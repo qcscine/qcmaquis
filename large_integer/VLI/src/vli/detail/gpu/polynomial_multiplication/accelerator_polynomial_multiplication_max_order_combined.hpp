@@ -32,8 +32,87 @@
 namespace vli {
     namespace detail {
 
-    #define VLI__ExtendStride result_stride<0, 4, Order>::value // 2*order+1
-    #define VLI__SIZE num_words<NumBits>::value 
+    #define VLI_ExtendStride result_stride<0, 4, Order>::value // 2*order+1
+    #define VLI_SIZE num_words<NumBits>::value 
+    // c - the declation of memory_specialization is into accelerator_polynomial_multiplication_max_order_combined
+    template<std::size_t NumBits, int Order, int NumVars >
+    struct memory_specialization<NumBits, max_order_combined<Order>, NumVars, range< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) < shared_min::value) > >{
+        enum { value1 = full_value<NumBits, max_order_combined<Order>, NumVars >::value };
+        enum { value2 = full_value<NumBits, max_order_combined<Order>, NumVars >::value };
+
+        static inline void __device__ shared_copy(unsigned int* in1shared, unsigned int const* in1, unsigned int* in2shared, unsigned int const* in2, const unsigned int offset){
+            for(int i=(threadIdx.x); i < full_value<NumBits, max_order_combined<Order>, NumVars >::value; i+= mul_block_size<max_order_combined<Order>, NumVars,2>::value ){ 
+               in1shared[i] = in1[offset + i];
+               in2shared[i] = in2[offset + i];
+            }
+            __syncthreads();
+        } 
+
+        static inline unsigned __device__  int offset_1(const unsigned int offset){return 0;}  
+        static inline unsigned __device__  int offset_2(const unsigned int offset){return 0;}  
+
+        static inline void __device__ local_copy(unsigned int* c1, unsigned int const* in1shared, unsigned int* c2, unsigned int const* in2shared, const unsigned int offset1, const unsigned int offset2){
+
+            #pragma unroll
+            for(unsigned int i = 0; i < VLI_SIZE; ++i)
+               c1[i] = in1shared[offset1+i];        
+           
+            #pragma unroll
+            for(unsigned int i = 0; i < VLI_SIZE; ++i)
+               c2[i] = in2shared[offset2+i];        
+
+        } 
+    };
+     
+    template<std::size_t NumBits, int Order, int NumVars >
+    struct memory_specialization<NumBits, max_order_combined<Order>, NumVars, range< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) >= shared_min::value) &&  (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) < 2*shared_min::value) > >{
+        enum { value1 = full_value<NumBits, max_order_combined<Order>, NumVars >::value };
+        enum { value2 = 1}; // should be 0 but not allowed, so 1
+
+        static inline void __device__ shared_copy(unsigned int* in1shared, unsigned int const* in1, unsigned int* in2shared, unsigned int const* in2, const unsigned int offset){
+            for(int i=(threadIdx.x); i < full_value<NumBits, max_order_combined<Order>, NumVars >::value; i+= mul_block_size<max_order_combined<Order>, NumVars,2>::value ){ 
+               in1shared[i] = in1[offset + i];
+            }
+             __syncthreads();
+        } 
+
+        static inline unsigned __device__ int offset_1(const unsigned int offset){return 0;}  
+        static inline unsigned __device__ int offset_2(const unsigned int offset){return offset;}  
+
+        static inline void __device__ local_copy(unsigned int* c1, unsigned int const* in1shared, unsigned int* c2, unsigned int const* in2shared, const unsigned int offset1, const unsigned int offset2){
+            #pragma unroll
+            for(unsigned int i = 0; i < VLI_SIZE; ++i)
+               c1[i] = in1shared[offset1+i];        
+           
+            #pragma unroll
+            for(unsigned int i = 0; i < VLI_SIZE; ++i)
+               c2[i] = tex1Dfetch(tex_reference_2,offset2+i);                 
+         } 
+
+    };
+
+    template<std::size_t NumBits, int Order, int NumVars >
+    struct memory_specialization<NumBits, max_order_combined<Order>, NumVars, range< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) >= 2*shared_min::value) > >{
+        enum { value1 = 1}; // same 1 should be 0
+        enum { value2 = 1}; // same 1 should be 0 
+
+        static inline void __device__ shared_copy(unsigned int* in1shared, unsigned int const* in1, unsigned int* in2shared, unsigned int const* in2, const unsigned int offset){
+            //nothing >_<'
+        } 
+
+        static inline unsigned __device__ int offset_1(const unsigned int offset){return offset;}  
+        static inline unsigned __device__ int offset_2(const unsigned int offset){return offset;}  
+
+        static inline void __device__ local_copy(unsigned int* c1, unsigned int const* in1shared, unsigned int* c2, unsigned int const* in2shared, const unsigned int offset1, const unsigned int offset2){
+            #pragma unroll
+            for(unsigned int i = 0; i < VLI_SIZE; ++i)
+               c1[i] = tex1Dfetch(tex_reference_1,offset1+i);                 
+           
+            #pragma unroll
+            for(unsigned int i = 0; i < VLI_SIZE; ++i)
+               c2[i] = tex1Dfetch(tex_reference_2,offset2+i);                 
+         } 
+    };
     // all this could be really simplified as the max_order version
     template <std::size_t NumBits, class MaxOrder, int NumVars>
     struct accelerator;
@@ -42,24 +121,22 @@ namespace vli {
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_combined<Order>, 4>{
     inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
-        __shared__ unsigned int in1shared[VLI__SIZE*max_order_combined_helpers::size<4+1, Order>::value];
+        __shared__ unsigned int in1shared[memory_specialization<NumBits,max_order_combined<Order>,4 >::value1];
+        __shared__ unsigned int in2shared[memory_specialization<NumBits,max_order_combined<Order>,4 >::value2];
 
         const unsigned int local_thread_id = threadIdx.x;
         const unsigned int element_id = blockIdx.x;
         
-        unsigned int c1[VLI__SIZE],c2[VLI__SIZE];
-        unsigned int res[2*VLI__SIZE];
+        unsigned int c1[VLI_SIZE],c2[VLI_SIZE];
+        unsigned int res[2*VLI_SIZE];
 
-        unsigned int res1[2*VLI__SIZE];
+        unsigned int res1[2*VLI_SIZE];
         
         unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
         
-        const unsigned int input_elem_offset = element_id *  vli::detail::max_order_combined_helpers::size<4+1, Order>::value * VLI__SIZE;
+        const unsigned int input_elem_offset = element_id *  vli::detail::max_order_combined_helpers::size<4+1, Order>::value * VLI_SIZE;
 
-        for(int i=(threadIdx.x); i < VLI__SIZE*max_order_combined_helpers::size<4+1, Order>::value; i+= mul_block_size<max_order_combined<Order>, 4,2>::value )
-           in1shared[i] = in1[input_elem_offset + i];
-
-         __syncthreads();
+        memory_specialization<NumBits,max_order_combined<Order>,4 >::shared_copy(in1shared, in1, in2shared, in2, input_elem_offset);
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>,4>::value)];
@@ -67,7 +144,7 @@ namespace vli {
         
             if (step_count > 0) {
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI__SIZE; ++i)
+                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
                     res[i] = 0;
                 
                 const int output_degree_x = task.output_degree_x;
@@ -85,7 +162,7 @@ namespace vli {
                                                                    - 3*current_degree_x))/24
                                                                    +(current_degree_y*(current_degree_y*current_degree_y - 3*current_degree_y*((Order+1)+1-current_degree_x) + 3*((Order+1)-current_degree_x)*((Order+1)+2-current_degree_x)+2))/6
                                                                    +((Order+1)-current_degree_x-current_degree_y)*current_degree_z - (current_degree_z*current_degree_z-current_degree_z)/2 + current_degree_w
-                                                                  ) * VLI__SIZE;
+                                                                  ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,4 >::offset_1(input_elem_offset);
                              
                              unsigned int in_polynomial_offset2 = ( //*.* 
                                                                    ((output_degree_x-current_degree_x)*(2*(Order+1)+3-(output_degree_x-current_degree_x))*(2*(Order+1)*(Order+1)+6*(Order+1)+2
@@ -95,32 +172,25 @@ namespace vli {
                                                                      + 3*((Order+1)-(output_degree_x-current_degree_x))*((Order+1)+2-(output_degree_x-current_degree_x))+2))/6
                                                                    +((Order+1)-(output_degree_x-current_degree_x)-(output_degree_y-current_degree_y))*(output_degree_z-current_degree_z) 
                                                                      - ((output_degree_z-current_degree_z)*(output_degree_z-current_degree_z)-(output_degree_z-current_degree_z))/2 + (output_degree_w-current_degree_w)
-                                                                  ) * VLI__SIZE + input_elem_offset;
+                                                                  ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,4 >::offset_2(input_elem_offset);
                              
+                             memory_specialization<NumBits,max_order_combined<Order>,4 >::local_copy(c1,in1shared,c2,in2shared,in_polynomial_offset1,in_polynomial_offset2);
+
                              #pragma unroll
-                             for(unsigned int i = 0; i < VLI__SIZE; ++i){
-                                 c1[i] = in1shared[in_polynomial_offset1+i];        
-                             }
-                             #pragma unroll
-                             for(unsigned int i = 0; i < VLI__SIZE; ++i){
-                                 c2[i] = tex1Dfetch(tex_reference_2,in_polynomial_offset2+i);                 
-                             } 
-                             
-                             #pragma unroll
-                             for(unsigned int i = 0; i < 2*VLI__SIZE; ++i)
+                             for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
                                  res1[i] = 0;
                              
                              multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
                     } //end big loop
 
-                unsigned int coefficient_id = (output_degree_x*(2*VLI__ExtendStride+3-output_degree_x)*(2*VLI__ExtendStride*VLI__ExtendStride+6*VLI__ExtendStride+2 +output_degree_x*output_degree_x -2*VLI__ExtendStride*output_degree_x
+                unsigned int coefficient_id = (output_degree_x*(2*VLI_ExtendStride+3-output_degree_x)*(2*VLI_ExtendStride*VLI_ExtendStride+6*VLI_ExtendStride+2 +output_degree_x*output_degree_x -2*VLI_ExtendStride*output_degree_x
                                               - 3*output_degree_x))/24
-                                              +(output_degree_y*(output_degree_y*output_degree_y - 3*output_degree_y*(VLI__ExtendStride+1-output_degree_x) + 3*(VLI__ExtendStride-output_degree_x)*(VLI__ExtendStride+2-output_degree_x)+2))/6
-                                              +(VLI__ExtendStride-output_degree_x-output_degree_y)*output_degree_z - (output_degree_z*output_degree_z-output_degree_z)/2 + output_degree_w;
+                                              +(output_degree_y*(output_degree_y*output_degree_y - 3*output_degree_y*(VLI_ExtendStride+1-output_degree_x) + 3*(VLI_ExtendStride-output_degree_x)*(VLI_ExtendStride+2-output_degree_x)+2))/6
+                                              +(VLI_ExtendStride-output_degree_x-output_degree_y)*output_degree_z - (output_degree_z*output_degree_z-output_degree_z)/2 + output_degree_w;
                 
-                unsigned int * out2 = out + (coefficient_id * element_count *2* VLI__SIZE) + element_id; // coefficient->int_degree->element_id
+                unsigned int * out2 = out + (coefficient_id * element_count *2* VLI_SIZE) + element_id; // coefficient->int_degree->element_id
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI__SIZE; ++i) {
+                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i) {
                         // This is a strongly compute-bound kernel,
                         // so it is fine to waste memory bandwidth by using non-coalesced writes in order to have less instructions,
                         //     less synchronization points, less shared memory used (and thus greater occupancy) and greater scalability.
@@ -137,34 +207,30 @@ namespace vli {
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_combined<Order>, 3>{
     inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
-        __shared__ unsigned int in1shared[VLI__SIZE*max_order_combined_helpers::size<3+1, Order>::value];
-        __shared__ unsigned int in2shared[VLI__SIZE*max_order_combined_helpers::size<3+1, Order>::value];
+
+        __shared__ unsigned int in1shared[memory_specialization<NumBits,max_order_combined<Order>,3 >::value1];
+        __shared__ unsigned int in2shared[memory_specialization<NumBits,max_order_combined<Order>,3 >::value2];
 
         const unsigned int local_thread_id = threadIdx.x;
         const unsigned int element_id = blockIdx.x;
         
-        unsigned int c1[VLI__SIZE],c2[VLI__SIZE];
-        unsigned int res[2*VLI__SIZE];
-        unsigned int res1[2*VLI__SIZE];
+        unsigned int c1[VLI_SIZE],c2[VLI_SIZE];
+        unsigned int res[2*VLI_SIZE];
+        unsigned int res1[2*VLI_SIZE];
         
         unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
         
-        const unsigned int input_elem_offset = element_id * vli::detail::max_order_combined_helpers::size<3+1, Order>::value  * VLI__SIZE;
+        const unsigned int input_elem_offset = element_id * vli::detail::max_order_combined_helpers::size<3+1, Order>::value  * VLI_SIZE;
 
-        for(int i=(threadIdx.x); i < VLI__SIZE*max_order_combined_helpers::size<3+1, Order>::value; i+= mul_block_size<max_order_combined<Order>, 3,2>::value ){ 
-           in1shared[i] = in1[input_elem_offset + i];
-           in2shared[i] = in2[input_elem_offset + i];
-        }
-
-         __syncthreads();
-        
+        memory_specialization<NumBits,max_order_combined<Order>,3 >::shared_copy(in1shared, in1, in2shared, in2, input_elem_offset);
+ 
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>, 3>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI__SIZE; ++i)
+                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
                     res[i] = 0;
                 
                 const int output_degree_x = task.output_degree_x;
@@ -179,7 +245,7 @@ namespace vli {
                                                               (current_degree_x*(current_degree_x*current_degree_x - 3*current_degree_x*((Order+1)+1)
                                                               + 3*(Order+1)*((Order+1)+2) +2))/6
                                                               + ((Order+1) - current_degree_x)*current_degree_y - (current_degree_y*current_degree_y-current_degree_y)/2 + current_degree_z
-                                                             ) * VLI__SIZE  ;
+                                                             ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,3 >::offset_1(input_elem_offset)  ;
       
                         
                         unsigned int in_polynomial_offset2 = ( 
@@ -187,30 +253,24 @@ namespace vli {
                                                               + 3*(Order+1)*((Order+1)+2) +2))/6
                                                               + ((Order+1) - (output_degree_x-current_degree_x))*(output_degree_y-current_degree_y) - ((output_degree_y-current_degree_y)*(output_degree_y-current_degree_y)-(output_degree_y-current_degree_y))/2
                                                               + (output_degree_z-current_degree_z)
-                                                             ) * VLI__SIZE  ;
-                        #pragma unroll
-                        for(unsigned int i = 0; i < VLI__SIZE; ++i){
-                            c1[i] = in1shared[in_polynomial_offset1+i];        
-                       }
-                        #pragma unroll
-                        for(unsigned int i = 0; i < VLI__SIZE; ++i){
-                            c2[i] = in2shared[in_polynomial_offset2+i];                 
-                        } 
+                                                             ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,3 >::offset_2(input_elem_offset)  ;
                           
+                        memory_specialization<NumBits,max_order_combined<Order>,3 >::local_copy(c1,in1shared,c2,in2shared,in_polynomial_offset1,in_polynomial_offset2);
+
                         #pragma unroll
-                        for(unsigned int i = 0; i < 2*VLI__SIZE; ++i)
+                        for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
                             res1[i] = 0;
                      
                         multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
                 }
                 
-                unsigned int coefficient_id =  (output_degree_x*(output_degree_x*output_degree_x - 3*output_degree_x*(VLI__ExtendStride+1)
-                                               + 3*VLI__ExtendStride*(VLI__ExtendStride+2) +2))/6
-                                               + (VLI__ExtendStride - output_degree_x)*output_degree_y - (output_degree_y*output_degree_y-output_degree_y)/2 + output_degree_z;
+                unsigned int coefficient_id =  (output_degree_x*(output_degree_x*output_degree_x - 3*output_degree_x*(VLI_ExtendStride+1)
+                                               + 3*VLI_ExtendStride*(VLI_ExtendStride+2) +2))/6
+                                               + (VLI_ExtendStride - output_degree_x)*output_degree_y - (output_degree_y*output_degree_y-output_degree_y)/2 + output_degree_z;
                 
-                unsigned int * out2 = out + (coefficient_id * element_count *2* VLI__SIZE) + element_id; // coefficient->int_degree->element_id
+                unsigned int * out2 = out + (coefficient_id * element_count *2* VLI_SIZE) + element_id; // coefficient->int_degree->element_id
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI__SIZE; ++i) {
+                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i) {
                         // This is a strongly compute-bound kernel,
                         // so it is fine to waste memory bandwidth by using non-coalesced writes in order to have less instructions,
                         //     less synchronization points, less shared memory used (and thus greater occupancy) and greater scalability.
@@ -227,34 +287,28 @@ namespace vli {
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_combined<Order>, 2>{
     inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
-        __shared__ unsigned int in1shared[VLI__SIZE*max_order_combined_helpers::size<2+1, Order>::value];
-        __shared__ unsigned int in2shared[VLI__SIZE*max_order_combined_helpers::size<2+1, Order>::value];
+        __shared__ unsigned int in1shared[memory_specialization<NumBits,max_order_combined<Order>,2 >::value1];
+        __shared__ unsigned int in2shared[memory_specialization<NumBits,max_order_combined<Order>,2 >::value2];
 
         const unsigned int local_thread_id = threadIdx.x;
         const unsigned int element_id = blockIdx.x;
         
-        unsigned int c1[VLI__SIZE],c2[VLI__SIZE];
-        unsigned int res[2*VLI__SIZE];
-        unsigned int res1[2*VLI__SIZE];
+        unsigned int c1[VLI_SIZE],c2[VLI_SIZE];
+        unsigned int res[2*VLI_SIZE];
+        unsigned int res1[2*VLI_SIZE];
         
         unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
-        
-        const unsigned int input_elem_offset = element_id * vli::detail::max_order_combined_helpers::size<2+1, Order>::value  * VLI__SIZE;
+        const unsigned int input_elem_offset = element_id * vli::detail::max_order_combined_helpers::size<2+1, Order>::value  * VLI_SIZE;
 
-        for(int i=(threadIdx.x); i < VLI__SIZE*max_order_combined_helpers::size<2+1, Order>::value; i+= mul_block_size<max_order_combined<Order>, 2,2>::value ){ 
-           in1shared[i] = in1[input_elem_offset + i];
-           in2shared[i] = in2[input_elem_offset + i];
-        }
+        memory_specialization<NumBits,max_order_combined<Order>,2 >::shared_copy(in1shared, in1, in2shared, in2, input_elem_offset);
 
-         __syncthreads();
-        
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>, 2>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI__SIZE; ++i)
+                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
                     res[i] = 0;
                 
                 const int output_degree_x = task.output_degree_x;
@@ -264,31 +318,25 @@ namespace vli {
                     for(int current_degree_y=max(0, output_degree_x+output_degree_y-Order-current_degree_x); current_degree_y <= min(output_degree_y,Order-current_degree_x) ; ++current_degree_y){
                         unsigned int in_polynomial_offset1 = (  
                                                                (Order+1)*current_degree_x - (current_degree_x*current_degree_x-current_degree_x)/2 + current_degree_y
-                                                             ) * VLI__SIZE;
+                                                             ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,3 >::offset_1(input_elem_offset)  ;
                         
                         unsigned int in_polynomial_offset2 = ( 
                                                                (Order+1)*(output_degree_x-current_degree_x) - ((output_degree_x-current_degree_x)*(output_degree_x-current_degree_x)-(output_degree_x-current_degree_x))/2 + (output_degree_y-current_degree_y)
-                                                             ) * VLI__SIZE;
+                                                             ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,3 >::offset_2(input_elem_offset)  ;
+
+                        memory_specialization<NumBits,max_order_combined<Order>,2 >::local_copy(c1,in1shared,c2,in2shared,in_polynomial_offset1,in_polynomial_offset2);
 
                         #pragma unroll
-                        for(unsigned int i = 0; i < VLI__SIZE; ++i)
-                             c1[i] = in1shared[in_polynomial_offset1+i];        
-
-                        #pragma unroll
-                        for(unsigned int i = 0; i < VLI__SIZE; ++i)
-                             c2[i] = in2shared[in_polynomial_offset2+i];        
-                    
-                        #pragma unroll
-                        for(unsigned int i = 0; i < 2*VLI__SIZE; ++i)
+                        for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
                             res1[i] = 0;
                      
                         multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
                     }                   
 
-                unsigned int coefficient_id = VLI__ExtendStride*output_degree_x - (output_degree_x*output_degree_x-output_degree_x)/2 + output_degree_y;
-                unsigned int * out2 = out + (coefficient_id * element_count *2* VLI__SIZE) + element_id; // coefficient->int_degree->element_id
+                unsigned int coefficient_id = VLI_ExtendStride*output_degree_x - (output_degree_x*output_degree_x-output_degree_x)/2 + output_degree_y;
+                unsigned int * out2 = out + (coefficient_id * element_count *2* VLI_SIZE) + element_id; // coefficient->int_degree->element_id
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI__SIZE; ++i) {
+                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i) {
                         // This is a strongly compute-bound kernel,
                         // so it is fine to waste memory bandwidth by using non-coalesced writes in order to have less instructions,
                         //     less synchronization points, less shared memory used (and thus greater occupancy) and greater scalability.
@@ -306,26 +354,21 @@ namespace vli {
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_combined<Order>, 1>{
     inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
-        __shared__ unsigned int in1shared[VLI__SIZE*max_order_combined_helpers::size<1+1, Order>::value];
-        __shared__ unsigned int in2shared[VLI__SIZE*max_order_combined_helpers::size<1+1, Order>::value];
+        __shared__ unsigned int in1shared[memory_specialization<NumBits,max_order_combined<Order>,1 >::value1];
+        __shared__ unsigned int in2shared[memory_specialization<NumBits,max_order_combined<Order>,1 >::value2];
 
         const unsigned int local_thread_id = threadIdx.x;
         const unsigned int element_id = blockIdx.x;
         
-        unsigned int c1[VLI__SIZE],c2[VLI__SIZE];
-        unsigned int res[2*VLI__SIZE];
-        unsigned int res1[2*VLI__SIZE];
+        unsigned int c1[VLI_SIZE],c2[VLI_SIZE];
+        unsigned int res[2*VLI_SIZE];
+        unsigned int res1[2*VLI_SIZE];
         
         unsigned int iteration_count = workblock_count_by_warp[local_thread_id / 32];
         
-        const unsigned int input_elem_offset = element_id * stride<0,1,Order>::value * VLI__SIZE;
+        const unsigned int input_elem_offset = element_id * stride<0,1,Order>::value * VLI_SIZE;
 
-        for(int i=(threadIdx.x); i < VLI__SIZE*max_order_combined_helpers::size<1+1, Order>::value; i+= mul_block_size<max_order_combined<Order>, 1,2>::value ){ 
-           in1shared[i] = in1[input_elem_offset + i];
-           in2shared[i] = in2[input_elem_offset + i];
-        }
-
-         __syncthreads();
+        memory_specialization<NumBits,max_order_combined<Order>,1 >::shared_copy(in1shared, in1, in2shared, in2, input_elem_offset);
         
         for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>, 1>::value)];
@@ -333,7 +376,7 @@ namespace vli {
         
             if (step_count > 0) {
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI__SIZE; ++i)
+                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
                     res[i] = 0;
                 
                 const unsigned int output_degree_x = task.output_degree_x;
@@ -343,22 +386,15 @@ namespace vli {
                 for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
                 
                     unsigned int in_polynomial_offset1 = ( + current_degree_x
-                                                         ) * VLI__SIZE;
+                                                         ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,1 >::offset_1(input_elem_offset)  ;
                     
                     unsigned int in_polynomial_offset2 = ( + (output_degree_x - current_degree_x)
-                                                         ) * VLI__SIZE;
+                                                         ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,1 >::offset_2(input_elem_offset)  ;
                 
+                    memory_specialization<NumBits,max_order_combined<Order>,1 >::local_copy(c1,in1shared,c2,in2shared,in_polynomial_offset1,in_polynomial_offset2);
+
                     #pragma unroll
-                    for(unsigned int i = 0; i < VLI__SIZE; ++i){
-                          c1[i] = in1shared[in_polynomial_offset1+i];        
-                    }
-                    #pragma unroll
-                    for(unsigned int i = 0; i < VLI__SIZE; ++i){
-                          c2[i] = in2shared[in_polynomial_offset2+i];                 
-                    } 
-                
-                    #pragma unroll
-                    for(unsigned int i = 0; i < 2*VLI__SIZE; ++i)
+                    for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
                         res1[i] = 0;
                  
                     multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
@@ -368,9 +404,9 @@ namespace vli {
                 
                 unsigned int coefficient_id =  output_degree_x;
                 
-                unsigned int * out2 = out + (coefficient_id * element_count *2* VLI__SIZE) + element_id; // coefficient->int_degree->element_id
+                unsigned int * out2 = out + (coefficient_id * element_count *2* VLI_SIZE) + element_id; // coefficient->int_degree->element_id
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI__SIZE; ++i) {
+                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i) {
                         // This is a strongly compute-bound kernel,
                         // so it is fine to waste memory bandwidth by using non-coalesced writes in order to have less instructions,
                         //     less synchronization points, less shared memory used (and thus greater occupancy) and greater scalability.
@@ -383,8 +419,8 @@ namespace vli {
         };  // end function
     }; // end struct
 
-    #undef VLI__ExtendStride
-    #undef VLI__SIZE
+    #undef VLI_ExtendStride
+    #undef VLI_SIZE
 
     }//end namesoace detail
 }//end namespace vli

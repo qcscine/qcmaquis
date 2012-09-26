@@ -106,75 +106,112 @@ namespace detail {
           gpu::cu_check_error(cudaMemset((void*)(pgm.PoutData_),0,2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
         } // end fonction
     }; //end struct
+    
+    // SFINAE patent
+    template<bool> struct range;
 
-
-    template <std::size_t NumBits, class MaxOrder, int NumVars>
+    template <std::size_t NumBits, class MaxOrder, int NumVars, typename = range<true> >
     struct memory_transfer_helper;
     
     // max order each specialization 
     template <std::size_t NumBits, int Order, int NumVars>
-    struct memory_transfer_helper<NumBits, max_order_each<Order>, NumVars>{
+    struct memory_transfer_helper<NumBits, max_order_each<Order>, NumVars, range< (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) < shared_min::value) > >{ //full shared mem version
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
-            BOOST_STATIC_ASSERT( NumVars <= 2);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
                                 *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
                                 *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
          }
+
+         static void unbind_texture(){
+         // nothing !
+         }
+    
     };
 
-    template <std::size_t NumBits, int Order>
-    struct memory_transfer_helper<NumBits, max_order_each<Order>, 3 >{
+    template <std::size_t NumBits, int Order, int NumVars>
+    struct memory_transfer_helper<NumBits, max_order_each<Order>, NumVars, range< (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) >= shared_min::value) &&  (full_value<NumBits, max_order_each<Order> , NumVars>::value*sizeof(unsigned int) < 2*shared_min::value) > >{ // hybrid version texture and shared mem
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
-            
-  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*stride<0,3,Order>::value*stride<1,3,Order>::value*stride<2,3,Order>::value*stride<3,3,Order>::value
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
                                 *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
-  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*stride<0,3,Order>::value*stride<1,3,Order>::value*stride<2,3,Order>::value*stride<3,3,Order>::value
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
                                 *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
-
             //only the second poly is cashed into the texture memory
-            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*stride<0,3,Order>::value*stride<1,3,Order>::value*stride<2,3,Order>::value*stride<3,3,Order>::value
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
                                 *num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+         }
 
+         static void unbind_texture(){
+            gpu::cu_check_error(cudaUnbindTexture(tex_reference_2),__FILE__,__LINE__);
          }
     };
 
-    template <std::size_t NumBits, int Order>
-    struct memory_transfer_helper<NumBits, max_order_each<Order>, 4 >{
+    template <std::size_t NumBits, int Order, int NumVars>
+    struct memory_transfer_helper<NumBits, max_order_each<Order>, NumVars, range< (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) >= 2*shared_min::value) > >{ // full texture memory
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
-  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*stride<0,4,Order>::value*stride<1,4,Order>::value*stride<2,4,Order>::value*stride<3,4,Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
-  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*stride<0,4,Order>::value*stride<1,4,Order>::value*stride<2,4,Order>::value*stride<3,4,Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
-
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
             //two polys are cached, too large
-            gpu::cu_check_error(cudaBindTexture(0,tex_reference_1,(void*)pgm.V1Data_,VectorSize*stride<0,4,Order>::value*stride<1,4,Order>::value*stride<2,4,Order>::value*stride<3,4,Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
-            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*stride<0,4,Order>::value*stride<1,4,Order>::value*stride<2,4,Order>::value*stride<3,4,Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_1,(void*)pgm.V1Data_,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+         }
+
+         static void unbind_texture(){
+            gpu::cu_check_error(cudaUnbindTexture(tex_reference_1),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaUnbindTexture(tex_reference_2),__FILE__,__LINE__);
          }
     };
 
     // max order combined  specialization 
     template <std::size_t NumBits, int Order, int NumVars>
-    struct memory_transfer_helper<NumBits, max_order_combined<Order>, NumVars>{
+    struct memory_transfer_helper<NumBits, max_order_combined<Order>, NumVars, range< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) < shared_min::value) > >{ //full shared mem version
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
-            BOOST_STATIC_ASSERT( NumVars <= 3);
+            std::cout << " comb 0 " << std::endl;
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
          }
-    };
 
-    template <std::size_t NumBits, int Order>
-    struct memory_transfer_helper<NumBits, max_order_combined<Order>, 4>{
-         static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
-  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<4+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
-  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<4+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
-            //only the second poly is cashed into the texture memory
-            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*max_order_combined_helpers::size<4+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+         static void unbind_texture(){
          }
     };
- 
-    void UnbindTexture(){
-        gpu::cu_check_error(cudaUnbindTexture(tex_reference_1),__FILE__,__LINE__);
-        gpu::cu_check_error(cudaUnbindTexture(tex_reference_2),__FILE__,__LINE__);
-    }
+
+    template <std::size_t NumBits, int Order, int NumVars>
+    struct memory_transfer_helper<NumBits, max_order_combined<Order>, NumVars, range< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) >= shared_min::value) &&  (full_value<NumBits, max_order_combined<Order> , NumVars>::value*sizeof(unsigned int) < 2*shared_min::value) > >{ // hybrid version texture and shared mem
+         static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
+            //only the second poly is cashed into the texture memory
+            std::cout << " comb 1 " << std::endl;
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+         }
+
+         static void unbind_texture(){
+            gpu::cu_check_error(cudaUnbindTexture(tex_reference_2),__FILE__,__LINE__);
+         }
+    };
+
+    template <std::size_t NumBits, int Order, int NumVars>
+    struct memory_transfer_helper<NumBits, max_order_combined<Order>, NumVars, range< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) >= 2*shared_min::value) > >{ // hybrid version texture and shared mem
+         static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
+            //only the second poly is cashed into the texture memory
+            std::cout << " comb 2 " << std::endl;
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+  	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_1,(void*)pgm.V1Data_,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+         }
+       
+         static void unbind_texture(){
+            gpu::cu_check_error(cudaUnbindTexture(tex_reference_1),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaUnbindTexture(tex_reference_2),__FILE__,__LINE__);
+         }
+    };
 
     } // end namespace detail
 }// end namespace vli
