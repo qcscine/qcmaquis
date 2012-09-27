@@ -985,11 +985,20 @@ namespace ambient { namespace numeric { namespace kernels {
     {
         typedef void (validation::*F)(const matrix<T>&, const matrix<T>&, future<bool>&);
 
+        inline double distance(const std::complex<double>& a, const std::complex<double>& b){
+            return fabs(std::norm(a) - std::norm(b));
+        }
+        inline double magnitude(const std::complex<double>& a, const std::complex<double>& b){
+            return std::max(fabs(std::norm(a)), fabs(std::norm(b)));
+        }
+        inline double distance(double a, double b) { return fabs(fabs(a) - fabs(b));    }
+        inline double magnitude(double a, double b){ return std::max(fabs(a), fabs(b)); }
+
         inline void l(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){
             pin(current(a));  //if(!ctxt.involved()) return;
             assign(current(b)); 
         }
-        
+
         inline void c(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
             __A_TIME_C("ambient_validation_kernel"); 
             T* ad = c_current(a); 
@@ -998,11 +1007,12 @@ namespace ambient { namespace numeric { namespace kernels {
             int count = 0;
             for(size_t i=0; i < __a_get_dim(a).y; ++i){
                 for(size_t j=0; j < __a_get_dim(a).x; ++j){
-                    double av = ad[i+j*a.num_rows()];
-                    double bv = bd[i+j*b.num_rows()];
-                    double delta = fabs(av)-fabs(bv);
-                    if(delta > epsilon*256 && delta/fabs(bv) > epsilon*256){ // || av*bv < 0 // 16 is recommended, 256 because MKL isn't bitwise stable
-                        std::cout << i << " " << j << " : " << av << " " << bv << ", eps: " << delta << std::endl;
+                    T av = ad[i+j*a.num_rows()];
+                    T bv = bd[i+j*b.num_rows()];
+                    double d = distance(av, bv);
+                    double m = magnitude(av, bv);
+                    if(d > epsilon*256 && d/m > epsilon*256){ // || av*bv < 0 // 16 is recommended, 256 because MKL isn't bitwise stable
+                        std::cout << i << " " << j << " : " << av << " " << bv << ", eps: " << d << std::endl;
                         ret.get_value() = false;
                         if(++count > 10) return;
                     }
