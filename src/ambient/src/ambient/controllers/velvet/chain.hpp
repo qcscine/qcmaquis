@@ -18,7 +18,6 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void chain::push_back(cfunctor* op){
         this->content.push_back(op);
-        op->tag(this);
     }
 
     inline void chain::execute(){
@@ -29,7 +28,7 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline bool chain::ready(){
         std::vector<cfunctor*>::iterator i = this->content.begin(); 
-        while(i != this->content.end()) if(!(*i++)->ready(this)) return false;
+        while(i != this->content.end()) if(!(*i++)->ready()) return false;
         return true;
     }
 

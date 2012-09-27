@@ -41,10 +41,9 @@ namespace ambient {
         
         inline void operator delete (void* ptr){ }
 
-        virtual bool ready(void* e){ return kernel_inliner<typename K::F,&K::c>::ready(this, e);   }
+        virtual bool ready()       { return kernel_inliner<typename K::F,&K::c>::ready(this);      }
         virtual bool match(void* t){ return kernel_inliner<typename K::F,&K::c>::match(this, t);   }
         virtual void place()       {        kernel_inliner<typename K::F,&K::c>::place(this);      }
-        virtual void tag(void* t)  {        kernel_inliner<typename K::F,&K::c>::tag(this, t);     }
         virtual void invoke()      {        kernel_inliner<typename K::F,&K::c>::invoke((K*)this); 
                                             kernel_inliner<typename K::F,&K::c>::cleanup(this);    }
 
