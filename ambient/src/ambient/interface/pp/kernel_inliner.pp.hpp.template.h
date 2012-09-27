@@ -11,13 +11,10 @@
     info<T ## n>::typed::place<n>(o);                                                           
 
 #define ready_revision(z, n, unused)                                                                                 \
-    info<T ## n>::typed::ready<n>(o,e) &&
+    info<T ## n>::typed::ready<n>(o) &&
 
 #define match_revision(z, n, unused)                                                                                 \
     info<T ## n>::typed::match<n>(o,t) ||
-
-#define tag_revision(z, n, unused)                                                                                   \
-    info<T ## n>::typed::tag<n>(o,t);
 
 #define extract_arguments(z, n, unused)                                                                              \
     info<T ## n>::typed::modify<n>(arg ## n, o);
@@ -65,14 +62,11 @@ struct kernel_inliner<void(K::*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST
     static inline void place(sfunctor* o){
         BOOST_PP_REPEAT(TYPES_NUMBER, place_revision, ~) 
     }
-    static inline bool ready(sfunctor* o, void* e){
+    static inline bool ready(sfunctor* o){
         return (BOOST_PP_REPEAT(TYPES_NUMBER, ready_revision, ~) true);
     }
     static inline bool match(sfunctor* o, void* t){
         return (BOOST_PP_REPEAT(TYPES_NUMBER, match_revision, ~) false);
-    }
-    static inline void tag(sfunctor* o, void* t){
-        BOOST_PP_REPEAT(TYPES_NUMBER, tag_revision, ~)
     }
 };
 
