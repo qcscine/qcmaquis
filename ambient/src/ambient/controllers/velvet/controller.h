@@ -5,7 +5,6 @@
 #include "ambient/controllers/velvet/cfunctor.h"
 #include "ambient/controllers/velvet/context.h"
 #include "ambient/controllers/velvet/iteratable.h"
-#include "ambient/utils/tasklist.hpp"
 #include "ambient/utils/collector.hpp"
 
 #include <cilk/cilk.h>
