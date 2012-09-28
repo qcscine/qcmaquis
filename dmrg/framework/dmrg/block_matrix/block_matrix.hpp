@@ -9,6 +9,7 @@
 #include "dmrg/block_matrix/block_matrix.h"
 
 #include "utils/function_objects.h"
+//#include "utils/bindings.hpp"
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix() 
@@ -351,10 +352,18 @@ void block_matrix<Matrix, SymmGroup>::load(alps::hdf5::archive & ar)
 {
     ar >> alps::make_pvp("rows_", rows_);
     ar >> alps::make_pvp("cols_", cols_);
+
+//#ifdef USE_AMBIENT
+//    std::vector<alps::numeric::matrix<typename Matrix::value_type> > tmp;
+//    ar >> alps::make_pvp("data_", tmp);
+//    for(typename std::vector<alps::numeric::matrix<typename Matrix::value_type> >::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
+//        data_.push_back(new Matrix(maquis::bindings::matrix_cast<Matrix>(*it)));
+//#else
     std::vector<Matrix> tmp;
     ar >> alps::make_pvp("data_", tmp);
-    for (typename std::vector<Matrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
+    for(typename std::vector<Matrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
         data_.push_back(new Matrix(*it));
+//#endif
 }
 
 template<class Matrix, class SymmGroup>
@@ -362,7 +371,17 @@ void block_matrix<Matrix, SymmGroup>::save(alps::hdf5::archive & ar) const
 {
     ar << alps::make_pvp("rows_", rows_);
     ar << alps::make_pvp("cols_", cols_);
+
+//#ifdef USE_AMBIENT
+//    std::vector<alps::numeric::matrix<typename Matrix::value_type> > tmp;
+//    tmp.reserve(data_.size());
+//    ambient::sync();
+//    for(int i = 0; i < data_.size(); i++){
+//        tmp.push_back(maquis::bindings::matrix_cast< alps::numeric::matrix<typename Matrix::value_type> >(data_[i]));
+//    }
+//#else
     std::vector<Matrix> tmp(data_.begin(), data_.end());
+//#endif
     ar << alps::make_pvp("data_", tmp);
 }
 
