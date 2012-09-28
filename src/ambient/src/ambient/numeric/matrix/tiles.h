@@ -48,6 +48,7 @@ namespace ambient { namespace numeric {
         inline void save(alps::hdf5::archive & ar)const{};
     public:
         std::vector<Matrix*> data;
+        bool single;
         size_t rows;
         size_t cols;
         size_t mt;
@@ -83,6 +84,7 @@ namespace ambient { namespace numeric {
         inline const value_type& operator() (size_type i, size_type j) const;
     public:
         std::vector<diagonal_matrix<T>*> data;
+        bool single;
         size_t size;
         size_t nt;
     };
