@@ -8,6 +8,8 @@ namespace ambient { namespace controllers { namespace velvet {
         virtual void invoke()      = 0;
         virtual bool ready()       = 0;
         virtual bool match(void*)  = 0;
+        inline void push_back(cfunctor* d);
+        std::vector<cfunctor*> deps;
     };
 
 } } }

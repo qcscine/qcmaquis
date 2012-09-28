@@ -3,7 +3,6 @@
 
 #include "ambient/utils/touchstack.h"
 #include "ambient/controllers/velvet/cfunctor.h"
-#include "ambient/controllers/velvet/chain.h"
 #include "ambient/controllers/velvet/context.h"
 #include "ambient/controllers/velvet/iteratable.h"
 #include "ambient/utils/tasklist.hpp"
@@ -34,16 +33,14 @@ namespace ambient { namespace controllers { namespace velvet {
         template<typename T> inline void destroy(T* o);
 
         inline void flush();
-        inline void execute(chain* op);
         inline void atomic_receive(revision& r);
         inline ~controller();
     public:
         bool muted;
         collector garbage;
     private:
-        touchstack< chain* >* chains;
-        touchstack< chain* > stack;
-        touchstack< chain* > mirror;
+        touchstack< cfunctor* > chains;
+        touchstack< cfunctor* > mirror;
         int arity;
     };
     
@@ -56,6 +53,5 @@ namespace ambient {
 #include "ambient/controllers/velvet/controller.hpp"
 #include "ambient/controllers/velvet/context.hpp"
 #include "ambient/controllers/velvet/iteratable.hpp"
-#include "ambient/controllers/velvet/chain.hpp"
 #include "ambient/controllers/velvet/cfunctor.hpp"
 #endif
