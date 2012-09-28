@@ -50,7 +50,9 @@ namespace ambient {
         inline void pin(revision& r){
             //this->set_group(channel.world()); 
             ambient::controller.ifetch(r);
-            ambient::controller.schedule(this);
+            cfunctor* g = (cfunctor*)r.get_generator();
+            if(g != NULL) g->push_back(this);
+            else ambient::controller.schedule(this);
         }
 
         template <class T0>

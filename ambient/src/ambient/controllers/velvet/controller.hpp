@@ -7,15 +7,13 @@ namespace ambient { namespace controllers { namespace velvet {
     using ambient::channels::mpi::packet;
 
     inline controller::~controller(){
-        delete[] this->chains;
     }
 
     inline controller::controller()
     : muted(false)
     {
         //this->acquire(&ambient::channel);
-        this->arity = __cilkrts_get_nworkers();
-        this->chains = new touchstack< chain* >[arity];
+        //this->arity = __cilkrts_get_nworkers();
     }
         
     template<typename T>
@@ -23,37 +21,26 @@ namespace ambient { namespace controllers { namespace velvet {
         this->garbage.push_back(o);
     }
 
-    inline void controller::execute(chain* op){
-        op->execute();
-        delete op;
-    }
-
     inline void controller::schedule(cfunctor* op){
-        touchstack< chain* >& queue = this->chains[__cilkrts_get_worker_number()];
-        if(!queue.empty() && false) //queue.back()->size() < 3 && op->match(queue.back())) 
-            queue.back()->push_back(op);
-        else
-            queue.push_back(new chain(op));
+        this->chains.push_back(op);
     }
 
     inline void controller::flush(){
-        for(int i = 0; i < this->arity; i++){
-            touchstack< chain* >& queue = this->chains[i];
-            while(!queue.end_reached()) this->stack.push_back(queue.pick());
-            queue.reset();
-        }
+        touchstack< cfunctor* >* chains = &this->chains;
+        touchstack< cfunctor* >* mirror = &this->mirror;
         
-        touchstack< chain* >* stack = &this->stack;
-        touchstack< chain* >* mirror = &this->mirror;
-        
-        while(!stack->empty()){
-            while(!stack->end_reached()){
-                chain* op = stack->pick();
-                if(op->ready()) cilk_spawn this->execute(op);
-                else mirror->push_back(op);
+        while(!chains->empty()){
+            while(!chains->end_reached()){
+                cfunctor* op = chains->pick();
+                if(op->ready()){ 
+                    cilk_spawn op->invoke();
+                    for(std::vector<cfunctor*>::const_iterator i = op->deps.begin(); 
+                        i != op->deps.end(); ++i)
+                        mirror->push_back(*i);
+                }else mirror->push_back(op);
             }
-            stack->reset();
-            std::swap(stack,mirror);
+            chains->reset();
+            std::swap(chains,mirror);
         }
         ambient::bulk_pool.refresh();
     } // implicit cilk_sync //
@@ -89,25 +76,6 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void forward(packet& cmd){ }
 
-/*  DEBUG VERSION:
-    inline void controller::flush(){
-        static __a_timer ts("ambient: time of small sets");
-        static __a_timer tl("ambient: time of large sets");
-        __a_timer& time = (this->stack.size() > 100)? ts : tl;
-        if(this->stack.empty()) return;
-
-        //while(!this->stack.end_reached()) 
-        //    this->stack.pick()->weight();
-        //this->stack.sort();
-
-        time.begin();
-        while(!this->stack.end_reached())
-            this->stack.pick()->logistics();
-        this->master_stream(this->tasks);
-        this->stack.reset();
-        time.end();
-    } */
-    
     /* MPI required parts:
     inline packet* package(revision& r, const char* state, int x, int y, int dest){
         void* header = r.block(x,y).get_memory();
