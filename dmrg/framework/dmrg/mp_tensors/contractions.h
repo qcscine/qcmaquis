@@ -15,12 +15,6 @@
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/indexing.h"
 
-#ifdef USE_AMBIENT
-#define parallel_for for
-#else
-#define parallel_for for
-#endif
-
 struct contraction {
     template<class Matrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
@@ -207,7 +201,7 @@ struct contraction {
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
-        parallel_for(std::size_t b = 0; b < loop_max; ++b) {
+        for(std::size_t b = 0; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(left.data_[b]), mps.data_, tmp);
             reshape_right_to_left_new<Matrix>(mps.site_dim(), left.data_[b].right_basis(), mps.col_dim(),
@@ -229,7 +223,7 @@ struct contraction {
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
-        parallel_for(size_t b2 = 0; b2 < loop_max; ++b2) {
+        for(size_t b2 = 0; b2 < loop_max; ++b2) {
             for (int run = 0; run < 2; ++run) {
                 if (run == 1)
                     ret.data_[b2].allocate_blocks();
@@ -327,7 +321,7 @@ struct contraction {
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
-        parallel_for(std::size_t b = 0; b < loop_max; ++b){
+        for(std::size_t b = 0; b < loop_max; ++b){
             gemm(mps.data_, right.data_[b], t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
             reshape_left_to_right<Matrix>(mps.site_dim(), mps.row_dim(), right.data_[b].right_basis(),
@@ -352,7 +346,7 @@ struct contraction {
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
-        parallel_for(size_t b1 = 0; b1 < loop_max; ++b1) {
+        for(size_t b1 = 0; b1 < loop_max; ++b1) {
             for(int run = 0; run < 2; ++run) {
                 if(run == 1)
                     ret.data_[b1].allocate_blocks();
@@ -454,7 +448,7 @@ struct contraction {
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
-        parallel_for(std::size_t b = 0; b < loop_max; ++b)
+        for(std::size_t b = 0; b < loop_max; ++b)
             gemm(transpose(lbtm.data_[b]), conjugate(bra_tensor.data()), ret.data_[b]);
 
         return ret;
@@ -478,7 +472,7 @@ struct contraction {
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
-        parallel_for(std::size_t b = 0; b < loop_max; ++b)
+        for(std::size_t b = 0; b < loop_max; ++b)
             gemm(rbtm.data_[b], transpose(conjugate(bra_tensor.data())), ret.data_[b]);
         
         
@@ -507,7 +501,7 @@ struct contraction {
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
-        parallel_for(size_t b = 0; b < loop_max; ++b)
+        for(size_t b = 0; b < loop_max; ++b)
             gemm(left_mpo_mps.data_[b], right.data_[b], oblocks[b]);
             
         for (size_t b = 0; b < loop_max; ++b)
@@ -925,5 +919,4 @@ struct contraction {
 
 };
 
-#undef parallel_for
 #endif
