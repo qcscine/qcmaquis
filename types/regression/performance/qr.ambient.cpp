@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     report(time, GFlopsGemm, x, y, nthreads);
     ambient::sync();
 
-    BOOST_CHECK(sQ == pQ); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
-    BOOST_CHECK(sR == pR); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(sQ == pQ);
+    BOOST_CHECK(sR == pR);
 }
 

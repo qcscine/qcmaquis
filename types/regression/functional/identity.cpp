@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( identity, T, test_types)
     y =  sA(accessx,accessy) ;
 
     Boost_check_close_adapter(x,y);
-    BOOST_CHECK(pA==sA); // we also check everything to verify we do not corrupt the memory
+    BOOST_CHECK(pA==sA); // memory corruption check
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( read_access, T, test_types)

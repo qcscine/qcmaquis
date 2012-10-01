@@ -27,6 +27,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     qr(pA,pQ,pR);
     qr(sA,sQ,sR);
 
-    BOOST_CHECK(sQ == pQ); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
-    BOOST_CHECK(sR == pR); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(sQ == pQ);
+    BOOST_CHECK(sR == pR);
 }

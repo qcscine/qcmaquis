@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( syev_comparison, T, test_types)
     typename alps::numeric::associated_diagonal_matrix<pMatrix>::type pE(T::valuex,T::valuex); 
     typename alps::numeric::associated_diagonal_matrix<sMatrix>::type sE(T::valuex,T::valuex);
 
-    syev(pA,pV,pE); // to modify the algo we need the reverse inside !
+    syev(pA,pV,pE);
     syev(sA,sV,sE);
      
     BOOST_CHECK(sE == pE);
