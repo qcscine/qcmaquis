@@ -4,7 +4,7 @@
 #include <limits>
 #include "utils/timings.h"
 
-//#define AMBIENT_COMPUTATIONAL_TIMINGS
+#define AMBIENT_COMPUTATIONAL_TIMINGS
 //#define AMBIENT_CHECK_BOUNDARIES
 
 #ifdef AMBIENT_CHECK_BOUNDARIES

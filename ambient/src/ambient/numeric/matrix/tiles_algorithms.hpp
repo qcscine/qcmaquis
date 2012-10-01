@@ -363,7 +363,7 @@ namespace ambient { namespace numeric {
             int am = num_rows(a);
             int an = num_cols(a);
             int ak = std::min(am,an);
-            resize(q, am, ak);
+            resize(q, am, an);
             resize(r, ak, an);
             
             tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
@@ -404,17 +404,19 @@ namespace ambient { namespace numeric {
                 for(n = 0; n < q.nt; n++)
                     ormqr<PlasmaNoTrans>(a.tile(k, k), t.tile(k, k), q.tile(k, n));
             }
+            resize(q, am, ak);
         }else{
             int am = num_rows(a);
             int an = num_cols(a);
             int ak = std::min(am,an);
-            resize(q, am, ak);
+            resize(q, am, an);
             resize(r, ak, an);
             tiles<Matrix> t(AMBIENT_IB, AMBIENT_IB);
             geqrt(a[0], t[0]);
             copy_rt(r[0], a[0]); // restoring R from A //
             fill_identity(q[0]); // restoring Q from T //
             ormqr<PlasmaNoTrans>(a[0], t[0], q[0]);
+            resize(q, am, ak);
         }
     }
 
@@ -427,7 +429,7 @@ namespace ambient { namespace numeric {
             int an = num_cols(a);
             int ak = std::min(am,an);
             resize(l, am, ak);
-            resize(q, ak, an);
+            resize(q, am, an); // instead of ak
             
             tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
             int k, m, n;
@@ -467,17 +469,19 @@ namespace ambient { namespace numeric {
                 for(m = 0; m < q.mt; m++)
                     ormlq<PlasmaNoTrans>(a.tile(k, k), t.tile(k, k), q.tile(m, k));
             }
+            resize(q, ak, an);
         }else{
             int am = num_rows(a);
             int an = num_cols(a);
             int ak = std::min(am,an);
             resize(l, am, ak);
-            resize(q, ak, an);
+            resize(q, am, an); // due to plasma (am instead of ak)
             tiles<Matrix> t(AMBIENT_IB, AMBIENT_IB);
             gelqt(a[0], t[0]);
             copy_lt(l[0], a[0]); // restoring L from A //
             fill_identity(q[0]); // restoring Q from T //
             ormlq<PlasmaNoTrans>(a[0], t[0], q[0]);
+            resize(q, ak, an);
         }
     }
 
