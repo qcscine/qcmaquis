@@ -20,5 +20,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Sqrt, T, test_types)
     sA = sqrt(sA);
     pA = sqrt(pA);
 
-    BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(pA==sA);
 }

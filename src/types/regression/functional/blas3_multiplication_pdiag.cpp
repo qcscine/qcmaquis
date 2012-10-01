@@ -29,6 +29,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     ambient::numeric::gemm<NoTranspose,NoTranspose>(pC,pB,pA);
     gemm(sC,sB,sA);
 
-    BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(pA==sA);
 }
 

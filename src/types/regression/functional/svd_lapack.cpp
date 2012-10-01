@@ -30,5 +30,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     svd(pA,pU,pV,pS);
     svd(sA,sU,sV,sS);
   
-    BOOST_CHECK(sS == pS); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(sS == pS);
 }

@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
     sC = sA + sB;
     pC = pA + pB; 
 
-    BOOST_CHECK(pC == sC); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(pC == sC);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addition_assign, T, test_types)
@@ -48,6 +48,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition_assign, T, test_types)
     sA += sB; 
     pA += pB; 
 
-    BOOST_CHECK(pA == sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(pA == sA);
 }
 

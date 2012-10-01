@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_first_rows, T, test_types)
 //    sA.remove_rows(T::null,1);
 //    pA.remove_rows(T::null,1);
 
-    BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(pA==sA);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( remove_last_rows, T, test_types)
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_last_rows, T, test_types)
 //    sA.remove_rows(T::valuex-1,1);
 //    pA.remove_rows(T::valuex-1,1);
 
-    BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(pA==sA);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( remove_rows, T, test_types)
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_rows, T, test_types)
 //    sA.remove_rows(row,1);
 //    pA.remove_rows(row,1);
 
-    BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(pA==sA);
 }
 /*
 BOOST_AUTO_TEST_CASE_TEMPLATE( remove_several_rows, T, test_types)
@@ -68,5 +68,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_several_rows, T, test_types)
     sA.remove_rows(row,numrows);
     pA.remove_rows(row,numrows);
 
-    BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(pA==sA);
 }*/

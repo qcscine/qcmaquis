@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( heev_comparison, T, test_types)
     generate(pA);
     sA = maquis::traits::matrix_cast<sMatrix>(pA);
 
-    heev(pA,pV,pE); // to modify the algo we need the reverse inside !
+    heev(pA,pV,pE);
     heev(sA,sV,sE);
      
     BOOST_CHECK(sE == pE);

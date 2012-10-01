@@ -21,5 +21,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Exp, T, test_types)
     sA = exp(sA);
     pA = exp(pA);
 
-    BOOST_CHECK(pA==sA); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(pA==sA);
 }

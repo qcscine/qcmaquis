@@ -24,11 +24,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dgemm, T, test_types)
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
     sB = maquis::bindings::matrix_cast<sMatrix>(pB);
 
-//    using maquis::types::NoTranspose;
-    //ambient::numeric::gemm<NoTranspose,NoTranspose>(pA,pB,pC);
     ambient::numeric::gemm(pA,pB,pC);
     ambient::sync();
     gemm(sA,sB,sC);
-    BOOST_CHECK(pC==sC); // BOOST_CHECK_EQUAL necessitates == inside the class, here == is a free function 
+    BOOST_CHECK(pC==sC);
 }
 
