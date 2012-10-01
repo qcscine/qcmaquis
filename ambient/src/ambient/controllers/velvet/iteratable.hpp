@@ -20,7 +20,8 @@ namespace ambient { namespace controllers { namespace velvet {
         revision& e = *(revision*)this;
         if(!e.valid()){
             revision& parent = *e.get_parent();
-            if(parent.occupied()) ambient::controller.alloc(e);
+            if(parent.occupied()) 
+                ambient::controller.alloc(e);
             else e.swap(parent);
         }
         return (T*)e;
