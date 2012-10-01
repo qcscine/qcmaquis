@@ -169,6 +169,40 @@ namespace ambient { namespace numeric { namespace kernels {
         }
     };
 
+    template<typename T>
+    struct tsmqr<T,PlasmaNoTrans> : public kernel< tsmqr<T,PlasmaNoTrans> > 
+    {
+        typedef void(tsmqr::*F)(matrix<T>&, matrix<T>&, const matrix<T>&, const matrix<T>&);
+
+        inline void l(matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
+            pin(current(a1)); //if(!ctxt.involved()) return;
+            assign(current(a2));
+            assign(current(v));
+            assign(current(t));
+        }
+
+        inline void c(matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
+            __A_TIME_C("ambient_tsmqr_c_kernel"); 
+            int ldwork = PLASMA_IB;
+            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*PLASMA_IB);
+            __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
+            __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
+            CORE_dtsmqr(PlasmaLeft, PlasmaNoTrans,
+                        AMBIENT_IB, a1.num_cols(), a2.num_rows(), a2.num_cols(), v.num_cols(), PLASMA_IB,
+                        (T*)r_updated(a1), a1.num_rows(),
+                        (T*)r_updated(a2), a2.num_rows(),
+                        (T*)c_current(v), v.num_rows(),
+                        (T*)c_current(t), t.num_rows(),
+                        work, ldwork);
+            free(work);
+            __A_TIME_C_STOP
+        }
+
+        inline void c(matrix<std::complex<double> >& a1, matrix<std::complex<double> >& a2, const matrix<std::complex<double> >& v, const matrix<std::complex<double> >& t){
+            printf("NOT IMPLEMENTED!\n");
+        }
+    };
+
     // kernels required by LQ //
 
     template<typename T>
@@ -315,6 +349,40 @@ namespace ambient { namespace numeric { namespace kernels {
             __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
             CORE_dtsmlq(PlasmaRight, TR,
                         a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), AMBIENT_IB, PLASMA_IB,
+                        (T*)r_updated(a1), a1.num_rows(),
+                        (T*)r_updated(a2), a2.num_rows(),
+                        (T*)c_current(v), v.num_rows(),
+                        (T*)c_current(t), t.num_rows(),
+                        work, ldwork);
+            free(work);
+            __A_TIME_C_STOP
+        }
+
+        inline void c(matrix<std::complex<double> >& a1, matrix<std::complex<double> >& a2, const matrix<std::complex<double> >& v, const matrix<std::complex<double> >& t){
+            printf("NOT IMPLEMENTED!\n");
+        }
+    };
+
+    template<typename T>
+    struct tsmlq<T,PlasmaNoTrans> : public kernel< tsmlq<T,PlasmaNoTrans> > 
+    {
+        typedef void(tsmlq::*F)(matrix<T>&, matrix<T>&, const matrix<T>&, const matrix<T>&);
+
+        inline void l(matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
+            pin(current(a1)); //if(!ctxt.involved()) return;
+            assign(current(a2));
+            assign(current(v));
+            assign(current(t));
+        }
+
+        inline void c(matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
+            __A_TIME_C("ambient_tsmlq_c_kernel"); 
+            int ldwork = AMBIENT_IB;
+            T* work = (T*)malloc(sizeof(T)*AMBIENT_IB*PLASMA_IB);
+            __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
+            __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
+            CORE_dtsmlq(PlasmaRight, PlasmaNoTrans,
+                        a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), v.num_rows(), PLASMA_IB,
                         (T*)r_updated(a1), a1.num_rows(),
                         (T*)r_updated(a2), a2.num_rows(),
                         (T*)c_current(v), v.num_rows(),
@@ -1005,10 +1073,13 @@ namespace ambient { namespace numeric { namespace kernels {
             T* bd = c_current(b); 
             double epsilon = std::numeric_limits<double>::epsilon();
             int count = 0;
-            for(size_t i=0; i < __a_get_dim(a).y; ++i){
-                for(size_t j=0; j < __a_get_dim(a).x; ++j){
-                    T av = ad[i+j*a.num_rows()];
-                    T bv = bd[i+j*b.num_rows()];
+            size_t sizey = std::min(__a_get_dim(a).y, __a_get_dim(b).y);
+            size_t sizex = std::min(__a_get_dim(a).x, __a_get_dim(b).y);
+
+            for(size_t i=0; i < sizey; ++i){
+                for(size_t j=0; j < sizex; ++j){
+                    T av = ad[i+j*__a_get_dim(a).y];
+                    T bv = bd[i+j*__a_get_dim(b).y];
                     double d = distance(av, bv);
                     double m = magnitude(av, bv);
                     if(d > epsilon*256 && d/m > epsilon*256){ // || av*bv < 0 // 16 is recommended, 256 because MKL isn't bitwise stable
