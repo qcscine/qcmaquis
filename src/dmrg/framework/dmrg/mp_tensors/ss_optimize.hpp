@@ -148,7 +148,7 @@ public:
             
             
             maquis::cout << "Energy " << lr << " " << res.first << std::endl;
-//            maquis::cout << "Energy check " << alps::numeric::real(expval(mps, mpo)) << std::endl;
+//            maquis::cout << "Energy check " << maquis::real(expval(mps, mpo)) << std::endl;
             
             iteration_log << make_log("Energy", res.first);
             

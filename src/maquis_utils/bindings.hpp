@@ -1,6 +1,8 @@
 #ifndef MATRIX_BINDINGS_H
 #define MATRIX_BINDINGS_H
 
+#include <alps/numeric/real.hpp> 
+
 namespace maquis { namespace bindings {
 
     template <typename O, typename I> struct binding { 
@@ -185,6 +187,7 @@ namespace maquis { namespace bindings {
             return binding<alps::numeric::diagonal_matrix<T>, ambient::numeric::diagonal_matrix<T> >::convert(pm).get_values();
         }
     };
+
 #endif
 
 } }
@@ -236,4 +239,66 @@ bool operator == (ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >
 }
 
 #endif
+
+#ifdef AMBIENT
+namespace maquis {
+
+    template<class T>
+    struct real_type {
+        typedef T type;
+    };
+
+    template<>
+    struct real_type<std::complex<double> > {
+        typedef double type;
+    };
+
+    template<>
+    struct real_type<ambient::future<std::complex<double> > > {
+        typedef typename ambient::future<double> type;
+    };
+
+    inline double real(double f){
+        return f;
+    }
+
+    inline double real(const std::complex<double>& f){
+        return f.real();
+    }
+
+    template<typename T>
+    inline const typename real_type<ambient::future<T> >::type& 
+    real(const ambient::future<T>& f){
+        return ambient::real(f);
+    }
+
+    template <typename T,                          // value_type
+             template<class AT> class A,           // allocator 
+             template<class TT, class AA> class C> // vector<value_type, allocator>
+    inline const C<typename real_type<T>::type, A<typename real_type<T>::type> >& 
+    real(const C<ambient::future<T>, A<ambient::future<T> > >& f){
+        return ambient::real(f);
+    }
+
+}
+namespace ietl {
+
+    inline double real(const ambient::future<std::complex<double> >& f){
+        return ambient::real(f);
+    }
+
+}
+
+#else
+
+namespace maquis {
+
+    template <class T> 
+    inline typename alps::numeric::real_type<T>::type real(T f){
+        return alps::numeric::real(f);
+    }
+
+}
+#endif
+
 #endif

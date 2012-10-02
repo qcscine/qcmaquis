@@ -84,8 +84,8 @@ template <class T>
 typename maquis::traits::real_type<T>::type gather_real_pred(T const & val)
 {
     assert( check_real(val) );
-    assert( alps::numeric::real(val) > -1e-10 );
-    return alps::numeric::real(val);
+    assert( maquis::real(val) > -1e-10 );
+    return maquis::real(val);
 }
 
 template<class DiagMatrix, class SymmGroup>
@@ -132,7 +132,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         std::vector<typename maquis::traits::real_type<value_type>::type> evals_k;
         for (typename std::vector<value_type>::const_iterator it = evals_vector[k].begin(); it != evals_vector[k].end(); ++it)
-            evals_k.push_back(alps::numeric::real(*it));
+            evals_k.push_back(maquis::real(*it));
         keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
     }
 
@@ -167,7 +167,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         std::vector<typename maquis::traits::real_type<typename DiagMatrix::value_type>::type> evals_k;
         for (typename DiagMatrix::const_element_iterator it = evals[k].elements().first; it != evals[k].elements().second; ++it)
-            evals_k.push_back(alps::numeric::real(*it));
+            evals_k.push_back(maquis::real(*it));
         keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
     } 
     // }}} */

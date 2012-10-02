@@ -629,7 +629,7 @@ struct multigrid {
                 
                 {
                     maquis::cout << "Norm " << norm(mps_mixed) << std::endl;
-                    maquis::cout << "Energy " << "finegraining_fullmpomix " << alps::numeric::real(expval(mps_mixed, mpos_mix[p+1])) << std::endl;
+                    maquis::cout << "Energy " << "finegraining_fullmpomix " << maquis::real(expval(mps_mixed, mpos_mix[p+1])) << std::endl;
                 }
                 
             }
@@ -772,7 +772,7 @@ struct multigrid {
         }
         
 #ifndef NDEBUG
-        double energy = alps::numeric::real(expval(mps_large, mpos_mix[L]));
+        double energy = maquis::real(expval(mps_large, mpos_mix[L]));
         maquis::cout << "Energy " << "finegraining_final " << energy << std::endl;
 #endif
         
