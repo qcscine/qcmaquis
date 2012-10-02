@@ -86,7 +86,7 @@ public:
         {
             alps::hdf5::archive ar(parms.get<std::string>("resultfile"), alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
             ar << alps::make_pvp(std::string("/spectrum/results/String order SS ") + boost::lexical_cast<std::string>(l) + std::string("/mean/value"),
-                                 std::vector<double>(1, alps::numeric::real(val)));
+                                 std::vector<double>(1, maquis::real(val)));
         }
     }
     
@@ -119,7 +119,7 @@ public:
         {
             alps::hdf5::archive ar(parms.get<std::string>("resultfile"), alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
             ar << alps::make_pvp(std::string("/spectrum/results/String order UC ") + boost::lexical_cast<std::string>(l) + std::string("/mean/value"),
-                                 std::vector<double>(1, alps::numeric::real(val)));
+                                 std::vector<double>(1, maquis::real(val)));
         }
     }
     

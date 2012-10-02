@@ -158,8 +158,8 @@ int main(int argc, char ** argv)
     H->push_extra_terms(mpom, *adj);
     MPO<Matrix, grp> mpo = mpom.create_mpo();
     
-    maquis::cout << alps::numeric::real(expval(mps, mpo, 0)) << std::endl;
-    maquis::cout << alps::numeric::real(expval(mps, mpo, 1)) << std::endl;
+    maquis::cout << maquis::real(expval(mps, mpo, 0)) << std::endl;
+    maquis::cout << maquis::real(expval(mps, mpo, 1)) << std::endl;
     {   
         ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps, parms, ssm);
         

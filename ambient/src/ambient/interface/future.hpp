@@ -1,6 +1,7 @@
 #ifndef AMBIENT_INTERFACE_FUTURE
 #define AMBIENT_INTERFACE_FUTURE
-// see history for an advanced version // supports multiple revisions
+
+#include <alps/numeric/real.hpp> 
 
 #ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
@@ -42,12 +43,21 @@ namespace ambient {
 
         template<typename S>
         inline future(const future<S>& f) // can be optimized later
+        : symlink(false)
+        {
+            const_cast<future<S>&>(f).symlink = true;
+            ghost = f.ghost;
+            value = (T*)ghost;
+        }
+
+        /*template<typename S>
+        inline future(const future<S>& f) // can be optimized later
         : symlink(false) 
         {
             ghost = ambient::static_memory::malloc<FUTURE_SIZE>();
             value = (T*)ghost;
            *value = (T)f.calc_value();
-        }
+        }*/
 
         inline future& operator = (const future& f){
             const_cast<future&>(f).symlink = true;
@@ -159,56 +169,17 @@ namespace ambient {
         return std::sqrt(f.calc_value());
     } 
 
-}
-
-namespace alps { namespace numeric {
-
-    inline double real(double f){
-        return f;
+    template<typename T>
+    inline const ambient::future<double>& real(const ambient::future<T>& f){
+        return *(ambient::future<double>*)&f;
     }
 
-    inline double real(std::complex<double> f){
-        return f.real();
-    }
-
-    inline const ambient::future<double>& real(const ambient::future<double>& f){
-        return f;
-    }
-
-    inline double real(const ambient::future<std::complex<double> >& f){
-        return f.calc_value().real();
-    }
-
-    inline const std::vector<double>& real(const std::vector<double>& f){
-        return f;
-    }
-
-    inline std::vector<double> real(const std::vector<std::complex<double> >& f){
-        std::vector<double> res;
-        for(size_t k = 0; k < f.size(); ++k) res.push_back(f[k].real());
-        return res;
-    }
-
-    inline std::vector<double> real(const std::vector<ambient::future<double> >& f){
+    template<typename T>
+    inline std::vector<double> real(const std::vector<ambient::future<T> >& f){
         ambient::sync();
         std::vector<double> res;
-        for(size_t k = 0; k < f.size(); ++k) res.push_back(f[k].get_value());
+        for(size_t k = 0; k < f.size(); ++k) res.push_back(*(double*)&f[k].get_value());
         return res;
-    }
-
-    inline std::vector<double> real(const std::vector<ambient::future<std::complex<double> > >& f){
-        ambient::sync();
-        std::vector<double> res;
-        for(size_t k = 0; k < f.size(); ++k) res.push_back(f[k].get_value().real());
-        return res;
-    }
-
-} }
-
-namespace ietl {
-
-    inline double real(const ambient::future<std::complex<double> >& f){
-        return alps::numeric::real(f);
     }
 
 }

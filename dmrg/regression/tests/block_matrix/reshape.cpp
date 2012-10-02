@@ -50,7 +50,7 @@ std::vector<double> density(MPS<Matrix, SymmGroup> const & mps, block_matrix<Mat
         mpom.add_term(term);
         MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
         
-        double val = alps::numeric::real(expval(mps, mpo));
+        double val = maquis::real(expval(mps, mpo));
         vals[p] = val;
     }
     return vals;

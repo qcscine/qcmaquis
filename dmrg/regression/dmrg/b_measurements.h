@@ -27,7 +27,7 @@ void measure_2pt_correlation(MPS<Matrix, SymmGroup> & mps,
                                                    ops, p);
         MPO<Matrix, SymmGroup> mpo = dcorr.create_mpo();
         
-        std::vector<double> dct = alps::numeric::real((multi_expval(mps, mpo));
+        std::vector<double> dct = maquis::real((multi_expval(mps, mpo));
         std::copy(dct.begin(), dct.end(), std::back_inserter(dc));
         
         std::vector<std::string> lbt = dcorr.label_strings();
@@ -53,7 +53,7 @@ void measure_4ptnn_correlation(MPS<Matrix, SymmGroup> & mps,
                                                      ops, p);
         MPO<Matrix, SymmGroup> mpo = dcorr.create_mpo();
         
-        std::vector<double> dct = alps::numeric::real(multi_expval(mps, mpo));
+        std::vector<double> dct = maquis::real(multi_expval(mps, mpo));
         std::copy(dct.begin(), dct.end(), std::back_inserter(dc));
         
         std::vector<std::string> lbt = dcorr.label_strings();

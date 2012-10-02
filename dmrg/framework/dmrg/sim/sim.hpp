@@ -341,9 +341,9 @@ void sim<Matrix, SymmGroup>::measure ()
             h5ar << alps::make_pvp("/spectrum/results/Renyi2/mean/value", renyi2);
     }
     
-    double energy = alps::numeric::real(expval(mps, mpoc));
-    maquis::cout << "Energy before: " << alps::numeric::real(expval(mps, mpo)) << std::endl;
-    maquis::cout << "Energy after: " << alps::numeric::real(expval(mps, mpoc)) << std::endl;
+    double energy = maquis::real(expval(mps, mpoc));
+    maquis::cout << "Energy before: " << maquis::real(expval(mps, mpo)) << std::endl;
+    maquis::cout << "Energy after: " << maquis::real(expval(mps, mpoc)) << std::endl;
     {
         alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
         h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
@@ -353,7 +353,7 @@ void sim<Matrix, SymmGroup>::measure ()
         MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpo);
         mpo2.compress(1e-12);
         
-        double energy2 = alps::numeric::real(expval(mps, mpo2, true));
+        double energy2 = maquis::real(expval(mps, mpo2, true));
         
         maquis::cout << "Energy^2: " << energy2 << std::endl;
         maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;

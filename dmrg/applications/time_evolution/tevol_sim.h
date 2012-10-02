@@ -70,7 +70,7 @@ public:
         // apply time evolution operators
         evolve_ntime_steps(nsteps, iteration_log);
         
-        double energy = alps::numeric::real(expval(this->mps, this->mpo));
+        double energy = maquis::real(expval(this->mps, this->mpo));
         maquis::cout << "Energy " << energy << std::endl;
         iteration_log << make_log("Energy", energy);
         

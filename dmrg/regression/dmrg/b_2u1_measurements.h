@@ -45,7 +45,7 @@ struct measure_<Matrix, TwoU1>
                 mpom.add_term(v);
                 MPO<Matrix, TwoU1> mpo = mpom.create_mpo();
                 
-                double val = alps::numeric::real(expval(mps, mpo, 0));
+                double val = maquis::real(expval(mps, mpo, 0));
                 magns.push_back(val);
             }
             
@@ -116,7 +116,7 @@ struct measure_<Matrix, TwoU1>
                     
                     MPO<Matrix, TwoU1> mpo = mpom.create_mpo();
                     
-                    double val = alps::numeric::real(expval(mps, mpo, 0));
+                    double val = maquis::real(expval(mps, mpo, 0));
                     sum += val;
                     
                     std::ostringstream name;
@@ -198,7 +198,7 @@ struct measure_<Matrix, TwoU1>
             v.push_back( std::make_pair( p, count_up ) );
             mpom_up.add_term(v);
             MPO<Matrix, TwoU1> mpo_up = mpom_up.create_mpo();
-            val = alps::numeric::real(expval(mps, mpo_up, 0));
+            val = maquis::real(expval(mps, mpo_up, 0));
             density_up.push_back(val);
             
             // density down
@@ -207,7 +207,7 @@ struct measure_<Matrix, TwoU1>
             v.push_back( std::make_pair( p, count_down ) );
             mpom_down.add_term(v);
             MPO<Matrix, TwoU1> mpo_down = mpom_down.create_mpo();
-            val = alps::numeric::real(expval(mps, mpo_down, 0));
+            val = maquis::real(expval(mps, mpo_down, 0));
             density_down.push_back(val);
             
         }

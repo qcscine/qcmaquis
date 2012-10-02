@@ -164,7 +164,7 @@ int main(int argc, char ** argv)
     {
         if (i == 100)
             op = get_hb(dt, false);
-        maquis::cout << alps::numeric::real((expval(mps, mpo)) << std::endl;
+        maquis::cout << maquis::real((expval(mps, mpo)) << std::endl;
         mps = evolve(mps, op, 100, 1e-10);
 //        maquis::cout << norm(mps) << std::endl;
     }
