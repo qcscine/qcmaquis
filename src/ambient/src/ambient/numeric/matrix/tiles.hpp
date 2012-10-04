@@ -36,13 +36,13 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     inline tiles<Matrix>::tiles()
-    : rows(0), cols(0), mt(0), nt(0), single(true)
+    : rows(0), cols(0), mt(0), nt(0), single(true), submatrix(false)
     {
     }
 
     template <class Matrix>
     inline tiles<Matrix>::tiles(size_type rows, size_type cols, value_type init_value)
-    : rows(rows), cols(cols), mt(__a_ceil(rows/AMBIENT_IB)), nt(__a_ceil(cols/AMBIENT_IB))
+    : rows(rows), cols(cols), mt(__a_ceil(rows/AMBIENT_IB)), nt(__a_ceil(cols/AMBIENT_IB)), submatrix(false)
     {
         if(mt > 1 || nt > 1){
             int tailn = __a_mod(cols, AMBIENT_IB);
@@ -65,8 +65,23 @@ namespace ambient { namespace numeric {
     }
 
     template <class Matrix>
+    inline tiles<Matrix>&& tiles<Matrix>::subset(size_type i, size_type j, size_type mt, size_type nt){
+        tiles<Matrix> s;
+        s.rows = mt*AMBIENT_IB;
+        s.cols = nt*AMBIENT_IB;
+        s.mt = mt;
+        s.nt = nt;
+        if(mt > 1 || nt > 1) s.single = false;
+        for(int jj = j; jj < j + nt; jj++)
+            for(int ii = i; ii < i + mt; ii++)
+                s.data.push_back(&tile(ii, jj));
+        s.submatrix = true;
+        return s;
+    }
+
+    template <class Matrix>
     inline tiles<Matrix>::tiles(const tiles& m)
-    : rows(m.rows), cols(m.cols), mt(m.mt), nt(m.nt), single(m.single)
+    : rows(m.rows), cols(m.cols), mt(m.mt), nt(m.nt), single(m.single), submatrix(false)
     {
         int nb = m.data.size();
         for(int k = 0; k < nb; k++) this->data.push_back(new Matrix(m[k]));
@@ -81,12 +96,10 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     tiles<Matrix>::~tiles(){
-        if(!this->single){
-            int size = this->data.size();
-            for(int i = 0; i < size; i++) delete this->data[i];
-        }else{
-            delete this->data[0];
-        }
+        if(this->submatrix) return;
+        int size = this->data.size();
+        for(int i = 0; i < size; i++) 
+            delete this->data[i];
     }
 
     template<class Matrix>
@@ -121,12 +134,13 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void tiles<Matrix>::swap(tiles& r){
-        std::swap(r.single, this->single);
-        std::swap(r.data,   this->data);
-        std::swap(r.rows,   this->rows);
-        std::swap(r.cols,   this->cols);
-        std::swap(r.mt,     this->mt);
-        std::swap(r.nt,     this->nt);
+        std::swap(r.submatrix, this->submatrix);
+        std::swap(r.single,    this->single);
+        std::swap(r.data,      this->data);
+        std::swap(r.rows,      this->rows);
+        std::swap(r.cols,      this->cols);
+        std::swap(r.mt,        this->mt);
+        std::swap(r.nt,        this->nt);
     }
 
     template<class Matrix>
@@ -215,16 +229,16 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline value_type& tiles<Matrix>::operator() (size_type i, size_type j){
-        size_t tiley = this->data[0]->num_rows();
-        size_t tilex = this->data[0]->num_cols();
+        size_type tiley = this->data[0]->num_rows();
+        size_type tilex = this->data[0]->num_cols();
         int mb = __a_ceil(rows/tiley);
         return (*this->data[mb*(int)(j/tilex) + (int)(i/tiley)])(i % tiley, j % tilex);
     }
 
     template<class Matrix>
     inline const value_type& tiles<Matrix>::operator() (size_type i, size_type j) const {
-        size_t tiley = this->data[0]->num_rows();
-        size_t tilex = this->data[0]->num_cols();
+        size_type tiley = this->data[0]->num_rows();
+        size_type tilex = this->data[0]->num_cols();
         int mb = __a_ceil(rows/tiley);
         return (*this->data[mb*(int)(j/tilex) + (int)(i/tiley)])(i % tiley, j % tilex);
     }
@@ -339,13 +353,13 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline value_type& tiles<diagonal_matrix<T> >::operator() (size_type i, size_type j){
-        size_t tile = this->data[0]->num_rows();
+        size_type tile = this->data[0]->num_rows();
         return (*this->data[(int)(i/tile)])(i % tile, i % tile);
     }
 
     template<typename T>
     inline const value_type& tiles<diagonal_matrix<T> >::operator() (size_type i, size_type j) const {
-        size_t tile = this->data[0]->num_rows();
+        size_type tile = this->data[0]->num_rows();
         return (*this->data[(int)(i/tile)])(i % tile, i % tile);
     }
 
