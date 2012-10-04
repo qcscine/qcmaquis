@@ -16,12 +16,12 @@ namespace ambient { namespace numeric {
         inline void operator delete (void* ptr);
         static inline tiles<Matrix> identity_matrix(size_type size);
 
+        inline ~tiles();
         explicit inline tiles();
         explicit inline tiles(size_type rows, size_type cols, value_type init_value = value_type()); 
+        inline tiles&& subset(size_type i, size_type j, size_type mt, size_type nt);
         inline tiles(const tiles& m);
         tiles& operator = (const tiles& rhs); 
-        inline ~tiles();
-    public:
         inline size_type num_rows() const;
         inline size_type num_cols() const;
         inline scalar_type trace() const;
@@ -48,11 +48,12 @@ namespace ambient { namespace numeric {
         inline void save(alps::hdf5::archive & ar)const{};
     public:
         std::vector<Matrix*> data;
+        bool submatrix;
+        size_type rows;
+        size_type cols;
+        size_type mt;
+        size_type nt;
         bool single;
-        size_t rows;
-        size_t cols;
-        size_t mt;
-        size_t nt;
     };
 
     template <typename T>
@@ -84,9 +85,9 @@ namespace ambient { namespace numeric {
         inline const value_type& operator() (size_type i, size_type j) const;
     public:
         std::vector<diagonal_matrix<T>*> data;
+        size_type size;
+        size_type nt;
         bool single;
-        size_t size;
-        size_t nt;
     };
 
 } }

@@ -330,24 +330,21 @@ namespace ambient { namespace numeric {
 
     template<class Matrix, class DiagonalMatrix>
     inline void svd(const tiles<Matrix>& a, tiles<Matrix>& u, tiles<Matrix>& vt, tiles<DiagonalMatrix>& s){
-        if(!a.single){
-            merge(a); merge(u); merge(vt); merge(s);
-            svd(a[0], u[0], vt[0], s[0]);
-            split(a); split(u); split(vt); split(s);
-        }else{
-            svd(a[0], u[0], vt[0], s[0]);
-        }
+//        split_d(a); split_d(u); split_d(vt); split_d(s);
+
+//        tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
+//        gebrd_ge2tb(a, t);
+
+        merge(a); merge(u); merge(vt); merge(s);
+        svd(a[0], u[0], vt[0], s[0]);
+        split(a); split(u); split(vt); split(s);
     }
 
     template<class Matrix, class DiagonalMatrix>
     inline void heev(const tiles<Matrix>& a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
-        if(!a.single){
-            merge(a); merge(evecs); merge(evals);
-            heev(a[0], evecs[0], evals[0]);
-            split(a); split(evecs); split(evals);
-        }else{
-            heev(a[0], evecs[0], evals[0]);
-        }
+        merge(a); merge(evecs); merge(evals);
+        heev(a[0], evecs[0], evals[0]);
+        split(a); split(evecs); split(evals);
     }
 
     template<class Matrix, class DiagonalMatrix>
@@ -356,132 +353,192 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix>
-    inline void qr(tiles<Matrix> a, tiles<Matrix>& q, tiles<Matrix>& r){
-        if(!a.single){
-            split_d(a); split_d(q); split_d(r);
-            
-            int am = num_rows(a);
-            int an = num_cols(a);
-            int ak = std::min(am,an);
-            resize(q, am, an);
-            resize(r, ak, an);
-            
-            tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
-            int k, m, n;
-            
-            for(k = 0; k < std::min(a.mt, a.nt); k++){
-                geqrt(a.tile(k, k), t.tile(k, k));
-            
-                for(n = k+1; n < a.nt; n++)
-                    ormqr<PlasmaTrans>(a.tile(k, k), t.tile(k, k), a.tile(k, n));
-                
-                for(m = k+1; m < a.mt; m++){
-                    tsqrt(a.tile(k, k), a.tile(m, k), t.tile(m, k));
-            
-                    for(n = k+1; n < a.nt; n++)
-                        tsmqr<PlasmaTrans>(a.tile(k, n), a.tile(m, n), a.tile(m, k), t.tile(m, k));
+    void ormqr(tiles<Matrix>&& a, tiles<Matrix>&& b, tiles<Matrix>&& t){
+        int k, m, n;
+    
+       // PlasmaLeft / PlasmaTrans
+        for(k = 0; k < std::min(a.mt, a.nt); k++){
+            size_t kmin = std::min(a.tile(k,k).num_rows(), a.tile(k,k).num_cols());
+            for(n = 0; n < b.nt; n++){
+                ormqr<PlasmaTrans>(kmin, a.tile(k, k), t.tile(k, k), b.tile(k, n));
+            }
+            for(m = k+1; m < b.mt; m++){
+                for(n = 0; n < b.nt; n++)
+                    tsmqr<PlasmaTrans>(kmin, b.tile(k, n), b.tile(m, n), a.tile(m, k), t.tile(m, k));
+            }
+        }
+    }
+
+    template<class Matrix>
+    void ormlq(tiles<Matrix>&& a, tiles<Matrix>&& b, tiles<Matrix>&& t){
+        int k, m, n;
+        
+        // PlasmaRight / PlasmaTrans
+        for(k = 0; k < std::min(a.mt, a.nt); k++){
+            size_t kmin = std::min(a.tile(k,k).num_rows(), a.tile(k,k).num_cols());
+            for(m = 0; m < b.mt; m++){
+                ormlq<PlasmaTrans>(kmin, a.tile(k, k), t.tile(k, k), b.tile(m, k));
+            }
+            for(n = k+1; n < b.nt; n++){
+                for(m = 0; m < b.mt; m++){
+                    tsmlq<PlasmaTrans>(kmin, b.tile(m, k), b.tile(m, n), a.tile(k, n), t.tile(k, n));
                 }
             }
+        }
+    }
+
+    template<class Matrix>
+    inline void qr(tiles<Matrix>&& a, tiles<Matrix>&& t){
+        int k, m, n;
+        
+        for(k = 0; k < std::min(a.mt, a.nt); k++){
+            geqrt(a.tile(k, k), t.tile(k, k));
+        
+            for(n = k+1; n < a.nt; n++)
+                ormqr<PlasmaTrans>(a.tile(k,n).num_rows(), a.tile(k, k), t.tile(k, k), a.tile(k, n));
             
-            // restoring R from A //
-            for(int j = 0; j < a.nt; j++)
-            for(int i = 0; i < j && i < std::min(a.mt, a.nt); i++)
-                copy(r.tile(i,j), a.tile(i,j));
-            
-            for(int k = 0; k < std::min(a.mt, a.nt); k++)
-                copy_rt(r.tile(k,k), a.tile(k,k));
-            
-            // restoring Q from T //
-            // do we need to memset Q first?
-            for(int i = 0; i < std::min(a.mt, a.nt); i++)
-                fill_identity(q.tile(i,i));
-            
-            for(k = std::min(a.mt, a.nt)-1; k >= 0; k--){
-                for(m = q.mt - 1; m > k; m--)
-                    for(n = 0; n < q.nt; n++)
-                        tsmqr<PlasmaNoTrans>(q.tile(k, n), q.tile(m, n), a.tile(m, k), t.tile(m, k));
-                
-                for(n = 0; n < q.nt; n++)
-                    ormqr<PlasmaNoTrans>(a.tile(k, k), t.tile(k, k), q.tile(k, n));
+            for(m = k+1; m < a.mt; m++){
+                tsqrt(a.tile(k, k), a.tile(m, k), t.tile(m, k));
+        
+                for(n = k+1; n < a.nt; n++)
+                    tsmqr<PlasmaTrans>(AMBIENT_IB, a.tile(k, n), a.tile(m, n), a.tile(m, k), t.tile(m, k));
             }
-            resize(q, am, ak);
-        }else{
-            int am = num_rows(a);
-            int an = num_cols(a);
-            int ak = std::min(am,an);
-            resize(q, am, an);
-            resize(r, ak, an);
-            tiles<Matrix> t(AMBIENT_IB, AMBIENT_IB);
-            geqrt(a[0], t[0]);
-            copy_rt(r[0], a[0]); // restoring R from A //
-            fill_identity(q[0]); // restoring Q from T //
-            ormqr<PlasmaNoTrans>(a[0], t[0], q[0]);
-            resize(q, am, ak);
+        }
+    }
+
+
+    template<class Matrix>
+    inline void qr(tiles<Matrix> a, tiles<Matrix>& q, tiles<Matrix>& r){
+        split_d(a); split_d(q); split_d(r);
+        int k, m, n;
+        
+        int am = num_rows(a);
+        int an = num_cols(a);
+        int ak = std::min(am,an);
+        resize(q, am, an);
+        resize(r, ak, an);
+        
+        tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
+        qr(a, t);
+        
+        // restoring R from A //
+        for(int j = 0; j < a.nt; j++)
+        for(int i = 0; i < j && i < std::min(a.mt, a.nt); i++)
+            copy(r.tile(i,j), a.tile(i,j));
+        
+        for(int k = 0; k < std::min(a.mt, a.nt); k++)
+            copy_rt(r.tile(k,k), a.tile(k,k));
+        
+        // restoring Q from T //
+        // do we need to memset Q first?
+        for(int i = 0; i < std::min(a.mt, a.nt); i++)
+            fill_identity(q.tile(i,i));
+        
+        for(k = std::min(a.mt, a.nt)-1; k >= 0; k--){
+            for(m = q.mt - 1; m > k; m--)
+                for(n = 0; n < q.nt; n++)
+                    tsmqr<PlasmaNoTrans>(a.tile(m, k).num_cols(), q.tile(k, n), q.tile(m, n), a.tile(m, k), t.tile(m, k));
+            
+            for(n = 0; n < q.nt; n++)
+                ormqr<PlasmaNoTrans>(std::min(a.tile(k,k).num_rows(), a.tile(k,k).num_cols()), a.tile(k, k), t.tile(k, k), q.tile(k, n));
+        }
+        resize(q, am, ak);
+    }
+
+    template<class Matrix>
+    inline void lq(tiles<Matrix>&& a, tiles<Matrix>&& t){
+        int k, m, n;
+        
+        for(k = 0; k < std::min(a.mt, a.nt); k++) {
+            gelqt(a.tile(k, k), t.tile(k, k));
+        
+            for(m = k+1; m < a.mt; m++)
+                ormlq<PlasmaTrans>(a.tile(m, k).num_cols(), a.tile(k, k), t.tile(k, k), a.tile(m, k));
+        
+            for(n = k+1; n < a.nt; n++){
+                tslqt(a.tile(k, k), a.tile(k, n), t.tile(k, n));
+        
+                for(m = k+1; m < a.mt; m++)
+                    tsmlq<PlasmaTrans>(AMBIENT_IB, a.tile(m, k), a.tile(m, n), a.tile(k, n), t.tile(k, n));
+            }
         }
     }
 
     template<class Matrix>
     inline void lq(tiles<Matrix> a, tiles<Matrix>& l, tiles<Matrix>& q){
-        if(!a.single){
-            split_d(a); split_d(l); split_d(q);
+        split_d(a); split_d(l); split_d(q);
+        int k, m, n;
+        
+        int am = num_rows(a);
+        int an = num_cols(a);
+        int ak = std::min(am,an);
+        resize(l, am, ak);
+        resize(q, am, an); // instead of ak
+        
+        tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
+        lq(a, t);
+        
+        // restoring L from A //
+        for(int j = 0; j < std::min(a.mt, a.nt); ++j)
+        for(int i = j+1; i < a.mt; ++i)
+            copy(l.tile(i,j), a.tile(i,j));
+        
+        for(int k = 0; k < std::min(a.mt, a.nt); k++)
+            copy_lt(l.tile(k,k), a.tile(k,k));
+        
+        // restoring Q from T //
+        // do we need to memset Q first?
+        for(int i = 0; i < std::min(a.mt, a.nt); i++)
+            fill_identity(q.tile(i,i));
+        
+        for(k = std::min(a.mt, a.nt)-1; k >= 0; k--){
+            for(n = q.nt-1; n > k; n--)
+                for(m = 0; m < q.mt; m++)
+                    tsmlq<PlasmaNoTrans>(a.tile(k, n).num_rows(), q.tile(m, k), q.tile(m, n), a.tile(k, n), t.tile(k, n));
+        
+            for(m = 0; m < q.mt; m++)
+                ormlq<PlasmaNoTrans>(std::min(a.tile(k,k).num_rows(), a.tile(k,k).num_cols()), a.tile(k, k), t.tile(k, k), q.tile(m, k));
+        }
+        resize(q, ak, an);
+    }
+
+    template<class Matrix>
+    void gebrd_ge2tb(tiles<Matrix>& a, tiles<Matrix>& t){ // band reduction
+        int k;
+        
+        if(a.num_rows() >= a.num_cols()){
+            for(k = 0; k < a.nt; k++){
+                qr(a.subset(k, k, a.mt-k, 1), t.subset(k, k, t.mt-k, 1));  
             
-            int am = num_rows(a);
-            int an = num_cols(a);
-            int ak = std::min(am,an);
-            resize(l, am, ak);
-            resize(q, am, an); // instead of ak
-            
-            tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
-            int k, m, n;
-            
-            for(k = 0; k < std::min(a.mt, a.nt); k++) {
-                gelqt(a.tile(k, k), t.tile(k, k));
-            
-                for(m = k+1; m < a.mt; m++)
-                    ormlq<PlasmaTrans>(a.tile(k, k), t.tile(k, k), a.tile(m, k));
-            
-                for(n = k+1; n < a.nt; n++){
-                    tslqt(a.tile(k, k), a.tile(k, n), t.tile(k, n));
-            
-                    for(m = k+1; m < a.mt; m++)
-                        tsmlq<PlasmaTrans>(a.tile(m, k), a.tile(m, n), a.tile(k, n), t.tile(k, n));
+                ormqr(a.subset(k, k,   a.mt-k, 1),
+                      a.subset(k, k+1, a.mt-k, t.nt-k-1), 
+                      t.subset(k, k,   t.mt-k, 1));
+                if(k+1 < a.nt){
+                   lq(a.subset(k, k+1, 1, a.nt-k-1), 
+                      t.subset(k, k+1, 1, t.nt-k-1));
+        
+                   ormlq(a.subset(k,   k+1, 1,        a.nt-k-1),
+                         a.subset(k+1, k+1, a.mt-k-1, a.nt-k-1),
+                         t.subset(k,   k+1, 1,        t.nt-k-1));
                 }
             }
-            
-            // restoring L from A //
-            for(int j = 0; j < std::min(a.mt, a.nt); ++j)
-            for(int i = j+1; i < a.mt; ++i)
-                copy(l.tile(i,j), a.tile(i,j));
-            
-            for(int k = 0; k < std::min(a.mt, a.nt); k++)
-                copy_lt(l.tile(k,k), a.tile(k,k));
-            
-            // restoring Q from T //
-            // do we need to memset Q first?
-            for(int i = 0; i < std::min(a.mt, a.nt); i++)
-                fill_identity(q.tile(i,i));
-            
-            for(k = std::min(a.mt, a.nt)-1; k >= 0; k--){
-                for(n = q.nt-1; n > k; n--)
-                    for(m = 0; m < q.mt; m++)
-                        tsmlq<PlasmaNoTrans>(q.tile(m, k), q.tile(m, n), a.tile(k, n), t.tile(k, n));
-            
-                for(m = 0; m < q.mt; m++)
-                    ormlq<PlasmaNoTrans>(a.tile(k, k), t.tile(k, k), q.tile(m, k));
-            }
-            resize(q, ak, an);
         }else{
-            int am = num_rows(a);
-            int an = num_cols(a);
-            int ak = std::min(am,an);
-            resize(l, am, ak);
-            resize(q, am, an); // due to plasma (am instead of ak)
-            tiles<Matrix> t(AMBIENT_IB, AMBIENT_IB);
-            gelqt(a[0], t[0]);
-            copy_lt(l[0], a[0]); // restoring L from A //
-            fill_identity(q[0]); // restoring Q from T //
-            ormlq<PlasmaNoTrans>(a[0], t[0], q[0]);
-            resize(q, ak, an);
+            for(k = 0; k < a.mt; k++){
+                lq(a.subset(k, k, 1, a.nt-k), 
+                   t.subset(k, k, 1, t.nt-k));
+            
+                ormlq(a.subset(k,   k, 1,        a.nt-k),
+                      a.subset(k+1, k, a.mt-k-1, a.nt-k),
+                      t.subset(k,   k, 1,        t.nt-k));
+                if(k+1 < a.mt){
+                   qr(a.subset(k+1, k, a.mt-k-1, 1),
+                      t.subset(k+1, k, t.mt-k-1, 1));
+        
+                   ormqr(a.subset(k+1, k,   a.mt-k-1, 1),
+                         a.subset(k+1, k+1, a.mt-k-1, a.nt-k-1),
+                         t.subset(k+1, k,   t.mt-k-1, 1));
+                }
+            }
         }
     }
 

@@ -41,20 +41,20 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T, PLASMA_enum TR>
     struct ormqr : public kernel< ormqr<T,TR> > 
     {
-        typedef void(ormqr::*F)(const matrix<T>&, const matrix<T>&, matrix<T>&);
+        typedef void(ormqr::*F)(const size_t&, const matrix<T>&, const matrix<T>&, matrix<T>&);
 
-        inline void l(const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
+        inline void l(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
             pin(current(a)); //if(!ctxt.involved()) return;
             assign(current(t));
             assign(current(c));
         }
 
-        inline void c(const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
+        inline void c(const size_t& k, const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
             __A_TIME_C("ambient_ormqr_c_kernel"); 
             T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             __a_refresh<T>(w_updated(c), c_current(c), __a_sizeof(c));
             CORE_dormqr(PlasmaLeft, TR,
-                        c.num_rows(), c.num_cols(), c.num_rows(), PLASMA_IB,
+                        c.num_rows(), c.num_cols(), k, PLASMA_IB,
                         (T*)c_current(a), a.num_rows(),
                         (T*)c_current(t), t.num_rows(),
                         (T*)w_updated(c), c.num_rows(),
@@ -62,37 +62,7 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C_STOP
         }
 
-        inline void c(const matrix<std::complex<double> >& a, const matrix<std::complex<double> >& t, matrix<std::complex<double> >& c){
-            printf("NOT IMPLEMENTED!\n");
-        }
-    };
-
-    template<typename T>
-    struct ormqr<T, PlasmaNoTrans> : public kernel< ormqr<T, PlasmaNoTrans> > 
-    {
-        typedef void(ormqr::*F)(const matrix<T>&, const matrix<T>&, matrix<T>&);
-
-        inline void l(const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(t));
-            assign(current(c));
-        }
-
-        inline void c(const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
-            __A_TIME_C("ambient_ormqr_c_kernel"); 
-            T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            __a_refresh<T>(w_updated(c), c_current(c), __a_sizeof(c));
-            CORE_dormqr(PlasmaLeft, PlasmaNoTrans,
-                        c.num_rows(), c.num_cols(), 
-                        std::min(a.num_rows(), a.num_cols()), PLASMA_IB,
-                        (T*)c_current(a), a.num_rows(),
-                        (T*)c_current(t), t.num_rows(),
-                        (T*)w_updated(c), c.num_rows(),
-                        work, AMBIENT_IB);
-            __A_TIME_C_STOP
-        }
-
-        inline void c(const matrix<std::complex<double> >& a, const matrix<std::complex<double> >& t, matrix<std::complex<double> >& c){
+        inline void c(const size_t& k, const matrix<std::complex<double> >& a, const matrix<std::complex<double> >& t, matrix<std::complex<double> >& c){
             printf("NOT IMPLEMENTED!\n");
         }
     };
@@ -130,22 +100,22 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T, PLASMA_enum TR>
     struct tsmqr : public kernel< tsmqr<T,TR> > 
     {
-        typedef void(tsmqr::*F)(matrix<T>&, matrix<T>&, const matrix<T>&, const matrix<T>&);
+        typedef void(tsmqr::*F)(const size_t&, matrix<T>&, matrix<T>&, const matrix<T>&, const matrix<T>&);
 
-        inline void l(matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
+        inline void l(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
             pin(current(a1)); //if(!ctxt.involved()) return;
             assign(current(a2));
             assign(current(v));
             assign(current(t));
         }
 
-        inline void c(matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
+        inline void c(const size_t& k, matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
             __A_TIME_C("ambient_tsmqr_c_kernel"); 
             T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
             __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
             CORE_dtsmqr(PlasmaLeft, TR,
-                        AMBIENT_IB, a1.num_cols(), a2.num_rows(), a2.num_cols(), AMBIENT_IB, PLASMA_IB,
+                        AMBIENT_IB, a1.num_cols(), a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
                         (T*)w_updated(a1), a1.num_rows(),
                         (T*)w_updated(a2), a2.num_rows(),
                         (T*)c_current(v), v.num_rows(),
@@ -154,39 +124,7 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C_STOP
         }
 
-        inline void c(matrix<std::complex<double> >& a1, matrix<std::complex<double> >& a2, const matrix<std::complex<double> >& v, const matrix<std::complex<double> >& t){
-            printf("NOT IMPLEMENTED!\n");
-        }
-    };
-
-    template<typename T>
-    struct tsmqr<T,PlasmaNoTrans> : public kernel< tsmqr<T,PlasmaNoTrans> > 
-    {
-        typedef void(tsmqr::*F)(matrix<T>&, matrix<T>&, const matrix<T>&, const matrix<T>&);
-
-        inline void l(matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-            pin(current(a1)); //if(!ctxt.involved()) return;
-            assign(current(a2));
-            assign(current(v));
-            assign(current(t));
-        }
-
-        inline void c(matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
-            __A_TIME_C("ambient_tsmqr_c_kernel"); 
-            T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
-            __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
-            CORE_dtsmqr(PlasmaLeft, PlasmaNoTrans,
-                        AMBIENT_IB, a1.num_cols(), a2.num_rows(), a2.num_cols(), v.num_cols(), PLASMA_IB,
-                        (T*)w_updated(a1), a1.num_rows(),
-                        (T*)w_updated(a2), a2.num_rows(),
-                        (T*)c_current(v), v.num_rows(),
-                        (T*)c_current(t), t.num_rows(),
-                        work, PLASMA_IB);
-            __A_TIME_C_STOP
-        }
-
-        inline void c(matrix<std::complex<double> >& a1, matrix<std::complex<double> >& a2, const matrix<std::complex<double> >& v, const matrix<std::complex<double> >& t){
+        inline void c(const size_t& k, matrix<std::complex<double> >& a1, matrix<std::complex<double> >& a2, const matrix<std::complex<double> >& v, const matrix<std::complex<double> >& t){
             printf("NOT IMPLEMENTED!\n");
         }
     };
@@ -223,20 +161,20 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T, PLASMA_enum TR>
     struct ormlq : public kernel< ormlq<T,TR> > 
     {
-        typedef void(ormlq::*F)(const matrix<T>&, const matrix<T>&, matrix<T>&);
+        typedef void(ormlq::*F)(const size_t&, const matrix<T>&, const matrix<T>&, matrix<T>&);
 
-        inline void l(const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
+        inline void l(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
             pin(current(a)); //if(!ctxt.involved()) return;
             assign(current(t));
             assign(current(c));
         }
 
-        inline void c(const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
+        inline void c(const size_t& k, const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
             __A_TIME_C("ambient_ormlq_c_kernel"); 
             T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             __a_refresh<T>(w_updated(c), c_current(c), __a_sizeof(c));
             CORE_dormlq(PlasmaRight, TR,
-                        c.num_rows(), c.num_cols(), c.num_cols(), PLASMA_IB,
+                        c.num_rows(), c.num_cols(), k, PLASMA_IB,
                         (T*)c_current(a), a.num_rows(),
                         (T*)c_current(t), t.num_rows(),
                         (T*)w_updated(c), c.num_rows(),
@@ -244,37 +182,7 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C_STOP
         }
 
-        inline void c(const matrix<std::complex<double> >& a, const matrix<std::complex<double> >& t, matrix<std::complex<double> >& c){
-            printf("NOT IMPLEMENTED!\n");
-        }
-    };
-
-    template<typename T>
-    struct ormlq<T, PlasmaNoTrans> : public kernel< ormlq<T, PlasmaNoTrans> > 
-    {
-        typedef void(ormlq::*F)(const matrix<T>&, const matrix<T>&, matrix<T>&);
-
-        inline void l(const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(t));
-            assign(current(c));
-        }
-
-        inline void c(const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
-            __A_TIME_C("ambient_ormlq_c_kernel"); 
-            T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            __a_refresh<T>(w_updated(c), c_current(c), __a_sizeof(c));
-            CORE_dormlq(PlasmaRight, PlasmaNoTrans,
-                        c.num_rows(), c.num_cols(), 
-                        std::min(a.num_rows(), a.num_cols()), PLASMA_IB,
-                        (T*)c_current(a), a.num_rows(),
-                        (T*)c_current(t), t.num_rows(),
-                        (T*)w_updated(c), c.num_rows(),
-                        work, AMBIENT_IB);
-            __A_TIME_C_STOP
-        }
-
-        inline void c(const matrix<std::complex<double> >& a, const matrix<std::complex<double> >& t, matrix<std::complex<double> >& c){
+        inline void c(const size_t& k, const matrix<std::complex<double> >& a, const matrix<std::complex<double> >& t, matrix<std::complex<double> >& c){
             printf("NOT IMPLEMENTED!\n");
         }
     };
@@ -312,22 +220,22 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T, PLASMA_enum TR>
     struct tsmlq : public kernel< tsmlq<T,TR> > 
     {
-        typedef void(tsmlq::*F)(matrix<T>&, matrix<T>&, const matrix<T>&, const matrix<T>&);
+        typedef void(tsmlq::*F)(const size_t&, matrix<T>&, matrix<T>&, const matrix<T>&, const matrix<T>&);
 
-        inline void l(matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
+        inline void l(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
             pin(current(a1)); //if(!ctxt.involved()) return;
             assign(current(a2));
             assign(current(v));
             assign(current(t));
         }
 
-        inline void c(matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
+        inline void c(const size_t& k, matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
             __A_TIME_C("ambient_tsmlq_c_kernel"); 
             T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
             __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
             CORE_dtsmlq(PlasmaRight, TR,
-                        a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), AMBIENT_IB, PLASMA_IB,
+                        a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
                         (T*)w_updated(a1), a1.num_rows(),
                         (T*)w_updated(a2), a2.num_rows(),
                         (T*)c_current(v), v.num_rows(),
@@ -336,39 +244,7 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C_STOP
         }
 
-        inline void c(matrix<std::complex<double> >& a1, matrix<std::complex<double> >& a2, const matrix<std::complex<double> >& v, const matrix<std::complex<double> >& t){
-            printf("NOT IMPLEMENTED!\n");
-        }
-    };
-
-    template<typename T>
-    struct tsmlq<T,PlasmaNoTrans> : public kernel< tsmlq<T,PlasmaNoTrans> > 
-    {
-        typedef void(tsmlq::*F)(matrix<T>&, matrix<T>&, const matrix<T>&, const matrix<T>&);
-
-        inline void l(matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-            pin(current(a1)); //if(!ctxt.involved()) return;
-            assign(current(a2));
-            assign(current(v));
-            assign(current(t));
-        }
-
-        inline void c(matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
-            __A_TIME_C("ambient_tsmlq_c_kernel"); 
-            T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
-            __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
-            CORE_dtsmlq(PlasmaRight, PlasmaNoTrans,
-                        a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), v.num_rows(), PLASMA_IB,
-                        (T*)w_updated(a1), a1.num_rows(),
-                        (T*)w_updated(a2), a2.num_rows(),
-                        (T*)c_current(v), v.num_rows(),
-                        (T*)c_current(t), t.num_rows(),
-                        work, AMBIENT_IB);
-            __A_TIME_C_STOP
-        }
-
-        inline void c(matrix<std::complex<double> >& a1, matrix<std::complex<double> >& a2, const matrix<std::complex<double> >& v, const matrix<std::complex<double> >& t){
+        inline void c(const size_t& k, matrix<std::complex<double> >& a1, matrix<std::complex<double> >& a2, const matrix<std::complex<double> >& v, const matrix<std::complex<double> >& t){
             printf("NOT IMPLEMENTED!\n");
         }
     };

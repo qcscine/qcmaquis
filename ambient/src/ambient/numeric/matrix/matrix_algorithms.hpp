@@ -88,8 +88,8 @@ namespace ambient { namespace numeric {
     }
 
     template<PLASMA_enum TR, typename T>
-    inline void ormqr(const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-        kernels::ormqr<T,TR>::spawn(a, t, c);
+    inline void ormqr(size_t k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
+        kernels::ormqr<T,TR>::spawn(k, a, t, c);
     }
 
     template<typename T>
@@ -98,8 +98,8 @@ namespace ambient { namespace numeric {
     }
 
     template<PLASMA_enum TR, typename T>
-    inline void tsmqr(matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-        kernels::tsmqr<T,TR>::spawn(a1, a2, v, t);
+    inline void tsmqr(size_t k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
+        kernels::tsmqr<T,TR>::spawn(k, a1, a2, v, t);
     }
 
     template<typename T>
@@ -108,8 +108,8 @@ namespace ambient { namespace numeric {
     }
 
     template<PLASMA_enum TR, typename T>
-    inline void ormlq(const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-        kernels::ormlq<T,TR>::spawn(a, t, c);
+    inline void ormlq(size_t k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
+        kernels::ormlq<T,TR>::spawn(k, a, t, c);
     }
 
     template<typename T>
@@ -118,8 +118,8 @@ namespace ambient { namespace numeric {
     }
 
     template<PLASMA_enum TR, typename T>
-    inline void tsmlq(matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-        kernels::tsmlq<T,TR>::spawn(a1, a2, v, t);
+    inline void tsmlq(size_t k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
+        kernels::tsmlq<T,TR>::spawn(k, a1, a2, v, t);
     }
 
     template<typename T> 
