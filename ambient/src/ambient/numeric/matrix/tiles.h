@@ -19,7 +19,7 @@ namespace ambient { namespace numeric {
         inline ~tiles();
         explicit inline tiles();
         explicit inline tiles(size_type rows, size_type cols, value_type init_value = value_type()); 
-        inline tiles&& subset(size_type i, size_type j, size_type mt, size_type nt);
+        inline tiles<subset_view<Matrix> >&& subset(size_type i, size_type j, size_type mt, size_type nt);
         inline tiles(const tiles& m);
         tiles& operator = (const tiles& rhs); 
         inline size_type num_rows() const;
@@ -48,7 +48,6 @@ namespace ambient { namespace numeric {
         inline void save(alps::hdf5::archive & ar)const{};
     public:
         std::vector<Matrix*> data;
-        bool submatrix;
         size_type rows;
         size_type cols;
         size_type mt;
@@ -56,8 +55,22 @@ namespace ambient { namespace numeric {
         bool single;
     };
 
+    template <class Matrix>
+    class tiles<subset_view<Matrix> >{
+    public:
+        typedef typename Matrix::size_type size_type;
+        inline Matrix& tile(size_type i, size_type j);
+        inline const Matrix& tile(size_type i, size_type j) const;
+    public:
+        std::vector<Matrix*> data;
+        size_type rows;
+        size_type cols;
+        size_type mt;
+        size_type nt;
+    };
+
     template <typename T>
-    class tiles<ambient::numeric::diagonal_matrix<T> > {
+    class tiles<diagonal_matrix<T> > {
     public:
         typedef typename diagonal_matrix<T>::value_type  value_type;
         typedef typename diagonal_matrix<T>::size_type   size_type;
@@ -87,7 +100,6 @@ namespace ambient { namespace numeric {
         std::vector<diagonal_matrix<T>*> data;
         size_type size;
         size_type nt;
-        bool single;
     };
 
 } }

@@ -4,6 +4,24 @@
 #include "ambient/numeric/matrix/tiles.h"
 #include "ambient/numeric/matrix/tiles_algorithms.hpp"
 
+#define size_type   typename tiles<subset_view<Matrix> >::size_type
+
+namespace ambient { namespace numeric {
+
+    template<class Matrix>
+    inline Matrix& tiles<subset_view<Matrix> >::tile(size_type i, size_type j){
+        return *this->data[i + mt*j];
+    }
+
+    template<class Matrix>
+    inline const Matrix& tiles<subset_view<Matrix> >::tile(size_type i, size_type j) const {
+        return *this->data[i + mt*j];
+    }
+
+} }
+
+#undef size_type
+
 #define size_type   typename tiles<Matrix>::size_type
 #define value_type  typename tiles<Matrix>::value_type
 #define scalar_type typename tiles<Matrix>::scalar_type
@@ -36,13 +54,13 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     inline tiles<Matrix>::tiles()
-    : rows(0), cols(0), mt(0), nt(0), single(true), submatrix(false)
+    : rows(0), cols(0), mt(0), nt(0), single(true)
     {
     }
 
     template <class Matrix>
     inline tiles<Matrix>::tiles(size_type rows, size_type cols, value_type init_value)
-    : rows(rows), cols(cols), mt(__a_ceil(rows/AMBIENT_IB)), nt(__a_ceil(cols/AMBIENT_IB)), submatrix(false)
+    : rows(rows), cols(cols), mt(__a_ceil(rows/AMBIENT_IB)), nt(__a_ceil(cols/AMBIENT_IB))
     {
         if(mt > 1 || nt > 1){
             int tailn = __a_mod(cols, AMBIENT_IB);
@@ -65,23 +83,21 @@ namespace ambient { namespace numeric {
     }
 
     template <class Matrix>
-    inline tiles<Matrix>&& tiles<Matrix>::subset(size_type i, size_type j, size_type mt, size_type nt){
-        tiles<Matrix> s;
+    inline tiles<subset_view<Matrix> >&& tiles<Matrix>::subset(size_type i, size_type j, size_type mt, size_type nt){
+        tiles<subset_view<Matrix> > s;
         s.rows = mt*AMBIENT_IB;
         s.cols = nt*AMBIENT_IB;
         s.mt = mt;
         s.nt = nt;
-        if(mt > 1 || nt > 1) s.single = false;
         for(int jj = j; jj < j + nt; jj++)
             for(int ii = i; ii < i + mt; ii++)
                 s.data.push_back(&tile(ii, jj));
-        s.submatrix = true;
         return s;
     }
 
     template <class Matrix>
     inline tiles<Matrix>::tiles(const tiles& m)
-    : rows(m.rows), cols(m.cols), mt(m.mt), nt(m.nt), single(m.single), submatrix(false)
+    : rows(m.rows), cols(m.cols), mt(m.mt), nt(m.nt), single(m.single)
     {
         int nb = m.data.size();
         for(int k = 0; k < nb; k++) this->data.push_back(new Matrix(m[k]));
@@ -96,7 +112,6 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     tiles<Matrix>::~tiles(){
-        if(this->submatrix) return;
         int size = this->data.size();
         for(int i = 0; i < size; i++) 
             delete this->data[i];
@@ -134,7 +149,6 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void tiles<Matrix>::swap(tiles& r){
-        std::swap(r.submatrix, this->submatrix);
         std::swap(r.single,    this->single);
         std::swap(r.data,      this->data);
         std::swap(r.rows,      this->rows);
@@ -276,10 +290,8 @@ namespace ambient { namespace numeric {
             for(int i = 1; i < nt; i++) 
                 this->data.push_back(new diagonal_matrix<T>(AMBIENT_IB, init_value));
             this->data.push_back(new diagonal_matrix<T>(tailm, init_value));
-            this->single = false;
         }else{
             this->data.push_back(new diagonal_matrix<T>(size, init_value));
-            this->single = true;
         }
     }
 
@@ -300,12 +312,8 @@ namespace ambient { namespace numeric {
 
     template <typename T>
     tiles<diagonal_matrix<T> >::~tiles(){
-        if(nt > 1){
-            int size = this->data.size();
-            for(int i = 0; i < size; i++) delete this->data[i];
-        }else{
-            delete this->data[0];
-        }
+        int size = this->data.size();
+        for(int i = 0; i < size; i++) delete this->data[i];
     }
 
     template<typename T>
@@ -320,7 +328,6 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void tiles<diagonal_matrix<T> >::swap(tiles& r){
-        std::swap(r.single, this->single);
         std::swap(r.data,   this->data);
         std::swap(r.size,   this->size);
         std::swap(r.nt,     this->nt);

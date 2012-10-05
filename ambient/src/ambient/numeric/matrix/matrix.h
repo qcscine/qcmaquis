@@ -14,25 +14,6 @@ namespace ambient { namespace numeric {
     template <class T>
     class weak_view;
 
-    template <class Matrix>
-    class transpose_view {
-    public:
-        typedef typename Matrix::real_type real_type;
-        typedef typename Matrix::size_type size_type; 
-        typedef typename Matrix::value_type value_type;
-        typedef typename Matrix::scalar_type scalar_type;
-        typedef typename Matrix::difference_type difference_type;
-        inline void* operator new (size_t);
-        inline void operator delete (void*);
-        explicit transpose_view(const Matrix& m);
-        operator Matrix () const;
-        template<class M> static size_t rows(const M& m); 
-        template<class M> static size_t cols(const M& m);
-        static const char* code();
-        typename Matrix::ptr impl;
-        size_t ref;
-    };
-
     template <typename T>
     class matrix {
     public:
@@ -89,11 +70,35 @@ namespace ambient { namespace numeric {
         size_t ref;
     };
 
+    template <class Matrix>
+    class subset_view {
+    public:
+        operator Matrix() const { return *(Matrix*)this; };
+    };
+
     template <class T>
     class weak_view : public matrix<T> {
-        public:
-        //operator matrix<T>& (){ return *(matrix<T>*)this; }
+    public:
         weak_view(const typename matrix<T>::ptr& p, size_t r) : matrix<T>(p, r) {}
+    };
+
+    template <class Matrix>
+    class transpose_view {
+    public:
+        typedef typename Matrix::real_type real_type;
+        typedef typename Matrix::size_type size_type; 
+        typedef typename Matrix::value_type value_type;
+        typedef typename Matrix::scalar_type scalar_type;
+        typedef typename Matrix::difference_type difference_type;
+        inline void* operator new (size_t);
+        inline void operator delete (void*);
+        explicit transpose_view(const Matrix& m);
+        operator Matrix () const;
+        template<class M> static size_t rows(const M& m); 
+        template<class M> static size_t cols(const M& m);
+        static const char* code();
+        typename Matrix::ptr impl;
+        size_t ref;
     };
 
 } }
