@@ -272,7 +272,7 @@ namespace ambient { namespace numeric {
 
     template<class MatrixA, class MatrixB, class MatrixC>
     inline void gemm(const tiles<MatrixA>& a, const tiles<MatrixB>& b, tiles<MatrixC>& c){
-        if(!a.single || !b.single || !c.single){
+        if(!a.single || !b.single){
             split_d(a); split_d(b); split_d(c);
             
             for(int i = 0; i < c.mt; i++){
@@ -300,7 +300,7 @@ namespace ambient { namespace numeric {
 
     template<class MatrixA, class MatrixC, typename T>
     inline void gemm(const tiles<MatrixA>& a, const tiles<diagonal_matrix<T> >& b, tiles<MatrixC>& c){
-        if(!a.single || !b.single || !c.single){
+        if(!a.single || b.nt > 1){
             split_d(a); split_d(b); split_d(c);
             
             for(int i = 0; i < c.mt; i++){
@@ -315,7 +315,7 @@ namespace ambient { namespace numeric {
 
     template<class MatrixB, class MatrixC, typename T>
     inline void gemm(const tiles<diagonal_matrix<T> >& a, const tiles<MatrixB>& b, tiles<MatrixC>& c){
-        if(!a.single || !b.single || !c.single){
+        if(a.nt > 1 || !b.single){
             split_d(a); split_d(b); split_d(c);
             
             for(int i = 0; i < c.mt; i++){
@@ -330,10 +330,10 @@ namespace ambient { namespace numeric {
 
     template<class Matrix, class DiagonalMatrix>
     inline void svd(const tiles<Matrix>& a, tiles<Matrix>& u, tiles<Matrix>& vt, tiles<DiagonalMatrix>& s){
-//        split_d(a); split_d(u); split_d(vt); split_d(s);
+        //split_d(a); split_d(u); split_d(vt); split_d(s);
 
-//        tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
-//        gebrd_ge2tb(a, t);
+        //tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
+        //gebrd_ge2tb(a, t);
 
         merge(a); merge(u); merge(vt); merge(s);
         svd(a[0], u[0], vt[0], s[0]);
@@ -586,7 +586,7 @@ namespace ambient { namespace numeric {
         if(m.num_rows() == rows) return;
         tiles<diagonal_matrix<T> > r(rows);
 
-        if(!r.single){
+        if(r.nt > 1){
             split_d(m); split_d(r);
             int nb_min = std::min(r.nt, m.nt);
             
