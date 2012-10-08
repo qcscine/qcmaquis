@@ -120,7 +120,8 @@ public:
                     multigrid::extension_optim(base::parms, iteration_log,
                                                this->mps, initial_mps, mpo_mix);
                 else if (this->mps.length() > initial_mps.length())
-                    multigrid::restriction(this->mps, initial_mps);
+                    throw std::runtime_error("Restriction operation not really implemented.");
+//                    multigrid::restriction(this->mps, initial_mps);
                 //            maquis::cout << "New MPS:" << std::endl << initial_mps.description();
                 
                 this->mps = initial_mps;
