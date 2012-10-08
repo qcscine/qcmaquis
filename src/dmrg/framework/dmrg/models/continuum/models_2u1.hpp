@@ -96,7 +96,7 @@ public:
             // optical lattice
             double exp_potential = model.get<double>("V0")*std::pow( std::cos(model.get<double>("k")*lat.get_prop<double>("x", p)), 2 );
             // harmonic oscillator
-            exp_potential += model.get<double>("omega")*std::pow(lat.get_prop<double>("x",p) - model.get<double>("shift"), 2 );
+            exp_potential += model.get<double>("omega")/2.*std::pow(lat.get_prop<double>("x",p) - model.get<double>("shift"), 2 );
             
             //              double dx = std::min(lat.get_prop<double>("dx", p, p+1), lat.get_prop<double>("dx", p-1, p));
             double dx2, dx1 = lat.get_prop<double>("dx", p, neighs[0]);
