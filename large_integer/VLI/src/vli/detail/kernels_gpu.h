@@ -31,6 +31,7 @@
 #ifndef VLI_KERNELS_GPU_H
 #define VLI_KERNELS_GPU_H
 
+#include <boost/cstdint.hpp> //boost type
 #include <boost/preprocessor/tuple/elem.hpp>
 #include <boost/preprocessor/seq/for_each.hpp>
 #include "vli/polynomial/variable.hpp"

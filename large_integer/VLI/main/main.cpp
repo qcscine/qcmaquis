@@ -119,9 +119,57 @@ typedef boost::mpl::vector< polynomial_type_each_x_256,
        }
    };
 
+namespace vli { namespace detail { 
+   void ultimate_192( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */);
+}}
+
 int main(int argc, char* argv[]) {
+vli_type_cpu_192 a(1),b(1);
+vli_type_cpu_384 c,d;
+
+      a[0] = 88888899991351;
+      a[1] = -917789283659612351;
+      a[2] = 120895710982351;
+
+      b[0] = 888889135009991;
+      b[1] = -135186238888541;
+      b[2] = 986999009999542;
+    
+     int e = 88888891351 ;
+      d[0] = b[0];
+      d[1] = b[1];
+      d[2] = b[2];
+
+     negate_inplace(a);
+     negate_inplace(b);
+     negate_inplace(d);
+
+//     std::cout << std::hex  <<  a << std::endl;
+//     std::cout <<  d << std::endl;
+
+
+
+
+    std::cout << std::hex << (d*=e ) << std::endl;
+  
+
+       TimerOMP temps("old");
+     temps.begin();  
+       for(int i=0 ; i < 0xffffff ; ++i)
+       multiply_extend(c,a,b);
+     temps.end();  
+      std::cout << std::hex <<  c << std::endl;
+
+       TimerOMP temps1("new");
+     temps1.begin();  
+       for(int i=0 ; i < 0xffffff ; ++i)
+      vli::detail::ultimate_192(&c[0],&a[0],&b[0]);
+     temps1.end();  
+      std::cout << std::hex <<  c << std::endl;
+/*
        boost::mpl::for_each<polynomial_list_128>(test_case());
        boost::mpl::for_each<polynomial_list_192>(test_case());
        boost::mpl::for_each<polynomial_list_256>(test_case());
+*/
        return 0;
 }
