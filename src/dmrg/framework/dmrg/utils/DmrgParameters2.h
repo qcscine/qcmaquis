@@ -156,6 +156,8 @@ private:
         add_option("k", "", value(0));
         add_option("a", "", value(1));
         add_option("Ndiscr", "");
+        add_option("omega", "", value(0.));
+        add_option("shift", "", value(0.));
         
         add_option("u1_total_charge", "");
         add_option("u1_total_charge1", "");
