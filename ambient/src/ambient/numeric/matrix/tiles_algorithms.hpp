@@ -122,6 +122,7 @@ namespace ambient { namespace numeric {
     }
 
     // {{{ normal merge / split
+    
     template<class Matrix>
     inline void merge(const tiles<Matrix>& a){
         if(a.data.size() == 1) return;
@@ -328,16 +329,27 @@ namespace ambient { namespace numeric {
         }
     }
 
-    template<class Matrix, class DiagonalMatrix>
-    inline void svd(const tiles<Matrix>& a, tiles<Matrix>& u, tiles<Matrix>& vt, tiles<DiagonalMatrix>& s){
-        //split_d(a); split_d(u); split_d(vt); split_d(s);
+    template<class Matrix>
+    inline void gebrd(tiles<Matrix>& a){
+        split_d(a); 
+        tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
+        gebrd_ge2tb(a, t);
 
-        //tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
-        //gebrd_ge2tb(a, t);
+        //gebrd_tb2bd(a, t, d, e);
+    }
+
+    template<class Matrix, class DiagonalMatrix>
+    inline void svd(tiles<Matrix> a, tiles<Matrix>& u, tiles<Matrix>& vt, tiles<DiagonalMatrix>& s){
+        size_t m = num_rows(a);
+        size_t n = num_cols(a);
+        size_t k = std::min(m,n);
+        resize(u,  m, k);
+        resize(vt, k, n);
+        resize(s,  k, k);
 
         merge(a); merge(u); merge(vt); merge(s);
         svd(a[0], u[0], vt[0], s[0]);
-        split(a); split(u); split(vt); split(s);
+        split(u); split(vt); split(s);
     }
 
     template<class Matrix, class DiagonalMatrix>
@@ -542,11 +554,6 @@ namespace ambient { namespace numeric {
         }
     }
 
-    template<class Matrix>
-    inline tiles<Matrix> exp(const tiles<Matrix>& m, const value_type& alfa = 1.){
-        assert(false); printf("ERROR: NOT TESTED (EXP)\n");
-    }
-
     template<class Matrix> 
     inline void resize(tiles<Matrix>& m, size_t rows, size_t cols){ 
         if(m.num_rows() == rows && m.num_cols() == cols) return;
@@ -606,9 +613,27 @@ namespace ambient { namespace numeric {
         swap(m, r);
     }
 
-    template<class Matrix> 
-    inline void sqrt_inplace(tiles<Matrix>& m){
-        assert(false); printf("ERROR: NOT TESTED (SQRT DIAG)\n");
+    template<typename T> 
+    inline void sqrt_inplace(tiles<diagonal_matrix<T> >& m){
+        split_d(m);
+        int size = m.data.size();
+        for(int i = 0; i < size; i++){
+            sqrt_inplace(m[i]);
+        }
+    }
+
+    template<typename T>
+    inline void exp_inplace(tiles<diagonal_matrix<T> >& m, const T& alfa = 1.){
+        split_d(m);
+        int size = m.data.size();
+        for(int i = 0; i < size; i++){
+            exp_inplace(m[i], alfa);
+        }
+    }
+
+    template<class Matrix>
+    inline tiles<Matrix> exp(const tiles<Matrix>& m, const value_type& alfa = 1.){
+        assert(false); printf("ERROR: NOT TESTED (EXP)\n");
     }
 
     template<class Matrix> 
@@ -744,14 +769,10 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void generate(tiles<Matrix>& m){
-        if(!m.single){
-            split_d(m);
-            int size = m.data.size();
-            for(int i = 0; i < size; i++){
-                fill_random(m[i]);
-            }
-        }else{
-            fill_random(m[0]);
+        split_d(m);
+        int size = m.data.size();
+        for(int i = 0; i < size; i++){
+            fill_random(m[i]);
         }
     }
 

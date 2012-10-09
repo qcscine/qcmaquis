@@ -60,7 +60,7 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline void svd(matrix<T> a, matrix<T>& u, matrix<T>& vt, diagonal_matrix<double>& s){
+    inline void svd(matrix<T>& a, matrix<T>& u, matrix<T>& vt, diagonal_matrix<double>& s){
         int m = num_rows(a);
         int n = num_cols(a);
         int k = std::min(m,n);
@@ -221,20 +221,20 @@ namespace ambient { namespace numeric {
         return transpose(m);
     }
 
-    template<typename T>
-    inline void fill_identity(matrix<T>& m){
-        kernels::init_identity<T>::spawn(m);
+    template<class Matrix>
+    inline void fill_identity(Matrix& m){
+        kernels::init_identity<typename Matrix::value_type>::spawn(m);
     }
 
-    template<typename T>
-    inline void fill_random(matrix<T>& m){
-        kernels::init_random<T>::spawn(m);
+    template<class Matrix>
+    inline void fill_random(Matrix& m){
+        kernels::init_random<typename Matrix::value_type>::spawn(m);
     }
 
-    template<typename T>
-    inline void fill_value(matrix<T>& m, T value){
+    template<class Matrix>
+    inline void fill_value(Matrix& m, typename Matrix::value_type value){
         if(value == 0.) return; // matrices are 0 by default
-        kernels::init_value<T>::spawn(m, value);
+        kernels::init_value<typename Matrix::value_type>::spawn(m, value);
     }
 
     template<typename T>
@@ -333,7 +333,11 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     bool operator == (const matrix<T>& a, const matrix<T>& b){
-        if(num_cols(a) != num_cols(b) || num_rows(a) != num_rows(b)) return false;
+        if(num_cols(a) != num_cols(b) || num_rows(a) != num_rows(b)){
+            printf("Sizes are different: %lu x %lu against %lu x %lu\n", 
+                    num_cols(a), num_rows(a), num_cols(b), num_rows(b));
+            return false;
+        }
         ambient::future<bool> ret(true);
         kernels::validation<T>::spawn(a, b, ret); 
         return (bool)ret;
@@ -341,8 +345,24 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     bool operator == (matrix<T> a, const transpose_view<matrix<T> >& b){
-        if(num_cols(a) != num_cols(b) || num_rows(a) != num_rows(b)) return false;
+        if(num_cols(a) != num_cols(b) || num_rows(a) != num_rows(b)){
+            printf("Sizes are different: %lu x %lu against %lu x %lu\n", 
+                    num_cols(a), num_rows(a), num_cols(b), num_rows(b));
+            return false;
+        }
         transpose_inplace(a);
+        ambient::future<bool> ret(true);
+        kernels::validation<T>::spawn(a, b, ret); 
+        return (bool)ret;
+    }
+
+    template<typename T>
+    bool operator == (const diagonal_matrix<T>& a, const diagonal_matrix<T>& b){
+        if(num_rows(a) != num_rows(b)){
+            printf("Sizes are different: %lu x %lu against %lu x %lu\n", 
+                    num_cols(a), num_rows(a), num_cols(b), num_rows(b));
+            return false;
+        }
         ambient::future<bool> ret(true);
         kernels::validation<T>::spawn(a, b, ret); 
         return (bool)ret;

@@ -734,6 +734,44 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C_STOP
         }
     };
+        
+    template<typename T>
+    struct sqrt_diagonal : public kernel< sqrt_diagonal<T> > 
+    {
+        typedef void (sqrt_diagonal::*F)(matrix<T>&);
+
+        inline void l(matrix<T>& a){
+            pin(current(a));
+        }
+
+        inline void c(matrix<T>& a){
+            __A_TIME_C("ambient_sqrt_diagonal_c_kernel"); 
+            size_t size = __a_get_dim(a).y;
+            T* ad = c_current(a);
+            T* au = w_updated(a);
+            for(size_t i = 0; i < size; ++i) au[i] = std::sqrt(ad[i]);
+            __A_TIME_C_STOP
+        }
+    };
+        
+    template<typename T>
+    struct exp_diagonal : public kernel< exp_diagonal<T> > 
+    {
+        typedef void (exp_diagonal::*F)(matrix<T>&, const T&);
+
+        inline void l(matrix<T>& a, const T& alfa){
+            pin(current(a));
+        }
+
+        inline void c(matrix<T>& a, const T& alfa){
+            __A_TIME_C("ambient_exp_diagonal_c_kernel"); 
+            size_t size = __a_get_dim(a).y;
+            T* ad = c_current(a);
+            T* au = w_updated(a);
+            for(size_t i = 0; i < size; ++i) au[i] = std::exp(alfa*ad[i]);
+            __A_TIME_C_STOP
+        }
+    };
 
     template<typename T>
     struct transpose_out : public kernel< transpose_out<T> > 

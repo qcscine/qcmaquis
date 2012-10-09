@@ -174,9 +174,12 @@ namespace ambient { namespace numeric {
 
     template<class Matrix, class OtherMatrix>
     bool operator == (const tiles<Matrix>& a, const tiles<OtherMatrix>& b){
+        split_d(a); split_d(b);
         bool result = true;
-        if(a.data.size() != b.data.size()) 
+        if(a.data.size() != b.data.size()){
+            printf("Blocks are different: %lu against %lu\n", a.data.size(), b.data.size());
             return false;
+        }
         int size = a.data.size();
         for(int i = 0; i < size; i++){
             if(a[i] == b[i]) continue;
