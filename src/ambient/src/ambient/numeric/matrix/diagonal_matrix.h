@@ -32,7 +32,6 @@ namespace ambient { namespace numeric {
         inline const container& get_data() const; 
         inline container& get_data();    
         inline size_type size() const;
-        inline void exp(const T& alfa = 1.);
    private:
         container data_;
     };
