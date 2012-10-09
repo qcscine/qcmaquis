@@ -6,6 +6,7 @@
 
 #include "alps/numeric/matrix.hpp"
 #include "alps/numeric/matrix/algorithms.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
 #include "ambient/numeric/matrix.hpp"
 #include "utilities.h"
 
@@ -13,20 +14,19 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuex);
     pMatrix pB(T::valuex,T::valuex);
-    pDiagMatrix pC(T::valuex,T::valuex);
+    pDiagMatrix pC(T::valuex);
 
     sMatrix sA(T::valuex,T::valuex);
     sMatrix sB(T::valuex,T::valuex);
-    sDiagMatrix sC(T::valuex,T::valuex);
+    sDiagMatrix sC((std::size_t)T::valuex);
 
-    generate(sB,Rd); // Rd is rand generator static variable inside utilities
-    sC.generate(Rd); // Rd is rand generator static variable inside utilities
+    generate(pB);
+    generate(pC);
 
-    pB = maquis::traits::matrix_cast<pMatrix>(sB);
-    pC = maquis::traits::matrix_cast<pDiagMatrix>(sC);
+    sB = maquis::bindings::matrix_cast<sMatrix>(pB);
+    sC = maquis::bindings::matrix_cast<sDiagMatrix>(pC);
 
-    using maquis::types::NoTranspose; 
-    ambient::numeric::gemm<NoTranspose,NoTranspose>(pC,pB,pA);
+    ambient::numeric::gemm(pC,pB,pA);
     gemm(sC,sB,sA);
 
     BOOST_CHECK(pA==sA);

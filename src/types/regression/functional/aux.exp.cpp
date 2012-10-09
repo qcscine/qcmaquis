@@ -7,19 +7,20 @@
 #include <boost/random.hpp>
 
 #include "alps/numeric/matrix.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
 #include "ambient/numeric/matrix.hpp"
 #include "utilities.h"
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( Exp, T, test_types)
 {
-    pDiagMatrix pA(T::valuex,0);
-    sDiagMatrix sA(T::valuex,0);
+    pDiagMatrix pA(T::valuex);
+    sDiagMatrix sA((std::size_t)T::valuex);
 
-    generate(pA.get_data());
+    generate(pA);
     sA = maquis::bindings::matrix_cast<sDiagMatrix>(pA);
 
     sA = exp(sA);
-    pA = exp(pA);
+    ambient::numeric::exp_inplace(pA);
 
     BOOST_CHECK(pA==sA);
 }

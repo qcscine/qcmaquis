@@ -19,14 +19,14 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( heev_comparison, T, test_types)
     sMatrix sA(T::valuex,T::valuex);
     sMatrix sV(T::valuex,T::valuex);
 
-    typename alps::numeric::associated_diagonal_matrix<pMatrix>::type pE(T::valuex,T::valuex); 
-    typename alps::numeric::associated_diagonal_matrix<sMatrix>::type sE(T::valuex,T::valuex);
+    pDiagMatrix pE(T::valuex); 
+    sDiagMatrix sE((std::size_t)T::valuex);
  
     generate(pA);
-    sA = maquis::traits::matrix_cast<sMatrix>(pA);
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA);
 
     heev(pA,pV,pE);
     heev(sA,sV,sE);
      
-    BOOST_CHECK(sE == pE);
+    BOOST_CHECK(pE == sE);
 }
