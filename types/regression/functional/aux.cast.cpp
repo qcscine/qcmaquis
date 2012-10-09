@@ -8,6 +8,7 @@
 
 #include "alps/numeric/matrix.hpp"
 #include "alps/numeric/matrix/algorithms.hpp"
+#include "alps/numeric/diagonal_matrix.hpp"
 #include "ambient/numeric/matrix.hpp"
 #include "utilities.h"
 
@@ -31,18 +32,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p, T, test_types)
 /*
 BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_diag, T, test_types)
 {
-    pDiagMatrix pA(T::valuex,0);
-    sDiagMatrix sA(T::valuex,0);
+    pDiagMatrix pA(T::valuex);
+    sDiagMatrix sA((std::size_t)T::valuex);
 
-    generate(pA.get_data());
+    generate(pA);
     sA = maquis::bindings::matrix_cast<sDiagMatrix>(pA);
     BOOST_CHECK(pA==sA);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p_diag, T, test_types)
 {
-    pDiagMatrix pA(T::valuex,0);
-    sDiagMatrix sA(T::valuex,0);
+    pDiagMatrix pA(T::valuex);
+    sDiagMatrix sA((std::size_t)T::valuex);
    
     sA.generate(Rd); // Rd is rand generator static variable inside utilities
     pA = maquis::bindings::matrix_cast<pDiagMatrix>(sA);
