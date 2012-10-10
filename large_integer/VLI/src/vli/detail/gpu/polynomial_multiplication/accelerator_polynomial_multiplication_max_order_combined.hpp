@@ -36,7 +36,7 @@ namespace vli {
     #define VLI_SIZE num_words<NumBits>::value 
     // c - the declation of memory_specialization is into accelerator_polynomial_multiplication_max_order_combined
     template<std::size_t NumBits, int Order, int NumVars >
-    struct memory_specialization<NumBits, max_order_combined<Order>, NumVars, range< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) < shared_min::value) > >{
+    struct memory_specialization<NumBits, max_order_combined<Order>, NumVars, typename  boost::enable_if_c< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) < shared_min::value) >::type >{
         enum { value1 = full_value<NumBits, max_order_combined<Order>, NumVars >::value };
         enum { value2 = full_value<NumBits, max_order_combined<Order>, NumVars >::value };
 
@@ -65,7 +65,7 @@ namespace vli {
     };
      
     template<std::size_t NumBits, int Order, int NumVars >
-    struct memory_specialization<NumBits, max_order_combined<Order>, NumVars, range< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) >= shared_min::value) &&  (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) < 2*shared_min::value) > >{
+    struct memory_specialization<NumBits, max_order_combined<Order>, NumVars, typename boost::enable_if_c< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) >= shared_min::value) &&  (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) < 2*shared_min::value) >::type >{
         enum { value1 = full_value<NumBits, max_order_combined<Order>, NumVars >::value };
         enum { value2 = 1}; // should be 0 but not allowed, so 1
 
@@ -92,7 +92,7 @@ namespace vli {
     };
 
     template<std::size_t NumBits, int Order, int NumVars >
-    struct memory_specialization<NumBits, max_order_combined<Order>, NumVars, range< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) >= 2*shared_min::value) > >{
+    struct memory_specialization<NumBits, max_order_combined<Order>, NumVars, typename boost::enable_if_c< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) >= 2*shared_min::value) >::type >{
         enum { value1 = 1}; // same 1 should be 0
         enum { value2 = 1}; // same 1 should be 0 
 
