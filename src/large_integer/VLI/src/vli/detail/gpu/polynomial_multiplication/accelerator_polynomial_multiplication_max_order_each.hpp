@@ -34,15 +34,11 @@ namespace vli {
 
     #define VLI_SIZE num_words<NumBits>::value 
 
-    // until today it is impossible to make a class with a __shared__ variable 
-    // SFINAE patent 
-    template<bool> struct range;
-
-    template<std::size_t NumBits, class MaxOrder, int NumVars, typename = range<true> >
-    struct memory_specialization{};
+    template<std::size_t NumBits, class MaxOrder, int NumVars, typename range = void>
+    struct memory_specialization;
 
     template<std::size_t NumBits, int Order, int NumVars >
-    struct memory_specialization<NumBits, max_order_each<Order>, NumVars, range< (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) < shared_min::value) > >{
+    struct memory_specialization<NumBits, max_order_each<Order>, NumVars, typename boost::enable_if_c< (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) < shared_min::value) >::type   >{
         enum { value1 = full_value<NumBits, max_order_each<Order>, NumVars >::value };
         enum { value2 = full_value<NumBits, max_order_each<Order>, NumVars >::value };
 
@@ -69,7 +65,7 @@ namespace vli {
     };
      
     template<std::size_t NumBits, int Order, int NumVars >
-    struct memory_specialization<NumBits, max_order_each<Order>, NumVars, range< (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) >= shared_min::value) &&  (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) < 2*shared_min::value) > >{
+    struct memory_specialization<NumBits, max_order_each<Order>, NumVars, typename boost::enable_if_c< (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) >= shared_min::value) &&  (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) < 2*shared_min::value) >::type >{
         enum { value1 = full_value<NumBits, max_order_each<Order>, NumVars >::value };
         enum { value2 = 1}; // should be 0 but not allowed, so 1
 
@@ -96,7 +92,7 @@ namespace vli {
     };
 
     template<std::size_t NumBits, int Order, int NumVars >
-    struct memory_specialization<NumBits, max_order_each<Order>, NumVars, range< (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) >= 2*shared_min::value) > >{
+    struct memory_specialization<NumBits, max_order_each<Order>, NumVars, typename boost::enable_if_c< (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) >= 2*shared_min::value) >::type >{
         enum { value1 = 1}; // same 1 should be 0
         enum { value2 = 1}; // same 1 should be 0 
 
@@ -384,6 +380,7 @@ namespace vli {
                         res1[i] = 0;
                  
                     multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
+                  //  multiplies<NumBits>(res, res1,&in1shared[in_polynomial_offset1],&in2shared[in_polynomial_offset2]   ); // the multiplication using boost pp
                  
                     current_degree_x++;
                     if (current_degree_x > end_degree_x_inclusive) {
