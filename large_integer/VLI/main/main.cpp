@@ -13,7 +13,7 @@
 #include "utils/tools.h"
 
 //#define Size_vec 65535// play with this 1024 - 16384
-#define Size_vec 4096// play with this 1024 - 16384
+#define Size_vec 16384// play with this 1024 - 16384
 #define Order 10 // play 5 - 15, cautious outside memory, xyzw poly ( 10 is the real target)
 
 using vli::polynomial;
@@ -54,22 +54,22 @@ typedef vli::polynomial< vli_type_cpu_256, vli::max_order_combined<Order>, vli::
 
 typedef boost::mpl::vector< polynomial_type_each_x_128,
                             polynomial_type_each_xy_128,
-                            polynomial_type_each_xyz_128,
+//                            polynomial_type_each_xyz_128,
                  //           polynomial_type_each_xyzw_128,// buffer can be too large cpu/gpu, be cautious
                             polynomial_type_combined_x_128,
-                            polynomial_type_combined_xy_128,
-                            polynomial_type_combined_xyz_128,
-                            polynomial_type_combined_xyzw_128// buffer can be too large cpu/gpu, be cautious
+                            polynomial_type_combined_xy_128
+ //                           polynomial_type_combined_xyz_128
+                         //   polynomial_type_combined_xyzw_128// buffer can be too large cpu/gpu, be cautious
                           > polynomial_list_128;
 
-typedef boost::mpl::vector< polynomial_type_each_x_192,
-                            polynomial_type_each_xy_192,
-                            polynomial_type_each_xyz_192,
-                        //    polynomial_type_each_xyzw_192,// buffer can be too large cpu/gpu, be cautious
-                            polynomial_type_combined_x_192,
-                            polynomial_type_combined_xy_192,
-                            polynomial_type_combined_xyz_192,
-                            polynomial_type_combined_xyzw_192// buffer can be too large cpu/gpu, be cautious
+typedef boost::mpl::vector<// polynomial_type_each_x_192,
+                            polynomial_type_each_xy_192
+  //                          polynomial_type_each_xyz_192,
+                          //  polynomial_type_each_xyzw_192,// buffer can be too large cpu/gpu, be cautious
+                        //    polynomial_type_combined_x_192,
+                       //     polynomial_type_combined_xy_192
+//                            polynomial_type_combined_xyz_192
+                         //   polynomial_type_combined_xyzw_192// buffer can be too large cpu/gpu, be cautious
                           > polynomial_list_192;
 
 typedef boost::mpl::vector< polynomial_type_each_x_256,
@@ -78,8 +78,8 @@ typedef boost::mpl::vector< polynomial_type_each_x_256,
              //               polynomial_type_each_xyzw_256,// buffer can be too large cpu/gpu, be cautious 
                             polynomial_type_combined_x_256,
                             polynomial_type_combined_xy_256,
-                            polynomial_type_combined_xyz_256,
-                            polynomial_type_combined_xyzw_256// buffer can be too large cpu/gpu, be cautious
+                            polynomial_type_combined_xyz_256
+//                            polynomial_type_combined_xyzw_256// buffer can be too large cpu/gpu, be cautious
                           > polynomial_list_256;
 
    struct test_case {
@@ -108,10 +108,10 @@ typedef boost::mpl::vector< polynomial_type_each_x_256,
        t1.end();
 
        if(p1_res == p2_res) 
-           printf("OK gpu \n"); 
+           std::cout << "OK gpu " << std::endl; 
        else
-           printf("NO OK gpu \n");
-      
+           std::cout << "NO OK gpu " << std::endl; 
+    
        #endif
        }
       
@@ -124,52 +124,29 @@ namespace vli { namespace detail {
 }}
 
 int main(int argc, char* argv[]) {
-vli_type_cpu_192 a(1),b(1);
-vli_type_cpu_384 c,d;
+       vli_type_cpu_192 a,b;
+       vli_type_cpu_384 c,d;   
 
-      a[0] = 88888899991351;
-      a[1] = -917789283659612351;
-      a[2] = 120895710982351;
+       a[0]=325165457354384;
+       a[1]=135354587344384;
+       a[2]=554984684684688;
 
-      b[0] = 888889135009991;
-      b[1] = -135186238888541;
-      b[2] = 986999009999542;
+       b[0]=325165457354384;
+       b[1]=135354587344384;
+       b[2]=554984684684688;
     
-     int e = 88888891351 ;
-      d[0] = b[0];
-      d[1] = b[1];
-      d[2] = b[2];
-
-     negate_inplace(a);
-     negate_inplace(b);
-     negate_inplace(d);
-
-//     std::cout << std::hex  <<  a << std::endl;
-//     std::cout <<  d << std::endl;
+//       a.negate();
+//       b.negate();
+ 
+      vli::detail::ultimate_192(&c[0],&a[0],&b[0]); 
+      std::cout << std::hex << c << std::endl;
+      vli::detail::mul<3>(&d[0],&a[0],&b[0]);
+      std::cout << std::hex << d << std::endl;
 
 
+//       boost::mpl::for_each<polynomial_list_128>(test_case());
+//       boost::mpl::for_each<polynomial_list_192>(test_case());
+//       boost::mpl::for_each<polynomial_list_256>(test_case());
 
-
-    std::cout << std::hex << (d*=e ) << std::endl;
-  
-
-       TimerOMP temps("old");
-     temps.begin();  
-       for(int i=0 ; i < 0xffffff ; ++i)
-       multiply_extend(c,a,b);
-     temps.end();  
-      std::cout << std::hex <<  c << std::endl;
-
-       TimerOMP temps1("new");
-     temps1.begin();  
-       for(int i=0 ; i < 0xffffff ; ++i)
-      vli::detail::ultimate_192(&c[0],&a[0],&b[0]);
-     temps1.end();  
-      std::cout << std::hex <<  c << std::endl;
-/*
-       boost::mpl::for_each<polynomial_list_128>(test_case());
-       boost::mpl::for_each<polynomial_list_192>(test_case());
-       boost::mpl::for_each<polynomial_list_256>(test_case());
-*/
        return 0;
 }
