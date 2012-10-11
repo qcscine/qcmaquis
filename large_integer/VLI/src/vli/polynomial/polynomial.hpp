@@ -19,7 +19,7 @@ namespace vli {
 // The polynomial class
 //------------------------------------------------------------------------ 
 
-template <class Coeff, class MaxOrder, class Var0, class Var1 = vli::no_variable, class Var2 = vli::no_variable, class Var3 = vli::no_variable>
+template <class Coeff, class MaxOrder, class Var0, class Var1 = no_variable, class Var2 = no_variable, class Var3 = no_variable>
 class polynomial : public detail::storage<Coeff,MaxOrder,num_variables<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> >::value> {
   public:
     typedef detail::storage<Coeff,MaxOrder,num_variables<polynomial>::value> base_type;
@@ -107,6 +107,22 @@ class polynomial : public detail::storage<Coeff,MaxOrder,num_variables<polynomia
     inline value_type& operator()(element_descriptor const& e) {
         return base_type::operator()(exponent(e,Var0()),exponent(e,Var1()),exponent(e,Var2()),exponent(e,Var3()));
     }
+#ifdef ALPS_HAVE_HDF5
+    void save(alps::hdf5::archive& ar) const {
+        using alps::make_pvp;
+        using std::distance;
+        ar << make_pvp("coefficients",std::vector<value_type>(this->begin(),this->end()));
+    }
+    void load(alps::hdf5::archive& ar) {
+        using alps::make_pvp;
+        using std::copy;
+        std::vector<value_type> v;
+        ar >> make_pvp("coefficients",v);
+        if( v.size() != this->size() )
+            throw std::runtime_error("Polynomial order mismatch while loading from hdf5.");
+        copy(v.begin(),v.end(),this->begin());
+    }
+#endif //ALPS_HAVE_HDF5
 
     inline value_type const& operator()(element_descriptor const& e) const {
         return base_type::operator()(exponent(e,Var0()),exponent(e,Var1()),exponent(e,Var2()),exponent(e,Var3()));
@@ -198,6 +214,11 @@ std::ostream& operator << (std::ostream& os, POLYNOMIAL_CLASS const& p) {
     return os;
 }
 
+
+template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
+void truncate_inplace(POLYNOMIAL_CLASS & p, unsigned int order) {
+    detail::loop_helper<POLYNOMIAL_CLASS>::apply(p,detail::truncate_helper(order));
+}
 
 //------------------------------------------------------------------------ 
 // Specializations
