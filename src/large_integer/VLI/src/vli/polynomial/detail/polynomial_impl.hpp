@@ -46,13 +46,41 @@ namespace detail {
             }
         };
     } // end namespace operations 
-    
+
+    struct truncate_helper {
+        truncate_helper(unsigned int order)
+        : truncation_order(order){
+        }
+        template <class Polynomial>
+        void operator()(Polynomial& p, typename Polynomial::element_descriptor const& e) {
+        }
+
+        template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+        void operator()(polynomial<Coeff, max_order_each<Order>,Var0,Var1,Var2,Var3> &p, typename polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3>::element_descriptor const& e) {
+            if(exponent(e,Var0()) > truncation_order)
+                p(e) = Coeff(0);
+            if(exponent(e,Var1()) > truncation_order)
+                p(e) = Coeff(0);
+            if(exponent(e,Var2()) > truncation_order)
+                p(e) = Coeff(0);
+            if(exponent(e,Var3()) > truncation_order)
+                p(e) = Coeff(0);
+        }
+        template <class Coeff, unsigned int Order, class Var0, class Var1, class Var2, class Var3>
+        void operator()(polynomial<Coeff, max_order_combined<Order>,Var0,Var1,Var2,Var3> &p, typename polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3>::element_descriptor const& e) {
+            if(exponent(e,Var0()) + exponent(e,Var1()) + exponent(e,Var2()) + exponent(e,Var3()) > truncation_order)
+                p(e) = Coeff(0);
+        }
+      private:
+        unsigned int const truncation_order;
+    };
+
     //
     // loop helper
     //
     template <class Polynomial>
     struct loop_helper;
-    
+
     template <class Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
     struct loop_helper< polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3>     polynomial_type;
@@ -311,7 +339,7 @@ namespace detail {
                                 for(exponent_type k2 = 0; k2 < stride<2,num_vars,Order>::value; ++k2)
                                     for(exponent_type l = 0; l < stride<3,num_vars,Order>::value; ++l)
                                         for(exponent_type l2 = 0; l2 < stride<3,num_vars,Order>::value; ++l2)
-                                            multiply_add_extend(result(i+i2,j+j2,k+k2,l+l2), p1(i,j,k,l), p2(i2,j2,k2,l2));
+                                            multiply_add(result(i+i2,j+j2,k+k2,l+l2), p1(i,j,k,l), p2(i2,j2,k2,l2));
              return result;
         };
     };
@@ -345,10 +373,10 @@ namespace detail {
 
         template <unsigned int N>
         static inline void apply_helper(result_type& result, polynomial_type const& p1, polynomial_type const& p2, result_element_descriptor const& er, element_descriptor const& e1, element_descriptor const& e2, exponent_type order_sum, exponent_type order_sum2, no_variable d) {
-            multiply_add_extend(result(er), p1(e1), p2(e2));
+            multiply_add(result(er), p1(e1), p2(e2));
         }
     };
-    
+
     //
     // polynomial_multiply_helper
     //
@@ -373,11 +401,11 @@ namespace detail {
                                 for(exponent_type k2 = 0; k2+k < stride<2,num_vars,Order>::value; ++k2)
                                     for(exponent_type l = 0; l < stride<3,num_vars,Order>::value; ++l)
                                         for(exponent_type l2 = 0; l2+l < stride<3,num_vars,Order>::value; ++l2)
-                                              multiply_add_extend(result(i+i2,j+j2,k+k2,l+l2), p1(i,j,k,l), p2(i2,j2,k2,l2));
+                                              multiply_add(result(i+i2,j+j2,k+k2,l+l2), p1(i,j,k,l), p2(i2,j2,k2,l2));
             return result;
         }
     };
-    
+
     template <class Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
     struct polynomial_multiply_keep_order_helper< polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
         typedef polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3>             polynomial_type;
@@ -407,11 +435,11 @@ namespace detail {
 
         template <unsigned int N>
         static inline void apply_helper(result_type& result, polynomial_type const& p1, polynomial_type const& p2, result_element_descriptor const& er, element_descriptor const& e1, element_descriptor const& e2, exponent_type order_sum, exponent_type order_sum2, no_variable d) {
-            multiply_add_extend(result(er), p1(e1), p2(e2));
+            multiply_add(result(er), p1(e1), p2(e2));
         }
     };
 
- 
+
 } // end namespace detail
 } // end namespace vli
 

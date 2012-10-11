@@ -78,7 +78,7 @@ struct num_coefficients<max_order_each<Order>, 0, Coeff>{
 
 template<int Order, int NumVars, int Coeff>
 struct num_coefficients<max_order_combined<Order>, NumVars, Coeff>{
-    static unsigned int const value = vli::detail::max_order_combined_helpers::size<NumVars+1, Coeff*Order>::value;
+    static unsigned int const value = detail::max_order_combined_helpers::size<NumVars+1, Coeff*Order>::value;
 };
 
 } // end namespace detail

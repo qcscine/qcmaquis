@@ -14,7 +14,7 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplie_add )
 
     mpz_class agmp(a), bgmp(b), cgmp(c);
 
-    multiply_add_extend(c,a,b);
+    multiply_add(c,a,b);
     cgmp += agmp * bgmp;
 
     BOOST_CHECK_EQUAL(mpz_class(a),agmp);
@@ -35,7 +35,7 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_a )
 
     mpz_class agmp(a), bgmp(b), cgmp(c);
 
-    multiply_add_extend(c,a,b);
+    multiply_add(c,a,b);
     cgmp += agmp * bgmp;
 
     BOOST_CHECK_EQUAL(mpz_class(a),agmp);
@@ -56,7 +56,7 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_b )
 
     mpz_class agmp(a), bgmp(b), cgmp(c);
 
-    multiply_add_extend(c,a,b);
+    multiply_add(c,a,b);
     cgmp += agmp * bgmp;
 
     BOOST_CHECK_EQUAL(mpz_class(a),agmp);
@@ -77,7 +77,7 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_c )
 
     mpz_class agmp(a), bgmp(b), cgmp(c);
 
-    multiply_add_extend(c,a,b);
+    multiply_add(c,a,b);
     cgmp += agmp * bgmp;
 
     BOOST_CHECK_EQUAL(mpz_class(a),agmp);
@@ -99,7 +99,7 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_ab )
 
     mpz_class agmp(a), bgmp(b), cgmp(c);
 
-    multiply_add_extend(c,a,b);
+    multiply_add(c,a,b);
     cgmp += agmp * bgmp;
 
     BOOST_CHECK_EQUAL(mpz_class(a),agmp);
@@ -122,7 +122,7 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_ac )
 
     mpz_class agmp(a), bgmp(b), cgmp(c);
 
-    multiply_add_extend(c,a,b);
+    multiply_add(c,a,b);
     cgmp += agmp * bgmp;
 
     BOOST_CHECK_EQUAL(mpz_class(a),agmp);

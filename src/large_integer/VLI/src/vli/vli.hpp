@@ -231,54 +231,54 @@ void quotient_helper(vli<NumBits> const& vli_b, vli<NumBits>& vli_quotient, vli<
 // Saint HPC forgives me
 template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator %= (vli<NumBits> vli_a){
-    int sign_this((*this)[numwords-1] >> std::numeric_limits<value_type>::digits-1);
-    int sign_vli_a(vli_a[numwords-1] >> std::numeric_limits<value_type>::digits-1);
+    bool const sign_this  = this->is_negative();
+    bool const sign_vli_a = vli_a.is_negative();
 
     if(sign_this)
-        (*this).negate();
+        this->negate();
 
     if(sign_vli_a)
         vli_a.negate();
 
     vli<NumBits> tmp(vli_a);
 
-    while((*this) >= tmp)
+    while(*this >= tmp)
         tmp <<= 1;
-        
-    while((*this) >= vli_a){
+
+    while(*this >= vli_a){
         tmp >>= 1;
-        if(tmp <= (*this) )
-            (*this) -= tmp;
+        if(tmp <= *this)
+            *this -= tmp;
     }
-    
-    if((sign_this^sign_vli_a)){
-        (*this).negate();
+
+    if(sign_this^sign_vli_a) {
+        this->negate();
         /* say gmp convention is correct
         if(sign_this)
             (*this) = vli_a - (*this);*/
     }
-    
+
     return *this;
 }
 
 // Saint HPC forgives me
 template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator /= (vli<NumBits> vli_a){
-  int sign_this((*this)[numwords-1] >> std::numeric_limits<value_type>::digits-1);
-  int sign_vli_a(vli_a[numwords-1] >> std::numeric_limits<value_type>::digits-1);
-    
-  if(sign_this)
-    (*this).negate();
-    
-  if(sign_vli_a)
-    vli_a.negate();
-    
-  vli<NumBits> vli_rest((*this));
-  (*this) ^= (*this); //flush to 0
-  quotient_helper(vli_a,(*this),vli_rest);
-    
-  if((sign_this^sign_vli_a))
-    (*this).negate();
+    bool const sign_this  = this->is_negative();
+    bool const sign_vli_a = vli_a.is_negative();
+
+    if(sign_this)
+        this->negate();
+
+    if(sign_vli_a)
+        vli_a.negate();
+
+    vli<NumBits> vli_rest(*this);
+    *this ^= *this; //flush to 0
+    quotient_helper(vli_a, *this, vli_rest);
+
+    if(sign_this^sign_vli_a)
+        this->negate();
     /* say gmp convention is correct
       if(sign_this){
       (*this).negate();
@@ -287,8 +287,7 @@ vli<NumBits>& vli<NumBits>::operator /= (vli<NumBits> vli_a){
     if(sign_vli_a)
       (*this).negate();
     }*/
-    
-  return (*this);
+    return *this;
 }
 
 template <std::size_t NumBits>
@@ -441,7 +440,7 @@ void multiply_extend(vli<2*NumBits>& vli_res, vli<NumBits> const&  vli_a, vli<Nu
 }
 
 template <std::size_t NumBits>
-void multiply_add_extend(vli<2*NumBits>& vli_res, vli<NumBits> const&  vli_a, vli<NumBits> const& vli_b) {
+void multiply_add(vli<2*NumBits>& vli_res, vli<NumBits> const&  vli_a, vli<NumBits> const& vli_b) {
     multiply_add_assign<NumBits>(vli_res, vli_a, vli_b);
 }
 
