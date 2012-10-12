@@ -122,6 +122,11 @@ namespace ambient { namespace numeric {
         kernels::tsmlq<T,TR>::spawn(k, a1, a2, v, t);
     }
 
+    template<PLASMA_enum UL, typename T>
+    inline void laset2(matrix<T>& a, const T& alfa){
+        kernels::laset2<T,UL>::spawn(a, alfa);
+    }
+
     template<typename T> 
     inline void qr(matrix<T> a, matrix<T>& q, matrix<T>& r){ 
         int m = num_rows(a);            

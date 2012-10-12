@@ -10,7 +10,7 @@
 #include "alps/numeric/diagonal_matrix.hpp"
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( QR_COMPARISON, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
     pMatrix pQ(T::valuex,T::valuey);

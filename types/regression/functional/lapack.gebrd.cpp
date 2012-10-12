@@ -10,23 +10,22 @@
 #include "alps/numeric/diagonal_matrix.hpp"
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( addition, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( BIDIAGONALIZATION, T, test_types)
 {
-    pMatrix pA(T::valuex,T::valuey);
-    pMatrix pQ(T::valuex,T::valuey);
-    pMatrix pR(T::valuex,T::valuey);
+    pMatrix A(T::valuex,T::valuey);
+    pMatrix U(T::valuex,T::valuey);
+    pMatrix V(T::valuex,T::valuey);
+    pMatrix S(T::valuex,T::valuey);
 
-    sMatrix sA(T::valuex,T::valuey);
-    sMatrix sQ(T::valuex,T::valuey);
-    sMatrix sR(T::valuex,T::valuey);
+    generate(A);
+    ambient::numeric::gebrd(A,U,S,V);
 
+    pMatrix G1(num_rows(U),num_cols(S));
+    pMatrix G2(num_rows(U),num_cols(V));
 
-    generate(pA);
-    sA = maquis::bindings::matrix_cast<sMatrix>(pA);
+    ambient::numeric::gemm(U, S, G1);
+    ambient::numeric::gemm(G1, V, G2);
 
-    qr(pA,pQ,pR);
-    qr(sA,sQ,sR);
-
-    BOOST_CHECK(sQ == pQ);
-    BOOST_CHECK(sR == pR);
+    std::cout << "done: " << num_rows(A) << " " << num_cols(A) << "\n";
+    BOOST_CHECK(G2 == A);
 }

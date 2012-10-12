@@ -41,20 +41,16 @@ namespace ambient { namespace numeric {
     template <class Matrix>
     inline tiles<Matrix> tiles<Matrix>::identity_matrix(size_type size){
         tiles t(size, size);
-        if(t.nt > 1){
-            int tailn = __a_mod(size, AMBIENT_IB);
-            for(int i = 0; i < t.nt-1; i++)
-                *t.data[i*t.nt + i] = Matrix::identity_matrix(AMBIENT_IB);
-            *t.data[t.nt*t.nt-1] = Matrix::identity_matrix(tailn);
-        }else{
-            t[0] = Matrix::identity_matrix(size);
-        }
+        int tailn = __a_mod(size, AMBIENT_IB);
+        for(int i = 0; i < t.nt-1; i++)
+            *t.data[i*t.nt + i] = Matrix::identity_matrix(AMBIENT_IB);
+        *t.data[t.nt*t.nt-1] = Matrix::identity_matrix(tailn);
         return t;
     }
 
     template <class Matrix>
     inline tiles<Matrix>::tiles()
-    : rows(0), cols(0), mt(0), nt(0), single(true)
+    : rows(0), cols(0), mt(0), nt(0)
     {
     }
 
@@ -62,28 +58,22 @@ namespace ambient { namespace numeric {
     inline tiles<Matrix>::tiles(size_type rows, size_type cols, value_type init_value)
     : rows(rows), cols(cols), mt(__a_ceil(rows/AMBIENT_IB)), nt(__a_ceil(cols/AMBIENT_IB))
     {
-        if(mt > 1 || nt > 1){
-            int tailn = __a_mod(cols, AMBIENT_IB);
-            int tailm = __a_mod(rows, AMBIENT_IB);
-            this->data.reserve(mt*nt);
-            
-            for(int j = 1; j < nt; j++){
-                for(int i = 1; i < mt; i++) 
-                    this->data.push_back(new Matrix(AMBIENT_IB, AMBIENT_IB, init_value));
-                this->data.push_back(new Matrix(tailm, AMBIENT_IB, init_value));
-            }
+        int tailn = __a_mod(cols, AMBIENT_IB);
+        int tailm = __a_mod(rows, AMBIENT_IB);
+        this->data.reserve(mt*nt);
+        
+        for(int j = 1; j < nt; j++){
             for(int i = 1; i < mt; i++) 
-                this->data.push_back(new Matrix(AMBIENT_IB, tailn, init_value));
-            this->data.push_back(new Matrix(tailm, tailn, init_value));
-            this->single = false;
-        }else{
-            this->data.push_back(new Matrix(rows, cols, init_value));
-            this->single = true;
+                this->data.push_back(new Matrix(AMBIENT_IB, AMBIENT_IB, init_value));
+            this->data.push_back(new Matrix(tailm, AMBIENT_IB, init_value));
         }
+        for(int i = 1; i < mt; i++) 
+            this->data.push_back(new Matrix(AMBIENT_IB, tailn, init_value));
+        this->data.push_back(new Matrix(tailm, tailn, init_value));
     }
 
     template <class Matrix>
-    inline tiles<subset_view<Matrix> >&& tiles<Matrix>::subset(size_type i, size_type j, size_type mt, size_type nt){
+    inline tiles<subset_view<Matrix> > tiles<Matrix>::subset(size_type i, size_type j, size_type mt, size_type nt) const {
         tiles<subset_view<Matrix> > s;
         s.rows = mt*AMBIENT_IB;
         s.cols = nt*AMBIENT_IB;
@@ -91,13 +81,13 @@ namespace ambient { namespace numeric {
         s.nt = nt;
         for(int jj = j; jj < j + nt; jj++)
             for(int ii = i; ii < i + mt; ii++)
-                s.data.push_back(&tile(ii, jj));
+                s.data.push_back((Matrix*)&tile(ii, jj));
         return s;
     }
 
     template <class Matrix>
     inline tiles<Matrix>::tiles(const tiles& m)
-    : rows(m.rows), cols(m.cols), mt(m.mt), nt(m.nt), single(m.single)
+    : rows(m.rows), cols(m.cols), mt(m.mt), nt(m.nt)
     {
         int nb = m.data.size();
         for(int k = 0; k < nb; k++) this->data.push_back(new Matrix(m[k]));
@@ -149,7 +139,6 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void tiles<Matrix>::swap(tiles& r){
-        std::swap(r.single,    this->single);
         std::swap(r.data,      this->data);
         std::swap(r.rows,      this->rows);
         std::swap(r.cols,      this->cols);
@@ -286,16 +275,12 @@ namespace ambient { namespace numeric {
     inline tiles<diagonal_matrix<T> >::tiles(size_type size, value_type init_value)
     : size(size), nt(__a_ceil(size/AMBIENT_IB))
     {
-        if(nt > 1){
-            int tailm = __a_mod(size, AMBIENT_IB);
-            this->data.reserve(nt);
-            
-            for(int i = 1; i < nt; i++) 
-                this->data.push_back(new diagonal_matrix<T>(AMBIENT_IB, init_value));
-            this->data.push_back(new diagonal_matrix<T>(tailm, init_value));
-        }else{
-            this->data.push_back(new diagonal_matrix<T>(size, init_value));
-        }
+        int tailm = __a_mod(size, AMBIENT_IB);
+        this->data.reserve(nt);
+        
+        for(int i = 1; i < nt; i++) 
+            this->data.push_back(new diagonal_matrix<T>(AMBIENT_IB, init_value));
+        this->data.push_back(new diagonal_matrix<T>(tailm, init_value));
     }
 
     template <typename T>

@@ -8,7 +8,7 @@
 #include "ambient/numeric/matrix.hpp"
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( substraction, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( SUB, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
     pMatrix pB(T::valuex,T::valuey);
@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substraction, T, test_types)
     BOOST_CHECK(pC == sC);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( substraction_assign, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( SUB_ASSIGN, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
     pMatrix pB(T::valuex,T::valuey);
