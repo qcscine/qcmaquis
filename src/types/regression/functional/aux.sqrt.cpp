@@ -10,7 +10,7 @@
 #include "ambient/numeric/matrix.hpp"
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( Sqrt, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( SQRT, T, test_types)
 {
     pDiagMatrix pA(T::valuex);
     sDiagMatrix sA((std::size_t)T::valuex);

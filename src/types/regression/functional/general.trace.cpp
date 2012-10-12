@@ -9,7 +9,7 @@
 #include "alps/numeric/matrix/algorithms.hpp"
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( trace_ambient, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( TRACE, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuex);
     sMatrix sA(T::valuex,T::valuex);

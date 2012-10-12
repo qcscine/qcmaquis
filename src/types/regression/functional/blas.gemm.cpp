@@ -8,7 +8,7 @@
 #include "ambient/numeric/matrix.hpp"
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( dgemm, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( GEMM_NORMAL, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuex);
     pMatrix pB(T::valuex,T::valuex);

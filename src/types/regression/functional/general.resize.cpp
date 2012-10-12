@@ -8,7 +8,7 @@
 #include "ambient/numeric/matrix.hpp"
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( resize, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( RESIZE, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);

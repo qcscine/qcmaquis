@@ -11,7 +11,7 @@
 #include "ambient/numeric/matrix.hpp"
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( Exp, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( EXP, T, test_types)
 {
     pDiagMatrix pA(T::valuex);
     sDiagMatrix sA((std::size_t)T::valuex);

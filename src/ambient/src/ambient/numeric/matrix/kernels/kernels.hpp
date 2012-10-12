@@ -249,6 +249,27 @@ namespace ambient { namespace numeric { namespace kernels {
         }
     };
 
+    template<typename T, PLASMA_enum UL>
+    struct laset2 : public kernel< laset2<T,UL> > 
+    {
+        typedef void(laset2::*F)(matrix<T>&, const T&);
+
+        inline void l(matrix<T>& a, const T&){
+            pin(current(a)); //if(!ctxt.involved()) return;
+        }
+
+        inline void c(matrix<double>& a, const double& alfa){
+            __A_TIME_C("ambient_laset2_c_kernel"); 
+            __a_refresh<T>(w_updated(a), c_current(a), __a_sizeof(a));
+            CORE_dlaset2(UL, a.num_rows(), a.num_cols(), alfa, (T*)w_updated(a), a.num_rows());
+            __A_TIME_C_STOP
+        }
+
+        inline void c(matrix<std::complex<double> >& a, const std::complex<double>& alfa){
+            printf("NOT IMPLEMENTED!\n");
+        }
+    };
+
     template<class ViewA, class ViewB, typename T>
     struct gemm : public kernel< gemm<ViewA, ViewB, T> > 
     { // gs
@@ -644,11 +665,11 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_add_c_kernel"); 
             T* ad = c_current(a);
             T* bd = c_current(b);
-            T* ar = r_updated(a);
+            T* ar = w_updated(a);
+
             int size = __a_get_dim(a).square();
-            static const T sign = 1.;
-            static const int ONE = 1;
-            axpy(&size, &sign, bd, &ONE, ar, &ONE);
+            for(int k = 0; k < size; k++) 
+                ar[k] = ad[k] + bd[k];
             __A_TIME_C_STOP
         }
     };
@@ -666,12 +687,13 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(matrix<T>& a, const matrix<T>& b){
             __A_TIME_C("ambient_sub_c_kernel"); 
+            T* ad = c_current(a);
             T* bd = c_current(b);
-            T* ar = r_updated(a);
+            T* ar = w_updated(a);
+
             int size = __a_get_dim(a).square();
-            static const T sign = -1.;
-            static const int ONE = 1;
-            axpy(&size, &sign, bd, &ONE, ar, &ONE);
+            for(int k = 0; k < size; k++) 
+                ar[k] = ad[k] - bd[k];
             __A_TIME_C_STOP
         }
     };
@@ -685,16 +707,7 @@ namespace ambient { namespace numeric { namespace kernels {
             pin(current(a));
         }
 
-        inline void c(matrix<double>& a, const future<double>& t){
-            __A_TIME_C("ambient_scale_c_kernel"); 
-            T* ar = r_updated(a);
-            int size = __a_get_dim(a).square();
-            static const int ONE = 1;
-            dscal_( &size, &t.get_value(), ar, &ONE );
-            __A_TIME_C_STOP
-        }
-
-        inline void c(matrix<std::complex<double> >& a, const future< std::complex<double> >& t){
+        inline void c(matrix<T>& a, const future<T>& t){
             __A_TIME_C("ambient_scale_c_kernel"); 
             T* ad = c_current(a);
             T* ar = w_updated(a);
@@ -714,17 +727,7 @@ namespace ambient { namespace numeric { namespace kernels {
             pin(current(a));
         }
 
-        inline void c(matrix<double>& a, const future<double>& t){
-            __A_TIME_C("ambient_scale_inverse_c_kernel"); 
-            T* ar = r_updated(a);
-            int size = __a_get_dim(a).square();
-            static const int ONE = 1;
-            double factor = 1. / t.get_value();
-            dscal_( &size, &factor, ar, &ONE );
-            __A_TIME_C_STOP
-        }
-
-        inline void c(matrix<std::complex<double> >& a, const future< std::complex<double> >& t){
+        inline void c(matrix<T>& a, const future<T>& t){
             __A_TIME_C("ambient_scale_inverse_c_kernel"); 
             T* ad = c_current(a);
             T* ar = w_updated(a);
@@ -748,8 +751,8 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_sqrt_diagonal_c_kernel"); 
             size_t size = __a_get_dim(a).y;
             T* ad = c_current(a);
-            T* au = w_updated(a);
-            for(size_t i = 0; i < size; ++i) au[i] = std::sqrt(ad[i]);
+            T* ar = w_updated(a);
+            for(size_t i = 0; i < size; ++i) ar[i] = std::sqrt(ad[i]);
             __A_TIME_C_STOP
         }
     };
@@ -767,8 +770,8 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_exp_diagonal_c_kernel"); 
             size_t size = __a_get_dim(a).y;
             T* ad = c_current(a);
-            T* au = w_updated(a);
-            for(size_t i = 0; i < size; ++i) au[i] = std::exp(alfa*ad[i]);
+            T* ar = w_updated(a);
+            for(size_t i = 0; i < size; ++i) ar[i] = std::exp(alfa*ad[i]);
             __A_TIME_C_STOP
         }
     };
@@ -810,7 +813,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
             __A_TIME_C("ambient_resize_c_kernel"); 
-            __a_memptf_r<T, __a_memcpy>(r_updated(r), __a_get_dim(r).y, dim2(0,0), 
+            __a_memptf_r<T, __a_memcpy>(r_updated(r), __a_get_dim(r).y, dim2(0,0), // r/p/w?
                                         c_current(a), __a_get_dim(a).y, dim2(0,0), dim2(n, m)); 
             __A_TIME_C_STOP
         }

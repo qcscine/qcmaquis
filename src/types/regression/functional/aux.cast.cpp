@@ -12,7 +12,7 @@
 #include "ambient/numeric/matrix.hpp"
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_P2S, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s, T, test_types)
     BOOST_CHECK(pA==sA);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_S2P, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p, T, test_types)
     BOOST_CHECK(sA==pA);
 }
 /*
-BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_diag, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_P2S_DIAG, T, test_types)
 {
     pDiagMatrix pA(T::valuex);
     sDiagMatrix sA((std::size_t)T::valuex);
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( cast_p2s_diag, T, test_types)
     BOOST_CHECK(pA==sA);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( cast_s2p_diag, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_S2P_DIAG, T, test_types)
 {
     pDiagMatrix pA(T::valuex);
     sDiagMatrix sA((std::size_t)T::valuex);

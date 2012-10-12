@@ -8,7 +8,7 @@
 #include "ambient/numeric/matrix.hpp"
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( remove_first_rows, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( REMOVE_FIRST_ROWS, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_first_rows, T, test_types)
     BOOST_CHECK(pA==sA);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( remove_last_rows, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( REMOVE_LAST_ROWS, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_last_rows, T, test_types)
     BOOST_CHECK(pA==sA);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( remove_rows, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( REMOVE_ROWS, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( remove_rows, T, test_types)
     BOOST_CHECK(pA==sA);
 }
 /*
-BOOST_AUTO_TEST_CASE_TEMPLATE( remove_several_rows, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( REMOVE_SEVERAL_ROWS, T, test_types)
 {
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);

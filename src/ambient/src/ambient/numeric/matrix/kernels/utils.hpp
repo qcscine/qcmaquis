@@ -22,10 +22,13 @@
 #endif
 
 typedef int PLASMA_enum;
-#define PlasmaNoTrans 111
-#define PlasmaTrans   112
-#define PlasmaLeft    141
-#define PlasmaRight   142
+#define PlasmaNoTrans    111
+#define PlasmaTrans      112
+#define PlasmaUpper      121
+#define PlasmaLower      122
+#define PlasmaUpperLower 123
+#define PlasmaLeft       141
+#define PlasmaRight      142
 
 extern "C" {
 void      dgemm_(const char*,const char*, const int*, const int*, const int*, const double*, 
@@ -78,6 +81,8 @@ int  CORE_dtsmlq(PLASMA_enum side, PLASMA_enum trans,
                  const double *V, int LDV,
                  const double *T, int LDT,
                  double *WORK, int LDWORK);
+void CORE_dlaset2(PLASMA_enum uplo, int n1, int n2, double alpha,
+                 double *tileA, int ldtilea);
 }
 
 namespace ambient { namespace numeric { namespace kernels {

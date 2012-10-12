@@ -12,7 +12,7 @@
 #include "ambient/numeric/matrix.hpp"
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( write_access, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( WRITE_ACCESS, T, test_types)
 {
     std::size_t accessx(T::valuex-1), accessy(T::valuey-1);
     typename T::dbl x;
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( write_access, T, test_types)
     BOOST_CHECK(pA==sA); // memory corruption check
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( read_access, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( READ_ACCESS, T, test_types)
 {
     std::size_t accessx(T::valuex-1), accessy(T::valuey-1);
     typename T::dbl x;
