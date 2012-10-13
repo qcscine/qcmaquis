@@ -426,7 +426,7 @@ namespace vli{
                         "sbbq $0               ,%%r13             \n"
 
                         "movq 16(%%rbx)        ,%%rax             \n"
-                        "andq %%r15            ,%%rax             \n"//must be positive
+//                        "andq %%r15            ,%%rax             \n"//must be positive <- @Tim: Why? This is where the 0x40 00 00 00 00 00 00 00 originated from.
                         "andq %%r14            ,%%rax             \n"//set up to 0 or nothing if rsi is positive
                         "movq %%rax            ,%%rdx             \n"
                         "shlq $63              ,%%rax             \n"
@@ -435,33 +435,44 @@ namespace vli{
                         "sbbq %%rdx            ,%%r13             \n"
 
                         // second correction du to the operand rbx, with a dummy method because sign extension is impossible
-                        // totally random assembly it is not logical at all, it seems work -*+, +*- not -*- 
-                        "movq 16(%%rbx)        ,%%r14             \n" 
-                        "shrq $63              ,%%r14             \n" // 0 or 1 
-                        "movq %%r14            ,%%r15             \n" // copy 
-                        "negq                   %%r15             \n" // 0 or 0xfffffff
 
+
+                        // I just do                    ffff ffff ffff xxxx xxxx xxxx
+                        //                                             cccc bbbb aaaa
+                        //                              -----------------------------
+                        //                                    Positive Product result
+                        //                            +      A'A' AAAA
+                        //                            + A'A' AAAA
+                        //                            + AAAA
+                        //                            + B'B' BBBB
+                        //                            + BBBB
+                        //                            + CCCC
+                        //                              =============================
+                        // Where   ffff * aaaa = A'A' AAAA  (64x64bit -> 128bit) and so on.
+                        // Need's to be optimized. You can probably replace the mulq and many addqs.
+
+
+                        "movq 16(%%rbx)        ,%%r15             \n"
                         "movq 0(%%rsi)         ,%%rax             \n"
-                        "andq %%r15            ,%%rax             \n" // set up to 0 if rbx is positive, the mask is null
-                        "xorq %%r15            ,%%rax             \n" //start negation
-                        "addq %%r14            ,%%rax             \n" // + 1 if negation
-                        "addq %%rax            ,%%r11             \n" // final sum + cb if needed
-                        "adcq %%r15            ,%%r12             \n" // final sum + cb if needed
-                        "adcq %%r15            ,%%r13             \n" // final sum + cb if needed
+                        "sarq $63              ,%%r15             \n" // 0 or 0xffffffffffffffffffffffffffffffffff
+                        "mulq %%r15                               \n"
+                        "addq %%rax            ,%%r11             \n"
+                        "adcq %%rdx            ,%%r12             \n"
+                        "adcq $0               ,%%r13             \n"
+                        "addq %%rax            ,%%r12             \n"
+                        "adcq %%rdx            ,%%r13             \n"
+                        "addq %%rax            ,%%r13             \n"
 
                         "movq 8(%%rsi)         ,%%rax             \n"
-                        "xorq %%r15            ,%%rax             \n" //start negation
-                        "andq %%r15            ,%%rax             \n" // set up to 0 if rbx is positive, the mask is null
-                        "addq %%r14            ,%%rax             \n" // + 1 if negation
-                        "addq %%rax            ,%%r12             \n" // final sum + cb if needed
-                        "adcq %%r15            ,%%r13             \n" // final sum + cb if needed
+                        "mulq %%r15                               \n"
+                        "addq %%rax            ,%%r12             \n"
+                        "adcq %%rdx            ,%%r13             \n"
+                        "addq %%rax            ,%%r13             \n"
 
                         "movq 16(%%rsi)        ,%%rax             \n"
-                        "xorq %%r15            ,%%rax             \n" //start negation
-                        "andq %%r15            ,%%rax             \n" // set up to 0 if rbx is positive, the mask is null
-                        "addq %%r14            ,%%rax             \n" // + 1 if negation
-                        "addq %%rax            ,%%r13             \n" // final sum + cb if needed
- // at the end if - * - I have a factor 0x4000000000000000 >_<, p.u.t.a.i.n
+                        "mulq %%r15                               \n"
+                        "addq %%rax            ,%%r13             \n"
+
                         "movq %%r8             ,(%%rdi)           \n"
                         "movq %%r9             ,8(%%rdi)          \n"
                         "movq %%r10            ,16(%%rdi)         \n"

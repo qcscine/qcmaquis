@@ -8,7 +8,7 @@
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
 #include "vli/polynomial/polynomial.hpp"
 #include "vli/vli.hpp"
-
+#include <time.h>
 #include "utils/timings.h"
 #include "utils/tools.h"
 
@@ -127,22 +127,73 @@ int main(int argc, char* argv[]) {
        vli_type_cpu_192 a,b;
        vli_type_cpu_384 c,d;   
 
-       a[0]=325165457354384;
-       a[1]=135354587344384;
-       a[2]=554984684684688;
+       a[0] = 1;
+       b[0] = 1;
 
-       b[0]=325165457354384;
-       b[1]=135354587344384;
-       b[2]=554984684684688;
-    
-//       a.negate();
-//       b.negate();
- 
-      vli::detail::ultimate_192(&c[0],&a[0],&b[0]); 
-      std::cout << std::hex << c << std::endl;
-      vli::detail::mul<3>(&d[0],&a[0],&b[0]);
-      std::cout << std::hex << d << std::endl;
+//       a[0]=325165457354384;
+//       a[1]=135354587344384;
+//       a[2]=554984684684688;
+//
+//       b[0]=325165457354384;
+//       b[1]=135354587344384;
+//       b[2]=554984684684688;
 
+       std::cout << "a :" << std::hex << a <<std::endl;
+       std::cout << "b :" << std::hex << b <<std::endl;
+
+       std::cout << std::endl << "+,+" <<std::endl;
+       vli::detail::ultimate_192(&c[0],&a[0],&b[0]); 
+       std::cout <<"ultimate: " << std::hex << c << std::endl;
+       vli::detail::mul<3>(&d[0],&a[0],&b[0]);
+       std::cout <<"correct:  " << std::hex << d << std::endl;
+
+       b.negate();
+       std::cout << std::endl << "+,-" <<std::endl;
+       vli::detail::ultimate_192(&c[0],&a[0],&b[0]); 
+       std::cout <<"ultimate: " << std::hex << c << std::endl;
+       vli::detail::mul<3>(&d[0],&a[0],&b[0]);
+       std::cout <<"correct:  " << std::hex << d << std::endl;
+
+       a.negate();
+       b.negate();
+       std::cout << std::endl << "-,+" <<std::endl;
+       vli::detail::ultimate_192(&c[0],&a[0],&b[0]); 
+       std::cout <<"ultimate: " << std::hex << c << std::endl;
+       vli::detail::mul<3>(&d[0],&a[0],&b[0]);
+       std::cout <<"correct:  " << std::hex << d << std::endl;
+
+       b.negate();
+       std::cout << std::endl << "-,-" <<std::endl;
+       vli::detail::ultimate_192(&c[0],&a[0],&b[0]); 
+       std::cout <<"ultimate: " << std::hex << c << std::endl;
+       vli::detail::mul<3>(&d[0],&a[0],&b[0]);
+       std::cout <<"correct:  " << std::hex << d << std::endl;
+
+
+       timespec ta,tb,tc;
+       clock_gettime(CLOCK_MONOTONIC,&ta);
+       for(unsigned int i=0; i < 100000000; ++i)
+           vli::detail::ultimate_192(&c[0],&a[0],&b[0]); 
+
+       clock_gettime(CLOCK_MONOTONIC,&tb);
+       for(unsigned int i=0; i < 100000000; ++i)
+           vli::detail::mul<3>(&c[0],&a[0],&b[0]); 
+       clock_gettime(CLOCK_MONOTONIC,&tc);
+
+
+       std::cout << "ultimate t=" << (tb.tv_sec - ta.tv_sec) + 1e-9 * (tb.tv_nsec - ta.tv_nsec) << "s" << std::endl;
+       std::cout << "old mul  t=" << (tc.tv_sec - tb.tv_sec) + 1e-9 * (tc.tv_nsec - tb.tv_nsec) << "s" << std::endl;
+       clock_gettime(CLOCK_MONOTONIC,&ta);
+       for(unsigned int i=0; i < 100000000; ++i)
+           vli::detail::mul<3>(&c[0],&a[0],&b[0]); 
+       clock_gettime(CLOCK_MONOTONIC,&tb);
+       for(unsigned int i=0; i < 100000000; ++i)
+           vli::detail::ultimate_192(&c[0],&a[0],&b[0]); 
+       clock_gettime(CLOCK_MONOTONIC,&tc);
+
+
+       std::cout << "old mul  t=" << (tb.tv_sec - ta.tv_sec) + 1e-9 * (tb.tv_nsec - ta.tv_nsec) << "s" << std::endl;
+       std::cout << "ultimate t=" << (tc.tv_sec - tb.tv_sec) + 1e-9 * (tc.tv_nsec - tb.tv_nsec) << "s" << std::endl;
 
 //       boost::mpl::for_each<polynomial_list_128>(test_case());
 //       boost::mpl::for_each<polynomial_list_192>(test_case());
