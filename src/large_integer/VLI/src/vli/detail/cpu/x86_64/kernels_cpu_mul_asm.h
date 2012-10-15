@@ -427,6 +427,7 @@ namespace vli{
 
                         "movq 16(%%rbx)        ,%%rax             \n"
 //                        "andq %%r15            ,%%rax             \n"//must be positive <- @Tim: Why? This is where the 0x40 00 00 00 00 00 00 00 originated from.
+// @Andreas : Tim answer : I do not know,
                         "andq %%r14            ,%%rax             \n"//set up to 0 or nothing if rsi is positive
                         "movq %%rax            ,%%rdx             \n"
                         "shlq $63              ,%%rax             \n"
@@ -454,8 +455,20 @@ namespace vli{
 
                         "movq 16(%%rbx)        ,%%r15             \n"
                         "movq 0(%%rsi)         ,%%rax             \n"
-                        "sarq $63              ,%%r15             \n" // 0 or 0xffffffffffffffffffffffffffffffffff
+
+                        "movq %%r15            ,%%rdx             \n"
+                        "sarq $63              ,%%r15             \n" // 0 or 0xffff ffff ffff ffff ffff ffff ffff ffff
+
+//                      "sarq $63              ,%%rdx             \n" // 0 ou 0xffff ffff ffff ffff ffff ffff ffff ffff
+//                      "shrq $63              ,%%r15             \n" // 0 or 1
+//                      "andq %%rdx            ,%%rax             \n" // safety mask to set up to .
+
                         "mulq %%r15                               \n"
+// @andreas I keep your algo but for -1*r15 shoud be the same than the 2 complement method did with the 2 next lines (because this multiplication multiply by 0 or -1)
+//                      "xorq %%rdx            ,%%rax             \n" //start the negation 
+//                      "addq %%r15            ,%%rax             \n" //r15 is 0 or 1 the complement
+// for me rdx is equal to 0 if rbx > 0 ( mean r15 =0), or 0x(16times)f if rbx < 0, I may wrong but I do not see why
+// calculate rax and rdx like should be the same, but not really .....
                         "addq %%rax            ,%%r11             \n"
                         "adcq %%rdx            ,%%r12             \n"
                         "adcq $0               ,%%r13             \n"
@@ -464,13 +477,23 @@ namespace vli{
                         "addq %%rax            ,%%r13             \n"
 
                         "movq 8(%%rsi)         ,%%rax             \n"
+//                      "andq %%rdx            ,%%rax             \n" //safetymask
                         "mulq %%r15                               \n"
+
+//                      "xorq %%rdx            ,%%rax             \n" // 2CM step 1
+//                      "addq %%r15            ,%%rax             \n" // 2cm step 2
+
                         "addq %%rax            ,%%r12             \n"
                         "adcq %%rdx            ,%%r13             \n"
                         "addq %%rax            ,%%r13             \n"
 
                         "movq 16(%%rsi)        ,%%rax             \n"
+//                      "andq %%rdx            ,%%rax             \n" //safety mask
                         "mulq %%r15                               \n"
+
+//                      "xorq %%rdx            ,%%rax             \n" // 2CM step1
+//                      "addq %%r15            ,%%rax             \n" // 2cM ste2
+
                         "addq %%rax            ,%%r13             \n"
 
                         "movq %%r8             ,(%%rdi)           \n"
