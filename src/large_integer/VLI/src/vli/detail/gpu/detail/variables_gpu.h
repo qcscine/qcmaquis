@@ -95,7 +95,18 @@ namespace vli {
         static std::size_t const value = 24576; // Note Fermi 48 KB shared, 24 KB for every poly 
     };
 
+    // let's go to save pico seconds
+     __device__ __constant__ int workblock_count_by_warp_max_order_each_1_variable[8]; // 8 is the maxmimum value
+     __device__ __constant__ int workblock_count_by_warp_max_order_each_2_variable[8]; // 8 is the maxmimum value
+     __device__ __constant__ int workblock_count_by_warp_max_order_each_3_variable[8]; // 8 is the maxmimum value
+     __device__ __constant__ int workblock_count_by_warp_max_order_each_4_variable[8]; // 8 is the maxmimum value
+
+     __device__ __constant__ int workblock_count_by_warp_max_order_combined_1_variable[8]; // 8 is the maxmimum value
+     __device__ __constant__ int workblock_count_by_warp_max_order_combined_2_variable[8]; // 8 is the maxmimum value
+     __device__ __constant__ int workblock_count_by_warp_max_order_combined_3_variable[8]; // 8 is the maxmimum value
+     __device__ __constant__ int workblock_count_by_warp_max_order_combined_4_variable[8]; // 8 is the maxmimum value
     }
 }
 
+   //  __device__ __constant__ int workblock_count_by_warp_max_order_each_2_variable[8]; // 8 is the maxmimum value
 #endif
