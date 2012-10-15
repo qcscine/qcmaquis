@@ -59,6 +59,12 @@ namespace vli {
         unsigned int  element_count_prepared;
     };
 
+    template<int NumVars>
+    void transfert_workblock_count_by_warp_max_order_each(std::vector<int> & workblock_count_by_warp_local);
+
+    template<int NumVars>
+    void transfert_workblock_count_by_warp_max_order_combined(std::vector<int> & workblock_count_by_warp_local);
+
     } // end namespace detail
  }//end namespace vli
 

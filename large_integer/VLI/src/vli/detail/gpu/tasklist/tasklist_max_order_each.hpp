@@ -92,8 +92,34 @@ namespace vli {
                work_total_by_size[warp_id] += max_step_count;
         }
 	gpu::cu_check_error(cudaMemcpyAsync(workblock_count_by_warp_, &(*workblock_count_by_warp_local.begin()), sizeof(int) * workblock_count_by_warp_local.size(), cudaMemcpyHostToDevice),__FILE__,__LINE__);
+        transfert_workblock_count_by_warp_max_order_each<NumVars>(workblock_count_by_warp_local);
 	gpu::cu_check_error(cudaMemcpyAsync(execution_plan_, &(*tasks_reordered.begin()), sizeof(single_coefficient_task) * tasks_reordered.size(),cudaMemcpyHostToDevice),__FILE__,__LINE__);
     }
 
+    template<>
+    void transfert_workblock_count_by_warp_max_order_each<1>(std::vector<int> & workblock_count_by_warp_local){
+//	 gpu::cu_check_error(cudaMemcpyToSymbolAsync(workblock_count_by_warp_max_order_each_1_variable, &(*workblock_count_by_warp_local.begin()), sizeof(int) * workblock_count_by_warp_local.size(),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+    };
+
+    template<>
+    void transfert_workblock_count_by_warp_max_order_each<2>(std::vector<int> & workblock_count_by_warp_local){
+	 gpu::cu_check_error(cudaMemcpyToSymbolAsync(workblock_count_by_warp_max_order_each_2_variable, &(*workblock_count_by_warp_local.begin()), sizeof(int) * workblock_count_by_warp_local.size(),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+         //PUTAIN PUTAIN PUTAIN PUTAIN PUTAIN
+    };
+
+    template<>
+    void transfert_workblock_count_by_warp_max_order_each<3>(std::vector<int> & workblock_count_by_warp_local){
+//	 gpu::cu_check_error(cudaMemcpyToSymbolAsync(workblock_count_by_warp_max_order_each_3_variable, &(*workblock_count_by_warp_local.begin()), sizeof(int) * workblock_count_by_warp_local.size(),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+    };
+
+    template<>
+    void transfert_workblock_count_by_warp_max_order_each<4>(std::vector<int> & workblock_count_by_warp_local){
+//	 gpu::cu_check_error(cudaMemcpyToSymbolAsync(workblock_count_by_warp_max_order_each_4_variable, &(*workblock_count_by_warp_local.begin()), sizeof(int) * workblock_count_by_warp_local.size(),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+    };
+ 
+
     } // end namespace detail
  }//end namespace vli
+
+
+
