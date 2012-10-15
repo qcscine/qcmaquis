@@ -199,11 +199,13 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline Matrix& tiles<Matrix>::operator[] (size_type k){
+        assert(k < data.size());
         return *this->data[k];
     }
 
     template<class Matrix>
     inline const Matrix& tiles<Matrix>::operator[] (size_type k) const {
+        assert(k < data.size());
         return *this->data[k];
     }
 
