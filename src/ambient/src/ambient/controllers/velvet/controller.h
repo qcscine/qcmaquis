@@ -1,7 +1,6 @@
 #ifndef AMBIENT_CONTROLLERS_VELVET_CONTROLLER
 #define AMBIENT_CONTROLLERS_VELVET_CONTROLLER
 
-#include "ambient/utils/touchstack.h"
 #include "ambient/controllers/velvet/cfunctor.h"
 #include "ambient/controllers/velvet/context.h"
 #include "ambient/controllers/velvet/iteratable.h"
@@ -38,8 +37,8 @@ namespace ambient { namespace controllers { namespace velvet {
         bool muted;
         collector garbage;
     private:
-        touchstack< cfunctor* > chains;
-        touchstack< cfunctor* > mirror;
+        std::vector< cfunctor* > chains;
+        std::vector< cfunctor* > mirror;
         int arity;
     };
     

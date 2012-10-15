@@ -1,6 +1,8 @@
 #include "ambient/utils/io.hpp"
 #include "ambient/utils/timings.hpp"
 
+#define CONTROLLER_CHAINS_RESERVE 65536
+
 namespace ambient { namespace controllers { namespace velvet {
 
     using ambient::channels::mpi::packet_t;
@@ -12,8 +14,9 @@ namespace ambient { namespace controllers { namespace velvet {
     inline controller::controller()
     : muted(false)
     {
+        this->chains.reserve(CONTROLLER_CHAINS_RESERVE);
+        this->mirror.reserve(CONTROLLER_CHAINS_RESERVE);
         //this->acquire(&ambient::channel);
-        //this->arity = __cilkrts_get_nworkers();
     }
         
     template<typename T>
@@ -26,24 +29,22 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::flush(){
-        touchstack< cfunctor* >* chains = &this->chains;
-        touchstack< cfunctor* >* mirror = &this->mirror;
+        typedef typename std::vector<cfunctor*>::const_iterator veci;
+        std::vector< cfunctor* >* chains = &this->chains;
+        std::vector< cfunctor* >* mirror = &this->mirror;
         
         while(!chains->empty()){
-            while(!chains->end_reached()){
-                cfunctor* op = chains->pick();
-                if(op->ready()){ 
-                    cilk_spawn op->invoke();
-                    for(std::vector<cfunctor*>::const_iterator i = op->deps.begin(); 
-                        i != op->deps.end(); ++i)
-                        mirror->push_back(*i);
-                }else mirror->push_back(op);
+            for(veci i = chains->begin(); i != chains->end(); ++i){
+                if((*i)->ready()){
+                    cilk_spawn (*i)->invoke();
+                    mirror->insert(mirror->end(), (*i)->deps.begin(), (*i)->deps.end());
+                }else mirror->push_back(*i);
             }
-            chains->reset();
+            chains->clear();
             std::swap(chains,mirror);
         }
         ambient::bulk_pool.refresh();
-    } // implicit cilk_sync //
+    }
 
     inline void controller::atomic_receive(revision& r){
         /*std::list<cfunctor*>& list = r.content.assignments;

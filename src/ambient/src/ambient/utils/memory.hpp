@@ -5,6 +5,7 @@
 
 #define BULK_LENGTH 8388608*50
 #define FUTURE_SIZE 16
+#define CPU __cilkrts_get_worker_number()
 
 namespace ambient { namespace utils {
 
@@ -53,10 +54,7 @@ namespace ambient { namespace utils {
         }
         template<size_t S>
         void* get(){
-            char*& iterator = this->iterators[__cilkrts_get_worker_number()];
-            void* result = iterator;
-            iterator += S; // 16*((size_t)(S/16)+1); // alignment variant
-            return result;
+            return ((char(*&)[S])this->iterators[CPU])++;
         }
         void refresh(){
             for(int i = 0; i < this->arity; i++)
@@ -71,8 +69,9 @@ namespace ambient { namespace utils {
 
     template<size_t S, size_t R>
     class pool {
+        typedef char(bulk)[S];
     public:
-        pool(){
+        pool() : capacity(R) {
             this->memory.reserve(2);
             this->handles.reserve(R);
             this->realloc();
@@ -82,10 +81,10 @@ namespace ambient { namespace utils {
                 free(this->memory[i]);
         }
         void realloc(){
-            this->memory.push_back(std::malloc(S*R));
-            char* memory = (char*)this->memory.back();
-            for(int i = 0; i < R; ++i)
-                this->handles.push_back(memory + i*S);
+            bulk* memory = (bulk*)std::malloc(sizeof(bulk)*this->capacity);
+            for(int i = 0; i < capacity; ++i) this->handles.push_back(&memory[i]);
+            this->memory.push_back(memory);
+            this->capacity *= 2;
         }
         void* malloc(){
             if(this->handles.empty()) this->realloc();
@@ -97,6 +96,7 @@ namespace ambient { namespace utils {
             this->handles.push_back(ptr);
         }
     private:
+        size_t capacity;
         std::vector<void*> handles;
         std::vector<void*> memory;
     };
@@ -127,7 +127,6 @@ namespace ambient { namespace utils {
         typedef pool<2800, 100 >  pool_2800; pool_2800* p2800;
         typedef pool<3200, 1000>  pool_3200; pool_3200* p3200;
         typedef pool<6400, 2500>  pool_6400; pool_6400* p6400;
-
         typedef pool<3000,  1000>  pool_3000;  pool_3000* p3000;
         typedef pool<4000,  1000>  pool_4000;  pool_4000* p4000;
         typedef pool<5000,  1000>  pool_5000;  pool_5000* p5000;
@@ -192,9 +191,13 @@ namespace ambient { namespace utils {
         typedef pool<64000, 30 >   pool_64000; pool_64000* p64000;
         typedef pool<65000, 30 >   pool_65000; pool_65000* p65000;
         typedef pool<66000, 30 >   pool_66000; pool_66000* p66000;
+
+        typedef pool<2097152, 30 >   pool_IB; pool_IB* pIB;
     public:
         range_memory(){
             this->arity = __cilkrts_get_nworkers();
+            this->pIB   = new pool_IB  [arity];
+
             this->p100  = new pool_100 [arity];
             this->p200  = new pool_200 [arity];
             this->p300  = new pool_300 [arity];
@@ -285,6 +288,8 @@ namespace ambient { namespace utils {
             this->p66000 = new pool_66000[arity];
         }
        ~range_memory(){
+            delete[] this->pIB;
+
             delete[] this->p100;
             delete[] this->p200;
             delete[] this->p300;
@@ -375,7 +380,9 @@ namespace ambient { namespace utils {
             delete[] this->p66000;
         }
         void* malloc(size_t sz){
-            int ts = __cilkrts_get_worker_number();
+            int ts = CPU;
+            if(sz == 2097152) return pIB[ts].malloc();
+
             switch((int)((sz-1) / 100)){
                 case 0:  return p100 [ts].malloc();
                 case 1:  return p200 [ts].malloc();
@@ -472,6 +479,8 @@ namespace ambient { namespace utils {
         void free(void* ptr, size_t sz){
             if(ptr == NULL) return;
             int ts = (int)(drand48()*(double)this->arity);
+            if(sz == 2097152) return pIB[ts].free(ptr);
+
             switch((int)((sz-1) / 100)){
                 case 0:  return p100 [ts].free(ptr);
                 case 1:  return p200 [ts].free(ptr);
@@ -577,4 +586,5 @@ namespace ambient {
     using utils::static_memory;
 }
 
+#undef CPU
 #endif

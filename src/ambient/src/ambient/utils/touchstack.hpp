@@ -1,7 +1,5 @@
 //#define TOUCHSTACK_ACCESS_CHECK
 
-#include <cilk/cilk.h>
-
 namespace ambient{
 
     template<typename T>

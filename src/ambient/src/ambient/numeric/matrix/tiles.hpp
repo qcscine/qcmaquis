@@ -75,13 +75,15 @@ namespace ambient { namespace numeric {
     template <class Matrix>
     inline tiles<subset_view<Matrix> > tiles<Matrix>::subset(size_type i, size_type j, size_type mt, size_type nt) const {
         tiles<subset_view<Matrix> > s;
-        s.rows = mt*AMBIENT_IB;
-        s.cols = nt*AMBIENT_IB;
-        s.mt = mt;
-        s.nt = nt;
+        if(mt == 0 || nt == 0) return s;
+
+        s.mt = mt; s.nt = nt;
         for(int jj = j; jj < j + nt; jj++)
             for(int ii = i; ii < i + mt; ii++)
                 s.data.push_back((Matrix*)&tile(ii, jj));
+
+        s.rows = (mt-1)*AMBIENT_IB + num_rows(*s.data.back());
+        s.cols = (nt-1)*AMBIENT_IB + num_cols(*s.data.back());
         return s;
     }
 
