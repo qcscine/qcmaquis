@@ -82,8 +82,8 @@ namespace ambient { namespace numeric {
             for(int ii = i; ii < i + mt; ii++)
                 s.data.push_back((Matrix*)&tile(ii, jj));
 
-        s.rows = (mt-1)*AMBIENT_IB + num_rows(*s.data.back());
-        s.cols = (nt-1)*AMBIENT_IB + num_cols(*s.data.back());
+        s.rows = (mt-1)*AMBIENT_IB + s.data.back()->num_rows();
+        s.cols = (nt-1)*AMBIENT_IB + s.data.back()->num_cols();
         return s;
     }
 
