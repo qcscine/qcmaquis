@@ -14,7 +14,7 @@ namespace ambient { namespace models { namespace velvet {
         return memory;
     }
 
-    inline void memspec::free(void* ptr) const {    
+    inline void memspec::free(void* ptr) const {
         return ambient::range_pool.free(ptr, size+BOUND);
     }
 
