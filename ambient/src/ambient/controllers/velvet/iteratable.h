@@ -9,6 +9,7 @@ namespace ambient { namespace controllers { namespace velvet {
     class w_revision { public: template<typename T> inline operator T* (); }; // weak
     class p_revision { public: template<typename T> inline operator T* (); }; // purge
     class r_revision { public: template<typename T> inline operator T* (); }; // reuse
+    class s_revision { public: template<typename T> inline operator T* (); }; // refresh
 
 } } }
 

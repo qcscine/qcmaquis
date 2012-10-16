@@ -38,5 +38,21 @@ namespace ambient { namespace controllers { namespace velvet {
         }
         return (T*)e;
     }
+    template<typename T>
+    inline s_revision::operator T* (){
+        revision& e = *(revision*)this;
+        if(!e.valid()){
+            revision& parent = *e.get_parent();
+            if(parent.occupied()){
+                if(!parent.valid()) 
+                    ambient::controller.calloc(e);
+                else{
+                    ambient::controller.alloc(e);
+                    memcpy((T*)e, (T*)parent, parent.spec->size);
+                }
+            }else e.swap(parent);
+        }
+        return (T*)e;
+    }
     
 } } }
