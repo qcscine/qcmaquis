@@ -25,9 +25,8 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_geqrt_c_kernel"); 
             T* tau  = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB>(); 
             T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            __a_refresh<T>(w_updated(a), c_current(a), __a_sizeof(a));
             CORE_dgeqrt(a.num_rows(), a.num_cols(), PLASMA_IB,
-                        (T*)w_updated(a), a.num_rows(),
+                        (T*)s_updated(a), a.num_rows(),
                         (T*)w_updated(t), t.num_rows(), 
                         tau, work);
             __A_TIME_C_STOP
@@ -52,12 +51,11 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(const size_t& k, const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
             __A_TIME_C("ambient_ormqr_c_kernel"); 
             T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            __a_refresh<T>(w_updated(c), c_current(c), __a_sizeof(c));
             CORE_dormqr(PlasmaLeft, TR,
                         c.num_rows(), c.num_cols(), k, PLASMA_IB,
-                        (T*)c_current(a), a.num_rows(),
-                        (T*)c_current(t), t.num_rows(),
-                        (T*)w_updated(c), c.num_rows(),
+                        (T*)current(a), a.num_rows(),
+                        (T*)current(t), t.num_rows(),
+                        (T*)s_updated(c), c.num_rows(),
                         work, AMBIENT_IB);
             __A_TIME_C_STOP
         }
@@ -82,11 +80,9 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_tsqrt_c_kernel"); 
             T* tau  = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB>();
             T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
-            __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
             CORE_dtsqrt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
-                        (T*)w_updated(a1), a1.num_rows(),
-                        (T*)w_updated(a2), a2.num_rows(),
+                        (T*)s_updated(a1), a1.num_rows(),
+                        (T*)s_updated(a2), a2.num_rows(),
                         (T*)w_updated(t), t.num_rows(),
                         tau, work);
             __A_TIME_C_STOP
@@ -112,14 +108,12 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(const size_t& k, matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
             __A_TIME_C("ambient_tsmqr_c_kernel"); 
             T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
-            __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
             CORE_dtsmqr(PlasmaLeft, TR,
                         AMBIENT_IB, a1.num_cols(), a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
-                        (T*)w_updated(a1), a1.num_rows(),
-                        (T*)w_updated(a2), a2.num_rows(),
-                        (T*)c_current(v), v.num_rows(),
-                        (T*)c_current(t), t.num_rows(),
+                        (T*)s_updated(a1), a1.num_rows(),
+                        (T*)s_updated(a2), a2.num_rows(),
+                        (T*)current(v), v.num_rows(),
+                        (T*)current(t), t.num_rows(),
                         work, PLASMA_IB);
             __A_TIME_C_STOP
         }
@@ -145,9 +139,8 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_gelqt_c_kernel"); 
             T* tau  = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB>();
             T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            __a_refresh<T>(w_updated(a), c_current(a), __a_sizeof(a));
             CORE_dgelqt(a.num_rows(), a.num_cols(), PLASMA_IB,
-                        (T*)w_updated(a), a.num_rows(), 
+                        (T*)s_updated(a), a.num_rows(), 
                         (T*)w_updated(t), t.num_rows(),
                         tau, work);
             __A_TIME_C_STOP
@@ -172,12 +165,11 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(const size_t& k, const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
             __A_TIME_C("ambient_ormlq_c_kernel"); 
             T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            __a_refresh<T>(w_updated(c), c_current(c), __a_sizeof(c));
             CORE_dormlq(PlasmaRight, TR,
                         c.num_rows(), c.num_cols(), k, PLASMA_IB,
-                        (T*)c_current(a), a.num_rows(),
-                        (T*)c_current(t), t.num_rows(),
-                        (T*)w_updated(c), c.num_rows(),
+                        (T*)current(a), a.num_rows(),
+                        (T*)current(t), t.num_rows(),
+                        (T*)s_updated(c), c.num_rows(),
                         work, AMBIENT_IB);
             __A_TIME_C_STOP
         }
@@ -202,11 +194,9 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_tslqt_c_kernel"); 
             T* tau  = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB>();
             T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
-            __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
             CORE_dtslqt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
-                        (T*)w_updated(a1), a1.num_rows(),
-                        (T*)w_updated(a2), a2.num_rows(),
+                        (T*)s_updated(a1), a1.num_rows(),
+                        (T*)s_updated(a2), a2.num_rows(),
                         (T*)w_updated(t), t.num_rows(),
                         tau, work);
             __A_TIME_C_STOP
@@ -232,14 +222,12 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(const size_t& k, matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
             __A_TIME_C("ambient_tsmlq_c_kernel"); 
             T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            __a_refresh<T>(w_updated(a1), c_current(a1), __a_sizeof(a1));
-            __a_refresh<T>(w_updated(a2), c_current(a2), __a_sizeof(a2));
             CORE_dtsmlq(PlasmaRight, TR,
                         a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
-                        (T*)w_updated(a1), a1.num_rows(),
-                        (T*)w_updated(a2), a2.num_rows(),
-                        (T*)c_current(v), v.num_rows(),
-                        (T*)c_current(t), t.num_rows(),
+                        (T*)s_updated(a1), a1.num_rows(),
+                        (T*)s_updated(a2), a2.num_rows(),
+                        (T*)current(v), v.num_rows(),
+                        (T*)current(t), t.num_rows(),
                         work, AMBIENT_IB);
             __A_TIME_C_STOP
         }
@@ -260,8 +248,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(matrix<double>& a, const double& alfa){
             __A_TIME_C("ambient_laset2_c_kernel"); 
-            __a_refresh<T>(w_updated(a), c_current(a), __a_sizeof(a));
-            CORE_dlaset2(UL, a.num_rows(), a.num_cols(), alfa, (T*)w_updated(a), a.num_rows());
+            CORE_dlaset2(UL, a.num_rows(), a.num_cols(), alfa, (T*)s_updated(a), a.num_rows());
             __A_TIME_C_STOP
         }
 
@@ -283,8 +270,13 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(const matrix<double>& a, const matrix<double>& b, weak_view<double>& c){
             __A_TIME_C("ambient_gemm_general_c_kernel"); 
-            double* ad = c_current(a);
-            double* bd = c_current(b);
+            if(!current(a).valid() || !current(b).valid()){
+                memset((T*)w_updated(c), 0, __a_sizeof(c));
+                return;
+            }
+
+            double* ad = current(a);
+            double* bd = current(b);
             double* cd = w_updated(c);
             int m = ViewA::rows(a);
             int k = ViewA::cols(a);
@@ -329,7 +321,7 @@ namespace ambient { namespace numeric { namespace kernels {
             int sizey = __a_get_dim(a_diag).y;
             int size = __a_get_dim(b).x;
             int ONE  = 1;
-            D* bd = c_current(b);
+            D* bd = current(b);
             D* cd = p_updated(c);
             D* alpha = c_current(a_diag);
         
@@ -358,7 +350,7 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t sizex = __a_get_dim(b).x;
             int size  = __a_get_dim(a_diag).y;
             int ONE  = 1;
-            D* bd = c_current(b);
+            D* bd = current(b);
             D* cd = p_updated(c);
             D* alpha = c_current(a_diag);
         
@@ -386,7 +378,7 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t sizex = __a_get_dim(b_diag).y;
             int size = __a_get_dim(a).y; // for the case of complex
             int ONE = 1;
-            D* ad = c_current(a);
+            D* ad = current(a);
             D* cd = p_updated(c);
         	D* alpha = c_current(b_diag);
         
@@ -415,7 +407,7 @@ namespace ambient { namespace numeric { namespace kernels {
             int sizey = __a_get_dim(b_diag).y;
             int size = __a_get_dim(a).x;
             int ONE = 1;
-            D* ad = c_current(a);
+            D* ad = current(a);
             D* cd = p_updated(c);
         	D* alpha = c_current(b_diag);
         
@@ -438,7 +430,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(weak_view<T>& ac, const matrix<T>& a){
             __A_TIME_C("ambient_copy_c_kernel"); 
-            __a_refresh<T>(w_updated(ac), c_current(a), __a_sizeof(a));
+            if(!current(a).valid()) memset((T*)w_updated(ac), 0, __a_sizeof(a));
+            else __a_refresh<T>(w_updated(ac), c_current(a), __a_sizeof(a));
             __A_TIME_C_STOP
         }
     };
@@ -455,8 +448,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(weak_view<T>& t, const matrix<T>& a){
             __A_TIME_C("ambient_copy_rt_kernel"); 
-            T* ad  = c_current(a);
-            T* td  = p_updated(t);
+            T* ad  = current(a);
+            T* td  = r_updated(t);
             size_t sda = a.num_cols();
             size_t lda = a.num_rows();
             size_t ldt = t.num_rows();
@@ -480,8 +473,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(weak_view<T>& t, const matrix<T>& a){
             __A_TIME_C("ambient_copy_lt_kernel"); 
-            T* ad  = c_current(a);
-            T* td  = p_updated(t);
+            T* ad  = current(a);
+            T* td  = r_updated(t);
             size_t sdt = t.num_cols();
             size_t lda = a.num_rows();
             size_t ldt = t.num_rows();
@@ -514,10 +507,10 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& m, const size_t& n)
         {
             __A_TIME_C("ambient_copy_partial_c_kernel"); 
-            if(m*n < __a_get_dim(dst).square()) 
-                __a_refresh<T>(w_updated(dst), c_current(dst), __a_sizeof(dst));
-            __a_memptf_r<T, __a_memcpy>(w_updated(dst), __a_get_dim(dst).y, dim2(dj, di), 
-                                        c_current(src), __a_get_dim(src).y, dim2(sj, si), 
+            T* sd = c_current(src); // c_
+            T* dd = m*n < __a_get_dim(dst).square() ? (T*)s_updated(dst) : (T*)w_updated(dst);
+            __a_memptf_r<T, __a_memcpy>(dd, __a_get_dim(dst).y, dim2(dj, di), 
+                                        sd, __a_get_dim(src).y, dim2(sj, si), 
                                         dim2( n, m ));
             __A_TIME_C_STOP
         }
@@ -546,12 +539,12 @@ namespace ambient { namespace numeric { namespace kernels {
                       const matrix<T>& alfa, const size_t& ai, const size_t& aj,
                       const size_t& m, const size_t& n)
         {
-            __A_TIME_C("ambient_copy_sa_c_kernel"); 
-            T factor = ((T*)c_current(alfa))[ai + aj*__a_get_dim(alfa).y];
-            if(m*n < __a_get_dim(dst).square()) 
-                __a_refresh<T>(w_updated(dst), c_current(dst), __a_sizeof(dst));
-            __a_memptf_r<T, __a_memscal>(w_updated(dst), __a_get_dim(dst).y, dim2(dj, di), 
-                                         c_current(src), __a_get_dim(src).y, dim2(sj, si), 
+            __A_TIME_C("ambient_copy_s_c_kernel"); 
+            T factor = ((T*)current(alfa))[ai + aj*__a_get_dim(alfa).y];
+            T* sd = c_current(src); // c_
+            T* dd = m*n < __a_get_dim(dst).square() ? (T*)s_updated(dst) : (T*)w_updated(dst);
+            __a_memptf_r<T, __a_memscal>(dd, __a_get_dim(dst).y, dim2(dj, di), 
+                                         sd, __a_get_dim(src).y, dim2(sj, si), 
                                          dim2( n, m ), factor);
             __A_TIME_C_STOP
         }
@@ -581,10 +574,9 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& m, const size_t& n)
         {
             __A_TIME_C("ambient_copy_sa_c_kernel"); 
-            T factor = ((T*)c_current(alfa))[ai + aj*__a_get_dim(alfa).y];
-            __a_refresh<T>(w_updated(dst), c_current(dst), __a_sizeof(dst));
-            __a_memptf_r<T, __a_memscala>(w_updated(dst), __a_get_dim(dst).y, dim2(dj, di), 
-                                          c_current(src), __a_get_dim(src).y, dim2(sj, si), 
+            T factor = ((T*)current(alfa))[ai + aj*__a_get_dim(alfa).y];
+            __a_memptf_r<T, __a_memscala>(s_updated(dst), __a_get_dim(dst).y, dim2(dj, di), 
+                                          current(src), __a_get_dim(src).y, dim2(sj, si), 
                                           dim2( n, m ), factor);
             __A_TIME_C_STOP
         }
@@ -604,7 +596,7 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_trace_c_kernel"); 
             size_t m = __a_get_dim(a).y;
             size_t n = __a_get_dim(a).x;
-            T* ad = c_current(a);
+            T* ad = current(a);
         
             size_t sizex = std::min(n,m);
             for(size_t jj = 0; jj < sizex; jj++){
@@ -625,7 +617,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(const matrix<T>& a, future<double>& norm){
             __A_TIME_C("ambient_scalar_norm_c_kernel"); 
-            T* ad = c_current(a);
+            T* ad = current(a);
             norm.get_value() = alps::numeric::real(__a_dot(ad, ad, __a_get_dim(a).square()));
             __A_TIME_C_STOP
         }
@@ -643,8 +635,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
             __A_TIME_C("ambient_scalar_overlap_c_kernel"); 
-            T* ad = c_current(a);
-            T* bd = c_current(b);
+            T* ad = current(a);
+            T* bd = current(b);
             overlap.get_value() = __a_dot(ad, bd, __a_get_dim(a).square());
             __A_TIME_C_STOP
         }
@@ -662,9 +654,9 @@ namespace ambient { namespace numeric { namespace kernels {
         }
 
         inline void c(matrix<T>& a, const matrix<T>& b){
-            __A_TIME_C("ambient_add_c_kernel"); 
-            T* ad = c_current(a);
-            T* bd = c_current(b);
+            __A_TIME_C("ambient_add_c_kernel");
+            T* ad = current(a);
+            T* bd = current(b);
             T* ar = w_updated(a);
 
             int size = __a_get_dim(a).square();
@@ -687,8 +679,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(matrix<T>& a, const matrix<T>& b){
             __A_TIME_C("ambient_sub_c_kernel"); 
-            T* ad = c_current(a);
-            T* bd = c_current(b);
+            T* ad = current(a);
+            T* bd = current(b);
             T* ar = w_updated(a);
 
             int size = __a_get_dim(a).square();
@@ -709,7 +701,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(matrix<T>& a, const future<T>& t){
             __A_TIME_C("ambient_scale_c_kernel"); 
-            T* ad = c_current(a);
+            T* ad = current(a);
             T* ar = w_updated(a);
             int size = __a_get_dim(a).square();
             for(int k=0; k < size; k++) 
@@ -729,7 +721,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(matrix<T>& a, const future<T>& t){
             __A_TIME_C("ambient_scale_inverse_c_kernel"); 
-            T* ad = c_current(a);
+            T* ad = current(a);
             T* ar = w_updated(a);
             int size = __a_get_dim(a).square();
             for(int k=0; k < size; k++) 
@@ -750,7 +742,7 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(matrix<T>& a){
             __A_TIME_C("ambient_sqrt_diagonal_c_kernel"); 
             size_t size = __a_get_dim(a).y;
-            T* ad = c_current(a);
+            T* ad = current(a);
             T* ar = w_updated(a);
             for(size_t i = 0; i < size; ++i) ar[i] = std::sqrt(ad[i]);
             __A_TIME_C_STOP
@@ -769,7 +761,7 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(matrix<T>& a, const T& alfa){
             __A_TIME_C("ambient_exp_diagonal_c_kernel"); 
             size_t size = __a_get_dim(a).y;
-            T* ad = c_current(a);
+            T* ad = current(a);
             T* ar = w_updated(a);
             for(size_t i = 0; i < size; ++i) ar[i] = std::exp(alfa*ad[i]);
             __A_TIME_C_STOP
@@ -788,7 +780,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(const matrix<T>& a, weak_view<T>& t){
             __A_TIME_C("ambient_transpose_out_c_kernel"); 
-            T* od = c_current(a);
+            T* od = current(a);
             T* td = w_updated(t);
             int m = __a_get_dim(a).y;
             int n = __a_get_dim(a).x;
@@ -812,9 +804,10 @@ namespace ambient { namespace numeric { namespace kernels {
         }
 
         inline void c(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
-            __A_TIME_C("ambient_resize_c_kernel"); 
-            __a_memptf_r<T, __a_memcpy>(r_updated(r), __a_get_dim(r).y, dim2(0,0), // r/p/w?
-                                        c_current(a), __a_get_dim(a).y, dim2(0,0), dim2(n, m)); 
+            __A_TIME_C("ambient_resize_c_kernel");
+            T* dd = m*n == __a_get_dim(r).square() ? (T*)w_updated(r) : (T*)r_updated(r);
+            __a_memptf_r<T, __a_memcpy>(dd, __a_get_dim(r).y, dim2(0,0),
+                                        current(a), __a_get_dim(a).y, dim2(0,0), dim2(n, m)); 
             __A_TIME_C_STOP
         }
     };
@@ -832,7 +825,7 @@ namespace ambient { namespace numeric { namespace kernels {
             __A_TIME_C("ambient_init_identity_c_kernel"); 
             size_t n = __a_get_dim(a).x;
             size_t m = __a_get_dim(a).y;
-            T* ad = r_updated(a);
+            T* ad = r_updated(a); // should be p?
 
             size_t sizex = std::min(m,n); // respecting borders
             for(size_t jj = 0; jj < sizex; ++jj) ad[jj + m*jj] = 1.;
@@ -896,7 +889,7 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(const matrix<T>& a, std::vector<T>*& ac){
             // gs
             __A_TIME_C("ambient_round_square_c_kernel"); 
-            T* ad = c_current(a);
+            T* ad = current(a);
             size_t sizey = __a_get_dim(a).y;
             for(int i=0; i < sizey; i++){
                 double v = std::abs(ad[i]);
@@ -1009,7 +1002,7 @@ namespace ambient { namespace numeric { namespace kernels {
             int info;
             int lwork = -1; // C - Alex, netlib said -1 for the best workspace
             T wkopt;
-            T* ad  = c_current(a);
+            T* ad  = current(a);
             T* ud  = w_updated(u);
             T* vtd = w_updated(vt);
             double* sd  = w_updated(s);

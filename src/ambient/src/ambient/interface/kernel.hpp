@@ -20,6 +20,7 @@ namespace ambient {
     using ambient::controllers::velvet::w_revision;
     using ambient::controllers::velvet::p_revision;
     using ambient::controllers::velvet::r_revision;
+    using ambient::controllers::velvet::s_revision;
 
     template<typename FP, FP fp> struct kernel_inliner{};
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
@@ -30,6 +31,7 @@ namespace ambient {
     template <typename T> static inline w_revision& w_updated(T& obj){ return *(w_revision*)obj.impl->content[obj.ref+1]; }
     template <typename T> static inline p_revision& p_updated(T& obj){ return *(p_revision*)obj.impl->content[obj.ref+1]; }
     template <typename T> static inline r_revision& r_updated(T& obj){ return *(r_revision*)obj.impl->content[obj.ref+1]; }
+    template <typename T> static inline s_revision& s_updated(T& obj){ return *(s_revision*)obj.impl->content[obj.ref+1]; }
 
     template<class K>
     class kernel : public cfunctor
