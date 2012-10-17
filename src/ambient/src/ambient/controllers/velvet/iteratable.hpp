@@ -2,57 +2,38 @@ namespace ambient { namespace controllers { namespace velvet {
 
     template<typename T>
     inline c_revision::operator T* (){
-        revision& e = *(revision*)this;
-        if(!e.valid()){
-            if(e.clean) ambient::controller.calloc(e);
-            else ambient::controller.alloc(e);
-        }
-        return (T*)e;
-    }
-    template<typename T>
-    inline p_revision::operator T* (){
-        revision& e = *(revision*)this;
-        if(!e.valid()) ambient::controller.calloc(e);
-        return (T*)e;
-    }
-    template<typename T>
-    inline w_revision::operator T* (){
-        revision& e = *(revision*)this;
-        if(!e.valid()){
-            revision& parent = *e.get_parent();
-            if(parent.occupied()) 
-                ambient::controller.alloc(e);
-            else e.swap(parent);
-        }
-        return (T*)e;
-    }
-    template<typename T>
-    inline r_revision::operator T* (){
-        revision& e = *(revision*)this;
-        if(!e.valid()){
-            revision& parent = *e.get_parent();
-            if(parent.occupied()){
-                if(parent.clean) ambient::controller.calloc(e);
-                else ambient::controller.alloc(e);
-            }else e.swap(parent);
-        }
-        return (T*)e;
+        revision& c = *(revision*)this;
+        if(!c.valid()) ambient::controller.calloc(c);
+        return (T*)c;
     }
     template<typename T>
     inline s_revision::operator T* (){
-        revision& e = *(revision*)this;
-        if(!e.valid()){
-            revision& parent = *e.get_parent();
-            if(parent.occupied()){
-                if(!parent.valid()) 
-                    ambient::controller.calloc(e);
-                else{
-                    ambient::controller.alloc(e);
-                    memcpy((T*)e, (T*)parent, parent.spec->size);
-                }
-            }else e.swap(parent);
-        }
-        return (T*)e;
+        revision& c = *(revision*)this;
+        revision& p = *c.get_parent();
+        assert(!c.valid());
+        if(p.occupied()){
+            if(!p.valid()) 
+                ambient::controller.calloc(c);
+            else{
+                ambient::controller.alloc(c);
+                memcpy((T*)c, (T*)p, p.spec->size);
+            }
+        }else c.swap(p);
+        return (T*)c;
+    }
+    template<typename T>
+    inline w_revision::operator T* (){
+        revision& c = *(revision*)this;
+        assert(!c.valid());
+        revision& p = *c.get_parent();
+        if(p.occupied()) ambient::controller.alloc(c);
+        else c.swap(p);
+        return (T*)c;
+    }
+    template<typename T>
+    inline p_revision::operator T* (){
+        memset((T*)*(w_revision*)this, 0, ((revision*)this)->spec->size); 
+        return (T*)*(revision*)this;
     }
     
 } } }
