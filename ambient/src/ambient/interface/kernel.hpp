@@ -17,21 +17,20 @@ namespace ambient {
     using ambient::models::velvet::revision;
 
     using ambient::controllers::velvet::c_revision;
+    using ambient::controllers::velvet::s_revision;
     using ambient::controllers::velvet::w_revision;
     using ambient::controllers::velvet::p_revision;
-    using ambient::controllers::velvet::r_revision;
-    using ambient::controllers::velvet::s_revision;
 
     template<typename FP, FP fp> struct kernel_inliner{};
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
 
     static inline void assign(revision& r){ ambient::controller.ifetch(r); }
-    template <typename T> static inline revision&   current(T& obj)  { return *obj.impl->content[obj.ref];                }
+    template <typename T> static inline revision&     current(T& obj){ return *(revision  *)obj.impl->content[obj.ref];   }
+    template <typename T> static inline w_revision&   updated(T& obj){ return *(w_revision*)obj.impl->content[obj.ref+1]; }
+    // supplementary revision modes: checked current (calloc), same updated (memcpy), purged updated (memset)
     template <typename T> static inline c_revision& c_current(T& obj){ return *(c_revision*)obj.impl->content[obj.ref];   }
-    template <typename T> static inline w_revision& w_updated(T& obj){ return *(w_revision*)obj.impl->content[obj.ref+1]; }
-    template <typename T> static inline p_revision& p_updated(T& obj){ return *(p_revision*)obj.impl->content[obj.ref+1]; }
-    template <typename T> static inline r_revision& r_updated(T& obj){ return *(r_revision*)obj.impl->content[obj.ref+1]; }
     template <typename T> static inline s_revision& s_updated(T& obj){ return *(s_revision*)obj.impl->content[obj.ref+1]; }
+    template <typename T> static inline p_revision& p_updated(T& obj){ return *(p_revision*)obj.impl->content[obj.ref+1]; }
 
     template<class K>
     class kernel : public cfunctor
