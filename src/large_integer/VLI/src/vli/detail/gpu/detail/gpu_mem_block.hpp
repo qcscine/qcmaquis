@@ -168,7 +168,6 @@ namespace detail {
     template <std::size_t NumBits, int Order, int NumVars>
     struct memory_transfer_helper<NumBits, max_order_combined<Order>, NumVars, typename boost::enable_if_c< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) < shared_min::value) >::type >{ //full shared mem version
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
-            std::cout << " comb 0 " << std::endl;
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
          }
@@ -181,7 +180,6 @@ namespace detail {
     struct memory_transfer_helper<NumBits, max_order_combined<Order>, NumVars, typename boost::enable_if_c< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) >= shared_min::value) &&  (full_value<NumBits, max_order_combined<Order> , NumVars>::value*sizeof(unsigned int) < 2*shared_min::value) >::type >{ // hybrid version texture and shared mem
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
             //only the second poly is cashed into the texture memory
-            std::cout << " comb 1 " << std::endl;
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
 
@@ -197,7 +195,6 @@ namespace detail {
     struct memory_transfer_helper<NumBits, max_order_combined<Order>, NumVars, typename boost::enable_if_c< (full_value<NumBits, max_order_combined<Order>, NumVars>::value*sizeof(unsigned int) >= 2*shared_min::value) >::type >{ // hybrid version texture and shared mem
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
             //only the second poly is cashed into the texture memory
-            std::cout << " comb 2 " << std::endl;
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
 
