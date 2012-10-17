@@ -172,13 +172,13 @@ namespace vli {
                 
                 for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
                 
-                    unsigned int in_polynomial_offset1 = (   current_degree_w  * stride_pad<3, 4, Order>::value * stride_pad<2, 4, Order>::value * stride_pad<1, 4, Order>::value 
+                    const unsigned int in_polynomial_offset1 = (   current_degree_w  * stride_pad<3, 4, Order>::value * stride_pad<2, 4, Order>::value * stride_pad<1, 4, Order>::value 
                                                            + current_degree_z  * stride_pad<2, 4, Order>::value * stride_pad<1, 4, Order>::value  
                                                            + current_degree_y  * stride_pad<1, 4, Order>::value
                                                            + current_degree_x
                                                          ) * VLI_SIZE + memory_specialization<NumBits,max_order_each<Order>,4 >::offset_1(input_elem_offset);
                     
-                    unsigned int in_polynomial_offset2 = (   (output_degree_w - current_degree_w) * stride_pad<3, 4, Order>::value * stride_pad<2, 4, Order>::value * stride_pad<1, 4, Order>::value
+                    const unsigned int in_polynomial_offset2 = (   (output_degree_w - current_degree_w) * stride_pad<3, 4, Order>::value * stride_pad<2, 4, Order>::value * stride_pad<1, 4, Order>::value
                                                            + (output_degree_z - current_degree_z) * stride_pad<2, 4, Order>::value * stride_pad<1, 4, Order>::value  
                                                            + (output_degree_y - current_degree_y) * stride_pad<1, 4, Order>::value
                                                            + (output_degree_x - current_degree_x)
@@ -209,7 +209,7 @@ namespace vli {
                     }
                 }
                 
-                unsigned int coefficient_id =   output_degree_w * (Order*2+1)*(Order*2+1)*(Order*2+1)
+                const unsigned int coefficient_id =   output_degree_w * (Order*2+1)*(Order*2+1)*(Order*2+1)
                                               + output_degree_z * (Order*2+1)*(Order*2+1) 
                                               + output_degree_y * (Order*2+1) 
                                               + output_degree_x;
@@ -276,12 +276,12 @@ namespace vli {
                
                 for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
                 
-                    unsigned int in_polynomial_offset1 = (   current_degree_z  * stride_pad<2, 3, Order>::value * stride_pad<1 ,3, Order>::value  
+                    const unsigned int in_polynomial_offset1 = (   current_degree_z  * stride_pad<2, 3, Order>::value * stride_pad<1 ,3, Order>::value  
                                                            + current_degree_y  * stride_pad<1, 3, Order>::value
                                                            + current_degree_x
                                                          ) * VLI_SIZE  + memory_specialization<NumBits,max_order_each<Order>,3 >::offset_1(input_elem_offset);
                     
-                    unsigned int in_polynomial_offset2 = (   (output_degree_z - current_degree_z) * stride_pad<2, 3, Order>::value * stride_pad<1, 3, Order>::value  
+                    const unsigned int in_polynomial_offset2 = (   (output_degree_z - current_degree_z) * stride_pad<2, 3, Order>::value * stride_pad<1, 3, Order>::value  
                                                            + (output_degree_y - current_degree_y) * stride_pad<1, 3, Order>::value
                                                            + (output_degree_x - current_degree_x)
                                                          ) * VLI_SIZE  + memory_specialization<NumBits,max_order_each<Order>,3 >::offset_2(input_elem_offset);
@@ -307,7 +307,7 @@ namespace vli {
                     }
                 }
                 
-                unsigned int coefficient_id =   output_degree_z * (Order*2+1)*(Order*2+1) 
+                const unsigned int coefficient_id =   output_degree_z * (Order*2+1)*(Order*2+1) 
                                               + output_degree_y * (Order*2+1) 
                                               + output_degree_x;
                 
@@ -365,11 +365,11 @@ namespace vli {
                 
                 for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
                 
-                    unsigned int in_polynomial_offset1 = (   current_degree_y  * stride_pad<1,2, Order>::value
+                    const unsigned int in_polynomial_offset1 = (   current_degree_y  * stride_pad<1,2, Order>::value
                                                            + current_degree_x
                                                          ) * VLI_SIZE + memory_specialization<NumBits,max_order_each<Order>,2 >::offset_1(input_elem_offset);
                     
-                    unsigned int in_polynomial_offset2 = (   (output_degree_y - current_degree_y) * stride_pad<1,2, Order>::value
+                    const unsigned int in_polynomial_offset2 = (   (output_degree_y - current_degree_y) * stride_pad<1,2, Order>::value
                                                            + (output_degree_x - current_degree_x)
                                                          ) * VLI_SIZE + memory_specialization<NumBits,max_order_each<Order>,2 >::offset_2(input_elem_offset);
 
@@ -389,7 +389,7 @@ namespace vli {
                     }
                 }
                 
-                unsigned int coefficient_id =   output_degree_y * (Order*2+1) 
+                const unsigned int coefficient_id =   output_degree_y * (Order*2+1) 
                                               + output_degree_x;
                 
                 unsigned int * out2 = out + (coefficient_id * element_count *2* VLI_SIZE) + element_id; // coefficient->int_degree->element_id
@@ -443,10 +443,10 @@ namespace vli {
                 
                 for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
                 
-                    unsigned int in_polynomial_offset1 = (  current_degree_x
+                    const unsigned int in_polynomial_offset1 = (  current_degree_x
                                                          ) * VLI_SIZE + memory_specialization<NumBits,max_order_each<Order>,1 >::offset_1(input_elem_offset);
                     
-                    unsigned int in_polynomial_offset2 = (  (output_degree_x - current_degree_x)
+                    const unsigned int in_polynomial_offset2 = (  (output_degree_x - current_degree_x)
                                                          ) * VLI_SIZE + memory_specialization<NumBits,max_order_each<Order>,1 >::offset_1(input_elem_offset);
                 
                     memory_specialization<NumBits,max_order_each<Order>,1 >::local_copy(c1,in1shared,c2,in2shared,in_polynomial_offset1,in_polynomial_offset2);
@@ -460,7 +460,7 @@ namespace vli {
                     current_degree_x++;
                 }
                 
-                unsigned int coefficient_id =  output_degree_x;
+                const unsigned int coefficient_id =  output_degree_x;
                 
                 unsigned int * out2 = out + (coefficient_id * element_count *2* VLI_SIZE) + element_id; // coefficient->int_degree->element_id
                 #pragma unroll

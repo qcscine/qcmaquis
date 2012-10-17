@@ -40,9 +40,9 @@ namespace vli {
         int mask2 = c2[num_words<NumBits>::value-1]  >> std::numeric_limits<boost::uint32_t>::digits-1; 
 	int mask3 = mask1 ^ mask2;
 
-        int bit1(mask1);
-        int bit2(mask2);
-        int bit3(mask3);
+        const int bit1(mask1);
+        const int bit2(mask2);
+        const int bit3(mask3);
         mask1 = -mask1;
         mask2 = -mask2;
         mask3 = -mask3;
@@ -57,7 +57,7 @@ namespace vli {
         asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(c2[0]):"r"(bit2)); 
 
         #pragma unroll
-        for(int i(1); i<num_words<NumBits>::value-1 ; ++i){
+        for(int i(1); i<num_words<NumBits>::value ; ++i){
             asm( "addc.cc.u32   %0 , %0 , 0 ; \n\t" : "+r"(c1[i])); 
             asm( "addc.cc.u32   %0 , %0 , 0 ; \n\t" : "+r"(c2[i])); 
         }
@@ -70,23 +70,21 @@ namespace vli {
             negate<NumBits>(c2);
 */
         mul_extend<2*NumBits>(res1,c1,c2);
-
+/* the next lines should be equivalent thant the if mask3 but no Oo'
         #pragma unroll
-        for(int i(0); i<2*num_words<NumBits>::value ; ++i){
+        for(int i(0); i<num_words<2*NumBits>::value ; ++i)
             res1[i] ^= mask3; 
-        }
 
         asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(res1[0]):"r"(bit3)); 
 
         #pragma unroll
-        for(int i(1); i<num_words<NumBits>::value-1 ; ++i){
-            asm( "addc.cc.u32   %0 , %0 , 0 ; \n\t" : "+r"(c1[i])); 
-        }
-    
-/*
+        for(int i(1); i<num_words<2*NumBits>::value ; ++i)
+            asm( "addc.cc.u32   %0 , %0 , 0 ; \n\t" : "+r"(res1[i])); 
+*/     
+
 	if(mask3)
            negate<2*NumBits>(res1);
-*/
+
 
        add<2*NumBits>(res,res1);
     }

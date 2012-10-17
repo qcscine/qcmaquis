@@ -92,7 +92,7 @@ namespace vli {
                work_total_by_size[warp_id] += max_step_count;
         }
 	gpu::cu_check_error(cudaMemcpyAsync(workblock_count_by_warp_, &(*workblock_count_by_warp_local.begin()), sizeof(int) * workblock_count_by_warp_local.size(), cudaMemcpyHostToDevice),__FILE__,__LINE__);
-        transfert_workblock_count_by_warp_max_order_each<NumVars>(workblock_count_by_warp_local);
+//        transfert_workblock_count_by_warp_max_order_each<NumVars>(workblock_count_by_warp_local);
 	gpu::cu_check_error(cudaMemcpyAsync(execution_plan_, &(*tasks_reordered.begin()), sizeof(single_coefficient_task) * tasks_reordered.size(),cudaMemcpyHostToDevice),__FILE__,__LINE__);
     }
 

@@ -157,14 +157,14 @@ namespace vli {
                         for(int current_degree_z=max(0, output_degree_x+output_degree_y+output_degree_z-Order-current_degree_x-current_degree_y); current_degree_z <= min(output_degree_z,Order-current_degree_x - current_degree_y) ; ++current_degree_z)
                             for(int current_degree_w=max(0, output_degree_x+output_degree_y+output_degree_z+output_degree_w-Order-current_degree_x-current_degree_y-current_degree_z); current_degree_w <= min(output_degree_w,Order-current_degree_x - current_degree_y - current_degree_z) ; ++current_degree_w){
                 
-                             unsigned int in_polynomial_offset1 = ( //0____0'
+                             const unsigned int in_polynomial_offset1 = ( //0____0'
                                                                    (current_degree_x*(2*(Order+1)+3-current_degree_x)*(2*(Order+1)*(Order+1)+6*(Order+1)+2 +current_degree_x*current_degree_x -2*(Order+1)*current_degree_x
                                                                    - 3*current_degree_x))/24
                                                                    +(current_degree_y*(current_degree_y*current_degree_y - 3*current_degree_y*((Order+1)+1-current_degree_x) + 3*((Order+1)-current_degree_x)*((Order+1)+2-current_degree_x)+2))/6
                                                                    +((Order+1)-current_degree_x-current_degree_y)*current_degree_z - (current_degree_z*current_degree_z-current_degree_z)/2 + current_degree_w
                                                                   ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,4 >::offset_1(input_elem_offset);
                              
-                             unsigned int in_polynomial_offset2 = ( //*.* 
+                             const unsigned int in_polynomial_offset2 = ( //*.* 
                                                                    ((output_degree_x-current_degree_x)*(2*(Order+1)+3-(output_degree_x-current_degree_x))*(2*(Order+1)*(Order+1)+6*(Order+1)+2
                                                                      + (output_degree_x-current_degree_x)*(output_degree_x-current_degree_x) -2*(Order+1)*(output_degree_x-current_degree_x)
                                                                      - 3*(output_degree_x-current_degree_x)))/24
@@ -183,7 +183,7 @@ namespace vli {
                              multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
                     } //end big loop
 
-                unsigned int coefficient_id = (output_degree_x*(2*VLI_ExtendStride+3-output_degree_x)*(2*VLI_ExtendStride*VLI_ExtendStride+6*VLI_ExtendStride+2 +output_degree_x*output_degree_x -2*VLI_ExtendStride*output_degree_x
+                const unsigned int coefficient_id = (output_degree_x*(2*VLI_ExtendStride+3-output_degree_x)*(2*VLI_ExtendStride*VLI_ExtendStride+6*VLI_ExtendStride+2 +output_degree_x*output_degree_x -2*VLI_ExtendStride*output_degree_x
                                               - 3*output_degree_x))/24
                                               +(output_degree_y*(output_degree_y*output_degree_y - 3*output_degree_y*(VLI_ExtendStride+1-output_degree_x) + 3*(VLI_ExtendStride-output_degree_x)*(VLI_ExtendStride+2-output_degree_x)+2))/6
                                               +(VLI_ExtendStride-output_degree_x-output_degree_y)*output_degree_z - (output_degree_z*output_degree_z-output_degree_z)/2 + output_degree_w;
@@ -241,14 +241,14 @@ namespace vli {
                     for(int current_degree_y=max(0, output_degree_x+output_degree_y-Order-current_degree_x); current_degree_y <= min(output_degree_y,Order-current_degree_x) ; ++current_degree_y)
                         for(int current_degree_z=max(0, output_degree_x+output_degree_y+output_degree_z-Order-current_degree_x-current_degree_y); current_degree_z <= min(output_degree_z,Order-current_degree_x - current_degree_y) ; ++current_degree_z){
                 
-                        unsigned int in_polynomial_offset1 = (
+                        const unsigned int in_polynomial_offset1 = (
                                                               (current_degree_x*(current_degree_x*current_degree_x - 3*current_degree_x*((Order+1)+1)
                                                               + 3*(Order+1)*((Order+1)+2) +2))/6
                                                               + ((Order+1) - current_degree_x)*current_degree_y - (current_degree_y*current_degree_y-current_degree_y)/2 + current_degree_z
                                                              ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,3 >::offset_1(input_elem_offset)  ;
       
                         
-                        unsigned int in_polynomial_offset2 = ( 
+                        const unsigned int in_polynomial_offset2 = ( 
                                                               ((output_degree_x-current_degree_x)*((output_degree_x-current_degree_x)*(output_degree_x-current_degree_x) - 3*(output_degree_x-current_degree_x)*((Order+1)+1)
                                                               + 3*(Order+1)*((Order+1)+2) +2))/6
                                                               + ((Order+1) - (output_degree_x-current_degree_x))*(output_degree_y-current_degree_y) - ((output_degree_y-current_degree_y)*(output_degree_y-current_degree_y)-(output_degree_y-current_degree_y))/2
@@ -264,7 +264,7 @@ namespace vli {
                         multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
                 }
                 
-                unsigned int coefficient_id =  (output_degree_x*(output_degree_x*output_degree_x - 3*output_degree_x*(VLI_ExtendStride+1)
+                const unsigned int coefficient_id =  (output_degree_x*(output_degree_x*output_degree_x - 3*output_degree_x*(VLI_ExtendStride+1)
                                                + 3*VLI_ExtendStride*(VLI_ExtendStride+2) +2))/6
                                                + (VLI_ExtendStride - output_degree_x)*output_degree_y - (output_degree_y*output_degree_y-output_degree_y)/2 + output_degree_z;
                 
@@ -316,11 +316,11 @@ namespace vli {
                 //note min and max are in numeric 
                 for(int current_degree_x=max(0, output_degree_x-Order); current_degree_x <= min(output_degree_x,Order) ;++current_degree_x)
                     for(int current_degree_y=max(0, output_degree_x+output_degree_y-Order-current_degree_x); current_degree_y <= min(output_degree_y,Order-current_degree_x) ; ++current_degree_y){
-                        unsigned int in_polynomial_offset1 = (  
+                        const unsigned int in_polynomial_offset1 = (  
                                                                (Order+1)*current_degree_x - (current_degree_x*current_degree_x-current_degree_x)/2 + current_degree_y
                                                              ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,3 >::offset_1(input_elem_offset)  ;
                         
-                        unsigned int in_polynomial_offset2 = ( 
+                        const unsigned int in_polynomial_offset2 = ( 
                                                                (Order+1)*(output_degree_x-current_degree_x) - ((output_degree_x-current_degree_x)*(output_degree_x-current_degree_x)-(output_degree_x-current_degree_x))/2 + (output_degree_y-current_degree_y)
                                                              ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,3 >::offset_2(input_elem_offset)  ;
 
@@ -333,7 +333,7 @@ namespace vli {
                         multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
                     }                   
 
-                unsigned int coefficient_id = VLI_ExtendStride*output_degree_x - (output_degree_x*output_degree_x-output_degree_x)/2 + output_degree_y;
+                const unsigned int coefficient_id = VLI_ExtendStride*output_degree_x - (output_degree_x*output_degree_x-output_degree_x)/2 + output_degree_y;
                 unsigned int * out2 = out + (coefficient_id * element_count *2* VLI_SIZE) + element_id; // coefficient->int_degree->element_id
                 #pragma unroll
                 for(unsigned int i = 0; i < 2*VLI_SIZE; ++i) {
@@ -385,10 +385,10 @@ namespace vli {
                 
                 for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
                 
-                    unsigned int in_polynomial_offset1 = ( + current_degree_x
+                    const unsigned int in_polynomial_offset1 = ( + current_degree_x
                                                          ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,1 >::offset_1(input_elem_offset)  ;
                     
-                    unsigned int in_polynomial_offset2 = ( + (output_degree_x - current_degree_x)
+                    const unsigned int in_polynomial_offset2 = ( + (output_degree_x - current_degree_x)
                                                          ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,1 >::offset_2(input_elem_offset)  ;
                 
                     memory_specialization<NumBits,max_order_combined<Order>,1 >::local_copy(c1,in1shared,c2,in2shared,in_polynomial_offset1,in_polynomial_offset2);
@@ -402,7 +402,7 @@ namespace vli {
                     current_degree_x++;
                 }
                 
-                unsigned int coefficient_id =  output_degree_x;
+                const unsigned int coefficient_id =  output_degree_x;
                 
                 unsigned int * out2 = out + (coefficient_id * element_count *2* VLI_SIZE) + element_id; // coefficient->int_degree->element_id
                 #pragma unroll
