@@ -54,11 +54,11 @@ namespace vli {
         static inline void __device__ local_copy(unsigned int* c1, unsigned int const* in1shared, unsigned int* c2, unsigned int const* in2shared, const unsigned int offset1, const unsigned int offset2){
 
             #pragma unroll
-            for(unsigned int i = 0; i < VLI_SIZE; ++i)
+            for( int i = 0; i < VLI_SIZE; ++i)
                c1[i] = in1shared[offset1+i];        
            
             #pragma unroll
-            for(unsigned int i = 0; i < VLI_SIZE; ++i)
+            for( int i = 0; i < VLI_SIZE; ++i)
                c2[i] = in2shared[offset2+i];        
 
         } 
@@ -81,11 +81,11 @@ namespace vli {
 
         static inline void __device__ local_copy(unsigned int* c1, unsigned int const* in1shared, unsigned int* c2, unsigned int const* in2shared, const unsigned int offset1, const unsigned int offset2){
             #pragma unroll
-            for(unsigned int i = 0; i < VLI_SIZE; ++i)
+            for( int i = 0; i < VLI_SIZE; ++i)
                c1[i] = in1shared[offset1+i];        
            
             #pragma unroll
-            for(unsigned int i = 0; i < VLI_SIZE; ++i)
+            for( int i = 0; i < VLI_SIZE; ++i)
                c2[i] = tex1Dfetch(tex_reference_2,offset2+i);                 
          } 
 
@@ -105,11 +105,11 @@ namespace vli {
 
         static inline void __device__ local_copy(unsigned int* c1, unsigned int const* in1shared, unsigned int* c2, unsigned int const* in2shared, const unsigned int offset1, const unsigned int offset2){
             #pragma unroll
-            for(unsigned int i = 0; i < VLI_SIZE; ++i)
+            for( int i = 0; i < VLI_SIZE; ++i)
                c1[i] = tex1Dfetch(tex_reference_1,offset1+i);                 
            
             #pragma unroll
-            for(unsigned int i = 0; i < VLI_SIZE; ++i)
+            for( int i = 0; i < VLI_SIZE; ++i)
                c2[i] = tex1Dfetch(tex_reference_2,offset2+i);                 
          } 
     };
@@ -138,13 +138,13 @@ namespace vli {
 
         memory_specialization<NumBits,max_order_combined<Order>,4 >::shared_copy(in1shared, in1, in2shared, in2, input_elem_offset);
         
-        for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
+        for( int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>,4>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
+                for( int i = 0; i < 2*VLI_SIZE; ++i)
                     res[i] = 0;
                 
                 const int output_degree_x = task.output_degree_x;
@@ -177,7 +177,7 @@ namespace vli {
                              memory_specialization<NumBits,max_order_combined<Order>,4 >::local_copy(c1,in1shared,c2,in2shared,in_polynomial_offset1,in_polynomial_offset2);
 
                              #pragma unroll
-                             for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
+                             for( int i = 0; i < 2*VLI_SIZE; ++i)
                                  res1[i] = 0;
                              
                              multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
@@ -190,7 +190,7 @@ namespace vli {
                 
                 unsigned int * out2 = out + (coefficient_id * element_count *2* VLI_SIZE) + element_id; // coefficient->int_degree->element_id
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i) {
+                for( int i = 0; i < 2*VLI_SIZE; ++i) {
                         // This is a strongly compute-bound kernel,
                         // so it is fine to waste memory bandwidth by using non-coalesced writes in order to have less instructions,
                         //     less synchronization points, less shared memory used (and thus greater occupancy) and greater scalability.
@@ -224,13 +224,13 @@ namespace vli {
 
         memory_specialization<NumBits,max_order_combined<Order>,3 >::shared_copy(in1shared, in1, in2shared, in2, input_elem_offset);
  
-        for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
+        for( int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>, 3>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
+                for( int i = 0; i < 2*VLI_SIZE; ++i)
                     res[i] = 0;
                 
                 const int output_degree_x = task.output_degree_x;
@@ -258,7 +258,7 @@ namespace vli {
                         memory_specialization<NumBits,max_order_combined<Order>,3 >::local_copy(c1,in1shared,c2,in2shared,in_polynomial_offset1,in_polynomial_offset2);
 
                         #pragma unroll
-                        for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
+                        for( int i = 0; i < 2*VLI_SIZE; ++i)
                             res1[i] = 0;
                      
                         multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
@@ -270,7 +270,7 @@ namespace vli {
                 
                 unsigned int * out2 = out + (coefficient_id * element_count *2* VLI_SIZE) + element_id; // coefficient->int_degree->element_id
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i) {
+                for( int i = 0; i < 2*VLI_SIZE; ++i) {
                         // This is a strongly compute-bound kernel,
                         // so it is fine to waste memory bandwidth by using non-coalesced writes in order to have less instructions,
                         //     less synchronization points, less shared memory used (and thus greater occupancy) and greater scalability.
@@ -302,13 +302,13 @@ namespace vli {
 
         memory_specialization<NumBits,max_order_combined<Order>,2 >::shared_copy(in1shared, in1, in2shared, in2, input_elem_offset);
 
-        for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
+        for( int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>, 2>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
+                for( int i = 0; i < 2*VLI_SIZE; ++i)
                     res[i] = 0;
                 
                 const int output_degree_x = task.output_degree_x;
@@ -327,7 +327,7 @@ namespace vli {
                         memory_specialization<NumBits,max_order_combined<Order>,2 >::local_copy(c1,in1shared,c2,in2shared,in_polynomial_offset1,in_polynomial_offset2);
 
                         #pragma unroll
-                        for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
+                        for( int i = 0; i < 2*VLI_SIZE; ++i)
                             res1[i] = 0;
                      
                         multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
@@ -336,7 +336,7 @@ namespace vli {
                 const unsigned int coefficient_id = VLI_ExtendStride*output_degree_x - (output_degree_x*output_degree_x-output_degree_x)/2 + output_degree_y;
                 unsigned int * out2 = out + (coefficient_id * element_count *2* VLI_SIZE) + element_id; // coefficient->int_degree->element_id
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i) {
+                for( int i = 0; i < 2*VLI_SIZE; ++i) {
                         // This is a strongly compute-bound kernel,
                         // so it is fine to waste memory bandwidth by using non-coalesced writes in order to have less instructions,
                         //     less synchronization points, less shared memory used (and thus greater occupancy) and greater scalability.
@@ -370,20 +370,20 @@ namespace vli {
 
         memory_specialization<NumBits,max_order_combined<Order>,1 >::shared_copy(in1shared, in1, in2shared, in2, input_elem_offset);
         
-        for(unsigned int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
+        for( int iteration_id = 0; iteration_id < iteration_count; ++iteration_id) {
             single_coefficient_task task = execution_plan[local_thread_id + (iteration_id * mul_block_size<max_order_combined<2*Order>, 1>::value)];
             const unsigned int step_count = task.step_count;
         
             if (step_count > 0) {
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
+                for( int i = 0; i < 2*VLI_SIZE; ++i)
                     res[i] = 0;
                 
                 const unsigned int output_degree_x = task.output_degree_x;
                 
                 unsigned int current_degree_x = output_degree_x > Order ? output_degree_x - Order : 0;
                 
-                for(unsigned int step_id = 0; step_id < step_count; ++step_id) {
+                for( int step_id = 0; step_id < step_count; ++step_id) {
                 
                     const unsigned int in_polynomial_offset1 = ( + current_degree_x
                                                          ) * VLI_SIZE + memory_specialization<NumBits,max_order_combined<Order>,1 >::offset_1(input_elem_offset)  ;
@@ -394,7 +394,7 @@ namespace vli {
                     memory_specialization<NumBits,max_order_combined<Order>,1 >::local_copy(c1,in1shared,c2,in2shared,in_polynomial_offset1,in_polynomial_offset2);
 
                     #pragma unroll
-                    for(unsigned int i = 0; i < 2*VLI_SIZE; ++i)
+                    for( int i = 0; i < 2*VLI_SIZE; ++i)
                         res1[i] = 0;
                  
                     multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
@@ -406,7 +406,7 @@ namespace vli {
                 
                 unsigned int * out2 = out + (coefficient_id * element_count *2* VLI_SIZE) + element_id; // coefficient->int_degree->element_id
                 #pragma unroll
-                for(unsigned int i = 0; i < 2*VLI_SIZE; ++i) {
+                for( int i = 0; i < 2*VLI_SIZE; ++i) {
                         // This is a strongly compute-bound kernel,
                         // so it is fine to waste memory bandwidth by using non-coalesced writes in order to have less instructions,
                         //     less synchronization points, less shared memory used (and thus greater occupancy) and greater scalability.
