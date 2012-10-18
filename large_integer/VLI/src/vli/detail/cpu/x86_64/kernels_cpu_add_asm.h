@@ -61,8 +61,7 @@ namespace vli{
                          asm(                                                                                   \
                                  "movq   %%rsi              , %%rax   \n"                                       \
                                  "movq   %%rax              , %%rcx   \n" /* XOR then AND could make a cpy */   \
-                                 "shrq   $63                , %%rcx   \n" /* get the sign */                    \
-                                 "negq   %%rcx                        \n" /* 0 or 0xffffff...    */             \
+                                 "sarq   $63                , %%rcx   \n" /* get the sign */                    \
                                  "addq   (%%rdi)            , %%rax   \n"                                       \
                                  "movq   %%rax              , (%%rdi) \n"                                       \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), Addition2, ~)                               \
@@ -83,10 +82,8 @@ namespace vli{
                          asm(                                                                 \
                                  "movq " PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rdx), %%r8  \n"    \
                                  "movq " PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rsi), %%r9  \n"    \
-                                 "shrq $63                    , %%r8                   \n"    \
-                                 "shrq $63                    , %%r9                   \n"    \
-                                 "negq %%r8                                            \n"    \
-                                 "negq %%r9                                            \n"    \
+                                 "sarq $63                    , %%r8                   \n"    \
+                                 "sarq $63                    , %%r9                   \n"    \
                                  BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), Addition3, ~)             \
                                  "adcq %%r8                  , %%r9                    \n"    \
                                  "movq %%r9                  ,"PPS(VLI_AOS,BOOST_PP_ADD(n,2))"(%%rdi) \n "   \

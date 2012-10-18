@@ -62,8 +62,7 @@ namespace vli {
                               "movq   %%rsi              , %%rax   \n"                                           \
                               "movq   %%rax              , %%rcx   \n" /*  XOR then AND could make a cpy */      \
                               "movq   (%%rdi)            , %%r9    \n"                                           \
-                              "shrq   $63                , %%rcx   \n" /* get the sign */                        \
-                              "negq   %%rcx                        \n" /* 0 or 0xffffff...    */                 \
+                              "sarq   $63                , %%rcx   \n" /* get the sign */                        \
                               "subq   %%rsi              , %%r9    \n"                                           \
                               "movq   %%r9               , (%%rdi) \n"                                          \
                               BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), Substraction2, ~)                               \
