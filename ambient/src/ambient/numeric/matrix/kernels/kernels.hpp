@@ -911,7 +911,7 @@ namespace ambient { namespace numeric { namespace kernels {
         inline void c(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
             // gs
             __A_TIME_C("ambient_cast_to_vector_c_kernel");
-            T* ad = current(a);
+            T* ad = c_current(a);
             for(int j=0; j < n; ++j) memcpy((void*)&(*ac)[j*lda + offset],(void*)&ad[j*m], m*sizeof(T));  
             __A_TIME_C_STOP
         }
@@ -955,8 +955,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
         inline void c(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
             __A_TIME_C("ambient_validation_kernel"); 
-            T* ad = current(a); 
-            T* bd = current(b); 
+            T* ad = c_current(a); 
+            T* bd = c_current(b); 
             double epsilon = std::numeric_limits<double>::epsilon();
             int count = 0;
             size_t sizey = std::min(__a_get_dim(a).y, __a_get_dim(b).y);
