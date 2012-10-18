@@ -71,8 +71,6 @@ public:
     : val(0), name(name_), freq(2.66e9),nCounter(0)
     { }
     
-    ~Timer() { std::cout << name << " " << val << std::endl; }
-    
     Timer & operator+=(double t)
     {
         val += t;

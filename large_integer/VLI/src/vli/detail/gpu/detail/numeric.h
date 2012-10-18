@@ -33,17 +33,17 @@ namespace vli {
     namespace detail  {
                         
     template<class T>
-    __device__ const T& min(T const& a, const T& b){
+    __device__ inline const T& min(T const& a, const T& b){
        return !(b<a)?a:b; 
     } 
 
     template<class T>
-    __device__ const T& max(T const& a, const T& b){
+    __device__ inline const T& max(T const& a, const T& b){
        return !(b>a)?a:b; 
     } 
 
     template <std::size_t NumBits>
-    __device__ void multiplies(boost::uint32_t* res, boost::uint32_t* res1, boost::uint32_t* c1, boost::uint32_t* c2);
+    __device__ inline void multiplies(boost::uint32_t* res, boost::uint32_t* res1, boost::uint32_t* c1, boost::uint32_t* c2);
 
     } // end namespace detail
 } // end namespace vli
