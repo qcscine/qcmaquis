@@ -960,7 +960,7 @@ namespace ambient { namespace numeric { namespace kernels {
             double epsilon = std::numeric_limits<double>::epsilon();
             int count = 0;
             size_t sizey = std::min(__a_get_dim(a).y, __a_get_dim(b).y);
-            size_t sizex = std::min(__a_get_dim(a).x, __a_get_dim(b).y);
+            size_t sizex = std::min(__a_get_dim(a).x, __a_get_dim(b).x);
 
             for(size_t i=0; i < sizey; ++i){
                 for(size_t j=0; j < sizex; ++j){
