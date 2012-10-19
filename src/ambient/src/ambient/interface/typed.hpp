@@ -56,11 +56,9 @@ namespace ambient {
         }
         template<size_t arg>
         static inline void modify(T& obj, sfunctor* m){
-            history& o = *obj.impl;
-            T* optr = new(ambient::bulk_pool.get<sizeof(T)>()) T(obj.impl, ambient::model.time(&o));
-            m->arguments[arg] = (void*)optr;
-            ambient::model.add_revision(&o); 
-            optr->impl->content[optr->ref+1]->set_generator(m);
+            history* o = obj.impl;
+            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(o, ambient::model.time(o));
+            ambient::model.add_revision(o, m); 
         }
         template<size_t arg>
         static inline void place(sfunctor* m){ }
@@ -82,6 +80,8 @@ namespace ambient {
     template <typename T> struct const_iteratable_info {
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){
+            T* obj = (T*)m->arguments[arg];
+            obj->impl->content[obj->ref]->release();
         }
         template<size_t arg>
         static inline T& revised(sfunctor* m){
@@ -90,7 +90,8 @@ namespace ambient {
         template<size_t arg>
         static inline void modify(T& obj, sfunctor* m){
             history& o = *obj.impl;
-            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(obj.impl, ambient::model.time(&o));
+            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(&o, ambient::model.time(&o));
+            ambient::model.use_revision(&o);
         }
         template<size_t arg>
         static inline void place(sfunctor* m){ }
@@ -112,11 +113,9 @@ namespace ambient {
     template <typename T> struct weak_iteratable_info {
         template<size_t arg>
         static inline void modify(T& obj, sfunctor* m){
-            history& o = *obj.impl;
-            T* optr = new(ambient::bulk_pool.get<sizeof(T)>()) T(obj.impl, ambient::model.time(&o));
-            m->arguments[arg] = (void*)optr;
-            ambient::model.add_revision(&o); 
-            optr->impl->content[optr->ref+1]->set_generator(m);
+            history* o = obj.impl;
+            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(o, ambient::model.time(o));
+            ambient::model.add_revision(o, m); 
         }
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){

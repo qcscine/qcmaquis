@@ -4,15 +4,19 @@ namespace ambient { namespace models { namespace velvet {
         *const_cast<size_t*>(&r->sid) = this->map.insert(r);
     }
 
-    inline revision* model::add_revision(history* o, bool init){
-        revision* r = new revision(&o->spec, init);
+    inline revision* model::add_revision(history* o, void* g){
+        revision* r = new revision(&o->spec, g);
         o->add_state(r);
         return r;
     }
 
+    inline void model::use_revision(history* o){
+        o->back()->use();
+    }
+
     inline size_t model::time(const history* o){
         if(o->back() == NULL)
-            this->add_revision(const_cast<history*>(o), true);
+            this->add_revision(const_cast<history*>(o));
         return o->time();
     }
 

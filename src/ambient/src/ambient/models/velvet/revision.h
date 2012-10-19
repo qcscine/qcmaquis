@@ -1,6 +1,8 @@
 #ifndef AMBIENT_MODELS_VELVET_REVISION
 #define AMBIENT_MODELS_VELVET_REVISION
 
+//#include <stdatomic.h>
+
 namespace ambient { namespace models { namespace velvet {
 
     class revision
@@ -16,13 +18,15 @@ namespace ambient { namespace models { namespace velvet {
         inline void* get_memory();
         inline bool valid();
         inline bool occupied();
+        inline void release();
+        inline void use();
 
         inline revision* get_parent(){ return parent; }
-        inline revision(memspec*, bool clean);
+        inline revision(memspec*, void* g);
         inline void* get_generator();
-        inline void set_generator(void*);
         inline void reset_generator();
 
+        int users; // std::atomic<int>
         size_t sid;
         memspec* spec;
         void* header;

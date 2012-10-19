@@ -8,17 +8,14 @@ namespace ambient { namespace models { namespace velvet {
         ambient::static_memory::free<revision>(ptr);
     }
 
-    inline revision::revision(memspec* spec, bool clean)
-    : spec(spec), clean(clean), generator(NULL), header(NULL), data(NULL){
+    inline revision::revision(memspec* spec, void* g)
+    : spec(spec), clean(g == NULL), generator(g), header(NULL), data(NULL), users(0) 
+    {
     }
 
     inline void revision::embed(void* memory, size_t bound){
         this->header = memory;
         this->data = (void*)((size_t)memory + bound);
-    }
-
-    inline void revision::set_generator(void* m){
-        this->generator = m;
     }
 
     inline void revision::reset_generator(){
@@ -44,7 +41,15 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline bool revision::occupied(){
-        return (this->data == NULL);
+        return (this->users != 0);
+    }
+
+    inline void revision::release(){
+        --this->users;
+    }
+
+    inline void revision::use(){
+        ++this->users;
     }
 
     // }}}
