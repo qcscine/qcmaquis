@@ -11,14 +11,14 @@ namespace ambient { namespace controllers { namespace velvet {
         revision& c = *(revision*)this;
         revision& p = *c.get_parent();
         assert(!c.valid());
-        if(p.occupied()){
-            if(!p.valid()) 
-                ambient::controller.calloc(c);
-            else{
-                ambient::controller.alloc(c);
-                memcpy((T*)c, (T*)p, p.spec->size);
-            }
-        }else c.swap(p);
+        if(!p.valid()){
+            ambient::controller.calloc(c);
+        }else if(p.occupied()){
+            ambient::controller.alloc(c);
+            memcpy((T*)c, (T*)p, p.spec->size);
+        }else{
+            c.swap(p);
+        }
         return (T*)c;
     }
     template<typename T>
@@ -26,7 +26,7 @@ namespace ambient { namespace controllers { namespace velvet {
         revision& c = *(revision*)this;
         assert(!c.valid());
         revision& p = *c.get_parent();
-        if(p.occupied()) ambient::controller.alloc(c);
+        if(!p.valid() || p.occupied()) ambient::controller.alloc(c);
         else c.swap(p);
         return (T*)c;
     }

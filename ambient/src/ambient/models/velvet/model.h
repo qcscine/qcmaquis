@@ -14,7 +14,8 @@ namespace ambient { namespace models { namespace velvet {
     class model : public singleton< model > {
     public:
         inline size_t time(const history* o);
-        inline revision* add_revision(history* o, bool init = false);
+        inline revision* add_revision(history* o, void* g = NULL);
+        inline void use_revision(history* o);
         inline void insert(revision* r);
         inline revision* get_revision(size_t id) const;
     private:

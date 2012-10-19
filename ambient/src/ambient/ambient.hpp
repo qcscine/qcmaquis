@@ -23,8 +23,6 @@
 #include <sys/time.h>
 #include <algorithm>
 #include <pthread.h>
-#define BOOST_SP_NO_SP_CONVERTIBLE
-#include <boost/shared_ptr.hpp>
 // }}}
 #include "ambient/utils/memory.hpp"
 #include "ambient/channels/mpi/channel.h"
