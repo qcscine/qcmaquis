@@ -37,15 +37,11 @@
 
 namespace vli{
 namespace detail {
-
-    gpu_memblock::gpu_memblock()
-    : block_size_(0), V1Data_(0), V2Data_(0), VinterData_(0), PoutData_(0) {
-    }
-
-    std::size_t const& gpu_memblock::BlockSize() const {
+/*
+    std::size_t & gpu_memblock::BlockSize() {
         return block_size_;
     }; 
-
+*/
     template <std::size_t NumBits, class MaxOrder, int NumVars>
     struct resize_helper{
     };
@@ -57,7 +53,7 @@ namespace detail {
 
         std::size_t req_size = vector_size * num_words<NumBits>::value * stride<0,NumVars,Order>::value * stride<1,NumVars,Order>::value * stride<2,NumVars,Order>::value * stride<3,NumVars,Order>::value;
 
-        if( req_size > pgm.BlockSize() ) {
+        if( req_size > pgm.block_size_ ) {
             pgm.block_size_  = req_size;
             if(pgm.V1Data_ != 0 )
                 gpu::cu_check_error(cudaFree((void*)pgm.V1Data_),__FILE__,__LINE__);
@@ -76,7 +72,6 @@ namespace detail {
         } // end if
           gpu::cu_check_error(cudaMemset((void*)(pgm.PoutData_),0,2*num_words<NumBits>::value
                                                  * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__FILE__,__LINE__);       
-
         } // end function
     }; // end struct
 
@@ -87,7 +82,7 @@ namespace detail {
 
         std::size_t req_size = vector_size * num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, Order>::value;
 
-        if( req_size > pgm.BlockSize() ) {
+        if( req_size > pgm.block_size_) {
             pgm.block_size_  = req_size;
             if(pgm.V1Data_ != 0 )
                 gpu::cu_check_error(cudaFree((void*)pgm.V1Data_),__FILE__,__LINE__);
