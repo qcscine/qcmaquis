@@ -36,20 +36,23 @@ namespace vli {
 
     texture<unsigned int, cudaTextureType1D, cudaReadModeElementType> tex_reference_1; 
     texture<unsigned int, cudaTextureType1D, cudaReadModeElementType> tex_reference_2; 
-
     // we allocate the mem only one time so pattern of this class singleton
+    // due to boost pp (of .cu file) all these pointers must be commun for every tupples of cmake 
+    // thus there are declared static  
     struct gpu_memblock {
         typedef boost::uint32_t value_type;
-        gpu_memblock();
-        std::size_t const& BlockSize() const;
-        mutable std::size_t block_size_;
-        value_type* V1Data_; // input vector 1
-        value_type* V2Data_; // input vector 2
-        value_type* VinterData_; // inter value before the final reduction
-        value_type* PoutData_; // final output
+        static boost::uint32_t* V1Data_; // input vector 1
+        static boost::uint32_t* V2Data_; // input vector 2
+        static boost::uint32_t* VinterData_; // inter value before the final reduction
+        static boost::uint32_t* PoutData_; // final output
+        static std::size_t block_size_;
     };
-   
-
+    //init else linker error 
+    boost::uint32_t*  gpu_memblock::V1Data_ = NULL;
+    boost::uint32_t*  gpu_memblock::V2Data_ = NULL;
+    boost::uint32_t*  gpu_memblock::VinterData_ = NULL;
+    boost::uint32_t*  gpu_memblock::PoutData_ = NULL;
+    std::size_t  gpu_memblock::block_size_ = 0;
     
     } //end namespace detail
 } //end namespce vli  

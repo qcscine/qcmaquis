@@ -36,7 +36,7 @@
 namespace vli {
     namespace detail {
 
-    gpu_memblock const& pgm  = boost::serialization::singleton<gpu_memblock>::get_const_instance(); // create memory block
+    extern  gpu_memblock const& pgm  = gpu_memblock();
 
     template <std::size_t NumBits, class MaxOrder, int NumVars>
     __global__ void
@@ -90,15 +90,14 @@ namespace vli {
     void gpu_inner_product_vector(std::size_t VectorSize, boost::uint32_t const* A, boost::uint32_t const* B) {
         scheduler sch;
         scheduler_helper<NumBits, MaxOrder, NumVars>::determine_memory(sch,VectorSize);
-   //     sch.print();
+        sch.print();
         resize_helper<NumBits, MaxOrder, NumVars>::resize(pgm, boost::get<0>(sch.get_tupple_data())  ); // allocate mem
         sch.execute(gpu_inner_product_vecto_helper<NumBits,MaxOrder, NumVars>, A, B, full_value<NumBits, MaxOrder, NumVars>::value);
         memory_transfer_helper<NumBits, MaxOrder, NumVars>::unbind_texture();      
     } 
 
     boost::uint32_t* gpu_get_polynomial(){
-	    gpu_memblock const& gm =  boost::serialization::singleton<gpu_memblock>::get_const_instance(); // I just get the mem pointer
-	    return gm.PoutData_;
+	    return pgm.PoutData_;
     }
 
 #define VLI_IMPLEMENT_GPU_FUNCTIONS(NUM_BITS, POLY_ORDER, VAR) \

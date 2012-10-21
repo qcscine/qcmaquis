@@ -11,9 +11,8 @@
 #include <time.h>
 #include "utils/timings.h"
 #include "utils/tools.h"
-
 //#define Size_vec 65535// play with this 1024 - 16384
-#define Size_vec 1024// play with this 1024 - 16384
+#define Size_vec 16384// play with this 1024 - 16384
 #define Order 10 // play 5 - 15, cautious outside memory, xyzw poly ( 10 is the real target)
 
 using vli::polynomial;
@@ -55,37 +54,41 @@ typedef vli::polynomial< vli_type_cpu_256, vli::max_order_combined<Order>, vli::
 typedef boost::mpl::vector< polynomial_type_each_x_128,
                             polynomial_type_each_xy_128,
                             polynomial_type_each_xyz_128
-  //                          polynomial_type_each_xyzw_128,// buffer can be too large cpu/gpu, be cautious
+//                            polynomial_type_each_xyzw_128// buffer can be too large cpu/gpu, be cautious
                           > polynomial_list_128_each;
 
 typedef boost::mpl::vector<
                             polynomial_type_combined_x_128,
                             polynomial_type_combined_xy_128,
                             polynomial_type_combined_xyz_128
+//                            polynomial_type_combined_xyzw_128
                           > polynomial_list_128_combined;
 
-typedef boost::mpl::vector< polynomial_type_each_x_192,
+typedef boost::mpl::vector<
+                            polynomial_type_each_x_192,
                             polynomial_type_each_xy_192,
                             polynomial_type_each_xyz_192
-  //                          polynomial_type_each_xyzw_192,// buffer can be too large cpu/gpu, be cautious
+//                            polynomial_type_each_xyzw_192
                           > polynomial_list_192_each;
 
 typedef boost::mpl::vector<
                             polynomial_type_combined_x_192,
                             polynomial_type_combined_xy_192,
                             polynomial_type_combined_xyz_192
+//                            polynomial_type_combined_xyzw_192
                           > polynomial_list_192_combined;
 
 typedef boost::mpl::vector< polynomial_type_each_x_256,
                             polynomial_type_each_xy_256,
                             polynomial_type_each_xyz_256
-  //                          polynomial_type_each_xyzw_256,// buffer can be too large cpu/gpu, be cautious
+//                            polynomial_type_each_xyzw_256// buffer can be too large cpu/gpu, be cautious
                           > polynomial_list_256_each;
 
 typedef boost::mpl::vector<
                             polynomial_type_combined_x_256,
                             polynomial_type_combined_xy_256,
                             polynomial_type_combined_xyz_256
+//                            polynomial_type_combined_xyzw_256
                           > polynomial_list_256_combined;
    struct test_case {
 
@@ -117,10 +120,12 @@ typedef boost::mpl::vector<
        t1.get_time();
 
        if(p1_res == p2_res){ 
-           std::cout << " ---- OK, cpu ";
+           std::cout << " ----- OK, cpu ";
            std::cout.precision(5);
-           std::cout << t0.get_time() << " gpu ";
+           std::cout << std::fixed << t0.get_time() << " gpu ";
            std::cout << t1.get_time(); 
+           std::cout.precision(2);
+           std::cout << " G: "  << t0.get_time()/t1.get_time(); 
        }else
            std::cout << " NO OK, " ; 
     
@@ -210,10 +215,11 @@ int main(int argc, char* argv[]) {
        std::cout << "ultimate t=" << (tc.tv_sec - tb.tv_sec) + 1e-9 * (tc.tv_nsec - tb.tv_nsec) << "s" << std::endl;
 */
        std::cout << " -------ASCII ART ^_^' --------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
+       std::cout << " -------Size vector : " << Size_vec  << std::endl;
        std::cout << " -----  MaxOrderEach------------------------------------------------------------------------------------------------------------------------------------------------------------ " << std::endl;
        std::cout << " -----  128bits * 128bits = 256 bits ------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
-       std::cout << " -----  1 variable ------------------------- 2 variables ------------------------- 3 variables ------------------------- 4 variables ------------------------------------------- " << std::endl;
+       std::cout << " -----  1 variable --------------------------------- 2 variables --------------------------------- 3 variables --------------------------------- 4 variables ------------------- " << std::endl;
        boost::mpl::for_each<polynomial_list_128_each>(test_case());
        std::cout << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
@@ -228,7 +234,7 @@ int main(int argc, char* argv[]) {
        std::cout << " -----  MaxOrderCombined-------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -----  128bits * 128bits = 256 bits ------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
-       std::cout << " -----  1 variable ------------------------- 2 variables ------------------------- 3 variables ------------------------- 4 variables ------------------------------------------- " << std::endl;
+       std::cout << " -----  1 variable --------------------------------- 2 variables --------------------------------- 3 variables --------------------------------- 4 variables ------------------- " << std::endl;
        boost::mpl::for_each<polynomial_list_128_combined>(test_case());
        std::cout << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
@@ -240,5 +246,6 @@ int main(int argc, char* argv[]) {
        boost::mpl::for_each<polynomial_list_256_combined>(test_case());
        std::cout << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
+
        return 0;
 }
