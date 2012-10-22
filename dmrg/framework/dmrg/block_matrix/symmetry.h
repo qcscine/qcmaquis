@@ -34,9 +34,9 @@ public:
 
 namespace boost {
     template <>
-    class hash<typename TrivialGroup::charge>{
+    class hash<TrivialGroup::charge>{
         public :
-            size_t operator()(typename TrivialGroup::charge const &Charge ) const {
+            size_t operator()(TrivialGroup::charge const &Charge ) const {
                 return hash<int>()(TrivialGroup::IdentityCharge); // return 0 ??
             }
     };
