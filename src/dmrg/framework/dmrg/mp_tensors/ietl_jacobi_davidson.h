@@ -69,7 +69,7 @@ solve_ietl_new_jd(SiteProblem<Matrix, SymmGroup> & sp,
     ietl::jd<Operator, Vecspace> jd(sp, vs);
 
     // the correction equation solver must be an function object
-    ietl::gmres_wrapper gmres(max_cor_iter);
+    ietl::ietl_gmres gmres(max_cor_iter);
 
     jd.eigensystem(iter, initial, n_evals, gmres);
     
