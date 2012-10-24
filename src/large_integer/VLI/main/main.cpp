@@ -12,7 +12,7 @@
 #include "utils/timings.h"
 #include "utils/tools.h"
 //#define Size_vec 65535// play with this 1024 - 16384
-#define Size_vec 16384// play with this 1024 - 16384
+#define Size_vec 1024// play with this 1024 - 16384
 #define Order 10 // play 5 - 15, cautious outside memory, xyzw poly ( 10 is the real target)
 
 using vli::polynomial;
@@ -60,8 +60,8 @@ typedef boost::mpl::vector< polynomial_type_each_x_128,
 typedef boost::mpl::vector<
                             polynomial_type_combined_x_128,
                             polynomial_type_combined_xy_128,
-                            polynomial_type_combined_xyz_128
-//                            polynomial_type_combined_xyzw_128
+                            polynomial_type_combined_xyz_128,
+                            polynomial_type_combined_xyzw_128
                           > polynomial_list_128_combined;
 
 typedef boost::mpl::vector<
@@ -74,8 +74,8 @@ typedef boost::mpl::vector<
 typedef boost::mpl::vector<
                             polynomial_type_combined_x_192,
                             polynomial_type_combined_xy_192,
-                            polynomial_type_combined_xyz_192
-//                            polynomial_type_combined_xyzw_192
+                            polynomial_type_combined_xyz_192,
+                            polynomial_type_combined_xyzw_192
                           > polynomial_list_192_combined;
 
 typedef boost::mpl::vector< polynomial_type_each_x_256,
@@ -87,8 +87,8 @@ typedef boost::mpl::vector< polynomial_type_each_x_256,
 typedef boost::mpl::vector<
                             polynomial_type_combined_x_256,
                             polynomial_type_combined_xy_256,
-                            polynomial_type_combined_xyz_256
-//                            polynomial_type_combined_xyzw_256
+                            polynomial_type_combined_xyz_256,
+                            polynomial_type_combined_xyzw_256
                           > polynomial_list_256_combined;
    struct test_case {
 

@@ -70,8 +70,8 @@ namespace detail {
             gpu::cu_check_error(cudaMalloc((void**)&(pgm.PoutData_),                  2*num_words<NumBits>::value 
                                                      * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__FILE__,__LINE__);
         } // end if
-          gpu::cu_check_error(cudaMemset((void*)(pgm.PoutData_),0,2*num_words<NumBits>::value
-                                                 * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__FILE__,__LINE__);       
+//          gpu::cu_check_error(cudaMemset((void*)(pgm.PoutData_),0,2*num_words<NumBits>::value
+//                                                 * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__FILE__,__LINE__);       
         } // end function
     }; // end struct
 
@@ -99,7 +99,7 @@ namespace detail {
             gpu::cu_check_error(cudaMalloc((void**)&(pgm.PoutData_),                  2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
 
             } // end if
-          gpu::cu_check_error(cudaMemset((void*)(pgm.PoutData_),0,2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+//          gpu::cu_check_error(cudaMemset((void*)(pgm.PoutData_),0,2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
         } // end fonction
     }; //end struct
     

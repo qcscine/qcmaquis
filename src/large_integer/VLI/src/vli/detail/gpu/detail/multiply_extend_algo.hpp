@@ -35,7 +35,7 @@ namespace vli {
     namespace detail {
 
     template <std::size_t NumBits>
-    void multiplies(boost::uint32_t* res, boost::uint32_t* res1, boost::uint32_t* c1, boost::uint32_t* c2){
+    __device__ void multiplies(boost::uint32_t* res, boost::uint32_t* res1, boost::uint32_t* c1, boost::uint32_t* c2){
         int mask1 = c1[num_words<NumBits>::value-1]  >> std::numeric_limits<boost::uint32_t>::digits-1; 
         int mask2 = c2[num_words<NumBits>::value-1]  >> std::numeric_limits<boost::uint32_t>::digits-1; 
 	int mask3 = mask1 ^ mask2;
