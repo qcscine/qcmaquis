@@ -31,8 +31,30 @@
 
 namespace vli {
     namespace detail {
+    #define VLI_SIZE num_words<NumBits>::value 
+/* bit use until bool reuse pass by template
+    template<std::size_t NumBits, bool reuse> 
+    struct add_helper;
 
-#define VLI_SIZE num_words<NumBits>::value 
+    template<std::size_t NumBits> 
+    struct add_helper<NumBits,false>{
+        static void add_help(boost::uint32_t* out,  const boost::uint32_t* in){
+                #pragma unroll
+		for(boost::uint32_t i=0; i<2*VLI_SIZE; ++i)
+		    out[i] = in[i];
+        }
+    };
+
+    template<std::size_t NumBits> 
+    struct add_helper<NumBits,true>{
+        static void add_help(boost::uint32_t* out,  const boost::uint32_t* in){
+                 asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(out[0]):"r"(in[0])); 
+                #pragma unroll
+                for(int i=1; i < 2*VLI_SIZE; ++i)
+                    asm( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(out[i]):"r"(in[i])); 
+        }
+    };
+*/
 
     template <std::size_t NumBits, int Order, int NumVars>
     __global__ void
@@ -41,7 +63,7 @@ namespace vli {
 		    const boost::uint32_t * __restrict__ intermediate,
 		    const boost::uint32_t element_count,
 		    boost::uint32_t * __restrict__ out,
-                    const std::size_t offset)
+                    const std::size_t offset, const bool reuse)
     {
 	    __shared__ boost::uint32_t buf[sum_block_size::value * size_pad<2*VLI_SIZE>::value]; 
 
@@ -77,19 +99,20 @@ namespace vli {
                 boost::uint32_t * out2 = out+(coefficient_id*2*VLI_SIZE); 
 
                 //final addition if the pbs does not fit into the mem, else it will sum 0
+            if(reuse == true){
                  asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(out2[0]):"r"(t1[0])); 
                 #pragma unroll
                 for(int i=1; i < 2*VLI_SIZE; ++i)
                     asm( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(out2[i]):"r"(t1[i])); 
-
-/*
+            }else{
                 #pragma unroll
 		for(boost::uint32_t i=0; i<2*VLI_SIZE; ++i)
 		    out2[i] = buf[i];
-*/
+            }
+
 	    }
     }
 
-#undef VLI_SIZE
+    #undef VLI_SIZE
     }
 }
