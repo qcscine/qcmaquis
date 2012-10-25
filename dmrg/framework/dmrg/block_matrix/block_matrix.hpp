@@ -11,6 +11,8 @@
 #include "utils/function_objects.h"
 #include "utils/bindings.hpp"
 
+#include <alps/type_traits/is_complex.hpp>
+
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix() 
 {
@@ -353,17 +355,28 @@ void block_matrix<Matrix, SymmGroup>::load(alps::hdf5::archive & ar)
     ar >> alps::make_pvp("rows_", rows_);
     ar >> alps::make_pvp("cols_", cols_);
 
+    if (alps::is_complex<typename Matrix::value_type>() && !ar.is_complex("data_"))
+    {
+        typedef typename alps::numeric::matrix<typename alps::numeric::real_type<typename Matrix::value_type>::type> LoadMatrix;
+        std::vector<LoadMatrix> tmp;
+        ar >> alps::make_pvp("data_", tmp);
+        for(typename std::vector<LoadMatrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
 #ifdef USE_AMBIENT
-    std::vector<alps::numeric::matrix<typename Matrix::value_type> > tmp;
-    ar >> alps::make_pvp("data_", tmp);
-    for(typename std::vector<alps::numeric::matrix<typename Matrix::value_type> >::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
-        data_.push_back(new Matrix(maquis::bindings::matrix_cast<Matrix>(*it)));
+            data_.push_back(new Matrix(maquis::bindings::matrix_cast<Matrix>(*it)));
 #else
-    std::vector<Matrix> tmp;
-    ar >> alps::make_pvp("data_", tmp);
-    for(typename std::vector<Matrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
-        data_.push_back(new Matrix(*it));
+            data_.push_back(new Matrix(*it));
 #endif
+    } else {
+        typedef typename alps::numeric::matrix<typename Matrix::value_type> LoadMatrix;
+        std::vector<LoadMatrix> tmp;
+        ar >> alps::make_pvp("data_", tmp);
+        for(typename std::vector<LoadMatrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
+#ifdef USE_AMBIENT
+            data_.push_back(new Matrix(maquis::bindings::matrix_cast<Matrix>(*it)));
+#else
+            data_.push_back(new Matrix(*it));
+#endif
+    }
 }
 
 template<class Matrix, class SymmGroup>
