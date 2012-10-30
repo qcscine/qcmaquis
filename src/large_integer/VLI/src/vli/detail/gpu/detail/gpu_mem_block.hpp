@@ -114,10 +114,20 @@ namespace detail {
                                 *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
                                 *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+//for kepler data are cached into the texture memory
+#ifdef VLI_KEPLER
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_1,(void*)pgm.V1Data_,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+#endif
          }
 
          static void unbind_texture(){
-         // nothing !
+#ifdef VLI_KEPLER
+            gpu::cu_check_error(cudaUnbindTexture(tex_reference_1),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaUnbindTexture(tex_reference_2),__FILE__,__LINE__);
+#endif
          }
     
     };
@@ -132,16 +142,24 @@ namespace detail {
             //only the second poly is cashed into the texture memory
             gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
                                 *num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+#ifdef VLI_KEPLER
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_1,(void*)pgm.V1Data_,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
+                                *num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+#endif
          }
 
          static void unbind_texture(){
             gpu::cu_check_error(cudaUnbindTexture(tex_reference_2),__FILE__,__LINE__);
+#ifdef VLI_KEPLER
+            gpu::cu_check_error(cudaUnbindTexture(tex_reference_1),__FILE__,__LINE__);
+#endif
          }
     };
 
     template <std::size_t NumBits, int Order, int NumVars>
     struct memory_transfer_helper<NumBits, max_order_each<Order>, NumVars, typename boost::enable_if_c< (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) >= 2*shared_min::value) >::type >{ // full texture memory
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
+ std::cout << " JE SUIS LA " << stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value << std::endl;
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
                                 *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
@@ -165,9 +183,17 @@ namespace detail {
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
+#ifdef VLI_KEPLER
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_1,(void*)pgm.V1Data_,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+#endif
          }
 
          static void unbind_texture(){
+#ifdef VLI_KEPLER
+            gpu::cu_check_error(cudaUnbindTexture(tex_reference_1),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaUnbindTexture(tex_reference_2),__FILE__,__LINE__);
+#endif
          }
     };
 
@@ -179,10 +205,16 @@ namespace detail {
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
 
             gpu::cu_check_error(cudaBindTexture(0,tex_reference_2,(void*)pgm.V2Data_,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+#ifdef VLI_KEPLER
+            gpu::cu_check_error(cudaBindTexture(0,tex_reference_1,(void*)pgm.V1Data_,VectorSize*max_order_combined_helpers::size<NumVars+1, Order>::value*num_words<NumBits>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+#endif
          }
 
          static void unbind_texture(){
             gpu::cu_check_error(cudaUnbindTexture(tex_reference_2),__FILE__,__LINE__);
+#ifdef VLI_KEPLER
+            gpu::cu_check_error(cudaUnbindTexture(tex_reference_1),__FILE__,__LINE__);
+#endif
          }
     };
 
