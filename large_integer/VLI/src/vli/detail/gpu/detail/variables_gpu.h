@@ -58,7 +58,7 @@ namespace vli {
     };
     
     struct numblock_constant_reduction{
-        static unsigned int const value = 65536;
+        static unsigned int const value = 16384;
     };
 
     template<class MaxOrder, int NumVars, int Coeff=1>

@@ -39,6 +39,7 @@ namespace vli {
 
     template<std::size_t NumBits, int Order, int NumVars >
     struct memory_specialization<NumBits, max_order_each<Order>, NumVars, typename boost::enable_if_c< (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) < shared_min::value) >::type   >{
+#ifdef VLI_FERMI
         enum { value1 = full_value<NumBits, max_order_each<Order>, NumVars >::value };
         enum { value2 = full_value<NumBits, max_order_each<Order>, NumVars >::value };
 
@@ -62,10 +63,34 @@ namespace vli {
             for( int i = 0; i < VLI_SIZE; ++i)
                c2[i] = in2shared[offset2+i];        
         } 
+#endif 
+
+#ifdef VLI_KEPLER
+        enum { value1 = 1}; // same 1 should be 0
+        enum { value2 = 1}; // same 1 should be 0 
+
+        static inline void __device__ shared_copy(unsigned int* in1shared, unsigned int const* in1, unsigned int* in2shared, unsigned int const* in2, const unsigned int offset){
+            //nothing >_<'
+        } 
+
+        static inline unsigned __device__ int offset_1(const unsigned int offset){return offset;}  
+        static inline unsigned __device__ int offset_2(const unsigned int offset){return offset;}  
+
+        static inline void __device__ local_copy(unsigned int* c1, unsigned int const* in1shared, unsigned int* c2, unsigned int const* in2shared, const unsigned int offset1, const unsigned int offset2){
+            #pragma unroll
+            for( int i = 0; i < VLI_SIZE; ++i)
+               c1[i] = tex1Dfetch(tex_reference_1,offset1+i);                 
+           
+            #pragma unroll
+            for( int i = 0; i < VLI_SIZE; ++i)
+               c2[i] = tex1Dfetch(tex_reference_2,offset2+i);                 
+         } 
+#endif
     };
      
     template<std::size_t NumBits, int Order, int NumVars >
     struct memory_specialization<NumBits, max_order_each<Order>, NumVars, typename boost::enable_if_c< (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) >= shared_min::value) &&  (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) < 2*shared_min::value) >::type >{
+#ifdef VLI_FERMI
         enum { value1 = full_value<NumBits, max_order_each<Order>, NumVars >::value };
         enum { value2 = 1}; // should be 0 but not allowed, so 1
 
@@ -88,7 +113,29 @@ namespace vli {
             for( int i = 0; i < VLI_SIZE; ++i)
                c2[i] = tex1Dfetch(tex_reference_2,offset2+i);                 
          } 
+#endif
 
+#ifdef VLI_KEPLER
+        enum { value1 = 1}; // same 1 should be 0
+        enum { value2 = 1}; // same 1 should be 0 
+
+        static inline void __device__ shared_copy(unsigned int* in1shared, unsigned int const* in1, unsigned int* in2shared, unsigned int const* in2, const unsigned int offset){
+            //nothing >_<'
+        } 
+
+        static inline unsigned __device__ int offset_1(const unsigned int offset){return offset;}  
+        static inline unsigned __device__ int offset_2(const unsigned int offset){return offset;}  
+
+        static inline void __device__ local_copy(unsigned int* c1, unsigned int const* in1shared, unsigned int* c2, unsigned int const* in2shared, const unsigned int offset1, const unsigned int offset2){
+            #pragma unroll
+            for( int i = 0; i < VLI_SIZE; ++i)
+               c1[i] = tex1Dfetch(tex_reference_1,offset1+i);                 
+           
+            #pragma unroll
+            for( int i = 0; i < VLI_SIZE; ++i)
+               c2[i] = tex1Dfetch(tex_reference_2,offset2+i);                 
+         } 
+#endif
     };
 
     template<std::size_t NumBits, int Order, int NumVars >
@@ -125,7 +172,7 @@ namespace vli {
     // 4 variables, 2 polys cached
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_each<Order>, 4>{
-    inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+    inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int const*  workblock_count_by_warp, single_coefficient_task const* execution_plan) {
         __shared__ unsigned int in1shared[memory_specialization<NumBits,max_order_each<Order>,4 >::value1];
         __shared__ unsigned int in2shared[memory_specialization<NumBits,max_order_each<Order>,4 >::value2];
 
@@ -168,7 +215,8 @@ namespace vli {
                 const unsigned int end_degree_z_inclusive = output_degree_z < (Order+1) ? output_degree_z : Order;
                 unsigned int current_degree_z = start_degree_z_inclusive;
                
-                unsigned int current_degree_w = output_degree_w > Order ? output_degree_w - Order : 0;
+                const unsigned int start_degree_w_inclusive = output_degree_w > Order ? output_degree_w - Order : 0;
+                unsigned int current_degree_w = start_degree_w_inclusive;
                 
                 for(int step_id = 0; step_id < step_count; ++step_id) {
                 
@@ -232,7 +280,7 @@ namespace vli {
     // 3 variables
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_each<Order>, 3>{
-    inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+    inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int const*  workblock_count_by_warp, single_coefficient_task const* execution_plan) {
 
         __shared__ unsigned int in1shared[memory_specialization<NumBits,max_order_each<Order>,3 >::value1];
         __shared__ unsigned int in2shared[memory_specialization<NumBits,max_order_each<Order>,3 >::value2];
@@ -329,7 +377,7 @@ namespace vli {
     // 2 variables
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_each<Order>, 2>{
-    inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+    inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int const*  workblock_count_by_warp, single_coefficient_task const* execution_plan) {
         __shared__ unsigned int in1shared[memory_specialization<NumBits,max_order_each<Order>,2 >::value1];
         __shared__ unsigned int in2shared[memory_specialization<NumBits,max_order_each<Order>,2 >::value2];
 
@@ -410,7 +458,7 @@ namespace vli {
     // 1 variables
     template <std::size_t NumBits, int Order>
     struct accelerator<NumBits, max_order_each<Order>, 1>{
-    inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int*  workblock_count_by_warp, single_coefficient_task* execution_plan) {
+    inline static __device__ void polynomial_multiplication_max_order(const unsigned int* in1, const unsigned int* in2, const unsigned int element_count, unsigned int*  out, unsigned int const*  workblock_count_by_warp, single_coefficient_task const* execution_plan) {
 
         __shared__ unsigned int in1shared[memory_specialization<NumBits,max_order_each<Order>,1 >::value1];
         __shared__ unsigned int in2shared[memory_specialization<NumBits,max_order_each<Order>,1 >::value2];
