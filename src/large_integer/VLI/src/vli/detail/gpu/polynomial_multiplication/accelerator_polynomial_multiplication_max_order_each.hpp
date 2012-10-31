@@ -196,7 +196,7 @@ namespace vli {
             if (step_count > 0) {
                 #pragma unroll
                 for(int i = 0; i < 2*VLI_SIZE; ++i)
-                    res[i] = 0;
+                    res[i] ^= res[i];
                 
                 const unsigned int output_degree_x = task.output_degree_x;
                 const unsigned int output_degree_y = task.output_degree_y;
@@ -236,7 +236,7 @@ namespace vli {
 
                     #pragma unroll
                     for(int i = 0; i < 2*VLI_SIZE; ++i)
-                        res1[i] = 0;
+                        res1[i] ^= res1[i];
                  
                     multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
                  
@@ -305,7 +305,7 @@ namespace vli {
             if (step_count > 0) {
                 #pragma unroll
                 for( int i = 0; i < 2*VLI_SIZE; ++i)
-                    res[i] = 0;
+                    res[i] ^= res[i];
                 
                 const unsigned int output_degree_x = task.output_degree_x;
                 const unsigned int output_degree_y = task.output_degree_y;
@@ -338,7 +338,7 @@ namespace vli {
                 
                     #pragma unroll
                     for( int i = 0; i < 2*VLI_SIZE; ++i)
-                        res1[i] = 0;
+                        res1[i] ^= res1[i];
                  
                     multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
                  
@@ -400,7 +400,7 @@ namespace vli {
             if (step_count > 0) {
                 #pragma unroll
                 for( int i = 0; i < 2*VLI_SIZE; ++i)
-                    res[i] = 0;
+                    res[i] ^= res[i];
                 
                 const unsigned int output_degree_x = task.output_degree_x;
                 const unsigned int output_degree_y = task.output_degree_y;
@@ -425,7 +425,7 @@ namespace vli {
 
                     #pragma unroll
                     for( int i = 0; i < 2*VLI_SIZE; ++i)
-                        res1[i] = 0;
+                        res1[i] ^= res1[i];
                  
                     multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
                   //  multiplies<NumBits>(res, res1,&in1shared[in_polynomial_offset1],&in2shared[in_polynomial_offset2]   ); // the multiplication using boost pp
@@ -483,7 +483,7 @@ namespace vli {
             if (step_count > 0) {
                 #pragma unroll
                 for( int i = 0; i < 2*VLI_SIZE; ++i)
-                    res[i] = 0;
+                    res[i] ^= res[i];
                 
                 const unsigned int output_degree_x = task.output_degree_x;
                 
@@ -501,7 +501,7 @@ namespace vli {
 
                     #pragma unroll
                     for( int i = 0; i < 2*VLI_SIZE; ++i)
-                        res1[i] = 0;
+                        res1[i] ^= res1[i];
                  
                     multiplies<NumBits>(res, res1, c1, c2); // the multiplication using boost pp
                  

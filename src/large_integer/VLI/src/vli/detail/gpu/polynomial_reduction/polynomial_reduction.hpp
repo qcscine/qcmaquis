@@ -32,29 +32,6 @@
 namespace vli {
     namespace detail {
     #define VLI_SIZE num_words<NumBits>::value 
-/* bit use until bool reuse pass by template
-    template<std::size_t NumBits, bool reuse> 
-    struct add_helper;
-
-    template<std::size_t NumBits> 
-    struct add_helper<NumBits,false>{
-        static void add_help(boost::uint32_t* out,  const boost::uint32_t* in){
-                #pragma unroll
-		for(boost::uint32_t i=0; i<2*VLI_SIZE; ++i)
-		    out[i] = in[i];
-        }
-    };
-
-    template<std::size_t NumBits> 
-    struct add_helper<NumBits,true>{
-        static void add_help(boost::uint32_t* out,  const boost::uint32_t* in){
-                 asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(out[0]):"r"(in[0])); 
-                #pragma unroll
-                for(int i=1; i < 2*VLI_SIZE; ++i)
-                    asm( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(out[i]):"r"(in[i])); 
-        }
-    };
-*/
 
     template <std::size_t NumBits, int Order, int NumVars>
     __global__ void

@@ -36,15 +36,13 @@ namespace vli {
 
     template <std::size_t NumBits>
     __device__ void multiplies(boost::uint32_t* res, boost::uint32_t* res1, boost::uint32_t* c1, boost::uint32_t* c2){
-        int mask1 = c1[num_words<NumBits>::value-1]  >> std::numeric_limits<boost::uint32_t>::digits-1; 
-        int mask2 = c2[num_words<NumBits>::value-1]  >> std::numeric_limits<boost::uint32_t>::digits-1; 
-	int mask3 = mask1 ^ mask2;
+        const unsigned int bit1 = c1[num_words<NumBits>::value-1]  >> std::numeric_limits<boost::uint32_t>::digits-1; 
+        const unsigned int bit2 = c2[num_words<NumBits>::value-1]  >> std::numeric_limits<boost::uint32_t>::digits-1; 
+	const unsigned int bit3 = bit1 ^ bit2;
 
-        const int bit1(mask1);
-        const int bit2(mask2);
-        mask1 = -mask1;
-        mask2 = -mask2;
-        mask3 = -mask3;
+        const unsigned int mask1 =  -bit1;
+        const unsigned int mask2 =  -bit2;
+        const unsigned int mask3 =  -bit3;
 
         #pragma unroll
         for(int i(0); i<num_words<NumBits>::value ; ++i){
@@ -82,8 +80,8 @@ namespace vli {
             asm( "addc.cc.u32   %0 , %0 , 0 ; \n\t" : "+r"(res1[i])); 
   */
 
-	if(mask3)
-           negate<2*NumBits>(res1);
+      if(mask3)
+        negate<2*NumBits>(res1);
 
 
        add<2*NumBits>(res,res1);
