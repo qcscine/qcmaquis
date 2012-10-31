@@ -240,7 +240,7 @@ namespace vli {
                         // This is a strongly compute-bound kernel,
                         // so it is fine to waste memory bandwidth by using non-coalesced writes in order to have less instructions,
                         //     less synchronization points, less shared memory used (and thus greater occupancy) and greater scalability.
-                        *out2 = res[i];
+                       *out2 = res[i];
                         out2 += element_count;
                 }
             } // end step count
