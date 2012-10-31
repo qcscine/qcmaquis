@@ -45,14 +45,18 @@ namespace vli {
         static boost::uint32_t* V2Data_; // input vector 2
         static boost::uint32_t* VinterData_; // inter value before the final reduction
         static boost::uint32_t* PoutData_; // final output
-        static std::size_t block_size_;
+        static std::size_t block_size_V_;
+        static std::size_t block_size_VinterData_;
+        static std::size_t block_size_PoutData_;
     };
     //init else linker error 
     boost::uint32_t*  gpu_memblock::V1Data_ = NULL;
     boost::uint32_t*  gpu_memblock::V2Data_ = NULL;
     boost::uint32_t*  gpu_memblock::VinterData_ = NULL;
     boost::uint32_t*  gpu_memblock::PoutData_ = NULL;
-    std::size_t  gpu_memblock::block_size_ = 0;
+    std::size_t  gpu_memblock::block_size_V_ = 0;
+    std::size_t  gpu_memblock::block_size_VinterData_ = 0;
+    std::size_t  gpu_memblock::block_size_PoutData_   = 0;
     
     } //end namespace detail
 } //end namespce vli  

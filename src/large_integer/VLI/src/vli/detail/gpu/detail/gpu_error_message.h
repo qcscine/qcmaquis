@@ -44,7 +44,7 @@ namespace gpu {
          }
      }
 
-     static  void cu_check_error_kernel(const char *message, const char* file, std::size_t line) {
+     static void cu_check_error_kernel(const char *message, const char* file, std::size_t line) {
          cudaError_t error = cudaGetLastError();
          if(error!=cudaSuccess) {
              throw(std::runtime_error("CUDA error (Error:"+ boost::lexical_cast<std::string>(message) +") in " + boost::lexical_cast<std::string>(file) + " line : " +  boost::lexical_cast<std::string>(line)  ));

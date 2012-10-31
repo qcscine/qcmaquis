@@ -51,27 +51,32 @@ namespace detail {
     struct resize_helper<NumBits, max_order_each<Order>, NumVars>{
         static void resize(gpu_memblock const& pgm,  std::size_t vector_size){
 
-        std::size_t req_size = vector_size * num_words<NumBits>::value * stride<0,NumVars,Order>::value * stride<1,NumVars,Order>::value * stride<2,NumVars,Order>::value * stride<3,NumVars,Order>::value;
+            std::size_t req_size_V = vector_size * num_words<NumBits>::value * stride<0,NumVars,Order>::value * stride<1,NumVars,Order>::value * stride<2,NumVars,Order>::value * stride<3,NumVars,Order>::value;
+            std::size_t req_size_PoutData   = 2*num_words<NumBits>::value * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value; 
+            std::size_t req_size_VinterData = vector_size * req_size_PoutData; 
 
-        if( req_size > pgm.block_size_ ) {
-            pgm.block_size_  = req_size;
-            if(pgm.V1Data_ != 0 )
+            if( req_size_V > pgm.block_size_V_ ) {
+                pgm.block_size_V_  = req_size_V;
+                //cudaFree does nothing is the adress passes is NULL
                 gpu::cu_check_error(cudaFree((void*)pgm.V1Data_),__FILE__,__LINE__);
-            if(pgm.V2Data_ != 0 )
                 gpu::cu_check_error(cudaFree((void*)pgm.V2Data_),__FILE__,__LINE__);
-            if(pgm.VinterData_ != 0)
+                gpu::cu_check_error(cudaMalloc((void**)&(pgm.V1Data_), req_size_V*sizeof(boost::uint32_t)),__FILE__,__LINE__); //input 1
+                gpu::cu_check_error(cudaMalloc((void**)&(pgm.V2Data_), req_size_V*sizeof(boost::uint32_t)),__FILE__,__LINE__); //input 2
+            }
+          
+            if( req_size_VinterData > pgm.block_size_VinterData_) {
+                pgm.block_size_VinterData_ = req_size_VinterData;
                 gpu::cu_check_error(cudaFree((void*)pgm.VinterData_),__FILE__,__LINE__);
-            if(pgm.PoutData_ != 0)
+                gpu::cu_check_error(cudaMalloc((void**)&(pgm.VinterData_), vector_size *  2*num_words<NumBits>::value 
+                                                         * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__FILE__,__LINE__); 
+            }
+          
+            if( req_size_PoutData  > pgm.block_size_PoutData_) {
+                pgm.block_size_PoutData_ = req_size_PoutData;
                 gpu::cu_check_error(cudaFree((void*)pgm.PoutData_),__FILE__,__LINE__);
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V1Data_), req_size*sizeof(boost::uint32_t)),__FILE__,__LINE__); //input 1
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V2Data_), req_size*sizeof(boost::uint32_t)),__FILE__,__LINE__); //input 2
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm.VinterData_), vector_size *  2*num_words<NumBits>::value 
-                                                     * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__FILE__,__LINE__); 
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm.PoutData_),                  2*num_words<NumBits>::value 
-                                                     * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__FILE__,__LINE__);
-        } // end if
-//          gpu::cu_check_error(cudaMemset((void*)(pgm.PoutData_),0,2*num_words<NumBits>::value
-//                                                 * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__FILE__,__LINE__);       
+                gpu::cu_check_error(cudaMalloc((void**)&(pgm.PoutData_),                  2*num_words<NumBits>::value 
+                                                         * result_stride<0, NumVars, Order>::value * result_stride<1, NumVars, Order>::value * result_stride<2, NumVars, Order>::value * result_stride<3, NumVars, Order>::value * sizeof(boost::uint32_t)),__FILE__,__LINE__);
+            }
         } // end function
     }; // end struct
 
@@ -80,26 +85,29 @@ namespace detail {
     struct resize_helper<NumBits, max_order_combined<Order>, NumVars>{
         static void resize(gpu_memblock const& pgm,  std::size_t vector_size){
 
-        std::size_t req_size = vector_size * num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, Order>::value;
+        std::size_t req_size_V = vector_size * num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, Order>::value;
+        std::size_t req_size_PoutData   = 2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value;
+        std::size_t req_size_VinterData = vector_size * req_size_PoutData; 
 
-        if( req_size > pgm.block_size_) {
-            pgm.block_size_  = req_size;
-            if(pgm.V1Data_ != 0 )
-                gpu::cu_check_error(cudaFree((void*)pgm.V1Data_),__FILE__,__LINE__);
-            if(pgm.V2Data_ != 0 )
-                gpu::cu_check_error(cudaFree((void*)pgm.V2Data_),__FILE__,__LINE__);
-            if(pgm.VinterData_ != 0)
-                gpu::cu_check_error(cudaFree((void*)pgm.VinterData_),__FILE__,__LINE__);
-            if(pgm.PoutData_ != 0)
-                gpu::cu_check_error(cudaFree((void*)pgm.PoutData_),__FILE__,__LINE__);
+        if( req_size_V > pgm.block_size_V_ ) {
+            pgm.block_size_V_  = req_size_V;
+            //cudaFree does nothing is the adress passes is NULL
+            gpu::cu_check_error(cudaFree((void*)pgm.V1Data_),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaFree((void*)pgm.V2Data_),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V1Data_), req_size_V*sizeof(boost::uint32_t)),__FILE__,__LINE__); //input 1
+            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V2Data_), req_size_V*sizeof(boost::uint32_t)),__FILE__,__LINE__); //input 2
+        }
 
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V1Data_), req_size*sizeof(boost::uint32_t)),__FILE__,__LINE__); //input 1
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm.V2Data_), req_size*sizeof(boost::uint32_t)),__FILE__,__LINE__); //input 2
+        if( req_size_VinterData  > pgm.block_size_VinterData_) {
+            pgm.block_size_VinterData_ = req_size_VinterData;
+            gpu::cu_check_error(cudaFree((void*)pgm.VinterData_),__FILE__,__LINE__);
             gpu::cu_check_error(cudaMalloc((void**)&(pgm.VinterData_), vector_size *  2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__); 
-            gpu::cu_check_error(cudaMalloc((void**)&(pgm.PoutData_),                  2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+        }
 
-            } // end if
-//          gpu::cu_check_error(cudaMemset((void*)(pgm.PoutData_),0,2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+        if( req_size_PoutData > pgm.block_size_PoutData_) {
+            gpu::cu_check_error(cudaFree((void*)pgm.PoutData_),__FILE__,__LINE__);
+            gpu::cu_check_error(cudaMalloc((void**)&(pgm.PoutData_),                  2*num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, 2*Order>::value*sizeof(boost::uint32_t)),__FILE__,__LINE__);
+        }
         } // end fonction
     }; //end struct
     
@@ -159,7 +167,6 @@ namespace detail {
     template <std::size_t NumBits, int Order, int NumVars>
     struct memory_transfer_helper<NumBits, max_order_each<Order>, NumVars, typename boost::enable_if_c< (full_value<NumBits, max_order_each<Order>, NumVars>::value*sizeof(unsigned int) >= 2*shared_min::value) >::type >{ // full texture memory
          static void transfer_up(gpu_memblock const& pgm, boost::uint32_t const* pData1, boost::uint32_t const* pData2,  std::size_t VectorSize){
- std::cout << " JE SUIS LA " << stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value << std::endl;
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V1Data_,(void*)pData1,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
                                 *num_words<NumBits>::value*sizeof(boost::uint32_t),cudaMemcpyHostToDevice),__FILE__,__LINE__);
   	    gpu::cu_check_error(cudaMemcpyAsync((void*)pgm.V2Data_,(void*)pData2,VectorSize*stride<0,NumVars,Order>::value*stride<1,NumVars,Order>::value*stride<2,NumVars,Order>::value*stride<3,NumVars,Order>::value
