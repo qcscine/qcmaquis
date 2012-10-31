@@ -62,7 +62,7 @@ namespace vli {
                 dim3 threads(mul_block_size<MaxOrder, NumVars,2>::value);
                 polynomial_multiply_full<NumBits, MaxOrder, NumVars><<<grid,threads>>>(pgm.V1Data_, pgm.V2Data_,VectorSize, pgm.VinterData_,ghc.workblock_count_by_warp_,ghc.execution_plan_);
     //            gpu::cu_check_error(cudaDeviceSynchronize(),__FILE__,__LINE__);
-                gpu::cu_check_error_kernel("error multiplication poly", __FILE__, __LINE__);
+  //              gpu::cu_check_error_kernel("error multiplication poly", __FILE__, __LINE__);
 	    }
             //second kernels reduction polynomials
 	    {
@@ -80,7 +80,7 @@ namespace vli {
                 for(std::size_t i=0; i < quotient; ++i){ 
                     polynomial_sum_intermediate_full<NumBits, MaxOrder::value, NumVars><<<grid,threads>>>(pgm.VinterData_, VectorSize, pgm.PoutData_, num_block_offset,reuse); 
 //                    gpu::cu_check_error(cudaDeviceSynchronize(),__FILE__,__LINE__);
-                    gpu::cu_check_error_kernel("error reduction poly  1", __FILE__,__LINE__);
+//                    gpu::cu_check_error_kernel("error reduction poly  1", __FILE__,__LINE__);
                     num_block_offset += numblock_constant_reduction::value;
                 }
 
@@ -88,7 +88,7 @@ namespace vli {
                     grid.x = rest;
                     polynomial_sum_intermediate_full<NumBits, MaxOrder::value, NumVars><<<grid,threads>>>(pgm.VinterData_, VectorSize, pgm.PoutData_, num_block_offset,reuse); 
   //                  gpu::cu_check_error(cudaDeviceSynchronize(),__FILE__,__LINE__);
-                    gpu::cu_check_error_kernel("error reduction poly  2",__FILE__,__LINE__);
+//                    gpu::cu_check_error_kernel("error reduction poly  2",__FILE__,__LINE__);
                 }
 	    }
     }
