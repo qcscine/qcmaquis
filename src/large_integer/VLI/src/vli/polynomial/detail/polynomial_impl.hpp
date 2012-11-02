@@ -210,8 +210,8 @@ namespace detail {
 #endif // VLI_POLYNOMIAL_PRINT_ZEROS
                 if( !(p(e) < typename Polynomial::value_type(0)) )
                     os_<<"+";
-                os_<<p(e)<<e<<" ";
-            //    os_<<p(e)<<e<<" "<< std::endl; C - Tim mine debug
+            //    os_<<p(e)<<e<<" ";
+                  os_<<p(e)<<e<<" "<< std::endl; // C - Tim mine debug
             }
 
           private:
