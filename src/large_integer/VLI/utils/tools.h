@@ -3,6 +3,7 @@
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <limits>
 
 namespace tools{
@@ -64,8 +65,6 @@ namespace tools{
     
         std::size_t vec_size = v_vli.size();
     
-     //   #pragma omp private(i,it_poly_vli, it_poly_gmp)
-     //   #pragma omp parallel for
         for(int i=0; i< vec_size; ++i){
             it_poly_vli = v_vli[i].begin();
             it_poly_gmp = v_gmp[i].begin();
@@ -90,6 +89,9 @@ namespace tools{
 
         return (p_gmp == p_gmp_tmp);
     }
+
+
+
 }//end namespace tool
 
 #endif

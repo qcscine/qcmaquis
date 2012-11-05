@@ -1,52 +1,58 @@
+//system and boost
 #include <boost/mpl/for_each.hpp>
+#include "boost/lexical_cast.hpp"
 #include <gmpxx.h>
 #include <iomanip> 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <time.h>
+
 #ifdef VLI_USE_GPU
 #include "vli/detail/gpu/inner_product_gpu_accelerator.hpp"
 #endif //VLI_USE_GPU
-
+//vli
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
 #include "vli/polynomial/polynomial.hpp"
 #include "vli/vli.hpp"
-#include <time.h>
+//utils
 #include "utils/timings.h"
 #include "utils/tools.h"
-//#define Size_vec 65535// play with this 1024 - 16384
-#define Size_vec 4096// play with this 1024 - 16384
-#define Order 10// play 5 - 15, cautious outside memory, xyzw poly ( 10 is the real target)
 
+#define Size_vec 4096// play with this 1024 - 16384
+//The order __ORDER__ is passed now by cmake, see cmakelist of the main
 using vli::polynomial;
 using vli::vector_polynomial;
 typedef vli::vli<128> vli_type_cpu_128;
 typedef vli::vli<192> vli_type_cpu_192;
 typedef vli::vli<256> vli_type_cpu_256;
 /*  -------------------------------------------------------------------- 128 bits ---------------------------------------------------------------------------------- */
-typedef vli::polynomial< vli_type_cpu_128, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_each_x_128;
-typedef vli::polynomial< vli_type_cpu_128, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>  >polynomial_type_each_xy_128;
-typedef vli::polynomial< vli_type_cpu_128, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>  >polynomial_type_each_xyz_128;
-typedef vli::polynomial< vli_type_cpu_128, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'>  >polynomial_type_each_xyzw_128;
-typedef vli::polynomial< vli_type_cpu_128, vli::max_order_combined<Order>, vli::var<'x'> > polynomial_type_combined_x_128;
-typedef vli::polynomial< vli_type_cpu_128, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_combined_xy_128;
-typedef vli::polynomial< vli_type_cpu_128, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_type_combined_xyz_128;
-typedef vli::polynomial< vli_type_cpu_128, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_combined_xyzw_128;
+typedef vli::polynomial< vli_type_cpu_128, vli::max_order_each<__ORDER__>, vli::var<'x'>  >polynomial_type_each_x_128;
+typedef vli::polynomial< vli_type_cpu_128, vli::max_order_each<__ORDER__>, vli::var<'x'>, vli::var<'y'>  >polynomial_type_each_xy_128;
+typedef vli::polynomial< vli_type_cpu_128, vli::max_order_each<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>  >polynomial_type_each_xyz_128;
+typedef vli::polynomial< vli_type_cpu_128, vli::max_order_each<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'>  >polynomial_type_each_xyzw_128;
+typedef vli::polynomial< vli_type_cpu_128, vli::max_order_combined<__ORDER__>, vli::var<'x'> > polynomial_type_combined_x_128;
+typedef vli::polynomial< vli_type_cpu_128, vli::max_order_combined<__ORDER__>, vli::var<'x'>, vli::var<'y'> > polynomial_type_combined_xy_128;
+typedef vli::polynomial< vli_type_cpu_128, vli::max_order_combined<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_type_combined_xyz_128;
+typedef vli::polynomial< vli_type_cpu_128, vli::max_order_combined<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_combined_xyzw_128;
 /*  -------------------------------------------------------------------- 192 bits ---------------------------------------------------------------------------------- */
-typedef vli::polynomial< vli_type_cpu_192, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_each_x_192;
-typedef vli::polynomial< vli_type_cpu_192, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>  >polynomial_type_each_xy_192;
-typedef vli::polynomial< vli_type_cpu_192, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>  >polynomial_type_each_xyz_192;
-typedef vli::polynomial< vli_type_cpu_192, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'>  >polynomial_type_each_xyzw_192;
-typedef vli::polynomial< vli_type_cpu_192, vli::max_order_combined<Order>, vli::var<'x'> > polynomial_type_combined_x_192;
-typedef vli::polynomial< vli_type_cpu_192, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_combined_xy_192;
-typedef vli::polynomial< vli_type_cpu_192, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_type_combined_xyz_192;
-typedef vli::polynomial< vli_type_cpu_192, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_combined_xyzw_192;
+typedef vli::polynomial< vli_type_cpu_192, vli::max_order_each<__ORDER__>, vli::var<'x'>  >polynomial_type_each_x_192;
+typedef vli::polynomial< vli_type_cpu_192, vli::max_order_each<__ORDER__>, vli::var<'x'>, vli::var<'y'>  >polynomial_type_each_xy_192;
+typedef vli::polynomial< vli_type_cpu_192, vli::max_order_each<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>  >polynomial_type_each_xyz_192;
+typedef vli::polynomial< vli_type_cpu_192, vli::max_order_each<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'>  >polynomial_type_each_xyzw_192;
+typedef vli::polynomial< vli_type_cpu_192, vli::max_order_combined<__ORDER__>, vli::var<'x'> > polynomial_type_combined_x_192;
+typedef vli::polynomial< vli_type_cpu_192, vli::max_order_combined<__ORDER__>, vli::var<'x'>, vli::var<'y'> > polynomial_type_combined_xy_192;
+typedef vli::polynomial< vli_type_cpu_192, vli::max_order_combined<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_type_combined_xyz_192;
+typedef vli::polynomial< vli_type_cpu_192, vli::max_order_combined<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_combined_xyzw_192;
 /*  -------------------------------------------------------------------- 256 bits ---------------------------------------------------------------------------------- */
-typedef vli::polynomial< vli_type_cpu_256, vli::max_order_each<Order>, vli::var<'x'>  >polynomial_type_each_x_256;
-typedef vli::polynomial< vli_type_cpu_256, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>  >polynomial_type_each_xy_256;
-typedef vli::polynomial< vli_type_cpu_256, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>  >polynomial_type_each_xyz_256;
-typedef vli::polynomial< vli_type_cpu_256, vli::max_order_each<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'>  >polynomial_type_each_xyzw_256;
-typedef vli::polynomial< vli_type_cpu_256, vli::max_order_combined<Order>, vli::var<'x'> > polynomial_type_combined_x_256;
-typedef vli::polynomial< vli_type_cpu_256, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'> > polynomial_type_combined_xy_256;
-typedef vli::polynomial< vli_type_cpu_256, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_type_combined_xyz_256;
-typedef vli::polynomial< vli_type_cpu_256, vli::max_order_combined<Order>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_combined_xyzw_256;
+typedef vli::polynomial< vli_type_cpu_256, vli::max_order_each<__ORDER__>, vli::var<'x'>  >polynomial_type_each_x_256;
+typedef vli::polynomial< vli_type_cpu_256, vli::max_order_each<__ORDER__>, vli::var<'x'>, vli::var<'y'>  >polynomial_type_each_xy_256;
+typedef vli::polynomial< vli_type_cpu_256, vli::max_order_each<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>  >polynomial_type_each_xyz_256;
+typedef vli::polynomial< vli_type_cpu_256, vli::max_order_each<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'>  >polynomial_type_each_xyzw_256;
+typedef vli::polynomial< vli_type_cpu_256, vli::max_order_combined<__ORDER__>, vli::var<'x'> > polynomial_type_combined_x_256;
+typedef vli::polynomial< vli_type_cpu_256, vli::max_order_combined<__ORDER__>, vli::var<'x'>, vli::var<'y'> > polynomial_type_combined_xy_256;
+typedef vli::polynomial< vli_type_cpu_256, vli::max_order_combined<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'> > polynomial_type_combined_xyz_256;
+typedef vli::polynomial< vli_type_cpu_256, vli::max_order_combined<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_combined_xyzw_256;
 
 typedef boost::mpl::vector<
                             polynomial_type_each_xyz_128,
@@ -89,8 +95,36 @@ typedef boost::mpl::vector<
                             polynomial_type_combined_xy_256,
                             polynomial_type_combined_x_256
                           > polynomial_list_256_combined;
-   struct test_case {
+
+   template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
+   class polynomial;
+
+   template <typename polynomial>
+   struct timescheduler;
+
+   template <typename Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
+   struct timescheduler<polynomial<Coeff,vli::max_order_each<Order>,Var0,Var1,Var2,Var3> >{
+       static void save(double tgmp, double tcpu, double tgpu = 0){
+           std::string name("MaxOrderEachTime");
+           name += boost::lexical_cast<std::string>(Order);
+           std::ofstream os(name.c_str(),std::ios::app);
+           os << Order << " " << Coeff::numbits << " " << vli::detail::num_of_variables_helper<Var0,Var1,Var2,Var3>::value << " "<< tgmp << " " << tcpu << " " << tgpu << std::endl;
+           os.close();
+       };
+   };   
+
+   template <typename Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
+   struct timescheduler<polynomial<Coeff,vli::max_order_combined<Order>,Var0,Var1,Var2,Var3> >{
+       static void save(double tgmp, double tcpu, double tgpu = 0){
+           std::string name("MaxOrderCombinedTime");
+           name += boost::lexical_cast<std::string>(Order);
+           std::ofstream os(name.c_str(),std::ios::app);
+           os << Order << " " << Coeff::numbits << " " << vli::detail::num_of_variables_helper<Var0,Var1,Var2,Var3>::value << " "<< tgmp << " " << tcpu << " " << tgpu << std::endl;
+           os.close();
+       };
+   };   
     
+   struct test_case {
 
    template <typename Polynomial>
    void operator()(Polynomial const&) {
@@ -104,7 +138,6 @@ typedef boost::mpl::vector<
        typedef typename vli::polynomial_multiply_result_type<Polynomial>::type Polynomial_res;
        typedef vli::vector_polynomial<Polynomial> vector_polynomial;
        typedef vli::vector_polynomial<Polynomial_res> vector_polynomial_res;
-       { 
        //VLI polys
        vector_polynomial v1(Size_vec),v2(Size_vec);
        Polynomial_res p1_res, p2_res;
@@ -133,32 +166,33 @@ typedef boost::mpl::vector<
        t1.begin();
            p2_res =  vli::detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2);
        t1.end();
+       #endif
 
        if(tools::equal<Polynomial>(p1_res,p_gmp_res))
-           if(p1_res == p2_res){ 
-               std::cout << " ----- OK, cpu ";
-               std::cout << t0.get_time() << " gpu ";
-               std::cout << t1.get_time() << " gmp ";
-               std::cout << tgmp.get_time();
-               std::cout.precision(2);
-               std::cout << " G vli: "  << tgmp.get_time()/t0.get_time() << " G gpu: " << tgmp.get_time()/t1.get_time()   ; 
-           }else
-               std::cout << " NO OK, " ; 
+               std::cout << "  OK, cpu/gmp " << t0.get_time() ;
+       #ifdef VLI_USE_GPU
+               if(p1_res == p2_res)
+                   std::cout << " gpu "  t1.get_time() ;
+               else
+                   std::cout << " gpu no ok";
        #endif
-       }
-      
+               std::cout << " gmp " <<  tgmp.get_time();
+               std::cout.precision(2);
+       #ifdef VLI_USE_GPU
+               std::cout << " G vli: "  << tgmp.get_time()/t0.get_time() << " G gpu: " << tgmp.get_time()/t1.get_time()   ; 
+//               tool::timescheduler::save(tgmp.get_time(),t0.get_time(),t1.get_time());
+       #else
+               std::cout << " G vli: "  << tgmp.get_time()/t0.get_time() ; 
+               timescheduler<Polynomial>::save(tgmp.get_time(),t0.get_time());
+       #endif
 
        }
    };
 
-namespace vli { namespace detail { 
-   void ultimate_192( boost::uint64_t* x/* %%rdi */,  boost::uint64_t const* y/* %%rsi */,  boost::uint64_t const* z/* %%rdx -> rbx */);
-}}
-
 int main(int argc, char* argv[]) {
        std::cout << " -------ASCII ART ^_^' --------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
-       std::cout << " -------Size vector : " << Size_vec  << ", Order " << Order << std::endl;
-       std::cout << " -----  MaxOrderEach------------------------------------------------------------------------------------------------------------------------------------------------------------ " << std::endl;
+       std::cout << " -------Size vector : " << Size_vec  << ", Order " << __ORDER__ << std::endl;
+       std::cout << " -----  Max_Order_Each --------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -----  3 variable --------------------------------- 2 variables --------------------------------- 1 variables ----------------------------------------------------------------- " << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
@@ -174,7 +208,7 @@ int main(int argc, char* argv[]) {
        boost::mpl::for_each<polynomial_list_128_each>(test_case());
        std::cout << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
-       std::cout << " -----  MaxOrderCombined-------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
+       std::cout << " -----  Max__Order_Combined ---------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -----  4 variable --------------------------------- 3 variables --------------------------------- 2 variables --------------------------------- 1 variables ------------------- " << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
