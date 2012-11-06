@@ -15,7 +15,7 @@ bool mycompare (const mytuple &lhs, const mytuple &rhs){
 template<int numvar>
 class data{
    public:
-   data(std::string const& name):name_(name),maxorder_(6){
+   data(std::string const& name):name_(name),maxorder_(14){
        datanumbits_.resize(3); // 3 because 128, 192 et 256 input vli
    }; 
 
@@ -60,8 +60,15 @@ class data{
            os.setf(std::ios::fixed,std::ios::floatfield);
            for(; it2 < (*it1).end(); it2+=numvar){ // MaxOrderEach 3 var, MaxOrderCombined 4 var
                os << boost::get<0>((*it2))<< " " << boost::get<1>((*it2)) ; /* give info on the poly + vli */
-               for(int i=0; i<numvar; ++i)
-                   os << " " << boost::get<2>(*(it2+i)) << " " << boost::get<3>(*(it2+i)) << " " << boost::get<4>(*(it2+i)) << " " << boost::get<5>(*(it2+i)); /* give #var, tgmp, tvlicpu, tvligpu */
+               int i =0;
+               int nv = 1;
+               while(i<numvar){
+                    if(nv == boost::get<2>(*(it2+i))){
+                        os << " " << boost::get<2>(*(it2+i)) << " " << boost::get<3>(*(it2+i)) << " " << boost::get<4>(*(it2+i)) << " " << boost::get<5>(*(it2+i)); /* give #var, tgmp, tvlicpu, tvligpu */
+                        nv++;i=0;
+                    }else
+                        i++;
+               };  
                os << std::endl;
                
            }
