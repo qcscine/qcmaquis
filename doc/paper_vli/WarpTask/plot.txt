@@ -1,0 +1,61 @@
+reset
+set terminal postscript
+set size 0.8,0.7
+set ylabel "Total number of contribution"
+set xlabel "coefficient"
+set xrange [0:448]
+set xtics 32
+
+#red family
+set style line 1  lt 1 lw 3 pt 1 lc rgb "#FF0000" #red
+set style line 2  lt 1 lw 3 pt 1 lc rgb "#FF1493" #deep pink
+set style line 3  lt 1 lw 3 pt 1 lc rgb "#FF6347" #tomato
+set style line 4  lt 1 lw 3 pt 1 lc rgb "#FFC8CB" #pink
+    
+#blue family    
+set style line 5  lt 1 lw 3 pt 1 lc rgb "#0000FF" #blue
+set style line 6  lt 1 lw 3 pt 1 lc rgb "#1E90FF" #dodger blue
+set style line 7  lt 1 lw 3 pt 1 lc rgb "#4682B4" #steelblue
+
+#green family
+set style line 9  lt 1 lw 3 pt 1 lc rgb "#008000" #green
+set style line 10 lt 1 lw 3 pt 1 lc rgb "#3CB371" #medium seagreen
+set style line 11 lt 1 lw 3 pt 1 lc rgb "#7FFFd4" #Aquamarine
+set style line 12 lt 1 lw 3 pt 1 lc rgb "#7FFF00" #chartreuse
+
+set style line 13 lt 1 lw 1 pt 1 lc rgb "#000000" #chartreuse
+
+
+set out "figures/coeffs.eps"; plot "outsort.dat" using 1:  2 linestyle 1 with lines title "Contributions of P(X,Y), Order 10"
+#dummy thing for the task warp
+set label "Task 0, Warp 0" at 16,2 rotate by 90 
+set label "Task 1, Warp 1" at 48,2 rotate by 90 
+set label "Task 2, Warp 2" at 80,2 rotate by 90 
+set label "Task 3, Warp 3" at 112,2 rotate by 90 
+set label "Task 4, Warp 4" at 144,50 rotate by 90 
+set label "Task 5, Warp 5" at 176,50 rotate by 90 
+set label "Task 6, Warp 6" at 208,50 rotate by 90 
+set label "Task 7, Warp 6" at 240,32 rotate by 90 
+set label "Task 8, Warp 5" at 272,32 rotate by 90 
+set label "Task 9, Warp 4" at 304,32 rotate by 90 
+set label "Task 10, Warp 3" at 336,32 rotate by 90 
+set label "Task 11, Warp 6" at 368,32 rotate by 90 
+set label "Task 12, Warp 5" at 400,32 rotate by 90 
+set label "Task 13, Warp 4" at 432,32 rotate by 90 
+
+
+set arrow from 144,48 to 144,2 
+set arrow from 176,48 to 176,2 
+set arrow from 208,48 to 208,2 
+
+set arrow from 240,30 to 240,2 
+set arrow from 272,30 to 272,2
+set arrow from 304,30 to 304,2
+set arrow from 336,30 to 336,2
+set arrow from 368,30 to 368,2
+set arrow from 400,30 to 400,2
+set arrow from 432,30 to 432,2
+set out "figures/coeffs.eps"; replot "task.dat" using 1:2 linestyle 13  with line notitle   
+
+set out
+set terminal pop
