@@ -173,6 +173,8 @@ public:
         		//mps[site2].divide_by_scalar(mps[site2].scalar_norm());	
 
         		t = mps[site2].normalize_left(DefaultSolver());
+                // MD: DEBUGGING OUTPUT
+                maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site2 < L-1) mps[site2+1].multiply_from_left(t);
 
                 storage::reset(left_stores_[site2]); // left_stores_[site2] is outdated
@@ -189,6 +191,8 @@ public:
         		//mps[site1].divide_by_scalar(mps[site1].scalar_norm());	
 
         		t = mps[site1].normalize_right(DefaultSolver());
+                // MD: DEBUGGING OUTPUT
+                maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site1 > 0) mps[site1-1].multiply_from_right(t);
 
                 storage::reset(right_stores_[site2]); // right_stores_[site2] is outdated
