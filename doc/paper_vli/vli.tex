@@ -26,7 +26,11 @@
 
 The main purpose of the VLI lib is performed large integer arithmetic based on meta-programming and  hybrid (CPU/GPU) inner product of polynomial up to order 14 with 1 to 4 variables with large integer coefficient 128 to 256 bits.  We remember the basics of the inner product of a polynomial,  and the implementation of the large integer library for the cpu version  The second part will be on the gpu implementation of the inner product.  All these algorithms are based on brut force attacks, as their size should not justify a FFT approach \cite{Emeliyanenko:2009}.
 
-\section*{Polynomial and Inner product definitions}
+\section{Art of work}
+
+BLABLABLALBALBALBLALBALBLALBLALBLALBLALBABLALB ALBLALBALBLABLALBLABLALBLA......
+
+\section{Polynomial and Inner product definitions}
 
 The library performed inner product of vector of polynomials from one to four variables where polynomials are defined like (four variables) :
 \begin{eqnarray}
@@ -105,8 +109,7 @@ The choice of the memory layout is important because it facilitates  the usage o
 we want reuse the VLI library in other object conception code,  we can not interleave the VLI number with the polynomial like on the figure \ref{AOSSOA}. 
 Thus, the data structure will only concern the very large coefficient. For an addition it is a non sense because it does not support carry bit, and less carry bit between entries of the multimedia register, and it  necessitate work under 31 bits to simulate the carry bit. 
 The extended multiplication under AVX \texttt{\_\_mm256\_mul\_epu32}  allows only four multiplication of 32 bits, we save a factor two. Nevertheless, on Sandy Bridge, we have 3 ALU, we can not exclude
-the execution of several long multiplication in the same time, thus we loose the benefice of the SIMD version. Moreover a large extra work it necessary to prepare the register and shuffle the data into the register which are costly.  To conclude for our range of operations the extended multiplication varies from 128 to 512 bits , a SIMD version will be not optimum. Although, it has been used with success for larger 
-integer \cite{SIMD}
+the execution of several long multiplication in the same time, thus we loose the benefice of the SIMD version. Moreover a large extra work it necessary to prepare the register and shuffle the data into the register which are costly. For our range of operations the extended multiplication varies from 128 to 512 bits , a SIMD version will be not optimum, although, it has been used with success for larger integer \cite{SIMD}. To conclude, our library is build on AoS format.
 
 \section{A Short introduction on GPU}
 
