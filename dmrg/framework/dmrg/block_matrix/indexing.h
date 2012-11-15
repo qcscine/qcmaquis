@@ -91,10 +91,18 @@ public:
     
     typedef basis_iterator_<SymmGroup> basis_iterator;
     
-    std::size_t size_of_block(charge c) const // rename
+    std::size_t size_of_block(charge c) const
     {
         assert( has(c) );
         return std::lower_bound(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>())->second;
+    }
+
+    std::size_t size_of_block(charge c, bool position_check) const
+    {
+        const_iterator it = std::lower_bound(this->begin(), this->end(), std::make_pair(c,0), index_detail::gt<SymmGroup>());
+        if (position_check && (it==this->end() || (*it).first != c))
+            return 0;
+        return it->second;
     }
     
     std::size_t position(charge c) const

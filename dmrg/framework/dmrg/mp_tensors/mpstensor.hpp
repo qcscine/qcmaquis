@@ -17,6 +17,10 @@
 
 #include "utils/traits.hpp"
 
+
+// implementation of join functions
+#include "dmrg/mp_tensors/joins.hpp"
+
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
                                         Index<SymmGroup> const & ld,
@@ -164,8 +168,10 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
             
             block_matrix<Matrix, SymmGroup> Q, R;
             qr(data_, Q, R);
-	    assert(data_.left_basis() == Q.left_basis());
+            
             swap(data_, Q);
+            right_i = data_.right_basis();
+            assert(right_i == R.left_basis());
             
             cur_normalization = Lnorm;
             return R;
@@ -182,7 +188,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
             
             swap(data_, U);
             gemm(S, V, U);
-            
+
             cur_normalization = Lnorm;
             return U;
         }
@@ -203,9 +209,10 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             
             block_matrix<Matrix, SymmGroup> L, Q;
             lq(data_, L, Q);
-	    assert(data_.right_basis() == L.right_basis());
-
+            
             swap(data_, Q);
+            left_i = data_.left_basis();
+            assert(left_i == L.right_basis());
             
             cur_normalization = Rnorm;
             return L;
@@ -218,8 +225,8 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             svd(data_, U, V, S);
             
             left_i = V.left_basis();
-	    assert(data_.right_basis() == V.right_basis());
-	    swap(data_, V);
+            assert(data_.right_basis() == V.right_basis());
+            swap(data_, V);
             
             gemm(U, S, V);
             

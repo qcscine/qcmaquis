@@ -50,6 +50,17 @@ namespace maquis { namespace dmrg { namespace detail {
                 out(out_y_offset + l1*ldim2 + l2, out_x_offset + r1*rdim2 + r2) = 
                 in(l2, r2)*alfa(l1, r1);
     }
+    
+    template <typename T>
+    void copy2d(alps::numeric::matrix<T>& B, size_t bi, size_t bj,
+                alps::numeric::matrix<T> const& A, size_t ai, size_t aj, size_t m, size_t n)
+    {
+        assert(num_cols(B) >= bj+n);
+        assert(num_rows(B) >= bi+m);
+        for(size_t j=0; j<n; ++j)
+            for(size_t i=0; i<m; ++i)
+                B(bi+i,bj+j) = A(ai+i,aj+j);
+    }
 
     template <typename T>
     void reshape_l2b(alps::numeric::matrix<T>& out, const alps::numeric::matrix<T>& in,
