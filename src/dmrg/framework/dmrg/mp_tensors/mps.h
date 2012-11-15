@@ -110,8 +110,10 @@ MPS<Matrix, SymmGroup> join(MPS<Matrix, SymmGroup> const & a,
 {
     assert( a.length() == b.length() );
     
-    MPS<Matrix, SymmGroup> ret = a;
-    for (std::size_t p = 0; p < a.length(); ++p)
+    MPS<Matrix, SymmGroup> ret(a.length());
+    ret[0] = join(a[0],b[0],l_boundary_f);
+    ret[a.length()-1] = join(a[a.length()-1],b[a.length()-1],r_boundary_f);
+    for (std::size_t p = 1; p < a.length()-1; ++p)
         ret[p] = join(a[p], b[p]);
     return ret;
 }

@@ -16,6 +16,7 @@
 #include <iostream>
 #include <algorithm>
 
+enum boundary_flag_t {no_boundary_f,l_boundary_f,r_boundary_f};
 enum MPSStorageLayout { LeftPaired, RightPaired };
 // these are actually used in several places
 enum Indicator { Unorm, Lnorm, Rnorm };
@@ -113,48 +114,9 @@ public:
     
     void conjugate_inplace();
     
-    /* friend
-    MPSTensor join(MPSTensor const & m1,
-                   MPSTensor const & m2)
-    {
-        m1.make_left_paired();
-        m2.make_left_paired();
-        
-        MPSTensor<Matrix, SymmGroup> ret;
-        
-        for (std::size_t b = 0; b < m1.data_.n_blocks(); ++b) {
-            if (m2.data_.has_block(m1.data_.left_basis()[b], m1.data_.right_basis()[b])) {
-                Matrix nb = join(m1.data_[b],
-                                       m2.data_(m1.data_.left_basis()[b].first, m1.data_.right_basis()[b].first));
-                
-                ret.data_.insert_block(nb, m1.data_.left_basis()[b].first, m1.data_.right_basis()[b].first);
-            } else
-                ret.data_.insert_block(m1.data_[b], m1.data_.left_basis()[b].first, m1.data_.right_basis()[b].first);
-        }
-        
-        for (std::size_t b = 0; b < m2.data_.n_blocks(); ++b) {
-            if (m1.data_.has_block(m2.data_.left_basis()[b], m2.data_.right_basis()[b])) // those should've been taken care of above.
-                continue;
-                
-            ret.data_.insert_block(m2.data_[b], m2.data_.left_basis()[b].first, m2.data_.right_basis()[b].first);
-        }
-        
-        ret.right_i = ret.data_.right_basis();
-        
-        ret.left_i = m1.left_i;
-        for (typename Index<SymmGroup>::const_iterator it = m2.left_i.begin();
-             it != m2.left_i.end(); ++it) {
-            if (ret.left_i.has(it->first))
-                ret.left_i[ret.left_i.find(it->first)].second += it->second;
-            else
-                ret.left_i.insert(*it);
-        }
-        
-        ret.phys_i = m1.phys_i;
-        
-        return ret;
-    } */
-    
+    template<class Matrix_, class SymmGroup_>
+    friend MPSTensor<Matrix_, SymmGroup_> join(MPSTensor<Matrix_, SymmGroup_> const &, MPSTensor<Matrix_, SymmGroup_> const &, boundary_flag_t);
+
 #ifdef HAVE_ALPS_HDF5
     void load(alps::hdf5::archive & ar);
     void save(alps::hdf5::archive & ar) const;
