@@ -2,11 +2,11 @@
 reset
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GMIPS"
+set ylabel "GIPS"
 set xlabel "Order"
 set xrange [1:14]
 #set yrange [0:4]
-set key  at 5.0,300
+set key  at 13.5,300
 #set ytics 0.5
 
 #red family
@@ -29,9 +29,12 @@ set style line 30 lt 1 lw 3 pt 1 lc rgb "#DA70D6" #pink
 set style line 31 lt 2 lw 3 pt 1 lc rgb "#DA70D6" #pink
 set style line 32 lt 3 lw 3 pt 1 lc rgb "#DA70D6" #pink
 
+#gold
+set style line 40 lt 1 lw 3 pt 1 lc rgb "#ffd700" # gold
+
 #GPU
-set out "figures/ME128MIPS.eps";plot "KeplerRes/MaxOrderEachTime128bitsMIPS.dat" using 1:($17)/(($14)*1e+9)  linestyle 1  with lines title "dense P(x,y,z)"
+set out "figures/ME128MIPS.eps";plot "KeplerRes/MaxOrderEachTime128bitsMIPS.dat" using 1:($15)/(($6)*1e+9)   linestyle 20 with lines title "dense P(x)"
 set out "figures/ME128MIPS.eps";replot "KeplerRes/MaxOrderEachTime128bitsMIPS.dat" using 1:($16)/(($10)*1e+9)  linestyle 10 with lines title "dense P(x,y)"
-set out "figures/ME128MIPS.eps";replot "KeplerRes/MaxOrderEachTime128bitsMIPS.dat" using 1:($15)/(($6)*1e+9)   linestyle 20 with lines title "dense P(x)"
-set out "figures/ME128MIPS.eps";replot "MIPS/peak.dat" using 1:2 linestyle 30 with lines title "Peak Kepler"
+set out "figures/ME128MIPS.eps";replot   "KeplerRes/MaxOrderEachTime128bitsMIPS.dat" using 1:($17)/(($14)*1e+9)  linestyle 1  with lines title "dense P(x,y,z)"
+set out "figures/ME128MIPS.eps";replot "MIPS/peak.dat" using 1:2 linestyle 40 with lines title "Peak Kepler"
 

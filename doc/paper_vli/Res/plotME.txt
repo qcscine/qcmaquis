@@ -2,7 +2,7 @@
 reset
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOP/s"
+set ylabel "GOPS"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:4]
@@ -44,7 +44,7 @@ set out "figures/ME192.eps";replot "SandyBridgeRes/MaxOrderEachTime192bits.dat" 
 
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOP/s"
+set ylabel "GOPS"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:7]
@@ -66,7 +66,7 @@ set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" 
 
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOP/s"
+set ylabel "GOPS"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:3]

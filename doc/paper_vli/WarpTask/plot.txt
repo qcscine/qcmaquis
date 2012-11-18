@@ -1,7 +1,7 @@
 reset
 set terminal postscript
 set size 0.8,0.7
-set ylabel "Total number of contribution"
+set ylabel "Contribution"
 set xlabel "coefficient"
 set xrange [0:448]
 set xtics 32
@@ -26,7 +26,7 @@ set style line 12 lt 1 lw 3 pt 1 lc rgb "#7FFF00" #chartreuse
 set style line 13 lt 1 lw 1 pt 1 lc rgb "#000000" #chartreuse
 
 
-set out "figures/coeffs.eps"; plot "outsort.dat" using 1:  2 linestyle 1 with lines title "Contributions of P(X,Y), Order 10"
+set out "figures/coeffs.eps"; plot "outsort.dat" using 1:  2 linestyle 1 with lines title "Contribution of dense P(X,Y), Order 10"
 #dummy thing for the task warp
 set label "Task 0, Warp 0" at 16,2 rotate by 90 
 set label "Task 1, Warp 1" at 48,2 rotate by 90 
