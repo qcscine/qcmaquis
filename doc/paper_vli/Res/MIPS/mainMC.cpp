@@ -100,7 +100,7 @@ using std::vector;
             }
         };
         // four variables 'x','y','z','w'
-                template<>
+        template<>
         struct BuildTaskList_helper<4>{
             static void BuildTaskList(vector<single_coefficient_task > & VecCoeff, int Order){
                 for( int degree_x = 0; degree_x <(2*Order+1); ++degree_x)
