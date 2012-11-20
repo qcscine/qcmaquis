@@ -6,8 +6,8 @@ set ylabel "GOPS"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:4]
-set key  at 4.2,3.9
-set ytics 0.5
+#set key  at 4.2,3.9
+#set ytics 0.5
 
 #red family
 set style line 1  lt 1 lw 3 pt 1 lc rgb "#B22222" #red
@@ -29,6 +29,9 @@ set style line 30 lt 1 lw 3 pt 1 lc rgb "#DA70D6" #pink
 set style line 31 lt 2 lw 3 pt 1 lc rgb "#DA70D6" #pink
 set style line 32 lt 3 lw 3 pt 1 lc rgb "#DA70D6" #pink
 
+#black
+set style line 40 lt 1 lw 3 pt 1 lc rgb "#000000" #black
+
 #GPU
 set out "figures/ME192.eps";plot "KeplerRes/MaxOrderEachTime192bits.dat" using 1:($17)/(($14)*1e+9)  linestyle 1  with lines title "x vli_{gpu}"
 set out "figures/ME192.eps";replot "KeplerRes/MaxOrderEachTime192bits.dat" using 1:($16)/(($10)*1e+9)  linestyle 10 with lines title "xy vli_{gpu}"
@@ -47,21 +50,27 @@ set size 0.8,0.8
 set ylabel "GOPS"
 set xlabel "Order"
 set xrange [1:14]
-set yrange [0:7]
-set key  at 4.2,6.9
-
+set yrange [0:10]
+#set key  at 6.6,9.9
+set key top right
+set title "Dense polynomials"
 #GPU
-set out "figures/ME128.eps";plot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($17)/(($14)*1e+9)  linestyle 1  with lines title "x vli_{gpu}"
-set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($16)/(($10)*1e+9)  linestyle 10 with lines title "xy vli_{gpu}"
-set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($15)/(($6)*1e+9)   linestyle 20 with lines title "xyz vli_{gpu}"
+set out "figures/ME128.eps";plot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($19)/(($6)*1e+9)  linestyle 1  with lines title "P(x)_{gpu}"
+set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($20)/(($10)*1e+9)  linestyle 10 with lines title "P(x,y)_{gpu}"
+set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($21)/(($14)*1e+9)   linestyle 20 with lines title "P(x,y,z)_{gpu}"
+set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($22)/(($18)*1e+9)   linestyle 30 with lines title "P(x,y,z,w)_{gpu}"
 #VLI
-set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat"   using 1:($15)/(($5)*1e+9)  linestyle 21 with lines title "x vli_{cpu}"
-set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($16)/(($9)*1e+9)  linestyle 11 with lines title "xy vli_{cpu}"
-set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($17)/(($13)*1e+9) linestyle 2 with lines title "xyz vli_{cpu}"
+set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat"   using 1:($19)/(($5)*1e+9)  linestyle 21 with lines title "P(x)_{cpu}"
+set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($20)/(($9)*1e+9)  linestyle 11 with lines title "P(x,y)_{cpu}"
+set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($21)/(($13)*1e+9) linestyle 2 with lines title "P(x,y,z_{cpu}"
+set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($22)/(($17)*1e+9) linestyle 31 with lines title "P(x,y,z,w)_{cpu}"
 #GMP
- set out "figures/ME128.eps"; replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($15)/(($4)*1e+9)  linestyle 22 with lines title "x gmp"
- set out "figures/ME128.eps"; replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($16)/(($8)*1e+9)  linestyle 12 with lines title "xy gmp"
- set out "figures/ME128.eps"; replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($17)/(($12)*1e+9) linestyle 3 with lines title "xyz gmp"
+ set out "figures/ME128.eps"; replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($19)/(($4)*1e+9)  linestyle 40 with lines title "gmp"
+
+# set out "figures/ME128.eps"; replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($19)/(($4)*1e+9)  linestyle 22 with lines title "x gmp"
+# set out "figures/ME128.eps"; replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($20)/(($8)*1e+9)  linestyle 12 with lines title "xy gmp"
+# set out "figures/ME128.eps"; replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($21)/(($12)*1e+9) linestyle 3 with lines title "xyz gmp"
+# set out "figures/ME128.eps"; replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($21)/(($12)*1e+9) linestyle 31 with lines title "xyz gmp"
 
 
 set terminal postscript enhanced
