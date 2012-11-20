@@ -29,6 +29,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVD_COMPARISON, T, test_types)
 
     svd(pA,pU,pV,pS);
     svd(sA,sU,sV,sS);
- 
+
+    printf("Done %d x %d\n", (int)T::valuex, (int)T::valuey);
     BOOST_CHECK(sS == pS);
 }
