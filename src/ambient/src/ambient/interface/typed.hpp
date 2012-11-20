@@ -195,11 +195,22 @@ namespace ambient {
         typedef S value_type;
     };
 
-    template <typename S>
-    struct info < const ambient::numeric::transpose_view<ambient::numeric::matrix<S> > > {
-        typedef const ambient::numeric::transpose_view<ambient::numeric::matrix<S> > type;
-        static inline const ambient::numeric::matrix<S>& unfold(type& folded){ return *(const ambient::numeric::matrix<S>*)&folded; }
+    template <class Matrix>
+    struct info < const ambient::numeric::transpose_view<Matrix> > {
+        typedef const ambient::numeric::transpose_view<Matrix> type;
+        static inline const ambient::numeric::matrix<typename Matrix::value_type>& unfold(type& folded){ 
+            return *(const ambient::numeric::matrix<typename Matrix::value_type>*)&folded; 
+        }
     };
+
+    template <class Matrix>
+    struct info < ambient::numeric::transpose_view<Matrix> > {
+        typedef ambient::numeric::transpose_view<Matrix> type;
+        static inline ambient::numeric::matrix<typename Matrix::value_type>& unfold(type& folded){ 
+            return *(ambient::numeric::matrix<typename Matrix::value_type>*)&folded; 
+        }
+    };
+
     // }}}
 }
 
