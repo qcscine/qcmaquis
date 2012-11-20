@@ -51,13 +51,28 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline void diagonal_matrix<T>::remove_rows(size_t i, size_t k){
-       this->data_.remove_rows(i, k);
+    inline void diagonal_matrix<T>::remove_rows(size_t i, size_t m){
+       this->data_.remove_rows(i, m);
     }
 
     template<typename T>  
-    inline void diagonal_matrix<T>::remove_cols(size_t j, size_t k){
-        this->data_.remove_rows(j, k);
+    inline void diagonal_matrix<T>::remove_cols(size_t j, size_t n){
+        this->data_.remove_rows(j, n);
+    }
+
+    template<typename T>
+    inline diagonal_matrix<T>& diagonal_matrix<T>::locate(size_t i, size_t j){
+        return *this;
+    }
+
+    template<typename T>
+    inline const diagonal_matrix<T>& diagonal_matrix<T>::locate(size_t i, size_t j) const {
+        return *this;
+    }
+
+    template<typename T>
+    inline size_t diagonal_matrix<T>::addr(size_t i, size_t j) const {
+        return i;
     }
 
     template<typename T> 
@@ -78,64 +93,64 @@ namespace ambient { namespace numeric {
 
     // {{{ diagonal_matrix free functions
     template<typename T>
-    inline size_type num_rows(const diagonal_matrix<T>& m){
-        return m.num_rows();
+    inline size_type num_rows(const diagonal_matrix<T>& a){
+        return a.num_rows();
     }
 
     template<typename T>
-    inline size_type num_cols(const diagonal_matrix<T>& m){
-        return m.num_cols();
+    inline size_type num_cols(const diagonal_matrix<T>& a){
+        return a.num_cols();
     }
 
     template<typename T>
-    inline diagonal_matrix< std::complex<T> > exp(const diagonal_matrix<T>& m, const std::complex<T>& alfa){
+    inline diagonal_matrix< std::complex<T> > exp(const diagonal_matrix<T>& a, const std::complex<T>& alfa){
         assert(false); printf("ERROR: NOT TESTED (EXP)\n");
-        diagonal_matrix< std::complex<T> > e(num_rows(m), num_rows(m));
-        //kernels::exp_diagonal_rc<T>::spawn(e, m, alfa);
+        diagonal_matrix< std::complex<T> > e(num_rows(a), num_rows(a));
+        //kernels::exp_diagonal_rc<T>::spawn(e, a, alfa);
         return e;
     }
 
     template<typename T>
-    inline diagonal_matrix<T> exp(diagonal_matrix<T> m, const T& alfa = 1.){
-        exp_inplace(m, alfa);
-        return m;
+    inline diagonal_matrix<T> exp(diagonal_matrix<T> a, const T& alfa = 1.){
+        exp_inplace(a, alfa);
+        return a;
     }
 
     template<typename T>
-    inline void exp_inplace(diagonal_matrix<T>& m, const T& alfa = 1.){
-        kernels::exp_diagonal<T>::spawn(m, alfa);
+    inline void exp_inplace(diagonal_matrix<T>& a, const T& alfa = 1.){
+        kernels::exp_diagonal<T>::spawn(a, alfa);
     }
 
     template<typename T>
-    inline diagonal_matrix<T> sqrt(diagonal_matrix<T> m){
-        sqrt_inplace(m);
-        return m;
+    inline diagonal_matrix<T> sqrt(diagonal_matrix<T> a){
+        sqrt_inplace(a);
+        return a;
     }
 
     template<typename T>
-    inline void sqrt_inplace(diagonal_matrix<T>& m){
-        kernels::sqrt_diagonal<T>::spawn(m);
+    inline void sqrt_inplace(diagonal_matrix<T>& a){
+        kernels::sqrt_diagonal<T>::spawn(a);
     }
 
     template<typename T>
-    inline std::ostream& operator<<(std::ostream& os, const diagonal_matrix<T>& m){
-       os << m.data_ ; 
+    inline std::ostream& operator<<(std::ostream& os, const diagonal_matrix<T>& a){
+       os << a.data_ ; 
        return os;
     }
 
     template<typename T>
-    inline void remove_rows(diagonal_matrix<T>& m, size_t k, size_t n = 1){
-        m.remove_rows(k, n);
+    inline void remove_rows(diagonal_matrix<T>& a, size_t i, size_t m = 1){
+        a.remove_rows(i, m);
     }
 
     template<typename T>
-    inline void remove_cols(diagonal_matrix<T>& m, size_t k, size_t n = 1){
-        m.remove_cols(k, n);
+    inline void remove_cols(diagonal_matrix<T>& a, size_t j, size_t n = 1){
+        a.remove_cols(j, n);
     }
 
     template<typename T>
-    inline void resize(diagonal_matrix<T>& m, size_t rows, size_t cols){
-        m.resize(rows, cols);
+    inline void resize(diagonal_matrix<T>& a, size_t m, size_t n){
+        a.resize(m, n);
     }
     // }}}
 
