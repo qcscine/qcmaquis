@@ -4,7 +4,7 @@
 #include <limits>
 #include "utils/timings.h"
 
-//#define AMBIENT_COMPUTATIONAL_TIMINGS
+#define AMBIENT_COMPUTATIONAL_TIMINGS
 //#define AMBIENT_CHECK_BOUNDARIES
 
 #ifdef AMBIENT_CHECK_BOUNDARIES
@@ -12,6 +12,9 @@
 #endif
     
 #include "ambient/utils/ceil.h"
+
+#define NUM_ROWS(m,offset) std::min(IB, m.num_rows() - offset % m.num_rows())
+#define NUM_COLS(m,offset) std::min(IB, m.num_cols() - (size_t)(offset / m.num_rows()))
 
 #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
     #define __A_TIME_C(name) static __a_timer time(name); time.begin();
@@ -29,13 +32,22 @@ typedef int PLASMA_enum;
 #define PlasmaUpperLower 123
 #define PlasmaLeft       141
 #define PlasmaRight      142
+#define PlasmaForward    391
+#define PlasmaColumnwise 401
 
 extern "C" {
 void      dgemm_(const char*,const char*, const int*, const int*, const int*, const double*, 
                  const double*, const int*, const double*, const int*, 
                  const double*, double*, const int*);
+void     dbdsqr_(const char*, const int*, const int*, const int*, const int*, double*, double*, 
+                 double*, const int*, double*, const int*, double*, const int*, double*, int*);
+
+int LAPACKE_dbdsdc(int matrix_order, char uplo, char compq, int n, double* d, double* e, double* u, int ldu, double* vt, int ldvt, double* q, int* iq);
+
+void     dgebrd_(const int*, const int*, double*, const int*, double*, double*, double*, double*, double*, const int*, int*);
 double     ddot_(const int*, const double*, const int*, 
                  const double*, const int*);
+void     dgebd2_(int*, int*, double*, int*, double*, double*, double*, double*, double*, int*);
 int  CORE_dgeqrt(int M, int N, int IB,
                  double *A, int LDA,
                  double *T, int LDT,
@@ -83,6 +95,13 @@ int  CORE_dtsmlq(PLASMA_enum side, PLASMA_enum trans,
                  double *WORK, int LDWORK);
 void CORE_dlaset2(PLASMA_enum uplo, int n1, int n2, double alpha,
                  double *tileA, int ldtilea);
+void CORE_dparfb(PLASMA_enum side, PLASMA_enum trans, PLASMA_enum direct, PLASMA_enum storev,
+                 int M1, int N1, int M2, int N2, int K, int L,
+                       double *A1, int LDA1,
+                       double *A2, int LDA2,
+                 const double *V, int LDV,
+                 const double *T, int LDT,
+                       double *WORK, int LDWORK);
 }
 
 namespace ambient { namespace numeric { namespace kernels {
