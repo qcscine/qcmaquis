@@ -75,20 +75,20 @@ namespace ambient { namespace numeric {
     // }}}
     // {{{ subset_view
 
-    template<class Matrix, size_t IB>
+    template<class Matrix>
     template<class M> 
-    size_t subset_view<Matrix,IB>::rows(const M& a){ 
-        return ((Matrix&)a).num_cols(); 
-    } 
-
-    template<class Matrix, size_t IB>
-    template<class M> 
-    size_t subset_view<Matrix,IB>::cols(const M& a){ 
+    size_t subset_view<Matrix>::rows(const M& a){ 
         return ((Matrix&)a).num_rows(); 
     } 
 
-    template<class Matrix, size_t IB>
-    const char* subset_view<Matrix,IB>::code(){
+    template<class Matrix>
+    template<class M> 
+    size_t subset_view<Matrix>::cols(const M& a){ 
+        return ((Matrix&)a).num_cols(); 
+    } 
+
+    template<class Matrix>
+    const char* subset_view<Matrix>::code(){
         return "N"; 
     }  
     

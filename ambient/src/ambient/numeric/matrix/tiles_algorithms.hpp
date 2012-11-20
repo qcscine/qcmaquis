@@ -122,8 +122,8 @@ namespace ambient { namespace numeric {
         std::swap(const_cast<std::vector<diagonal_matrix<T>*>&>(a.data), split);
     }
     
-    template<class Matrix, size_t IB>
-    inline Matrix* merge(const tiles<subset_view<Matrix,IB> >& a){
+    template<class Matrix>
+    inline Matrix* merge(const tiles<subset_view<Matrix> >& a){
         Matrix* m = new Matrix(a.rows, a.cols);
 
         for(int j = 0; j < a.nt; j++){
@@ -141,18 +141,18 @@ namespace ambient { namespace numeric {
     inline void merge(const tiles<Matrix>& a){
         if(a.data.size() == 1) return;
 
-        std::vector<Matrix*> merge; 
-        merge.push_back(new Matrix(a.rows, a.cols));
+        std::vector<Matrix*> m; 
+        m.push_back(new Matrix(a.rows, a.cols));
 
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
                 const Matrix* src = &a.tile(i,j);
                 if(!src->impl->weak())
-                copy(*merge[0], i*AMBIENT_IB, j*AMBIENT_IB, *src, 0, 0, src->num_rows(), src->num_cols());
+                copy(*m[0], i*AMBIENT_IB, j*AMBIENT_IB, *src, 0, 0, src->num_rows(), src->num_cols());
                 delete src;
             }
         }
-        std::swap(const_cast<std::vector<Matrix*>&>(a.data), merge);
+        std::swap(const_cast<std::vector<Matrix*>&>(a.data), m);
     }
 
     template<class Matrix>
@@ -193,16 +193,16 @@ namespace ambient { namespace numeric {
     inline void merge(const tiles<diagonal_matrix<T> >& a){
         if(a.data.size() == 1) return;
 
-        std::vector<diagonal_matrix<T> *> merge; 
-        merge.push_back(new diagonal_matrix<T>(a.size));
+        std::vector<diagonal_matrix<T> *> m; 
+        m.push_back(new diagonal_matrix<T>(a.size));
 
         for(int i = 0; i < a.nt; i++){
             const diagonal_matrix<T>* src = a.data[i];
             if(!src->get_data().impl->weak())
-            copy(merge[0]->get_data(), i*AMBIENT_IB, 0, src->get_data(), 0, 0, src->num_rows(), 1);
+            copy(m[0]->get_data(), i*AMBIENT_IB, 0, src->get_data(), 0, 0, src->num_rows(), 1);
             delete src;
         }
-        std::swap(const_cast<std::vector<diagonal_matrix<T>*>&>(a.data), merge);
+        std::swap(const_cast<std::vector<diagonal_matrix<T>*>&>(a.data), m);
     }
 
     template<typename T>
@@ -459,7 +459,6 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void band(tiles<Matrix> a, tiles<Matrix>& u, tiles<Matrix>& b, tiles<Matrix>& v){
-        split_d(a);
         size_t m = num_rows(a);
         size_t n = num_cols(a);
         resize(u, m, m);
@@ -683,17 +682,6 @@ namespace ambient { namespace numeric {
             delete &say;
             delete &sax;
 
-            // {{{ 
-            //printf("\n\nA at this point: \n\n");
-            //Matrix& t = *merge(a.subset(k+1, k, a.mt-k-1, 1));
-            //std::cout << t;
-            //
-            //printf("\n\nY at this point: \n\n");
-            //merge(y);
-            //std::cout << y[0];
-            //split_d(y);
-            // }}}
-
             a.subset(k+1, k+1, a.mt-k-1, a.nt-k-1) -= a.subset(k+1, k, a.mt-k-1, 1) * transpose(y.subset(1, 0, y.mt-k-1, 1));
             a.subset(k+1, k+1, a.mt-k-1, a.nt-k-1) -= x.subset(  1, 0, x.mt-k-1, 1) * a.subset(k, k+1, 1, a.nt-k-1);
         }
@@ -703,9 +691,7 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix, class DiagonalMatrix>
-    inline void svd(const tiles<Matrix>& a, tiles<Matrix>& u, tiles<Matrix>& v, tiles<DiagonalMatrix>& s){
-        split_d(a); split_d(u); split_d(v);
-
+    inline void svd_mod(const tiles<Matrix>& a, tiles<Matrix>& u, tiles<Matrix>& v, tiles<DiagonalMatrix>& s){
         size_t m = num_rows(a);
         size_t n = num_cols(a);
         size_t k = std::min(m,n);
@@ -741,7 +727,7 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix, class DiagonalMatrix>
-    inline void svd_old(tiles<Matrix> a, tiles<Matrix>& u, tiles<Matrix>& v, tiles<DiagonalMatrix>& s){
+    inline void svd(tiles<Matrix> a, tiles<Matrix>& u, tiles<Matrix>& v, tiles<DiagonalMatrix>& s){
         size_t m = num_rows(a);
         size_t n = num_cols(a);
         size_t k = std::min(m,n);
@@ -751,14 +737,14 @@ namespace ambient { namespace numeric {
 
         merge(a); merge(u); merge(v); merge(s);
         svd(a[0], u[0], v[0], s[0]);
-        split(u); split(v); split(s);
+        split_d(u); split_d(v); split_d(s);
     }
 
     template<class Matrix, class DiagonalMatrix>
     inline void heev(const tiles<Matrix>& a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
         merge(a); merge(evecs); merge(evals);
         heev(a[0], evecs[0], evals[0]);
-        split(a); split(evecs); split(evals);
+        split_d(a); split_d(evecs); split_d(evals);
     }
 
     template<class Matrix, class DiagonalMatrix>
@@ -823,8 +809,6 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void qr(tiles<Matrix> a, tiles<Matrix>& q, tiles<Matrix>& r){
-        split_d(a); split_d(q); split_d(r);
-        
         int am = num_rows(a);
         int an = num_cols(a);
         int ak = std::min(am,an);
@@ -872,8 +856,6 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void lq(tiles<Matrix> a, tiles<Matrix>& l, tiles<Matrix>& q){
-        split_d(a); split_d(l); split_d(q);
-        
         int am = num_rows(a);
         int an = num_cols(a);
         int ak = std::min(am,an);
@@ -905,7 +887,6 @@ namespace ambient { namespace numeric {
         if(a.num_rows() == m && a.num_cols() == n) return;
         tiles<Matrix> r(m, n);
 
-        split_d(a); split_d(r);
         int mb_min = std::min(r.mt, a.mt);
         int nb_min = std::min(r.nt, a.nt);
         
@@ -934,7 +915,6 @@ namespace ambient { namespace numeric {
         if(a.num_rows() == m) return;
         tiles<diagonal_matrix<T> > r(m);
 
-        split_d(a); split_d(r);
         int nb_min = std::min(r.nt, a.nt);
         
         for(int i = 0; i < nb_min; i++){
@@ -951,7 +931,6 @@ namespace ambient { namespace numeric {
 
     template<typename T> 
     inline void sqrt_inplace(tiles<diagonal_matrix<T> >& a){
-        split_d(a);
         int size = a.data.size();
         for(int i = 0; i < size; i++){
             sqrt_inplace(a[i]);
@@ -960,7 +939,6 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void exp_inplace(tiles<diagonal_matrix<T> >& a, const T& alfa = 1.){
-        split_d(a);
         int size = a.data.size();
         for(int i = 0; i < size; i++){
             exp_inplace(a[i], alfa);
@@ -974,7 +952,6 @@ namespace ambient { namespace numeric {
 
     template<class Matrix> 
     inline scalar_type trace(const tiles<Matrix>& a){
-        split_d(a);
         int size = std::min(a.nt, a.mt);
         scalar_type result(0.);
         std::vector<scalar_type> parts;
@@ -987,7 +964,6 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     inline real_type norm_square(const tiles<Matrix>& a){
-        split_d(a);
         int size = a.nt*a.mt;
         real_type result(0.);
         std::vector<real_type> parts;
@@ -1000,7 +976,6 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     inline scalar_type overlap(const tiles<Matrix>& a, const tiles<Matrix>& b){
-        split_d(a); split_d(b);
         int size = a.nt*a.mt;
         scalar_type result(0.);
         std::vector<scalar_type> parts;
@@ -1030,7 +1005,6 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void transpose_inplace(tiles<Matrix>& a){
-        split_d(a);
         std::vector<Matrix*> t;
         t.reserve(a.mt*a.nt);
         for(int i = 0; i < a.mt; i++){
@@ -1078,7 +1052,6 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void generate(tiles<Matrix>& a){
-        split_d(a);
         int size = a.data.size();
         for(int i = 0; i < size; i++){
             fill_random(a[i]);
@@ -1118,7 +1091,6 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     inline void mul_inplace(tiles<Matrix>& a, const scalar_type& rhs) { 
-        split_d(a);
         int size = a.data.size();
         for(int i = 0; i < size; i++){
             a[i] *= rhs;
@@ -1127,7 +1099,6 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     inline void div_inplace(tiles<Matrix>& a, const scalar_type& rhs){
-        split_d(a);
         int size = a.data.size();
         for(int i = 0; i < size; i++){
             a[i] /= rhs;
