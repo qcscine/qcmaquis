@@ -33,16 +33,18 @@ namespace ambient { namespace numeric {
         explicit inline matrix(const ptr& p, size_t r);
         explicit inline matrix();
         explicit inline matrix(size_type rows, size_type cols, value_type init_value = value_type()); 
-        inline matrix(const matrix& m);
+        inline matrix(const matrix& a);
         matrix& operator = (const matrix& rhs); 
 #ifdef RVALUE
-        inline matrix(matrix&& m); 
+        inline matrix(matrix&& a); 
         matrix& operator = (matrix&& rhs);
 #endif
         inline ~matrix();
     public:
-        template<class M> static size_t rows(const M& m); 
-        template<class M> static size_t cols(const M& m);
+        template<class M> static size_t inc (const M& a); 
+        template<class M> static size_t rows(const M& a); 
+        template<class M> static size_t cols(const M& a);
+        inline size_type lda() const;
         inline size_type num_rows() const;
         inline size_type num_cols() const;
         inline scalar_type trace() const;
@@ -52,9 +54,12 @@ namespace ambient { namespace numeric {
         inline void swap(matrix& r);
         template<typename TT> 
         friend void swap(matrix& x, matrix& y);
-        inline void resize(size_type rows, size_type cols); 
+        inline void resize(size_type m, size_type n); 
         inline void remove_rows(size_type i, size_type k = 1);
         inline void remove_cols(size_type j, size_type k = 1);
+        inline matrix& locate(size_type i, size_type j);
+        inline const matrix& locate(size_type i, size_type j) const;
+        inline size_t addr(size_type i, size_type j) const;
         inline matrix& operator += (const matrix& rhs);
         inline matrix& operator -= (const matrix& rhs);
         template <typename T2> inline matrix& operator *= (const T2& t);
@@ -70,10 +75,25 @@ namespace ambient { namespace numeric {
         size_t ref;
     };
 
-    template <class Matrix>
+    template <class Matrix, size_t IB>
     class subset_view {
     public:
-        operator Matrix() const { return *(Matrix*)this; };
+        typedef typename Matrix::real_type real_type;
+        typedef typename Matrix::size_type size_type; 
+        typedef typename Matrix::value_type value_type;
+        typedef typename Matrix::scalar_type scalar_type;
+        typedef typename Matrix::difference_type difference_type;
+        typedef typename Matrix::ptr ptr;
+        subset_view(const Matrix& a, size_t offset = 0) : impl(a.impl), m(&a), offset(offset) {}
+        size_t num_rows(){ return std::min(IB, m->num_rows() - offset % m->num_rows()); };
+        size_t num_cols(){ return std::min(IB, m->num_cols() - (size_t)(offset / m->num_rows())); };
+        template<class M> static size_t rows(const M& a); 
+        template<class M> static size_t cols(const M& a);
+        static const char* code();
+        operator Matrix& () const { return *(Matrix*)m; }
+        ptr impl;
+        const Matrix* m;
+        size_t offset;
     };
 
     template <class T>
@@ -92,10 +112,15 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::difference_type difference_type;
         inline void* operator new (size_t);
         inline void operator delete (void*);
-        explicit transpose_view(const Matrix& m);
+        explicit transpose_view(const Matrix& a);
+        inline transpose_view& locate(size_type i, size_type j);
+        inline const transpose_view& locate(size_type i, size_type j) const;
+        inline size_t addr(size_type i, size_type j) const;
+        inline size_t lda() const;
         operator Matrix () const;
-        template<class M> static size_t rows(const M& m); 
-        template<class M> static size_t cols(const M& m);
+        template<class M> static size_t inc (const M& a); 
+        template<class M> static size_t rows(const M& a); 
+        template<class M> static size_t cols(const M& a);
         static const char* code();
         typename Matrix::ptr impl;
         size_t ref;
