@@ -170,7 +170,6 @@ namespace maquis { namespace bindings {
             alps::numeric::matrix<T> m(num_rows, num_cols);    
             std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
             size_t lda = m.stride2();
-            split_d(pm);
             for(size_t j = 0; j < pm.nt; ++j){
                 size_t offset = j*lda*AMBIENT_IB;
                 for(size_t i = 0; i < pm.mt; ++i){
@@ -216,7 +215,6 @@ namespace maquis { namespace bindings {
             size_t offset(0);
             alps::numeric::diagonal_matrix<T> m((std::size_t)num_rows);    
             std::vector<typename alps::numeric::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
-            split_d(pm);
             for(size_t i = 0; i < pm.nt; ++i){
                 const ambient::numeric::diagonal_matrix<T>& tile = pm[i];
                 size_t rows = tile.num_rows();
