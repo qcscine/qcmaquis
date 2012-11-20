@@ -6,7 +6,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg.h"
+#include "runsim.h"
 
 typedef @CMAKE_SYMM_GROUP@ grp;
-#include "measure_symm/sim.h"
+#include "measure_symm/symm_runsim.h"
