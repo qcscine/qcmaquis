@@ -19,9 +19,29 @@ namespace ambient { namespace numeric {
     }
 
     template <class Matrix>
-    transpose_view<Matrix>::transpose_view(const Matrix& m)
-    : impl(m.impl) 
+    transpose_view<Matrix>::transpose_view(const Matrix& a)
+    : impl(a.impl) 
     { 
+    }
+
+    template <class Matrix>
+    inline transpose_view<Matrix>& transpose_view<Matrix>::locate(size_type i, size_type j){
+        return *this;
+    }
+
+    template <class Matrix>
+    inline const transpose_view<Matrix>& transpose_view<Matrix>::locate(size_type i, size_type j) const {
+        return *this;
+    }
+
+    template<class Matrix>
+    inline size_t transpose_view<Matrix>::lda() const { 
+        return this->impl->spec.dim.y; 
+    }
+
+    template <class Matrix>
+    inline size_t transpose_view<Matrix>::addr(size_type i, size_type j) const {
+        return (j + i*lda()); 
     }
 
     template <class Matrix>
@@ -31,14 +51,20 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     template<class M> 
-    size_t transpose_view<Matrix>::rows(const M& m){ 
-        return m.num_cols(); 
+    size_t transpose_view<Matrix>::inc(const M& a){ 
+        return a.num_rows(); 
     } 
 
     template<class Matrix>
     template<class M> 
-    size_t transpose_view<Matrix>::cols(const M& m){ 
-        return m.num_rows(); 
+    size_t transpose_view<Matrix>::rows(const M& a){ 
+        return a.num_cols(); 
+    } 
+
+    template<class Matrix>
+    template<class M> 
+    size_t transpose_view<Matrix>::cols(const M& a){ 
+        return a.num_rows(); 
     } 
 
     template<class Matrix>
@@ -47,7 +73,26 @@ namespace ambient { namespace numeric {
     }  
 
     // }}}
+    // {{{ subset_view
 
+    template<class Matrix, size_t IB>
+    template<class M> 
+    size_t subset_view<Matrix,IB>::rows(const M& a){ 
+        return ((Matrix&)a).num_cols(); 
+    } 
+
+    template<class Matrix, size_t IB>
+    template<class M> 
+    size_t subset_view<Matrix,IB>::cols(const M& a){ 
+        return ((Matrix&)a).num_rows(); 
+    } 
+
+    template<class Matrix, size_t IB>
+    const char* subset_view<Matrix,IB>::code(){
+        return "N"; 
+    }  
+    
+    // }}}
     // {{{ matrix
     #define size_type   typename matrix<T>::size_type
     #define value_type  typename matrix<T>::value_type
@@ -98,9 +143,9 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T>
-    inline matrix<T>::matrix(const matrix& m){
-        this->impl = new I(m.impl->spec.dim, sizeof(T));
-        copy(*this, m);
+    inline matrix<T>::matrix(const matrix& a){
+        this->impl = new I(a.impl->spec.dim, sizeof(T));
+        copy(*this, a);
     }
     
     template <typename T>
@@ -113,8 +158,8 @@ namespace ambient { namespace numeric {
 
 #ifdef RVALUE
     template <typename T>
-    inline matrix<T>::matrix(matrix&& m){
-        this->impl = m.impl;
+    inline matrix<T>::matrix(matrix&& a){
+        this->impl = a.impl;
     }
 
     template <typename T>
@@ -126,14 +171,25 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     template<class M> 
-    size_t matrix<T>::rows(const M& m){ 
-        return m.num_rows(); 
-    } 
+    size_t matrix<T>::inc(const M& a){ 
+        return 1; 
+    }
 
     template<typename T>
     template<class M> 
-    size_t matrix<T>::cols(const M& m){ 
-        return m.num_cols(); 
+    size_t matrix<T>::rows(const M& a){ 
+        return a.num_rows(); 
+    }
+
+    template<typename T>
+    template<class M> 
+    size_t matrix<T>::cols(const M& a){ 
+        return a.num_cols(); 
+    }
+
+    template<typename T>
+    inline size_type matrix<T>::lda() const { 
+        return this->impl->spec.dim.y; 
     }
 
     template<typename T>
@@ -172,8 +228,8 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline void matrix<T>::resize(size_type rows, size_type cols){
-        ambient::numeric::resize(*this, rows, cols);
+    inline void matrix<T>::resize(size_type m, size_type n){
+        ambient::numeric::resize(*this, m, n);
     }
 
     template<typename T>
@@ -184,6 +240,21 @@ namespace ambient { namespace numeric {
     template<typename T>
     inline void matrix<T>::remove_cols(size_type j, size_type k){
         ambient::numeric::remove_cols(*this, j, k); 
+    }
+
+    template<typename T>
+    inline matrix<T>& matrix<T>::locate(size_type i, size_type j){
+        return *this;
+    }
+
+    template<typename T>
+    inline const matrix<T>& matrix<T>::locate(size_type i, size_type j) const {
+        return *this;
+    }
+
+    template<typename T>
+    inline size_t matrix<T>::addr(size_type i, size_type j) const {
+        return (i + j*this->lda());
     }
 
     template<typename T>
