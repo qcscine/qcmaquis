@@ -4,24 +4,109 @@
 #include "ambient/numeric/matrix/tiles.h"
 #include "ambient/numeric/matrix/tiles_algorithms.hpp"
 
-#define size_type   typename tiles<subset_view<Matrix> >::size_type
+#define size_type typename tiles<subset_view<Matrix,IB> >::size_type
 
 namespace ambient { namespace numeric {
 
-    template<class Matrix>
-    inline Matrix& tiles<subset_view<Matrix> >::tile(size_type i, size_type j){
-        return *this->data[i + mt*j];
+    template<class Matrix, size_t IB>
+    inline tiles<subset_view<Matrix,IB> > tiles<subset_view<Matrix,IB> >::subset(size_type i, size_type j, size_type mt, size_type nt) const {
+        if(mt == 0 || nt == 0){
+            tiles<subset_view<Matrix,IB> > s;
+            s.mt = s.nt = s.rows = s.cols = 0;
+            return s;
+        }
+
+        tiles<subset_view<Matrix,IB> > s;
+        s.data.reserve(mt*nt);
+        s.mt = mt; s.nt = nt;
+        s.rows = (mt-1)*IB + tile(i+mt-1,0).num_rows(); 
+        s.cols = (nt-1)*IB + tile(0,j+nt-1).num_cols();
+
+        for(int jj = j; jj < j + nt; jj++)
+        for(int ii = i; ii < i + mt; ii++)
+        s.data.push_back(tile(ii,jj));
+        return s;
     }
 
-    template<class Matrix>
-    inline const Matrix& tiles<subset_view<Matrix> >::tile(size_type i, size_type j) const {
-        return *this->data[i + mt*j];
+    template<class Matrix, size_t IB>
+    template<class MatrixB>
+    inline tiles<subset_view<Matrix,IB> >& tiles<subset_view<Matrix,IB> >::operator += (const tiles<MatrixB>& rhs){
+        add_inplace(*this, rhs);
+        return *this;
+    }
+
+    template<class Matrix, size_t IB>
+    template<class MatrixB>
+    inline tiles<subset_view<Matrix,IB> >& tiles<subset_view<Matrix,IB> >::operator -= (const tiles<MatrixB>& rhs){
+        sub_inplace(*this, rhs);
+        return *this;
+    }
+
+    template<class Matrix, size_t IB>
+    inline Matrix& tiles<subset_view<Matrix,IB> >::tile(size_type i, size_type j){
+        return (Matrix&)this->data[i + mt*j];
+    }
+
+    template<class Matrix, size_t IB>
+    inline const Matrix& tiles<subset_view<Matrix,IB> >::tile(size_type i, size_type j) const {
+        return (Matrix&)this->data[i + mt*j];
+    }
+
+    template<class Matrix, size_t IB>
+    inline Matrix& tiles<subset_view<Matrix,IB> >::operator[](size_type k){
+        return (Matrix&)this->data[k];
+    }
+
+    template<class Matrix, size_t IB>
+    inline const Matrix& tiles<subset_view<Matrix,IB> >::operator[](size_type k) const {
+        return (Matrix&)this->data[k];
+    }
+
+    template<class Matrix, size_t IB>
+    inline size_type tiles<subset_view<Matrix,IB> >::num_rows() const {
+        return this->rows;
+    }
+
+    template<class Matrix, size_t IB>
+    inline size_type tiles<subset_view<Matrix,IB> >::num_cols() const {
+        return this->cols;
+    }
+
+    template<class Matrix, size_t IB>
+    inline Matrix& tiles<subset_view<Matrix,IB> >::locate(size_type i, size_type j){
+        return this->tile(i/AMBIENT_IB, j/AMBIENT_IB);
+    }
+
+    template<class Matrix, size_t IB>
+    inline const Matrix& tiles<subset_view<Matrix,IB> >::locate(size_type i, size_type j) const {
+        return this->tile(i/AMBIENT_IB, j/AMBIENT_IB);
+    }
+
+    template<class Matrix, size_t IB>
+    inline size_t tiles<subset_view<Matrix,IB> >::addr(size_type i, size_type j) const {
+        return locate(i,j).addr(i % AMBIENT_IB, j % AMBIENT_IB);
     }
 
 } }
 
 #undef size_type
+/*#define size_type typename tiles<subset_view<subset_view<Matrix,IB>,IB> >::size_type
 
+namespace ambient { namespace numeric {
+
+    template<class Matrix, size_t IB>
+    inline subset_view<Matrix,IB>& tiles<subset_view<subset_view<Matrix,IB>,IB> >::tile(size_type i, size_type j){
+        return this->data[i + mt*j];
+    }
+
+    template<class Matrix, size_t IB>
+    inline const subset_view<Matrix,IB>& tiles<subset_view<subset_view<Matrix,IB>,IB> >::tile(size_type i, size_type j) const {
+        return this->data[i + mt*j];
+    }
+
+} }
+
+#undef size_type*/
 #define size_type   typename tiles<Matrix>::size_type
 #define value_type  typename tiles<Matrix>::value_type
 #define scalar_type typename tiles<Matrix>::scalar_type
@@ -55,6 +140,13 @@ namespace ambient { namespace numeric {
     }
 
     template <class Matrix>
+    inline tiles<Matrix>::tiles(Matrix* a)
+    : rows(a->num_rows()), cols(a->num_cols()), mt(__a_ceil(rows/AMBIENT_IB)), nt(__a_ceil(cols/AMBIENT_IB))
+    {
+        this->data.push_back(a);
+    }
+
+    template <class Matrix>
     inline tiles<Matrix>::tiles(size_type rows, size_type cols, value_type init_value)
     : rows(rows), cols(cols), mt(__a_ceil(rows/AMBIENT_IB)), nt(__a_ceil(cols/AMBIENT_IB))
     {
@@ -73,24 +165,33 @@ namespace ambient { namespace numeric {
     }
 
     template <class Matrix>
-    inline tiles<subset_view<Matrix> > tiles<Matrix>::subset(size_type i, size_type j, size_type mt, size_type nt) const {
-        tiles<subset_view<Matrix> > s;
-        s.mt = mt; s.nt = nt;
-        s.rows = mt*AMBIENT_IB;
-        s.cols = nt*AMBIENT_IB;
+    template <size_t IB>
+    inline tiles<subset_view<Matrix,IB> > tiles<Matrix>::subset(size_type i, size_type j, size_type mt, size_type nt) const {
+        if(mt == 0 || nt == 0){
+            tiles<subset_view<Matrix,IB> > s;
+            s.mt = s.nt = s.rows = s.cols = 0;
+            return s;
+        }
+
+        tiles<subset_view<Matrix,IB> > s;
+        s.data.reserve(mt*nt);
+        s.mt = mt; 
+        s.nt = nt;
+        s.rows = (mt-1)*IB + tile(i+mt-1,0).num_rows(); 
+        s.cols = (nt-1)*IB + tile(0,j+nt-1).num_cols();
         for(int jj = j; jj < j + nt; jj++)
-            for(int ii = i; ii < i + mt; ii++)
-                s.data.push_back((Matrix*)&tile(ii, jj));
+        for(int ii = i; ii < i + mt; ii++)
+        s.data.push_back(subset_view<Matrix,IB>(tile(ii,jj),0));
 
         return s;
     }
 
     template <class Matrix>
-    inline tiles<Matrix>::tiles(const tiles& m)
-    : rows(m.rows), cols(m.cols), mt(m.mt), nt(m.nt)
+    inline tiles<Matrix>::tiles(const tiles& a)
+    : rows(a.rows), cols(a.cols), mt(a.mt), nt(a.nt)
     {
-        int nb = m.data.size();
-        for(int k = 0; k < nb; k++) this->data.push_back(new Matrix(m[k]));
+        int nb = a.data.size();
+        for(int k = 0; k < nb; k++) this->data.push_back(new Matrix(a[k]));
     }
     
     template <class Matrix>
@@ -147,8 +248,8 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix>
-    inline void tiles<Matrix>::resize(size_type rows, size_type cols){
-        ambient::numeric::resize(*this, rows, cols);
+    inline void tiles<Matrix>::resize(size_type m, size_type n){
+        ambient::numeric::resize(*this, m, n);
     }
 
     template<class Matrix>
@@ -198,6 +299,11 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix>
+    inline size_t tiles<Matrix>::addr(size_type i, size_type j) const {
+        return locate(i,j).addr(i % AMBIENT_IB, j % AMBIENT_IB);
+    }
+
+    template<class Matrix>
     inline Matrix& tiles<Matrix>::operator[] (size_type k){
         assert(k < data.size());
         return *this->data[k];
@@ -206,17 +312,20 @@ namespace ambient { namespace numeric {
     template<class Matrix>
     inline const Matrix& tiles<Matrix>::operator[] (size_type k) const {
         assert(k < data.size());
+        if(k >= data.size()) printf("OVERFLOW OF DATA ! (getting element %d of %d)\n", (int)k, (int)data.size());
         return *this->data[k];
     }
 
     template<class Matrix>
-    inline tiles<Matrix>& tiles<Matrix>::operator += (const tiles& rhs){
+    template<class MatrixB>
+    inline tiles<Matrix>& tiles<Matrix>::operator += (const tiles<MatrixB>& rhs){
         add_inplace(*this, rhs);
         return *this;
     }
 
     template<class Matrix>
-    inline tiles<Matrix>& tiles<Matrix>::operator -= (const tiles& rhs){
+    template<class MatrixB>
+    inline tiles<Matrix>& tiles<Matrix>::operator -= (const tiles<MatrixB>& rhs){
         sub_inplace(*this, rhs);
         return *this;
     }
@@ -286,11 +395,11 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T>
-    inline tiles<diagonal_matrix<T> >::tiles(const tiles& m)
-    : size(m.size), nt(m.nt)
+    inline tiles<diagonal_matrix<T> >::tiles(const tiles& a)
+    : size(a.size), nt(a.nt)
     {
-        int nb = m.data.size();
-        for(int k = 0; k < nb; k++) this->data.push_back(new diagonal_matrix<T>(m[k]));
+        int nb = a.data.size();
+        for(int k = 0; k < nb; k++) this->data.push_back(new diagonal_matrix<T>(a[k]));
     }
     
     template <typename T>
@@ -324,8 +433,8 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline void tiles<diagonal_matrix<T> >::resize(size_type rows, size_type cols){
-        ambient::numeric::resize(*this, rows, cols);
+    inline void tiles<diagonal_matrix<T> >::resize(size_type m, size_type n){
+        ambient::numeric::resize(*this, m, n);
     }
 
     template<typename T>
