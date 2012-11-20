@@ -32,17 +32,43 @@
 namespace ambient { namespace numeric {
 
     template<typename T>
-    bool is_hermitian(matrix<T> const& m)
+    bool is_hermitian(const matrix<T>& a)
     {
-        /*if(num_rows(m) != num_cols(m))
+        /*if(num_rows(a) != num_cols(a))
             return false;
-        for (size_t i=0; i<num_rows(m); ++i)
-            for(size_t j=0; j<num_cols(m); ++j)
-                if ( m(i,j) != conj(m(j,i)) )
+        for (size_t i=0; i < num_rows(a); ++i)
+            for(size_t j=0; j < num_cols(a); ++j)
+                if ( a(i,j) != conj(a(j,i)) )
                     return false;*/
         return false;
     }
 
+
+    template<int alfa, int beta, class MatrixViewA, class MatrixViewB, class MatrixViewC>
+    inline void gemv(const MatrixViewA& a, size_t aoffset, 
+                     const MatrixViewB& b, size_t boffset, 
+                           MatrixViewC& c, size_t coffset, 
+                           size_t m, size_t n)
+    {
+        kernels::gemv<alfa,beta,MatrixViewA,MatrixViewB,MatrixViewC>::spawn(a, aoffset, 
+                                                                            b, boffset, 
+                                                                            c, coffset, 
+                                                                            m, n); 
+    }
+
+    template<int ADD, class MA, class MB, class MC, class MF>
+    inline void gemv_scale(const MA& a, size_t aoffset, 
+                           const MB& b, size_t boffset, 
+                                 MC& c, size_t coffset, 
+                           const MF& f, size_t foffset, 
+                           size_t m, size_t n)
+    {
+        kernels::gemv_scale<ADD,MA,MB,MC,MF>::spawn(a, aoffset, 
+                                                    b, boffset, 
+                                                    c, coffset, 
+                                                    f, foffset, 
+                                                    m, n); 
+    }
 
     template<class MatrixViewA, class MatrixViewB, typename T>
     inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T>& c){
@@ -57,6 +83,72 @@ namespace ambient { namespace numeric {
     template<class MatrixViewB, typename T, typename D>
     inline void gemm(const diagonal_matrix<D>& a, const MatrixViewB& b, matrix<T>& c){ 
         kernels::gemm_diagonal_lhs<MatrixViewB,T,D>::spawn(a, b, c); 
+    }
+
+    template<typename T>
+    inline void scale(matrix<T>& a, size_t ai, size_t aj, const diagonal_matrix<T>& alfa, size_t alfai, size_t alfaj){
+        kernels::scale_offset<T>::spawn(a, ai, aj, alfa, alfai);
+    }
+
+    template<typename T>
+    inline void gbbrd(matrix<T>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T>& u, matrix<T>& v){
+        kernels::gbbrd<T>::spawn(a, d, e, u, v);
+    }
+
+    template<typename T>
+    inline void gebrd(matrix<T>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T>& u, matrix<T>& v){
+        kernels::gebrd<T>::spawn(a, d, e, u, v);
+    }
+
+    template<typename T>
+    inline void bdsqr(diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T>& u, matrix<T>& v){
+        kernels::bdsqr<T>::spawn(d, e, u, v);
+    }
+
+    template<typename T>
+    inline void gebd2(matrix<T>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, diagonal_matrix<T>& tq, diagonal_matrix<T>& tp){
+        kernels::gebd2<T>::spawn(a, d, e, tq, tp);
+    }
+
+    template<PLASMA_enum TR, typename T>
+    inline void larfg(matrix<T>& a, diagonal_matrix<T>& t, diagonal_matrix<T>& d, size_t k){
+        kernels::larfg<T,TR>::spawn(a, t, d, k);
+    }
+
+    template<typename T>
+    inline void labrd_update_col(matrix<T>& say, const matrix<T>& sax, 
+                           matrix<T>& sy, const matrix<T>& sx, 
+                           diagonal_matrix<T>& tq, 
+                           diagonal_matrix<T>& d, 
+                           int i)
+    {
+        kernels::labrd_update_col<T>::spawn(say, sax, sy, sx, tq, d, i);
+    }
+
+    template<typename T>
+    inline void labrd_reduce_col(matrix<T>& say, const matrix<T>& sax, 
+                           matrix<T>& sy, const matrix<T>& sx, 
+                           int i)
+    {
+        kernels::labrd_reduce_col<T>::spawn(say, sax, sy, sx, i);
+    }
+
+    template<typename T>
+    inline void labrd_update_row(const matrix<T>& say, matrix<T>& sax, 
+                           const matrix<T>& sy, matrix<T>& sx, 
+                           diagonal_matrix<T>& tp, 
+                           diagonal_matrix<T>& e, 
+                           int i)
+    {
+        kernels::labrd_update_row<T>::spawn(say, sax, sy, sx, tp, e, i);
+    }
+
+    template<typename T>
+    inline void labrd_reduce_row(const matrix<T>& say, matrix<T>& sax, 
+                           const matrix<T>& sy, matrix<T>& sx, 
+                           int i)
+    {
+        kernels::labrd_reduce_row<T>::spawn(say, sax, sy, sx, i);
     }
 
     template<typename T>
@@ -122,9 +214,9 @@ namespace ambient { namespace numeric {
         kernels::tsmlq<T,TR>::spawn(k, a1, a2, v, t);
     }
 
-    template<PLASMA_enum UL, typename T>
-    inline void laset2(matrix<T>& a, const T& alfa){
-        kernels::laset2<T,UL>::spawn(a, alfa);
+    template<PLASMA_enum UL, size_t OFF, typename T>
+    inline void laset2(matrix<T>& a, const T& alfa = 0.0){
+        kernels::laset2<T,UL,OFF>::spawn(a, alfa);
     }
 
     template<typename T> 
@@ -148,26 +240,26 @@ namespace ambient { namespace numeric {
     } 
 
     template<typename T>
-    inline matrix<T> exp(const matrix<T>& m, const T& alfa = 1.){
+    inline matrix<T> exp(const matrix<T>& a, const T& alfa = 1.){
         printf("ERROR: NOT TESTED (EXP)\n");
-        diagonal_matrix<double> evals(m.num_rows());
+        diagonal_matrix<double> evals(a.num_rows());
         matrix<T> evecs = matrix<T>();
-        heev(m, evecs, evals);
+        heev(a, evecs, evals);
         return (evecs * exp(evals, alfa))*conj(transpose(evecs));
     }
 
-    template<typename T> inline void resize(matrix<T>& m, size_t rows, size_t cols){ 
-        assert(m.num_rows() != 0 && m.num_cols() != 0);
-        if(m.num_rows() == rows && m.num_cols() == cols) return;
-        matrix<T> resized(rows, cols);
-        if(!m.impl->weak())
-            kernels::resize<T>::spawn(resized, m, std::min(rows, m.num_rows()), std::min(cols, m.num_cols()));
-        m.swap(resized);
+    template<typename T> inline void resize(matrix<T>& a, size_t m, size_t n){ 
+        assert(a.num_rows() != 0 && a.num_cols() != 0);
+        if(a.num_rows() == m && a.num_cols() == n) return;
+        matrix<T> resized(m, n);
+        if(!a.impl->weak())
+            kernels::resize<T>::spawn(resized, a, std::min(m, a.num_rows()), std::min(n, a.num_cols()));
+        a.swap(resized);
     }
 
-    template<typename T> inline scalar_type trace(const matrix<T>& m){ 
+    template<typename T> inline scalar_type trace(const matrix<T>& a){ 
         scalar_type trace(0.);
-        kernels::trace<T>::spawn(m, trace);
+        kernels::trace<T>::spawn(a, trace);
         return trace;
     }
 
@@ -191,13 +283,13 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline const matrix<T>& conj(const matrix<T>& m){
-        //m.conj();
-        return m;
+    inline const matrix<T>& conj(const matrix<T>& a){
+        //a.conj();
+        return a;
     }
 
     template<typename T>
-    inline void conj_inplace(matrix<T>& m){
+    inline void conj_inplace(matrix<T>& a){
         // gs (doubles)
         // does nothing for now
     }
@@ -210,52 +302,55 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline matrix<T> transpose(const matrix<T>& a){
-        matrix<T> t(a.num_cols(), a.num_rows());
-        kernels::transpose_out<T>::spawn(a, t);
-        return t;
+    inline transpose_view<matrix<T> > transpose(const matrix<T>& a){
+        return transpose_view<matrix<T> >(a);
     }
 
     template<typename T>
-    inline void adjoint_inplace(matrix<T>& m){
-        transpose_inplace(m);
+    inline void adjoint_inplace(matrix<T>& a){
+        transpose_inplace(a);
     }
 
     template<typename T>
-    inline const matrix<T>& adjoint(const matrix<T>& m){
-        return transpose(m);
+    inline transpose_view<matrix<T> > adjoint(const matrix<T>& a){
+        return transpose_view<matrix<T> >(a);
     }
 
     template<class Matrix>
-    inline void fill_identity(Matrix& m){
-        kernels::init_identity<typename Matrix::value_type>::spawn(m);
+    inline void fill_identity(Matrix& a){
+        kernels::init_identity<typename Matrix::value_type>::spawn(a);
     }
 
     template<class Matrix>
-    inline void fill_random(Matrix& m){
-        kernels::init_random<typename Matrix::value_type>::spawn(m);
+    inline void fill_random(Matrix& a){
+        kernels::init_random<typename Matrix::value_type>::spawn(a);
     }
 
     template<class Matrix>
-    inline void fill_value(Matrix& m, typename Matrix::value_type value){
+    inline void fill_value(Matrix& a, typename Matrix::value_type value){
         if(value == 0.) return; // matrices are 0 by default
-        kernels::init_value<typename Matrix::value_type>::spawn(m, value);
+        kernels::init_value<typename Matrix::value_type>::spawn(a, value);
     }
 
     template<typename T>
-    inline void remove_rows(matrix<T>& m, size_type i, difference_type k){
-        assert( i+k <= m->num_rows() );
+    inline void remove_rows(matrix<T>& a, size_type i, difference_type k){
+        assert( i+k <= a.num_rows() );
         assert(false); printf("ERROR: NOT TESTED (REMOVE ROWS)\n");
-        //kernels::remove_rows<T>::spawn(m, i, k);
-        resize(m, m.num_rows()-k, m.num_cols());
+        //kernels::remove_rows<T>::spawn(a, i, k);
+        resize(a, a.num_rows()-k, a.num_cols());
     }
 
     template<typename T>
-    inline void remove_cols(matrix<T>& m, size_type j, difference_type k){
-        assert( j+k <= m->num_cols() );
+    inline void remove_cols(matrix<T>& a, size_type j, difference_type k){
+        assert( j+k <= a.num_cols() );
         assert(false); printf("ERROR: NOT TESTED (REMOVE COLS)\n");
-        //kernels::remove_cols<T>::spawn(m, j, k);
-        resize(m, m.num_rows(), m.num_cols()-k);
+        //kernels::remove_cols<T>::spawn(a, j, k);
+        resize(a, a.num_rows(), a.num_cols()-k);
+    }
+
+    template <int alfa, typename T>
+    inline void add_vectors(matrix<T>& lhs, size_t loffset, const matrix<T>& rhs, size_t roffset, size_t size){ 
+        kernels::add_vectors<alfa, T>::spawn(lhs, loffset, rhs, roffset, size); 
     }
 
     template <typename T>
@@ -269,15 +364,15 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T>
-    inline void mul_inplace(matrix<T>& m, const matrix<T>& rhs){
+    inline void mul_inplace(matrix<T>& a, const matrix<T>& rhs){
         assert(false); printf("ERROR: NOT TESTED (GEMM INPLACE)\n");
-        //kernels::gemm_inplace<T>::spawn(m, rhs);
+        //kernels::gemm_inplace<T>::spawn(a, rhs);
     }
 
     template <typename T>
-    inline void mul_inplace(matrix<T>& m, const diagonal_matrix<T>& rhs){
+    inline void mul_inplace(matrix<T>& a, const diagonal_matrix<T>& rhs){
         assert(false); printf("ERROR: NOT TESTED (GEMM DIAG INPLACE)\n");
-        //kernels::gemm_diag_inplace<T>::spawn(m, rhs);
+        //kernels::gemm_diag_inplace<T>::spawn(a, rhs);
     }
 
     template <typename T>
@@ -303,14 +398,19 @@ namespace ambient { namespace numeric {
         kernels::copy_partial<T>::spawn(dst, di, dj, src, si, sj, m, n); 
     }
 
+    template<PLASMA_enum UL, typename T>
+    inline void copy_band(matrix<T>& dst, size_t dj, const matrix<T>& src){
+        kernels::copy_band<T,UL>::spawn(dst, dj, src);
+    }
+
     template<typename T>
     inline void copy_rt(matrix<T>& dst, const matrix<T>& src){ 
-        kernels::copy_rt<T>::spawn(dst, src); 
+        kernels::copy_rt<T>::spawn(dst, src);
     }
 
     template<typename T>
     inline void copy_lt(matrix<T>& dst, const matrix<T>& src){ 
-        kernels::copy_lt<T>::spawn(dst, src); 
+        kernels::copy_lt<T>::spawn(dst, src);
     }
 
     template<typename T>
@@ -319,7 +419,7 @@ namespace ambient { namespace numeric {
                        const matrix<T>& alfa, size_t ai, size_t aj,
                        size_t m, size_t n)
     { 
-        kernels::copy_s<T>::spawn(dst, di, dj, src, si, sj, alfa, ai, aj, m, n); 
+        kernels::copy_s<T>::spawn(dst, di, dj, src, si, sj, alfa, ai, aj, m, n);
     }
 
     template<typename T>
@@ -328,7 +428,7 @@ namespace ambient { namespace numeric {
                         const matrix<T>& alfa, size_t ai, size_t aj,
                         size_t m, size_t n)
     { 
-        kernels::copy_sa<T>::spawn(dst, di, dj, src, si, sj, alfa, ai, aj, m, n); 
+        kernels::copy_sa<T>::spawn(dst, di, dj, src, si, sj, alfa, ai, aj, m, n);
     }
 
     template<typename T>
@@ -339,89 +439,94 @@ namespace ambient { namespace numeric {
     template<typename T>
     bool operator == (const matrix<T>& a, const matrix<T>& b){
         if(num_cols(a) != num_cols(b) || num_rows(a) != num_rows(b)){
-            printf("Sizes are different: %lu x %lu against %lu x %lu\n", 
+            printf("Sizes are different: %lu x %lu against %lu x %lu\n",
                     num_cols(a), num_rows(a), num_cols(b), num_rows(b));
             return false;
         }
         ambient::future<bool> ret(true);
-        kernels::validation<T>::spawn(a, b, ret); 
+        kernels::validation<T>::spawn(a, b, ret);
         return (bool)ret;
     }
 
     template<typename T>
     bool operator == (matrix<T> a, const transpose_view<matrix<T> >& b){
         if(num_cols(a) != num_cols(b) || num_rows(a) != num_rows(b)){
-            printf("Sizes are different: %lu x %lu against %lu x %lu\n", 
+            printf("Sizes are different: %lu x %lu against %lu x %lu\n",
                     num_cols(a), num_rows(a), num_cols(b), num_rows(b));
             return false;
         }
         transpose_inplace(a);
         ambient::future<bool> ret(true);
-        kernels::validation<T>::spawn(a, b, ret); 
+        kernels::validation<T>::spawn(a, b, ret);
         return (bool)ret;
     }
 
     template<typename T>
     bool operator == (const diagonal_matrix<T>& a, const diagonal_matrix<T>& b){
         if(num_rows(a) != num_rows(b)){
-            printf("Sizes are different: %lu x %lu against %lu x %lu\n", 
+            printf("Sizes are different: %lu x %lu against %lu x %lu\n",
                     num_cols(a), num_rows(a), num_cols(b), num_rows(b));
             return false;
         }
         ambient::future<bool> ret(true);
-        kernels::validation<T>::spawn(a, b, ret); 
+        kernels::validation<T>::spawn(a, b, ret);
         return (bool)ret;
     }
 
     template <typename T>
-    std::ostream& operator << (std::ostream& o, matrix<T> const& m){
-        for(size_type i=0; i< m.num_rows(); ++i){
-            for(size_type j=0; j < m.num_cols(); ++j)
-                ambient::cout << m(i,j) << " ";
-            ambient::cout << std::endl;
+    std::ostream& operator << (std::ostream& o, const matrix<T>& a){
+        for(size_type i=0; i< a.num_rows(); ++i){
+            for(size_type j=0; j < a.num_cols(); ++j){
+                //if(a(i,j) < 10e-16) ambient::cout << 0 << " ";
+                //else 
+                if(a(i,j)*a(i,j) < 10e-40) printf("     ");
+                else if(a(i,j) < 0) printf("%.2f ", -1*a(i,j)); //ambient::cout << a(i,j) << " ";
+                else printf("%.2f ", a(i,j)); //ambient::cout << a(i,j) << " ";
+            }
+            ambient::cout << std::endl << "\n";
         }
         return o;
     }
 
     template <typename T> 
-    inline matrix<T> operator + (matrix<T> lhs, const matrix<T>& rhs){ 
-        return (lhs += rhs); 
+    inline matrix<T> operator + (matrix<T> lhs, const matrix<T>& rhs){
+        return (lhs += rhs);
     }
 
     template <typename T> 
-    inline matrix<T> operator - (matrix<T> lhs, const matrix<T>& rhs){ 
-        return (lhs -= rhs); 
+    inline matrix<T> operator - (matrix<T> lhs, const matrix<T>& rhs){
+        return (lhs -= rhs);
     }
 
     template <typename T>
-    inline const matrix<T> operator * (matrix<T> lhs, const matrix<T>& rhs){ 
-        return (lhs *= rhs); 
+    inline const matrix<T> operator * (matrix<T> lhs, const matrix<T>& rhs){
+        return (lhs *= rhs);
     }
 
     template<typename T, typename T2> 
-    inline const matrix<T> operator * (matrix<T> lhs, const T2& rhs){ 
-        return (lhs *= rhs); 
+    inline const matrix<T> operator * (matrix<T> lhs, const T2& rhs){
+        return (lhs *= rhs);
     }
 
     template<typename T, typename T2> 
-    inline const matrix<T> operator * (const T2& lhs, matrix<T> rhs){ 
-        return (rhs *= lhs); 
+    inline const matrix<T> operator * (const T2& lhs, matrix<T> rhs){
+        return (rhs *= lhs);
     }
 
-    template<typename T> inline size_type num_rows(const matrix<T>& m){ 
-        return m.num_rows(); 
+    template<typename T> inline size_type num_rows(const matrix<T>& a){
+        return a.num_rows();
     }
 
-    template<typename T> inline size_type num_cols(const matrix<T>& m){
-        return m.num_cols(); 
+    template<typename T> inline size_type num_cols(const matrix<T>& a){
+        return a.num_cols();
     }
 
-    template<typename T> inline size_type num_rows(const transpose_view< matrix<T> >& m){ 
-        return m.impl->spec.dim.x; 
+    template<typename T> inline size_type num_rows(const transpose_view< matrix<T> >& a){
+        return a.impl->spec.dim.x;
     }
 
-    template<typename T> inline size_type num_cols(const transpose_view< matrix<T> >& m){ 
-        return m.impl->spec.dim.y; 
+    template<typename T> inline size_type num_cols(const transpose_view< matrix<T> >& a){
+        return a.impl->spec.dim.y;
     }
 
 } }
@@ -429,5 +534,5 @@ namespace ambient { namespace numeric {
 #undef size_type
 #undef real_type
 #undef scalar_type
-#undef difference_type 
+#undef difference_type
 #endif
