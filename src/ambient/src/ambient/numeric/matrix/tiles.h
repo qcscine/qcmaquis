@@ -20,7 +20,7 @@ namespace ambient { namespace numeric {
         explicit inline tiles();
         explicit inline tiles(Matrix* a);
         explicit inline tiles(size_type rows, size_type cols, value_type init_value = value_type());
-        template<size_t IB = AMBIENT_IB> inline tiles<subset_view<Matrix,IB> > subset(size_type i, size_type j, size_type mt, size_type nt) const;
+        inline tiles<subset_view<Matrix> > subset(size_type i, size_type j, size_type mt, size_type nt) const;
         inline tiles(const tiles& a);
         tiles& operator = (const tiles& rhs); 
         inline size_type num_rows() const;
@@ -56,8 +56,8 @@ namespace ambient { namespace numeric {
         size_type nt;
     };
 
-    template <class Matrix, size_t IB>
-    class tiles<subset_view<Matrix,IB> >{
+    template <class Matrix>
+    class tiles<subset_view<Matrix> >{
     public:
         typedef typename Matrix::size_type  size_type;
         typedef typename Matrix::value_type value_type;
@@ -65,10 +65,10 @@ namespace ambient { namespace numeric {
         inline const Matrix& tile(size_type i, size_type j) const;
         inline Matrix& operator[] (size_type k);
         inline const Matrix& operator[] (size_type k) const;
-        inline tiles<subset_view<Matrix,IB> > subset(size_type i, size_type j, size_type mt, size_type nt) const;
+        inline tiles<subset_view<Matrix> > subset(size_type i, size_type j, size_type mt, size_type nt) const;
         template <class MatrixB> inline tiles& operator += (const tiles<MatrixB>& rhs);
         template <class MatrixB> inline tiles& operator -= (const tiles<MatrixB>& rhs);
-        std::vector<subset_view<Matrix,IB> > data;
+        std::vector<subset_view<Matrix> > data;
         inline size_type num_rows() const;
         inline size_type num_cols() const;
         inline Matrix& locate(size_type i, size_type j);

@@ -75,7 +75,7 @@ namespace ambient { namespace numeric {
         size_t ref;
     };
 
-    template <class Matrix, size_t IB>
+    template <class Matrix>
     class subset_view {
     public:
         typedef typename Matrix::real_type real_type;
@@ -84,16 +84,15 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::scalar_type scalar_type;
         typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::ptr ptr;
-        subset_view(const Matrix& a, size_t offset = 0) : impl(a.impl), m(&a), offset(offset) {}
-        size_t num_rows(){ return std::min(IB, m->num_rows() - offset % m->num_rows()); };
-        size_t num_cols(){ return std::min(IB, m->num_cols() - (size_t)(offset / m->num_rows())); };
+        subset_view(const Matrix& a) : impl(a.impl), m(&a) {}
+        size_t num_rows(){ return std::min(AMBIENT_IB, m->num_rows()); };
+        size_t num_cols(){ return std::min(AMBIENT_IB, m->num_cols()); };
         template<class M> static size_t rows(const M& a); 
         template<class M> static size_t cols(const M& a);
         static const char* code();
         operator Matrix& () const { return *(Matrix*)m; }
         ptr impl;
         const Matrix* m;
-        size_t offset;
     };
 
     template <class T>
