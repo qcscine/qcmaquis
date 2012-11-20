@@ -6,8 +6,8 @@
  *
  *****************************************************************************/
 
-#ifndef APP_DMRG_H
-#define APP_DMRG_H
+#ifndef APP_RUNSIM_H
+#define APP_RUNSIM_H
 
 #ifdef USE_COMPLEX
     #define dmrg_value_type std::complex<double>
@@ -30,8 +30,12 @@
 #include "dmrg/block_matrix/detail/alps.hpp"
 #include "dmrg/block_matrix/symmetry.h"
 
-// def. of run functions
-template <class SymmGroup>
-void run_dmrg(DmrgParameters & parms, ModelParameters & model);
+namespace maquis { namespace dmrg {
+
+    // def. of run functions
+    template <class SymmGroup>
+    void run_sim(DmrgParameters & parms, ModelParameters & model);
+    
+} }
 
 #endif

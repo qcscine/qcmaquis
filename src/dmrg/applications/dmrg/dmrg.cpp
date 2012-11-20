@@ -1,4 +1,4 @@
-#include "dmrg.h"
+#include "symm_factory.h"
 
 #include <cmath>
 #include <iterator>
@@ -8,36 +8,6 @@
 #include "utils/data_collector.hpp"
 #include "dmrg/utils/DmrgParameters2.h"
 #include "utils/timings.h"
-
-#include <boost/function.hpp>
-
-// factory
-void dmrg(DmrgParameters & parms, ModelParameters & model)
-{
-    std::map<std::string, boost::function<void (DmrgParameters & p, ModelParameters & m)> > factory_map;
-    
-    maquis::cout << "This binary contains symmetries: ";
-#ifdef HAVE_TrivialGroup
-    factory_map["none"] = run_dmrg<TrivialGroup>;
-    maquis::cout << "none ";
-#endif
-#ifdef HAVE_U1
-    factory_map["u1"] = run_dmrg<U1>;
-    maquis::cout << "u1 ";
-#endif
-#ifdef HAVE_TwoU1
-    factory_map["2u1"] = run_dmrg<TwoU1>;
-    maquis::cout << "2u1 ";
-#endif
-    maquis::cout << std::endl;
-
-    std::string symm_name = parms.get<std::string>("symmetry");
-    
-    if (factory_map.find(symm_name) != factory_map.end())
-        factory_map[symm_name](parms, model);
-    else
-        throw std::runtime_error("Don't know this symmetry group. Please, check your compilation flags.");    
-}
 
 int main(int argc, char ** argv)
 {
@@ -70,7 +40,7 @@ int main(int argc, char ** argv)
     gettimeofday(&now, NULL);
     
     try {
-        dmrg(parms, model);
+        maquis::dmrg::symm_factory(parms, model);
     } catch (std::exception & e) {
         maquis::cerr << "Exception thrown!" << std::endl;
         maquis::cerr << e.what() << std::endl;

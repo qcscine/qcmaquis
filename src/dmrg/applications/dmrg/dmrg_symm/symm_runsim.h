@@ -9,10 +9,11 @@
 
 #include "dmrg_sim.h"
 
-template <>
-void run_dmrg<grp>(DmrgParameters & parms, ModelParameters & model)
-{
-    dmrg_sim<matrix, grp> sim(parms, model);
-    sim.measure();
-}
-
+namespace maquis { namespace dmrg {
+    template <>
+    void run_sim<grp>(DmrgParameters & parms, ModelParameters & model)
+    {
+        dmrg_sim<matrix, grp> sim(parms, model);
+        sim.run();
+    }
+} }
