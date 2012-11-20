@@ -85,8 +85,8 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::ptr ptr;
         subset_view(const Matrix& a) : impl(a.impl), m(&a) {}
-        size_t num_rows(){ return std::min(AMBIENT_IB, m->num_rows()); };
-        size_t num_cols(){ return std::min(AMBIENT_IB, m->num_cols()); };
+        size_t num_rows(){ return m->num_rows(); };
+        size_t num_cols(){ return m->num_cols(); };
         template<class M> static size_t rows(const M& a); 
         template<class M> static size_t cols(const M& a);
         static const char* code();

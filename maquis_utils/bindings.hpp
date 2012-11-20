@@ -162,6 +162,31 @@ namespace maquis { namespace bindings {
         }
     };
 
+    template <typename T2, typename T1>
+    struct binding< ambient::numeric::tiles<ambient::numeric::matrix<T2> >, alps::numeric::matrix<T1> > {
+        static ambient::numeric::tiles<ambient::numeric::matrix<T2> > convert(const alps::numeric::matrix<T1>& m){
+            size_t num_rows = m.num_rows();
+            size_t num_cols = m.num_cols();
+            size_t lda = m.stride2();
+            ambient::numeric::tiles<ambient::numeric::matrix<T2> > pm(num_rows, num_cols);    
+            const std::vector<typename alps::numeric::matrix<T1>::value_type>* v_ptr = &m.get_values();
+
+            for(size_t j = 0; j < pm.nt; ++j){
+                size_t offset = j*lda*AMBIENT_IB;
+                for(size_t i = 0; i < pm.mt; ++i){
+                    ambient::numeric::matrix<T2>& tile = pm.tile(i,j);
+                    size_t rows = tile.num_rows();
+                    size_t cols = tile.num_cols();
+                    ambient::numeric::kernels::cast_from_vector_t<T1,T2>::spawn(v_ptr, tile, rows, cols, lda, offset);
+                    offset += rows;
+                }
+            }
+
+            ambient::sync();
+            return pm;
+        }
+    };
+
     template <typename T>
     struct binding< alps::numeric::matrix<T>, ambient::numeric::tiles<ambient::numeric::matrix<T> > > {
         static alps::numeric::matrix<T> convert(const ambient::numeric::tiles<ambient::numeric::matrix<T> >& pm){

@@ -1098,6 +1098,26 @@ namespace ambient { namespace numeric { namespace kernels {
         }
     };
 
+    template<typename T1, typename T2>
+    struct cast_from_vector_t : public kernel< cast_from_vector_t<T1,T2> > 
+    {
+        typedef void (cast_from_vector_t::*F)(const std::vector<T1>*&, matrix<T2>&, const size_t&, const size_t&, const size_t&, const size_t&);
+
+        inline void l(const std::vector<T1>*& ac, matrix<T2>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
+            pin(current(a));
+        }
+
+        inline void c(const std::vector<T1>*& ac, matrix<T2>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
+            __A_TIME_C("ambient_cast_from_vector_t_c_kernel"); 
+            T2* ad = updated(a);
+            const T1* sd = &(*ac)[offset];
+            for(int j=0; j < n; ++j) 
+                for(int i=0; i < m; ++i)
+                    ad[j*m + i] = sd[j*lda + i];
+            __A_TIME_C_STOP 
+        }
+    };
+
     template<typename T>
     struct validation : public kernel< validation<T> > 
     {
