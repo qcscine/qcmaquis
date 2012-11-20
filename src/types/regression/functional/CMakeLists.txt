@@ -31,7 +31,6 @@ add_executable( blas.gemmd.out          blas.gemmd.cpp        )
 add_executable( lapack.qr.out           lapack.qr.cpp         )
 add_executable( lapack.lq.out           lapack.lq.cpp         )
 add_executable( lapack.svd.out          lapack.svd.cpp        )
-add_executable( lapack.gebrd.out        lapack.gebrd.cpp      )
 add_executable( lapack.heev.out         lapack.heev.cpp       )
 add_executable( aux.cast.out            aux.cast.cpp          )
 add_executable( aux.sqrt.out            aux.sqrt.cpp          )
@@ -52,7 +51,6 @@ foreach( functional_test
          lapack.qr.out
          lapack.lq.out
          lapack.svd.out
-         lapack.gebrd.out
          lapack.heev.out
          aux.cast.out
          aux.sqrt.out
