@@ -2,7 +2,7 @@ reset
 set terminal postscript
 set size 0.8,0.7
 set ylabel "Contribution"
-set xlabel "coefficient"
+set xlabel "Coefficient"
 set xrange [0:448]
 set xtics 32
 
