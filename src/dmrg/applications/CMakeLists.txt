@@ -9,8 +9,10 @@ option(BUILD_OLD_TARGETS "Enable targets with old names" OFF)
 
 if(BUILD_DMRG)
   add_subdirectory(dmrg)
+  add_subdirectory(init)
 else(BUILD_DMRG)
   add_subdirectory(dmrg EXCLUDE_FROM_ALL)
+  add_subdirectory(init EXCLUDE_FROM_ALL)
 endif(BUILD_DMRG)
 
 if(BUILD_TIME_EVOLUTION)
