@@ -15,7 +15,7 @@ endif(ENABLE_ALPS_MODELS)
 
 
 # *** Libraries
-add_library(dmrg_utils STATIC utils/utils.cpp utils/stream_storage.cpp)
+add_library(dmrg_utils STATIC utils/utils.cpp utils/stream_storage.cpp sim/symm_factory.cpp)
 add_library(dmrg_models STATIC ${DMRG_MODELS_SOURCES})
 
 

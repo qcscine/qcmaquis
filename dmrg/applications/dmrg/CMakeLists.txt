@@ -22,16 +22,14 @@ get_symm_files(APPEND MEASURE_SYMM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/measure_
 
 
 # *** Targets
-add_library(dmrg_symmfactory STATIC symm_factory.cpp)
-
 add_executable(dmrg ${DMRG_SYMM_SOURCES} dmrg.cpp)
-target_link_libraries(dmrg dmrg_symmfactory ${DMRG_APP_LIBRARIES})
+target_link_libraries(dmrg ${DMRG_APP_LIBRARIES})
 
 add_executable(dmrg_meas ${MEASURE_SYMM_SOURCES} measure.cpp)
-target_link_libraries(dmrg_meas dmrg_symmfactory ${DMRG_APP_LIBRARIES})
+target_link_libraries(dmrg_meas ${DMRG_APP_LIBRARIES})
 
 add_executable(dmrg_cmeas ${MEASURE_SYMM_SOURCES} measure.cpp)
-target_link_libraries(dmrg_cmeas dmrg_symmfactory ${DMRG_APP_LIBRARIES})
+target_link_libraries(dmrg_cmeas ${DMRG_APP_LIBRARIES})
 set_target_properties(dmrg_cmeas PROPERTIES COMPILE_FLAGS -DUSE_COMPLEX)
 
 # *** Install
