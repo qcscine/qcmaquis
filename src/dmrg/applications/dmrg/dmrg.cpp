@@ -1,4 +1,4 @@
-#include "symm_factory.h"
+#include "dmrg/sim/symm_factory.h"
 
 #include <cmath>
 #include <iterator>
