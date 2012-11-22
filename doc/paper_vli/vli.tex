@@ -81,52 +81,73 @@ because the assembly instructions facilitate the implementation and boost the pe
 
 We applied algorithms based on childhood  experience for large arithmetic. These methods necessitate carry\footnote{ The carry bit is a bit of the register of status, as the overflow bit, 
 it informs  the overflow of an operation, but it can be re-used to propagate the carry. } for addition/subtraction and an extended multiplication for the multiplication.
-Although the hardware supports them, we can not access  these features by the C++ language. The only possibility is the assembly.
+Although the hardware supports them, we can not access  these features by the C++ language. The only possibility is the assembly language.
 
-In assembly, these operations  are supported by the pair of mnemonics; \texttt{addq/adcq} for the addition; \texttt{sbbq/subq} for the subtraction, and \texttt{mul} for the extentend multiplication.   
+In assembly, these operations  are supported by the pair of mnemonics; \texttt{addq/adcq} for the addition; \texttt{sbbq/subq} for the subtraction, and \texttt{mul} for the extended multiplication.   
 Combining these mnemonics, we reproduce easily long arithmetic algorithm, as described into the famous  ASM book of \cite{Hyde:2003:AAL:861534}. 
 
 We coded the assembly using the GNU inline assembly which consists of strings between ASM tags.
-Generating by hand all these  assembly strings (kernels)  can be painful and a source of error \footnote{The library has near 8000 lines of assembly cumulated between x86-64, Power64, and PTX} 
+Generating by hand all these  assembly strings (kernels)  can be painful and a source of error\footnote{The library has near 10000 lines of assembly cumulated between x86-64, Power64, and PTX} 
 We designed a generator of assembly. It creates all versions of a kernel during the compilation.   
-It is built on the boost preprocessor package, because we can thus create and manipulate the strings during the pre-compilation, 
-and generate a specifically tuned kernel for every large integer. All kernels use this procedure except the extended multiplication for the CPU.
+It is built on the preprocessor with the boost preprocessor package. We can thus create and manipulate the ASM strings during the precompilation, 
+and generate a specifically tuned kernel for every large integer. We give a small example of a long addition with the generator into the table \ref{ASMGENERATOR}.
+
+ \begin{table}[h] 
+	\begin{center}
+	 	\begin{tabular}{l l}
+                           \hline 
+                           \textbf{Assembly generator}      \hspace{8.5 cm}  ASM  x86-64 \\ \hline
+                           \begin{tabular}{l l l l } 
+                               \tiny{1:} & begin asm(\texttt{"}     &  $\vartriangleright$ Start ASM string & asm(\texttt{"} \\
+                               \tiny{2:} &  \textbf{boost  repeat} over n  &$\vartriangleright$  Start the repetition over n from 0 to n-1 &   \\
+                               \tiny{3:} &   \hspace{0.2 cm}  boost  if(n = 0) &  $\vartriangleright$   if n = 0 &  \hspace{0.2 cm}  \texttt{"}\texttt{addq} 0x0(rsi), rax\texttt{"}\\    
+                               \tiny{4:} &   \hspace{0.4 cm}  boost stringize(\texttt{addq}  $r_i$, $r_j$)  &$\vartriangleright$   Become \texttt{"addq} \dots &  \hspace{0.2 cm}    \texttt{"}\texttt{adcq}  0x8(rsi), rax\texttt{"}\\    
+                               \tiny{5:} &   \hspace{0.2 cm}  boost  else  & $\vartriangleright$   if n != 0 &  \hspace{0.2 cm}  \texttt{"}\texttt{adcq}  0x10(rsi), rax\texttt{"} \\ 
+                               \tiny{6:} &   \hspace{0.4 cm}  boost stringize(\texttt{adcq}  $r_i$, $r_j$)  &$\vartriangleright$   Become \texttt{"adcq} \dots &  \hspace{0.2 cm}   \texttt{"}\texttt{adcq}  0x18(rsi), rax\texttt{"}\\     
+                               \tiny{7:} &  \textbf{end boost repeat} &  &   \\                            
+                               \tiny{8:} &  \texttt{"})  &  $\vartriangleright$ end ASM string & \texttt{"})\\
+                          \end{tabular} &  \\ \hline
+		 \end{tabular} 
+		 \caption{Basic example of the ASM generator for a long addition (n=4), the preprocessor with the boost preprocessor macros generate the effective string for the ASM block. ASM \texttt{move} are not included, as the correct use of the registers. It exceeds  the purpose of the present document \label{ASMGENERATOR}.  }
+	\end{center}
+\end{table} 
 
 The x86-64 architecture allows 16 registers (32 for power). As much as possible, in the solver, we conserve the data in the registers in order to reduce memory read/writes to the  minimum.
  Additional optimizations have been done like full unrolling or assembly tips. We  supported  x86-64, Power64 and PTX (GPU) assembly.
  PTX does not support carry bit for 64 bits integer, but only for 32 bits integer\footnote{Introduced since CUDA 4.2}.  
 It allows multiplication-addition of 32 bits integers  with carry bit support \cite{CUDAasm}. 
-Work in 32 bits mode imposes twice as much operations for the additions/substractions, and one order of magnitude more for the multiplications. 
+Work in 32 bits mode imposes twice as much operations for the additions/subtractions, and one order of magnitude more for the multiplications. 
 
 \subsection{Memory layout and SIMD implementation}
 
-There exists at least two data layouts for this problem: the array of structure (AoS) and structure of array (SoA). Both have  advantages and disadvantages. In our problem the AoS consists in saving the data in this order : VLI - series of VLI (polynomial coefficient)- series of polynomials (the vector). The SoA structure interleaves the coefficients of the VLI and the polynomials:
-\begin{figure}
-\begin{minipage}{0.50\linewidth}
-\begin{eqnarray}
-\tiny{
- \underbrace{
- \underbrace{ \underbrace{a^0_{00} | a^1_{00} | a^2_{00}}_{VLI, a_{00} } || \underbrace{a^0_{10} | a^1_{10} | a^2_{10}}_{VLI, a_{10}} ||   \dots  }_{1^{st} \textrm{polynomial}} 
-      |||    \underbrace{ \underbrace{b^0_{00} | a^1_{00} | b^2_{00}}_{VLI, b_{00} } || \underbrace{b^0_{10} | b^1_{10} | b^2_{10}}_{VLI, b_{10}} ||   \dots  }_{2^{nd} \textrm{polynomial} } }_{\textrm{Vector of polynomials, AoS order}} \nonumber
-}
-\end{eqnarray}
-\end{minipage}
-\begin{minipage}{0.50\linewidth}
-\begin{eqnarray}
-\tiny{
- \underbrace{
- \underbrace{a^0_{00} | a^0_{10} | \dots || a^1_{00} | a^1_{10} | \dots  }_{1st  \textrm{ nested VLI/Polynomial} } |||  \underbrace{b^0_{00} | b^0_{10} | \dots || b^1_{00} | b^1_{10} | \dots  }_{2nd  \textrm{ nested VLI/Polynomial} }
- }_{\textrm{Vector of polynomials, SoA Order}} \nonumber }
-\end{eqnarray}
-\end{minipage}
-\caption{Representation of the AoS Order (left) or SoA Order (right) for a vector of polynomial \label{AOSSOA}}
-\end{figure}
+There exists at least two data layouts for this problem: the array of structure (AoS) and structure of array (SoA). Both have  advantages and disadvantages. In our problem the AoS consists in saving the data in this order : VLI - series of VLI (polynomial coefficient)- series of polynomials (the vector). The SoA structure interleaves the coefficients of the VLI and the polynomials.
+
+%\begin{figure}
+%\begin{minipage}{0.50\linewidth}
+%\begin{eqnarray}
+%\tiny{
+% \underbrace{
+% \underbrace{ \underbrace{a^0_{00} | a^1_{00} | a^2_{00}}_{VLI, a_{00} } || \underbrace{a^0_{10} | a^1_{10} | a^2_{10}}_{VLI, a_{10}} ||   \dots  }_{1^{st} \textrm{polynomial}} 
+%      |||    \underbrace{ \underbrace{b^0_{00} | a^1_{00} | b^2_{00}}_{VLI, b_{00} } || \underbrace{b^0_{10} | b^1_{10} | b^2_{10}}_{VLI, b_{10}} ||   \dots  }_{2^{nd} \textrm{polynomial} } }_{\textrm{Vector of polynomials, AoS order}} \nonumber
+%}
+%\end{eqnarray}
+%\end{minipage}
+%\begin{minipage}{0.50\linewidth}
+%\begin{eqnarray}
+%\tiny{
+% \underbrace{
+% \underbrace{a^0_{00} | a^0_{10} | \dots || a^1_{00} | a^1_{10} | \dots  }_{1st  \textrm{ nested VLI/Polynomial} } |||  \underbrace{b^0_{00} | b^0_{10} | \dots || b^1_{00} | b^1_{10} | \dots  }_{2nd  \textrm{ nested VLI/Polynomial} }
+% }_{\textrm{Vector of polynomials, SoA Order}} \nonumber }
+%\end{eqnarray}
+%\end{minipage}
+%\caption{Representation of the AoS Order (left) or SoA Order (right) for a vector of polynomial \label{AOSSOA}}
+%\end{figure}
 
 The choice of the memory layout is important. It may facilitate  the usage of the SIMD/AVX instructions. We choose the AoS for the following reasons:
 we want to reuse the VLI library in other objects conception code, so we can not interleave the VLI number with the polynomial. 
  Apply SIMD on AoS, for an addition is a non sense because there is no specific instruction to propagate carry between entries of the multimedia register.
 The extended multiplication under AVX \texttt{\_\_mm256\_mul\_epu32}  allows only four multiplications of 32 bits, we save a factor two. Nevertheless, on Sandy Bridge, we have 3 ALU, we can not exclude
-the execution of several long multiplication in the same time, and we lose the benefice of the SIMD version. Moreover, a large extra work is necessary to prepare the registers and shuffle the data into the registers which is expensive. For our range of operations the extended multiplication varies from 128 to 512 bits, a SIMD version will not be the optimal solution. Though, it has been used with success for large integers ($>$1024 bits) \cite{SIMD}.
+the execution of several long multiplication in the same time, and we lose the benefice of the SIMD version. Moreover, a large extra work is necessary to prepare the registers and shuffle the data into the registers which is expensive. For our range of operations the extended multiplication varies from 128 to 512 bits, a SIMD version will not be the optimal solution. Though, it has been used with sucess for  integers higher than 1024 bits \cite{SIMD}.
 
 \section{A short introduction to GPU}
 
@@ -142,7 +163,7 @@ Inside each SM additional special memories (constant, shared, texture, surface) 
 They have still a common characteristics, a very high performance for read/write  operations in a few cycles only.
 A good programming practice is to preload data from global memory in shared/texture at once, for subsequent computations.  \label{CUDA_PRACTICE}
 
-Applying the GPU ideology to the polynomial inner product  means that the polynomial multiplications will be executed in parallel on a SM. Then a global reduction will sum all resulting polynomials. The division into blocks is natural, a block being a single entry of the vector (equation \ref{InnerProduct}). All the difficulties consists in designing a parallel algorithm for the polynomial multiplication and the final reduction.
+Applying the GPU ideology to the polynomial inner product  means that the polynomial multiplications will be executed in parallel on the SMs. Then a global reduction will sum all resulting polynomials. The division into blocks is natural, a block being a single entry of the vector (equation \ref{InnerProduct}). All the difficulties consists in designing a parallel algorithm for the polynomial multiplication and the final reduction.
 
 \subsection{Inner product booster on GPU}
 
@@ -237,7 +258,8 @@ Evaluating  integer benchmarks  is not easy, contrary to float number integer op
 The GPU curves show again an excellent speed up  factor of 10 to 60 maximum, compared to GMP, but with an interesting feature. 
 For both kind of polynomials, the performance for one variable is low, because we have a small number of threads during the execution of the GPU algorithms.
 As the number of threads is fixed by the number of coefficients, $2n$ for a dense polynomial,  the maximum number of threads will be 28
- which corresponds to one warp. We do not utilize at all the capacity of the GPU. For two and more variables, whatever the polynomials, the performance is  like a parabola. The position of the maximum depends on  to the type of polynomial.  We obtained the maximum of performance  if the following conditions are satisfied. The number of running threads is maximum; (256 threads), and both input
+ which corresponds to one warp. We do not utilize at all the capacity of the GPU. For two and more variables, whatever the polynomials, we have a maximum. 
+  We obtained the maximum of performance  if the following conditions are satisfied. The number of running threads is maximum; (256 threads), and both input
   polynomials  are cached into the texture memory. On Kepler the size of the texture memory is equal to 48 kB. This memory  is highly optimized for repetitive and random access contrary to shared memory
  (where bank memory conflict can appear).  Moreover, for large order, the result polynomials have  more coefficients, so the balance of the tasks over the warp is good, and consequently the efficiency too.
  
