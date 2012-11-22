@@ -28,6 +28,7 @@ public:
     , chkpfile(parms.get<std::string>("chkpfile"))
     , num_states1(0)
     , num_states2(0)
+    , totstates(0)
     {
         maquis::cout << DMRG_VERSION_STRING << std::endl;
         
@@ -46,25 +47,32 @@ public:
         
         // final join of mps1 and mps2
         if (num_states2 > 0) {
-            mps1 = join(mps1, mps2);
-            mps1 = compression::l2r_compress(mps1, parms.get<size_t>("init_bond_dimension"), parms.get<size_t>("truncation_initial"));
+            if (num_states1 == parms.get<size_t>("init_bond_dimension"))
+                mps1.normalize_left();
+            mps2.normalize_left();
+            mps1 = join(mps1, mps2, std::sqrt(num_states1), std::sqrt(num_states2));
+            mps1.normalize_left();
+            mps1 = compression::l2r_compress(mps1, parms.get<size_t>("init_bond_dimension"), parms.get<double>("truncation_initial"));
             mps2 = MPS<Matrix, SymmGroup>();
+            num_states1 += num_states2;
             num_states2 = 0;
         }
         
+        mps1.normalize_left();
+        
         // write parameters and mps
-        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+        alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
         h5ar << alps::make_pvp("/parameters", parms);
         h5ar << alps::make_pvp("/parameters", model);
         h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
         h5ar << alps::make_pvp("/state", mps1);
+        h5ar << alps::make_pvp("/status/sweep", 0);
     }
     
 private:
+    // slow version looping over all basis states, discarding those with N!=initc
     void build_slow()
     {
-        // some functions are missing for complex charge objects
-#ifndef HAVE_TwoU1
         typedef typename std::vector<local_state>::const_iterator states_iterator;
         
         std::vector<local_state> alllocal;
@@ -82,7 +90,7 @@ private:
             for (size_t i=0; i<L; ++i)
                 state[i] = *(it[i]);
             charge N = std::accumulate(state.begin(), state.end(), SymmGroup::IdentityCharge,
-                                       boost::lambda::_1 + boost::lambda::bind(index_detail::get_first<SymmGroup>, boost::lambda::_2));
+                                       boost::bind(static_cast<charge(*)(charge,charge)>(&SymmGroup::fuse), _1,  boost::bind(&local_state::first, _2)) );
             if (N == initc)
                 add_state(state);
             
@@ -92,15 +100,18 @@ private:
                 ++it[i-1];
             }
         }
-#endif
     }
+    
+    // TODO: faster version looping only over basis states with N == initc
+    void build_fast();
+
     
     MPS<Matrix, SymmGroup> state_mps(std::vector<local_state> const & state)
     {
         MPS<Matrix, SymmGroup> mps(state.size());
         
         Index<SymmGroup> curr_i;
-        curr_i.insert(std::make_pair(0, 1));
+        curr_i.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
         size_t curr_b = 0;
         for (int i=0; i<state.size(); ++i)
         {
@@ -132,11 +143,17 @@ private:
         else
             swap(curr, temp);
         num_states += 1;
-
+        totstates += 1;
+        
         if (num_states2 > parms.get<size_t>("init_bond_dimension")) {
-            mps1 = join(mps1, mps2);
-            mps1 = compression::l2r_compress(mps1, parms.get<size_t>("init_bond_dimension"), parms.get<size_t>("truncation_initial"));
+            if (num_states1 == parms.get<size_t>("init_bond_dimension"))
+                mps1.normalize_left();
+            mps2.normalize_left();
+            mps1 = join(mps1, mps2, std::sqrt(num_states1), std::sqrt(num_states2));
+            mps1.normalize_left();
+            mps1 = compression::l2r_compress(mps1, parms.get<size_t>("init_bond_dimension"), parms.get<double>("truncation_initial"));
             mps2 = MPS<Matrix, SymmGroup>();
+            num_states1 += num_states2;
             num_states2 = 0;
         }
     }
@@ -147,7 +164,6 @@ private:
     ModelParameters model;
     
     std::string chkpfile;
-    std::string rfile;
     
     Lattice_ptr lat;
     typename model_traits<Matrix, SymmGroup>::model_ptr phys_model;
@@ -155,7 +171,7 @@ private:
     charge initc;
     size_t L;
     MPS<Matrix, SymmGroup> mps1, mps2;
-    size_t num_states1, num_states2;
+    size_t num_states1, num_states2, totstates;
 };
 
 
