@@ -106,13 +106,18 @@ struct mps_initializer
 
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup> join(MPS<Matrix, SymmGroup> const & a,
-                            MPS<Matrix, SymmGroup> const & b)
+                            MPS<Matrix, SymmGroup> const & b,
+                            double alpha=1., double beta=1.)
 {
     assert( a.length() == b.length() );
     
+    MPSTensor<Matrix, SymmGroup> aright=a[a.length()-1], bright=b[a.length()-1];
+    aright.multiply_by_scalar(alpha);
+    bright.multiply_by_scalar(beta);
+
     MPS<Matrix, SymmGroup> ret(a.length());
     ret[0] = join(a[0],b[0],l_boundary_f);
-    ret[a.length()-1] = join(a[a.length()-1],b[a.length()-1],r_boundary_f);
+    ret[a.length()-1] = join(aright,bright,r_boundary_f);
     for (std::size_t p = 1; p < a.length()-1; ++p)
         ret[p] = join(a[p], b[p]);
     return ret;
