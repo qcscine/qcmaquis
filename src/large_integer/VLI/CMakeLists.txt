@@ -157,7 +157,7 @@ endif(VLI_BENCHMARKS)
 #
 ########################################################################
 
-install(DIRECTORY src/vli DESTINATION include FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".svn" EXCLUDE)
+install(DIRECTORY src/vli DESTINATION include FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.ipp" PATTERN ".svn" EXCLUDE)
 install(FILES ${PROJECT_BINARY_DIR}/src/vli/libvli.a DESTINATION lib)
 install(FILES ${PROJECT_BINARY_DIR}/vli/config.hpp DESTINATION include/vli/)
 if(VLI_COMPILE_GPU)
