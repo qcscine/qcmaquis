@@ -27,8 +27,8 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef VLI_VLI_CPU_H
-#define VLI_VLI_CPU_H
+#ifndef VLI_VLI_HPP
+#define VLI_VLI_HPP
 #include "vli/function_hooks/vli_number_cpu_function_hooks.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/cstdint.hpp> // for the type boost::uint64_t
@@ -157,4 +157,6 @@ namespace vli {
     std::ostream& operator<< (std::ostream& os,  vli<NumBits> const& );
 }
 
-#endif //VLI_NUMBER_CPU_HPP
+#include <vli/vli.ipp>
+
+#endif //VLI_VLI_IPP
