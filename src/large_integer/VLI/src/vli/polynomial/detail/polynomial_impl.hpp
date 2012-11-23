@@ -180,7 +180,7 @@ namespace detail {
     }
 
     template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3, class Operation>
-    void additive_op_assign(POLYNOMIAL_CLASS& p, typename boost::enable_if<boost::is_same<Coeff,int>,int>::type a, Operation op) {
+    void additive_op_assign(POLYNOMIAL_CLASS& p, typename boost::disable_if<boost::is_same<Coeff,int>,int>::type a, Operation op) {
         op(*p.begin(),a);
     }
     
@@ -210,8 +210,7 @@ namespace detail {
 #endif // VLI_POLYNOMIAL_PRINT_ZEROS
                 if( !(p(e) < typename Polynomial::value_type(0)) )
                     os_<<"+";
-            //    os_<<p(e)<<e<<" ";
-                  os_<<p(e)<<e<<" "<< std::endl; // C - Tim mine debug
+                os_<<p(e)<<e<<" ";
             }
 
           private:

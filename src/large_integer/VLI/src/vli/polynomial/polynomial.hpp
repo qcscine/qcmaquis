@@ -36,7 +36,8 @@ class polynomial : public detail::storage<Coeff,MaxOrder,num_variables<polynomia
         detail::init(*this, typename boost::is_fundamental<value_type>::type());
     }
 
-    explicit polynomial(value_type const& v) {
+    template <class T>
+    explicit polynomial(T const& v, typename boost::enable_if_c<boost::is_same<T,int>::value || boost::is_same<T,value_type>::value>::type* dummy = 0 ) {
         detail::init(*this, typename boost::is_fundamental<value_type>::type());
         base_type::operator[](0) = v;
     }
