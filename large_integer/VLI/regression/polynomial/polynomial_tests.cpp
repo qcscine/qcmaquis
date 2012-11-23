@@ -6,6 +6,8 @@
 #include <limits>
 #include <fstream>
 #include <iostream>
+// TODO why is gmp needed?
+#include <gmpxx.h>
 
 #include <vli/polynomial/polynomial.hpp>
 
