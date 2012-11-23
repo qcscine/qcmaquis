@@ -20,7 +20,7 @@
 
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/utils/logger.h"
-#include "dmrg/utils/stream_storage.h"
+//#include "dmrg/utils/stream_storage.h"
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem

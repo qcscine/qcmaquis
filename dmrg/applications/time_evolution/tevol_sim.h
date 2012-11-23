@@ -17,8 +17,6 @@
 #include "dmrg/sim/sim.h"
 
 #include "dmrg/sim/te_utils.hpp"
-#include "dmrg/mp_tensors/evolve.h"
-#include "dmrg/mp_tensors/te.h"
 
 template <class Matrix, class SymmGroup>
 class dmrg_tevol_sim : public sim<Matrix, SymmGroup> {
