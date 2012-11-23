@@ -27,8 +27,8 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef VLI_VLI_CPU_IPP
-#define VLI_VLI_CPU_IPP
+#ifndef VLI_VLI_IPP
+#define VLI_VLI_IPP
 
 namespace vli {
 namespace detail {
@@ -499,4 +499,4 @@ std::ostream& operator<< (std::ostream& os,  vli<NumBits> const& vli){
 
 } // end namespace vli
 
-#endif
+#endif //VLI_VLI_IPP
