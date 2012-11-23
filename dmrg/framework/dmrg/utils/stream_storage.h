@@ -140,6 +140,7 @@ public:
     void notify();
     void sync();
     
+    std::string & get_base_path() {return base_path;}
 protected:
     std::string base_path;
     mutable std::size_t last_id;
@@ -183,9 +184,6 @@ public:
     
     void operator()()
     {
-        if (store->master()->base_path.size() == 0)
-            return;
-        
         std::string fp = store->master()->base_path + store->object_path;
         std::ifstream ifs(fp.c_str(), std::ifstream::binary);
         if (!ifs) {
@@ -233,8 +231,6 @@ public:
     
     void operator()()
     {
-        if (store->master()->base_path.size() == 0)
-            return;
         std::string fp = store->master()->base_path + store->object_path;
         std::ofstream of(fp.c_str(), std::ofstream::binary);
         
@@ -283,9 +279,6 @@ public:
     
     void operator()()
     {
-        if (store->master()->base_path.size() == 0)
-            return;
-        
         std::string fp = store->master()->base_path + store->object_path;
         std::ifstream ifs(fp.c_str(), std::ifstream::binary);
         if (!ifs) {
@@ -333,10 +326,6 @@ public:
     
     void operator()()
     {
-        
-        if (store->master()->base_path.size() == 0)
-            return;
-        
         std::string fp = store->master()->base_path + store->object_path;
         std::ofstream of(fp.c_str(), std::ofstream::binary);
         
@@ -384,6 +373,9 @@ namespace storage {
     template<class T>
     void prefetch(T & o, StreamStorage & ss)
     {
+        if (ss.master()->get_base_path().size() == 0)
+            return;
+        
         if (ss.status() == StreamStorage::Prefetching)
             return;
         if (ss.status() == StreamStorage::Complete)
@@ -402,6 +394,9 @@ namespace storage {
     template<class T>
     void load(T & o, StreamStorage & ss)
     {
+        if (ss.master()->get_base_path().size() == 0)
+            return;
+        
         if (ss.status() == StreamStorage::Complete)
             return;
         else if (ss.status() == StreamStorage::Prefetching)
@@ -417,6 +412,9 @@ namespace storage {
     template<class T>
     void store(T & o, StreamStorage & ss)
     {
+        if (ss.master()->get_base_path().size() == 0)
+            return;
+        
         if (ss.status() == StreamStorage::Stored)
             return;
         
@@ -432,10 +430,18 @@ namespace storage {
     
     inline void reset(StreamStorage & ss)
     {
+        if (ss.master()->get_base_path().size() == 0)
+            return;
+        
         ss.wait();
         assert(ss.status() == StreamStorage::Complete);
     }
     
 };
 
+#if defined USE_AMBIENT
+#include "stream_storage_ambient.h" // the specialization for ****_impl function object
+#endif
+
+            
 #endif

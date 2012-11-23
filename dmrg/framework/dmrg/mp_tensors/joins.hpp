@@ -88,9 +88,12 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
                 size_t out_l_offset = out_left_pb(s_charge, l_charge);
                 if (t == 1 && boundary_f != l_boundary_f)
                     out_l_offset += m1.row_dim().size_of_block(l_charge, true);
-                
+#ifdef USE_AMBIENT
+    assert(false);              
+#else
                 maquis::dmrg::detail::copy2d(nb, out_l_offset, out_r_offset, m.data()[b], in_l_offset, 0,
                                              in_l_size, in_r_size);
+#endif
             }
         }
     }
