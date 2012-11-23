@@ -1100,13 +1100,31 @@ namespace ambient { namespace numeric {
     template <class Matrix>
     inline void div_inplace(tiles<Matrix>& a, const scalar_type& rhs){
         int size = a.data.size();
-        for(int i = 0; i < size; i++){
+        for(int i = 0; i < size; i++)
             a[i] /= rhs;
-        }
+    }
+ 
+    template <class Matrix>
+    inline void save(const tiles<Matrix>& a, size_t tag){
+        split_d(a);
+        int size = a.data.size();
+        for(int i = 0; i < size; ++i)
+           save(a[i], (tag+i));//tag is done over blocks      
+    }
+
+    template <class Matrix>
+    inline void load(tiles<Matrix>& a, size_t tag){
+        split_d(a);
+        int size = a.data.size();
+        for(int i = 0; i < size; ++i)
+           load(a[i], (tag+i));        
     }
 
     template <class Matrix>
     std::ostream& operator << (std::ostream& o, const tiles<Matrix>& a){
+        int size = a.data.size();
+        for(int i = 0; i < size; i++)
+            o << a[i];
         return o;
     }
 
