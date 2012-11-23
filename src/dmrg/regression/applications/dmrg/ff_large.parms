@@ -1,4 +1,4 @@
-max_bond_dimension = 3000
+max_bond_dimension = 600
 
 truncation_initial = 0.0001
 truncation_final = 1e-12
@@ -9,8 +9,8 @@ nmainsweeps = 1
 
 resultfile = "ff_large.out.h5"
 chkpfile = "ff_large.out.h5"
-storagedir = "test_storage"
-donotsave = 1
+//storagedir = "test_storage"
+//donotsave = 1
 
 // possible values: singlesite, twosite
 optimization = "twosite"
