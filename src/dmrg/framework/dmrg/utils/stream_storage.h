@@ -430,7 +430,7 @@ namespace storage {
         ss.status() = StreamStorage::Stored;
     }
     
-    static void reset(StreamStorage & ss)
+    inline void reset(StreamStorage & ss)
     {
         ss.wait();
         assert(ss.status() == StreamStorage::Complete);

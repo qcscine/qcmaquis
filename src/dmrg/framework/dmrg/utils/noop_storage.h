@@ -14,6 +14,7 @@ class NoopStorage { };
 
 class NoopStorageMaster { 
 public:
+    typedef NoopStorage Storage;
     NoopStorage child() { return NoopStorage(); }
     void sync() { }
     void print_size() const { }
@@ -24,7 +25,7 @@ namespace storage
     template<class T> void store(T &, NoopStorage &) { }
     template<class T> void prefetch(T &, NoopStorage &) { }
     template<class T> void load(T &, NoopStorage &) { }
-    void reset(NoopStorage &) { }
+    inline void reset(NoopStorage &) { }
 }
 
 #endif
