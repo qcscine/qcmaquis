@@ -27,10 +27,8 @@
 *DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef VLI_VLI_CPU_HPP
-#define VLI_VLI_CPU_HPP
-
-#include "vli.h"
+#ifndef VLI_VLI_CPU_IPP
+#define VLI_VLI_CPU_IPP
 
 namespace vli {
 namespace detail {
