@@ -385,6 +385,16 @@ namespace ambient { namespace numeric {
         kernels::scale_inverse<T>::spawn(a, rhs); 
     }
 
+    template <typename T>
+    inline void save(const matrix<T>& a, const size_t& tag) { 
+        kernels::save<T>::spawn(a, tag); 
+    }
+
+    template <typename T>
+    inline void load(matrix<T>& a, const size_t& tag) { 
+        kernels::load<T>::spawn(a, tag); 
+    }
+
     template<typename T>
     inline void copy(matrix<T>& dst, const matrix<T>& src){ 
         kernels::copy<T>::spawn(dst, src); 

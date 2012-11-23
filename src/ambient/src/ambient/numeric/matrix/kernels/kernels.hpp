@@ -1119,6 +1119,36 @@ namespace ambient { namespace numeric { namespace kernels {
     };
 
     template<typename T>
+    struct save : public kernel< save<T> >
+    {
+        typedef void (save::*F)(matrix<T> const&, const size_t& );
+
+        inline void l(matrix<T> const& a, const size_t& tag){
+            pin(current(a));
+        }
+
+        inline void c(matrix<T> const& a, const size_t& tag ){
+            T* ad = (T*)current(a);
+            ambient::io_manager.save(ad, tag, __a_sizeof(a)); 
+        }
+    };
+
+    template<typename T>
+    struct load : public kernel< load<T> >
+    {
+        typedef void (load::*F)(matrix<T>&, const size_t&);
+
+        inline void l(matrix<T>& a, const size_t& tag){
+            pin(current(a));
+        }
+
+        inline void c(matrix<T>& a, const size_t& tag){
+            T* ad = (T*)updated(a);
+            ambient::io_manager.load(ad, tag, __a_sizeof(a)); 
+        }
+    };
+
+    template<typename T>
     struct validation : public kernel< validation<T> > 
     {
         typedef void (validation::*F)(const matrix<T>&, const matrix<T>&, future<bool>&);
