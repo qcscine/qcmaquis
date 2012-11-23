@@ -84,6 +84,13 @@ public:
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;
     
+    friend void swap(MPS& a, MPS& b)
+    {
+        using std::swap;
+        swap(a.data_, b.data_);
+        swap(a.canonized_i, b.canonized_i);
+    }
+
 #ifdef HAVE_ALPS_HDF5
     void load(alps::hdf5::archive & ar);
     void save(alps::hdf5::archive & ar) const;
