@@ -15,12 +15,12 @@
 #include "dmrg/mp_tensors/compression.h"
 #include "dmrg/models/factory.h"
 
-
 template <class Matrix, class SymmGroup>
-class dmrg_init {
+class dmrg_init {    
 public:
     typedef typename SymmGroup::charge charge;
     typedef std::pair<charge, size_t> local_state;
+    typedef typename std::vector<local_state>::const_iterator states_iterator;
     
     dmrg_init(DmrgParameters const & parms_, ModelParameters const & model_)
     : parms(parms_)
@@ -43,7 +43,7 @@ public:
     
     void build()
     {
-        build_slow();
+        build_fast();
         
         // final join of mps1 and mps2
         if (num_states2 > 0) {
@@ -73,8 +73,6 @@ private:
     // slow version looping over all basis states, discarding those with N!=initc
     void build_slow()
     {
-        typedef typename std::vector<local_state>::const_iterator states_iterator;
-        
         std::vector<local_state> alllocal;
         for (size_t i=0; i<phys.size(); ++i)
             for (size_t j=0; j<phys[i].second; ++j)
@@ -102,9 +100,45 @@ private:
         }
     }
     
-    // TODO: faster version looping only over basis states with N == initc
-    void build_fast();
-
+    // faster version looping only over basis states with N == initc
+    void build_fast()
+    {
+        std::vector<local_state> alllocal;
+        for (size_t i=0; i<phys.size(); ++i)
+            for (size_t j=0; j<phys[i].second; ++j)
+                alllocal.push_back( local_state(phys[i].first, j) );
+        
+        std::vector<states_iterator> it(L);
+        for (size_t i=0; i<L; ++i)
+            it[i] = alllocal.begin();
+        
+        std::vector<local_state> basis;
+        while (it[0] != alllocal.end()) {
+            charge N = SymmGroup::IdentityCharge;
+            for (size_t i=0; i<L; ++i)
+                 N = SymmGroup::fuse(N, it[i]->first);
+            
+            if (N == initc)
+                permutate_states(it);
+            
+            ++it[L-1];
+            for (int i = L-1; (i > 0) && (it[i] == alllocal.end()); --i) {
+                if (++it[i-1] != alllocal.end())
+                    for (int j=i; j<L; ++j)
+                        it[j] = it[i-1];
+            }
+        }
+    }
+    
+    void permutate_states(std::vector<states_iterator> its)
+    {
+        std::vector<local_state> state(L);
+        do {
+            for (size_t i=0; i<L; ++i)
+                state[i] = *(its[i]);
+            add_state(state);
+        } while ( next_permutation(its.begin(), its.end()) );
+    }
     
     MPS<Matrix, SymmGroup> state_mps(std::vector<local_state> const & state)
     {
