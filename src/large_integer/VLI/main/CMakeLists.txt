@@ -1,6 +1,7 @@
 # Make sure the linker can find the vli library once it is built. 
 link_directories (${PROJECT_BINARY_DIR}/src/vli) 
-set(order_list 1 2 3 4 5 6 7 8 9 10 11 12 13 14)
+#set(order_list 1 2 3 4 5 6 7 8 9 10 11 12 13 14)
+set(order_list 1)
 
 if(VLI_COMPILE_GPU)
     add_definitions(-DVLI_USE_GPU -DVLI_SPLIT_PARAM=${VLI_SPLIT_PARAM} )
@@ -16,6 +17,6 @@ foreach(order ${order_list})
 endforeach(order)
 
 #the data programm
-add_executable(data data.cpp)
-SET_TARGET_PROPERTIES(data PROPERTIES COMPILE_FLAGS "-D__ORDER__=14 -w -std=gnu++0x ")
+#add_executable(data data.cpp)
+#SET_TARGET_PROPERTIES(data PROPERTIES COMPILE_FLAGS "-D__ORDER__=14 -w -std=gnu++0x ")
 #target_link_libraries(data)

@@ -15,9 +15,20 @@
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
 #include "vli/polynomial/polynomial.hpp"
 #include "vli/vli.hpp"
+#include "vli/detail/kernels_cpu.h"
 //utils
 #include "utils/timings.h"
 #include "utils/tools.h"
+
+
+
+#include <boost/preprocessor/arithmetic/add.hpp>
+#include <boost/preprocessor/arithmetic/mul.hpp>
+#include <boost/preprocessor/arithmetic/sub.hpp>
+#include <boost/preprocessor/repetition.hpp>
+#include <boost/preprocessor/iteration/local.hpp>
+#include <boost/preprocessor/comparison/equal.hpp>
+#include <boost/preprocessor/stringize.hpp>
 
 #define Size_vec 4096// play with this 1024 - 16384
 //The order __ORDER__ is passed now by cmake, see cmakelist of the main
@@ -95,7 +106,7 @@ typedef boost::mpl::vector<
                             polynomial_type_combined_xy_256,
                             polynomial_type_combined_x_256
                           > polynomial_list_256_combined;
-
+/*
    template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
    class polynomial;
 
@@ -123,7 +134,7 @@ typedef boost::mpl::vector<
            os.close();
        };
    };   
-    
+  */
    struct test_case {
 
    template <typename Polynomial>
@@ -183,13 +194,50 @@ typedef boost::mpl::vector<
 //               tool::timescheduler::save(tgmp.get_time(),t0.get_time(),t1.get_time());
        #else
                std::cout << " G vli: "  << tgmp.get_time()/t0.get_time() ; 
-               timescheduler<Polynomial>::save(tgmp.get_time(),t0.get_time());
+     //          timescheduler<Polynomial>::save(tgmp.get_time(),t0.get_time());
        #endif
 
        }
    };
 
+
 int main(int argc, char* argv[]) {
+    
+    
+    vli::vli<256> a,b;
+
+    b[0] = 0xfffffffffffffff;
+    b[1] = 0xfffffffffffb;
+    b[2] = 0xffffffffffffffc;
+    b[3] = 0xffffffffffffffd;
+
+    a[0] = 0xfffffffffffffff;
+    a[1] = 0xbfffffffffff;
+    a[2] = 0xcffffffffffffff;
+    a[3] = 0xdffffffffffffff;
+
+    vli::vli<512> res,res2;
+
+    Timer t1("CPU classic");
+    t1.begin();
+    for(int i=0; i<0xffffff; ++i)
+       vli::multiply_extend(res2, a ,b);
+    t1.end();
+
+
+    Timer t2("CPU KA");
+    t2.begin();
+    for(int i=0; i<0xffffff; ++i)
+         res = vli::detail::KA_helper<256>::KA_algo(a,b);
+    t2.end();
+
+    std::cout << " classic " << t1.get_time() << " karatsuba " << t2.get_time() << std::endl;
+    std::cout << " ------------ " << std::endl;
+    std::cout << std::hex << " ref " << res2  << std::endl;
+    std::cout << " res " << res  << std::endl;
+    std::cout << " diff " << (res2 -= res)   << std::endl;
+        
+    /*
        std::cout << " -------ASCII ART ^_^' --------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -------Size vector : " << Size_vec  << ", Order " << __ORDER__ << std::endl;
        std::cout << " -----  Max_Order_Each --------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
@@ -224,5 +272,6 @@ int main(int argc, char* argv[]) {
        boost::mpl::for_each<polynomial_list_128_combined>(test_case());
        std::cout << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
+     */
        return 0;
 }
