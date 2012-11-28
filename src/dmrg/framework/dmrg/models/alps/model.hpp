@@ -621,10 +621,9 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                     term.fill_operator = tfill[type];
                 }
 
-#ifndef NDEBUG
                 if (f_ops % 2 != 0)
                     throw std::runtime_error("Number of fermionic operators has to be even.");
-#endif
+
                 meas.add_term(term);
             }
         }
