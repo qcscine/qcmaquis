@@ -165,7 +165,7 @@ namespace vli {
     std::ostream& operator<< (std::ostream& os,  vli<NumBits> const& );
 }
 
-#include <vli/vli.hpp>
+#include <vli/vli.ipp>
 #include "vli/detail/cpu/x86_64/karatsuba_asm.h"
 
 #endif //VLI_VLI_IPP
