@@ -19,16 +19,6 @@
 #include <omp.h>
 #endif
 
-template <class charge>
-std::ostream& operator<< (std::ostream& os, std::vector<std::pair<charge, size_t> > const& v)
-{
-    os << "[";
-    for (size_t i=0; i<v.size(); i++)
-        os << "  (" << v[i].first << " - " << v[i].second << ")";
-    os << "  ]";
-    return os;
-}
-
 template <class Matrix, class SymmGroup>
 class dmrg_init {    
 public:
