@@ -433,10 +433,10 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                     term.name = what.str(1);
 
 					SiteOperator op = make_site_term(it->value(), parms);
-#ifndef NDEBUG
+
 					if (b.is_fermionic(simplify_name(op)))
 						throw std::runtime_error("Cannot measure local fermionic operators.");
-#endif
+
 					alps_matrix m = alps::get_matrix(value_type(), op, b, parms, true);
 
 					term.operators.push_back( std::make_pair(convert_matrix(m, type), false) );
@@ -494,11 +494,11 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                     term.name = what.str(1);
 
 					SiteOperator op = make_site_term(it->value(), parms);
-#ifndef NDEBUG
+
 					if (b.is_fermionic(simplify_name(op)))
 						throw std::runtime_error("Cannot measure local fermionic operators.");
-#endif
 
+                    
 					alps_matrix m = alps::get_matrix(value_type(), op, b, parms, true);
 
 					term.operators.push_back( std::make_pair(convert_matrix(m, type), false) );
@@ -547,10 +547,10 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                     term.fill_operator = tfill[type];
                 }
                 
-#ifndef NDEBUG
+
                 if (f_ops % 2 != 0)
                     throw std::runtime_error("Number of fermionic operators has to be even.");
-#endif
+
                 meas.add_term(term);
             }
         }
