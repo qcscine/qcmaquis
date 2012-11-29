@@ -36,14 +36,14 @@ namespace vli {
     template <std::size_t NumBits>
     void inline KA_add(vli<NumBits> & x, vli<NumBits> const& y){
         asm("addq  %1, %0;" :"+r"(x[0]):"g"(y[0]):"cc");
-        for(int i(1); i < (NumBits>>6);++i)
+        for(int i(1); i < vli<NumBits>::numwords;++i)
             asm("adcq  %1, %0;" :"+r"(x[i]):"g"(y[i]):"cc");
     };
    
     template <std::size_t NumBits>
     void inline KA_sub(vli<NumBits> & x, vli<NumBits>  const& y){
         asm("subq  %1, %0;" :"+r"(x[0]):"g"(y[0]):"cc");
-        for(int i(1); i < (NumBits>>6);++i)
+        for(int i(1); i < vli<NumBits>::numwords;++i)
             asm("sbbq  %1, %0;" :"+r"(x[i]):"g"(y[i]):"cc");
     };
    
