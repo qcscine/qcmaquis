@@ -34,14 +34,14 @@ namespace vli {
     namespace detail {
     
     template <std::size_t NumBits>
-    void inline KA_add(boost::uint64_t* x, boost::uint64_t const* y){
+    void inline KA_add(vli<NumBits> & x, vli<NumBits> const& y){
         asm("addq  %1, %0;" :"+r"(x[0]):"g"(y[0]):"cc");
         for(int i(1); i < (NumBits>>6);++i)
             asm("adcq  %1, %0;" :"+r"(x[i]):"g"(y[i]):"cc");
     };
    
     template <std::size_t NumBits>
-    void inline KA_sub(boost::uint64_t* x, boost::uint64_t const* y){
+    void inline KA_sub(vli<NumBits> & x, vli<NumBits>  const& y){
         asm("subq  %1, %0;" :"+r"(x[0]):"g"(y[0]):"cc");
         for(int i(1); i < (NumBits>>6);++i)
             asm("sbbq  %1, %0;" :"+r"(x[i]):"g"(y[i]):"cc");
@@ -57,14 +57,14 @@ namespace vli {
             vli<NumBits> u,v,w;
             u = KA_helper<NumBits/2>::KA_algo(x2,y2);
             v = KA_helper<NumBits/2>::KA_algo(x1,y1);
-            KA_add<NumBits/2>(&x1x2[0],&x2[0]);
-            KA_add<NumBits/2>(&y1y2[0],&y2[0]);
+            KA_add<NumBits/2>(x1x2,x2);
+            KA_add<NumBits/2>(y1y2,y2);
             w = KA_helper<NumBits/2>::KA_algo(x1x2,y1y2);
-            KA_sub<NumBits>(&w[0],&u[0]);
-            KA_sub<NumBits>(&w[0],&v[0]);
+            KA_sub<NumBits>(w,u);
+            KA_sub<NumBits>(w,v);
             vli<2*NumBits> tmp_res0(w,copy_right_shift_tag());
             vli<2*NumBits> tmp_res1(u,v,copy_right_shift_tag());
-            KA_add<2*NumBits>(&tmp_res0[0],&tmp_res1[0]);
+            KA_add<2*NumBits>(tmp_res0,tmp_res1);
             return tmp_res0;
         };
     };
