@@ -51,6 +51,11 @@ namespace vli {
         boost::swap(vli_a.data_,vli_b.data_);
     }
 
+    // Karatsuba stuff
+    struct copy_msb_tag{}; // Most Significant Bits
+    struct copy_lsb_tag{}; // Least Significant Bits
+    struct copy_right_shift_tag{}; // for the shift copy
+
     template<std::size_t NumBits>
     class vli
         :boost::equality_comparable<vli<NumBits> >, // generate != operator
@@ -73,7 +78,10 @@ namespace vli {
         // c - constructors, copy-swap, access   
         vli();
         explicit vli(long int num);
-        //vli(vli const& r);
+        vli(vli<2*NumBits> const&, copy_lsb_tag);
+        vli(vli<2*NumBits> const&, copy_msb_tag);
+        vli(vli<NumBits/2> const&, copy_right_shift_tag);
+        vli(vli<NumBits/2> const&, vli<NumBits/2> const&, copy_right_shift_tag);//just  coherence previous one
 #if defined __GNU_MP_VERSION
         // TODO find a better solution for this.
         operator mpz_class() const;
@@ -91,6 +99,7 @@ namespace vli {
         vli& operator <<= (long int const a); // bit shift
         vli& operator |= (vli const& vli_a); // bit shift
         vli& operator ^= (vli const& vli_a); // bit shift
+        vli& operator &= (vli const& vli_a); // bit shift
         vli& operator += (vli const& a);
         vli& operator += (long int const a);
         vli& operator -= (vli const& vli_a);
@@ -158,5 +167,6 @@ namespace vli {
 }
 
 #include <vli/vli.ipp>
+#include "vli/detail/cpu/x86_64/karatsuba_asm.h"
 
 #endif //VLI_VLI_IPP

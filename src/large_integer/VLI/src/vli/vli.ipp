@@ -77,9 +77,36 @@ vli<NumBits>::vli(long int num) {
     value_type a = num >> std::numeric_limits<long int>::digits;
     for(size_type i=1; i< numwords; ++i)
         data_[i] = a;
-
 }
 
+template <std::size_t NumBits>
+vli<NumBits>::vli(vli<2*NumBits> const& vli_a, copy_lsb_tag){
+    for(size_type i=0; i < numwords; ++i)
+        data_[i] = vli_a[i+numwords];
+}
+    
+template <std::size_t NumBits>
+vli<NumBits>::vli(vli<2*NumBits> const& vli_a, copy_msb_tag){
+    for(size_type i=0; i < numwords; ++i)
+        data_[i] = vli_a[i];
+}
+
+template <std::size_t NumBits>
+vli<NumBits>::vli(vli<NumBits/2> const& vli_a, copy_right_shift_tag){
+    for(size_type i=0; i < numwords; ++i)
+        data_[i] = 0;
+    for(int  i=0 ; i < vli<NumBits/2>::numwords; i++)
+        data_[i+(numwords>>2)] = vli_a[i];
+}
+
+template <std::size_t NumBits>
+vli<NumBits>::vli(vli<NumBits/2> const& vli_a,  vli<NumBits/2> const& vli_b, copy_right_shift_tag){
+    for(int i=0; i < vli<NumBits/2>::numwords; ++i)
+        data_[i] = vli_a[i];
+    for(int i=0; i < vli<NumBits/2>::numwords; i++)
+        data_[i+(numwords>>1)] = vli_b[i];
+}
+    
 #if defined __GNU_MP_VERSION
 template <std::size_t NumBits>
 vli<NumBits>::operator mpz_class() const{
@@ -199,6 +226,13 @@ template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator ^= (vli const& vli_a){
     for(std::size_t i=0; i < numwords; ++i)
         (*this)[i] ^= vli_a[i];
+    return *this;
+}
+
+template <std::size_t NumBits>
+vli<NumBits>& vli<NumBits>::operator &= (vli const& vli_a){
+    for(std::size_t i=0; i < numwords; ++i)
+        (*this)[i] &= vli_a[i];
     return *this;
 }
 
