@@ -296,6 +296,9 @@ vli<NumBits>& vli<NumBits>::operator %= (vli<NumBits> vli_a){
 // Saint HPC forgives me
 template <std::size_t NumBits>
 vli<NumBits>& vli<NumBits>::operator /= (vli<NumBits> vli_a){
+    if(vli_a.is_zero())
+        throw vli_division_by_zero_error();
+
     bool const sign_this  = this->is_negative();
     bool const sign_vli_a = vli_a.is_negative();
 

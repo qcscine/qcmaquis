@@ -36,6 +36,12 @@ VLI_FUZZABLE_TEST( gmp_divides_negative )
     vli_type d = a / b;
     mpz_class dgmp = agmp / (-bgmp);
 
+    negate_inplace(a);
+
+    vli_type e = a / b;
+    mpz_class egmp = (-agmp) / (-bgmp);
+
     BOOST_CHECK_EQUAL(mpz_class(c),cgmp);
     BOOST_CHECK_EQUAL(mpz_class(d),dgmp);
+    BOOST_CHECK_EQUAL(mpz_class(e),egmp);
 }

@@ -39,10 +39,13 @@
 #include <cstring>
 #include <ostream>
 #include <sstream>
+#include <stdexcept>
 #include <boost/swap.hpp>
 
 
 namespace vli {
+
+    struct vli_division_by_zero_error : public std::runtime_error { vli_division_by_zero_error(): std::runtime_error("Divide by zero."){}; };
 
     template<std::size_t NumBits> class vli;
 
