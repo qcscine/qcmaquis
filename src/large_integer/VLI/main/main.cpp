@@ -66,35 +66,35 @@ typedef vli::polynomial< vli_type_cpu_256, vli::max_order_combined<__ORDER__>, v
 typedef vli::polynomial< vli_type_cpu_256, vli::max_order_combined<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_combined_xyzw_256;
 
 typedef boost::mpl::vector<
+                            polynomial_type_each_xyzw_128,// buffer can be too large cpu/gpu, be cautious
                             polynomial_type_each_xyz_128,
                             polynomial_type_each_xy_128,
                             polynomial_type_each_x_128
-//                            polynomial_type_each_xyzw_128// buffer can be too large cpu/gpu, be cautious
                           > polynomial_list_128_each;
 
 typedef boost::mpl::vector<
-                            polynomial_type_combined_xyzw_128,
+//                           polynomial_type_combined_xyzw_128,
                             polynomial_type_combined_xyz_128,
                             polynomial_type_combined_xy_128,
                             polynomial_type_combined_x_128 
                           > polynomial_list_128_combined;
 
 typedef boost::mpl::vector<
-//                         polynomial_type_each_xyzw_192
+                           polynomial_type_each_xyzw_192,
                            polynomial_type_each_xyz_192,
                            polynomial_type_each_xy_192,
                            polynomial_type_each_x_192 
                           > polynomial_list_192_each;
 
 typedef boost::mpl::vector<
-                           polynomial_type_combined_xyzw_192,
+  //                        polynomial_type_combined_xyzw_192,
                            polynomial_type_combined_xyz_192,
                            polynomial_type_combined_xy_192,
                            polynomial_type_combined_x_192
                           > polynomial_list_192_combined;
 
 typedef boost::mpl::vector<
-                       //   polynomial_type_each_xyzw_256// buffer can be too large cpu/gpu, be cautious
+                            polynomial_type_each_xyzw_256,// buffer can be too large cpu/gpu, be cautious
                             polynomial_type_each_xyz_256,
                             polynomial_type_each_xy_256,
                             polynomial_type_each_x_256
@@ -158,7 +158,7 @@ typedef boost::mpl::vector<
         
        tools::fill_vector_random(v1);
        tools::fill_vector_random(v2);
-
+/*
        tools::converter(v1,v1_gmp); 
        tools::converter(v2,v2_gmp); 
 
@@ -166,7 +166,7 @@ typedef boost::mpl::vector<
        tgmp.begin();
            p_gmp_res = vli::detail::inner_product_cpu(v1_gmp,v2_gmp);
        tgmp.end();
-        
+ */       
        Timer t0("CPU ");
        t0.begin();
            p1_res = vli::detail::inner_product_cpu(v1,v2);
@@ -178,25 +178,23 @@ typedef boost::mpl::vector<
            p2_res =  vli::detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2);
        t1.end();
        #endif
-
-       if(tools::equal<Polynomial>(p1_res,p_gmp_res))
-               std::cout << "  OK, cpu/gmp " << t0.get_time() ;
+  //     if(tools::equal<Polynomial>(p1_res,p_gmp_res))
+    //           std::cout << "  OK, cpu/gmp " << t0.get_time() ;
        #ifdef VLI_USE_GPU
                if(p1_res == p2_res)
-                   std::cout << " gpu "  t1.get_time() ;
+                   std::cout << " gpu " << t1.get_time() ;
                else
                    std::cout << " gpu no ok";
        #endif
-               std::cout << " gmp " <<  tgmp.get_time();
                std::cout.precision(2);
        #ifdef VLI_USE_GPU
-               std::cout << " G vli: "  << tgmp.get_time()/t0.get_time() << " G gpu: " << tgmp.get_time()/t1.get_time()   ; 
-//               tool::timescheduler::save(tgmp.get_time(),t0.get_time(),t1.get_time());
+             //  std::cout << " G vli: "  << tgmp.get_time()/t0.get_time() << " G gpu: " << tgmp.get_time()/t1.get_time()   ; 
+             //  timescheduler<Polynomial>::save(tgmp.get_time(),t0.get_time(),t1.get_time());
+            //   timescheduler<Polynomial>::save(0,t0.get_time(),t1.get_time());
        #else
-               std::cout << " G vli: "  << tgmp.get_time()/t0.get_time() ; 
+            //   std::cout << " G vli: "  << tgmp.get_time()/t0.get_time() ; 
      //          timescheduler<Polynomial>::save(tgmp.get_time(),t0.get_time());
        #endif
-
        }
    };
 
@@ -208,7 +206,7 @@ int main(int argc, char* argv[]) {
 
     b[0] = 0xfffffffffffffff;
     b[1] = 0xfffffffffffb;
-    b[2] = 0xffffffffffffffc;
+    b[2] = 0xfffffffffffffff;
     b[3] = 0xffffffffffffffd;
 
     a[0] = 0xfffffffffffffff;
@@ -220,14 +218,14 @@ int main(int argc, char* argv[]) {
 
     Timer t1("CPU classic");
     t1.begin();
-    for(int i=0; i<0xffffff; ++i)
+    for(int i=0; i<1; ++i)
        vli::multiply_extend(res2, a ,b);
     t1.end();
 
 
     Timer t2("CPU KA");
     t2.begin();
-    for(int i=0; i<0xffffff; ++i)
+    for(int i=0; i<1; ++i)
          res = vli::detail::KA_helper<256>::KA_algo(a,b);
     t2.end();
 
@@ -240,6 +238,7 @@ int main(int argc, char* argv[]) {
     /*
        std::cout << " -------ASCII ART ^_^' --------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -------Size vector : " << Size_vec  << ", Order " << __ORDER__ << std::endl;
+
        std::cout << " -----  Max_Order_Each --------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -----  3 variable --------------------------------- 2 variables --------------------------------- 1 variables ----------------------------------------------------------------- " << std::endl;
@@ -255,6 +254,7 @@ int main(int argc, char* argv[]) {
        std::cout << " -----  128bits * 128bits = 256 bits ------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        boost::mpl::for_each<polynomial_list_128_each>(test_case());
        std::cout << std::endl;
+/*
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -----  Max__Order_Combined ---------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;

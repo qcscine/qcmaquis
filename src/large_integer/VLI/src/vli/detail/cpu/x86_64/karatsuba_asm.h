@@ -87,12 +87,12 @@ namespace vli {
         boost::uint64_t KA_sub<(n+1)*64>(boost::uint64_t* x,boost::uint64_t const* y){ \
         boost::uint64_t sign(0); \
         BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), subn128_n128_ka_cpu, ~) \
-        asm("setc %0;":"=g"(sign)::"cc"); /* extract the sign = CB */ \
+        asm("setc %0;":"=m"(sign)::"cc"); /* extract the sign = CB */ \
         sign = -sign; \
         return sign; \
     }; \
    
-    BOOST_PP_REPEAT(4, FUNCTION_add_nbits_nbits, ~)
+    BOOST_PP_REPEAT(8, FUNCTION_add_nbits_nbits, ~)
     BOOST_PP_REPEAT(4, FUNCTION_add_nbits_bit,   ~)
     BOOST_PP_REPEAT(4, FUNCTION_sub_nbits_nbits, ~)
     
