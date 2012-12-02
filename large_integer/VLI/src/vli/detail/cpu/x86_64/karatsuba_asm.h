@@ -36,65 +36,69 @@
 #include <boost/preprocessor/repetition.hpp>
 #include <boost/preprocessor/iteration/local.hpp>
 #include <boost/preprocessor/comparison/equal.hpp>
+#include <boost/preprocessor/stringize.hpp>
 
 namespace vli {
     namespace detail {
 
     template <std::size_t NumBits>
-    inline void KA_add(boost::uint64_t* x, boost::uint64_t const* y);
+    void KA_add(boost::uint64_t* x, boost::uint64_t const* y);
    
     template <std::size_t NumBits>
     boost::uint64_t KA_sub(boost::uint64_t* x, boost::uint64_t const* y); //return the mask
    
     template <std::size_t NumBits>
-    inline void KA_sign(boost::uint64_t* x, boost::uint64_t a);
+    void KA_sign(boost::uint64_t* x, boost::uint64_t a);
+    
+    #define r(w, n, MAX)  BOOST_PP_COMMA_IF(n) BOOST_PP_STRINGIZE(+r)(x[n])
+    #define g(w, n, MAX)  BOOST_PP_COMMA_IF(n) BOOST_PP_STRINGIZE(g)(y[n])
    
-    #define addn128_n128_ka_cpu(w, n, unused) \
-    asm(  \
-            BOOST_PP_IF(n,"adcq %1, %0;","addq  %1, %0; ") /* n=0 no CB,  n!=0, second pass needs CB */  \
-            :"+r"(x[n]):"g"(y[n]):"cc" \
-       ); \
+    #define addn128_n128_ka_cpu(w, n, MAX) \
+        BOOST_PP_IF(n,"adcq %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(MAX,n))", %"BOOST_PP_STRINGIZE(n)"; \n\t","addq  %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(MAX,n))", %0; \n\t")
+
+    #define subn128_n128_ka_cpu(w, n, MAX) \
+        BOOST_PP_IF(n,"sbbq %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(MAX,BOOST_PP_ADD(n,1)))", %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(n,1))"; \n\t","subq  %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(MAX,BOOST_PP_ADD(n,1)))", %1; \n\t") \
    
-    #define addn64_bit_ka_cpu(w, n, unused) \
-    asm(  \
-           BOOST_PP_IF(n,"adcq $0, %0; ","addq  %1, %0; ")  /* n=0 no CB,  n!=0, second pass needs CB */  \
-           :"+r"(x[n]):BOOST_PP_IF(n,/* nothing */,"g"(mask)):"cc" \
-       ); \
-   
-    #define subn128_n128_ka_cpu(w, n, unused) \
-    asm(  \
-           BOOST_PP_IF(n,"sbbq %1, %0; \n\t","subq  %1, %0; \n\t") /* n=0 no CB,  n!=0, second pass needs CB */  \
-           :"+r"(x[n]):"g"(y[n]):"cc"                                                     \
-       ); \
+    #define addn64_bit_ka_cpu(w, n, MAX) \
+        BOOST_PP_IF(n,"adcq $0, %"BOOST_PP_STRINGIZE(n)"; \n\t","addq  %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(MAX,n))", %0; \n\t")  /* n=0 no CB,  n!=0, second pass needs CB */  \
+
    
     #define FUNCTION_add_nbits_nbits(z, n, unused) \
     template<> \
-    inline void KA_add<(n+1)*64>(boost::uint64_t* x,boost::uint64_t const* y){ \
-        BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), addn128_n128_ka_cpu, ~) \
+    void KA_add<(n+1)*64>(boost::uint64_t* x,boost::uint64_t const* y){ \
+        asm( \
+            BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), addn128_n128_ka_cpu, BOOST_PP_ADD(n,1)) \
+          : BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), r, ~) : BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), g, BOOST_PP_ADD(n,1)): "cc" \
+        ); \
     }; \
     
     #define FUNCTION_add_nbits_bit(z, n, unused) \
     template<> \
-    inline void KA_sign<(n+1)*64>(boost::uint64_t* x,boost::uint64_t mask){ \
+    void KA_sign<(n+1)*64>(boost::uint64_t* x,boost::uint64_t mask){ \
         for(int i(0); i < (n+1); ++i) \
             x[i] ^= mask; \
         mask >>= 63; /* transform the mask to CB */ \
-        BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), addn64_bit_ka_cpu, ~) \
+        asm volatile(  \
+           BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), addn64_bit_ka_cpu, BOOST_PP_ADD(n,1)) \
+           :BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), r, ~) : "g"(mask) : "cc" \
+        ); \
     }; \
-   
+
     #define FUNCTION_sub_nbits_nbits(z, n, unused) \
     template<> \
         boost::uint64_t KA_sub<(n+1)*64>(boost::uint64_t* x,boost::uint64_t const* y){ \
         boost::uint64_t sign(0); \
-        BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), subn128_n128_ka_cpu, ~) \
-        asm("setc %0;":"=m"(sign)::"cc"); /* extract the sign = CB */ \
-        sign = -sign; \
-        return sign; \
+        asm( \
+            BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), subn128_n128_ka_cpu, BOOST_PP_ADD(n,1)) \
+            "setc %0; \n\t" /* get the CB*/\
+           : "+m"(sign), BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), r, ~) : BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), g, BOOST_PP_ADD(n,1)): "cc" \
+        ); \
+        return -sign; \
     }; \
    
     BOOST_PP_REPEAT(8, FUNCTION_add_nbits_nbits, ~)
-    BOOST_PP_REPEAT(4, FUNCTION_add_nbits_bit,   ~)
     BOOST_PP_REPEAT(4, FUNCTION_sub_nbits_nbits, ~)
+    BOOST_PP_REPEAT(4, FUNCTION_add_nbits_bit,   ~)
     
     template <std::size_t NumBits>
     struct KA_helper{//lsb = partie haute, msb = partie basse
@@ -113,6 +117,7 @@ namespace vli {
             medium = KA_helper<NumBits/2>::KA_algo(am,bm);
             mask_s1 ^= mask_s2;
             KA_sign<NumBits>(&medium[0],mask_s1);
+            vli<NumBits> low_cp(low),medium_cp(medium),high_c(high);
             KA_add<NumBits>(&medium[0],&low[0]);
             KA_add<NumBits>(&medium[0],&high[0]);
             vli<2*NumBits> tmp_res0(medium,copy_right_shift_tag());
@@ -124,7 +129,7 @@ namespace vli {
    
     template <>
     struct KA_helper<64>{
-        inline static vli<128> KA_algo(vli<64> const& vli_a, vli<64> const& vli_b){//
+        static vli<128> KA_algo(vli<64> const& vli_a, vli<64> const& vli_b){//
             vli<128> vli_res;
             /* =a means rax for lower part, =d means rdx for the higher part, = for writing, %0 directly vli_a[0] ready for mul vli[0] */
             asm("mulq %3;" :"=a"(vli_res[0]), "=d"(vli_res[1]) :"%0" (vli_a[0]), "r"(vli_b[0]): "cc");
