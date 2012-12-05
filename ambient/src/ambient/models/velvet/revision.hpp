@@ -9,8 +9,10 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline revision::revision(memspec* spec, void* g)
-    : spec(spec), clean(g == NULL), generator(g), header(NULL), data(NULL), users(0) 
+    : spec(spec), generator(g), users(0)
     {
+        state = (generator == NULL) ? PURE : VOID;
+        header = data = NULL;
     }
 
     inline void revision::embed(void* memory, size_t bound){
@@ -18,38 +20,39 @@ namespace ambient { namespace models { namespace velvet {
         this->data = (void*)((size_t)memory + bound);
     }
 
-    inline void revision::reset_generator(){
-        this->generator = NULL;
+    inline void revision::reuse(revision& r){
+        this->data   = r.data;
+        this->header = r.header;
+        r.header     = NULL;
     }
 
-    inline void* revision::get_generator(){
-        return this->generator;
-    }
-
-    inline void revision::swap(revision& e){
-        this->data = e.data;
-        this->header = e.header;
-        e.header = NULL;
-    }
-
-    inline void* revision::get_memory(){
-        return this->header;
-    }
-
-    inline bool revision::valid(){
-        return (this->data != NULL);
-    }
-
-    inline bool revision::occupied(){
-        return (this->users != 0);
+    inline void revision::use(){
+        ++this->users;
     }
 
     inline void revision::release(){
         --this->users;
     }
 
-    inline void revision::use(){
-        ++this->users;
+    inline void revision::complete(){
+        this->generator = NULL;
+    }
+
+    inline bool revision::locked(){
+        return (this->users != 0);
+    }
+
+    inline bool revision::remote(){
+        return (this->state == VOID);
+    }
+
+    inline bool revision::origin(){
+        return (this->state == ORIG);
+    }
+
+    inline bool revision::valid(){
+        return (this->data != NULL); //(this->state == ORIG || 
+                                     // this->state == COPY );
     }
 
     // }}}

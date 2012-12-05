@@ -36,22 +36,19 @@ namespace ambient {
     class kernel : public cfunctor
     {
     public:
-        inline void* operator new (size_t size){ 
-            return ambient::bulk_pool.get<sizeof(K)>(); 
-        }
-        
+        inline void* operator new (size_t size){ return ambient::bulk_pool.get<sizeof(K)>(); }
         inline void operator delete (void* ptr){ }
 
-        virtual bool ready()       { return kernel_inliner<typename K::F,&K::c>::ready(this);      }
         virtual bool match(void* t){ return kernel_inliner<typename K::F,&K::c>::match(this, t);   }
-        virtual void place()       {        kernel_inliner<typename K::F,&K::c>::place(this);      }
+        virtual void deploy(size_t target){        kernel_inliner<typename K::F,&K::c>::place(this);      }
+        virtual bool ready()       { return kernel_inliner<typename K::F,&K::c>::ready(this);      }
         virtual void invoke()      {        kernel_inliner<typename K::F,&K::c>::invoke((K*)this); 
                                             kernel_inliner<typename K::F,&K::c>::cleanup(this);    }
 
         inline void pin(revision& r){
             //this->set_group(channel.world()); 
             //ambient::controller.ifetch(r);
-            cfunctor* g = (cfunctor*)r.get_generator();
+            cfunctor* g = (cfunctor*)r.generator;
             if(g != NULL) g->push_back(this);
             else ambient::controller.submit(this);
         }

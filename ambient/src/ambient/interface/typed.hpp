@@ -48,7 +48,7 @@ namespace ambient {
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){
             T* obj = (T*)m->arguments[arg];
-            obj->impl->content[obj->ref+1]->reset_generator();
+            obj->impl->content[obj->ref+1]->complete();
         }
         template<size_t arg>
         static inline T& revised(sfunctor* m){
@@ -120,7 +120,7 @@ namespace ambient {
         template<size_t arg> 
         static inline void deallocate(sfunctor* m){
             T* obj = (T*)m->arguments[arg];
-            obj->impl->content[obj->ref+1]->reset_generator();
+            obj->impl->content[obj->ref+1]->complete();
         }
         template<size_t arg>
         static inline T& revised(sfunctor* m){

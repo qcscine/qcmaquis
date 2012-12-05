@@ -10,30 +10,34 @@ namespace ambient { namespace models { namespace velvet {
     public:
         revision(memspec*, void* g);
         void* operator new (size_t size);
-        void operator delete (void* ptr);
-        operator char* (){ return (char*)this->data; }
-        operator double* (){ return (double*)this->data; }
-        operator std::complex<double>* (){ return (std::complex<double>*)this->data; }
+        void  operator delete (void* ptr);
+        template<typename T> operator T* (){ return (T*)data; }
+
         void embed(void* memory, size_t bound);
-        void swap(revision&);
-        void* get_memory();
-        bool valid();
-        bool occupied();
-        void release();
+        void reuse(revision& r);
+
         void use();
+        void release();
+        void complete();
 
-        revision* get_parent(){ return parent; }
-        void* get_generator();
-        void reset_generator();
+        bool locked();
+        bool remote();
+        bool origin();
+        bool valid();
 
-        int users; // std::atomic<int>
-        size_t sid;
-        memspec* spec;
-        void* header;
-        void* data;
-        bool clean;
-        void* generator;
+        memspec*  spec;
         revision* parent;
+        void*     generator;
+        void*     header;
+        void*     data;
+        size_t    sid;
+        int       users;
+
+        enum { VOID,
+               PURE, 
+               COPY, 
+               WAIT, 
+               ORIG } state;
     };
 
 } } }
