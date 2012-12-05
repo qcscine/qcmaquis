@@ -2,18 +2,16 @@
 #include "ambient/utils/timings.hpp"
 
 #define CONTROLLER_CHAINS_RESERVE 65536
+#define BOUND 0
 
 namespace ambient { namespace controllers { namespace velvet {
 
     using ambient::channels::mpi::packet_t;
     using ambient::channels::mpi::packet;
 
-    inline controller::~controller(){
-    }
+    inline controller::~controller(){ }
 
-    inline controller::controller()
-    : muted(false)
-    {
+    inline controller::controller(){
         this->chains.reserve(CONTROLLER_CHAINS_RESERVE);
         this->mirror.reserve(CONTROLLER_CHAINS_RESERVE);
         //this->acquire(&ambient::channel);
@@ -60,11 +58,15 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::alloc(revision& r){
-        r.embed(r.spec->alloc(), r.spec->get_bound());
+        r.embed(ambient::range_pool.malloc(r.spec->size + BOUND), BOUND);
     }
 
     inline void controller::calloc(revision& r){
-        r.embed(r.spec->calloc(), r.spec->get_bound());
+        alloc(r); memset(r.data, 0, r.spec->size);
+    }
+
+    inline void controller::free(revision& r){
+        return ambient::range_pool.free(r.header, r.spec->size + BOUND);
     }
 
     inline revision& controller::ufetch(revision& r){

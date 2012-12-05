@@ -5,9 +5,7 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline revision* model::add_revision(history* o, void* g){
-        revision* r = new revision(&o->spec, g);
-        o->add_state(r);
-        return r;
+        return o->add_state(g);
     }
 
     inline void model::use_revision(history* o){
