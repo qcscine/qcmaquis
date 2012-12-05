@@ -19,7 +19,6 @@ namespace ambient { namespace channels { namespace mpi {
     : type(p.type)
     {
         memcpy(this->data, p.data, p.type.get_size());
-        reset_usage(this->data);
         this->mpi_t = p.mpi_t;
     }
 

@@ -7,6 +7,7 @@
 #include "ambient/channels/mpi/groups/group.h"
 #include "ambient/channels/mpi/groups/multirank.h"
 #include "ambient/utils/delegate.hpp"
+#include <atomic>
 
 namespace ambient { namespace channels { namespace mpi {
 
@@ -42,24 +43,24 @@ namespace ambient { namespace channels { namespace mpi {
         static void* stream(void* instance);
         void ifetch(group* placement, size_t sid, size_t x, size_t y);
 
-        group* world();
         void  init();
         void  finalize();
-        std::pair<size_t*,size_t> id();
-        packet_t& get_block_packet_type(size_t len);
         pipe* add_pipe(const packet_t& type, pipe::direction flow);
         pipe* get_pipe(const packet_t& type, pipe::direction flow);
         void  add_handler(const packet_t& type, void(*callback)(packet&));
-        size_t get_volume() const;
-        void  emit(packet* pack);
-        void  spin();
-        ~channel();
 
-        group* ambient;
+        void  replicate(vbp& p);
+        void  broadcast(vbp& p, bool root);
+        void  emit(packet* p);
+        void  spin();
+       ~channel();
+
+        group* world;
         std::list<pipe*> qs;
+        std::atomic<bool> active;
+
         pthread_t thread;
         pthread_mutex_t mutex;
-        bool active;
     };
 
 } } }
@@ -69,6 +70,7 @@ namespace ambient {
 }
 
 #include "ambient/channels/mpi/channel.hpp"
+#include "ambient/channels/mpi/groups/multirank.hpp"
 #include "ambient/channels/mpi/groups/group.hpp"
 #include "ambient/channels/mpi/packets/packet.hpp"
 #include "ambient/channels/mpi/packets/packet_t.hpp"

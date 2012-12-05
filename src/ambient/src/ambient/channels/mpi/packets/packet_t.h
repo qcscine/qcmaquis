@@ -52,16 +52,12 @@ namespace ambient { namespace channels { namespace mpi {
         MPI_Aint* displacements;                       // memory placements of type-blocks
         MPI_Datatype  mpi_t;                           // resulting MPI Datatype
         MPI_Datatype* compounds;                       // MPI compound datatypes
-        BASE_FIELDS type, usage;                       // mandatory packet-type first field
+        BASE_FIELDS type;                              // mandatory packet-type first field
     protected:
         packet_t();
     };
 
     void* alloc_t(const packet_t& type);
-    void reset_usage(void* memory);
-    void checked_free(void* memory);
-    void use(void* memory);
-    void unuse(void* memory);
 
 } } }
 
