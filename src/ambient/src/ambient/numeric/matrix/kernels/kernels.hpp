@@ -1,6 +1,5 @@
 #ifndef AMBIENT_NUMERIC_MATRIX_KERNELS
 #define AMBIENT_NUMERIC_MATRIX_KERNELS
-#define pin this->pin
 #define AMBIENT_IB 512
 #define PLASMA_IB 64
 
@@ -14,112 +13,68 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct geqrt : public kernel< geqrt<T> > 
     {
-        typedef void(geqrt::*F)(matrix<T>&, matrix<T>&);
-
-        inline void l(matrix<T>& a, matrix<T>& t){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(t));
-        }
-
-        inline void c(matrix<double>& a, matrix<double>& t){
+        static const char* name(){ return "geqrt"; }
+        static void c(matrix<T>& a, matrix<T>& t){
             __A_TIME_C("ambient_geqrt_c_kernel"); 
-            T* tau  = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB>(); 
-            T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            double* tau  = (double*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB>(); 
+            double* work = (double*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             CORE_dgeqrt(a.num_rows(), a.num_cols(), PLASMA_IB,
-                        (T*)s_updated(a), a.num_rows(),
-                        (T*)updated(t),   t.num_rows(), 
+                        (double*)s_updated(a), a.num_rows(),
+                        (double*)updated(t),   t.num_rows(), 
                         tau, work);
             __A_TIME_C_STOP
-        }
-
-        inline void c(matrix<std::complex<double> >& a, matrix<std::complex<double> >& t){
-            printf("NOT IMPLEMENTED!\n");
         }
     };
 
     template<typename T, PLASMA_enum TR>
     struct ormqr : public kernel< ormqr<T,TR> > 
     {
-        typedef void(ormqr::*F)(const size_t&, const matrix<T>&, const matrix<T>&, matrix<T>&);
-
-        inline void l(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(t));
-            assign(current(c));
-        }
-
-        inline void c(const size_t& k, const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
+        static const char* name(){ return "ormqr"; }
+        static void c(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
             __A_TIME_C("ambient_ormqr_c_kernel"); 
-            T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            double* work = (double*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             CORE_dormqr(PlasmaLeft, TR,
                         c.num_rows(), c.num_cols(), k, PLASMA_IB,
-                        (T*)current(a), a.num_rows(),
-                        (T*)current(t), t.num_rows(),
-                        (T*)s_updated(c), c.num_rows(),
+                        (double*)current(a), a.num_rows(),
+                        (double*)current(t), t.num_rows(),
+                        (double*)s_updated(c), c.num_rows(),
                         work, AMBIENT_IB);
             __A_TIME_C_STOP
-        }
-
-        inline void c(const size_t& k, const matrix<std::complex<double> >& a, const matrix<std::complex<double> >& t, matrix<std::complex<double> >& c){
-            printf("NOT IMPLEMENTED!\n");
         }
     };
 
     template<typename T>
     struct tsqrt : public kernel< tsqrt<T> > 
     {
-        typedef void(tsqrt::*F)(matrix<T>&, matrix<T>&, matrix<T>&);
-
-        inline void l(matrix<T>& a1, matrix<T>& a2, matrix<T>& t){
-            pin(current(a1)); //if(!ctxt.involved()) return;
-            assign(current(a2));
-            assign(current(t));
-        }
-
-        inline void c(matrix<double>& a1, matrix<double>& a2, matrix<double>& t){
+        static const char* name(){ return "tsqrt"; }
+        static void c(matrix<T>& a1, matrix<T>& a2, matrix<T>& t){
             __A_TIME_C("ambient_tsqrt_c_kernel"); 
-            T* tau  = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB>();
-            T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            double* tau  = (double*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB>();
+            double* work = (double*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             CORE_dtsqrt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
-                        (T*)s_updated(a1), a1.num_rows(),
-                        (T*)s_updated(a2), a2.num_rows(),
-                        (T*)updated(t),     t.num_rows(),
+                        (double*)s_updated(a1), a1.num_rows(),
+                        (double*)s_updated(a2), a2.num_rows(),
+                        (double*)updated(t),     t.num_rows(),
                         tau, work);
             __A_TIME_C_STOP
-        }
-
-        inline void c(matrix<std::complex<double> >& a1, matrix<std::complex<double> >& a2, matrix<std::complex<double> >& t){
-            printf("NOT IMPLEMENTED!\n");
         }
     };
 
     template<typename T, PLASMA_enum TR>
     struct tsmqr : public kernel< tsmqr<T,TR> > 
     {
-        typedef void(tsmqr::*F)(const size_t&, matrix<T>&, matrix<T>&, const matrix<T>&, const matrix<T>&);
-
-        inline void l(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-            pin(current(a1)); //if(!ctxt.involved()) return;
-            assign(current(a2));
-            assign(current(v));
-            assign(current(t));
-        }
-
-        inline void c(const size_t& k, matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
+        static const char* name(){ return "tsmqr"; }
+        static void c(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
             __A_TIME_C("ambient_tsmqr_c_kernel"); 
-            T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            double* work = (double*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             CORE_dtsmqr(PlasmaLeft, TR,
                         AMBIENT_IB, a1.num_cols(), a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
-                        (T*)s_updated(a1), a1.num_rows(),
-                        (T*)s_updated(a2), a2.num_rows(),
-                        (T*)current(v), v.num_rows(),
-                        (T*)current(t), t.num_rows(),
+                        (double*)s_updated(a1), a1.num_rows(),
+                        (double*)s_updated(a2), a2.num_rows(),
+                        (double*)current(v), v.num_rows(),
+                        (double*)current(t), t.num_rows(),
                         work, PLASMA_IB);
             __A_TIME_C_STOP
-        }
-
-        inline void c(const size_t& k, matrix<std::complex<double> >& a1, matrix<std::complex<double> >& a2, const matrix<std::complex<double> >& v, const matrix<std::complex<double> >& t){
-            printf("NOT IMPLEMENTED!\n");
         }
     };
 
@@ -128,133 +83,80 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct gelqt : public kernel< gelqt<T> > 
     {
-        typedef void(gelqt::*F)(matrix<T>&, matrix<T>&);
-
-        inline void l(matrix<T>& a, matrix<T>& t){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(t));
-        }
-
-        inline void c(matrix<double>& a, matrix<double>& t){
+        static const char* name(){ return "gelqt"; }
+        static void c(matrix<T>& a, matrix<T>& t){
             __A_TIME_C("ambient_gelqt_c_kernel"); 
-            T* tau  = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB>();
-            T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            double* tau  = (double*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB>();
+            double* work = (double*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             CORE_dgelqt(a.num_rows(), a.num_cols(), PLASMA_IB,
-                        (T*)s_updated(a), a.num_rows(), 
-                        (T*)updated(t),   t.num_rows(),
+                        (double*)s_updated(a), a.num_rows(), 
+                        (double*)updated(t),   t.num_rows(),
                         tau, work);
             __A_TIME_C_STOP
-        }
-
-        inline void c(matrix<std::complex<double> >& a, matrix<std::complex<double> >& t){
-            printf("NOT IMPLEMENTED!\n");
         }
     };
 
     template<typename T, PLASMA_enum TR>
     struct ormlq : public kernel< ormlq<T,TR> > 
     {
-        typedef void(ormlq::*F)(const size_t&, const matrix<T>&, const matrix<T>&, matrix<T>&);
-
-        inline void l(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(t));
-            assign(current(c));
-        }
-
-        inline void c(const size_t& k, const matrix<double>& a, const matrix<double>& t, matrix<double>& c){
+        static const char* name(){ return "ormlq"; }
+        static void c(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
             __A_TIME_C("ambient_ormlq_c_kernel"); 
-            T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            double* work = (double*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             CORE_dormlq(PlasmaRight, TR,
                         c.num_rows(), c.num_cols(), k, PLASMA_IB,
-                        (T*)current(a), a.num_rows(),
-                        (T*)current(t), t.num_rows(),
-                        (T*)s_updated(c), c.num_rows(),
+                        (double*)current(a), a.num_rows(),
+                        (double*)current(t), t.num_rows(),
+                        (double*)s_updated(c), c.num_rows(),
                         work, AMBIENT_IB);
             __A_TIME_C_STOP
-        }
-
-        inline void c(const size_t& k, const matrix<std::complex<double> >& a, const matrix<std::complex<double> >& t, matrix<std::complex<double> >& c){
-            printf("NOT IMPLEMENTED!\n");
         }
     };
 
     template<typename T>
     struct tslqt : public kernel< tslqt<T> > 
     {
-        typedef void(tslqt::*F)(matrix<T>&, matrix<T>&, matrix<T>&);
-
-        inline void l(matrix<T>& a1, matrix<T>& a2, matrix<T>& t){
-            pin(current(a1)); //if(!ctxt.involved()) return;
-            assign(current(a2));
-            assign(current(t));
-        }
-
-        inline void c(matrix<double>& a1, matrix<double>& a2, matrix<double>& t){
+        static const char* name(){ return "tslqt"; }
+        static void c(matrix<T>& a1, matrix<T>& a2, matrix<T>& t){
             __A_TIME_C("ambient_tslqt_c_kernel"); 
-            T* tau  = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB>();
-            T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            double* tau  = (double*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB>();
+            double* work = (double*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             CORE_dtslqt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
-                        (T*)s_updated(a1), a1.num_rows(),
-                        (T*)s_updated(a2), a2.num_rows(),
-                        (T*)updated(t),     t.num_rows(),
+                        (double*)s_updated(a1), a1.num_rows(),
+                        (double*)s_updated(a2), a2.num_rows(),
+                        (double*)updated(t),     t.num_rows(),
                         tau, work);
             __A_TIME_C_STOP
-        }
-
-        inline void c(matrix<std::complex<double> >& a1, matrix<std::complex<double> >& a2, matrix<std::complex<double> >& t){
-            printf("NOT IMPLEMENTED!\n");
         }
     };
 
     template<typename T, PLASMA_enum TR>
     struct tsmlq : public kernel< tsmlq<T,TR> > 
     {
-        typedef void(tsmlq::*F)(const size_t&, matrix<T>&, matrix<T>&, const matrix<T>&, const matrix<T>&);
-
-        inline void l(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-            pin(current(a1)); //if(!ctxt.involved()) return;
-            assign(current(a2));
-            assign(current(v));
-            assign(current(t));
-        }
-
-        inline void c(const size_t& k, matrix<double>& a1, matrix<double>& a2, const matrix<double>& v, const matrix<double>& t){
+        static const char* name(){ return "tsmlq"; }
+        static void c(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
             __A_TIME_C("ambient_tsmlq_c_kernel"); 
-            T* work = (T*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            double* work = (double*)ambient::bulk_pool.get<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             CORE_dtsmlq(PlasmaRight, TR,
                         a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
-                        (T*)s_updated(a1), a1.num_rows(),
-                        (T*)s_updated(a2), a2.num_rows(),
-                        (T*)current(v), v.num_rows(),
-                        (T*)current(t), t.num_rows(),
+                        (double*)s_updated(a1), a1.num_rows(),
+                        (double*)s_updated(a2), a2.num_rows(),
+                        (double*)current(v), v.num_rows(),
+                        (double*)current(t), t.num_rows(),
                         work, AMBIENT_IB);
             __A_TIME_C_STOP
-        }
-
-        inline void c(const size_t& k, matrix<std::complex<double> >& a1, matrix<std::complex<double> >& a2, const matrix<std::complex<double> >& v, const matrix<std::complex<double> >& t){
-            printf("NOT IMPLEMENTED!\n");
         }
     };
 
     template<typename T, PLASMA_enum UL, size_t OFF>
     struct laset2 : public kernel< laset2<T,UL,OFF> > 
     {
-        typedef void(laset2::*F)(matrix<T>&, const T&);
-
-        inline void l(matrix<T>& a, const T&){
-            pin(current(a)); //if(!ctxt.involved()) return;
-        }
-
-        inline void c(matrix<double>& a, const double& alfa){
+        static const char* name(){ return "laset2"; }
+        static void c(matrix<T>& a, const double& alfa){
             __A_TIME_C("ambient_laset2_c_kernel"); 
-            T* ad = (T*)s_updated(a);
+            double* ad = (double*)s_updated(a);
             CORE_dlaset2(UL, a.num_rows()-OFF, a.num_cols()-OFF, alfa, ad + OFF*a.num_rows(), a.num_rows());
             __A_TIME_C_STOP
-        }
-
-        inline void c(matrix<std::complex<double> >& a, const std::complex<double>& alfa){
-            printf("NOT IMPLEMENTED!\n");
         }
     };
 
@@ -262,24 +164,8 @@ namespace ambient { namespace numeric { namespace kernels {
     struct gemv_scale : public kernel< gemv_scale<ADD, VA, VB, VC, VF> > 
     { // gs
         typedef typename VC::value_type T;
-        typedef void(gemv_scale::*F)(const matrix<T>&, const size_t&, 
-                                     const matrix<T>&, const size_t&, 
-                                           matrix<T>&, const size_t&, 
-                                     const matrix<T>&, const size_t&, 
-                                     const size_t&, const size_t&);
-
-        inline void l(const matrix<T>& a, const size_t& aoffset, 
-                      const matrix<T>& b, const size_t& boffset,
-                            matrix<T>& c, const size_t& coffset,
-                      const matrix<T>& f, const size_t& foffset,
-                      const size_t& rows, const size_t& cols){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(b));
-            assign(current(c));
-            assign(current(f));
-        }
-
-        inline void c(const matrix<T>& a, const size_t& aoffset, 
+        static const char* name(){ return "gemv_scale"; }
+        static void c(const matrix<T>& a, const size_t& aoffset, 
                       const matrix<T>& b, const size_t& boffset,
                             matrix<T>& c, const size_t& coffset,
                       const matrix<T>& f, const size_t& foffset,
@@ -308,21 +194,8 @@ namespace ambient { namespace numeric { namespace kernels {
     struct gemv : public kernel< gemv<alfa, beta, ViewA, ViewB, ViewC> > 
     { // gs
         typedef typename ViewC::value_type T;
-        typedef void(gemv::*F)(const matrix<T>&, const size_t&, 
-                               const matrix<T>&, const size_t&, 
-                                     matrix<T>&, const size_t&, 
-                               const size_t&, const size_t&);
-
-        inline void l(const matrix<T>& a, const size_t& aoffset, 
-                      const matrix<T>& b, const size_t& boffset,
-                            matrix<T>& c, const size_t& coffset,
-                      const size_t& rows, const size_t& cols){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(b));
-            assign(current(c));
-        }
-
-        inline void c(const matrix<T>& a, const size_t& aoffset, 
+        static const char* name(){ return "gemv"; }
+        static void c(const matrix<T>& a, const size_t& aoffset, 
                       const matrix<T>& b, const size_t& boffset,
                             matrix<T>& c, const size_t& coffset,
                       const size_t& rows, const size_t& cols){
@@ -347,15 +220,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<class ViewA, class ViewB, typename T>
     struct gemm : public kernel< gemm<ViewA, ViewB, T> > 
     { // gs
-        typedef void(gemm::*F)(const matrix<T>&, const matrix<T>&, weak_view<T>&);
-
-        inline void l(const matrix<T>& a, const matrix<T>& b, weak_view<T>& c){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(b));
-            assign(current(c));
-        }
-
-        inline void c(const matrix<double>& a, const matrix<double>& b, weak_view<double>& c){
+        static const char* name(){ return "gemm"; }
+        static void c(const matrix<T>& a, const matrix<T>& b, weak_view<T>& c){
             __A_TIME_C("ambient_gemm_general_c_kernel"); 
             if(!current(a).valid() || !current(b).valid()){
                 (T*)p_updated(c);
@@ -373,20 +239,7 @@ namespace ambient { namespace numeric { namespace kernels {
             int ldc = __a_get_dim(c).y;
             static const double alpha(1.0); 
             static const double beta(0.0);
-            dgemm_(ViewA::code(), ViewB::code(), &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
-            __A_TIME_C_STOP
-        }
-        inline void c(const matrix<std::complex<double> >& a, const matrix<std::complex<double> >& b, weak_view<std::complex<double> >& c){
-            __A_TIME_C("ambient_gemm_general_c_kernel"); 
-            T* ad   = current(a);
-            T* bd   = current(b);
-            T* cd   = updated(c);
-            int m   = __a_get_dim(a).y;
-            int n   = __a_get_dim(b).x;
-            int k   = __a_get_dim(b).y;
-            T alpha(1.0); 
-            T beta(0.0);
-            __a_gemm("N","N", &m, &n, &k, &alpha, ad, &m, bd, &k, &beta, cd, &m);
+            dgemm_(ViewA::code(), ViewB::code(), &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc); // __a_gemm ?
             __A_TIME_C_STOP
         }
     };
@@ -394,15 +247,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<class ViewB, typename T, typename D>
     struct gemm_diagonal_lhs : public kernel< gemm_diagonal_lhs<ViewB,T,D> > 
     {
-        typedef void (gemm_diagonal_lhs::*F)(const matrix<D>&, const matrix<T>&, weak_view<T>&);
-
-        inline void l(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
-            pin(current(b)); //if(!ctxt.involved()) return;
-            assign(current(a_diag));
-            assign(current(c));
-        }
-
-        inline void c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
+        static const char* name(){ return "gemm_diagonal_lhs"; }
+        static void c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
             // gs
             __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
             int sizey = __a_get_dim(a_diag).y;
@@ -422,15 +268,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T, typename D>
     struct gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D> : public kernel< gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D> > 
     {
-        typedef void (gemm_diagonal_lhs::*F)(const matrix<D>&, const matrix<T>&, weak_view<T>&);
-
-        inline void l(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
-            pin(current(b)); //if(!ctxt.involved()) return;
-            assign(current(a_diag));
-            assign(current(c));
-        }
-
-        inline void c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
+        static const char* name(){ return "gemm_diagonal_lhs"; }
+        static void c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
             // gs
             __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
             printf("Special DIAGONAL!\n");
@@ -451,15 +290,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<class ViewA, typename T, typename D>
     struct gemm_diagonal_rhs : public kernel< gemm_diagonal_rhs<ViewA,T,D> > 
     {
-        typedef void (gemm_diagonal_rhs::*F)(const matrix<T>&, const matrix<D>&, weak_view<T>&);
-
-        inline void l(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(b_diag));
-            assign(current(c));
-        }
-
-        inline void c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
+        static const char* name(){ return "gemm_diagonal_rhs"; }
+        static void c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
             // gs
             __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
             size_t sizex = __a_get_dim(b_diag).y;
@@ -479,15 +311,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T, typename D>
     struct gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D> : public kernel< gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D> > 
     {
-        typedef void (gemm_diagonal_rhs::*F)(const matrix<T>&, const matrix<D>&, weak_view<T>&);
-
-        inline void l(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(b_diag));
-            assign(current(c));
-        }
-
-        inline void c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
+        static const char* name(){ return "gemm_diagonal_rhs"; }
+        static void c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
             // gs
             __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
             printf("Special DIAGONAL!\n");
@@ -508,14 +333,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct copy : public kernel< copy<T> > 
     { // gs
-        typedef void(copy::*F)(weak_view<T>&, const matrix<T>&);
-
-        inline void l(weak_view<T>& ac, const matrix<T>& a){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(ac));
-        }
-
-        inline void c(weak_view<T>& ac, const matrix<T>& a){
+        static const char* name(){ return "copy"; }
+        static void c(weak_view<T>& ac, const matrix<T>& a){
             __A_TIME_C("ambient_copy_c_kernel"); 
             if(!current(a).valid()) (T*)p_updated(ac);
             else __a_refresh<T>(updated(ac), current(a), __a_sizeof(a));
@@ -526,15 +345,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T, PLASMA_enum UL>
     struct copy_band : public kernel< copy_band<T,UL> > 
     { // gs
-        typedef void(copy_band::*F)(matrix<T>&, const size_t&, const matrix<T>&); 
-
-        inline void l(matrix<T>& dst, const size_t& dj, const matrix<T>& src)
-        {
-            pin(current(src)); //if(!ctxt.involved()) return;
-            assign(current(dst));
-        }
-
-        inline void c(matrix<T>& dst, const size_t& dj, const matrix<T>& src)
+        static const char* name(){ return "copy_band"; }
+        static void c(matrix<T>& dst, const size_t& dj, const matrix<T>& src)
         {
             __A_TIME_C("ambient_copy_band_c_kernel"); 
             T* sd = (T*)current(src);
@@ -561,14 +373,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct copy_rt : public kernel< copy_rt<T> > 
     { // gs
-        typedef void(copy_rt::*F)(weak_view<T>&, const matrix<T>&);
-
-        inline void l(weak_view<T>& t, const matrix<T>& a){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(t));
-        }
-
-        inline void c(weak_view<T>& t, const matrix<T>& a){
+        static const char* name(){ return "copy_rt"; }
+        static void c(weak_view<T>& t, const matrix<T>& a){
             __A_TIME_C("ambient_copy_rt_kernel"); 
             T* ad  = current(a);
             T* td  = p_updated(t);
@@ -586,14 +392,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct copy_lt : public kernel< copy_lt<T> > 
     { // gs
-        typedef void(copy_lt::*F)(weak_view<T>&, const matrix<T>&);
-
-        inline void l(weak_view<T>& t, const matrix<T>& a){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(t));
-        }
-
-        inline void c(weak_view<T>& t, const matrix<T>& a){
+        static const char* name(){ return "copy_lt"; }
+        static void c(weak_view<T>& t, const matrix<T>& a){
             __A_TIME_C("ambient_copy_lt_kernel"); 
             T* ad  = current(a);
             T* td  = p_updated(t);
@@ -611,20 +411,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct copy_partial : public kernel< copy_partial<T> > 
     { // gs
-        typedef void(copy_partial::*F)(matrix<T>&, const size_t&, const size_t&, 
-                                       const matrix<T>&, const size_t&, const size_t&, 
-                                       const size_t&, const size_t&);
-                                           
-
-        inline void l(matrix<T>& dst, const size_t& di, const size_t& dj, 
-                      const matrix<T>& src, const size_t& si, const size_t& sj,
-                      const size_t& m, const size_t& n)
-        {
-            pin(current(src)); //if(!ctxt.involved()) return;
-            assign(current(dst));
-        }
-
-        inline void c(matrix<T>& dst, const size_t& di, const size_t& dj, 
+        static const char* name(){ return "copy_partial"; }
+        static void c(matrix<T>& dst, const size_t& di, const size_t& dj, 
                       const matrix<T>& src, const size_t& si, const size_t& sj,
                       const size_t& m, const size_t& n)
         {
@@ -641,22 +429,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct copy_s : public kernel< copy_s<T> > 
     { // gs
-        typedef void(copy_s::*F)(matrix<T>&, const size_t&, const size_t&, 
-                                 const matrix<T>&, const size_t&, const size_t&, 
-                                 const matrix<T>&, const size_t&, const size_t&, 
-                                 const size_t&, const size_t&);
-                                           
-        inline void l(matrix<T>& dst, const size_t& di, const size_t& dj, 
-                      const matrix<T>& src, const size_t& si, const size_t& sj,
-                      const matrix<T>& alfa, const size_t& ai, const size_t& aj,
-                      const size_t& m, const size_t& n)
-        {
-            pin(current(src)); //if(!ctxt.involved()) return;
-            assign(current(dst));
-            assign(current(alfa));
-        }
-
-        inline void c(matrix<T>& dst, const size_t& di, const size_t& dj, 
+        static const char* name(){ return "copy_s"; }
+        static void c(matrix<T>& dst, const size_t& di, const size_t& dj, 
                       const matrix<T>& src, const size_t& si, const size_t& sj,
                       const matrix<T>& alfa, const size_t& ai, const size_t& aj,
                       const size_t& m, const size_t& n)
@@ -675,22 +449,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct copy_sa : public kernel< copy_sa<T> > 
     { // gs
-        typedef void(copy_sa::*F)(matrix<T>&, const size_t&, const size_t&, 
-                                  const matrix<T>&, const size_t&, const size_t&, 
-                                  const matrix<T>&, const size_t&, const size_t&, 
-                                  const size_t&, const size_t&);
-                                           
-        inline void l(matrix<T>& dst, const size_t& di, const size_t& dj, 
-                      const matrix<T>& src, const size_t& si, const size_t& sj,
-                      const matrix<T>& alfa, const size_t& ai, const size_t& aj,
-                      const size_t& m, const size_t& n)
-        {
-            pin(current(src)); //if(!ctxt.involved()) return;
-            assign(current(dst));
-            assign(current(alfa));
-        }
-
-        inline void c(matrix<T>& dst, const size_t& di, const size_t& dj, 
+        static const char* name(){ return "copy_sa"; }
+        static void c(matrix<T>& dst, const size_t& di, const size_t& dj, 
                       const matrix<T>& src, const size_t& si, const size_t& sj,
                       const matrix<T>& alfa, const size_t& ai, const size_t& aj,
                       const size_t& m, const size_t& n)
@@ -707,13 +467,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct trace : public kernel< trace<T> > 
     {
-        typedef void (trace::*F)(const matrix<T>&, future<T>&);
-
-        inline void l(const matrix<T>& a, future<T>& trace){
-            pin(current(a));
-        }
-
-        inline void c(const matrix<T>& a, future<T>& trace){
+        static const char* name(){ return "trace"; }
+        static void c(const matrix<T>& a, future<T>& trace){
             // gs
             __A_TIME_C("ambient_trace_c_kernel"); 
             size_t m = __a_get_dim(a).y;
@@ -731,13 +486,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct scalar_norm : public kernel< scalar_norm<T> > 
     {// gs
-        typedef void (scalar_norm::*F)(const matrix<T>&, future<double>&);
-
-        inline void l(const matrix<T>& a, future<double>& norm){
-            pin(current(a));
-        }
-
-        inline void c(const matrix<T>& a, future<double>& norm){
+        static const char* name(){ return "scalar_norm"; }
+        static void c(const matrix<T>& a, future<double>& norm){
             __A_TIME_C("ambient_scalar_norm_c_kernel"); 
             T* ad = current(a);
             norm.get_value() = alps::numeric::real(__a_dot(ad, ad, __a_get_dim(a).square()));
@@ -748,14 +498,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct overlap : public kernel< overlap<T> > 
     { // gs
-        typedef void (overlap::*F)(const matrix<T>&, const matrix<T>&, future<T>&);
-
-        inline void l(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(b));
-        }
-
-        inline void c(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
+        static const char* name(){ return "overlap"; }
+        static void c(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
             __A_TIME_C("ambient_scalar_overlap_c_kernel"); 
             T* ad = current(a);
             T* bd = current(b);
@@ -768,14 +512,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<int alfa, typename T>
     struct add_vectors : public kernel< add_vectors<alfa, T> > 
     { // gs
-        typedef void (add_vectors::*F)(matrix<T>&, const size_t&, const matrix<T>&, const size_t&, const size_t&);
-
-        inline void l(matrix<T>& a, const size_t& aoffset, const matrix<T>& b, const size_t& boffset, const size_t& size){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(b));
-        }
-
-        inline void c(matrix<T>& a, const size_t& aoffset, const matrix<T>& b, const size_t& boffset, const size_t& size){
+        static const char* name(){ return "add_vectors"; }
+        static void c(matrix<T>& a, const size_t& aoffset, const matrix<T>& b, const size_t& boffset, const size_t& size){
             __A_TIME_C("ambient_add_vectors_c_kernel");
             T* ad = &((T*)current(a))[aoffset];
             T* bd = &((T*)current(b))[boffset];
@@ -790,14 +528,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct add : public kernel< add<T> > 
     { // gs
-        typedef void (add::*F)(matrix<T>&, const matrix<T>&);
-
-        inline void l(matrix<T>& a, const matrix<T>& b){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(b));
-        }
-
-        inline void c(matrix<T>& a, const matrix<T>& b){
+        static const char* name(){ return "add"; }
+        static void c(matrix<T>& a, const matrix<T>& b){
             __A_TIME_C("ambient_add_c_kernel");
             T* ad = current(a);
             T* bd = current(b);
@@ -814,14 +546,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct sub : public kernel< sub<T> > 
     { // gs
-        typedef void (sub::*F)(matrix<T>&, const matrix<T>&);
-
-        inline void l(matrix<T>& a, const matrix<T>& b){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(b));
-        }
-
-        inline void c(matrix<T>& a, const matrix<T>& b){
+        static const char* name(){ return "sub"; }
+        static void c(matrix<T>& a, const matrix<T>& b){
             __A_TIME_C("ambient_sub_c_kernel"); 
             T* ad = current(a);
             T* bd = current(b);
@@ -837,13 +563,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct scale : public kernel< scale<T> > 
     { // gs
-        typedef void (scale::*F)(matrix<T>&, const future<T>&);
-
-        inline void l(matrix<T>& a, const future<T>& t){
-            pin(current(a));
-        }
-
-        inline void c(matrix<T>& a, const future<T>& t){
+        static const char* name(){ return "scale"; }
+        static void c(matrix<T>& a, const future<T>& t){
             __A_TIME_C("ambient_scale_c_kernel"); 
             T* ad = current(a);
             T* ar = updated(a);
@@ -857,14 +578,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct scale_offset : public kernel< scale_offset<T> > 
     { // gs
-        typedef void (scale_offset::*F)(matrix<T>&, const size_t&, const size_t&, const matrix<T>&, const size_t&);
-
-        inline void l(matrix<T>& a, const size_t& ai, const size_t& aj, const matrix<T>& alfa, const size_t& alfai){
-            pin(current(a));
-            assign(current(alfa));
-        }
-
-        inline void c(matrix<T>& a, const size_t& ai, const size_t& aj, const matrix<T>& alfa, const size_t& alfai){
+        static const char* name(){ return "scale_offset"; }
+        static void c(matrix<T>& a, const size_t& ai, const size_t& aj, const matrix<T>& alfa, const size_t& alfai){
             __A_TIME_C("ambient_scale_offset_c_kernel"); 
             int m = num_rows(a);
             T* ad = &((T*)s_updated(a))[aj*m];
@@ -877,13 +592,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct scale_inverse : public kernel< scale_inverse<T> > 
     { // gs
-        typedef void (scale_inverse::*F)(matrix<T>&, const future<T>&);
-
-        inline void l(matrix<T>& a, const future<T>& t){
-            pin(current(a));
-        }
-
-        inline void c(matrix<T>& a, const future<T>& t){
+        static const char* name(){ return "scale_inverse"; }
+        static void c(matrix<T>& a, const future<T>& t){
             __A_TIME_C("ambient_scale_inverse_c_kernel"); 
             T* ad = current(a);
             T* ar = updated(a);
@@ -897,13 +607,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct sqrt_diagonal : public kernel< sqrt_diagonal<T> > 
     {
-        typedef void (sqrt_diagonal::*F)(matrix<T>&);
-
-        inline void l(matrix<T>& a){
-            pin(current(a));
-        }
-
-        inline void c(matrix<T>& a){
+        static const char* name(){ return "sqrt_diagonal"; }
+        static void c(matrix<T>& a){
             __A_TIME_C("ambient_sqrt_diagonal_c_kernel"); 
             size_t size = __a_get_dim(a).y;
             T* ad = current(a);
@@ -916,13 +621,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct exp_diagonal : public kernel< exp_diagonal<T> > 
     {
-        typedef void (exp_diagonal::*F)(matrix<T>&, const T&);
-
-        inline void l(matrix<T>& a, const T& alfa){
-            pin(current(a));
-        }
-
-        inline void c(matrix<T>& a, const T& alfa){
+        static const char* name(){ return "exp_diagonal"; }
+        static void c(matrix<T>& a, const T& alfa){
             __A_TIME_C("ambient_exp_diagonal_c_kernel"); 
             size_t size = __a_get_dim(a).y;
             T* ad = current(a);
@@ -935,14 +635,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct transpose_out : public kernel< transpose_out<T> > 
     { // gs
-        typedef void (transpose_out::*F)(const matrix<T>&, weak_view<T>&);
-
-        inline void l(const matrix<T>& a, weak_view<T>& t){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(t));
-        }
-
-        inline void c(const matrix<T>& a, weak_view<T>& t){
+        static const char* name(){ return "transpose_out"; }
+        static void c(const matrix<T>& a, weak_view<T>& t){
             __A_TIME_C("ambient_transpose_out_c_kernel"); 
             T* od = current(a);
             T* td = updated(t);
@@ -960,14 +654,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct resize : public kernel< resize<T> > 
     {
-        typedef void (resize::*F)(weak_view<T>&, const matrix<T>&, const size_t&, const size_t&);
-
-        inline void l(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(r));
-        }
-
-        inline void c(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
+        static const char* name(){ return "resize"; }
+        static void c(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
             __A_TIME_C("ambient_resize_c_kernel");
             T* dd = m*n == __a_get_dim(r).square() ? (T*)updated(r) : (T*)p_updated(r);
             __a_memptf_r<T, __a_memcpy>(dd, __a_get_dim(r).y, dim2(0,0),
@@ -979,13 +667,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct init_identity : public kernel< init_identity<T> > 
     {
-        typedef void (init_identity::*F)(weak_view<T>&);
-
-        inline void l(weak_view<T>& a){
-            pin(current(a));
-        }
-
-        inline void c(weak_view<T>& a){
+        static const char* name(){ return "init_identity"; }
+        static void c(weak_view<T>& a){
             __A_TIME_C("ambient_init_identity_c_kernel"); 
             size_t n = __a_get_dim(a).x;
             size_t m = __a_get_dim(a).y;
@@ -1000,21 +683,17 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct init_random : public kernel< init_random<T> > 
     {
-        typedef void (init_random::*F)(weak_view<T>&);
+        static const char* name(){ return "init_random"; }
      
-        template<typename T> inline void randomize(T& a){ 
+        template<typename T> static void randomize(T& a){ 
             a = drand48();
         }
-        template<typename T> inline void randomize(std::complex<T>& a){
+        template<typename T> static void randomize(std::complex<T>& a){
             a.real(drand48());
             a.imag(drand48());
         }
-
-        inline void l(weak_view<T>& a){
-            pin(current(a));
-        }
         
-        inline void c(weak_view<T>& a){
+        static void c(weak_view<T>& a){
             __A_TIME_C("ambient_init_random_c_kernel"); 
             size_t size = __a_get_dim(a).square();
             T* ad = updated(a);
@@ -1026,13 +705,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct init_value : public kernel< init_value<T> > 
     {
-        typedef void (init_value::*F)(weak_view<T>&, const T&);
-
-        inline void l(weak_view<T>& a, const T& value){
-            pin(current(a));
-        }
-
-        inline void c(weak_view<T>& a, const T& value){
+        static const char* name(){ return "init_value"; }
+        static void c(weak_view<T>& a, const T& value){
             __A_TIME_C("ambient_init_value_c_kernel"); 
             size_t size = __a_get_dim(a).square();
             T* ad = updated(a);
@@ -1044,13 +718,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct round_square : public kernel< round_square<T> > 
     {
-        typedef void (round_square::*F)(const matrix<T>&, std::vector<T>*&);
-
-        inline void l(const matrix<T>& a, std::vector<T>*& ac){
-            pin(current(a));
-        }
-
-        inline void c(const matrix<T>& a, std::vector<T>*& ac){
+        static const char* name(){ return "round_square"; }
+        static void c(const matrix<T>& a, std::vector<T>*& ac){
             // gs
             __A_TIME_C("ambient_round_square_c_kernel"); 
             T* ad = current(a);
@@ -1066,13 +735,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct cast_to_vector : public kernel< cast_to_vector<T> > 
     {
-        typedef void (cast_to_vector::*F)(std::vector<T>*&, const matrix<T>&, const size_t&, const size_t&, const size_t&, const size_t&);
-
-        inline void l(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
-            pin(current(a));
-        }
-
-        inline void c(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
+        static const char* name(){ return "cast_to_vector"; }
+        static void c(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
             // gs
             __A_TIME_C("ambient_cast_to_vector_c_kernel");
             T* ad = c_current(a);
@@ -1084,13 +748,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct cast_from_vector : public kernel< cast_from_vector<T> > 
     {
-        typedef void (cast_from_vector::*F)(const std::vector<T>*&, matrix<T>&, const size_t&, const size_t&, const size_t&, const size_t&);
-
-        inline void l(const std::vector<T>*& ac, matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
-            pin(current(a));
-        }
-
-        inline void c(const std::vector<T>*& ac, matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
+        static const char* name(){ return "cast_from_vector"; }
+        static void c(const std::vector<T>*& ac, matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
             __A_TIME_C("ambient_cast_from_vector_c_kernel"); 
             T* ad = updated(a);
             for(int j=0; j < n; ++j) memcpy((void*)&ad[j*m],(void*)&(*ac)[offset + j*lda], m*sizeof(T));
@@ -1101,13 +760,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T1, typename T2>
     struct cast_from_vector_t : public kernel< cast_from_vector_t<T1,T2> > 
     {
-        typedef void (cast_from_vector_t::*F)(const std::vector<T1>*&, matrix<T2>&, const size_t&, const size_t&, const size_t&, const size_t&);
-
-        inline void l(const std::vector<T1>*& ac, matrix<T2>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
-            pin(current(a));
-        }
-
-        inline void c(const std::vector<T1>*& ac, matrix<T2>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
+        static const char* name(){ return "cast_from_vector_t"; }
+        static void c(const std::vector<T1>*& ac, matrix<T2>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
             __A_TIME_C("ambient_cast_from_vector_t_c_kernel"); 
             T2* ad = updated(a);
             const T1* sd = &(*ac)[offset];
@@ -1121,13 +775,7 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct save : public kernel< save<T> >
     {
-        typedef void (save::*F)(matrix<T> const&, const size_t& );
-
-        inline void l(matrix<T> const& a, const size_t& tag){
-            pin(current(a));
-        }
-
-        inline void c(matrix<T> const& a, const size_t& tag ){
+        static void c(matrix<T> const& a, const size_t& tag ){
             T* ad = (T*)current(a);
             ambient::io_manager.save(ad, tag, __a_sizeof(a)); 
         }
@@ -1136,13 +784,7 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct load : public kernel< load<T> >
     {
-        typedef void (load::*F)(matrix<T>&, const size_t&);
-
-        inline void l(matrix<T>& a, const size_t& tag){
-            pin(current(a));
-        }
-
-        inline void c(matrix<T>& a, const size_t& tag){
+        static void c(matrix<T>& a, const size_t& tag){
             T* ad = (T*)updated(a);
             ambient::io_manager.load(ad, tag, __a_sizeof(a)); 
         }
@@ -1151,23 +793,18 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct validation : public kernel< validation<T> > 
     {
-        typedef void (validation::*F)(const matrix<T>&, const matrix<T>&, future<bool>&);
+        static const char* name(){ return "validation"; }
 
-        inline double distance(const std::complex<double>& a, const std::complex<double>& b){
+        static double distance(const std::complex<double>& a, const std::complex<double>& b){
             return fabs(std::norm(a) - std::norm(b));
         }
-        inline double magnitude(const std::complex<double>& a, const std::complex<double>& b){
+        static double magnitude(const std::complex<double>& a, const std::complex<double>& b){
             return std::max(fabs(std::norm(a)), fabs(std::norm(b)));
         }
-        inline double distance(double a, double b) { return fabs(fabs(a) - fabs(b));    }
-        inline double magnitude(double a, double b){ return std::max(fabs(a), fabs(b)); }
+        static double distance(double a, double b) { return fabs(fabs(a) - fabs(b));    }
+        static double magnitude(double a, double b){ return std::max(fabs(a), fabs(b)); }
 
-        inline void l(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){
-            pin(current(a));  //if(!ctxt.involved()) return;
-            assign(current(b)); 
-        }
-
-        inline void c(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
+        static void c(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
             __A_TIME_C("ambient_validation_kernel"); 
             T* ad = c_current(a); 
             T* bd = c_current(b); 
@@ -1196,16 +833,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct labrd_update_col : public kernel< labrd_update_col<T> > 
     { // svd
-        typedef void (labrd_update_col::*F)(matrix<T>& , const matrix<T>&, matrix<T>&, const matrix<T>&, matrix<T>&, matrix<T>&, const int&);
-        inline void l(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, matrix<T>& tq, matrix<T>& d, const int& i){
-            pin(current(say));
-            assign(current(sax));
-            assign(current(sy));
-            assign(current(sx));
-            assign(current(tq));
-            assign(current(d));
-        }
-        inline void c(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, matrix<T>& tq, matrix<T>& d, const int& i){
+        static const char* name(){ return "labrd_update_col"; }
+        static void c(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, matrix<T>& tq, matrix<T>& d, const int& i){
             __A_TIME_C("ambient_labrd_update_col_c_kernel"); 
                 static const double mone = -1.;
                 static const double one = 1.;
@@ -1249,14 +878,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct labrd_reduce_col : public kernel< labrd_reduce_col<T> > 
     { // svd
-        typedef void (labrd_reduce_col::*F)(matrix<T>& , const matrix<T>&, matrix<T>&, const matrix<T>&, const int&);
-        inline void l(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, const int& i){
-            pin(current(say));
-            assign(current(sax));
-            assign(current(sy));
-            assign(current(sx));
-        }
-        inline void c(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, const int& i){
+        static const char* name(){ return "labrd_reduce_col"; }
+        static void c(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, const int& i){
             __A_TIME_C("ambient_labrd_reduce_col_c_kernel"); 
                 static const double mone = -1.;
                 static const double one = 1.;
@@ -1289,16 +912,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct labrd_update_row : public kernel< labrd_update_row<T> > 
     { // svd
-        typedef void (labrd_update_row::*F)(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, matrix<T>& tp, matrix<T>& e, const int& i);
-        inline void l(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, matrix<T>& tp, matrix<T>& e, const int& i){
-            pin(current(say));
-            assign(current(sax));
-            assign(current(sy));
-            assign(current(sx));
-            assign(current(tp));
-            assign(current(e));
-        }
-        inline void c(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, matrix<T>& tp, matrix<T>& e, const int& i){
+        static const char* name(){ return "labrd_update_row"; }
+        static void c(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, matrix<T>& tp, matrix<T>& e, const int& i){
             __A_TIME_C("ambient_labrd_update_row_c_kernel"); 
                 static const double mone = -1.;
                 static const double one = 1.;
@@ -1337,14 +952,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct labrd_reduce_row : public kernel< labrd_reduce_row<T> > 
     { // svd
-        typedef void (labrd_reduce_row::*F)(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, const int& i);
-        inline void l(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, const int& i){
-            pin(current(say));
-            assign(current(sax));
-            assign(current(sy));
-            assign(current(sx));
-        }
-        inline void c(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, const int& i){
+        static const char* name(){ return "labrd_reduce_row"; }
+        static void c(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, const int& i){
             __A_TIME_C("ambient_labrd_reduce_row_c_kernel"); 
                 static const double mone = -1.;
                 static const double one = 1.;
@@ -1380,13 +989,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T, PLASMA_enum TR>
     struct larfg : public kernel< larfg<T,TR> > 
     { // svd
-        typedef void (larfg::*F)(matrix<T>&, matrix<T>&, matrix<T>&, const size_t&);
-        inline void l(matrix<T>& a, matrix<T>& t, matrix<T>& d, const size_t& k){
-            pin(current(a));
-            assign(current(t));
-            assign(current(d));
-        }
-        inline void c(matrix<T>& a, matrix<T>& t, matrix<T>& d, const size_t& k){
+        static const char* name(){ return "larfg"; }
+        static void c(matrix<T>& a, matrix<T>& t, matrix<T>& d, const size_t& k){
             __A_TIME_C("ambient_larfg_c_kernel"); 
             int lda;
             int n;
@@ -1420,15 +1024,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct gebd2 : public kernel< gebd2<T> > 
     { // gs
-        typedef void (gebd2::*F)(matrix<T>&, matrix<T>&, matrix<T>&, matrix<T>&, matrix<T>&);
-        inline void l(matrix<T>& a, matrix<T>& d, matrix<T>& e, matrix<T>& tq, matrix<T>& tp){
-            pin(current(a));
-            assign(current(d));
-            assign(current(e));
-            assign(current(tq));
-            assign(current(tp));
-        }
-        inline void c(matrix<T>& a, matrix<T>& d, matrix<T>& e, matrix<T>& tq, matrix<T>& tp){
+        static const char* name(){ return "gebd2"; }
+        static void c(matrix<T>& a, matrix<T>& d, matrix<T>& e, matrix<T>& tq, matrix<T>& tp){
             __A_TIME_C("ambient_gebd2_c_kernel"); 
             int m = a.num_rows();
             int n = a.num_cols();
@@ -1445,15 +1042,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct gebrd : public kernel< gebrd<T> > 
     { // gs
-        typedef void (gebrd::*F)(matrix<T>&, weak_view<T>&, weak_view<T>&, weak_view<T>&, weak_view<T>&);
-        inline void l(matrix<T>& a, weak_view<T>& d, weak_view<T>& e, weak_view<T>& q, weak_view<T>& p){
-            pin(current(a));
-            assign(current(d));
-            assign(current(e));
-            assign(current(q));
-            assign(current(p));
-        }
-        inline void c(matrix<T>& a, weak_view<T>& d, weak_view<T>& e, weak_view<T>& q, weak_view<T>& p){
+        static const char* name(){ return "gebrd"; }
+        static void c(matrix<T>& a, weak_view<T>& d, weak_view<T>& e, weak_view<T>& q, weak_view<T>& p){
             __A_TIME_C("ambient_gebrd_c_kernel");
             static int zero = 0;
             static int one  = 1;
@@ -1507,15 +1097,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct gbbrd : public kernel< gbbrd<T> > 
     { // gs
-        typedef void (gbbrd::*F)(matrix<T>&, weak_view<T>&, weak_view<T>&, weak_view<T>&, weak_view<T>&);
-        inline void l(matrix<T>& a, weak_view<T>& d, weak_view<T>& e, weak_view<T>& q, weak_view<T>& p){
-            pin(current(a));
-            assign(current(d));
-            assign(current(e));
-            assign(current(q));
-            assign(current(p));
-        }
-        inline void c(matrix<T>& a, weak_view<T>& d, weak_view<T>& e, weak_view<T>& q, weak_view<T>& p){
+        static const char* name(){ return "gbbrd"; }
+        static void c(matrix<T>& a, weak_view<T>& d, weak_view<T>& e, weak_view<T>& q, weak_view<T>& p){
             static int zero = 0;
             static int one  = 1;
             int m = q.num_rows();
@@ -1544,14 +1127,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct bdsqr : public kernel< bdsqr<T> > 
     { // gs
-        typedef void (bdsqr::*F)(matrix<T>&, matrix<T>&, matrix<T>&, matrix<T>&);
-        inline void l(matrix<T>& d, matrix<T>& e, matrix<T>& u, matrix<T>& v){
-            pin(current(d));
-            assign(current(e));
-            assign(current(u));
-            assign(current(v));
-        }
-        inline void c(matrix<T>& d, matrix<T>& e, matrix<T>& u, matrix<T>& v){
+        static const char* name(){ return "bdsqr"; }
+        static void c(matrix<T>& d, matrix<T>& e, matrix<T>& u, matrix<T>& v){
             __A_TIME_C("ambient_bdsqr_c_kernel"); 
             static int zero = 0;
             static int one  = 1;
@@ -1574,16 +1151,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct svd : public kernel< svd<T> > 
     {
-        typedef void (svd::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&, weak_view<double>&);
-
-        inline void l(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(s));
-            assign(current(u));
-            assign(current(vt));
-        }
-
-        inline void c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s){
+        static const char* name(){ return "svd"; }
+        static void c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s){
             // gs
             __A_TIME_C("ambient_svd_c_kernel"); 
             int m = __a_get_dim(a).y;
@@ -1611,15 +1180,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct qr : public kernel< qr<T> > 
     {
-        typedef void (qr::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&);
-
-        inline void l(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(q));
-            assign(current(r));
-        }
-
-        inline void c(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r){
+        static const char* name(){ return "qr"; }
+        static void c(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r){
             // gs
             __A_TIME_C("ambient_qr_c_kernel"); 
             int m = __a_get_dim(a).y; //numrow a
@@ -1668,15 +1230,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct lq : public kernel< lq<T> > 
     {
-        typedef void (lq::*F)(const matrix<T>&, weak_view<T>&, weak_view<T>&);
-
-        inline void l(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(l));
-            assign(current(q));
-        }
-
-        inline void c(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q){
+        static const char* name(){ return "lq"; }
+        static void c(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q){
             // gs
             __A_TIME_C("ambient_lq_c_kernel"); 
             int m = __a_get_dim(a).y; //numrow a, numrow l
@@ -1727,14 +1282,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     struct heev : public kernel< heev<T> > 
     {
-        typedef void (heev::*F)(matrix<T>&, weak_view<double>&);
-
-        inline void l(matrix<T>& a, weak_view<double>& w){
-            pin(current(a)); //if(!ctxt.involved()) return;
-            assign(current(w));
-        }
-
-        inline void c(matrix<T>& a, weak_view<double>& w){
+        static const char* name(){ return "heev"; }
+        static void c(matrix<T>& a, weak_view<double>& w){
             // gs
             __A_TIME_C("ambient_heev_c_kernel"); 
             int m = __a_get_dim(a).y;
@@ -1773,5 +1322,4 @@ namespace ambient { namespace numeric { namespace kernels {
     // }}}
 } } }
 
-#undef pin
 #endif

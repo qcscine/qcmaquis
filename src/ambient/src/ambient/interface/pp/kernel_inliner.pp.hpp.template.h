@@ -4,20 +4,17 @@
 #define cleanup_object(z, n, unused)                                                                                 \
     info<T ## n>::typed::deallocate<n>(o);
 
-#define creditup_object(z, n, unused)                                                                                \
-    info<T ## n>::typed::weight<n>(o); 
-
-#define place_revision(z, n, unused)                                                                                 \
-    info<T ## n>::typed::place<n>(o);                                                           
+#define deploy_revision(z, n, unused)                                                                                \
+    info<T ## n>::typed::deploy<n>(o,target);
 
 #define ready_revision(z, n, unused)                                                                                 \
     info<T ## n>::typed::ready<n>(o) &&
 
-#define match_revision(z, n, unused)                                                                                 \
-    info<T ## n>::typed::match<n>(o,t) ||
-
 #define extract_arguments(z, n, unused)                                                                              \
     info<T ## n>::typed::modify<n>(arg ## n, o);
+
+#define traverse_arguments(z, n, unused)                                                                             \
+    if(info<T ## n>::typed::pin<n>(o)) return;
 
 #define type_arg_list(z, n, pn)                                                                                      \
     BOOST_PP_COMMA_IF(n)                                                                                             \
@@ -49,6 +46,8 @@ struct kernel_inliner<void(K::*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST
     
     static inline void latch(cfunctor* o, BOOST_PP_REPEAT(TYPES_NUMBER, type_arg_list, n) ){
         BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 
+        BOOST_PP_REPEAT(TYPES_NUMBER, traverse_arguments, ~) 
+        ambient::controller.submit(o);
     }
     static inline void invoke(K* o){
         (o->*fp)( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, BOOST_PP_ADD(n,1)) );
@@ -56,17 +55,11 @@ struct kernel_inliner<void(K::*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST
     static inline void cleanup(sfunctor* o){
         BOOST_PP_REPEAT(TYPES_NUMBER, cleanup_object, ~) 
     }
-    static inline void weight(cfunctor* o){
-        BOOST_PP_REPEAT(TYPES_NUMBER, creditup_object, ~) 
-    }
-    static inline void place(sfunctor* o){
-        BOOST_PP_REPEAT(TYPES_NUMBER, place_revision, ~) 
+    static inline void deploy(sfunctor* o, size_t target){
+        BOOST_PP_REPEAT(TYPES_NUMBER, deploy_revision, ~) 
     }
     static inline bool ready(sfunctor* o){
         return (BOOST_PP_REPEAT(TYPES_NUMBER, ready_revision, ~) true);
-    }
-    static inline bool match(sfunctor* o, void* t){
-        return (BOOST_PP_REPEAT(TYPES_NUMBER, match_revision, ~) false);
     }
 };
 
