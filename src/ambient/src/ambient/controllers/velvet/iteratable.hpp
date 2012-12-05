@@ -9,15 +9,15 @@ namespace ambient { namespace controllers { namespace velvet {
     template<typename T>
     inline s_revision::operator T* (){
         revision& c = *(revision*)this;
-        revision& p = *c.get_parent();
+        revision& p = *c.parent;
         assert(!c.valid());
         if(!p.valid()){
             ambient::controller.calloc(c);
-        }else if(p.occupied()){
+        }else if(p.locked()){
             ambient::controller.alloc(c);
             memcpy((T*)c, (T*)p, p.spec->size);
         }else{
-            c.swap(p);
+            c.reuse(p);
         }
         return (T*)c;
     }
@@ -25,9 +25,9 @@ namespace ambient { namespace controllers { namespace velvet {
     inline w_revision::operator T* (){
         revision& c = *(revision*)this;
         assert(!c.valid());
-        revision& p = *c.get_parent();
-        if(!p.valid() || p.occupied()) ambient::controller.alloc(c);
-        else c.swap(p);
+        revision& p = *c.parent;
+        if(!p.valid() || p.locked()) ambient::controller.alloc(c);
+        else c.reuse(p);
         return (T*)c;
     }
     template<typename T>
