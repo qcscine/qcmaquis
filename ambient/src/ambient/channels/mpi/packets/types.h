@@ -3,30 +3,23 @@
 
 // STANDARD AMBIENT FIELDS DEFINES
 #define A_TYPE_FIELD 0 // MANDATORY FIRST TYPE CODE FIELD
-#define A_USGE_FIELD 1 // RECOMMENDED FIRST FIELD IN DERIVED TYPES
-#define A_DEST_FIELD 2 // RECOMMENDED SECOND FIELD IN DERIVED TYPES
-#define A_OP_T_FIELD 3 // RECOMMENDED THIRD FIELD IN DERIVED TYPES
+#define A_DEST_FIELD 1 // RECOMMENDED SECOND FIELD IN DERIVED TYPES
+#define A_OP_T_FIELD 2 // RECOMMENDED THIRD FIELD IN DERIVED TYPES
                        // (KEEP IT UNLESS YOU KNOW WHAT YOU ARE DOING)
 
 // LAYOUT PACKET FIELDS DEFINES
-#define A_LAYOUT_P_ACTION      4
-#define A_LAYOUT_P_GID_FIELD   5
-#define A_LAYOUT_P_SID_FIELD   6
-#define A_LAYOUT_P_STATE_FIELD 7
-#define A_LAYOUT_P_OWNER_FIELD 8
-#define A_LAYOUT_P_X_FIELD     9
-#define A_LAYOUT_P_Y_FIELD     10
+#define A_LAYOUT_P_ACTION      3
+#define A_LAYOUT_P_SID_FIELD   4
+#define A_LAYOUT_P_STATE_FIELD 5
+#define A_LAYOUT_P_OWNER_FIELD 6
 
-#define A_BLOCK_P_GID_FIELD    4
-#define A_BLOCK_P_SID_FIELD    5
-#define A_BLOCK_P_STATE_FIELD  6
-#define A_BLOCK_P_X_FIELD      7
-#define A_BLOCK_P_Y_FIELD      8
-#define A_BLOCK_P_DATA_FIELD   9
+#define A_BLOCK_P_SID_FIELD    3
+#define A_BLOCK_P_STATE_FIELD  4
+#define A_BLOCK_P_DATA_FIELD   5
 
-#define A_CONTROL_P_SRC_FIELD  4
-#define A_CONTROL_P_CODE_FIELD 5
-#define A_CONTROL_P_INFO_FIELD 6
+#define A_CONTROL_P_SRC_FIELD  3
+#define A_CONTROL_P_CODE_FIELD 4
+#define A_CONTROL_P_INFO_FIELD 5
 
 namespace ambient { namespace channels { namespace mpi {
 
@@ -61,37 +54,48 @@ namespace ambient { namespace channels { namespace mpi {
 
     struct layout_packet_t : public standard_packet_t
     {
-        __a_fields__ action, object_gid, object_sid, state, owner, x, y;
+        __a_fields__ action, object_sid, state, owner;
         layout_packet_t(){
             __a_packet__
             action        = MPI_BYTE;
-            object_gid    = MPI_INT;
             object_sid    = MPI_INT;
             state         = MPI_BYTE;
             owner         = MPI_INT;
-            x             = MPI_INT;
-            y             = MPI_INT;
-            __a_pack{ 1, 1, 1, 1, 1, 1, 1 };
+            __a_pack{ 1, 1, 1, 1 };
             __a_code('L');
         }
     };
 
     struct block_packet_t : public standard_packet_t
     {
-        __a_flex_fields__ object_gid, object_sid, state, x, y, data;
+        __a_flex_fields__ object_sid, state, data;
         block_packet_t(size_t size) 
         : standard_packet_t()
         {
             __a_packet__
-            object_gid    = MPI_INT;
             object_sid    = MPI_INT;
             state         = MPI_BYTE;
-            x             = MPI_INT;
-            y             = MPI_INT;
             data          = MPI_BYTE;
-            __a_pack{ 1, 1, 1, 1, 1, size };
-            __a_code('B'+size); // note: small size is dangerous (code overlap)
+            __a_pack{ 1, 1, size };
+            __a_code('Z'+size); // note: small size is dangerous (code overlap)
         }
+    };
+
+    class vbp { // volatile block packet (two-sided known communication)
+    public:
+        static vbp& instance(void* memory, size_t size, size_t dest){
+            vbp& p = *(vbp*)memory;
+            p.type = (double)((int)'Z' + (int)size/sizeof(double));
+            p.dest = (double)dest;
+            return p;
+        }
+        int length(){
+            return (this->type-'Z');
+        }
+    public:
+        double type;
+        double dest;
+        double data;
     };
 
 } } }

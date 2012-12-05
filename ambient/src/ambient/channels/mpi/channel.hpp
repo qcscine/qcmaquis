@@ -6,8 +6,7 @@
 
 namespace ambient { namespace controllers { namespace velvet {
 
-    void forward(ambient::channels::mpi::packet&);
-    void accept(ambient::channels::mpi::packet&);
+//    void deviate(ambient::channels::mpi::packet&);
 
 } } }
 
@@ -15,7 +14,7 @@ namespace ambient { namespace channels { namespace mpi {
 
     // {{{ channel
 
-    inline channel::channel(){ 
+    inline channel::channel(){
         pthread_mutex_init(&this->mutex, NULL);
     }
 
@@ -24,55 +23,36 @@ namespace ambient { namespace channels { namespace mpi {
         pthread_mutex_destroy(&this->mutex);
     }
 
-    inline group* channel::world(){
-        return this->ambient;
-    }
-
     inline void channel::init(){
-        int threading_level;
-        MPI_Init_thread(0, NULL, MPI_THREAD_MULTIPLE, &threading_level);
-        if(threading_level != MPI_THREAD_MULTIPLE) printf("Wrong value of threading_level!\n");
-        assert(threading_level == MPI_THREAD_MULTIPLE);
-        this->ambient = new group("ambient", AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
+        int level, zero = 0;
+        MPI_Init_thread(&zero, NULL, MPI_THREAD_MULTIPLE, &level); 
+        if(level != MPI_THREAD_MULTIPLE) printf("ERROR: Wrong threading level\n");
+        this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
 
-        this->add_handler( get_t<layout_packet_t>() , controllers::velvet::forward );
-
+//        this->add_handler( get_t<control_packet_t>() , controllers::velvet::deviate);
         this->active = true;
-        //pthread_create(&this->thread, NULL, &channel::stream, this);
-    }
-
-    inline std::pair<size_t*,size_t> channel::id(){
-        return this->ambient->id;
-    }
-
-    inline packet_t& channel::get_block_packet_type(size_t len){
-        printf("WARNING: Getting packet type for some reason!\n");
-        static packet_t* types[65538] = { NULL };
-        size_t idx = len / 8; // for double
-        if(types[idx] == NULL){
-            types[idx] = new block_packet_t(len);
-            //pt->commit(); // serial
-            //this->add_handler(*pt, controllers::accept);
-        }
-        return *types[idx];
+        pthread_create(&this->thread, NULL, &channel::stream, this);
     }
 
     inline void channel::finalize(){
         this->active = false;
-        //pthread_join(this->thread, NULL);
+        pthread_join(this->thread, NULL);
         MPI_Finalize();
     }
 
-    inline void* channel::stream(void* instance){ // pthread bootstrapper
+    inline void* channel::stream(void* instance){
         channel* c = static_cast<channel*>(instance);
         while(c->active) c->spin();
         return NULL;
     }
 
-    inline size_t channel::get_volume() const {
-        int size;
-        MPI_Comm_size(MPI_COMM_WORLD, &size);
-        return (size_t)size;
+    inline void channel::spin(){
+        pthread_mutex_lock(&this->mutex);
+        std::list<pipe*>::const_iterator begin = this->qs.begin();
+        std::list<pipe*>::const_iterator end = this->qs.end();
+        pthread_mutex_unlock(&this->mutex);
+        for(std::list<pipe*>::const_iterator p = begin; p != end; ++p)
+        (*p)->spin();
     }
 
     inline void channel::add_handler(const packet_t& type, void(*callback)(packet&)){
@@ -93,6 +73,20 @@ namespace ambient { namespace channels { namespace mpi {
         return this->qs.back();
     }
 
+    inline void channel::replicate(vbp& p){
+        //pipe* queue = this->get_pipe(p->get_t(), pipe::OUT);
+        //queue->send(queue->attach_request(&p));
+    }
+
+    inline void channel::broadcast(vbp& p, bool root){
+        if(!root){ replicate(p); return; }
+        for(int i = 0; i < world->size; i++){
+            if(i == ambient::rank()) continue;
+            p.dest = (double)i;
+            replicate(p);
+        }
+    }
+
     inline void channel::emit(packet* p){
         packet* pk = static_cast<packet*>(p);
         if(pk->get<int>(A_DEST_FIELD) == ambient::rank()){
@@ -103,20 +97,10 @@ namespace ambient { namespace channels { namespace mpi {
         }
     }
 
-    inline void channel::spin(){ // ex: stream thread
-        pthread_mutex_lock(&this->mutex);
-        std::list<pipe*>::const_iterator begin = this->qs.begin();
-        std::list<pipe*>::const_iterator end = this->qs.end();
-        pthread_mutex_unlock(&this->mutex);
-        for(std::list<pipe*>::const_iterator p = begin; p != end; ++p){
-            (*p)->spin();
-        }
-    }
-
     inline void channel::ifetch(group* g, size_t sid, size_t x, size_t y){
-        for(int i = 0; i < g->get_size(); i++){
+        for(int i = 0; i < g->size; i++){
             this->emit(pack<layout_packet_t>(alloc_t<layout_packet_t>(), // pack from auxiliary
-                                                       g->get_member(i), "P2P", 
+                                                       g->get_proc(i), "P2P", 
                                                        "INFORM OWNER ABOUT REQUEST",
                                                        sid, sid, "GENERIC", // fixme
                                                        ambient::rank(), // forward target
@@ -167,11 +151,10 @@ namespace ambient { namespace channels { namespace mpi {
 
     inline void channel::pipe::send(request* r){
         packet* p = unpack(this->type, r->memory);
-        use(r->memory); // using the memory until completion
         if(p->get<char>(A_OP_T_FIELD) == 'P'){
             MPI_Isend(r->memory, 1, this->type.mpi_t, p->get<int>(A_DEST_FIELD), this->type.t_code, MPI_COMM_WORLD, &(r->mpi_request));
         }else if(p->get<char>(A_OP_T_FIELD) == 'B'){ // unrolling into a series
-            for(size_t i=0; i < ambient::channel.get_volume(); i++){
+            for(size_t i=0; i < (size_t)ambient::channel.world->size; i++){
                 packet it = packet(*p);
                 it.set(A_OP_T_FIELD, "P2P");
                 it.set(A_DEST_FIELD, i);
@@ -182,7 +165,6 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline void channel::pipe::recv(request* r){
-        use(r->memory);
         MPI_Irecv(r->memory, 1, this->type.mpi_t, MPI_ANY_SOURCE, this->type.t_code, MPI_COMM_WORLD, &(r->mpi_request));
     }
 
@@ -204,7 +186,7 @@ namespace ambient { namespace channels { namespace mpi {
             if(flag){
                 packet* p = unpack(this->type, (*it)->memory); 
                 this->packet_delivered(*p); // delegate
-                unuse(p->data); checked_free(p->data); // freeing memory
+                // checked_free(p->data); // freeing memory
                 delete p;
 
                 if(this->flow == IN) this->renew(*it);

@@ -6,9 +6,8 @@ namespace ambient { namespace channels { namespace mpi {
     : t_size(0), count(0), displacements(NULL), sizes(NULL), compounds(NULL), mpi_t(MPI_DATATYPE_NULL)
     {
         type = MPI_INT;
-        usage = MPI_INT;
-        int sizes[] = { 1, 1 };
-        construct('0', 2, sizes, &type);
+        int sizes[] = { 1 };
+        construct('0', 1, sizes, &type);
     }
 
     inline void packet_t::construct(int code, int count, const int* sizes, const MPI_Datatype* types){
@@ -83,25 +82,7 @@ namespace ambient { namespace channels { namespace mpi {
     inline void* alloc_t(const packet_t& type){
         void* memory = malloc(type.get_size());
         memset(memory, 0, type.get_size());
-        // *(int*)((size_t)memory + type.displacements[1]) = 0; // usage
         return memory;
-    }
-
-    inline void reset_usage(void* memory){
-        ((int*)memory)[1] = 0; // unsafe
-    }
-
-    inline void checked_free(void* memory){
-        if(((int*)memory)[1]) return;
-        free(memory);
-    }
-
-    inline void use(void* memory){
-        ((int*)memory)[1]++;
-    }
-
-    inline void unuse(void* memory){
-        ((int*)memory)[1]--;
     }
 
     // }}}

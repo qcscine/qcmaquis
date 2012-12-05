@@ -23,12 +23,11 @@ namespace ambient { namespace controllers { namespace velvet {
 // group class method duplicates
     public:
         int np,nq; //mask of the two cyclic distribution
-        int get_master_g()        { return grp->get_master_g();                         }
-        int get_rank()            { return grp->get_rank();                             }
-        int get_size()            { return grp->get_size();                             }
-        const char* get_name()    { return grp->get_name();                             }
-        bool involved()           { return grp->involved();                             }
-        bool is_master()          { return grp->is_master();                            }
+        int  get_master()          { return ambient::rank.translate(grp->master, grp);   }
+        bool involved()            { return ambient::rank.belongs(grp);                  }
+        bool is_master()           { return ambient::rank.masters(grp);                  }
+        int  get_rank()            { return grp->rank;                                   }
+        int  get_size()            { return grp->size;                                   }
     };
 
 } } }
