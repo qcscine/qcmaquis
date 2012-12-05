@@ -12,8 +12,8 @@ namespace ambient { namespace models { namespace velvet {
     class sfunctor {
     public:
         virtual void place() = 0;
-        inline void set_group(group* g)                  { grp = g; place();    }
-        inline group* get_group()                        { return grp;          }
+        void set_group(group* g)                  { grp = g; place();    }
+        group* get_group()                        { return grp;          }
         void*  arguments[SFUNCTOR_ARITY];
         group* grp;
     };

@@ -37,7 +37,7 @@ namespace ambient { namespace channels { namespace mpi {
     struct standard_packet_t : public packet_t
     {
         __a_fields__ dest, op_type;
-        inline standard_packet_t(){
+        standard_packet_t(){
             __a_packet__
             dest     = MPI_INT;
             op_type  = MPI_BYTE;
@@ -49,7 +49,7 @@ namespace ambient { namespace channels { namespace mpi {
     struct control_packet_t : public standard_packet_t
     {
         __a_fields__ src, code, info;
-        inline control_packet_t(){
+        control_packet_t(){
             __a_packet__
             src      = MPI_INT;
             code     = MPI_BYTE;
@@ -62,7 +62,7 @@ namespace ambient { namespace channels { namespace mpi {
     struct layout_packet_t : public standard_packet_t
     {
         __a_fields__ action, object_gid, object_sid, state, owner, x, y;
-        inline layout_packet_t(){
+        layout_packet_t(){
             __a_packet__
             action        = MPI_BYTE;
             object_gid    = MPI_INT;
@@ -79,7 +79,7 @@ namespace ambient { namespace channels { namespace mpi {
     struct block_packet_t : public standard_packet_t
     {
         __a_flex_fields__ object_gid, object_sid, state, x, y, data;
-        inline block_packet_t(size_t size) 
+        block_packet_t(size_t size) 
         : standard_packet_t()
         {
             __a_packet__

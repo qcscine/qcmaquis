@@ -16,11 +16,11 @@ namespace ambient { namespace channels { namespace mpi {
     {
 // PACKET-TYPE WORK LOGIC //////////////////////////////////////////////////////////////
     private:
-        inline packet_t(packet_t const&);             // copy constructor is private
-        inline packet_t& operator=(packet_t const&);  // assignment operator is private
+        packet_t(packet_t const&);             // copy constructor is private
+        packet_t& operator=(packet_t const&);  // assignment operator is private
     public:
         template<typename T>
-        static inline T& get(){
+        static T& get(){
             static T* singleton = NULL;
             if(!singleton){ 
                 singleton = new T();
@@ -29,7 +29,7 @@ namespace ambient { namespace channels { namespace mpi {
             }
             return *singleton;
         }
-        static inline const packet_t& type_map(int t_code, const packet_t* type = NULL){
+        static const packet_t& type_map(int t_code, const packet_t* type = NULL){
             static std::map<int,const packet_t*> map;
             if(type != NULL){
                 map.insert(std::pair<int,const packet_t*>(t_code,type));
@@ -37,13 +37,13 @@ namespace ambient { namespace channels { namespace mpi {
             }
             return const_cast<packet_t&>(*(map.find(t_code)->second));
         }
-        inline void change_field_size(int field, int size);
-        inline void fill_packet(void* memory, int type, va_list& fields) const;
-        inline size_t get_size() const;
-        inline size_t get_bound(size_t field) const;
-        inline void commit();
+        void change_field_size(int field, int size);
+        void fill_packet(void* memory, int type, va_list& fields) const;
+        size_t get_size() const;
+        size_t get_bound(size_t field) const;
+        void commit();
     protected:
-        inline void construct(int code, int count, const int* sizes, const MPI_Datatype* types);
+        void construct(int code, int count, const int* sizes, const MPI_Datatype* types);
     public:
         int  t_code;
         int  t_size;                                   // memory size of the type
@@ -54,14 +54,14 @@ namespace ambient { namespace channels { namespace mpi {
         MPI_Datatype* compounds;                       // MPI compound datatypes
         BASE_FIELDS type, usage;                       // mandatory packet-type first field
     protected:
-        inline packet_t();
+        packet_t();
     };
 
-    inline void* alloc_t(const packet_t& type);
-    inline void reset_usage(void* memory);
-    inline void checked_free(void* memory);
-    inline void use(void* memory);
-    inline void unuse(void* memory);
+    void* alloc_t(const packet_t& type);
+    void reset_usage(void* memory);
+    void checked_free(void* memory);
+    void use(void* memory);
+    void unuse(void* memory);
 
 } } }
 

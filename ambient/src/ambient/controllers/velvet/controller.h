@@ -18,21 +18,21 @@ namespace ambient { namespace controllers { namespace velvet {
     {
     public:
         controller();
-        inline void   acquire(channels::mpi::channel* channel);
-        inline void   schedule(cfunctor* op);
+        void   acquire(channels::mpi::channel* channel);
+        void   schedule(cfunctor* op);
 
-        inline void alloc (revision& r);
-        inline void calloc(revision& r);
-        inline revision& ufetch(revision& r);
-        inline void ifetch(revision& r);
-        inline void unlock_revision(revision* arg);
-        inline void unlink_revision(revision* arg);
+        void alloc (revision& r);
+        void calloc(revision& r);
+        revision& ufetch(revision& r);
+        void ifetch(revision& r);
+        void unlock_revision(revision* arg);
+        void unlink_revision(revision* arg);
 
-        template<typename T> inline void destroy(T* o);
+        template<typename T> void destroy(T* o);
 
-        inline void flush();
-        inline void atomic_receive(revision& r);
-        inline ~controller();
+        void flush();
+        void atomic_receive(revision& r);
+        ~controller();
     public:
         bool muted;
         collector garbage;

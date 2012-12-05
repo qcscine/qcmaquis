@@ -8,23 +8,23 @@ namespace ambient { namespace models { namespace velvet {
     class revision
     {
     public:
-        inline void* operator new (size_t size);
-        inline void operator delete (void* ptr);
-        inline operator char* (){ return (char*)this->data; }
-        inline operator double* (){ return (double*)this->data; }
-        inline operator std::complex<double>* (){ return (std::complex<double>*)this->data; }
-        inline void embed(void* memory, size_t bound);
-        inline void swap(revision&);
-        inline void* get_memory();
-        inline bool valid();
-        inline bool occupied();
-        inline void release();
-        inline void use();
+        revision(memspec*, void* g);
+        void* operator new (size_t size);
+        void operator delete (void* ptr);
+        operator char* (){ return (char*)this->data; }
+        operator double* (){ return (double*)this->data; }
+        operator std::complex<double>* (){ return (std::complex<double>*)this->data; }
+        void embed(void* memory, size_t bound);
+        void swap(revision&);
+        void* get_memory();
+        bool valid();
+        bool occupied();
+        void release();
+        void use();
 
-        inline revision* get_parent(){ return parent; }
-        inline revision(memspec*, void* g);
-        inline void* get_generator();
-        inline void reset_generator();
+        revision* get_parent(){ return parent; }
+        void* get_generator();
+        void reset_generator();
 
         int users; // std::atomic<int>
         size_t sid;

@@ -6,40 +6,40 @@ namespace ambient { namespace channels { namespace mpi {
     class group
     {
     public:
-        inline ~group();
-        inline group(const char* name, int master, group* parent);
-        inline group(const char* name, int master, MPI_Comm parent); // special constructor for nest group
-        inline void commit();
+        ~group();
+        group(const char* name, int master, group* parent);
+        group(const char* name, int master, MPI_Comm parent); // special constructor for nest group
+        void commit();
 
-        inline int get_vacant();   // get the vacant rank for the child creation
-        inline int get_master();   // get rank of the group master
-        inline int get_master_g(); // get translated rank of the group master
-        inline bool occupied();
-        inline bool involved();
-        inline bool is_master();
-        inline void occupy();
-        inline void idle();
+        int get_vacant();   // get the vacant rank for the child creation
+        int get_master();   // get rank of the group master
+        int get_master_g(); // get translated rank of the group master
+        bool occupied();
+        bool involved();
+        bool is_master();
+        void occupy();
+        void idle();
 
-        inline void add(const int* procs, int count, bool excl = false);
-        inline void add(int count, bool excl = false); // loose method
-        inline void add_range(int first, int last, bool excl = false);
-        inline void add_every(int nth, bool excl = false);
-        inline void add_every(bool(*include)(int k), bool excl = false);
-        inline void add_every(bool(*include)(int k), bool(*excl)(int k));
-        inline void add_intersection(const group* b, int* count = NULL);
-        inline void add_every_intersection(const group* b, int nth, int* count = NULL);
-        inline void add_substraction(const group* b, int* count = NULL);
-        inline void reorder(int* new_ranks);
-        inline void reorder(int(*order)(int r));
+        void add(const int* procs, int count, bool excl = false);
+        void add(int count, bool excl = false); // loose method
+        void add_range(int first, int last, bool excl = false);
+        void add_every(int nth, bool excl = false);
+        void add_every(bool(*include)(int k), bool excl = false);
+        void add_every(bool(*include)(int k), bool(*excl)(int k));
+        void add_intersection(const group* b, int* count = NULL);
+        void add_every_intersection(const group* b, int nth, int* count = NULL);
+        void add_substraction(const group* b, int* count = NULL);
+        void reorder(int* new_ranks);
+        void reorder(int(*order)(int r));
 
-        inline int translate_up_rank(int rank, group* parent = NULL) const;
-        inline int translate_down_rank(int rank, group* child) const;
+        int translate_up_rank(int rank, group* parent = NULL) const;
+        int translate_down_rank(int rank, group* child) const;
 
-        inline std::pair<size_t*,size_t> hash_gid();
-        inline int get_rank();
-        inline size_t get_size();
-        inline const char* get_name();
-        inline size_t get_member(size_t i); // returns global children
+        std::pair<size_t*,size_t> hash_gid();
+        int get_rank();
+        size_t get_size();
+        const char* get_name();
+        size_t get_member(size_t i); // returns global children
 
         int master;                 // master process in this group
         int vacant_level;
@@ -58,8 +58,8 @@ namespace ambient { namespace channels { namespace mpi {
         bool occupancy;
     };
 
-    inline group* group_map(const char* name, group* instance = NULL);
-    inline group* group_id_map(std::pair<size_t*,size_t> id, group* instance = NULL);
+    group* group_map(const char* name, group* instance = NULL);
+    group* group_id_map(std::pair<size_t*,size_t> id, group* instance = NULL);
 
 } } }
 
