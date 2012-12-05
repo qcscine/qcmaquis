@@ -29,10 +29,10 @@ namespace ambient {
     utils::bulk_memory& bulk_pool = utils::bulk_memory::instance();
     utils::range_memory& range_pool = utils::range_memory::instance();
     utils::io_manager& io_manager = utils::io_manager::instance();
-    //channels::mpi::multirank& rank = channels::mpi::multirank::instance();
     models::velvet::model& model = models::velvet::model::instance();
-    //channels::mpi::channel& channel = channels::mpi::channel::instance();
+    channels::mpi::channel& channel = channels::mpi::channel::instance();
     controllers::velvet::controller& controller = controllers::velvet::controller::instance();
+    channels::mpi::multirank& rank = channels::mpi::multirank::instance();
     controllers::velvet::context& ctxt = controllers::velvet::context::instance();
     io cout;
     io cerr;
