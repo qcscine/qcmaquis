@@ -12,16 +12,12 @@ namespace ambient { namespace models { namespace velvet {
         this->content.reserve(2); 
     }
 
-    inline history::~history(){
-        int size = this->content.size();
-        for(int i = 0; i < size; i++) spec.free(this->content[i]->header);
-        for(int i = 0; i < size; i++) ambient::static_memory::free<revision>(this->content[i]); 
-    }
-
-    inline void history::add_state(revision* r){
+    inline revision* history::add_state(void* g){
+        revision* r = new revision(&spec, g); 
         r->parent = this->current;
         this->content.push_back(r);
         this->current = r;
+        return r;
     }
         
     inline size_t history::time() const {
