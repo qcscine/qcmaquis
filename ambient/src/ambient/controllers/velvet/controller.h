@@ -20,24 +20,21 @@ namespace ambient { namespace controllers { namespace velvet {
         controller();
        ~controller();
         void flush();
-        void   acquire(channels::mpi::channel* channel);
-        void   schedule(cfunctor* op);
-
+        void clear();
+        void submit(cfunctor* f);
         void calloc(revision& r);
         void alloc (revision& r);
         void free  (revision& r);
-        revision& ufetch(revision& r);
-        void ifetch(revision& r);
-        void unlock_revision(revision* arg);
-        void unlink_revision(revision* arg);
-
+        void sync  (revision& r);
+        void sync  (revision& r, size_t target);
+        void graph();
+        void graph(cfunctor* f, size_t level);
         template<typename T> void destroy(T* o);
-
-        void atomic_receive(revision& r);
-    public:
-        std::vector< cfunctor* > chains;
-        std::vector< cfunctor* > mirror;
-        int arity;
+    private:
+        std::vector< cfunctor* > stack_m;
+        std::vector< cfunctor* > stack_s;
+        std::vector< cfunctor* >* chains;
+        std::vector< cfunctor* >* mirror;
         collector garbage;
     };
     

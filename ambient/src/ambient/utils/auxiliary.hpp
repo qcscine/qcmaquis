@@ -3,12 +3,10 @@
 
 namespace ambient {
     template<typename T>
-    inline void destroy(T* o)                               { ambient::controller.destroy(o);          }
-    inline bool verbose()                                   { return (rank() ? false : true);          }
-    inline void sync(){ 
-        ambient::controller.flush();
-        ambient::controller.garbage.clear();
-    } 
+    inline void destroy(T* o){ controller.destroy(o); }
+    inline bool verbose()    { return rank.verbose;   }
+    inline void sync()       { controller.flush();
+                               controller.clear();    } 
 }
 
 #endif

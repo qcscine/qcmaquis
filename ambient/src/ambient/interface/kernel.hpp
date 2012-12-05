@@ -24,7 +24,7 @@ namespace ambient {
     template<typename FP, FP fp> struct kernel_inliner{};
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
 
-    static inline void assign(revision& r){ ambient::controller.ifetch(r); }
+    static inline void assign(revision& r){ } //ambient::controller.ifetch(r); }
     template <typename T> static inline revision&     current(T& obj){ return *(revision  *)obj.impl->content[obj.ref];   }
     template <typename T> static inline w_revision&   updated(T& obj){ return *(w_revision*)obj.impl->content[obj.ref+1]; }
     // supplementary revision modes: checked current (calloc), same updated (memcpy), purged updated (memset)
@@ -50,10 +50,10 @@ namespace ambient {
 
         inline void pin(revision& r){
             //this->set_group(channel.world()); 
-            ambient::controller.ifetch(r);
+            //ambient::controller.ifetch(r);
             cfunctor* g = (cfunctor*)r.get_generator();
             if(g != NULL) g->push_back(this);
-            else ambient::controller.schedule(this);
+            else ambient::controller.submit(this);
         }
 
         template <class T0>
