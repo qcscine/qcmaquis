@@ -10,25 +10,25 @@ namespace ambient { namespace controllers { namespace velvet {
     class context : public singleton< context > 
     {
     public:
-        inline  context();
-        inline ~context();
+        context();
+       ~context();
     public:
 // proxy functionality //
-        inline context& operator()(int rank){ return *this;   } // proxy
-        inline group* get_group()           { return grp;     }
-        inline void set_group(group* grp);
+        context& operator()(int rank){ return *this;   } // proxy
+        group* get_group()           { return grp;     }
+        void set_group(group* grp);
     private:
         group* grp;
         cfunctor* functor;
 // group class method duplicates
     public:
         int np,nq; //mask of the two cyclic distribution
-        inline int get_master_g()        { return grp->get_master_g();                         }
-        inline int get_rank()            { return grp->get_rank();                             }
-        inline int get_size()            { return grp->get_size();                             }
-        inline const char* get_name()    { return grp->get_name();                             }
-        inline bool involved()           { return grp->involved();                             }
-        inline bool is_master()          { return grp->is_master();                            }
+        int get_master_g()        { return grp->get_master_g();                         }
+        int get_rank()            { return grp->get_rank();                             }
+        int get_size()            { return grp->get_size();                             }
+        const char* get_name()    { return grp->get_name();                             }
+        bool involved()           { return grp->involved();                             }
+        bool is_master()          { return grp->is_master();                            }
     };
 
 } } }

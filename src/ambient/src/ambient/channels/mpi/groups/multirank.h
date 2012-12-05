@@ -8,13 +8,13 @@ namespace ambient { namespace channels { namespace mpi {
     class multirank : public singleton< multirank >
     {
     public:
-        inline multirank(){
+        multirank(){
         }
     private: 
         std::map<std::string,int> map;
     public:
-        inline int operator()(const group* grp) const { return grp->rank; }
-        inline int operator()(const char* name = "ambient") const {
+        int operator()(const group* grp) const { return grp->rank; }
+        int operator()(const char* name = "ambient") const {
             group* grp = group_map(name);
             if(grp != NULL) return grp->rank;
             return MPI_UNDEFINED;

@@ -12,17 +12,17 @@ namespace ambient{
     template<typename T>
     class touchstack {
     public:
-        inline touchstack();
-        inline ~touchstack();
-        inline T pick();
-        inline T back();
-        inline void push_back(T e);
-        inline bool end_reached();
-        inline void reset();
-        inline void repeat();
-        inline bool empty();
-        inline size_t size();
-        inline void sort();
+        touchstack();
+       ~touchstack();
+        T pick();
+        T back();
+        void push_back(T e);
+        bool end_reached();
+        void reset();
+        void repeat();
+        bool empty();
+        size_t size();
+        void sort();
     public:
         T* content;
         T* wi; 

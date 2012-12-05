@@ -4,40 +4,40 @@
 namespace ambient { namespace channels { namespace mpi {
 
     template<typename T>
-    inline T& get_t(){
+    T& get_t(){
         return packet_t::get<T>();
     }
 
     template<typename T>
-    inline MPI_Datatype get_mpi_t(){
+    MPI_Datatype get_mpi_t(){
         return get_t<T>().mpi_t;
     }
 
     template<typename T>
-    inline size_t sizeof_t(int field = -1){
+    size_t sizeof_t(int field = -1){
         if(field == -1) return get_t<T>().get_size();
         else return get_t<T>().sizes[field];
     }
 
     template<typename T>
-    inline void commit_t(){
+    void commit_t(){
         if(get_mpi_t<T>() != MPI_DATATYPE_NULL) MPI_Type_free(&get_t<T>().mpi_t);
         get_t<T>().commit();
     }
 
     template<typename T>
-    inline void change_t(int field, int size){
+    void change_t(int field, int size){
         get_t<T>().change_field_size(field, size);
         commit_t<T>();
     }
 
     template<typename T>
-    inline void* alloc_t(){
+    void* alloc_t(){
         return alloc_t(get_t<T>());
     }
 
     template<typename T>
-    inline packet* pack(void* memory, ...){
+    packet* pack(void* memory, ...){
         packet* instance;
         va_list fields;
         va_start(fields, memory); 
@@ -47,7 +47,7 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     template<typename T>
-    inline packet* unpack(void* memory){
+    packet* unpack(void* memory){
         return unpack(get_t<T>(), memory);
     }
 

@@ -4,14 +4,14 @@
 namespace ambient { namespace models { namespace velvet {
 
     struct memspec {
-        inline memspec(dim2 dim, size_t ts);
-        inline void* alloc() const;
-        inline void* calloc() const;
-        inline void free(void*) const;
-        inline size_t get_bound() const;
-        inline void* get_packet_t() const;
-        dim2 dim;
+        memspec(dim2 dim, size_t ts);
+        void* alloc() const;
+        void* calloc() const;
+        void free(void*) const;
+        size_t get_bound() const;
+        void* get_packet_t() const;
         size_t size;
+        dim2 dim;
     };
 
 } } }

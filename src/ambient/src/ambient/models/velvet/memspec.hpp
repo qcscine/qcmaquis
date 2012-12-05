@@ -22,7 +22,7 @@ namespace ambient { namespace models { namespace velvet {
         return BOUND; // ambient::channel.get_block_packet_type(size).get_bound(9);
     }
  
-    void* memspec::get_packet_t() const {
+    inline void* memspec::get_packet_t() const {
         return &ambient::channel.get_block_packet_type(size);
     }
 
