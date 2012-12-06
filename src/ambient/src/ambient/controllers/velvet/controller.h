@@ -27,8 +27,6 @@ namespace ambient { namespace controllers { namespace velvet {
         void free  (revision& r);
         void sync  (revision& r);
         void sync  (revision& r, size_t target);
-        void graph();
-        void graph(cfunctor* f, size_t level);
         template<typename T> void destroy(T* o);
     private:
         std::vector< cfunctor* > stack_m;

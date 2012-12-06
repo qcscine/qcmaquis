@@ -5,9 +5,8 @@ namespace ambient { namespace controllers { namespace velvet {
 
     class cfunctor : public models::velvet::sfunctor {
     public:
-        virtual void invoke()        = 0;
-        virtual bool ready()         = 0;
-        virtual const char* symbol() = 0;
+        virtual void invoke()   = 0;
+        virtual bool ready()    = 0;
         void push_back(cfunctor* d);
         std::vector<cfunctor*> deps;
     };
