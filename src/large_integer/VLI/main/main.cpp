@@ -204,37 +204,50 @@ int main(int argc, char* argv[]) {
     
     vli::vli<256> a,b;
 
-    b[0] = 0xfffffffffffffff;
-    b[1] = 0xfffffffffffb;
-    b[2] = 0xfffffffffffffff;
-    b[3] = 0xffffffffffffffd;
+    b[0] = 0xffffffffffff;
+    b[1] = 0xffffffffffff;
+    b[2] = 0xffffffffffff;
+    b[3] = 0xffffffffffff;
 
-    a[0] = 0xfffffffffffffff;
-    a[1] = 0xbfffffffffff;
-    a[2] = 0xcffffffffffffff;
-    a[3] = 0xdffffffffffffff;
+    a[0] = 0xffffffffffff;
+    a[1] = 0xffffffffffff;
+    a[2] = 0xffffffffffff;
+    a[3] = 0xffffffffffff;
 
-    vli::vli<512> res,res2;
+    vli::vli<512> res,res2,res3;
 
     Timer t1("CPU classic");
     t1.begin();
-    for(int i=0; i<1; ++i)
+    for(int i=0; i<0xffffff; ++i)
        vli::multiply_extend(res2, a ,b);
     t1.end();
 
 
     Timer t2("CPU KA");
     t2.begin();
-    for(int i=0; i<1; ++i)
+    for(int i=0; i<0xffffff; ++i)
          res = vli::detail::KA_helper<256>::KA_algo(a,b);
     t2.end();
+    
+    Timer t3("CPU KA+");
+    t3.begin();
+    for(int i=0; i<0xffffff; ++i)
+       vli::detail::Karatsuba_helper<256>::Karatsuba(res3,a,b);
+    t3.end();
 
-    std::cout << " classic " << t1.get_time() << " karatsuba " << t2.get_time() << std::endl;
+    
+    std::cout << std::hex << res << std::endl;
+    std::cout << res2 << std::endl;
+    std::cout << res3 << std::endl;
+    
+    
+    std::cout << " classic " << t1.get_time() << " karatsuba " << t2.get_time() << " karatsuba+ " << t3.get_time() << std::endl;
+/*
     std::cout << " ------------ " << std::endl;
     std::cout << std::hex << " ref " << res2  << std::endl;
     std::cout << " res " << res  << std::endl;
     std::cout << " diff " << (res2 -= res)   << std::endl;
-        
+      *?
     /*
        std::cout << " -------ASCII ART ^_^' --------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -------Size vector : " << Size_vec  << ", Order " << __ORDER__ << std::endl;

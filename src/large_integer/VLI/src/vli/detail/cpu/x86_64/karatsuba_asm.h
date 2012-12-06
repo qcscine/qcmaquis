@@ -1,3 +1,4 @@
+
 /*
 *Very Large Integer Library, License - Version 1.0 - May 3rd, 2012
 *
@@ -43,18 +44,24 @@ namespace vli {
 
     template <std::size_t NumBits>
     void KA_add(boost::uint64_t* x, boost::uint64_t const* y);
-   
+
+    template <std::size_t NumBits>
+    void KA_add_extend(boost::uint64_t* x, boost::uint64_t const* y);
+
     template <std::size_t NumBits>
     boost::uint64_t KA_sub(boost::uint64_t* x, boost::uint64_t const* y); //return the mask
    
     template <std::size_t NumBits>
     void KA_sign(boost::uint64_t* x, boost::uint64_t a);
     
-    #define r(w, n, MAX)  BOOST_PP_COMMA_IF(n) BOOST_PP_STRINGIZE(+r)(x[n])
-    #define g(w, n, MAX)  BOOST_PP_COMMA_IF(n) BOOST_PP_STRINGIZE(g)(y[n])
-   
+    #define r(w, n, MAX)  BOOST_PP_COMMA_IF(n) BOOST_PP_STRINGIZE(+r)(*(x+n))
+    #define g(w, n, MAX)  BOOST_PP_COMMA_IF(n) BOOST_PP_STRINGIZE(g)(*(y+n))
+        
     #define addn128_n128_ka_cpu(w, n, MAX) \
         BOOST_PP_IF(n,"adcq %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(MAX,n))", %"BOOST_PP_STRINGIZE(n)"; \n\t","addq  %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(MAX,n))", %0; \n\t")
+
+    #define addn128_n128_extend_ka_cpu(w, n, MAX) \
+        BOOST_PP_IF(n,"adcq %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(MAX,BOOST_PP_ADD(n,1)))", %"BOOST_PP_STRINGIZE(n)"; \n\t","addq  %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(MAX,BOOST_PP_ADD(n,1)))", %0; \n\t") \
 
     #define subn128_n128_ka_cpu(w, n, MAX) \
         BOOST_PP_IF(n,"sbbq %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(MAX,BOOST_PP_ADD(n,1)))", %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(n,1))"; \n\t","subq  %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(MAX,BOOST_PP_ADD(n,1)))", %1; \n\t") \
@@ -71,7 +78,17 @@ namespace vli {
           : BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), r, ~) : BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), g, BOOST_PP_ADD(n,1)): "cc" \
         ); \
     }; \
-    
+
+    #define FUNCTION_add_extend_nbits_nbits(z, n, unused) \
+    template<> \
+    void KA_add_extend<(n+1)*64>(boost::uint64_t* x,boost::uint64_t const* y){ \
+        asm( \
+            BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), addn128_n128_extend_ka_cpu, BOOST_PP_ADD(n,1)) \
+            "adcq $0 , %"BOOST_PP_STRINGIZE(BOOST_PP_ADD(n,1))"; \n\t" \
+            : BOOST_PP_REPEAT(BOOST_PP_ADD(n,2), r, ~) : BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), g, BOOST_PP_ADD(n,1)): "cc" \
+           ); \
+    }; \
+
     #define FUNCTION_add_nbits_bit(z, n, unused) \
     template<> \
     void KA_sign<(n+1)*64>(boost::uint64_t* x,boost::uint64_t mask){ \
@@ -95,11 +112,16 @@ namespace vli {
         ); \
         return -sign; \
     }; \
-   
+
     BOOST_PP_REPEAT(8, FUNCTION_add_nbits_nbits, ~)
-    BOOST_PP_REPEAT(4, FUNCTION_sub_nbits_nbits, ~)
+    BOOST_PP_REPEAT(4, FUNCTION_add_extend_nbits_nbits, ~)
     BOOST_PP_REPEAT(4, FUNCTION_add_nbits_bit,   ~)
+
+    BOOST_PP_REPEAT(8, FUNCTION_sub_nbits_nbits, ~)
     
+        
+        
+        
     template <std::size_t NumBits>
     struct KA_helper{//lsb = partie haute, msb = partie basse
         inline static vli<2*NumBits> KA_algo(vli<NumBits> const&  vli_a, vli<NumBits> const& vli_b){
@@ -115,14 +137,27 @@ namespace vli {
             low = KA_helper<NumBits/2>::KA_algo(al,bl);
             high = KA_helper<NumBits/2>::KA_algo(ah,bh);
             medium = KA_helper<NumBits/2>::KA_algo(am,bm);
-            mask_s1 ^= mask_s2;
-            KA_sign<NumBits>(&medium[0],mask_s1);
-            vli<NumBits> low_cp(low),medium_cp(medium),high_c(high);
-            KA_add<NumBits>(&medium[0],&low[0]);
-            KA_add<NumBits>(&medium[0],&high[0]);
-            vli<2*NumBits> tmp_res0(medium,copy_right_shift_tag());
+            
+            vli<2*NumBits> tmp_res0;
+        
+            KA_add<NumBits>(&tmp_res0[(vli<2*NumBits>::numwords)>>2],&low[0]);;
+            KA_add<NumBits>(&tmp_res0[(vli<2*NumBits>::numwords)>>2],&high[0]);
+
+       
+            if(mask_s1 != mask_s2)
+                boost::uint64_t a = KA_sub<NumBits>(&tmp_res0[(vli<2*NumBits>::numwords)>>2],&medium[0]);
+            else
+                KA_add<NumBits>(&tmp_res0[(vli<2*NumBits>::numwords)>>2],&medium[0]);
+
+            
+   //         mask_s1 ^= mask_s2;
+    //        KA_sign<NumBits>(&medium[0],mask_s1);
+     //       vli<2*NumBits> tmp_res0(medium,copy_right_shift_tag());
+            
             vli<2*NumBits> tmp_res1(low,high,copy_right_shift_tag());
+          
             KA_add<2*NumBits>(&tmp_res0[0],&tmp_res1[0]);
+             
             return tmp_res0;
         };
     };
@@ -136,7 +171,61 @@ namespace vli {
             return vli_res;
         }
     };
+        
+        
+        
+    template <std::size_t NumBits>
+    struct K_helper{//lsb = partie haute, msb = partie basse
+        static void  KA(boost::uint64_t* res0, boost::uint64_t const *  a, boost::uint64_t const *  b){
+            boost::uint64_t am[NumBits/128];
+            boost::uint64_t bm[NumBits/128];
+            boost::uint64_t medium[NumBits/64];
 
+            for(int i=0; i < NumBits/128; ++i){
+                am[i] = a[i];
+                bm[i] = b[i+NumBits/128];
+            }
+ 
+            for(int i=0; i < NumBits/64; ++i)
+                medium[i] = 0;
+            
+            boost::uint64_t mask_s1 = KA_sub<NumBits/2>(am,(a+NumBits/128));
+            boost::uint64_t mask_s2 = KA_sub<NumBits/2>(bm,b);
+            
+            KA_sign<NumBits/2>(am,mask_s1);
+            KA_sign<NumBits/2>(bm,mask_s2);
+
+            K_helper<NumBits/2>::KA(res0,a,b);
+            K_helper<NumBits/2>::KA((res0+(2*NumBits)/128),(a+NumBits/128),(b+NumBits/128)); // pointer arithmetic
+            K_helper<NumBits/2>::KA(medium,am,bm);
+
+            mask_s1 ^= mask_s2;
+            KA_sign<NumBits>(medium,mask_s1);
+           // std::cout << NumBits << " "  << res0 << std::endl;
+            KA_add<NumBits>(medium,res0); // TO DO possible CB
+            KA_add<NumBits>(medium,res0+(NumBits)/64); // TO DO possible CB
+            KA_add<NumBits>((res0+(NumBits/64)/2),medium); // TO DO possible CB
+            };
+        };
+        
+        template <>
+        struct K_helper<64>{
+            static void KA(boost::uint64_t* res0, boost::uint64_t const *  a, boost::uint64_t const *  b){//
+                /* =a means rax for lower part, =d means rdx for the higher part, = for writing, %0 directly vli_a[0] ready for mul vli[0] */
+                asm("mulq %3;" :"=a"(res0[0]), "=d"(res0[1]) :"%0" (a[0]), "r"(b[0]): "cc");
+            }
+        };
+
+        
+    template <std::size_t NumBits>
+    struct Karatsuba_helper{
+        static void Karatsuba(vli<2*NumBits>& res, vli<NumBits> const& vli_a, vli<NumBits> const& vli_b){
+            K_helper<NumBits>::KA(&res[0],&vli_a[0],&vli_b[0]);
+        }
+    };
+
+        
+        
     }
 }
 
