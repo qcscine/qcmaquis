@@ -19,27 +19,8 @@ namespace ambient { namespace controllers { namespace velvet {
         //ambient::channel.init();
     }
 
-    /*inline void controller::graph(cfunctor* f, size_t level){
-        typedef typename std::vector<cfunctor*>::const_iterator veci;
-        for(veci i = f->deps.begin(); i != f->deps.end(); ++i){
-            printf("-%s\t", (*i)->symbol()); graph(*i, level+1);
-            if(i+1 != f->deps.end()){ printf("\n"); for(size_t l = 0; l < level; ++l) printf("\t"); }
-        }
-    }
-
-    inline void controller::graph(){
-        typedef typename std::vector<cfunctor*>::const_iterator veci;
-        for(veci i = chains->begin(); i != chains->end(); ++i){
-            printf("\n%s\t", (*i)->symbol());
-            graph(*i, 1);
-        }
-        printf("\n----------------------------------------------------------------------------------------------------------------------------\n");
-    }*/
-
     inline void controller::flush(){
         typedef typename std::vector<cfunctor*>::const_iterator veci;
-
-        //if(chains->size() > 100) graph();
 
         while(!chains->empty()){
             for(veci i = chains->begin(); i != chains->end(); ++i){
