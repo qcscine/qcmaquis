@@ -336,8 +336,15 @@ namespace ambient { namespace numeric { namespace kernels {
         static const char* name(){ return "copy"; }
         static void c(weak_view<T>& ac, const matrix<T>& a){
             __A_TIME_C("ambient_copy_c_kernel"); 
-            if(!current(a).valid()) (T*)p_updated(ac);
-            else __a_refresh<T>(updated(ac), current(a), __a_sizeof(a));
+            if(!current(a).valid()){ (T*)p_updated(ac); return; }
+
+            // if(!current(a).locked()){
+            //     current(a).use(); // alternative reusage method
+            //     ac.impl->content[ac.ref + 1]->reuse(current(a));
+            //     return;
+            // }
+
+            __a_refresh<T>(updated(ac), current(a), __a_sizeof(a));
             __A_TIME_C_STOP
         }
     };

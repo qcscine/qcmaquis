@@ -404,7 +404,7 @@ namespace ambient { namespace numeric {
     inline void copy(matrix<T>& dst, size_t di, size_t dj, 
                      const matrix<T>& src, size_t si, size_t sj, 
                      size_t m, size_t n)
-    { 
+    {
         kernels::copy_partial<T>::spawn(dst, di, dj, src, si, sj, m, n); 
     }
 
