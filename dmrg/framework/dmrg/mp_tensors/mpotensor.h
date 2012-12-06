@@ -68,7 +68,7 @@ public:
         return true;
     }
     
-public:
+private:
     std::vector<block_matrix<Matrix, SymmGroup> > data_;
 //    Index<SymmGroup> upper_i, lower_i;
 };
