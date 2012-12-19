@@ -201,19 +201,15 @@ void measure_on_mps(MPS<Matrix, SymmGroup> & mps, Lattice const & lat,
                                                      h5name, basepath + alps::hdf5_name_encode(meas[i].name), true, false);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::CorrelationNN:
-#ifndef NDEBUG
                     if (meas[i].operators.size() % 2 != 0)
                         throw std::runtime_error("Next neighbors correlators have to have even number of operators");
-#endif
                     meas_detail::measure_correlation(mps, lat, meas.get_identity(),
                                                      meas[i].fill_operator, meas[i].operators,
                                                      h5name, basepath + alps::hdf5_name_encode(meas[i].name), false, true);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::HalfCorrelationNN:
-#ifndef NDEBUG
                     if (meas[i].operators.size() % 2 != 0)
                         throw std::runtime_error("Next neighbors correlators have to have even number of operators");
-#endif
                     meas_detail::measure_correlation(mps, lat, meas.get_identity(),
                                                      meas[i].fill_operator, meas[i].operators,
                                                      h5name, basepath + alps::hdf5_name_encode(meas[i].name), true, true);
