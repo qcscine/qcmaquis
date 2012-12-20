@@ -6,8 +6,8 @@
  *
  *****************************************************************************/
 
-#ifndef BELA_HAMILTONIANS_H
-#define BELA_HAMILTONIANS_H
+#ifndef MODELS_CODED_BELA_H
+#define MODELS_CODED_BELA_H
 
 #include <sstream>
 

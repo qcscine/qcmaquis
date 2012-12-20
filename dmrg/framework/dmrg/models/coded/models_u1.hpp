@@ -7,8 +7,8 @@
  *
  *****************************************************************************/
 
-#ifndef APP_HAMILTONIANS_H
-#define APP_HAMILTONIANS_H
+#ifndef MODELS_CODED_U1_H
+#define MODELS_CODED_U1_H
 
 #include <sstream>
 
