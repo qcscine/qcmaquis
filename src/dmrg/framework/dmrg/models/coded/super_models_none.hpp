@@ -186,11 +186,26 @@ class SuperBoseHubbardNone : public Model<Matrix, TrivialGroup>
     typedef typename ham::op_t op_t;
     
 public:
-    SuperBoseHubbardNone (const Lattice& lat, int Nmax=2, double t=1., double U=1., double V=0., double Delta=1., double Gamma1a=0., double Gamma1b=0., double Gamma2=0.)
+    // Dissipation needs complex types, that's why we forward to do_init with a tag
+    SuperBoseHubbardNone(const Lattice& lat, int Nmax=2, double t=1., double U=1., double V=0., 
+                         double Delta=1., double Gamma1a=0., double Gamma1b=0., double Gamma2=0.)
+    {
+        do_init(lat,Nmax,t,U,V,Delta,Gamma1a,Gamma1b,Gamma2,typename Matrix::value_type());
+    }
+    
+    void do_init(const Lattice& lat, int Nmax, double t, double U, double V, 
+                 double Delta, double Gamma1a, double Gamma1b, double Gamma2, double)
+    {
+        throw std::runtime_error("need complex value type");
+    }
+    
+    void do_init(const Lattice& lat, int Nmax, double t, double U, double V, 
+                 double Delta, double Gamma1a, double Gamma1b, double Gamma2, std::complex<double>)
     {
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
         const size_t N = Nmax+1;
         const size_t N2 = N*N;
+        const std::complex<double> I(0,1);
         
         phys.insert(std::make_pair(C, N2));
         ident.insert_block(Matrix::identity_matrix(N2), C, C);
@@ -257,7 +272,7 @@ public:
             {
                 hamterm_t term;
                 term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, Gamma1a*lindDestroy) );
+                term.operators.push_back( std::make_pair(p, I*Gamma1a*lindDestroy) );
                 terms.push_back(term);
             }
             
@@ -266,7 +281,7 @@ public:
             {
                 hamterm_t term;
                 term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, 0.5*Gamma2*lindDestroy2) );
+                term.operators.push_back( std::make_pair(p, I*0.5*Gamma2*lindDestroy2) );
                 terms.push_back(term);
             }
             
@@ -308,28 +323,28 @@ public:
                 {
                     hamterm_t term;
                     term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, Gamma1b/2*create) );
+                    term.operators.push_back( std::make_pair(p, I*Gamma1b/2.*create) );
                     term.operators.push_back( std::make_pair(neighs[n], leftDestroy) );
                     terms.push_back(term);
                 }
                 {
                     hamterm_t term;
                     term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, Gamma1b/2*leftDestroy) );
+                    term.operators.push_back( std::make_pair(p, I*Gamma1b/2.*leftDestroy) );
                     term.operators.push_back( std::make_pair(neighs[n], create) );
                     terms.push_back(term);
                 }
                 {
                     hamterm_t term;
                     term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, Gamma1b/2*destroy) );
+                    term.operators.push_back( std::make_pair(p, I*Gamma1b/2.*destroy) );
                     term.operators.push_back( std::make_pair(neighs[n], rightCreate) );
                     terms.push_back(term);
                 }
                 {
                     hamterm_t term;
                     term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, Gamma1b/2*rightCreate) );
+                    term.operators.push_back( std::make_pair(p, I*Gamma1b/2.*rightCreate) );
                     term.operators.push_back( std::make_pair(neighs[n], destroy) );
                     terms.push_back(term);
                 }
