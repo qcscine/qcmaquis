@@ -9,6 +9,7 @@
 
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
+#include "dmrg/mp_tensors/super_mpo.h"
 
 #include <sstream>
 #include <algorithm>
@@ -30,7 +31,8 @@ namespace meas_detail {
 							  std::vector<std::size_t> const & order,
 							  bool is_nn,
 							  std::vector<typename MPS<Matrix, SymmGroup>::scalar_type>& dc,
-							  std::vector<std::string>& labels);
+							  std::vector<std::string>& labels,
+                              bool super_meas);
     
 	inline std::vector<std::string> label_strings (const Lattice& lat, const std::vector<std::vector<std::size_t> >& labels)
 	{
@@ -81,7 +83,7 @@ namespace meas_detail {
     class LocalMPSMeasurement
     {
     public:
-        LocalMPSMeasurement (const MPS<Matrix, SymmGroup> & mps_, const Lattice & lat_)
+        LocalMPSMeasurement(const MPS<Matrix, SymmGroup> & mps_, const Lattice & lat_)
         : mps(mps_)
         , lat(lat_)
         , L(mps.size())
@@ -182,13 +184,14 @@ namespace meas_detail {
                        block_matrix<Matrix, SymmGroup> const & fill,
                        std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
                        std::string const & h5name,
-                       std::string base_path)
+                       std::string base_path,
+                       bool super_meas = false)
 	{
 		std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals;
         std::vector<std::string> labels;
         
         if (ops.size() == 1) {
-            measure_correlation_(mps, lat, identity, fill, ops, std::vector<std::size_t>(), false, vals, labels);
+            measure_correlation_(mps, lat, identity, fill, ops, std::vector<std::size_t>(), false, vals, labels, super_meas);
         } else {
             // TODO: optimize this, by building a special MPO (MPOMaker and CorrMaker don't support it)
             for (std::size_t p = 0; p < lat.size(); ++p)
@@ -206,8 +209,16 @@ namespace meas_detail {
 					mpom.add_term(term);
 					MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
                     
-					typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo);
-					vals.push_back(val);
+					typename MPS<Matrix, SymmGroup>::scalar_type val;
+                    if (!super_meas)
+                        val = expval(mps, mpo);
+					else {
+                        Index<SymmGroup> phys_i = identity.left_basis();
+                        MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
+                        val = overlap(super_mpo, mps);
+                    }
+                    
+                    vals.push_back(val);
 					labels.push_back(lat.get_prop<std::string>("label", p, *hopto));
             	}
             }
@@ -260,7 +271,8 @@ namespace meas_detail {
                          block_matrix<Matrix, SymmGroup> const & fill,
 						 std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
                          std::string const & h5name,
-                         std::string base_path)
+                         std::string base_path,
+                         bool super_meas = false)
 	{
         generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
 		for (std::size_t p = 0; p < lat.size(); ++p)
@@ -283,8 +295,16 @@ namespace meas_detail {
             }
         }
         MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-        typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo);
         
+        typename MPS<Matrix, SymmGroup>::scalar_type val;
+        if (!super_meas)
+            val = expval(mps, mpo);
+        else {
+            Index<SymmGroup> phys_i = identity.left_basis();
+            MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
+            val = overlap(super_mpo, mps);
+        }
+
         {
             alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
             if ( all_true(ops.begin(), ops.end(), boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian), 
@@ -309,10 +329,20 @@ namespace meas_detail {
             ar >> alps::make_pvp("/state", bra_mps);
         }
         
-        typename MPS<Matrix, SymmGroup>::scalar_type result = overlap(bra_mps, mps);
+        std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals(1);
+        if (bra_mps[bra_mps.length()-1].col_dim().sum_of_sizes() == 1)
         {
+            typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(bra_mps, mps);
+            
+            std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> tmp(1, val);
             alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<typename MPS<Matrix, SymmGroup>::scalar_type>(1, result));
+            ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
+        } else {
+            std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals = multi_overlap(bra_mps, mps);
+            
+            std::vector<std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> > tmp(1, vals);
+            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+            ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
         }
 	}
     
@@ -380,7 +410,8 @@ namespace meas_detail {
 							  std::vector<std::size_t> const & order,
 							  bool is_nn,
 							  std::vector<typename MPS<Matrix, SymmGroup>::scalar_type>& dc,
-							  std::vector<std::string>& labels)
+							  std::vector<std::string>& labels,
+                              bool super_meas)
 	{
         for (size_t p = 0; p < lat.size()-(ops.size()-1); ++p) {
 			std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
@@ -389,7 +420,15 @@ namespace meas_detail {
 				generate_mpo::CorrMakerNN<Matrix, SymmGroup> dcorr(mps.length(), identity, fill,
 																   ops, p);
 				MPO<Matrix, SymmGroup> mpo = dcorr.create_mpo();
-				dct = multi_expval(mps, mpo);
+                
+                if (!super_meas)
+                    dct = multi_expval(mps, mpo);
+                else {
+                    Index<SymmGroup> phys_i = identity.left_basis();
+                    MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
+                    dct = multi_overlap(super_mpo, mps);
+                }
+                
 				num_labels = dcorr.numeric_labels();
 			} else {
 				generate_mpo::CorrMaker<Matrix, SymmGroup> dcorr(mps.length(), identity, fill,
@@ -421,16 +460,17 @@ namespace meas_detail {
 							 std::string const & h5name,
 							 std::string base_path,
 							 bool half=false,
-							 bool is_nn=false)
+							 bool is_nn=false,
+                             bool super_meas=false)
 	{
 	    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dc;
 	    std::vector<std::string> labels;
 	    if (half) {
-	    	measure_correlation_(mps, lat, identity, fill, ops, std::vector<std::size_t>(), is_nn, dc, labels);
+	    	measure_correlation_(mps, lat, identity, fill, ops, std::vector<std::size_t>(), is_nn, dc, labels, super_meas);
 	    } else {
 	    	CorrPermutator<Matrix, SymmGroup> perm(ops, is_nn);
 	    	for (int i=0; i<perm.size(); ++i) {
-		    	measure_correlation_(mps, lat, identity, fill, perm[i], perm.order(i), is_nn, dc, labels);
+		    	measure_correlation_(mps, lat, identity, fill, perm[i], perm.order(i), is_nn, dc, labels, super_meas);
 	    	}
 	    }
 

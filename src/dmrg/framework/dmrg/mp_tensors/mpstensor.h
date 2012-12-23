@@ -43,6 +43,12 @@ public:
               bool fillrand = true,
               value_type val = 0);
 
+    MPSTensor(Index<SymmGroup> const& sd,
+              Index<SymmGroup> const& ld,
+              Index<SymmGroup> const& rd,
+              block_matrix<Matrix, SymmGroup> const& block,
+              MPSStorageLayout layout = LeftPaired);
+
 #ifdef RVALUE
     MPSTensor(MPSTensor&& rhs); 
     MPSTensor& operator=(MPSTensor&& rhs);
