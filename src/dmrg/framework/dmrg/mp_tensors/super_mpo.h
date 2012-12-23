@@ -46,7 +46,7 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
     MPS<Matrix, SymmGroup> mps(mpo.size());
     
     boost::function<charge (charge, charge)> phys_fuse = boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                               boost::lambda::_1, -boost::lambda::_2);
+                                                                             boost::lambda::_1, -boost::lambda::_2);
     
     Index<SymmGroup> phys2_i = phys_i*adjoin(phys_i);
     ProductBasis<SymmGroup> phys_prod(phys_i, phys_i, phys_fuse);
@@ -60,8 +60,6 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
         
         ProductBasis<SymmGroup> left_out(phys2_i, left_i);
         boost::unordered_map<charge, size_t> right_sizes;
-        
-        std::vector<bool> used(mpo[i].col_dim(), false);
         
         block_matrix<Matrix, SymmGroup> out_block;
         
@@ -77,6 +75,7 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
                     /// note: this has to be here, because we don't know if b1 exists
                     charge l_charge; size_t ll;
                     boost::tie(l_charge, ll) = left_map[b1];
+                    size_t l_size = left_i[left_i.position(l_charge)].second;
                     
                     block_matrix<Matrix, SymmGroup> const& in_block = mpo[i](b1, b2);
                     for (size_t n=0; n<in_block.n_blocks(); ++n)
@@ -112,12 +111,13 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
                             continue;
                         }
                         
-
+                        
                         if (!out_block.has_block(out_l_charge, out_r_charge))
-                            out_block.insert_block(Matrix(phys_prod.size(s1_charge, s2_charge, phys_fuse)*left_i.sum_of_sizes(), right_sizes[out_r_charge], 0.),
+                            out_block.insert_block(Matrix(left_out.size(s_charge,l_charge), right_sizes[out_r_charge], 0.),
                                                    out_l_charge, out_r_charge);
                         
-                        size_t phys_offset  = phys_prod(s1_charge, s2_charge);
+                        size_t phys_offset = phys_prod(s1_charge, s2_charge);
+                        size_t left_offset = left_out(s_charge, l_charge);
                         
                         size_t rr = right_map[b2].second;
                         
@@ -128,7 +128,7 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
                             for (size_t ss1=0; ss1<size1; ++ss1)
                             {
                                 size_t ss = ss2 + ss1*size2 + phys_offset;
-                                out_m(ss*left_i.sum_of_sizes() + ll, rr) = in_m(ss1, ss2);
+                                out_m(left_offset + ss*l_size + ll, rr) = in_m(ss1, ss2);
                             }
                     }
                 }
