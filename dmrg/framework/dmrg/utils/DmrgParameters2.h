@@ -158,6 +158,11 @@ private:
         add_option("Ndiscr", "");
         add_option("omega", "", value(0.));
         add_option("shift", "", value(0.));
+
+        add_option("Delta"  , "", value(0.));
+        add_option("Gamma1a", "", value(0.));
+        add_option("Gamma1b", "", value(0.));
+        add_option("Gamma2" , "", value(0.));
         
         add_option("u1_total_charge", "");
         add_option("u1_total_charge1", "");
