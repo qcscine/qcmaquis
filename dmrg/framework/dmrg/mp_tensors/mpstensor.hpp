@@ -51,6 +51,20 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
         data_.generate(utils::constant<typename Matrix::value_type>(val));
 }
 
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const& sd,
+          Index<SymmGroup> const& ld,
+          Index<SymmGroup> const& rd,
+          block_matrix<Matrix, SymmGroup> const& block,
+          MPSStorageLayout layout)
+: phys_i(sd)
+, left_i(ld)
+, right_i(rd)
+, data_(block)
+, cur_storage(layout)
+, cur_normalization(Unorm)
+{ }
+
 #ifdef RVALUE
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(MPSTensor&& rhs){ 

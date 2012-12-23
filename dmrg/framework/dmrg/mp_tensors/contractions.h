@@ -16,6 +16,8 @@
 #include "dmrg/block_matrix/indexing.h"
 
 struct contraction {
+    
+    // output/input: left_i for bra_tensor, right_i for ket_tensor
     template<class Matrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
     overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,

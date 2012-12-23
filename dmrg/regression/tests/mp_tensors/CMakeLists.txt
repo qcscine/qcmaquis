@@ -14,3 +14,8 @@ target_link_libraries(mpsjoin.test ${DMRG_APP_LIBRARIES} ${MAQUIS_Boost_UNIT_TES
 add_test(mpsjoin mpsjoin.test)
 
 
+add_executable(super_mpo.test super_mpo.cpp)
+target_link_libraries(super_mpo.test ${DMRG_APP_LIBRARIES})
+
+add_test(super_mpo super_mpo.test)
+

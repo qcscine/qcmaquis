@@ -143,6 +143,35 @@ typename MPS<Matrix, SymmGroup>::scalar_type overlap(MPS<Matrix, SymmGroup> cons
 }
 
 template<class Matrix, class SymmGroup>
+std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_overlap(MPS<Matrix, SymmGroup> const & mps1,
+                                                                        MPS<Matrix, SymmGroup> const & mps2)
+{
+    // assuming mps2 to have `correct` shape, i.e. left size=1, right size=1
+    //          mps1 more generic, i.e. left size=1, right size arbitrary
+    
+    
+    assert(mps1.length() == mps2.length());
+    
+    std::size_t L = mps1.length();
+    
+    block_matrix<Matrix, SymmGroup> left;
+    left.insert_block(Matrix(1, 1, 1), SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
+    
+    for (int i = 0; i < L; ++i) {
+        left = contraction::overlap_left_step(mps1[i], mps2[i], left);
+    }
+    
+    assert(left.right_basis().sum_of_sizes() == 1);
+    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals;
+    vals.reserve(left.left_basis().sum_of_sizes());
+    for (int n=0; n<left.n_blocks(); ++n)
+        for (int i=0; i<left.left_basis()[n].second; ++i)
+            vals.push_back( left[n](i,0) );
+        
+    return vals;
+}
+
+template<class Matrix, class SymmGroup>
 std::vector<double>
 calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n) // to be optimized later
 {
