@@ -202,46 +202,40 @@ typedef boost::mpl::vector<
 int main(int argc, char* argv[]) {
     
     
-    vli::vli<256> a,b;
+    vli::vli<128> a,b;
 
-    b[0] = 0xffffffffffff;
+    b[0] = -1;
     b[1] = 0xffffffffffff;
-    b[2] = 0xffffffffffff;
+    b[2] = -1;
     b[3] = 0xffffffffffff;
 
-    a[0] = 0xffffffffffff;
+    a[0] = -1;
     a[1] = 0xffffffffffff;
-    a[2] = 0xffffffffffff;
+    a[2] = -1;
     a[3] = 0xffffffffffff;
 
-    vli::vli<512> res,res2,res3;
+    vli::vli<256> res,res2,res3;
+
+    Timer t3("CPU KA+");
+    t3.begin();
+    for(int i=0; i<0xffff; ++i)
+       vli::detail::karatsuba(res3,a,b);
+    t3.end();
 
     Timer t1("CPU classic");
     t1.begin();
-    for(int i=0; i<0xffffff; ++i)
+    for(int i=0; i<0xffff; ++i)
        vli::multiply_extend(res2, a ,b);
     t1.end();
 
 
-    Timer t2("CPU KA");
-    t2.begin();
-    for(int i=0; i<0xffffff; ++i)
-         res = vli::detail::KA_helper<256>::KA_algo(a,b);
-    t2.end();
-    
-    Timer t3("CPU KA+");
-    t3.begin();
-    for(int i=0; i<0xffffff; ++i)
-       vli::detail::Karatsuba_helper<256>::Karatsuba(res3,a,b);
-    t3.end();
 
     
-    std::cout << std::hex << res << std::endl;
-    std::cout << res2 << std::endl;
+    std::cout << std::hex << res2 << std::endl;
     std::cout << res3 << std::endl;
     
     
-    std::cout << " classic " << t1.get_time() << " karatsuba " << t2.get_time() << " karatsuba+ " << t3.get_time() << std::endl;
+    std::cout << " classic " << t1.get_time() << " karatsuba+ " << t3.get_time() << std::endl;
 /*
     std::cout << " ------------ " << std::endl;
     std::cout << std::hex << " ref " << res2  << std::endl;
