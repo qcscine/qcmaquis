@@ -41,6 +41,17 @@ namespace vli{
     template <std::size_t NumBits>
     __device__ void mul_extend(boost::uint32_t * x,boost::uint32_t const* y,boost::uint32_t const* z);
 
+    #define mul128bits_64bits_64bits(w, n, unused) \
+        asm( \
+              "mad.lo.cc.u32  %0, %4,  %3, %0; \n\t" /* c[i]   = a[0] * b[i] (low)  + c[i] (c[i]=0 for i=0) may generate carry bit (CB) */ \
+              "madc.lo.cc.u32 %1, %5,  %3, %1; \n\t" /* c[i+1] = a[1] * b[i] (low)  + c[i+1] + CB                                       */ \
+              BOOST_PP_IF(n,"addc.cc.u32 %4, 0, 0; \n\t",/* no extention n=0 */) /* c[i+6] += CB, n = 0 CB impossible                   */ \
+              "mad.hi.cc.u32  %1, %4,  %3, %1; \n\t" /* c[i+1] = a[0] * b[i] (high) + c[i+1] + CB (c[i]=0 for i=0)                      */ \
+              "madc.hi.cc.u32 %2, %5,  %3, %2; \n\t" /* c[i+2] = a[1] * b[i] (high) + c[i+2] + CB                                       */ \
+              :"+r"(x[BOOST_PP_ADD(0,n)]),"+r"(x[BOOST_PP_ADD(1,n)]),"+r"(x[BOOST_PP_ADD(2,n)])                                            \
+              :"r"(z[0]),"r"(z[1],"r"(y[0]),"r"(y[1])                                                                                               \
+          );                                                                                                                               \
+
     #define mul256bits_128bits_128bits(w, n, unused) \
         asm( \
               "mad.lo.cc.u32  %0, %6,  %5, %0; \n\t" /* c[i]   = a[0] * b[i] (low)  + c[i] (c[i]=0 for i=0) may generate carry bit (CB) */ \
@@ -60,7 +71,27 @@ namespace vli{
     void mul_extend<256>(boost::uint32_t* x, boost::uint32_t const* y, boost::uint32_t const* z){
            BOOST_PP_REPEAT(4, mul256bits_128bits_128bits, ~)                                                                              \
     }
-    #undef mul384bits_192bits_192bits
+
+    template<>
+    void mul_extend<128>(boost::uint32_t* x, boost::uint32_t const* y, boost::uint32_t const* z){
+        asm( 
+              "mul.lo.u32 %0, %4, %6; \n\t"
+              "mul.lo.u32 %1, %4, %7; \n\t"
+              "mad.lo.cc.u32 %1, %5, %6, %1; \n\t"
+              "mad.lo.cc.u32 %2, %5, %7, %2; \n\t"
+
+              "mad.hi.cc.u32 %1, %4, %6, %1; \n\t"
+              "madc.hi.cc.u32 %2, %4, %7, %2; \n\t"
+              "madc.hi.cc.u32 %2, %5, %6, %2; \n\t"
+              "madc.hi.cc.u32 %3, %5, %7, %3; \n\t"
+              
+              :"+r"(x[0]),"+r"(x[1]),"+r"(x[2]),"+r"(x[3])                                            
+              :"r"(z[0]),"r"(z[1]),"r"(y[0]),"r"(y[1])                                                                                      
+          );                                                                                                                               
+    }
+
+    #undef mul128bits_64bits_64bits
+    #undef mul256bits_128bits_128bits
 
     #define mul384bits_192bits_192bits(w, n, unused) \
         asm( \

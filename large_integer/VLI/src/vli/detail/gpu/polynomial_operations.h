@@ -49,6 +49,7 @@
 #include "vli/detail/gpu/kernels/kernels_gpu_neg_asm.hpp" //kernels gpu boost pp
 #include "vli/detail/gpu/kernels/kernels_gpu_add_asm.hpp" //kernels gpu boost pp
 #include "vli/detail/gpu/kernels/kernels_gpu_mul_asm.hpp" //kernels gpu boost pp
+#include "vli/detail/gpu/detail/gpu_karatsuba_asm.h" // wrapper multiplication
 #include "vli/detail/gpu/detail/multiply_extend_algo.hpp" // wrapper multiplication
 #include "vli/detail/gpu/polynomial_multiplication/accelerator_polynomial_multiplication_max_order_each.hpp" // accelerator max_order_each polynomial
 #include "vli/detail/gpu/polynomial_multiplication/accelerator_polynomial_multiplication_max_order_combined.hpp" // accelerator max_order_combined polynomial

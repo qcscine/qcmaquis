@@ -59,32 +59,13 @@ namespace vli {
             asm( "addc.cc.u32   %0 , %0 , 0 ; \n\t" : "+r"(c2[i])); 
         }
 
-/*
-	if(mask1) 
-            negate<NumBits>(c1);
-
-	if(mask2)
-            negate<NumBits>(c2);
-*/
         mul_extend<2*NumBits>(res1,c1,c2);
-/* the next lines should be equivalent thant the if mask3 but no Oo' */
-/*
-        #pragma unroll
-        for(int i(0); i<num_words<2*NumBits>::value ; ++i)
-            res1[i] ^= mask3; 
+ //     karatsuba<NumBits>(res1,c1,c2);
 
-        asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(res1[0]):"r"(bit3)); 
+        if(mask3)
+            negate<2*NumBits>(res1);
 
-        #pragma unroll
-        for(int i(1); i<num_words<2*NumBits>::value ; ++i)
-            asm( "addc.cc.u32   %0 , %0 , 0 ; \n\t" : "+r"(res1[i])); 
-  */
-
-      if(mask3)
-        negate<2*NumBits>(res1);
-
-
-       add<2*NumBits>(res,res1);
+         add<2*NumBits>(res,res1);
     }
     
     } //namespace detail
