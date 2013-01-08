@@ -29,7 +29,7 @@ namespace generate_mpo
 	struct Operator_Term
 	{
 		typedef block_matrix<Matrix, SymmGroup> op_t;
-        typedef typename Lattice::pos_t pos_t;
+                typedef typename Lattice::pos_t pos_t;
 		typedef std::pair<pos_t, op_t> op_pair_t;
         
 		std::vector<op_pair_t> operators;
