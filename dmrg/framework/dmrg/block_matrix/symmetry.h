@@ -27,6 +27,8 @@ class TrivialGroup
 public:
 	typedef enum { Plus } charge;
 	static const charge IdentityCharge = Plus;
+    static const bool finite = true;
+    
     
 	static inline charge fuse(charge a, charge b) { return Plus; }
 	template<int R> static charge fuse(boost::array<charge, R>) { return Plus; }
@@ -87,6 +89,7 @@ class Ztwo
 		typedef enum { Plus = 0, Minus = 1 } charge;
 		
 		static const charge IdentityCharge = Plus;
+        static const bool finite = true;
 		
 		static inline charge fuse(charge a, charge b)
 		{
@@ -160,6 +163,7 @@ public:
 	typedef int charge;
 
 	static const charge IdentityCharge = 0;
+    static const bool finite = false;
 	
 	static charge fuse(charge a, charge b) { return a + b; }
 	
@@ -227,6 +231,8 @@ public:
     typedef ZqCharge<Q> charge;
     
     static const charge IdentityCharge;
+    static const bool finite = true;
+
     static const int q = Q;
     
     static charge fuse(charge a, charge b)
@@ -469,6 +475,7 @@ public:
     typedef std::vector<charge> charge_v;
     
     static const charge IdentityCharge;
+    static const bool finite = false;
 
     static charge fuse(charge a, charge b)
     {
