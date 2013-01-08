@@ -6,47 +6,14 @@
  *
  *****************************************************************************/
 
-#ifdef USE_AMBIENT
-// parallel matrix
-#include "dmrg/block_matrix/detail/ambient.hpp"
-#endif
-
-#include <complex>
-#include <vector>
-
-// serial matrix
-#include "dmrg/block_matrix/detail/alps.hpp"
-
-#ifdef USE_MTM
-#include "types/mt_matrix/mt_matrix.h"
-#include "types/mt_matrix/algorithms.hpp"
-#endif
+#include "matrices.h"
 
 #include "dmrg/models/factory.h"
 #include "dmrg/models/coded/factory.h"
 #include "dmrg/models/continuum/factory.h"
-#ifdef ENABLE_ALPS_MODELS
-#include "dmrg/models/alps/lattice.hpp"
-#include "dmrg/models/alps/model.hpp"
-#endif
 
-#include <fstream>
-#include <boost/tokenizer.hpp>
-
-// BLAS matrix
-typedef alps::numeric::matrix<double> matrix;
-typedef alps::numeric::matrix<std::complex<double> > cmatrix;
-
-// MT matrix
-#ifdef USE_MTM
-typedef alps::numeric::mt_matrix<double> mtmatrix;
-typedef alps::numeric::mt_matrix<std::complex<double> > cmtmatrix;
-#endif
-
-// parallel matrix
-#ifdef USE_AMBIENT
-typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > pmatrix;
-typedef ambient::numeric::tiles<ambient::numeric::matrix<std::complex<double> > > cpmatrix;
+#ifdef ENABLE_LL_MODELS
+#include "dmrg/models/ll/ll_models.h"
 #endif
 
 // Definition of init function
@@ -88,6 +55,10 @@ void model_parser (std::string lattice_lib, std::string model_lib,
         lattice = lattice_factory(parms);
     } else if (lattice_lib == "continuum") {
         lattice = cont_lattice_factory(parms);
+#ifdef ENABLE_LL_MODELS
+    } else if (lattice_lib == "ll") {
+        lattice = ll_lattice_factory(parms);
+#endif
     } else {
         throw std::runtime_error("Don't know this lattice_library!");
     }
@@ -108,6 +79,10 @@ void model_parser (std::string lattice_lib, std::string model_lib,
         model = model_factory<Matrix, SymmGroup>::parse(*lattice, parms);
     } else if (model_lib == "continuum") {
         model = cont_model_factory<Matrix, SymmGroup>::parse(*lattice, parms);
+#ifdef ENABLE_LL_MODELS
+    } else if (model_lib == "ll") {
+        model = ll_model_factory<Matrix, SymmGroup>::parse(*lattice, parms);
+#endif
     } else {
         throw std::runtime_error("Don't know this model_library!");
     }

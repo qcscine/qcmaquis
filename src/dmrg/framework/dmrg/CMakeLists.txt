@@ -13,6 +13,10 @@ if(ENABLE_ALPS_MODELS)
   get_symm_files(APPEND DMRG_MODELS_SOURCES "models/alps/symm_impl/model_{SYMM}.cpp")
 endif(ENABLE_ALPS_MODELS)
 
+if(ENABLE_LL_MODELS)
+  list(APPEND DMRG_MODELS_SOURCES "models/ll/ll_models.cpp")
+endif(ENABLE_LL_MODELS)
+
 
 # *** Libraries
 add_library(dmrg_utils STATIC utils/utils.cpp utils/stream_storage.cpp sim/symm_factory.cpp)
