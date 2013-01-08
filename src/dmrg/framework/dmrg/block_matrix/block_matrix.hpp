@@ -424,6 +424,7 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         cols_.push_back(p2);
         data_.push_back(Matrix());*/
     }
+    assert( this->has_block(c1,c2) );
 }
 
 template<class Matrix, class SymmGroup>

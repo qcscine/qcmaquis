@@ -84,7 +84,7 @@ inline TrivialGroup::charge operator-(TrivialGroup::charge a) { return a; }
 class Ztwo
 	{
 	public:
-		typedef enum { Plus, Minus } charge;
+		typedef enum { Plus = 0, Minus = 1 } charge;
 		
 		static const charge IdentityCharge = Plus;
 		
@@ -107,18 +107,28 @@ class Ztwo
 	};	
 
 #ifdef HAVE_ALPS_HDF5
+inline
 void save(alps::hdf5::archive & ar,
           std::string const & p,
           Ztwo::charge const & v,
           std::vector<std::size_t> size = std::vector<std::size_t>(),
           std::vector<std::size_t> chunk = std::vector<std::size_t>(),
-          std::vector<std::size_t> offset = std::vector<std::size_t>());
+          std::vector<std::size_t> offset = std::vector<std::size_t>())
+{
+    ar << alps::make_pvp(p, static_cast<int>(v));
+}
+inline
 void load(alps::hdf5::archive & ar,
           std::string const & p,
           Ztwo::charge & v,
           std::vector<std::size_t> size = std::vector<std::size_t>(),
           std::vector<std::size_t> chunk = std::vector<std::size_t>(),
-          std::vector<std::size_t> offset = std::vector<std::size_t>());
+          std::vector<std::size_t> offset = std::vector<std::size_t>())
+{
+    int t;
+    ar >> alps::make_pvp(p, t);
+    v = (t == 0 ? Ztwo::Plus : Ztwo::Minus);
+}
 #endif
 
 inline Ztwo::charge operator-(Ztwo::charge a) { return a; }
