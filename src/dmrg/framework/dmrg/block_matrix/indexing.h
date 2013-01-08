@@ -127,17 +127,15 @@ public:
             return positions.find(c)->second;
     }
 
-    // What the heck is this supposed to do?
-//    std::size_t position(std::pair<charge, std::size_t> x) const
-//    {
-//        assert( has(x.first) );
-//        assert( x.second < size_of_block(x.first) );
-//        return x.second + std::accumulate(this->begin(),
-//                                          std::lower_bound(this->begin(), this->end(), x, index_detail::gt<SymmGroup>()),
-//                                          0,
-//                                          boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2)
-//                                          );
-//    }
+    std::size_t position(std::pair<charge, std::size_t> x) const
+    {
+        assert( has(x.first) );
+        assert( x.second < size_of_block(x.first) );
+        const_iterator to = this->begin()+position(x.first);
+        return x.second + std::accumulate(this->begin(), to, 0,
+                                          boost::lambda::_1 + boost::lambda::bind(index_detail::get_second<SymmGroup>, boost::lambda::_2)
+                                         );
+    }
 
     std::size_t destination(charge c) const
     {
