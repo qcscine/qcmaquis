@@ -2,7 +2,7 @@
  *
  * MAQUIS DMRG Project
  *
- * Copyright (C) 2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ * Copyright (C) 2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  *
  *****************************************************************************/
@@ -38,6 +38,8 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
                       bool fillrand = true,
                       typename Matrix::value_type val = 0)
     {
+        bool finitegroup = SymmGroup::finite;
+        
         std::size_t L = mps.length();
         
         std::cout << "Phys: " << phys << std::endl;
@@ -66,18 +68,17 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
         typename SymmGroup::charge cmaxi=cmaxL, cmini=cminL;
         for (int i = 1; i < L+1; ++i) {
             left_allowed[i] = phys * left_allowed[i-1];
-            std::cout << "Bare lallowed " << i << ": " << left_allowed[i] << std::endl;
             typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
             while ( it != left_allowed[i].end() )
             {
-//                if (SymmGroup::fuse(it->first, cmaxi) < right_end)
-//                    it = left_allowed[i].erase(it);
-//                else if (SymmGroup::fuse(it->first, cmini) > right_end)
-//                    it = left_allowed[i].erase(it);
-//                else {
+                if (!finitegroup && SymmGroup::fuse(it->first, cmaxi) < right_end)
+                    it = left_allowed[i].erase(it);
+                else if (!finitegroup && SymmGroup::fuse(it->first, cmini) > right_end)
+                    it = left_allowed[i].erase(it);
+                else {
                     it->second = std::min(Mmax, it->second);
                     ++it;
-//                }
+                }
             }
             cmaxi = SymmGroup::fuse(cmaxi, -cmax);
             cmini = SymmGroup::fuse(cmini, -cmin);
@@ -89,14 +90,14 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
             typename Index<SymmGroup>::iterator it = right_allowed[i].begin();
             while ( it != right_allowed[i].end() )
             {
-//                if (SymmGroup::fuse(it->first, -cmaxi) > SymmGroup::IdentityCharge)
-//                    it = right_allowed[i].erase(it);
-//                else if (SymmGroup::fuse(it->first, -cmini) < SymmGroup::IdentityCharge)
-//                    it = right_allowed[i].erase(it);
-//                else {
+                if (!finitegroup && SymmGroup::fuse(it->first, -cmaxi) > SymmGroup::IdentityCharge)
+                    it = right_allowed[i].erase(it);
+                else if (!finitegroup && SymmGroup::fuse(it->first, -cmini) < SymmGroup::IdentityCharge)
+                    it = right_allowed[i].erase(it);
+                else {
                     it->second = std::min(Mmax, it->second);
                     ++it;
-//                }
+                }
             }
             cmaxi = SymmGroup::fuse(cmaxi, -cmax);
             cmini = SymmGroup::fuse(cmini, -cmin);
