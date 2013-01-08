@@ -38,7 +38,7 @@ std::map<U1::charge,std::size_t> init_qn_charges<U1>
     assert(conserved_qn.size() == 1);
     std::map<U1::charge,std::size_t> ret;
     for (int i=0; i<states.size(); ++i)
-        ret[convert_alps<U1>(states[i], conserved_qn)] = 1;
+        ret[convert_alps<U1>(states[i], conserved_qn)] += 1;
     return ret;
 }
 
@@ -48,8 +48,11 @@ std::map<alps::site_state<short>, std::pair<U1::charge, std::size_t> > init_coor
 {
     assert(conserved_qn.size() == 1);
     std::map<alps::site_state<short>, std::pair<U1::charge, std::size_t> > ret;
-    for (std::size_t i=0; i<states.size(); ++i)
-        ret[states[i]] = std::make_pair(convert_alps<U1>(states[i], conserved_qn), 0);
+    std::map<U1::charge, std::size_t> used;
+    for (std::size_t i=0; i<states.size(); ++i) {
+        U1::charge c = convert_alps<U1>(states[i], conserved_qn);
+        ret[states[i]] = std::make_pair(c, used[c]++);
+    }
     return ret;
 }
 
