@@ -175,7 +175,7 @@ namespace generate_mpo
         , used_dims(length)
         , ident(ident_)
         , prempo(length)
-        , maximum(0)
+        , maximum(2)
         , leftmost_right(length)
         {   
             for (size_t p = 0; p < length; ++p)
@@ -200,15 +200,7 @@ namespace generate_mpo
             size_t minp = *min_element(positions.begin(), positions.end());
             size_t maxp = *max_element(positions.begin(), positions.end());
             
-            size_t use_b;
-            for (use_b = 2; true; ++use_b) {
-                bool valid = true;
-                for (size_t p = minp; p < maxp; ++p)
-                    valid &= (used_dims[p].count(use_b) == 0);
-                if (valid)
-                    break;
-            }
-            maximum = max(use_b, maximum);
+            size_t use_b = maximum++;
             
             vector<bool> done(length, false);
             for (typename vector<pair<typename Lattice::pos_t, op_t> >::const_iterator it = ops.begin();
