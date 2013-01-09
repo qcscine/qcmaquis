@@ -174,7 +174,12 @@ public:
     {
         return (this->size() == o.size()) && std::equal(this->begin(), this->end(), o.begin());
     }
-    
+
+    bool operator!=(Index const & o) const
+    {
+        return !( *this == o );
+    }
+
     basis_iterator basis_begin() const
     {
         assert( this->size() > 0 );
