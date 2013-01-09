@@ -116,7 +116,7 @@ The x86-64 architecture allows 16 registers (32 for Power architecture). We try 
 It allows a fused multiplication-addition of 32-bit integer  with carry bit support \cite{CUDAasm}. 
 The calculation in 32-bit mode imposes twice as much operations for the additions/subtractions, and one order of magnitude more for the multiplications. 
 
-\subsection{Memory layout and SIMD implementation}
+\subsection{Memory layout and SIMD possibility}
 
 % TODO: which problem are you talking about?
 There exists at least two data layouts for this problem: the array of structure (AoS) and structure of array (SoA). Both have  advantages and disadvantages. In our problem the AoS consists in saving the data in this hierarchy: VLI - series of VLI (polynomial coefficient) - series of polynomials (the vector). The SoA structure interleaves the coefficients of the VLI and the polynomials.
@@ -195,14 +195,13 @@ This method does not  change the ordering of the data. As for the CPU version, w
                            \begin{tabular}{c l l} 
                                \tiny{1:} & VLI tmp   &  $\vartriangleright$ Specific to every thread  \\
                                \tiny{2:} &  \textbf{for} over number of task list size &$\vartriangleright$  Depend on the warp \\
-                               \tiny{3:} &  tmp $\,\, \wedge=$ tmp     & $\vartriangleright$ Flush to 0 \\    
-                               \tiny{4:} &   VLI ResCoeff &$\vartriangleright$  Thread gets a result coefficient from a task \\
-                               \tiny{5:} &  \hspace{0.2 cm}  \textbf{for} over the number of contributions  & $\vartriangleright$ Each thread loops over its coefficients \\
-                               \tiny{6:} &  \hspace{0.4 cm}   Indices$_i$ = GetIndices(ResCoeff) &$\vartriangleright$ Determine input indices \\
-                               \tiny{7:} &  \hspace{0.4 cm}   tmp + = CoeffPoly$_1$(indices$_1$) $\times$ CoeffPoly$_2$(indices$_2$) &$\vartriangleright$ Perform the extended MulAdd  \\
-                               \tiny{8:} &  \hspace{0.2 cm}   \textbf{end for} &\\
-                               \tiny{9:} &  SaveSoA(tmp) & $\vartriangleright$ Write into the global memory under AoS \\                               
-                               \tiny{10:} &  \textbf{end for} &\\                               
+                               \tiny{3:} &   VLI ResCoeff &$\vartriangleright$  Thread gets a result coefficient from a task \\
+                               \tiny{4:} &  \hspace{0.2 cm}  \textbf{for} over the number of contributions  & $\vartriangleright$ Each thread loops over its coefficients \\
+                               \tiny{5:} &  \hspace{0.4 cm}   Indices$_i$ = GetIndices(ResCoeff) &$\vartriangleright$ Determine input indices \\
+                               \tiny{6:} &  \hspace{0.4 cm}   tmp + = CoeffPoly$_1$(indices$_1$) $\times$ CoeffPoly$_2$(indices$_2$) &$\vartriangleright$ Perform the extended MulAdd  \\
+                               \tiny{7:} &  \hspace{0.2 cm}   \textbf{end for} &\\
+                               \tiny{8:} &  SaveSoA(tmp) & $\vartriangleright$ Write into the global memory under AoS \\                               
+                               \tiny{9:} &  \textbf{end for} &\\                               
                           \end{tabular} &  \\ \hline
 		 \end{tabular} 
 		 \caption{Algorithm of the task execution on GPU for the polynomial multiplications. \label{ALGO}}
@@ -223,7 +222,7 @@ The reduction is done using the standard method of NVIDIA \cite{CUDAReduction} t
 %  It can be both in the shared, one polynomial into the shared and the second one into the texture or two in the texture memory. 
 %The determination of which  fast memory (shared or texture) is determined during the compilation. Thus we avoid if statement and probable sequentialization of the warps. 
 
-To conclude, this  algorithm has the great advantage of working well with dense and sparse polynomials. 
+To conclude, this  algorithm has the great advantage of working well with dense and triangular polynomials. 
 The main difficulty consists  of designing an efficient function GetIndices (\ref{ALGO}) which determines the contributions.
  We also developed an optional hybrid mode between CPU/GPU. This  technique is usual in GPU computing.
   We split the input vectors of polynomials into two chunks of data, execute concurrently on CPU and GPU. 
@@ -251,8 +250,7 @@ Benchmarks are performed on the facilities of the Swiss Center for Scientific Co
 Evaluating  integer benchmarks  is not easy: unlike the floating point, integer operations are performed by ALU (and not on the single FPU),  the number of  ALUs  between processors (Intel, AMD, IBM) and the execution time of the operations are  not constant \cite{ASMcost} (constant for FPU).  We compute the  result  numbers as operations \footnote{An operation can be a long multiplication, addition and so on}   per seconds $GOP/s=10^{-9} \times batch/t$, where  $batch$ is the number of long integer operations computed during the execution (additions and multiplications), $t$ [s]  is the elapsed time. For more realistic comparison the execution time for GPU contains the memory  transfer. 
 
 Figure \ref{ResME} presents the performance of a dense and triangular polynomials inner products. It compares our CPU library to GMP (where polynomials are  instantiated with VLI or GMP). We get an excellent speed-up factor from 4 to 11, for three reasons.
-Coefficients of the  polynomial are allocated in one large block on the heap, while in the case of GMP, each coefficient needs to be allocated independently. It is well known that better performances are obtained with less dynamic memory allocations. The second reason is that  the meta-programming allows the construction of a specific solver for every type of large integer during the compilation, thus, we do not have a universal solver, the solver being unique with the maximum optimizations. Thirdly, the operations are performed in the registers only, no stack call.
-%TODO what do you mean by the last sentence?
+Coefficients of the  polynomial are allocated in one large block on the heap, while in the case of GMP, each coefficient needs to be allocated independently. It is well known that better performances are obtained with less dynamic memory allocations. The second reason is that  the meta-programming allows the construction of a specific solver for every type of large integer during the compilation, thus, we do not have a universal solver, the solver being unique with the maximum optimizations. Thirdly, the datas stay in the registers during an arithmetic operation.
   
 The GPU curves show again an excellent speed up  factor of 10 to 60 maximum, compared to GMP, but with an interesting feature. 
 For both kinds of polynomials, the performance for one variable is low, because we have a small number of threads during the execution of the GPU algorithms.
