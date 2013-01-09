@@ -24,6 +24,22 @@ namespace detail {
             return new linear_mps_init<Matrix>();
         }
     };
+
+    template <class Matrix, class SymmGroup>
+    struct call_hf_init {
+        static mps_initializer<Matrix, SymmGroup> * call(BaseParameters & params)
+        {
+            throw std::runtime_error("HF MPS init is available only for TwoU1 symmetry group.");
+            return new default_mps_init<Matrix, SymmGroup>();
+        }
+    };
+    template <class Matrix>
+    struct call_hf_init<Matrix, TwoU1> {
+        static mps_initializer<Matrix, TwoU1> * call(BaseParameters & params)
+        {
+            return new hf_mps_init<Matrix>(params);
+        }
+    }; 
     
 }
 
@@ -382,6 +398,8 @@ mps_initializer<Matrix, SymmGroup> * sim<Matrix, SymmGroup>::initializer_factory
         return new thin_mps_init<Matrix, SymmGroup>();
     else if (params.get<std::string>("init_state") == "thin_const")
         return new thin_const_mps_init<Matrix, SymmGroup>();
+    else if (params.get<std::string>("init_state") == "hf")
+        return detail::call_hf_init<Matrix, SymmGroup>::call(params);
     else {
         throw std::runtime_error("Don't know this initial state.");
         return NULL;
