@@ -40,6 +40,7 @@
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
+#include "dmrg/models/chem/mps_init_hf.hpp"
 
 #include "dmrg/utils/stream_storage.h"
 #include "dmrg/utils/logger.h"
