@@ -201,25 +201,26 @@ namespace meas_detail {
             		 hopto != neighs.end();
             		 ++hopto)
             	{
-					generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
-					generate_mpo::Operator_Term<Matrix, SymmGroup> term;
-					term.operators.push_back( std::make_pair(p, ops[0].first) );
-					term.operators.push_back( std::make_pair(*hopto, ops[1].first) );
-					term.fill_operator = (ops[0].second) ? fill : identity;
-					mpom.add_term(term);
-					MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
+                    generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
+                    generate_mpo::Operator_Term<Matrix, SymmGroup> term;
+                    term.operators.push_back( std::make_pair(p, ops[0].first) );
+                    term.operators.push_back( std::make_pair(*hopto, ops[1].first) );
+                    term.fill_operator = (ops[0].second) ? fill : identity;
+                    mpom.add_term(term);
+                    MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
                     
-					typename MPS<Matrix, SymmGroup>::scalar_type val;
-                    if (!super_meas)
-                        val = expval(mps, mpo);
-					else {
+                    // C - Tim, no futur, if disagree -> Alex must fix futur stuff
+                    if (!super_meas){
+			typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo);
+                        vals.push_back(val);
+		    }else {
                         Index<SymmGroup> phys_i = identity.left_basis();
                         MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
-                        val = overlap(super_mpo, mps);
+			typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(super_mpo, mps);
+                        vals.push_back(val);
                     }
                     
-                    vals.push_back(val);
-					labels.push_back(lat.get_prop<std::string>("label", p, *hopto));
+	    	    labels.push_back(lat.get_prop<std::string>("label", p, *hopto));
             	}
             }
         }
@@ -263,19 +264,37 @@ namespace meas_detail {
             ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<double>(1, val));
         }
     }
-    
+ 
+        // C - Tim, I add one layer of wrapper for the compatibility with the futur stuff
+	template<class Matrix, class SymmGroup>
+	void save_helper(typename MPS<Matrix, SymmGroup>::scalar_type const& val,
+    		         std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
+                         std::string const & h5name,
+                         std::string base_path){
+            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+            if ( all_true(ops.begin(), ops.end(), boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian), 
+                                                              boost::bind<block_matrix<Matrix, SymmGroup> const&>(&std::pair<block_matrix<Matrix, SymmGroup>, bool>::first, _1))
+                          ) ) {
+                std::vector<double> tmp(1, maquis::real(val));
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
+            } else
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<typename MPS<Matrix, SymmGroup>::scalar_type>(1, val));
+        }
+
+   
 	template<class Matrix, class SymmGroup>
 	void measure_average(MPS<Matrix, SymmGroup> const & mps,
                          const Lattice & lat,
                          block_matrix<Matrix, SymmGroup> const & identity,
                          block_matrix<Matrix, SymmGroup> const & fill,
-						 std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
+    		         std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
                          std::string const & h5name,
                          std::string base_path,
                          bool super_meas = false)
 	{
         generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
-		for (std::size_t p = 0; p < lat.size(); ++p)
+
+	for (std::size_t p = 0; p < lat.size(); ++p)
         {
             generate_mpo::Operator_Term<Matrix, SymmGroup> term;
             term.operators.push_back( std::make_pair(p, ops[0].first) );
@@ -294,27 +313,20 @@ namespace meas_detail {
 
             }
         }
+
         MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-        
-        typename MPS<Matrix, SymmGroup>::scalar_type val;
-        if (!super_meas)
-            val = expval(mps, mpo);
-        else {
+       
+        // C - Tim, no futur, if disagree -> Alex must fix futur 
+        if (!super_meas){
+            typename MPS<Matrix, SymmGroup>::scalar_type  val = expval(mps, mpo);
+            save_helper<Matrix, SymmGroup>(val, ops, h5name, base_path); 
+        } else {
             Index<SymmGroup> phys_i = identity.left_basis();
             MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
-            val = overlap(super_mpo, mps);
+            typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(super_mpo, mps);
+            save_helper<Matrix, SymmGroup>(val, ops, h5name, base_path); 
         }
 
-        {
-            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            if ( all_true(ops.begin(), ops.end(), boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian), 
-                                                              boost::bind<block_matrix<Matrix, SymmGroup> const&>(&std::pair<block_matrix<Matrix, SymmGroup>, bool>::first, _1))
-                          ) ) {
-                std::vector<double> tmp(1, maquis::real(val));
-                ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
-            } else
-                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<typename MPS<Matrix, SymmGroup>::scalar_type>(1, val));
-        }
 	}
     
 	template<class Matrix, class SymmGroup>
