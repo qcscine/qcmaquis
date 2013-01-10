@@ -29,7 +29,7 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
     
     // computing new left_i
     ret.left_i = m1.left_i;
-    if (boundary_f != l_boundary_f)
+    if (boundary_f != l_boundary_f) {
         for (typename Index<SymmGroup>::const_iterator it = m2.left_i.begin();
              it != m2.left_i.end(); ++it) {
             if (ret.left_i.has(it->first))
@@ -37,10 +37,11 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
             else
                 ret.left_i.insert(*it);
         }
+    }
     
     // computing new right_i
     ret.right_i = m1.right_i;
-    if (boundary_f != r_boundary_f)
+    if (boundary_f != r_boundary_f) {
         for (typename Index<SymmGroup>::const_iterator it = m2.right_i.begin();
              it != m2.right_i.end(); ++it) {
             if (ret.right_i.has(it->first))
@@ -48,6 +49,7 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
             else
                 ret.right_i.insert(*it);
         }
+    }
     
     ProductBasis<SymmGroup> out_left_pb(phys_i, ret.left_i);
     Index<SymmGroup> const& out_right = ret.right_i;
@@ -74,7 +76,7 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
             size_t out_r_offset = 0;
             if (t == 1 && boundary_f != r_boundary_f)
                 out_r_offset += m1.col_dim().size_of_block(r_charge, true);
-                
+            
             for (size_t s=0; s<phys_i.size(); ++s) {
                 typename SymmGroup::charge const& s_charge = phys_i[s].first;
                 typename SymmGroup::charge l_charge = SymmGroup::fuse(sl_charge, -s_charge); // left
@@ -85,15 +87,19 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
                 size_t in_l_size = m.row_dim().size_of_block(l_charge, true);
                 size_t in_l_offset = in_left(s_charge, l_charge);
 
+                size_t out_l_size = ret.row_dim().size_of_block(l_charge, true);
                 size_t out_l_offset = out_left_pb(s_charge, l_charge);
                 if (t == 1 && boundary_f != l_boundary_f)
                     out_l_offset += m1.row_dim().size_of_block(l_charge, true);
+                
+                for (size_t ss=0; ss<phys_i[s].second; ++ss) {
 #ifdef USE_AMBIENT
-    assert(false);              
+    assert(false);
 #else
-                maquis::dmrg::detail::copy2d(nb, out_l_offset, out_r_offset, m.data()[b], in_l_offset, 0,
-                                             in_l_size, in_r_size);
+                    maquis::dmrg::detail::copy2d(nb, out_l_offset+ss*out_l_size, out_r_offset, m.data()[b], in_l_offset+ss*in_l_size, 0,
+                                                 in_l_size, in_r_size);
 #endif
+                }
             }
         }
     }
