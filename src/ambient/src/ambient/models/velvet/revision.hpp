@@ -8,8 +8,8 @@ namespace ambient { namespace models { namespace velvet {
         ambient::static_memory::free<revision>(ptr);
     }
 
-    inline revision::revision(memspec* spec, void* g)
-    : spec(spec), generator(g), users(0)
+    inline revision::revision(size_t extent, void* g)
+    : extent(extent), generator(g), users(0)
     {
         state = (generator == NULL) ? PURE : VOID;
         header = data = NULL;

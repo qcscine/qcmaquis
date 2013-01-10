@@ -183,6 +183,19 @@ namespace ambient { namespace numeric {
         return *this;
     }
 
+#if 0
+    template <class Matrix>
+    inline tiles<Matrix>::tiles(tiles&& a){
+        this->swap(a);
+    }
+
+    template <class Matrix>
+    tiles<Matrix>& tiles<Matrix>::operator = (tiles&& rhs){
+        this->swap(rhs);
+        return *this;
+    }
+#endif
+
     template <class Matrix>
     tiles<Matrix>::~tiles(){
         int size = this->data.size();
@@ -388,6 +401,19 @@ namespace ambient { namespace numeric {
         this->swap(c);
         return *this;
     }
+
+#if 0
+    template <typename T>
+    inline tiles<diagonal_matrix<T> >::tiles(tiles&& a){
+        this->swap(a);
+    }
+
+    template <typename T>
+    tiles<diagonal_matrix<T> >& tiles<diagonal_matrix<T> >::operator = (tiles&& rhs){
+        this->swap(rhs);
+        return *this;
+    }
+#endif
 
     template <typename T>
     tiles<diagonal_matrix<T> >::~tiles(){

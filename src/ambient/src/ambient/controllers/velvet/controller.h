@@ -10,9 +10,7 @@
 
 namespace ambient { namespace controllers { namespace velvet {
 
-    using ambient::models::velvet::history;
     using ambient::models::velvet::revision;
-    using ambient::models::velvet::memspec;
 
     class controller : public singleton< controller >
     {

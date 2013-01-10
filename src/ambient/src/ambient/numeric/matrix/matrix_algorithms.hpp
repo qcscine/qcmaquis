@@ -396,49 +396,49 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline void copy(matrix<T>& dst, const matrix<T>& src){ 
-        kernels::copy<T>::spawn(dst, src); 
+    inline void copy(const matrix<T>& src, matrix<T>& dst){
+        ambient::fuse(src.impl, dst.impl);
     }
 
     template<typename T>
-    inline void copy(matrix<T>& dst, size_t di, size_t dj, 
-                     const matrix<T>& src, size_t si, size_t sj, 
-                     size_t m, size_t n)
+    inline void copy(const matrix<T>& src, size_t si, size_t sj, 
+                        matrix<T>& dst, size_t di, size_t dj, 
+                        size_t m, size_t n)
     {
-        kernels::copy_partial<T>::spawn(dst, di, dj, src, si, sj, m, n); 
+        kernels::copy_partial<T>::spawn(src, si, sj, dst, di, dj, m, n); 
     }
 
     template<PLASMA_enum UL, typename T>
-    inline void copy_band(matrix<T>& dst, size_t dj, const matrix<T>& src){
-        kernels::copy_band<T,UL>::spawn(dst, dj, src);
+    inline void copy_band(const matrix<T>& src, matrix<T>& dst, size_t dj){
+        kernels::copy_band<T,UL>::spawn(src, dst, dj);
     }
 
     template<typename T>
-    inline void copy_rt(matrix<T>& dst, const matrix<T>& src){ 
-        kernels::copy_rt<T>::spawn(dst, src);
+    inline void copy_rt(const matrix<T>& src, matrix<T>& dst){ 
+        kernels::copy_rt<T>::spawn(src, dst);
     }
 
     template<typename T>
-    inline void copy_lt(matrix<T>& dst, const matrix<T>& src){ 
-        kernels::copy_lt<T>::spawn(dst, src);
+    inline void copy_lt(const matrix<T>& src, matrix<T>& dst){ 
+        kernels::copy_lt<T>::spawn(src, dst);
     }
 
     template<typename T>
-    inline void copy_s(matrix<T>& dst, size_t di, size_t dj, 
-                       const matrix<T>& src, size_t si, size_t sj, 
-                       const matrix<T>& alfa, size_t ai, size_t aj,
-                       size_t m, size_t n)
+    inline void copy_s(const matrix<T>& src, size_t si, size_t sj, 
+                          matrix<T>& dst, size_t di, size_t dj, 
+                          const matrix<T>& alfa, size_t ai, size_t aj,
+                          size_t m, size_t n)
     { 
-        kernels::copy_s<T>::spawn(dst, di, dj, src, si, sj, alfa, ai, aj, m, n);
+        kernels::copy_s<T>::spawn(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
     }
 
     template<typename T>
-    inline void copy_sa(matrix<T>& dst, size_t di, size_t dj, 
-                        const matrix<T>& src, size_t si, size_t sj, 
-                        const matrix<T>& alfa, size_t ai, size_t aj,
-                        size_t m, size_t n)
+    inline void copy_sa(const matrix<T>& src, size_t si, size_t sj, 
+                           matrix<T>& dst, size_t di, size_t dj, 
+                           const matrix<T>& alfa, size_t ai, size_t aj,
+                           size_t m, size_t n)
     { 
-        kernels::copy_sa<T>::spawn(dst, di, dj, src, si, sj, alfa, ai, aj, m, n);
+        kernels::copy_sa<T>::spawn(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
     }
 
     template<typename T>

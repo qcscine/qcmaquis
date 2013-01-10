@@ -145,7 +145,7 @@ namespace ambient { namespace numeric {
     template <typename T>
     inline matrix<T>::matrix(const matrix& a){
         this->impl = new I(a.impl->spec.dim, sizeof(T));
-        copy(*this, a);
+        ambient::fuse(a.impl, this->impl);
     }
     
     template <typename T>
@@ -156,10 +156,11 @@ namespace ambient { namespace numeric {
         return *this;
     }
 
-#ifdef RVALUE
+#if 0
     template <typename T>
     inline matrix<T>::matrix(matrix&& a){
-        this->impl = a.impl;
+        printf("ERROR: NOT TESTED (RVALUE COPY)\n");
+        this->impl = a.impl; // need to clear a.impl
     }
 
     template <typename T>
@@ -224,7 +225,7 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void matrix<T>::swap(matrix& r){ 
-        std::swap(this->impl, r.impl);       
+        std::swap(this->impl, r.impl);
     }
 
     template<typename T>
@@ -285,12 +286,14 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline value_type& matrix<T>::operator() (size_type i, size_type j){
-        ambient::sync(); ambient::controller.sync(*impl->current); return ((value_type*)*impl->current)[ j*impl->spec.dim.y + i ];
+        if(impl->weak()) impl->add_state(NULL);
+        ambient::sync(); ambient::controller.sync(*impl->current); return ((value_type*)*(c_revision*)impl->current)[ j*impl->spec.dim.y + i ];
     }
 
     template<typename T>
     inline const value_type& matrix<T>::operator() (size_type i, size_type j) const {
-        ambient::sync(); ambient::controller.sync(*impl->current); return ((value_type*)*impl->current)[ j*impl->spec.dim.y + i ];
+        if(impl->weak()) return value_type();
+        ambient::sync(); ambient::controller.sync(*impl->current); return ((value_type*)*(c_revision*)impl->current)[ j*impl->spec.dim.y + i ];
     }
 
     template<typename T>

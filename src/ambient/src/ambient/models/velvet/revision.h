@@ -8,7 +8,7 @@ namespace ambient { namespace models { namespace velvet {
     class revision
     {
     public:
-        revision(memspec*, void* g);
+        revision(size_t extent, void* g);
         void* operator new (size_t size);
         void  operator delete (void* ptr);
         template<typename T> operator T* (){ return (T*)data; }
@@ -25,7 +25,7 @@ namespace ambient { namespace models { namespace velvet {
         bool origin();
         bool valid();
 
-        memspec*  spec;
+        size_t    extent;
         revision* parent;
         void*     generator;
         void*     header;

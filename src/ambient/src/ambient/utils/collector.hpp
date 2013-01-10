@@ -21,8 +21,15 @@ namespace ambient{
 
     inline void collector::delete_ptr::operator()( history* element ) const {
         int size = element->content.size();
-        for(int i = 0; i < size; i++) ambient::controller.free(*element->content[i]);
-        for(int i = 0; i < size; i++) ambient::static_memory::free<revision>(element->content[i]); 
+        for(int i = 0; i < size; i++){
+            revision* r = element->content[i];
+            if(r->locked()){
+                r->release();
+            }else{
+                ambient::controller.free(*r);
+                ambient::static_memory::free<revision>(r); 
+            }
+        }
         delete element;
     }
 

@@ -24,10 +24,10 @@ namespace ambient {
     template<typename FP, FP fp> struct kernel_inliner{};
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
 
-    template <typename T> static inline revision&     current(T& obj){ return *(revision  *)obj.impl->content[obj.ref];   }
+    template <typename T> static inline revision&     naked(T& obj)  { return *(revision*)obj.impl->content[obj.ref];     }
+    template <typename T> static inline c_revision&   current(T& obj){ return *(c_revision*)obj.impl->content[obj.ref];   }
     template <typename T> static inline w_revision&   updated(T& obj){ return *(w_revision*)obj.impl->content[obj.ref+1]; }
     // supplementary revision modes: checked current (calloc), same updated (memcpy), purged updated (memset)
-    template <typename T> static inline c_revision& c_current(T& obj){ return *(c_revision*)obj.impl->content[obj.ref];   }
     template <typename T> static inline s_revision& s_updated(T& obj){ return *(s_revision*)obj.impl->content[obj.ref+1]; }
     template <typename T> static inline p_revision& p_updated(T& obj){ return *(p_revision*)obj.impl->content[obj.ref+1]; }
 

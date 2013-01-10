@@ -44,15 +44,15 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::alloc(revision& r){
-        r.embed(ambient::range_pool.malloc(r.spec->size + BOUND), BOUND);
+        r.embed(ambient::range_pool.malloc(r.extent + BOUND), BOUND);
     }
 
     inline void controller::calloc(revision& r){
-        alloc(r); memset(r.data, 0, r.spec->size);
+        alloc(r); memset(r.data, 0, r.extent);
     }
 
     inline void controller::free(revision& r){
-        return ambient::range_pool.free(r.header, r.spec->size + BOUND);
+        return ambient::range_pool.free(r.header, r.extent + BOUND);
     }
 
     inline void controller::sync(revision& r, size_t target){
@@ -60,12 +60,12 @@ namespace ambient { namespace controllers { namespace velvet {
         if(ambient::rank() != target && !r.valid())  return;
         
         if(r.remote()){ alloc(r); r.state = revision::WAIT; }
-        channel.replicate(channels::mpi::vbp::instance(r.header, r.spec->size, target));*/
+        channel.replicate(channels::mpi::vbp::instance(r.header, r.extent, target));*/
     }
 
     inline void controller::sync(revision& r){
         /*if(!r.origin()){ alloc(r); r.state = revision::WAIT; }
-        channel.broadcast( channels::mpi::vbp::instance(r.header, r.spec->size, ambient::rank()), r.origin() );*/
+        channel.broadcast( channels::mpi::vbp::instance(r.header, r.extent, ambient::rank()), r.origin() );*/
     }
 
     template<typename T> void controller::destroy(T* o){

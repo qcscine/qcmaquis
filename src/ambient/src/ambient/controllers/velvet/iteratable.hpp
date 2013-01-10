@@ -15,7 +15,7 @@ namespace ambient { namespace controllers { namespace velvet {
             ambient::controller.calloc(c);
         }else if(p.locked()){
             ambient::controller.alloc(c);
-            memcpy((T*)c, (T*)p, p.spec->size);
+            memcpy((T*)c, (T*)p, p.extent);
         }else{
             c.reuse(p);
         }
@@ -32,7 +32,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
     template<typename T>
     inline p_revision::operator T* (){
-        memset((T*)*(w_revision*)this, 0, ((revision*)this)->spec->size); 
+        memset((T*)*(w_revision*)this, 0, ((revision*)this)->extent); 
         return (T*)*(revision*)this;
     }
     
