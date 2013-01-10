@@ -311,6 +311,23 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     template<class MatrixB>
+    inline tiles<Matrix>::operator tiles<MatrixB> () const {
+        tiles<MatrixB> c;
+        std::vector<MatrixB*> data;
+        data.reserve(this->mt*this->nt);
+        for(int j = 0; j < this->nt; j++)
+            for(int i = 0; i < this->mt; i++)
+                data.push_back(new MatrixB((MatrixB)this->tile(i,j)));
+        std::swap(c.data, data);
+        c.rows = this->num_rows();
+        c.cols = this->num_cols();
+        c.mt   = this->mt;
+        c.nt   = this->nt;
+        return c;
+    }
+
+    template<class Matrix>
+    template<class MatrixB>
     inline tiles<Matrix>& tiles<Matrix>::operator += (const tiles<MatrixB>& rhs){
         add_inplace(*this, rhs);
         return *this;

@@ -22,7 +22,7 @@ namespace ambient { namespace numeric {
         explicit tiles(size_type rows, size_type cols, value_type init_value = value_type());
         tiles<subset_view<Matrix> > subset(size_type i, size_type j, size_type mt, size_type nt) const;
         tiles(const tiles& a);
-        tiles& operator = (const tiles& rhs); 
+        tiles& operator = (const tiles& rhs);
         size_type num_rows() const;
         size_type num_cols() const;
         scalar_type trace() const;
@@ -40,6 +40,7 @@ namespace ambient { namespace numeric {
         size_t addr(size_type i, size_type j) const;
         Matrix& operator[] (size_type k);
         const Matrix& operator[] (size_type k) const;
+        template <class MatrixB> operator tiles<MatrixB> () const;
         template <class MatrixB> tiles& operator += (const tiles<MatrixB>& rhs);
         template <class MatrixB> tiles& operator -= (const tiles<MatrixB>& rhs);
         template <typename T2> tiles& operator *= (const T2& t);

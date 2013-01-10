@@ -45,8 +45,10 @@ namespace ambient { namespace numeric {
     }
 
     template <class Matrix>
-    transpose_view<Matrix>::operator Matrix () const { 
-        return transpose(Matrix(this->impl)); 
+    transpose_view<Matrix>::operator Matrix () const {
+        Matrix t(Matrix(this->impl,0));
+        transpose_inplace(t); 
+        return t;
     }
 
     template<class Matrix>
