@@ -18,11 +18,19 @@ namespace ambient {
     template <typename T>
     class future {
     private:
-        future(){}
         template<typename S> inline future& operator = (const S& v){ }
     public:
         typedef void* ptr;
         typedef T value_type;
+
+        future()
+        : symlink(false)
+        {
+            printf("ambient::future$ used default constructor\n");
+            ghost = ambient::static_memory::malloc<FUTURE_SIZE>();
+            value = (T*)ghost;
+           *value = T();
+        }
 
         explicit inline future(const ptr& p)
         : ghost(p), value((T*)p), symlink(true)
@@ -73,7 +81,7 @@ namespace ambient {
             value = (T*)ghost;
         }
 
-        inline future& operator = (future&& f){ 
+        inline future& operator = (future&& f){
             f.symlink = true;
             ghost = f.ghost;
             value = (T*)ghost;
@@ -151,17 +159,17 @@ namespace ambient {
     }
 
     template<typename T>
-    inline const T operator / (std::complex<double> lhs, const future<T>& rhs){ 
+    inline const T operator / (std::complex<double> lhs, const future<T>& rhs){
         return (lhs / rhs.calc_value()); 
     }
 
     template<typename T>
-    inline T operator / (const future<T>& lhs, const future<T>& rhs){ 
+    inline T operator / (const future<T>& lhs, const future<T>& rhs){
         return (lhs.calc_value() / rhs.calc_value()); 
     }
 
     template<typename T>
-    inline const future<T> operator + (const future<T>& lhs, const future<T>& rhs){ 
+    inline const future<T> operator + (const future<T>& lhs, const future<T>& rhs){
         return future<T>(lhs.calc_value() + rhs.calc_value()); // explicit
     }
 

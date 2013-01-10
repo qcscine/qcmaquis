@@ -35,7 +35,7 @@ namespace ambient { namespace numeric {
         explicit matrix(size_type rows, size_type cols, value_type init_value = value_type()); 
         matrix(const matrix& a);
         matrix& operator = (const matrix& rhs); 
-#ifdef RVALUE
+#if 0
         matrix(matrix&& a); 
         matrix& operator = (matrix&& rhs);
 #endif

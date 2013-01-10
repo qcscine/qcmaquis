@@ -85,7 +85,7 @@ namespace ambient { namespace numeric {
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
                 Matrix& dst = *split[i+j*a.mt];
-                copy(dst, 0, 0, *src, i*AMBIENT_IB, j*AMBIENT_IB, dst.num_rows(), dst.num_cols());
+                copy(*src, i*AMBIENT_IB, j*AMBIENT_IB, dst, 0, 0, dst.num_rows(), dst.num_cols());
             }
         }
 
@@ -115,7 +115,7 @@ namespace ambient { namespace numeric {
         if(!a[0].get_data().impl->weak())
         for(int i = 0; i < a.nt; i++){
             diagonal_matrix<T>& dst = *split[i];
-            copy(dst.get_data(), 0, 0, src->get_data(), i*AMBIENT_IB, 0, dst.num_rows(), 1);
+            copy(src->get_data(), i*AMBIENT_IB, 0, dst.get_data(), 0, 0, dst.num_rows(), 1);
         }
 
         delete src;
@@ -129,7 +129,7 @@ namespace ambient { namespace numeric {
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
                 const Matrix* src = &a.tile(i,j);
-                copy(*m, i*AMBIENT_IB, j*AMBIENT_IB, *src, 0, 0, src->num_rows(), src->num_cols());
+                copy(*src, 0, 0, *m, i*AMBIENT_IB, j*AMBIENT_IB, src->num_rows(), src->num_cols());
             }
         }
         return m;
@@ -148,7 +148,7 @@ namespace ambient { namespace numeric {
             for(int i = 0; i < a.mt; i++){
                 const Matrix* src = &a.tile(i,j);
                 if(!src->impl->weak())
-                copy(*m[0], i*AMBIENT_IB, j*AMBIENT_IB, *src, 0, 0, src->num_rows(), src->num_cols());
+                copy(*src, 0, 0, *m[0], i*AMBIENT_IB, j*AMBIENT_IB, src->num_rows(), src->num_cols());
                 delete src;
             }
         }
@@ -180,7 +180,7 @@ namespace ambient { namespace numeric {
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
                 Matrix& dst = *split[i+j*a.mt];
-                copy(dst, 0, 0, *src, i*AMBIENT_IB, j*AMBIENT_IB, dst.num_rows(), dst.num_cols());
+                copy(*src, i*AMBIENT_IB, j*AMBIENT_IB, dst, 0, 0, dst.num_rows(), dst.num_cols());
             }
         }
 
@@ -199,7 +199,7 @@ namespace ambient { namespace numeric {
         for(int i = 0; i < a.nt; i++){
             const diagonal_matrix<T>* src = a.data[i];
             if(!src->get_data().impl->weak())
-            copy(m[0]->get_data(), i*AMBIENT_IB, 0, src->get_data(), 0, 0, src->num_rows(), 1);
+            copy(src->get_data(), 0, 0, m[0]->get_data(), i*AMBIENT_IB, 0, src->num_rows(), 1);
             delete src;
         }
         std::swap(const_cast<std::vector<diagonal_matrix<T>*>&>(a.data), m);
@@ -223,7 +223,7 @@ namespace ambient { namespace numeric {
         if(!a[0].get_data().impl->weak())
         for(int i = 0; i < a.nt; i++){
             diagonal_matrix<T>& dst = *split[i];
-            copy(dst.get_data(), 0, 0, src->get_data(), i*AMBIENT_IB, 0, dst.num_rows(), 1);
+            copy(src->get_data(), i*AMBIENT_IB, 0, dst.get_data(), 0, 0, dst.num_rows(), 1);
         }
 
         delete src;
@@ -232,45 +232,45 @@ namespace ambient { namespace numeric {
     // }}}
 
     template<class MatrixA, class MatrixB>
-    inline void copy(tiles<MatrixA>& out, size_t oi, size_t oj, 
-                     const tiles<MatrixB>& in, size_t ii, size_t ij,
-                     size_t m, size_t n)
-    {
-        for(cross_iterator row(oi,ii,m); !row.end(); ++row)
-        for(cross_iterator col(oj,ij,n); !col.end(); ++col)
-        copy(out.locate(row.first, col.first), row.first%AMBIENT_IB, col.first%AMBIENT_IB, 
-             in.locate(row.second, col.second), row.second%AMBIENT_IB, col.second%AMBIENT_IB,
-             row.step, col.step);
-    }
-
-    template<class Matrix>
-    inline void copy_s(tiles<Matrix>& out, size_t oi, size_t oj, 
-                       const tiles<Matrix>& in, size_t ii, size_t ij,
-                       const tiles<Matrix>& alfa, size_t ai, size_t aj,
-                       size_t m, size_t n)
-    {
-        const Matrix& factor = alfa.locate(ai, aj); 
-        ai %= AMBIENT_IB; aj %= AMBIENT_IB;
-        for(cross_iterator row(oi,ii,m); !row.end(); ++row)
-        for(cross_iterator col(oj,ij,n); !col.end(); ++col)
-        copy_s(out.locate(row.first, col.first), row.first%AMBIENT_IB, col.first%AMBIENT_IB, 
-               in.locate(row.second, col.second), row.second%AMBIENT_IB, col.second%AMBIENT_IB,
-               factor, ai, aj, row.step, col.step);
-    }
-
-    template<class Matrix>
-    inline void copy_sa(tiles<Matrix>& out, size_t oi, size_t oj, 
-                        const tiles<Matrix>& in, size_t ii, size_t ij,
-                        const tiles<Matrix>& alfa, size_t ai, size_t aj,
+    inline void copy(const tiles<MatrixB>& in, size_t ii, size_t ij,
+                        tiles<MatrixA>& out, size_t oi, size_t oj, 
                         size_t m, size_t n)
     {
+        for(cross_iterator row(oi,ii,m); !row.end(); ++row)
+        for(cross_iterator col(oj,ij,n); !col.end(); ++col)
+        copy(in.locate(row.second, col.second), row.second%AMBIENT_IB, col.second%AMBIENT_IB,
+                out.locate(row.first, col.first), row.first%AMBIENT_IB, col.first%AMBIENT_IB, 
+                row.step, col.step);
+    }
+
+    template<class Matrix>
+    inline void copy_s(const tiles<Matrix>& in, size_t ii, size_t ij,
+                          tiles<Matrix>& out, size_t oi, size_t oj, 
+                          const tiles<Matrix>& alfa, size_t ai, size_t aj,
+                          size_t m, size_t n)
+    {
         const Matrix& factor = alfa.locate(ai, aj); 
         ai %= AMBIENT_IB; aj %= AMBIENT_IB;
         for(cross_iterator row(oi,ii,m); !row.end(); ++row)
         for(cross_iterator col(oj,ij,n); !col.end(); ++col)
-        copy_sa(out.locate(row.first, col.first), row.first%AMBIENT_IB, col.first%AMBIENT_IB, 
-                in.locate(row.second, col.second), row.second%AMBIENT_IB, col.second%AMBIENT_IB,
-                factor, ai, aj, row.step, col.step);
+        copy_s(in.locate(row.second, col.second), row.second%AMBIENT_IB, col.second%AMBIENT_IB,
+                  out.locate(row.first, col.first), row.first%AMBIENT_IB, col.first%AMBIENT_IB, 
+                  factor, ai, aj, row.step, col.step);
+    }
+
+    template<class Matrix>
+    inline void copy_sa(const tiles<Matrix>& in, size_t ii, size_t ij,
+                           tiles<Matrix>& out, size_t oi, size_t oj, 
+                           const tiles<Matrix>& alfa, size_t ai, size_t aj,
+                           size_t m, size_t n)
+    {
+        const Matrix& factor = alfa.locate(ai, aj); 
+        ai %= AMBIENT_IB; aj %= AMBIENT_IB;
+        for(cross_iterator row(oi,ii,m); !row.end(); ++row)
+        for(cross_iterator col(oj,ij,n); !col.end(); ++col)
+        copy_sa(in.locate(row.second, col.second), row.second%AMBIENT_IB, col.second%AMBIENT_IB,
+                   out.locate(row.first, col.first), row.first%AMBIENT_IB, col.first%AMBIENT_IB, 
+                   factor, ai, aj, row.step, col.step);
     }
 
     template<class MatrixA, class MatrixB, class MatrixC>
@@ -440,18 +440,18 @@ namespace ambient { namespace numeric {
         Matrix* c;
         if(a.num_rows() >= a.num_cols()){
             c = new Matrix(std::min((size_t)(AMBIENT_IB+1),a.num_cols()),a.num_cols());
-            copy_band<PlasmaUpper>(*c, 0, a.tile(0,0));
+            copy_band<PlasmaUpper>(a.tile(0,0), *c, 0);
             for(int j = 1; j < a.nt; j++){
-                copy_band<PlasmaLower>(*c, AMBIENT_IB*j, a.tile(j-1,j));
-                copy_band<PlasmaUpper>(*c, AMBIENT_IB*j, a.tile(j,j));
+                copy_band<PlasmaLower>(a.tile(j-1,j), *c, AMBIENT_IB*j);
+                copy_band<PlasmaUpper>(a.tile(j,j),   *c, AMBIENT_IB*j);
             }
         }else{
             c = new Matrix(std::min((size_t)(AMBIENT_IB+1),a.num_rows()),a.num_rows());
             for(int j = 0; j < a.mt-1; j++){
-                copy_band<PlasmaLower>(*c, AMBIENT_IB*j, a.tile(j,j));
-                copy_band<PlasmaUpper>(*c, AMBIENT_IB*j, a.tile(j+1,j));
+                copy_band<PlasmaLower>(a.tile(j,j),   *c, AMBIENT_IB*j);
+                copy_band<PlasmaUpper>(a.tile(j+1,j), *c, AMBIENT_IB*j);
             }
-            copy_band<PlasmaLower>(*c, AMBIENT_IB*(a.mt-1), a.tile(a.mt-1,a.mt-1));
+            copy_band<PlasmaLower>(a.tile(a.mt-1,a.mt-1), *c, AMBIENT_IB*(a.mt-1));
         }
         tiles<Matrix> t(c);
         a.swap(t);
@@ -599,7 +599,7 @@ namespace ambient { namespace numeric {
                 scale(y, i+1, i, tq, i, i);
 
                 // synchronizing stripes
-                copy(sax, 0, 0, say, 0, 0, num_rows(sax), num_cols(say));
+                copy(say, 0, 0, sax, 0, 0, num_rows(sax), num_cols(say));
         
                 gemv<-1,1>(y,                                      i+1, 0, //
                            transpose(sax),                         0,   i, // only 2 horizontal blocks
@@ -612,7 +612,7 @@ namespace ambient { namespace numeric {
                                                                            //
                 larfg<PlasmaTrans>(sax, tp, e, i);                         //
         
-                copy(say, 0, 0, sax, 0, 0, num_rows(sax), num_cols(say));
+                copy(sax, 0, 0, say, 0, 0, num_rows(sax), num_cols(say));
                 // synchronizing stripes
 
                 // --------------------- BIG ONE -------------------------
@@ -675,9 +675,9 @@ namespace ambient { namespace numeric {
             plabrd(a.subset(k, k, a.mt-k, a.nt-k), say, sax, d[k], e[k], tq[k], tp[k], x, y);
 
             for(int i = k+1; i < a.mt; i++)
-                copy(a.tile(i,k), 0, 0, say, (i-k)*AMBIENT_IB, 0, a.tile(i,k).num_rows(), a.tile(i,k).num_cols());
+                copy(say, (i-k)*AMBIENT_IB, 0, a.tile(i,k), 0, 0, a.tile(i,k).num_rows(), a.tile(i,k).num_cols());
             for(int j = k+1; j < a.nt; j++)
-                copy(a.tile(k,j), 0, 0, sax, 0, (j-k)*AMBIENT_IB, a.tile(k,j).num_rows(), a.tile(k,j).num_cols());
+                copy(sax, 0, (j-k)*AMBIENT_IB, a.tile(k,j), 0, 0, a.tile(k,j).num_rows(), a.tile(k,j).num_cols());
 
             delete &say;
             delete &sax;
@@ -821,10 +821,10 @@ namespace ambient { namespace numeric {
         // restoring R from A //
         for(int j = 0; j < a.nt; j++)
         for(int i = 0; i < j && i < std::min(a.mt, a.nt); i++)
-            copy(r.tile(i,j), a.tile(i,j));
+            copy(a.tile(i,j), r.tile(i,j));
         
         for(int k = 0; k < std::min(a.mt, a.nt); k++)
-            copy_rt(r.tile(k,k), a.tile(k,k));
+            copy_rt(a.tile(k,k), r.tile(k,k));
         
         // restoring Q from T //
         // do we need to memset Q first?
@@ -868,10 +868,10 @@ namespace ambient { namespace numeric {
         // restoring L from A //
         for(int j = 0; j < std::min(a.mt, a.nt); ++j)
         for(int i = j+1; i < a.mt; ++i)
-            copy(l.tile(i,j), a.tile(i,j));
+            copy(a.tile(i,j), l.tile(i,j));
         
         for(int k = 0; k < std::min(a.mt, a.nt); k++)
-            copy_lt(l.tile(k,k), a.tile(k,k));
+            copy_lt(a.tile(k,k), l.tile(k,k));
         
         // restoring Q from T //
         // do we need to memset Q first?
