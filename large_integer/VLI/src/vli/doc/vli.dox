@@ -1,0 +1,15 @@
+
+/*!
+  \mainpage Very large integer notice
+ 
+  \section Introduction
+
+  The main purpose of the  Very Large Integer (VLI/C++) library is to perform large integer arithmetic and  inner products of polynomials. Based on meta-programming of assembly language,
+  and  hybrid (CPU/GPU) mode, it performs inner products of dense and triangular polynomials  of 1 to 4 variables  up to order 14 where the coefficients are represented  by large integers of 128 to 512 bits. 
+ 
+  \section install_sec Installation
+ 
+  \subsection step1 Step 1: Opening the box
+ 
+  etc...
+ */

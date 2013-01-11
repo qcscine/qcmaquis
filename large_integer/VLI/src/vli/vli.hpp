@@ -42,9 +42,8 @@
 #include <stdexcept>
 #include <boost/swap.hpp>
 
-
 namespace vli {
-
+    /* \cond I do not need this part in the doc*/
     struct vli_division_by_zero_error : public std::runtime_error { vli_division_by_zero_error(): std::runtime_error("Divide by zero."){}; };
 
     template<std::size_t NumBits> class vli;
@@ -58,9 +57,18 @@ namespace vli {
     struct copy_msb_tag{}; // Most Significant Bits
     struct copy_lsb_tag{}; // Least Significant Bits
     struct copy_right_shift_tag{}; // for the shift copy
-
+    /* \endcond */
+    
+    /*! \class vli
+        \brief the class vli defines the VLI number and basic operations on number.
+     
+        The four basics operators are included : +,-,* and / as bit operations and equality and inequality operators. All theses operators
+        conserve the number of bit. The class derived from the boost::operators package.  Per exmaple for a given operator VLI += VLI  the complentary operation
+        VLI * VLI is generated automatically.
+     */
     template<std::size_t NumBits>
     class vli
+    /* \cond I do not need this part in the doc*/
         :boost::equality_comparable<vli<NumBits> >, // generate != operator
          boost::less_than_comparable<vli<NumBits> >, // generate <= >= > < whatever the paire VLI/VLI
          boost::less_than_comparable<vli<NumBits>, long int>, // generate <= >= > < whatever the paire VLI/int
@@ -71,52 +79,188 @@ namespace vli {
          boost::right_shiftable<vli<NumBits>, long int>, //enerate VLI<nbits> = VLIVLI<nbits> >> int
          boost::modable<vli<NumBits> >,
          boost::dividable<vli<NumBits> >
+    /* \endcond */    
     {
     public:
-        typedef boost::uint64_t      value_type;     // Data type to store parts of the very long integer (usually int) -
-        typedef std::size_t          size_type;      // Size type of the very long integers (number of parts)
+        /*! \brief The value type of the VLI number: a 64-bit unsigned integer */
+        typedef boost::uint64_t      value_type;
+        
+         /* \cond I do not need this part in the doc*/
+        typedef std::size_t          size_type;
+        /* \endcond */
+        
+        /*! \brief The size of the VLI [bit] */
+        static const std::size_t numbits = NumBits;
 
-        static const std::size_t numbits = NumBits;           // Number of bits of the vli
-        static const std::size_t numwords = (NumBits+63)/64;  // Number of words (here word = 64 bits) of the very long integer (eg. how many ints)
-        // c - constructors, copy-swap, access   
+        /*! \brief The  number of word of the VLI, we consider the world equal to 64 bits for the CPU version*/
+        static const std::size_t numwords = (NumBits+63)/64;
+        /**
+         \brief Default constructor, the VLI number is equal to 0, every entries of the container are set up to 0
+        */
         vli();
+        /**
+         \brief Constructor, the VLI number is equal to the parameter.
+         \param The arguement is an sign integer. If the parameter is negative, the VLI number is initialized with the two complementary method.
+         \note copy constructor and destructor are generated automatically by the compiler.
+         */
         explicit vli(long int num);
+        /* \cond I do not need this part in the doc*/
         vli(vli<2*NumBits> const&, copy_lsb_tag);
         vli(vli<2*NumBits> const&, copy_msb_tag);
         vli(vli<NumBits/2> const&, copy_right_shift_tag);
         vli(vli<NumBits/2> const&, vli<NumBits/2> const&, copy_right_shift_tag);//just  coherence previous one
+        /* \endcond */
 #if defined __GNU_MP_VERSION
         // TODO find a better solution for this.
         operator mpz_class() const;
         operator mpq_class() const;
 #endif //__GNU_MP_VERSION
+        /* \cond I do not need this part in the doc*/
         friend void swap<> (vli& vli_a, vli& vli_b);
-        //vli& operator= (vli r);
+        /* \endcond */
+        /**
+         \fn value_type& operator[](size_type i)
+         \brief Give a write acces to the element of the VLI number
+         \param a first argument unsigned 64-bit integer
+         */
         value_type& operator[](size_type i);
+        /**
+         \fn value_type& operator[](size_type i) const
+         \brief Give a read acces to the element of the VLI number
+         \param a first argument unsigned 64-bit integer
+         */
         const value_type& operator[](size_type i) const;
         // c - negative number
+        /* \cond I do not need this part in the doc*/
         void negate();
         bool is_negative() const;
+        /* \endcond */
         // c - basic operator
-        vli& operator >>= (long int const a); // bit shift
-        vli& operator <<= (long int const a); // bit shift
-        vli& operator |= (vli const& vli_a); // bit shift
-        vli& operator ^= (vli const& vli_a); // bit shift
-        vli& operator &= (vli const& vli_a); // bit shift
-        vli& operator += (vli const& a);
-        vli& operator += (long int const a);
-        vli& operator -= (vli const& vli_a);
-        vli& operator -= (long int a);
-        vli& operator *= (long int a);
-        vli& operator *= (vli const& a); // conserve the total number of bits
-        vli& operator /= (vli a); // conserve the total number of bits
-        vli& operator %= (vli a); // conserve the total number of bits
 
+        /**
+         \fn vli& operator >>= (vli const& vli_a)
+         \brief Perform a right bit shift operation on the VLI number, it conserves the number of bits
+         \param a first argument 64-bit integer
+         */
+        vli& operator >>= (long int const a); // bit shift
+        
+        /**
+         \fn vli& operator <<= (vli const& vli_a)
+         \brief Perform a left bit shift operation on the VLI number, it conserves the number of bits
+         \param a first argument 64-bit integer
+         */
+        vli& operator <<= (long int const a); // bit shift
+
+        /**
+         \fn vli& operator |= (vli const& vli_a)
+         \brief Perform a bit | operation between two VLI numbers, it conserves the number of bits
+         \param a first argument, VLI number
+         */
+        vli& operator |= (vli const& vli_a); // bit shift
+
+        /**
+         \fn vli& operator ^= (vli const& vli_a)
+         \brief Perform a bit ^ operation between two VLI numbers, it conserves the number of bits
+         \param a first argument, VLI number
+         */
+        vli& operator ^= (vli const& vli_a);
+
+        /**
+         \fn vli& operator &= (vli const& vli_a)
+         \brief Perform a bit & operation between two VLI numbers, it conserves the number of bits
+         \param a first argument, VLI number
+         */
+        vli& operator &= (vli const& vli_a);
+
+        /**
+         \fn vli& operator += (vli const& vli_a)
+         \brief Perform an addition between two VLI numbers, it conserves the number of bits
+         \param a first argument, VLI number
+         */
+        vli& operator += (vli const& vli_a);
+
+        /**
+         \fn vli& operator += (long int const a)
+         \brief Perform an addition between a VLI number and a 64-bit long integer, it conserves the number of bits
+         \param a first argument, 64-bit integer
+        */
+        vli& operator += (long int const a);
+
+        /**
+         \fn vli& operator -= (vli const& vli_a)
+         \brief Perform a substraction between two VLI numbers, it conserves the number of bits
+         \param a first argument, VLI number
+         */
+        vli& operator -= (vli const& vli_a);
+        
+        /**
+         \fn vli& operator -= (long int const a)
+         \brief Perform a substraction between a VLI number and a 64-bit long integer, it conserves the number of bits
+         \param a first argument, 64-bit integer
+         */
+        vli& operator -= (long int a);
+
+        /**
+         \fn vli& operator *= (vli const& vli_a)
+         \brief Perform a multiplication between two VLI numbers, it conserves the number of bits
+         \param a first argument, VLI number
+         */
+        vli& operator *= (vli const& a);
+        
+        /**
+         \fn vli& operator *= (long int const a)
+         \brief Perform a multiplication between a VLI numbers and a 64-bit long integer, it conserves the number of bits
+         \param a first argument, 64-bit integer
+         */
+        vli& operator *= (long int a);
+
+        /**
+         \fn vli& operator /= (vli a)
+         \brief Perform a division between two VLI numbers. It return the quotient of the euclidian division, it conserves the number of bits
+         \param a first argument, VLI number
+         */
+        vli& operator /= (vli a);
+
+        /**
+         \fn vli& operator %= (vli a)
+         \brief Perform a division between two VLI numbers. It return the rest of the euclidian division followinf the GMP convention (for negative number it exists two possibilities), it conserves the number of bits
+         \param a first argument, VLI number
+         */
+        vli& operator %= (vli a);
+
+        /* \cond I do not need this part in the doc*/
         vli operator -() const;
+        /* \endcond */
+        
+        /**
+         \fn vli& operator == (vli const& vli_a) const
+         \brief Test the equality between two VLI numbers. The complementary operator != is generated automatically by the boost operator package
+         \param a first argument, VLI number
+         */
         bool operator == (vli const& vli_a) const; // need by boost::equality_comparable
+
+        /**
+         \fn vli& operator < (vli const& vli_a) const
+         \brief Test the inequality < between two VLI numbers. The complementary operator <=, > and >= are generated automatically by the boost operator package
+         \param a first argument, VLI number
+         */
         bool operator < (vli const& vli_a) const; // need by less_than_comparable<T>
+
+        /**
+         \fn vli& operator < (long int) const
+         \brief Test the inequality < between a signed 64-bit integer and a VLI number. The complementary operator <= is generated automatically by the boost operator package
+         \param a first argument, a signed 64-bit
+         */
         bool operator < (long int i) const; // need by less_than_comparable<T,U>
+
+        /**
+         \fn vli& operator > (long int) const
+         \brief Test the inequality > between a signed 64-bit integer and a VLI number. The complementary operator >= is generated automatically by the boost operator package
+         \param a first argument, a signed 64-bit
+         */
         bool operator > (long int i) const; // need by less_than_comparable<T,U>
+ 
+        /* \cond I do not need this part in the doc*/
         bool is_zero() const;
         void print_raw(std::ostream& os) const;
         void print(std::ostream& os) const;
@@ -124,8 +268,10 @@ namespace vli {
         std::string get_str() const;
         size_type order_of_magnitude_base10(vli const& value) const;
         std::string get_str_helper_inplace(vli& value, size_type ten_exp) const;
+        /* \endcond */
+
     private:
-        value_type data_[numwords];
+        value_type data_[numwords]; /*!< The container of the VLI number a 64-bit unsigned integer */
     };
 
     /**
