@@ -27,8 +27,8 @@ namespace maquis { namespace dmrg { namespace detail {
     {
         for(size_t l1 = 0; l1 < ldim1; ++l1)
         for(size_t r1 = 0; r1 < rdim1; ++r1)
-        copy_s(in, 0, 0, out, out_y_offset + l1*ldim2, out_x_offset + r1*rdim2, 
-               alfa, l1, r1, ldim2, rdim2);
+        copy_block_s(in, 0, 0, out, out_y_offset + l1*ldim2, out_x_offset + r1*rdim2, 
+                     alfa, l1, r1, ldim2, rdim2);
     }
 
     template <class M>
@@ -42,9 +42,9 @@ namespace maquis { namespace dmrg { namespace detail {
 
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2){
-                copy(in,  in_y_offset, 0, 
-                     out, out_y_offset, out_right_offset + rdim*ss2,
-                     ldim, rdim);
+                copy_block(in,  in_y_offset, 0, 
+                           out, out_y_offset, out_right_offset + rdim*ss2,
+                           ldim, rdim);
                 in_y_offset += ldim;
             }
             out_y_offset += ldim;
@@ -63,9 +63,9 @@ namespace maquis { namespace dmrg { namespace detail {
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
             {
-                copy(in, in_y_offset, in_right_offset + rdim*ss2,
-                     out, out_y_offset, 0, 
-                     ldim, rdim);
+                copy_block(in, in_y_offset, in_right_offset + rdim*ss2,
+                           out, out_y_offset, 0, 
+                           ldim, rdim);
                 out_y_offset += ldim;
             }
             in_y_offset += ldim;
@@ -77,9 +77,9 @@ namespace maquis { namespace dmrg { namespace detail {
                             size_t left_offset, size_t right_offset, size_t sdim, size_t ldim, size_t rdim)
     {
         for(size_t ss = 0; ss < sdim; ++ss){
-        copy(left, ss*ldim + left_offset, 0, 
-             right, 0, ss*rdim + right_offset, 
-             ldim, rdim);
+        copy_block(left, ss*ldim + left_offset, 0, 
+                   right, 0, ss*rdim + right_offset, 
+                   ldim, rdim);
         }
     }
     
@@ -88,9 +88,9 @@ namespace maquis { namespace dmrg { namespace detail {
                             size_t left_offset, size_t right_offset, size_t sdim, size_t ldim, size_t rdim)
     {
         for(size_t ss = 0; ss < sdim; ++ss)
-        copy(right, 0, ss*rdim + right_offset, 
-             left, ss*ldim + left_offset, 0, 
-             ldim, rdim);
+        copy_block(right, 0, ss*rdim + right_offset, 
+                   left, ss*ldim + left_offset, 0, 
+                   ldim, rdim);
     }
     
     template <class M>
@@ -99,9 +99,9 @@ namespace maquis { namespace dmrg { namespace detail {
     {
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-        copy_sa(in, in_offset + ss1*ldim, 0,
-                out, out_offset + ss2*ldim, 0,
-                alfa, ss1, ss2, ldim, rdim);
+        copy_block_sa(in, in_offset + ss1*ldim, 0,
+                      out, out_offset + ss2*ldim, 0,
+                      alfa, ss1, ss2, ldim, rdim);
     }
     
     template <class M>
@@ -110,9 +110,9 @@ namespace maquis { namespace dmrg { namespace detail {
     {
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-        copy_sa(in, 0, in_offset + ss1*rdim,
-                out, 0, out_offset + ss2*rdim,
-                alfa, ss1, ss2, ldim, rdim);
+        copy_block_sa(in, 0, in_offset + ss1*rdim,
+                      out, 0, out_offset + ss2*rdim,
+                      alfa, ss1, ss2, ldim, rdim);
     }
    
     template<class M, class SymmGroup>

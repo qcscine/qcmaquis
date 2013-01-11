@@ -213,14 +213,14 @@ namespace ambient { namespace numeric { namespace kernels {
     { static void c(const matrix<T>& a, weak_view<T>& t); };
 
     template<typename T>
-    struct copy_partial : public kernel< copy_partial<T> > {
+    struct copy_block : public kernel< copy_block<T> > {
         static void c(const matrix<T>& src, const size_t& si, const size_t& sj,
                       matrix<T>& dst, const size_t& di, const size_t& dj, 
                       const size_t& m, const size_t& n);
     };
 
     template<typename T>
-    struct copy_s : public kernel< copy_s<T> > {
+    struct copy_block_s : public kernel< copy_block_s<T> > {
         static void c(const matrix<T>& src, const size_t& si, const size_t& sj,
                       matrix<T>& dst, const size_t& di, const size_t& dj, 
                       const matrix<T>& alfa, const size_t& ai, const size_t& aj,
@@ -228,7 +228,7 @@ namespace ambient { namespace numeric { namespace kernels {
     };
 
     template<typename T>
-    struct copy_sa : public kernel< copy_sa<T> > {
+    struct copy_block_sa : public kernel< copy_block_sa<T> > {
         static void c(const matrix<T>& src, const size_t& si, const size_t& sj,
                       matrix<T>& dst, const size_t& di, const size_t& dj, 
                       const matrix<T>& alfa, const size_t& ai, const size_t& aj,
@@ -564,11 +564,11 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T>
-    void copy_partial<T>::c(const matrix<T>& src, const size_t& si, const size_t& sj,
+    void copy_block<T>::c(const matrix<T>& src, const size_t& si, const size_t& sj,
                             matrix<T>& dst, const size_t& di, const size_t& dj, 
                             const size_t& m, const size_t& n)
     {
-        __A_TIME_C("ambient_copy_partial_c_kernel"); 
+        __A_TIME_C("ambient_copy_block_c_kernel"); 
         T* sd = current(src);
         T* dd = m*n < __a_get_dim(dst).square() ? (T*)s_updated(dst) : (T*)updated(dst);
         __a_memptf_r<T, __a_memcpy>(dd, __a_get_dim(dst).y, dim2(dj, di), 
@@ -577,12 +577,12 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T>
-    void copy_s<T>::c(const matrix<T>& src, const size_t& si, const size_t& sj,
-                      matrix<T>& dst, const size_t& di, const size_t& dj, 
-                      const matrix<T>& alfa, const size_t& ai, const size_t& aj,
-                      const size_t& m, const size_t& n)
+    void copy_block_s<T>::c(const matrix<T>& src, const size_t& si, const size_t& sj,
+                            matrix<T>& dst, const size_t& di, const size_t& dj, 
+                            const matrix<T>& alfa, const size_t& ai, const size_t& aj,
+                            const size_t& m, const size_t& n)
     {
-        __A_TIME_C("ambient_copy_s_c_kernel"); 
+        __A_TIME_C("ambient_copy_block_s_c_kernel"); 
         T factor = ((T*)current(alfa))[ai + aj*__a_get_dim(alfa).y];
         T* sd = current(src);
         T* dd = m*n < __a_get_dim(dst).square() ? (T*)s_updated(dst) : (T*)updated(dst);
@@ -592,12 +592,12 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T>
-    void copy_sa<T>::c(const matrix<T>& src, const size_t& si, const size_t& sj,
-                      matrix<T>& dst, const size_t& di, const size_t& dj, 
-                      const matrix<T>& alfa, const size_t& ai, const size_t& aj,
-                      const size_t& m, const size_t& n)
+    void copy_block_sa<T>::c(const matrix<T>& src, const size_t& si, const size_t& sj,
+                             matrix<T>& dst, const size_t& di, const size_t& dj, 
+                             const matrix<T>& alfa, const size_t& ai, const size_t& aj,
+                             const size_t& m, const size_t& n)
     {
-        __A_TIME_C("ambient_copy_sa_c_kernel"); 
+        __A_TIME_C("ambient_copy_block_sa_c_kernel"); 
         T factor = ((T*)current(alfa))[ai + aj*__a_get_dim(alfa).y];
         __a_memptf_r<T, __a_memscala>(s_updated(dst), __a_get_dim(dst).y, dim2(dj, di), 
                                       current(src), __a_get_dim(src).y, dim2(sj, si), 

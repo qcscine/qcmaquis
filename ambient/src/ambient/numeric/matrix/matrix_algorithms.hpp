@@ -401,11 +401,11 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline void copy(const matrix<T>& src, size_t si, size_t sj, 
-                        matrix<T>& dst, size_t di, size_t dj, 
-                        size_t m, size_t n)
+    inline void copy_block(const matrix<T>& src, size_t si, size_t sj, 
+                           matrix<T>& dst, size_t di, size_t dj, 
+                           size_t m, size_t n)
     {
-        kernels::copy_partial<T>::spawn(src, si, sj, dst, di, dj, m, n); 
+        kernels::copy_block<T>::spawn(src, si, sj, dst, di, dj, m, n); 
     }
 
     template<PLASMA_enum UL, typename T>
@@ -424,21 +424,21 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline void copy_s(const matrix<T>& src, size_t si, size_t sj, 
-                          matrix<T>& dst, size_t di, size_t dj, 
-                          const matrix<T>& alfa, size_t ai, size_t aj,
-                          size_t m, size_t n)
+    inline void copy_block_s(const matrix<T>& src, size_t si, size_t sj, 
+                             matrix<T>& dst, size_t di, size_t dj, 
+                             const matrix<T>& alfa, size_t ai, size_t aj,
+                             size_t m, size_t n)
     { 
-        kernels::copy_s<T>::spawn(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
+        kernels::copy_block_s<T>::spawn(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
     }
 
     template<typename T>
-    inline void copy_sa(const matrix<T>& src, size_t si, size_t sj, 
-                           matrix<T>& dst, size_t di, size_t dj, 
-                           const matrix<T>& alfa, size_t ai, size_t aj,
-                           size_t m, size_t n)
+    inline void copy_block_sa(const matrix<T>& src, size_t si, size_t sj, 
+                              matrix<T>& dst, size_t di, size_t dj, 
+                              const matrix<T>& alfa, size_t ai, size_t aj,
+                              size_t m, size_t n)
     { 
-        kernels::copy_sa<T>::spawn(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
+        kernels::copy_block_sa<T>::spawn(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
     }
 
     template<typename T>
