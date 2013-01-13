@@ -33,6 +33,27 @@
 
 namespace vli {
     namespace detail {
+ 
+   template <std::size_t NumBits>
+   __device__ void helper_selector(boost::uint32_t* res, boost::uint32_t const*  a, boost::uint32_t const*  b);
+
+   template<>
+   __device__ void helper_selector<128>(boost::uint32_t* res, boost::uint32_t const*  a, boost::uint32_t const*  b){
+       mul_extend<2*128>(res,a,b); // unify notation
+      // karatsuba<128>(res,a,b);
+   };
+
+   template<>
+   __device__ void helper_selector<192>(boost::uint32_t* res, boost::uint32_t const*  a, boost::uint32_t const*  b){
+       mul_extend<2*192>(res,a,b); // to do unify notation 
+   };
+
+   template<>
+   __device__ void helper_selector<256>(boost::uint32_t* res, boost::uint32_t const*  a, boost::uint32_t const*  b){
+ //    mul_extend<2*256>(res,a,b); // to do unify notation 
+       karatsuba<256>(res,a,b);
+   };
+ 
 
     template <std::size_t NumBits>
     __device__ void multiplies(boost::uint32_t* res, boost::uint32_t* res1, boost::uint32_t* c1, boost::uint32_t* c2){
@@ -49,18 +70,19 @@ namespace vli {
             c1[i] ^= mask1; 
             c2[i] ^= mask2; 
         }
-
+       
         asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(c1[0]):"r"(bit1)); 
-        asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(c2[0]):"r"(bit2)); 
-
         #pragma unroll
-        for(int i(1); i<num_words<NumBits>::value ; ++i){
+        for(int i(1); i<num_words<NumBits>::value ; ++i)
             asm( "addc.cc.u32   %0 , %0 , 0 ; \n\t" : "+r"(c1[i])); 
-            asm( "addc.cc.u32   %0 , %0 , 0 ; \n\t" : "+r"(c2[i])); 
-        }
 
-        mul_extend<2*NumBits>(res1,c1,c2);
- //     karatsuba<NumBits>(res1,c1,c2);
+
+        asm( "add.cc.u32   %0 , %0 , %1 ; \n\t" : "+r"(c2[0]):"r"(bit2)); 
+        #pragma unroll
+        for(int i(1); i<num_words<NumBits>::value ; ++i)
+            asm( "addc.cc.u32   %0 , %0 , 0 ; \n\t" : "+r"(c2[i])); 
+        
+        helper_selector<NumBits>(res1,c1,c2);
 
         if(mask3)
             negate<2*NumBits>(res1);

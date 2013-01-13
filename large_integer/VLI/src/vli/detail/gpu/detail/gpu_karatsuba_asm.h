@@ -30,57 +30,48 @@
 #ifndef VLI_KARATSUBA_ASM_H
 #define VLI_KARATSUBA_ASM_H
 
-#include <boost/preprocessor/arithmetic/add.hpp>
-#include <boost/preprocessor/arithmetic/mul.hpp>
-#include <boost/preprocessor/arithmetic/sub.hpp>
-#include <boost/preprocessor/repetition.hpp>
-#include <boost/preprocessor/iteration/local.hpp>
-#include <boost/preprocessor/comparison/equal.hpp>
-#include <boost/preprocessor/stringize.hpp>
 #include <stdio.h>
 namespace vli {
     namespace detail {
 
-    /* It should not work as CPU, but my miracle, thank you Saint HPC */
-    template <std::size_t NumBits>
-    __device__ inline void KA_add(boost::uint32_t* x, boost::uint32_t* y){
-
-        asm( "add.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[0]):"r"(y[0])); 
+    template <std::size_t NumBits> 
+    __device__ void KA_add(boost::uint32_t* x, boost::uint32_t const* y){
+        asm volatile( "add.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[0]):"r"(y[0])); 
         #pragma unroll
         for(int i=1; i < (NumBits/32); ++i)
-            asm( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[i]):"r"(y[i])); 
-    };
-
-    template <std::size_t NumBits>
-    __device__ inline void KA_add_extend(boost::uint32_t* x, boost::uint32_t* y){
-        asm( "add.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[0]):"r"(y[0])); 
-        #pragma unroll
-        for(int i=1; i < (NumBits/32); ++i)
-            asm( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[i]):"r"(y[i])); 
-
-        asm( "addc.cc.u32  %0 , %0 , 0 ; \n\t" : "+r"(x[NumBits/32]):); 
-    };
-
-    template <std::size_t NumBits>
-    __device__ inline void KA_sign_zero_extend(boost::uint32_t* x,  boost::uint32_t mask){
-        for(int i(0); i < (NumBits/32+2); ++i) 
-            x[i] ^= mask; 
-        mask >>= 31; 
-        asm( "add.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[0]):"r"(mask)); 
-        #pragma unroll
-        for(int i=1; i < (NumBits/32+2); ++i)
-            asm( "addc.cc.u32  %0 , %0 , 0 ; \n\t" : "+r"(x[i]):);
+            asm volatile( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[i]):"r"(y[i])); 
     }
 
     template <std::size_t NumBits>
-    __device__ inline boost::uint32_t KA_sub_b(boost::uint32_t* x, boost::uint32_t* y){
-        boost::uint32_t sign(0); 
-        asm( "sub.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[0]):"r"(y[0])); 
+    __device__ void KA_add_extend(boost::uint32_t* x, boost::uint32_t const* y){
+        asm volatile( "add.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[0]):"r"(y[0])); 
         #pragma unroll
         for(int i=1; i < (NumBits/32); ++i)
-            asm( "subc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[i]):"r"(y[i])); 
+            asm volatile( "addc.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[i]):"r"(y[i])); 
 
-        asm( "subc.cc.u32  %0 , 0 , 0 ; \n\t" : "+r"(sign):); // constraint = should be enough 
+        asm volatile( "addc.u32  %0 , %0 , 0 ; \n\t" : "+r"(x[NumBits/32]):); 
+    };
+
+    template <std::size_t NumBits>
+    __device__ void KA_sign_zero_extend(boost::uint32_t* x,  boost::uint32_t mask){
+        for(int i(0); i <= (NumBits/32); ++i) 
+            x[i] ^= mask; 
+        mask >>= 31; 
+        asm volatile( "add.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[0]):"r"(mask)); 
+        #pragma unroll
+        for(int i=1; i <= (NumBits/32); ++i)
+            asm volatile ( "addc.cc.u32  %0 , %0 , 0 ; \n\t" : "+r"(x[i]):);
+    }
+
+    template <std::size_t NumBits>
+    __device__ boost::uint32_t KA_sub_b(boost::uint32_t* x, boost::uint32_t const* y){
+        boost::uint32_t sign(0); // attention %1 %0 ou %0 %1 
+        asm volatile( "sub.cc.u32  %0 , %1 , %0 ; \n\t" : "+r"(x[0]):"r"(y[0])); 
+        #pragma unroll
+        for(int i=1; i < (NumBits/32); ++i)
+            asm volatile( "subc.cc.u32  %0 , %1 , %0 ; \n\t" : "+r"(x[i]):"r"(y[i])); 
+
+        asm volatile( "subc.u32  %0 , 0 , 0 ; \n\t" : "=r"(sign):); // constraint = should be enough 
         return sign; 
     }; 
 
@@ -90,20 +81,23 @@ namespace vli {
         for(int i(0); i < (NumBits/32); ++i) 
             x[i] ^= mask; 
         mask >>= 31; 
-        asm( "add.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[0]):"r"(mask)); 
+        asm volatile( "add.cc.u32  %0 , %0 , %1 ; \n\t" : "+r"(x[0]):"r"(mask)); 
         #pragma unroll
         for(int i=1; i < (NumBits/32); ++i)
-            asm( "addc.cc.u32  %0 , %0 , 0 ; \n\t" : "+r"(x[i]):);
+            asm volatile( "addc.cc.u32  %0 , %0 , 0 ; \n\t" : "+r"(x[i]):);
     };
 
 //  A less recursive variant of Karatsuba-Ofman algorithm for Multiplying Operands of Size a Power of Two
 //  Swedar S. Erdem Cetin Koc, coded section 4 Efficient Implementation of KOA
     template <std::size_t NumBits>
-    __device__ inline void  KA(boost::uint32_t* res0, boost::uint32_t*  a, boost::uint32_t*  b){
+    __device__ void  KA(boost::uint32_t* res0, boost::uint32_t const*  a, boost::uint32_t const*  b){
             boost::uint32_t am[NumBits/64];
             boost::uint32_t bm[NumBits/64];
             boost::uint32_t medium[NumBits/32+1];
-            medium[NumBits/32] = 0;
+
+            #pragma unroll
+            for(int i=0; i <= NumBits/32; ++i)
+                medium[i] = 0;
 
             // step 3 and 4 not coded I direct use the data a and b 
             #pragma unroll
@@ -120,36 +114,30 @@ namespace vli {
 
             KA<NumBits/2>(res0,a,b); // step 8
             KA<NumBits/2>((res0+(2*NumBits)/64),(a+NumBits/64),(b+NumBits/64)); // step 9
-
             KA<NumBits/2>(medium,am,bm); // step 10
-            
+
             KA_sign_zero_extend<NumBits>(medium, (mask_s1^mask_s2)); // 0 +- medium, in both case I do 0 + Two Complementary method on medium, for the postive version it changes nothings, step 11a (+- medium)
             KA_add_extend<NumBits>(medium,res0); //  step 11a next
             KA_add_extend<NumBits>(medium,(res0+NumBits/32)); //  step 11a next
             KA_add<NumBits+32>((res0+(NumBits/32)/2),(medium));  // 11b
+
     }
-        
+    // I benchmark Karatusba is only faster for 256 * 256 = 512 bits    
     template <> // if 64 -> mul_extend<128>, 128 -> mul_extend<256>
-    __device__ inline void KA<32>(boost::uint32_t* res0, boost::uint32_t*  a, boost::uint32_t*  b){//
-//           vli::detail::mul_extend<256>(res0,a,b);
-  
+    __device__ void KA<128>(boost::uint32_t* res0, boost::uint32_t const*  a, boost::uint32_t const*  b){//
+       vli::detail::mul_extend<256>(res0,a,b);
+      /*  32 bits version
            asm(
                "mul.lo.u32  %0, %2, %3; \n\t"
                "mul.hi.u32  %1, %2, %3; \n\t"
                 :"=r"(res0[0]),"=r"(res0[1]):"r"(a[0]), "r"(b[0])
            );
-  
-/*
-           boost::uint64_t tmp;
-           asm("mul.wide.u32  %0, %1, %2; \n\t" :"=l"(tmp):"r"(a[0]), "r"(b[0]));
-           res0[0] = (boost::uint32_t) tmp;
-           res0[1] = (tmp>>32);
-*/
+     */
     }
         
     template <std::size_t NumBits>
-    __device__ void karatsuba(boost::uint32_t* res, boost::uint32_t* a, boost::uint32_t* b){
-        KA<NumBits>(res,a,b);
+    __device__ void karatsuba(boost::uint32_t* res, boost::uint32_t const* a, boost::uint32_t const* b){
+     KA<NumBits>(res,a,b);
     }
     
     }
