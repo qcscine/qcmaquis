@@ -15,13 +15,13 @@ namespace tools{
     template <typename Vli>
     typename Vli::value_type rnd_digit(){
         static boost::uniform_int<typename Vli::value_type> rnd(0,std::numeric_limits<typename Vli::value_type>::max());
-        return rnd(rng);
+        return   rnd(rng);
     }
    
     template <typename Vli>
     int rnd_valid_int(){
         static boost::uniform_int<int> rnd(0,std::abs(static_cast<int>(std::numeric_limits<typename Vli::value_type>::max())));
-        return rnd(rng);
+        return  rnd(rng);
     }
     // I can get a overflow during the sum of the inner product so minus 1
     template <typename Vli>
@@ -32,14 +32,15 @@ namespace tools{
    
     template <typename Vli>
     void fill_random(Vli& v){
+        assert(size <= Vli::numwords);
         for(typename Vli::size_type i=0; i < Vli::numwords-1; ++i)
-            v[i] = rnd_digit<Vli>(); 
+            v[i] = rnd_digit<Vli>();
     }
    
     template <typename Vli>
     void fill_random(Vli& v, typename Vli::size_type size){
         assert(size <= Vli::numwords);
-        for(typename Vli::size_type i=0; i < Vli::numwords; ++i)
+        for(typename Vli::size_type i=0; i < size; ++i)
             v[i] = rnd_digit<Vli>();
     }
 

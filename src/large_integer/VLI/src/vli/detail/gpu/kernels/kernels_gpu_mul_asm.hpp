@@ -53,7 +53,7 @@ namespace vli{
           );                                                                                                                               \
 
     #define mul256bits_128bits_128bits(w, n, unused) \
-        asm( \
+        asm volatile( \
               "mad.lo.cc.u32  %0, %6,  %5, %0; \n\t" /* c[i]   = a[0] * b[i] (low)  + c[i] (c[i]=0 for i=0) may generate carry bit (CB) */ \
               "madc.lo.cc.u32 %1, %7,  %5, %1; \n\t" /* c[i+1] = a[1] * b[i] (low)  + c[i+1] + CB                                       */ \
               "madc.lo.cc.u32 %2, %8,  %5, %2; \n\t" /* c[i+2] = a[2] * b[i] (low)  + c[i+1] + CB                                       */ \
@@ -64,7 +64,7 @@ namespace vli{
               "madc.hi.cc.u32 %3, %8,  %5, %3; \n\t" /* c[i+3] = a[2] * b[i] (high) + c[i+3] + CB                                       */ \
               "madc.hi.cc.u32 %4, %9,  %5, %4; \n\t" /* c[i+3] = a[2] * b[i] (high) + c[i+3] + CB                                       */ \
               :"+r"(x[BOOST_PP_ADD(0,n)]),"+r"(x[BOOST_PP_ADD(1,n)]),"+r"(x[BOOST_PP_ADD(2,n)]),"+r"(x[BOOST_PP_ADD(3,n)]),"+r"(x[BOOST_PP_ADD(4,n)])   \
-              :"r"(z[n]),"r"(y[0]),"r"(y[1]),"r"(y[2]),"r"(y[3])                                                                         \
+              :"r"(z[n]),"r"(y[0]),"r"(y[1]),"r"(y[2]),"r"(y[3]):"memory"                                                                 \
           );                                                                                                                               \
 
     template<>
@@ -74,16 +74,17 @@ namespace vli{
 
     template<>
     void mul_extend<128>(boost::uint32_t* x, boost::uint32_t const* y, boost::uint32_t const* z){
-        asm( 
+        asm volatile( 
               "mul.lo.u32 %0, %4, %6; \n\t"
               "mul.lo.u32 %1, %4, %7; \n\t"
-              "mad.lo.cc.u32 %1, %5, %6, %1; \n\t"
-              "mad.lo.cc.u32 %2, %5, %7, %2; \n\t"
-
               "mad.hi.cc.u32 %1, %4, %6, %1; \n\t"
-              "madc.hi.cc.u32 %2, %4, %7, %2; \n\t"
-              "madc.hi.cc.u32 %2, %5, %6, %2; \n\t"
-              "madc.hi.cc.u32 %3, %5, %7, %3; \n\t"
+              "madc.hi.u32 %2, %4, %7, %2; \n\t"
+
+              "mad.lo.cc.u32 %1, %5, %6, %1; \n\t"
+              "madc.lo.cc.u32 %2, %5, %7, %2; \n\t"
+              "addc.u32 %3, 0, 0 ; \n\t"          
+              "mad.hi.cc.u32 %2, %5, %6, %2; \n\t"
+              "madc.hi.u32 %3, %5, %7, %3; \n\t"
               
               :"+r"(x[0]),"+r"(x[1]),"+r"(x[2]),"+r"(x[3])                                            
               :"r"(z[0]),"r"(z[1]),"r"(y[0]),"r"(y[1])                                                                                      

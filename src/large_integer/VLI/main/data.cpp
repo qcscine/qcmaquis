@@ -82,7 +82,7 @@ class data{
 };
 
 int main(){
-    data<3>  MaxOrderEach("MaxOrderEachTime");
+    data<4>  MaxOrderEach("MaxOrderEachTime");
     data<4>  MaxOrderCombined("MaxOrderCombinedTime"); 
     MaxOrderEach();
     MaxOrderCombined();
