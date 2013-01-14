@@ -129,7 +129,7 @@ The calculation in 32-bit mode imposes twice as much operations for the addition
 
 \subsection{Memory layout}
 
-We have privileged the  array  of structure  (SoA ) detrimental to the  structure of array (SoA)
+We have privileged the  array  of structure  (AoS ) detrimental to the  structure of array (SoA)
 The AoS consists in saving the data in this hierarchy: VLI - series of VLI (polynomial coefficient) - series of polynomials (the vector), where  the SoA structure interleaves the coefficients of the VLI and the polynomials.
 A representation of both memory layout is presented on figure \ref{AOSSOA}. 
 
@@ -154,14 +154,14 @@ A representation of both memory layout is presented on figure \ref{AOSSOA}.
 \caption{Representation of the AoS Order (left) or SoA Order (right) for a vector of polynomial \label{AOSSOA}.  The SoA structure limits the usage of the VLI module alone.}
 \end{figure}
 
-We have chosen the SoA for the two following reasons :
+We have chosen the AoS for the two following reasons :
 
 \begin{enumerate}
-\item SoA order allows the natural propagation of the carry bit between the entries of the VLI with the pair of mnemonics \texttt{addq/adcq}, as the utilization of the extended multiplication without any padding.  
+\item AoS order allows the natural propagation of the carry bit between the entries of the VLI with the pair of mnemonics \texttt{addq/adcq}, as the utilization of the extended multiplication without any padding.  
 \item The VLI and the polynomial module of the library can be separated and use independently. Thinks impossible if the coefficients are interleaved.
 \end{enumerate}
 
-The disagreement  of this choice, the SoA order does not facilitate the usage of the SIMD instruction such as the AVX instructions of the Sandy Bridge x86-64 architecture.
+The disagreement  of this choice, the AoS order does not facilitate the usage of the SIMD instruction such as the AVX instructions of the Sandy Bridge x86-64 architecture.
 Applying SIMD to the AoS for an addition/subtraction is a nonsense because there is no specific instruction to propagate carry bit between entries of the SIMD register.
 It could be  apply  on multiplications for integer  larger than 1024-bit \cite{SIMD}, unfortunately, it does not correspond to our working range. Consequently, we do not 
 use the multimedia instruction into the ASM kernels.
