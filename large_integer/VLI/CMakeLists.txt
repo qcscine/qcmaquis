@@ -44,6 +44,7 @@ option (VLI_BENCHMARKS "Build the VLI benchmarks" OFF)
 option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 option (VLI_MAIN  "Build and execute the main" ON)
 option (VLI_KEPLER "Target Kepler (ON - default) or Fermi (OFF) GPU architecture" ON)
+option (VLI_DOCUMENTATION "Use Doxygen to create the HTML/LATEX based API documentation" OFF)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_SPLIT_PARAM "1.0" CACHE STRING "Split param for cpu/gpu mix mode, 1.0 = full gpu")
@@ -150,6 +151,28 @@ if(VLI_BENCHMARKS)
     add_subdirectory (benchmarks)
 endif(VLI_BENCHMARKS)
 
+########################################################################
+#
+# Documentation
+#
+########################################################################
+
+if(VLI_DOCUMENTATION)
+  FIND_PACKAGE(Doxygen)
+  if (NOT DOXYGEN_FOUND)
+    message(FATAL_ERROR 
+      "Doxygen is needed to build the documentation. Please install it correctly")
+  endif()
+  #-- Configure the Template Doxyfile for our specific project
+  configure_file(Doxyfile.in 
+                 ${PROJECT_BINARY_DIR}/Doxyfile  @ONLY IMMEDIATE)
+  #-- Add a custom target to run Doxygen when ever the project is built
+  add_custom_target (doc   
+                     COMMAND ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/Doxyfile
+                     SOURCES ${PROJECT_BINARY_DIR}/Doxyfile)
+  # IF you want the documentation to be generated EVERY time you build the project
+  # then add the 'ALL' keyword after "doc" from the above command.
+endif()
 
 ########################################################################
 #
