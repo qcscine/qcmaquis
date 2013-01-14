@@ -6,8 +6,8 @@ link_directories (${PROJECT_BINARY_DIR}/src/vli)
 
 set(VLI_FUZZ_TEST_ITERATIONS "10000" CACHE STRING "Number of fuzz iterations for the fuzz tests") 
 
-set(tests constructors equal bit_shift negate plus plus_negative minus multiplies multiplies_negative divides gmp_and_str_conversion gmp_plus gmp_minus gmp_multiplies_int gmp_multiplies gmp_divides  comparison misc_tests )
-set(fuzz_tests constructors bit_shift negate plus plus_negative minus multiplies multiplies_negative divides gmp_and_str_conversion gmp_plus gmp_minus gmp_multiplies_int gmp_multiplies gmp_divides )
+set(tests constructors equal bit_shift negate plus plus_negative minus multiplies multiplies_negative divides modulo gmp_and_str_conversion gmp_plus gmp_minus gmp_multiplies_int gmp_multiplies gmp_divides  comparison misc_tests )
+set(fuzz_tests constructors bit_shift negate plus plus_negative minus multiplies multiplies_negative divides modulo gmp_and_str_conversion gmp_plus gmp_minus gmp_multiplies_int gmp_multiplies gmp_divides )
 set(extending_plus_tests gmp_extending_plus)
 set(extending_multiplies_tests gmp_extending_multiplies gmp_extending_multiplies_negative gmp_extending_multiplie_add)
 set(extending_karatsuba_tests gmp_karatsuba_extending_multiplies)

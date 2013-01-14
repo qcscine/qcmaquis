@@ -11,22 +11,6 @@ template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class
 class polynomial;
 
 template <typename Polynomial>
-struct polynomial_multiply_type_gmp {
-};
-
-template <typename Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
-struct polynomial_multiply_type_gmp<polynomial<Coeff,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
-    typedef polynomial<mpz_class,max_order_each<Order>,Var0,Var1,Var2,Var3> type;
-    typedef polynomial<mpz_class,max_order_each<2*Order>,Var0,Var1,Var2,Var3> type_res;
-};
-
-template <typename Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
-struct polynomial_multiply_type_gmp<polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
-    typedef polynomial<mpz_class,max_order_combined<Order>,Var0,Var1,Var2,Var3> type;
-    typedef polynomial<mpz_class,max_order_combined<2*Order>,Var0,Var1,Var2,Var3> type_res;
-};
-
-template <typename Polynomial>
 struct polynomial_multiply_result_type {
 };
 
