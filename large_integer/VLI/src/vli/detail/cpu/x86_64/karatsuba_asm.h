@@ -196,7 +196,8 @@ namespace vli {
     #undef FUNCTION_add_extend_nbits_nbits
     #undef FUNCTION_add_nbits_bit
     #undef FUNCTION_sub_nbits_nbits_mask
-        
+    #undef g // FIXME this name is unacceptable
+    #undef r // FIXME this name is unacceptable
     }
 }
 
