@@ -1,0 +1,40 @@
+/**
+\page tutorial2 Tutorial 2, make constant size arithmetic operations with VLI
+
+This second tutorial illustrates  the arithmetics operations between VLI number
+Considering the following program,  
+
+\code
+    vli<128> a(2),b(3); // I create two VLI numbers of 128 bits 
+    a+=b; // We make the sum
+\endcode
+
+The output simply gives 5. If now we consider the inputs : 
+\code
+    vli<128> a(0xffffffffffffffff),b(3); // The first entry of a is full bit, but it is not a negative number because the second entry is null
+\endcode
+
+The print show the propagation of the carry bit.
+
+\code
+   18 446 744 073 709 551 618 // for the decimal form 
+   1 2 // for the hexadecimal form 
+\endcode
+
+This last operation can be rewrite under the followings form
+
+\code
+    vli<128> a(0xffffffffffffffff),b(3),c;
+    c = a+b; // less performable, it necessitates an extra copy due to operator=
+    a += 3; // alternative if the right value fits into 64 bits.
+\endcode
+
+In both case a and c will have the same value. For the optimum performance, if possible, the user should privilege the operators += long int, += VLI and VLI + VLI.
+In the three cases the ASM solvers are not the same and they can necessitate an extra work.
+The last thing can be done with the 3 other operators : -,* and / whatever the operators the operations will not change the size of the VLI.
+
+A addition may do an overflow or multiplication can double the VLI size of the result, we need operations that consider the size of the results.
+Let's go to the tutorial 3.
+
+
+*/
