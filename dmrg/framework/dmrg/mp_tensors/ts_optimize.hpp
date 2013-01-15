@@ -32,15 +32,17 @@ public:
 
     ts_optimize(MPS<Matrix, SymmGroup> const & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
+                MPO<Matrix, SymmGroup> const & ts_mpo_,
                 BaseParameters & parms_,
                 StorageMaster & sm)
-    : base(mps_, mpo_, parms_, sm) { }
+    : ts_cache_mpo(ts_mpo_), base(mps_, mpo_, parms_, sm) { }
 
     int sweep(int sweep, Logger & iteration_log,
                OptimizeDirection d = Both,
                int resume_at = -1,
                int max_secs = -1)
     {
+        // Sebastian: Is this still necessary?
         mpo = mpo_orig;
 
     	timeval sweep_now, sweep_then;
@@ -120,8 +122,7 @@ public:
     	    // Create TwoSite objects
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
     	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
-    	    MPOTensor<Matrix, SymmGroup> twin_mpo_tensor = make_twosite_mpo(mpo[site1], mpo[site2], mps[site1].site_dim());
-            SiteProblem<Matrix, SymmGroup> sp(twin_mps, left_[site1], right_[site2+1], twin_mpo_tensor);
+            SiteProblem<Matrix, SymmGroup> sp(twin_mps, left_[site1], right_[site2+1], ts_cache_mpo[site1]);
 
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
            
@@ -216,7 +217,9 @@ public:
 
         return -1;
     } // sweep
-    
+
+private:
+    MPO<Matrix, SymmGroup> const & ts_cache_mpo;
 };
 
 #endif
