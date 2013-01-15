@@ -111,4 +111,19 @@ MPOTensor<Matrix, SymmGroup> make_twosite_mpo(MPOTensor<Matrix, SymmGroup> const
 
     return mpo_big;
 }
+
+template<class Matrix, class SymmGroup>
+MPO<Matrix, SymmGroup> make_ts_cache_mpo(MPO<Matrix, SymmGroup> const & mpo_orig, Index<SymmGroup> const & site_dim)
+{
+    std::size_t L_ts = mpo_orig.length() - 1;
+    MPO<Matrix, SymmGroup> r(L_ts);
+    for(std::size_t p=0; p < L_ts; ++p)
+    {
+        r[p] = make_twosite_mpo(mpo_orig[p], mpo_orig[p+1], site_dim);
+    }
+
+    return r;
+
+}
+
 #endif

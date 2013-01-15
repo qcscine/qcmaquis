@@ -139,6 +139,12 @@ void sim<Matrix, SymmGroup>::model_init()
     mpoc = mpo;
     if (parms.get<int>("use_compressed") > 0)
         mpoc.compress(1e-12);
+
+    if (parms.get<std::string>("optimization") == "twosite") {
+        Timer t("TS_MPO"); t.begin();
+        ts_cache_mpo = make_ts_cache_mpo(mpoc, phys);
+        t.end();
+    }
 }
 
 template <class Matrix, class SymmGroup>

@@ -67,14 +67,18 @@ public:
                                                 base::parms, base::ssm) );
             } 
             
-            else 
+            else if(parms_.get<std::string>("optimization") == "twosite")
             {
-                optimizer = 
+                optimizer =
                 boost::shared_ptr<opt_base_t> ( new ts_optimize<Matrix, SymmGroup, StreamStorageMaster>
                                                (base::mps,
                                                 base::parms.template get<int>("use_compressed") == 0 ? base::mpo : base::mpoc,
+                                                base::ts_cache_mpo,
                                                 base::parms, base::ssm) );
             }
+
+            else
+                throw std::runtime_error("Don't know this optimizer");
         }
     }
     

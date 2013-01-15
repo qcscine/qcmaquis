@@ -36,6 +36,8 @@
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/twositetensor.h"
+#include "dmrg/mp_tensors/contractions.h"
 #include "dmrg/mp_tensors/contractions.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
@@ -99,7 +101,7 @@ protected:
     Index<SymmGroup> phys;
     typename SymmGroup::charge initc;
     MPS<Matrix, SymmGroup> mps;
-    MPO<Matrix, SymmGroup> mpo, mpoc;
+    MPO<Matrix, SymmGroup> mpo, mpoc, ts_cache_mpo;
     Measurements<Matrix, SymmGroup> measurements;
     Measurements<Matrix, SymmGroup> meas_always;
     
