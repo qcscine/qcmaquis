@@ -12,6 +12,7 @@
 #include <boost/static_assert.hpp>
 
 namespace vli {
+/* \cond I do not need this part in the doc*/
 namespace detail {
 
     template <class Var>
@@ -296,5 +297,6 @@ namespace detail {
         }
     };
 } // end namespace detail
+/* \endcond I do not need this part in the doc*/
 } // end namespace vli
 #endif //VLI_POLYNOMIAL_STORAGE_HPP

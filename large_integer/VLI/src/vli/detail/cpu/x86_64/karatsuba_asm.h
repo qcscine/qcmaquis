@@ -39,6 +39,7 @@
 #include <boost/preprocessor/stringize.hpp>
 
 namespace vli {
+   /* \cond I do not need this part in the doc*/
     namespace detail {
 
     template <std::size_t NumBits>
@@ -155,7 +156,7 @@ namespace vli {
             medium[NumBits/64] = 0;
 
             // step 3 and 4 not coded I direct use the data a and b 
-            for(int i=0; i < NumBits/128; ++i){
+            for(std::size_t i=0; i < NumBits/128; ++i){
                 am[i] = a[i]; // step 2
                 bm[i] = b[i+NumBits/128]; // step 5
             }
@@ -198,8 +199,9 @@ namespace vli {
     #undef FUNCTION_sub_nbits_nbits_mask
     #undef g // FIXME this name is unacceptable
     #undef r // FIXME this name is unacceptable
-    }
-}
+    } //detail
+       /* \endcond I do not need this part in the doc*/
+} //vli
 
 
 #endif

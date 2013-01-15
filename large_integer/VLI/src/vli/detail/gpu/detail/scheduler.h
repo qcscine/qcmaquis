@@ -33,6 +33,8 @@
 
 #include "boost/tuple/tuple.hpp"
 
+/* \cond I do not need this part in the doc*/
+
 namespace vli {
     namespace detail {
 
@@ -136,5 +138,8 @@ namespace vli {
 
     } //end namespace detail
 } //end namespce vli  
+
+/* \endcond I do not need this part in the doc*/
+
 
 #endif

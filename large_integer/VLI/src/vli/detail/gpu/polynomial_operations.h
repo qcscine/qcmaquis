@@ -40,6 +40,8 @@
 #include <boost/cstdint.hpp> //boost type
 #include <boost/serialization/singleton.hpp> //boost singleton for mem and tasklist
 
+/* \endcond I do not need this part in the doc*/
+
 #include "vli/detail/kernels_gpu.h" // signature interface with cpu + structure max_order_each, max_order_combined
 #include "vli/detail/gpu/detail/gpu_error_message.h" //error message
 #include "vli/detail/gpu/detail/variables_gpu.h" //compile time  variable
@@ -54,5 +56,7 @@
 #include "vli/detail/gpu/polynomial_multiplication/accelerator_polynomial_multiplication_max_order_each.hpp" // accelerator max_order_each polynomial
 #include "vli/detail/gpu/polynomial_multiplication/accelerator_polynomial_multiplication_max_order_combined.hpp" // accelerator max_order_combined polynomial
 #include "vli/detail/gpu/polynomial_reduction/polynomial_reduction.hpp" // final reduction
+
+/* \cond I do not need this part in the doc*/
 
 #endif

@@ -42,6 +42,10 @@
 #include <stdexcept>
 #include <boost/swap.hpp>
 
+
+/*! \namespace vli
+    \brief the principal name space of VLI
+*/
 namespace vli {
     /* \cond I do not need this part in the doc*/
     struct vli_division_by_zero_error : public std::runtime_error { vli_division_by_zero_error(): std::runtime_error("Divide by zero."){}; };
@@ -60,7 +64,7 @@ namespace vli {
     /* \endcond */
     
     /*! \class vli
-        \brief the class vli defines the VLI number and basic operations on number.
+        \brief This class models the VLI number 
      
         The four basics operators are included : +,-,* and / as bit operations and equality and inequality operators. All theses operators
         conserve the number of bit. The class derived from the boost::operators package.  Per exmaple for a given operator VLI += VLI  the complentary operation
@@ -68,7 +72,6 @@ namespace vli {
      */
     template<std::size_t NumBits>
     class vli
-    /* \cond I do not need this part in the doc*/
         :boost::equality_comparable<vli<NumBits> >, // generate != operator
          boost::less_than_comparable<vli<NumBits> >, // generate <= >= > < whatever the paire VLI/VLI
          boost::less_than_comparable<vli<NumBits>, long int>, // generate <= >= > < whatever the paire VLI/int
@@ -79,7 +82,6 @@ namespace vli {
          boost::right_shiftable<vli<NumBits>, long int>, //enerate VLI<nbits> = VLIVLI<nbits> >> int
          boost::modable<vli<NumBits> >,
          boost::dividable<vli<NumBits> >
-    /* \endcond */    
     {
     public:
         /*! \brief The value type of the VLI number: a 64-bit unsigned integer */
@@ -279,12 +281,14 @@ namespace vli {
      no boost::operators for VLI operator int, because I have specific assembly solver, 
      I do not want VLI tmp(int) and work with the tmp as for > < operators
      */
+    
+    /* \cond */
     template <std::size_t NumBits>
     bool is_zero(vli<NumBits> const& v);
 
     template <std::size_t NumBits>
     void negate_inplace(vli<NumBits>& v);
-
+    /* \endcond */
     template <std::size_t NumBits>
     const vli<NumBits> operator + (vli<NumBits> vli_a, long int b);
 

@@ -33,6 +33,9 @@
 
 #include "vli/polynomial/detail/helpers.hpp" // A part of variable comes from the polynomial class
 
+/* \cond I do not need this part in the doc*/
+
+
 namespace vli {
     namespace detail {
    
@@ -107,6 +110,8 @@ namespace vli {
      __device__ __constant__ int workblock_count_by_warp_max_order_combined_4_variable[8]; // 8 is the maxmimum value
     }
 }
+
+/* \endcond I do not need this part in the doc*/
 
    //  __device__ __constant__ int workblock_count_by_warp_max_order_each_2_variable[8]; // 8 is the maxmimum value
 #endif

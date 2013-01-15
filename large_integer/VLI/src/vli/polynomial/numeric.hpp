@@ -2,6 +2,9 @@
 #define VLI_POLYNOMIAL_NUMERIC_HPP
 
 namespace vli {
+
+/* \cond I do not need this part in the doc*/
+
 /*
   The following templates are used in the polynomial (and elsewhere)
   and can be specialized or overloaded for types to provide an optimized
@@ -22,6 +25,8 @@ template <typename T, typename T2, typename T3>
 void multiply_add(T& t, T2 const& t2, T3 const& t3) {
     t += t2 * t3;
 }
+
+/* \endcond I do not need this part in the doc*/
 
 } // end namespace vli
 

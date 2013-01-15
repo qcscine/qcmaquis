@@ -16,6 +16,7 @@
 #define POLYNOMIAL_CLASS polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3>
 
 namespace vli {
+    /* \cond I do not need this part in the doc*/
 namespace detail {
     namespace operations {
         struct plus_assign {
@@ -45,7 +46,9 @@ namespace detail {
                 t /= t2;
             }
         };
-    } // end namespace operations 
+    } // end namespace operations
+    
+
 
     struct truncate_helper {
         truncate_helper(unsigned int order)
@@ -442,6 +445,9 @@ namespace detail {
 
 
 } // end namespace detail
+
+/* \endcond I do not need this part in the doc*/
+
 } // end namespace vli
 
 #undef POLYNOMIAL_CLASS

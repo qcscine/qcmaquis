@@ -3,6 +3,9 @@
 
 #include <boost/mpl/int.hpp>
 
+/* \cond I do not need this part in the doc*/
+
+
 namespace vli {
 
 class no_variable;
@@ -89,5 +92,8 @@ struct variable<Polynomial,3> {
 };
 
 } // end namespace vli
+
+/* \endcond I do not need this part in the doc*/
+
 
 #endif //VLI__POLYNOMIAL_TRAITS_HPP

@@ -31,6 +31,8 @@
 #ifndef GPU_MEM_BLOCK_H
 #define GPU_MEM_BLOCK_H
 
+/* \cond I do not need this part in the doc*/
+
 namespace vli {
     namespace detail {
 
@@ -60,5 +62,7 @@ namespace vli {
     
     } //end namespace detail
 } //end namespce vli  
+
+/* \endcond I do not need this part in the doc*/
 
 #endif //INNER_PRODUCT_GPU_BOOSTER_HPP

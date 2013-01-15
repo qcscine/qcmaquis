@@ -30,6 +30,7 @@
 
 
 namespace vli {
+/* \cond I do not need this part in the doc*/
     namespace detail {
 
     #define VLI_ExtendStride result_stride<0, 4, Order>::value // 2*order+1
@@ -506,4 +507,5 @@ namespace vli {
     #undef VLI_SIZE
 
     }//end namesoace detail
+    /* \endcond I do not need this part in the doc*/
 }//end namespace vli

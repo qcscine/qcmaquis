@@ -34,6 +34,7 @@
 #include "vli/detail/gpu/tasklist/single_coefficient_task.h"
 
 namespace vli {
+   /* \cond I do not need this part in the doc*/
     namespace detail {
 
     template <std::size_t NumBits, class MaxOrder, int NumVars>
@@ -66,6 +67,7 @@ namespace vli {
     void transfert_workblock_count_by_warp_max_order_combined(std::vector<int> & workblock_count_by_warp_local);
 
     } // end namespace detail
+       /* \endcond I do not need this part in the doc*/
  }//end namespace vli
 
 #include "vli/detail/gpu/tasklist/tasklist_max_order_each.hpp"

@@ -33,8 +33,10 @@
 #include <boost/cstdint.hpp>
 #include "vli/detail/kernels_cpu.h"
 
+
 namespace vli
 {
+  /* \cond I do not need this part in the doc*/
     //forwart declaration
     template <std::size_t NumBits>
     class vli;
@@ -92,7 +94,8 @@ namespace vli
     void multiply_add_assign(vli<2*NumBits>& vli_res , vli<NumBits> const & vli_a, vli<NumBits> const & vli_b){
         using detail::muladd;
         muladd<vli<NumBits>::numwords>(&vli_res[0],&vli_a[0],&vli_b[0]);
-    }    
+    }
+      /* \endcond I do not need this part in the doc*/
 } //namespace vli
 
 #endif //VLI_NUMBER_CPU_FUNCTION_HOOKS_HPP
