@@ -1,3 +1,5 @@
+/* \cond I do not need this part in the doc*/
+
 #ifndef VLI_POLYNOMIAL_DETAIL_HELPERS_HPP
 #define VLI_POLYNOMIAL_DETAIL_HELPERS_HPP
 
@@ -84,3 +86,5 @@ struct num_coefficients<max_order_combined<Order>, NumVars, Coeff>{
 } // end namespace detail
 } // end namespace vli
 #endif //VLI_POLYNOMIAL_DETAIL_HELPERS_HPP
+
+/* \endcond I do not need this part in the doc*/

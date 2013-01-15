@@ -30,6 +30,7 @@
 
 
 namespace vli {
+   /* \cond I do not need this part in the doc*/
     namespace detail {
 
     #define VLI_SIZE num_words<NumBits>::value 
@@ -527,4 +528,5 @@ namespace vli {
 
     #undef VLI_SIZE 
     }//end namesoace detail
+       /* \endcond I do not need this part in the doc*/
 }//end namespace vli

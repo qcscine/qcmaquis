@@ -48,18 +48,31 @@
 
 namespace vli {
 
+/* \cond I do not need this part in the doc*/
+
 template <std::size_t NumBits>
 class vli;
 
+/* \endcond I do not need this part in the doc*/
+
+
+/*! \class vector_polynomial
+    \brief  This class models a vector for polynomial
+
+    It helps the preparation of the inner product. As the class derived from std::vector, it inherits the properties of the vector, constructor and so on
+ 
+*/
 template<class Polynomial>
 class vector_polynomial : public std::vector<Polynomial> { 
   public:
     vector_polynomial(std::size_t size = 1)
     :std::vector<Polynomial>(size) {
     }
+
     //copy and assignemant are done by the std vector
 }; //end class
 
+/* \cond I do not need this part in the doc*/
 template <class VectorPolynomial>
 struct inner_product_result_type {
 };
@@ -68,6 +81,8 @@ template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class
 struct inner_product_result_type< vector_polynomial<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> > > {
     typedef typename polynomial_multiply_result_type<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> >::type type;
 };
+/* \endcond */
+
 
 namespace detail {    
 

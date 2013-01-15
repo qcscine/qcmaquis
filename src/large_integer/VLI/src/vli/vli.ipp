@@ -31,6 +31,7 @@
 #define VLI_VLI_IPP
 
 namespace vli {
+    /* \cond I do not need this part in the doc*/
 namespace detail {
 
 #if defined __GNU_MP_VERSION
@@ -536,6 +537,8 @@ std::ostream& operator<< (std::ostream& os,  vli<NumBits> const& vli){
         vli.print(os);
     return os;
 }
+
+    /* \cond I do not need this part in the doc*/
 
 } // end namespace vli
 

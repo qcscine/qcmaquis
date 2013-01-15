@@ -19,6 +19,12 @@ namespace vli {
 // The polynomial class
 //------------------------------------------------------------------------ 
 
+/*! \class polynomial
+        \brief This class models a dense or triangular polynomial up to 4 variables with an arbitrary Order
+
+        The class is template over the Coefficients (e.g. a VLI number), a type of polynomial max_order_each(dense) or max_order_combined(triangular), and the variables vli::var<'x'>
+ 
+*/
 template <class Coeff, class MaxOrder, class Var0, class Var1 = no_variable, class Var2 = no_variable, class Var3 = no_variable>
 class polynomial : public detail::storage<Coeff,MaxOrder,num_variables<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> >::value> {
   public:
@@ -215,6 +221,7 @@ std::ostream& operator << (std::ostream& os, POLYNOMIAL_CLASS const& p) {
     return os;
 }
 
+/* \cond I do not need this part in the doc*/
 
 template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
 void truncate_inplace(POLYNOMIAL_CLASS & p, unsigned int order) {
@@ -255,12 +262,12 @@ struct variable<POLYNOMIAL_CLASS,3> {
     typedef Var3 type;
 };
 
-
 //------------------------------------------------------------------------ 
 // Specializations for vli
 //------------------------------------------------------------------------ 
 
 // TODO move someplace else
+
 
 template <std::size_t NumBits>
 class vli;
@@ -292,6 +299,9 @@ namespace detail {
         }
     };
 }
+
+/* \endcond I do not need this part in the doc*/
+
 
 } // end namespace vli
 

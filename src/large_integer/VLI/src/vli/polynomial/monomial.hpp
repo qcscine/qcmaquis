@@ -35,6 +35,9 @@
 #include <vli/polynomial/detail/storage.hpp>
 
 namespace vli {
+/*! \class monomial
+        \brief This class models a monomial 
+*/
 template <class Coeff, class Var0, class Var1 = no_variable, class Var2 = no_variable, class Var3 = no_variable>
 struct monomial : public detail::element_descriptor_impl<Var0,Var1,Var2,Var3> {
     typedef Coeff           value_type;

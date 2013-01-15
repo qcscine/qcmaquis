@@ -31,6 +31,7 @@
 #define COEFF_TASK_H
 
 namespace vli {
+   /* \cond I do not need this part in the doc*/
     namespace detail {
 
     struct single_coefficient_task {
@@ -58,5 +59,6 @@ namespace vli {
     }
 
     } // end namespace detail
+       /* \endcond I do not need this part in the doc*/
 } // end name space vli
 #endif

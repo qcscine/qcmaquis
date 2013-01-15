@@ -1,3 +1,5 @@
+
+/* \cond I do not need this part in the doc*/
 //system and boost
 #include <boost/mpl/for_each.hpp>
 #include "boost/lexical_cast.hpp"
@@ -19,9 +21,7 @@
 //utils
 #include "utils/timings.h"
 #include "utils/tools.h"
-#include "main/misc.hpp"
-
-
+#include "misc.hpp"
 
 #include <boost/preprocessor/arithmetic/add.hpp>
 #include <boost/preprocessor/arithmetic/mul.hpp>
@@ -31,7 +31,7 @@
 #include <boost/preprocessor/comparison/equal.hpp>
 #include <boost/preprocessor/stringize.hpp>
 
-#define Size_vec 128// play with this 1024 - 16384
+#define Size_vec 16// play with this 1024 - 16384
 //The order __ORDER__ is passed now by cmake, see cmakelist of the main
 using vli::polynomial;
 using vli::vector_polynomial;
@@ -247,3 +247,5 @@ int main(int argc, char* argv[]) {
 
        return 0;
 }
+
+/* \endcond I do not need this part in the doc*/

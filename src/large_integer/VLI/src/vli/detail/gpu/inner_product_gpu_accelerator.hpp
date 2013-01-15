@@ -46,8 +46,8 @@
 
 namespace vli
 {
- 
-    // a lot of forward declaration    
+/* \cond I do not need this part in the doc*/
+    // a lot of forward declaration
     template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
     class polynomial;
 
@@ -168,6 +168,8 @@ namespace vli
                 #endif
             }
         };
+
+/* \endcond I do not need this part in the doc*/
 
     } // end namespace detail
 } // end namespace vli

@@ -35,6 +35,8 @@
 #include <boost/utility/enable_if.hpp>
 #include "vli/detail/gpu/detail/gpu_mem_block.h" // memory
 
+/* \cond I do not need this part in the doc*/
+
 namespace vli{
 namespace detail {
 /*
@@ -244,5 +246,8 @@ namespace detail {
 
     } // end namespace detail
 }// end namespace vli
+
+/* \endcond I do not need this part in the doc*/
+
 
 #endif
