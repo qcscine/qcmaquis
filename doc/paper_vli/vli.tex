@@ -31,67 +31,120 @@ and attain 67 \% of the peak performance of the GPU.
 \section{Introduction}
 % TODO references LINBOX, NTL
 
-The Very Large Integer library performs  standards  operations for large integer arithmetic and polynomial. This library also provides optimized implementations of inner products  of polynomials for GPU.
-This library is composed of two distinct modules,  but enough closed  to work together by the mechanism of template instantiation. VLI is a fix size library from 128 to 512 bits.
-The polynomial module  is limited for dense and triangular polynomials  up to 4 variables. The core of VLI is build under assembly language to provide the best performance.  Every arithmetic operations
-are executed by a specific kernel generated specifically during the compilation by an assembly language generator. Moreover, VLI allows multithreading and hybrid  GPU usage for the inner products of polynomials.
-Multithreading is build with OpenMP library whereas the GPU module utilizes CUDA. As on the CPU, PTX kernels are generated specifically during the compilation.
+The Very Large Integer library realizes large arithmetic , polynomials  and vector operations............ There are three 3 different modules. 
 
-In large arithmetic, the standard library is GMP\footnote{GMP is the standard library for long arithmetic, gmplib.org}. GMP is polyvalent, nevertheless this polyvalence is attained by the usage of  dynamic memory.
-It is well know dynamic allocation is time consuming, and it can become a bottle neck for small operations, which correspond to our working range.  
-Alternatively, for polynomial arithmetic, a few libraries like  LINBOX or NTL  provide a solution but  they use GMP when needed. 
-Although hardware accelerators were introduced  in HPC a few years ago, as the GPUs  by NVIDIA. Only a few libraries have been adapted 
-A prominent example of such an adaption are the MAGMA libraries, which port the well known BLAS/LAPACK packages to GPU accelerators.
-The polynomials libraries, however,  have not done the transition to these new hardwares yet.
-During the last few years, the polynomial multiplication was successfully implemented on this new hardware
-\cite{Govindaraju2008, Emeliyanenko:2009, Moreno2010}. All these works focus on large polynomials, using a FFT approach. 
+The large integer module models large signed integer from 128 to 512 bits. The operations supported are bits operations , the four basic operators $(\times,+,/,-)$ , extended multiplications and bit shift operations. .....SOMETHING ELSE .......
 
-In this work, we are going to highlight the speedup given by a tiny ASM library without any dynamic memory,  suggest an alternative at GMP for small size integer. 
-We also propose an efficient implementation of the inner products for  dense and triangular multivariable polynomials  on GPU with the latest CUDA PTX features.  
+The polynomial module models polynomials up to 4 variables for dense and triangular polynomials, As previously, the polynomials usual  operations between polynomials and operations with monomials.  .....SOMETHING ELSE .......
 
-%In the present work, we focus on the inner products of dense and triangular multivariable polynomials.  The coefficients of the polynomials are large integers. 
-%In contrast to GMP which dynamically adapts the size of the integers, the presented long integer library is based on static integer sizes.
-%Moreover, our library is natively compatible with GPU to allow hybrid calculation. GPUs impose contiguous memory which is impossible with a GMP approach due to the dynamic allocated memory.
-%Thus, we propose a  library based on contiguous memory where the exact assembly kernels are generated during the compilation for CPU and GPU.
-%The static integer sizes allow the compiler to aggressivly optimize the non-assembly parts of the library and avoids costly heap allocations for the data. 
+The vector of polynomial module provides a container for polynomials and allows support for optimized inners products.
 
-\section{Polynomial and inner products definitions}
+Modules allow flexibility, they can be interchangeable. ........ polynomial can have large integer coefficient or other coefficient ..... All modules combined, we can have access to specialized GPU solver for inner product.
 
-The library performs standards operations for polynomials (up to four variables) and optimized solvers for  the inner products of vectors of polynomials (presented in the next sections).
-The polynomials are defined like  $e.g.$ our variables
-\begin{eqnarray}
-P_a(x,y,z,w) & = & \sum_{i=0}^n \sum_{j=0}^n  \sum_{k=0}^n \sum_{l=0}^n  a_{ijkl} x^i y^j z^k w^l , \,\,\,\,\,\, \text{or} \\
-                   & = & \sum_{i=0}^n \sum_{j=0}^{(n-i)} \sum_{k=0}^{(n-i-j)} \sum_{l=0}^{(n-i-j-k)}  a_{ijkl} x^i y^j z^k w^l  .
-\end{eqnarray}
-where  $x,\,y,\,z$ and $w$ are symbolic variables,  $i,\,j,\,k$ and $l$  the indices, $a$  the coefficients, and $n$ the order of the polynomial.
-The polynomials of the form  (1) and (2) are named dense and triangular respectively. Consider now two vectors of polynomials of the  same type with $m$ 
-entries  $\boldsymbol{v}_1$ and  $\boldsymbol{v}_2$. The inner products  consist of the product 
-of all entries  associated with a global reduction. 
- \begin{eqnarray}
- P_c = \sum_{i=0}^m \boldsymbol{v}_{1_i} \times  \boldsymbol{v}_{2_i}  \label{poly1} \label{InnerProduct}
-\end{eqnarray}
-where $\times$ indicates the multiplication between two polynomials. The multiplications use usual rules of polynomials multiplication. 
-A final coefficient may be the sum of several coefficients (which we call contributions in the following passage), resulting from the sum of several multiplications. These coefficients are the cross terms. 
-The cross terms are not a problem for the CPU version, as a polynomial multiplication is done by a single thread, but they are the bottleneck for the GPU version.
-The number of coefficient for a dense and triangular polynomial is given by $(n+1)^{\kappa}$ and  $(\kappa+n-1)! / ( (\kappa-1)! n! )$ respectively, where $\kappa$ is the number of variables. 
+We goal of this library is perfumed efficient arithmetic for polynomial with large coefficient and execute efficient inner product on GPU........ ANDRES SHOUD WE TALK ON VLI INT SE OR QE ....? 
 
-In terms of  programming and parallelization, in the CPU version, the previous equations can be reduced to independent loops with a final reduction.
-The CPU parallelization has been done with OpenMP. The OpenMP threads calculate several  polynomial multiplications and make a local reduction. At the end, a final reduction is performed  by the main thread.
+ Computer sciences provide solution for large arithmetic, and polynomial operations. For large arithmetic the most famous is GMP ..... WRITE GMP is polyvalent but polyvalence obtained by dynamic memory.....
+ Polynomial operations can be performed by libraries as LINBOX and NTL. ......... these libraries allows manipulation but with GMP, it not performable for small coefficient ......   The GPU is a revolution is programming model tell the LAPACK -> MAGMA .....
+...... polynomial ported only for large size with FFT approach inefficient for pb .... It does not exists optimized polynomials inner products for GPU ...... 
+
+
+
+%standards  operations for large integer arithmetic and polynomial. This library also provides optimized implementations of inner products  for GPU.
+%This library is composed of two distinct modules,  but enough closed  to work together by the mechanism of template instantiation. VLI is a fix size library from 128 to 512 bits,
+%as the polynomial module  which is limited for dense and triangular polynomials  up to 4 variables. The core of VLI is build under ASM language to provide the best performance.  Every arithmetic operations
+%are executed by a specific kernel generated specifically during the compilation by an ASM generator. Moreover, VLI allows multithreading and hybrid  GPU usage for inner products of polynomials.
+%Multithreading is build on OpenMP library and GPU module under CUDA. As the CPU, the GPU is a fixe size library, and ASM kernels are also determinated specifically during the compilation.
+
+%In large arithmetic, the standard library is GMP\footnote{GMP is the standard library for long arithmetic, gmplib.org}. GMP is polyvalent, nevertheless this polyvalence is attained by the usage of  dynamic memory.
+%It is well know dynamic allocation is time consuming, and it can become a bottle neck for small operations which are in the working range.  
+%Alternatively for polynomial arithmetic, a few libraries like  LINBOX or NTL  provide a solution but  they use GMP when needed. 
+%Although hardware accelerators were introduced  in HPC a few years ago, as the GPUs  by NVIDIA. Only a few libraries have been adapted 
+%A prominent example of such an adaption are the MAGMA libraries, which port the well known BLAS/LAPACK packages to GPU accelerators.
+%The polynomials libraries, however,  have not done the transition to these new hardwares yet.
+%During the last few years, the polynomial multiplication was successfully implemented on this new hardware
+%\cite{Govindaraju2008, Emeliyanenko:2009, Moreno2010}. All these works focus on large polynomials, using a FFT approach. 
+
+%In this work, we are going to highlight the speedup given by a tiny ASM library without any dynamic memory, suggest an alternative for small size integer. 
+%And propose an efficient implementation of inner product on GPU with the latest CUDA PTX features.  
+
+%\section{Polynomial and inner products definitions}
+
+%The library performs standards operations for polynomials (up to four variables) and optimized solvers for  the inner products of vectors of polynomials (presented in the next section).
+%The polynomials are defined like  e.g. our variables
+%\begin{eqnarray}
+%P_a(x,y,z,w) & = & \sum_{i=0}^n \sum_{j=0}^n  \sum_{k=0}^n \sum_{l=0}^n  a_{ijkl} x^i y^j z^k w^l , \,\,\,\,\,\, \text{or} \\
+%                   & = & \sum_{i=0}^n \sum_{j=0}^{(n-i)} \sum_{k=0}^{(n-i-j)} \sum_{l=0}^{(n-i-j-k)}  a_{ijkl} x^i y^j z^k w^l  .
+%\end{eqnarray}
+%where  $x,\,y,\,z$ and $w$ are symbolic variables,  $i,\,j,\,k$ and $l$  the indices, $a$  the coefficients, and $n$ the order of the polynomial.
+%The polynomials of the form  (1) and (2) are named dense and triangular respectively. Consider now two vectors of polynomials of the  same type with $m$ 
+%entries  $\boldsymbol{v}_1$ and  $\boldsymbol{v}_2$. The inner products  consist of the product 
+%of all entries  associated with a global reduction. 
+ %\begin{eqnarray}
+% P_c = \sum_{i=0}^m \boldsymbol{v}_{1_i} \times  \boldsymbol{v}_{2_i}  \label{poly1} \label{InnerProduct}
+%\end{eqnarray}
+%where $\times$ indicates the multiplication between two polynomials. The multiplications use usual rules of polynomials multiplication. 
+%A final coefficient may be the sum of several coefficients (which we call contributions in the following passage), resulting from the sum of several multiplications. These coefficients are the cross terms. 
+%The cross terms are not a problem for the CPU version, as a polynomial multiplication is done by a single thread, but they are the bottleneck for the GPU version.
+%The number of coefficient for a dense and triangular polynomial is given by $(n+1)^{\kappa}$ and  $(\kappa+n-1)! / ( (\kappa-1)! n! )$ respectively, where $\kappa$ is the number of variables. 
+
+%In terms of  programming and parallelization, in the CPU version, the previous equations can be reduced to independent loops with a final reduction.
+%The CPU parallelization has been done with OpenMP. The OpenMP threads calculate several  polynomial multiplications and make a local reduction. At the end, a final reduction is performed  by the main thread.
+
  % \footnote{In OpenMP reduction for class is not supported}. Results showed a perfect scalability of the OpenMP code. 
 
-\section{Very Large Integer library}
+%\section{VLI  CPU library}
 
-The coefficients of the polynomials are represented by a large integer named the VLI number.  A VLI number is characterized by a size in bits.
-Our current implementation allows for integer sizes from 128 to 512 bits, but is easily extendable to larger integers.
-Inside the memory, the VLI numbers are  contiguous. The data type container is a 64 bit unsigned integer array.
+%The coefficients of the polynomials are represented by a large integer named the VLI number.  A VLI number is characterized by a size in bits.
+%Our current implementation allows for integer sizes from 128 to 512 bits, but is easily extendable to larger integers.
+%Inside the memory, the VLI numbers are  contiguous. The data type container is a 64 bit unsigned integer array.
 
-The basic operations supported by VLI are the four basic operations: $+,-,\times, /$, extended multiplications and bit shift. The library allows  operations between operands of the same type, and with basic  integers. 
-For performance reasons, we have a specific solver for every operation except  for division.
-All the algorithms and operations are based on basic arithmetic but have been implemented in assembly language to make use of hardware features which are not accessible by plain C++.
+%The basic operations supported by VLI are the four basic operations: $+,-,\times, /$, extended multiplications and bit shift. The library allows  operations between operands of the same type, and with basic  integers. 
+%For performance reasons, we have a specific solver for every operation except  for division.
+%All the algorithms and operations are based on basic arithmetic but have been implemented in assembly language to make use of hardware features which are not accessible by plain C++.
 
-\subsection{Assembly language}
+\section{Implementation of the library}
+\subsubsection{memory layout}
 
-We applied algorithms based on childhood  experience for large arithmetic. The implementation necessitates a carry bit and an extended multiplication. The hardware supports
+.... contrary to GMP  explain a static version of large arithmetic can be faster than a dynamic one....   ....   VLI number are base on 64-bit integer array .... size compile time polymorphism ...
+.... polynomials constructed over boost::array ............. the vector of polynomial is std::vector..... combined together we have a contiguous memory, and more precisely  SoA (show the figure). 
+...... It exists a second order name AoS, it does not allow a construction into module ............  
+
+
+\begin{figure}
+    \begin{minipage}{0.50\linewidth}
+        \begin{eqnarray}
+        \tiny{
+                 \underbrace{
+                 \underbrace{ \underbrace{a^0_{00} | a^1_{00} | a^2_{00}}_{VLI, a_{00} } || \underbrace{a^0_{10} | a^1_{10} | a^2_{10}}_{VLI, a_{10}} ||   \dots  }_{1^{st} \textrm{polynomial}} 
+                  |||    \underbrace{ \underbrace{b^0_{00} | a^1_{00} | b^2_{00}}_{VLI, b_{00} } || \underbrace{b^0_{10} | b^1_{10} | b^2_{10}}_{VLI, b_{10}} ||   \dots  }_{2^{nd} \textrm{polynomial} } }_{\textrm{Vector of polynomials, AoS order}} \nonumber
+            }
+        \end{eqnarray}
+    \end{minipage}
+\begin{minipage}{0.50\linewidth}
+    \begin{eqnarray}
+    \tiny{
+        \underbrace{
+        \underbrace{a^0_{00} | a^0_{10} | \dots || a^1_{00} | a^1_{10} | \dots  }_{1st  \textrm{ nested VLI/Polynomial} } |||  \underbrace{b^0_{00} | b^0_{10} | \dots || b^1_{00} | b^1_{10} | \dots  }_{2nd  \textrm{ nested VLI/Polynomial} }
+        }_{\textrm{Vector of polynomials, SoA Order}} \nonumber }
+        \end{eqnarray}
+\end{minipage}
+\caption{Representation of the AoS Order (left) or SoA Order (right) for a vector of polynomial \label{AOSSOA}.  The SoA structure limits the usage of the VLI module alone.}
+\end{figure}
+
+
+
+......start transition ...........  Polynomials operations necessitates large arithmetic operations for the coefficients , ..... coefficient operations must be fast, we need ASM ..... 
+
+
+
+\subsubsection{Kernels and assembly  language}
+
+
+
+
+
+We applied algorithms based on childhood  experience for large arithmetic........... for the specific range classical operations are enough ........
+The implementation necessitates a carry bit and an extended multiplication. The hardware supports
 the carry bit in the status register, as the extended multiplications, but they are only accessible by the assembly language.
 In assembly, these operations  are supported by the pair of mnemonics; \texttt{addq/adcq} for the addition; \texttt{subq/sbbq} for the subtraction, and \texttt{mul} for the extended multiplication.   
 Combining these mnemonics, we reproduce easily long arithmetic algorithm, as described into the famous  ASM book of \cite{Hyde:2003:AAL:861534}. 
@@ -122,55 +175,72 @@ and generate a specifically tuned kernel for every large integer. We give a smal
 	\end{center}
 \end{table} 
 
-The x86-64 architecture allows 16 registers (32 for Power architecture). We try to reuse the data in the registers as much as possible in order to reduce memory read/writes to the minimum.  Additional optimizations have been done like full unrolling and assembly tips. We  supported  x86-64, Power64 and PTX (GPU) assembly language.
- PTX does not support carry bit for 64-bit integers, but only for 32-bit integers\footnote{Introduced since CUDA 4.2}.  
-It allows a fused multiplication-addition of 32-bit integer  with carry bit support \cite{CUDAasm}. 
-The calculation in 32-bit mode imposes twice as much operations for the additions/subtractions, and one order of magnitude more for the multiplications. 
+The x86-64 architecture allows 16 registers (32 for Power architecture). We try to reuse the data in the registers as much as possible in order to reduce memory read/writes to the minimum.  Additional optimizations have been done like full unrolling and assembly tips. We  supported  x86-64, Power64 and PTX (GPU) assembly language. PTX does not support carry bit for 64-bit integers, but only for 32-bit integers\footnote{Introduced since CUDA 4.2}.  
+It allows a fused multiplication-addition of 32-bit integer  with carry bit support \cite{CUDAasm}.  The calculation in 32-bit mode imposes twice as much operations for the additions/subtractions, and one order of magnitude more for the multiplications. 
 
-\subsection{Memory layout}
-
-We have privileged the  array  of structure  (AoS ) detrimental to the  structure of array (SoA)
-The AoS consists in saving the data in this hierarchy: VLI - series of VLI (polynomial coefficient) - series of polynomials (the vector), where  the SoA structure interleaves the coefficients of the VLI and the polynomials.
-A representation of both memory layout is presented on figure \ref{AOSSOA}. 
-
-\begin{figure}
-    \begin{minipage}{0.50\linewidth}
-        \begin{eqnarray}
-        \tiny{
-                 \underbrace{
-                 \underbrace{ \underbrace{a^0_{00} | a^1_{00} | a^2_{00}}_{VLI, a_{00} } || \underbrace{a^0_{10} | a^1_{10} | a^2_{10}}_{VLI, a_{10}} ||   \dots  }_{1^{st} \textrm{polynomial}} 
-                  |||    \underbrace{ \underbrace{b^0_{00} | a^1_{00} | b^2_{00}}_{VLI, b_{00} } || \underbrace{b^0_{10} | b^1_{10} | b^2_{10}}_{VLI, b_{10}} ||   \dots  }_{2^{nd} \textrm{polynomial} } }_{\textrm{Vector of polynomials, AoS order}} \nonumber
-            }
-        \end{eqnarray}
-    \end{minipage}
-\begin{minipage}{0.50\linewidth}
-    \begin{eqnarray}
-    \tiny{
-        \underbrace{
-        \underbrace{a^0_{00} | a^0_{10} | \dots || a^1_{00} | a^1_{10} | \dots  }_{1st  \textrm{ nested VLI/Polynomial} } |||  \underbrace{b^0_{00} | b^0_{10} | \dots || b^1_{00} | b^1_{10} | \dots  }_{2nd  \textrm{ nested VLI/Polynomial} }
-        }_{\textrm{Vector of polynomials, SoA Order}} \nonumber }
-        \end{eqnarray}
-\end{minipage}
-\caption{Representation of the AoS Order (left) or SoA Order (right) for a vector of polynomial \label{AOSSOA}.  The SoA structure limits the usage of the VLI module alone.}
-\end{figure}
-
-We have chosen the AoS for the two following reasons :
-
-\begin{enumerate}
-\item AoS order allows the natural propagation of the carry bit between the entries of the VLI with the pair of mnemonics \texttt{addq/adcq}, as the utilization of the extended multiplication without any padding.  
-\item The VLI and the polynomial module of the library can be separated and use independently. Thinks impossible if the coefficients are interleaved.
-\end{enumerate}
-
-The disagreement  of this choice, the AoS order does not facilitate the usage of the SIMD instruction such as the AVX instructions of the Sandy Bridge x86-64 architecture.
-Applying SIMD to the AoS for an addition/subtraction is a nonsense because there is no specific instruction to propagate carry bit between entries of the SIMD register.
+..... We does not use SIMD .... because the data order does not help .....
+....  simplify .......
+The disagreement  of this choice, the SoA order does not facilitate the usage of the SIMD instruction such as the AVX instructions of the Sandy Bridge x86-64 architecture.
+Applying SIMD to the AoS, for an addition or a subtraction is a nonsense because there is no specific instruction to propagate carry bit between entries of the SIMD register.
 It could be  apply  on multiplications for integer  larger than 1024-bit \cite{SIMD}, unfortunately, it does not correspond to our working range. Consequently, we do not 
 use the multimedia instruction into the ASM kernels.
+............
 
-%The choice of the memory layout is important. It may facilitate  the usage of the SIMD instructions such as the AVX instructions of the Sandy Bridge x86-64 architecture. We choose the AoS for the following reasons:
-%Applying SIMD to the AoS, for an addition is a nonsense because there is no specific instruction to propagate carry bit between entries of the SIMD register.
-%The extended multiplication under AVX \texttt{\_\_mm256\_mul\_epu32}  allows only four multiplications of 32-bit, saving a factor of two, nevertheless, on Sandy Bridge, we have 3 ALU, we can not exclude
-%the execution of several long multiplication at the same time, and we lose the benefit of the SIMD version. Moreover, there is a large overhead  to prepare the registers and shuffle the data into the registers. For our range of operations the extended multiplication varies from 128 to 512 bits, a SIMD version will not be the optimal solution. However SIMD has been used with success for  integers larger  than 1024-bit \cite{SIMD}.
-% TODO somehow the problem with SIMD operations is not entirely clear yet. You mention the issues, but I think you should elaborate them a little more.
+\section{Advance solver : Inner products}
+
+..... Introduce the capacity of the lib to perform inner product ................
+...... make a short math description ......... 
+
+%The library performs standards operations for polynomials (up to four variables) and optimized solvers for  the inner products of vectors of polynomials (presented in the next section).
+%The polynomials are defined like  e.g. our variables
+%\begin{eqnarray}
+%P_a(x,y,z,w) & = & \sum_{i=0}^n \sum_{j=0}^n  \sum_{k=0}^n \sum_{l=0}^n  a_{ijkl} x^i y^j z^k w^l , \,\,\,\,\,\, \text{or} \\
+%                   & = & \sum_{i=0}^n \sum_{j=0}^{(n-i)} \sum_{k=0}^{(n-i-j)} \sum_{l=0}^{(n-i-j-k)}  a_{ijkl} x^i y^j z^k w^l  .
+%\end{eqnarray}
+%where  $x,\,y,\,z$ and $w$ are symbolic variables,  $i,\,j,\,k$ and $l$  the indices, $a$  the coefficients, and $n$ the order of the polynomial.
+%The polynomials of the form  (1) and (2) are named dense and triangular respectively. Consider now two vectors of polynomials of the  same type with $m$ 
+%entries  $\boldsymbol{v}_1$ and  $\boldsymbol{v}_2$. The inner products  consist of the product 
+%of all entries  associated with a global reduction. 
+ %\begin{eqnarray}
+% P_c = \sum_{i=0}^m \boldsymbol{v}_{1_i} \times  \boldsymbol{v}_{2_i}  \label{poly1} \label{InnerProduct}
+%\end{eqnarray}
+%where $\times$ indicates the multiplication between two polynomials. % The multiplications use usual rules of polynomials multiplication. 
+
+\subsubsection{CPU implementation}
+........ explain quickly ..... just loop other coefficient .... with the OMP /// ......
+%In terms of  programming and parallelization, in the CPU version, the previous equations can be reduced to independent loops with a final reduction.
+%The CPU parallelization has been done with OpenMP. The OpenMP threads calculate several  polynomial multiplications and make a local reduction. At the end, a final reduction is performed  by the main thread.
+
+
+
+....... transisition explain the pb of the cross term ..... 
+%A final coefficient may be the sum of several coefficients (which we call contributions in the following passage), resulting from the sum of several multiplications. These coefficients are the cross terms. 
+%The cross terms are not a problem for the CPU version, as a polynomial multiplication is done by a single thread, but they are the bottleneck for the GPU version.
+%The number of coefficient for a dense and triangular polynomial is given by $(n+1)^{\kappa}$ and  $(\kappa+n-1)! / ( (\kappa-1)! n! )$ respectively, where $\kappa$ is the number of variables. 
+....... end pb .......
+..... GPU is interesting because we have a lot of threads available, we can calculate contribution but in a correct way to avoid pb .............
+
+%\subsection{Memory layout and SIMD possibility}
+
+%We have privileged the  array  of structure  (SoA ) detrimental to the  structure of array (SoA)
+%The AoS consists in saving the data in this hierarchy: VLI - series of VLI (polynomial coefficient) - series of polynomials (the vector), where  the SoA structure interleaves the coefficients of the VLI and the polynomials.
+%A representation of both memory layout is presented on figure \ref{AOSSOA}. 
+
+
+%We have choose the SoA for the two following reasons :
+
+%\begin{enumerate}
+%\item SoA order allows the natural propagation of the carry bit between the entries of the VLI with the pair of mnemonics \texttt{addq/adcq}, as the utilization of the extended multiplication without any padding.  
+%\item The VLI and the polynomial module of the library can be separated and use independently. Thinks impossible if the coefficients are interleaved.
+%\end{enumerate}
+
+
+
+%%The choice of the memory layout is important. It may facilitate  the usage of the SIMD instructions such as the AVX instructions of the Sandy Bridge x86-64 architecture. We choose the AoS for the following reasons:
+%%Applying SIMD to the AoS, for an addition is a nonsense because there is no specific instruction to propagate carry bit between entries of the SIMD register.
+%%The extended multiplication under AVX \texttt{\_\_mm256\_mul\_epu32}  allows only four multiplications of 32-bit, saving a factor of two, nevertheless, on Sandy Bridge, we have 3 ALU, we can not exclude
+%%the execution of several long multiplication at the same time, and we lose the benefit of the SIMD version. Moreover, there is a large overhead  to prepare the registers and shuffle the data into the registers. For our range of operations the extended multiplication varies from 128 to 512 bits, a SIMD version will not be the optimal solution. However SIMD has been used with success for  integers larger  than 1024-bit \cite{SIMD}.
+%% TODO somehow the problem with SIMD operations is not entirely clear yet. You mention the issues, but I think you should elaborate them a little more.
 
 %\section{A short introduction to GPU}
 
@@ -185,11 +255,38 @@ use the multimedia instruction into the ASM kernels.
 
 %Applying the GPU ideology to the polynomial inner products  means that the polynomial multiplications will be executed in parallel on the SMs. Then a global reduction will sum all resulting polynomials. The division into blocks is natural, a block being a single entry of the vector (equation \ref{InnerProduct}).  The difficulty consists of designing a parallel algorithm for the polynomial multiplication and the final reduction.
 
-\section{Inner product booster on GPU}
+
+
+%The library performs standards operations for polynomials (up to four variables) and optimized solvers for  the inner products of vectors of polynomials (presented in the next section).
+%The polynomials are defined like  e.g. our variables
+%\begin{eqnarray}
+%P_a(x,y,z,w) & = & \sum_{i=0}^n \sum_{j=0}^n  \sum_{k=0}^n \sum_{l=0}^n  a_{ijkl} x^i y^j z^k w^l , \,\,\,\,\,\, \text{or} \\
+%                   & = & \sum_{i=0}^n \sum_{j=0}^{(n-i)} \sum_{k=0}^{(n-i-j)} \sum_{l=0}^{(n-i-j-k)}  a_{ijkl} x^i y^j z^k w^l  .
+%\end{eqnarray}
+%where  $x,\,y,\,z$ and $w$ are symbolic variables,  $i,\,j,\,k$ and $l$  the indices, $a$  the coefficients, and $n$ the order of the polynomial.
+%The polynomials of the form  (1) and (2) are named dense and triangular respectively. Consider now two vectors of polynomials of the  same type with $m$ 
+%entries  $\boldsymbol{v}_1$ and  $\boldsymbol{v}_2$. The inner products  consist of the product 
+%of all entries  associated with a global reduction. 
+ %\begin{eqnarray}
+% P_c = \sum_{i=0}^m \boldsymbol{v}_{1_i} \times  \boldsymbol{v}_{2_i}  \label{poly1} \label{InnerProduct}
+%\end{eqnarray}
+%where $\times$ indicates the multiplication between two polynomials. The multiplications use usual rules of polynomials multiplication. 
+%A final coefficient may be the sum of several coefficients (which we call contributions in the following passage), resulting from the sum of several multiplications. These coefficients are the cross terms. 
+%The cross terms are not a problem for the CPU version, as a polynomial multiplication is done by a single thread, but they are the bottleneck for the GPU version.
+%The number of coefficient for a dense and triangular polynomial is given by $(n+1)^{\kappa}$ and  $(\kappa+n-1)! / ( (\kappa-1)! n! )$ respectively, where $\kappa$ is the number of variables. 
+
+%In terms of  programming and parallelization, in the CPU version, the previous equations can be reduced to independent loops with a final reduction.
+%The CPU parallelization has been done with OpenMP. The OpenMP threads calculate several  polynomial multiplications and make a local reduction. At the end, a final reduction is performed  by the main thread.
+
+ % \footnote{In OpenMP reduction for class is not supported}. Results showed a perfect scalability of the OpenMP code. 
+
+
 
 %The first idea comes to mind: calculate every single multiplication on an independent GPU thread. Indeed for a dense polynomial, the number of coefficients can be large and compatible with the number of SMs threads. Nevertheless, the resulting coefficients may have several contributions. If the contributions are calculated by several threads, this requires reduction between threads. This solution introduces   synchronizations and leads to low performance.
 
-The GPU algorithm of the inner product is divided into two parts. A preliminary step on the CPU executed only once,  where we prepare the execution blue print of the  contribution. And the second step the calculation itself on the GPU
+\subsubsection{GPU implementation}
+
+The GPU algorithm of the inner product is divided into two parts. A preliminary step on the CPU,  where we prepare the calculation blue print of the  contribution. And the calculation itself on the GPU
 
 \begin{enumerate}
 
@@ -253,7 +350,7 @@ The contributions are not dispatched between the threads, thus we do not  introd
 This  algorithm has the great advantage of working well with dense - triangular polynomials, and it could be extended to sparse polynomials, as structure of the polynomial is not primordial.
 The main difficulty consists  of designing an efficient function \texttt{GetIndices} (table \ref{ALGO}) which determines the contributions.
 
-To conclude,  We also developed an optional hybrid mode between CPU/GPU. This  technique is usual in GPU computing.
+To conclude, ........ both method can be mix ........ We also developed an optional hybrid mode between CPU/GPU. This  technique is usual in GPU computing.
 We split the input vectors of polynomials into two chunks of data, execute concurrently on CPU and GPU. 
 A synchronization  is performed during  the memory transfer   by the final reduction, at the end of the calculation.
 
