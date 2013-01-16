@@ -58,6 +58,12 @@ namespace vli {
 template<class Polynomial>
 class vector : public std::vector<Polynomial> {
   public:
+    /**
+    \brief  constructor
+    \param size, default value 1
+    
+    Initialiation of the vector for a given size
+    */
     vector(std::size_t size = 1)
     :std::vector<Polynomial>(size) {
     }
@@ -79,6 +85,13 @@ struct inner_product_result_type< vector<polynomial<Coeff,MaxOrder,Var0,Var1,Var
 
 namespace detail {    
 
+/**
+    \brief multithread inner product on CPU
+    \param v1 vector of polynomial
+    \param v2 vector of polynomial
+ 
+    This function performs an inner product on the CPU using OMP multi-threading
+*/
 template <class Polynomial>
 typename inner_product_result_type<vector<Polynomial> >::type inner_product_cpu( 
     vector<Polynomial> const& v1, 
@@ -114,7 +127,13 @@ typename inner_product_result_type<vector<Polynomial> >::type inner_product_cpu(
     #endif
 }
 
-// I keep it for dev but nothing else
+/**
+    \brief  Safe inner product
+    \param v1 vector of polynomial
+    \param v2 vector of polynomial
+ 
+    This function performs an inner product on the CPU without any threading
+*/
 template <class Polynomial>
 typename inner_product_result_type<vector<Polynomial> >::type inner_product_plain (
       vector<Polynomial> const& v1
@@ -130,6 +149,18 @@ typename inner_product_result_type<vector<Polynomial> >::type inner_product_plai
 
 } // end namespace detail
 
+
+/**
+    \brief  Optimize Inner Product
+    \param v1 vector of polynomial
+    \param v2 vector of polynomial
+ 
+    This function performs an optimized inner product. If the GPU mode is OFF the inner product will be executed in parrallel by OMP threading.
+    If the GPU mode is activated an hybrid inner product will be executed on the GPU under hybrid setting rule.
+    
+    \note By default the  hybrid inner product is executed on the full GPU. A split parameter is available into the cmake setting. It is to the user
+    to fix properly.
+*/
 template <class Polynomial>
 inline typename inner_product_result_type<vector<Polynomial> >::type
 inner_product(
@@ -143,6 +174,9 @@ inner_product(
 #endif
 }
 
+/**
+    \brief  Stream operator for the vector class
+*/
 template<class Polynomial>
 std::ostream & operator<<(std::ostream & os, vector<Polynomial> const& v) {        
     for(std::size_t i = 0; i < v.size(); ++i)
