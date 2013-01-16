@@ -5,8 +5,8 @@ using namespace vli::test;
 
 VLI_FUZZABLE_TEST( gmp_multiplies_negative )
 {
-    vli_type a;
-    vli_type b;
+    integer_type a;
+    integer_type b;
     init(a,multiplies_overflow_safe);
     init(b,multiplies_overflow_safe);
 
@@ -14,13 +14,13 @@ VLI_FUZZABLE_TEST( gmp_multiplies_negative )
 
     mpz_class agmp(a), bgmp(b);
 
-    vli_type c = a*b;
-    vli_type cr = b*a;
+    integer_type c = a*b;
+    integer_type cr = b*a;
     mpz_class cgmp = agmp * bgmp;
 
     negate_inplace(b);
 
-    vli_type d = a*b;
+    integer_type d = a*b;
     mpz_class dgmp = agmp * (-bgmp);
 
     BOOST_CHECK_EQUAL(cr,c);

@@ -181,14 +181,14 @@ namespace vli {
     template <>
     struct K_helper<64>{
         static inline void KA(boost::uint64_t* res0, boost::uint64_t const *  a, boost::uint64_t const *  b){//
-            /* =a means rax for lower part, =d means rdx for the higher part, = for writing, %0 directly vli_a[0] ready for mul vli[0] */
+            /* =a means rax for lower part, =d means rdx for the higher part, = for writing, %0 directly integer_a[0] ready for mul integer[0] */
             asm("mulq %3;" :"=a"(res0[0]), "=d"(res0[1]) :"%0" (a[0]), "r"(b[0]): "cc");
         }
     };
         
     template <std::size_t NumBits>
-    void karatsuba(vli<2*NumBits>& res, vli<NumBits> const& vli_a, vli<NumBits> const& vli_b){
-        K_helper<NumBits>::KA(&res[0],&vli_a[0],&vli_b[0]);
+    void karatsuba(integer<2*NumBits>& res, integer<NumBits> const& integer_a, integer<NumBits> const& integer_b){
+        K_helper<NumBits>::KA(&res[0],&integer_a[0],&integer_b[0]);
     }
     
     #undef FUNCTION_add_nbits_nbits

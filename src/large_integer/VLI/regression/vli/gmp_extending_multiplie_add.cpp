@@ -5,8 +5,8 @@ using namespace vli::test;
 
 VLI_FUZZABLE_TEST( gmp_extending_multiplie_add )
 {
-    vli_type a,b;
-    typename double_sized_vli<vli_type>::type c;
+    integer_type a,b;
+    typename double_sized_integer<integer_type>::type c;
 
     init(a,multiplies_overflow_safe);
     init(b,multiplies_overflow_safe);
@@ -24,8 +24,8 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplie_add )
 
 VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_a )
 {
-    vli_type a,b;
-    typename double_sized_vli<vli_type>::type c;
+    integer_type a,b;
+    typename double_sized_integer<integer_type>::type c;
 
     init(a,multiplies_overflow_safe);
     init(b,multiplies_overflow_safe);
@@ -45,8 +45,8 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_a )
 
 VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_b )
 {
-    vli_type a,b;
-    typename double_sized_vli<vli_type>::type c;
+    integer_type a,b;
+    typename double_sized_integer<integer_type>::type c;
 
     init(a,multiplies_overflow_safe);
     init(b,multiplies_overflow_safe);
@@ -66,8 +66,8 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_b )
 
 VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_c )
 {
-    vli_type a,b;
-    typename double_sized_vli<vli_type>::type c;
+    integer_type a,b;
+    typename double_sized_integer<integer_type>::type c;
 
     init(a,multiplies_overflow_safe);
     init(b,multiplies_overflow_safe);
@@ -87,8 +87,8 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_c )
 
 VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_ab )
 {
-    vli_type a,b;
-    typename double_sized_vli<vli_type>::type c;
+    integer_type a,b;
+    typename double_sized_integer<integer_type>::type c;
 
     init(a,multiplies_overflow_safe);
     init(b,multiplies_overflow_safe);
@@ -109,8 +109,8 @@ VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_ab )
 
 VLI_FUZZABLE_TEST( gmp_extending_multiplie_add_negative_ac )
 {
-    vli_type a,b;
-    typename double_sized_vli<vli_type>::type c;
+    integer_type a,b;
+    typename double_sized_integer<integer_type>::type c;
 
     init(a,multiplies_overflow_safe);
     init(b,multiplies_overflow_safe);

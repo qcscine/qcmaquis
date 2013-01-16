@@ -4,12 +4,12 @@ using namespace vli::test;
 
 VLI_STATIC_TEST( comparison_vli )
 {
-    BOOST_STATIC_ASSERT(vli_type::numwords > 1);
+    BOOST_STATIC_ASSERT(integer_type::numwords > 1);
 
-    vli_type a(0);
-    vli_type b(0);
-    vli_type a_orig(a);
-    vli_type b_orig(b);
+    integer_type a(0);
+    integer_type b(0);
+    integer_type a_orig(a);
+    integer_type b_orig(b);
 
     BOOST_CHECK_EQUAL(a<b, false);
     BOOST_CHECK_EQUAL(a>b, false);
@@ -51,10 +51,10 @@ VLI_STATIC_TEST( comparison_vli )
 
 VLI_STATIC_TEST( comparison_int )
 {
-    BOOST_STATIC_ASSERT(vli_type::numwords > 1);
+    BOOST_STATIC_ASSERT(integer_type::numwords > 1);
 
-    vli_type a(0);
-    vli_type a_orig(a);
+    integer_type a(0);
+    integer_type a_orig(a);
 
     int zero = 0;
     int one = 1;
@@ -93,9 +93,9 @@ VLI_STATIC_TEST( comparison_int )
     BOOST_CHECK_EQUAL(a,a_orig);
 
 
-    vli_type b(0);
+    integer_type b(0);
     b[1] = 1;
-    vli_type b_orig(b);
+    integer_type b_orig(b);
     BOOST_CHECK_EQUAL(b<zero, false);
     BOOST_CHECK_EQUAL(b>zero, true);
     BOOST_CHECK_EQUAL(b<minus_one, false);

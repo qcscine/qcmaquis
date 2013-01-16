@@ -4,14 +4,14 @@ using namespace vli::test;
 
 VLI_FUZZABLE_TEST( multiplies_assign_multiplies_equivalence )
 {
-    vli_type a;
-    vli_type b;
+    integer_type a;
+    integer_type b;
     init(a);
     init(b);
-    vli_type b_orig(b);
+    integer_type b_orig(b);
 
-    vli_type ab = a*b;
-    vli_type ba = b*a;
+    integer_type ab = a*b;
+    integer_type ba = b*a;
     a*=b;
 
     BOOST_CHECK_EQUAL(a,ab);
@@ -23,15 +23,15 @@ VLI_FUZZABLE_TEST( multiplies_assign_multiplies_equivalence )
 
 VLI_FUZZABLE_TEST( multiplies_assign_multiplies_equivalence_int )
 {
-    vli_type a;
+    integer_type a;
     int b;
     init(a);
     init(b);
 
     int b_orig(b);
 
-    vli_type ab = a*b;
-    vli_type ba = b*a;
+    integer_type ab = a*b;
+    integer_type ba = b*a;
     a*=b;
 
     BOOST_CHECK_EQUAL(a,ab);
@@ -43,12 +43,12 @@ VLI_FUZZABLE_TEST( multiplies_assign_multiplies_equivalence_int )
 
 VLI_STATIC_TEST( multiplies_plus_relation_int )
 {
-    vli_type a;
+    integer_type a;
     init(a,overflow_safe);
-    vli_type a_orig(a);
+    integer_type a_orig(a);
 
-    vli_type b = a+a+a;
-    vli_type c = a * 3;
+    integer_type b = a+a+a;
+    integer_type c = a * 3;
 
     BOOST_CHECK_EQUAL(c,b);
 
@@ -58,13 +58,13 @@ VLI_STATIC_TEST( multiplies_plus_relation_int )
 
 VLI_STATIC_TEST( multiplies_plus_relation )
 {
-    vli_type a;
+    integer_type a;
     init(a,overflow_safe);
 
-    vli_type a_orig(a);
+    integer_type a_orig(a);
 
-    vli_type b = a+a+a;
-    vli_type c = a * vli_type(3);
+    integer_type b = a+a+a;
+    integer_type c = a * integer_type(3);
 
     BOOST_CHECK_EQUAL(c,b);
 
@@ -74,41 +74,41 @@ VLI_STATIC_TEST( multiplies_plus_relation )
 
 VLI_STATIC_TEST( multiplies_carry_int )
 {
-    vli_type a,c;
+    integer_type a,c;
     long int b = 2;
 
-    for(std::size_t i(0); i < vli_type::numwords-1; ++i)
-        a[i] = std::numeric_limits<vli_type::value_type>::max();
+    for(std::size_t i(0); i < integer_type::numwords-1; ++i)
+        a[i] = std::numeric_limits<integer_type::value_type>::max();
 
     a*=b;
 
-    c[0] = std::numeric_limits<vli_type::value_type>::max()-1;
+    c[0] = std::numeric_limits<integer_type::value_type>::max()-1;
 
-    for(std::size_t i(1); i < vli_type::numwords-1; ++i)
-        c[i] = std::numeric_limits<vli_type::value_type>::max();
+    for(std::size_t i(1); i < integer_type::numwords-1; ++i)
+        c[i] = std::numeric_limits<integer_type::value_type>::max();
 
-    c[vli_type::numwords-1] = 1;
+    c[integer_type::numwords-1] = 1;
 
     BOOST_CHECK_EQUAL(a,c);
 }
 
 VLI_STATIC_TEST( multiplies_carry )
 {
-    vli_type a,c,b;
+    integer_type a,c,b;
 
     b[0]=2;
 
-    for(std::size_t i(0); i < vli_type::numwords-1; ++i)
-        a[i] = std::numeric_limits<vli_type::value_type>::max();
+    for(std::size_t i(0); i < integer_type::numwords-1; ++i)
+        a[i] = std::numeric_limits<integer_type::value_type>::max();
 
     a*=b;
 
-    c[0] = std::numeric_limits<vli_type::value_type>::max()-1;
+    c[0] = std::numeric_limits<integer_type::value_type>::max()-1;
 
-    for(std::size_t i(1); i < vli_type::numwords-1; ++i)
-        c[i] = std::numeric_limits<vli_type::value_type>::max();
+    for(std::size_t i(1); i < integer_type::numwords-1; ++i)
+        c[i] = std::numeric_limits<integer_type::value_type>::max();
 
-    c[vli_type::numwords-1] = 1;
+    c[integer_type::numwords-1] = 1;
 
     BOOST_CHECK_EQUAL(a,c);
 }

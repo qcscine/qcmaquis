@@ -270,28 +270,28 @@ struct variable<POLYNOMIAL_CLASS,3> {
 
 
 template <std::size_t NumBits>
-class vli;
+class integer;
 
 template <std::size_t NumBits, int Order, class Var0, class Var1, class Var2, class Var3>
-struct polynomial_multiply_result_type<polynomial<vli<NumBits>,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
-    typedef polynomial<vli<2*NumBits>,max_order_each<2*Order>,Var0,Var1,Var2,Var3> type;
+struct polynomial_multiply_result_type<polynomial<integer<NumBits>,max_order_each<Order>,Var0,Var1,Var2,Var3> > {
+    typedef polynomial<integer<2*NumBits>,max_order_each<2*Order>,Var0,Var1,Var2,Var3> type;
 };
 
 template <std::size_t NumBits, int Order, class Var0, class Var1, class Var2, class Var3>
-struct polynomial_multiply_result_type<polynomial<vli<NumBits>,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
-    typedef polynomial<vli<2*NumBits>,max_order_combined<2*Order>,Var0,Var1,Var2,Var3> type;
+struct polynomial_multiply_result_type<polynomial<integer<NumBits>,max_order_combined<Order>,Var0,Var1,Var2,Var3> > {
+    typedef polynomial<integer<2*NumBits>,max_order_combined<2*Order>,Var0,Var1,Var2,Var3> type;
 };
 
 template <std::size_t NumBits, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
-struct polynomial_multiply_keep_order_result_type<polynomial<vli<NumBits>,MaxOrder,Var0,Var1,Var2,Var3> > {
-    typedef polynomial<vli<2*NumBits>,MaxOrder,Var0,Var1,Var2,Var3> type;
+struct polynomial_multiply_keep_order_result_type<polynomial<integer<NumBits>,MaxOrder,Var0,Var1,Var2,Var3> > {
+    typedef polynomial<integer<2*NumBits>,MaxOrder,Var0,Var1,Var2,Var3> type;
 };
 
 
 namespace detail {
     template <std::size_t NumBits, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
-    struct equal_helper<polynomial<vli<NumBits>,MaxOrder,Var0,Var1,Var2,Var3> > {
-        typedef polynomial<vli<NumBits>,MaxOrder,Var0,Var1,Var2,Var3> polynomial_type;
+    struct equal_helper<polynomial<integer<NumBits>,MaxOrder,Var0,Var1,Var2,Var3> > {
+        typedef polynomial<integer<NumBits>,MaxOrder,Var0,Var1,Var2,Var3> polynomial_type;
             bool operator()(polynomial_type const& p, polynomial_type const& p2) {
             // TODO check if this is ok
             int n = memcmp((void*)p.begin(),(void*)p2.begin(),((char*)p.end()-(char*)p.begin())*sizeof(char));

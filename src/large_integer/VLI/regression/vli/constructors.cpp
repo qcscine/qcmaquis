@@ -4,20 +4,20 @@ using namespace vli::test;
 
 VLI_STATIC_TEST( constructors_test )
 {
-    vli_type a;
-    vli_type b(0);
+    integer_type a;
+    integer_type b(0);
 
     BOOST_CHECK_EQUAL(a,b);
 }
 
 VLI_FUZZABLE_TEST( copy_constructor_and_assignment )
 { 
-    vli_type a;
+    integer_type a;
     init(a);
-    vli_type b(a);
+    integer_type b(a);
     BOOST_CHECK_EQUAL(a,b);
 
-    vli_type c;
+    integer_type c;
     init(c);
 
     c = b;

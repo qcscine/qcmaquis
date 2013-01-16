@@ -5,14 +5,14 @@ using namespace vli::test;
 
 VLI_FUZZABLE_TEST( gmp_multiplies_positive_positive_int )
 {
-    vli_type a;
+    integer_type a;
     int b;
     init(a,overflow_safe); // TODO is this safe enough?
     init(b);
 
     mpz_class agmp(a);
 
-    vli_type c = a*b;
+    integer_type c = a*b;
     mpz_class cgmp = agmp * b;
 
     BOOST_CHECK_EQUAL(mpz_class(c),cgmp);
@@ -20,7 +20,7 @@ VLI_FUZZABLE_TEST( gmp_multiplies_positive_positive_int )
 
 VLI_FUZZABLE_TEST( gmp_multiplies_positive_negative_int )
 {
-    vli_type a;
+    integer_type a;
     int b;
     init(a,overflow_safe); // TODO is this safe enough?
     init(b);
@@ -29,7 +29,7 @@ VLI_FUZZABLE_TEST( gmp_multiplies_positive_negative_int )
 
     mpz_class agmp(a);
 
-    vli_type c = a*b;
+    integer_type c = a*b;
     mpz_class cgmp = agmp * b;
 
     BOOST_CHECK_EQUAL(mpz_class(c),cgmp);
@@ -37,7 +37,7 @@ VLI_FUZZABLE_TEST( gmp_multiplies_positive_negative_int )
 
 VLI_FUZZABLE_TEST( gmp_multiplies_negative_positive_int )
 {
-    vli_type a;
+    integer_type a;
     int b;
     init(a,overflow_safe); // TODO is this safe enough?
     init(b);
@@ -46,7 +46,7 @@ VLI_FUZZABLE_TEST( gmp_multiplies_negative_positive_int )
 
     mpz_class agmp(a);
 
-    vli_type c = a*b;
+    integer_type c = a*b;
     mpz_class cgmp = agmp * b;
 
     BOOST_CHECK_EQUAL(mpz_class(c),cgmp);
@@ -54,7 +54,7 @@ VLI_FUZZABLE_TEST( gmp_multiplies_negative_positive_int )
 
 VLI_FUZZABLE_TEST( gmp_multiplies_negative_negative_int )
 {
-    vli_type a;
+    integer_type a;
     int b;
     init(a,overflow_safe); // TODO is this safe enough?
     init(b);
@@ -64,7 +64,7 @@ VLI_FUZZABLE_TEST( gmp_multiplies_negative_negative_int )
 
     mpz_class agmp(a);
 
-    vli_type c = a*b;
+    integer_type c = a*b;
     mpz_class cgmp = agmp * b;
 
     BOOST_CHECK_EQUAL(mpz_class(c),cgmp);
@@ -72,7 +72,7 @@ VLI_FUZZABLE_TEST( gmp_multiplies_negative_negative_int )
 
 VLI_FUZZABLE_TEST( gmp_multiplies_assign_positive_positive_int )
 {
-    vli_type a;
+    integer_type a;
     int b;
     init(a,overflow_safe); // TODO is this safe enough?
     init(b);
@@ -88,7 +88,7 @@ VLI_FUZZABLE_TEST( gmp_multiplies_assign_positive_positive_int )
 
 VLI_FUZZABLE_TEST( gmp_multiplies_assign_negative_positive_int )
 {
-    vli_type a;
+    integer_type a;
     int b;
     init(a,overflow_safe); // TODO is this safe enough?
     init(b);
@@ -105,7 +105,7 @@ VLI_FUZZABLE_TEST( gmp_multiplies_assign_negative_positive_int )
 
 VLI_FUZZABLE_TEST( gmp_multiplies_assign_positive_negative_int )
 {
-    vli_type a;
+    integer_type a;
     int b;
     init(a,overflow_safe); // TODO is this safe enough?
     init(b);
@@ -121,7 +121,7 @@ VLI_FUZZABLE_TEST( gmp_multiplies_assign_positive_negative_int )
 
 VLI_FUZZABLE_TEST( gmp_multiplies_assign_negative_negative_int )
 {
-    vli_type a;
+    integer_type a;
     int b;
     init(a,overflow_safe); // TODO is this safe enough?
     init(b);
