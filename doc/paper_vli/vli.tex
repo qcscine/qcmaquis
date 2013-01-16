@@ -31,23 +31,42 @@ and attain 67 \% of the peak performance of the GPU.
 \section{Introduction}
 % TODO references LINBOX, NTL
 
+ THE LIB DOES
 \begin{itemize}
-\item The Very Large Integer library realizes large arithmetic , polynomials  and vector operation.  There are three 3 different modules. 
-\item The large integer module models large signed integer from 128 to 512 bits. The operations supported are bits operations , the four basic operators $(\times,+,/,-)$ , extended multiplications and bit shift operations. 
-\item The polynomial module models polynomials up to 4 variables for dense and triangular polynomials, As previously, the polynomials usual  operations between polynomials and operations with monomials.  
-\item The vector of polynomial module provides a container for polynomials and allows support for optimized inners products.
-\item Modules allow flexibility, they can be interchangeable. 
-\item polynomial can have large integer coefficient or other coefficient 
-\item All modules combined, we can have access to specialized GPU solver for inner product.
+\item The Very Large Integer library realizes large arithmetic , polynomials  and vector operation.  There are three 3 different modules interchangeable. 
 \end{itemize}
---------------------------------------------------------
-\begin{itemize}
-\item  We goal of this library is perfumed efficient arithmetic for polynomial with large coefficient and execute efficient inner product on GPU.
-\item give an efficient library for the HP2C initiative code .e.g 
-\end{itemize}
---------------------------------------------------------
-\begin{itemize}
 
+\begin{enumerate}
+\item  \begin{itemize}
+\item The large integer module models large signed integer from 128 to 512 bits. The operations supported are bits operations , the four basic operators $(\times,+,/,-)$ , extended multiplications and bit shift operations. 
+\item compile time polymorphism
+\end{itemize}
+
+\item \begin{itemize}
+\item The polynomial module models polynomials up to 4 variables for dense and triangular polynomials, As previously, the polynomials usual  operations between polynomials and operations with monomials.  
+\item polynomial can have large integer coefficient or other coefficient e.g. GMP
+\end{itemize}
+
+\item \begin{itemize}
+\item The vector of polynomial module provides a container for polynomials and allows support for optimized inners products.
+\item  modules combined, we can have access to specialized GPU solver for inner product.
+\end{itemize}
+\end{enumerate}
+
+--------------------------------------------------------
+
+THE OBJECTIVE
+
+\begin{itemize}
+\item  We goal of this library is performed efficient arithmetic for polynomial with large coefficient and execute efficient inner product : multithread and/or GPU.
+\item give an efficient library for the HP2C initiative code .e.g  SE
+\end{itemize}
+--------------------------------------------------------
+
+OTHER LIBRAIRIES
+
+
+\begin{itemize}
 \item Computer sciences provide solution for large arithmetic, and polynomial operations. For large arithmetic the standard is GMP
 \item  GMP is polyvalent but polyvalence obtained by dynamic memory 
 \item Polynomial operations can be performed by libraries as LINBOX and NTL
@@ -142,9 +161,11 @@ and attain 67 \% of the peak performance of the GPU.
 \caption{Representation of the AoS Order (left) or SoA Order (right) for a vector of polynomial \label{AOSSOA}.  The SoA structure limits the usage of the VLI module alone.}
 \end{figure}
 
+TRANSITION
 \begin{itemize}
 \item Polynomials operations necessitates large arithmetic operations for the coefficients ,
 \item  coefficient operations must be fast, we need ASM 
+\item this memory layout facilitates classical ASM 
 \end{itemize}
 
 
