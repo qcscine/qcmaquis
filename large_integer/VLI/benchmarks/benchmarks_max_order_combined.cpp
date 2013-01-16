@@ -4,8 +4,8 @@
 BOOST_AUTO_TEST_CASE(TEST_NAME) // later boost mpl on the polynomial type
 {
        typedef vli::polynomial_multiply_result_type<Polynomial_type_combined>::type Polynomial_res;
-       typedef vli::vector_polynomial<Polynomial_type_combined> vector_polynomial;
-       typedef vli::vector_polynomial<Polynomial_res> vector_polynomial_res;
+       typedef vli::vector<Polynomial_type_combined> vector_polynomial;
+       typedef vli::vector<Polynomial_res> vector_polynomial_res;
       
        vector_polynomial v1(SIZE_VEC),v2(SIZE_VEC);
        Polynomial_res p_res;

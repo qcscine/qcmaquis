@@ -1,28 +1,26 @@
 #ifndef VLI_BENCH_HEADER_HPP
 #define VLI_BENCH_HEADER_HPP
 
-#define BOOST_TEST_MODULE vli_cpu
+#define BOOST_TEST_MODULE integer_cpu
 
 #include <boost/test/unit_test.hpp>
 #include <boost/mpl/list.hpp>
  
 #ifdef VLI_USE_GPU
-#include "vli/detail/gpu/inner_product_gpu_booster.hpp"
-#include "vli/utils/gpu_manager.h"
-#include "vli/utils/gpu_manager.hpp"
+#include "vli/detail/gpu/inner_product_gpu_accelerator.hpp"
 #endif //VLI_USE_GPU
 
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
 #include "vli/polynomial/polynomial.hpp"
-#include "vli/vli_cpu.h"
-#include "vli/vli_traits.hpp"
+#include "vli/vli.hpp"
+//#include "vli/vli_traits.hpp"
 #include "utils/timings.h"
 
 #include "utils/tools.h"
 
-using vli::vli_cpu;
+using vli::integer;
 using vli::polynomial;
-using vli::vector_polynomial;
+using vli::vector;
 #define SIZE_VEC 128
 
 
@@ -37,11 +35,11 @@ using vli::vector_polynomial;
 
 
 //typedef vli
-typedef vli_cpu< unsigned long int, VLI_SIZE> vli_type_cpu;
+typedef integer<VLI_SIZE*64> integer_type;
 //typedef poly max order each
-typedef vli::polynomial< vli_type_cpu, vli::max_order_each<ORDER_POLY>, VLI_EXPEND_VAR(VARIABLE_POLY) > Polynomial_type_each;
+typedef vli::polynomial< integer_type, vli::max_order_each<ORDER_POLY>, VLI_EXPEND_VAR(VARIABLE_POLY) > Polynomial_type_each;
 //typedef poly max order combined
-typedef vli::polynomial< vli_type_cpu, vli::max_order_combined<ORDER_POLY>, VLI_EXPEND_VAR(VARIABLE_POLY) > Polynomial_type_combined;
+typedef vli::polynomial< integer_type, vli::max_order_combined<ORDER_POLY>, VLI_EXPEND_VAR(VARIABLE_POLY) > Polynomial_type_combined;
 
 
 #endif // VLI_BENCH_HEADER_HPP

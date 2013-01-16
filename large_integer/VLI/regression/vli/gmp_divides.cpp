@@ -5,20 +5,20 @@ using namespace vli::test;
 
 VLI_FUZZABLE_TEST( gmp_divides )
 {
-    vli_type a;
-    vli_type b;
+    integer_type a;
+    integer_type b;
     init(a);
     init(b);
     mpz_class agmp(a), bgmp(b);
-    vli_type c = a / b;
+    integer_type c = a / b;
     mpz_class cgmp = agmp / bgmp;
     BOOST_CHECK_EQUAL(mpz_class(c),cgmp);
 }
 
 VLI_FUZZABLE_TEST( gmp_divides_negative )
 {
-    vli_type a;
-    vli_type b;
+    integer_type a;
+    integer_type b;
     init(a);
     init(b);
     std::cout<<a<<std::endl;
@@ -28,17 +28,17 @@ VLI_FUZZABLE_TEST( gmp_divides_negative )
 
     mpz_class agmp(a), bgmp(b);
 
-    vli_type c = a / b;
+    integer_type c = a / b;
     mpz_class cgmp = agmp / bgmp;
 
     negate_inplace(b);
 
-    vli_type d = a / b;
+    integer_type d = a / b;
     mpz_class dgmp = agmp / (-bgmp);
 
     negate_inplace(a);
 
-    vli_type e = a / b;
+    integer_type e = a / b;
     mpz_class egmp = (-agmp) / (-bgmp);
 
     BOOST_CHECK_EQUAL(mpz_class(c),cgmp);

@@ -39,61 +39,61 @@ namespace vli
   /* \cond I do not need this part in the doc*/
     //forwart declaration
     template <std::size_t NumBits>
-    class vli;
+    class integer;
     
     //????_assign functions
     template <std::size_t NumBits>
-    void plus_assign(vli<NumBits> & vli_a, vli<NumBits> const& vli_b ){
+    void plus_assign(integer<NumBits> & integer_a, integer<NumBits> const& integer_b ){
         using detail::add;
-        add<vli<NumBits>::numwords>(&vli_a[0],&vli_b[0]);
+        add<integer<NumBits>::numwords>(&integer_a[0],&integer_b[0]);
     }
      
     template <std::size_t NumBits>
-    void plus_assign(vli<NumBits> & vli_a,  boost::uint64_t const b ){
+    void plus_assign(integer<NumBits> & integer_a,  boost::uint64_t const b ){
         using detail::add;
-        add<vli<NumBits>::numwords>(&vli_a[0],b);
+        add<integer<NumBits>::numwords>(&integer_a[0],b);
     }
     
     template <std::size_t NumBits>
-    void plus_extend_assign(vli<NumBits+64> & vli_a, vli<NumBits> const& vli_b, vli<NumBits> const& vli_c){
+    void plus_extend_assign(integer<NumBits+64> & integer_a, integer<NumBits> const& integer_b, integer<NumBits> const& integer_c){
         using detail::add_extension;
-        add_extension<vli<NumBits>::numwords>(&vli_a[0],&vli_b[0],&vli_c[0]);
+        add_extension<integer<NumBits>::numwords>(&integer_a[0],&integer_b[0],&integer_c[0]);
     }
 
     template <std::size_t NumBits>
-    void minus_assign(vli<NumBits> & vli_a, vli<NumBits> const& vli_b ){
+    void minus_assign(integer<NumBits> & integer_a, integer<NumBits> const& integer_b ){
         using detail::sub;
-        sub<vli<NumBits>::numwords>(&vli_a[0],&vli_b[0]);
+        sub<integer<NumBits>::numwords>(&integer_a[0],&integer_b[0]);
     }
     
     template <std::size_t NumBits>
-    void minus_assign(vli<NumBits> & vli_a,  boost::uint64_t const b ){
+    void minus_assign(integer<NumBits> & integer_a,  boost::uint64_t const b ){
         using detail::sub;
-        sub<vli<NumBits>::numwords>(&vli_a[0],b);
+        sub<integer<NumBits>::numwords>(&integer_a[0],b);
     }
 
     template <std::size_t NumBits>
-    void multiplies_assign( vli<NumBits>& vli_a , vli<NumBits> const & vli_b){
+    void multiplies_assign( integer<NumBits>& integer_a , integer<NumBits> const & integer_b){
         using detail::mul;
-        mul<vli<NumBits>::numwords>(&vli_a[0],&vli_b[0]);
+        mul<integer<NumBits>::numwords>(&integer_a[0],&integer_b[0]);
     }
 
     template <std::size_t NumBits>
-    void multiplies_assign(vli<NumBits> & vli_a,  boost::uint64_t const b){
+    void multiplies_assign(integer<NumBits> & integer_a,  boost::uint64_t const b){
         using detail::mul;
-        mul<vli<NumBits>::numwords>(&vli_a[0],b);
+        mul<integer<NumBits>::numwords>(&integer_a[0],b);
     }
 
     template <std::size_t NumBits>
-    void multiplies(vli<2*NumBits>& vli_res , vli<NumBits> const & vli_a, vli<NumBits> const & vli_b){
+    void multiplies(integer<2*NumBits>& integer_res , integer<NumBits> const & integer_a, integer<NumBits> const & integer_b){
         using detail::mul;
-        mul<vli<NumBits>::numwords>(&vli_res[0],&vli_a[0],&vli_b[0]);
+        mul<integer<NumBits>::numwords>(&integer_res[0],&integer_a[0],&integer_b[0]);
     }
     
     template <std::size_t NumBits>
-    void multiply_add_assign(vli<2*NumBits>& vli_res , vli<NumBits> const & vli_a, vli<NumBits> const & vli_b){
+    void multiply_add_assign(integer<2*NumBits>& integer_res , integer<NumBits> const & integer_a, integer<NumBits> const & integer_b){
         using detail::muladd;
-        muladd<vli<NumBits>::numwords>(&vli_res[0],&vli_a[0],&vli_b[0]);
+        muladd<integer<NumBits>::numwords>(&integer_res[0],&integer_a[0],&integer_b[0]);
     }
       /* \endcond I do not need this part in the doc*/
 } //namespace vli

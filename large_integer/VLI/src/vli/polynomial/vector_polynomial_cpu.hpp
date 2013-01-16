@@ -48,24 +48,17 @@
 
 namespace vli {
 
-/* \cond I do not need this part in the doc*/
 
-template <std::size_t NumBits>
-class vli;
-
-/* \endcond I do not need this part in the doc*/
-
-
-/*! \class vector_polynomial
+/*! \class vector
     \brief  This class models a vector for polynomial
 
     It helps the preparation of the inner product. As the class derived from std::vector, it inherits the properties of the vector, constructor and so on
  
 */
 template<class Polynomial>
-class vector_polynomial : public std::vector<Polynomial> { 
+class vector : public std::vector<Polynomial> {
   public:
-    vector_polynomial(std::size_t size = 1)
+    vector(std::size_t size = 1)
     :std::vector<Polynomial>(size) {
     }
 
@@ -78,7 +71,7 @@ struct inner_product_result_type {
 };
 
 template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
-struct inner_product_result_type< vector_polynomial<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> > > {
+struct inner_product_result_type< vector<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> > > {
     typedef typename polynomial_multiply_result_type<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> >::type type;
 };
 /* \endcond */
@@ -87,18 +80,18 @@ struct inner_product_result_type< vector_polynomial<polynomial<Coeff,MaxOrder,Va
 namespace detail {    
 
 template <class Polynomial>
-typename inner_product_result_type<vector_polynomial<Polynomial> >::type inner_product_cpu( 
-    vector_polynomial<Polynomial> const& v1, 
-    vector_polynomial<Polynomial> const& v2){
+typename inner_product_result_type<vector<Polynomial> >::type inner_product_cpu( 
+    vector<Polynomial> const& v1, 
+    vector<Polynomial> const& v2){
     
     assert(v1.size() == v2.size());
     std::size_t size_v = v1.size();
 
     #ifdef _OPENMP
-        std::vector<typename inner_product_result_type<vector_polynomial<Polynomial> >::type > res(omp_get_max_threads()); 
+        std::vector<typename inner_product_result_type<vector<Polynomial> >::type > res(omp_get_max_threads()); 
     #else
-        typename inner_product_result_type<vector_polynomial<Polynomial> >::type res;
-    #endif 
+    typename inner_product_result_type<vector<Polynomial> >::type res;
+    #endif
 
     #pragma omp parallel for schedule(dynamic) 
     for(std::size_t i=0 ; i < size_v ; ++i){
@@ -123,13 +116,13 @@ typename inner_product_result_type<vector_polynomial<Polynomial> >::type inner_p
 
 // I keep it for dev but nothing else
 template <class Polynomial>
-typename inner_product_result_type<vector_polynomial<Polynomial> >::type inner_product_plain (
-      vector_polynomial<Polynomial> const& v1
-    , vector_polynomial<Polynomial> const& v2
+typename inner_product_result_type<vector<Polynomial> >::type inner_product_plain (
+      vector<Polynomial> const& v1
+    , vector<Polynomial> const& v2
     ) {
     assert(v1.size() == v2.size());
     std::size_t const v_size = v1.size();
-    typename inner_product_result_type<vector_polynomial<Polynomial> >::type res;
+    typename inner_product_result_type<vector<Polynomial> >::type res;
     for(std::size_t i=0; i < v_size; ++i)
         res += v1[i]*v2[i];
     return res;
@@ -138,10 +131,10 @@ typename inner_product_result_type<vector_polynomial<Polynomial> >::type inner_p
 } // end namespace detail
 
 template <class Polynomial>
-inline typename inner_product_result_type<vector_polynomial<Polynomial> >::type
+inline typename inner_product_result_type<vector<Polynomial> >::type
 inner_product(
-          vector_polynomial<Polynomial> const& v1
-        , vector_polynomial<Polynomial> const& v2
+          vector<Polynomial> const& v1
+        , vector<Polynomial> const& v2
         ) {
 #ifdef VLI_USE_GPU
     return detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2); // can be pure gpu or hybride cpu omp/gpu
@@ -151,7 +144,7 @@ inner_product(
 }
 
 template<class Polynomial>
-std::ostream & operator<<(std::ostream & os, vector_polynomial<Polynomial> const& v) {        
+std::ostream & operator<<(std::ostream & os, vector<Polynomial> const& v) {        
     for(std::size_t i = 0; i < v.size(); ++i)
         os << v[i] << std::endl;
     return os;

@@ -5,15 +5,15 @@ using namespace vli::test;
 
 VLI_FUZZABLE_TEST( gmp_karatsuba_extending_multiplies)
 {
-    vli_type a,b;
+    integer_type a,b;
     init(a,max_positive);
     init(b,max_positive);
-    vli_type a_orig(a);
-    vli_type b_orig(b);
+    integer_type a_orig(a);
+    integer_type b_orig(b);
 
     mpz_class agmp(a), bgmp(b);
 
-    typename double_sized_vli<vli_type>::type c;
+    typename double_sized_integer<integer_type>::type c;
     vli::detail::karatsuba(c,a,b);
     mpz_class cgmp = agmp * bgmp;
 

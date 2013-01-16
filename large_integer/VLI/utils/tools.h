@@ -33,14 +33,14 @@ namespace tools{
     template <typename Vli>
     void fill_random(Vli& v){
         assert(size <= Vli::numwords);
-        for(typename Vli::size_type i=0; i < Vli::numwords-1; ++i)
+        for(int i=0; i < Vli::numwords-1; ++i)
             v[i] = rnd_digit<Vli>();
     }
    
     template <typename Vli>
     void fill_random(Vli& v, typename Vli::size_type size){
         assert(size <= Vli::numwords);
-        for(typename Vli::size_type i=0; i < size; ++i)
+        for(int i=0; i < size; ++i)
             v[i] = rnd_digit<Vli>();
     }
 

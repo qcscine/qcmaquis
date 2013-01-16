@@ -4,16 +4,16 @@ using namespace vli::test;
 
 VLI_FUZZABLE_TEST( plus_assign_plus_equivalence )
 {
-    vli_type a;
-    vli_type b;
+    integer_type a;
+    integer_type b;
 
     init(a);
     init(b);
 
-    vli_type b_orig(b);
+    integer_type b_orig(b);
 
-    vli_type ab = a + b;
-    vli_type ba = b + a;
+    integer_type ab = a + b;
+    integer_type ba = b + a;
     a += b;
     BOOST_CHECK_EQUAL(a,ab);
     BOOST_CHECK_EQUAL(a,ba);
@@ -24,15 +24,15 @@ VLI_FUZZABLE_TEST( plus_assign_plus_equivalence )
 
 VLI_FUZZABLE_TEST( plus_assign_plus_equivalence_int )
 {
-    vli_type a;
+    integer_type a;
     init(a);
     int b;
     init(b);
 
     int b_orig(b);
 
-    vli_type ab = a + b;
-    vli_type ba = b + a;
+    integer_type ab = a + b;
+    integer_type ba = b + a;
     a += b;
     BOOST_CHECK_EQUAL(a,ab);
     BOOST_CHECK_EQUAL(a,ba);
@@ -43,22 +43,22 @@ VLI_FUZZABLE_TEST( plus_assign_plus_equivalence_int )
 
 VLI_STATIC_TEST( plus_assign_carry )
 {
-    vli_type a,b,c;
-    for(std::size_t i(0); i < vli_type::numwords-1; ++i)
-        a[i] = static_cast<vli_type::value_type>(-1);
+    integer_type a,b,c;
+    for(std::size_t i(0); i < integer_type::numwords-1; ++i)
+        a[i] = static_cast<integer_type::value_type>(-1);
     b[0] = 1;
     a+=b;
-    c[vli_type::numwords-1] = 1;
+    c[integer_type::numwords-1] = 1;
     BOOST_CHECK_EQUAL(a,c);
 }
 
 VLI_STATIC_TEST( plus_assign_overflow )
 {
     // TODO this test could also be a fuzz test
-    vli_type a;
-    vli_type b(1);
+    integer_type a;
+    integer_type b(1);
     init(a,max_positive);
-    vli_type c(a);
+    integer_type c(a);
     negate_inplace(c);
 
     a+=b;

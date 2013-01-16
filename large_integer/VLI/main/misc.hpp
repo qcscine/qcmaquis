@@ -22,7 +22,7 @@ struct polynomial_multiply_type_gmp<polynomial<Coeff,max_order_combined<Order>,V
 namespace tools
 {
     template <typename Polynomial>
-    void converter(typename vli::vector_polynomial<Polynomial>& v_vli,  vli::vector_polynomial<typename vli::polynomial_multiply_type_gmp<Polynomial>::type>& v_gmp ){
+    void converter(typename vli::vector<Polynomial>& v_vli,  vli::vector<typename vli::polynomial_multiply_type_gmp<Polynomial>::type>& v_gmp ){
         typedef typename vli::polynomial_multiply_type_gmp<Polynomial>::type Polynomial_gmp;
         typename Polynomial::iterator it_poly_vli;
         typename Polynomial_gmp::iterator it_poly_gmp;

@@ -1,7 +1,7 @@
 #ifndef VLI_TEST_HEADER_HPP
 #define VLI_TEST_HEADER_HPP
 
-#define BOOST_TEST_MODULE vli_cpu
+#define BOOST_TEST_MODULE integer_cpu
 #define BOOST_TEST_NO_MAIN
 #include <boost/test/unit_test.hpp>
 #include <boost/preprocessor/cat.hpp>
@@ -45,9 +45,9 @@
 namespace vli {
 namespace test {
 
-typedef vli<VLI_SIZE*64> vli_type;
-typedef vli<2*VLI_SIZE*64> vli_type_double;
-typedef vli<2*VLI_SIZE*64>::value_type type;
+typedef integer<VLI_SIZE*64> integer_type;
+typedef integer<2*VLI_SIZE*64> integer_type_double;
+typedef integer<2*VLI_SIZE*64>::value_type type;
 
 enum variant_enum {
       max_positive = 0      // fill with the max positive number
@@ -57,19 +57,19 @@ enum variant_enum {
 };
 
 struct initializer {
-    void operator()(vli_type& v, variant_enum variant = overflow_safe) {
-            for(std::size_t i=0; i != vli_type::numwords; ++i)
-                v[i] = std::numeric_limits<vli_type::value_type>::max();
+    void operator()(integer_type& v, variant_enum variant = overflow_safe) {
+            for(std::size_t i=0; i != integer_type::numwords; ++i)
+                v[i] = std::numeric_limits<integer_type::value_type>::max();
         switch(variant) {
             case overflow_safe:
-                v[vli_type::numwords-1] = 1;
+                v[integer_type::numwords-1] = 1;
                 break;
             case max_positive:
-                v[vli_type::numwords-1] = 0x7fffffffffffffff;
+                v[integer_type::numwords-1] = 0x7fffffffffffffff;
                 break;
             case multiplies_overflow_safe:
-                v[vli_type::numwords/2-1] = 0x7fffffffffffffff;
-                for(std::size_t i=vli_type::numwords/2; i != vli_type::numwords; ++i)
+                v[integer_type::numwords/2-1] = 0x7fffffffffffffff;
+                for(std::size_t i=integer_type::numwords/2; i != integer_type::numwords; ++i)
                     v[i] = 0;
                 break;
             case fill_ff:
@@ -78,19 +78,19 @@ struct initializer {
                 throw(std::runtime_error("init variant not implemented"));
         }
     }
-    void operator()(vli_type_double& v, variant_enum variant = overflow_safe) {
-        for(std::size_t i=0; i != vli_type_double::numwords; ++i)
-            v[i] = std::numeric_limits<vli_type::value_type>::max();
+    void operator()(integer_type_double& v, variant_enum variant = overflow_safe) {
+        for(std::size_t i=0; i != integer_type_double::numwords; ++i)
+            v[i] = std::numeric_limits<integer_type::value_type>::max();
         switch(variant) {
             case max_positive:
-                v[vli_type_double::numwords-1] = v[vli_type_double::numwords-1] & ~(vli_type::value_type(1)<<(sizeof(vli_type_double::value_type)*8-1));
+                v[integer_type_double::numwords-1] = v[integer_type_double::numwords-1] & ~(integer_type::value_type(1)<<(sizeof(integer_type_double::value_type)*8-1));
                 break;
             case overflow_safe:
-                v[vli_type_double::numwords-1] = 1;
+                v[integer_type_double::numwords-1] = 1;
                 break;
             case multiplies_overflow_safe:
-                v[vli_type_double::numwords/2-1] = v[vli_type_double::numwords/2-1] & 0x7fffffffffffffff;
-                for(std::size_t i=vli_type_double::numwords/2; i != vli_type_double::numwords; ++i)
+                v[integer_type_double::numwords/2-1] = v[integer_type_double::numwords/2-1] & 0x7fffffffffffffff;
+                for(std::size_t i=integer_type_double::numwords/2; i != integer_type_double::numwords; ++i)
                     v[i] = 0;
                 break;
             default:
@@ -116,41 +116,41 @@ struct initializer {
 #ifdef VLI_FUZZ_TESTS
 struct fuzz_initializer {
       static boost::random::mt19937                                           rng;
-      static boost::random::uniform_int_distribution<vli_type::value_type>    vli_value_type_max_rnd;
+      static boost::random::uniform_int_distribution<integer_type::value_type>    integer_value_type_max_rnd;
       static boost::random::uniform_int_distribution<int>                     int_plus_rnd;
     static unsigned int                                                     fuzz_iterations;
-    void operator()(vli_type& v, variant_enum variant = overflow_safe) {
-        for(std::size_t i=0; i != vli_type::numwords; ++i)
-            v[i] = vli_value_type_max_rnd(rng);
+    void operator()(integer_type& v, variant_enum variant = overflow_safe) {
+        for(std::size_t i=0; i != integer_type::numwords; ++i)
+            v[i] = integer_value_type_max_rnd(rng);
         switch(variant) {
             case max_positive:
-                v[vli_type::numwords-1] = v[vli_type::numwords-1] & ~(vli_type::value_type(1)<<(sizeof(vli_type::value_type)*8-1));
+                v[integer_type::numwords-1] = v[integer_type::numwords-1] & ~(integer_type::value_type(1)<<(sizeof(integer_type::value_type)*8-1));
                 break;
             case overflow_safe:
-                v[vli_type::numwords-1] = 1;
+                v[integer_type::numwords-1] = 1;
                 break;
             case multiplies_overflow_safe:
-                v[vli_type::numwords/2-1] = v[vli_type::numwords/2-1] & 0x7fffffffffffffff;
-                for(std::size_t i=vli_type::numwords/2; i != vli_type::numwords; ++i)
+                v[integer_type::numwords/2-1] = v[integer_type::numwords/2-1] & 0x7fffffffffffffff;
+                for(std::size_t i=integer_type::numwords/2; i != integer_type::numwords; ++i)
                     v[i] = 0;
                 break;
             default:
                 throw(std::runtime_error("init variant not implemented"));
         }
     }
-    void operator()(vli_type_double& v, variant_enum variant = overflow_safe) {
-        for(std::size_t i=0; i != vli_type_double::numwords; ++i)
-            v[i] = vli_value_type_max_rnd(rng);
+    void operator()(integer_type_double& v, variant_enum variant = overflow_safe) {
+        for(std::size_t i=0; i != integer_type_double::numwords; ++i)
+            v[i] = integer_value_type_max_rnd(rng);
         switch(variant) {
             case max_positive:
-                v[vli_type_double::numwords-1] = v[vli_type_double::numwords-1] & ~(vli_type::value_type(1)<<(sizeof(vli_type_double::value_type)*8-1));
+                v[integer_type_double::numwords-1] = v[integer_type_double::numwords-1] & ~(integer_type::value_type(1)<<(sizeof(integer_type_double::value_type)*8-1));
                 break;
             case overflow_safe:
-                v[vli_type_double::numwords-1] = 1;
+                v[integer_type_double::numwords-1] = 1;
                 break;
             case multiplies_overflow_safe:
-                v[vli_type_double::numwords/2-1] = v[vli_type_double::numwords/2-1] & 0x7fffffffffffffff;
-                for(std::size_t i=vli_type_double::numwords/2; i != vli_type_double::numwords; ++i)
+                v[integer_type_double::numwords/2-1] = v[integer_type_double::numwords/2-1] & 0x7fffffffffffffff;
+                for(std::size_t i=integer_type_double::numwords/2; i != integer_type_double::numwords; ++i)
                     v[i] = 0;
                 break;
             default:
@@ -171,7 +171,7 @@ struct fuzz_initializer {
 };
 unsigned int                                                  fuzz_initializer::fuzz_iterations        = 0;
 boost::random::mt19937                                        fuzz_initializer::rng;
-boost::random::uniform_int_distribution<vli_type::value_type> fuzz_initializer::vli_value_type_max_rnd = boost::random::uniform_int_distribution<vli_type::value_type>(0,std::numeric_limits<vli_type::value_type>::max());
+boost::random::uniform_int_distribution<integer_type::value_type> fuzz_initializer::integer_value_type_max_rnd = boost::random::uniform_int_distribution<integer_type::value_type>(0,std::numeric_limits<integer_type::value_type>::max());
 boost::random::uniform_int_distribution<int>                  fuzz_initializer::int_plus_rnd           = boost::random::uniform_int_distribution<int>(0,std::numeric_limits<int>::max());
 #endif // VLI_FUZZ_TESTS
 
@@ -181,21 +181,21 @@ struct extended {
 };
 
 template <std::size_t NumBits>
-struct extended<vli<NumBits> > {
-    typedef vli<NumBits+64> type;
+struct extended<integer<NumBits> > {
+    typedef integer<NumBits+64> type;
 };
 
 template <typename T>
-struct double_sized_vli {
+struct double_sized_integer {
 };
 
 template <std::size_t NumBits>
-struct double_sized_vli<vli<NumBits> > {
-    typedef vli<2*NumBits> type;
+struct double_sized_integer<integer<NumBits> > {
+    typedef integer<2*NumBits> type;
 };
 
 } // end namespace test
-} // end namespace vli
+} // end namespace integer
 
 int main(int argc, char* argv[])
 {
