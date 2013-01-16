@@ -35,13 +35,12 @@ and attain 67 \% of the peak performance of the GPU.
 \begin{itemize}
 \item The Very Large Integer library realizes large arithmetic , polynomials  and vector operation.  There are three 3 different modules interchangeable. 
 \end{itemize}
-
+Description of the 3 modules : vli, poly and vector
 \begin{enumerate}
 \item  \begin{itemize}
 \item The large integer module models large signed integer from 128 to 512 bits. The operations supported are bits operations , the four basic operators $(\times,+,/,-)$ , extended multiplications and bit shift operations. 
 \item compile time polymorphism
 \end{itemize}
-
 \item \begin{itemize}
 \item The polynomial module models polynomials up to 4 variables for dense and triangular polynomials, As previously, the polynomials usual  operations between polynomials and operations with monomials.  
 \item polynomial can have large integer coefficient or other coefficient e.g. GMP
@@ -59,7 +58,7 @@ THE OBJECTIVE
 
 \begin{itemize}
 \item  We goal of this library is performed efficient arithmetic for polynomial with large coefficient and execute efficient inner product : multithread and/or GPU.
-\item give an efficient library for the HP2C initiative code .e.g  SE
+\item give an efficient library for the HP2C initiative code .e.g  HTSE
 \end{itemize}
 --------------------------------------------------------
 
@@ -131,50 +130,24 @@ OTHER LIBRAIRIES
 %All the algorithms and operations are based on basic arithmetic but have been implemented in assembly language to make use of hardware features which are not accessible by plain C++.
 
 \section{Implementation of the library}
-\subsubsection{memory layout}
+\subsubsection{module VLI}
 \begin{itemize}
 \item contrary to GMP  explain a static version of large arithmetic can be faster than a dynamic one
 \item   VLI number are base on 64-bit integer array, size compile time polymorphism 
-\item  polynomials constructed over boost::array, the vector of polynomial is std::vector
-\item combined together we have a contiguous memory, and more precisely  SoA (show the figure). 
-\item  It exists a second order name AoS, it does not allow a construction into module 
-\end{itemize}
+\item VLI module performs arithmetic operations, it needs performable kernels
+\item ASM Kernel 
 
-\begin{figure}
-    \begin{minipage}{0.50\linewidth}
-        \begin{eqnarray}
-        \tiny{
-                 \underbrace{
-                 \underbrace{ \underbrace{a^0_{00} | a^1_{00} | a^2_{00}}_{VLI, a_{00} } || \underbrace{a^0_{10} | a^1_{10} | a^2_{10}}_{VLI, a_{10}} ||   \dots  }_{1^{st} \textrm{polynomial}} 
-                  |||    \underbrace{ \underbrace{b^0_{00} | a^1_{00} | b^2_{00}}_{VLI, b_{00} } || \underbrace{b^0_{10} | b^1_{10} | b^2_{10}}_{VLI, b_{10}} ||   \dots  }_{2^{nd} \textrm{polynomial} } }_{\textrm{Vector of polynomials, AoS order}} \nonumber
-            }
-        \end{eqnarray}
-    \end{minipage}
-\begin{minipage}{0.50\linewidth}
-    \begin{eqnarray}
-    \tiny{
-        \underbrace{
-        \underbrace{a^0_{00} | a^0_{10} | \dots || a^1_{00} | a^1_{10} | \dots  }_{1st  \textrm{ nested VLI/Polynomial} } |||  \underbrace{b^0_{00} | b^0_{10} | \dots || b^1_{00} | b^1_{10} | \dots  }_{2nd  \textrm{ nested VLI/Polynomial} }
-        }_{\textrm{Vector of polynomials, SoA Order}} \nonumber }
-        \end{eqnarray}
-\end{minipage}
-\caption{Representation of the AoS Order (left) or SoA Order (right) for a vector of polynomial \label{AOSSOA}.  The SoA structure limits the usage of the VLI module alone.}
-\end{figure}
+%\item  polynomials constructed over boost::array, the vector of polynomial is std::vector
+%\item combined together we have a contiguous memory, and more precisely  SoA (show the figure). 
+%\item  It exists a second order name AoS, it does not allow a construction into module 
 
-TRANSITION
-\begin{itemize}
-\item Polynomials operations necessitates large arithmetic operations for the coefficients ,
-\item  coefficient operations must be fast, we need ASM 
-\item this memory layout facilitates classical ASM 
 \end{itemize}
 
 
-\subsubsection{Kernels and assembly  language}
 
-
-
-
-
+----------------------------------------------- \\
+COPY/PAST from the LAST ASM\\
+-----------------------------------------------\\
 We applied algorithms based on childhood  experience for large arithmetic, for the specific range classical algorithms are enough.
 The implementation necessitates a carry bit and an extended multiplication. The hardware supports
 the carry bit in the status register, as the extended multiplications, but they are only accessible by the assembly language.
@@ -212,21 +185,70 @@ It allows a fused multiplication-addition of 32-bit integer  with carry bit supp
 
 \begin{itemize}
 \item  We does not use SIMD 
-\item because the data order does not help
+\item because the contiguous data does not help at all for CB propagation
 \item 
-The disagreement  of this choice, the AoS order does not facilitate the usage of the SIMD instruction such as the AVX instructions of the Sandy Bridge x86-64 architecture.
-Applying SIMD to the AoS, for an addition or a subtraction is a nonsense because there is no specific instruction to propagate carry bit between entries of the SIMD register.
-It could be  apply  on multiplications for integer  larger than 1024-bit \cite{SIMD}, unfortunately, it does not correspond to our working range. Consequently, we do not 
-use the multimedia instruction into the ASM kernels.
+%The disagreement  of this choice, the AoS order does not facilitate the usage of the SIMD instruction such as the AVX instructions of the Sandy Bridge x86-64 architecture.
+%Applying SIMD to the AoS, for an addition or a subtraction is a nonsense because there is no specific instruction to propagate carry bit between entries of the SIMD register.
+%It could be  apply  on multiplications for integer  larger than 1024-bit \cite{SIMD}, unfortunately, it does not correspond to our working range. Consequently, we do not 
+%use the multimedia instruction into the ASM kernels.
+\end{itemize}
+
+\subsubsection{module polynomial}
+
+short description of both type of polynomial
+
+\begin{itemize}
+\item construct on boost array
+\item compile time polymorphism for dense, triangular
+\item works whatever the coefficient
+\item description of the implementation of the basic operations, the perf depends of coefficients implementation
+\end{itemize}
+
+\subsubsection{module vector}
+\begin{itemize}
+\item +- std::vector
+\end{itemize}
+
+
+
+\subsubsection{memory layout}
+
+All elements modules combined together give the memory layout
+
+\begin{figure}
+   \begin{minipage}{0.50\linewidth}
+        \begin{eqnarray}
+        \tiny{
+                \underbrace{
+                 \underbrace{ \underbrace{a^0_{00} | a^1_{00} | a^2_{00}}_{VLI, a_{00} } || \underbrace{a^0_{10} | a^1_{10} | a^2_{10}}_{VLI, a_{10}} ||   \dots  }_{1^{st} \textrm{polynomial}} 
+                  |||    \underbrace{ \underbrace{b^0_{00} | a^1_{00} | b^2_{00}}_{VLI, b_{00} } || \underbrace{b^0_{10} | b^1_{10} | b^2_{10}}_{VLI, b_{10}} ||   \dots  }_{2^{nd} \textrm{polynomial} } }_{\textrm{Vector of polynomials, AoS order}} \nonumber
+            }
+        \end{eqnarray}
+    \end{minipage}
+\begin{minipage}{0.50\linewidth}
+   \begin{eqnarray}
+    \tiny{
+        \underbrace{
+        \underbrace{a^0_{00} | a^0_{10} | \dots || a^1_{00} | a^1_{10} | \dots  }_{1st  \textrm{ nested VLI/Polynomial} } |||  \underbrace{b^0_{00} | b^0_{10} | \dots || b^1_{00} | b^1_{10} | \dots  }_{2nd  \textrm{ nested VLI/Polynomial} }
+        }_{\textrm{Vector of polynomials, SoA Order}} \nonumber }
+       \end{eqnarray}
+\end{minipage}
+\caption{Representation of the AoS Order (left) or SoA Order (right) for a vector of polynomial \label{AOSSOA}.  The SoA structure limits the usage of the VLI module alone.}
+\end{figure}
+
+
+\begin{itemize}
+\item object conception imposes SoA
+\item AoS is the good for SIMD ( global solution)
+\item  with the flexibility of module we lost the SIMD 
 \end{itemize}
 
 \section{Advance solver : Inner products}
 
 \begin{itemize}
-\item Introduce the capacity of the lib to perform inner product 
+\item Introduce the capacity of the lib to perform inner product  as external solver
 \item make a short math description 
 \end{itemize}
-
 
 %The library performs standards operations for polynomials (up to four variables) and optimized solvers for  the inner products of vectors of polynomials (presented in the next section).
 %The polynomials are defined like  e.g. our variables
