@@ -31,22 +31,31 @@ and attain 67 \% of the peak performance of the GPU.
 \section{Introduction}
 % TODO references LINBOX, NTL
 
-The Very Large Integer library realizes large arithmetic , polynomials  and vector operations............ There are three 3 different modules. 
+\begin{itemize}
+\item The Very Large Integer library realizes large arithmetic , polynomials  and vector operation.  There are three 3 different modules. 
+\item The large integer module models large signed integer from 128 to 512 bits. The operations supported are bits operations , the four basic operators $(\times,+,/,-)$ , extended multiplications and bit shift operations. 
+\item The polynomial module models polynomials up to 4 variables for dense and triangular polynomials, As previously, the polynomials usual  operations between polynomials and operations with monomials.  
+\item The vector of polynomial module provides a container for polynomials and allows support for optimized inners products.
+\item Modules allow flexibility, they can be interchangeable. 
+\item polynomial can have large integer coefficient or other coefficient 
+\item All modules combined, we can have access to specialized GPU solver for inner product.
+\end{itemize}
+--------------------------------------------------------
+\begin{itemize}
+\item  We goal of this library is perfumed efficient arithmetic for polynomial with large coefficient and execute efficient inner product on GPU.
+\item give an efficient library for the HP2C initiative code .e.g 
+\end{itemize}
+--------------------------------------------------------
+\begin{itemize}
 
-The large integer module models large signed integer from 128 to 512 bits. The operations supported are bits operations , the four basic operators $(\times,+,/,-)$ , extended multiplications and bit shift operations. .....SOMETHING ELSE .......
-
-The polynomial module models polynomials up to 4 variables for dense and triangular polynomials, As previously, the polynomials usual  operations between polynomials and operations with monomials.  .....SOMETHING ELSE .......
-
-The vector of polynomial module provides a container for polynomials and allows support for optimized inners products.
-
-Modules allow flexibility, they can be interchangeable. ........ polynomial can have large integer coefficient or other coefficient ..... All modules combined, we can have access to specialized GPU solver for inner product.
-
-We goal of this library is perfumed efficient arithmetic for polynomial with large coefficient and execute efficient inner product on GPU........ ANDRES SHOUD WE TALK ON VLI INT SE OR QE ....? 
-
- Computer sciences provide solution for large arithmetic, and polynomial operations. For large arithmetic the most famous is GMP ..... WRITE GMP is polyvalent but polyvalence obtained by dynamic memory.....
- Polynomial operations can be performed by libraries as LINBOX and NTL. ......... these libraries allows manipulation but with GMP, it not performable for small coefficient ......   The GPU is a revolution is programming model tell the LAPACK -> MAGMA .....
-...... polynomial ported only for large size with FFT approach inefficient for pb .... It does not exists optimized polynomials inner products for GPU ...... 
-
+\item Computer sciences provide solution for large arithmetic, and polynomial operations. For large arithmetic the standard is GMP
+\item  GMP is polyvalent but polyvalence obtained by dynamic memory 
+\item Polynomial operations can be performed by libraries as LINBOX and NTL
+\item these libraries allows manipulation but with GMP, it not performable for small coefficient
+\item  The GPU is a revolution is programming model tell the LAPACK -> MAGMA 
+\item polynomial ported only for large size with FFT approach inefficient for pb 
+\item It does not exists optimized polynomials inner products for GPU
+\end{itemize}
 
 
 %standards  operations for large integer arithmetic and polynomial. This library also provides optimized implementations of inner products  for GPU.
@@ -104,11 +113,13 @@ We goal of this library is perfumed efficient arithmetic for polynomial with lar
 
 \section{Implementation of the library}
 \subsubsection{memory layout}
-
-.... contrary to GMP  explain a static version of large arithmetic can be faster than a dynamic one....   ....   VLI number are base on 64-bit integer array .... size compile time polymorphism ...
-.... polynomials constructed over boost::array ............. the vector of polynomial is std::vector..... combined together we have a contiguous memory, and more precisely  SoA (show the figure). 
-...... It exists a second order name AoS, it does not allow a construction into module ............  
-
+\begin{itemize}
+\item contrary to GMP  explain a static version of large arithmetic can be faster than a dynamic one
+\item   VLI number are base on 64-bit integer array, size compile time polymorphism 
+\item  polynomials constructed over boost::array, the vector of polynomial is std::vector
+\item combined together we have a contiguous memory, and more precisely  SoA (show the figure). 
+\item  It exists a second order name AoS, it does not allow a construction into module 
+\end{itemize}
 
 \begin{figure}
     \begin{minipage}{0.50\linewidth}
@@ -131,10 +142,10 @@ We goal of this library is perfumed efficient arithmetic for polynomial with lar
 \caption{Representation of the AoS Order (left) or SoA Order (right) for a vector of polynomial \label{AOSSOA}.  The SoA structure limits the usage of the VLI module alone.}
 \end{figure}
 
-
-
-......start transition ...........  Polynomials operations necessitates large arithmetic operations for the coefficients , ..... coefficient operations must be fast, we need ASM ..... 
-
+\begin{itemize}
+\item Polynomials operations necessitates large arithmetic operations for the coefficients ,
+\item  coefficient operations must be fast, we need ASM 
+\end{itemize}
 
 
 \subsubsection{Kernels and assembly  language}
@@ -143,7 +154,7 @@ We goal of this library is perfumed efficient arithmetic for polynomial with lar
 
 
 
-We applied algorithms based on childhood  experience for large arithmetic........... for the specific range classical operations are enough ........
+We applied algorithms based on childhood  experience for large arithmetic, for the specific range classical algorithms are enough.
 The implementation necessitates a carry bit and an extended multiplication. The hardware supports
 the carry bit in the status register, as the extended multiplications, but they are only accessible by the assembly language.
 In assembly, these operations  are supported by the pair of mnemonics; \texttt{addq/adcq} for the addition; \texttt{subq/sbbq} for the subtraction, and \texttt{mul} for the extended multiplication.   
@@ -178,18 +189,23 @@ and generate a specifically tuned kernel for every large integer. We give a smal
 The x86-64 architecture allows 16 registers (32 for Power architecture). We try to reuse the data in the registers as much as possible in order to reduce memory read/writes to the minimum.  Additional optimizations have been done like full unrolling and assembly tips. We  supported  x86-64, Power64 and PTX (GPU) assembly language. PTX does not support carry bit for 64-bit integers, but only for 32-bit integers\footnote{Introduced since CUDA 4.2}.  
 It allows a fused multiplication-addition of 32-bit integer  with carry bit support \cite{CUDAasm}.  The calculation in 32-bit mode imposes twice as much operations for the additions/subtractions, and one order of magnitude more for the multiplications. 
 
-..... We does not use SIMD .... because the data order does not help .....
-....  simplify .......
-The disagreement  of this choice, the SoA order does not facilitate the usage of the SIMD instruction such as the AVX instructions of the Sandy Bridge x86-64 architecture.
+\begin{itemize}
+\item  We does not use SIMD 
+\item because the data order does not help
+\item 
+The disagreement  of this choice, the AoS order does not facilitate the usage of the SIMD instruction such as the AVX instructions of the Sandy Bridge x86-64 architecture.
 Applying SIMD to the AoS, for an addition or a subtraction is a nonsense because there is no specific instruction to propagate carry bit between entries of the SIMD register.
 It could be  apply  on multiplications for integer  larger than 1024-bit \cite{SIMD}, unfortunately, it does not correspond to our working range. Consequently, we do not 
 use the multimedia instruction into the ASM kernels.
-............
+\end{itemize}
 
 \section{Advance solver : Inner products}
 
-..... Introduce the capacity of the lib to perform inner product ................
-...... make a short math description ......... 
+\begin{itemize}
+\item Introduce the capacity of the lib to perform inner product 
+\item make a short math description 
+\end{itemize}
+
 
 %The library performs standards operations for polynomials (up to four variables) and optimized solvers for  the inner products of vectors of polynomials (presented in the next section).
 %The polynomials are defined like  e.g. our variables
@@ -207,18 +223,29 @@ use the multimedia instruction into the ASM kernels.
 %where $\times$ indicates the multiplication between two polynomials. % The multiplications use usual rules of polynomials multiplication. 
 
 \subsubsection{CPU implementation}
-........ explain quickly ..... just loop other coefficient .... with the OMP /// ......
+\begin{itemize}
+\item   explain quickly ..... just loop other coefficient 
+\item  with the OMP 
+\end{itemize}
 %In terms of  programming and parallelization, in the CPU version, the previous equations can be reduced to independent loops with a final reduction.
 %The CPU parallelization has been done with OpenMP. The OpenMP threads calculate several  polynomial multiplications and make a local reduction. At the end, a final reduction is performed  by the main thread.
 
 
+-----------------------------------------------------------------------
 
 ....... transisition explain the pb of the cross term ..... 
+
+-----------------------------------------------------------------------
+
 %A final coefficient may be the sum of several coefficients (which we call contributions in the following passage), resulting from the sum of several multiplications. These coefficients are the cross terms. 
 %The cross terms are not a problem for the CPU version, as a polynomial multiplication is done by a single thread, but they are the bottleneck for the GPU version.
 %The number of coefficient for a dense and triangular polynomial is given by $(n+1)^{\kappa}$ and  $(\kappa+n-1)! / ( (\kappa-1)! n! )$ respectively, where $\kappa$ is the number of variables. 
-....... end pb .......
-..... GPU is interesting because we have a lot of threads available, we can calculate contribution but in a correct way to avoid pb .............
+
+\begin{itemize}
+\item  GPU is interesting because we have a lot of threads available, 
+\item we can calculate contribution but in a correct way to avoid pb 
+\item need an algo fits GPU constraints
+\end{itemize}
 
 %\subsection{Memory layout and SIMD possibility}
 
@@ -350,12 +377,15 @@ The contributions are not dispatched between the threads, thus we do not  introd
 This  algorithm has the great advantage of working well with dense - triangular polynomials, and it could be extended to sparse polynomials, as structure of the polynomial is not primordial.
 The main difficulty consists  of designing an efficient function \texttt{GetIndices} (table \ref{ALGO}) which determines the contributions.
 
-To conclude, ........ both method can be mix ........ We also developed an optional hybrid mode between CPU/GPU. This  technique is usual in GPU computing.
-We split the input vectors of polynomials into two chunks of data, execute concurrently on CPU and GPU. 
-A synchronization  is performed during  the memory transfer   by the final reduction, at the end of the calculation.
+\begin{itemize}
+\item both algo can be mix -> hybrid mode
+\item a few line to explain how does it work
+\end{itemize}
+%We also developed an optional hybrid mode between CPU/GPU. This  technique is usual in GPU computing.
+%We split the input vectors of polynomials into two chunks of data, execute concurrently on CPU and GPU. 
+%A synchronization  is performed during  the memory transfer   by the final reduction, at the end of the calculation.
 
-\section{Results}
-
+\section{benchmarks}
 
 
 Benchmarks are performed on the facilities of the Swiss Center for Scientific Computing (CSCS), on a Cray  XK7 cluster for the GPU, and a Sandy Bridge  node with 32 logical cores  (HyperThreading on) Xeon E5-2670. The size of our vector is equal to 4096, the order of the polynomials varies from 1 to 14, the size of the input coefficients of the polynomials varies from 128 to 256 bits, the output polynomial has double width-coefficients (256 to 512 bits). 
