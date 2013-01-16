@@ -44,7 +44,7 @@
 
 
 /*! \namespace vli
-    \brief the principal name space of VLI
+    \brief the name space of the library
 */
 namespace vli {
     /* \cond I do not need this part in the doc*/
@@ -64,46 +64,46 @@ namespace vli {
     /* \endcond */
     
     /*! \class integer
-        \brief This class models the INTEGER number 
+        \brief This class models the integer<NumBits> number it is templated over the total number of bit
      
         The four basics operators are included : +,-,* and / as bit operations and equality and inequality operators. All theses operators
-        conserve the number of bit. The class derived from the boost::operators package.  Per exmaple for a given operator INTEGER += INTEGER  the complentary operation
-        INTEGER * INTEGER is generated automatically.
+        conserve the number of bit. The class derived from the boost::operators package.  Per exmaple for a given operator integer<NumBits> += integer<NumBits>  the complentary operation
+        integer<NumBits> + integer<NumBits> is generated automatically.
      */
     template<std::size_t NumBits>
     class integer
         :boost::equality_comparable<integer<NumBits> >, // generate != operator
-         boost::less_than_comparable<integer<NumBits> >, // generate <= >= > < whatever the paire INTEGER/INTEGER
-         boost::less_than_comparable<integer<NumBits>, long int>, // generate <= >= > < whatever the paire INTEGER/int
-         boost::addable<integer<NumBits> >, // generate INTEGER<nbits> = VLIVLI<nbits> + INTEGER<INTEGER<nbits>
-         boost::subtractable<integer<NumBits> >, // generate INTEGER<nbits> = VLIVLI<nbits> - INTEGER<INTEGER<nbits>
-         boost::multipliable<integer<NumBits> >, //  generate INTEGER<nbits> = VLIVLI<nbits> * INTEGER<INTEGER<nbits>
-         boost::left_shiftable<integer<NumBits>, long int>, // enerate INTEGER<nbits> = VLIVLI<nbits> << int
-         boost::right_shiftable<integer<NumBits>, long int>, //enerate INTEGER<nbits> = VLIVLI<nbits> >> int
+         boost::less_than_comparable<integer<NumBits> >, // generate <= >= > < whatever the paire integer/integer
+         boost::less_than_comparable<integer<NumBits>, long int>, // generate <= >= > < whatever the paire integer/int
+         boost::addable<integer<NumBits> >, // generate integer<nbits> = VLIVLI<nbits> + integer<integer<nbits>
+         boost::subtractable<integer<NumBits> >, // generate integer<nbits> = VLIVLI<nbits> - integer<integer<nbits>
+         boost::multipliable<integer<NumBits> >, //  generate integer<nbits> = VLIVLI<nbits> * integer<integer<nbits>
+         boost::left_shiftable<integer<NumBits>, long int>, // enerate integer<nbits> = VLIVLI<nbits> << int
+         boost::right_shiftable<integer<NumBits>, long int>, //enerate integer<nbits> = VLIVLI<nbits> >> int
          boost::modable<integer<NumBits> >,
          boost::dividable<integer<NumBits> >
     {
     public:
-        /*! \brief The value type of the INTEGER number: a 64-bit unsigned integer */
+        /*! \brief The value type of the integer number: a 64-bit unsigned integer */
         typedef boost::uint64_t      value_type;
         
          /* \cond I do not need this part in the doc*/
         typedef std::size_t          size_type;
         /* \endcond */
         
-        /*! \brief The size of the INTEGER [bit] */
+        /*! \brief The size of the integer [bit] */
         static const std::size_t numbits = NumBits;
 
-        /*! \brief The  number of word of the INTEGER, we consider the world equal to 64 bits for the CPU version*/
+        /*! \brief The  number of word of the integer, we consider the world equal to 64 bits for the CPU version*/
         static const std::size_t numwords = (NumBits+63)/64;
         /**
-         \brief Default constructor, the INTEGER number is equal to 0, every entries of the container are set up to 0
+         \brief Default constructor, the integer number is equal to 0, every entries of the container are set up to 0
         */
         integer();
         /**
-         \brief Constructor, the INTEGER number is equal to the parameter.
-         \param The arguement is an sign integer. If the parameter is negative, the INTEGER number is initialized with the two complementary method.
-         \note copy constructor and destructor are generated automatically by the compiler.
+         \brief Constructor, the integer<NumBits> number is equal to the parameter.
+         \param 64-bit int
+         \note  If the parameter is negative, the integer number is initialized with the two complementary method. Copy constructor and destructor are generated automatically by the compiler.
          */
         explicit integer(long int num);
         /* \cond I do not need this part in the doc*/
@@ -122,14 +122,14 @@ namespace vli {
         /* \endcond */
         /**
          \fn value_type& operator[](size_type i)
-         \brief Give a write acces to the element of the INTEGER number
-         \param a first argument unsigned 64-bit integer
+         \brief Give a write acces to the element of the integer number
+         \param i unsigned 64-bit int
          */
         value_type& operator[](size_type i);
         /**
          \fn value_type& operator[](size_type i) const
-         \brief Give a read acces to the element of the INTEGER number
-         \param a first argument unsigned 64-bit integer
+         \brief Give a read acces to the element of the integer number
+         \param i unsigned 64-bit int
          */
         const value_type& operator[](size_type i) const;
         // c - negative number
@@ -140,127 +140,129 @@ namespace vli {
         // c - basic operator
 
         /**
-         \fn integer& operator >>= (integer const& integer_a)
-         \brief Perform a right bit shift operation on the INTEGER number, it conserves the number of bits
-         \param a first argument 64-bit integer
+         \fn integer<NumBits>& operator >>= (integer<NumBits> const& integer_a)
+         \brief Perform a right bit shift operation on the integer<NumBits> number, it conserves the number of bits
+         \param a 64-bit int
          */
         integer& operator >>= (long int const a); // bit shift
         
         /**
-         \fn integer& operator <<= (integer const& integer_a)
-         \brief Perform a left bit shift operation on the INTEGER number, it conserves the number of bits
-         \param a first argument 64-bit integer
+         \fn integer<NumBits>& operator <<= (integer<NumBits> const& integer_a)
+         \brief Perform a left bit shift operation on the integer<NumBits> number, it conserves the number of bits
+         \param a 64-bit int
          */
         integer& operator <<= (long int const a); // bit shift
 
         /**
-         \fn integer& operator |= (integer const& integer_a)
-         \brief Perform a bit | operation between two INTEGER numbers, it conserves the number of bits
-         \param a first argument, INTEGER number
+         \fn integer<NumBits>& operator |= (integer<NumBits> const& integer_a)
+         \brief Perform a bit | operation between two integer<NumBits> numbers, it conserves the number of bits
+         \param integer_a integer<NumBits> number
          */
         integer& operator |= (integer const& integer_a); // bit shift
 
         /**
-         \fn integer& operator ^= (integer const& integer_a)
-         \brief Perform a bit ^ operation between two INTEGER numbers, it conserves the number of bits
-         \param a first argument, INTEGER number
+         \fn integer<NumBits>& operator ^= (integer<NumBits> const& integer_a)
+         \brief Perform a bit ^ operation between two integer<NumBits> numbers, it conserves the number of bits
+         \param integer_a integer<NumBits> number
          */
         integer& operator ^= (integer const& integer_a);
 
         /**
-         \fn integer& operator &= (integer const& integer_a)
-         \brief Perform a bit & operation between two INTEGER numbers, it conserves the number of bits
-         \param a first argument, INTEGER number
+         \fn integer<NumBits>& operator &= (integer<NumBits> const& integer_a)
+         \brief Perform a bit & operation between two integer<NumBits> numbers, it conserves the number of bits
+         \param integer_a integer<NumBits> number
          */
         integer& operator &= (integer const& integer_a);
 
         /**
-         \fn integer& operator += (integer const& integer_a)
-         \brief Perform an addition between two INTEGER numbers, it conserves the number of bits
-         \param a first argument, INTEGER number
+         \fn integer<NumBits>& operator += (integer<NumBits> const& integer_a)
+         \brief Perform an addition between two integer<NumBits> numbers, it conserves the number of bits
+         \param integer_a integer<NumBits> number
          */
         integer& operator += (integer const& integer_a);
 
         /**
-         \fn integer& operator += (long int const a)
-         \brief Perform an addition between a INTEGER number and a 64-bit long integer, it conserves the number of bits
-         \param a first argument, 64-bit integer
+         \fn integer<NumBits>& operator += (long int const a)
+         \brief Perform an addition between a integer<NumBits> number and a 64-bit long integer, it conserves the number of bits
+         \param a 64-bit int
         */
         integer& operator += (long int const a);
 
         /**
-         \fn integer& operator -= (integer const& integer_a)
-         \brief Perform a substraction between two INTEGER numbers, it conserves the number of bits
-         \param a first argument, INTEGER number
+         \fn integer<NumBits>& operator -= (integer<NumBits> const& integer_a)
+         \brief Perform a substraction between two integer<NumBits> numbers, it conserves the number of bits
+         \param integer_a integer<NumBits> number
          */
         integer& operator -= (integer const& integer_a);
         
         /**
-         \fn integer& operator -= (long int const a)
-         \brief Perform a substraction between a INTEGER number and a 64-bit long integer, it conserves the number of bits
-         \param a first argument, 64-bit integer
+         \fn integer<NumBits>& operator -= (long int const a)
+         \brief Perform a substraction between a integer<NumBits> number and a signed 64-bit int, it conserves the number of bits
+         \param a 64-bit int
          */
         integer& operator -= (long int a);
 
         /**
-         \fn integer& operator *= (integer const& integer_a)
-         \brief Perform a multiplication between two INTEGER numbers, it conserves the number of bits
-         \param a first argument, INTEGER number
+         \fn integer<NumBits>& operator *= (integer<NumBits> const& integer_a)
+         \brief Perform a multiplication between two integer<NumBits> numbers, it conserves the number of bits
+         \param a integer<NumBits> number
          */
-        integer& operator *= (integer const& a);
+        integer& operator *= (integer const& integer_a);
         
         /**
-         \fn integer& operator *= (long int const a)
-         \brief Perform a multiplication between a INTEGER numbers and a 64-bit long integer, it conserves the number of bits
-         \param a first argument, 64-bit integer
+         \fn integer<NumBits>& operator *= (long int const a)
+         \brief Perform a multiplication between a integer number<NumBits> and a  signed 64-bit int, it conserves the number of bits
+         \param a 64-bit int
          */
         integer& operator *= (long int a);
 
         /**
-         \fn integer& operator /= (integer a)
-         \brief Perform a division between two INTEGER numbers. It return the quotient of the euclidian division, it conserves the number of bits
-         \param a first argument, INTEGER number
+         \fn integer<NumBits>& operator /= (integer<NumBits> a)
+         \brief Perform a division between two integer<NumBits> numbers. It return the quotient of the euclidian division, it conserves the number of bits
+         \param a integer<NumBits> number
+         \note this operator is slow
          */
-        integer& operator /= (integer a);
+        integer& operator /= (integer integer_a);
 
         /**
-         \fn integer& operator %= (integer a)
-         \brief Perform a division between two INTEGER numbers. It return the rest of the euclidian division followinf the GMP convention (for negative number it exists two possibilities), it conserves the number of bits
-         \param a first argument, INTEGER number
+         \fn integer<NumBits>& operator %= (integer<NumBits> a)
+         \brief Perform a division between two integer numbers. It return the rest of the euclidian division followinf the GMP convention (for negative number it exists two possibilities), it conserves the number of bits. The ASM solver is generic with  /= 
+         \param integer_a integer<NumBits> number
+         \note this operator is slow
          */
-        integer& operator %= (integer a);
+        integer& operator %= (integer integer_a);
 
         /* \cond I do not need this part in the doc*/
         integer operator -() const;
         /* \endcond */
         
         /**
-         \fn integer& operator == (integer const& integer_a) const
-         \brief Test the equality between two INTEGER numbers. The complementary operator != is generated automatically by the boost operator package
-         \param a first argument, INTEGER number
+         \fn integer<NumBits>& operator == (integer<NumBits> const& integer_a) const
+         \brief Test the equality between two integer<NumBits> numbers. The complementary operator != is generated automatically by the boost operator package
+         \param a integer<NumBits> number
          */
         bool operator == (integer const& integer_a) const; // need by boost::equality_comparable
 
         /**
-         \fn integer& operator < (integer const& integer_a) const
-         \brief Test the inequality < between two INTEGER numbers. The complementary operator <=, > and >= are generated automatically by the boost operator package
-         \param a first argument, INTEGER number
+         \fn integer<NumBits>& operator < (integer<NumBits> const& integer_a) const
+         \brief Test the inequality < between two integer<NumBits> numbers. The complementary operator <=, > and >= are generated automatically by the boost operator package
+         \param a integer number
          */
         bool operator < (integer const& integer_a) const; // need by less_than_comparable<T>
 
         /**
-         \fn integer& operator < (long int) const
-         \brief Test the inequality < between a signed 64-bit integer and a INTEGER number. The complementary operator <= is generated automatically by the boost operator package
-         \param a first argument, a signed 64-bit
+         \fn integer<NumBits>& operator < (long int) const
+         \brief Test the inequality < between a signed 64-bit int and a integer<NumBits> number. The complementary operator <= is generated automatically by the boost operator package
+         \param a signed int 64-bit
          */
-        bool operator < (long int i) const; // need by less_than_comparable<T,U>
+        bool operator < (long int a) const; // need by less_than_comparable<T,U>
 
         /**
          \fn integer& operator > (long int) const
-         \brief Test the inequality > between a signed 64-bit integer and a INTEGER number. The complementary operator >= is generated automatically by the boost operator package
-         \param a first argument, a signed 64-bit
+         \brief Test the inequality > between a signed 64-bit int and a integer<NumBits> number. The complementary operator >= is generated automatically by the boost operator package
+         \param a signed int 64-bit
          */
-        bool operator > (long int i) const; // need by less_than_comparable<T,U>
+        bool operator > (long int a) const; // need by less_than_comparable<T,U>
  
         /* \cond I do not need this part in the doc*/
         bool is_zero() const;
@@ -273,14 +275,8 @@ namespace vli {
         /* \endcond */
 
     private:
-        value_type data_[numwords]; /*!< The container of the INTEGER number a 64-bit unsigned integer */
+        value_type data_[numwords]; /*!< The container of the integer number a 64-bit unsigned integer */
     };
-
-    /**
-     multiply and addition operators, suite ...
-     no boost::operators for INTEGER operator int, because I have specific assembly solver, 
-     I do not want INTEGER tmp(int) and work with the tmp as for > < operators
-     */
     
     /* \cond */
     template <std::size_t NumBits>
@@ -289,31 +285,103 @@ namespace vli {
     template <std::size_t NumBits>
     void negate_inplace(integer<NumBits>& v);
     /* \endcond */
+
+    /**
+     \brief Addition between an integer<NumBits> and a signed 64-bit int
+     \return integer<NumBits>
+     \param integer_a integer<NumBits> numer
+     \param b long int
+     This operator performs an addition between an integer and as signed 64 bits integer, the return syze type is the same than the input.
+     The ASM solver is specific. This operator is not generated by BOOST::operator for performance issue.
+     */
     template <std::size_t NumBits>
     const integer<NumBits> operator + (integer<NumBits> integer_a, long int b);
 
+    /**
+     \brief Addition between a signed 64-bit integer and an integer<NumBits>
+     \return integer number<NumBits>
+     \param a long int
+     \param integer_b integer<NumBits> 
+     This operator performs an addition between an integer and as signed 64 bits integer, the return syze type is the same than the input.
+     The ASM solver is specific. This operator is not generated by BOOST::operator for performance issue.
+     */
     template <std::size_t NumBits>
-    const integer<NumBits> operator + (long int b, integer<NumBits> const& integer_a);
-
+    const integer<NumBits> operator + (long int b, integer<NumBits> const& integer_b);
+    
+    /**
+     \brief Addition between an integer<NumBits> number and a signed 64-bit int
+     \return integer larger (64-bit more)
+     \param integer_a an integer<NumBits> number
+     \param integer_b an integer<NumBits> number
+     This operator performs an addition between an integer<NumBits> and as signed 64 bits int, the return syze type is the same than the input.
+     The ASM solver is specific. This operator is not generated by BOOST::operator for performance issue.
+     */
     template <std::size_t NumBits> //extented arithmetic
     const integer<NumBits+64> plus_extend(integer<NumBits> const& integer_a, integer<NumBits> const& integer_b);
 
+    /**
+     \brief substraction between an integer<NumBits> number and a signed 64-bit int
+     \return integer number<NumBits> number
+     \param integer_res integer number<NumBits> number
+     \param b long int
+     This operator performs an addition between an integer<NumBits> and as signed 64 bits int, the return syze type is the same than the input.
+     The ASM solver is specific. This operator is not generated by BOOST::operator for performance issue.
+     */
     template <std::size_t NumBits>
     const integer<NumBits> operator - (integer<NumBits> integer_a, long int b);
 
+    
+    /**
+     \brief multiplication between an integer<NumBits> and a signed 64-bit int
+     \return integer number<NumBits> number
+     \param integer_a integer number<NumBits> number
+     \param b long int
+     This operator performs an addition between an integer<NumBits> and as signed 64 bits int, the return syze type is the same than the input.
+     The ASM solver is specific. This operator is not generated by BOOST::operator for performance issue.
+     */
     template <std::size_t NumBits>
     const integer<NumBits> operator * (integer<NumBits> integer_a, long int b);
 
+    /**
+     \brief multiplication between a signed 64-bit int and integer<NumBits> number
+     \return integer number<NumBits> number
+     \param a long int
+     \param integer_b integer number<NumBits> number
+     This operator performs an addition between an integer<NumBits> and as signed 64 bits int, the return syze type is the same than the input.
+     The ASM solver is specific. This operator is not generated by BOOST::operator for performance issue.
+     */
     template <std::size_t NumBits>
-    const integer<NumBits> operator * (long int b, integer<NumBits> const& a);
-
+    const integer<NumBits> operator * (long int a, integer<NumBits> const& integer_b);
+    
+    /**
+     \brief extended multiplication between two integer<NumBits>
+     \return void
+     \param integer_res integer number<2*umBits> number
+     \param integer_a integer number<NumBits> number
+     \param integer_b integer number<NumBits> number
+     This operator performs an addition between two integer<NumBits>, the result is twice larger than the input.
+     The ASM solver is specific. This operator is not generated by BOOST::operator for performance issue.
+     \warning The size template parameter must be twice large for the ouput. This operation give a new type
+     */
     template <std::size_t NumBits>
     void multiply_extend(integer<2*NumBits>& integer_res, integer<NumBits> const&  integer_a, integer<NumBits> const& integer_b); // C nt = non truncated
 
+    /**
+     \brief fuse multiply-add operation
+     \return void
+     \param integer_res integer number<2*NumBits> number
+     \param integer_a integer number<NumBits> number
+     \param integer_b integer number<NumBits> number
+     This operator performs an addition between two integer<NumBits>, the result is twice larger than the input.
+     The ASM solver is specific. This operator is not generated by BOOST::operator for performance issue.
+     \warning The size template parameter must be twice large for the ouput. This operation give a new type
+     */
     template <std::size_t NumBits>
     void multiply_add(integer<2*NumBits>& integer_res, integer<NumBits> const&  integer_a, integer<NumBits> const& integer_b); // C
+
     /**
-    stream 
+         \brief  stream operator
+          As classical iostream, the integer stream allows hexadecimal e.g. std::cout << or std::cout << std::hex <<
     */
     template <std::size_t NumBits>
     std::ostream& operator<< (std::ostream& os,  integer<NumBits> const& );

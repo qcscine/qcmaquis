@@ -5,13 +5,13 @@ This second tutorial illustrates  the arithmetics operations between VLI number
 Considering the following program,  
 
 \code
-    vli<128> a(2),b(3); // I create two VLI numbers of 128 bits 
+    integer<128> a(2),b(3); // I create two VLI numbers of 128 bits 
     a+=b; // We make the sum
 \endcode
 
 The output simply gives 5. If now we consider the inputs : 
 \code
-    vli<128> a(0xffffffffffffffff),b(3); // The first entry of a is full bit, but it is not a negative number because the second entry is null
+    integer<128> a(0xffffffffffffffff),b(3); // The first entry of a is full bit, but it is not a negative number because the second entry is null
 \endcode
 
 The print show the propagation of the carry bit.
@@ -24,7 +24,7 @@ The print show the propagation of the carry bit.
 This last operation can be rewrite under the followings form
 
 \code
-    vli<128> a(0xffffffffffffffff),b(3),c;
+    integer<128> a(0xffffffffffffffff),b(3),c;
     c = a+b; // less performable, it necessitates an extra copy due to operator=
     a += 3; // alternative if the right value fits into 64 bits.
 \endcode
