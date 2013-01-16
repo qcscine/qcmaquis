@@ -52,7 +52,6 @@ Description of the 3 modules : vli, poly and vector
 \end{itemize}
 \end{enumerate}
 
---------------------------------------------------------
 
 THE OBJECTIVE
 
@@ -60,7 +59,6 @@ THE OBJECTIVE
 \item  We goal of this library is performed efficient arithmetic for polynomial with large coefficient and execute efficient inner product : multithread and/or GPU.
 \item give an efficient library for the HP2C initiative code .e.g  HTSE
 \end{itemize}
---------------------------------------------------------
 
 OTHER LIBRAIRIES
 
@@ -184,9 +182,12 @@ The x86-64 architecture allows 16 registers (32 for Power architecture). We try 
 It allows a fused multiplication-addition of 32-bit integer  with carry bit support \cite{CUDAasm}.  The calculation in 32-bit mode imposes twice as much operations for the additions/subtractions, and one order of magnitude more for the multiplications. 
 
 \begin{itemize}
-\item  We does not use SIMD 
-\item because the contiguous data does not help at all for CB propagation
-\item 
+\item We does not use SIMD for kernels 
+\item because the contiguous data does not help at all for CB propagation 
+\item It could be  apply  on multiplications for integer  larger than 1024-bit \cite{SIMD}, unfortunately, it does not correspond to our working range. 
+
+%Consequently, we do not  use the multimedia instruction into the ASM kernels.
+
 %The disagreement  of this choice, the AoS order does not facilitate the usage of the SIMD instruction such as the AVX instructions of the Sandy Bridge x86-64 architecture.
 %Applying SIMD to the AoS, for an addition or a subtraction is a nonsense because there is no specific instruction to propagate carry bit between entries of the SIMD register.
 %It could be  apply  on multiplications for integer  larger than 1024-bit \cite{SIMD}, unfortunately, it does not correspond to our working range. Consequently, we do not 
@@ -206,12 +207,12 @@ short description of both type of polynomial
 
 \subsubsection{module vector}
 \begin{itemize}
-\item +- std::vector
+\item derived from  std::vector
 \end{itemize}
 
 
 
-\subsubsection{memory layout}
+\subsubsection{memory layout} 
 
 All elements modules combined together give the memory layout
 
@@ -239,8 +240,8 @@ All elements modules combined together give the memory layout
 
 \begin{itemize}
 \item object conception imposes SoA
-\item AoS is the good for SIMD ( global solution)
-\item  with the flexibility of module we lost the SIMD 
+\item AoS is the good for SIMD ( global solution) but for this solution modules disappear, we loose all the flexibility
+\item  Do SoA to AoS reorganization of the data costs too much, Maybe intel Xeon phi could be a solution in the future, as gpu we could develop a booster
 \end{itemize}
 
 \section{Advance solver : Inner products}
@@ -268,7 +269,7 @@ All elements modules combined together give the memory layout
 \subsubsection{CPU implementation}
 \begin{itemize}
 \item   explain quickly ..... just loop other coefficient 
-\item  with the OMP 
+\item  explain the implementation of threadings basic OMP
 \end{itemize}
 %In terms of  programming and parallelization, in the CPU version, the previous equations can be reduced to independent loops with a final reduction.
 %The CPU parallelization has been done with OpenMP. The OpenMP threads calculate several  polynomial multiplications and make a local reduction. At the end, a final reduction is performed  by the main thread.
@@ -420,8 +421,10 @@ The contributions are not dispatched between the threads, thus we do not  introd
 This  algorithm has the great advantage of working well with dense - triangular polynomials, and it could be extended to sparse polynomials, as structure of the polynomial is not primordial.
 The main difficulty consists  of designing an efficient function \texttt{GetIndices} (table \ref{ALGO}) which determines the contributions.
 
+\subsubsection{hybri-mode}
+
 \begin{itemize}
-\item both algo can be mix -> hybrid mode
+\item both algo can be mix  $=>$ hybrid mode
 \item a few line to explain how does it work
 \end{itemize}
 %We also developed an optional hybrid mode between CPU/GPU. This  technique is usual in GPU computing.
