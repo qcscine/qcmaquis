@@ -61,12 +61,10 @@ namespace vli {
                           asm(                                                                                   \
                               "movq   %%rsi              , %%rax   \n"                                           \
                               "movq   %%rax              , %%rcx   \n" /*  XOR then AND could make a cpy */      \
-                              "movq   (%%rdi)            , %%r9    \n"                                           \
                               "sarq   $63                , %%rcx   \n" /* get the sign */                        \
-                              "subq   %%rsi              , %%r9    \n"                                           \
-                              "movq   %%r9               , (%%rdi) \n"                                          \
+                              "subq   %%rsi              , (%%rdi) \n"                                           \
                               BOOST_PP_REPEAT(BOOST_PP_ADD(n,1), Substraction2, ~)                               \
-                              : : :"rax","r8","r9","rcx","memory"                                                \
+                              : : :"rax","r8","rcx","memory"                                                \
                             );                                                                                   \
                           }                                                                                      \
 

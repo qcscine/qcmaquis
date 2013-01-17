@@ -43,26 +43,20 @@
 // addition ASM operators
 #define ADC0_register(z, n, unused) "adcq $0x0                                ,"R(BOOST_PP_ADD(n,1))" \n" /* adcq 0 + rdi + CB    */     
 
-#define Addition( z, n, unused) "movq "PPS(VLI_AOS,n)"(%%rdi), %%rax \n" \
-                                ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" "PPS(VLI_AOS,n)"(%%rsi), %%rax \n" \
-                                "movq %%rax              , "PPS(VLI_AOS,n)"(%%rdi) \n" 
+#define Addition( z, n, unused) "movq "PPS(VLI_AOS,n)"(%%rsi), %%rax \n" \
+                                ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" %%rax, "PPS(VLI_AOS,n)"(%%rdi) \n" \
 
-#define Addition2( z, n, unused) "movq "PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rdi), %%rax \n" \
-                                 "adcq %%rcx              , %%rax \n" \
-                                 "movq %%rax              , "PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rdi) \n" 
+#define Addition2( z, n, unused) "adcq %%rcx              , "PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rdi) \n" \
 
 #define Addition3( z, n, unused) "movq "PPS(VLI_AOS,n)"(%%rdx), %%rax \n" \
                                  ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" "PPS(VLI_AOS,n)"(%%rsi), %%rax \n" \
                                  "movq %%rax              , "PPS(VLI_AOS,n)"(%%rdi) \n" 
 
 // substraction ASM operators 
-#define Substraction( z, n, unused) "movq "PPS(VLI_AOS,n)"(%%rdi), %%rax \n" \
-                                    ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(sbbq),BOOST_PP_STRINGIZE(subq))" "PPS(VLI_AOS,n)"(%%rsi), %%rax  \n" \
-                                    "movq %%rax              , "PPS(VLI_AOS,n)"(%%rdi) \n" 
+#define Substraction( z, n, unused) "movq "PPS(VLI_AOS,n)"(%%rsi), %%rax \n" \
+                                    ""BOOST_PP_IF(n,BOOST_PP_STRINGIZE(sbbq),BOOST_PP_STRINGIZE(subq))" %%rax, "PPS(VLI_AOS,n)"(%%rdi) \n" \
 
-#define Substraction2( z, n, unused)"movq "PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rdi), %%rax \n" \
-                                    "sbbq %%rcx              , %%rax \n" \
-                                    "movq %%rax              , "PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rdi) \n" 
+#define Substraction2( z, n, unused) "sbbq %%rcx         , "PPS(VLI_AOS,BOOST_PP_ADD(n,1))"(%%rdi) \n" 
 
 // multiplication VLI<n*64> *= 64 bits, note : results are saved in to r8, r9, r10 .... thus for the first iteration I move direclty inside
 #define  MUL_register(z, n, unused) "mulq "PPS(1,BOOST_PP_ADD(n,1))"(%%rdi)             \n" /* mulq r??*rax */                \
