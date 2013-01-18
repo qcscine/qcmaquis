@@ -223,6 +223,31 @@ calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
     return calculate_bond_renyi_entropies(mps, 1);
 }
 
+template<class Matrix, class SymmGroup>
+double dm_trace(MPS<Matrix, SymmGroup> const& mps, Index<SymmGroup> const& phys_psi, Index<SymmGroup> const& phys_rho)
+{
+    size_t L = mps.length();
+    
+    Matrix identblock(phys_rho.size_of_block(SymmGroup::IdentityCharge), 1, 0.);
+    for (int s=0; s<phys_psi.size(); ++s)
+        for (int ss=0; ss<phys_psi[s].second; ++ss) {
+            identblock(ss*phys_psi[s].second+ss, 0) = 1.;
+        }
+    block_matrix<Matrix, SymmGroup> ident;
+    ident.insert_block(identblock, SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
+    
+    Index<SymmGroup> trivial_i;
+    trivial_i.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
+    MPSTensor<Matrix, SymmGroup> mident(phys_rho, trivial_i, trivial_i);
+    mident.data() = ident;
+    
+    MPS<Matrix,SymmGroup> mps_ident(L);
+    for (int p=0; p<L; ++p)
+        mps_ident[p] = mident;
+    
+    return overlap(mps, mps_ident);
+}
+
 
 // Specific to Fermi-Hubbard on a Ladder!!
 template<class Matrix, class SymmGroup>
