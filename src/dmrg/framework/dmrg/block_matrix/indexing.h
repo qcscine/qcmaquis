@@ -252,6 +252,7 @@ public:
         typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > my_type;
         ar >> alps::make_pvp("Index",
                              static_cast<my_type&>(*this));
+        calc_positions();
     }
     void save(alps::hdf5::archive & ar) const
     {
