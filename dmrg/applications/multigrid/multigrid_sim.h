@@ -187,8 +187,7 @@ private:
         {
             optimizer = 
             boost::shared_ptr<opt_base_t> ( new ss_optimize<Matrix, SymmGroup, StreamStorageMaster>
-                                           (base::mps,
-                                            base::parms.template get<int>("use_compressed") == 0 ? base::mpo : base::mpoc,
+                                           (base::mps, base::mpoc,
                                             base::parms, base::ssm) );
         } 
         
@@ -196,8 +195,7 @@ private:
         {
             optimizer = 
             boost::shared_ptr<opt_base_t> ( new ts_optimize<Matrix, SymmGroup, StreamStorageMaster>
-                                           (base::mps,
-                                            base::parms.template get<int>("use_compressed") == 0 ? base::mpo : base::mpoc,
+                                           (base::mps, base::mpoc, base::ts_cache_mpo,
                                             base::parms, base::ssm) );
         }
         
