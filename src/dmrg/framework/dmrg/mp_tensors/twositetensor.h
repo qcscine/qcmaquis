@@ -94,21 +94,22 @@ MPOTensor<Matrix, SymmGroup> make_twosite_mpo(MPOTensor<Matrix, SymmGroup> const
 {
     assert(mpo1.col_dim() == mpo2.row_dim());
     MPOTensor<Matrix, SymmGroup> mpo_big(mpo1.row_dim(), mpo2.col_dim());
-
+    // TODO: use OpenMP, thread-safe reduction needed!
     std::size_t b1, b2, b3;
     for( b1=0; b1 < mpo1.row_dim(); ++b1)
-	for( b2=0; b2 < mpo1.col_dim(); ++b2)
-	    for( b3=0; b3 < mpo2.col_dim(); ++b3) {
-		if (! (mpo1.has(b1, b2) && mpo2.has(b2, b3)) )
-		    continue;
-		    block_matrix<Matrix, SymmGroup> tmp;
-		    op_kron(phys_i, mpo1(b1,b2), mpo2(b2,b3), tmp);
-		if (mpo_big.has(b1,b3))
-		    mpo_big(b1,b3) += tmp;
-		else
-		    mpo_big(b1,b3) = tmp;
-	    }
-
+        for( b2=0; b2 < mpo1.col_dim(); ++b2)
+            for( b3=0; b3 < mpo2.col_dim(); ++b3)
+            {
+                if (! (mpo1.has(b1, b2) && mpo2.has(b2, b3)) )
+                    continue;
+                block_matrix<Matrix, SymmGroup> tmp;
+                op_kron(phys_i, mpo1(b1,b2), mpo2(b2,b3), tmp);
+                if (mpo_big.has(b1,b3))
+                    mpo_big(b1,b3) += tmp;
+                else
+                    mpo_big(b1,b3) = tmp;
+            }
+    
     return mpo_big;
 }
 

@@ -118,9 +118,9 @@ namespace meas_detail {
             std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> vals;
             std::vector<std::string> labels;
             MPOTensor<Matrix, SymmGroup> temp;
+            temp(0,0) = op.first;
 
             for (int p = 0; p < L; ++p) {
-                temp(0,0) = op.first;
                 MPSTensor<Matrix, SymmGroup> vec2 =
                 contraction::site_hamil2(mps[p], left_[p], right_[p], temp);
                 vals.push_back( maquis::real(mps[p].scalar_overlap(vec2)) ); // MD todo: allow complex numbers

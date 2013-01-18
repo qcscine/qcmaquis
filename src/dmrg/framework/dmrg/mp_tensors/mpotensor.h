@@ -104,9 +104,7 @@ public:
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
     typedef std::pair<typename SymmGroup::charge, std::size_t> access_type;
     
-    // the constructor asumes that the upper and lower physical dimension is the same
-    MPOTensor(std::size_t = 1,
-              std::size_t = 1);
+    MPOTensor(std::size_t = 1, std::size_t = 1);
     
     std::size_t row_dim() const;
     std::size_t col_dim() const;
@@ -131,10 +129,9 @@ public:
     bool has(std::size_t left_index, std::size_t right_index) const;
     
 private:
-    mutable data_t data_;
+    data_t data_;
     
     std::size_t left_i, right_i;
-//    Index<SymmGroup> phys_i;
 };
 
 #include "dmrg/mp_tensors/mpotensor.hpp"
