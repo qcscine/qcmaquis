@@ -27,14 +27,14 @@ namespace ambient{
                 r->release();
             }else{
                 ambient::controller.free(*r);
-                ambient::static_memory::free<revision>(r); 
+                ambient::pool.free<revision>(r); 
             }
         }
         delete element;
     }
 
     inline void collector::delete_ptr::operator()( void* element ) const {
-        ambient::static_memory::free<FUTURE_SIZE>(element);
+        ambient::pool.free<FUTURE_SIZE>(element);
     } 
 
     inline void collector::clear(){

@@ -15,6 +15,7 @@ namespace ambient {
     inline void sync(){ 
         controller.flush();
         controller.clear();  
+        bulk.drop();
     }
 
     inline void fuse(const history* src, history* dst){ 

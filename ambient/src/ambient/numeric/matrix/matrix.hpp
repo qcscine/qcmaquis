@@ -10,12 +10,12 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void* transpose_view<Matrix>::operator new (size_t size){
-        return ambient::static_memory::malloc<transpose_view<Matrix> >(); 
+        return ambient::pool.malloc<transpose_view<Matrix> >(); 
     }
 
     template<class Matrix>
     inline void transpose_view<Matrix>::operator delete (void* ptr){
-        ambient::static_memory::free<transpose_view<Matrix> >(ptr); 
+        ambient::pool.free<transpose_view<Matrix> >(ptr); 
     }
 
     template <class Matrix>
@@ -102,7 +102,7 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void* matrix<T>::operator new (size_t size){
-        return ambient::static_memory::malloc<matrix<T> >();
+        return ambient::pool.malloc<matrix<T> >();
     }
 
     template<typename T>
@@ -112,7 +112,7 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void matrix<T>::operator delete (void* ptr){
-        ambient::static_memory::free<matrix<T> >(ptr);
+        ambient::pool.free<matrix<T> >(ptr);
     }
 
     template <typename T>

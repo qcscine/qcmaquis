@@ -27,7 +27,7 @@ namespace ambient {
         : symlink(false)
         {
             printf("ambient::future$ used default constructor\n");
-            ghost = ambient::static_memory::malloc<FUTURE_SIZE>();
+            ghost = ambient::pool.malloc<FUTURE_SIZE>();
             value = (T*)ghost;
            *value = T();
         }
@@ -44,7 +44,7 @@ namespace ambient {
         explicit inline future(const future& f)
         : symlink(false) 
         {
-            ghost = ambient::static_memory::malloc<FUTURE_SIZE>();
+            ghost = ambient::pool.malloc<FUTURE_SIZE>();
             value = (T*)ghost;
            *value = f.calc_value();
         }
@@ -62,7 +62,7 @@ namespace ambient {
         inline future(const future<S>& f) // can be optimized later
         : symlink(false) 
         {
-            ghost = ambient::static_memory::malloc<FUTURE_SIZE>();
+            ghost = ambient::pool.malloc<FUTURE_SIZE>();
             value = (T*)ghost;
            *value = (T)f.calc_value();
         }*/
@@ -92,7 +92,7 @@ namespace ambient {
         inline future(double v)
         : symlink(false)
         {
-            ghost = ambient::static_memory::malloc<FUTURE_SIZE>();
+            ghost = ambient::pool.malloc<FUTURE_SIZE>();
             value = (T*)ghost;
            *value = v;
         }
@@ -100,7 +100,7 @@ namespace ambient {
         inline future(std::complex<double> v)
         : symlink(false)
         {
-            ghost = ambient::static_memory::malloc<FUTURE_SIZE>();
+            ghost = ambient::pool.malloc<FUTURE_SIZE>();
             value = (T*)ghost;
            *value = v;
         }

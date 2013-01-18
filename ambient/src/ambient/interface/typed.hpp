@@ -23,7 +23,7 @@ namespace ambient {
         template<size_t arg> static inline bool ready         (sfunctor* m){ return true;           }
         template<size_t arg> static inline T&   revised       (sfunctor* m){ extract(o); return *o; }
         template<size_t arg> static inline void modify(T& obj, sfunctor* m){ 
-            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(obj); 
+            m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(obj); 
         }
     };
     template <typename T> struct singular_inplace_info : public singular_info<T> {
@@ -32,7 +32,7 @@ namespace ambient {
     };
     template <typename T> struct future_info : public singular_info<T> {
         template<size_t arg> static inline void modify(const T& obj, sfunctor* m){ 
-            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(obj.ghost);
+            m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(obj.ghost);
         }
     };
     // }}}
@@ -46,7 +46,7 @@ namespace ambient {
         template<size_t arg>
         static inline void modify(T& obj, sfunctor* m){
             history* o = obj.impl;
-            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(o, ambient::model.time(o));
+            m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(o, ambient::model.time(o));
             ambient::model.add_revision(o, m); 
         }
         template<size_t arg> 
@@ -81,7 +81,7 @@ namespace ambient {
         }
         template<size_t arg> static inline void modify(T& obj, sfunctor* m){
             history* o = obj.impl;
-            m->arguments[arg] = (void*)new(ambient::bulk_pool.get<sizeof(T)>()) T(o, ambient::model.time(o));
+            m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(o, ambient::model.time(o));
             ambient::model.use_revision(o);
         }
     };

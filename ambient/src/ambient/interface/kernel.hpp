@@ -35,7 +35,7 @@ namespace ambient {
     class kernel : public cfunctor
     {
     public:
-        inline void* operator new (size_t size){ return ambient::bulk_pool.get<sizeof(K)>(); }
+        inline void* operator new (size_t size){ return ambient::bulk.malloc<sizeof(K)>(); }
         inline void operator delete (void* ptr){ }
 
         virtual void deploy(size_t target){ return kernel_inliner<decltype(&K::c),&K::c>::deploy(this, target); }

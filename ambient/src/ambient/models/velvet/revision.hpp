@@ -1,11 +1,11 @@
 namespace ambient { namespace models { namespace velvet {
 
     inline void* revision::operator new (size_t size){
-        return ambient::static_memory::malloc<revision>(); 
+        return ambient::pool.malloc<revision>(); 
     }
 
     inline void revision::operator delete (void* ptr){
-        ambient::static_memory::free<revision>(ptr);
+        ambient::pool.free<revision>(ptr);
     }
 
     inline revision::revision(size_t extent, void* g)

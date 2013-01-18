@@ -42,7 +42,7 @@ public:
             }
 
         ambient::sync(); // the list is full
-        ambient::io_manager.get_list(list); // get the list from io manager
+        ambient::fout.get_list(list); // get the list from io manager
     }
     
     void operator()()
@@ -89,7 +89,7 @@ public:
             }
 
         ambient::sync(); // the list is full
-        ambient::io_manager.get_list(list); // get the list from io manager
+        ambient::fout.get_list(list); // get the list from io manager
     }
     
     void operator()()
@@ -136,7 +136,7 @@ public:
         }
 
         ambient::sync(); // the list is full
-        ambient::io_manager.get_list(list); // get the list from io manager
+        ambient::fout.get_list(list); // get the list from io manager
     }
     
     void operator()()
@@ -183,7 +183,7 @@ public:
         }
 
         ambient::sync(); // the list is full
-        ambient::io_manager.get_list(list); // get the list from io manager
+        ambient::fout.get_list(list); // get the list from io manager
     }
     
     void operator()()

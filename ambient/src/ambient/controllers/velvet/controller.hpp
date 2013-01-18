@@ -32,7 +32,6 @@ namespace ambient { namespace controllers { namespace velvet {
             chains->clear();
             std::swap(chains,mirror);
         }
-        ambient::bulk_pool.refresh();
     }
 
     inline void controller::clear(){
@@ -44,7 +43,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::alloc(revision& r){
-        r.embed(ambient::range_pool.malloc(r.extent + BOUND), BOUND);
+        r.embed(ambient::pool.malloc(r.extent + BOUND), BOUND);
     }
 
     inline void controller::calloc(revision& r){
@@ -52,7 +51,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::free(revision& r){
-        return ambient::range_pool.free(r.header, r.extent + BOUND);
+        return ambient::pool.free(r.header, r.extent + BOUND);
     }
 
     inline void controller::sync(revision& r, size_t target){
