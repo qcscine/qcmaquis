@@ -79,6 +79,7 @@ private:
         add_option("finegrain_optim", "", value(false));
         
         add_option("init_state", "", value("default"));
+        add_option("init_coeff", "coefficients for coherent init", value(""));
         
         add_option("symmetry", "null, u1 or 2u1", value("u1"));
         add_option("lattice_library", "", value("alps"));
@@ -159,6 +160,7 @@ private:
         add_option("omega", "", value(0.));
         add_option("shift", "", value(0.));
 
+        add_option("V"      , "", value(0.));
         add_option("Delta"  , "", value(0.));
         add_option("Gamma1a", "", value(0.));
         add_option("Gamma1b", "", value(0.));
@@ -171,7 +173,12 @@ private:
         add_option("MEASURE_CONTINUUM[Density]", "", value(true));
         add_option("MEASURE_CONTINUUM[Local density]", "", value(true));
         add_option("MEASURE_CONTINUUM[Onebody density matrix]", "", value(false));
-    }
+
+        add_option("MEASURE[Density]", "", value(false));
+        add_option("MEASURE[Local density]", "", value(false));
+        add_option("MEASURE[Onebody density matrix]", "", value(false));
+        add_option("MEASURE[Density correlation]", "", value(false));
+}
 
 };
 

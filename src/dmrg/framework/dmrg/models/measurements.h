@@ -101,7 +101,9 @@ public:
     typedef typename mterm_t::type_t meas_type_t;
     typedef typename mterm_t::op_t op_t;
     
-    Measurements(bool super_=false) : super_meas(super_) { }
+    enum system_type_t {Wavefunction, Densitymatrix};
+    
+    Measurements(system_type_t system_type=Wavefunction) : super_meas( system_type == Densitymatrix ) { }
     
     int n_terms() const
     {

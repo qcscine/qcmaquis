@@ -184,13 +184,16 @@ class SuperBoseHubbardNone : public Model<Matrix, TrivialGroup>
     typedef Hamiltonian<Matrix, TrivialGroup> ham;
     typedef typename ham::hamterm_t hamterm_t;
     typedef typename ham::op_t op_t;
+    typedef Measurement_Term<Matrix, TrivialGroup> mterm_t;
     
 public:
     // Dissipation needs complex types, that's why we forward to do_init with a tag
-    SuperBoseHubbardNone(const Lattice& lat, int Nmax=2, double t=1., double U=1., double V=0., 
-                         double Delta=1., double Gamma1a=0., double Gamma1b=0., double Gamma2=0.)
+    SuperBoseHubbardNone(const Lattice& lat, BaseParameters & model_)
+    : model(model_)
     {
-        do_init(lat,Nmax,t,U,V,Delta,Gamma1a,Gamma1b,Gamma2,typename Matrix::value_type());
+        do_init(lat,model.get<int>("Nmax"),model.get<double>("t"),model.get<double>("U"),model.get<double>("V"),
+                model.get<double>("Delta"),model.get<double>("Gamma1a"),model.get<double>("Gamma1b"),model.get<double>("Gamma2"),
+                typename Matrix::value_type());
     }
     
     void do_init(const Lattice& lat, int Nmax, double t, double U, double V, 
@@ -207,11 +210,13 @@ public:
         const size_t N2 = N*N;
         const std::complex<double> I(0,1);
         
+        phys_psi.insert(std::make_pair(C, N));
+        
         phys.insert(std::make_pair(C, N2));
         ident.insert_block(Matrix::identity_matrix(N2), C, C);
         
         // construct basic on-site operators
-        Matrix mcount(N,N), minteraction(N,N), mcreate(N,N), mdestroy(N,N);
+        mcount.resize(N,N); minteraction.resize(N,N); mcreate.resize(N,N); mdestroy.resize(N,N);
         for( int n = 1; n <= Nmax; ++n )
         {
             mcount(n,n) = n;
@@ -365,8 +370,60 @@ public:
     
     Measurements<Matrix, TrivialGroup> measurements () const
     {
-        // get transpose(mcount) etc.
-        return Measurements<Matrix, TrivialGroup>();
+        TrivialGroup::charge C = TrivialGroup::IdentityCharge;
+        
+        op_t ident_psi = identity_matrix<Matrix>(phys_psi);
+        op_t count_psi, create_psi, destroy_psi;
+        count_psi.insert_block(mcount, C, C);
+        create_psi.insert_block(transpose(mcreate), C, C);
+        destroy_psi.insert_block(transpose(mdestroy), C, C);
+        
+        Measurements<Matrix, TrivialGroup> meas(Measurements<Matrix, TrivialGroup>::Densitymatrix);
+        meas.set_identity(ident_psi);
+        
+        if (model.get<bool>("MEASURE[Density]")) {
+            mterm_t term;
+            term.fill_operator = ident_psi;
+            term.name = "Density";
+            term.type = mterm_t::Average;
+            term.operators.push_back( std::make_pair(count_psi, false) );
+            
+            meas.add_term(term);
+        }
+        
+        if (model.get<bool>("MEASURE[Local density]")) {
+            mterm_t term;
+            term.fill_operator = ident_psi;
+            term.name = "Local density";
+            term.type = mterm_t::Local;
+            term.operators.push_back( std::make_pair(count_psi, false) );
+            
+            meas.add_term(term);
+        }
+        
+        if (model.get<bool>("MEASURE[Onebody density matrix]")) {
+            mterm_t term;
+            term.fill_operator = ident_psi;
+            term.name = "Onebody density matrix";
+            term.type = mterm_t::HalfCorrelation;
+            term.operators.push_back( std::make_pair(create_psi, false) );
+            term.operators.push_back( std::make_pair(destroy_psi, false) );
+            
+            meas.add_term(term);
+        }
+
+        if (model.get<bool>("MEASURE[Density correlation]")) {
+            mterm_t term;
+            term.fill_operator = ident_psi;
+            term.name = "Density correlation";
+            term.type = mterm_t::HalfCorrelation;
+            term.operators.push_back( std::make_pair(count_psi, false) );
+            term.operators.push_back( std::make_pair(count_psi, false) );
+            
+            meas.add_term(term);
+        }
+
+        return meas;
     }
     
     op_t get_op(std::string const & op) const
@@ -376,10 +433,13 @@ public:
     
     
 private:
+    BaseParameters & model;
+    
     op_t ident;
+    Matrix mcount, minteraction, mcreate, mdestroy;
     op_t create, destroy, pump, count, interaction;
     op_t lindDestroy, lindDestroy2, leftDestroy, rightCreate;
-    Index<TrivialGroup> phys;
+    Index<TrivialGroup> phys, phys_psi;
     
     std::vector<hamterm_t> terms;
 };

@@ -290,6 +290,102 @@ struct linear_mps_init : public mps_initializer<Matrix, U1>
     }
 };
 
+template<class Matrix, class SymmGroup>
+class coherent_mps_init : public mps_initializer<Matrix, SymmGroup>
+{
+public:
+    coherent_mps_init(BaseParameters & params)
+    {
+        coeff = params.get<std::vector<double> >("init_coeff");
+    }
+    void operator()(MPS<Matrix, SymmGroup> & mps,
+                    std::size_t Mmax,
+                    Index<SymmGroup> const & phys,
+                    typename SymmGroup::charge right_end)
+    {
+        assert(coeff.size() == mps.length());
+        assert(phys.size() == 1); // only for TrivialGroup
+        
+        typedef typename SymmGroup::charge charge;
+        
+        using std::exp; using std::pow;
+        using boost::math::factorial;
+        
+        size_t L = coeff.size();
+        
+        Index<SymmGroup> trivial_i;
+        trivial_i.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
+        
+        for (int p=0; p<L; ++p) {
+            int s=0;
+            Matrix m(phys[s].second, 1, 0.);
+            for (int ss=0; ss<phys[s].second; ++ss) {
+                m(ss, 0) = pow(coeff[p], ss) / factorial<double>(ss);
+            }
+            block_matrix<Matrix, SymmGroup> block;
+            block.insert_block(m, SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
+            
+            MPSTensor<Matrix, SymmGroup> t(phys, trivial_i, trivial_i);
+            t.data() = block;
+            
+            mps[p] = t;
+        }
+    }
+private:
+    std::vector<double> coeff;
+};
+
+template<class Matrix, class SymmGroup>
+class coherent_dm_mps_init : public mps_initializer<Matrix, SymmGroup>
+{
+public:
+    coherent_dm_mps_init(BaseParameters & params)
+    {
+        coeff = params.get<std::vector<double> >("init_coeff");
+    }
+    void operator()(MPS<Matrix, SymmGroup> & mps,
+                    std::size_t Mmax,
+                    Index<SymmGroup> const & phys_rho,
+                    typename SymmGroup::charge right_end)
+    {
+        using std::sqrt;
+        
+        assert(coeff.size() == mps.length());
+        assert(phys_rho.size() == 1); // only for TrivialGroup
+        
+        Index<SymmGroup> phys_psi;
+        phys_psi.insert( std::make_pair( SymmGroup::IdentityCharge, static_cast<size_t>(sqrt(phys_rho[0].second)) ) );
+        
+        typedef typename SymmGroup::charge charge;
+        
+        using std::exp; using std::pow;
+        using boost::math::factorial;
+        
+        size_t L = coeff.size();
+        
+        Index<SymmGroup> trivial_i;
+        trivial_i.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
+        
+        for (int p=0; p<L; ++p) {
+            int s=0;
+            Matrix m(phys_rho[s].second, 1, 0.);
+            for (int ss1=0; ss1<phys_psi[s].second; ++ss1)
+                for (int ss2=0; ss2<phys_psi[s].second; ++ss2) {
+                    m(ss1*phys_psi[s].second+ss2, 0)  = pow(coeff[p], ss1) / factorial<double>(ss1);
+                    m(ss1*phys_psi[s].second+ss2, 0) *= pow(coeff[p], ss2) / factorial<double>(ss2);
+                }
+            block_matrix<Matrix, SymmGroup> block;
+            block.insert_block(m, SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
+            
+            MPSTensor<Matrix, SymmGroup> t(phys_rho, trivial_i, trivial_i);
+            t.data() = block;
+            
+            mps[p] = t;
+        }
+    }
+private:
+    std::vector<double> coeff;
+};
 
 
 #endif

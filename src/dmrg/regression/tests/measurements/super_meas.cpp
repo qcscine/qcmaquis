@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE( density_trivial_init )
     dens[5] = 1.;
 
     MPS<matrix,SymmGroup> mps = state_mps<matrix>(state, phys_rho);
-    double nn = dm_trace(mps, phys_psi, phys_rho);
+    double nn = dm_trace(mps, phys_psi);
     std::cout << "norm = " << nn << std::endl;
     
     /// operators for meas
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE( density_join_init )
         mps = join(tmp, mps);
     }
     
-    double nn = dm_trace(mps, phys_psi, phys_rho);
+    double nn = dm_trace(mps, phys_psi);
     std::cout << "norm = " << nn << std::endl;
 
     /// operators for meas
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE( density_coherent_init )
     /// build coherent init MPS
     MPS<matrix,SymmGroup> mps = coherent_init_dm<matrix>(coeff, phys_psi, phys_rho);
     
-    double nn = dm_trace(mps, phys_psi, phys_rho);
+    double nn = dm_trace(mps, phys_psi);
     std::cout << "norm = " << nn << std::endl;
 
     /// operators for meas
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE( density_random_init )
     MPS<matrix,SymmGroup> mps;
     mps.resize(L); initializer(mps, M, phys_rho, C);
     
-    double nn = dm_trace(mps, phys_psi, phys_rho);
+    double nn = dm_trace(mps, phys_psi);
     std::cout << "norm = " << nn << std::endl;
     
     /// operators for meas

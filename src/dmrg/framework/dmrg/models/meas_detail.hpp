@@ -211,16 +211,17 @@ namespace meas_detail {
                     
                     // C - Tim, no futur, if disagree -> Alex must fix futur stuff
                     if (!super_meas){
-			typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo);
+                        typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo);
                         vals.push_back(val);
-		    }else {
+                    }else {
                         Index<SymmGroup> phys_i = identity.left_basis();
+                        typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, phys_i);
                         MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
-			typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(super_mpo, mps);
-                        vals.push_back(val);
+                        typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(super_mpo, mps);
+                        vals.push_back(val/nn);
                     }
                     
-	    	    labels.push_back(lat.get_prop<std::string>("label", p, *hopto));
+                    labels.push_back(lat.get_prop<std::string>("label", p, *hopto));
             	}
             }
         }
@@ -322,8 +323,9 @@ namespace meas_detail {
             save_helper<Matrix, SymmGroup>(val, ops, h5name, base_path); 
         } else {
             Index<SymmGroup> phys_i = identity.left_basis();
+            typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, phys_i);
             MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
-            typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(super_mpo, mps);
+            typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(super_mpo, mps) / nn;
             save_helper<Matrix, SymmGroup>(val, ops, h5name, base_path); 
         }
 
@@ -437,8 +439,11 @@ namespace meas_detail {
                     dct = multi_expval(mps, mpo);
                 else {
                     Index<SymmGroup> phys_i = identity.left_basis();
+                    typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, phys_i);
                     MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
                     dct = multi_overlap(super_mpo, mps);
+                    for (int i=0; i<dct.size(); ++i)
+                        dct[i] /= nn;
                 }
                 
 				num_labels = dcorr.numeric_labels();

@@ -224,9 +224,11 @@ calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
 }
 
 template<class Matrix, class SymmGroup>
-double dm_trace(MPS<Matrix, SymmGroup> const& mps, Index<SymmGroup> const& phys_psi, Index<SymmGroup> const& phys_rho)
+typename MPS<Matrix, SymmGroup>::scalar_type dm_trace(MPS<Matrix, SymmGroup> const& mps, Index<SymmGroup> const& phys_psi)
 {
     size_t L = mps.length();
+    
+    Index<SymmGroup> phys_rho = phys_psi * adjoin(phys_psi);
     
     Matrix identblock(phys_rho.size_of_block(SymmGroup::IdentityCharge), 1, 0.);
     for (int s=0; s<phys_psi.size(); ++s)
