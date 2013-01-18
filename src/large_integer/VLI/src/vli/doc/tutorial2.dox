@@ -1,7 +1,7 @@
 /**
 \page tutorial2 Tutorial 2, make constant size arithmetic operations with VLI
 
-This second tutorial illustrates  the arithmetics operations between VLI number
+This second tutorial illustrates  the arithmetics operations between large integer number
 Considering the following program,  
 
 \code
@@ -10,8 +10,10 @@ Considering the following program,
 \endcode
 
 The output simply gives 5. If now we consider the inputs : 
+
 \code
-    integer<128> a(0xffffffffffffffff),b(3); // The first entry of a is full bit, but it is not a negative number because the second entry is null
+    integer<128> a,b(3); // The first entry of a is full bit, but it is not a negative number because the second entry is null
+    a[0] = -1; // Developer init to fill up the 64 first digits to one;
 \endcode
 
 The print show the propagation of the carry bit.
@@ -24,17 +26,58 @@ The print show the propagation of the carry bit.
 This last operation can be rewrite under the followings form
 
 \code
-    integer<128> a(0xffffffffffffffff),b(3),c;
+    integer<128> a,b(3); // The first entry of a is full bit, but it is not a negative number because the second entry is null
+    a[0] = -1;
     c = a+b; // less performable, it necessitates an extra copy due to operator=
     a += 3; // alternative if the right value fits into 64 bits.
 \endcode
 
-In both case a and c will have the same value. For the optimum performance, if possible, the user should privilege the operators += long int, += VLI and VLI + VLI.
-In the three cases the ASM solvers are not the same and they can necessitate an extra work.
-The last thing can be done with the 3 other operators : -,* and / whatever the operators the operations will not change the size of the VLI.
+In both case a and c will have the same value. The same think can be applied for subtraction 
 
-A addition may do an overflow or multiplication can double the VLI size of the result, we need operations that consider the size of the results.
-Let's go to the tutorial 3.
+\code
+    integer<128> a(1),b(3); // The first entry of a is full bit, but it is not a negative number because the second entry is null
+    a -= b;
+\endcode
 
+It will give,
+
+\code
+     -2 \\ decimal form
+    (ffffffffffffffff fffffffffffffffe) \\ hexadecimal form
+\endcode
+
+For the optimum performance, if possible, the user for the performances should privilege for the addition/subtraction
+operations.
+
+-# integer<NumBits> += long,     
+-# integer<NumBits> += integer<NumBits>,  
+-# integer<NumBits> = integer<NumBits> + integer<NumBits>, 
+
+In the three cases the ASM solvers are not the same and they can necessitate an extra work. The same rules are true for the subtraction,
+ because the solvers differ only from one pair of mnemonic instructions (add/adc become sub/sbb). The next operations are the multiplication (*) and the division (/)
+
+Multiply two integer<NumBits> can mathematically give an integer twice larger integer<2*NumBits>. Contrary to GMP the library 
+does not readapt the size of the container, it is the role of the user. Consequently, we must distinguish the two possibilities.
+First, the operators *= and * conserve the initial type, therefore, if we consider the operations :
+
+\code
+    integer<128> a(0xfffffffffffffff),b(0xfffffffffffffff); // fill up the 63 first bit
+    a *= b; // I will get a 126-bit number, it fits into 128 bits number
+\endcode
+will give
+\code
+    (ffffffffffffff e000000000000001)
+\endcode
+
+If now, we define a and b under the form {1 , 0xffff ffff ffff ffff}. We obtain (fffffffffffffffc 1) which is wrong, the correct result is (5 fffffffffffffffc 1)
+The library does not provide any safety for the multiplication as the usual type in C++. The performance of the operations respect the same ladder than the additions/subtractions.
+
+
+ The possibility of the extended operation will be presented in the 
+tutorial 3.
+
+To conclude, we present the possibilities of the division. The division is closed to the % operators as they use the same functions. The solutions are generic whatever
+the left/right value of the operators, thus the execution time is the same e.g. for the operations integer<NumBits> /= integer<NumBits>  and  integer<NumBits> /= long . 
+Whatever the operates %= or /= thesse operators are very slow.
 
 */

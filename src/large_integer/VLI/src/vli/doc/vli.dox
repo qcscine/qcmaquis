@@ -25,7 +25,7 @@
 
 If you have a exotic system (e.g. Raspberry PI), it exists a non ASM mode with poor performance.
 
-  \subsection step2 How does it compile ?
+  \subsection step2 How do I install ?
   
 The makefile is generated with cmake, if your environment is correctly set up do : 
 
@@ -38,5 +38,17 @@ You can now compile the library and install it.
 
    -# make
    -# make install 
+
+  \subsection step2 How do I compile ?
+
+As usual program, you will path to the include and  
+
+
+The code needs the include path of the library VLI and boost, and a link to the library VLI : 
+
+\code
+    g++ -I/PATH_INCLUDE_BOOST -I/PATH_INCLUDE_VLI my_programm.cpp -L/PATH_LIBRARY_VLI -lvli
+\endcode
+
 
  */

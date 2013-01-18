@@ -15,17 +15,12 @@ int main(int argc, char * argv[]){
 }
 \endcode
 
-The code needs the include path of the library VLI and boost, and a link to the library VLI : 
-
-\code
-    g++ -I/PATH_INCLUDE_BOOST -I/PATH_INCLUDE_VLI main.cpp -L/PATH_LIBRARY_VLI -lvli
-\endcode
 
 The output will be : 
 
 \code
-   0 // for the decimal form 
-   0 0 // for the hexadecimal form, by default the hexadecimal prints all entries of the VLI number
+   0 // for the decimal form /Users/ewartt/Documents/hp2c/trunk/src/large_integer/VLI/src/src/doc/tutorial1.dox
+   0 0 // for the hexadecimal form, by default the hexadecimal prints all entries of the large integer number
 \endcode
 
 This example is not very significative, considering now the following initialization of the number a: 
@@ -39,12 +34,12 @@ The VLI library will fit the number into a multiple of 64-bit, thus the containe
 The print under hexadecimal mode gives (little endian form): 
 
 \code
-   0 0 1// for the hexadecimal form, by default the hexadecimal prints all entries of the VLI number
+   0 0 1// for the hexadecimal form, by default the hexadecimal prints all entries of the large integer.
 \endcode
 
 Although the library will select a good container size, we recommend a multiple of 64-bit to facilitate the utilization of the arithmetic operations 
 
-Now if we decided to create a negative VLI :  
+Now if we decided to create a negative large integer :  
 
 \code
     integer<128> a(-1);
