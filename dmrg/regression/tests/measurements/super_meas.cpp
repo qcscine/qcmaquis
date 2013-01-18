@@ -32,7 +32,7 @@ typedef boost::tuple<charge, size_t> local_state;
 
 
 std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
-                   block_matrix<matrix, SymmGroup> const& ident, block_matrix<matrix, SymmGroup> const& op)
+                                  block_matrix<matrix, SymmGroup> const& ident, block_matrix<matrix, SymmGroup> const& op)
 {
     std::vector<double> vals(mps.size());
     for (int p=0; p<mps.size(); ++p) {
@@ -48,7 +48,6 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
     }
     return vals;
 }
-
 
 BOOST_AUTO_TEST_CASE( density_trivial_init )
 {
@@ -95,6 +94,8 @@ BOOST_AUTO_TEST_CASE( density_trivial_init )
     dens[5] = 1.;
 
     MPS<matrix,SymmGroup> mps = state_mps<matrix>(state, phys_rho);
+    double nn = dm_trace(mps, phys_psi, phys_rho);
+    std::cout << "norm = " << nn << std::endl;
     
     /// operators for meas
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys_psi);
@@ -108,8 +109,8 @@ BOOST_AUTO_TEST_CASE( density_trivial_init )
     /// meas
     std::vector<double> meas_dens = measure_local(mps, ident, densop);
     for (int p=0; p<L; ++p) {
-        maquis::cout << "site " << p << ": " << meas_dens[p] << std::endl;
-        BOOST_CHECK_CLOSE(dens[p], meas_dens[p], 1e-8 );
+        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << std::endl;
+        BOOST_CHECK_CLOSE(dens[p], meas_dens[p]/nn, 1e-8 );
     }
 }
 
@@ -152,6 +153,9 @@ BOOST_AUTO_TEST_CASE( density_join_init )
         MPS<matrix,SymmGroup> tmp =state_mps<matrix>(state, phys_rho);
         mps = join(tmp, mps);
     }
+    
+    double nn = dm_trace(mps, phys_psi, phys_rho);
+    std::cout << "norm = " << nn << std::endl;
 
     /// operators for meas
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys_psi);
@@ -165,7 +169,7 @@ BOOST_AUTO_TEST_CASE( density_join_init )
     /// meas
     std::vector<double> meas_dens = measure_local(mps, ident, densop);
     for (int p=0; p<L; ++p) {
-        maquis::cout << "site " << p << ": " << meas_dens[p] << std::endl;
+        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << std::endl;
     }
 }
 
@@ -191,9 +195,9 @@ BOOST_AUTO_TEST_CASE( density_coherent_init )
     /// build coherent init MPS
     MPS<matrix,SymmGroup> mps = coherent_init_dm<matrix>(coeff, phys_psi, phys_rho);
     
-    double nn = sqrt(norm(mps));
+    double nn = dm_trace(mps, phys_psi, phys_rho);
     std::cout << "norm = " << nn << std::endl;
-    
+
     /// operators for meas
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys_psi);
     block_matrix<matrix, SymmGroup> densop;
@@ -231,7 +235,9 @@ BOOST_AUTO_TEST_CASE( density_random_init )
     
     MPS<matrix,SymmGroup> mps;
     mps.resize(L); initializer(mps, M, phys_rho, C);
-    mps.normalize_left();
+    
+    double nn = dm_trace(mps, phys_psi, phys_rho);
+    std::cout << "norm = " << nn << std::endl;
     
     /// operators for meas
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys_psi);
@@ -245,7 +251,7 @@ BOOST_AUTO_TEST_CASE( density_random_init )
     /// meas
     std::vector<double> meas_dens = measure_local(mps, densop, ident);
     for (int p=0; p<L; ++p)
-        maquis::cout << "site " << p << ": " << meas_dens[p] << std::endl;
+        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << std::endl;
 }
 
 
