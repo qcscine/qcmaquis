@@ -10,7 +10,8 @@
 #ifndef MPS_INITIALIZER_H
 #define MPS_INITIALIZER_H
 
-#include "compression.h"
+#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/mp_tensors/compression.h"
 
 template<class T>
 T tri_min(T a, T b, T c)
