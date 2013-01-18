@@ -364,15 +364,16 @@ void sim<Matrix, SymmGroup>::measure ()
     }
     
     double energy = maquis::real(expval(mps, mpoc));
-    maquis::cout << "Energy before: " << maquis::real(expval(mps, mpo)) << std::endl;
-    maquis::cout << "Energy after: " << maquis::real(expval(mps, mpoc)) << std::endl;
+    // MD: removed redundant energy calculation
+    // maquis::cout << "Energy before: " << maquis::real(expval(mps, mpo)) << std::endl;
+    maquis::cout << "Energy: " << maquis::real(expval(mps, mpoc)) << std::endl;
     {
         alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
         h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
     }
     
     if (parms.get<int>("calc_h2") > 0) {
-        MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpo);
+        MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpoc);
         mpo2.compress(1e-12);
         
         double energy2 = maquis::real(expval(mps, mpo2, true));
