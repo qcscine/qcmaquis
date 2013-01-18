@@ -21,7 +21,7 @@ struct model_factory<Matrix, TrivialGroup> {
                                                                 );
         else if (model.get<std::string>("MODEL") == std::string("super boson Hubbard"))
             return typename model_traits<Matrix, TrivialGroup>::model_ptr(
-                                                                          new SuperBoseHubbardNone<Matrix>(lattice, model.get<int>("Nmax"), model.get<double>("t"), model.get<double>("U"), model.get<double>("V"), model.get<double>("Delta"), model.get<double>("Gamma1a"), model.get<double>("Gamma1b"), model.get<double>("Gamma2"))
+                                                                          new SuperBoseHubbardNone<Matrix>(lattice, model)
                                                                 );
         else {
             throw std::runtime_error("Don't know this model with NONE symmetry group!");
