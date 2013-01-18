@@ -98,12 +98,12 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void* tiles<Matrix>::operator new (size_t size){
-        return ambient::static_memory::malloc<tiles<Matrix> >();
+        return ambient::pool.malloc<tiles<Matrix> >();
     }
 
     template<class Matrix>
     inline void tiles<Matrix>::operator delete (void* ptr){
-        ambient::static_memory::free<tiles<Matrix> >(ptr); 
+        ambient::pool.free<tiles<Matrix> >(ptr); 
     }
 
     template <class Matrix>
@@ -384,12 +384,12 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void* tiles<diagonal_matrix<T> >::operator new (size_t size){
-        return ambient::static_memory::malloc<tiles<diagonal_matrix<T> > >();
+        return ambient::pool.malloc<tiles<diagonal_matrix<T> > >();
     }
 
     template<typename T>
     inline void tiles<diagonal_matrix<T> >::operator delete (void* ptr){
-        ambient::static_memory::free<tiles<diagonal_matrix<T> > >(ptr); 
+        ambient::pool.free<tiles<diagonal_matrix<T> > >(ptr); 
     }
 
     template <typename T>

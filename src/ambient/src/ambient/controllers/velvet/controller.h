@@ -2,7 +2,6 @@
 #define AMBIENT_CONTROLLERS_VELVET_CONTROLLER
 
 #include "ambient/controllers/velvet/cfunctor.h"
-#include "ambient/controllers/velvet/context.h"
 #include "ambient/controllers/velvet/iteratable.h"
 #include "ambient/utils/collector.h"
 
@@ -42,7 +41,6 @@ namespace ambient {
 
 #include "ambient/controllers/velvet/controller.hpp"
 #include "ambient/utils/collector.hpp"
-#include "ambient/controllers/velvet/context.hpp"
 #include "ambient/controllers/velvet/iteratable.hpp"
 #include "ambient/controllers/velvet/cfunctor.hpp"
 #endif

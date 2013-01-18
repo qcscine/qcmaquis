@@ -1,11 +1,11 @@
 namespace ambient { namespace models { namespace velvet {
 
     inline void* history::operator new (size_t size){
-        return ambient::static_memory::malloc<history>();
+        return ambient::pool.malloc<history>();
     }
 
     inline void history::operator delete (void* ptr){
-        ambient::static_memory::free<history>(ptr);
+        ambient::pool.free<history>(ptr);
     }
 
     inline history::history(dim2 dim, size_t ts) : current(NULL), spec(dim, ts) { 
