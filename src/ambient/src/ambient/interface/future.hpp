@@ -118,6 +118,11 @@ namespace ambient {
             return *this;
         }
 
+        inline future& operator /= (const future& rhs){
+            *(T*)ghost = this->calc_value() / rhs.calc_value();
+            return *this;
+        }
+
         inline operator T () const {
             return this->calc_value();
         }
