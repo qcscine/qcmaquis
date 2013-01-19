@@ -37,17 +37,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(positioni_test, T, SymmGroupList){
     phys.insert(std::make_pair(1, 4));
     phys.insert(std::make_pair(4, 1));
     BOOST_CHECK_EQUAL(1,phys.position(3));
-    phys.insert(std::make_pair(3, 2));
-    BOOST_CHECK_EQUAL(1,phys.position(3));
+    BOOST_CHECK_EQUAL(3,phys.position(1));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(position_pair_test, T, SymmGroupList){
     Index<T> phys;
     phys.insert(std::make_pair(0, 1));
-    phys.insert(std::make_pair(1, 1));
+    phys.insert(std::make_pair(1, 2));
     phys.insert(std::make_pair(2, 2));
     phys.insert(std::make_pair(3, 1));
-    BOOST_CHECK_EQUAL(2,phys.position(std::make_pair(2, 1)));
+    BOOST_CHECK_EQUAL(4,phys.position(std::make_pair(1, 1)));
+    BOOST_CHECK_EQUAL(0,phys.position(std::make_pair(3, 0)));
 }
 
 BOOST_AUTO_TEST_CASE(sort_test){

@@ -69,9 +69,9 @@ double measure_local_trace_2(MPS<matrix, SymmGroup> const & mps,
 BOOST_AUTO_TEST_CASE( obs_bosons_nmax2 )
 {
     
-    int Nrep = 10;
-    int M = 50;
-    int L = 40;
+    int Nrep = 8;
+    int M = 20;
+    int L = 16;
     
     // Bosons with Nmax=2
     Index<SymmGroup> phys;
