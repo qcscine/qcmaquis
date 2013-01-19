@@ -29,9 +29,9 @@ typedef alps::numeric::matrix<double> matrix;
 BOOST_AUTO_TEST_CASE( test )
 {
     
-    int Nrep = 10;
+    int Nrep = 6;
     int M = 50;
-    int L = 40;
+    int L = 16;
     
     // Bosons with Nmax=2
     Index<SymmGroup> phys;
@@ -51,10 +51,10 @@ BOOST_AUTO_TEST_CASE( test )
     MPS<matrix, SymmGroup> mps1(mps), mps2(mps);
     
     // here canonize with SVD
-    mps1.canonize(20, SVD);
+    mps1.canonize(L/2, SVD);
     
     // here canonize with QR
-    mps2.canonize(20, QR);
+    mps2.canonize(L/2, QR);
     
     { // measure norm
         double orig = norm(mps);
