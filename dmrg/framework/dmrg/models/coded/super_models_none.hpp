@@ -88,8 +88,8 @@ Matrix super_lindblad(const Matrix& l)
     const size_t N2 = N*N;
     assert( num_cols(l) == N );
 
-    Matrix ldag = transpose(conj(l));   // L^\dag
-    Matrix ldagl; gemm(ldag,l,ldagl);   // L^\dag L
+    Matrix ldag = transpose(conj(l));       // L^\dag
+    Matrix ldagl(N,N); gemm(ldag,l,ldagl);  // L^\dag L
     Matrix lindL(N2,N2);
 
     for( size_t i = 0; i < N; ++i )
