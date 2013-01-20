@@ -203,9 +203,90 @@ typedef boost::mpl::vector<
        }
    };
 
+/*
+template<int n>
+void test_add(boost::uint64_t*, boost::uint64_t* ){    
+    asm volatile (
+        "clc                                     \n"
+        "movq %0, %%rcx                          \n"
+    "loop:                                       \n"
+        "movq 8(%%rsi,%%rcx,8), %%rax            \n"  
+        "adcq %%rax           , 8(%%rdi,%%rcx,8) \n"  
+        "incq %%rcx                              \n"  
+    "jnz loop                                    \n"
+        :
+        :"g"(n)
+        :"rax","rcx","cc","memory"
+    );
+}
+*/
+
+template<long n>
+void test_add(boost::uint64_t* x, boost::uint64_t const* y) {
+    boost::uint64_t dummy;
+    __asm__ __volatile__ (
+        "clc\n\t"
+        "movq %[counter_value], %[counter]\n\t" // set the counter to the template value, it's not sure if the function is reused
+        "1:\n\t"
+        "movq (%[y],%[counter],8), %[dummy]\n\t"
+        "adcq %[dummy], (%[x], %[counter], 8)\n\t"
+        "incq %[counter]\n\t"
+        "jnz 1b\n\t"
+        : [dummy] "=&r" (dummy)
+        : [x] "r" (x), [y] "r" (y), [counter] "r" (n), [counter_value] "i" (n)
+        : "memory", "cc");
+}
 
 int main(int argc, char* argv[]) {
+
+    vli::integer<256> c,d;
+
     
+    c[0] = -1;
+    c[1] = -1;
+    c[2] = -1;
+    c[3] =  0;
+    
+    d[0] = 1;
+    d[1] = -1;
+    d[2] = -1;
+    d[3] = 0;
+
+    vli::integer<256> a(c),b(d);
+
+    Timer to("old ");
+    to.begin();
+
+        for(int i(0); i < 0xff; ++i){
+            a+=b; 
+        for(int j(0); j < 0xff; ++j){ 
+            a+=b; 
+        for(int k(0); k < 0xff; ++k){ 
+            a+=b;}}} 
+
+    to.end();
+ 
+    Timer t("new ");
+    t.begin();
+
+        for(int i(0); i < 0xff; ++i){ 
+             test_add<-4>((&c[0]+4),(&d[0]+4));    // <-- horible but no choice conversion (BigEndian/LittleEndian)
+        for(int j(0); j < 0xff; ++j){ 
+             test_add<-4>((&c[0]+4),(&d[0]+4));    // <-- horible but no choice (BigEndian/LittleEndian)
+        for(int k(0); k < 0xff; ++k){ 
+             test_add<-4>((&c[0]+4),(&d[0]+4));}}} // <-- horible but no choice (BigEndian/LittleEndian)
+
+    t.end();
+
+
+    std::cout << " new "  << t.get_time()<< std::endl; 
+    std::cout << " old "  << to.get_time()<< std::endl; 
+
+    std::cout << std::hex << c << std::endl;
+    std::cout << std::hex << a << std::endl;
+
+
+  /*  
        std::cout << " -------ASCII ART ^_^' --------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -------Size vector : " << Size_vec  << ", Order " << __ORDER__ << std::endl;
 
@@ -214,7 +295,6 @@ int main(int argc, char* argv[]) {
        std::cout << " -----  3 variable --------------------------------- 2 variables --------------------------------- 1 variables ----------------------------------------------------------------- " << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -----  256bits * 256bits = 512 bits ------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
-/*
        boost::mpl::for_each<polynomial_list_256_each>(test_case());
        std::cout << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
@@ -241,11 +321,10 @@ int main(int argc, char* argv[]) {
        std::cout << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -----  128bits * 128bits = 256 bits ------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
- */
        boost::mpl::for_each<polynomial_list_128_combined>(test_case());
        std::cout << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
-
+*/
        return 0;
 }
 
