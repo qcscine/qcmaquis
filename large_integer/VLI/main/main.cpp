@@ -202,50 +202,49 @@ typedef boost::mpl::vector<
        #endif
        }
    };
-/*
+
 template<long n>
-void test_add(boost::uint64_t* x, boost::uint64_t const* y);
+inline void test_add(boost::uint64_t* x, boost::uint64_t const* y);
 
 
 template<>
-void test_add<-4>(boost::uint64_t* x, boost::uint64_t const* y) {
-    boost::uint64_t dummy, dummy2;
+inline void test_add<4>(boost::uint64_t* x, boost::uint64_t const* y) {
+    boost::uint64_t tmp_register;
     __asm__ __volatile__ (
-                          "movq (%[y],$-4,8), %[dummy]\n\t"
-                          "addq %[dummy], (%[x], $-4, 8)\n\t"
-                          
-                          "movq (%[y],$-3,8), %[dummy]\n\t"
-                          "adcq %[dummy], (%[x], $-3, 8)\n\t"
-                          
-                          "movq (%[y],$-2,8), %[dummy]\n\t"
-                          "adcq %[dummy], (%[x], $-2, 8)\n\t"
-                          
-                          "movq (%[y],$-1,8), %[dummy]\n\t"
-                          "adcq %[dummy], (%[x], $-1, 8)\n\t"
+                          "movq 0(%[y]), %[tmp_register] \n\t"
+                          "addq %[tmp_register], 0(%[x]) \n\t"
 
-                          : [dummy] "=&r" (dummy)
+                          "movq 8(%[y]), %[tmp_register] \n\t"
+                          "adcq %[tmp_register], 8(%[x]) \n\t"
+
+                          "movq 16(%[y]), %[tmp_register]\n\t"
+                          "adcq %[tmp_register], 16(%[x])\n\t"
+                          
+                          "movq 24(%[y]), %[tmp_register]\n\t"
+                          "adcq %[tmp_register], 24(%[x])\n\t"
+
+                          : [tmp_register] "=&r" (tmp_register)
                           : [x] "r" (x), [y] "r" (y)
                           : "memory", "cc");
 }
 
-*/
 
-
+/*
 template<long n>
 void test_add(boost::uint64_t* x, boost::uint64_t const* y) {
-    boost::uint64_t dummy, dummy2;
+    boost::uint64_t tmp_register, tmp_register2;
     __asm__ __volatile__ (
         "clc\n\t"
         "1:\n\t"
-            "movq (%[y],%[counter],8), %[dummy]\n\t"
-            "adcq %[dummy], (%[x], %[counter], 8)\n\t"
+            "movq (%[y],%[counter],8), %[tmp_register]\n\t"
+            "adcq %[tmp_register], (%[x], %[counter], 8)\n\t"
             "incq %[counter]\n\t"
         "jnz 1b\n\t"
-        : [dummy] "=&r" (dummy), "=r" (dummy2)
+        : [tmp_register] "=&r" (tmp_register), "=r" (tmp_register2)
         : [x] "r" (x), [y] "r" (y), [counter] "1" (n)
         : "memory", "cc");
 }
-
+*/
 int main(int argc, char* argv[]) {
 
     vli::integer<256> c;// = {{-1,-1,-1,0}} ;
@@ -269,7 +268,7 @@ int main(int argc, char* argv[]) {
 
         for(int i(0); i < 0xff; ++i){
             a+=b; 
-        for(int j(0); j < 0xff; ++j){ 
+        for(int j(0); j < 0xff; ++j){
             a+=b; 
         for(int k(0); k < 0xff; ++k){ 
             a+=b;}}} 
@@ -278,19 +277,20 @@ int main(int argc, char* argv[]) {
  
     Timer t("new ");
     t.begin();
+  
 
         for(int i(0); i < 0xff; ++i){ 
-             test_add<-4>((&c[0]+4),(&d[0]+4));    // <-- horible but no choice conversion (BigEndian/LittleEndian)
+             test_add<4>((&c[0]),(&d[0]));    // <-- horible but no choice conversion (BigEndian/LittleEndian)
         for(int j(0); j < 0xff; ++j){ 
-             test_add<-4>((&c[0]+4),(&d[0]+4));    // <-- horible but no choice (BigEndian/LittleEndian)
+             test_add<4>((&c[0]),(&d[0]));    // <-- horible but no choice (BigEndian/LittleEndian)
         for(int k(0); k < 0xff; ++k){ 
-             test_add<-4>((&c[0]+4),(&d[0]+4));}}} // <-- horible but no choice (BigEndian/LittleEndian)
+             test_add<4>((&c[0]),(&d[0]));}}} // <-- horible but no choice (BigEndian/LittleEndian)
 
     t.end();
 
 
-    std::cout << " new "  << t.get_time()<< std::endl; 
-    std::cout << " old "  << to.get_time()<< std::endl; 
+    std::cout << " new "  << t.get_time()<< std::endl;
+    std::cout << " old "  << to.get_time()<< std::endl;
 
     std::cout << std::hex << c << std::endl;
     std::cout << std::hex << a << std::endl;

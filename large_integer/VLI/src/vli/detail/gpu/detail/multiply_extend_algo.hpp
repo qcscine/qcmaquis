@@ -59,7 +59,7 @@ namespace vli {
     __device__ void multiplies(boost::uint32_t* res, boost::uint32_t* res1, boost::uint32_t* c1, boost::uint32_t* c2){
         const unsigned int bit1 = c1[num_words<NumBits>::value-1]  >> std::numeric_limits<boost::uint32_t>::digits-1; 
         const unsigned int bit2 = c2[num_words<NumBits>::value-1]  >> std::numeric_limits<boost::uint32_t>::digits-1; 
-	const unsigned int bit3 = bit1 ^ bit2;
+	    const unsigned int bit3 = bit1 ^ bit2;
 
         const unsigned int mask1 =  -bit1;
         const unsigned int mask2 =  -bit2;
