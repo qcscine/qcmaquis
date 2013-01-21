@@ -1,9 +1,0 @@
-LATTICE = "open ladder"
-U = 8
-t = 1
-t' = 1
-MODEL = "fermion Hubbard"
-Nup_total = 10
-L = 10
-Ndown_total = 10
-CONSERVED_QUANTUMNUMBERS = "Nup,Ndown"

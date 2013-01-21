@@ -1,10 +1,10 @@
 #!/bin/bash
 
-tests="bh ff_middle fermiladder"
+DMRGAPP=$1
+MEASAPP=$2
 
-for tt in $tests; do
+for tt in `ls test_*py`; do
   echo "Creating $tt... "
-  python $tt.py --create
+  ./$tt --create $DMRGAPP $MEASAPP
 done
-
 
