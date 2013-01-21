@@ -202,44 +202,54 @@ typedef boost::mpl::vector<
        #endif
        }
    };
-
 /*
-template<int n>
-void test_add(boost::uint64_t*, boost::uint64_t* ){    
-    asm volatile (
-        "clc                                     \n"
-        "movq %0, %%rcx                          \n"
-    "loop:                                       \n"
-        "movq 8(%%rsi,%%rcx,8), %%rax            \n"  
-        "adcq %%rax           , 8(%%rdi,%%rcx,8) \n"  
-        "incq %%rcx                              \n"  
-    "jnz loop                                    \n"
-        :
-        :"g"(n)
-        :"rax","rcx","cc","memory"
-    );
+template<long n>
+void test_add(boost::uint64_t* x, boost::uint64_t const* y);
+
+
+template<>
+void test_add<-4>(boost::uint64_t* x, boost::uint64_t const* y) {
+    boost::uint64_t dummy, dummy2;
+    __asm__ __volatile__ (
+                          "movq (%[y],$-4,8), %[dummy]\n\t"
+                          "addq %[dummy], (%[x], $-4, 8)\n\t"
+                          
+                          "movq (%[y],$-3,8), %[dummy]\n\t"
+                          "adcq %[dummy], (%[x], $-3, 8)\n\t"
+                          
+                          "movq (%[y],$-2,8), %[dummy]\n\t"
+                          "adcq %[dummy], (%[x], $-2, 8)\n\t"
+                          
+                          "movq (%[y],$-1,8), %[dummy]\n\t"
+                          "adcq %[dummy], (%[x], $-1, 8)\n\t"
+
+                          : [dummy] "=&r" (dummy)
+                          : [x] "r" (x), [y] "r" (y)
+                          : "memory", "cc");
 }
+
 */
+
 
 template<long n>
 void test_add(boost::uint64_t* x, boost::uint64_t const* y) {
-    boost::uint64_t dummy;
+    boost::uint64_t dummy, dummy2;
     __asm__ __volatile__ (
         "clc\n\t"
-        "movq %[counter_value], %[counter]\n\t" // set the counter to the template value, it's not sure if the function is reused
         "1:\n\t"
-        "movq (%[y],%[counter],8), %[dummy]\n\t"
-        "adcq %[dummy], (%[x], %[counter], 8)\n\t"
-        "incq %[counter]\n\t"
+            "movq (%[y],%[counter],8), %[dummy]\n\t"
+            "adcq %[dummy], (%[x], %[counter], 8)\n\t"
+            "incq %[counter]\n\t"
         "jnz 1b\n\t"
-        : [dummy] "=&r" (dummy)
-        : [x] "r" (x), [y] "r" (y), [counter] "r" (n), [counter_value] "i" (n)
+        : [dummy] "=&r" (dummy), "=r" (dummy2)
+        : [x] "r" (x), [y] "r" (y), [counter] "1" (n)
         : "memory", "cc");
 }
 
 int main(int argc, char* argv[]) {
 
-    vli::integer<256> c,d;
+    vli::integer<256> c;// = {{-1,-1,-1,0}} ;
+    vli::integer<256> d;
 
     
     c[0] = -1;
@@ -285,6 +295,7 @@ int main(int argc, char* argv[]) {
     std::cout << std::hex << c << std::endl;
     std::cout << std::hex << a << std::endl;
 
+    
 
   /*  
        std::cout << " -------ASCII ART ^_^' --------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;

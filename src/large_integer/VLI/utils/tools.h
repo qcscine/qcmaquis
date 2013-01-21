@@ -32,7 +32,6 @@ namespace tools{
    
     template <typename Vli>
     void fill_random(Vli& v){
-        assert(size <= Vli::numwords);
         for(int i=0; i < Vli::numwords-1; ++i)
             v[i] = rnd_digit<Vli>();
     }
