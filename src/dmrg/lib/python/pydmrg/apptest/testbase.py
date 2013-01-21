@@ -51,6 +51,11 @@ class DMRGTestBase(object):
             self.origdir = os.getcwd()
             self.tmpdir = tempfile.mkdtemp()
     
+    def write_parameters(self):
+        """Write parameters as `testname.parms/.model`."""
+        pyalps.writeParameterFile(self.testname+'.parms', self.inputs['parms'])
+        pyalps.writeParameterFile(self.testname+'.model', self.inputs['model'])
+    
     def run(self, dmrg_app=None, meas_app=None):
         """Create parameters and execute the simulation."""
         
@@ -58,8 +63,7 @@ class DMRGTestBase(object):
         os.chdir(self.tmpdir)
         
         ## Write parameters
-        pyalps.writeParameterFile(self.testname+'.parms', self.inputs['parms'])
-        pyalps.writeParameterFile(self.testname+'.model', self.inputs['model'])
+        self.write_parameters()
         
         ## Remove existing result files
         remove_if_exists( self.inputs['parms']['resultfile'] )

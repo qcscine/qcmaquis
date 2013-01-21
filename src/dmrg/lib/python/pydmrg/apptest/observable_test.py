@@ -57,7 +57,7 @@ class reference_run(object):
 class reference_value(object):
     def __init__(self, observable, value, tolerance=1e-6, load_type='spectrum'):
         self.observable = str(observable)
-        self.value      = list(value)
+        self.value      = np.atleast_1d(value)
         self.tolerance  = float(tolerance)
         if load_type == 'spectrum':
             self.loader = load_spectrum_observable
@@ -68,7 +68,7 @@ class reference_value(object):
     
     def __call__(self, test_file, reference_file=None):
         obs = self.loader(test_file, self.observable)
-        for tval, rval in zip(obs.y[0], self.value):
+        for tval, rval in zip(np.atleast_1d(obs.y[0]), self.value):
             if abs(tval-rval) / rval > self.tolerance:
                 raise ObservableNotMatch(self.observable, tval, rval, self.tolerance)
     
