@@ -93,12 +93,8 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
                     out_l_offset += m1.row_dim().size_of_block(l_charge, true);
                 
                 for (size_t ss=0; ss<phys_i[s].second; ++ss) {
-#ifdef USE_AMBIENT
-    assert(false);
-#else
-                    maquis::dmrg::detail::copy2d(nb, out_l_offset+ss*out_l_size, out_r_offset, m.data()[b], in_l_offset+ss*in_l_size, 0,
-                                                 in_l_size, in_r_size);
-#endif
+                    copy_block(m.data()[b], in_l_offset+ss*in_l_size, 0, in_l_size, in_r_size,
+                               nb, out_l_offset+ss*out_l_size, out_r_offset);
                 }
             }
         }
