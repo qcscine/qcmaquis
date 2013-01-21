@@ -1,0 +1,237 @@
+/**
+\page tutorial Tutorial
+
+\section tutorial1 Tutorial 1, construct a large integer number
+
+
+The first tutorial illustrates how create VLI numbers. First, as usual C++ program 
+the library needs an #include "vli.hpp". The namespace of the library is vli.
+The most basic example is :
+
+\code
+#include <iostream>
+#include "vli.hpp" 
+
+int main(int argc, char * argv[]){
+    vli::integer<128> a;
+    std::cout << a << std::endl;
+    std::cout << std::hex << a <<  std::endl;
+}
+\endcode
+
+
+The output will be : 
+
+\code
+   0 // for the decimal form /Users/ewartt/Documents/hp2c/trunk/src/large_integer/VLI/src/src/doc/tutorial1.dox
+   0 0 // for the hexadecimal form, by default the hexadecimal prints all entries of the large integer number
+\endcode
+
+This example is not very significative, considering now the following initialization of the number a: 
+
+\code
+    vli::integer<132> a(1);
+\endcode
+
+The VLI library will fit the number into a multiple of 64-bit, thus the container will be 192 bits.
+
+The print under hexadecimal mode gives (little endian form): 
+
+\code
+   0 0 1// for the hexadecimal form, by default the hexadecimal prints all entries of the large integer.
+\endcode
+
+Although the library will select a good container size, we recommend a multiple of 64-bit to facilitate the utilization of the arithmetic operations 
+
+Now if we decided to create a negative large integer :  
+
+\code
+    vli::integer<128> a(-1);
+\endcode
+
+Negative numbers are constructed with the two complementary method, thus the hexadecimal print will be : 
+
+\code
+    0xffffffffffffffff 0xffffffffffffffff
+\endcode
+
+The last possibility to initiate a number is the operators brackets [], as they allow a direct access to the container.
+
+\code
+   integer<256> a;
+   a[0] = 1;
+   a[2] = 3;
+\endcode
+
+it will give
+
+\code
+    0 3 0 1
+\endcode
+
+\note
+This last mode of initialization should be avoid, it is more reserved for developers who are looking for special features.
+\endnote
+
+\section tutorial2 Tutorial 2, make constant size arithmetic operations with VLI
+
+This second tutorial illustrates  the arithmetics operations between large integer number
+Considering the following program,  
+
+\code
+    vli::integer<128> a(2),b(3); // I create two VLI numbers of 128 bits
+    a+=b; // We make the sum
+\endcode
+
+The output simply gives 5. If now we consider the inputs : 
+
+\code
+    integer<128> a,b(3); // The first entry of a is full bit, but it is not a negative number because the second entry is null
+    a[0] = -1; // Developer init to fill up the 64 first digits to one;
+\endcode
+
+The print show the propagation of the carry bit.
+
+\code
+   18 446 744 073 709 551 618 // for the decimal form 
+   1 2 // for the hexadecimal form 
+\endcode
+
+This last operation can be rewrite under the followings form
+
+\code
+    vli::integer<128> a,b(3); // The first entry of a is full bit, but it is not a negative number because the second entry is null
+    a[0] = -1;
+    c = a+b; // less performable, it necessitates an extra copy due to operator=
+    a += 3; // alternative if the right value fits into 64 bits.
+\endcode
+
+In both case a and c will have the same value. The same think can be applied for subtraction 
+
+\code
+    vli::integer<128> a(1),b(3); // The first entry of a is full bit, but it is not a negative number because the second entry is null
+    a -= b;
+\endcode
+
+It will give,
+
+\code
+     -2 \\ decimal form
+    (ffffffffffffffff fffffffffffffffe) \\ hexadecimal form
+\endcode
+
+For the optimum performance, if possible, the user for the performances should privilege for the addition/subtraction
+operations.
+
+-# integer<NumBits> += long,     
+-# integer<NumBits> += integer<NumBits>,  
+-# integer<NumBits> = integer<NumBits> + integer<NumBits>, 
+
+In the three cases the ASM solvers are not the same and they can necessitate an extra work. The same rules are true for the subtraction,
+ because the solvers differ only from one pair of mnemonic instructions (add/adc become sub/sbb). The next operations are the multiplication (*) and the division (/)
+
+Multiply two integer<NumBits> can mathematically give an integer twice larger integer<2*NumBits>. Contrary to GMP the library 
+does not readapt the size of the container, it is the role of the user. Consequently, we must distinguish the two possibilities.
+First, the operators *= and * conserve the initial type, therefore, if we consider the operations :
+
+\code
+    vli::integer<128> a(0xfffffffffffffff),b(0xfffffffffffffff); // fill up the 63 first bit
+    a *= b; // I will get a 126-bit number, it fits into 128 bits number
+\endcode
+will give
+\code
+    (ffffffffffffff e000000000000001)
+\endcode
+
+If now, we define a and b under the form {1 , 0xffff ffff ffff ffff}. We obtain (fffffffffffffffc 1) which is wrong, the correct result is (5 fffffffffffffffc 1)
+The library does not provide any safety for the multiplication as the usual type in C++ (int by int give int and not long int). The performance of the operations respect the same ladder than the additions/subtractions.
+
+we present the possibilities of the division. The division is closed to the % operators as they use the same functions. The solutions are generic whatever
+the left/right value of the operators, thus the execution time is the same e.g. for the operations integer<NumBits> /= integer<NumBits>  and  integer<NumBits> /= long . 
+Whatever the operates %= or /=, these operators are very slows.
+
+
+To conclude,  the possibilities of the extended operations will be presented in the tutorial 3.
+
+\section tutorial3 Tutorial 3, make non constant size arithmetic operations with VLI
+
+This third tutorial illustrates  the arithmetics operations between large numbers which produce larger output than input. 
+By definition a multiplication can generate a twice larger operand. Considering the two large integers a<128> and b<128> 
+initizaling under the following form {0x0fff ffff ffff ffff, 0x0fff ffff ffff ffff}, the produce of the operands will give
+an integer with a size of 248-bit. By safety and convention, we decided, the result of an extented multiplication for a given
+size should be twice larger. The extend multiplication is performed by the \link  vli::multiply_extend \endlink free function;
+
+This, considering the following example :
+
+\code
+    vli::integer<128> a,b;
+    vli::integer<256> c; // a and b inputs, c ouputs
+    a[0] = a[1] = b[0] = b[1] = 0xfffffffffffffff;
+    vli::multiply_extend(c,a,b);
+    std::cout << std::hex << c << std::endl;
+\endcode
+
+It will give :
+
+\code
+    ffffffffffffff e200000000000000 c100000000000001 e000000000000001
+\endcode
+
+Similarly, large integers can be negative.
+
+\code
+    vli::integer<128> a,b;
+    vli::integer<256> c; // a and b inputs, c ouputs
+    a[0] = b[0] = b[1] = 0xfffffffffffffff;
+    a[1] = -1; // -1 = 0xffff ffff ffff ffff
+    vli::multiply_extend(c,a,b);
+    std::cout << std::hex << c << std::endl;
+\endcode
+
+\code
+    ffffffffffffffff f100000000000000 d100000000000001 e000000000000001
+\endcode
+
+We summarize the possibility of the arithmetic operations into the next table.
+
+<TABLE BORDER="1">
+<CAPTION> Arithmetic possibility of the VLI library</CAPTION>
+ <TR>
+ <TH>          </TH>
+ <TH> += and + </TH>
+ <TH> -= and - </TH>
+ <TH> *= and * </TH>
+ <TH> /= and / </TH>
+ <TH> multiply_extend </TH>
+ <TH> multiply_add    </TH>
+ <TH> bit operations    </TH>
+  </TR>
+  <TR> 
+ <TH> vli::integer<NumBits> <= 256-bit   </TH>
+ <TD  align="center" bgcolor=#66CD00> yes  </TD>
+ <TD  align="center" bgcolor=#66CD00> yes  </TD>
+ <TD  align="center" bgcolor=#66CD00> yes  </TD>
+ <TD  align="center" bgcolor=#66CD00> yes  </TD>
+ <TD  align="center" bgcolor=#66CD00> yes  </TD>
+ <TD  align="center" bgcolor=#66CD00> yes  </TD>
+ <TD  align="center" bgcolor=#66CD00> yes  </TD>
+  </TR>
+   <TR> 
+ <TH> 256-bit < vli::integer<NumBits> <= 512-bit   </TH>
+ <TD  align="center" bgcolor=#66CD00> yes  </TD>
+ <TD  align="center" bgcolor=#66CD00> yes  </TD>
+ <TD  align="center" bgcolor=#66CD00> yes  </TD>
+ <TD  align="center" bgcolor=#66CD00> yes  </TD>
+ <TD  align="center" bgcolor=#CD0000> no   </TD>
+ <TD  align="center" bgcolor=#CD0000> no   </TD>
+ <TD  align="center" bgcolor=#66CD00> yes  </TD>
+ </TR>
+
+</TABLE>
+
+\section tutorial4 Tutorial 4, Polynomial multiplication and polynomial inner products on CPU
+
+\section tutorial5 Tutorial 5, GPU accelerator for inner products
+
+
+*/

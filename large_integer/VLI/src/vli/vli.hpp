@@ -33,6 +33,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/cstdint.hpp> // for the type boost::uint64_t
 #include <boost/operators.hpp>
+
+//#include <initializer_list>
 #include <vector>
 #include <string>
 #include <cassert>
@@ -98,6 +100,8 @@ namespace vli {
 
         /*! \brief The  number of word of the integer, we consider the world equal to 64 bits for the CPU version*/
         static const std::size_t numwords = (NumBits+63)/64;
+        
+   //     integer(std::initializer_list<value_type> i) : data_{i} {}
         /**
          \brief Default constructor, the integer number is equal to 0, every entries of the container are set up to 0
         */
