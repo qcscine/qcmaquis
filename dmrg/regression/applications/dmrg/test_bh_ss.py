@@ -45,6 +45,19 @@ class mytest(apptest.DMRGTestBase):
                     apptest.observable_test.reference_run('Energy'),
                     apptest.observable_test.reference_run('Entropy'),
                     apptest.observable_test.reference_run('Local density'),
+                    apptest.observable_test.reference_value('Energy',        value=-6.881090360639349,
+                                                            tolerance=0.001),
+                    apptest.observable_test.reference_value('Local density', value=[0.39303194698174188,
+                                                                                    0.54302419722113426,
+                                                                                    0.51400554735345949,
+                                                                                    0.52780042423515783,
+                                                                                    0.5221378842084331,
+                                                                                    0.52213788420366136,
+                                                                                    0.52780042424107332,
+                                                                                    0.5140055473576155,
+                                                                                    0.54302419721735529,
+                                                                                    0.39303194698034677],
+                                                            tolerance=0.001),
                   ]
 
 
