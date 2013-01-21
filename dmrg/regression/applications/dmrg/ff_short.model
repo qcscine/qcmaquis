@@ -1,7 +1,0 @@
-LATTICE = "open square lattice"
-MODEL = "spinless fermions"
-t = 1
-CONSERVED_QUANTUMNUMBERS = "N"
-N_total = 3
-L = 4
-W = 4
