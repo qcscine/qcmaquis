@@ -19,7 +19,7 @@ namespace ambient {
     }
 
     inline void fuse(const history* src, history* dst){ 
-        dst->fuse(src);        
+        dst->fuse(src);
     }
 
 }

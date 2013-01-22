@@ -8,7 +8,8 @@ namespace ambient { namespace models { namespace velvet {
         ambient::pool.free<history>(ptr);
     }
 
-    inline history::history(dim2 dim, size_t ts) : current(NULL), spec(dim, ts) { 
+    inline history::history(dim2 dim, size_t ts) : current(NULL), spec(dim, ts) {
+        this->clock = ambient::model.clock;
         this->content.reserve(2); 
     }
 
@@ -26,7 +27,9 @@ namespace ambient { namespace models { namespace velvet {
         this->content.push_back(r);
         this->current = r;
         // do not deallocate or reuse
-        r->use(); 
+        if(!r->valid()) r->region++;
+        assert(!r->valid() || r->region > 0); // can't rely on bulk memory
+        r->use();
     }
         
     inline size_t history::time() const {

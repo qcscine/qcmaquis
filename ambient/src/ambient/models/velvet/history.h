@@ -17,6 +17,7 @@ namespace ambient { namespace models { namespace velvet {
         std::vector<revision*> content;
         revision* current;
         memspec spec;
+        size_t clock;
     };
 
 } } }

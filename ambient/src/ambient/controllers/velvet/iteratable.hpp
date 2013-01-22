@@ -13,7 +13,7 @@ namespace ambient { namespace controllers { namespace velvet {
         assert(!c.valid());
         if(!p.valid()){
             ambient::controller.calloc(c);
-        }else if(p.locked()){
+        }else if(p.locked() || ((!p.region) && c.region)){
             ambient::controller.alloc(c);
             memcpy((T*)c, (T*)p, p.extent);
         }else{
@@ -26,7 +26,8 @@ namespace ambient { namespace controllers { namespace velvet {
         revision& c = *(revision*)this;
         assert(!c.valid());
         revision& p = *c.parent;
-        if(!p.valid() || p.locked()) ambient::controller.alloc(c);
+        if(!p.valid() || p.locked() || ((!p.region) && c.region))
+            ambient::controller.alloc(c);
         else c.reuse(p);
         return (T*)c;
     }

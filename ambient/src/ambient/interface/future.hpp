@@ -26,7 +26,6 @@ namespace ambient {
         future()
         : symlink(false)
         {
-            printf("ambient::future$ used default constructor\n");
             ghost = ambient::pool.malloc<FUTURE_SIZE>();
             value = (T*)ghost;
            *value = T();
