@@ -32,6 +32,7 @@ namespace ambient { namespace models { namespace velvet {
         void*     data;
         size_t    sid;
         int       users;
+        int       region;
 
         enum { VOID,
                PURE, 

@@ -9,7 +9,7 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline revision::revision(size_t extent, void* g)
-    : extent(extent), generator(g), users(0)
+    : extent(extent), generator(g), users(0), region(1)
     {
         state = (generator == NULL) ? PURE : VOID;
         header = data = NULL;
@@ -23,6 +23,7 @@ namespace ambient { namespace models { namespace velvet {
     inline void revision::reuse(revision& r){
         this->data   = r.data;
         this->header = r.header;
+        this->region = r.region;
         r.header     = NULL;
     }
 

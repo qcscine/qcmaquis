@@ -17,6 +17,12 @@ namespace ambient{
 
     inline void collector::push_back(history* o){
         this->str.push_back(o);
+        if(ambient::model.clock == o->clock){
+            int size = o->content.size(); 
+            for(int i = 0; i < size; i++) 
+            if(!o->content[i]->valid()) 
+                o->content[i]->region--;
+        }
     }
 
     inline void collector::delete_ptr::operator()( history* element ) const {

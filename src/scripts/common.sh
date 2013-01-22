@@ -253,7 +253,7 @@ benchmark(){
 
 execute(){
     echo
-    if [ "$0" == "-bash" ]
+    if [ "$1" == "" ]
     then
         echo " $SELF: set the environment"
     else

@@ -21,6 +21,7 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void controller::flush(){
         typedef typename std::vector<cfunctor*>::const_iterator veci;
+        ambient::model.clock++;
 
         while(!chains->empty()){
             for(veci i = chains->begin(); i != chains->end(); ++i){
@@ -43,7 +44,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::alloc(revision& r){
-        r.embed(ambient::pool.malloc(r.extent + BOUND), BOUND);
+        r.embed(ambient::pool.malloc(r.extent + BOUND, r.region), BOUND);
     }
 
     inline void controller::calloc(revision& r){
@@ -51,7 +52,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::free(revision& r){
-        return ambient::pool.free(r.header, r.extent + BOUND);
+        return ambient::pool.free(r.header, r.extent + BOUND, r.region);
     }
 
     inline void controller::sync(revision& r, size_t target){
