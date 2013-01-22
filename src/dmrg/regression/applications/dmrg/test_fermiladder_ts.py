@@ -3,12 +3,14 @@
 from pydmrg import apptest
 import sys, os
 
-testname = os.path.splitext( os.path.basename(sys.argv[0]) )[0]
+testname       = os.path.splitext( os.path.basename(sys.argv[0]) )[0]
+reference_dir  = os.path.join( os.path.dirname(os.path.abspath(__file__)), 'ref/' )
+reference_file = os.path.join(reference_dir, testname+'.h5')
 
 class mytest(apptest.DMRGTestBase):
     testname = testname
-    reference_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                  'ref/'+testname+'.h5')
+    reference_file = reference_file
+    
     inputs   = {
                 'parms': {
                             'nsweeps'                    : 2,
@@ -42,11 +44,53 @@ class mytest(apptest.DMRGTestBase):
                             'CONSERVED_QUANTUMNUMBERS'  : 'Nup,Ndown',
                             'Nup_total'                 : 10,
                             'Ndown_total'               : 10,
+                            
+                            'MEASURE_LOCAL[Local density up]'                   : 'n_up',
+                            'MEASURE_LOCAL[Local density down]'                 : 'n_down',
+                            'MEASURE_CORRELATIONS[Onebody density matrix up]'   : 'cdag_up:c_up',
+                            'MEASURE_CORRELATIONS[Onebody density matrix down]' : 'cdag_down:c_down',
                           },
                   }
     observables = [
-                    apptest.observable_test.reference_run('Energy'),
-                    apptest.observable_test.reference_run('Entropy'),
+                    apptest.observable_test.reference_file('Energy',                      file=reference_file),
+                    apptest.observable_test.reference_file('Entropy',                     file=reference_file),
+                    apptest.observable_test.reference_file('Local density up',            file=reference_file),
+                    apptest.observable_test.reference_file('Local density down',          file=reference_file),
+                    apptest.observable_test.reference_file('Onebody density matrix up',   file=reference_file),
+                    apptest.observable_test.reference_file('Onebody density matrix down', file=reference_file),
+                    
+                    apptest.observable_test.reference_value('Energy',            value=55.08693016528693,
+                                                            tolerance=0.001),
+                    apptest.observable_test.reference_value('Local density up',  value=[0.86015912231757885,
+                                                                                       0.86015912231996861,
+                                                                                       0.80381048962759327,
+                                                                                       0.80381048962879098,
+                                                                                       0.83603038805181895,
+                                                                                       0.83603038805119045,
+                                                                                       0.8360303880519383,
+                                                                                       0.83603038804869678,
+                                                                                       0.80381048962858803,
+                                                                                       0.80381048962535662,
+                                                                                       0.86015912232003822,
+                                                                                       0.86015912231926772],
+                                                            tolerance=0.001),
+                    apptest.observable_test.reference_value('Local density down', value=[0.860159122323,
+                                                                                        0.860159122321,
+                                                                                        0.803810489626,
+                                                                                        0.803810489623,
+                                                                                        0.836030388051,
+                                                                                        0.836030388051,
+                                                                                        0.836030388048,
+                                                                                        0.836030388052,
+                                                                                        0.803810489627,
+                                                                                        0.803810489629,
+                                                                                        0.860159122320,
+                                                                                        0.860159122320],
+                                                            tolerance=0.001),
+                    apptest.observable_test.reference_file('Onebody density matrix up',
+                                                            file=os.path.join(reference_dir, 'test_fermiladder.diag.h5'), tolerance=0.001),
+                    apptest.observable_test.reference_file('Onebody density matrix down',
+                                                            file=os.path.join(reference_dir, 'test_fermiladder.diag.h5'), tolerance=0.001),
                   ]
 
 

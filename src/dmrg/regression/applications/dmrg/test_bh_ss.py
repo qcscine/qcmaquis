@@ -5,11 +5,14 @@ import sys
 from pydmrg import apptest
 import sys, os
 
-testname = os.path.splitext( os.path.basename(sys.argv[0]) )[0]
+testname       = os.path.splitext( os.path.basename(sys.argv[0]) )[0]
+reference_dir  = os.path.join( os.path.dirname(os.path.abspath(__file__)), 'ref/' )
+reference_file = os.path.join(reference_dir, testname+'.h5')
+
 class mytest(apptest.DMRGTestBase):
     testname = testname
-    reference_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                  'ref/'+testname+'.h5')
+    reference_file = reference_file
+    
     inputs   = {
                 'parms': {
                             'nsweeps'                    : 5,
@@ -42,9 +45,10 @@ class mytest(apptest.DMRGTestBase):
                           },
                   }
     observables = [
-                    apptest.observable_test.reference_run('Energy'),
-                    apptest.observable_test.reference_run('Entropy'),
-                    apptest.observable_test.reference_run('Local density'),
+                    apptest.observable_test.reference_file('Energy',        file=reference_file),
+                    apptest.observable_test.reference_file('Entropy',       file=reference_file),
+                    apptest.observable_test.reference_file('Local density', file=reference_file),
+                    
                     apptest.observable_test.reference_value('Energy',        value=-6.881090360639349,
                                                             tolerance=0.001),
                     apptest.observable_test.reference_value('Local density', value=[0.39303194698174188,
