@@ -20,14 +20,16 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
-We present a high-performance C++ library for 128 to 512 bit integer arithemtics and symbolic polynomial computations.
+We present a high-performance C++ library for 128 to 512 bit integer arithmetic and symbolic polynomial computations.
 While both parts of the library can be used independently optimized kernels for symbolic polynomials with large integer coefficients are provided.
 %Even though the application developed as a special purpose library for high-temperature series expansions, it is also of great interest for other applications due to its modular design.
 %The kernels for the large integer operations are implemented in \verb|x86-64| and \verb|power64| assembly.
 %The polynomials may have up to 4 symbolic variables and have a compile time fixed truncation order.
-Since our target application is high-temperature series expansions (HTSE) we implemented a special routine to perform inner products of vectors of polynomials with large integer coefficients.
-Here we employ hybrid CPU/GPU approach to make optimal use of todays supercomputers, where we attain 67\% of the peak performance of the current NVIDIA Kepler GPU.
-Compared to a solution using the GNU Multiple Precision Arithmetic Library (GMP) we save a factor up to 10 on the CPU and
+%Since our main target applications is high-temperature series expansions (HTSE) we implemented a special routine to perform inner products of vectors of polynomials with large integer coefficients.
+Our main target application is high-temperature series expansions (HTSE) which require inner products of large vectors of polynomials with large integer coefficients.
+For this purpose we implemented a tunable hybrid CPU/GPU inner product function using OpenMP and NVIDIA CUDA.
+This way we make optimal use of todays and upcoming hybrid supercomputers and attain 67\% of the peak performance of the current NVIDIA Kepler GPU.
+Compared to a pure CPU solution using the GNU Multiple Precision Arithmetic Library (GMP) we gain a speedup of 10x for a pure CPU inner product and 60x using a GPU accelerator.
 \end{abstract}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -50,7 +52,7 @@ Compared to a solution using the GNU Multiple Precision Arithmetic Library (GMP)
 \section{Large integers}
 \begin{itemize}
 \item {\bf Description}
-\item signed integer arithmetics
+\item signed integer arithmetic
 \item fixed size (128-512bit)
 \item all standard integer operations (arithmetic, comparison and bit operations)
 \item in addition to that: extended multiplication which doubles the number of bits, extended add which increases the size by one 64bit.
@@ -103,7 +105,7 @@ Compared to a solution using the GNU Multiple Precision Arithmetic Library (GMP)
 \section{Conclusion}
 \begin{itemize}
 \item TODO
-\item Licence?
+\item License?
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
