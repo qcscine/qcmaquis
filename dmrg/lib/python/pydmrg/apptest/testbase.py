@@ -95,29 +95,25 @@ class DMRGTestBase(object):
         os.chdir(self.tmpdir)
         
         ## Compare observables
-        errors = []
+        passed = True
         for obstest in self.observables:
             try:
-                obstest( os.path.join(self.tmpdir, resfile),
-                         os.path.join(self.origdir, self.reference_file) )
+                obstest( os.path.join(self.tmpdir, resfile) )
                 print obstest, 'Success!'
             except TestFailed as err:
+                passed = False
                 print obstest, 'Failed!'
-                errors.append( str(err) ) 
+                print 'Details:', err
                     
         os.chdir(self.origdir)
         
-        if len(errors) > 0:
+        if not passed:
             archive_dirname = self.testname+'_failed.%s' % dt.now().strftime('%Y%m%d%H%M%S')
             basedir = os.path.dirname(self.tmpdir)
             shutil.move( self.tmpdir, os.path.join(basedir, archive_dirname) )
             archive_file = shutil.make_archive(archive_dirname, format='gztar',
                                                root_dir=basedir, base_dir=archive_dirname)
             print 'Failed test archived in %s.' % archive_file
-            
-            print 'Details:'
-            for err in errors:
-                print 'Error:', err
             
             raise TestFailed('Some tests failed!')
             

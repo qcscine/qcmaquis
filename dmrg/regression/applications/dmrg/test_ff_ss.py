@@ -3,19 +3,21 @@
 from pydmrg import apptest
 import sys, os
 
-testname = os.path.splitext( os.path.basename(sys.argv[0]) )[0]
+testname       = os.path.splitext( os.path.basename(sys.argv[0]) )[0]
+reference_dir  = os.path.join( os.path.dirname(os.path.abspath(__file__)), 'ref/' )
+reference_file = os.path.join(reference_dir, testname+'.h5')
 
 class mytest(apptest.DMRGTestBase):
     testname = testname
-    reference_file = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                  'ref/'+testname+'.h5')
+    reference_file = reference_file
+    
     inputs   = {
                 'parms': {
                             'nsweeps'                    : 3,
                             'nmainsweeps'                : 1,
                             'ngrowsweeps'                : 1,
             
-                            'max_bond_dimension'         : 50,
+                            'max_bond_dimension'         : 100,
             
                             'truncation_initial'         : 0.0001,
                             'truncation_final'           : 1e-12,
@@ -43,8 +45,14 @@ class mytest(apptest.DMRGTestBase):
                           },
                   }
     observables = [
-                    apptest.observable_test.reference_run('Energy'),
-                    apptest.observable_test.reference_run('Entropy'),
+                    apptest.observable_test.reference_file('Energy',        file=reference_file),
+                    apptest.observable_test.reference_file('Entropy',       file=reference_file),
+                    apptest.observable_test.reference_file('Local density', file=reference_file),
+
+                    apptest.observable_test.reference_file('Energy',         file=os.path.join(reference_dir, 'test_ff.diag.h5'),
+                                                            tolerance=1e-4),
+                    apptest.observable_test.reference_file('Local density',  file=os.path.join(reference_dir, 'test_ff.diag.h5'),
+                                                            tolerance=1e-4),
                   ]
 
 
