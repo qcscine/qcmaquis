@@ -33,6 +33,8 @@
 #include <boost/cstdint.hpp>
 #include "vli/detail/kernels_cpu.h"
 
+#include "vli/detail/cpu/x86_64/kernels_cpu_inline_add.h" // inline add kernel
+#include "vli/detail/cpu/x86_64/kernels_cpu_inline_sub.h" // inline sub kernel
 
 namespace vli
 {
@@ -44,6 +46,7 @@ namespace vli
     //????_assign functions
     template <std::size_t NumBits>
     void plus_assign(integer<NumBits> & integer_a, integer<NumBits> const& integer_b ){
+      //  helper_inline_add<integer<NumBits>::numwords>::inline_add(&integer_a[0],&integer_b[0]);
         using detail::add;
         add<integer<NumBits>::numwords>(&integer_a[0],&integer_b[0]);
     }
@@ -62,8 +65,9 @@ namespace vli
 
     template <std::size_t NumBits>
     void minus_assign(integer<NumBits> & integer_a, integer<NumBits> const& integer_b ){
-        using detail::sub;
-        sub<integer<NumBits>::numwords>(&integer_a[0],&integer_b[0]);
+    //    helper_inline_sub<integer<NumBits>::numwords>::inline_sub(&integer_a[0],&integer_b[0]);
+         using detail::sub;
+         sub<integer<NumBits>::numwords>(&integer_a[0],&integer_b[0]);
     }
     
     template <std::size_t NumBits>

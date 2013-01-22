@@ -10,6 +10,8 @@
 #include <string>
 #include <time.h>
 
+//#include "main/inline_add.h"
+
 #ifdef VLI_USE_GPU
 #include "vli/detail/gpu/inner_product_gpu_accelerator.hpp"
 #endif //VLI_USE_GPU
@@ -203,66 +205,35 @@ typedef boost::mpl::vector<
        }
    };
 
-template<long n>
-inline void test_add(boost::uint64_t* x, boost::uint64_t const* y);
-
-
-template<>
-inline void test_add<4>(boost::uint64_t* x, boost::uint64_t const* y) {
-    boost::uint64_t tmp_register;
-    __asm__ __volatile__ (
-                          "movq 0(%[y]), %[tmp_register] \n\t"
-                          "addq %[tmp_register], 0(%[x]) \n\t"
-
-                          "movq 8(%[y]), %[tmp_register] \n\t"
-                          "adcq %[tmp_register], 8(%[x]) \n\t"
-
-                          "movq 16(%[y]), %[tmp_register]\n\t"
-                          "adcq %[tmp_register], 16(%[x])\n\t"
-                          
-                          "movq 24(%[y]), %[tmp_register]\n\t"
-                          "adcq %[tmp_register], 24(%[x])\n\t"
-
-                          : [tmp_register] "=&r" (tmp_register)
-                          : [x] "r" (x), [y] "r" (y)
-                          : "memory", "cc");
-}
-
-
-/*
-template<long n>
-void test_add(boost::uint64_t* x, boost::uint64_t const* y) {
-    boost::uint64_t tmp_register, tmp_register2;
-    __asm__ __volatile__ (
-        "clc\n\t"
-        "1:\n\t"
-            "movq (%[y],%[counter],8), %[tmp_register]\n\t"
-            "adcq %[tmp_register], (%[x], %[counter], 8)\n\t"
-            "incq %[counter]\n\t"
-        "jnz 1b\n\t"
-        : [tmp_register] "=&r" (tmp_register), "=r" (tmp_register2)
-        : [x] "r" (x), [y] "r" (y), [counter] "1" (n)
-        : "memory", "cc");
-}
-*/
 int main(int argc, char* argv[]) {
 
-    vli::integer<256> c;// = {{-1,-1,-1,0}} ;
-    vli::integer<256> d;
+    vli::integer<1152> a1,a2;
 
+    for(int i=0 ; i < 17; ++i)
+        a1[i] = -1;
+
+    a2[0] = 1;
     
-    c[0] = -1;
-    c[1] = -1;
-    c[2] = -1;
-    c[3] =  0;
+    for(int i(0); i < 0xff; ++i)
+        helper_inline_add<18>::inline_add((&a1[0]),(&a2[0]));
     
-    d[0] = 1;
-    d[1] = -1;
-    d[2] = -1;
-    d[3] = 0;
+ //   std::cout << std::hex << a1 << std::endl;
+    
+    
 
-    vli::integer<256> a(c),b(d);
+//    for(int i(0); i < 0xff; ++i)
+//        helper_inline_add<8>::inline_add((&e[0]),(&f[0]));
+    
+    
+ //   std::cout<< std::hex << e[0] << " " << e[1] << " " << e[2] << " " << e[3] << " "
+ //                        << e[4] << " " << e[5] << " " << e[6] << " " << e[7] << " " << std::endl;
 
+ //   vli::integer<512> a(e);// = {{-1,-1,-1,0}} ;
+ //   vli::integer<512> b(f);
+
+//       a+=b;
+//     helper_inline_add<8>::inline_add((&e[0]),(&f[0]));
+    /*
     Timer to("old ");
     to.begin();
 
@@ -270,7 +241,7 @@ int main(int argc, char* argv[]) {
             a+=b; 
         for(int j(0); j < 0xff; ++j){
             a+=b; 
-        for(int k(0); k < 0xff; ++k){ 
+        for(int k(0); k < 0xff; ++k){
             a+=b;}}} 
 
     to.end();
@@ -279,23 +250,30 @@ int main(int argc, char* argv[]) {
     t.begin();
   
 
-        for(int i(0); i < 0xff; ++i){ 
-             test_add<4>((&c[0]),(&d[0]));    // <-- horible but no choice conversion (BigEndian/LittleEndian)
-        for(int j(0); j < 0xff; ++j){ 
-             test_add<4>((&c[0]),(&d[0]));    // <-- horible but no choice (BigEndian/LittleEndian)
-        for(int k(0); k < 0xff; ++k){ 
-             test_add<4>((&c[0]),(&d[0]));}}} // <-- horible but no choice (BigEndian/LittleEndian)
+        for(int i(0); i < 0xff; ++i){
+            helper_inline_add<16>::inline_add((&a1[0]),(&a2
+                                                        [0]));    // <-- horible but no choice conversion (BigEndian/LittleEndian)
+        for(int j(0); j < 0xff; ++j){
+            helper_inline_add<16>::inline_add((&a1[0]),(&a2[0]));    // <-- horible but no choice conversion (BigEndian/LittleEndian)
+        for(int k(0); k < 0xff; ++k){
+            helper_inline_add<16>::inline_add((&a1[0]),(&a2[0]));    // <-- horible but no choice conversion (BigEndian/LittleEndian)
+        }}}
 
     t.end();
 
-
-    std::cout << " new "  << t.get_time()<< std::endl;
-    std::cout << " old "  << to.get_time()<< std::endl;
-
-    std::cout << std::hex << c << std::endl;
+    std::cout << " inline "  << t.get_time()<< std::endl;
+    std::cout << " vli.a "  << to.get_time()<< std::endl;
+  
     std::cout << std::hex << a << std::endl;
-
+    std::cout << std::hex << e << std::endl;
     
+    if (e == a) {
+      std::cout << "OK" << std::endl;
+    }else{
+      std::cout << "NOT OK" << std::endl;
+    }
+
+  */  
 
   /*  
        std::cout << " -------ASCII ART ^_^' --------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
