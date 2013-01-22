@@ -1,0 +1,111 @@
+\documentclass[oribibl]{llncs2e/llncs}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+\usepackage{graphicx}
+
+
+\author{Timoth\'ee Ewart\inst{1}\thanks{Acknowledgments: Maxim Milakov, Peter Messmer:   NVIDIA,   Williams Sawyer, Gilles Fourestey:  CSCS, HP2C funding, hp2c.ch}  , Andreas Hehn$^2$, Matthias Troyer\inst{2} and Thierry Giamarchi\inst{1}}
+
+\institute{Universit\'e de Gen\`eve, \email{timothee.ewart@gmail.com}  \and Eidgen\"ossische Technische Hochschule Z\"urich }
+
+
+\title{VLI - a library for large integer and polynomial arithemtic}
+\author{Timoth\'ee Ewart\inst{1}\thanks{Acknowledgments: Maxim Milakov, Peter Messmer:   NVIDIA,   Williams Sawyer, Gilles Fourestey:  CSCS, HP2C funding, hp2c.ch}  , Andreas Hehn$^2$, Matthias Troyer\inst{2} and Thierry Giamarchi\inst{1}}
+
+\institute{Universit\'e de Gen\`eve, \email{timothee.ewart@gmail.com}  \and Eidgen\"ossische Technische Hochschule Z\"urich }
+
+\begin{document}
+\maketitle
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+We present a high-performance C++ library for 128 to 512 bit integer arithemtics and symbolic polynomial computations.
+While both parts of the library can be used independently optimized kernels for symbolic polynomials with large integer coefficients are provided.
+%Even though the application developed as a special purpose library for high-temperature series expansions, it is also of great interest for other applications due to its modular design.
+%The kernels for the large integer operations are implemented in \verb|x86-64| and \verb|power64| assembly.
+%The polynomials may have up to 4 symbolic variables and have a compile time fixed truncation order.
+Since our target application is high-temperature series expansions (HTSE) we implemented a special routine to perform inner products of vectors of polynomials with large integer coefficients.
+Here we employ hybrid CPU/GPU approach to make optimal use of todays supercomputers, where we attain 67\% of the peak performance of the current NVIDIA Kepler GPU.
+Compared to a solution using the GNU Multiple Precision Arithmetic Library (GMP) we save a factor up to 10 on the CPU and
+\end{abstract}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+\begin{itemize}
+\item {\bf Why did we develop the library?}
+\item Applications of large integers and polynomials in many fields of science, e.g.\ cryptography
+\item our intention: special purpose library for high-temperature series expansions.
+\item HTSE require symbolic polynomials with arbitrary precise coefficients. Coefficients can be represented as integers.
+\item maximal integer size known beforehand
+\item Hot spot of HTSE inner products of vectors of such polynomials.
+\item {\bf Problems with existing libraries:}
+\item GMP integers are dynamic in size and optimized to cover a large range of large integers up to several thousand bits. We need only up to 512 bits.
+\item inner products of polynomials are well suited for GPUs $\rightarrow$ specialized GPU kernels required.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Large integers}
+\begin{itemize}
+\item {\bf Description}
+\item signed integer arithmetics
+\item fixed size (128-512bit)
+\item all standard integer operations (arithmetic, comparison and bit operations)
+\item in addition to that: extended multiplication which doubles the number of bits, extended add which increases the size by one 64bit.
+\item {\bf Implementation details}
+\item data is stored as 64 bit integer arrays.
+\item stack based $\rightarrow$ cheap memory allocation
+\item optimized ASM kernels to use hardware features not accessible from C++ (\verb|x86_64| carry addition \verb|adcq|, 64bit multiplication \verb|mulq| which calculates low and hi 64bit part of the result.)
+\item ASM code generated using \verb|BOOST_PP| to compactify the code and minimize bugs.
+\end{itemize}
+
+\section{Polynomials}
+\begin{itemize}
+\item {\bf Description}
+\item dense symbolic polynomial in 1-4 variables.
+\begin{equation}
+    p(x,y,z,a) = \sum_{i,j,k,l} c_{ijkl} x^i y^j z^k a^l
+\end{equation}
+\item either ``dense'' (${i,j,k,l} \le N$) or ``triangular'' ($i+j+k+l \le N$) structure.
+\item any arithmetic type as coefficient $c_{ijkl}$
+\item addition, subtraction, multiplication with other polynomials and monomials
+\item {\bf Implementation details}
+\item structure and truncation order $N$ is compile time fixed 
+\item The symbolic variable names are given as template parameter
+\item Automatic matching of variable names of different polynomial types using template meta programming.
+\end{itemize}
+
+\section{Optimized inner product}
+\paragraph{CPU}
+\begin{itemize}
+\item The hot spot of HTSE are inner products of large vectors with symbolic polynomials as components. The coefficients of the polynomials are large integers.
+\item We continue to use the single large integer routines
+\item No SIMD, since the number of operations for a multiplication increases by a factor TODO due to the manual handling of the carry and separate lo/hi word multiplication.
+\item OpenMP parallelization
+\end{itemize}
+\paragraph{GPU}
+\begin{itemize}
+\item Many small tasks of the same form. $\rightarrow$ well suited for GPUs.
+\item {\bf Implementation details}
+\item Each resulting coefficient of the polynomial $c_{I,J,K,L}$ may has several e
+\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Benchmarks}
+\begin{itemize}
+\item Benchmarks performed
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclusion}
+\begin{itemize}
+\item TODO
+\item Licence?
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
