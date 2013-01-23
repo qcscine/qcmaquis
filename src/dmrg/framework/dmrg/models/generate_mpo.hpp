@@ -298,7 +298,15 @@ namespace generate_mpo
     
     
     template<class Matrix, class SymmGroup>
-    class CorrMaker
+    class CorrMakerBase {
+    public:
+        virtual MPO<Matrix, SymmGroup> create_mpo()=0;
+        virtual std::string description () const=0;
+        virtual vector<vector<size_t> > numeric_labels()=0;
+    };
+
+    template<class Matrix, class SymmGroup>
+    class CorrMaker : public CorrMakerBase<Matrix, SymmGroup>
     {
         typedef block_matrix<Matrix, SymmGroup> op_t;
         typedef boost::tuple<size_t, size_t, op_t> block;
@@ -459,7 +467,7 @@ namespace generate_mpo
     // same as CorrMaker, but operators in ops have to be even,
     //  and are avaluated as ops[0](i)*ops[1](i+1)*ops[2](j)*ops[3](j+1)
     template<class Matrix, class SymmGroup>
-    class CorrMakerNN
+    class CorrMakerNN : public CorrMakerBase<Matrix, SymmGroup>
     {
         typedef block_matrix<Matrix, SymmGroup> op_t;
         typedef boost::tuple<size_t, size_t, op_t> block;

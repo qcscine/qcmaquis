@@ -427,35 +427,33 @@ namespace meas_detail {
 							  std::vector<std::string>& labels,
                               bool super_meas)
 	{
+        typedef boost::shared_ptr<generate_mpo::CorrMakerBase<Matrix, SymmGroup> > maker_ptr;
+
         for (size_t p = 0; p < lat.size()-(ops.size()-1); ++p) {
 			std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
 			std::vector<std::vector<std::size_t> > num_labels;
-			if (is_nn) {
-				generate_mpo::CorrMakerNN<Matrix, SymmGroup> dcorr(mps.length(), identity, fill,
-																   ops, p);
-				MPO<Matrix, SymmGroup> mpo = dcorr.create_mpo();
-                
-                if (!super_meas)
-                    dct = multi_expval(mps, mpo);
-                else {
-                    Index<SymmGroup> phys_i = identity.left_basis();
-                    typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, phys_i);
-                    MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
-                    dct = multi_overlap(super_mpo, mps);
-                    for (int i=0; i<dct.size(); ++i)
-                        dct[i] /= nn;
-                }
-                
-				num_labels = dcorr.numeric_labels();
-			} else {
-				generate_mpo::CorrMaker<Matrix, SymmGroup> dcorr(mps.length(), identity, fill,
-																 ops, p);
-				MPO<Matrix, SymmGroup> mpo = dcorr.create_mpo();
-				dct = multi_expval(mps, mpo);
-				num_labels = dcorr.numeric_labels();
-			}
+            maker_ptr dcorr;
+            if (is_nn)
+                dcorr.reset(new generate_mpo::CorrMakerNN<Matrix, SymmGroup>(mps.length(), identity, fill, ops, p) );
+            else
+                dcorr.reset(new generate_mpo::CorrMaker<Matrix, SymmGroup>(mps.length(), identity, fill, ops, p) );
+            
+            MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
+            
+            if (!super_meas)
+                dct = multi_expval(mps, mpo);
+            else {
+                Index<SymmGroup> phys_i = identity.left_basis();
+                typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, phys_i);
+                MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
+                dct = multi_overlap(super_mpo, mps);
+                for (int i=0; i<dct.size(); ++i)
+                    dct[i] /= nn;
+            }
+            
+            num_labels = dcorr->numeric_labels();
 			std::copy(dct.begin(), dct.end(), std::back_inserter(dc));
-
+            
 			//maquis::cout << dcorr.description() << std::endl;
 
 
