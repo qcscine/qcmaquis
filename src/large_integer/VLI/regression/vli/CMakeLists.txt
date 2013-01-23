@@ -17,7 +17,7 @@ set(test_sizes 2 3 4 5 6 7 8)
 set(extending_plus_sizes 2 3 4 5 6)
 set(extending_multiplies_sizes 2 3 4)
 set(extending_karatsuba_sizes 2 4)
-#set(large_gmp_sizes 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24) 
+#set(large_gmp_sizes 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24)
 
 #foreach(test ${large_gmp_tests})
 #    foreach(size ${large_gmp_sizes})
