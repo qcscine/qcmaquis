@@ -174,10 +174,10 @@ private:
         add_option("MEASURE_CONTINUUM[Local density]", "", value(true));
         add_option("MEASURE_CONTINUUM[Onebody density matrix]", "", value(false));
 
-        add_option("MEASURE[Density]", "", value(false));
-        add_option("MEASURE[Local density]", "", value(false));
-        add_option("MEASURE[Onebody density matrix]", "", value(false));
-        add_option("MEASURE[Density correlation]", "", value(false));
+        add_option("ENABLE_MEASURE[Density]", "", value(false));
+        add_option("ENABLE_MEASURE[Local density]", "", value(false));
+        add_option("ENABLE_MEASURE[Onebody density matrix]", "", value(false));
+        add_option("ENABLE_MEASURE[Density correlation]", "", value(false));
 }
 
 };
