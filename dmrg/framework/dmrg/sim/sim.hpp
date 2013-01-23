@@ -305,18 +305,8 @@ std::string sim<Matrix, SymmGroup>::sweep_archive_path ()
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::do_sweep_measure (Logger&)
 {
-    if (!parms.get<std::string>("always_measure").empty()) {
-        meas_always.clear();
-        meas_always.set_identity(measurements.get_identity());
-        std::vector<std::string> meas_list = parms.get<std::vector<std::string> >("always_measure");
-        for (int i=0; i<meas_list.size(); ++i) {
-            try {
-                meas_always.add_term(measurements.get(meas_list[i]));
-            } catch (std::runtime_error & e) {
-                maquis::cout << "WARNING: " << e.what() << std::endl;
-            }
-        }
-    }
+    if (!parms.get<std::string>("always_measure").empty())
+        meas_always = measurements.sublist( parms.get<std::vector<std::string> >("always_measure") );
     
     maquis::cout << "Calculating vN entropy." << std::endl;
     std::vector<double> entropies = calculate_bond_entropies(mps);

@@ -91,6 +91,23 @@ protected:
     }
 };
 
+namespace detail {
+    class name_not_in_list {
+    public:
+        name_not_in_list(std::vector<std::string> const& list_)
+        : list(list_)
+        { }
+        
+        template <class Matrix, class SymmGroup>
+        bool operator() (Measurement_Term<Matrix, SymmGroup> const& mterm) const
+        {
+            return std::find(list.begin(), list.end(), mterm.name) == list.end();
+        }
+        
+    private:
+        std::vector<std::string> const& list;
+    };
+}
 
 // implement me for your purpose!
 template<class Matrix, class SymmGroup>
@@ -122,6 +139,15 @@ public:
         }
         throw std::runtime_error("Measurement "+name+" not found!");
         return *(terms.end());
+    }
+    
+    Measurements sublist(std::vector<std::string> const& meas_list) const
+    {
+        Measurements sublist(*this);
+        
+        typename boost::ptr_vector<mterm_t>::iterator tend = std::remove_if(sublist.terms.begin(), sublist.terms.end(), detail::name_not_in_list(meas_list));
+        sublist.terms.erase(tend, sublist.terms.end());
+        return sublist;
     }
     
     const op_t& get_identity() const
