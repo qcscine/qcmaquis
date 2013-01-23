@@ -38,15 +38,22 @@
      BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" %[tmp_register], "EIGHT_MULTIPLY(n)"(%[x]) \n\t" \
 
 #define ADDITION2(z, n, unused) "movq "EIGHT_MULTIPLY(n)"(%[y],%[counter],8), %[tmp_register]\n\t" \
-    "adcq %[tmp_register], "EIGHT_MULTIPLY(n)"(%[x], %[counter], 8)\n\t" \
+                                "adcq %[tmp_register], "EIGHT_MULTIPLY(n)"(%[x], %[counter], 8)\n\t" \
+
+#define ADDITION3(z, n, unused) \
+     BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq %[constante]),BOOST_PP_STRINGIZE(addq %[tmp_register]))", "EIGHT_MULTIPLY(n)"(%[x]) \n\t"
 
 #define GENERATE_ADDITION(m)  BOOST_PP_REPEAT(BOOST_PP_ADD(m,2), ADDITION, ~)
 
 #define GENERATE_ADDITION2(m)  BOOST_PP_REPEAT(m, ADDITION2, ~)
 
+#define GENERATE_ADDITION3(m)  BOOST_PP_REPEAT(BOOST_PP_ADD(m,2), ADDITION3, ~)
 
-template<std::size_t n, typename range = void>
+template<std::size_t NumWords, typename range = void>
 struct helper_inline_add;
+
+template<std::size_t NumWords, typename range = void>
+struct helper_inline_add_constante;
 
 /**
  \brief addition between two integer<n*128>, n*128 <= 512
@@ -57,14 +64,25 @@ struct helper_inline_add;
  and full unroll n belongs to the interval 1 to 8, 128-bit <= vli::integer<n*128>  <= 512-bit
 */
 #define FUNCTION_INLINE_add_nbits_nbits(z, m, unused)                                  \
-template<std::size_t n>                                                                \
-struct helper_inline_add<n,typename boost::enable_if_c< n == BOOST_PP_ADD(m,2)>::type>{\
+template<std::size_t NumWords>                                                         \
+struct helper_inline_add<NumWords,typename boost::enable_if_c< NumWords == BOOST_PP_ADD(m,2)>::type>{\
     static void inline_add(boost::uint64_t* x, boost::uint64_t const* y){              \
         boost::uint64_t tmp_register;                                                  \
         __asm__ __volatile__ (                                                         \
-        GENERATE_ADDITION(m)                                                           \
+            GENERATE_ADDITION(m)                                                       \
         : [tmp_register] "=&r" (tmp_register)                                          \
         : [x] "r" (x), [y] "r" (y)                                                     \
+        : "memory", "cc");                                                             \
+    };                                                                                 \
+                                                                                       \
+    static void inline_add(boost::uint64_t* x, boost::int64_t const y){                \
+        boost::uint64_t tmp_register;                                                  \
+        __asm__ __volatile__ (                                                         \
+            "movq  %[constante],   %[tmp_register] \n\t"                               \
+            "sarq   $63        ,   %[constante]    \n\t"                               \
+            GENERATE_ADDITION3(m)                                                      \
+        : [tmp_register] "=&r" (tmp_register)                                          \
+        : [x] "r" (x), [constante] "r" (y)                                             \
         : "memory", "cc");                                                             \
     };                                                                                 \
 };                                                                                     \
@@ -82,8 +100,8 @@ BOOST_PP_REPEAT(8, FUNCTION_INLINE_add_nbits_nbits, ~) //unroll until 512, maybe
  This operator performs a += between two integer<n*128> The ASM solver is specific
  and full unroll n belongs to the interval 1 to 8, 512-bit <= vli::integer<n*128>  */
 #define FUNCTION_INLINE_add_nbits_nbits(z, m, unused)                                     \
-template<std::size_t n>                                                                   \
-struct helper_inline_add<n,typename boost::enable_if_c<  ((n>8) && (n%8 == m )) >::type>{ \
+template<std::size_t NumWords>                                                                   \
+struct helper_inline_add<NumWords,typename boost::enable_if_c<  ((NumWords>8) && (NumWords%8 == m )) >::type>{ \
     static void inline_add(boost::uint64_t* x, boost::uint64_t const* y){                 \
         boost::uint64_t tmp_register, tmp_register2;                                      \
         __asm__ __volatile__ (                                                            \
@@ -118,7 +136,7 @@ struct helper_inline_add<n,typename boost::enable_if_c<  ((n>8) && (n%8 == m )) 
             "jnz 1b\n\t" /* check if I can leav the loop */                               \
             GENERATE_ADDITION2(m) /* finish the unroll by hand */                         \
         : [tmp_register] "=&r" (tmp_register), "=r" (tmp_register2)                       \
-        : [x] "r" (x+(n-m)), [y] "r" (y+(n-m)), [counter] "1" (-(n-m))                    \
+        : [x] "r" (x+(NumWords-m)), [y] "r" (y+(NumWords-m)), [counter] "1" (-(NumWords-m))\
         : "memory", "cc");                                                                \
     };                                                                                    \
 };                                                                                        \
@@ -127,13 +145,24 @@ BOOST_PP_REPEAT(8, FUNCTION_INLINE_add_nbits_nbits, ~) //unroll until 512, maybe
 
 #undef FUNCTION_INLINE_add_nbits_nbits
 
+/*
 
+template<std::size_t NumWords>
+struct helper_inline_add_constante<NumWords,typename boost::enable_if_c<2>::type>{
+    static void inline_add_constante(boost::uint64_t* x, boost::int64_t const y){
+        boost::uint64_t tmp_register;
+        __asm__ __volatile__ (
+                 "movq  %[constante] ,   %[tmp_register] \n\t"
+                 "sarq   $63           , %[constante]    \n\t"
+                 "addq  %[tmp_register], (%[x]) \n\t"
+                 "adcq  %[constante],  8(%[x]) \n\t"
+        : [tmp_register] "=&r" (tmp_register)
+        : [x] "r" (x), [constante] "r" (y)
+        : "memory", "cc");
+    };
+};
 
-
-
-
-
-
+*/
 
 
 
@@ -342,8 +371,10 @@ struct helper_inline_add<n,typename boost::enable_if_c< ((n>4) && (n%4 == 3 )) >
 #undef EIGHT_MULTIPLY
 #undef ADDITION
 #undef ADDITION2
+#undef ADDITION3
 
 #undef GENERATE_ADDITION
 #undef GENERATE_ADDITION2
+#undef GENERATE_ADDITION3
 
 #endif

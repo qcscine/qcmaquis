@@ -205,19 +205,30 @@ typedef boost::mpl::vector<
        }
    };
 
+
+
 int main(int argc, char* argv[]) {
 
-    vli::integer<1152> a1,a2;
+    vli::integer<128> a1,a2;
 
-    for(int i=0 ; i < 17; ++i)
-        a1[i] = -1;
+    a1[0] = 1;
+//    a1[1] = -1;
+    
+    negate_inplace(a1);
 
-    a2[0] = 1;
+       std::cout << std::hex << a1 << std::endl;
+
+  negate_inplace(a1);
+
+       std::cout << std::hex << a1 << std::endl;
+
     
-    for(int i(0); i < 0xff; ++i)
-        helper_inline_add<18>::inline_add((&a1[0]),(&a2[0]));
+//    for(int i(0); i < 0xff; ++i)
+        helper_inline_add<2>::inline_add((&a1[0]), 3);
+
+ 
     
- //   std::cout << std::hex << a1 << std::endl;
+    std::cout << std::hex << a1 << std::endl;
     
     
 
