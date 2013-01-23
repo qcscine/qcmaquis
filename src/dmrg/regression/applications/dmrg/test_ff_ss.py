@@ -17,7 +17,7 @@ class mytest(apptest.DMRGTestBase):
                             'nmainsweeps'                : 1,
                             'ngrowsweeps'                : 1,
             
-                            'max_bond_dimension'         : 100,
+                            'max_bond_dimension'         : 200,
             
                             'truncation_initial'         : 0.0001,
                             'truncation_final'           : 1e-12,
@@ -42,6 +42,8 @@ class mytest(apptest.DMRGTestBase):
 
                             'CONSERVED_QUANTUMNUMBERS'  : 'N',
                             'N_total'                   : 10,
+                            
+                            'MEASURE_LOCAL[Local density]' : 'n',
                           },
                   }
     observables = [

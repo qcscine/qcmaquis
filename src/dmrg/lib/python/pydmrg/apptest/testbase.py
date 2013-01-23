@@ -50,6 +50,7 @@ class DMRGTestBase(object):
         if not hasattr(self, 'tmpdir'):
             self.origdir = os.getcwd()
             self.tmpdir = tempfile.mkdtemp()
+            print 'Using temporary dir:', self.tmpdir
     
     def write_parameters(self):
         """Write parameters as `testname.parms/.model`."""
