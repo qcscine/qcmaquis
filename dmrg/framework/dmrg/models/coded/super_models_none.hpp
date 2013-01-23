@@ -381,7 +381,7 @@ public:
         Measurements<Matrix, TrivialGroup> meas(Measurements<Matrix, TrivialGroup>::Densitymatrix);
         meas.set_identity(ident_psi);
         
-        if (model.get<bool>("MEASURE[Density]")) {
+        if (model.get<bool>("ENABLE_MEASURE[Density]")) {
             mterm_t term;
             term.fill_operator = ident_psi;
             term.name = "Density";
@@ -391,7 +391,7 @@ public:
             meas.add_term(term);
         }
         
-        if (model.get<bool>("MEASURE[Local density]")) {
+        if (model.get<bool>("ENABLE_MEASURE[Local density]")) {
             mterm_t term;
             term.fill_operator = ident_psi;
             term.name = "Local density";
@@ -401,7 +401,7 @@ public:
             meas.add_term(term);
         }
         
-        if (model.get<bool>("MEASURE[Onebody density matrix]")) {
+        if (model.get<bool>("ENABLE_MEASURE[Onebody density matrix]")) {
             mterm_t term;
             term.fill_operator = ident_psi;
             term.name = "Onebody density matrix";
@@ -412,7 +412,7 @@ public:
             meas.add_term(term);
         }
 
-        if (model.get<bool>("MEASURE[Density correlation]")) {
+        if (model.get<bool>("ENABLE_MEASURE[Density correlation]")) {
             mterm_t term;
             term.fill_operator = ident_psi;
             term.name = "Density correlation";
