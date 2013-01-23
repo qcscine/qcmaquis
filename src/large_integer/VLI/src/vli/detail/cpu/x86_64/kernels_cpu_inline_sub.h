@@ -56,8 +56,8 @@ struct helper_inline_sub;
  n belongs to the interval 1 to 8, 128-bit <= vli::integer<n*128>  <= 5120-bit
 */
 #define FUNCTION_INLINE_sub_nbits_nbits(z, m, unused)                                  \
-template<std::size_t n>                                                                \
-struct helper_inline_sub<n,typename boost::enable_if_c< n == BOOST_PP_ADD(m,2)>::type>{\
+template<std::size_t NumWords>                                                                \
+struct helper_inline_sub<NumWords,typename boost::enable_if_c< NumWords == BOOST_PP_ADD(m,2)>::type>{\
     static void inline_sub(boost::uint64_t* x, boost::uint64_t const* y){              \
         boost::uint64_t tmp_register;                                                  \
             __asm__ __volatile__ (                                                     \
