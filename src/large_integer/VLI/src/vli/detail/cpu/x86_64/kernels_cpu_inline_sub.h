@@ -32,17 +32,22 @@
 #include <boost/preprocessor/comparison/equal.hpp>
 #include <boost/preprocessor/stringize.hpp>
 
-#define EIGHT_MULTIPLY(n)    BOOST_PP_STRINGIZE(BOOST_PP_MUL(n,8))
+#define VLI_EIGHT_MULTIPLY(n)    BOOST_PP_STRINGIZE(BOOST_PP_MUL(n,8))
 
-#define SUBTRACTION( z, n, unused) "movq "EIGHT_MULTIPLY(n)"(%[y]), %[tmp_register] \n\t" \
-     BOOST_PP_IF(n,BOOST_PP_STRINGIZE(sbbq),BOOST_PP_STRINGIZE(subq))" %[tmp_register], "EIGHT_MULTIPLY(n)"(%[x]) \n\t" \
+#define VLI_SUBTRACTION( z, n, unused) "movq "VLI_EIGHT_MULTIPLY(n)"(%[y]), %[tmp_register] \n\t" \
+     BOOST_PP_IF(n,BOOST_PP_STRINGIZE(sbbq),BOOST_PP_STRINGIZE(subq))" %[tmp_register], "VLI_EIGHT_MULTIPLY(n)"(%[x]) \n\t" \
 
-#define SUBTRACTION2(z, n, unused) "movq "EIGHT_MULTIPLY(n)"(%[y],%[counter],8), %[tmp_register]\n\t" \
-    "sbbq %[tmp_register], "EIGHT_MULTIPLY(n)"(%[x], %[counter], 8)\n\t" \
+#define VLI_SUBTRACTION2(z, n, unused) "movq "VLI_EIGHT_MULTIPLY(n)"(%[y],%[counter],8), %[tmp_register]\n\t" \
+    "sbbq %[tmp_register], "VLI_EIGHT_MULTIPLY(n)"(%[x], %[counter], 8)\n\t" \
 
-#define GENERATE_SUBTRACTION(m)  BOOST_PP_REPEAT(BOOST_PP_ADD(m,2), SUBTRACTION, ~)
+#define VLI_SUBTRACTION3(z, n, unused) \
+     BOOST_PP_IF(n,BOOST_PP_STRINGIZE(sbbq %[constante2]),BOOST_PP_STRINGIZE(subq %[tmp_register]))", "VLI_EIGHT_MULTIPLY(n)"(%[x]) \n\t"
 
-#define GENERATE_SUBTRACTION2(m)  BOOST_PP_REPEAT(m, SUBTRACTION2, ~)
+#define VLI_GENERATE_SUBTRACTION(m)  BOOST_PP_REPEAT(BOOST_PP_ADD(m,2), VLI_SUBTRACTION, ~)
+
+#define VLI_GENERATE_SUBTRACTION2(m)  BOOST_PP_REPEAT(m, VLI_SUBTRACTION2, ~)
+
+#define VLI_GENERATE_SUBTRACTION3(m)  BOOST_PP_REPEAT(BOOST_PP_ADD(m,2), VLI_SUBTRACTION3, ~)
 
 template<std::size_t n, typename range = void>
 struct helper_inline_sub;
@@ -61,10 +66,21 @@ struct helper_inline_sub<NumWords,typename boost::enable_if_c< NumWords == BOOST
     static void inline_sub(boost::uint64_t* x, boost::uint64_t const* y){              \
         boost::uint64_t tmp_register;                                                  \
             __asm__ __volatile__ (                                                     \
-            GENERATE_SUBTRACTION(m)                                                    \
+            VLI_GENERATE_SUBTRACTION(m)                                                \
             : [tmp_register] "=&r" (tmp_register)                                      \
             : [x] "r" (x), [y] "r" (y)                                                 \
             : "memory", "cc");                                                         \
+    };                                                                                 \
+                                                                                       \
+        static void inline_sub(boost::uint64_t* x, boost::int64_t const y){            \
+        boost::uint64_t tmp_register;                                                  \
+        boost::uint64_t tmp_register2(y >> 63);                                        \
+        __asm__ __volatile__ (                                                         \
+            "movq  %[constante],   %[tmp_register] \n\t"                               \
+            VLI_GENERATE_SUBTRACTION3(m)                                               \
+        : [tmp_register] "=&r" (tmp_register)                                          \
+        : [x] "r" (x), [constante] "r" (y), [constante2] "r" (tmp_register2)           \
+        : "memory", "cc");                                                             \
     };                                                                                 \
 };                                                                                     \
 
@@ -115,7 +131,7 @@ struct helper_inline_sub<n,typename boost::enable_if_c<  ((n>8) && (n%8 == m )) 
             "leaq 7(,%[counter],1), %[counter]\n\t" /* lea does not change zero flag so counter += 7 */  \
             "incq %[counter]\n\t" /* change the zero flag */                              \
             "jnz 1b\n\t" /* check if I can leav the loop */                               \
-            GENERATE_SUBTRACTION2(m) /* finish the unroll by hand */                      \
+            VLI_GENERATE_SUBTRACTION2(m) /* finish the unroll by hand */                  \
         : [tmp_register] "=&r" (tmp_register), "=r" (tmp_register2)                       \
         : [x] "r" (x+(n-m)), [y] "r" (y+(n-m)), [counter] "1" (-(n-m))                    \
         : "memory", "cc");                                                                \
@@ -130,10 +146,13 @@ BOOST_PP_REPEAT(8, FUNCTION_INLINE_sub_nbits_nbits, ~) //unroll until 512, maybe
 
 
 
-#undef EIGHT_MULTIPLY
-#undef SUBTRACTION
-#undef SUBTRACTION2
-#undef GENERATE_SUBTRACTION
-#undef GENERATE_SUBTRACTION2
+#undef VLI_EIGHT_MULTIPLY
+#undef VLI_SUBTRACTION
+#undef VLI_SUBTRACTION2
+#undef VLI_SUBTRACTION3
+
+#undef VLI_GENERATE_SUBTRACTION
+#undef VLI_GENERATE_SUBTRACTION2
+#undef VLI_GENERATE_SUBTRACTION3
 
 #endif

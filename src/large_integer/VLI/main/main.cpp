@@ -209,28 +209,22 @@ typedef boost::mpl::vector<
 
 int main(int argc, char* argv[]) {
 
-    vli::integer<128> a1,a2;
-
-    a1[0] = 1;
-//    a1[1] = -1;
-    
-    negate_inplace(a1);
-
-       std::cout << std::hex << a1 << std::endl;
-
-  negate_inplace(a1);
-
-       std::cout << std::hex << a1 << std::endl;
-
-    
-//    for(int i(0); i < 0xff; ++i)
-        helper_inline_add<2>::inline_add((&a1[0]), 3);
-
+    vli::integer<128> a(43443545),b(43443545);
  
     
-    std::cout << std::hex << a1 << std::endl;
+    vli::integer<128> c(a),b_orig(b);
     
-    
+    a -= b;
+    negate_inplace(b); negate_inplace(b_orig);
+    c += b;
+
+    std::cout << a << std::endl;
+    std::cout << c << std::endl;
+    std::cout << b << std::endl;
+    std::cout << b_orig << std::endl;
+
+
+
 
 //    for(int i(0); i < 0xff; ++i)
 //        helper_inline_add<8>::inline_add((&e[0]),(&f[0]));
