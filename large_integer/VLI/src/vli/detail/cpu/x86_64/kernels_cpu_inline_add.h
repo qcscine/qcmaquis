@@ -32,22 +32,26 @@
 #include <boost/preprocessor/comparison/equal.hpp>
 #include <boost/preprocessor/stringize.hpp>
 
-#define EIGHT_MULTIPLY(n)    BOOST_PP_STRINGIZE(BOOST_PP_MUL(n,8))
+#define VLI_EIGHT_MULTIPLY(n)    BOOST_PP_STRINGIZE(BOOST_PP_MUL(n,8))
 
-#define ADDITION( z, n, unused) "movq "EIGHT_MULTIPLY(n)"(%[y]), %[tmp_register] \n\t" \
-     BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" %[tmp_register], "EIGHT_MULTIPLY(n)"(%[x]) \n\t" \
+#define VLI_ADDITION( z, n, unused) "movq "VLI_EIGHT_MULTIPLY(n)"(%[y]), %[tmp_register] \n\t" \
+     BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq),BOOST_PP_STRINGIZE(addq))" %[tmp_register], "VLI_EIGHT_MULTIPLY(n)"(%[x]) \n\t" \
 
-#define ADDITION2(z, n, unused) "movq "EIGHT_MULTIPLY(n)"(%[y],%[counter],8), %[tmp_register]\n\t" \
-                                "adcq %[tmp_register], "EIGHT_MULTIPLY(n)"(%[x], %[counter], 8)\n\t" \
+#define VLI_ADDITION2(z, n, unused) "movq "VLI_EIGHT_MULTIPLY(n)"(%[y],%[counter],8), %[tmp_register]\n\t" \
+                                "adcq %[tmp_register], "VLI_EIGHT_MULTIPLY(n)"(%[x], %[counter], 8)\n\t" \
 
-#define ADDITION3(z, n, unused) \
-     BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq %[constante]),BOOST_PP_STRINGIZE(addq %[tmp_register]))", "EIGHT_MULTIPLY(n)"(%[x]) \n\t"
+#define VLI_ADDITION3(z, n, unused) \
+     BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq %[constante2]),BOOST_PP_STRINGIZE(addq %[tmp_register]))", "VLI_EIGHT_MULTIPLY(n)"(%[x]) \n\t"
 
-#define GENERATE_ADDITION(m)  BOOST_PP_REPEAT(BOOST_PP_ADD(m,2), ADDITION, ~)
+#define VLI_ADDITION4(z, n, unused) "adcq %[constante2], "EIGHT_MULTIPLY(n)"(%[x], %[counter], 8)\n\t" \
 
-#define GENERATE_ADDITION2(m)  BOOST_PP_REPEAT(m, ADDITION2, ~)
+#define VLI_GENERATE_ADDITION(m)  BOOST_PP_REPEAT(BOOST_PP_ADD(m,2), VLI_ADDITION, ~)
 
-#define GENERATE_ADDITION3(m)  BOOST_PP_REPEAT(BOOST_PP_ADD(m,2), ADDITION3, ~)
+#define VLI_GENERATE_ADDITION2(m)  BOOST_PP_REPEAT(m, VLI_ADDITION2, ~)
+
+#define VLI_GENERATE_ADDITION3(m)  BOOST_PP_REPEAT(BOOST_PP_ADD(m,2), VLI_ADDITION3, ~)
+
+#define VLI_GENERATE_ADDITION4(m)  BOOST_PP_REPEAT(m, VLI_ADDITION4, ~)
 
 template<std::size_t NumWords, typename range = void>
 struct helper_inline_add;
@@ -69,7 +73,7 @@ struct helper_inline_add<NumWords,typename boost::enable_if_c< NumWords == BOOST
     static void inline_add(boost::uint64_t* x, boost::uint64_t const* y){              \
         boost::uint64_t tmp_register;                                                  \
         __asm__ __volatile__ (                                                         \
-            GENERATE_ADDITION(m)                                                       \
+            VLI_GENERATE_ADDITION(m)                                                   \
         : [tmp_register] "=&r" (tmp_register)                                          \
         : [x] "r" (x), [y] "r" (y)                                                     \
         : "memory", "cc");                                                             \
@@ -77,12 +81,12 @@ struct helper_inline_add<NumWords,typename boost::enable_if_c< NumWords == BOOST
                                                                                        \
     static void inline_add(boost::uint64_t* x, boost::int64_t const y){                \
         boost::uint64_t tmp_register;                                                  \
+        boost::uint64_t tmp_register2(y >> 63);                                        \
         __asm__ __volatile__ (                                                         \
             "movq  %[constante],   %[tmp_register] \n\t"                               \
-            "sarq   $63        ,   %[constante]    \n\t"                               \
-            GENERATE_ADDITION3(m)                                                      \
+            VLI_GENERATE_ADDITION3(m)                                                  \
         : [tmp_register] "=&r" (tmp_register)                                          \
-        : [x] "r" (x), [constante] "r" (y)                                             \
+        : [x] "r" (x), [constante] "r" (y), [constante2] "r" (tmp_register2)           \
         : "memory", "cc");                                                             \
     };                                                                                 \
 };                                                                                     \
@@ -134,7 +138,7 @@ struct helper_inline_add<NumWords,typename boost::enable_if_c<  ((NumWords>8) &&
             "leaq 7(,%[counter],1), %[counter]\n\t" /* lea does not change zero flag so counter += 7 */  \
             "incq %[counter]\n\t" /* change the zero flag */                              \
             "jnz 1b\n\t" /* check if I can leav the loop */                               \
-            GENERATE_ADDITION2(m) /* finish the unroll by hand */                         \
+            VLI_GENERATE_ADDITION2(m) /* finish the unroll by hand */                     \
         : [tmp_register] "=&r" (tmp_register), "=r" (tmp_register2)                       \
         : [x] "r" (x+(NumWords-m)), [y] "r" (y+(NumWords-m)), [counter] "1" (-(NumWords-m))\
         : "memory", "cc");                                                                \
@@ -372,9 +376,11 @@ struct helper_inline_add<n,typename boost::enable_if_c< ((n>4) && (n%4 == 3 )) >
 #undef ADDITION
 #undef ADDITION2
 #undef ADDITION3
+#undef ADDITION4
 
 #undef GENERATE_ADDITION
 #undef GENERATE_ADDITION2
 #undef GENERATE_ADDITION3
+#undef GENERATE_ADDITION4
 
 #endif
