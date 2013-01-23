@@ -13,7 +13,7 @@ import numpy as np
 from exception import ObservableNotFound
 from exception import ObservableNotMatch
 
-def load_spectrum_observable(fname, observable):
+def load_spectrum_observable(fname, observable, remove_equal_indexes=False):
     if not os.path.exists(fname):
         raise IOError('Archive `%s` not found.' % fname)
     data = pyalps.loadEigenstateMeasurements([fname], [observable])
@@ -22,6 +22,28 @@ def load_spectrum_observable(fname, observable):
         raise ObservableNotFound(fname, observable)
     d = data[0]
     if len(d.x) > 1 and d.props['observable'] != 'Entropy':
+        # removing observables with repeated indexes
+        if remove_equal_indexes:
+            x = np.array(d.x)
+            if len(x.shape) > 1:
+                sel = np.array( [True]*len(x) )
+                for i in range(len(x)):
+                    for j in range(x.shape[1]):
+                        for k in range(x.shape[1]):
+                            if k != j and np.all( x[i,j,...]==x[i,k,...] ):
+                                sel[i] = False
+                                break
+                        else:
+                            continue
+                        break
+
+            d.x = d.x[sel]
+            y = []
+            for i in range(len(d.y)):
+                y.append( d.y[i][sel] )
+            d.y = y
+        
+        # sorting observables
         x = np.array(d.x)
         if len(x.shape) > 1:
             x = x.reshape( x.shape[0], np.prod(x.shape[1:]) )
@@ -48,10 +70,11 @@ def load_iterations_observable(fname, observable):
 
 
 class reference_file(object):
-    def __init__(self, observable, file, tolerance=1e-6, load_type='spectrum'):
+    def __init__(self, observable, file, tolerance=1e-6, load_type='spectrum', remove_equal_indexes=False):
         self.observable     = str(observable)
         self.tolerance      = float(tolerance)
         self.reference_file = str(file)
+        self.remove_equal_indexes = bool(remove_equal_indexes)
         if load_type == 'spectrum':
             self.loader = load_spectrum_observable
         elif load_type == 'iterations':
@@ -60,8 +83,8 @@ class reference_file(object):
             raise RuntimeError('`%s` not a valid type.' % load_type)
     
     def __call__(self, test_file):
-        tobs = self.loader(test_file,           self.observable)
-        robs = self.loader(self.reference_file, self.observable)
+        tobs = self.loader(test_file,           self.observable, self.remove_equal_indexes)
+        robs = self.loader(self.reference_file, self.observable, self.remove_equal_indexes)
         for ty, ry in zip(tobs.y, robs.y):
             for tval, rval in zip( np.atleast_1d(ty), np.atleast_1d(ry) ):
                 if np.any( np.array(abs(tval-rval)) / rval > self.tolerance ):

@@ -87,9 +87,9 @@ class mytest(apptest.DMRGTestBase):
                                                                                         0.860159122320,
                                                                                         0.860159122320],
                                                             tolerance=0.001),
-                    apptest.observable_test.reference_file('Onebody density matrix up',
+                    apptest.observable_test.reference_file('Onebody density matrix up', remove_equal_indexes = True,
                                                             file=os.path.join(reference_dir, 'test_fermiladder.diag.h5'), tolerance=0.001),
-                    apptest.observable_test.reference_file('Onebody density matrix down',
+                    apptest.observable_test.reference_file('Onebody density matrix down', remove_equal_indexes = True,
                                                             file=os.path.join(reference_dir, 'test_fermiladder.diag.h5'), tolerance=0.001),
                   ]
 
