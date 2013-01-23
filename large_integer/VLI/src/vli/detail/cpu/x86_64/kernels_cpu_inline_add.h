@@ -40,10 +40,11 @@
 #define VLI_ADDITION2(z, n, unused) "movq "VLI_EIGHT_MULTIPLY(n)"(%[y],%[counter],8), %[tmp_register]\n\t" \
                                 "adcq %[tmp_register], "VLI_EIGHT_MULTIPLY(n)"(%[x], %[counter], 8)\n\t" \
 
-#define VLI_ADDITION3(z, n, unused) \
-     BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq %[constante2]),BOOST_PP_STRINGIZE(addq %[tmp_register]))", "VLI_EIGHT_MULTIPLY(n)"(%[x]) \n\t"
+#define VLI_ADDITION3(z, n, unused)  BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq %[constante2]),BOOST_PP_STRINGIZE(addq %[tmp_register]))", "VLI_EIGHT_MULTIPLY(n)"(%[x]) \n\t"
 
-#define VLI_ADDITION4(z, n, unused) "adcq %[constante2], "EIGHT_MULTIPLY(n)"(%[x], %[counter], 8)\n\t" \
+#define VLI_ADDITION4(n) BOOST_PP_IF(n,BOOST_PP_STRINGIZE(adcq %[constante2]),BOOST_PP_STRINGIZE(addq %[tmp_register]))", (%[x], %[counter], 8)\n\t"
+
+#define VLI_ADDITION5(z, n, unused) "adcq %[constante2], "VLI_EIGHT_MULTIPLY(n)"(%[x], %[counter], 8)\n\t"
 
 #define VLI_GENERATE_ADDITION(m)  BOOST_PP_REPEAT(BOOST_PP_ADD(m,2), VLI_ADDITION, ~)
 
@@ -51,13 +52,10 @@
 
 #define VLI_GENERATE_ADDITION3(m)  BOOST_PP_REPEAT(BOOST_PP_ADD(m,2), VLI_ADDITION3, ~)
 
-#define VLI_GENERATE_ADDITION4(m)  BOOST_PP_REPEAT(m, VLI_ADDITION4, ~)
+#define VLI_GENERATE_ADDITION5(m)  BOOST_PP_REPEAT(m, VLI_ADDITION5, ~)
 
 template<std::size_t NumWords, typename range = void>
 struct helper_inline_add;
-
-template<std::size_t NumWords, typename range = void>
-struct helper_inline_add_constante;
 
 /**
  \brief addition between two integer<n*128>, n*128 <= 512
@@ -143,11 +141,30 @@ struct helper_inline_add<NumWords,typename boost::enable_if_c<  ((NumWords>8) &&
         : [x] "r" (x+(NumWords-m)), [y] "r" (y+(NumWords-m)), [counter] "1" (-(NumWords-m))\
         : "memory", "cc");                                                                \
     };                                                                                    \
+                                                                                          \
+static void inline_add(boost::uint64_t* x, boost::uint64_t const y){                       \
+    boost::uint64_t tmp_register,tmp_register3;                                           \
+    boost::uint64_t tmp_register2(y >> 63);                                               \
+    __asm__ __volatile__ (    /* TO TUNE */                                               \
+        "movq %[constante],    %[tmp_register] \n\t"                                      \
+        "addq %[tmp_register],  (%[x], %[counter], 8)\n\t"                                \
+        "incq %[counter]\n\t" /* change the zero flag */                                  \
+        "1:\n\t"                                                                          \
+        "adcq %[constante2],    (%[x], %[counter], 8)\n\t"                                \
+        "incq %[counter]\n\t" /* change the zero flag */                                  \
+        "jnz 1b\n\t" /* check if I can leav the loop */                                   \
+        : [tmp_register] "=&r" (tmp_register), "=r" (tmp_register3)                       \
+        : [x] "r" (x+(NumWords)), [constante] "r" (y), [constante2] "r" (tmp_register2), [counter] "1" (-(NumWords))\
+        : "memory", "cc");                                                                \
+    };                                                                                    \
 };                                                                                        \
 
 BOOST_PP_REPEAT(8, FUNCTION_INLINE_add_nbits_nbits, ~) //unroll until 512, maybe test 1024
 
 #undef FUNCTION_INLINE_add_nbits_nbits
+
+
+
 
 /*
 
@@ -372,15 +389,16 @@ struct helper_inline_add<n,typename boost::enable_if_c< ((n>4) && (n%4 == 3 )) >
  }
  */
 
-#undef EIGHT_MULTIPLY
-#undef ADDITION
-#undef ADDITION2
-#undef ADDITION3
-#undef ADDITION4
+#undef VLI_EIGHT_MULTIPLY
+#undef VLI_ADDITION
+#undef VLI_ADDITION2
+#undef VLI_ADDITION3
+#undef VLI_ADDITION4
+#undef VLI_ADDITION5
 
-#undef GENERATE_ADDITION
-#undef GENERATE_ADDITION2
-#undef GENERATE_ADDITION3
-#undef GENERATE_ADDITION4
+#undef VLI_GENERATE_ADDITION
+#undef VLI_GENERATE_ADDITION2
+#undef VLI_GENERATE_ADDITION3
+#undef VLI_GENERATE_ADDITION5
 
 #endif
