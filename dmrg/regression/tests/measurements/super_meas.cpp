@@ -24,6 +24,9 @@ using std::endl;
 #include "dmrg/models/generate_mpo.hpp"
 
 #include <boost/math/special_functions/factorials.hpp>
+#include <boost/iterator/zip_iterator.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 
 typedef alps::numeric::matrix<double> matrix;
 typedef TrivialGroup SymmGroup;
@@ -48,6 +51,23 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
     }
     return vals;
 }
+
+std::vector<double> measure_local_multi(MPS<matrix, SymmGroup> const& mps,
+                                        block_matrix<matrix, SymmGroup> const& ident, block_matrix<matrix, SymmGroup> const& op)
+{
+    std::vector<std::pair<block_matrix<matrix, SymmGroup>, bool> > ops(1, std::make_pair(op, false));
+    generate_mpo::CorrMaker<matrix, SymmGroup> dcorr(mps.length(), ident, ident, ops, -1);
+    
+    MPO<matrix, SymmGroup> mpo = dcorr.create_mpo();
+    
+    Index<SymmGroup> phys_i = ident.left_basis();
+    double nn = dm_trace(mps, phys_i);
+    MPS<matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
+    std::vector<double> vals = multi_overlap(super_mpo, mps);
+    std::reverse(vals.begin(), vals.end());
+    return vals;
+}
+
 
 BOOST_AUTO_TEST_CASE( density_trivial_init )
 {
@@ -108,9 +128,11 @@ BOOST_AUTO_TEST_CASE( density_trivial_init )
     
     /// meas
     std::vector<double> meas_dens = measure_local(mps, ident, densop);
+    std::vector<double> meas_dens_multi = measure_local_multi(mps, ident, densop);
     for (int p=0; p<L; ++p) {
-        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << std::endl;
+        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << "  " << meas_dens_multi[p]/nn << std::endl;
         BOOST_CHECK_CLOSE(dens[p], meas_dens[p]/nn, 1e-8 );
+        BOOST_CHECK_CLOSE(dens[p], meas_dens_multi[p]/nn, 1e-8 );
     }
 }
 
@@ -168,8 +190,10 @@ BOOST_AUTO_TEST_CASE( density_join_init )
     
     /// meas
     std::vector<double> meas_dens = measure_local(mps, ident, densop);
+    std::vector<double> meas_dens_multi = measure_local_multi(mps, ident, densop);
     for (int p=0; p<L; ++p) {
-        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << std::endl;
+        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << "  " << meas_dens_multi[p]/nn << std::endl;
+        BOOST_CHECK_CLOSE(meas_dens[p], meas_dens_multi[p], 1e-8 );
     }
 }
 
@@ -209,9 +233,12 @@ BOOST_AUTO_TEST_CASE( density_coherent_init )
     
     /// meas
     std::vector<double> meas_dens = measure_local(mps, ident, densop);
+    std::vector<double> meas_dens_multi = measure_local_multi(mps, ident, densop);
     for (int p=0; p<L; ++p) {
-        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << std::endl;
+        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << "  " << meas_dens_multi[p]/nn << std::endl;
+        BOOST_CHECK_CLOSE(meas_dens[p], meas_dens_multi[p], 1e-8 );
         BOOST_CHECK_CLOSE(coeff[p]*coeff[p], meas_dens[p]/nn, 5. );
+        BOOST_CHECK_CLOSE(coeff[p]*coeff[p], meas_dens_multi[p]/nn, 5. );
     }
 }
 
@@ -249,9 +276,12 @@ BOOST_AUTO_TEST_CASE( density_random_init )
     }
     
     /// meas
-    std::vector<double> meas_dens = measure_local(mps, densop, ident);
-    for (int p=0; p<L; ++p)
-        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << std::endl;
+    std::vector<double> meas_dens = measure_local(mps, ident, densop);
+    std::vector<double> meas_dens_multi = measure_local_multi(mps, ident, densop);
+    for (int p=0; p<L; ++p) {
+        maquis::cout << "site " << p << ": " << meas_dens[p]/nn << "  " << meas_dens_multi[p]/nn << std::endl;
+        BOOST_CHECK_CLOSE(meas_dens[p], meas_dens_multi[p], 1e-8 );
+    }
 }
 
 
