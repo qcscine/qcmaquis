@@ -440,6 +440,8 @@ namespace meas_detail {
             
             MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
             
+//            maquis::cout << "site " << p << ":" << std::endl << dcorr->description() << std::endl;
+
             if (!super_meas)
                 dct = multi_expval(mps, mpo);
             else {
@@ -453,9 +455,6 @@ namespace meas_detail {
             
             num_labels = dcorr->numeric_labels();
 			std::copy(dct.begin(), dct.end(), std::back_inserter(dc));
-            
-			//maquis::cout << dcorr.description() << std::endl;
-
 
 			std::vector<std::string> lbt;
 			if (order.size() > 0)
