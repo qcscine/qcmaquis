@@ -86,17 +86,6 @@ accelerator.
 \item Automatic matching of variable names of different polynomial types using template meta programming.
 \end{itemize}
 
-\section{Overview of the GPU architecture}
-\begin{itemize}
-\item A GPU has multiple streaming multiprocessors (SM)
-\item They execute instructions in a SIMT (single-instruction, multiple-thread).
-\item A group of 32 threads (called ``warp'') execute the instruction stream in a lockstep fashion on multiple data, if the threads follow different execution paths all branches need to be executed serially.
-\item SM switches between up to 64 warps to hide latencies. $\rightarrow$ To gain good performance thousands of threads are necessary.
-\item NVIDIA CUDA resembles this hardware properties by threads that are organized in so called blocks, which consist of a few hundred threads. A thread block is always scheduled on a single SM, but it is possible to schedule multiple thread blocks on a single SM.
-\item Memory hierarchy: large (several GB) slow global memory accessible from all threads; small (a few KB) very fast shared memory which is shared among all threads of a thread block; The registers of the SM are split among all threads hosted by the SM.
-\item Special purpose memories: Texture memory: globally shared, read-only, cache optimized for 2D access
-\end{itemize}
-
 \section{Optimized inner product}
 \paragraph{CPU}
 \begin{itemize}
@@ -109,12 +98,14 @@ accelerator.
 \begin{itemize}
 \item Many small tasks of the same form. $\rightarrow$ well suited for GPUs.
 \item {\bf Implementation details}
-\item Several coefficients $a_{ijkl}$, $b_{i'j'k'l'}$ of the polynomials to be multiplied contribute to the same coefficient $c_{IJKL}$ of the resulting polynomial
+\item Element-wise polynomial multiplication + reduction at the end.
+\item Each thread calculates one coefficient $c_{IJKL}$ the product polynomial.
+\item Several coefficients $a_{ijkl}$, $b_{i'j'k'l'}$ of the polynomials to be multiplied contribute to the same coefficient $c_{IJKL}$
 \begin{equation}
     c_{IJKL} = \sum_{i,j,k,l} a_{ijkl} \cdot b_{I-i,J-j,K-k,L-l}
 \end{equation}
 \item The number of terms in this sum depends on the orders $I,J,K,L$ of the resulting coefficient $\rightarrow$ load inbalance
-\item We group 32 coefficients of the result into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}). {\color{red} TODO: Tim please elaborate}
+\item We group 32 coefficients of the result into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}).
 \begin{figure}[t]
     \begin{center}
     \mbox{
@@ -125,7 +116,8 @@ accelerator.
     \label{fig:GPU_load_balance}
     \end{center}
 \end{figure}
-\item Coalesced memory access?
+\item {\color{red} TODO: Tim please elaborate}
+%\item Coalesced memory access?
 \item Using NVIDIA parallel thread execution (PTX) assembly language to benefit from hardware carry bit propagation \verb|addc.cc| and fused multiply add with carry bit propagation \verb|madc.cc|.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
