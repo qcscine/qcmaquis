@@ -16,6 +16,8 @@ foreach(order ${order_list})
         target_link_libraries(main_order_${order} ${LIBRAIRIES})
 endforeach(order)
 
+        add_executable(bench_vli bench_vli.cpp)
+        target_link_libraries(bench_vli ${LIBRAIRIES})
 #the data programm
 #add_executable(data data.cpp)
 #SET_TARGET_PROPERTIES(data PROPERTIES COMPILE_FLAGS "-D__ORDER__=14 -w -std=gnu++0x ")

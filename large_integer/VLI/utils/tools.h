@@ -14,13 +14,15 @@ namespace tools{
 
     template <typename Vli>
     typename Vli::value_type rnd_digit(){
-        static boost::uniform_int<typename Vli::value_type> rnd(0,std::numeric_limits<typename Vli::value_type>::max());
+        //static boost::uniform_int<typename Vli::value_type> rnd(0,std::numeric_limits<typename Vli::value_type>::max());
+        static boost::uniform_int<typename Vli::value_type> rnd(0,0xffffffffffffff);
         return   rnd(rng);
     }
    
     template <typename Vli>
     int rnd_valid_int(){
-        static boost::uniform_int<int> rnd(0,std::abs(static_cast<int>(std::numeric_limits<typename Vli::value_type>::max())));
+       // static boost::uniform_int<int> rnd(0,std::abs(static_cast<int>(std::numeric_limits<typename Vli::value_type>::max())));
+        static boost::uniform_int<int> rnd(0,std::abs(static_cast<int>( 0xffffffffffffff )));
         return  rnd(rng);
     }
     // I can get a overflow during the sum of the inner product so minus 1
@@ -32,7 +34,7 @@ namespace tools{
    
     template <typename Vli>
     void fill_random(Vli& v){
-        for(int i=0; i < Vli::numwords-1; ++i)
+        for(int i=0; i < Vli::numwords; ++i)
             v[i] = rnd_digit<Vli>();
     }
    
