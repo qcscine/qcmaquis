@@ -13,10 +13,10 @@ set(extending_multiplies_tests gmp_extending_multiplies gmp_extending_multiplies
 set(extending_karatsuba_tests gmp_karatsuba_extending_multiplies)
 set(large_gmp_tests gmp_large_plus) 
 
-set(test_sizes 2 3 4 5 6 7 8)
-set(extending_plus_sizes 2 3 4 5 6)
-set(extending_multiplies_sizes 2 3 4)
-set(extending_karatsuba_sizes 2 4)
+set(test_sizes 128 192 256 384 448 512)
+set(extending_plus_sizes 128 192 256 384 448)
+set(extending_multiplies_sizes 128 192 256)
+set(extending_karatsuba_sizes 128 256)
 #set(large_gmp_sizes 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24)
 
 #foreach(test ${large_gmp_tests})

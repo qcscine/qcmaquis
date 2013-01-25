@@ -45,9 +45,9 @@
 namespace vli {
 namespace test {
 
-typedef integer<VLI_SIZE*64> integer_type;
-typedef integer<2*VLI_SIZE*64> integer_type_double;
-typedef integer<2*VLI_SIZE*64>::value_type type;
+typedef integer<VLI_SIZE> integer_type;
+typedef integer<2*VLI_SIZE> integer_type_double;
+typedef integer<2*VLI_SIZE>::value_type type;
 
 enum variant_enum {
       max_positive = 0      // fill with the max positive number
