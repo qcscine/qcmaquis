@@ -2,7 +2,7 @@
 reset
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GIP/S"
+set ylabel "GIOP/s"
 set xlabel "Order"
 set xrange [1:14]
 #set yrange [0:4]
@@ -31,8 +31,8 @@ set style line 31 lt 2 lw 3 pt 1 lc rgb "#DA70D6" #pink
 set style line 32 lt 3 lw 3 pt 1 lc rgb "#DA70D6" #pink
 
 #gold
-set style line 40 lt 1 lw 3 pt 1 lc rgb "#4D4D4D" # grey
-set label 1 "Peak Kepler mul-add" at 6,340 
+set style line 40 lt 2 lw 3 pt 1 lc rgb "#4D4D4D" # grey
+set label 1 "Peak Kepler mul-add" at 6,310 
 
 #GPU
 set out "figures/ME128MIPS.eps";plot "KeplerRes/MaxOrderEachTime128bitsMIPS.dat" using 1:($19)/(($6)*1e+9)   linestyle 20 with lines title "P(x)"
