@@ -1,7 +1,7 @@
 reset
 set terminal postscript 
 set size 0.8,0.7
-set ylabel "Contribution"
+set ylabel "Number of terms"
 set xlabel "Warp"
 
 set xrange [-0.5:6.5]

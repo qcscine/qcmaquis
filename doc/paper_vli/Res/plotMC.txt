@@ -2,7 +2,8 @@
 reset
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOPS"
+set ylabel "GOP/S"
+
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:4]
@@ -50,13 +51,13 @@ set out "figures/MC192.eps";replot "SandyBridgeRes/MaxOrderCombinedTime192bits.d
 
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOPS"
+set ylabel "GOP/S"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:10]
 #set key  at 6.6,9.9
 set key top right
-set title "Triangular polynomials"
+set title "\"Triangular\" polynomials"
 
 #GPU
 set out "figures/MC128.eps";plot   "KeplerRes/MaxOrderCombinedTime128bits.dat" using 1:($19)/(($6)*1e+9)  linestyle 20 with lines title "P(x)_{gpu}"
@@ -78,7 +79,7 @@ set out "figures/MC128.eps";replot "SandyBridgeRes/MaxOrderCombinedTime128bits.d
 
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOPS"
+set ylabel "GOP/S"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:3]

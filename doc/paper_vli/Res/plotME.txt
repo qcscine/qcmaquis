@@ -2,7 +2,7 @@
 reset
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOPS"
+set ylabel "GOP/S"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:4]
@@ -47,13 +47,13 @@ set out "figures/ME192.eps";replot "SandyBridgeRes/MaxOrderEachTime192bits.dat" 
 
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOPS"
+set ylabel "GOP/S"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:10]
 #set key  at 6.6,9.9
 set key top right
-set title "Dense polynomials"
+set title "\"Dense\" polynomials"
 #GPU
 set out "figures/ME128.eps";plot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($19)/(($6)*1e+9)  linestyle 1  with lines title "P(x)_{gpu}"
 set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($20)/(($10)*1e+9)  linestyle 10 with lines title "P(x,y)_{gpu}"
@@ -75,7 +75,7 @@ set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" 
 
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOPS"
+set ylabel "GOP/S"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:3]
