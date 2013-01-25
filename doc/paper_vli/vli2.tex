@@ -44,7 +44,7 @@ accelerator.
 \item maximal integer size known beforehand
 \item Hot spot of HTSE inner products of vectors of such polynomials.
 \item {\bf Problems with existing libraries:}
-\item GMP integers are dynamic in size and optimized to cover a large range of large integers up to several thousand bits. We need only up to 512 bits.
+\item GMP integers \cite{GMP} are dynamic in size and optimized to cover a large range of large integers up to several thousand bits. We need only up to 512 bits.
 \item inner products of polynomials are well suited for GPUs $\rightarrow$ specialized GPU kernels required.
 \end{itemize}
 
@@ -79,6 +79,7 @@ accelerator.
 \item either ``dense'' (${i,j,k,l} \le N$) or ``triangular'' ($i+j+k+l \le N$) structure.
 \item any arithmetic type as coefficient $c_{ijkl}$
 \item addition, subtraction, multiplication with other polynomials and monomials
+\item special multiplication which will double the truncation order
 \item {\bf Implementation details}
 \item structure and truncation order $N$ is compile time fixed 
 \item function hooks to allow custom optimized kernels for certain coefficient types
@@ -87,11 +88,15 @@ accelerator.
 \end{itemize}
 
 \section{Optimized inner product}
+The hot spot of HTSE are inner products of large vectors with symbolic polynomials as components. The coefficients of the polynomials are large integers.
+All polynomials are assumed to have the same truncation order.
+The inner product will result in a polynomial of twice the order of the original polynomials
+with coefficients of twice the width of the original coefficients, i.e.\ 256 and
+512 bit, respectively.
 \paragraph{CPU}
 \begin{itemize}
-\item The hot spot of HTSE are inner products of large vectors with symbolic polynomials as components. The coefficients of the polynomials are large integers.
 \item We continue to use the single large integer kernels
-\item OpenMP parallelization: split vector into chunks, each thread does part of the inner product
+\item OpenMP parallelization: split vectors into chunks, each thread does part of the inner product. Very regular problem, good load balance.
 \item No SIMD, since we had to use 32bit words and the number of operations for a multiplication increases by a factor TODO due to the manual handling of the carry.
 \end{itemize}
 \paragraph{GPU}
@@ -106,7 +111,9 @@ accelerator.
 \end{equation}
 \item The number of terms in this sum depends on the orders $I,J,K,L$ of the resulting coefficient $\rightarrow$ load inbalance
 %\item {\color{blue} We design an execution plan. We group the coefficients of a fictive result polynomial by packet of 32 } into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}).
-\item We group the coefficients by 32 into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}).
+\item We group the coefficients by 32 into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}), i.e.\ each thread calculates one coefficient.
+Since the differences within a warp are rather small all threads of the warp will finish
+
 {\color{blue} Preparation of the task is done on CPU}
 
 \begin{figure}[t]
@@ -124,7 +131,7 @@ accelerator.
 \item {\color{blue} This algorithm is efficient whatever the type of polynomial. But the termination of the contributions of an output coefficient can be tricky}
 %\item Coalesced memory access?
 \item {\color{blue}  Karatsuba algorithm \cite{Karatsuba1963} for the largest extended multiplication (256 bit to 512 bit) on GPU}
-\item Using NVIDIA parallel thread execution (PTX) assembly language to benefit from hardware carry bit propagation \verb|addc.cc| and fused multiply add with carry bit propagation \verb|madc.cc|.
+\item Using NVIDIA parallel thread execution (PTX) assembly language to benefit from hardware carry bit propagation \verb|addc.cc| and fused multiply-add with carry bit propagation \verb|madc.cc|.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -132,10 +139,32 @@ accelerator.
 \paragraph{CPU}
 \begin{itemize}
 \item pure CPU benchmarks were done on a Sandy bridge Intel Xeon E5-2670 with 32 logical cores.
-\end{itemize}
-\paragraph{GPU, hybrid}
-\begin{itemize}
 \item GPU benchmarks were performed on Todi, a Cray XK7 with NVIDIA Tesla K20X GPUs and AMD Opteron CPUs, at the Swiss Center for Scientific Computing (CSCS)
+\item Testcase: inner product of two vectors dimension 4096, with ``dense'' and
+``triangular'' polynomials of order 1 to 14 with 128 and 256 bit integer
+coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512 bit integer coefficiencts, respectively.
+\item We estimate the performance in integer operations per second (IOP/s).
+It
+\item For the GPU performance we only consider the polynomial polynomial multiplications and neglect the reduction at the end of the inner product.
+
+\begin{figure}[t!]
+    \begin{center}
+    \mbox{
+        \hspace{-0.5cm}
+        \includegraphics[scale=0.37, angle=-90]{ME128MIPS.eps} 
+        \hspace{-0.4cm}
+        \includegraphics[scale=0.37, angle=-90]{MC128MIPS.eps} 
+        %\hspace{-0.4cm}
+        %\includegraphics[scale=0.25, angle=-90]{ME256.eps} 
+    }
+    \caption{Performance of the inner product of two vectors of dimension 4096 with ``dense'' (left) and ``triangular'' (right) polynomials having 128 bit coefficients on a NVIDIA Tesla K20X (GK110).}
+    \label{ResMEMIPS}
+    \end{center}
+\end{figure}  
+\item We reach up to $200$ GIOP/s using 32 bit multiply-add (\verb|madc|)
+\item Theoretical maximum for the NVIDIA Tesla K20X are $14 \, \mathrm{SMs} \cdot 732 \, \mathrm{MHz} \cdot 32 \, \mathrm{ IOP / cycle / SM} = 327 \, \mathrm{GIOP/s}$. (Multiply-add throughput taken from \cite{CUDAProgramming}).
+\item We reach 61\% of the peak.
+
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
