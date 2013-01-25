@@ -147,18 +147,19 @@ with coefficients of twice the width of the original coefficients, i.e.\ 256 and
  Operation & Execution & time [s] & Speed-up\\
    & \, GMP\,  & \, VLI\,  & \\
  \hline
-\verb|add|, 128 bit & 1.11 & 0.33 & \\
-\verb|add|, 192 bit & 1.25 & 0.45 & \\
-\verb|add|, 256 bit & 1.11 & 0.81 & \\
-\verb|add|, 384 bit & & & \\
-\verb|add|, 448 bit & & & \\
-\verb|add|, 512 bit & & & \\
+\verb|add|, 128 bit & 1.11 & 0.33 & 3.36x \\
+\verb|add|, 192 bit & 1.21 & 0.45 & 2.68x \\
+\verb|add|, 256 bit & 1.11 & 0.81 & 1.37x \\
+\verb|add|, 320 bit & 1.25 & 0.81 & 1.54x \\
+\verb|add|, 384 bit & 1.25 & 0.97 & 1.28x \\
+\verb|add|, 448 bit & 1.34 & 1.01 & 1.32x \\
+\verb|add|, 512 bit & 1.31 & 1.07 & 1.25x \\
 \hline
 \verb|mul|, 128 bit $\rightarrow$ 256 bit & 1.36 & 0.93 & 1.46x \\
 \verb|mul|, 192 bit $\rightarrow$ 384 bit & 3.21 & 1.18 & 2.72x \\
 \verb|mul|, 256 bit $\rightarrow$ 512 bit & 3.74 & 2.04 & 1.83x \\ 
 \end{tabular}
-\caption{Exection time for $10^8$ operations.}
+\caption{Execution time for $10^8$ operations.}
 \end{center}
 \end{table}
 \item GPU benchmarks were performed on Todi, a Cray XK7 with NVIDIA Tesla K20X GPUs and AMD Opteron CPUs, at the Swiss Center for Scientific Computing (CSCS)
