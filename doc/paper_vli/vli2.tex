@@ -105,7 +105,10 @@ accelerator.
     c_{IJKL} = \sum_{i,j,k,l} a_{ijkl} \cdot b_{I-i,J-j,K-k,L-l}
 \end{equation}
 \item The number of terms in this sum depends on the orders $I,J,K,L$ of the resulting coefficient $\rightarrow$ load inbalance
-\item We group 32 coefficients of the result into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}).
+%\item {\color{blue} We design an execution plan. We group the coefficients of a fictive result polynomial by packet of 32 } into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}).
+\item We group the coefficients by 32 into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}).
+{\color{blue} Preparation of the task is done on CPU}
+
 \begin{figure}[t]
     \begin{center}
     \mbox{
@@ -116,8 +119,11 @@ accelerator.
     \label{fig:GPU_load_balance}
     \end{center}
 \end{figure}
-\item {\color{red} TODO: Tim please elaborate}
+\item {\color{blue} During the execution of a task by a warp,  each threads into the warp get the indices of the fictive coefficient, determine the necessary  contributions and  then calculate the output coefficient}
+\item {\color{blue} Reduction is performed under NVIDA standard}
+\item {\color{blue} This algorithm is efficient whatever the type of polynomial. But the termination of the contributions of an output coefficient can be tricky}
 %\item Coalesced memory access?
+\item {\color{blue}  Karatsuba algorithm \cite{Karatsuba1963} for the largest extended multiplication (256 bit to 512 bit) on GPU}
 \item Using NVIDIA parallel thread execution (PTX) assembly language to benefit from hardware carry bit propagation \verb|addc.cc| and fused multiply add with carry bit propagation \verb|madc.cc|.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
