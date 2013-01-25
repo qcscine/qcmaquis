@@ -3,6 +3,7 @@
 #include <boost/mpl/for_each.hpp>
 #include "boost/lexical_cast.hpp"
 #include <gmpxx.h>
+#include <gmp.h>
 #include <iomanip> 
 #include <iostream>
 #include <fstream>
@@ -35,12 +36,31 @@
 typedef vli::integer<128> integer_type_cpu_128;
 typedef vli::integer<192> integer_type_cpu_192;
 typedef vli::integer<256> integer_type_cpu_256;
+typedef vli::integer<320> integer_type_cpu_320;
+typedef vli::integer<384> integer_type_cpu_384;
+typedef vli::integer<448> integer_type_cpu_448;
+typedef vli::integer<512> integer_type_cpu_512;
+
+
+
+typedef boost::mpl::vector<
+integer_type_cpu_128,
+integer_type_cpu_192,
+integer_type_cpu_256,
+integer_type_cpu_320,
+integer_type_cpu_384,
+integer_type_cpu_448,
+integer_type_cpu_512
+> vli_add_list;
+
+
+
 
 typedef boost::mpl::vector<
                             integer_type_cpu_128,
                             integer_type_cpu_192,
                             integer_type_cpu_256
-                          > vli_list;
+                          > vli_mul_list;
 
    template<int NumBits>
    struct timescheduler{
@@ -60,38 +80,55 @@ typedef boost::mpl::vector<
            
            integer a,b,c;
            integer_res c_res;
-       
+           
            tools::fill_random(a);
            tools::fill_random(b);
-       
-            mpz_class agmp(a), bgmp(b), cgmp;
            
-            Timer tvli("vli");
-            Timer tgmp("gmp");
-        
-            long long limit=1;
-
-            while( limit != 1000000000){
-                     tvli.begin();
-                     for (int i=1; i <= limit; i++)
-                         multiply_extend(c_res,a,b);
-                     tvli.end();
-                     
-                     tgmp.begin();
-                     for (int i=1; i <= limit; i++)
-                         cgmp = agmp * bgmp;
-
-                     tgmp.end();
-                     std::cout << " mul " << integer::numbits << " " << limit << " "  << tvli.get_time() << " " << tgmp.get_time() << std::endl;
-                     limit *= 10;
-            }
-
-           mpz_class res(c_res);
+           mpz_t agmp, bgmp, cgmp;
            
-           if(res == cgmp){
-             std::cout << "ok " << std::endl;
+           mpz_init(agmp);
+           mpz_init(bgmp);
+           mpz_init(cgmp);
+           
+           mpz_set_str(agmp, a.get_str().c_str(), 10);
+           mpz_set_str(bgmp, b.get_str().c_str(), 10);
+           
+           
+           Timer tvli("vli");
+           Timer tgmp("gmp");
+           
+           int limit=1;
+           
+           while( limit != 1000000000){
+               tvli.begin();
+               for (int i=1; i <= limit; i++)
+                   multiply_extend(c_res,a,b);
+               tvli.end();
+               
+               tgmp.begin();
+               for (int i=1; i <= limit; i++)
+                   mpz_mul(cgmp, agmp, bgmp);
+               
+               tgmp.end();
+               std::cout << " mul " << integer::numbits << " " << limit << " "  << tvli.get_time() << " " << tgmp.get_time() << std::endl;
+               limit *= 10;
            }
+           
+           mpz_t res;
+           
+           mpz_init(res);
+           mpz_set_str(res, c_res.get_str().c_str(), 10);
+           
+           if(mpz_cmp(res ,cgmp) == 0){
+               std::cout << "ok " << std::endl;
+           }
+           
+           mpz_clear(agmp);
+           mpz_clear(bgmp);
+           mpz_clear(cgmp);
+           mpz_clear(res);
        }
+
    };
 
    struct test_add {
@@ -105,7 +142,15 @@ typedef boost::mpl::vector<
            tools::fill_random(a);
            tools::fill_random(b);
        
-            mpz_class agmp(a), bgmp(b), cgmp;
+            mpz_t agmp, bgmp, cgmp;
+         
+           mpz_init(agmp);
+           mpz_init(bgmp);
+           mpz_init(cgmp);
+           
+           mpz_set_str(agmp, a.get_str().c_str(), 10);
+           mpz_set_str(bgmp, b.get_str().c_str(), 10);
+
            
             Timer tvli("vli");
             Timer tgmp("gmp");
@@ -120,23 +165,32 @@ typedef boost::mpl::vector<
                      
                      tgmp.begin();
                      for (int i=1; i <= limit; i++)
-                         cgmp = agmp + bgmp;
+                         mpz_add(cgmp, agmp, bgmp);
+                       //  cgmp = agmp + bgmp;
 
                      tgmp.end();
                      std::cout << " add " << integer::numbits << " " << limit << " "  << tvli.get_time() << " " << tgmp.get_time() << std::endl;
                      limit *= 10;
             }
 
-           mpz_class res(c);
+           mpz_t res;
            
-           if(res == cgmp){
+           mpz_init(res);
+           mpz_set_str(res, c.get_str().c_str(), 10);
+           
+           if(mpz_cmp(res ,cgmp) == 0){
              std::cout << "ok " << std::endl;
            }
+           
+           mpz_clear(agmp);
+           mpz_clear(bgmp);
+           mpz_clear(cgmp);
+           mpz_clear(res);
        }
    };
 
 int main(int argc, char* argv[]) {
-       boost::mpl::for_each<vli_list>(test_add());
-       boost::mpl::for_each<vli_list>(test_mul());
+       boost::mpl::for_each<vli_add_list>(test_add());
+       boost::mpl::for_each<vli_mul_list>(test_mul());
        return 0;
 }
