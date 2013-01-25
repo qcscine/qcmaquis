@@ -2,6 +2,8 @@
 \usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
 \geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
 \usepackage{graphicx}
+\usepackage{tabularx}
+%\usepackage{multicolumn}
 \usepackage{color}
 \graphicspath{{WarpTask/figures/}{Res/figures/}} %do not forget the / at the end
 
@@ -27,7 +29,7 @@ expansions which require inner products of large vectors of polynomials
 with large integer coefficients. For this purpose we implemented a
 tunable hybrid CPU/GPU inner product function using OpenMP and NVIDIA
 CUDA with inline PTX assembly. This way we make optimal use of today's
-and upcoming hybrid supercomputers and attain 67\% of the peak
+and upcoming hybrid supercomputers and attain $65\%$ of the peak
 performance of the current NVIDIA Kepler GPU. Compared to a pure CPU
 solution using the GNU Multiple Precision Arithmetic Library (GMP) we
 gain a speedup of 10x for a pure CPU inner product and 60x using a GPU
@@ -57,7 +59,7 @@ accelerator.
 \item signed integer arithmetic
 \item fixed size (128-512bit)
 \item all standard integer operations (arithmetic, comparison and bit operations)
-\item in addition to that: fused multiply-add, extended multiplication which doubles the number of bits, extended add which increases the size by one 64bit word.
+\item in addition to that: multiply-add, extended multiplication which doubles the number of bits, extended add which increases the size by one 64bit word.
 \item {\bf Implementation details}
 \item data is stored as 64 bit integer arrays.
 \item two-complement representation
@@ -111,9 +113,9 @@ with coefficients of twice the width of the original coefficients, i.e.\ 256 and
 \end{equation}
 \item The number of terms in this sum depends on the orders $I,J,K,L$ of the resulting coefficient $\rightarrow$ load inbalance
 %\item {\color{blue} We design an execution plan. We group the coefficients of a fictive result polynomial by packet of 32 } into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}).
-\item We group the coefficients by 32 into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}), i.e.\ each thread calculates one coefficient.
-Since the differences within a warp are rather small all threads of the warp will finish
-
+\item Since threads within a warp are executed in a lockstep manner, we try to give all threads within one warp the same amount of work. Such that a thread has to wait as little as possible for the other threads of the warp to finish.
+\item We group the coefficients by 32 into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}), i.e.\ each thread calculates one coefficient of the resulting polynomial.
+\item Since the work load differences within a warp are small, the 
 {\color{blue} Preparation of the task is done on CPU}
 
 \begin{figure}[t]
@@ -131,7 +133,7 @@ Since the differences within a warp are rather small all threads of the warp wil
 \item {\color{blue} This algorithm is efficient whatever the type of polynomial. But the termination of the contributions of an output coefficient can be tricky}
 %\item Coalesced memory access?
 \item {\color{blue}  Karatsuba algorithm \cite{Karatsuba1963} for the largest extended multiplication (256 bit to 512 bit) on GPU}
-\item Using NVIDIA parallel thread execution (PTX) assembly language to benefit from hardware carry bit propagation \verb|addc.cc| and fused multiply-add with carry bit propagation \verb|madc.cc|.
+\item Using NVIDIA parallel thread execution (PTX) assembly language to benefit from hardware carry bit propagation \verb|addc.cc| and multiply-add with carry bit propagation \verb|madc.cc|.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -139,13 +141,33 @@ Since the differences within a warp are rather small all threads of the warp wil
 \paragraph{CPU}
 \begin{itemize}
 \item pure CPU benchmarks were done on a Sandy bridge Intel Xeon E5-2670 with 32 logical cores.
+\begin{table}
+\begin{center}
+\begin{tabular}{l|cc|c}
+ Operation & Execution & time [s] & Speed-up\\
+   & \, GMP\,  & \, VLI\,  & \\
+ \hline
+\verb|add|, 128 bit & 1.11 & 0.33 & \\
+\verb|add|, 192 bit & 1.25 & 0.45 & \\
+\verb|add|, 256 bit & 1.11 & 0.81 & \\
+\verb|add|, 384 bit & & & \\
+\verb|add|, 448 bit & & & \\
+\verb|add|, 512 bit & & & \\
+\hline
+\verb|mul|, 128 bit $\rightarrow$ 256 bit & 1.36 & 0.93 & 1.46x \\
+\verb|mul|, 192 bit $\rightarrow$ 384 bit & 3.21 & 1.18 & 2.72x \\
+\verb|mul|, 256 bit $\rightarrow$ 512 bit & 3.74 & 2.04 & 1.83x \\ 
+\end{tabular}
+\caption{Exection time for $10^8$ operations.}
+\end{center}
+\end{table}
 \item GPU benchmarks were performed on Todi, a Cray XK7 with NVIDIA Tesla K20X GPUs and AMD Opteron CPUs, at the Swiss Center for Scientific Computing (CSCS)
 \item Testcase: inner product of two vectors dimension 4096, with ``dense'' and
 ``triangular'' polynomials of order 1 to 14 with 128 and 256 bit integer
 coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512 bit integer coefficiencts, respectively.
 \item We estimate the performance in integer operations per second (IOP/s).
 It
-\item For the GPU performance we only consider the polynomial polynomial multiplications and neglect the reduction at the end of the inner product.
+\item For the GPU performance estimate we only consider the instructions for the polynomial-polynomial multiplications and neglect the reduction at the end of the inner product.
 
 \begin{figure}[t!]
     \begin{center}
@@ -161,9 +183,9 @@ It
     \label{ResMEMIPS}
     \end{center}
 \end{figure}  
-\item We reach up to $200$ GIOP/s using 32 bit multiply-add (\verb|madc|)
-\item Theoretical maximum for the NVIDIA Tesla K20X are $14 \, \mathrm{SMs} \cdot 732 \, \mathrm{MHz} \cdot 32 \, \mathrm{ IOP / cycle / SM} = 327 \, \mathrm{GIOP/s}$. (Multiply-add throughput taken from \cite{CUDAProgramming}).
-\item We reach 61\% of the peak.
+\item We reach up to $214$ GIOP/s using 32 bit multiply-add (\verb|madc|)
+\item Theoretical maximum for the NVIDIA Tesla K20X are Number of Multiprocessors (SMX) $\cdot$ Clock frequency $\cdot$ Instruction throughput of \verb|madc|  =  $14 \, \mathrm{SMX} \cdot 732 \, \mathrm{MHz} \cdot 32 \, \mathrm{ IOP / cycle / SMX} = 327 \, \mathrm{GIOP/s}$. (Multiply-add throughput taken from \cite{CUDAProgramming}).
+\item We reach $65\%$ of the peak.
 
 \end{itemize}
 
