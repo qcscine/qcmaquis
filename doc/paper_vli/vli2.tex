@@ -116,7 +116,7 @@ with coefficients of twice the width of the original coefficients, i.e.\ 256 and
 \item Since threads within a warp are executed in a lockstep manner, we try to give all threads within one warp the same amount of work. Such that a thread has to wait as little as possible for the other threads of the warp to finish.
 \item We group the coefficients by 32 into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}), i.e.\ each thread calculates one coefficient of the resulting polynomial.
 \item Since the work load differences within a warp are small, the 
-{\color{blue} Preparation of the task is done on CPU}
+%{\color{blue} Preparation of the task is done on CPU}
 
 \begin{figure}[t]
     \begin{center}
@@ -138,36 +138,39 @@ with coefficients of twice the width of the original coefficients, i.e.\ 256 and
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Benchmarks}
-\paragraph{CPU}
+\paragraph{Simple integer operations}
 \begin{itemize}
 \item pure CPU benchmarks were done on a Sandy bridge Intel Xeon E5-2670 with 32 logical cores.
 \begin{table}
-\begin{center}
-\begin{tabular}{l|cc|c}
- Operation & Execution & time [s] & Speed-up\\
-   & \, GMP\,  & \, VLI\,  & \\
- \hline
-\verb|add|, 128 bit & 1.11 & 0.33 & 3.36x \\
-\verb|add|, 192 bit & 1.21 & 0.45 & 2.68x \\
-\verb|add|, 256 bit & 1.11 & 0.81 & 1.37x \\
-\verb|add|, 320 bit & 1.25 & 0.81 & 1.54x \\
-\verb|add|, 384 bit & 1.25 & 0.97 & 1.28x \\
-\verb|add|, 448 bit & 1.34 & 1.01 & 1.32x \\
-\verb|add|, 512 bit & 1.31 & 1.07 & 1.25x \\
-\hline
-\verb|mul|, 128 bit $\rightarrow$ 256 bit & 1.36 & 0.93 & 1.46x \\
-\verb|mul|, 192 bit $\rightarrow$ 384 bit & 3.21 & 1.18 & 2.72x \\
-\verb|mul|, 256 bit $\rightarrow$ 512 bit & 3.74 & 2.04 & 1.83x \\ 
-\end{tabular}
-\caption{Execution time for $10^8$ operations.}
-\end{center}
+    \begin{center}
+    \begin{tabular}{l|cc|c}
+     Operation & Execution & time [s] & Speed-up\\
+       & GMP & VLI & \\
+     \hline
+    \verb|add|, 128 bit & 1.11 & 0.33 & 3.36x \\
+    \verb|add|, 192 bit & 1.21 & 0.45 & 2.68x \\
+    \verb|add|, 256 bit & 1.11 & 0.81 & 1.37x \\
+    \verb|add|, 320 bit & 1.25 & 0.81 & 1.54x \\
+    \verb|add|, 384 bit & 1.25 & 0.97 & 1.28x \\
+    \verb|add|, 448 bit & 1.34 & 1.01 & 1.32x \\
+    \verb|add|, 512 bit & 1.31 & 1.07 & 1.25x \\
+    \hline
+    \verb|mul|, 128 bit $\rightarrow$ 256 bit & 1.36 & 0.93 & 1.46x \\
+    \verb|mul|, 192 bit $\rightarrow$ 384 bit & 3.21 & 1.18 & 2.72x \\
+    \verb|mul|, 256 bit $\rightarrow$ 512 bit & 3.74 & 2.04 & 1.83x \\ 
+    \end{tabular}
+    \caption{Execution time comparison of simple integer operations using the GNU Multiprecision Library and the VLI library for $10^8$ operations.}
+    \end{center}
 \end{table}
+\end{itemize}
+
+\paragraph{Optimized inner product with GPU accelerator}
+\begin{itemize}
 \item GPU benchmarks were performed on Todi, a Cray XK7 with NVIDIA Tesla K20X GPUs and AMD Opteron CPUs, at the Swiss Center for Scientific Computing (CSCS)
 \item Testcase: inner product of two vectors dimension 4096, with ``dense'' and
 ``triangular'' polynomials of order 1 to 14 with 128 and 256 bit integer
 coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512 bit integer coefficiencts, respectively.
 \item We estimate the performance in integer operations per second (IOP/s).
-It
 \item For the GPU performance estimate we only consider the instructions for the polynomial-polynomial multiplications and neglect the reduction at the end of the inner product.
 
 \begin{figure}[t!]
@@ -185,9 +188,12 @@ It
     \end{center}
 \end{figure}  
 \item We reach up to $214$ GIOP/s using 32 bit multiply-add (\verb|madc|)
-\item Theoretical maximum for the NVIDIA Tesla K20X are Number of Multiprocessors (SMX) $\cdot$ Clock frequency $\cdot$ Instruction throughput of \verb|madc|  =  $14 \, \mathrm{SMX} \cdot 732 \, \mathrm{MHz} \cdot 32 \, \mathrm{ IOP / cycle / SMX} = 327 \, \mathrm{GIOP/s}$. (Multiply-add throughput taken from \cite{CUDAProgramming}).
+\item Theoretical maximum for the NVIDIA Tesla K20X is given by Number of Multiprocessors (SMX) $\cdot$ Clock frequency $\cdot$ Instruction throughput of \verb|madc|  =  $14 \, \mathrm{SMX} \cdot 732 \, \mathrm{MHz} \cdot 32 \, \mathrm{ IOP / cycle / SMX} = 327 \, \mathrm{GIOP/s}$. (Multiply-add throughput taken from \cite{CUDAProgramming}).
 \item We reach $65\%$ of the peak.
-
+\item Poor performance for low orders as well as for polynomials in 1 symbolic variable, since too little coefficients need to be calculated to saturate the number of available threads.
+\item Maximal performance for ``dense'' polynomial in 3 variables with a truncation at 7th order, where we employ $(2\cdot7+1)^3 = 3375$ threads. Using more threads may yield an even better performance, but we start to exceed the size of the texture memory cache and have to load data from the device memory more often, which causes the decrease of performance for higher orders.
+\item Polynomials in 4 symbolic variables only up to 6th order due to memory limitations on the device. Could be overcome by splitting the vectors and performing the inner product on these parts sequentially.
+\item Performance for ``triangular'' polynomials rises lower with increasing order, because the number of threads used grows slower with the order than for ``dense'' polynomials.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
