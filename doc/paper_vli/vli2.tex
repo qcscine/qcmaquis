@@ -7,7 +7,7 @@
 \usepackage{color}
 \graphicspath{{WarpTask/figures/}{Res/figures/}} %do not forget the / at the end
 
-\title{VLI - a library for high precision integer and polynomial arithemtic}
+\title{VLI - a library for high precision integer and polynomial arithmetic}
 \author{Timoth\'ee Ewart\inst{1}\thanks{Acknowledgments: Maxim Milakov, Peter Messmer:   NVIDIA,   Williams Sawyer, Gilles Fourestey:  CSCS, HP2C funding, hp2c.ch}  , Andreas Hehn$^2$, Matthias Troyer\inst{2} and Thierry Giamarchi\inst{1}}
 
 \institute{Universit\'e de Gen\`eve, \email{timothee.ewart@gmail.com}  \and Eidgen\"ossische Technische Hochschule Z\"urich }
@@ -115,7 +115,7 @@ We also neglected the carry bit propagation, which needs to be done manually in 
 \begin{equation}
     c_{IJKL} = \sum_{i,j,k,l} a_{ijkl} \cdot b_{I-i,J-j,K-k,L-l}
 \end{equation}
-\item The number of terms in this sum depends on the orders $I,J,K,L$ of the resulting coefficient $\rightarrow$ load inbalance
+\item The number of terms in this sum depends on the orders $I,J,K,L$ of the resulting coefficient $\rightarrow$ load in-balance
 %\item {\color{blue} We design an execution plan. We group the coefficients of a fictive result polynomial by packet of 32 } into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}).
 \item Since threads within a warp are executed in a lockstep manner, we try to give all threads within a warp the same amount of work. This way the threads have to wait as little as possible for the other threads of the warp to finish.
 \item We group the coefficients by 32 into a ``task'' and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}), i.e.\ each thread calculates one coefficient of the resulting polynomial.
@@ -129,11 +129,11 @@ We also neglected the carry bit propagation, which needs to be done manually in 
     \label{fig:GPU_load_balance}
     \end{center}
 \end{figure}
-\item {\color{blue} During the execution of a task by a warp,  each threads into the warp get the indices of the fictive coefficient, determine the necessary  contributions and  then calculate the output coefficient}
-\item {\color{blue} Reduction is performed under NVIDA standard}
-\item {\color{blue} This algorithm is efficient whatever the type of polynomial. But the termination of the contributions of an output coefficient can be tricky}
+\item Each thread of the warp gets the indices of the resulting coefficient and determines the necessary terms to calculate the output coefficient.
+\item Reduction is implemented according to the best practices by NVIDIA (TODO reference)
+%\item {\color{blue} This algorithm is efficient whatever the type of polynomial. But the termination of the contributions of an output coefficient can be tricky}
 %\item Coalesced memory access?
-\item {\color{blue}  Karatsuba algorithm \cite{Karatsuba1963} for the largest extended multiplication (256 bit to 512 bit) on GPU}
+\item We use the Karatsuba algorithm \cite{Karatsuba1963} for the largest extended multiplication (256 bit to 512 bit) on GPU, because an integer addition requires substantially less cycles than multiplication the GPU.
 \item Using NVIDIA parallel thread execution (PTX) assembly language to benefit from hardware carry bit propagation \verb|addc.cc| and multiply-add with carry bit propagation \verb|madc.cc|.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -174,7 +174,7 @@ Since our integer library is stack based we do not need expensive calls to \verb
 \item GPU benchmarks were performed on Todi, a Cray XK7 with NVIDIA Tesla K20X GPUs and AMD Opteron CPUs, at the Swiss Center for Scientific Computing (CSCS)
 \item Testcase: inner product of two vectors dimension 4096, with ``dense'' and
 ``triangular'' polynomials of order 1 to 14 with 128 and 256 bit integer
-coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512 bit integer coefficiencts, respectively.
+coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512 bit integer coefficients, respectively.
 \item We estimate the performance in integer operations per second (IOP/s).
 \item For the GPU performance estimate we only consider the instructions for the polynomial-polynomial multiplications and neglect the reduction at the end of the inner product.
 \begin{figure}[t!]
@@ -185,7 +185,7 @@ coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512
         \hspace{-0.4cm}
         \includegraphics[scale=0.37, angle=-90]{MC128.eps} 
     }
-    \caption{Left: Inner product of dense polynomials with up to 3 variables and 126 to 256 bits coefficients. Right: Inner product of triangular polynomials with up to 3 variables and 126 to 256 bits coefficients.  Size of the vector 4096. For four variables we are limited by the memory of the node. GMP gives similar results whatever the polynomials.}
+    \caption{Comparison of the inner product with and without GPU accelerator. Left: Inner product of dense polynomials with up to 3 variables and 126 to 256 bits coefficients. Right: Inner product of triangular polynomials with up to 3 variables and 126 to 256 bits coefficients. Size of the vector 4096. GMP gives similar results independent of the polynomial structure.}
     \label{ResME}
     \end{center}
 \end{figure}
@@ -217,7 +217,7 @@ coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512
 
 \section{Conclusion}
 \begin{itemize}
-\item We presented a C++ library
+\item TODO
 \item License?
 \end{itemize}
 
