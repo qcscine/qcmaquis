@@ -7,7 +7,7 @@
 \usepackage{color}
 \graphicspath{{WarpTask/figures/}{Res/figures/}} %do not forget the / at the end
 
-\title{VLI - a library for large integer and polynomial arithemtic}
+\title{VLI - a library for high precision integer and polynomial arithemtic}
 \author{Timoth\'ee Ewart\inst{1}\thanks{Acknowledgments: Maxim Milakov, Peter Messmer:   NVIDIA,   Williams Sawyer, Gilles Fourestey:  CSCS, HP2C funding, hp2c.ch}  , Andreas Hehn$^2$, Matthias Troyer\inst{2} and Thierry Giamarchi\inst{1}}
 
 \institute{Universit\'e de Gen\`eve, \email{timothee.ewart@gmail.com}  \and Eidgen\"ossische Technische Hochschule Z\"urich }
@@ -93,18 +93,22 @@ accelerator.
 The hot spot of HTSE are inner products of large vectors with symbolic polynomials as components. The coefficients of the polynomials are large integers.
 All polynomials are assumed to have the same truncation order.
 The inner product will result in a polynomial of twice the order of the original polynomials
-with coefficients of twice the width of the original coefficients, i.e.\ 256 and
-512 bit, respectively.
+with coefficients of twice the width of the original coefficients.
 \paragraph{CPU}
 \begin{itemize}
-\item We continue to use the single large integer kernels
+\item We use the single large integer kernels
 \item OpenMP parallelization: split vectors into chunks, each thread does part of the inner product. Very regular problem, good load balance.
-\item No SIMD, since we had to use 32bit words and the number of operations for a multiplication increases by a factor TODO due to the manual handling of the carry.
+\item A SIMD implementation to perform 4 large integer operations in parallel on current \verb|x86_64| architectures is not useful, since we had to use 32bit integer operations, which increases the number of multiply instructions for a large integer multiplication by a factor of 4 compared to the 64bit based implementation.
+Using current Streaming SIMD Extensions (SSE) allows only two 32bit multiplications yielding 64bit results in a SIMD fashion.
+Thus a SIMD implementation using SSE will be two times slower than our serial version using 64 bit integers.
+We also neglected the carry bit propagation, which needs to be done manually in SSE, while the sequential version takes advantage of the hardware support for carry bit propagation.
+\item The upcoming AVX2 will double the vector width and support four 32bit integer multiplications, but no carry bit support.
 \end{itemize}
 \paragraph{GPU}
 \begin{itemize}
 \item Many small tasks of the same form. $\rightarrow$ well suited for GPUs.
 \item {\bf Implementation details}
+\item based on 32bit integers due to architecture.
 \item Element-wise polynomial multiplication + reduction at the end.
 \item Each thread calculates one coefficient $c_{IJKL}$ the product polynomial.
 \item Several coefficients $a_{ijkl}$, $b_{i'j'k'l'}$ of the polynomials to be multiplied contribute to the same coefficient $c_{IJKL}$
@@ -113,11 +117,8 @@ with coefficients of twice the width of the original coefficients, i.e.\ 256 and
 \end{equation}
 \item The number of terms in this sum depends on the orders $I,J,K,L$ of the resulting coefficient $\rightarrow$ load inbalance
 %\item {\color{blue} We design an execution plan. We group the coefficients of a fictive result polynomial by packet of 32 } into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}).
-\item Since threads within a warp are executed in a lockstep manner, we try to give all threads within one warp the same amount of work. Such that a thread has to wait as little as possible for the other threads of the warp to finish.
-\item We group the coefficients by 32 into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}), i.e.\ each thread calculates one coefficient of the resulting polynomial.
-\item Since the work load differences within a warp are small, the 
-%{\color{blue} Preparation of the task is done on CPU}
-
+\item Since threads within a warp are executed in a lockstep manner, we try to give all threads within a warp the same amount of work. This way the threads have to wait as little as possible for the other threads of the warp to finish.
+\item We group the coefficients by 32 into a ``task'' and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}), i.e.\ each thread calculates one coefficient of the resulting polynomial.
 \begin{figure}[t]
     \begin{center}
     \mbox{
@@ -143,11 +144,11 @@ with coefficients of twice the width of the original coefficients, i.e.\ 256 and
 \item pure CPU benchmarks were done on a Sandy bridge Intel Xeon E5-2670 with 32 logical cores.
 \begin{table}
     \begin{center}
-    \begin{tabular}{l|cc|c}
+    \begin{tabular}{l|cc|r}
      Operation & Execution & time [s] & Speed-up\\
        & GMP & VLI & \\
      \hline
-    \verb|add|, 128 bit & 1.11 & 0.33 & 3.36x \\
+    \verb|add|, 128 bit & 1.11 & 0.33 & {\bf 3.36x} \\
     \verb|add|, 192 bit & 1.21 & 0.45 & 2.68x \\
     \verb|add|, 256 bit & 1.11 & 0.81 & 1.37x \\
     \verb|add|, 320 bit & 1.25 & 0.81 & 1.54x \\
@@ -156,7 +157,7 @@ with coefficients of twice the width of the original coefficients, i.e.\ 256 and
     \verb|add|, 512 bit & 1.31 & 1.07 & 1.25x \\
     \hline
     \verb|mul|, 128 bit $\rightarrow$ 256 bit & 1.36 & 0.93 & 1.46x \\
-    \verb|mul|, 192 bit $\rightarrow$ 384 bit & 3.21 & 1.18 & 2.72x \\
+    \verb|mul|, 192 bit $\rightarrow$ 384 bit & 3.21 & 1.18 & {\bf 2.72x} \\
     \verb|mul|, 256 bit $\rightarrow$ 512 bit & 3.74 & 2.04 & 1.83x \\ 
     \end{tabular}
     \caption{Execution time comparison of simple integer operations using the GNU Multiprecision Library and the VLI library for $10^8$ operations.}
@@ -172,6 +173,18 @@ with coefficients of twice the width of the original coefficients, i.e.\ 256 and
 coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512 bit integer coefficiencts, respectively.
 \item We estimate the performance in integer operations per second (IOP/s).
 \item For the GPU performance estimate we only consider the instructions for the polynomial-polynomial multiplications and neglect the reduction at the end of the inner product.
+\begin{figure}[t!]
+    \begin{center}
+    \mbox{
+        \hspace{-0.5cm}
+        \includegraphics[scale=0.37, angle=-90]{ME128.eps} 
+        \hspace{-0.4cm}
+        \includegraphics[scale=0.37, angle=-90]{MC128.eps} 
+    }
+    \caption{Left: Inner product of dense polynomials with up to 3 variables and 126 to 256 bits coefficients. Right: Inner product of triangular polynomials with up to 3 variables and 126 to 256 bits coefficients.  Size of the vector 4096. For four variables we are limited by the memory of the node. GMP gives similar results whatever the polynomials.}
+    \label{ResME}
+    \end{center}
+\end{figure}
 
 \begin{figure}[t!]
     \begin{center}
@@ -184,13 +197,13 @@ coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512
         %\includegraphics[scale=0.25, angle=-90]{ME256.eps} 
     }
     \caption{Performance of the inner product of two vectors of dimension 4096 with ``dense'' (left) and ``triangular'' (right) polynomials having 128 bit coefficients on a NVIDIA Tesla K20X (GK110).}
-    \label{ResMEMIPS}
+    \label{fig:ResMEMIPS}
     \end{center}
 \end{figure}  
 \item We reach up to $214$ GIOP/s using 32 bit multiply-add (\verb|madc|)
 \item Theoretical maximum for the NVIDIA Tesla K20X is given by Number of Multiprocessors (SMX) $\cdot$ Clock frequency $\cdot$ Instruction throughput of \verb|madc|  =  $14 \, \mathrm{SMX} \cdot 732 \, \mathrm{MHz} \cdot 32 \, \mathrm{ IOP / cycle / SMX} = 327 \, \mathrm{GIOP/s}$. (Multiply-add throughput taken from \cite{CUDAProgramming}).
 \item We reach $65\%$ of the peak.
-\item Poor performance for low orders as well as for polynomials in 1 symbolic variable, since too little coefficients need to be calculated to saturate the number of available threads.
+\item Poor performance for low orders as well as for polynomials in 1 symbolic variable, since too little coefficients need to be calculated to saturate the number of available threads (Fig. \ref{fig:ResMEMIPS}).
 \item Maximal performance for ``dense'' polynomial in 3 variables with a truncation at 7th order, where we employ $(2\cdot7+1)^3 = 3375$ threads. Using more threads may yield an even better performance, but we start to exceed the size of the texture memory cache and have to load data from the device memory more often, which causes the decrease of performance for higher orders.
 \item Polynomials in 4 symbolic variables only up to 6th order due to memory limitations on the device. Could be overcome by splitting the vectors and performing the inner product on these parts sequentially.
 \item Performance for ``triangular'' polynomials rises lower with increasing order, because the number of threads used grows slower with the order than for ``dense'' polynomials.
@@ -200,7 +213,7 @@ coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512
 
 \section{Conclusion}
 \begin{itemize}
-\item We 
+\item We presented a C++ library
 \item License?
 \end{itemize}
 
