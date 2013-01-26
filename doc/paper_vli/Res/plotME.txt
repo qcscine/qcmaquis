@@ -2,7 +2,7 @@
 reset
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOP/s"
+set ylabel "10^9 Large integer OP/s"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:4]
@@ -47,7 +47,7 @@ set out "figures/ME192.eps";replot "SandyBridgeRes/MaxOrderEachTime192bits.dat" 
 
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOP/s"
+set ylabel "10^9 Large integer OP/s"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:10]
@@ -58,12 +58,12 @@ set title "\"Dense\" polynomials"
 set out "figures/ME128.eps";plot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($19)/(($6)*1e+9)  linestyle 1  with lines title "P(x)_{gpu}"
 set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($20)/(($10)*1e+9)  linestyle 10 with lines title "P(x,y)_{gpu}"
 set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($21)/(($14)*1e+9)   linestyle 20 with lines title "P(x,y,z)_{gpu}"
-set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($22)/(($18)*1e+9)   linestyle 30 with lines title "P(x,y,z,w)_{gpu}"
+#set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($22)/(($18)*1e+9)   linestyle 30 with lines title "P(x,y,z,w)_{gpu}"
 #VLI
 set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat"   using 1:($19)/(($5)*1e+9)  linestyle 21 with lines title "P(x)_{cpu}"
 set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($20)/(($9)*1e+9)  linestyle 11 with lines title "P(x,y)_{cpu}"
-set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($21)/(($13)*1e+9) linestyle 2 with lines title "P(x,y,z_{cpu}"
-set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($22)/(($17)*1e+9) linestyle 31 with lines title "P(x,y,z,w)_{cpu}"
+set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($21)/(($13)*1e+9) linestyle 2 with lines title "P(x,y,z)_{cpu}"
+#set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($22)/(($17)*1e+9) linestyle 31 with lines title "P(x,y,z,w)_{cpu}"
 #GMP
  set out "figures/ME128.eps"; replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" using 1:($19)/(($4)*1e+9)  linestyle 40 with lines title "gmp"
 
@@ -75,7 +75,7 @@ set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat" 
 
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOP/s"
+set ylabel "10^9 Large integer OP/s"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:3]

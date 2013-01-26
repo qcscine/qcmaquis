@@ -2,7 +2,7 @@
 reset
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOP/s"
+set ylabel "10^9 Large integer OP/s"
 
 set xlabel "Order"
 set xrange [1:14]
@@ -37,21 +37,21 @@ set style line 40 lt 1 lw 3 pt 1 lc rgb "#000000" #black
 set out "figures/MC192.eps";plot   "KeplerRes/MaxOrderCombinedTime192bits.dat" using 1:($19)/(($6)*1e+9)  linestyle 20 with lines title "x vli_{gpu}"
 set out "figures/MC192.eps";replot "KeplerRes/MaxOrderCombinedTime192bits.dat" using 1:($20)/(($10)*1e+9)  linestyle 10 with lines title "xy vli_{gpu}"
 set out "figures/MC192.eps";replot "KeplerRes/MaxOrderCombinedTime192bits.dat" using 1:($21)/(($14)*1e+9)   linestyle 1 with lines title "xyz vli_{gpu}"
-set out "figures/MC192.eps";replot "KeplerRes/MaxOrderCombinedTime192bits.dat" using 1:($22)/(($18)*1e+9)   linestyle 30 with lines title "xyzw vli_{gpu}"
+#set out "figures/MC192.eps";replot "KeplerRes/MaxOrderCombinedTime192bits.dat" using 1:($22)/(($18)*1e+9)   linestyle 30 with lines title "xyzw vli_{gpu}"
 #VLI
 set out "figures/MC192.eps";replot "SandyBridgeRes/MaxOrderCombinedTime192bits.dat" using 1:($19)/(($5)*1e+9)  linestyle 21 with lines title "x vli_{cpu}"
 set out "figures/MC192.eps";replot "SandyBridgeRes/MaxOrderCombinedTime192bits.dat" using 1:($20)/(($9)*1e+9)  linestyle 11 with lines title "xy vli_{cpu}"
 set out "figures/MC192.eps";replot "SandyBridgeRes/MaxOrderCombinedTime192bits.dat" using 1:($21)/(($13)*1e+9) linestyle 2  with lines title "xyz vli_{cpu}"
-set out "figures/MC192.eps";replot "SandyBridgeRes/MaxOrderCombinedTime192bits.dat" using 1:($22)/(($17)*1e+9) linestyle 31 with lines title "xyzw vli_{cpu}"
+#set out "figures/MC192.eps";replot "SandyBridgeRes/MaxOrderCombinedTime192bits.dat" using 1:($22)/(($17)*1e+9) linestyle 31 with lines title "xyzw vli_{cpu}"
 #GMP
  set out "figures/MC192.eps"; replot "SandyBridgeRes/MaxOrderCombinedTime192bits.dat" using 1:($19)/(($4)*1e+9)  linestyle 22 with lines title "x gmp"
  set out "figures/MC192.eps"; replot "SandyBridgeRes/MaxOrderCombinedTime192bits.dat" using 1:($20)/(($8)*1e+9)  linestyle 12 with lines title "xy gmp"
  set out "figures/MC192.eps"; replot "SandyBridgeRes/MaxOrderCombinedTime192bits.dat" using 1:($21)/(($12)*1e+9) linestyle 3 with lines title "xyz gmp"
- set out "figures/MC192.eps"; replot "SandyBridgeRes/MaxOrderCombinedTime192bits.dat" using 1:($22)/(($16)*1e+9) linestyle 32 with lines title "xyzw gmp"
+# set out "figures/MC192.eps"; replot "SandyBridgeRes/MaxOrderCombinedTime192bits.dat" using 1:($22)/(($16)*1e+9) linestyle 32 with lines title "xyzw gmp"
 
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOP/s"
+set ylabel "10^9 Large integer OP/s"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:10]
@@ -63,12 +63,12 @@ set title "\"Triangular\" polynomials"
 set out "figures/MC128.eps";plot   "KeplerRes/MaxOrderCombinedTime128bits.dat" using 1:($19)/(($6)*1e+9)  linestyle 20 with lines title "P(x)_{gpu}"
 set out "figures/MC128.eps";replot "KeplerRes/MaxOrderCombinedTime128bits.dat" using 1:($20)/(($10)*1e+9)  linestyle 10 with lines title "P(x,y)_{gpu}"
 set out "figures/MC128.eps";replot "KeplerRes/MaxOrderCombinedTime128bits.dat" using 1:($21)/(($14)*1e+9)   linestyle 1 with lines title "P(x,y,z)_{gpu}"
-set out "figures/MC128.eps";replot "KeplerRes/MaxOrderCombinedTime128bits.dat" using 1:($22)/(($18)*1e+9)   linestyle 30 with lines title "P(x,y,z,w)_{gpu}"
+#set out "figures/MC128.eps";replot "KeplerRes/MaxOrderCombinedTime128bits.dat" using 1:($22)/(($18)*1e+9)   linestyle 30 with lines title "P(x,y,z,w)_{gpu}"
 #VLI
 set out "figures/MC128.eps";replot "SandyBridgeRes/MaxOrderCombinedTime128bits.dat" using 1:($19)/(($5)*1e+9)  linestyle 21 with lines title "P(x)_{cpu}"
 set out "figures/MC128.eps";replot "SandyBridgeRes/MaxOrderCombinedTime128bits.dat" using 1:($20)/(($9)*1e+9)  linestyle 11 with lines title "P(x,y)_{cpu}"
 set out "figures/MC128.eps";replot "SandyBridgeRes/MaxOrderCombinedTime128bits.dat" using 1:($21)/(($13)*1e+9) linestyle 2  with lines title "P(x,y,z)_{cpu}"
-set out "figures/MC128.eps";replot "SandyBridgeRes/MaxOrderCombinedTime128bits.dat" using 1:($22)/(($17)*1e+9) linestyle 31 with lines title "P(x,y,z,w)_{cpu}"
+#set out "figures/MC128.eps";replot "SandyBridgeRes/MaxOrderCombinedTime128bits.dat" using 1:($22)/(($17)*1e+9) linestyle 31 with lines title "P(x,y,z,w)_{cpu}"
 #GMP
   set out "figures/MC128.eps"; replot "SandyBridgeRes/MaxOrderCombinedTime128bits.dat" using 1:($19)/(($4)*1e+9)  linestyle 40 with lines title "gmp"
 
@@ -79,7 +79,7 @@ set out "figures/MC128.eps";replot "SandyBridgeRes/MaxOrderCombinedTime128bits.d
 
 set terminal postscript enhanced
 set size 0.8,0.8
-set ylabel "GOP/s"
+set ylabel "10^9 Large integer OP/s"
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:3]
@@ -89,17 +89,17 @@ set key  at 4.6,2.9
 set out "figures/MC256.eps";plot   "KeplerRes/MaxOrderCombinedTime256bits.dat" using 1:($19)/(($6)*1e+9)  linestyle 20 with lines title "x vli_{gpu}"
 set out "figures/MC256.eps";replot "KeplerRes/MaxOrderCombinedTime256bits.dat" using 1:($20)/(($10)*1e+9)  linestyle 10 with lines title "xy vli_{gpu}"
 set out "figures/MC256.eps";replot "KeplerRes/MaxOrderCombinedTime256bits.dat" using 1:($21)/(($14)*1e+9)   linestyle 1 with lines title "xyz vli_{gpu}"
-set out "figures/MC256.eps";replot "KeplerRes/MaxOrderCombinedTime256bits.dat" using 1:($22)/(($18)*1e+9)   linestyle 30 with lines title "xyzw vli_{gpu}"
+#set out "figures/MC256.eps";replot "KeplerRes/MaxOrderCombinedTime256bits.dat" using 1:($22)/(($18)*1e+9)   linestyle 30 with lines title "xyzw vli_{gpu}"
 #VLI
 set out "figures/MC256.eps";replot "SandyBridgeRes/MaxOrderCombinedTime256bits.dat" using 1:($19)/(($5)*1e+9)  linestyle 21 with lines title "x vli_{cpu}"
 set out "figures/MC256.eps";replot "SandyBridgeRes/MaxOrderCombinedTime256bits.dat" using 1:($20)/(($9)*1e+9)  linestyle 11 with lines title "xy vli_{cpu}"
 set out "figures/MC256.eps";replot "SandyBridgeRes/MaxOrderCombinedTime256bits.dat" using 1:($21)/(($13)*1e+9) linestyle 2  with lines title "xyz vli_{cpu}"
-set out "figures/MC256.eps";replot "SandyBridgeRes/MaxOrderCombinedTime256bits.dat" using 1:($22)/(($17)*1e+9) linestyle 31 with lines title "xyzw vli_{cpu}"
+#set out "figures/MC256.eps";replot "SandyBridgeRes/MaxOrderCombinedTime256bits.dat" using 1:($22)/(($17)*1e+9) linestyle 31 with lines title "xyzw vli_{cpu}"
 #GMP
  set out "figures/MC256.eps"; replot "SandyBridgeRes/MaxOrderCombinedTime256bits.dat" using 1:($19)/(($4)*1e+9)  linestyle 22 with lines title "x gmp"
  set out "figures/MC256.eps"; replot "SandyBridgeRes/MaxOrderCombinedTime256bits.dat" using 1:($20)/(($8)*1e+9)  linestyle 12 with lines title "xy gmp"
  set out "figures/MC256.eps"; replot "SandyBridgeRes/MaxOrderCombinedTime256bits.dat" using 1:($21)/(($12)*1e+9) linestyle 3 with lines title "xyz gmp"
- set out "figures/MC256.eps"; replot "SandyBridgeRes/MaxOrderCombinedTime256bits.dat" using 1:($22)/(($16)*1e+9) linestyle 32 with lines title "xyzw gmp"
+# set out "figures/MC256.eps"; replot "SandyBridgeRes/MaxOrderCombinedTime256bits.dat" using 1:($22)/(($16)*1e+9) linestyle 32 with lines title "xyzw gmp"
 
 set out
 set terminal pop
