@@ -161,7 +161,7 @@ typedef boost::mpl::vector<
        tools::fill_vector_random(v1);
        tools::fill_vector_random(v2);
 
-       tools::converter(v1,v1_gmp); 
+       tools::converter(v1,v1_gmp);
        tools::converter(v2,v2_gmp); 
 
        Timer tgmp("CPU GMP ");
@@ -205,30 +205,207 @@ typedef boost::mpl::vector<
        }
    };
 
+    template<int num>
+    inline void tim_add(boost::uint64_t* x,  const boost::uint64_t* y);
+
+    template<>
+    inline void tim_add<5>(boost::uint64_t* x,  const boost::uint64_t *y){
+        boost::uint64_t tmp_register;
+        __asm__ __volatile__(
+                 "movq  (%[y]) ,   %[tmp_register] \n\t"
+                 "addq  %[tmp_register], (%[x]) \n\t"
+                 "movq  8(%[y]) ,   %[tmp_register] \n\t"
+                 "adcq  %[tmp_register], 8(%[x]) \n\t"
+                 "adcq  0,            16(%[x]) \n\t"
+                 "adcq  0,            24(%[x]) \n\t"
+                 "adcq  0,            32(%[x]) \n\t"
+        : [tmp_register] "=&r" (tmp_register)
+        : [x] "r" (x), [y] "r" (y)
+        : "memory", "cc");
+    }
+
+    template<>
+    inline void tim_add<4>(boost::uint64_t* x,  const boost::uint64_t *y){
+        boost::uint64_t tmp_register;
+        asm __volatile__(
+                 "movq  (%[y]) ,   %[tmp_register] \n\t"
+                 "addq  %[tmp_register], (%[x]) \n\t"
+                 "movq  8(%[y]) ,   %[tmp_register] \n\t"
+                 "adcq  %[tmp_register], 8(%[x]) \n\t"
+                 "adcq  $0,            16(%[x]) \n\t"
+                 "adcq  $0,            24(%[x]) \n\t"
+        : [tmp_register] "=&r" (tmp_register)
+        : [x] "r" (x), [y] "r" (y)
+        : "memory", "cc");
+    }
+
+    template<>
+    inline void tim_add<3>(boost::uint64_t* x,  const boost::uint64_t *y){
+        boost::uint64_t tmp_register;
+        asm __volatile__(
+                 "movq  (%[y]) ,   %[tmp_register] \n\t"
+                 "addq  %[tmp_register], (%[x]) \n\t"
+                 "movq  8(%[y]) ,   %[tmp_register] \n\t"
+                 "adcq  %[tmp_register], 8(%[x]) \n\t"
+                 "adcq  $0,            16(%[x]) \n\t"
+        : [tmp_register] "=&r" (tmp_register)
+        : [x] "r" (x), [y] "r" (y)
+        : "memory", "cc");
+    }
+
+    template<>
+    inline void tim_add<2>(boost::uint64_t* x,  const boost::uint64_t *y){
+        boost::uint64_t tmp_register;
+        asm __volatile__(
+                 "movq  (%[y]) ,   %[tmp_register] \n\t"
+                 "addq  %[tmp_register], (%[x]) \n\t"
+                 "movq  8(%[y]) ,   %[tmp_register] \n\t"
+                 "adcq  %[tmp_register], 8(%[x]) \n\t"
+        : [tmp_register] "=&r" (tmp_register)
+        : [x] "r" (x), [y] "r" (y)
+        : "memory", "cc");
+    }
+
+    inline void mul_base(boost::uint64_t* c, boost::uint64_t   a, boost::uint64_t  b){//
+        asm ("mulq %3;" :"=a"(c[0]), "=d"(c[1]) :"%0" (a), "r"(b): "cc");
+    }
+
+    template<int NumBits>
+    inline void tim_mul(boost::uint64_t *x, const boost::uint64_t *y);
+
+    template<> // 128 -> 128
+    inline void tim_mul<2>(boost::uint64_t *x, const boost::uint64_t *y){
+        boost::uint64_t tmp_mul[2];
+        mul_base(&tmp_mul[0], x[0], y[0]);
+        tmp_mul[1] += x[0] * y[1];
+        tmp_mul[1] += x[1] * y[0];
+        x[0] = tmp_mul[0];
+        x[1] = tmp_mul[1];
+    }
+
+    template<int NumBits>
+    inline void tim_mul_extend(boost::uint64_t* z,  const boost::uint64_t *x, const boost::uint64_t *y);
+
+    template<> // 128 -> 256
+    inline void tim_mul_extend<4>(boost::uint64_t* z,  const boost::uint64_t *x, const boost::uint64_t *y){
+        boost::uint64_t tmp_mul[2];
+        //clean z to avoid pb
+        z[0] ^= z[0];
+        z[1] ^= z[1];
+        z[2] ^= z[2];
+        z[3] ^= z[3];
+
+        mul_base(&tmp_mul[0], x[0], y[0]);
+        tim_add<2>(&z[0],&tmp_mul[0]);
+
+        mul_base(&tmp_mul[0], x[0], y[1]);
+        tim_add<2>(&z[1],&tmp_mul[0]);
+
+        mul_base(&tmp_mul[0], x[1], y[0]);
+        tim_add<3>(&z[1],&tmp_mul[0]);
+
+        mul_base(&tmp_mul[0], x[1], y[1]);
+        tim_add<2>(&z[2],&tmp_mul[0]);
+    }
+
+    template<> // 192 -> 384
+    inline void tim_mul_extend<5>(boost::uint64_t* z,  const boost::uint64_t *x, const boost::uint64_t *y){
+        boost::uint64_t tmp_mul[2];
+        //clean z to avoid pb
+        z[0] ^= z[0];
+        z[1] ^= z[1];
+        z[2] ^= z[2];
+        z[3] ^= z[3];
+        z[4] ^= z[4];
+        z[5] ^= z[5];
+        // first pass
+        mul_base(&tmp_mul[0], x[0], y[0]);
+        tim_add<2>(&z[0],&tmp_mul[0]);
+
+        mul_base(&tmp_mul[0], x[0], y[1]);
+        tim_add<2>(&z[1],&tmp_mul[0]);
+
+        mul_base(&tmp_mul[0], x[0], y[2]);
+        tim_add<2>(&z[2],&tmp_mul[0]);
+
+        //second pass
+        mul_base(&tmp_mul[0], x[1], y[2]);
+        tim_add<2>(&z[3],&tmp_mul[0]);
+
+        mul_base(&tmp_mul[0], x[1], y[0]);
+        tim_add<3>(&z[1],&tmp_mul[0]); // should be 4 to check with test
+        
+        mul_base(&tmp_mul[0], x[1], y[1]);
+        tim_add<3>(&z[2],&tmp_mul[0]);
+        
+        //third pass
+        mul_base(&tmp_mul[0], x[2], y[2]);
+        tim_add<2>(&z[4],&tmp_mul[0]);
+
+        mul_base(&tmp_mul[0], x[2], y[0]);
+        tim_add<3>(&z[2],&tmp_mul[0]); // should be 4 to check with test
+        
+        mul_base(&tmp_mul[0], x[2], y[1]);
+        tim_add<3>(&z[3],&tmp_mul[0]);
+    }
+
+
+   
+
 
 
 int main(int argc, char* argv[]) {
 
-    vli::integer<128> a(43443545),b(43443545);
- 
-    
-    vli::integer<128> c(a),b_orig(b);
-    
-    a -= b;
-    negate_inplace(b); negate_inplace(b_orig);
-    c += b;
+    vli::integer<192> a,b;
+    vli::integer<384> c,d;
+    a[0] = b[0] =  0xfffffffffff;
+    a[1] = b[1] =  0xffffffaaaaa;
+  //  vli::integer<192> a_copy(a), b_copy(b);
+
+    a[2] = b[2] = 443545;
+    a[3] = b[3] = 4343545;
+   
+    mpz_class agmp(a), bgmp(b), cgmp;
+/*
+    a*=b ;
+    tim_mul<2>(&a_copy[0],&b_copy[0]);
 
     std::cout << a << std::endl;
-    std::cout << c << std::endl;
-    std::cout << b << std::endl;
-    std::cout << b_orig << std::endl;
-
-
-
-
-//    for(int i(0); i < 0xff; ++i)
-//        helper_inline_add<8>::inline_add((&e[0]),(&f[0]));
     
+    std::cout << a_copy << std::endl;
+*/
+    
+    Timer t1("vli plus");
+    t1.begin();
+        for(int i(0); i < 1000000; ++i)
+            multiply_extend(c,a,b);
+    t1.end();
+
+
+    Timer t2("gmp plus ");
+    t2.begin();
+        for(int i(0); i < 1000000; ++i)
+            cgmp = agmp * bgmp;
+    t2.end();
+
+    Timer to("vli inline");
+    to.begin();
+        for(int i(0); i < 1000000; ++i)
+            tim_mul_extend<5>(&d[0],&a[0],&b[0]);
+    to.end();
+
+
+    std::cout << " vli inline "  << to.get_time()<< std::endl;
+
+    std::cout << " vli old "  << t1.get_time()<< std::endl;
+
+    std::cout << " gmp "  << t2.get_time()<< std::endl;
+
+    std::cout << std::hex << d << std::endl;
+    std::cout << std::hex << c << std::endl;
+    std::cout << std::hex << cgmp << std::endl;
+
+
     
  //   std::cout<< std::hex << e[0] << " " << e[1] << " " << e[2] << " " << e[3] << " "
  //                        << e[4] << " " << e[5] << " " << e[6] << " " << e[7] << " " << std::endl;
@@ -323,3 +500,4 @@ int main(int argc, char* argv[]) {
 }
 
 /* \endcond I do not need this part in the doc*/
+
