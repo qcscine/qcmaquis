@@ -55,12 +55,12 @@ accelerator.
 
 \section{Large integers}
 \begin{itemize}
-\item {\bf Description}
+\item {\bf Description:}
 \item signed integer arithmetic
 \item fixed size (128-512bit)
 \item all standard integer operations (arithmetic, comparison and bit operations)
 \item in addition to that: multiply-add, extended multiplication which doubles the number of bits, extended add which increases the size by one 64bit word.
-\item {\bf Implementation details}
+\item {\bf Implementation details:}
 \item data is stored as 64 bit integer arrays.
 \item two-complement representation
 \item stack based $\rightarrow$ cheap memory allocation
@@ -73,7 +73,7 @@ accelerator.
 
 \section{Polynomials}
 \begin{itemize}
-\item {\bf Description}
+\item {\bf Description:}
 \item symbolic polynomial in 1-4 variables.
 \begin{equation}
     p(x,y,z,a) = \sum_{i,j,k,l} c_{ijkl} x^i y^j z^k a^l
@@ -82,7 +82,7 @@ accelerator.
 \item any arithmetic type as coefficient $c_{ijkl}$
 \item addition, subtraction, multiplication with other polynomials and monomials
 \item special multiplication which will double the truncation order
-\item {\bf Implementation details}
+\item {\bf Implementation details:}
 \item structure and truncation order $N$ is compile time fixed 
 \item function hooks to allow custom optimized kernels for certain coefficient types
 \item The symbolic variable names are given as template parameter
@@ -107,7 +107,7 @@ We also neglected the carry bit propagation, which needs to be done manually in 
 \paragraph{GPU}
 \begin{itemize}
 \item Many small tasks of the same form. $\rightarrow$ well suited for GPUs.
-\item {\bf Implementation details}
+\item {\bf Implementation details:}
 \item based on 32bit integers due to architecture.
 \item Element-wise polynomial multiplication + reduction at the end.
 \item Each thread calculates one coefficient $c_{IJKL}$ the product polynomial.
@@ -154,15 +154,19 @@ We also neglected the carry bit propagation, which needs to be done manually in 
     \verb|add|, 320 bit & 1.25 & 0.81 & 1.54x \\
     \verb|add|, 384 bit & 1.25 & 0.97 & 1.28x \\
     \verb|add|, 448 bit & 1.34 & 1.01 & 1.32x \\
-    \verb|add|, 512 bit & 1.31 & 1.07 & 1.25x \\
+    \verb|add|, 512 bit & 1.31 & 1.07 & {\bf 1.25x} \\
     \hline
     \verb|mul|, 128 bit $\rightarrow$ 256 bit & 1.36 & 0.93 & 1.46x \\
     \verb|mul|, 192 bit $\rightarrow$ 384 bit & 3.21 & 1.18 & {\bf 2.72x} \\
     \verb|mul|, 256 bit $\rightarrow$ 512 bit & 3.74 & 2.04 & 1.83x \\ 
     \end{tabular}
     \caption{Execution time comparison of simple integer operations using the GNU Multiprecision Library and the VLI library for $10^8$ operations.}
+    \label{tab:vli_vs_gmp}
     \end{center}
 \end{table}
+\item Comparing the execution time of simple addition and multiplication operations our implementation for fixed size integers is between $25\%$ and $236\%$ faster for the addition and up to $172\%$ faster for the multiplication (table \ref{tab:vli_vs_gmp}).
+\item Note that the reported time is the pure execution time of the operation. All variables were allocated before.
+Since our integer library is stack based we do not need expensive calls to \verb|malloc|, which will give an additional speedup for the inner product.
 \end{itemize}
 
 \paragraph{Optimized inner product with GPU accelerator}
