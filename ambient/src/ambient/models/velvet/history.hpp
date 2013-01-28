@@ -13,12 +13,11 @@ namespace ambient { namespace models { namespace velvet {
         this->content.reserve(2); 
     }
 
-    inline revision* history::add_state(void* g){
+    inline void history::add_state(void* g){
         revision* r = new revision(spec.size, g); 
         r->parent = this->current;
         this->content.push_back(r);
         this->current = r;
-        return r;
     }
 
     inline void history::fuse(const history* src){

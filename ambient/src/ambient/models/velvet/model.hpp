@@ -4,8 +4,8 @@ namespace ambient { namespace models { namespace velvet {
         *const_cast<size_t*>(&r->sid) = this->map.insert(r);
     }
 
-    inline revision* model::add_revision(history* o, void* g){
-        return o->add_state(g);
+    inline void model::add_revision(history* o, void* g){
+        o->add_state(g);
     }
 
     inline void model::use_revision(history* o){

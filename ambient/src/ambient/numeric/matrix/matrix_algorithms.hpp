@@ -443,7 +443,8 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void destroy(matrix<T>& a){
-        ambient::destroy(a.impl); 
+        if(a.impl->weak()) delete a.impl;
+        else ambient::destroy(a.impl);
     }
 
     template<typename T>
