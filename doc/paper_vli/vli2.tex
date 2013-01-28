@@ -25,7 +25,7 @@ of the library can be used independently optimized kernels for symbolic
 polynomials with large integer coefficients are provided. The kernels
 were manually optimized in assembly language for the x86-64 and power64
 architectures. Our main target application is high-temperature series
-expansions which require inner products of large vectors of polynomials
+expansions which requires inner products of large vectors of polynomials
 with large integer coefficients. For this purpose we implemented a
 tunable hybrid CPU/GPU inner product function using OpenMP and NVIDIA
 CUDA with inline PTX assembly. This way we make optimal use of today's
@@ -54,30 +54,51 @@ accelerator.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Large integers}
-\begin{itemize}
-\item {\bf Description:}
-\item signed integer arithmetic
-\item fixed size (128-512bit)
-\item all standard integer operations (arithmetic, comparison and bit operations)
-\item in addition to that: multiply-add, extended multiplication which doubles the number of bits, extended add which increases the size by one 64bit word.
-\item {\bf Implementation details:}
-\item data is stored as 64 bit integer arrays.
-\item two-complement representation
-\item stack based $\rightarrow$ cheap memory allocation
-\item addition and multiplication using the standard schoolbook algorithms.
-\item Numbers are two small for Toom\cite{Toom} or FFT based approaches like the Sch\"onhage-Strassen algorithm\cite{Schonhage}.
-\item optimized ASM kernels to use hardware features not accessible from C++ (\verb|x86_64| carry addition \verb|adcq|, 64bit multiplication \verb|mulq| which calculates low and hi 64bit part of the result.)
-\item TODO which special features do we use on power64?
-\item assembly code generated using \verb|BOOST_PP| to compactify the code and minimize bugs.
-\end{itemize}
+The library provides a class template \verb|integer<n_bits>| to represent signed integers with a fixed size of $128 \le n \le 512$ bits.
+Objects of this class behave like the regular C++ type $int$. We implemented all standard integer operations starting from basic arithmetic operations, comparion operations and bit operations, like bit-shift or bit-wise logical operations.
+In addition to these operations we also provide a multiply-add function, an extended multiplcation which doubles the number of bits when two integers of the same size get multiplied and an extended add which increases the size of the integer by one 64bit word.
+The data of the integer is stored as a 64 bit unsigned integer array, where we use a standard two-complement represnetation of the number.
+Due to the fixed size of the integer, we are able to allocate the memory for the data on the stack.
+This way we save expensive heap allocations, which would require a manual memory pool management to get efficient allocations.
+The basic arithmetic operations like addition and multiplication use standard schoolbook algorithms, since the integers are too small for Toom\cite{Toom} or FFT based approaches like the Sch\"onhage-Strassen algorithm\cite{Schonhage}.
+We implemented the schoolbook algorithms in optimized assembly code to make optimal use of the hardware features that are not accessible from C++, like the carry addition \verb|adcq| or the 64bit multiplication \verb|mulq| which calculates the low and hi 64 bit part of the result on the \verb|x86-64| architecture.
+Since writing assembly code can result in very long error-prone code, we generate most parts of the assembly code with the C++ preprocessor using the \verb|BOOST_PP| library.
+
+
+%\begin{itemize}
+%\item {\bf Description:}
+%\item signed integer arithmetic
+%\item fixed size (128-512bit)
+%\item all standard integer operations (arithmetic, comparison and bit operations)
+%\item in addition to that: multiply-add, extended multiplication which doubles the number of bits, extended add which increases the size by one 64bit word.
+%\item {\bf Implementation details:}
+%\item data is stored as 64 bit integer arrays.
+%\item two-complement representation
+%\item stack based $\rightarrow$ cheap memory allocation
+%\item addition and multiplication using the standard schoolbook algorithms.
+%\item Numbers are two small for Toom\cite{Toom} or FFT based approaches like the Sch\"onhage-Strassen algorithm\cite{Schonhage}.
+%\item optimized ASM kernels to use hardware features not accessible from C++ (\verb|x86_64| carry addition \verb|adcq|, 64bit multiplication \verb|mulq| which calculates low and hi 64bit part of the result.)
+%\item TODO which special features do we use on power64?
+%\item assembly code generated using \verb|BOOST_PP| to compactify the code and minimize bugs.
+%\end{itemize}
 
 \section{Polynomials}
-\begin{itemize}
-\item {\bf Description:}
-\item symbolic polynomial in 1-4 variables.
+The second part of the library is a template class 
+\begin{verbatim}
+    polynomial<CoeffType, Structure<N>, Var0, Var1, Var2, Var3>
+\end{verbatim}
+for symbolic polynomials in 1 to 4 variables
 \begin{equation}
     p(x,y,z,a) = \sum_{i,j,k,l} c_{ijkl} x^i y^j z^k a^l
 \end{equation}
+having either a ``dense'' (${i,j,k,l} \le N$) or a ``triangular'' ($i+j+k+l \le N$) structure.
+The truncation order $N$ is fixed at compile-time.
+As coefficient $c_{ijkl}$ of the polynomial any arithemetic type may be used.
+
+
+\begin{itemize}
+\item {\bf Description:}
+\item symbolic polynomial in 1-4 variables.
 \item either ``dense'' (${i,j,k,l} \le N$) or ``triangular'' ($i+j+k+l \le N$) structure.
 \item any arithmetic type as coefficient $c_{ijkl}$
 \item addition, subtraction, multiplication with other polynomials and monomials
