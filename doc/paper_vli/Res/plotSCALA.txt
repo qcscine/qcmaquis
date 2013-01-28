@@ -9,7 +9,7 @@ set xlabel "Number of threads"
 set xrange [1:32]
 set yrange [1:32]
 #set key  at 4.6,3.9
-#set ytics 0.5
+set xtics 8
 
 #red family
 set style line 1  lt 1 lw 3 pt 1 lc rgb "#B22222" #red
