@@ -25,10 +25,10 @@ namespace ambient{
         }
     }
 
-    inline void collector::delete_ptr::operator()( history* element ) const {
-        int size = element->content.size();
+    inline void collector::delete_ptr::operator()( history* e ) const {
+        int size = e->content.size();
         for(int i = 0; i < size; i++){
-            revision* r = element->content[i];
+            revision* r = e->content[i];
             if(r->locked()){
                 r->release();
             }else{
@@ -36,11 +36,11 @@ namespace ambient{
                 ambient::pool.free<revision>(r); 
             }
         }
-        delete element;
+        delete e;
     }
 
-    inline void collector::delete_ptr::operator()( void* element ) const {
-        ambient::pool.free<FUTURE_SIZE>(element);
+    inline void collector::delete_ptr::operator()( void* e ) const {
+        ambient::pool.free<FUTURE_SIZE>(e);
     } 
 
     inline void collector::clear(){

@@ -15,7 +15,7 @@ namespace ambient { namespace models { namespace velvet {
     public:
         model() : clock(0) {}
         size_t time(const history* o);
-        revision* add_revision(history* o, void* g = NULL);
+        void add_revision(history* o, void* g = NULL);
         void use_revision(history* o);
         void insert(revision* r);
         revision* get_revision(size_t id) const;

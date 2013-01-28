@@ -9,7 +9,7 @@ namespace ambient { namespace models { namespace velvet {
         void* operator new (size_t);
         void operator delete (void*);
         history(dim2,size_t);
-        revision* add_state(void* g);
+        void add_state(void* g);
         void fuse(const history* src);
         revision* back() const;
         size_t time() const;
