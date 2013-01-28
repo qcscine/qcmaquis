@@ -55,9 +55,9 @@ set yrange [0:10]
 set key top right
 set title "\"Dense\" polynomials"
 #GPU
-set out "figures/ME128.eps";plot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($19)/(($6)*1e+9)  linestyle 1  with lines title "P(x)_{gpu}"
+set out "figures/ME128.eps";plot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($19)/(($6)*1e+9)  linestyle 20  with lines title "P(x)_{gpu}"
 set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($20)/(($10)*1e+9)  linestyle 10 with lines title "P(x,y)_{gpu}"
-set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($21)/(($14)*1e+9)   linestyle 20 with lines title "P(x,y,z)_{gpu}"
+set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($21)/(($14)*1e+9)   linestyle 1 with lines title "P(x,y,z)_{gpu}"
 #set out "figures/ME128.eps";replot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($22)/(($18)*1e+9)   linestyle 30 with lines title "P(x,y,z,w)_{gpu}"
 #VLI
 set out "figures/ME128.eps";replot "SandyBridgeRes/MaxOrderEachTime128bits.dat"   using 1:($19)/(($5)*1e+9)  linestyle 21 with lines title "P(x)_{cpu}"
