@@ -49,11 +49,19 @@ Now if we decided to create a negative large integer :
     vli::integer<128> a(-1);
 \endcode
 
-Negative numbers are constructed with the two complementary method, thus the hexadecimal print will be : 
+or alternatively
+
+\code
+    vli::integer<128> a;
+    a = -1;
+\endcode
+
+Negative numbers are constructed with the two complementary method, thus the hexadecimal print will be :
 
 \code
     0xffffffffffffffff 0xffffffffffffffff
 \endcode
+
 
 The last possibility to initiate a number is the operators brackets [], as they allow a direct access to the container.
 
@@ -69,8 +77,8 @@ it will give
     0 3 0 1
 \endcode
 
-\note
-This last mode of initialization should be avoid, it is more reserved for developers who are looking for special features.
+\note 
+    This last mode of initialization should be avoid, it is more reserved for developers who are looking for special features.
 \endnote
 
 \section tutorial2 Tutorial 2, make constant size arithmetic operations with VLI
@@ -229,9 +237,78 @@ We summarize the possibility of the arithmetic operations into the next table.
 
 </TABLE>
 
-\section tutorial4 Tutorial 4, Polynomial multiplication and polynomial inner products on CPU
+\section tutorial4 Tutorial 4, Polynomials and polynomial arithmetics
+
+The library allows the utilization of polynomial in 1-4 variables. As usual polynomials are defined under the following forms :
+
+\f[
+ p(x,y,z,a) = \sum_{i,j,k,l} c_{ijkl} x^i y^j z^k a^l
+\f]
+
+The polynomials can be "dense" (\f${i,j,k,l} \le N\f$) or "triangular" (\f$i+j+k+l \le N\f$) structure, with various type of coefficient (vli::integer, basic type, GMP ...)
+The polynomial facility of the library necessitates an additional include.
+
+\code
+    #include "vli/polynomial/polynomial.hpp"
+\endcode
+
+The vli::polynomial must be instantiated over the coefficient type, polynomial type (dense or triangular) and the symbolic name of the variables.
+To illustrate this functionnality, we consider a dense polynomial defined as : \f$ p(x) = \sum_i c_i  x^i \f$, where the coefficients \f$ c_i \f$ are assimilated
+to a vli::integer<128>, we will have :
+
+\code
+    typedef vli::integer<128> integer_type_cpu_128; // New type of 128-bit integer
+    typedef vli::polynomial< integer_type_cpu_128, vli::max_order_each<10>, vli::var<'x'>  >polynomial_type_each_x_128; // dense polynomial, order 10, one variable "x"
+
+    polynomial_type_each_x_128 p; // Create the polynomial, the coefficients are nulls
+\endcode
+
+The coefficients of the  polynomial can be attained and initialized with the operator () and =,
+
+\code
+    p(0) = 1;
+\endcode
+
+
+
 
 \section tutorial5 Tutorial 5, GPU accelerator for inner products
+
+The last tutorial presents the possibility of the library to perform efficient inner product by multhreading, GPU accelerator or hybrid-mode.
+The library allows a module for vector polynomial. This module can be used with the help of the following include.
+
+\code
+    #include "vli/polynomial/vector_polynomial_cpu.hpp"
+\endcode
+
+As previsouly, with the usual rule of template, we can define a vector of polynomial
+
+\code
+    typedef vli::integer<128> integer_type_cpu_128; // New type of 128-bit integer
+    typedef vli::polynomial< integer_type_cpu_128, vli::max_order_each<10>, vli::var<'x'>  >polynomial_type_each_x_128; // dense polynomial, order 10, one variable "x"
+    typedef vli::vector<Polynomial> polynomial_type_each_x_128;
+\endcode
+
+As the vli::vector derived from a std::vector, it has similar properties. The inner inner product is simply call by the vli::inner_product function which returns a polynomial twice larger (Order and Size of coefficient). The polynomial class has a trait class which gives the exact result type of the inner products.
+
+\code
+     typedef typename vli::polynomial_multiply_result_type<polynomial_type_each_x_128>::type polynomial_res;
+\endcode 
+
+The inner product operation is simply called by the free function vli::inner_product,
+
+\code
+     polynomial_type_each_x_128 p1,p2;
+     polynomial_res p_res;
+     
+     std::generate(p1.begin(), p1.end(), foo); // foo init the number of p1
+     std::generate(p2.begin(), p2.end(), foo); // foo init the number of p2
+     
+     p_res = vli::inner_product(p1,p2);
+\endcode
+
+By default, the inner_product will be multithreaded, free to the user to fix the desired number of thread with the usual OpenMP command (export OMP_NUM_THREADS=xx).
+If the GPU is enabled (with the help of cmake), the hybrid inner product will be executed between the CPU/GPU following the setting of the users.
 
 
 */

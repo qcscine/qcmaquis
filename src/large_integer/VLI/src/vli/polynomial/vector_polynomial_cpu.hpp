@@ -60,7 +60,7 @@ class vector : public std::vector<Polynomial> {
   public:
     /**
     \brief  constructor
-    \param size, default value 1
+    \param size default value 1
     
     Initialiation of the vector for a given size
     */
@@ -158,7 +158,7 @@ typename inner_product_result_type<vector<Polynomial> >::type inner_product_plai
     This function performs an optimized inner product. If the GPU mode is OFF the inner product will be executed in parrallel by OMP threading.
     If the GPU mode is activated an hybrid inner product will be executed on the GPU under hybrid setting rule.
     
-    \note By default the  hybrid inner product is executed on the full GPU. A split parameter is available into the cmake setting. It is to the user
+    \note If the  hybrid inner product is executed, it will be full GPU by default. A split parameter is available into the cmake setting. It is to the user
     to fix properly.
 */
 template <class Polynomial>

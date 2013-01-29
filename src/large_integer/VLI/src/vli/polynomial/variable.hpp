@@ -7,7 +7,7 @@ namespace vli {
 /*! \class var
         \brief This class models a variable
 
-        This class just encapsulates the char of the variable
+        This class just encapsulates the char of the variables of the polynomials
 */
 template <char X>
 class var

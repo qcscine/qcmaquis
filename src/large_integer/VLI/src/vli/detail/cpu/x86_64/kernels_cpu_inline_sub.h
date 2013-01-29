@@ -32,6 +32,11 @@
 #include <boost/preprocessor/comparison/equal.hpp>
 #include <boost/preprocessor/stringize.hpp>
 
+/* \cond I do not need this part in the doc*/
+
+namespace vli{
+    namespace detail{
+        
 #define VLI_EIGHT_MULTIPLY(n)    BOOST_PP_STRINGIZE(BOOST_PP_MUL(n,8))
 
 #define VLI_SUBTRACTION( z, n, unused) "movq "VLI_EIGHT_MULTIPLY(n)"(%[y]), %[tmp_register] \n\t" \
@@ -84,7 +89,7 @@ struct helper_inline_sub<NumWords,typename boost::enable_if_c< NumWords == BOOST
     };                                                                                 \
 };                                                                                     \
 
-BOOST_PP_REPEAT(8, FUNCTION_INLINE_sub_nbits_nbits, ~) //unroll until 512, maybe test 1024
+BOOST_PP_REPEAT(7, FUNCTION_INLINE_sub_nbits_nbits, ~) //unroll until 512, maybe test 1024
 
 #undef FUNCTION_INLINE_sub_nbits_nbits
 
@@ -142,10 +147,6 @@ BOOST_PP_REPEAT(8, FUNCTION_INLINE_sub_nbits_nbits, ~) //unroll until 512, maybe
 
 #undef FUNCTION_INLINE_sub_nbits_nbits
 
-
-
-
-
 #undef VLI_EIGHT_MULTIPLY
 #undef VLI_SUBTRACTION
 #undef VLI_SUBTRACTION2
@@ -154,5 +155,9 @@ BOOST_PP_REPEAT(8, FUNCTION_INLINE_sub_nbits_nbits, ~) //unroll until 512, maybe
 #undef VLI_GENERATE_SUBTRACTION
 #undef VLI_GENERATE_SUBTRACTION2
 #undef VLI_GENERATE_SUBTRACTION3
+
+/* \endcond I do not need this part in the doc*/
+
+    }} //end namespace
 
 #endif

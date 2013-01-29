@@ -25,7 +25,7 @@
 
 If you have a exotic system (e.g. Raspberry PI), it exists a non ASM mode with poor performance.
 
-  \subsection step2 How do I install ?
+  \subsection step1 How do I install ?
   
 The makefile is generated with cmake, if your environment is correctly set up do : 
 

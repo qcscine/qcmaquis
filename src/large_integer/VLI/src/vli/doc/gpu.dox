@@ -1,0 +1,27 @@
+/**
+\page gpu GPU environement
+
+\section gpu    Setting of the GPU
+
+This short section provides informations about the GPU setting. Into VLI library,  the GPU is an optionnal accelerator for the GPU inner products.
+The utilization of the GPU is not automatic (default off), the utilizers must set-up environment variables with the help of cmake 
+to have the full utilization of the GPU device.
+
+As usual with cmake, the cmake menu is accessed with "ccmake .". We obtain a menu with the environement variables.
+For the gpu environment, we are looking for :
+
+\image html cmake.png
+\image latex cmake.png "cmake menu" width=10cm
+
+
+   -# VLI_COMPILE_GPU (OFF/OFF) This variable must be set-up ON to enable the GPU accelerator (default: OFF)
+   -# VLI_COMPILE_TYPPE (int,int,int) These tupples instantiate the GPU library for a given type. Tupples are constructed
+   under the form : (size of the integer, Order of the polynomial, number of variable into the polynomial).
+   -# VLI_KEPLER generated (ON/OFF) if ON, it will generate an optimized version for Kepler architecture. If OFF, it will generate an optimized version for Fermi architecture
+   -# VLI_SPLIT_PARAM (float belongs [0,1], default 1) If the GPU is enable the inner products can be calculated by an hybrid mode between CPU/GPU simultaneously. The dispatch of the calculation is fixed by the user, 0 means full CPU, 1 full gpu. Usually 0.8 may be good value to have the optimal performance. But keep in mind this parameter will depend strongly of your GPU and the type of your polynomials.
+
+\warning  The tuples must match with the polynomial ytype (Type, Order and Size) create into your program, else teh compiler will fail the link operation
+
+\note Whatever the  given tuples, a dense and triangular version of an optimized inner product will be generated.
+
+*/
