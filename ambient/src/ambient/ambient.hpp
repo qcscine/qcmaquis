@@ -30,6 +30,7 @@
 #include "ambient/controllers/velvet/controller.h"
 #include "ambient/utils/auxiliary.hpp"
 #include "ambient/utils/io.hpp"
+#include "ambient/interface/scope.hpp"
 #include "ambient/interface/typed.hpp"
 #include "ambient/interface/kernel.hpp"
 #include "ambient/interface/future.hpp"

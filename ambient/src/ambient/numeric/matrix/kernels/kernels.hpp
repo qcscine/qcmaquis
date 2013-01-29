@@ -442,19 +442,19 @@ namespace ambient { namespace numeric { namespace kernels {
         int m = ViewA::rows(a);
         int k = ViewA::cols(a);
         int n = ViewB::cols(b);
-        int lda = __a_get_dim(a).y;
-        int ldb = __a_get_dim(b).y;
-        int ldc = __a_get_dim(c).y;
+        int lda = a.num_rows();
+        int ldb = b.num_rows();
+        int ldc = c.num_rows();
         static const double alpha(1.0); 
         static const double beta(0.0);
-        dgemm_(ViewA::code(), ViewB::code(), &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc); // __a_gemm ?
+        dgemm_(ViewA::code(), ViewB::code(), &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
     }
         
     template<class ViewB, typename T, typename D>
     void gemm_diagonal_lhs<ViewB,T,D>::c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
         __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
-        int sizey = __a_get_dim(a_diag).y;
-        int size = __a_get_dim(b).x;
+        int sizey = a_diag.num_rows();
+        int size = b.num_cols();
         int ONE  = 1;
         D* bd = current(b);
         D* cd = p_updated(c);
@@ -469,8 +469,8 @@ namespace ambient { namespace numeric { namespace kernels {
     void gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D>::c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
         __A_TIME_C("ambient_gemm_diagonal_lhs_c_kernel"); 
         printf("Special DIAGONAL!\n");
-        size_t sizex = __a_get_dim(b).x;
-        int size  = __a_get_dim(a_diag).y;
+        size_t sizex = b.num_cols();
+        int size  = a_diag.num_rows();
         int ONE  = 1;
         D* bd = current(b);
         D* cd = p_updated(c);
@@ -484,8 +484,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<class ViewA, typename T, typename D>
     void gemm_diagonal_rhs<ViewA,T,D>::c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
         __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
-        size_t sizex = __a_get_dim(b_diag).y;
-        int size = __a_get_dim(a).y; // for the case of complex
+        size_t sizex = b_diag.num_rows();
+        int size = a.num_rows(); // for the case of complex
         int ONE = 1;
         D* ad = current(a);
         D* cd = p_updated(c);
@@ -500,8 +500,8 @@ namespace ambient { namespace numeric { namespace kernels {
     void gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D>::c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
         __A_TIME_C("ambient_gemm_diagonal_rhs_c_kernel"); 
         printf("Special DIAGONAL!\n");
-        int sizey = __a_get_dim(b_diag).y;
-        int size = __a_get_dim(a).x;
+        int sizey = b_diag.num_rows();
+        int size = a.num_cols();
         int ONE = 1;
         D* ad = current(a);
         D* cd = p_updated(c);
@@ -570,9 +570,9 @@ namespace ambient { namespace numeric { namespace kernels {
     {
         __A_TIME_C("ambient_copy_block_c_kernel"); 
         T* sd = current(src);
-        T* dd = m*n < __a_get_dim(dst).square() ? (T*)s_updated(dst) : (T*)updated(dst);
-        __a_memptf_r<T, __a_memcpy>(dd, __a_get_dim(dst).y, dim2(dj, di), 
-                                    sd, __a_get_dim(src).y, dim2(sj, si), 
+        T* dd = m*n < __a_get_square_dim(dst) ? (T*)s_updated(dst) : (T*)updated(dst);
+        __a_memptf_r<T, __a_memcpy>(dd, dst.num_rows(), dim2(dj, di), 
+                                    sd, src.num_rows(), dim2(sj, si), 
                                     dim2( n, m ));
     }
 
@@ -583,11 +583,11 @@ namespace ambient { namespace numeric { namespace kernels {
                             const size_t& m, const size_t& n)
     {
         __A_TIME_C("ambient_copy_block_s_c_kernel"); 
-        T factor = ((T*)current(alfa))[ai + aj*__a_get_dim(alfa).y];
+        T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
         T* sd = current(src);
-        T* dd = m*n < __a_get_dim(dst).square() ? (T*)s_updated(dst) : (T*)updated(dst);
-        __a_memptf_r<T, __a_memscal>(dd, __a_get_dim(dst).y, dim2(dj, di), 
-                                     sd, __a_get_dim(src).y, dim2(sj, si), 
+        T* dd = m*n < __a_get_square_dim(dst) ? (T*)s_updated(dst) : (T*)updated(dst);
+        __a_memptf_r<T, __a_memscal>(dd, dst.num_rows(), dim2(dj, di), 
+                                     sd, src.num_rows(), dim2(sj, si), 
                                      dim2( n, m ), factor);
     }
 
@@ -598,17 +598,17 @@ namespace ambient { namespace numeric { namespace kernels {
                              const size_t& m, const size_t& n)
     {
         __A_TIME_C("ambient_copy_block_sa_c_kernel"); 
-        T factor = ((T*)current(alfa))[ai + aj*__a_get_dim(alfa).y];
-        __a_memptf_r<T, __a_memscala>(s_updated(dst), __a_get_dim(dst).y, dim2(dj, di), 
-                                      current(src), __a_get_dim(src).y, dim2(sj, si), 
+        T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
+        __a_memptf_r<T, __a_memscala>(s_updated(dst), dst.num_rows(), dim2(dj, di), 
+                                      current(src), src.num_rows(), dim2(sj, si), 
                                       dim2( n, m ), factor);
     }
         
     template<typename T>
     void trace<T>::c(const matrix<T>& a, future<T>& trace){
         __A_TIME_C("ambient_trace_c_kernel"); 
-        size_t m = __a_get_dim(a).y;
-        size_t n = __a_get_dim(a).x;
+        size_t m = a.num_rows();
+        size_t n = a.num_cols();
         T* ad = current(a);
     
         size_t sizex = std::min(n,m);
@@ -621,7 +621,7 @@ namespace ambient { namespace numeric { namespace kernels {
     void scalar_norm<T>::c(const matrix<T>& a, future<double>& norm){
         __A_TIME_C("ambient_scalar_norm_c_kernel"); 
         T* ad = current(a);
-        norm.get_value() = alps::numeric::real(__a_dot(ad, ad, __a_get_dim(a).square()));
+        norm.get_value() = alps::numeric::real(__a_dot(ad, ad, __a_get_square_dim(a)));
     }
         
     template<typename T>
@@ -629,7 +629,7 @@ namespace ambient { namespace numeric { namespace kernels {
         __A_TIME_C("ambient_scalar_overlap_c_kernel"); 
         T* ad = current(a);
         T* bd = current(b);
-        overlap.get_value() = __a_dot(ad, bd, __a_get_dim(a).square());
+        overlap.get_value() = __a_dot(ad, bd, __a_get_square_dim(a));
     }
 
         
@@ -651,7 +651,7 @@ namespace ambient { namespace numeric { namespace kernels {
         T* bd = current(b);
         T* ar = updated(a);
 
-        int size = __a_get_dim(a).square();
+        int size = __a_get_square_dim(a);
         for(int k = 0; k < size; k++) 
             ar[k] = ad[k] + bd[k];
     }
@@ -664,7 +664,7 @@ namespace ambient { namespace numeric { namespace kernels {
         T* bd = current(b);
         T* ar = updated(a);
 
-        int size = __a_get_dim(a).square();
+        int size = __a_get_square_dim(a);
         for(int k = 0; k < size; k++) 
             ar[k] = ad[k] - bd[k];
     }
@@ -674,7 +674,7 @@ namespace ambient { namespace numeric { namespace kernels {
         __A_TIME_C("ambient_scale_c_kernel"); 
         T* ad = current(a);
         T* ar = updated(a);
-        int size = __a_get_dim(a).square();
+        int size = __a_get_square_dim(a);
         for(int k=0; k < size; k++) 
             ar[k] = ad[k] * t.get_value();
     }
@@ -693,7 +693,7 @@ namespace ambient { namespace numeric { namespace kernels {
         __A_TIME_C("ambient_scale_inverse_c_kernel"); 
         T* ad = current(a);
         T* ar = updated(a);
-        int size = __a_get_dim(a).square();
+        int size = __a_get_square_dim(a);
         for(int k=0; k < size; k++) 
             ar[k] = ad[k] / t.get_value();
     }
@@ -701,7 +701,7 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     void sqrt_diagonal<T>::c(matrix<T>& a){
         __A_TIME_C("ambient_sqrt_diagonal_c_kernel"); 
-        size_t size = __a_get_dim(a).y;
+        size_t size = a.num_rows();
         T* ad = current(a);
         T* ar = updated(a);
         for(size_t i = 0; i < size; ++i) ar[i] = std::sqrt(ad[i]);
@@ -710,7 +710,7 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     void exp_diagonal<T>::c(matrix<T>& a, const T& alfa){
         __A_TIME_C("ambient_exp_diagonal_c_kernel"); 
-        size_t size = __a_get_dim(a).y;
+        size_t size = a.num_rows();
         T* ad = current(a);
         T* ar = updated(a);
         for(size_t i = 0; i < size; ++i) ar[i] = std::exp(alfa*ad[i]);
@@ -721,8 +721,8 @@ namespace ambient { namespace numeric { namespace kernels {
         __A_TIME_C("ambient_transpose_out_c_kernel"); 
         T* od = current(a);
         T* td = updated(t);
-        int m = __a_get_dim(a).y;
-        int n = __a_get_dim(a).x;
+        int m = a.num_rows();
+        int n = a.num_cols();
 
         for(int i = 0; i < m; i++){
             for(int j = 0; j < n; j++) *td++ = od[j*m];
@@ -733,16 +733,16 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     void resize<T>::c(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
         __A_TIME_C("ambient_resize_c_kernel");
-        T* dd = m*n == __a_get_dim(r).square() ? (T*)updated(r) : (T*)p_updated(r);
-        __a_memptf_r<T, __a_memcpy>(dd, __a_get_dim(r).y, dim2(0,0),
-                                    current(a), __a_get_dim(a).y, dim2(0,0), dim2(n, m)); 
+        T* dd = m*n == __a_get_square_dim(r) ? (T*)updated(r) : (T*)p_updated(r);
+        __a_memptf_r<T, __a_memcpy>(dd, r.num_rows(), dim2(0,0),
+                                    current(a), a.num_rows(), dim2(0,0), dim2(n, m)); 
     }
         
     template<typename T>
     void init_identity<T>::c(weak_view<T>& a){
         __A_TIME_C("ambient_init_identity_c_kernel"); 
-        size_t n = __a_get_dim(a).x;
-        size_t m = __a_get_dim(a).y;
+        size_t n = a.num_cols();
+        size_t m = a.num_rows();
         T* ad = p_updated(a);
 
         size_t sizex = std::min(m,n); // respecting borders
@@ -763,7 +763,7 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     void init_random<T>::c(weak_view<T>& a){
         __A_TIME_C("ambient_init_random_c_kernel"); 
-        size_t size = __a_get_dim(a).square();
+        size_t size = __a_get_square_dim(a);
         T* ad = updated(a);
         for(size_t i = 0; i < size; ++i) randomize(ad[i]);
     }
@@ -771,7 +771,7 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     void init_value<T>::c(weak_view<T>& a, const T& value){
         __A_TIME_C("ambient_init_value_c_kernel"); 
-        size_t size = __a_get_dim(a).square();
+        size_t size = __a_get_square_dim(a);
         T* ad = updated(a);
         for(size_t i = 0; i < size; ++i) ad[i] = value; // not a memset due to complex
     }
@@ -780,7 +780,7 @@ namespace ambient { namespace numeric { namespace kernels {
     void round_square<T>::c(const matrix<T>& a, std::vector<T>*& ac){
         __A_TIME_C("ambient_round_square_c_kernel"); 
         T* ad = current(a);
-        size_t sizey = __a_get_dim(a).y;
+        size_t sizey = a.num_rows();
         for(int i=0; i < sizey; i++){
             double v = std::abs(ad[i]);
             if(v > 1e-10) ac->push_back(v*v);
@@ -846,13 +846,13 @@ namespace ambient { namespace numeric { namespace kernels {
         T* bd = current(b); 
         double epsilon = std::numeric_limits<double>::epsilon();
         int count = 0;
-        size_t sizey = std::min(__a_get_dim(a).y, __a_get_dim(b).y);
-        size_t sizex = std::min(__a_get_dim(a).x, __a_get_dim(b).x);
+        size_t sizey = std::min(a.num_rows(), b.num_rows());
+        size_t sizex = std::min(a.num_cols(), b.num_cols());
 
         for(size_t i=0; i < sizey; ++i){
             for(size_t j=0; j < sizex; ++j){
-                T av = ad[i+j*__a_get_dim(a).y];
-                T bv = bd[i+j*__a_get_dim(b).y];
+                T av = ad[i+j*a.num_rows()];
+                T bv = bd[i+j*b.num_rows()];
                 double d = distance(av, bv);
                 double m = magnitude(av, bv);
                 if(d > epsilon*256 && d/m > epsilon*256){ // || av*bv < 0 // 16 is recommended, 256 because MKL isn't bitwise stable
@@ -1134,8 +1134,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     void svd<T>::c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s){
         __A_TIME_C("ambient_svd_c_kernel"); 
-        int m = __a_get_dim(a).y;
-        int n = __a_get_dim(a).x;
+        int m = a.num_rows();
+        int n = a.num_cols();
         int k = std::min(m,n);
         int info;
         int lwork = -1; // C - Alex, netlib said -1 for the best workspace
@@ -1157,8 +1157,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     void qr<T>::c(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r){
         __A_TIME_C("ambient_qr_c_kernel"); 
-        int m = __a_get_dim(a).y; //numrow a
-        int n = __a_get_dim(a).x; //numcol a, numcol r
+        int m = a.num_rows(); //numrow a
+        int n = a.num_cols(); //numcol a, numcol r
         int k = std::min(m,n); //numrow r
         int info;
         int lwork = -1; 
@@ -1190,7 +1190,7 @@ namespace ambient { namespace numeric { namespace kernels {
         getq_qr(&m, &k, &k, ad, &m, tau, more_work, &lwork, &info);
         assert( info == 0 ); 
          
-        memcpy((void*)qd, (void*)ad, k*__a_get_dim(a).y*sizeof(T)); // l 235 
+        memcpy((void*)qd, (void*)ad, k*a.num_rows()*sizeof(T)); // l 235 
 
         free(work);
         free(more_work);
@@ -1200,8 +1200,8 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     void lq<T>::c(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q){
         __A_TIME_C("ambient_lq_c_kernel"); 
-        int m = __a_get_dim(a).y; //numrow a, numrow l
-        int n = __a_get_dim(a).x; //numcol a
+        int m = a.num_rows(); //numrow a, numrow l
+        int n = a.num_cols(); //numcol a
         int k = std::min(m,n); //numcol l
         int info;
         int lwork = -1; 
@@ -1245,7 +1245,7 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     void heev<T>::c(matrix<T>& a, weak_view<double>& w){
         __A_TIME_C("ambient_heev_c_kernel"); 
-        int m = __a_get_dim(a).y;
+        int m = a.num_rows();
         int info, lwork = -1;
         double wkopt;
         double* work;
