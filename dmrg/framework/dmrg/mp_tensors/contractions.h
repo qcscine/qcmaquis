@@ -499,12 +499,17 @@ struct contraction {
         
         size_t loop_max = mpo.col_dim();
        
-        std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max); 
+        std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max);
+
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
-        for(size_t b = 0; b < loop_max; ++b)
+        for(size_t b = 0; b < loop_max; ++b) {
+            #ifdef AMBIENT
+            ambient::scope::single i;
+            #endif
             gemm(left_mpo_mps.data_[b], right.data_[b], oblocks[b]);
+        }
             
         for (size_t b = 0; b < loop_max; ++b)
             for (size_t k = 0; k < oblocks[b].n_blocks(); ++k)
