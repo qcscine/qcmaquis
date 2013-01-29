@@ -112,6 +112,10 @@ namespace ambient { namespace numeric { namespace kernels {
         return ref.impl->spec.dim;
     }
 
+    template<typename T> inline size_t __a_get_square_dim(T& ref){ 
+        return ref.impl->spec.dim.square();
+    }
+
     template<typename T> inline size_t __a_sizeof(T& ref){ 
         return ref.impl->spec.size;  
     }
