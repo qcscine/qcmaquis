@@ -28,16 +28,26 @@ namespace vli {
 template <class Coeff, class MaxOrder, class Var0, class Var1 = no_variable, class Var2 = no_variable, class Var3 = no_variable>
 class polynomial : public detail::storage<Coeff,MaxOrder,num_variables<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> >::value> {
   public:
+    /*! \cond I do not need this part in the doc*/
     typedef detail::storage<Coeff,MaxOrder,num_variables<polynomial>::value> base_type;
+    /* \endcond */
+    /*! \brief Type of the coefficient  */
     typedef typename  base_type::value_type                 value_type;
+    /*! \cond I do not need this part in the doc*/
     typedef detail::element_descriptor_impl<Var0, Var1, Var2, Var3> element_descriptor;
+    /* \endcond */
+    /*! \brief Order of the polynomial */
     typedef MaxOrder                                        max_order;
+    /*! \brief iterator std compatibility  */
     typedef typename  base_type::iterator                   iterator;
+    /*! \brief const_iterator std compatibility  */
     typedef typename  base_type::const_iterator             const_iterator;
+    /*! \brief reverse_iterator std compatibility  */
     typedef typename  base_type::reverse_iterator           reverse_iterator;
+    /*! \brief const_reverse_iterator std compatibility  */
     typedef typename  base_type::const_reverse_iterator     const_reverse_iterator;
-    typedef unsigned int                                    exponent_type;      // Type of the exponents (has to be the same type as Vli::size_type)
-
+    /*! \brief Type of the exponents (has to be the same type as Vli::size_type */
+    typedef unsigned int                                    exponent_type;
 
     /**
     \brief Default constructor
@@ -48,8 +58,7 @@ class polynomial : public detail::storage<Coeff,MaxOrder,num_variables<polynomia
     }
 
     /**
-    \brief  constructor
-       I do not understand well
+    \brief  Constructor with funcamental type or third-party library
     */
     template <class T>
     explicit polynomial(T const& v, typename boost::enable_if_c<boost::is_same<T,int>::value || boost::is_same<T,value_type>::value>::type* dummy = 0 ) {
@@ -58,8 +67,8 @@ class polynomial : public detail::storage<Coeff,MaxOrder,num_variables<polynomia
     }
 
     /**
-    \brief
-    \param p polynomial with different coefficient type
+    \brief copy constructor
+     \param p polynomial with different coefficient type
     The polynomial is initialized by copy, it necessitate a cast between the two kind of coefficients
     */
     template <class Coeff2>
@@ -70,6 +79,7 @@ class polynomial : public detail::storage<Coeff,MaxOrder,num_variables<polynomia
             *it++ = static_cast<Coeff>(*it2++);
     }
 
+    /* \cond */
     friend void swap(polynomial& a, polynomial& b) {
         using boost::swap;
         swap(static_cast<base_type&>(a),static_cast<base_type&>(b));
@@ -78,6 +88,7 @@ class polynomial : public detail::storage<Coeff,MaxOrder,num_variables<polynomia
     void print(std::ostream& os) const {
         detail::print_helper<polynomial>::apply(os,*this);
     }
+    /* \endcond */
 
     /**
     \brief Perform an addition between a polynomial and an other type
@@ -134,13 +145,14 @@ class polynomial : public detail::storage<Coeff,MaxOrder,num_variables<polynomia
         multiplicative_op_assign(*this, t, detail::operations::devide_assign());
         return *this;
     }
-    // ANDREAS well I do not see the difference between this  and line 120, do you duplicate ?
+
+    /*! \cond I do not need this part in the doc*/
     template <typename Coeff2, typename MVar0, typename MVar1, typename MVar2, typename MVar3>
     polynomial& operator *= (monomial<Coeff2, MVar0, MVar1, MVar2, MVar3> const& m) {
         detail::multiply_assign_monomial_helper<polynomial>::apply(*this,m);
         return *this;
     }
-
+    /* \endcond */
     /**
     \brief negate a polynomial
     */
@@ -159,10 +171,12 @@ class polynomial : public detail::storage<Coeff,MaxOrder,num_variables<polynomia
     }
 
     using base_type::operator();
-    // for direct access, I removed the element descriptor
+
+    /*! \cond I do not need this part in the doc*/
     inline value_type& operator()(element_descriptor const& e) {
         return base_type::operator()(exponent(e,Var0()),exponent(e,Var1()),exponent(e,Var2()),exponent(e,Var3()));
     }
+
 #ifdef ALPS_HAVE_HDF5
     void save(alps::hdf5::archive& ar) const {
         using alps::make_pvp;
@@ -183,6 +197,8 @@ class polynomial : public detail::storage<Coeff,MaxOrder,num_variables<polynomia
     inline value_type const& operator()(element_descriptor const& e) const {
         return base_type::operator()(exponent(e,Var0()),exponent(e,Var1()),exponent(e,Var2()),exponent(e,Var3()));
     }
+    /* \endcond */
+
 };
 
 
@@ -348,7 +364,7 @@ POLYNOMIAL_CLASS operator / (POLYNOMIAL_CLASS p, int c) {
 \brief division between a polynomial and a coefficient
 \return polynomial
 \param p polynomial
-\param a coefficient
+\param c coefficient
 
 Basic division bewteen a polynomial and a coefficient
 */

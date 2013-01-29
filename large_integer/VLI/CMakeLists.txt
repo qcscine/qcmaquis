@@ -45,6 +45,7 @@ option (VLI_USE_OPENMP "Build and execute with openmp" ON)
 option (VLI_MAIN  "Build and execute the main" ON)
 option (VLI_KEPLER "Target Kepler (ON - default) or Fermi (OFF) GPU architecture" ON)
 option (VLI_DOCUMENTATION "Use Doxygen to create the HTML/LATEX based API documentation" OFF)
+option (VLI_INLINE "Experimental inline kernel" OFF)
 
 set (VLI_CPU_FREQ "2.5e9" CACHE STRING "Frequency of the CPU (for benchmark timers)")
 set (VLI_SPLIT_PARAM "1.0" CACHE STRING "Split param for cpu/gpu mix mode, 1.0 = full gpu")
@@ -55,6 +56,11 @@ set (VLI_COMPILE_TYPES "((128,10,1))((128,10,2))((128,10,3))((128,10,4))((192,10
 # Find dependencies
 #
 ########################################################################
+if(VLI_INLINE)
+     add_definitions("-DVLI_INLINE")
+endif(VLI_INLINE)
+
+
 if(VLI_USE_OPENMP)
      find_package(OpenMP)
      add_definitions(${OpenMP_CXX_FLAGS})

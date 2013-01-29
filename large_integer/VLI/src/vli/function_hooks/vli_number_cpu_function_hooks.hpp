@@ -35,6 +35,7 @@
 
 #include "vli/detail/cpu/x86_64/kernels_cpu_inline_add.h" // inline add kernel
 #include "vli/detail/cpu/x86_64/kernels_cpu_inline_sub.h" // inline sub kernel
+#include "vli/detail/cpu/x86_64/kernels_cpu_inline_mul.h" // inline mul kernel
 
 namespace vli
 {

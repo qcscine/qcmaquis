@@ -185,7 +185,19 @@ template <std::size_t NumBits>
 bool integer<NumBits>::is_negative() const{
     return static_cast<bool>( data_[numwords-1] >> (std::numeric_limits<value_type>::digits-1) );
 }
+
 // c - basic operators
+template <std::size_t NumBits>
+integer<NumBits>& integer<NumBits>::operator = (long int const num){
+    assert( -1l >> 1 == -1l );
+    data_[0] = num;
+    value_type a = num >> std::numeric_limits<long int>::digits;
+    for(size_type i=1; i< numwords; ++i)
+        data_[i] = a;
+    return *this;
+}
+    
+    
 template <std::size_t NumBits>
 integer<NumBits>& integer<NumBits>::operator >>= (long int const a){
     assert( a >= 0 );

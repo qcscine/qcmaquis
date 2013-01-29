@@ -38,7 +38,7 @@ PROJECT_NUMBER         = 1.0
 # for a project that appears at the top of each page and should give viewer
 # a quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "Large and polynomial arithmetic for hybrid inner products of polynomials" 
+PROJECT_BRIEF          = "VLI - a library for high precision integer and polynomial arithmetic" 
 
 # With the PROJECT_LOGO tag one can specify an logo or icon that is
 # included in the documentation. The maximum height of the logo should not
@@ -748,7 +748,7 @@ EXAMPLE_RECURSIVE      = NO
 # directories that contain image that are included in the documentation (see
 # the \image command).
 
-IMAGE_PATH             =
+IMAGE_PATH             = @PROJECT_SOURCE_DIR@/src/vli/doc
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program

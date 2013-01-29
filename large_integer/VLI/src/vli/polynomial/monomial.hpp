@@ -40,36 +40,68 @@ namespace vli {
 */
 template <class Coeff, class Var0, class Var1 = no_variable, class Var2 = no_variable, class Var3 = no_variable>
 struct monomial : public detail::element_descriptor_impl<Var0,Var1,Var2,Var3> {
-    typedef Coeff           value_type;
-    typedef unsigned int    exponent_type;
-    typedef detail::element_descriptor_impl<Var0,Var1,Var2,Var3> base_type;
     
+    /*! \brief value type of the coefficient of the monomial */
+    typedef Coeff           value_type;
+    /*! \brief value type of the exponent of the monomial */
+    typedef unsigned int    exponent_type;
+     /* \cond I do not need this part in the doc*/
+    typedef detail::element_descriptor_impl<Var0,Var1,Var2,Var3> base_type;
+     /* \endcond */
+    /**
+     \brief Default constructor, the coefficient of the monomial is set up to 0
+     */
     monomial()
     : detail::element_descriptor_impl<Var0,Var1,Var2,Var3>(0,0,0,0), c_(Coeff(1)) {
     }
+
+    /**
+     \brief explicit constructor, it necessitates at least one value
+      \param exp0 value of the first exponent
+      \param exp1 value of the second exponent (default 0)
+      \param exp2 value of the third exponent (default 0)
+      \param exp3 value of the fourth exponent (default 0)
+     */
     explicit monomial(exponent_type exp0, exponent_type exp1 = 0, exponent_type exp2 = 0, exponent_type exp3 = 0)
     : detail::element_descriptor_impl<Var0,Var1,Var2,Var3>(exp0,exp1,exp2,exp3), c_(Coeff(1)) {
     }
-    
+
+    /**
+     \fn operator - () const
+     \brief negate a monomial
+     */
     monomial operator - () const {
         monomial r(*this);
         r.c_ = -c_;
         return r;
     }
-    
+
+    /**
+     \fn monomial& operator *= (T const& c)
+     \brief multiply monomial by vli::integer or a long int
+     \param c template parameter (vli::integer or a long int)
+     */
     template <class T>
     monomial& operator *= (T const& c) {
         c_ *= c;
         return *this;
     }
     
+    /* \cond I do not need this part in the doc*/
     void print(std::ostream& os) const {
         if(c_ > 0)
             os << "+";
         os << c_ << "*";
         os << static_cast<base_type>(*this);
     }
-
+     /* \endcond */
+    
+    /**
+     \fn bool operator == (monomial const& m) const
+     \brief check if two monomials are equals
+     \param m a monomial
+     This operator checks if the exponent and the coefficients of the monomails are equals.
+     */
     bool operator == (monomial const& m) const{
         return (
                (exponent(*this,Var0()) == exponent(m,Var0()))
@@ -79,22 +111,43 @@ struct monomial : public detail::element_descriptor_impl<Var0,Var1,Var2,Var3> {
             && (c_ == m.c_)
         );
     }
-
+    
+    /**
+     \brief container of the monomial (vli::integer, gmp number, int ...)
+     */
     Coeff c_;
 };
 
-
+/**
+\brief Stream operator
+\param os std::ostream
+\param m a monomial
+   As classical iostream operator
+*/
 template <class Coeff, class Var0, class Var1, class Var2, class Var3>
 std::ostream& operator << (std::ostream& os, monomial<Coeff,Var0,Var1,Var2,Var3> const& m){
     m.print(os);
     return os;
 }
+
+/**
+\brief multiplication between a monomial and vli::integer or a long int
+\param m a monomial
+\param c template parameter can be a vli::integer or a long int
+This operator performs  a multiplication between the coefficients of two monomial, or a monomial and a long int
+*/
 template <class Coeff, class Var0, class Var1, class Var2, class Var3, class T>
 monomial<Coeff,Var0,Var1,Var2,Var3> operator * (monomial<Coeff,Var0,Var1,Var2,Var3> m, T const& c) {
     m*=c;
     return m;
 }
-
+    
+/**
+\brief multiplication between a monomial and vli::integer or a long int
+\param c template parameter can be a vli::integer or a long int
+\param m a monomial
+This operator performs  a multiplication between the coefficients of two monomial, or a monomial and a long int
+*/
 template <class Coeff, class Var0, class Var1, class Var2, class Var3, class T>
 monomial<Coeff,Var0,Var1,Var2,Var3> operator * (T const& c, monomial<Coeff,Var0,Var1,Var2,Var3> const& m) {
     return m*c;
