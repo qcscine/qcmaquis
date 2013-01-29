@@ -1,4 +1,4 @@
-\documentclass[oribibl]{llncs2e/llncs}
+\documentclass[oribibl,a4paper]{llncs2e/llncs}
 \usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
 \geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
 \usepackage{graphicx}
@@ -8,7 +8,7 @@
 \graphicspath{{WarpTask/figures/}{Res/figures/}} %do not forget the / at the end
 
 \title{VLI - a library for high precision integer and polynomial arithmetic}
-\author{Timoth\'ee Ewart\inst{1}\thanks{Acknowledgments: Maxim Milakov, Peter Messmer:   NVIDIA,   Williams Sawyer, Gilles Fourestey:  CSCS, HP2C funding, hp2c.ch}  , Andreas Hehn$^2$, Matthias Troyer\inst{2} and Thierry Giamarchi\inst{1}}
+\author{Timoth\'ee Ewart\inst{1}\thanks{Acknowledgments: Maxim Milakov, Peter Messmer:   NVIDIA,   Williams Sawyer, Gilles Fourestey:  CSCS, HP2C funding, hp2c.ch}  , Andreas Hehn$^2$ and Matthias Troyer\inst{2}}
 
 \institute{Universit\'e de Gen\`eve, \email{timothee.ewart@gmail.com}  \and Eidgen\"ossische Technische Hochschule Z\"urich }
 
@@ -128,21 +128,20 @@ where the inner product the vectors are split into a part calculated on the CPU 
 The ratio of these two parts can be set when building the library.
 It is also possible to deactivate either part completely and compile a pure CPU version.
 
-\paragraph{CPU}
 On the CPU we perform the inner product by element-wise polynomial-polynomial multiplications using the implementation of the polynomial.
 This operation can easily parallelized using OpenMP by splitting the vector and distributing equal-sized chunks among the available threads.
 Since all polynomials are of the same structure the work is well balanced between the threads.
 
-The highly parallel structure of the operation suggests a SIMD approach.
-However to perform 4 large integer operations in parallel on current \verb|x86-64| architectures is not advisable,
-since the kernels need to be based 32 bit integer operations instead of 64 bit operations which are available for the sequential version.
-This increases the number of required multiply instructions for a large integer multiplication by a factor of 4.
-Using current Streaming SIMD Extensions (SSE) allows only two 32bit multiplications yielding 64bit results in a SIMD fashion.
+Even though the parallel structure of the operation suggests a SIMD approach performing 4 large integer operations in parallel on current \verb|x86-64| architectures is not advisable.
+Using the Streaming SIMD Extensions (SSE) all kernels need to be based on 32 bit integer operations instead of 64 bit operations which are available for the sequential version.
+This reduction of word size increases the number of required multiply instructions for a large integer multiplication by a factor of 4.
+Furthermore, the current SSE instruction set only supports an integer SIMD multiplication for two 32bit numbers, each yielding a 64 bit result.
 Thus a SIMD implementation using SSE will be two times slower than our serial version using 64 bit integers.
-Furthermore we neglected the carry bit propagation, which needs to be done manually in SSE,
-while the sequential version takes advantage of the hardware support for carry bit propagation.
+Note that we also neglected the carry bit propagation of the required additions.
+While the sequential version benefits of the hardware support for carry bit propagation, an SSE implementation needs to handle the carry manually.
 
-The upcoming AVX2 instruction set will feature integer SIMD operations with twice the vector width of SSE. However, it will neither support any 64 bit integer operations nor any carry bit propagation. Therefore it will at most be as fast as our sequential version.
+The upcoming AVX2 instruction set will feature integer SIMD operations with twice the vector width of SSE.
+However, it will neither support 64 bit integer multiplications nor carry bit propagation. Therefore it will at most be as fast as our sequential version.
 
 %\begin{itemize}
 %\item We use the single large integer kernels
@@ -154,6 +153,7 @@ The upcoming AVX2 instruction set will feature integer SIMD operations with twic
 %\item The upcoming AVX2 will double the vector width and support four 32bit integer multiplications, but no carry bit support.
 %\end{itemize}
 \paragraph{GPU}
+On the GPU the picture is slightly different. The SIMT
 \begin{itemize}
 \item Many small tasks of the same form. $\rightarrow$ well suited for GPUs.
 \item {\bf Implementation details:}
@@ -169,14 +169,13 @@ The upcoming AVX2 instruction set will feature integer SIMD operations with twic
 \item Since threads within a warp are executed in a lockstep manner, we try to give all threads within a warp the same amount of work. This way the threads have to wait as little as possible for the other threads of the warp to finish.
 \item We group the coefficients by 32 into a ``task'' and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}), i.e.\ each thread calculates one coefficient of the resulting polynomial.
 \begin{figure}[t]
-    \begin{center}
+    \centering
     \mbox{
         \includegraphics[scale=0.37, angle=-90]{coeffs.eps} 
         \includegraphics[scale=0.37, angle=-90]{warp.eps} 
     }
     \caption{Left: Number of contributions to each coefficient of the resulting polynomial (red line) sorted in reverse order and split into tasks. Right: Load balancing of the tasks over the warps.}
     \label{fig:GPU_load_balance}
-    \end{center}
 \end{figure}
 \item Each thread of the warp gets the indices of the resulting coefficient and determines the necessary terms to calculate the output coefficient.
 \item Reduction is implemented according to the best practices by NVIDIA (TODO reference)
@@ -192,7 +191,7 @@ The upcoming AVX2 instruction set will feature integer SIMD operations with twic
 \begin{itemize}
 \item pure CPU benchmarks were done on a Sandy bridge Intel Xeon E5-2670 with 32 logical cores.
 \begin{table}
-    \begin{center}
+    \centering
     \begin{tabular}{l|cc|r}
      Operation & Execution & time [s] & Speed-up\\
        & GMP & VLI & \\
@@ -211,7 +210,6 @@ The upcoming AVX2 instruction set will feature integer SIMD operations with twic
     \end{tabular}
     \caption{Execution time comparison of simple integer operations using the GNU Multiprecision Library and the VLI library for $10^8$ operations.}
     \label{tab:vli_vs_gmp}
-    \end{center}
 \end{table}
 \item Comparing the execution time of simple addition and multiplication operations our implementation for fixed size integers is between $25\%$ and $236\%$ faster for the addition and up to $172\%$ faster for the multiplication (table \ref{tab:vli_vs_gmp}).
 \item Note that the reported time is the pure execution time of the operation. All variables were allocated before.
@@ -227,7 +225,7 @@ coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512
 \item We estimate the performance in integer operations per second (IOP/s).
 \item For the GPU performance estimate we only consider the instructions for the polynomial-polynomial multiplications and neglect the reduction at the end of the inner product.
 \begin{figure}[t!]
-    \begin{center}
+    \centering
     \mbox{
         \hspace{-0.5cm}
         \includegraphics[scale=0.37, angle=-90]{ME128.eps} 
@@ -236,11 +234,10 @@ coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512
     }
     \caption{Comparison of the inner product with and without GPU accelerator. Left: Inner product of dense polynomials with up to 3 variables and 126 to 256 bits coefficients. Right: Inner product of triangular polynomials with up to 3 variables and 126 to 256 bits coefficients. Size of the vector 4096. GMP gives similar results independent of the polynomial structure.}
     \label{ResME}
-    \end{center}
 \end{figure}
 
 \begin{figure}[t!]
-    \begin{center}
+    \centering
     \mbox{
         \hspace{-0.5cm}
         \includegraphics[scale=0.37, angle=-90]{ME128MIPS.eps} 
@@ -251,7 +248,6 @@ coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512
     }
     \caption{Performance of the inner product of two vectors of dimension 4096 with ``dense'' (left) and ``triangular'' (right) polynomials having 128 bit coefficients on a NVIDIA Tesla K20X (GK110).}
     \label{fig:ResMEMIPS}
-    \end{center}
 \end{figure}  
 \item We reach up to $214$ GIOP/s using 32 bit multiply-add (\verb|madc|)
 \item Theoretical maximum for the NVIDIA Tesla K20X is given by Number of Multiprocessors (SMX) $\cdot$ Clock frequency $\cdot$ Instruction throughput of \verb|madc|  =  $14 \, \mathrm{SMX} \cdot 732 \, \mathrm{MHz} \cdot 32 \, \mathrm{ IOP / cycle / SMX} = 327 \, \mathrm{GIOP/s}$. (Multiply-add throughput taken from \cite{CUDAProgramming}).
