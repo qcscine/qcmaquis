@@ -46,13 +46,13 @@ set out "figures/ME192.eps";replot "SandyBridgeRes/MaxOrderEachTime192bits.dat" 
  set out "figures/ME192.eps"; replot "SandyBridgeRes/MaxOrderEachTime192bits.dat" using 1:($17)/(($12)*1e+9) linestyle 3 with lines title "xyz gmp"
 
 set terminal postscript enhanced
+set key top left
 set size 0.8,0.8
 set ylabel "10^9 Large integer OP/s"
 set xlabel "Order"
 set xrange [1:14]
-set yrange [0:10]
+set yrange [0:8]
 #set key  at 6.6,9.9
-set key top right
 set title "\"Dense\" polynomials"
 #GPU
 set out "figures/ME128.eps";plot "KeplerRes/MaxOrderEachTime128bits.dat" using 1:($19)/(($6)*1e+9)  linestyle 20  with lines title "P(x)_{gpu}"

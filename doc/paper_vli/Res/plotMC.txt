@@ -3,7 +3,6 @@ reset
 set terminal postscript enhanced
 set size 0.8,0.8
 set ylabel "10^9 Large integer OP/s"
-
 set xlabel "Order"
 set xrange [1:14]
 set yrange [0:4]
@@ -51,12 +50,12 @@ set out "figures/MC192.eps";replot "SandyBridgeRes/MaxOrderCombinedTime192bits.d
 
 set terminal postscript enhanced
 set size 0.8,0.8
+set key top left
 set ylabel "10^9 Large integer OP/s"
 set xlabel "Order"
 set xrange [1:14]
-set yrange [0:10]
+set yrange [0:8]
 #set key  at 6.6,9.9
-set key top right
 set title "\"Triangular\" polynomials"
 
 #GPU
