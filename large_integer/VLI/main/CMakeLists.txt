@@ -1,7 +1,7 @@
 # Make sure the linker can find the vli library once it is built. 
 link_directories (${PROJECT_BINARY_DIR}/src/vli) 
 #set(order_list 1 2 3 4 5 6 7 8 9 10 11 12 13 14)
-set(order_list 6)
+set(order_list 10)
 
 if(VLI_COMPILE_GPU)
     add_definitions(-DVLI_USE_GPU -DVLI_SPLIT_PARAM=${VLI_SPLIT_PARAM} )

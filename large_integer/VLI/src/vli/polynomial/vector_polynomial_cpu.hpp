@@ -47,6 +47,14 @@
 #endif //VLI_COMPILE_GPU
 
 namespace vli {
+    
+    
+    /* \cond I do not need this part in the doc*/
+    
+    template <std::size_t NumBits>
+    class integer;
+    
+    /* \endcond I do not need this part in the doc*/
 
 
 /*! \class vector
@@ -72,7 +80,7 @@ class vector : public std::vector<Polynomial> {
 }; //end class
 
 /* \cond I do not need this part in the doc*/
-template <class VectorPolynomial>
+template <class Vector>
 struct inner_product_result_type {
 };
 
@@ -168,7 +176,7 @@ inner_product(
         , vector<Polynomial> const& v2
         ) {
 #ifdef VLI_USE_GPU
-    return detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2); // can be pure gpu or hybride cpu omp/gpu
+    return vli::detail::inner_product_gpu_helper<Polynomial>::inner_product_gpu(v1,v2); // can be pure gpu or hybride cpu omp/gpu
 #else 
     return detail::inner_product_cpu(v1,v2);// can be pure serial or omp
 #endif
