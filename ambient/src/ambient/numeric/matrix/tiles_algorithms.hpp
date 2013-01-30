@@ -1,5 +1,5 @@
-#ifndef __AMBIENT_NUMERIC_TILES_ALGORITHMS_HPP__
-#define __AMBIENT_NUMERIC_TILES_ALGORITHMS_HPP__
+#ifndef AMBIENT_NUMERIC_TILES_ALGORITHMS
+#define AMBIENT_NUMERIC_TILES_ALGORITHMS
 
 #include "ambient/numeric/matrix/tiles.h"
 
@@ -9,52 +9,33 @@
 #define scalar_type     typename tiles<Matrix>::scalar_type
 #define difference_type typename tiles<Matrix>::difference_type
 
-inline size_t __a_mod_classic(size_t size, size_t tile){
-    size_t mask[2] = {(size & (tile-1)), tile}; 
-    return mask[!mask[0]];
-}
-
-inline size_t __a_mod(size_t size, size_t tile){
-    size_t m = size % tile;
-    if(m == 0) m = tile;
-    return m;
-}
-
-template<typename T>
-inline void __a_reduce(std::vector<T*>& seq){
-    if(seq.size() == 1) return;
-    for(int stride = 1; stride < seq.size(); stride *= 2)
-        for(int k = stride; k < seq.size(); k += stride*2){
-            *seq[k-stride] += *seq[k];
-        }
-}
-
-class cross_iterator {
-public:
-    cross_iterator(size_t first, size_t second, size_t size) 
-    : first(first), second(second), lim(first+size){
-        measure_step();
-    }
-    void operator++ (){
-        first  += step;
-        second += step;
-        measure_step();
-    }
-    bool end(){
-        return (first >= lim);
-    }
-    void measure_step(){
-        step = std::min(std::min((AMBIENT_IB*__a_ceil((first+1)/AMBIENT_IB) - first), 
-                                 (AMBIENT_IB*__a_ceil((second+1)/AMBIENT_IB) - second)),
-                                 (lim-first));
-    }
-    size_t first;
-    size_t second;
-    size_t step;
-    size_t lim;
-};
 
 namespace ambient { namespace numeric {
+
+    class cross_iterator {
+    public:
+        cross_iterator(size_t first, size_t second, size_t size) 
+        : first(first), second(second), lim(first+size){
+            measure_step();
+        }
+        void operator++ (){
+            first  += step;
+            second += step;
+            measure_step();
+        }
+        bool end(){
+            return (first >= lim);
+        }
+        void measure_step(){
+            step = std::min(std::min((AMBIENT_IB*__a_ceil((first+1)/AMBIENT_IB) - first), 
+                                     (AMBIENT_IB*__a_ceil((second+1)/AMBIENT_IB) - second)),
+                                     (lim-first));
+        }
+        size_t first;
+        size_t second;
+        size_t step;
+        size_t lim;
+    };
 
     template<class Matrix>
     bool is_hermitian(const tiles<Matrix>& a){

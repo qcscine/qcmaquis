@@ -1,8 +1,7 @@
-#ifndef __AMBIENT_NUMERIC_MATRIX_ALGORITHMS_HPP__
-#define __AMBIENT_NUMERIC_MATRIX_ALGORITHMS_HPP__
+#ifndef AMBIENT_NUMERIC_MATRIX_ALGORITHMS
+#define AMBIENT_NUMERIC_MATRIX_ALGORITHMS
 
 #include "ambient/numeric/matrix/matrix.h"
-#include "ambient/numeric/matrix/kernels/utils.hpp"
 #include "ambient/numeric/matrix/kernels/kernels.hpp"
 #include "ambient/numeric/matrix/diagonal_matrix.hpp"
 

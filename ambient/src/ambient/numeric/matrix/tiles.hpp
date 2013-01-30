@@ -1,5 +1,5 @@
-#ifndef __AMBIENT_NUMERIC_TILES_HPP__
-#define __AMBIENT_NUMERIC_TILES_HPP__
+#ifndef AMBIENT_NUMERIC_TILES_HPP
+#define AMBIENT_NUMERIC_TILES_HPP
 
 #include "ambient/numeric/matrix/tiles.h"
 #include "ambient/numeric/matrix/tiles_algorithms.hpp"

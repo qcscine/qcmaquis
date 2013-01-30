@@ -1,5 +1,5 @@
-#ifndef __AMBIENT_NUMERIC_TILES_H__
-#define __AMBIENT_NUMERIC_TILES_H__
+#ifndef AMBIENT_NUMERIC_TILES_H
+#define AMBIENT_NUMERIC_TILES_H
 
 namespace ambient { namespace numeric {
 
