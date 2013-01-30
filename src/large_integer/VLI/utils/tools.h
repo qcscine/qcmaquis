@@ -15,19 +15,19 @@ namespace tools{
     template <typename Vli>
     typename Vli::value_type rnd_digit(){
         //static boost::uniform_int<typename Vli::value_type> rnd(0,std::numeric_limits<typename Vli::value_type>::max());
-        static boost::uniform_int<typename Vli::value_type> rnd(0,0xffffffffffffff);
+        static boost::uniform_int<typename Vli::value_type> rnd(0,0xffffffffffff); //else over flow inner products
         return   rnd(rng);
     }
    
     template <typename Vli>
     int rnd_valid_int(){
        // static boost::uniform_int<int> rnd(0,std::abs(static_cast<int>(std::numeric_limits<typename Vli::value_type>::max())));
-        static boost::uniform_int<int> rnd(0,std::abs(static_cast<int>( 0xffffffffffffff )));
+        static boost::uniform_int<int> rnd(0,std::abs(static_cast<int>( 0xffffffffffff ))); //else over flow inner products
         return  rnd(rng);
     }
     // I can get a overflow during the sum of the inner product so minus 1
     template <typename Vli>
-    void vli_negate(Vli& v, int random=Vli::numwords-1){
+    void vli_negate(Vli& v, int random=Vli::numwords){
         if(v[0]%random == 0)
             v.negate();
     }

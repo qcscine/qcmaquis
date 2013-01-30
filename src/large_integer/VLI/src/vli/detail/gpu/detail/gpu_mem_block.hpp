@@ -31,8 +31,6 @@
 #ifndef GPU_MEM_BLOCK_HPP
 #define GPU_MEM_BLOCK_HPP
 
-#include <boost/mpl/assert.hpp>
-#include <boost/utility/enable_if.hpp>
 #include "vli/detail/gpu/detail/gpu_mem_block.h" // memory
 
 /* \cond I do not need this part in the doc*/

@@ -38,8 +38,6 @@
 
 namespace vli {
     namespace detail {
-   
-
 
     template <int Var, int NumVars, int Order>
     struct result_stride {
@@ -52,7 +50,20 @@ namespace vli {
     };
 
     struct sum_block_size{
-       enum { value = 256};
+       enum { value = 256 }; // only use by the reduction
+    };
+
+    template<std::size_t NumCoeffs, typename range = void>
+    struct helper_selector_num_threads;
+
+    template<std::size_t NumCoeffs>
+    struct helper_selector_num_threads<NumCoeffs, typename boost::enable_if_c< (NumCoeffs > 512) >::type  >{
+        enum {value = 512U }; // I have more 1024 coeffs for poly I use 512 threads per poly multiplication
+    };
+
+    template<std::size_t NumCoeffs>
+    struct helper_selector_num_threads<NumCoeffs, typename boost::enable_if_c< (NumCoeffs <= 512) >::type >{
+        enum {value = 256U }; // I have less than 1024 coeff for poly I use 256 threads per poly multiplication
     };
 
     template<std::size_t NumBits>
@@ -66,7 +77,7 @@ namespace vli {
 
     template<class MaxOrder, int NumVars, int Coeff=1>
     struct mul_block_size {
-        enum {value = (num_coefficients<MaxOrder,NumVars, Coeff>::value/2U >= 256U) ? 256U
+        enum {value = (num_coefficients<MaxOrder,NumVars, Coeff>::value/2U >= helper_selector_num_threads<num_coefficients<MaxOrder,NumVars, Coeff>::value>::value) ? helper_selector_num_threads<num_coefficients<MaxOrder,NumVars, Coeff>::value>::value
                : (num_coefficients<MaxOrder,NumVars, Coeff>::value/2U+32U-1U)/32U*32U };
     };
  
@@ -81,37 +92,29 @@ namespace vli {
     };
 
     template <std::size_t NumBits, class MaxOrder, int NumVars>
+    struct number_coefficient{
+    };
+
+    template <std::size_t NumBits, int Order, int NumVars>
+    struct number_coefficient<NumBits, max_order_each<Order>, NumVars>{
+        enum { value = stride<0,NumVars,Order>::value * stride<1,NumVars,Order>::value * stride<2,NumVars,Order>::value * stride<3,NumVars,Order>::value };
+    };
+
+    template <std::size_t NumBits, int Order, int NumVars>
+    struct number_coefficient<NumBits, max_order_combined<Order>, NumVars>{
+        enum { value = vli::detail::max_order_combined_helpers::size<NumVars+1, Order>::value };
+    };
+    
+    template <std::size_t NumBits, class MaxOrder, int NumVars>
     struct full_value{
-    };
-
-    template <std::size_t NumBits, int Order, int NumVars>
-    struct full_value<NumBits, max_order_each<Order>, NumVars>{
-        enum {  value = num_words<NumBits>::value * stride<0,NumVars,Order>::value * stride<1,NumVars,Order>::value * stride<2,NumVars,Order>::value * stride<3,NumVars,Order>::value };
-    };
-
-    template <std::size_t NumBits, int Order, int NumVars>
-    struct full_value<NumBits, max_order_combined<Order>, NumVars>{
-        enum {  value = num_words<NumBits>::value * vli::detail::max_order_combined_helpers::size<NumVars+1, Order>::value };
+        enum { value = num_words<NumBits>::value*number_coefficient<NumBits, MaxOrder, NumVars>::value }; 
     };
 
     struct shared_min{
         static std::size_t const value = 24576; // Note Fermi 48 KB shared, 24 KB for every poly 
     };
 
-    // let's go to save pico seconds
-     __device__ __constant__ int workblock_count_by_warp_max_order_each_1_variable[8]; // 8 is the maxmimum value
-     __device__ __constant__ int workblock_count_by_warp_max_order_each_2_variable[8]; // 8 is the maxmimum value
-     __device__ __constant__ int workblock_count_by_warp_max_order_each_3_variable[8]; // 8 is the maxmimum value
-     __device__ __constant__ int workblock_count_by_warp_max_order_each_4_variable[8]; // 8 is the maxmimum value
-
-     __device__ __constant__ int workblock_count_by_warp_max_order_combined_1_variable[8]; // 8 is the maxmimum value
-     __device__ __constant__ int workblock_count_by_warp_max_order_combined_2_variable[8]; // 8 is the maxmimum value
-     __device__ __constant__ int workblock_count_by_warp_max_order_combined_3_variable[8]; // 8 is the maxmimum value
-     __device__ __constant__ int workblock_count_by_warp_max_order_combined_4_variable[8]; // 8 is the maxmimum value
     }
 }
-
 /* \endcond I do not need this part in the doc*/
-
-   //  __device__ __constant__ int workblock_count_by_warp_max_order_each_2_variable[8]; // 8 is the maxmimum value
 #endif

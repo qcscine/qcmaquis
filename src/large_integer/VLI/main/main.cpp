@@ -27,7 +27,7 @@
 #include "misc.hpp"
 
 
-#define Size_vec 16// play with this 1024 - 16384
+#define Size_vec 512// play with this 1024 - 16384
 //The order __ORDER__ is passed now by cmake, see cmakelist of the main
 using vli::polynomial;
 using vli::vector;
@@ -63,7 +63,7 @@ typedef vli::polynomial< integer_type_cpu_256, vli::max_order_combined<__ORDER__
 typedef vli::polynomial< integer_type_cpu_256, vli::max_order_combined<__ORDER__>, vli::var<'x'>, vli::var<'y'>, vli::var<'z'>, vli::var<'w'> > polynomial_type_combined_xyzw_256;
 
 typedef boost::mpl::vector<
-                            polynomial_type_each_xyzw_128,// buffer can be too large cpu/gpu, be cautious
+                    //        polynomial_type_each_xyzw_128,// buffer can be too large cpu/gpu, be cautious
                             polynomial_type_each_xyz_128,
                             polynomial_type_each_xy_128,
                             polynomial_type_each_x_128
@@ -76,28 +76,28 @@ typedef boost::mpl::vector<
                           > polynomial_list_128_combined;
 
 typedef boost::mpl::vector<
-                           polynomial_type_each_xyzw_192,
+                      //     polynomial_type_each_xyzw_192,
                            polynomial_type_each_xyz_192,
                            polynomial_type_each_xy_192,
                            polynomial_type_each_x_192 
                           > polynomial_list_192_each;
 
 typedef boost::mpl::vector<
-                           polynomial_type_combined_xyzw_192,
+                        //   polynomial_type_combined_xyzw_192,
                            polynomial_type_combined_xyz_192,
                            polynomial_type_combined_xy_192,
                            polynomial_type_combined_x_192
                           > polynomial_list_192_combined;
 
 typedef boost::mpl::vector<
-                            polynomial_type_each_xyzw_256,// buffer can be too large cpu/gpu, be cautious
+                        //    polynomial_type_each_xyzw_256,// buffer can be too large cpu/gpu, be cautious
                             polynomial_type_each_xyz_256,
                             polynomial_type_each_xy_256,
                             polynomial_type_each_x_256
                           > polynomial_list_256_each;
 
 typedef boost::mpl::vector<
-                            polynomial_type_combined_xyzw_256,
+                          //  polynomial_type_combined_xyzw_256,
                             polynomial_type_combined_xyz_256,
                             polynomial_type_combined_xy_256,
                             polynomial_type_combined_x_256
@@ -159,10 +159,11 @@ typedef boost::mpl::vector<
        tools::converter(v2,v2_gmp); 
 
        Timer tgmp("CPU GMP ");
+
        tgmp.begin();
            p_gmp_res = vli::detail::inner_product_cpu(v1_gmp,v2_gmp);
        tgmp.end();
-        
+
        Timer t0("CPU ");
        t0.begin();
            p1_res = vli::detail::inner_product_cpu(v1,v2);
@@ -191,7 +192,6 @@ typedef boost::mpl::vector<
        #ifdef VLI_USE_GPU
                std::cout << " G vli: "  << tgmp.get_time()/t0.get_time() << " G gpu: " << tgmp.get_time()/t1.get_time()   ; 
                timescheduler<Polynomial>::save(tgmp.get_time(),t0.get_time(),t1.get_time());
-               timescheduler<Polynomial>::save(0,t0.get_time(),t1.get_time());
        #else
                std::cout << " G vli: "  << tgmp.get_time()/t0.get_time() ; 
                timescheduler<Polynomial>::save(tgmp.get_time(),t0.get_time());
@@ -210,16 +210,14 @@ int main(int argc, char* argv[]) {
        std::cout << " -----  256bits * 256bits = 512 bits ------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        boost::mpl::for_each<polynomial_list_256_each>(test_case());
        std::cout << std::endl;
-    std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
+       std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -----  192bits * 192bits = 384 bits ------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        boost::mpl::for_each<polynomial_list_192_each>(test_case());
        std::cout << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
-
        std::cout << " -----  128bits * 128bits = 256 bits ------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        boost::mpl::for_each<polynomial_list_128_each>(test_case());
        std::cout << std::endl;
-
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -----  Max__Order_Combined ---------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
@@ -237,7 +235,6 @@ int main(int argc, char* argv[]) {
        boost::mpl::for_each<polynomial_list_128_combined>(test_case());
        std::cout << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
- 
        return 0;
 }
 
