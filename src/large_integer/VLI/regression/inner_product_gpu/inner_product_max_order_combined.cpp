@@ -5,8 +5,8 @@
 BOOST_AUTO_TEST_CASE_TEMPLATE( max_order_combined, T, polynomial_list_max_order_combined)
 {
        typedef typename vli::polynomial_multiply_result_type<T>::type Polynomial_res;
-       typedef vli::vector_polynomial<T> vector_polynomial;
-       typedef vli::vector_polynomial<Polynomial_res> vector_polynomial_res;
+       typedef vli::vector<T> vector_polynomial;
+       typedef vli::vector<Polynomial_res> vector_polynomial_res;
       
        vector_polynomial v1(8),v2(8);
        Polynomial_res p1_res, p2_res;

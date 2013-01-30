@@ -10,28 +10,22 @@
 #include <string>
 #include <time.h>
 
-//#include "main/inline_add.h"
 
 #ifdef VLI_USE_GPU
 #include "vli/detail/gpu/inner_product_gpu_accelerator.hpp"
 #endif //VLI_USE_GPU
+
 //vli
 #include "vli/polynomial/vector_polynomial_cpu.hpp"
 #include "vli/polynomial/polynomial.hpp"
 #include "vli/vli.hpp"
 #include "vli/detail/kernels_cpu.h"
+
 //utils
 #include "utils/timings.h"
 #include "utils/tools.h"
 #include "misc.hpp"
 
-#include <boost/preprocessor/arithmetic/add.hpp>
-#include <boost/preprocessor/arithmetic/mul.hpp>
-#include <boost/preprocessor/arithmetic/sub.hpp>
-#include <boost/preprocessor/repetition.hpp>
-#include <boost/preprocessor/iteration/local.hpp>
-#include <boost/preprocessor/comparison/equal.hpp>
-#include <boost/preprocessor/stringize.hpp>
 
 #define Size_vec 16// play with this 1024 - 16384
 //The order __ORDER__ is passed now by cmake, see cmakelist of the main
@@ -216,7 +210,7 @@ int main(int argc, char* argv[]) {
        std::cout << " -----  256bits * 256bits = 512 bits ------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        boost::mpl::for_each<polynomial_list_256_each>(test_case());
        std::cout << std::endl;
-       std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
+    std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        std::cout << " -----  192bits * 192bits = 384 bits ------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
        boost::mpl::for_each<polynomial_list_192_each>(test_case());
        std::cout << std::endl;
@@ -243,6 +237,7 @@ int main(int argc, char* argv[]) {
        boost::mpl::for_each<polynomial_list_128_combined>(test_case());
        std::cout << std::endl;
        std::cout << " ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- " << std::endl;
+ 
        return 0;
 }
 

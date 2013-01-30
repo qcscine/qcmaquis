@@ -52,13 +52,13 @@ namespace vli
     class polynomial;
 
     template <class polynomial>
-    class vector_polynomial;
+    class vector;
    
-    template <class VectorPolynomial>
+    template <class vector>
     struct inner_product_result_type;
    
     template <class Coeff, class MaxOrder, class Var0, class Var1, class Var2, class Var3>
-    struct inner_product_result_type< vector_polynomial<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> > >; 
+    struct inner_product_result_type< vector<polynomial<Coeff,MaxOrder,Var0,Var1,Var2,Var3> > >; 
 
     namespace detail {
 
@@ -70,21 +70,21 @@ namespace vli
 
         template <class Coeff,  int  Order, class Var0, class Var1, class Var2, class Var3>
         struct inner_product_gpu_helper<polynomial<Coeff, max_order_each<Order>, Var0, Var1, Var2, Var3> >{
-            static inline typename inner_product_result_type<vector_polynomial<polynomial<Coeff,max_order_each<Order>, Var0, Var1, Var2, Var3> > >::type /* return type ~~'*/
+            static inline typename inner_product_result_type<vector<polynomial<Coeff,max_order_each<Order>, Var0, Var1, Var2, Var3> > >::type /* return type ~~'*/
             inner_product_gpu(
-                 vector_polynomial<polynomial<Coeff,max_order_each<Order>, Var0, Var1, Var2, Var3> > const& v1,
-                 vector_polynomial<polynomial<Coeff,max_order_each<Order>, Var0, Var1, Var2, Var3> > const& v2
+                 vector<polynomial<Coeff,max_order_each<Order>, Var0, Var1, Var2, Var3> > const& v1,
+                 vector<polynomial<Coeff,max_order_each<Order>, Var0, Var1, Var2, Var3> > const& v2
             ) {
             assert(v1.size() == v2.size());
             std::size_t size_v = v1.size();
           
             #ifdef _OPENMP
-                std::vector<typename inner_product_result_type<vector_polynomial<polynomial<Coeff, max_order_each<Order>, Var0, Var1, Var2, Var3> > >::type > res(omp_get_max_threads());
+                std::vector<typename inner_product_result_type<vector<polynomial<Coeff, max_order_each<Order>, Var0, Var1, Var2, Var3> > >::type > res(omp_get_max_threads());
             #else
-                typename inner_product_result_type<vector_polynomial<polynomial<Coeff,max_order_each<Order>, Var0, Var1, Var2, Var3> > >::type res;
+                typename inner_product_result_type<vector<polynomial<Coeff,max_order_each<Order>, Var0, Var1, Var2, Var3> > >::type res;
             #endif
           
-            typename inner_product_result_type<vector_polynomial<polynomial<Coeff, max_order_each<Order>, Var0, Var1, Var2, Var3> > >::type poly;
+            typename inner_product_result_type<vector<polynomial<Coeff, max_order_each<Order>, Var0, Var1, Var2, Var3> > >::type poly;
           
             std::size_t split = static_cast<std::size_t>(VLI_SPLIT_PARAM*v1.size());
             vli::detail::gpu_inner_product_vector<Coeff::numbits, max_order_each<Order>, num_of_variables_helper<Var0, Var1, Var2, Var3>::value >(split, &v1[0](0,0)[0], &v2[0](0,0)[0]);
@@ -122,21 +122,21 @@ namespace vli
 
         template <class Coeff, int Order, class Var0, class Var1, class Var2, class Var3>
         struct inner_product_gpu_helper<polynomial<Coeff, max_order_combined<Order>, Var0, Var1, Var2, Var3> >{
-        static inline typename inner_product_result_type<vector_polynomial<polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > >::type
+        static inline typename inner_product_result_type<vector<polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > >::type
             inner_product_gpu(
-                 vector_polynomial<polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > const& v1,
-                 vector_polynomial<polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > const& v2
+                 vector<polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > const& v1,
+                 vector<polynomial<Coeff,max_order_combined<Order>,Var0,Var1,Var2,Var3> > const& v2
             ) {
                 assert(v1.size() == v2.size());
                 std::size_t size_v = v1.size();
               
                 #ifdef _OPENMP
-                    std::vector<typename inner_product_result_type<vector_polynomial<polynomial<Coeff, max_order_combined<Order>, Var0, Var1, Var2, Var3> > >::type > res(omp_get_max_threads());
+                    std::vector<typename inner_product_result_type<vector<polynomial<Coeff, max_order_combined<Order>, Var0, Var1, Var2, Var3> > >::type > res(omp_get_max_threads());
                 #else
-                    typename inner_product_result_type<vector_polynomial<polynomial<Coeff, max_order_combined<Order>, Var0, Var1, Var2, Var3> > >::type res;
+                    typename inner_product_result_type<vector<polynomial<Coeff, max_order_combined<Order>, Var0, Var1, Var2, Var3> > >::type res;
                 #endif
             
-                typename inner_product_result_type<vector_polynomial<polynomial<Coeff, max_order_combined<Order>, Var0, Var1, Var2, Var3> > >::type poly;
+                typename inner_product_result_type<vector<polynomial<Coeff, max_order_combined<Order>, Var0, Var1, Var2, Var3> > >::type poly;
               
                 std::size_t split = static_cast<std::size_t>(VLI_SPLIT_PARAM*v1.size());
                 vli::detail::gpu_inner_product_vector<Coeff::numbits, max_order_combined<Order>, num_of_variables_helper<Var0, Var1, Var2, Var3>::value >(split, &v1[0](0,0)[0], &v2[0](0,0)[0]);

@@ -22,7 +22,7 @@
 #define Order 10
 
 using vli::polynomial;
-using vli::vector_polynomial;
+using vli::vector;
 //typedef vli
 typedef vli::vli<64*VLI_SIZE> integer_type_cpu;
 //typedef poly max order each
