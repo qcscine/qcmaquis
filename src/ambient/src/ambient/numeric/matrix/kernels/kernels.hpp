@@ -286,7 +286,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void geqrt<T>::c(matrix<T>& a, matrix<T>& t){
-        AMBIENT_TIME("ambient_geqrt_c_kernel");
         double* tau  = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB>(); 
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dgeqrt(a.num_rows(), a.num_cols(), PLASMA_IB,
@@ -297,7 +296,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T, PLASMA_enum TR>
     void ormqr<T,TR>::c(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-        AMBIENT_TIME("ambient_ormqr_c_kernel"); 
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dormqr(PlasmaLeft, TR,
                     c.num_rows(), c.num_cols(), k, PLASMA_IB,
@@ -309,7 +307,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void tsqrt<T>::c(matrix<T>& a1, matrix<T>& a2, matrix<T>& t){
-        AMBIENT_TIME("ambient_tsqrt_c_kernel"); 
         double* tau  = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB>();
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dtsqrt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
@@ -321,7 +318,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T, PLASMA_enum TR>
     void tsmqr<T,TR>::c(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-        AMBIENT_TIME("ambient_tsmqr_c_kernel"); 
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dtsmqr(PlasmaLeft, TR,
                     AMBIENT_IB, a1.num_cols(), a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
@@ -334,7 +330,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void gelqt<T>::c(matrix<T>& a, matrix<T>& t){
-        AMBIENT_TIME("ambient_gelqt_c_kernel"); 
         double* tau  = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB>();
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dgelqt(a.num_rows(), a.num_cols(), PLASMA_IB,
@@ -345,7 +340,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T, PLASMA_enum TR>
     void ormlq<T,TR>::c(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-        AMBIENT_TIME("ambient_ormlq_c_kernel"); 
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dormlq(PlasmaRight, TR,
                     c.num_rows(), c.num_cols(), k, PLASMA_IB,
@@ -357,7 +351,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void tslqt<T>::c(matrix<T>& a1, matrix<T>& a2, matrix<T>& t){
-        AMBIENT_TIME("ambient_tslqt_c_kernel"); 
         double* tau  = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB>();
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dtslqt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
@@ -369,7 +362,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T, PLASMA_enum TR>
     void tsmlq<T,TR>::c(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-        AMBIENT_TIME("ambient_tsmlq_c_kernel"); 
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dtsmlq(PlasmaRight, TR,
                     a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
@@ -382,7 +374,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T, PLASMA_enum UL, size_t OFF>
     void laset2<T,UL,OFF>::c(matrix<T>& a, const double& alfa){
-        AMBIENT_TIME("ambient_laset2_c_kernel"); 
         double* ad = (double*)s_updated(a);
         CORE_dlaset2(UL, a.num_rows()-OFF, a.num_cols()-OFF, alfa, ad + OFF*a.num_rows(), a.num_rows());
     }
@@ -394,7 +385,6 @@ namespace ambient { namespace numeric { namespace kernels {
                                             const matrix<T>& f, const size_t& foffset,
                                             const size_t& rows, const size_t& cols)
     {
-        AMBIENT_TIME("ambient_gemv_scale_c_kernel"); 
         T* ad = current(a);
         T* bd = current(b);
         T* fd = current(f);
@@ -418,7 +408,6 @@ namespace ambient { namespace numeric { namespace kernels {
                         matrix<T>& c, const size_t& coffset,
                   const size_t& rows, const size_t& cols)
     {
-        AMBIENT_TIME("ambient_gemv_c_kernel"); 
         T* ad = current(a);
         T* bd = current(b);
         T* cd = s_updated(c);
@@ -436,7 +425,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<class ViewA, class ViewB, typename T>
     void gemm<ViewA, ViewB, T>::c(const matrix<T>& a, const matrix<T>& b, weak_view<T>& c){
-        AMBIENT_TIME("ambient_gemm_general_c_kernel"); 
         if(!naked(a).valid() || !naked(b).valid()){
             (T*)p_updated(c);
             return;
@@ -458,7 +446,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<class ViewB, typename T, typename D>
     void gemm_diagonal_lhs<ViewB,T,D>::c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
-        AMBIENT_TIME("ambient_gemm_diagonal_lhs_c_kernel"); 
         int sizey = a_diag.num_rows();
         int size = b.num_cols();
         int ONE  = 1;
@@ -473,7 +460,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T, typename D>
     void gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D>::c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
-        AMBIENT_TIME("ambient_gemm_diagonal_lhs_c_kernel"); 
         printf("Special DIAGONAL!\n");
         size_t sizex = b.num_cols();
         int size  = a_diag.num_rows();
@@ -489,7 +475,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<class ViewA, typename T, typename D>
     void gemm_diagonal_rhs<ViewA,T,D>::c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
-        AMBIENT_TIME("ambient_gemm_diagonal_rhs_c_kernel"); 
         size_t sizex = b_diag.num_rows();
         int size = a.num_rows(); // for the case of complex
         int ONE = 1;
@@ -504,7 +489,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T, typename D>
     void gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D>::c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
-        AMBIENT_TIME("ambient_gemm_diagonal_rhs_c_kernel"); 
         printf("Special DIAGONAL!\n");
         int sizey = b_diag.num_rows();
         int size = a.num_cols();
@@ -520,7 +504,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T, PLASMA_enum UL>
     void copy_band<T,UL>::c(const matrix<T>& src, matrix<T>& dst, const size_t& dj){
-        AMBIENT_TIME("ambient_copy_band_c_kernel"); 
         T* sd = (T*)current(src);
         T* dd = (T*)s_updated(dst);
         size_t ldd = dst.num_rows();
@@ -542,7 +525,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void copy_rt<T>::c(const matrix<T>& a, weak_view<T>& t){
-        AMBIENT_TIME("ambient_copy_rt_kernel"); 
         T* ad  = current(a);
         T* td  = p_updated(t);
         size_t sda = a.num_cols();
@@ -556,7 +538,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void copy_lt<T>::c(const matrix<T>& a, weak_view<T>& t){
-        AMBIENT_TIME("ambient_copy_lt_kernel"); 
         T* ad  = current(a);
         T* td  = p_updated(t);
         size_t sdt = t.num_cols();
@@ -573,7 +554,6 @@ namespace ambient { namespace numeric { namespace kernels {
                             matrix<T>& dst, const size_t& di, const size_t& dj, 
                             const size_t& m, const size_t& n)
     {
-        AMBIENT_TIME("ambient_copy_block_c_kernel"); 
         T* sd = current(src);
         T* dd = m*n < ambient::square_dim(dst) ? (T*)s_updated(dst) : (T*)updated(dst);
         ambient::memptf<T, ambient::memcpy>(dd, dst.num_rows(), dim2(dj, di), 
@@ -587,7 +567,6 @@ namespace ambient { namespace numeric { namespace kernels {
                             const matrix<T>& alfa, const size_t& ai, const size_t& aj,
                             const size_t& m, const size_t& n)
     {
-        AMBIENT_TIME("ambient_copy_block_s_c_kernel"); 
         T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
         T* sd = current(src);
         T* dd = m*n < ambient::square_dim(dst) ? (T*)s_updated(dst) : (T*)updated(dst);
@@ -602,7 +581,6 @@ namespace ambient { namespace numeric { namespace kernels {
                              const matrix<T>& alfa, const size_t& ai, const size_t& aj,
                              const size_t& m, const size_t& n)
     {
-        AMBIENT_TIME("ambient_copy_block_sa_c_kernel"); 
         T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
         ambient::memptf<T, ambient::memscala>(s_updated(dst), dst.num_rows(), dim2(dj, di), 
                                               current(src), src.num_rows(), dim2(sj, si), 
@@ -611,7 +589,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T>
     void trace<T>::c(const matrix<T>& a, future<T>& trace){
-        AMBIENT_TIME("ambient_trace_c_kernel"); 
         size_t m = a.num_rows();
         size_t n = a.num_cols();
         T* ad = current(a);
@@ -624,14 +601,12 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T>
     void scalar_norm<T>::c(const matrix<T>& a, future<double>& norm){
-        AMBIENT_TIME("ambient_scalar_norm_c_kernel"); 
         T* ad = current(a);
         norm.get_value() = alps::numeric::real(ambient::dot(ad, ad, ambient::square_dim(a)));
     }
         
     template<typename T>
     void overlap<T>::c(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
-        AMBIENT_TIME("ambient_scalar_overlap_c_kernel"); 
         T* ad = current(a);
         T* bd = current(b);
         overlap.get_value() = ambient::dot(ad, bd, ambient::square_dim(a));
@@ -640,7 +615,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<int alfa, typename T>
     void add_vectors<alfa, T>::c(matrix<T>& a, const size_t& aoffset, const matrix<T>& b, const size_t& boffset, const size_t& size){
-        AMBIENT_TIME("ambient_add_vectors_c_kernel");
         T* ad = &((T*)current(a))[aoffset];
         T* bd = &((T*)current(b))[boffset];
         T* ar = &((T*)updated(a))[aoffset];
@@ -651,7 +625,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T>
     void add<T>::c(matrix<T>& a, const matrix<T>& b){
-        AMBIENT_TIME("ambient_add_c_kernel");
         T* ad = current(a);
         T* bd = current(b);
         T* ar = updated(a);
@@ -664,7 +637,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T>
     void sub<T>::c(matrix<T>& a, const matrix<T>& b){
-        AMBIENT_TIME("ambient_sub_c_kernel"); 
         T* ad = current(a);
         T* bd = current(b);
         T* ar = updated(a);
@@ -676,7 +648,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T>
     void scale<T>::c(matrix<T>& a, const future<T>& t){
-        AMBIENT_TIME("ambient_scale_c_kernel"); 
         T* ad = current(a);
         T* ar = updated(a);
         int size = ambient::square_dim(a);
@@ -686,7 +657,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T>
     void scale_offset<T>::c(matrix<T>& a, const size_t& ai, const size_t& aj, const matrix<T>& alfa, const size_t& alfai){
-        AMBIENT_TIME("ambient_scale_offset_c_kernel"); 
         int m = num_rows(a);
         T* ad = &((T*)s_updated(a))[aj*m];
         T factor = ((T*)current(alfa))[alfai];
@@ -695,7 +665,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T>
     void scale_inverse<T>::c(matrix<T>& a, const future<T>& t){
-        AMBIENT_TIME("ambient_scale_inverse_c_kernel"); 
         T* ad = current(a);
         T* ar = updated(a);
         int size = ambient::square_dim(a);
@@ -705,7 +674,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T>
     void sqrt_diagonal<T>::c(matrix<T>& a){
-        AMBIENT_TIME("ambient_sqrt_diagonal_c_kernel"); 
         size_t size = a.num_rows();
         T* ad = current(a);
         T* ar = updated(a);
@@ -714,7 +682,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T>
     void exp_diagonal<T>::c(matrix<T>& a, const T& alfa){
-        AMBIENT_TIME("ambient_exp_diagonal_c_kernel"); 
         size_t size = a.num_rows();
         T* ad = current(a);
         T* ar = updated(a);
@@ -723,7 +690,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void transpose_out<T>::c(const matrix<T>& a, weak_view<T>& t){
-        AMBIENT_TIME("ambient_transpose_out_c_kernel"); 
         T* od = current(a);
         T* td = updated(t);
         int m = a.num_rows();
@@ -737,7 +703,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void resize<T>::c(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
-        AMBIENT_TIME("ambient_resize_c_kernel");
         T* dd = m*n == ambient::square_dim(r) ? (T*)updated(r) : (T*)p_updated(r);
         ambient::memptf<T, ambient::memcpy>(dd, r.num_rows(), dim2(0,0),
                                             current(a), a.num_rows(), dim2(0,0), dim2(n, m)); 
@@ -745,7 +710,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T>
     void init_identity<T>::c(weak_view<T>& a){
-        AMBIENT_TIME("ambient_init_identity_c_kernel"); 
         size_t n = a.num_cols();
         size_t m = a.num_rows();
         T* ad = p_updated(a);
@@ -767,7 +731,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void init_random<T>::c(weak_view<T>& a){
-        AMBIENT_TIME("ambient_init_random_c_kernel"); 
         size_t size = ambient::square_dim(a);
         T* ad = updated(a);
         for(size_t i = 0; i < size; ++i) randomize(ad[i]);
@@ -775,7 +738,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T>
     void init_value<T>::c(weak_view<T>& a, const T& value){
-        AMBIENT_TIME("ambient_init_value_c_kernel"); 
         size_t size = ambient::square_dim(a);
         T* ad = updated(a);
         for(size_t i = 0; i < size; ++i) ad[i] = value; // not a memset due to complex
@@ -783,7 +745,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T>
     void round_square<T>::c(const matrix<T>& a, std::vector<T>*& ac){
-        AMBIENT_TIME("ambient_round_square_c_kernel"); 
         T* ad = current(a);
         size_t sizey = a.num_rows();
         for(int i=0; i < sizey; i++){
@@ -794,21 +755,18 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void cast_to_vector<T>::c(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
-        AMBIENT_TIME("ambient_cast_to_vector_c_kernel");
         T* ad = current(a);
         for(int j=0; j < n; ++j) std::memcpy((void*)&(*ac)[j*lda + offset],(void*)&ad[j*m], m*sizeof(T));  
     }
         
     template<typename T>
     void cast_from_vector<T>::c(const std::vector<T>*& ac, matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
-        AMBIENT_TIME("ambient_cast_from_vector_c_kernel"); 
         T* ad = updated(a);
         for(int j=0; j < n; ++j) std::memcpy((void*)&ad[j*m],(void*)&(*ac)[offset + j*lda], m*sizeof(T));
     }
 
     template<typename T1, typename T2>
     void cast_from_vector_t<T1,T2>::c(const std::vector<T1>*& ac, matrix<T2>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
-        AMBIENT_TIME("ambient_cast_from_vector_t_c_kernel"); 
         T2* ad = updated(a);
         const T1* sd = &(*ac)[offset];
         for(int j=0; j < n; ++j) 
@@ -846,7 +804,6 @@ namespace ambient { namespace numeric { namespace kernels {
     }
     template<typename T>
     void validation<T>::c(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
-        AMBIENT_TIME("ambient_validation_kernel"); 
         T* ad = current(a); 
         T* bd = current(b); 
         double epsilon = std::numeric_limits<double>::epsilon();
@@ -871,7 +828,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void labrd_update_col<T>::c(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, matrix<T>& tq, matrix<T>& d, const int& i){
-        AMBIENT_TIME("ambient_labrd_update_col_c_kernel"); 
         static const double mone = -1.;
         static const double one = 1.;
         static const double zero = 0.;
@@ -910,7 +866,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void labrd_reduce_col<T>::c(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, const int& i){
-        AMBIENT_TIME("ambient_labrd_reduce_col_c_kernel"); 
         static const double mone = -1.;
         static const double one = 1.;
         static const double zero = 0.;
@@ -938,7 +893,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void labrd_update_row<T>::c(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, matrix<T>& tp, matrix<T>& e, const int& i){
-        AMBIENT_TIME("ambient_labrd_update_row_c_kernel"); 
         static const double mone = -1.;
         static const double one = 1.;
         static const double zero = 0.;
@@ -972,7 +926,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void labrd_reduce_row<T>::c(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, const int& i){
-        AMBIENT_TIME("ambient_labrd_reduce_row_c_kernel"); 
         static const double mone = -1.;
         static const double one = 1.;
         static const double zero = 0.;
@@ -1002,7 +955,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T, PLASMA_enum TR>
     void larfg<T,TR>::c(matrix<T>& a, matrix<T>& t, matrix<T>& d, const size_t& k){
-        AMBIENT_TIME("ambient_larfg_c_kernel"); 
         int lda;
         int n;
         T* alfa;
@@ -1032,7 +984,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void gebd2<T>::c(matrix<T>& a, matrix<T>& d, matrix<T>& e, matrix<T>& tq, matrix<T>& tp){
-        AMBIENT_TIME("ambient_gebd2_c_kernel"); 
         int m = a.num_rows();
         int n = a.num_cols();
         int lda = a.num_rows();
@@ -1045,7 +996,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void gebrd<T>::c(matrix<T>& a, weak_view<T>& d, weak_view<T>& e, weak_view<T>& q, weak_view<T>& p){
-        AMBIENT_TIME("ambient_gebrd_c_kernel");
         static int zero = 0;
         static int one  = 1;
         int m = q.num_rows();
@@ -1095,7 +1045,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void gbbrd<T>::c(matrix<T>& a, weak_view<T>& d, weak_view<T>& e, weak_view<T>& q, weak_view<T>& p){
-        AMBIENT_TIME("ambient_gbbrd_c_kernel"); 
         static int zero = 0;
         static int one  = 1;
         int m = q.num_rows();
@@ -1120,7 +1069,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void bdsqr<T>::c(matrix<T>& d, matrix<T>& e, matrix<T>& u, matrix<T>& v){
-        AMBIENT_TIME("ambient_bdsqr_c_kernel"); 
         static int zero = 0;
         static int one  = 1;
         int n = d.num_rows();
@@ -1138,7 +1086,6 @@ namespace ambient { namespace numeric { namespace kernels {
     
     template<typename T>
     void svd<T>::c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s){
-        AMBIENT_TIME("ambient_svd_c_kernel"); 
         int m = a.num_rows();
         int n = a.num_cols();
         int k = std::min(m,n);
@@ -1161,7 +1108,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void qr<T>::c(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r){
-        AMBIENT_TIME("ambient_qr_c_kernel"); 
         int m = a.num_rows(); //numrow a
         int n = a.num_cols(); //numcol a, numcol r
         int k = std::min(m,n); //numrow r
@@ -1204,7 +1150,6 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T>
     void lq<T>::c(const matrix<T>& a, weak_view<T>& l, weak_view<T>& q){
-        AMBIENT_TIME("ambient_lq_c_kernel"); 
         int m = a.num_rows(); //numrow a, numrow l
         int n = a.num_cols(); //numcol a
         int k = std::min(m,n); //numcol l
@@ -1249,7 +1194,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void heev<T>::c(matrix<T>& a, weak_view<double>& w){
-        AMBIENT_TIME("ambient_heev_c_kernel"); 
         int m = a.num_rows();
         int info, lwork = -1;
         double wkopt;
