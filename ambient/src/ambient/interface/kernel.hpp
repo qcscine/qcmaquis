@@ -1,11 +1,9 @@
 #ifndef AMBIENT_INTERFACE_KERNELS
 #define AMBIENT_INTERFACE_KERNELS
 #include "ambient/utils/timings.hpp"
- 
+
 #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-#define AMBIENT_TIME(name) static ambient::timer time(name); time.begin();
-#else
-#define AMBIENT_TIME(name) 
+#include <typeinfo>
 #endif
 
 namespace ambient {
@@ -41,13 +39,15 @@ namespace ambient {
             return kernel_inliner<decltype(&K::c),&K::c>::ready(this);
         }
         virtual void invoke(){ 
+            #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
+            static ambient::timer time(typeid(K).name()); time.begin();
+            #endif
             kernel_inliner<decltype(&K::c),&K::c>::invoke(this);
             kernel_inliner<decltype(&K::c),&K::c>::cleanup(this);
             #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
             time.end();
             #endif
         }
-
         template <class T0>
         static inline void spawn(T0& arg0){
             kernel_inliner<decltype(&K::c),&K::c>::latch(new kernel(), info<T0>::unfold(arg0));
