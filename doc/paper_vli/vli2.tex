@@ -191,27 +191,29 @@ On the GPU the picture is slightly different. The SIMT
 \begin{itemize}
 \item pure CPU benchmarks were done on a Sandy bridge Intel Xeon E5-2670 with 32 logical cores.
 \begin{table}
-    \centering
-    \begin{tabular}{l|cc|r}
-     Operation & Execution & time [s] & Speed-up\\
-       & GMP & VLI & \\
-     \hline
-    \verb|add|, 128 bit & 1.11 & 0.33 & {\bf 3.36x} \\
-    \verb|add|, 192 bit & 1.21 & 0.45 & 2.68x \\
-    \verb|add|, 256 bit & 1.11 & 0.81 & 1.37x \\
-    \verb|add|, 320 bit & 1.25 & 0.81 & 1.54x \\
-    \verb|add|, 384 bit & 1.25 & 0.97 & 1.28x \\
-    \verb|add|, 448 bit & 1.34 & 1.01 & 1.32x \\
-    \verb|add|, 512 bit & 1.31 & 1.07 & {\bf 1.25x} \\
+   \centering
+   \begin{tabular}{l|cc|r}
+    Operation & Execution & time [s] & Speed-up\\
+      & GMP & VLI & \\
     \hline
-    \verb|mul|, 128 bit $\rightarrow$ 256 bit & 1.36 & 0.93 & 1.46x \\
-    \verb|mul|, 192 bit $\rightarrow$ 384 bit & 3.21 & 1.18 & {\bf 2.72x} \\
-    \verb|mul|, 256 bit $\rightarrow$ 512 bit & 3.74 & 2.04 & 1.83x \\ 
-    \end{tabular}
-    \caption{Execution time comparison of simple integer operations using the GNU Multiprecision Library and the VLI library for $10^8$ operations.}
-    \label{tab:vli_vs_gmp}
+   \verb|add|, 128 bit & 1.11 & 0.28 & {\bf 3.96x} \\
+   \verb|add|, 192 bit & 1.21 & 0.42 & 2.88x \\
+   \verb|add|, 256 bit & 1.11 & 0.77 & 1.44x \\
+   \verb|add|, 320 bit & 1.25 & 0.94 & 1.32x \\
+   \verb|add|, 384 bit & 1.25 & 0.91 & 1.37x \\
+   \verb|add|, 448 bit & 1.34 & 0.97 & 1.38x \\
+   \verb|add|, 512 bit & 1.31 & 1.04 & {\bf 1.26x} \\
+   \hline
+   \verb|mul|, 128 bit $\rightarrow$ 256 bit & 1.36 & 0.93 & 1.46x \\
+   \verb|mul|, 192 bit $\rightarrow$ 384 bit & 3.21 & 1.18 & {\bf 2.72x} \\
+   \verb|mul|, 256 bit $\rightarrow$ 512 bit & 3.74 & 2.04 & 1.83x \\ 
+   \end{tabular}
+   \caption{Execution time comparison of simple integer operations using the GNU Multiprecision Library and the VLI library for $10^8$ operations.}
+   \label{tab:vli_vs_gmp}
 \end{table}
-\item Comparing the execution time of simple addition and multiplication operations our implementation for fixed size integers is between $25\%$ and $236\%$ faster for the addition and up to $172\%$ faster for the multiplication (table \ref{tab:vli_vs_gmp}).
+
+
+\item Comparing the execution time of simple addition and multiplication operations our implementation for fixed size integers is between $26\%$ and $296\%$ faster for the addition and up to $172\%$ faster for the multiplication (table \ref{tab:vli_vs_gmp}).
 \item Note that the reported time is the pure execution time of the operation. All variables were allocated before.
 Since our integer library is stack based we do not need expensive calls to \verb|malloc|, which will give an additional speedup for the inner product.
 \end{itemize}
