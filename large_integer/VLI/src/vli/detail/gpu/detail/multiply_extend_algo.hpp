@@ -40,7 +40,6 @@ namespace vli {
    template<>
    __device__ void helper_selector<128>(boost::uint32_t* res, boost::uint32_t const*  a, boost::uint32_t const*  b){
        mul_extend<2*128>(res,a,b); // unify notation
-      // karatsuba<128>(res,a,b);
    };
 
    template<>
@@ -50,7 +49,6 @@ namespace vli {
 
    template<>
    __device__ void helper_selector<256>(boost::uint32_t* res, boost::uint32_t const*  a, boost::uint32_t const*  b){
- //    mul_extend<2*256>(res,a,b); // to do unify notation 
        karatsuba<256>(res,a,b);
    };
  
@@ -64,7 +62,7 @@ namespace vli {
         const unsigned int mask1 =  -bit1;
         const unsigned int mask2 =  -bit2;
         const unsigned int mask3 =  -bit3;
-
+        //This thing is dangerous, TO do isolate into a function an declare the block as volatile
         #pragma unroll
         for(int i(0); i<num_words<NumBits>::value ; ++i){
             c1[i] ^= mask1; 
@@ -87,7 +85,7 @@ namespace vli {
         if(mask3)
             negate<2*NumBits>(res1);
 
-         add<2*NumBits>(res,res1);
+        add<2*NumBits>(res,res1);
     }
     
     } //namespace detail

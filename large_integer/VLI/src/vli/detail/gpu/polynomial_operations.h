@@ -37,6 +37,8 @@
 #include <vector>
 #include <algorithm>
 
+#include <boost/mpl/assert.hpp>
+#include <boost/utility/enable_if.hpp>
 #include <boost/cstdint.hpp> //boost type
 #include <boost/serialization/singleton.hpp> //boost singleton for mem and tasklist
 

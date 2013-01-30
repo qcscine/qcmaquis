@@ -33,6 +33,7 @@
 #define INNER_PRODUCT_GPU_BOOSTER_HPP
 #include <iostream>
 #include <vector>
+#include <boost/utility/enable_if.hpp>
 
 #ifdef _OPENMP
 #include <omp.h>
