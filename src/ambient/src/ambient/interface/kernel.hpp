@@ -2,13 +2,10 @@
 #define AMBIENT_INTERFACE_KERNELS
 #include "ambient/utils/timings.hpp"
  
-//#define AMBIENT_SPAWN_TIMINGS
-#ifdef AMBIENT_SPAWN_TIMINGS
-    #define __A_TIME(name) static __a_timer time(name); time.begin();
-    #define __A_TIME_STOP time.end();
+#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
+#define AMBIENT_TIME(name) static ambient::timer time(name); time.begin();
 #else
-    #define __A_TIME(name) 
-    #define __A_TIME_STOP 
+#define AMBIENT_TIME(name) 
 #endif
 
 namespace ambient {
@@ -27,9 +24,8 @@ namespace ambient {
     template <typename T> static inline revision&     naked(T& obj)  { return *(revision*)obj.impl->content[obj.ref];     }
     template <typename T> static inline c_revision&   current(T& obj){ return *(c_revision*)obj.impl->content[obj.ref];   }
     template <typename T> static inline w_revision&   updated(T& obj){ return *(w_revision*)obj.impl->content[obj.ref+1]; }
-    // supplementary revision modes: checked current (calloc), same updated (memcpy), purged updated (memset)
-    template <typename T> static inline s_revision& s_updated(T& obj){ return *(s_revision*)obj.impl->content[obj.ref+1]; }
-    template <typename T> static inline p_revision& p_updated(T& obj){ return *(p_revision*)obj.impl->content[obj.ref+1]; }
+    template <typename T> static inline s_revision& s_updated(T& obj){ return *(s_revision*)obj.impl->content[obj.ref+1]; } // memcpy updated
+    template <typename T> static inline p_revision& p_updated(T& obj){ return *(p_revision*)obj.impl->content[obj.ref+1]; } // memset updated
 
     template<class K>
     class kernel : public cfunctor
@@ -38,10 +34,19 @@ namespace ambient {
         inline void* operator new (size_t size){ return ambient::bulk.malloc<sizeof(K)>(); }
         inline void operator delete (void* ptr){ }
 
-        virtual void deploy(size_t target){ return kernel_inliner<decltype(&K::c),&K::c>::deploy(this, target); }
-        virtual bool ready()              { return kernel_inliner<decltype(&K::c),&K::c>::ready(this);          }
-        virtual void invoke()             {        kernel_inliner<decltype(&K::c),&K::c>::invoke(this); 
-                                                   kernel_inliner<decltype(&K::c),&K::c>::cleanup(this);        }
+        virtual void deploy(size_t target){ 
+            kernel_inliner<decltype(&K::c),&K::c>::deploy(this, target);
+        }
+        virtual bool ready(){ 
+            return kernel_inliner<decltype(&K::c),&K::c>::ready(this);
+        }
+        virtual void invoke(){ 
+            kernel_inliner<decltype(&K::c),&K::c>::invoke(this);
+            kernel_inliner<decltype(&K::c),&K::c>::cleanup(this);
+            #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
+            time.end();
+            #endif
+        }
 
         template <class T0>
         static inline void spawn(T0& arg0){

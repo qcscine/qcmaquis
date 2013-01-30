@@ -1,5 +1,5 @@
-#ifndef __AMBIENT_NUMERIC_MATRIX_H__
-#define __AMBIENT_NUMERIC_MATRIX_H__
+#ifndef AMBIENT_NUMERIC_MATRIX_H
+#define AMBIENT_NUMERIC_MATRIX_H
 
 #include "ambient/ambient.hpp"
 #include "utils/io.hpp"

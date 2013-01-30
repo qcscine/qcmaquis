@@ -1,5 +1,5 @@
-#ifndef __AMBIENT_NUMERIC_DIAGONAL_MATRIX_H
-#define __AMBIENT_NUMERIC_DIAGONAL_MATRIX_H
+#ifndef AMBIENT_NUMERIC_DIAGONAL_MATRIX_H
+#define AMBIENT_NUMERIC_DIAGONAL_MATRIX_H
 
 namespace ambient { namespace numeric {
    

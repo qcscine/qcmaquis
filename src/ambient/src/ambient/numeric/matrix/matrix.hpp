@@ -1,5 +1,5 @@
-#ifndef __AMBIENT_NUMERIC_MATRIX_HPP__
-#define __AMBIENT_NUMERIC_MATRIX_HPP__
+#ifndef AMBIENT_NUMERIC_MATRIX_HPP
+#define AMBIENT_NUMERIC_MATRIX_HPP
 
 #include "ambient/numeric/matrix/matrix.h"
 #include "ambient/numeric/matrix/matrix_algorithms.hpp"
