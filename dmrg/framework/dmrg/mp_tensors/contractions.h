@@ -504,9 +504,9 @@ struct contraction {
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(guided)
 #endif
-        for(size_t b = 0; b < loop_max; ++b) {
+        for(size_t b = 0; b < loop_max; ++b){
             #ifdef AMBIENT
-            ambient::scope::single i;
+            ambient::scope<ambient::single> i;
             #endif
             gemm(left_mpo_mps.data_[b], right.data_[b], oblocks[b]);
         }

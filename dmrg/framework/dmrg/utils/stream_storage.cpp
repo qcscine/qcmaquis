@@ -104,7 +104,7 @@ void StreamStorageMaster::print_size() const
     if (base_path.size() == 0)
         return;
     
-    maquis::cout << "Storage directory size: "; std::cout.flush();
+    maquis::cout << "Storage directory size: "; maquis::cout.flush();
     std::ostringstream oss;
     oss << "du -skh " << base_path << " | awk '{print $1}'";
     system(oss.str().c_str());

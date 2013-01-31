@@ -74,7 +74,7 @@ public:
             if (num_states2[rank] > 0) {
                 for (int i=0; i<L; ++i)
                     assert(vmps2[rank][i].reasonable());
-                std::cout << "final merge" << std::endl;
+                maquis::cout << "final merge" << std::endl;
                 if (num_states1[rank] == parms.get<size_t>("init_bond_dimension"))
                     vmps1[rank].normalize_left();
                 vmps2[rank].normalize_left();
@@ -84,7 +84,7 @@ public:
                 vmps2[rank] = MPS<Matrix, SymmGroup>();
                 num_states1[rank] += num_states2[rank];
                 num_states2[rank] = 0;
-                std::cout << vmps1[rank].description();
+                maquis::cout << vmps1[rank].description();
             } else if (num_states1[rank] > 0) { // if the thread actually contributed
                 vmps1[rank].normalize_left();
             }
