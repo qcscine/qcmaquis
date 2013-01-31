@@ -43,8 +43,8 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
         
         std::size_t L = mps.length();
         
-        std::cout << "Phys: " << phys << std::endl;
-        std::cout << "Right end: " << right_end << std::endl;
+        maquis::cout << "Phys: " << phys << std::endl;
+        maquis::cout << "Right end: " << right_end << std::endl;
         
         Index<SymmGroup> physc = phys;
         physc.sort();

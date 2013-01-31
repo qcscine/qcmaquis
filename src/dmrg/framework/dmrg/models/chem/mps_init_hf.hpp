@@ -31,7 +31,7 @@ struct hf_mps_init : public mps_initializer<Matrix, TwoU1>
 
             std::vector<std::size_t> hf_init = params.template get<std::vector<std::size_t> >("hf_occ");
             if (hf_init.size() != mps.length()) {
-                std::cout << "HF occupation vector length != MPS length\n";
+                maquis::cout << "HF occupation vector length != MPS length\n";
                 exit(1);
             }
 
@@ -48,16 +48,16 @@ struct hf_mps_init : public mps_initializer<Matrix, TwoU1>
 
             mps[i].multiply_by_scalar(1. / mps[i].scalar_norm());
 
-            //std::cout << std::endl;
-            //std::cout << "mps[" << i << "]:\n" << mps[i] << std::endl;
+            //maquis::cout << std::endl;
+            //maquis::cout << "mps[" << i << "]:\n" << mps[i] << std::endl;
         }
 
         //mps = compression::l2r_compress(mps, Mmax, 1e-6); 
 
-        //std::cout << "\nMPS AFTER COMPRESSION:\n";
+        //maquis::cout << "\nMPS AFTER COMPRESSION:\n";
         //for(int i = 0; i < mps.length(); ++i) {
-        //    std::cout << "mps[" << i << "]:\n" << mps[i] << std::endl;
-        //    std::cout << mps[i].scalar_norm() << std::endl;
+        //    maquis::cout << "mps[" << i << "]:\n" << mps[i] << std::endl;
+        //    maquis::cout << mps[i].scalar_norm() << std::endl;
         //}
     }
 

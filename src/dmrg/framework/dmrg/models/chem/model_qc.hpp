@@ -118,7 +118,7 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
         else if ( i==j && k==l && j!=k) {
             if (std::abs(matrix_elements[m]) < 1.e-20) {
                 used_elements[m] += 1;
-                std::cout << "matrix element underflow:\t" << std::abs(matrix_elements[m]) << std::endl;
+                maquis::cout << "matrix element underflow:\t" << std::abs(matrix_elements[m]) << std::endl;
                 continue;
             }
 
@@ -137,7 +137,7 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
         // V_ijij == V_jiji = V_ijji = V_jiij
         else if ( i==k && j==l && i!=j) {
             if (std::abs(matrix_elements[m]) < 1.e-20) {
-                std::cout << "matrix element underflow:\t" << std::abs(matrix_elements[m]) << std::endl;
+                maquis::cout << "matrix element underflow:\t" << std::abs(matrix_elements[m]) << std::endl;
                 used_elements[m] += 1;
                 continue;
             }
@@ -319,7 +319,7 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
     it_0 = std::find(used_elements.begin(), used_elements.end(), 0);
     assert( it_0 == used_elements.end() );
 
-    std::cout << "The hamiltonian will contain " << terms.size() << " terms\n";
+    maquis::cout << "The hamiltonian will contain " << terms.size() << " terms\n";
 
     return ham(phys, ident, terms);
 

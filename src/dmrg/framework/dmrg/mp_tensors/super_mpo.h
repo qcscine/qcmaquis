@@ -90,15 +90,15 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
                         charge out_r_charge = out_l_charge;
                         
                         if (false && run==0) {
-                            std::cout << "s1: " << s1_charge << std::endl;
-                            std::cout << "s2: " << s2_charge << std::endl;
-                            std::cout << "s:  " << s_charge << std::endl;
-                            std::cout << "b1: " << b1 << std::endl;
-                            std::cout << "b2: " << b2 << std::endl;
-                            std::cout << "l:  " << l_charge << std::endl;
-                            std::cout << "r:  " << out_r_charge << std::endl;
+                            maquis::cout << "s1: " << s1_charge << std::endl;
+                            maquis::cout << "s2: " << s2_charge << std::endl;
+                            maquis::cout << "s:  " << s_charge << std::endl;
+                            maquis::cout << "b1: " << b1 << std::endl;
+                            maquis::cout << "b2: " << b2 << std::endl;
+                            maquis::cout << "l:  " << l_charge << std::endl;
+                            maquis::cout << "r:  " << out_r_charge << std::endl;
                             
-                            std::cout << " ------ " << std::endl;
+                            maquis::cout << " ------ " << std::endl;
                         }
                         
                         if ( run == 0) {

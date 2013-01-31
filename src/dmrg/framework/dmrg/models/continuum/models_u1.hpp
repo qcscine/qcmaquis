@@ -108,7 +108,7 @@ public:
             mu += -coeff0 * model.get<double>("h");
             
 #ifndef NDEBUG
-            std::cout << "U = " << U << ", mu = " << mu << ", t = " << coeff1 * model.get<double>("h") << std::endl;
+            maquis::cout << "U = " << U << ", mu = " << mu << ", t = " << coeff1 * model.get<double>("h") << std::endl;
 #endif
             
             /*

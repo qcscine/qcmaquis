@@ -99,7 +99,7 @@ public:
             }
         } else if (K3 != 0 && K4 == 0 && K2 == 0) {
             if (alt == 0) {
-                std::cout << "Setting up operators for K3 non-alternative." << std::endl;
+                maquis::cout << "Setting up operators for K3 non-alternative." << std::endl;
                 f = std::complex<double>(0, K3 * 0.5);
                 int pos[] = {
                     0, 2, 1,
@@ -111,10 +111,10 @@ public:
                     10, 11, 21,
                     11, 1, 12
                 };
-                std::cout << L << " " << L/12 << std::endl;
+                maquis::cout << L << " " << L/12 << std::endl;
                 int lmax = int(L/12)*12;
                 for (int p = 0; p < L; p += 12) {
-                    std::cout << p << std::endl;
+                    maquis::cout << p << std::endl;
                     for (int k = 0; k < 8; ++k) {
                         if (p+pos[k*3+0] < lmax && p+pos[k*3+1] < lmax && p+pos[k*3+2] < lmax) {
                             if (stag && k % 2 == 1)
@@ -125,7 +125,7 @@ public:
                     }
                 }
             } else {
-                std::cout << "Setting up operators for K3 alternative." << std::endl;
+                maquis::cout << "Setting up operators for K3 alternative." << std::endl;
                 f = std::complex<double>(0, K3 * 0.5);
                 int pos[] = {
                     4, 3, 2,
@@ -146,9 +146,9 @@ public:
                     39, 23, 19
                 };
                 
-                std::cout << L << " " << L/24 << std::endl;
+                maquis::cout << L << " " << L/24 << std::endl;
                 for (int p = 0; p < L; p += 24) {
-                    std::cout << p << std::endl;
+                    maquis::cout << p << std::endl;
 
                     for (int k = 0; k < 16; ++k) {
                         TERM(p+pos[k*3+0], p+pos[k*3+1], p+pos[k*3+2]);
@@ -193,7 +193,7 @@ public:
                 pos = &pos_nonstag[0];
             
             for (int p = 0; p < L; p += 7) {
-                std::cout << p << std::endl;
+                maquis::cout << p << std::endl;
                 for (int k = 0; k < 4; ++k) {
                     TERM(p+pos[k*3+0], p+pos[k*3+1], p+pos[k*3+2]);
                 }
