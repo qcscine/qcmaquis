@@ -56,8 +56,8 @@ accelerator.
 \section{Large integers}
 The library provides a template class \verb|integer<n>| to represent signed integers with a fixed size of $128 \le n \le 512$ bits.
 Objects of this class behave like the regular C++ type \verb|int|.
-We implemented all standard integer operations starting from basic arithmetic operations, comparion operations and bit operations, like bit-shift or bit-wise logical operations.
-In addition to these operations we also provide a multiply-add function, an extended multiplcation which doubles the number of bits when two integers of the same size get multiplied and an extended add which increases the size of the integer by one 64 bit word.
+We implemented all standard integer operations starting from basic arithmetic operations, comparison operations and bit operations, like bit-shift or bit-wise logical operations.
+In addition to these operations we also provide a multiply-add function, an extended multiplication which doubles the number of bits when two integers of the same size get multiplied and an extended add which increases the size of the integer by one 64 bit word.
 
 The data of the integer is stored as a 64 bit unsigned integer array, where we use a standard two-complement representation of the number.
 Due to the fixed size of the integer, we are able to allocate the memory for the data on the stack.
@@ -141,7 +141,8 @@ Note that we also neglected the carry bit propagation of the required additions.
 While the sequential version benefits of the hardware support for carry bit propagation, an SSE implementation needs to handle the carry manually.
 
 The upcoming AVX2 instruction set will feature integer SIMD operations with twice the vector width of SSE.
-However, it will neither support 64 bit integer multiplications nor carry bit propagation. Therefore it will at most be as fast as our sequential version.
+However, it will neither support 64 bit integer multiplications nor carry bit propagation.
+Therefore it will be at most as fast as our sequential version.
 
 %\begin{itemize}
 %\item We use the single large integer kernels
@@ -153,35 +154,74 @@ However, it will neither support 64 bit integer multiplications nor carry bit pr
 %\item The upcoming AVX2 will double the vector width and support four 32bit integer multiplications, but no carry bit support.
 %\end{itemize}
 \paragraph{GPU}
-On the GPU the picture is slightly different. The SIMT
-\begin{itemize}
-\item Many small tasks of the same form. $\rightarrow$ well suited for GPUs.
-\item {\bf Implementation details:}
-\item based on 32bit integers due to architecture.
-\item Element-wise polynomial multiplication + reduction at the end.
-\item Each thread calculates one coefficient $c_{IJKL}$ the product polynomial.
-\item Several coefficients $a_{ijkl}$, $b_{i'j'k'l'}$ of the polynomials to be multiplied contribute to the same coefficient $c_{IJKL}$
-\begin{equation}
-    c_{IJKL} = \sum_{i,j,k,l} a_{ijkl} \cdot b_{I-i,J-j,K-k,L-l}
+While on the CPU a SIMD approach is not promising, the highly parallel structure of the problem is well suited for GPU accelerators.
+In a nutshell GPUs offer a hybrid between SIMD and massively multithreaded execution,
+where the GPU schedules thousands of threads in so called warps. A warp is a group of usually 32 threads which are executed in a lockstep manner.
+We implemented the inner product in NVIDIA CUDA to exploit this powerful architecture.
+Our target hardware is the NVIDIA Tesla K20X.
+We perform element-wise polynomial multiplications where each thread calculates one coefficient of the product polynomials
+\begin{equation} \label{coefficient_sum}
+    c_{IJKL} = \sum_{i,j,k,l} a_{ijkl} \cdot b_{I-i,J-j,K-k,L-l} \,
 \end{equation}
-\item The number of terms in this sum depends on the orders $I,J,K,L$ of the resulting coefficient $\rightarrow$ load in-balance
-%\item {\color{blue} We design an execution plan. We group the coefficients of a fictive result polynomial by packet of 32 } into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}).
-\item Since threads within a warp are executed in a lockstep manner, we try to give all threads within a warp the same amount of work. This way the threads have to wait as little as possible for the other threads of the warp to finish.
-\item We group the coefficients by 32 into a ``task'' and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}), i.e.\ each thread calculates one coefficient of the resulting polynomial.
+where  $a_{ijkl}$, $b_{i'j'k'l'}$ are the coefficients of the polynomials to be multiplied.
+Once all coefficients are calculated we perform a reduction over the result vector to obtain the final result of the inner product.
+This way we avoid race conditions and minimize the number of synchronization points.
+However, this method leads to a load-inbalance since the number of terms in the sum (Eq.\ \ref{coefficient_sum}) depends on the orders $I,J,K,L$ of the resulting coefficient.
+To overcome this problem we set up an execution plan before the actual calculation.
+Therefor we determine the number of terms of each coefficient of the product polynomial and sort them according to this number and assemble groups of 32 coefficients.
+Starting with the most expensive group the groups get scheduled on the available warps balancing the work among the available warps (Fig.\ \ref{fig:GPU_load_balance}).
+Note that by sorting the coefficients we also minimize the work-load difference within a warp, such that the threads within the warp idle as little as possible until the other threads finished their lockstep calculation.
+
 \begin{figure}[t]
     \centering
     \mbox{
         \includegraphics[scale=0.37, angle=-90]{coeffs.eps} 
         \includegraphics[scale=0.37, angle=-90]{warp.eps} 
     }
-    \caption{Left: Number of contributions to each coefficient of the resulting polynomial (red line) sorted in reverse order and split into tasks. Right: Load balancing of the tasks over the warps.}
+    \caption{Left: Number of contributions to each coefficient of the resulting polynomial (red line) sorted and split into tasks. Right: Load balancing of the tasks over the warps.}
     \label{fig:GPU_load_balance}
 \end{figure}
-\item Each thread of the warp gets the indices of the resulting coefficient and determines the necessary terms to calculate the output coefficient.
+
+%The data of the polynomials to be multiplied is copied asynchonously from the host to the device's texture memory.
+Once the \verb|inner_product| function is called the vectors to be multiplied are copied asynchronously from the host to the device.
+We store the data in the texture memory to take advantage of the texture cache which optimized for 2D access.
+% TODO maybe something about the size and how we use it exactly.
+The intermediate results, i.e. the vector of the product polynomials, is written to the global memory.
+At this point we change the memory layout from the usual Array (vector) of Array (polynomial) of Structures (large integer) to an Array of Structures of Arrays where the data segments of the large integer coefficients are interleaved within the polynomial (Fig.\ \ref{fig:GPU_data_layout}).
+\begin{figure}[t]
+    \centering
+    \mbox{
+    }
+    \caption{Data layout of the intermediate data on the GPU.}
+    \label{fig:GPU_data_layout}
+\end{figure}
+Thus we can access the coefficients in a coalesced way during the reduction at the end of the calculation, where each thread requires first the least significant word of the coefficient, then the next higher significant word and so on.
+Once the reduction is completed the result is transferred from the device memory back to the host using the regular memory layout.
+
+Like for the SSE approach on the CPU our kernels on the GPU rely on 32 bit unsigned integer arithmetic.
+However, on the GPU we were able to profit from hardwired addition with carry \verb|addc.cc| and multiply-add with carry \verb|madc.cc| using NVIDIA parallel thread execution (PTX) inline assembly.
+On the GPU we also apply the Karatsuba algorithm \cite{Karatsuba1963}, which corresponds to the Toom-2 method, for the 256 bit integer multiplication because it uses less multiplications and more additions on the words than the schoolbook algorithm.
+While this advantage is negligible on the CPU, we save TODO\% on the GPU, since an integer addition requires substantially less cycles than an integer multiplication on the NVIDIA Kepler.
+%Unlike on the CPU where we operate on 64 bit words, we e
+%Internally the kernels operate on 32 bit unsigned integers
+\begin{itemize}
+%\item Many small tasks of the same form. $\rightarrow$ well suited for GPUs.
+%\item {\bf Implementation details:}
+\item based on 32bit integers due to architecture.
+%\item Element-wise polynomial multiplication + reduction at the end.
+%\item Each thread calculates one coefficient $c_{IJKL}$ the product polynomial.
+%\item Several coefficients $a_{ijkl}$, $b_{i'j'k'l'}$ of the polynomials to be multiplied contribute to the same coefficient $c_{IJKL}$
+%\begin{equation}
+%    c_{IJKL} = \sum_{i,j,k,l} a_{ijkl} \cdot b_{I-i,J-j,K-k,L-l}
+%\end{equation}
+%\item The number of terms in this sum depends on the orders $I,J,K,L$ of the resulting coefficient $\rightarrow$ load in-balance
+%\item {\color{blue} We design an execution plan. We group the coefficients of a fictive result polynomial by packet of 32 } into a task and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}).
+%\item Since threads within a warp are executed in a lockstep manner, we try to give all threads within a warp the same amount of work. This way the threads have to wait as little as possible for the other threads of the warp to finish.
+%\item We group the coefficients by 32 into a ``task'' and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}), i.e.\ each thread calculates one coefficient of the resulting polynomial.
+%\item Each thread of the warp gets the indices of the resulting coefficient and determines the necessary terms to calculate the output coefficient.
 \item Reduction is implemented according to the best practices by NVIDIA (TODO reference)
-%\item {\color{blue} This algorithm is efficient whatever the type of polynomial. But the termination of the contributions of an output coefficient can be tricky}
-%\item Coalesced memory access?
-\item We use the Karatsuba algorithm \cite{Karatsuba1963} for the largest extended multiplication (256 bit to 512 bit) on GPU, because an integer addition requires substantially less cycles than multiplication the GPU.
+%%\item {\color{blue} This algorithm is efficient whatever the type of polynomial. But the termination of the contributions of an output coefficient can be tricky}
+%\item We use the Karatsuba algorithm \cite{Karatsuba1963} for the largest extended multiplication (256 bit to 512 bit) on GPU, because an integer addition requires substantially less cycles than multiplication the GPU.
 \item Using NVIDIA parallel thread execution (PTX) assembly language to benefit from hardware carry bit propagation \verb|addc.cc| and multiply-add with carry bit propagation \verb|madc.cc|.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
