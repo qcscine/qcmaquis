@@ -16,7 +16,9 @@ namespace ambient { namespace controllers { namespace velvet {
         this->stack_s.reserve(CONTROLLER_CHAINS_RESERVE);
         this->chains = &this->stack_m;
         this->mirror = &this->stack_s;
-        //ambient::channel.init();
+        ambient::channel.init();
+        if(ambient::rank() != 0) 
+            ambient::rank.verbose = false;
     }
 
     inline void controller::flush(){

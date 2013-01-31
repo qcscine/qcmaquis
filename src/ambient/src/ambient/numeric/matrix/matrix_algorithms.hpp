@@ -493,7 +493,7 @@ namespace ambient { namespace numeric {
                 else if(a(i,j) < 0) printf("%.2f ", -1*a(i,j)); //ambient::cout << a(i,j) << " ";
                 else printf("%.2f ", a(i,j)); //ambient::cout << a(i,j) << " ";
             }
-            ambient::cout << std::endl << "\n";
+            ambient::cout << "\n\n";
         }
         return o;
     }

@@ -567,9 +567,9 @@ namespace ambient { namespace numeric { namespace kernels {
                             const matrix<T>& alfa, const size_t& ai, const size_t& aj,
                             const size_t& m, const size_t& n)
     {
-        T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
         T* sd = current(src);
         T* dd = m*n < ambient::square_dim(dst) ? (T*)s_updated(dst) : (T*)updated(dst);
+        T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
         ambient::memptf<T, ambient::memscal>(dd, dst.num_rows(), dim2(dj, di), 
                                              sd, src.num_rows(), dim2(sj, si), 
                                              dim2( n, m ), factor);
@@ -650,9 +650,10 @@ namespace ambient { namespace numeric { namespace kernels {
     void scale<T>::c(matrix<T>& a, const future<T>& t){
         T* ad = current(a);
         T* ar = updated(a);
+        T factor = t.get_value();
         int size = ambient::square_dim(a);
         for(int k=0; k < size; k++) 
-            ar[k] = ad[k] * t.get_value();
+            ar[k] = ad[k] * factor;
     }
         
     template<typename T>
@@ -667,9 +668,10 @@ namespace ambient { namespace numeric { namespace kernels {
     void scale_inverse<T>::c(matrix<T>& a, const future<T>& t){
         T* ad = current(a);
         T* ar = updated(a);
+        T factor = t.get_value();
         int size = ambient::square_dim(a);
         for(int k=0; k < size; k++) 
-            ar[k] = ad[k] / t.get_value();
+            ar[k] = ad[k] / factor;
     }
         
     template<typename T>
@@ -818,7 +820,7 @@ namespace ambient { namespace numeric { namespace kernels {
                 double d = distance(av, bv);
                 double m = magnitude(av, bv);
                 if(d > epsilon*256 && d/m > epsilon*256){ // || av*bv < 0 // 16 is recommended, 256 because MKL isn't bitwise stable
-                    std::cout << i << " " << j << " : " << av << " " << bv << ", eps: " << d << std::endl;
+                    std::cout << i << " " << j << " : " << av << " " << bv << ", eps: " << d << "\n";
                     ret.get_value() = false;
                     if(++count > 10) return;
                 }
