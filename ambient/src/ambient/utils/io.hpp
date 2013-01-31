@@ -88,44 +88,41 @@ namespace ambient { namespace utils {
     class mpostream {
     public:
         std::fstream nullio;
-        mpostream() : nullio("/dev/null") {
-            this->v = verbose();
-        }
+        mpostream() : nullio("/dev/null") { }
 
         template<class T>
         mpostream& operator<<(future<T> const & obj){
-            if(v) std::cout << obj.calc_value();
+            if(ambient::verbose()) std::cout << obj.calc_value();
             else nullio << obj.calc_value();
             return *this;
         }
 
         template<class T>
         mpostream& operator<<(T const & obj){
-            if(v) std::cout << obj;
+            if(ambient::verbose()) std::cout << obj;
             return *this;
         }
 
         mpostream& operator<<(std::ostream& (*pf)(std::ostream&)){
-            if(v) std::cout << pf;
+            if(ambient::verbose()) std::cout << pf;
             return *this;
         }
 
         void precision(int p){
-            if(v) std::cout.precision(p);
+            if(ambient::verbose()) std::cout.precision(p);
         }
 
         void flush(){
-            if(v) std::cout.flush();
+            if(ambient::verbose()) std::cout.flush();
         }
-        bool v;
     };
 
 } }
 
 namespace ambient {
     extern utils::fstream fout;
-    extern utils::ostream cout;
-    extern utils::ostream cerr;
+    extern utils::mpostream cout;
+    extern utils::mpostream cerr;
 }
 
 #endif

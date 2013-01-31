@@ -32,6 +32,6 @@ namespace ambient {
     channels::mpi::multirank& rank = channels::mpi::multirank::instance();
     controllers::velvet::controller& controller = controllers::velvet::controller::instance();
     utils::fstream fout;
-    utils::ostream cout;
-    utils::ostream cerr;
+    utils::mpostream cout;
+    utils::mpostream cerr;
 }

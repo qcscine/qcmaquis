@@ -56,7 +56,7 @@ namespace ambient {
         #ifdef AMBIENT_CHECK_BOUNDARIES
         if(ambient::dim(dst).x - dst_p.x < size.x || ambient::dim(dst).y - dst_p.y < size.y ||
            ambient::dim(src).x - src_p.x < size.x || ambient::dim(src).y - src_p.y < size.y){
-            ambient::cout << "Error: invalid memory movement: " << std::endl;
+            ambient::cout << "Error: invalid memory movement: \n";
             ambient::cout << "Matrix dst " << ambient::dim(dst).x << "x" << ambient::dim(dst).y << "\n";
             ambient::cout << "Dest p " << dst_p.x << "x" << dst_p.y << "\n";
             ambient::cout << "Matrix src " << ambient::dim(src).x << "x" << ambient::dim(src).y << "\n";
