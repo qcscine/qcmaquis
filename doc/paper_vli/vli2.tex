@@ -57,12 +57,13 @@ accelerator.
 The library provides a template class \verb|integer<n>| to represent signed integers with a fixed size of $128 \le n \le 512$ bits.
 Objects of this class behave like the regular C++ type \verb|int|.
 We implemented all standard integer operations starting from basic arithmetic operations, comparison operations and bit operations, like bit-shift or bit-wise logical operations.
-In addition to these operations we also provide a multiply-add function, an extended multiplication which doubles the number of bits when two integers of the same size get multiplied and an extended add which increases the size of the integer by one 64 bit word.
+In addition to these operations we also provide a multiply-add function, an extended multiplication which doubles the number of bits when two integers of the same size get multiplied and an extended add which increases the size of the integer by one 64 bit segment.
 
 The data of the integer is stored as a 64 bit unsigned integer array, where we use a standard two-complement representation of the number.
 Due to the fixed size of the integer, we are able to allocate the memory for the data on the stack.
 This way we save expensive heap allocations, which would require a manual memory pool management to get efficient allocations.
 The basic arithmetic operations like addition and multiplication use standard schoolbook algorithms, since the integers are too small for Toom\cite{Toom} or FFT based approaches like the Sch\"onhage-Strassen algorithm\cite{Schonhage}.
+%An exception is the 256 bit multiplication on the GPU, where we use the Karatsuba algorithm \cite{Karatsuba1963}.
 We implemented the schoolbook algorithms in optimized assembly code to make optimal use of the hardware features that are not accessible from C++, like the carry addition \verb|adcq| or the 64 bit multiplication \verb|mulq| which calculates the low and hi 64 bit part of the result on the \verb|x86-64| architecture.
 Since writing assembly code can result in very long error-prone code, we generate most parts of the assembly code with the C++ preprocessor using the \verb|BOOST_PP| library.
 
@@ -134,7 +135,7 @@ Since all polynomials are of the same structure the work is well balanced betwee
 
 Even though the parallel structure of the operation suggests a SIMD approach performing 4 large integer operations in parallel on current \verb|x86-64| architectures is not advisable.
 Using the Streaming SIMD Extensions (SSE) all kernels need to be based on 32 bit integer operations instead of 64 bit operations which are available for the sequential version.
-This reduction of word size increases the number of required multiply instructions for a large integer multiplication by a factor of 4.
+This reduction of segment size increases the number of required multiply instructions for a large integer multiplication by a factor of 4.
 Furthermore, the current SSE instruction set only supports an integer SIMD multiplication for two 32bit numbers, each yielding a 64 bit result.
 Thus a SIMD implementation using SSE will be two times slower than our serial version using 64 bit integers.
 Note that we also neglected the carry bit propagation of the required additions.
@@ -187,27 +188,34 @@ Once the \verb|inner_product| function is called the vectors to be multiplied ar
 We store the data in the texture memory to take advantage of the texture cache which optimized for 2D access.
 % TODO maybe something about the size and how we use it exactly.
 The intermediate results, i.e. the vector of the product polynomials, is written to the global memory.
-At this point we change the memory layout from the usual Array (vector) of Array (polynomial) of Structures (large integer) to an Array of Structures of Arrays where the data segments of the large integer coefficients are interleaved within the polynomial (Fig.\ \ref{fig:GPU_data_layout}).
+At this point we change the memory layout from the usual Array (vector) of Array (polynomial) of Structures (large integer) to an Array of Structures of Arrays where the data segments of the large integer coefficients are interleaved within the polynomial (Fig.\ \ref{fig:GPU_data_layout}), such that the least significant segments of all coefficients are continuous in memory followed by the next more signficiant segments.
 \begin{figure}[t]
     \centering
-    \mbox{
+\includegraphics[scale=0.9]{memory_layout.eps} \\
+    \vspace{0.5cm}
+%    \hline
+\includegraphics[scale=0.9]{memory_layout_gpu.eps} 
+    \caption{Memory layout of a vector of polynomials with 192 bit integer coefficients.
+             Each coefficient $\textsf{c}_{ijkl}$ consists of three 64 bit segments \textsf{s}.
+             Top: Regular memory layout used on the CPU. Each coefficient is stored contiguously.
+             Bottom: Memory layout used for intermediate results on the GPU. The coefficients are stored in an interleaved way grouping the segments according to their significance.
+             Note that we will have 32 bit segments on the GPU, which doubles the number of segments in return.
     }
-    \caption{Data layout of the intermediate data on the GPU.}
     \label{fig:GPU_data_layout}
 \end{figure}
-Thus we can access the coefficients in a coalesced way during the reduction at the end of the calculation, where each thread requires first the least significant word of the coefficient, then the next higher significant word and so on.
+This memory layout allows for a efficient coalesced access during the reduction at the end of the calculation.
 Once the reduction is completed the result is transferred from the device memory back to the host using the regular memory layout.
 
 Like for the SSE approach on the CPU our kernels on the GPU rely on 32 bit unsigned integer arithmetic.
-However, on the GPU we were able to profit from hardwired addition with carry \verb|addc.cc| and multiply-add with carry \verb|madc.cc| using NVIDIA parallel thread execution (PTX) inline assembly.
-On the GPU we also apply the Karatsuba algorithm \cite{Karatsuba1963}, which corresponds to the Toom-2 method, for the 256 bit integer multiplication because it uses less multiplications and more additions on the words than the schoolbook algorithm.
-While this advantage is negligible on the CPU, we save TODO\% on the GPU, since an integer addition requires substantially less cycles than an integer multiplication on the NVIDIA Kepler.
-%Unlike on the CPU where we operate on 64 bit words, we e
-%Internally the kernels operate on 32 bit unsigned integers
-\begin{itemize}
+However, on the GPU we were able to profit from hard-wired addition with carry \verb|addc.cc| and multiply-add with carry \verb|madc.cc| using NVIDIA parallel thread execution (PTX) inline assembly.
+Contrary to the CPU where we used only schoolbook algorithms, we employ the Karatsuba algorithm \cite{karatsuba1963}, which corresponds to the Toom-2 method, for the 256 bit integer multiplication on the GPU.
+Even though the method does not require less operations than the schoolbook algorithm it is advantageous on the GPU, because it uses less multiplications and more additions on the 32 bit segments.
+While on the CPU these operations are almost equally expensive, the addition on the NVIDIA Kepler has a 5 times higher throughput than the multiplication \cite{CUDAProgramming}.
+
+%\begin{itemize}
 %\item Many small tasks of the same form. $\rightarrow$ well suited for GPUs.
 %\item {\bf Implementation details:}
-\item based on 32bit integers due to architecture.
+%\item based on 32bit integers due to architecture.
 %\item Element-wise polynomial multiplication + reduction at the end.
 %\item Each thread calculates one coefficient $c_{IJKL}$ the product polynomial.
 %\item Several coefficients $a_{ijkl}$, $b_{i'j'k'l'}$ of the polynomials to be multiplied contribute to the same coefficient $c_{IJKL}$
@@ -219,11 +227,11 @@ While this advantage is negligible on the CPU, we save TODO\% on the GPU, since 
 %\item Since threads within a warp are executed in a lockstep manner, we try to give all threads within a warp the same amount of work. This way the threads have to wait as little as possible for the other threads of the warp to finish.
 %\item We group the coefficients by 32 into a ``task'' and distribute them among the warps of threads (Fig.\ \ref{fig:GPU_load_balance}), i.e.\ each thread calculates one coefficient of the resulting polynomial.
 %\item Each thread of the warp gets the indices of the resulting coefficient and determines the necessary terms to calculate the output coefficient.
-\item Reduction is implemented according to the best practices by NVIDIA (TODO reference)
+%\item Reduction is implemented according to the best practices by NVIDIA (TODO reference)
 %%\item {\color{blue} This algorithm is efficient whatever the type of polynomial. But the termination of the contributions of an output coefficient can be tricky}
 %\item We use the Karatsuba algorithm \cite{Karatsuba1963} for the largest extended multiplication (256 bit to 512 bit) on GPU, because an integer addition requires substantially less cycles than multiplication the GPU.
-\item Using NVIDIA parallel thread execution (PTX) assembly language to benefit from hardware carry bit propagation \verb|addc.cc| and multiply-add with carry bit propagation \verb|madc.cc|.
-\end{itemize}
+%\item Using NVIDIA parallel thread execution (PTX) assembly language to benefit from hardware carry bit propagation \verb|addc.cc| and multiply-add with carry bit propagation \verb|madc.cc|.
+%\end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Benchmarks}
