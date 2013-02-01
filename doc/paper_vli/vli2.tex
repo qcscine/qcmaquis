@@ -63,7 +63,7 @@ The data of the integer is stored as a 64 bit unsigned integer array, where we u
 Due to the fixed size of the integer, we are able to allocate the memory for the data on the stack.
 This way we save expensive heap allocations, which would require a manual memory pool management to get efficient allocations.
 The basic arithmetic operations like addition and multiplication use standard schoolbook algorithms, since the integers are too small for Toom\cite{Toom} or FFT based approaches like the Sch\"onhage-Strassen algorithm\cite{Schonhage}.
-%An exception is the 256 bit multiplication on the GPU, where we use the Karatsuba algorithm \cite{Karatsuba1963}.
+An exception is the 256 bit multiplication on the GPU, where we use the Karatsuba algorithm \cite{Karatsuba1963} as we will explain later.
 We implemented the schoolbook algorithms in optimized assembly code to make optimal use of the hardware features that are not accessible from C++, like the carry addition \verb|adcq| or the 64 bit multiplication \verb|mulq| which calculates the low and hi 64 bit part of the result on the \verb|x86-64| architecture.
 Since writing assembly code can result in very long error-prone code, we generate most parts of the assembly code with the C++ preprocessor using the \verb|BOOST_PP| library.
 
@@ -199,7 +199,7 @@ At this point we change the memory layout from the usual Array (vector) of Array
              Each coefficient $\textsf{c}_{ijkl}$ consists of three 64 bit segments \textsf{s}.
              Top: Regular memory layout used on the CPU. Each coefficient is stored contiguously.
              Bottom: Memory layout used for intermediate results on the GPU. The coefficients are stored in an interleaved way grouping the segments according to their significance.
-             Note that we will have 32 bit segments on the GPU, which doubles the number of segments in return.
+             Note that on the GPU we will have segments of only 32 bit width, which doubles the number of segments in return.
     }
     \label{fig:GPU_data_layout}
 \end{figure}
@@ -208,7 +208,7 @@ Once the reduction is completed the result is transferred from the device memory
 
 Like for the SSE approach on the CPU our kernels on the GPU rely on 32 bit unsigned integer arithmetic.
 However, on the GPU we were able to profit from hard-wired addition with carry \verb|addc.cc| and multiply-add with carry \verb|madc.cc| using NVIDIA parallel thread execution (PTX) inline assembly.
-Contrary to the CPU where we used only schoolbook algorithms, we employ the Karatsuba algorithm \cite{karatsuba1963}, which corresponds to the Toom-2 method, for the 256 bit integer multiplication on the GPU.
+Contrary to the CPU where we used only schoolbook algorithms, we employ the Karatsuba algorithm \cite{Karatsuba1963} for the 256 bit integer multiplication on the GPU.
 Even though the method does not require less operations than the schoolbook algorithm it is advantageous on the GPU, because it uses less multiplications and more additions on the 32 bit segments.
 While on the CPU these operations are almost equally expensive, the addition on the NVIDIA Kepler has a 5 times higher throughput than the multiplication \cite{CUDAProgramming}.
 
