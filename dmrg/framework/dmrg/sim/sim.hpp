@@ -49,8 +49,13 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
 , model(model_)
 , sweep(0)
 , site(-1)
+#ifdef AMBIENT
+, chkpfile(parms.get<std::string>("chkpfile")+"."+boost::lexical_cast<std::string>(ambient::rank()))
+, rfile(parms.get<std::string>("resultfile")+"."+boost::lexical_cast<std::string>(ambient::rank()))
+#else
 , chkpfile(parms.get<std::string>("chkpfile"))
 , rfile(parms.get<std::string>("resultfile"))
+#endif
 , ssm(parms.get<std::string>("storagedir"))
 , dns( (parms.get<int>("donotsave") != 0) )
 { 
