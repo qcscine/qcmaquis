@@ -212,6 +212,8 @@ Contrary to the CPU where we used only schoolbook algorithms, we employ the Kara
 Even though the method does not require less operations than the schoolbook algorithm it is advantageous on the GPU, because it uses less multiplications and more additions on the 32 bit segments.
 While on the CPU these operations are almost equally expensive, the addition on the NVIDIA Kepler has a 5 times higher throughput than the multiplication \cite{CUDAProgramming}.
 
+% TODO write something on the number of threads used
+
 %\begin{itemize}
 %\item Many small tasks of the same form. $\rightarrow$ well suited for GPUs.
 %\item {\bf Implementation details:}
@@ -236,8 +238,9 @@ While on the CPU these operations are almost equally expensive, the addition on 
 
 \section{Benchmarks}
 \paragraph{Simple integer operations}
-\begin{itemize}
-\item pure CPU benchmarks were done on a Sandy bridge Intel Xeon E5-2670 with 32 logical cores.
+We benchmarked the large integer part of the library on an Intel Sandy bridge Xeon E5-2670 node with 32 logical cores
+and compared against the commonly used GNU Multiple Precision Arithemtic library (GMP).
+The results are shown in table \ref{tab:vli_vs_gmp}.
 \begin{table}
    \centering
    \begin{tabular}{l|cc|r}
@@ -259,19 +262,33 @@ While on the CPU these operations are almost equally expensive, the addition on 
    \caption{Execution time comparison of simple integer operations using the GNU Multiprecision Library and the VLI library for $10^8$ operations.}
    \label{tab:vli_vs_gmp}
 \end{table}
+Comparing the execution time of simple addition and multiplication operations our implementation for fixed size integers is between $26\%$ and $296\%$ faster for the addition and up to $172\%$ faster for the multiplication.
+Note that the reported time is the pure execution time of the operation. All variables were allocated before.
+The allocation will 
+Since our integer library is stack based we do not need expensive calls to \verb|malloc| like GMP, which will give an additional speedup for the inner product, where multiple allocations are necessary.
 
-
-\item Comparing the execution time of simple addition and multiplication operations our implementation for fixed size integers is between $26\%$ and $296\%$ faster for the addition and up to $172\%$ faster for the multiplication (table \ref{tab:vli_vs_gmp}).
-\item Note that the reported time is the pure execution time of the operation. All variables were allocated before.
-Since our integer library is stack based we do not need expensive calls to \verb|malloc|, which will give an additional speedup for the inner product.
-\end{itemize}
+%\begin{itemize}
+%\item pure CPU benchmarks were done on a Sandy bridge Intel Xeon E5-2670 with 32 logical cores.
+%\item Comparing the execution time of simple addition and multiplication operations our implementation for fixed size integers is between $26\%$ and $296\%$ faster for the addition and up to $172\%$ faster for the multiplication (table \ref{tab:vli_vs_gmp}).
+%\item Note that the reported time is the pure execution time of the operation. All variables were allocated before.
+%Since our integer library is stack based we do not need expensive calls to \verb|malloc|, which will give an additional speedup for the inner product.
+%\end{itemize}
 
 \paragraph{Optimized inner product with GPU accelerator}
+The benchmarks for the inner product were again performed on the Intel Sandy bridge node for the pure CPU version of the inner product.
+The GPU benchmarks were performed on Todi, a Cray XK7 with NVIDIA Tesla K20X GPUs and AMD Opteron CPUs, at the Swiss Center for Scientific Computing (CSCS).
+The test cases are inner products of two vectors of dimension 4096 with ``dense'' and ``triangular'' polynomials of order 1 to 14 with 128 and 256 bit integer coefficients.
+Since the inner product will double the order of the polynomial and the width of the large integer coefficients, the test cases will result in polynomials of order 2 to 28 with 256 and 512 bit integer coefficients, respectively.
+
+Figure \ref{fig:performance_large_int_ops} shows the performance of the inner product for the various test cases in number of large integer operations per second.
+Monovariant polynomials show a rather poor performance of at most $1.6 \text{G large integer OP/s}$ on the CPU.
+
+
 \begin{itemize}
-\item GPU benchmarks were performed on Todi, a Cray XK7 with NVIDIA Tesla K20X GPUs and AMD Opteron CPUs, at the Swiss Center for Scientific Computing (CSCS)
-\item Testcase: inner product of two vectors dimension 4096, with ``dense'' and
-``triangular'' polynomials of order 1 to 14 with 128 and 256 bit integer
-coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512 bit integer coefficients, respectively.
+%\item GPU benchmarks were performed on Todi, a Cray XK7 with NVIDIA Tesla K20X GPUs and AMD Opteron CPUs, at the Swiss Center for Scientific Computing (CSCS)
+%\item Testcase: inner product of two vectors dimension 4096, with ``dense'' and
+%``triangular'' polynomials of order 1 to 14 with 128 and 256 bit integer
+%coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512 bit integer coefficients, respectively.
 \item We estimate the performance in integer operations per second (IOP/s).
 \item For the GPU performance estimate we only consider the instructions for the polynomial-polynomial multiplications and neglect the reduction at the end of the inner product.
 \begin{figure}[t!]
@@ -283,7 +300,7 @@ coefficients. Which will result in polynomials of order 2 to 28 with 256 and 512
         \includegraphics[scale=0.37, angle=-90]{MC128.eps} 
     }
     \caption{Comparison of the inner product with and without GPU accelerator. Left: Inner product of dense polynomials with up to 3 variables and 126 to 256 bits coefficients. Right: Inner product of triangular polynomials with up to 3 variables and 126 to 256 bits coefficients. Size of the vector 4096. GMP gives similar results independent of the polynomial structure.}
-    \label{ResME}
+    \label{fig:performance_large_int_ops}
 \end{figure}
 
 \begin{figure}[t!]
