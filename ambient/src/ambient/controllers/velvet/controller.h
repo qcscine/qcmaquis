@@ -15,7 +15,7 @@ namespace ambient { namespace controllers { namespace velvet {
     public:
         class scope {
         public:
-            enum { COMMON, LOCAL, REMOTE } state;
+            ambient::locality state;
             int sector;
             int round;
             int gauge;

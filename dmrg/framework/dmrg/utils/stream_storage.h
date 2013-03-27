@@ -439,7 +439,7 @@ namespace storage {
     
 };
 
-#if defined USE_AMBIENT
+#ifdef USE_AMBIENT
 #include "stream_storage_ambient.h" // the specialization for ****_impl function object
 #endif
 
