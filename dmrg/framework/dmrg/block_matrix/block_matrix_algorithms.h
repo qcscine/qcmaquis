@@ -59,8 +59,15 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for(std::size_t k = 0; k < loop_max; ++k)
+    #ifdef AMBIENT
+    ambient::scope<ambient::single>::compact(loop_max);
+    #endif
+    for(std::size_t k = 0; k < loop_max; ++k){
+        #ifdef AMBIENT
+        ambient::scope<ambient::single> i;
+        #endif
         svd(M[k], U[k], V[k], S[k]);
+    }
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
@@ -75,8 +82,15 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for(std::size_t k = 0; k < loop_max; ++k)
+    #ifdef AMBIENT
+    ambient::scope<ambient::single>::compact(loop_max);
+    #endif
+    for(std::size_t k = 0; k < loop_max; ++k){
+        #ifdef AMBIENT
+        ambient::scope<ambient::single> i;
+        #endif
         heev(M[k], evecs[k], evals[k]);
+    }
 
 }
     
@@ -93,6 +107,10 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
                          size_t Mmax, double cutoff, size_t* keeps, 
                          double & truncated_fraction, double & truncated_weight, double & smallest_ev)
 { // to be parallelized later (30.04.2012)
+    #ifdef AMBIENT
+    ambient::log("BEGIN OF ESTIMATE TRUNCATION");
+    ambient::scope<ambient::shared> i;
+    #endif
     typedef typename DiagMatrix::value_type value_type;
 
     size_t length = 0;
@@ -136,41 +154,9 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
         keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
     }
 
-    /* // {{{ original version:
-
-    size_t length = 0;
-    for(std::size_t k = 0; k < evals.n_blocks(); ++k){ 
-        length += num_rows(evals[k]);
-    }
-
-    std::vector<typename maquis::traits::real_type<typename DiagMatrix::value_type>::type > allevals(length);
-
-    std::size_t position = 0;
-    for(std::size_t k = 0; k < evals.n_blocks(); ++k){
-        std::transform(evals[k].elements().first, evals[k].elements().second, allevals.begin()+position, gather_real_pred<typename DiagMatrix::value_type>);
-        position += num_rows(evals[k]);
-    }
-
-    assert( allevals.size() > 0 );
-    std::sort(allevals.begin(), allevals.end());
-    std::reverse(allevals.begin(), allevals.end());
-
-    double evalscut = cutoff * allevals[0];
-
-    if (allevals.size() > Mmax)
-        evalscut = std::max(evalscut, allevals[Mmax]);
-    smallest_ev = evalscut / allevals[0];
-    
-    truncated_weight = std::accumulate(std::find_if(allevals.begin(), allevals.end(), boost::lambda::_1 < evalscut), allevals.end(), 0.0);
-    truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0);
-    
-    for(std::size_t k = 0; k < evals.n_blocks(); ++k){
-        std::vector<typename maquis::traits::real_type<typename DiagMatrix::value_type>::type> evals_k;
-        for (typename DiagMatrix::const_element_iterator it = evals[k].elements().first; it != evals[k].elements().second; ++it)
-            evals_k.push_back(maquis::real(*it));
-        keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
-    } 
-    // }}} */
+    #ifdef AMBIENT
+    ambient::log("END OF ESTIMATE TRUNCATION");
+    #endif
 }
 
 
@@ -310,8 +296,15 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for(std::size_t k = 0; k < M.n_blocks(); ++k)
+    #ifdef AMBIENT
+    ambient::scope<ambient::single>::compact(M.n_blocks());
+    #endif
+    for(std::size_t k = 0; k < M.n_blocks(); ++k){
+        #ifdef AMBIENT
+        ambient::scope<ambient::single> i;
+        #endif
         qr(M[k], Q[k], R[k]);
+    }
     
     assert(Q.right_basis() == R.left_basis());
     assert(Q.reasonable());
@@ -334,8 +327,15 @@ void lq(block_matrix<Matrix, SymmGroup> & M,
 #ifdef MAQUIS_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif
-    for(std::size_t k = 0; k < M.n_blocks(); ++k)
+    #ifdef AMBIENT
+    ambient::scope<ambient::single>::compact(M.n_blocks());
+    #endif
+    for(std::size_t k = 0; k < M.n_blocks(); ++k){
+        #ifdef AMBIENT
+        ambient::scope<ambient::single> i;
+        #endif
         lq(M[k], L[k], Q[k]);
+    }
     
     assert(Q.left_basis() == L.right_basis());
     assert(Q.reasonable());

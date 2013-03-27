@@ -2,6 +2,7 @@
 #define AMBIENT_NUMERIC_MATRIX_H
 
 #include "ambient/ambient.hpp"
+#include "ambient/numeric/future.hpp"
 #include "utils/io.hpp"
 #include <alps/hdf5.hpp>
 
@@ -22,14 +23,13 @@ namespace ambient { namespace numeric {
         typedef size_t size_type;
         typedef ptrdiff_t difference_type;
         typedef typename ambient::history* ptr;
-        typedef typename ambient::future<double> real_type;
-        typedef typename ambient::future<T> scalar_type;
+        typedef typename ambient::numeric::future<double> real_type;
+        typedef typename ambient::numeric::future<T> scalar_type;
 
         void* operator new (size_t);
         void* operator new (size_t, void*);
         void operator delete (void*);
         void operator delete (void*, void*){ } // doesn't throw
-        static matrix<T> identity_matrix(size_type size);
         explicit matrix(const ptr& p, size_t r);
         explicit matrix();
         explicit matrix(size_type rows, size_type cols, value_type init_value = value_type()); 
@@ -71,7 +71,7 @@ namespace ambient { namespace numeric {
         static const char* code();
         operator weak_view<T>& (){ return *(weak_view<T>*)this; }
     public:
-        ptr impl;
+        ptr core;
         size_t ref;
     };
 
@@ -84,14 +84,14 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::scalar_type scalar_type;
         typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::ptr ptr;
-        subset_view(const Matrix& a) : impl(a.impl), m(&a) {}
+        subset_view(const Matrix& a) : core(a.core), m(&a) {}
         size_t num_rows(){ return m->num_rows(); };
         size_t num_cols(){ return m->num_cols(); };
         template<class M> static size_t rows(const M& a); 
         template<class M> static size_t cols(const M& a);
         static const char* code();
         operator Matrix& () const { return *(Matrix*)m; }
-        ptr impl;
+        ptr core;
         const Matrix* m;
     };
 
@@ -121,7 +121,7 @@ namespace ambient { namespace numeric {
         template<class M> static size_t rows(const M& a); 
         template<class M> static size_t cols(const M& a);
         static const char* code();
-        typename Matrix::ptr impl;
+        typename Matrix::ptr core;
         size_t ref;
     };
 

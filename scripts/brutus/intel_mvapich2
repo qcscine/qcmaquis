@@ -4,8 +4,7 @@ STATE_AMBIENT="void"
 STATE_TYPES="void"
 STATE_DMRG="build"
 # end of target states #
-SITE=brutus # the dashboard name (uname -n)
-ROOT_DIR=/cluster/home/phys/ewartt/trunk/src/
+PREFIX=standard
 COMPILER=intel
 COMPILER_VERSION=12.1.2
 MPI_WRAPPER=mvapich2
@@ -38,5 +37,5 @@ MAQUIS_DMRG_BUILD_REGRESSION=OFF
 MAQUIS_DMRG_BUILD_AMBIENT=OFF
 MAQUIS_DMRG_USE_AMBIENT=OFF
 
-source common.sh 
+source $ROOT_DIR/scripts/common/common.sh 
 execute $*

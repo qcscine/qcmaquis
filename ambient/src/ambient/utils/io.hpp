@@ -3,11 +3,11 @@
 
 #include <boost/tuple/tuple.hpp>
 
-namespace ambient {
-
-    template<typename T> class future;
+namespace ambient { 
+    namespace numeric {
+        template<typename T> class future;
+    }
     bool verbose();
-
 }
 
 namespace ambient { namespace utils {
@@ -15,7 +15,7 @@ namespace ambient { namespace utils {
     class fstream {
     public: 
          fstream(){ 
-             vec_of_list_tiles_ = std::vector<std::list< boost::tuple<void*, size_t, size_t> > >(__cilkrts_get_total_workers()); // idea : each cilk thread saves in a seperate list, I avoid mutex
+             vec_of_list_tiles_ = std::vector<std::list< boost::tuple<void*, size_t, size_t> > >(AMBIENT_NUM_THREADS); // idea : each thread saves in a seperate list, I avoid mutex
          };
 
          void sort(std::list<boost::tuple<void*, size_t, size_t> >& full_list_tiles){
@@ -39,11 +39,11 @@ namespace ambient { namespace utils {
          void build_list_write(void* buffer, size_t tag, size_t size_buffer){
              void* value = malloc(size_buffer);
              memcpy(value, buffer, size_buffer); // I can not create a temporary matrix by an independant thread without crash so cpy ..., to change one day
-             this->vec_of_list_tiles_[__cilkrts_get_worker_number()].push_back(boost::make_tuple(value, tag, size_buffer));
+             this->vec_of_list_tiles_[AMBIENT_THREAD_ID].push_back(boost::make_tuple(value, tag, size_buffer));
          }
 
          void build_list_read(void* buffer, size_t tag, size_t size_buffer){
-             this->vec_of_list_tiles_[__cilkrts_get_worker_number()].push_back(boost::make_tuple(buffer, tag, size_buffer));
+             this->vec_of_list_tiles_[AMBIENT_THREAD_ID].push_back(boost::make_tuple(buffer, tag, size_buffer));
          }
 
          void get_list(std::list< boost::tuple<void*, size_t, size_t> >& full_list_tiles){ 
@@ -60,8 +60,8 @@ namespace ambient { namespace utils {
         ostream() : nullio("/dev/null") { }
 
         template<class T>
-        ostream& operator<<(future<T> const & obj){
-            std::cout << obj.calc_value();
+        ostream& operator<<(ambient::numeric::future<T> const & obj){
+            std::cout << obj.get();
             return *this;
         }
 
@@ -91,9 +91,9 @@ namespace ambient { namespace utils {
         mpostream() : nullio("/dev/null") { }
 
         template<class T>
-        mpostream& operator<<(future<T> const & obj){
-            if(ambient::verbose()) std::cout << obj.calc_value();
-            else nullio << obj.calc_value();
+        mpostream& operator<<(ambient::numeric::future<T> const & obj){
+            if(ambient::verbose()) std::cout << obj.get();
+            else nullio << obj.get();
             return *this;
         }
 

@@ -4,6 +4,7 @@
 #include "ambient/numeric/matrix/tiles.h"
 #include "ambient/numeric/matrix/tiles_algorithms.hpp"
 
+// {{{ tiles< subset_view<Matrix> >
 #define size_type typename tiles<subset_view<Matrix> >::size_type
 
 namespace ambient { namespace numeric {
@@ -90,6 +91,9 @@ namespace ambient { namespace numeric {
 } }
 
 #undef size_type
+// }}}
+
+// {{{ tiles< Matrix >
 #define size_type   typename tiles<Matrix>::size_type
 #define value_type  typename tiles<Matrix>::value_type
 #define scalar_type typename tiles<Matrix>::scalar_type
@@ -111,8 +115,18 @@ namespace ambient { namespace numeric {
         tiles t(size, size);
         int tailn = __a_mod(size, AMBIENT_IB);
         for(int i = 0; i < t.nt-1; i++)
-            *t.data[i*t.nt + i] = Matrix::identity_matrix(AMBIENT_IB);
-        *t.data[t.nt*t.nt-1] = Matrix::identity_matrix(tailn);
+            fill_identity(*t.data[i*t.nt + i]);
+        fill_identity(*t.data[t.nt*t.nt-1]);
+        return t;
+    }
+
+    template <class Matrix>
+    inline tiles<Matrix>* tiles<Matrix>::new_identity_matrix(size_type size){
+        tiles* t = new tiles(size, size);
+        int tailn = __a_mod(size, AMBIENT_IB);
+        for(int i = 0; i < t->nt-1; i++)
+            fill_identity(*t->data[i*t->nt + i]);
+        fill_identity(*t->data[t->nt*t->nt-1]);
         return t;
     }
 
@@ -375,7 +389,9 @@ namespace ambient { namespace numeric {
 #undef size_type
 #undef value_type
 #undef scalar_type
+// }}}
 
+// {{{ tiles< diagonal_matrix<T> >
 #define size_type   typename tiles<diagonal_matrix<T> >::size_type
 #define value_type  typename tiles<diagonal_matrix<T> >::value_type
 #define scalar_type typename tiles<diagonal_matrix<T> >::scalar_type
@@ -497,4 +513,6 @@ namespace ambient { namespace numeric {
 #undef size_type
 #undef value_type
 #undef scalar_type
+// }}}
+
 #endif

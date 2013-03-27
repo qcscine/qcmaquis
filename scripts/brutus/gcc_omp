@@ -1,0 +1,36 @@
+#!/bin/bash -l
+STATE="void"
+STATE_AMBIENT="void"
+STATE_TYPES="void"
+STATE_DMRG="configure"
+# end of target states #
+PREFIX=default
+COMPILER=gcc
+COMPILER_VERSION=4.7
+MPI_WRAPPER=open_mpi
+MPI_WRAPPER_VERSION=1.4
+ALPS_DIR=$HOME/opt/alps-gcc
+
+export ALPS_ROOT=${ALPS_DIR}
+export PATH=${ALPS_DIR}/bin:${PATH}
+export PYTHONPATH=${ALPS_DIR}/lib:${PYTHONPATH}
+
+module purge
+module load ${COMPILER}/${COMPILER_VERSION}
+module load goto2 python
+module load mkl/13.0.0
+module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
+module load hdf5
+module load cmake
+
+## common ##
+# MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2012/src/types/src"
+# MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2012/src/types/src"
+## dmrg ##
+MAQUIS_DMRG_DEFAULT_BLAS_LAPACK=manual
+MAQUIS_DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -fopenmp -lpthread -lm"
+MAQUIS_DMRG_ENABLE_OMP=ON
+MAQUIS_DMRG_BUILD_MULTIGRID=ON
+
+source $ROOT_DIR/scripts/common/common.sh 
+execute $*

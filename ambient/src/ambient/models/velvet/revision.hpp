@@ -8,10 +8,9 @@ namespace ambient { namespace models { namespace velvet {
         ambient::pool.free<revision>(ptr);
     }
 
-    inline revision::revision(size_t extent, void* g)
-    : extent(extent), generator(g), users(0), region(1)
+    inline revision::revision(size_t extent, void* g, ambient::rstate s)
+    : extent(extent), generator(g), transfer(NULL), users(0), region(DEFAULT_REGION), state(s) // -1 is for common
     {
-        state = (generator == NULL) ? PURE : VOID;
         header = data = NULL;
     }
 
@@ -43,17 +42,8 @@ namespace ambient { namespace models { namespace velvet {
         return (this->users != 0);
     }
 
-    inline bool revision::remote(){
-        return (this->state == VOID);
-    }
-
-    inline bool revision::origin(){
-        return (this->state == ORIG);
-    }
-
     inline bool revision::valid(){
-        return (this->data != NULL); //(this->state == ORIG || 
-                                     // this->state == COPY );
+        return (this->data != NULL);
     }
 
     // }}}

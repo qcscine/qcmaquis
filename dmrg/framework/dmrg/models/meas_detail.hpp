@@ -115,7 +115,7 @@ namespace meas_detail {
                         std::string const & h5name,
                         std::string const & base_path) const
         {
-            std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> vals;
+            std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> vals; vals.reserve(L);
             std::vector<std::string> labels;
             MPOTensor<Matrix, SymmGroup> temp;
             temp(0,0) = op.first;
@@ -141,7 +141,7 @@ namespace meas_detail {
         {
             assert(ops.size() == 2);
             
-            std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> vals;
+            std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> vals; vals.reserve(L-1);
             std::vector<std::string> labels;
             MPOTensor<Matrix, SymmGroup> temp;
             Boundary<Matrix, SymmGroup> tmp_b;
@@ -197,6 +197,7 @@ namespace meas_detail {
             for (std::size_t p = 0; p < lat.size(); ++p)
             {
             	std::vector<Lattice::pos_t> neighs = lat.forward(p);
+                vals.reserve(vals.size()+neighs.size());
             	for (typename std::vector<Lattice::pos_t>::const_iterator hopto = neighs.begin();
             		 hopto != neighs.end();
             		 ++hopto)
@@ -211,14 +212,12 @@ namespace meas_detail {
                     
                     // C - Tim, no futur, if disagree -> Alex must fix futur stuff
                     if (!super_meas){
-                        typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo);
-                        vals.push_back(val);
+                        vals.push_back(expval(mps, mpo));
                     }else {
                         Index<SymmGroup> phys_i = identity.left_basis();
                         typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, phys_i);
                         MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
-                        typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(super_mpo, mps);
-                        vals.push_back(val/nn);
+                        vals.push_back(overlap(super_mpo, mps)/nn);
                     }
                     
                     labels.push_back(lat.get_prop<std::string>("label", p, *hopto));

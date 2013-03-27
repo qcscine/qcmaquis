@@ -15,6 +15,7 @@ namespace ambient { namespace channels { namespace mpi {
         int cast_to_child(int rank, const group* source, const group* target) const;
         bool belongs(const group* target) const;
         bool masters(const group* target) const;
+        void mute();
         bool verbose;
     };
 

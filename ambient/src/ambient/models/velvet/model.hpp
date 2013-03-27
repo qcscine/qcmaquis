@@ -1,25 +1,40 @@
 namespace ambient { namespace models { namespace velvet {
 
-    inline void model::insert(revision* r){
-        *const_cast<size_t*>(&r->sid) = this->map.insert(r);
+    inline void model::index(revision* r){
+        r->sid = this->sid++;
+        this->sid %= MAX_SID;
     }
 
+    inline void model::index(transformable* v){
+        v->sid = this->sid++;
+        this->sid %= MAX_SID;
+    }
+
+    template<ambient::rstate S>
     inline void model::add_revision(history* o, void* g){
-        o->add_state(g);
+        o->add_state<S>(g);
     }
 
     inline void model::use_revision(history* o){
         o->back()->use();
     }
 
+    inline void model::touch(const history* o){
+        if(o->back() == NULL) 
+            this->add_revision<ambient::common>(const_cast<history*>(o));
+    }
+
     inline size_t model::time(const history* o){
-        if(o->back() == NULL)
-            this->add_revision(const_cast<history*>(o));
+        this->touch(o);
         return o->time();
     }
 
-    inline revision* model::get_revision(size_t id) const {
-        return (revision*)this->map.find(id);
+    inline bool model::feeds(const revision* r){
+        return (r->state == ambient::feed);
+    }
+
+    inline bool model::common(const revision* r){
+        return (r->state == ambient::common);
     }
 
 } } }

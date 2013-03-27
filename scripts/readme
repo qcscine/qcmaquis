@@ -1,0 +1,53 @@
+Experimental branch:
+Diverged from trunk from revision 2921.
+
+Scripts usage:
+Add the bootstrap to your bin by symlinking 
+(or by adding ./common to your PATH):
+ 
+ln -s common/maquis ~/bin/maquis
+
+Now you should be able to use command `maquis` as following:
+
+maquis [ -s dir ] [ -e ] [ config ]
+
+-s : sources directory (including scripts folder)
+     if not provided - searches for $MAQUIS_ROOT
+     and if not set - will search back from `pwd`
+     
+-e : sets the environment according to [ config ]
+
+After execution with defined [ config ] 
+one will be able to execute:
+
+     run [ binary ] [ params / preset ]
+     build [ targets ]
+     configure [ targets ]
+     clean [ targets ]
+     test [ targets ]
+     benchmark [ targets ]
+     envset
+
+If [ config ] is not present - you will need to 
+add config name before the command name, i.e:
+
+     <config> build [ targets ]
+
+Note: 
+1) the environment is propagated unless purged.
+2) run command specifically looks for:
+   - VALGRIND
+   - CILK_NUM_THREADS
+   - OMP_NUM_THREADS
+   - MPI_NUM_PROCS
+
+Example:
+$ cd ~/experimental/src
+$ maquis -e ambient_intel_openmpi
+$ build dmrg
+$ MPI_NUM_PROCS=2 OMP_NUM_THREADS=6 run dmrg large
+
+The `run` command above will automatically look for `dmrg` binary 
+in the build dir and execute it with parameters from "large" preset.
+Encountering MPI and OMP variables it will pin 6 threads of every 
+processes onto separate sockets.

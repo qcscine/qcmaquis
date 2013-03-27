@@ -40,7 +40,7 @@ public:
     
     std::vector<scalar_type> traces() const
     {
-        std::vector<scalar_type> ret;
+        std::vector<scalar_type> ret; ret.reserve(data_.size());
         for (size_t k=0; k < data_.size(); ++k) ret.push_back(data_[k].trace());
         return ret;
     }
@@ -125,6 +125,9 @@ public:
     
     void multiply_by_scalar(const scalar_type&);
     void divide_by_scalar(const scalar_type&);
+#ifdef AMBIENT
+    void persist() const;
+#endif
     
     bool has(std::size_t left_index, std::size_t right_index) const;
     

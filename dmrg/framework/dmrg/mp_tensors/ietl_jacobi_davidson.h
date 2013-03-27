@@ -24,7 +24,11 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
 {
     typedef MPSTensor<Matrix, SymmGroup> Vector;
     SingleSiteVS<Matrix, SymmGroup> vs(initial);
-    
+   
+#ifdef AMBIENT 
+    sp.mpo.persist();
+#endif
+
     ietl::jcd_gmres_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
     jcd_gmres(sp, vs, params.get<int>("ietl_jcd_gmres"));
     
@@ -41,7 +45,7 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     return r0;
 }
 
-template<class Matrix, class SymmGroup>
+/*template<class Matrix, class SymmGroup>
 std::pair<double, MPSTensor<Matrix, SymmGroup> >
 solve_ietl_new_jd(SiteProblem<Matrix, SymmGroup> & sp,
                   MPSTensor<Matrix, SymmGroup> const & initial,
@@ -76,6 +80,6 @@ solve_ietl_new_jd(SiteProblem<Matrix, SymmGroup> & sp,
     std::vector<double> evals = jd.eigenvalues();
     
     return std::make_pair(evals[0], jd.eigenvector(0));
-}
+}*/
 
 #endif

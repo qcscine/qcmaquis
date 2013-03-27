@@ -4,6 +4,7 @@
 namespace ambient{
 
     using ambient::models::velvet::history;
+    using ambient::models::velvet::revision;
 
     class collector {
     public:

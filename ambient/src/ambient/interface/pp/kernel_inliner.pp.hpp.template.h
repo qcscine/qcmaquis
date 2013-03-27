@@ -2,19 +2,25 @@
 #define ARGS_MAX_LEN 11
 
 #define cleanup_object(z, n, unused)                                                                                 \
-    info<T ## n>::typed::deallocate<n>(o);
-
-#define deploy_revision(z, n, unused)                                                                                \
-    info<T ## n>::typed::deploy<n>(o,target);
+    info<T ## n>::typed::template deallocate<n>(o);
 
 #define ready_revision(z, n, unused)                                                                                 \
-    info<T ## n>::typed::ready<n>(o) &&
+    info<T ## n>::typed::template ready<n>(o) &&
 
 #define extract_arguments(z, n, unused)                                                                              \
-    info<T ## n>::typed::modify<n>(arg ## n, o);
+    info<T ## n>::typed::template modify<n>(arg ## n, o);
+
+#define extract_local_arguments(z, n, unused)                                                                        \
+    info<T ## n>::typed::template modify_local<n>(arg ## n, o);
+
+#define extract_remote_arguments(z, n, unused)                                                                       \
+    info<T ## n>::typed::template modify_remote<n>(arg ## n);
 
 #define traverse_arguments(z, n, unused)                                                                             \
-    if(info<T ## n>::typed::pin<n>(o)) return;
+    info<T ## n>::typed::template pin<n>(o) ||
+
+#define score_arguments(z, n, unused)                                                                                \
+    info<T ## n>::typed::template score<n>(arg ## n);
 
 #define type_arg_list(z, n, pn)                                                                                      \
     BOOST_PP_COMMA_IF(n)                                                                                             \
@@ -26,7 +32,7 @@
 
 #define arg_list(z, n, pn)                                                                                           \
     BOOST_PP_COMMA_IF(n)                                                                                             \
-    info<T ## n>::typed::revised<n>(o)
+    info<T ## n>::typed::template revised<n>(o)
                                                                                                                      
 #ifndef BOOST_PP_IS_ITERATING
 #ifndef AMBIENT_INTERFACE_KERNEL_INLINER_PP
@@ -41,24 +47,34 @@
 #define n BOOST_PP_ITERATION()
 #define TYPES_NUMBER n
 
-template< class K, BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) , void(K::*fp)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )>
-struct kernel_inliner<void(K::*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) ), fp> {
-    
+template<BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) , void(*fp)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) )>
+struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) ), fp> {
+    static const int arity = n; 
+    template<complexity O>
     static inline void latch(cfunctor* o, BOOST_PP_REPEAT(TYPES_NUMBER, type_arg_list, n) ){
-        BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 
-        BOOST_PP_REPEAT(TYPES_NUMBER, traverse_arguments, ~) 
-        ambient::controller.submit(o);
+
+        BOOST_PP_REPEAT(TYPES_NUMBER, score_arguments, ~)
+        ambient::controller.schedule<O>();
+
+        if(ambient::controller.remote()){
+            BOOST_PP_REPEAT(TYPES_NUMBER, extract_remote_arguments, ~)
+            return;
+        }else if(ambient::controller.local()){
+            BOOST_PP_REPEAT(TYPES_NUMBER, extract_local_arguments, ~) 
+        }else{
+            BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 
+        }
+
+        BOOST_PP_REPEAT(TYPES_NUMBER, traverse_arguments, ~)
+        ambient::controller.queue(o);
     }
-    static inline void invoke(K* o){
-        (o->*fp)( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, BOOST_PP_ADD(n,1)) );
+    static inline void invoke(cfunctor* o){
+        (*fp)( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, BOOST_PP_ADD(n,1)) );
     }
-    static inline void cleanup(sfunctor* o){
+    static inline void cleanup(cfunctor* o){
         BOOST_PP_REPEAT(TYPES_NUMBER, cleanup_object, ~) 
     }
-    static inline void deploy(sfunctor* o, size_t target){
-        BOOST_PP_REPEAT(TYPES_NUMBER, deploy_revision, ~) 
-    }
-    static inline bool ready(sfunctor* o){
+    static inline bool ready(cfunctor* o){
         return (BOOST_PP_REPEAT(TYPES_NUMBER, ready_revision, ~) true);
     }
 };

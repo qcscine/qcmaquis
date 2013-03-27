@@ -15,6 +15,7 @@ namespace ambient { namespace numeric {
         void* operator new (size_t);
         void operator delete (void* ptr);
         static tiles<Matrix> identity_matrix(size_type size);
+        static tiles<Matrix>* new_identity_matrix(size_type size);
 
        ~tiles();
         explicit tiles();

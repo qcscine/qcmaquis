@@ -22,7 +22,7 @@ enum MPSStorageLayout { LeftPaired, RightPaired };
 enum Indicator { Unorm, Lnorm, Rnorm };
 enum DecompMethod {QR, SVD}; 
 
-static DecompMethod DefaultSolver() {return QR;} // QR or SVD
+static DecompMethod DefaultSolver() {return SVD;} // QR or SVD
 
 template<class Matrix, class SymmGroup>
 class TwoSiteTensor;
@@ -49,11 +49,6 @@ public:
               block_matrix<Matrix, SymmGroup> const& block,
               MPSStorageLayout layout = LeftPaired);
 
-#ifdef RVALUE
-    MPSTensor(MPSTensor&& rhs); 
-    MPSTensor& operator=(MPSTensor&& rhs);
-#endif
-    
     Index<SymmGroup> const & site_dim() const;
     Index<SymmGroup> const & row_dim() const;
     Index<SymmGroup> const & col_dim() const;

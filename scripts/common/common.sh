@@ -1,32 +1,44 @@
 #!/bin/bash -l
+## externals ##
+## HOST
+## ROOT_DIR
+## CONFIG_DIR 
+## CONFIG_NAME (if specific)
 
 ## targets ##
 AMBIENT=ambient
 DMRG=dmrg
 TYPES=types
+TARGETS="ambient dmrg types"
+
+RUN_PRESETS="short: ~/maquis2013/src/dmrg/configurations/ff_short.parms ~/maquis2013/src/dmrg/configurations/ff_short.model
+             large: ~/maquis2013/benchmarks/dmrg/fflarge/parms ~/maquis2013/benchmarks/dmrg/fflarge/model
+             fermiwideladder: ~/maquis2013/benchmarks/dmrg/fermiwideladder/parms ~/maquis2013/benchmarks/dmrg/fermiwideladder/model"
 
 ## settings ##
-BUILD_NAME=${SITE}_${COMPILER}_${MPI_WRAPPER}
+
+BUILD_NAME=${PREFIX}_${COMPILER}_${MPI_WRAPPER}
+[[ $SHARED_FS ]] && BUILD_NAME=${HOST}/${BUILD_NAME}
 BENCHMARK_SCRIPTS_DIR=${ROOT_DIR}/scripts/benchmarks
 SELF=$BUILD_NAME
 
 add_ambient(){
     local defines_common=`get_defines MAQUIS_COMMON`
     local defines_target=`get_defines MAQUIS_AMBIENT`
-    eval cmake $defines_common $defines_target ..
+    eval cmake $defines_common $defines_target ${ROOT_DIR}/ambient
 }
 
 add_types(){
     local defines_common=`get_defines MAQUIS_COMMON`
     local defines_target=`get_defines MAQUIS_TYPES`
     use_dashboards types
-    eval cmake $defines_common $defines_target ..
+    eval cmake $defines_common $defines_target ${ROOT_DIR}/types
 }
 
 add_dmrg(){
     local defines_common=`get_defines MAQUIS_COMMON`
     local defines_target=`get_defines MAQUIS_DMRG`
-    eval cmake $defines_common $defines_target ..
+    eval cmake $defines_common $defines_target ${ROOT_DIR}/dmrg
 }
 
 add_target(){
@@ -35,8 +47,9 @@ add_target(){
     echo " ------------------------------------------------------------------------------------------ "
     echo " $self: configuring"
     echo " ------------------------------------------------------------------------------------------ "
-    mkdir ${ROOT_DIR}/${!target}/${BUILD_NAME}
-    pushd . &> /dev/null
+    [[ $SHARED_FS ]] && mkdir ${ROOT_DIR}/${!target}/${HOST} &> /dev/null
+    pushd . &> /dev/null; 
+    mkdir ${ROOT_DIR}/${!target}/${BUILD_NAME} &> /dev/null
     cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
     eval add_${1}
     popd &> /dev/null
@@ -64,6 +77,18 @@ build_target(){
     set_state ${1} build
 }
 
+test_target(){
+    local self="${SELF}/${1} (`get_state ${1}`)"
+    local target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
+    echo " ------------------------------------------------------------------------------------------ "
+    echo " $self: testing"
+    echo " ------------------------------------------------------------------------------------------ "
+    pushd . &> /dev/null
+    cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
+    make test
+    popd &> /dev/null
+}
+
 run_target(){
     local self="${SELF}/${1} (`get_state ${1}`)"
     local target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
@@ -89,13 +114,13 @@ dash_target(){
 }
 
 use_dashboards(){
-    mkdir Dashboards
+    mkdir Dashboards &> /dev/null
     local target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
-    echo "set(PREDEFINED_CTEST_SITE \"${SITE}\")"                                         >  ./Dashboards/site.cmake
-    echo "set(PREDEFINED_CTEST_BUILD_NAME \"${COMPILER}_${MPI_WRAPPER}\")"                >> ./Dashboards/site.cmake
-    echo "set(PREDEFINED_CTEST_SOURCE_DIRECTORY \"${ROOT_DIR}/${!target}\")"              >> ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_SITE \"${HOST}\")"                                          >  ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_BUILD_NAME \"${PREFIX}_${COMPILER}_${MPI_WRAPPER}\")"       >> ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_SOURCE_DIRECTORY \"${ROOT_DIR}/${!target}\")"               >> ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${ROOT_DIR}/${!target}/${BUILD_NAME}\")" >> ./Dashboards/site.cmake
-    cat ../Dashboards/site.cmake                                                          >> ./Dashboards/site.cmake
+    cat ../Dashboards/site.cmake                                                           >> ./Dashboards/site.cmake
     cp ../Dashboards/cmake_common.cmake ./Dashboards/
 }
 
@@ -112,6 +137,24 @@ get_defines(){
         local d=`echo $i | sed "s/${1}_/D/"`
         echo -n " -$d=\"${!i}\""
     done
+}
+
+lookup(){
+    local command=${1}
+    local target=${command%% *}
+    if [ ! -f $target ]
+    then
+        target=`basename $target`
+        local i; for i in $TARGETS; do
+            if [ -d ${ROOT_DIR}/${i}/${BUILD_NAME} ]; then
+                local result=`find ${ROOT_DIR}/${i}/${BUILD_NAME} -name $target -type f -executable -print`
+                [[ -n $result ]] && value=$result
+            fi
+        done
+    else
+        value=`readlink -f $target`
+    fi
+    echo "$value"
 }
 
 check_state(){ # 1: target
@@ -149,8 +192,9 @@ set_state(){ # 1: target (optional, def: all) # 2: state
 }
 
 write_states(){
-    ORIG="`basename $0`"
-    MOD=".`basename $0`.mod"
+    [[ -z "${CONFIG_NAME}" ]] && export CONFIG_NAME=`basename $0`
+    ORIG="${CONFIG_DIR}/${CONFIG_NAME}"
+    MOD="${CONFIG_DIR}/${CONFIG_NAME}.mod"
     cp $ORIG $MOD # keeping permissions
     echo "#!/bin/bash -l"                   >  $MOD
     echo "STATE=\"$STATE\""                 >> $MOD
@@ -163,7 +207,7 @@ write_states(){
 
 ## target wrappers ##
 
-clean(){
+function clean(){
    local state=`get_state ${1}`
    if [ -n "${1}" ] 
    then
@@ -179,7 +223,7 @@ clean(){
    fi
 }
 
-configure(){
+function configure(){
     clean ${1} # cleaning every configuration
     local state=`get_state ${1}`
     if [ -n "${1}" ]
@@ -195,7 +239,7 @@ configure(){
     fi
 }
 
-build(){
+function build(){
     local state=`get_state ${1}`
     [[ "$state" == "void" ]] && configure ${1}
     if [ -n "${1}" ]
@@ -211,22 +255,71 @@ build(){
     fi
 }
 
-run(){
+function test(){
     local state=`get_state ${1}`
     [[ "$state" != "build" ]] && build ${1}
     if [ -n "${1}" ]
     then
-        run_target ${1}
+        test_target ${1}
     else
         echo " $SELF ($state): running all tests             "
-        run_target ambient
-        run_target types
-        run_target dmrg
+        test_target ambient
+        test_target types
+        test_target dmrg
         echo " $SELF (build): testing has finished           "
     fi
 }
 
-dash(){
+function expend(){
+    echo "short"
+}
+
+function run(){  
+    [[ ! -n "${1}" ]] && die "please specify the binary      "
+    args=${*:2}
+    if [ -z ${3} ]; then
+        echo $RUN_PRESETS | grep "${2}:" &> /dev/null
+        [[ $? -eq 0 ]] && args=`(read line; echo $line;) < <(echo "${RUN_PRESETS#*${2}: }")`
+    fi
+
+    local target=`lookup ${1}`
+    [[ ! -n $target ]] && die "couldn't find the binary      "
+
+    [[ ! -z $VALGRIND         ]] && VALGRIND="valgrind --error-limit=no"
+    [[ ! -z $CILK_NUM_THREADS ]] && CILK_NUM_THREADS="CILK_NWORKERS=$CILK_NUM_THREADS"
+    if [ ! -z $OMP_NUM_THREADS  ]; then
+        local proclist="0,1,2,3,4,5 6,7,8,9,10,11"
+        [[ $OMP_NUM_THREADS -eq 12 ]] && proclist="0,1,2,3,4,5,6,7,8,9,10,11"
+        OMP_NUM_THREADS="OMP_NUM_THREADS=$OMP_NUM_THREADS"
+    fi
+    
+    local command="$OMP_NUM_THREADS 
+                   $CILK_NUM_THREADS 
+                   $VALGRIND 
+                   $target $args"; 
+
+    if [ ! -z "$MPI_NUM_PROCS" ]; then
+        # todo: hwloc-bind socket:0 --mempolicy firsttouch 
+        local rank_var="OMPI_COMM_WORLD_NODE_RANK"
+        command="export proclist=($proclist); 
+                 command=\"KMP_AFFINITY=verbose,proclist=[\${proclist[\$$rank_var]}],explicit $command\"; 
+                 echo \$command;
+                 echo
+                 eval \$command"
+        
+        echo "#!/bin/bash
+        rm -f bootstrap.sh; $command" &> bootstrap.sh; chmod +x bootstrap.sh;
+        command="mpiexec -np $MPI_NUM_PROCS bootstrap.sh"
+    fi
+
+    rm -f *.h5*
+    echo $command
+    echo
+    eval $command
+    rm -f *.h5*
+}
+
+function dash(){
     local state=`get_state ${1}`
     [[ "$state" != "build" ]] && build ${1}
     if [ -n "${1}" ]
@@ -241,7 +334,7 @@ dash(){
     fi
 }
 
-benchmark(){
+function benchmark(){
     [[ -n "${1}" ]] || die "please supply the name of the benchmark"
     source $BENCHMARK_SCRIPTS_DIR/${1}
     local state=`get_state ${TARGET}`
@@ -251,23 +344,28 @@ benchmark(){
     popd &> /dev/null
 }
 
-execute(){
+function execute(){
     echo
     if [ "$1" == "" ]
     then
         echo " $SELF: set the environment"
     else
-        action=`echo $1 | sed "s/dashboard/dash/" | sed "s/test/run/"` &&
-        [[ "$action" != "clean" ]] && [[ "$action" != "configure" ]]   && 
-        [[ "$action" != "build" ]] && [[ "$action" != "run"       ]]   &&
-        [[ "$action" != "dash"  ]] && [[ "$action" != "benchmark" ]]   &&
-        echo "  Usage: ./config {clean, configure, build, test, dashboard, benchmark} [targets]" &&
+        action=`echo $1 | sed "s/dashboard/dash/"` &&
+        [[ "$action" != "clean" ]] && [[ "$action" != "configure" ]] && 
+        [[ "$action" != "build" ]] && [[ "$action" != "test"      ]] &&
+        [[ "$action" != "dash"  ]] && [[ "$action" != "benchmark" ]] &&
+        [[ "$action" != "run"   ]] && 
+        echo "  Usage: ./config {clean, configure, build, test, run, dashboard, benchmark} [targets]" &&
         echo "  Note: in order to set the environment use \`source ./config\`" && echo && exit
 
-        local i; for i in ${*:2}""; do
-            check_state ${i} # safe check
-            eval $action ${i}
-        done
+        if [ "$action" == "run" ]; then
+            run ${*:2}
+        else
+            local i; for i in ${*:2}""; do
+                check_state ${i} # safe check
+                eval $action ${i}
+            done
+        fi
     fi
     echo
 }

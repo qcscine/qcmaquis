@@ -23,8 +23,8 @@
 #define ARG(I) BOOST_PP_EXPR_IF(I, double* rwork)
 
 // C - Two functions for the functional tests
-    inline double norm(double a){return sqrt(a*a);}
-    inline double norm(std::complex<double> a){return sqrt(std::norm(a));}
+    inline double norm(double a){return std::sqrt(a*a);}
+    inline double norm(std::complex<double> a){return std::sqrt(std::norm(a));}
 
 // C - Two functions for the SVD, to calculate the optimal size work because a cast complex to int does not exist !
     inline int OptimalSize(double a){return (int)a;}
@@ -113,7 +113,7 @@ BOOST_PP_REPEAT(TUPLE_TYPE_CNT, BOOST_PP_DEF, _)
 BOOST_PP_REPEAT(TUPLE_TYPE_CNT, BOOST_PP_DEF, _)
 #undef BOOST_PP_DEF
 
-    template<typename T>
+    /*template<typename T>
     void getq_qr(const int* m, const int* n, const int* k, T *a, const int* lda, T* tau, T* work, const int* lwork, int* info);
 
     template<>
@@ -137,5 +137,5 @@ BOOST_PP_REPEAT(TUPLE_TYPE_CNT, BOOST_PP_DEF, _)
     template<>
     void getq_lq<std::complex<double> >(const int* m, const int* n, const int* k, std::complex<double> *a, const int* lda, std::complex<double>* tau, std::complex<double>* work, const int* lwork, int* info){
             zunglq_(m, n, k, a, lda, tau, work, lwork, info);
-    }
+    }*/
 #endif

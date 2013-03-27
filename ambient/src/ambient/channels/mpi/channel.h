@@ -11,6 +11,16 @@
 
 namespace ambient { namespace channels { namespace mpi {
 
+    using ambient::models::velvet::revision;
+    using ambient::models::velvet::transformable;
+
+    class request {
+    public:
+        request(void* memory);
+        MPI_Request mpi_request;
+        void* memory;
+    };
+
     class channel : public singleton< channel > 
     {
         class pipe {
@@ -44,11 +54,15 @@ namespace ambient { namespace channels { namespace mpi {
         void ifetch(group* placement, size_t sid, size_t x, size_t y);
 
         void  init();
-        void  finalize();
         pipe* add_pipe(const packet_t& type, pipe::direction flow);
         pipe* get_pipe(const packet_t& type, pipe::direction flow);
         void  add_handler(const packet_t& type, void(*callback)(packet&));
 
+        request* get(revision* r);
+        request* set(revision* r, int rank);
+        request* get(transformable* v);
+        request* set(transformable* v, int rank);
+        bool  test(request* r);
         void  replicate(vbp& p);
         void  broadcast(vbp& p, bool root);
         void  emit(packet* p);
@@ -56,6 +70,7 @@ namespace ambient { namespace channels { namespace mpi {
        ~channel();
 
         group* world;
+        size_t volume;
         std::list<pipe*> qs;
         std::atomic<bool> active;
 
