@@ -3,10 +3,6 @@
 
 #include <atomic>
 
-namespace ambient {
-    enum rstate { feed, common, stub, none };
-}
-
 namespace ambient { namespace models { namespace velvet {
 
     class revision

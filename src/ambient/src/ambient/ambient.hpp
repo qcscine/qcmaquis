@@ -1,8 +1,5 @@
-#ifndef AMBIENT_INTERFACE
-#define AMBIENT_INTERFACE
 #ifndef AMBIENT
 #define AMBIENT
-#endif
 // {{{ system includes
 #include <mpi.h>
 #include <complex>
@@ -44,13 +41,16 @@
 #endif
 
 #ifdef AMBIENT_CPP11
-#define AMBIENT_MOVE(var) std::move(var)
+    #define AMBIENT_MOVE(var) std::move(var)
 #else
-#define AMBIENT_MOVE(var) var
+    #define AMBIENT_MOVE(var) var
 #endif
 
 namespace ambient {
     enum complexity { N, N2, N3 };
+    enum rstate     { feed, common, stub, none };
+    enum scope_t    { base, single, shared };
+    enum locality   { COMMON, LOCAL, REMOTE };
 }
 
 #include "ambient/utils/memory.hpp"

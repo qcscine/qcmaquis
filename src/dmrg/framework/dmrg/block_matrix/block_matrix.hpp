@@ -340,7 +340,7 @@ void block_matrix<Matrix, SymmGroup>::load(alps::hdf5::archive & ar)
         std::vector<LoadMatrix> tmp;
         ar >> alps::make_pvp("data_", tmp);
         for(typename std::vector<LoadMatrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
-#ifdef USE_AMBIENT
+#ifdef AMBIENT
             data_.push_back(new Matrix(maquis::bindings::matrix_cast<Matrix>(*it)));
 #else
             data_.push_back(new Matrix(*it));
@@ -350,7 +350,7 @@ void block_matrix<Matrix, SymmGroup>::load(alps::hdf5::archive & ar)
         std::vector<LoadMatrix> tmp;
         ar >> alps::make_pvp("data_", tmp);
         for(typename std::vector<LoadMatrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
-#ifdef USE_AMBIENT
+#ifdef AMBIENT
             data_.push_back(new Matrix(maquis::bindings::matrix_cast<Matrix>(*it)));
 #else
             data_.push_back(new Matrix(*it));
@@ -364,7 +364,7 @@ void block_matrix<Matrix, SymmGroup>::save(alps::hdf5::archive & ar) const
     ar << alps::make_pvp("rows_", rows_);
     ar << alps::make_pvp("cols_", cols_);
 
-#ifdef USE_AMBIENT
+#ifdef AMBIENT
     std::vector<alps::numeric::matrix<typename Matrix::value_type> > tmp;
     tmp.reserve(data_.size());
     for(int i = 0; i < data_.size(); i++)

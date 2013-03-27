@@ -64,12 +64,12 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline bool controller::remote(){
         //return (this->state == ambient::stub); //(this->context->state == scope::REMOTE);
-        return (this->context->state == scope::REMOTE);
+        return (this->context->state == ambient::REMOTE);
     }
 
     inline bool controller::local(){
         //return (this->state == ambient::feed); //(this->context->state == scope::LOCAL);
-        return (this->context->state == scope::LOCAL);
+        return (this->context->state == ambient::LOCAL);
     }
 
     inline void controller::flush(){

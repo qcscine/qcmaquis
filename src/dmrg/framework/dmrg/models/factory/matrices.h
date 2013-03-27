@@ -2,7 +2,6 @@
 #define MATRICES_H
 
 #ifdef USE_AMBIENT
-// parallel matrix
 #include "dmrg/block_matrix/detail/ambient.hpp"
 #endif
 

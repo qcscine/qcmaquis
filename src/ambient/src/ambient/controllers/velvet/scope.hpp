@@ -5,12 +5,6 @@ namespace ambient {
 
     using ambient::controllers::velvet::controller;
 
-    enum scope_t {
-        base,
-        single,
-        shared
-    };
-
     template<scope_t T>
     class scope {};
 

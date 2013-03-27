@@ -3,7 +3,6 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 include_directories("${AMBIENT_SOURCES_DIR}")
 
 add_definitions(-DBOOST_TEST_DYN_LINK -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
-add_definitions(-DAMBIENT)
 
 # Note: we can't mix openmp and pthreads but for performance tests we need two implementations:
 # ambient gemm + sequential blas || mkl gemm + multithreaded blas
@@ -18,7 +17,7 @@ endif()
 if(BLAS_Accelerate_LIBRARY) # apple
     include_directories("${MPI_INCLUDE_PATH}") # cluster path
     set(MPI_CXX_LIBRARIES ${MPI_LIBRARY} ${MPI_EXTRA_LIBRARY})
-    add_definitions(-DAPPLE -DAMBIENT -framework Accelerate)
+    add_definitions(-DAPPLE -framework Accelerate)
     set(BLAS_LAPACK ${BLAS_vecLib_LIBRARY}) 
 endif()
 
