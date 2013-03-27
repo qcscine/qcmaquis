@@ -82,6 +82,16 @@ void MPOTensor<Matrix, SymmGroup>::divide_by_scalar(const scalar_type& v)
         *it /= v;
 }
 
+#ifdef AMBIENT
+template<class Matrix, class SymmGroup>
+void MPOTensor<Matrix, SymmGroup>::persist() const
+{
+    for(typename data_t::const_iterator it = data_.begin(); it != data_.end(); ++it)
+        for(size_t k = 0; k < (it->second).n_blocks(); k++)
+           ambient::numeric::persist((it->second)[k]);
+}
+#endif
+
 template<class Matrix, class SymmGroup>
 std::size_t MPOTensor<Matrix, SymmGroup>::row_dim() const
 {

@@ -26,7 +26,7 @@ class TrivialGroup
 {
 public:
 	typedef enum { Plus } charge;
-	static const charge IdentityCharge = Plus;
+	static constexpr charge IdentityCharge = Plus;
     static const bool finite = true;
     
     
@@ -162,7 +162,7 @@ class U1
 public:
 	typedef int charge;
 
-	static const charge IdentityCharge = 0;
+	static constexpr charge IdentityCharge = 0;
     static const bool finite = false;
 	
 	static charge fuse(charge a, charge b) { return a + b; }

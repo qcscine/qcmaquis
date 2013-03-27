@@ -3,10 +3,12 @@
 #include "ambient/utils/singleton.hpp"
 #include "boost/pool/singleton_pool.hpp"
 
-#define FUTURE_SIZE 16
-#define CPU __cilkrts_get_worker_number()
-
+#define FUTURE_SIZE 64
 #define BULK 41943040
+
+#define BULK_REGION 0
+#define DEFAULT_REGION 1
+#define PERSIST_REGION 13
 
 namespace ambient { namespace memory {
 
@@ -49,7 +51,7 @@ namespace ambient { namespace memory {
         // boost::details::pool::guard<mutex> g(mtx);
     public:
         bulk(){
-            this->arity = __cilkrts_get_nworkers();
+            this->arity = AMBIENT_NUM_THREADS;
             this->set   = new region<BULK>[arity];
         }
        ~bulk(){
@@ -57,10 +59,10 @@ namespace ambient { namespace memory {
         }
         template<size_t S>
         void* malloc(){
-            return set[CPU].malloc(S);
+            return set[AMBIENT_THREAD_ID].malloc(S);
         }
         void* malloc(size_t sz){
-            return set[CPU].malloc(sz);
+            return set[AMBIENT_THREAD_ID].malloc(sz);
         }
         void drop(){
             for(int i = 0; i < arity; i++) this->set[i].reset();
@@ -84,7 +86,7 @@ namespace ambient { namespace memory {
         struct empty {};
     public:
         pool(){
-            this->arity = __cilkrts_get_nworkers();
+            this->arity = AMBIENT_NUM_THREADS;
         }
        ~pool(){
         }
@@ -122,5 +124,4 @@ namespace ambient {
     extern memory::pool& pool;
 }
 
-#undef CPU
 #endif

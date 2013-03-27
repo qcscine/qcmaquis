@@ -20,7 +20,7 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     transpose_view<Matrix>::transpose_view(const Matrix& a)
-    : impl(a.impl) 
+    : core(a.core) 
     { 
     }
 
@@ -36,7 +36,7 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline size_t transpose_view<Matrix>::lda() const { 
-        return this->impl->spec.dim.y; 
+        return this->core->spec.dim.y; 
     }
 
     template <class Matrix>
@@ -46,7 +46,7 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     transpose_view<Matrix>::operator Matrix () const {
-        Matrix t(Matrix(this->impl,0));
+        Matrix t(Matrix(this->core,0));
         transpose_inplace(t); 
         return t;
     }
@@ -121,38 +121,31 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T>
-    inline matrix<T> matrix<T>::identity_matrix(size_type size){
-        matrix i(size, size);
-        fill_identity(i);
-        return i;
-    }
-
-    template <typename T>
     inline matrix<T>::matrix(const ptr& p, size_t r) 
-    : impl(p), ref(r)
+    : core(p), ref(r)
     {
     }
 
     template <typename T>
     inline matrix<T>::matrix(){ 
-        this->impl = new I(ambient::dim2(0,0), sizeof(T)); 
+        this->core = new I(ambient::dim2(0,0), sizeof(T)); 
     }
 
     template <typename T>
     inline matrix<T>::matrix(size_type rows, size_type cols, value_type init_value){
-        this->impl = new I(ambient::dim2(cols, rows), sizeof(T)); 
+        this->core = new I(ambient::dim2(cols, rows), sizeof(T));
         fill_value(*this, init_value);
     }
 
     template <typename T>
     inline matrix<T>::matrix(const matrix& a){
-        this->impl = new I(a.impl->spec.dim, sizeof(T));
-        ambient::fuse(a.impl, this->impl);
+        this->core = new I(a.core->spec.dim, sizeof(T));
+        ambient::fuse(a.core, this->core);
     }
     
     template <typename T>
     matrix<T>& matrix<T>::operator = (const matrix& rhs){
-        //assert(!rhs.impl->weak()); // can be optimized if weak
+        //assert(!rhs.core->weak()); // can be optimized if weak
         matrix c(rhs);
         this->swap(c);
         return *this;
@@ -162,7 +155,7 @@ namespace ambient { namespace numeric {
     template <typename T>
     inline matrix<T>::matrix(matrix&& a){
         printf("ERROR: NOT TESTED (RVALUE COPY)\n");
-        this->impl = a.impl; // need to clear a.impl
+        this->core = a.core; // need to clear a.core
     }
 
     template <typename T>
@@ -192,17 +185,17 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline size_type matrix<T>::lda() const { 
-        return this->impl->spec.dim.y; 
+        return this->core->spec.dim.y; 
     }
 
     template<typename T>
     inline size_type matrix<T>::num_rows() const { 
-        return this->impl->spec.dim.y; 
+        return this->core->spec.dim.y; 
     }
 
     template<typename T>
     inline size_type matrix<T>::num_cols() const {
-        return this->impl->spec.dim.x; 
+        return this->core->spec.dim.x; 
     }
 
     template<typename T>
@@ -222,12 +215,12 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline bool matrix<T>::empty() const { 
-        return (this->impl->spec.dim == 0);    
+        return (this->core->spec.dim == 0);    
     }
 
     template<typename T>
     inline void matrix<T>::swap(matrix& r){ 
-        std::swap(this->impl, r.impl);
+        std::swap(this->core, r.core);
     }
 
     template<typename T>
@@ -288,14 +281,16 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline value_type& matrix<T>::operator() (size_type i, size_type j){
-        if(impl->weak()) impl->add_state(NULL);
-        ambient::sync(); ambient::controller.sync(*impl->current); return ((value_type*)*(c_revision*)impl->current)[ j*impl->spec.dim.y + i ];
+        ambient::model.touch(core);
+        assert(ambient::model.common(r));
+        ambient::sync(); return ((value_type*)*(c_revision*)core->current)[ j*core->spec.dim.y + i ];
     }
 
     template<typename T>
     inline const value_type& matrix<T>::operator() (size_type i, size_type j) const {
-        if(impl->weak()) return value_type();
-        ambient::sync(); ambient::controller.sync(*impl->current); return ((value_type*)*(c_revision*)impl->current)[ j*impl->spec.dim.y + i ];
+        ambient::model.touch(core);
+        assert(ambient::model.common(r));
+        ambient::sync(); return ((value_type*)*(c_revision*)core->current)[ j*core->spec.dim.y + i ];
     }
 
     template<typename T>

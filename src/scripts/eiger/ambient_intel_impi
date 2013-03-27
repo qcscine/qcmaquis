@@ -4,8 +4,8 @@ STATE_AMBIENT="void"
 STATE_TYPES="build"
 STATE_DMRG="void"
 # end of target states #
-SITE=eiger_ambient # the dashboard name (uname -n)
-ROOT_DIR=~/maquis2012/src
+SHARED_FS=true
+PREFIX=ambient
 COMPILER=iccxe
 COMPILER_VERSION=2011
 MPI_WRAPPER=impi
@@ -57,5 +57,5 @@ MAQUIS_DMRG_BUILD_REGRESSION=OFF
 MAQUIS_DMRG_BUILD_AMBIENT=ON
 MAQUIS_DMRG_USE_AMBIENT=ON
 
-source common.sh 
+source $ROOT_DIR/scripts/common/common.sh 
 execute $*

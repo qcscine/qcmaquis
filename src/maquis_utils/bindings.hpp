@@ -33,6 +33,8 @@ namespace maquis { namespace bindings {
 
 #ifdef AMBIENT 
 
+    using ambient::complexity;
+
     template <typename T, typename S, template<class M, class SS> class C>
     struct binding< std::vector< std::vector<T> >, C<ambient::numeric::diagonal_matrix<T>, S> > {
         static std::vector< std::vector<T> > convert(const C<ambient::numeric::diagonal_matrix<T>, S>& m){
@@ -45,7 +47,7 @@ namespace maquis { namespace bindings {
             for(size_t k = 0; k < m.n_blocks(); ++k){
                 num_rows = m[k].num_rows();
                 std::vector<T>* v_ptr = &set[k];
-                ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, m[k], num_rows, num_cols, num_rows, offset);
+                ambient::numeric::kernels::cast_to_vector<T>::spawn<complexity::N2>(v_ptr, m[k], num_rows, num_cols, num_rows, offset);
             }
             ambient::sync();
             return set;
@@ -61,7 +63,7 @@ namespace maquis { namespace bindings {
             size_t offset(0);
             ambient::numeric::matrix<T> pm(num_rows, num_cols);    
             const std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::numeric::kernels::cast_from_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, lda, offset);
+            ambient::numeric::kernels::cast_from_vector<T>::spawn<complexity::N2>(v_ptr, pm, num_rows, num_cols, lda, offset);
             ambient::sync();
             return pm;
         }
@@ -75,7 +77,7 @@ namespace maquis { namespace bindings {
             size_t offset(0);
             alps::numeric::matrix<T> m(num_rows, num_cols);    
             std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, num_rows, offset);
+            ambient::numeric::kernels::cast_to_vector<T>::spawn<complexity::N2>(v_ptr, pm, num_rows, num_cols, num_rows, offset);
             ambient::sync();
             return m;
         }
@@ -89,7 +91,7 @@ namespace maquis { namespace bindings {
             size_t offset(0);
             ambient::numeric::diagonal_matrix<T> pm(num_rows);    
             const std::vector<typename alps::numeric::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::numeric::kernels::cast_from_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, num_rows, offset);
+            ambient::numeric::kernels::cast_from_vector<T>::spawn<complexity::N2>(v_ptr, pm, num_rows, num_cols, num_rows, offset);
             ambient::sync();
             return pm;
         }
@@ -103,7 +105,7 @@ namespace maquis { namespace bindings {
             size_t num_rows = pm.num_rows();
             alps::numeric::diagonal_matrix<T> m((std::size_t)num_rows);
             std::vector<typename alps::numeric::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
-            ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, pm, num_rows, num_cols, num_rows, offset);
+            ambient::numeric::kernels::cast_to_vector<T>::spawn<complexity::N2>(v_ptr, pm, num_rows, num_cols, num_rows, offset);
             ambient::sync();
             return m;
         }
@@ -128,7 +130,7 @@ namespace maquis { namespace bindings {
                 size_t offset = 0;
                 for(size_t kk = 0; kk < m[k].data.size(); kk++){
                     size_t num_rows = m[k][kk].num_rows();
-                    ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, m[k][kk], num_rows, num_cols, num_rows, offset);
+                    ambient::numeric::kernels::cast_to_vector<T>::spawn<complexity::N2>(v_ptr, m[k][kk], num_rows, num_cols, num_rows, offset);
                     offset += num_rows;
                 }
             }
@@ -152,7 +154,7 @@ namespace maquis { namespace bindings {
                     ambient::numeric::matrix<T>& tile = pm.tile(i,j);
                     size_t rows = tile.num_rows();
                     size_t cols = tile.num_cols();
-                    ambient::numeric::kernels::cast_from_vector<T>::spawn(v_ptr, tile, rows, cols, lda, offset);
+                    ambient::numeric::kernels::cast_from_vector<T>::spawn<complexity::N2>(v_ptr, tile, rows, cols, lda, offset);
                     offset += rows;
                 }
             }
@@ -177,7 +179,7 @@ namespace maquis { namespace bindings {
                     ambient::numeric::matrix<T2>& tile = pm.tile(i,j);
                     size_t rows = tile.num_rows();
                     size_t cols = tile.num_cols();
-                    ambient::numeric::kernels::cast_from_vector_t<T1,T2>::spawn(v_ptr, tile, rows, cols, lda, offset);
+                    ambient::numeric::kernels::cast_from_vector_t<T1,T2>::spawn<complexity::N2>(v_ptr, tile, rows, cols, lda, offset);
                     offset += rows;
                 }
             }
@@ -201,7 +203,7 @@ namespace maquis { namespace bindings {
                     const ambient::numeric::matrix<T>& tile = pm.tile(i,j);
                     size_t rows = tile.num_rows();
                     size_t cols = tile.num_cols();
-                    ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, tile, rows, cols, lda, offset);
+                    ambient::numeric::kernels::cast_to_vector<T>::spawn<complexity::N2>(v_ptr, tile, rows, cols, lda, offset);
                     offset += rows;
                 }
             }
@@ -223,7 +225,7 @@ namespace maquis { namespace bindings {
             for(size_t i = 0; i < pm.nt; ++i){
                 ambient::numeric::diagonal_matrix<T>& tile = pm[i];
                 size_t rows = tile.num_rows();
-                ambient::numeric::kernels::cast_from_vector<T>::spawn(v_ptr, tile, rows, num_cols, num_rows, offset);
+                ambient::numeric::kernels::cast_from_vector<T>::spawn<complexity::N2>(v_ptr, tile, rows, num_cols, num_rows, offset);
                 offset += rows;
             }
 
@@ -243,7 +245,7 @@ namespace maquis { namespace bindings {
             for(size_t i = 0; i < pm.nt; ++i){
                 const ambient::numeric::diagonal_matrix<T>& tile = pm[i];
                 size_t rows = tile.num_rows();
-                ambient::numeric::kernels::cast_to_vector<T>::spawn(v_ptr, tile, rows, num_cols, num_rows, offset);
+                ambient::numeric::kernels::cast_to_vector<T>::spawn<complexity::N2>(v_ptr, tile, rows, num_cols, num_rows, offset);
                 offset += rows;
             }
 
@@ -318,8 +320,8 @@ namespace maquis {
     };
 
     template<>
-    struct real_type<ambient::future<std::complex<double> > > {
-        typedef typename ambient::future<double> type;
+    struct real_type<ambient::numeric::future<std::complex<double> > > {
+        typedef typename ambient::numeric::future<double> type;
     };
 
     inline double real(double f){
@@ -331,24 +333,50 @@ namespace maquis {
     }
 
     template<typename T>
-    inline const typename real_type<ambient::future<T> >::type& 
-    real(const ambient::future<T>& f){
-        return ambient::real(f);
+    inline const typename real_type<ambient::numeric::future<T> >::type& 
+    real(const ambient::numeric::future<T>& f){
+        return ambient::numeric::real(f);
     }
 
     template <typename T,                          // value_type
              template<class AT> class A,           // allocator 
              template<class TT, class AA> class C> // vector<value_type, allocator>
     inline const C<typename real_type<T>::type, A<typename real_type<T>::type> >& 
-    real(const C<ambient::future<T>, A<ambient::future<T> > >& f){
-        return ambient::real(f);
+    real(const C<ambient::numeric::future<T>, A<ambient::numeric::future<T> > >& f){
+        return ambient::numeric::real(f);
+    }
+
+    template<typename _InputIterator, typename _Tp>
+    inline _Tp
+    accumulate(_InputIterator __first, _InputIterator __last, _Tp __init)
+    {
+      __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
+      __glibcxx_requires_valid_range(__first, __last);
+
+      for (; __first != __last; ++__first)
+	__init = __init + *__first;
+
+      #ifdef AMBIENT_LOOSE_FUTURE
+      return std::move(__init);
+      #else
+      return __init;
+      #endif
+    }
+
+    template<typename T>
+    inline T sqrt(T arg){
+        return std::sqrt(arg);
+    }
+
+    inline ambient::numeric::future<double> sqrt(const ambient::numeric::future<double>& f){
+        return ambient::numeric::sqrt(f);
     }
 
 }
 namespace ietl {
 
-    inline double real(const ambient::future<std::complex<double> >& f){
-        return ambient::real(f);
+    inline double real(const ambient::numeric::future<std::complex<double> >& f){
+        return ambient::numeric::real(f);
     }
 
 }
@@ -360,6 +388,17 @@ namespace maquis {
     template <class T> 
     inline typename alps::numeric::real_type<T>::type real(T f){
         return alps::numeric::real(f);
+    }
+
+    template<typename _InputIterator, typename _Tp>
+    inline _Tp
+    accumulate(_InputIterator __first, _InputIterator __last, _Tp __init){
+        return std::accumulate(__first, __last, __init);
+    }
+
+    template<typename T>
+    T sqrt(T arg){
+        return std::sqrt(arg);
     }
 
 }

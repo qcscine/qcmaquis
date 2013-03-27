@@ -29,33 +29,12 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows,
         data_.push_back(new Matrix(rows_[k].second, cols_[k].second));
 }
 
-#ifdef RVALUE
-template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix&& rhs){
-    swap(*this, rhs);
-}
-
-template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup>& block_matrix<Matrix, SymmGroup>::operator=(block_matrix&& rhs){
-    swap(*this, rhs);
-    return *this;
-}
-
-template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(const block_matrix& rhs)
-{
-    block_matrix tmp(rhs);
-    swap(*this, tmp);
-    return *this;
-}
-#else
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(block_matrix rhs)
 {
     swap(*this, rhs);
     return *this;
 }
-#endif
 
 // Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
 //template<class Matrix, class SymmGroup>
@@ -217,17 +196,17 @@ block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operato
 template<class Matrix, class SymmGroup>
 typename block_matrix<Matrix, SymmGroup>::scalar_type block_matrix<Matrix, SymmGroup>::trace() const
 {
-    std::vector<scalar_type> vt;
+    std::vector<scalar_type> vt; vt.reserve(data_.size());
     std::transform(data_.begin(), data_.end(), back_inserter(vt), utils::functor_trace());
-    return std::accumulate(vt.begin(), vt.end(), scalar_type(0.)); // maquis::accumulate
+    return maquis::accumulate(vt.begin(), vt.end(), scalar_type(0.));
 }
 
 template<class Matrix, class SymmGroup>
 typename block_matrix<Matrix, SymmGroup>::real_type block_matrix<Matrix, SymmGroup>::norm() const
 {
-    std::vector<real_type> vt;
+    std::vector<real_type> vt; vt.reserve(data_.size());
     std::transform(data_.begin(), data_.end(), back_inserter(vt), utils::functor_norm_square());
-    return sqrt(std::accumulate(vt.begin(), vt.end(), real_type(0.)));
+    return maquis::sqrt(maquis::accumulate(vt.begin(), vt.end(), real_type(0.)));
 }
 
 template<class Matrix, class SymmGroup>

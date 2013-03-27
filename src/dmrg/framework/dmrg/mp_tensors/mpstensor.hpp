@@ -65,19 +65,6 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const& sd,
 , cur_normalization(Unorm)
 { }
 
-#ifdef RVALUE
-template<class Matrix, class SymmGroup>
-MPSTensor<Matrix, SymmGroup>::MPSTensor(MPSTensor&& rhs){ 
-    swap(*this, rhs); 
-}
-
-template<class Matrix, class SymmGroup>
-MPSTensor<Matrix, SymmGroup>& MPSTensor<Matrix, SymmGroup>::operator=(MPSTensor&& rhs){
-    swap(*this, rhs);
-    return *this;
-}
-#endif
-
 template<class Matrix, class SymmGroup>
 void MPSTensor<Matrix, SymmGroup>::replace_left_paired(block_matrix<Matrix, SymmGroup> const & rhs, Indicator normalization)
 {
@@ -332,14 +319,14 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     // This shouldn't be necessary, but as of Rev. 1702, is necessary in some cases
     // If I haven't fixed this by the end of Feb 2012, remind me
     Index<SymmGroup> i1 = data_.left_basis(), i2 = rhs.data_.left_basis();
-    std::vector<scalar_type> vt;
     common_subset(i1, i2);
+    std::vector<scalar_type> vt; vt.reserve(i1.size());
 
     for (std::size_t b = 0; b < i1.size(); ++b) {
         typename SymmGroup::charge c = i1[b].first;
         vt.push_back(overlap(data_(c,c), rhs.data_(c,c)));
     } // should be reformulated in terms of reduction (todo: Matthias, 30.04.12 / scalar-value types)
-    return std::accumulate(vt.begin(), vt.end(), scalar_type(0.));
+    return maquis::accumulate(vt.begin(), vt.end(), scalar_type(0.));
 }
 
 template<class Matrix, class SymmGroup>

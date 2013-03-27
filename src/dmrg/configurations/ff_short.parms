@@ -9,6 +9,7 @@ ietl_jcd_maxiter = 10
 
 chkpfile = results.h5
 max_bond_dimension = 50
+donotsave = 1
 
 nsweeps = 5
 nmainsweeps = 1

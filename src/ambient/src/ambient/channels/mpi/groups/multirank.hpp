@@ -46,4 +46,8 @@ namespace ambient { namespace channels { namespace mpi {
         return (target->rank == target->master);
     }
 
+    inline void multirank::mute(){
+        this->verbose = false;
+    }
+
 } } }

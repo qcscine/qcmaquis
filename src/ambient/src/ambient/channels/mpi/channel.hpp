@@ -19,7 +19,7 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline channel::~channel(){
-        if(this->active) this->finalize();
+        MPI_Finalize();
         pthread_mutex_destroy(&this->mutex);
     }
 
@@ -28,16 +28,11 @@ namespace ambient { namespace channels { namespace mpi {
         MPI_Init_thread(&zero, NULL, MPI_THREAD_MULTIPLE, &level); 
         if(level != MPI_THREAD_MULTIPLE) printf("ERROR: Wrong threading level\n");
         this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
+        this->volume = this->world->size;
 
 //        this->add_handler( get_t<control_packet_t>() , controllers::velvet::deviate);
-        this->active = true;
-        pthread_create(&this->thread, NULL, &channel::stream, this);
-    }
-
-    inline void channel::finalize(){
-        this->active = false;
-        pthread_join(this->thread, NULL);
-        MPI_Finalize();
+        //this->active = true;
+        //pthread_create(&this->thread, NULL, &channel::stream, this);
     }
 
     inline void* channel::stream(void* instance){
@@ -71,6 +66,71 @@ namespace ambient { namespace channels { namespace mpi {
         this->qs.push_back(new pipe(type, flow));
         pthread_mutex_unlock(&this->mutex);
         return this->qs.back();
+    }
+
+
+    inline request::request(void* memory) 
+    : memory(memory), mpi_request(MPI_REQUEST_NULL) 
+    {
+    };
+
+    inline request* channel::get(transformable* v){
+        request* q = new request(&v->v);
+        MPI_Irecv(q->memory, 
+                  (int)sizeof(transformable::numeric_union)/sizeof(double), 
+                  MPI_DOUBLE, 
+                  MPI_ANY_SOURCE, 
+                  v->sid, 
+                  MPI_COMM_WORLD, 
+                  &(q->mpi_request));
+        return q;
+    }
+
+    inline request* channel::set(transformable* v, int rank){
+        if(rank == ambient::rank()) return NULL;
+        request* q = new request(&v->v);
+        MPI_Isend(q->memory, 
+                  (int)sizeof(transformable::numeric_union)/sizeof(double), 
+                  MPI_DOUBLE, 
+                  rank, 
+                  v->sid, 
+                  MPI_COMM_WORLD, 
+                  &(q->mpi_request));
+        return q;
+    }
+
+    inline request* channel::get(revision* r){
+        request* q = new request(r->header);
+        //printf("Getting %d with tag %d\n", (int)r->extent, r->sid);
+        MPI_Irecv(q->memory, 
+                  (int)r->extent/sizeof(double), 
+                  MPI_DOUBLE, 
+                  MPI_ANY_SOURCE, 
+                  r->sid, 
+                  MPI_COMM_WORLD, 
+                  &(q->mpi_request));
+        return q;
+    }
+
+    inline request* channel::set(revision* r, int rank){
+        request* q = new request(r->header);
+        //printf("Sending %d with tag %d to %d\n", (int)r->extent, r->sid, rank);
+        MPI_Isend(q->memory, 
+                  (int)r->extent/sizeof(double), 
+                  MPI_DOUBLE, 
+                  rank, 
+                  r->sid, 
+                  MPI_COMM_WORLD, 
+                  &(q->mpi_request));
+        return q;
+    }
+
+    inline bool channel::test(request* q){
+        if(q == NULL) return true; // for transformable
+        int flag = 0;
+        MPI_Test(&(q->mpi_request), &flag, MPI_STATUS_IGNORE);
+        if(flag) return true;
+        return false;
     }
 
     inline void channel::replicate(vbp& p){

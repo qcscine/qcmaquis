@@ -8,15 +8,15 @@
 namespace ambient {
 
     template<typename T> inline dim2 dim(T& ref){ 
-        return ref.impl->spec.dim;
+        return ref.core->spec.dim;
     }
 
     template<typename T> inline size_t square_dim(T& ref){ 
-        return ref.impl->spec.dim.square();
+        return ref.core->spec.dim.square();
     }
 
     template<typename T> inline size_t size(T& ref){ 
-        return ref.impl->spec.size;  
+        return ref.core->spec.size;  
     }
 
     template <typename T>

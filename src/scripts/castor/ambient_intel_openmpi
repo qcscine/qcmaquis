@@ -1,34 +1,34 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_TYPES="build"
+STATE_TYPES="void"
 STATE_DMRG="build"
 # end of target states #
-SITE=castor_ambient # the dashboard name (uname -n)
-ROOT_DIR=/users/akosenko/maquis2012/src
+SHARED_FS=true
+PREFIX=ambient
 COMPILER=intel
 COMPILER_VERSION=2013
 MPI_WRAPPER=openmpi
-MPI_WRAPPER_VERSION=1.6.2-intel
+MPI_WRAPPER_VERSION=1.6.3-intel
 BOOST=boost
-BOOST_VERSION=1.51.0
+BOOST_VERSION=1.49.0
 CMAKE=cmake
 
-export CXX=icpc
-export CC=icc
-export BOOST_ROOT=/apps/castor/boost_1_51_0/
+export CC=mpicc
+export CXX=mpicxx
+export BOOST_ROOT=/project/h07/boost_1_49_0/
 
+module load gcc/4.7.2
 module load ${COMPILER}/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load ${CMAKE}
-
 ## common ##
-MAQUIS_COMMON_CMAKE_CXX_FLAGS="-w -O3 -DNDEBUG -DBOOST_ASIO_DISABLE_STD_ATOMIC -std=c++0x -U__GXX_EXPERIMENTAL_CXX0X__  -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2012/src/types/src"
-MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-w -O3 -DNDEBUG -DBOOST_ASIO_DISABLE_STD_ATOMIC -std=c++0x -U__GXX_EXPERIMENTAL_CXX0X__ -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2012/src/types/src"
-#MAQUIS_COMMON_CMAKE_CXX_FLAGS="-w -O0 -g -DNDEBUG -DBOOST_ASIO_DISABLE_STD_ATOMIC -std=c++0x -U__GXX_EXPERIMENTAL_CXX0X__  -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2012/src/types/src"
-#MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-w -O0 -g -DNDEBUG -DBOOST_ASIO_DISABLE_STD_ATOMIC -std=c++0x -U__GXX_EXPERIMENTAL_CXX0X__ -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2012/src/types/src"
-MAQUIS_COMMON_CMAKE_C_COMPILER=icc
-MAQUIS_COMMON_CMAKE_CXX_COMPILER=icpc
+MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
+MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
+#MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
+#MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
+MAQUIS_COMMON_CMAKE_C_COMPILER=mpicc
+MAQUIS_COMMON_CMAKE_CXX_COMPILER=mpicxx
 MAQUIS_COMMON_MPI_CXX_FOUND=FALSE
 MAQUIS_COMMON_MPI_CXX_INCLUDE_PATH=
 MAQUIS_COMMON_MPI_CXX_LINK_FLAGS=
@@ -57,5 +57,5 @@ MAQUIS_DMRG_BUILD_REGRESSION=OFF
 MAQUIS_DMRG_BUILD_AMBIENT=ON
 MAQUIS_DMRG_USE_AMBIENT=ON
 
-source common.sh 
+source $ROOT_DIR/scripts/common/common.sh 
 execute $*

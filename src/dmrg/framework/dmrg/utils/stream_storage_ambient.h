@@ -129,7 +129,7 @@ public:
         assert(false); // not used
         std::size_t tag(0);
         for (std::size_t k = 0; k < ptr_.n_blocks(); ++k) {
-            ambient::numeric::save((*ptr_)[k],tag)
+            ambient::numeric::save((*ptr_)[k],tag);
             tag +=  (*ptr_)[k].data.size();
             typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> > tmp((*ptr_)[k].num_rows(), (*ptr_)[k].num_cols());                 
             (*ptr_)[k].swap(tmp);
@@ -141,7 +141,7 @@ public:
     
     void operator()()
     {
-        std::string fp = store->master->base_path + store->object_path;
+        std::string fp = store->master()->get_base_path() + store->object_path;
         std::ofstream of(fp.c_str(), std::ofstream::binary);
 
         typename ObjectList::const_iterator it = list.begin();
@@ -178,7 +178,7 @@ public:
         assert(false); // not used
         std::size_t tag(0);
         for (std::size_t k = 0; k < ptr_.n_blocks(); ++k) {
-            ambient::numeric::load((*ptr_)[k],tag)
+            ambient::numeric::load((*ptr_)[k],tag);
             tag +=  (*ptr_)[k].data.size();
         }
 
@@ -188,14 +188,14 @@ public:
     
     void operator()()
     {
-        std::string fp = store->master->base_path + store->object_path;
+        std::string fp = store->master()->get_base_path() + store->object_path;
         std::ifstream ifs(fp.c_str(), std::ofstream::binary);
 
         typename ObjectList::const_iterator it = list.begin();
         for(; it != list.end(); ++it)
            ifs.read((char*)(dmrg_value_type*)(boost::get<0>((*it))),boost::get<2>((*it))/sizeof(char));
 
-        of.close();
+        ifs.close();
     }
     
 private:

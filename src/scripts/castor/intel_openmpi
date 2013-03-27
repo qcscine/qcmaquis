@@ -4,8 +4,8 @@ STATE_AMBIENT="void"
 STATE_TYPES="void"
 STATE_DMRG="build"
 # end of target states #
-SITE=castor # the dashboard name (uname -n)
-ROOT_DIR=/users/akosenko/maquis2012/src
+SHARED_FS=true
+PREFIX=standard
 COMPILER=intel
 COMPILER_VERSION=2011
 MPI_WRAPPER=openmpi
@@ -24,8 +24,8 @@ module load ${CMAKE}
 
 ## common ##
 MAQUIS_COMMON_ENABLE_OMP=ON
-MAQUIS_COMMON_CMAKE_CXX_FLAGS="-O3 -DNDEBUG -I/users/akosenko/maquis2012/src/types/src"
-MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG -I/users/akosenko/maquis2012/src/types/src"
+MAQUIS_COMMON_CMAKE_CXX_FLAGS="-O3 -DNDEBUG -I/users/akosenko/maquis2013/src/types/src"
+MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG -I/users/akosenko/maquis2013/src/types/src"
 MAQUIS_COMMON_CMAKE_C_COMPILER=icc
 MAQUIS_COMMON_CMAKE_CXX_COMPILER=icpc
 MAQUIS_COMMON_MPI_CXX_FOUND=FALSE
@@ -55,5 +55,5 @@ MAQUIS_DMRG_BUILD_REGRESSION=OFF
 MAQUIS_DMRG_BUILD_AMBIENT=OFF
 MAQUIS_DMRG_USE_AMBIENT=OFF
 
-source common.sh 
+source $ROOT_DIR/scripts/common/common.sh 
 execute $*

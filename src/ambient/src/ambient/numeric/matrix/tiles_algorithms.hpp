@@ -2,6 +2,7 @@
 #define AMBIENT_NUMERIC_TILES_ALGORITHMS
 
 #include "ambient/numeric/matrix/tiles.h"
+#include <utility>
 
 #define value_type      typename tiles<Matrix>::value_type
 #define size_type       typename tiles<Matrix>::size_type
@@ -62,7 +63,7 @@ namespace ambient { namespace numeric {
 
         const Matrix* src = a.data[0];
 
-        if(!a[0].impl->weak())
+        if(!a[0].core->weak())
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
                 Matrix& dst = *split[i+j*a.mt];
@@ -93,7 +94,7 @@ namespace ambient { namespace numeric {
 
         const diagonal_matrix<T>* src = a.data[0];
 
-        if(!a[0].get_data().impl->weak())
+        if(!a[0].get_data().core->weak())
         for(int i = 0; i < a.nt; i++){
             diagonal_matrix<T>& dst = *split[i];
             copy_block(src->get_data(), i*AMBIENT_IB, 0, dst.get_data(), 0, 0, dst.num_rows(), 1);
@@ -128,7 +129,7 @@ namespace ambient { namespace numeric {
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
                 const Matrix* src = &a.tile(i,j);
-                if(!src->impl->weak())
+                if(!src->core->weak())
                 copy_block(*src, 0, 0, *m[0], i*AMBIENT_IB, j*AMBIENT_IB, src->num_rows(), src->num_cols());
                 delete src;
             }
@@ -157,7 +158,7 @@ namespace ambient { namespace numeric {
 
         const Matrix* src = a.data[0];
 
-        if(!a[0].impl->weak())
+        if(!a[0].core->weak())
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
                 Matrix& dst = *split[i+j*a.mt];
@@ -179,7 +180,7 @@ namespace ambient { namespace numeric {
 
         for(int i = 0; i < a.nt; i++){
             const diagonal_matrix<T>* src = a.data[i];
-            if(!src->get_data().impl->weak())
+            if(!src->get_data().core->weak())
             copy_block(src->get_data(), 0, 0, m[0]->get_data(), i*AMBIENT_IB, 0, src->num_rows(), 1);
             delete src;
         }
@@ -201,7 +202,7 @@ namespace ambient { namespace numeric {
 
         const diagonal_matrix<T>* src = a.data[0];
 
-        if(!a[0].get_data().impl->weak())
+        if(!a[0].get_data().core->weak())
         for(int i = 0; i < a.nt; i++){
             diagonal_matrix<T>& dst = *split[i];
             copy_block(src->get_data(), i*AMBIENT_IB, 0, dst.get_data(), 0, 0, dst.num_rows(), 1);
@@ -536,7 +537,7 @@ namespace ambient { namespace numeric {
                 gemv<1,1>(a, AMBIENT_IB, i+1, transpose(sax), i+1, i, sx, AMBIENT_IB, i, m-AMBIENT_IB, n-i-1);
                 scale(sx, i+1, i, tp, i, i);
             }
-            /* {{{ explicit implementation
+            /* {{{ explicit coreementation
             for(int i = 0; i < AMBIENT_IB; ++i){
         
                 int ri  = m-i;   //std::min(m-i, i*nb);
@@ -797,7 +798,7 @@ namespace ambient { namespace numeric {
         resize(r, ak, an);
         
         tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
-        qr(a, t);
+        qr(AMBIENT_MOVE(a), AMBIENT_MOVE(t));
         
         // restoring R from A //
         for(int j = 0; j < a.nt; j++)
@@ -812,7 +813,7 @@ namespace ambient { namespace numeric {
         for(int i = 0; i < std::min(a.mt, a.nt); i++)
             fill_identity(q.tile(i,i));
        
-        orgqr(a, q, t); 
+        orgqr(AMBIENT_MOVE(a), AMBIENT_MOVE(q), AMBIENT_MOVE(t)); 
         resize(q, am, ak);
     }
 
@@ -844,7 +845,7 @@ namespace ambient { namespace numeric {
         resize(q, am, an); // instead of ak
         
         tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
-        lq(a, t);
+        lq(AMBIENT_MOVE(a), AMBIENT_MOVE(t));
         
         // restoring L from A //
         for(int j = 0; j < std::min(a.mt, a.nt); ++j)
@@ -859,7 +860,7 @@ namespace ambient { namespace numeric {
         for(int i = 0; i < std::min(a.mt, a.nt); i++)
             fill_identity(q.tile(i,i));
        
-        orglq(a, q, t); 
+        orglq(AMBIENT_MOVE(a), AMBIENT_MOVE(q), AMBIENT_MOVE(t)); 
         resize(q, ak, an);
     }
 
@@ -1040,6 +1041,14 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix>
+    inline void persist(const tiles<Matrix>& a){
+        int size = a.data.size();
+        for(int i = 0; i < size; i++){
+            persist(a[i]);
+        }
+    }
+
+    template<class Matrix>
     inline void remove_rows(tiles<Matrix>& a, size_type i, difference_type k){
         assert(false); printf("ERROR: NOT TESTED (BLOCKED REMOVE ROWS)\n");
     }
@@ -1071,7 +1080,10 @@ namespace ambient { namespace numeric {
     }
 
     template <class Matrix>
-    inline void mul_inplace(tiles<Matrix>& a, const scalar_type& rhs) { 
+    inline void mul_inplace(tiles<Matrix>& a, const scalar_type& rhs) {
+        #ifdef AMBIENT_LOOSE_FUTURE
+        if(!rhs.valid) rhs.get();
+        #endif
         int size = a.data.size();
         for(int i = 0; i < size; i++){
             a[i] *= rhs;
@@ -1080,9 +1092,22 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     inline void div_inplace(tiles<Matrix>& a, const scalar_type& rhs){
+        #ifdef AMBIENT_LOOSE_FUTURE
+        if(!rhs.valid) rhs.get();
+        #endif
         int size = a.data.size();
         for(int i = 0; i < size; i++)
             a[i] /= rhs;
+    }
+
+    template <class Matrix>
+    inline tiles<Matrix> kron(const tiles<Matrix>& M1, const tiles<Matrix>& M2){
+        assert(false); printf("ERROR: NOT TESTED (KRON)\n");
+    }
+
+    template<class Matrix>
+    inline tiles<Matrix> sqrt(tiles<Matrix>& a){
+        assert(false); printf("ERROR: NOT TESTED (SQRT)\n");
     }
  
     template <class Matrix>

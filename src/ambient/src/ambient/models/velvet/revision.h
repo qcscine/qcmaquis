@@ -1,14 +1,18 @@
 #ifndef AMBIENT_MODELS_VELVET_REVISION
 #define AMBIENT_MODELS_VELVET_REVISION
 
-//#include <stdatomic.h>
+#include <atomic>
+
+namespace ambient {
+    enum rstate { feed, common, stub, none };
+}
 
 namespace ambient { namespace models { namespace velvet {
 
     class revision
     {
     public:
-        revision(size_t extent, void* g);
+        revision(size_t extent, void* g, ambient::rstate s);
         void* operator new (size_t size);
         void  operator delete (void* ptr);
         template<typename T> operator T* (){ return (T*)data; }
@@ -28,17 +32,13 @@ namespace ambient { namespace models { namespace velvet {
         size_t    extent;
         revision* parent;
         void*     generator;
+        void*     transfer;
         void*     header;
         void*     data;
-        size_t    sid;
-        int       users;
+        int       sid;
+        std::atomic<int> users;
         int       region;
-
-        enum { VOID,
-               PURE, 
-               COPY, 
-               WAIT, 
-               ORIG } state;
+        ambient::rstate state;
     };
 
 } } }

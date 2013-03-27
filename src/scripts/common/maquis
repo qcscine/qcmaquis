@@ -1,0 +1,70 @@
+#!/bin/bash 
+## run control
+
+export HOST=`hostname | tr -d [:digit:] | sed  -e "s/\.ethz\.ch//g"`
+path=`pwd`
+entry=$path
+self="maquis"
+
+if [ ! -z "${CONFIG_NAME}" ]; then
+   [[ ! -z "${CONFIG_GUARD}" ]] && echo "mixing environment is forbidden (exit and switch)" && exit 1;
+   . ~/.bashrc
+   source /etc/profile.d/modules.sh
+   export CONFIG_GUARD="true"
+   alias clean='$CONFIG_DIR/$CONFIG_NAME clean'
+   alias configure='$CONFIG_DIR/$CONFIG_NAME configure'
+   alias build='$CONFIG_DIR/$CONFIG_NAME build'
+   alias test='$CONFIG_DIR/$CONFIG_NAME test'
+   alias run='$CONFIG_DIR/$CONFIG_NAME run'
+   alias dash='$CONFIG_DIR/$CONFIG_NAME dash'
+   alias benchmark='$CONFIG_DIR/$CONFIG_NAME benchmark'
+   alias envset='source $CONFIG_DIR/$CONFIG_NAME'
+   [[ $CONFIG_ENV ]] && source $CONFIG_DIR/$CONFIG_NAME;
+   return
+fi
+[[ ! -z $MAQUIS_ROOT ]] && path=$MAQUIS_ROOT
+
+while getopts ":es:" opt; do
+   case $opt in
+     e) export CONFIG_ENV=true;                                     ;;
+     s) path=$OPTARG;                                               ;;
+    \?) echo "Usage: ${0##*/}" [ -s dir ] [ -e ] [ config ]; exit 1 ;;
+     :) echo "$self@$HOST: option -s requires an argument"; exit 1  ;;
+  esac
+done
+shift $((OPTIND-1))
+
+cd $path; [[ $? -ne 0 ]] && exit 1;
+while [ ! -d "scripts" ] && [ $path != "/" ]
+do
+    cd ..; path=`pwd`
+done
+
+[[ $path == "/" ]] && echo "$self@$HOST: couldn't find the scripts directory" && exit 1;
+[[ ! -d "scripts/$HOST" ]] && echo "$self@$HOST: $path/scripts/$HOST doesn't exist" && exit 1;
+export ROOT_DIR=$path;
+export CONFIG_DIR=$path/scripts/$HOST
+
+# general machine sub-shell
+if [[ "$@" == "" ]]; then 
+    export PS1="$self@${HOST}:\w > "
+    export PATH=$CONFIG_DIR:$PATH
+    cd $entry
+    bash
+    exit 0
+fi
+
+command=$CONFIG_DIR/$@; 
+export CONFIG_NAME=`basename ${command%% *}`
+[[ ! -f $CONFIG_DIR/$CONFIG_NAME ]] && echo "$self@$HOST: $CONFIG_DIR/$CONFIG_NAME doesn't exist" && exit 1;
+shift 1
+# configuration specific machine sub-shell
+if [[ "$@" == "" ]]; then 
+    export PS1="$self@${HOST}:\w (${CONFIG_NAME}) > "
+    cd $entry
+    bash --rcfile `which $self`
+    exit 0
+fi
+
+# default (same shell)
+$command

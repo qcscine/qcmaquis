@@ -3,8 +3,8 @@
 #define AMBIENT_IB 512
 #define PLASMA_IB 64
 
-#include "ambient/numeric/matrix/kernels/math.hpp"
-#include "ambient/numeric/matrix/kernels/utils.hpp"
+#include "ambient/numeric/kernels/math.hpp"
+#include "ambient/numeric/kernels/utils.hpp"
 
 namespace ambient { namespace numeric { namespace kernels {
 
@@ -595,21 +595,21 @@ namespace ambient { namespace numeric { namespace kernels {
     
         size_t sizex = std::min(n,m);
         for(size_t jj = 0; jj < sizex; jj++){
-            trace.get_value() += ad[jj + jj*m];
+            trace.get_naked() += ad[jj + jj*m];
         }
     }
         
     template<typename T>
     void scalar_norm<T>::c(const matrix<T>& a, future<double>& norm){
         T* ad = current(a);
-        norm.get_value() = alps::numeric::real(ambient::dot(ad, ad, ambient::square_dim(a)));
+        norm.get_naked() = alps::numeric::real(ambient::dot(ad, ad, ambient::square_dim(a)));
     }
         
     template<typename T>
     void overlap<T>::c(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
         T* ad = current(a);
         T* bd = current(b);
-        overlap.get_value() = ambient::dot(ad, bd, ambient::square_dim(a));
+        overlap.get_naked() = ambient::dot(ad, bd, ambient::square_dim(a));
     }
 
         
@@ -650,7 +650,7 @@ namespace ambient { namespace numeric { namespace kernels {
     void scale<T>::c(matrix<T>& a, const future<T>& t){
         T* ad = current(a);
         T* ar = updated(a);
-        T factor = t.get_value();
+        T factor = t.get_naked();
         int size = ambient::square_dim(a);
         for(int k=0; k < size; k++) 
             ar[k] = ad[k] * factor;
@@ -668,7 +668,7 @@ namespace ambient { namespace numeric { namespace kernels {
     void scale_inverse<T>::c(matrix<T>& a, const future<T>& t){
         T* ad = current(a);
         T* ar = updated(a);
-        T factor = t.get_value();
+        T factor = t.get_naked();
         int size = ambient::square_dim(a);
         for(int k=0; k < size; k++) 
             ar[k] = ad[k] / factor;
@@ -821,7 +821,7 @@ namespace ambient { namespace numeric { namespace kernels {
                 double m = magnitude(av, bv);
                 if(d > epsilon*256 && d/m > epsilon*256){ // || av*bv < 0 // 16 is recommended, 256 because MKL isn't bitwise stable
                     std::cout << i << " " << j << " : " << av << " " << bv << ", eps: " << d << "\n";
-                    ret.get_value() = false;
+                    ret.get_naked() = false;
                     if(++count > 10) return;
                 }
             }
@@ -1108,7 +1108,7 @@ namespace ambient { namespace numeric { namespace kernels {
         free(work);
     }
 
-    template<typename T>
+    /*template<typename T>
     void qr<T>::c(const matrix<T>& a, weak_view<T>& q, weak_view<T>& r){
         int m = a.num_rows(); //numrow a
         int n = a.num_cols(); //numcol a, numcol r
@@ -1192,7 +1192,7 @@ namespace ambient { namespace numeric { namespace kernels {
         free(work);
         free(more_work);
         free(tau);
-    }
+    }*/
 
     template<typename T>
     void heev<T>::c(matrix<T>& a, weak_view<double>& w){

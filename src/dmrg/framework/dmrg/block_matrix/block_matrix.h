@@ -37,13 +37,7 @@ public:
     block_matrix(Index<SymmGroup> rows,
                  Index<SymmGroup> cols);
 
-#ifdef RVALUE
-    block_matrix(block_matrix&& rhs);
-    block_matrix& operator=(block_matrix&& rhs); 
-    block_matrix& operator=(const block_matrix& rhs);
-#else
     block_matrix& operator=(block_matrix rhs);
-#endif
 
     Index<SymmGroup> const & left_basis() const;
     Index<SymmGroup> const & right_basis() const;

@@ -12,85 +12,157 @@ namespace ambient { namespace numeric {
 
 namespace ambient { 
 
-    using ambient::models::velvet::sfunctor;
     using ambient::controllers::velvet::cfunctor;
+    using ambient::models::velvet::transformable;
     using ambient::models::velvet::history;
     // {{{ compile-time type info: singular types + inplace and future specializations
     template <typename T> struct singular_info {
-        template<size_t arg> static inline void deallocate    (sfunctor* m){                        }
-        template<size_t arg> static inline void deploy        (sfunctor* m,size_t){                 }
-        template<size_t arg> static inline bool pin           (cfunctor* m){ return false;          }
-        template<size_t arg> static inline bool ready         (sfunctor* m){ return true;           }
-        template<size_t arg> static inline T&   revised       (sfunctor* m){ extract(o); return *o; }
-        template<size_t arg> static inline void modify(T& obj, sfunctor* m){ 
+        template<size_t arg> static inline void deallocate     (cfunctor* m){                        }
+        template<size_t arg> static inline bool pin            (cfunctor* m){ return false;          }
+        template<size_t arg> static inline void score          (T& obj)     {                        }
+        template<size_t arg> static inline bool ready          (cfunctor* m){ return true;           }
+        template<size_t arg> static inline T&   revised        (cfunctor* m){ extract(o); return *o; }
+        template<size_t arg> static inline void modify (T& obj, cfunctor* m){
             m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(obj); 
+        }
+        template<size_t arg> static inline void modify_remote(T& obj)       {                        }
+        template<size_t arg> static inline void modify_local(T& obj, cfunctor* m){
+            m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(obj);
         }
     };
     template <typename T> struct singular_inplace_info : public singular_info<T> {
-        template<size_t arg> static inline T& revised(sfunctor* m){ return *(T*)&m->arguments[arg]; }
-        template<size_t arg> static inline void modify(T& obj, sfunctor* m){ *(T*)&m->arguments[arg] = obj; }
+        template<size_t arg> static inline T& revised(cfunctor* m){ return *(T*)&m->arguments[arg]; }
+        template<size_t arg> static inline void modify_remote(T& obj){ }
+        template<size_t arg> static inline void modify_local(T& obj, cfunctor* m){ *(T*)&m->arguments[arg] = obj; }
+        template<size_t arg> static inline void modify(T& obj, cfunctor* m){ *(T*)&m->arguments[arg] = obj; }
     };
     template <typename T> struct future_info : public singular_info<T> {
-        template<size_t arg> static inline void modify(const T& obj, sfunctor* m){ 
-            m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(obj.ghost);
+        template<size_t arg> static inline void deallocate(cfunctor* m){       
+            extract(o); o->core->generator = NULL;
+        }
+        template<size_t arg> static inline void modify_remote(T& obj){ 
+            ambient::controller.rsync(obj.core);
+        }
+        template<size_t arg> static inline void modify_local(const T& obj, cfunctor* m){ 
+            obj.core->generator = m;
+            ambient::controller.lsync(obj.core);
+            m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(obj.core);
+        }
+        template<size_t arg> static inline void modify(const T& obj, cfunctor* m){ 
+            m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(obj.core);
+        }
+    };
+    template <typename T> struct read_future_info : public future_info<T> {
+        template<size_t arg> static inline void deallocate(cfunctor* m){ }
+        template<size_t arg> static inline void modify_remote(T& obj){ }
+        template<size_t arg> static inline void modify_local(const T& obj, cfunctor* m){
+            m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(obj.core);
         }
     };
     // }}}
     // {{{ compile-time type info: iteratable derived types
     template <typename T> struct iteratable_info : public singular_info<T> {
         template<size_t arg> 
-        static inline void deallocate(sfunctor* m){
+        static inline void deallocate(cfunctor* m){
             extract(o);
-            o->impl->content[o->ref+1]->complete();
+            o->core->content[o->ref+1]->complete();
         }
         template<size_t arg>
-        static inline void modify(T& obj, sfunctor* m){
-            history* o = obj.impl;
+        static inline void modify_remote(T& obj){
+            history* o = obj.core;
+            ambient::model.touch(o);
+            ambient::controller.rsync(o->back());
+            ambient::model.add_revision<ambient::stub>(o); 
+        }
+        template<size_t arg>
+        static inline void modify_local(T& obj, cfunctor* m){
+            history* o = obj.core;
             m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(o, ambient::model.time(o));
-            ambient::model.add_revision(o, m); 
+            ambient::controller.lsync(o->back());
+            ambient::model.add_revision<ambient::feed>(o, m); 
+        }
+        template<size_t arg>
+        static inline void modify(T& obj, cfunctor* m){
+            history* o = obj.core;
+            m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(o, ambient::model.time(o));
+            ambient::controller.sync(o->back());
+            ambient::model.add_revision<ambient::common>(o, m); 
         }
         template<size_t arg> 
         static inline bool pin(cfunctor* m){ 
             extract(o);
-            void* generator = o->impl->content[o->ref]->generator;
+            void* generator = o->core->content[o->ref]->generator;
             if(generator != NULL){
-                ((cfunctor*)generator)->push_back(m);
+                ((cfunctor*)generator)->queue(m);
                 return true;
             }
             return false;
         }
         template<size_t arg> 
-        static inline bool ready(sfunctor* m){
+        static inline void score(T& obj){
+            //ambient::controller.score_rw(obj.core);
+        }
+        template<size_t arg> 
+        static inline bool ready(cfunctor* m){
             extract(o);
-            void* generator = o->impl->content[o->ref]->generator;
+            void* generator = o->core->content[o->ref]->generator;
             if(generator == NULL || generator == m) return true;
             return false;
-        }
-        template<size_t arg>
-        static inline void deploy(sfunctor* m, size_t target){
-            extract(o);
-            ambient::controller.sync(*o->impl->content[o->ref], target);
         }
     };
     // }}}
     // {{{ compile-time type info: only read/write iteratable derived types
     template <typename T> struct read_iteratable_info : public iteratable_info<T> {
-        template<size_t arg> static inline void deallocate(sfunctor* m){
+        template<size_t arg> static inline void deallocate(cfunctor* m){
             extract(o);
-            o->impl->content[o->ref]->release();
+            o->core->content[o->ref]->release();
         }
-        template<size_t arg> static inline void modify(T& obj, sfunctor* m){
-            history* o = obj.impl;
+        template<size_t arg> static inline void modify_remote(T& obj){
+            history* o = obj.core;
+            ambient::model.touch(o);
+            ambient::controller.rsync(o->back());
+        }
+        template<size_t arg> static inline void modify_local(T& obj, cfunctor* m){
+            history* o = obj.core;
             m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(o, ambient::model.time(o));
+            ambient::controller.lsync(o->back());
             ambient::model.use_revision(o);
+        }
+        template<size_t arg> static inline void modify(T& obj, cfunctor* m){
+            history* o = obj.core;
+            m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(o, ambient::model.time(o));
+            ambient::controller.sync(o->back());
+            ambient::model.use_revision(o);
+        }
+        template<size_t arg> 
+        static inline void score(T& obj){
+            //ambient::controller.score_r(obj.core);
         }
     };
     template <typename T> struct write_iteratable_info : public iteratable_info<T> {
-        template<size_t arg> static inline void deploy(sfunctor* m,size_t){        }
-        template<size_t arg> static inline bool pin   (cfunctor* m){ return false; }
-        template<size_t arg> static inline bool ready (sfunctor* m){ return true;  }
+        template<size_t arg> static inline void modify_remote(T& obj){
+            history* o = obj.core;
+            ambient::model.touch(o);
+            ambient::model.add_revision<ambient::stub>(o); 
+        }
+        template<size_t arg> static inline void modify_local(T& obj, cfunctor* m){
+            history* o = obj.core;
+            m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(o, ambient::model.time(o));
+            ambient::model.add_revision<ambient::feed>(o, m); 
+        }
+        template<size_t arg> static inline void modify(T& obj, cfunctor* m){
+            history* o = obj.core;
+            m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(o, ambient::model.time(o));
+            ambient::model.add_revision<ambient::common>(o, m); 
+        }
+        template<size_t arg> static inline bool pin(cfunctor* m){ return false; }
+        template<size_t arg> static inline void score(T& obj) {               
+            //ambient::controller.score_w(obj.core);
+        }
+        template<size_t arg> static inline bool ready (cfunctor* m){ return true;  }
     };
     // }}}
+
     // {{{ compile-time type info: specialization for forwarded types
     template <typename T> 
     struct info { 
@@ -106,16 +178,16 @@ namespace ambient {
     };
 
     template <typename S>
-    struct info < ambient::future<S> > {
-        typedef ambient::future<S> type;
+    struct info < ambient::numeric::future<S> > {
+        typedef ambient::numeric::future<S> type;
         typedef future_info<type> typed; 
         static inline type& unfold(type& folded){ return folded.unfold(); }
     };
 
     template <typename S>
-    struct info < const ambient::future<S> > { 
-        typedef const ambient::future<S> type;
-        typedef future_info<type> typed; 
+    struct info < const ambient::numeric::future<S> > { 
+        typedef const ambient::numeric::future<S> type;
+        typedef read_future_info<type> typed; 
         static inline type& unfold(type& folded){ return folded.unfold(); }
     };
 
