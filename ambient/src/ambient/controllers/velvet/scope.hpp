@@ -52,7 +52,6 @@ namespace ambient {
     class scope<shared> : public controller::scope {
     public:
         scope(){
-            ambient::controller.uniform = true;
             ambient::controller.set_context(this);
             this->round = ambient::channel.volume;
             this->state = COMMON;
@@ -60,7 +59,6 @@ namespace ambient {
             //printf("switcing scope to %d!\n", this->sector);
         }
        ~scope(){
-            ambient::controller.uniform = false;
             ambient::controller.pop_context();
             //printf("reverted to %d!\n", ambient::controller.context->sector);
         }

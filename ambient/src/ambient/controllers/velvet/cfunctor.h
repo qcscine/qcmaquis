@@ -25,7 +25,7 @@ namespace ambient { namespace controllers { namespace velvet {
     public:
         void* operator new (size_t size){ return ambient::bulk.malloc<sizeof(get)>(); }
         void operator delete (void* ptr){ }
-        static inline void spawn(revision& r);
+        static void spawn(revision& r);
         get(revision& r);
         virtual bool ready();
         virtual void invoke();
@@ -42,7 +42,7 @@ namespace ambient { namespace controllers { namespace velvet {
         void operator delete (void*, void*){ }
         void operator delete (void* ptr){ }
 
-        static inline set& spawn(revision& r);
+        static set<revision>& spawn(revision& r);
 
         set(revision& r);
         template<int NE> set(set<revision,NE>* s);
@@ -56,13 +56,37 @@ namespace ambient { namespace controllers { namespace velvet {
         revision* target;
     };
     // }}}
-    // {{{ transformable get/set
+    // {{{ revision broadcast get/set
+    template<>
+    class set<revision, AMBIENT_NUM_PROCS> : public cfunctor {
+    public:
+        template<class T, int NE> friend class set;
+        void* operator new (size_t size, void* placement){ return placement; }
+        void* operator new (size_t size){ return ambient::bulk.malloc<sizeof(set)>(); }
+        void operator delete (void*, void*){ }
+        void operator delete (void* ptr){ }
+
+        static void spawn(revision& r);
+
+        set(revision& r);
+        template<int NE> set(set<revision,NE>* s);
+        virtual void operator >> (int p);
+        virtual bool ready();
+        virtual void invoke();
+    private:
+        bool evaluated;
+        std::vector<bool>* states;
+        std::vector<request*>* handles;
+        revision* target;
+    };
+    // }}}
+    // {{{ transformable broadcast get/set
     template<>
     class get<transformable, AMBIENT_NUM_PROCS> : public cfunctor {
     public:
         void* operator new (size_t size){ return ambient::bulk.malloc<sizeof(get)>(); }
         void operator delete (void* ptr){ }
-        static inline void spawn(transformable& v);
+        static void spawn(transformable& v);
         get(transformable& v);
         virtual bool ready();
         virtual void invoke();
@@ -76,7 +100,7 @@ namespace ambient { namespace controllers { namespace velvet {
         void* operator new (size_t size){ return ambient::bulk.malloc<sizeof(set)>(); }
         void operator delete (void*, void*){ }
         void operator delete (void* ptr){ }
-        static inline set& spawn(transformable& v);
+        static set& spawn(transformable& v);
         set(transformable& v);
         virtual bool ready();
         virtual void invoke();

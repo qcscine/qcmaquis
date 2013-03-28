@@ -84,13 +84,9 @@ namespace ambient { namespace controllers { namespace velvet {
         template<typename T> void destroy(T* o);
         void persist(history* o);
 
-        template<complexity O>
-        void schedule();
-        //void score_r(history* o);
-        //void score_w(history* o);
-        //void score_rw(history* o);
-        //void set_state(ambient::rstate s);
-        //ambient::rstate state;
+        template<complexity O> void schedule();
+        void intend_fetch(history* o);
+        void intend_write(history* o);
 
         void set_context(scope* s);
         void pop_context();
@@ -99,8 +95,6 @@ namespace ambient { namespace controllers { namespace velvet {
 
         scope* context_c;
         scope* context;
-        bool uniform;
-        int depth;
     private:
         std::vector< cfunctor* > stack_m;
         std::vector< cfunctor* > stack_s;

@@ -20,10 +20,6 @@ namespace ambient {
         return rank.verbose;   
     }
 
-    inline bool uniform(){
-        return controller.uniform;
-    }
-
     inline void log(const char* msg){
         if(ambient::rank()) printf("%s\n", msg);
     }

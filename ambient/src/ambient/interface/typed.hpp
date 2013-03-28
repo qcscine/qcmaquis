@@ -100,7 +100,8 @@ namespace ambient {
         }
         template<size_t arg> 
         static inline void score(T& obj){
-            //ambient::controller.score_rw(obj.core);
+            ambient::controller.intend_fetch(obj.core);
+            ambient::controller.intend_write(obj.core);
         }
         template<size_t arg> 
         static inline bool ready(cfunctor* m){
@@ -136,7 +137,7 @@ namespace ambient {
         }
         template<size_t arg> 
         static inline void score(T& obj){
-            //ambient::controller.score_r(obj.core);
+            ambient::controller.intend_fetch(obj.core);
         }
     };
     template <typename T> struct write_iteratable_info : public iteratable_info<T> {
@@ -157,7 +158,7 @@ namespace ambient {
         }
         template<size_t arg> static inline bool pin(cfunctor* m){ return false; }
         template<size_t arg> static inline void score(T& obj) {               
-            //ambient::controller.score_w(obj.core);
+            ambient::controller.intend_write(obj.core);
         }
         template<size_t arg> static inline bool ready (cfunctor* m){ return true;  }
     };

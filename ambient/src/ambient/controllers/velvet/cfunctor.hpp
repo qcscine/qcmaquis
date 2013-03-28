@@ -59,13 +59,13 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     template<int N>
-    inline set<revision, N>& set<revision, N>::spawn(revision& r){
+    inline set<revision>& set<revision, N>::spawn(revision& r){
         if(r.transfer == NULL)
             r.transfer = new (r.region == PERSIST_REGION 
                               ? ambient::pool.malloc<sizeof(set)>()
                               : ambient::bulk.malloc<sizeof(set)>())
-                         set<revision, N>(r);
-        return *(set<revision, N>*)r.transfer;
+                         set<revision>(r);
+        return *(set<revision>*)r.transfer;
     }
 
     template<int N>
@@ -88,8 +88,8 @@ namespace ambient { namespace controllers { namespace velvet {
             (*states)[p] = true;
             handles->push_back((request*)p);
             new (this) set<revision, lim_expr(N+1)>(this);
-            target->use();
             if(!N){
+                target->use();
                 if(target->generator != NULL) ((cfunctor*)target->generator)->queue(this);
                 else ambient::controller.queue(this);
             }
@@ -99,8 +99,8 @@ namespace ambient { namespace controllers { namespace velvet {
     template<int N>
     inline bool set<revision, N>::ready(){
         if(target->generator != NULL) return false;
-        if(!evaluated){ 
-            evaluated = true; 
+        if(!evaluated){
+            evaluated = true;
             static_repeat<0, lim_expr(N)>()([&](int i){
                 (*handles)[i] = ambient::channel.set(target, (size_t)(*handles)[i]); 
             });
@@ -112,22 +112,67 @@ namespace ambient { namespace controllers { namespace velvet {
 
     template<int N>
     inline void set<revision, N>::invoke(){
+        target->release(); 
         if(target->region == PERSIST_REGION){
             this->handles->clear();
-            new (this) set<revision, 0>(this);
+            new (this) set<revision>(this);
         }else{
             target->transfer = NULL;
             delete this->handles;
             delete this->states;
         }
-        static_repeat<0, lim_expr(N)>()([&](int i){ 
-            target->release(); 
-        });
     }
 
     // }}}
 
-    // {{{ transformable get/set
+    // {{{ revision broadcast (get)/set
+
+    inline void set<revision, AMBIENT_NUM_PROCS>::spawn(revision& r){
+        if(r.transfer == NULL)
+            r.transfer = new (r.region == PERSIST_REGION 
+                              ? ambient::pool.malloc<sizeof(set)>()
+                              : ambient::bulk.malloc<sizeof(set)>())
+                         set<revision>(r);
+        static_repeat<0, lim_expr(AMBIENT_NUM_PROCS)>()([&](int i){ (*(set<revision>*)r.transfer) >> i; });
+    }
+
+    template<int NE>
+    inline set<revision, AMBIENT_NUM_PROCS>::set(set<revision, NE>* s) 
+    : evaluated(false), target(s->target),
+      states(s->states), handles(s->handles)
+    {
+    }
+
+    inline void set<revision, AMBIENT_NUM_PROCS>::operator >> (int p){ }
+
+    inline bool set<revision, AMBIENT_NUM_PROCS>::ready(){
+        if(target->generator != NULL) return false;
+        if(!evaluated){ 
+            evaluated = true; 
+            static_repeat<0, lim_expr(AMBIENT_NUM_PROCS)>()([&](int i){
+                (*handles)[i] = ambient::channel.set(target, (size_t)(*handles)[i]); 
+            });
+        }
+        return static_for<0, lim_expr(AMBIENT_NUM_PROCS)>()([&](int i){ 
+            return ambient::channel.test((*handles)[i]);
+        });
+    }
+
+    inline void set<revision, AMBIENT_NUM_PROCS>::invoke(){
+        target->release(); 
+        if(target->region == PERSIST_REGION){
+            this->handles->clear();
+            new (this) set<revision>(this);
+        }else{
+            target->transfer = NULL;
+            delete this->handles;
+            delete this->states;
+        }
+    }
+
+    // }}}
+
+    // {{{ transformable broadcast get/set
 
     inline void get<transformable, AMBIENT_NUM_PROCS>::spawn(transformable& v){
         ambient::controller.queue(new get(v));
@@ -163,7 +208,7 @@ namespace ambient { namespace controllers { namespace velvet {
             });
         }
         return static_for<0, lim_expr(AMBIENT_NUM_PROCS)>()([&](int i){ 
-            return ambient::channel.test((*handles)[i]); // do we need to remove completed reqs?
+            return ambient::channel.test((*handles)[i]);
         });
     }
 

@@ -11,7 +11,7 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline controller::~controller(){ }
 
-    inline controller::controller() : depth(0), uniform(false)
+    inline controller::controller()
     {
         this->stack_m.reserve(CONTROLLER_CHAINS_RESERVE);
         this->stack_s.reserve(CONTROLLER_CHAINS_RESERVE);
@@ -24,41 +24,34 @@ namespace ambient { namespace controllers { namespace velvet {
 
     template<complexity O>
     inline void controller::schedule(){
-        /*if(uniform) set_state(ambient::common); 
+        /*if(context->state == COMMON) set_state(ambient::common); 
         else if(tuning.decide() == ambient::rank()) set_state(ambient::feed);
         else set_state(ambient::stub);
         tuning.repeat();*/
     }
 
-    /*inline void controller::score_r(history* o){
-        revision* r = o->back();
+    inline void controller::intend_fetch(history* o){
+        /*revision* r = o->back();
         if(r == NULL) tuning.add_as_new(o->spec.size);
         else if(r->state == ambient::stub) tuning.add_as_remote(r->extent);
-        else if(r->state == ambient::feed) tuning.add_as_local(r->extent);
+        else if(r->state == ambient::feed) tuning.add_as_local(r->extent);*/
     }
 
-    inline void controller::score_w(history* o){
-        tuning.add_as_new(o->spec.size);
+    inline void controller::intend_write(history* o){
+        //tuning.add_as_new(o->spec.size);
     }
 
-    inline void controller::score_rw(history* o){
-        score_r(o);
-        score_w(o);
-    }
-
+    /*
     inline void controller::set_state(ambient::rstate s){
         this->state = s;
     }*/
 
     inline void controller::set_context(scope* s){
-        this->depth++;
-        if(depth > 1) printf("NESTED SCOPES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n");
         this->context_c = this->context;
-        this->context = s;
+        this->context = s; // no nesting
     }
 
     inline void controller::pop_context(){
-        this->depth--;
         this->context = this->context_c;
     }
 
@@ -129,8 +122,8 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void controller::sync(revision* r){
         if(context->round == 1) return; // for single process version
         if(ambient::model.common(r)) return;
-        if(ambient::model.feeds(r)) ambient::controllers::velvet::set<revision>::spawn(*r) >> (1-ambient::rank()); // for 2 processes
-        else ambient::controllers::velvet::get<revision>::spawn(*r);
+        if(ambient::model.feeds(r)) ambient::controllers::velvet::set<revision, AMBIENT_NUM_PROCS>::spawn(*r);
+        else ambient::controllers::velvet::get<revision, AMBIENT_NUM_PROCS>::spawn(*r);
     }
 
     inline void controller::lsync(revision* r){
