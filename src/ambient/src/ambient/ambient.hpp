@@ -22,7 +22,7 @@
 #include <pthread.h>
 // }}}
 
-#define AMBIENT_NUM_PROCS 2
+#define AMBIENT_NUM_PROCS 1
 
 #ifdef AMBIENT_CILK
     #include <cilk/cilk.h>

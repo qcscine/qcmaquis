@@ -113,6 +113,7 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline request* channel::set(revision* r, int rank){
+        if(rank == ambient::rank()) return NULL;
         request* q = new request(r->header);
         //printf("Sending %d with tag %d to %d\n", (int)r->extent, r->sid, rank);
         MPI_Isend(q->memory, 
