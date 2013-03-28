@@ -100,7 +100,7 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline request* channel::get(revision* r){
-        request* q = new request(r->header);
+        request* q = new request(r->data);
         //printf("Getting %d with tag %d\n", (int)r->extent, r->sid);
         MPI_Irecv(q->memory, 
                   (int)r->extent/sizeof(double), 
@@ -114,7 +114,7 @@ namespace ambient { namespace channels { namespace mpi {
 
     inline request* channel::set(revision* r, int rank){
         if(rank == ambient::rank()) return NULL;
-        request* q = new request(r->header);
+        request* q = new request(r->data);
         //printf("Sending %d with tag %d to %d\n", (int)r->extent, r->sid, rank);
         MPI_Isend(q->memory, 
                   (int)r->extent/sizeof(double), 

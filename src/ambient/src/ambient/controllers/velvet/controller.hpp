@@ -2,7 +2,6 @@
 #include "ambient/utils/timings.hpp"
 
 #define CONTROLLER_CHAINS_RESERVE 65536
-#define BOUND 0
 
 namespace ambient { namespace controllers { namespace velvet {
 
@@ -24,27 +23,21 @@ namespace ambient { namespace controllers { namespace velvet {
 
     template<complexity O>
     inline void controller::schedule(){
-        /*if(context->state == COMMON) set_state(ambient::common); 
-        else if(tuning.decide() == ambient::rank()) set_state(ambient::feed);
-        else set_state(ambient::stub);
-        tuning.repeat();*/
+        if(context->tunable) context->toss(); 
     }
 
     inline void controller::intend_fetch(history* o){
-        /*revision* r = o->back();
-        if(r == NULL) tuning.add_as_new(o->spec.size);
-        else if(r->state == ambient::stub) tuning.add_as_remote(r->extent);
-        else if(r->state == ambient::feed) tuning.add_as_local(r->extent);*/
+        if(!context->tunable) return;
+        //revision* r = o->back();
+        //if(r == NULL) tuning.add_as_new(o->spec.size);
+        //else if(r->state == ambient::stub) tuning.add_as_remote(r->extent);
+        //else if(r->state == ambient::feed) tuning.add_as_local(r->extent);
     }
 
     inline void controller::intend_write(history* o){
-        //tuning.add_as_new(o->spec.size);
+        if(!context->tunable) return;
+        //context->intend_new(o->spec.size);
     }
-
-    /*
-    inline void controller::set_state(ambient::rstate s){
-        this->state = s;
-    }*/
 
     inline void controller::set_context(scope* s){
         this->context_c = this->context;
@@ -56,42 +49,29 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline bool controller::remote(){
-        //return (this->state == ambient::stub); //(this->context->state == scope::REMOTE);
         return (this->context->state == ambient::REMOTE);
     }
 
     inline bool controller::local(){
-        //return (this->state == ambient::feed); //(this->context->state == scope::LOCAL);
         return (this->context->state == ambient::LOCAL);
     }
 
     inline void controller::flush(){
         typedef typename std::vector<cfunctor*>::const_iterator veci;
         ambient::model.clock++;
-        //printf("Cumulative imbalance: %.2f\n", ((float)tuning.load[0]/tuning.load[1]));
-        //tuning.clear();
-        #ifdef AMBIENT_OMP
-        #pragma omp parallel
-        {
-            #pragma omp single
-        #endif
-            while(!chains->empty()){
-                for(veci i = chains->begin(); i != chains->end(); ++i){
-                    if((*i)->ready()){
-                        cfunctor* task = *i;
-                        #ifdef AMBIENT_OMP
-                        #pragma omp task untied
-                        #endif
-                        AMBIENT_THREAD task->invoke();
-                        mirror->insert(mirror->end(), (*i)->deps.begin(), (*i)->deps.end());
-                    }else mirror->push_back(*i);
-                }
-                chains->clear();
-                std::swap(chains,mirror);
+        AMBIENT_SMP_ENABLE
+        while(!chains->empty()){
+            for(veci i = chains->begin(); i != chains->end(); ++i){
+                if((*i)->ready()){
+                    cfunctor* task = *i;
+                    AMBIENT_THREAD task->invoke();
+                    mirror->insert(mirror->end(), (*i)->deps.begin(), (*i)->deps.end());
+                }else mirror->push_back(*i);
             }
-        #ifdef AMBIENT_OMP
+            chains->clear();
+            std::swap(chains,mirror);
         }
-        #endif
+        AMBIENT_SMP_DISABLE
     }
 
     inline bool controller::empty(){
@@ -108,7 +88,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::alloc(revision& r){
-        r.embed(ambient::pool.malloc(r.extent + BOUND, r.region), BOUND);
+        r.embed(ambient::pool.malloc(r.extent, r.region));
     }
 
     inline void controller::calloc(revision& r){
@@ -116,11 +96,11 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::free(revision& r){
-        return ambient::pool.free(r.header, r.extent + BOUND, r.region);
+        return ambient::pool.free(r.data, r.extent, r.region);
     }
 
     inline void controller::sync(revision* r){
-        if(context->round == 1) return; // for single process version
+        if(context->round == 1) return;
         if(ambient::model.common(r)) return;
         if(ambient::model.feeds(r)) ambient::controllers::velvet::set<revision, AMBIENT_NUM_PROCS>::spawn(*r);
         else ambient::controllers::velvet::get<revision, AMBIENT_NUM_PROCS>::spawn(*r);
