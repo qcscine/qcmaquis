@@ -290,7 +290,7 @@ function run(){
     if [ ! -z $OMP_NUM_THREADS  ]; then
         local proclist="0,1,2,3,4,5,6,7,8,9,10,11"
         [[ $OMP_NUM_THREADS -eq 1  ]] && proclist="0 6 1 7 2 8 3 9 4 10 5 11"
-        [[ $OMP_NUM_THREADS -eq 2  ]] && proclist="0,1 6,7 2,3 8,9 4,5 10,11"
+        [[ $OMP_NUM_THREADS -eq 2  ]] && proclist="0,6 1,7 2,3 8,9 4,5 10,11"
         [[ $OMP_NUM_THREADS -eq 3  ]] && proclist="0,1,2 6,7,8 3,4,5 9,10,11"
         [[ $OMP_NUM_THREADS -eq 4  ]] && proclist="0,1,2,3 8,9,10,11 4,5,6,7"
         [[ $OMP_NUM_THREADS -eq 6  ]] && proclist="0,1,2,3,4,5 6,7,8,9,10,11"
