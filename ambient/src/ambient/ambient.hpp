@@ -22,22 +22,29 @@
 #include <pthread.h>
 // }}}
 
-#define AMBIENT_NUM_PROCS 1
+#define AMBIENT_NUM_PROCS 2
 
 #ifdef AMBIENT_CILK
     #include <cilk/cilk.h>
     #define AMBIENT_NUM_THREADS __cilkrts_get_total_workers()
     #define AMBIENT_THREAD_ID __cilkrts_get_worker_number()
     #define AMBIENT_THREAD cilk_spawn
+    #define AMBIENT_SMP_ENABLE
+    #define AMBIENT_SMP_DISABLE
 #elif defined(AMBIENT_OMP)
     #include <omp.h>
     #define AMBIENT_NUM_THREADS 12
     #define AMBIENT_THREAD_ID omp_get_thread_num()
-    #define AMBIENT_THREAD
+    #define AMBIENT_PRAGMA(a) _Pragma( #a )
+    #define AMBIENT_THREAD AMBIENT_PRAGMA(omp task untied)
+    #define AMBIENT_SMP_ENABLE AMBIENT_PRAGMA(omp parallel) { AMBIENT_PRAGMA(omp single)
+    #define AMBIENT_SMP_DISABLE }
 #else
     #define AMBIENT_NUM_THREADS 1
     #define AMBIENT_THREAD_ID 0
     #define AMBIENT_THREAD
+    #define AMBIENT_SMP_ENABLE
+    #define AMBIENT_SMP_DISABLE
 #endif
 
 #ifdef AMBIENT_CPP11

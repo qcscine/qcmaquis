@@ -7,6 +7,7 @@
 #define BULK 41943040
 
 #define BULK_REGION 0
+#define DELEGATED_REGION 0 // same as bulk - don't deallocate
 #define DEFAULT_REGION 1
 #define PERSIST_REGION 13
 

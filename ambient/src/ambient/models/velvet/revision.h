@@ -13,7 +13,7 @@ namespace ambient { namespace models { namespace velvet {
         void  operator delete (void* ptr);
         template<typename T> operator T* (){ return (T*)data; }
 
-        void embed(void* memory, size_t bound);
+        void embed(void* memory);
         void reuse(revision& r);
 
         void use();
@@ -21,15 +21,12 @@ namespace ambient { namespace models { namespace velvet {
         void complete();
 
         bool locked();
-        bool remote();
-        bool origin();
         bool valid();
 
         size_t    extent;
         revision* parent;
         void*     generator;
         void*     transfer;
-        void*     header;
         void*     data;
         int       sid;
         std::atomic<int> users;
