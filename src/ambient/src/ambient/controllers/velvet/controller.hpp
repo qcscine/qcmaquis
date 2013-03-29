@@ -21,22 +21,34 @@ namespace ambient { namespace controllers { namespace velvet {
         this->context = new ambient::scope<base>();
     }
 
+    inline void controller::tunable_scope::consider_allocation(size_t size){
+    }
+
+    inline void controller::tunable_scope::consider_transfer(size_t size, ambient::locality l){
+    }
+
+    inline void controller::tunable_scope::toss(){
+        //this->sector = some_logic;
+        //state = (sector == ambient::rank()) ? ambient::local : ambient::remote;
+    }
+
+    inline bool controller::tunable(){
+        return context->tunable;
+    }
+
     template<complexity O>
     inline void controller::schedule(){
-        if(context->tunable) context->toss(); 
+        ((tunable_scope*)context)->toss();
     }
 
     inline void controller::intend_fetch(history* o){
-        if(!context->tunable) return;
-        //revision* r = o->back();
-        //if(r == NULL) tuning.add_as_new(o->spec.size);
-        //else if(r->state == ambient::stub) tuning.add_as_remote(r->extent);
-        //else if(r->state == ambient::feed) tuning.add_as_local(r->extent);
+        revision* r = o->back();
+        if(r == NULL) return ((tunable_scope*)context)->consider_allocation(o->spec.size); // do we have to?
+        ((tunable_scope*)context)->consider_transfer(r->extent, r->state);
     }
 
     inline void controller::intend_write(history* o){
-        if(!context->tunable) return;
-        //context->intend_new(o->spec.size);
+        ((tunable_scope*)context)->consider_allocation(o->spec.size);
     }
 
     inline void controller::set_context(scope* s){
@@ -49,11 +61,11 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline bool controller::remote(){
-        return (this->context->state == ambient::REMOTE);
+        return (this->context->state == ambient::remote);
     }
 
     inline bool controller::local(){
-        return (this->context->state == ambient::LOCAL);
+        return (this->context->state == ambient::local);
     }
 
     inline void controller::flush(){

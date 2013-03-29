@@ -15,7 +15,7 @@ namespace ambient { namespace models { namespace velvet {
     class model : public singleton< model > {
     public:
         model() : clock(0), sid(0) {}
-        template<ambient::rstate S> 
+        template<ambient::locality L> 
         void add_revision(history* o, void* g = NULL);
         void use_revision(history* o);
         bool feeds(const revision* r);

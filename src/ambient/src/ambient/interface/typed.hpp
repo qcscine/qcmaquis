@@ -72,14 +72,14 @@ namespace ambient {
             history* o = obj.core;
             ambient::model.touch(o);
             ambient::controller.rsync(o->back());
-            ambient::model.add_revision<ambient::stub>(o); 
+            ambient::model.add_revision<ambient::remote>(o); 
         }
         template<size_t arg>
         static inline void modify_local(T& obj, cfunctor* m){
             history* o = obj.core;
             m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(o, ambient::model.time(o));
             ambient::controller.lsync(o->back());
-            ambient::model.add_revision<ambient::feed>(o, m); 
+            ambient::model.add_revision<ambient::local>(o, m); 
         }
         template<size_t arg>
         static inline void modify(T& obj, cfunctor* m){
@@ -144,12 +144,12 @@ namespace ambient {
         template<size_t arg> static inline void modify_remote(T& obj){
             history* o = obj.core;
             ambient::model.touch(o);
-            ambient::model.add_revision<ambient::stub>(o); 
+            ambient::model.add_revision<ambient::remote>(o); 
         }
         template<size_t arg> static inline void modify_local(T& obj, cfunctor* m){
             history* o = obj.core;
             m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(o, ambient::model.time(o));
-            ambient::model.add_revision<ambient::feed>(o, m); 
+            ambient::model.add_revision<ambient::local>(o, m); 
         }
         template<size_t arg> static inline void modify(T& obj, cfunctor* m){
             history* o = obj.core;

@@ -10,9 +10,9 @@ namespace ambient { namespace models { namespace velvet {
         this->sid %= MAX_SID;
     }
 
-    template<ambient::rstate S>
+    template<ambient::locality L>
     inline void model::add_revision(history* o, void* g){
-        o->add_state<S>(g);
+        o->add_state<L>(g);
     }
 
     inline void model::use_revision(history* o){
@@ -30,7 +30,7 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline bool model::feeds(const revision* r){
-        return (r->state == ambient::feed);
+        return (r->state == ambient::local);
     }
 
     inline bool model::common(const revision* r){

@@ -9,7 +9,7 @@ namespace ambient { namespace models { namespace velvet {
         void* operator new (size_t);
         void operator delete (void*);
         history(dim2,size_t);
-        template<ambient::rstate S> 
+        template<ambient::locality L> 
         void add_state(void* g);
         void fuse(const history* src);
         revision* back() const;

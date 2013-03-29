@@ -55,9 +55,8 @@
 
 namespace ambient {
     enum complexity { N, N2, N3 };
-    enum rstate     { feed, common, stub, none };
+    enum locality   { remote, local, common };
     enum scope_t    { base, single, shared };
-    enum locality   { COMMON, LOCAL, REMOTE };
 }
 
 #include "ambient/utils/memory.hpp"
