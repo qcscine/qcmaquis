@@ -3,8 +3,10 @@ struct kernel_inliner<void(*)( T0& ), fp> {
     static const int arity = 1;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 ){
-        info<T0>::typed::template score<0>(arg0);
-        ambient::controller.schedule<O>();
+        if(ambient::controller.tunable()){
+            info<T0>::typed::template score<0>(arg0);
+            ambient::controller.schedule<O>();
+        }
         if(ambient::controller.remote()){
             info<T0>::typed::template modify_remote<0>(arg0);
             return;
@@ -31,8 +33,10 @@ struct kernel_inliner<void(*)( T0& , T1& ), fp> {
     static const int arity = 2;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 ){
-        info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1);
-        ambient::controller.schedule<O>();
+        if(ambient::controller.tunable()){
+            info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1);
+            ambient::controller.schedule<O>();
+        }
         if(ambient::controller.remote()){
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1);
             return;
@@ -59,8 +63,10 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& ), fp> {
     static const int arity = 3;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 ){
-        info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2);
-        ambient::controller.schedule<O>();
+        if(ambient::controller.tunable()){
+            info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2);
+            ambient::controller.schedule<O>();
+        }
         if(ambient::controller.remote()){
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2);
             return;
@@ -87,8 +93,10 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& ), fp> {
     static const int arity = 4;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 ){
-        info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3);
-        ambient::controller.schedule<O>();
+        if(ambient::controller.tunable()){
+            info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3);
+            ambient::controller.schedule<O>();
+        }
         if(ambient::controller.remote()){
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3);
             return;
@@ -115,8 +123,10 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& ), fp> {
     static const int arity = 5;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 ){
-        info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4);
-        ambient::controller.schedule<O>();
+        if(ambient::controller.tunable()){
+            info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4);
+            ambient::controller.schedule<O>();
+        }
         if(ambient::controller.remote()){
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4);
             return;
@@ -143,8 +153,10 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& ), fp> {
     static const int arity = 6;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 ){
-        info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5);
-        ambient::controller.schedule<O>();
+        if(ambient::controller.tunable()){
+            info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5);
+            ambient::controller.schedule<O>();
+        }
         if(ambient::controller.remote()){
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4); info<T5>::typed::template modify_remote<5>(arg5);
             return;
@@ -171,8 +183,10 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& ), fp> {
     static const int arity = 7;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 ){
-        info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6);
-        ambient::controller.schedule<O>();
+        if(ambient::controller.tunable()){
+            info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6);
+            ambient::controller.schedule<O>();
+        }
         if(ambient::controller.remote()){
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4); info<T5>::typed::template modify_remote<5>(arg5); info<T6>::typed::template modify_remote<6>(arg6);
             return;
@@ -199,8 +213,10 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& ), 
     static const int arity = 8;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 ){
-        info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6); info<T7>::typed::template score<7>(arg7);
-        ambient::controller.schedule<O>();
+        if(ambient::controller.tunable()){
+            info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6); info<T7>::typed::template score<7>(arg7);
+            ambient::controller.schedule<O>();
+        }
         if(ambient::controller.remote()){
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4); info<T5>::typed::template modify_remote<5>(arg5); info<T6>::typed::template modify_remote<6>(arg6); info<T7>::typed::template modify_remote<7>(arg7);
             return;
@@ -227,8 +243,10 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
     static const int arity = 9;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 ){
-        info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6); info<T7>::typed::template score<7>(arg7); info<T8>::typed::template score<8>(arg8);
-        ambient::controller.schedule<O>();
+        if(ambient::controller.tunable()){
+            info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6); info<T7>::typed::template score<7>(arg7); info<T8>::typed::template score<8>(arg8);
+            ambient::controller.schedule<O>();
+        }
         if(ambient::controller.remote()){
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4); info<T5>::typed::template modify_remote<5>(arg5); info<T6>::typed::template modify_remote<6>(arg6); info<T7>::typed::template modify_remote<7>(arg7); info<T8>::typed::template modify_remote<8>(arg8);
             return;
@@ -255,8 +273,10 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
     static const int arity = 10;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 , T9& arg9 ){
-        info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6); info<T7>::typed::template score<7>(arg7); info<T8>::typed::template score<8>(arg8); info<T9>::typed::template score<9>(arg9);
-        ambient::controller.schedule<O>();
+        if(ambient::controller.tunable()){
+            info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6); info<T7>::typed::template score<7>(arg7); info<T8>::typed::template score<8>(arg8); info<T9>::typed::template score<9>(arg9);
+            ambient::controller.schedule<O>();
+        }
         if(ambient::controller.remote()){
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4); info<T5>::typed::template modify_remote<5>(arg5); info<T6>::typed::template modify_remote<6>(arg6); info<T7>::typed::template modify_remote<7>(arg7); info<T8>::typed::template modify_remote<8>(arg8); info<T9>::typed::template modify_remote<9>(arg9);
             return;
@@ -283,8 +303,10 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
     static const int arity = 11;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 , T9& arg9 , T10& arg10 ){
-        info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6); info<T7>::typed::template score<7>(arg7); info<T8>::typed::template score<8>(arg8); info<T9>::typed::template score<9>(arg9); info<T10>::typed::template score<10>(arg10);
-        ambient::controller.schedule<O>();
+        if(ambient::controller.tunable()){
+            info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6); info<T7>::typed::template score<7>(arg7); info<T8>::typed::template score<8>(arg8); info<T9>::typed::template score<9>(arg9); info<T10>::typed::template score<10>(arg10);
+            ambient::controller.schedule<O>();
+        }
         if(ambient::controller.remote()){
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4); info<T5>::typed::template modify_remote<5>(arg5); info<T6>::typed::template modify_remote<6>(arg6); info<T7>::typed::template modify_remote<7>(arg7); info<T8>::typed::template modify_remote<8>(arg8); info<T9>::typed::template modify_remote<9>(arg9); info<T10>::typed::template modify_remote<10>(arg10);
             return;

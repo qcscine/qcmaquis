@@ -8,8 +8,8 @@ namespace ambient { namespace models { namespace velvet {
         ambient::pool.free<revision>(ptr);
     }
 
-    inline revision::revision(size_t extent, void* g, ambient::rstate s)
-    : extent(extent), generator(g), state(s), 
+    inline revision::revision(size_t extent, void* g, ambient::locality l)
+    : extent(extent), generator(g), state(l), 
       data(NULL), transfer(NULL), users(0), 
       region(DEFAULT_REGION)
     {

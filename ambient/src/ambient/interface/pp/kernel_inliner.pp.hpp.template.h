@@ -52,10 +52,10 @@ struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP
     static const int arity = n; 
     template<complexity O>
     static inline void latch(cfunctor* o, BOOST_PP_REPEAT(TYPES_NUMBER, type_arg_list, n) ){
-
-        BOOST_PP_REPEAT(TYPES_NUMBER, score_arguments, ~)
-        ambient::controller.schedule<O>();
-
+        if(ambient::controller.tunable()){
+            BOOST_PP_REPEAT(TYPES_NUMBER, score_arguments, ~)
+            ambient::controller.schedule<O>();
+        }
         if(ambient::controller.remote()){
             BOOST_PP_REPEAT(TYPES_NUMBER, extract_remote_arguments, ~)
             return;
@@ -64,7 +64,6 @@ struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP
         }else{
             BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 
         }
-
         BOOST_PP_REPEAT(TYPES_NUMBER, traverse_arguments, ~)
         ambient::controller.queue(o);
     }

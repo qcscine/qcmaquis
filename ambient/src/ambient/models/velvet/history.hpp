@@ -13,9 +13,9 @@ namespace ambient { namespace models { namespace velvet {
         this->content.reserve(2); 
     }
 
-    template<ambient::rstate S>
+    template<ambient::locality L>
     inline void history::add_state(void* g){
-        revision* r = new revision(spec.size, g, S); 
+        revision* r = new revision(spec.size, g, L); 
         r->parent = this->current;
         this->content.push_back(r);
         this->current = r;
