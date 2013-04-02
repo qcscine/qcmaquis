@@ -16,17 +16,23 @@ typedef int PLASMA_enum;
 extern "C" {
 
     int LAPACKE_dbdsdc(int matrix_order, char uplo, char compq, int n, double* d, double* e, double* u, int ldu, double* vt, int ldvt, double* q, int* iq);
+/*
     void      dgemm_(const char*,const char*, const int*, 
                      const int*, const int*, const double*, 
                      const double*, const int*, const double*, const int*, 
                      const double*, double*, const int*);
+    void     dgesvd_(const char*, const char*, const int*, const int*,
+                     const double*, const int*,
+                     double*, double*, const int*, double* , const int*, 
+                     double*, const int*, int*);
     void     dbdsqr_(const char*, const int*, const int*,
-                     const int*, const int*, double*, double*, 
-                     double*, const int*, double*, const int*, 
-                     double*, const int*, double*, int*);
+                    const int*, const int*, double*, double*, 
+                    double*, const int*, double*, const int*, 
+                    double*, const int*, double*, int*);
     void     dgebrd_(const int*, const int*, double*, 
                      const int*, double*, double*, double*, 
                      double*, double*, const int*, int*);
+*/
     double     ddot_(const int*, const double*, const int*, 
                      const double*, const int*);
     void     dgebd2_(int*, int*, double*, 
