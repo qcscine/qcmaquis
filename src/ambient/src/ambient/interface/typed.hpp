@@ -1,7 +1,7 @@
 #ifndef AMBIENT_INTERFACE_TYPED
 #define AMBIENT_INTERFACE_TYPED
 
-#define extract(var) T* var = (T*)m->arguments[arg];
+#define EXTRACT(var) T* var = (T*)m->arguments[arg];
 
 namespace ambient { namespace numeric {
     template <class T> class matrix;
@@ -21,7 +21,7 @@ namespace ambient {
         template<size_t arg> static inline bool pin            (cfunctor* m){ return false;          }
         template<size_t arg> static inline void score          (T& obj)     {                        }
         template<size_t arg> static inline bool ready          (cfunctor* m){ return true;           }
-        template<size_t arg> static inline T&   revised        (cfunctor* m){ extract(o); return *o; }
+        template<size_t arg> static inline T&   revised        (cfunctor* m){ EXTRACT(o); return *o; }
         template<size_t arg> static inline void modify (T& obj, cfunctor* m){
             m->arguments[arg] = (void*)new(ambient::bulk.malloc<sizeof(T)>()) T(obj); 
         }
@@ -38,7 +38,7 @@ namespace ambient {
     };
     template <typename T> struct future_info : public singular_info<T> {
         template<size_t arg> static inline void deallocate(cfunctor* m){       
-            extract(o); o->core->generator = NULL;
+            EXTRACT(o); o->core->generator = NULL;
         }
         template<size_t arg> static inline void modify_remote(T& obj){ 
             ambient::controller.rsync(obj.core);
@@ -64,7 +64,7 @@ namespace ambient {
     template <typename T> struct iteratable_info : public singular_info<T> {
         template<size_t arg> 
         static inline void deallocate(cfunctor* m){
-            extract(o);
+            EXTRACT(o);
             o->core->content[o->ref+1]->complete();
         }
         template<size_t arg>
@@ -90,7 +90,7 @@ namespace ambient {
         }
         template<size_t arg> 
         static inline bool pin(cfunctor* m){ 
-            extract(o);
+            EXTRACT(o);
             void* generator = o->core->content[o->ref]->generator;
             if(generator != NULL){
                 ((cfunctor*)generator)->queue(m);
@@ -105,7 +105,7 @@ namespace ambient {
         }
         template<size_t arg> 
         static inline bool ready(cfunctor* m){
-            extract(o);
+            EXTRACT(o);
             void* generator = o->core->content[o->ref]->generator;
             if(generator == NULL || generator == m) return true;
             return false;
@@ -115,7 +115,7 @@ namespace ambient {
     // {{{ compile-time type info: only read/write iteratable derived types
     template <typename T> struct read_iteratable_info : public iteratable_info<T> {
         template<size_t arg> static inline void deallocate(cfunctor* m){
-            extract(o);
+            EXTRACT(o);
             o->core->content[o->ref]->release();
         }
         template<size_t arg> static inline void modify_remote(T& obj){
@@ -247,5 +247,5 @@ namespace ambient {
     // }}}
 }
 
-#undef extract
+#undef EXTRACT
 #endif

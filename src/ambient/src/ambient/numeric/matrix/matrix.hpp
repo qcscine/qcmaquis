@@ -117,7 +117,8 @@ namespace ambient { namespace numeric {
 
     template <typename T>
     inline matrix<T>::~matrix(){
-        destroy(*this);
+        if(this->core->weak()) delete this->core;
+        else ambient::destroy(this->core);
     }
 
     template <typename T>
