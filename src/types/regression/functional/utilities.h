@@ -2,7 +2,7 @@
 #include <boost/static_assert.hpp> 
 
 #define M 0xF4240 
-#define ValueWG 128 //4 // was 32
+#define ValueWG 64 // was 128
 
 namespace Random{
    struct random {
@@ -19,22 +19,25 @@ template <int n, int m, typename T> // n # of workgroup, T double or std::comple
 struct size {
    BOOST_STATIC_ASSERT(n>0);
    BOOST_STATIC_ASSERT(n*ValueWG > m);
-   typedef T dbl; // To template later
+   typedef T value_type; 
    enum {valuex = n*ValueWG+m};// n is the number or work group, m how we resize
    enum {valuey = n*ValueWG-m};// n is the number or work group, m how we resize
    enum {null = 0};// n is the number or work group, m how we resize
 };
 
 typedef ambient::dim2 dim;
-// to do move all this typdef into the structure 
-typedef alps::numeric::matrix<double> sMatrix;
-typedef alps::numeric::diagonal_matrix<double> sDiagMatrix;
 
-typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > pMatrix;
-typedef ambient::numeric::tiles<ambient::numeric::diagonal_matrix<double> > pDiagMatrix;
-typedef boost::mpl::list<size<2,0,double>,size<2,3,double>,size<3,0,double>,size<3,3,double>,size<3,-3,double>,size<5,7,double>,size<5,-7,double> > test_types; // prime numbers ...
-
-//typedef boost::mpl::list<size<2, 2,std::complex<double> > > test_types; 
+typedef boost::mpl::list< 
+                         size<2,0,std::complex<double> >,
+                         size<2,0,double>,
+                         size<2,0,double>,
+                         size<2,3,double>,
+                         size<3,0,double>,
+                         size<3,3,double>,
+                         size<3,-3,double>,
+                         size<5,7,double>,
+                         size<5,-7,double> 
+                        > test_types; 
 
 struct caveats {
     caveats() {

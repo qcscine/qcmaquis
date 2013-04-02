@@ -13,6 +13,11 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( HEEV_COMPARISON, T, test_types)
 {
+    typedef alps::numeric::matrix<typename T::value_type> sMatrix;
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<typename T::value_type> > pMatrix;
+    typedef ambient::numeric::tiles<ambient::numeric::diagonal_matrix<double> > pDiagMatrix;
+    typedef alps::numeric::diagonal_matrix<double> sDiagMatrix;
+
     pMatrix pA(T::valuex,T::valuex);
     pMatrix pV(T::valuex,T::valuex);
 

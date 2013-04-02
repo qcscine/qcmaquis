@@ -13,6 +13,9 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( LQ_COMPARISON, T, test_types)
 {
+    typedef alps::numeric::matrix<typename T::value_type> sMatrix;
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<typename T::value_type> > pMatrix;
+
     pMatrix pA(T::valuex,T::valuey);
     pMatrix pL(T::valuex,T::valuey);
     pMatrix pQ(T::valuex,T::valuey);
