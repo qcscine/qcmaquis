@@ -83,7 +83,7 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix>
-    inline void split_d(const tiles<transpose_view<Matrix> >& a){
+    inline void split(const tiles<transpose_view<Matrix> >& a){
         printf("SPLIT OF TRANSPOSE VIEW!\n\n\n");
         if(a.data.size() == 1 && (__a_ceil(a.rows/AMBIENT_IB) != 1 || __a_ceil(a.cols/AMBIENT_IB) != 1)) printf("We have to split but we don't :(\n");
     }
@@ -109,35 +109,35 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix>
-    inline void split_d(const tiles<Matrix>& a){
+    inline void split(const tiles<Matrix>& a){
         if(a.data.size() != 1) return;
         if(a.mt == 1 && a.nt == 1) return;
 
-        std::vector<Matrix*> split;
+        std::vector<Matrix*> s;
         int tailm = __a_mod(a.rows, AMBIENT_IB);
         int tailn = __a_mod(a.cols, AMBIENT_IB);
-        split.reserve(a.mt*a.nt);
+        s.reserve(a.mt*a.nt);
         for(int j = 1; j < a.nt; j++){
             for(int i = 1; i < a.mt; i++) 
-                split.push_back(new Matrix(AMBIENT_IB, AMBIENT_IB));
-            split.push_back(new Matrix(tailm, AMBIENT_IB));
+                s.push_back(new Matrix(AMBIENT_IB, AMBIENT_IB));
+            s.push_back(new Matrix(tailm, AMBIENT_IB));
         }
         for(int i = 1; i < a.mt; i++) 
-            split.push_back(new Matrix(AMBIENT_IB, tailn));
-        split.push_back(new Matrix(tailm, tailn));
+            s.push_back(new Matrix(AMBIENT_IB, tailn));
+        s.push_back(new Matrix(tailm, tailn));
 
         const Matrix* src = a.data[0];
 
         if(!a[0].core->weak())
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
-                Matrix& dst = *split[i+j*a.mt];
+                Matrix& dst = *s[i+j*a.mt];
                 copy_block(*src, i*AMBIENT_IB, j*AMBIENT_IB, dst, 0, 0, dst.num_rows(), dst.num_cols());
             }
         }
 
         delete src;
-        std::swap(const_cast<std::vector<Matrix*>&>(a.data), split);
+        std::swap(const_cast<std::vector<Matrix*>&>(a.data), s);
     }
 
     // }}}
@@ -160,27 +160,27 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline void split_d(const tiles<diagonal_matrix<T> >& a){
+    inline void split(const tiles<diagonal_matrix<T> >& a){
         if(a.data.size() != 1) return;
         if(a.nt == 1) return;
 
-        std::vector<diagonal_matrix<T> *> split;
+        std::vector<diagonal_matrix<T> *> s;
         int tailm = __a_mod(a.size, AMBIENT_IB);
-        split.reserve(a.nt);
+        s.reserve(a.nt);
         for(int i = 1; i < a.nt; i++) 
-            split.push_back(new diagonal_matrix<T>(AMBIENT_IB));
-        split.push_back(new diagonal_matrix<T>(tailm));
+            s.push_back(new diagonal_matrix<T>(AMBIENT_IB));
+        s.push_back(new diagonal_matrix<T>(tailm));
 
         const diagonal_matrix<T>* src = a.data[0];
 
         if(!a[0].get_data().core->weak())
         for(int i = 0; i < a.nt; i++){
-            diagonal_matrix<T>& dst = *split[i];
+            diagonal_matrix<T>& dst = *s[i];
             copy_block(src->get_data(), i*AMBIENT_IB, 0, dst.get_data(), 0, 0, dst.num_rows(), 1);
         }
 
         delete src;
-        std::swap(const_cast<std::vector<diagonal_matrix<T>*>&>(a.data), split);
+        std::swap(const_cast<std::vector<diagonal_matrix<T>*>&>(a.data), s);
     }
 
     // }}}
@@ -278,14 +278,14 @@ namespace ambient { namespace numeric {
 
         merge(a); merge(u); merge(v); merge(s);
         svd(a[0], u[0], v[0], s[0]);
-        split_d(u); split_d(v); split_d(s);
+        split(u); split(v); split(s);
     }
 
     template<class Matrix, class DiagonalMatrix>
     inline void heev(const tiles<Matrix>& a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
         merge(a); merge(evecs); merge(evals);
         heev(a[0], evecs[0], evals[0]);
-        split_d(a); split_d(evecs); split_d(evals);
+        split(a); split(evecs); split(evals);
     }
 
     template<class Matrix, class DiagonalMatrix>
@@ -657,7 +657,7 @@ namespace ambient { namespace numeric {
  
     template <class Matrix>
     inline void save(const tiles<Matrix>& a, size_t tag){
-        split_d(a);
+        split(a);
         int size = a.data.size();
         for(int i = 0; i < size; ++i)
            save(a[i], (tag+i));//tag is done over blocks      
@@ -665,7 +665,7 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     inline void load(tiles<Matrix>& a, size_t tag){
-        split_d(a);
+        split(a);
         int size = a.data.size();
         for(int i = 0; i < size; ++i)
            load(a[i], (tag+i));        
