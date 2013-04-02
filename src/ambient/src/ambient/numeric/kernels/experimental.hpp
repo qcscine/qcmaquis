@@ -119,7 +119,7 @@ namespace ambient { namespace numeric { namespace kernels {
         T* dd   = s_updated(d);
         
         if(i == 0){
-            dlarfg_(&ri, sayd, &sayd[1], &lone, tqd);
+            helper_lapack<T>::larfg(&ri, sayd, &sayd[1], &lone, tqd);
             *dd = *sayd;
             *sayd = 1.0;
             return;
@@ -129,10 +129,10 @@ namespace ambient { namespace numeric { namespace kernels {
                                             saxd, ldsax, dim2(i, i-1), 
                                             dim2( num_cols(say)-i, 1));
 
-        dgemv_("N", &ri, &i, &mone, &sayd[ i ], &ldsay, &syd[ i ], &ldsy, &one, &sayd[i + i*ldsay], &lone);
-        dgemv_("N", &ri, &i, &mone, &sxd[ i ], &ldsx, &sayd[ i*ldsay ], &lone, &one, &sayd[i + i*ldsay], &lone);
+        helper_blas<T>::gemv("N", &ri, &i, &mone, &sayd[ i ], &ldsay, &syd[ i ], &ldsy, &one, &sayd[i + i*ldsay], &lone);
+        helper_blas<T>::gemv("N", &ri, &i, &mone, &sxd[ i ], &ldsx, &sayd[ i*ldsay ], &lone, &one, &sayd[i + i*ldsay], &lone);
         
-        dlarfg_( &ri, &sayd[i+i*ldsay], &sayd[std::min(i+1, m-1)+i*ldsay], &lone, &tqd[i] );
+        helper_lapack<T>::larfg( &ri, &sayd[i+i*ldsay], &sayd[std::min(i+1, m-1)+i*ldsay], &lone, &tqd[i] );
         dd[i] = sayd[i+i*ldsay];
         sayd[i+i*ldsay] = 1.000;
     }
@@ -155,13 +155,13 @@ namespace ambient { namespace numeric { namespace kernels {
         T* syd  = s_updated(sy);  int ldsy = sy.num_rows();
         T* sxd  = current(sx);    int ldsx = sx.num_rows();
         
-        dgemv_("T", &ri, &ari, &one, &sayd[i + (i+1)*ldsay], &ldsay, &sayd[i+i*ldsay], &lone, &zero, &syd[i+1 + i*ldsy], &lone); // part of big gemv
+        helper_blas<T>::gemv("T", &ri, &ari, &one, &sayd[i + (i+1)*ldsay], &ldsay, &sayd[i+i*ldsay], &lone, &zero, &syd[i+1 + i*ldsy], &lone); // part of big gemv
 
-        dgemv_("T", &ri, &i, &one, &sayd[i], &ldsay, &sayd[i+i*ldsay], &lone, &zero, &syd[i*ldsy], &lone);
-        dgemv_("N", &rj, &i, &mone, &syd[ i+1 ], &ldsy, &syd[i*ldsy], &lone, &one, &syd[i+1 + i*ldsy], &lone);
+        helper_blas<T>::gemv("T", &ri, &i, &one, &sayd[i], &ldsay, &sayd[i+i*ldsay], &lone, &zero, &syd[i*ldsy], &lone);
+        helper_blas<T>::gemv("N", &rj, &i, &mone, &syd[ i+1 ], &ldsy, &syd[i*ldsy], &lone, &one, &syd[i+1 + i*ldsy], &lone);
 
-        dgemv_("T", &ri, &i, &one, &sxd[i], &ldsx, &sayd[i + i*ldsay], &lone, &zero, &syd[ i*ldsy ], &lone);
-        dgemv_("T", &i, &rj, &mone, &saxd[ (i+1)*ldsax ], &ldsax, &syd[i*ldsy], &lone, &one, &syd[ i+1 + i*ldsy], &lone);
+        helper_blas<T>::gemv("T", &ri, &i, &one, &sxd[i], &ldsx, &sayd[i + i*ldsay], &lone, &zero, &syd[ i*ldsy ], &lone);
+        helper_blas<T>::gemv("T", &i, &rj, &mone, &saxd[ (i+1)*ldsax ], &ldsax, &syd[i*ldsy], &lone, &one, &syd[ i+1 + i*ldsy], &lone);
     }
 
     template<typename T>
@@ -189,10 +189,10 @@ namespace ambient { namespace numeric { namespace kernels {
                                             sayd, ldsay, dim2(i, i), 
                                             dim2( 1, ldsax-i ));
         
-        dgemv_("T", &i, &rj, &mone, &saxd[(i+1)*ldsax], &ldsax, &sxd[i], &ldsx, &one, &saxd[ i + (i+1)*ldsax], &ldsax);
-        dgemv_("N", &rj, &r3, &mone, &syd[ i+1 ], &ldsy, &saxd[i], &ldsax, &one, &saxd[i + (i+1)*ldsax], &ldsax);
+        helper_blas<T>::gemv("T", &i, &rj, &mone, &saxd[(i+1)*ldsax], &ldsax, &sxd[i], &ldsx, &one, &saxd[ i + (i+1)*ldsax], &ldsax);
+        helper_blas<T>::gemv("N", &rj, &r3, &mone, &syd[ i+1 ], &ldsy, &saxd[i], &ldsax, &one, &saxd[i + (i+1)*ldsax], &ldsax);
 
-        dlarfg_(&rj, &saxd[i + (i+1)*ldsax], &saxd[i + std::min(i+2, n-1)*ldsax], &ldsax, &tpd[i] );
+        helper_lapack<T>::larfg(&rj, &saxd[i + (i+1)*ldsax], &saxd[i + std::min(i+2, n-1)*ldsax], &ldsax, &tpd[i] );
         ed[i] = saxd[i + (i+1)*ldsax];
         saxd[i + (i+1)*ldsax] = 1.000;
     }
@@ -217,13 +217,13 @@ namespace ambient { namespace numeric { namespace kernels {
         T* syd  = current(sy);      int ldsy = sy.num_rows();
         T* sxd  = s_updated(sx);    int ldsx = sx.num_rows();
         
-        dgemv_("T", &rj, &r3, &one, &syd[i+1], &ldsy, &saxd[i+(i+1)*ldsax], &ldsax, &zero, &sxd[i*ldsx], &lone);
-        dgemv_("N", &rij, &r3, &mone, &sayd[i+1], &ldsay, &sxd[i*ldsx], &lone, &zero, &sxd[i+1+i*ldsx], &lone);
+        helper_blas<T>::gemv("T", &rj, &r3, &one, &syd[i+1], &ldsy, &saxd[i+(i+1)*ldsax], &ldsax, &zero, &sxd[i*ldsx], &lone);
+        helper_blas<T>::gemv("N", &rij, &r3, &mone, &sayd[i+1], &ldsay, &sxd[i*ldsx], &lone, &zero, &sxd[i+1+i*ldsx], &lone);
 
-        dgemv_("N", &i, &rj, &one, &saxd[(i+1)*ldsax], &ldsax, &saxd[ i +(i+1)*ldsax], &ldsax, &zero, &sxd[i*ldsx], &lone);
-        dgemv_("N", &rij, &i, &mone, &sxd[i+1], &ldsx, &sxd[i*ldsx], &lone, &one, &sxd[i+1+i*ldsx], &lone);
+        helper_blas<T>::gemv("N", &i, &rj, &one, &saxd[(i+1)*ldsax], &ldsax, &saxd[ i +(i+1)*ldsax], &ldsax, &zero, &sxd[i*ldsx], &lone);
+        helper_blas<T>::gemv("N", &rij, &i, &mone, &sxd[i+1], &ldsx, &sxd[i*ldsx], &lone, &one, &sxd[i+1+i*ldsx], &lone);
 
-        dgemv_("N", &ari, &rj, &one, &saxd[i+1 + (i+1)*ldsax], &ldsax, &saxd[ i +(i+1)*ldsax], &ldsax, &one, &sxd[i+1 + i*ldsx], &lone); // part of big gemv
+        helper_blas<T>::gemv("N", &ari, &rj, &one, &saxd[i+1 + (i+1)*ldsax], &ldsax, &saxd[ i +(i+1)*ldsax], &ldsax, &one, &sxd[i+1 + i*ldsx], &lone); // part of big gemv
     }
 
     template<typename T, PLASMA_enum TR>
@@ -249,7 +249,7 @@ namespace ambient { namespace numeric { namespace kernels {
             lda = a.num_rows();
         }
 
-        dlarfg_(&n, alfa, x, &lda, &td[k]);
+        helper_lapack<T>::larfg(&n, alfa, x, &lda, &td[k]);
         
         dd[k] = *alfa;
         *alfa = 1.00;
@@ -263,7 +263,7 @@ namespace ambient { namespace numeric { namespace kernels {
         int info;
 
         T* work = (T*)malloc(std::max(m,n)*sizeof(T));
-        dgebd2_(&m, &n, (T*)s_updated(a), &lda, (T*)updated(d), (T*)updated(e), (T*)updated(tq), (T*)updated(tp), work, &info);
+        helper_lapack<T>::gebd2(&m, &n, (T*)s_updated(a), &lda, (T*)updated(d), (T*)updated(e), (T*)updated(tq), (T*)updated(tp), work, &info);
         free(work);
     }
 
@@ -288,26 +288,26 @@ namespace ambient { namespace numeric { namespace kernels {
         T* tauq = (T*)malloc(sizeof(T)*k);
         T* taup = (T*)malloc(sizeof(T)*k);
 
-        dgebrd_(&m, &n, ad, &lda, dd, ed, tauq, taup, work, &lwork, &info);
+        helper_lapack<T>::gebrd(&m, &n, ad, &lda, dd, ed, tauq, taup, work, &lwork, &info);
         lwork = (int)work[0];
         work = (T*)realloc(work, sizeof(T)*lwork);
-        dgebrd_(&m, &n, ad, &lda, dd, ed, tauq, taup, work, &lwork, &info);
+        helper_lapack<T>::gebrd(&m, &n, ad, &lda, dd, ed, tauq, taup, work, &lwork, &info);
 
         T* ac = (T*)malloc(m*n*sizeof(T));
         std::memcpy(ac, ad, m*n*sizeof(T));
 
         lwork = -1;
-        dorgbr_("Q",&m,&k,&n, ad, &lda, tauq, work, &lwork, &info);
+        helper_lapack<T>::orgbr("Q",&m,&k,&n, ad, &lda, tauq, work, &lwork, &info);
         lwork = (int)work[0];
         work = (T*)realloc(work, sizeof(T)*lwork);
-        dorgbr_("Q",&m,&k,&n, ad, &lda, tauq, work, &lwork, &info);
+        helper_lapack<T>::orgbr("Q",&m,&k,&n, ad, &lda, tauq, work, &lwork, &info);
 
 
         lwork = -1;
-        dorgbr_("P",&k,&n,&m, ac, &lda, taup, work, &lwork, &info);
+        helper_lapack<T>::orgbr("P",&k,&n,&m, ac, &lda, taup, work, &lwork, &info);
         lwork = (int)work[0];
         work = (T*)realloc(work, sizeof(T)*lwork);
-        dorgbr_("P",&k,&n,&m, ac, &lda, taup, work, &lwork, &info);
+        helper_lapack<T>::orgbr("P",&k,&n,&m, ac, &lda, taup, work, &lwork, &info);
 
         for(int j = 0; j < n; ++j){
             std::memcpy(&pd[n*j], &ac[lda*j], sizeof(T)*k);
@@ -334,7 +334,7 @@ namespace ambient { namespace numeric { namespace kernels {
         T* qd = (T*)updated(q);
         T* pd = (T*)updated(p);
 
-        dgbbrd_("B", &m, &n, &zero, &kl, &ku, ad, &k, dd, ed, 
+        helper_lapack<T>::gbbrd("B", &m, &n, &zero, &kl, &ku, ad, &k, dd, ed, 
                 qd, &m, pd, &n, NULL, &one, work, &info);
 
         free(work);
@@ -351,7 +351,7 @@ namespace ambient { namespace numeric { namespace kernels {
         int info;
         
         T* work = (T*)malloc(n*4*sizeof(T));
-        dbdsqr_("U", &n, &nv, &mu, &zero, (T*)s_updated(d), (T*)s_updated(e), 
+        helper_lapack<T>::bdsqr("U", &n, &nv, &mu, &zero, (T*)s_updated(d), (T*)s_updated(e), 
                 (T*)s_updated(v), &mv, (T*)s_updated(u), &mu, NULL, &one, work, &info); free(work);
         // Uncomment for dc numerically loose algorithm:
         // LAPACKE_dbdsdc(102, 'U', 'N', n, (T*)s_updated(d), (T*)s_updated(e),  (T*)s_updated(u), one, (T*)s_updated(v), one, NULL, NULL);
@@ -399,7 +399,7 @@ namespace ambient { namespace numeric { namespace kernels {
         const double* beta = (ADD == 1) ? &one : alfa;
 
         if(*VA::code() == 'T') std::swap(m,n);
-        dgemv_(VA::code(), &m, &n, alfa, &ad[aoffset], &lda, &bd[boffset], &ldb, beta, &cd[coffset], &ldc);
+        helper_blas<T>::gemv(VA::code(), &m, &n, alfa, &ad[aoffset], &lda, &bd[boffset], &ldb, beta, &cd[coffset], &ldc);
     }
 
     template<int alfa, int beta, class ViewA, class ViewB, class ViewC>
@@ -420,7 +420,7 @@ namespace ambient { namespace numeric { namespace kernels {
         int n = cols;
 
         if(*ViewA::code() == 'T') std::swap(m,n);
-        dgemv_(ViewA::code(), &m, &n, &salfa, &ad[aoffset], &lda, &bd[boffset], &ldb, &sbeta, &cd[coffset], &ldc);
+        helper_blas<T>::gemv(ViewA::code(), &m, &n, &salfa, &ad[aoffset], &lda, &bd[boffset], &ldb, &sbeta, &cd[coffset], &ldc);
     }
 
 } } }

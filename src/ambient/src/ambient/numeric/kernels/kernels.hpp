@@ -5,13 +5,13 @@
 
 #include "ambient/numeric/kernels/math.hpp"
 #include "ambient/numeric/kernels/utils.hpp"
+#include "utils/traits.hpp"
+#include "ambient/utils/numeric.h"
 
 namespace ambient { namespace numeric { namespace kernels {
-
-    #include "ambient/utils/numeric.h"
-
     using ambient::numeric::matrix;
     using ambient::numeric::weak_view;
+    using maquis::traits::real_type;
 
     template<typename T> 
     struct geqrt : public kernel< geqrt<T> > 
@@ -147,11 +147,11 @@ namespace ambient { namespace numeric { namespace kernels {
     
     template<typename T>
     struct svd : public kernel< svd<T> > 
-    { static void c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s); };
+    { static void c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<typename real_type<T>::type>& s); };
 
     template<typename T>
     struct heev : public kernel< heev<T> > 
-    { static void c(matrix<T>& a, weak_view<double>& w); };
+    { static void c(matrix<T>& a, weak_view<typename real_type<T>::type>& w); };
 
     template<typename T>
     struct copy_rt : public kernel< copy_rt<T> > 
@@ -303,10 +303,9 @@ namespace ambient { namespace numeric { namespace kernels {
             (T*)p_updated(c);
             return;
         }
-
-        double* ad = current(a);
-        double* bd = current(b);
-        double* cd = updated(c);
+        T* ad = current(a);
+        T* bd = current(b);
+        T* cd = updated(c);
         int m = ViewA::rows(a);
         int k = ViewA::cols(a);
         int n = ViewB::cols(b);
@@ -315,7 +314,7 @@ namespace ambient { namespace numeric { namespace kernels {
         int ldc = c.num_rows();
         static const double alpha(1.0); 
         static const double beta(0.0);
-        dgemm_(ViewA::code(), ViewB::code(), &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+        helper_blas<T>::gemm(ViewA::code(), ViewB::code(), &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
     }
         
     template<class ViewB, typename T, typename D>
@@ -323,12 +322,12 @@ namespace ambient { namespace numeric { namespace kernels {
         int sizey = a_diag.num_rows();
         int size = b.num_cols();
         int ONE  = 1;
-        D* bd = current(b);
-        D* cd = p_updated(c);
-        D* alpha = current(a_diag);
+        T* bd = current(b);
+        T* cd = p_updated(c);
+        T* alpha = current(a_diag);
     
         for(int k = 0 ; k < sizey; k++){
-    	     axpy(&size, &alpha[k], &bd[k], &sizey, &cd[k], &sizey);
+    	    helper_blas<T>::axpy(&size, &alpha[k], &bd[k], &sizey, &cd[k], &sizey); // C - check carefully for TE a_diag double, b complex
         }
     }
         
@@ -337,13 +336,11 @@ namespace ambient { namespace numeric { namespace kernels {
         printf("Special DIAGONAL!\n");
         size_t sizex = b.num_cols();
         int size  = a_diag.num_rows();
-        int ONE  = 1;
-        D* bd = current(b);
-        D* cd = p_updated(c);
-        D* alpha = current(a_diag);
+        T* cd = p_updated(c);
+        T* alpha = current(a_diag);
     
         for(int k = 0 ; k < sizex; k++){
-    	     axpy(&size, &alpha[k], &bd[k*size], &ONE, &cd[k], &size);
+    	    helper_blas<T>::axpy(&size, &alpha[k], &bd[k*size], &ONE, &cd[k], &size);// C - check carefully for TE a_diag double, b complex
         }
     }
         
@@ -352,12 +349,12 @@ namespace ambient { namespace numeric { namespace kernels {
         size_t sizex = b_diag.num_rows();
         int size = a.num_rows(); // for the case of complex
         int ONE = 1;
-        D* ad = current(a);
-        D* cd = p_updated(c);
-    	D* alpha = current(b_diag);
+        T* ad = current(a);
+        T* cd = p_updated(c);
+    	T* alpha = current(b_diag);
     
         for(int k = 0 ; k < sizex; k++){
-    	    axpy(&size, &alpha[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
+    	    helper_blas<T>::axpy(&size, &alpha[k], &ad[k*size], &ONE, &cd[k*size], &ONE);// C - check carefully for TE b_diag double, b complex
         }
     }
 
@@ -367,12 +364,12 @@ namespace ambient { namespace numeric { namespace kernels {
         int sizey = b_diag.num_rows();
         int size = a.num_cols();
         int ONE = 1;
-        D* ad = current(a);
-        D* cd = p_updated(c);
-    	D* alpha = current(b_diag);
+        T* ad = current(a);
+        T* cd = p_updated(c);
+    	T* alpha = current(b_diag);
     
         for(int k = 0 ; k < sizey; k++){
-    	    axpy(&size, &alpha[k], &ad[k], &sizey, &cd[k*size], &ONE);
+    	   helper_blas<T>::axpy(&size, &alpha[k], &ad[k], &sizey, &cd[k*size], &ONE);// C - check carefully for TE b_diag double, b complex
         }
     }
 
@@ -671,60 +668,50 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T>
-    void svd<T>::c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<double>& s){
+    void svd<T>::c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<typename real_type<T>::type>& s){
         int m = a.num_rows();
         int n = a.num_cols();
         int k = std::min(m,n);
         int info;
-        int lwork = -1; // C - Alex, netlib said -1 for the best workspace
+        int lwork = -1;
         T wkopt;
         T* ad  = current(a);
         T* ud  = updated(u);
         T* vtd = updated(vt);
-        double* sd  = updated(s);
-        double* rwork; // = new double[5*m]; // C - useless for double but need for complex 
-        T* work;
-        gesvd( "S", "S", &m, &n, ad, &m, sd, ud, &m, vtd, &k, &wkopt, &lwork, rwork, &info ); // query and allocate the optimal workspace
-        lwork = OptimalSize(wkopt);
-        work = (T*)malloc( lwork*sizeof(T) );
-        gesvd( "S", "S", &m, &n, ad, &m, sd, ud, &m, vtd, &k, work, &lwork, rwork, &info );   // compute SVD
-        assert( info == 0 ); // otherwise the algorithm computing atomic SVD failed to converge
-        free(work);
+        typename real_type<T>::type* sd  = updated(s);
+        helper_lapack<T>::gesvd( "S", "S", &m, &n, ad, &m, sd, ud, &m, vtd, &k, &wkopt, &lwork, &info );
     }
 
     template<typename T>
-    void heev<T>::c(matrix<T>& a, weak_view<double>& w){
+    void heev<T>::c(matrix<T>& a, weak_view<typename real_type<T>::type>& w){
         int m = a.num_rows();
         int info, lwork = -1;
-        double wkopt;
-        double* work;
-        double* ad = (double*)std::malloc(ambient::size(a));
-        double* wd = (double*)std::malloc(ambient::size(w));
+        T wkopt;
+        T* work;
+        T* ad = (T*)std::malloc(ambient::size(a));
+        typename real_type<T>::type* wd = (typename real_type<T>::type*)std::malloc(ambient::size(w));
         std::memcpy(ad, (T*)current(a), ambient::size(a));
-        std::memcpy(wd, (T*)current(w), ambient::size(w));
+        std::memcpy(wd, (typename real_type<T>::type*)current(w), ambient::size(w));
 
-        dsyev_("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
-        lwork = (int)wkopt;
-        work = (double*)malloc( lwork*sizeof(double) );
-        dsyev_("V","U",&m,ad,&m,wd,work,&lwork,&info);
-        assert( info == 0 ); // otherwise the algorithm computing SYEV failed to converge
-        // First we reverse the eigenvalues, to be coherent with the serial version ! 
+        helper_lapack<T>::syev("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
+
+        typename real_type<T>::type s;
         for(int i=0; i < (int)(m/2); i++){ 
             wkopt = wd[i];
             wd[i] = wd[m-i-1];
-            wd[m-i-1] = wkopt;
+            wd[m-i-1] = s;
         } 
         // Second we reverse the eigenvectors
-        size_t len = m*sizeof(double);
-        work = (double*)realloc(work, len);
+        size_t len = m*sizeof(T);
+        work = (T*)realloc(work, len);
         for (int i=0; i < (int)(m/2); i++){ 
             std::memcpy(work, &ad[i*m], len);
             std::memcpy(&ad[i*m], &ad[(m-1-i)*m], len);
             std::memcpy(&ad[(m-1-i)*m], work, len);
         }
         std::memcpy((T*)updated(a), ad, ambient::size(a)); std::free(ad);
-        std::memcpy((T*)updated(w), wd, ambient::size(w)); std::free(wd);
-        std::free(work);
+        std::memcpy((typename real_type<T>::type*)updated(w), wd, ambient::size(w));
+        std::free(wd);
     }
 
 } } }

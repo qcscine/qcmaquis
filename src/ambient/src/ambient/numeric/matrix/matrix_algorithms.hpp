@@ -354,13 +354,11 @@ namespace ambient { namespace numeric {
 
     template <typename T>
     std::ostream& operator << (std::ostream& o, const matrix<T>& a){
+        std::cout.precision(2);
+        std::cout.setf(std::ios::fixed, std::ios::floatfield);
         for(size_type i=0; i< a.num_rows(); ++i){
             for(size_type j=0; j < a.num_cols(); ++j){
-                //if(a(i,j) < 10e-16) ambient::cout << 0 << " ";
-                //else 
-                if(a(i,j)*a(i,j) < 10e-40) printf("     ");
-                else if(a(i,j) < 0) printf("%.2f ", -1*a(i,j)); //ambient::cout << a(i,j) << " ";
-                else printf("%.2f ", a(i,j)); //ambient::cout << a(i,j) << " ";
+                std::cout << a(i,j) << " ";
             }
             ambient::cout << "\n\n";
         }
