@@ -28,7 +28,7 @@ struct size {
 typedef ambient::dim2 dim;
 
 typedef boost::mpl::list< 
-                         size<2,0,std::complex<double> >,
+                        // size<2,0,std::complex<double> >,
                          size<2,0,double>,
                          size<2,0,double>,
                          size<2,3,double>,
