@@ -286,8 +286,8 @@ namespace ambient { namespace numeric {
             }
             }}} */
 
-            split_d(x);
-            split_d(y);
+            split(x);
+            split(y);
 
         }else{}
     }
@@ -364,7 +364,7 @@ namespace ambient { namespace numeric {
         merge(s); merge(e);
 #endif
         bdsqr(s[0], e[0], u2[0], v2[0]);
-        split_d(s); split_d(u2); split_d(v2);
+        split(s); split(u2); split(v2);
 
         ambient::numeric::gemm(u1, u2, u);
         ambient::numeric::gemm(v2, v1, v);
