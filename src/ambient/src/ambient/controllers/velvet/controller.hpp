@@ -21,34 +21,23 @@ namespace ambient { namespace controllers { namespace velvet {
         this->context = new ambient::scope<base>();
     }
 
-    inline void controller::tunable_scope::consider_allocation(size_t size){
-    }
-
-    inline void controller::tunable_scope::consider_transfer(size_t size, ambient::locality l){
-    }
-
-    inline void controller::tunable_scope::toss(){
-        //this->sector = some_logic;
-        //state = (sector == ambient::rank()) ? ambient::local : ambient::remote;
-    }
-
     inline bool controller::tunable(){
-        return context->tunable;
+        return context->tunable();
     }
 
     template<complexity O>
     inline void controller::schedule(){
-        ((tunable_scope*)context)->toss();
+        context->toss();
     }
 
     inline void controller::intend_fetch(history* o){
         revision* r = o->back();
-        if(r == NULL) return ((tunable_scope*)context)->consider_allocation(o->spec.size); // do we have to?
-        ((tunable_scope*)context)->consider_transfer(r->extent, r->state);
+        if(r == NULL) return context->consider_allocation(o->spec.size); // do we have to?
+        context->consider_transfer(r->extent, r->state);
     }
 
     inline void controller::intend_write(history* o){
-        ((tunable_scope*)context)->consider_allocation(o->spec.size);
+        context->consider_allocation(o->spec.size);
     }
 
     inline void controller::set_context(scope* s){

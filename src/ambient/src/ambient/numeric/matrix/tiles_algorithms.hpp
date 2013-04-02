@@ -137,38 +137,6 @@ namespace ambient { namespace numeric {
         std::swap(const_cast<std::vector<Matrix*>&>(a.data), m);
     }
 
-    template<class Matrix>
-    inline void split(const tiles<Matrix>& a){
-        return;
-        if(a.data.size() != 1) return;
-        if(a.mt == 1 && a.nt == 1) return;
-
-        std::vector<Matrix*> split;
-        int tailm = __a_mod(a.rows, AMBIENT_IB);
-        int tailn = __a_mod(a.cols, AMBIENT_IB);
-        split.reserve(a.mt*a.nt);
-        for(int j = 1; j < a.nt; j++){
-            for(int i = 1; i < a.mt; i++) 
-                split.push_back(new Matrix(AMBIENT_IB, AMBIENT_IB));
-            split.push_back(new Matrix(tailm, AMBIENT_IB));
-        }
-        for(int i = 1; i < a.mt; i++) 
-            split.push_back(new Matrix(AMBIENT_IB, tailn));
-        split.push_back(new Matrix(tailm, tailn));
-
-        const Matrix* src = a.data[0];
-
-        if(!a[0].core->weak())
-        for(int j = 0; j < a.nt; j++){
-            for(int i = 0; i < a.mt; i++){
-                Matrix& dst = *split[i+j*a.mt];
-                copy_block(*src, i*AMBIENT_IB, j*AMBIENT_IB, dst, 0, 0, dst.num_rows(), dst.num_cols());
-            }
-        }
-
-        delete src;
-        std::swap(const_cast<std::vector<Matrix*>&>(a.data), split);
-    }
     // }}}
     // {{{ diagonal merge/split
     template<typename T>
@@ -187,30 +155,6 @@ namespace ambient { namespace numeric {
         std::swap(const_cast<std::vector<diagonal_matrix<T>*>&>(a.data), m);
     }
 
-    template<typename T>
-    inline void split(const tiles<diagonal_matrix<T> >& a){
-        return;
-        if(a.data.size() != 1) return;
-        if(a.nt == 1) return;
-
-        std::vector<diagonal_matrix<T> *> split;
-        int tailm = __a_mod(a.size, AMBIENT_IB);
-        split.reserve(a.nt);
-        for(int i = 1; i < a.nt; i++) 
-            split.push_back(new diagonal_matrix<T>(AMBIENT_IB));
-        split.push_back(new diagonal_matrix<T>(tailm));
-
-        const diagonal_matrix<T>* src = a.data[0];
-
-        if(!a[0].get_data().core->weak())
-        for(int i = 0; i < a.nt; i++){
-            diagonal_matrix<T>& dst = *split[i];
-            copy_block(src->get_data(), i*AMBIENT_IB, 0, dst.get_data(), 0, 0, dst.num_rows(), 1);
-        }
-
-        delete src;
-        std::swap(const_cast<std::vector<diagonal_matrix<T>*>&>(a.data), split);
-    }
     // }}}
 
     template<class MatrixA, class MatrixB>
