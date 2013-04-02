@@ -32,8 +32,6 @@ namespace ambient { namespace numeric {
         bool empty() const;          
         void swap(tiles& r);
         void resize(size_type m, size_type n); 
-        void remove_rows(size_type i, size_type k = 1);
-        void remove_cols(size_type j, size_type k = 1);
         Matrix& tile(size_type i, size_type j);
         const Matrix& tile(size_type i, size_type j) const;
         Matrix& locate(size_type i, size_type j);
@@ -103,8 +101,6 @@ namespace ambient { namespace numeric {
         size_type num_cols() const;
         void swap(tiles& r);
         void resize(size_type m, size_type n); 
-        void remove_rows(size_type i, size_type k = 1);
-        void remove_cols(size_type j, size_type k = 1);
         diagonal_matrix<T>& operator[] (size_type k);
         const diagonal_matrix<T>& operator[] (size_type k) const;
         value_type& operator() (size_type i, size_type j);

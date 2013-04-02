@@ -10,24 +10,6 @@
 #define scalar_type     typename matrix<T>::scalar_type
 #define difference_type typename matrix<T>::difference_type
 
-// Functions used by the ground state algorithm: //
-//
-// norm_square
-// overlap
-// transpose
-// transpose_inplace
-// trace
-// add_inplace
-// sub_inplace
-// resize
-// mul_inplace (scalar)
-// div_inplace
-// copy
-// gemm (matrix-matrix)
-// gemm (matrix-diagonal)
-// svd
-// heev
-
 namespace ambient { namespace numeric {
 
     template<typename T>
@@ -42,31 +24,88 @@ namespace ambient { namespace numeric {
         return false;
     }
 
-
-    template<int alfa, int beta, class MatrixViewA, class MatrixViewB, class MatrixViewC>
-    inline void gemv(const MatrixViewA& a, size_t aoffset, 
-                     const MatrixViewB& b, size_t boffset, 
-                           MatrixViewC& c, size_t coffset, 
-                           size_t m, size_t n)
-    {
-        kernels::gemv<alfa,beta,MatrixViewA,MatrixViewB,MatrixViewC>::spawn<complexity::N2>(a, aoffset, 
-                                                                                            b, boffset, 
-                                                                                            c, coffset, 
-                                                                                            m, n); 
+    template<typename T>
+    inline matrix<T> exp(const matrix<T>& a, const T& alfa = 1.){
+        printf("ERROR: NOT TESTED (EXP)\n");
+        assert( false );
+        // TODO: - right eigenvalues/eigenvectors from geev
+        //       - inverse of eigenvectors (getrf && getri)
+        //       - return Nr * exp(S, alpha) * inverse(Nr);
+        return matrix<T>();
     }
 
-    template<int ADD, class MA, class MB, class MC, class MF>
-    inline void gemv_scale(const MA& a, size_t aoffset, 
-                           const MB& b, size_t boffset, 
-                                 MC& c, size_t coffset, 
-                           const MF& f, size_t foffset, 
-                           size_t m, size_t n)
-    {
-        kernels::gemv_scale<ADD,MA,MB,MC,MF>::spawn<complexity::N2>(a, aoffset, 
-                                                                    b, boffset, 
-                                                                    c, coffset, 
-                                                                    f, foffset, 
-                                                                    m, n); 
+    template<typename T>
+    inline matrix<T> exp_hermitian(const matrix<T>& a, const T& alfa = 1.){
+        printf("ERROR: NOT TESTED (EXP_HERMITIAN)\n");
+        diagonal_matrix<T> evals(a.num_rows());
+        matrix<T> evecs = matrix<T>();
+        heev(a, evecs, evals);
+        return (evecs * exp(evals, alfa))*conj(transpose(evecs));
+    }
+
+    template<typename T>
+    inline const matrix<T>& conj(const matrix<T>& a){
+        //a.conj();
+        return a;
+    }
+
+    template<typename T>
+    inline void conj_inplace(matrix<T>& a){
+        // gs (doubles)
+        // does nothing for now
+    }
+
+    template<typename T>
+    inline void adjoint_inplace(matrix<T>& a){
+        transpose_inplace(a);
+    }
+
+    template<typename T>
+    inline transpose_view<matrix<T> > adjoint(const matrix<T>& a){
+        return transpose_view<matrix<T> >(a);
+    }
+
+    template<typename T>
+    inline void remove_rows(matrix<T>& a, size_type i, difference_type k){
+        assert( i+k <= a.num_rows() );
+        assert(false); printf("ERROR: NOT TESTED (REMOVE ROWS)\n");
+        //kernels::remove_rows<T>::spawn<complexity::N2>(a, i, k);
+        resize(a, a.num_rows()-k, a.num_cols());
+    }
+
+    template<typename T>
+    inline void remove_cols(matrix<T>& a, size_type j, difference_type k){
+        assert( j+k <= a.num_cols() );
+        assert(false); printf("ERROR: NOT TESTED (REMOVE COLS)\n");
+        //kernels::remove_cols<T>::spawn<complexity::N2>(a, j, k);
+        resize(a, a.num_rows(), a.num_cols()-k);
+    }
+
+    template <typename T>
+    inline void mul_inplace(matrix<T>& a, const matrix<T>& rhs){
+        assert(false); printf("ERROR: NOT TESTED (GEMM INPLACE)\n");
+        //kernels::gemm_inplace<T>::spawn(a, rhs);
+    }
+
+    template <typename T>
+    inline void mul_inplace(matrix<T>& a, const diagonal_matrix<T>& rhs){
+        assert(false); printf("ERROR: NOT TESTED (GEMM DIAG INPLACE)\n");
+        //kernels::gemm_diag_inplace<T>::spawn<complexity::N2>(a, rhs);
+    }
+
+    template <typename T>
+    inline void save(const matrix<T>& a, const size_t& tag) { 
+        kernels::save<T>::spawn<complexity::N2>(a, tag); 
+    }
+
+    template <typename T>
+    inline void load(matrix<T>& a, const size_t& tag) { 
+        kernels::load<T>::spawn<complexity::N2>(a, tag); 
+    }
+
+    template<class Matrix>
+    inline void persist(const Matrix& a){
+        ambient::persist(a.core);
     }
 
     template<class MatrixViewA, class MatrixViewB, typename T>
@@ -90,67 +129,6 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline void gbbrd(matrix<T>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T>& u, matrix<T>& v){
-        kernels::gbbrd<T>::spawn<complexity::N3>(a, d, e, u, v);
-    }
-
-    template<typename T>
-    inline void gebrd(matrix<T>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T>& u, matrix<T>& v){
-        kernels::gebrd<T>::spawn<complexity::N3>(a, d, e, u, v);
-    }
-
-    template<typename T>
-    inline void bdsqr(diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T>& u, matrix<T>& v){
-        kernels::bdsqr<T>::spawn<complexity::N3>(d, e, u, v);
-    }
-
-    template<typename T>
-    inline void gebd2(matrix<T>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, diagonal_matrix<T>& tq, diagonal_matrix<T>& tp){
-        kernels::gebd2<T>::spawn<complexity::N3>(a, d, e, tq, tp);
-    }
-
-    template<PLASMA_enum TR, typename T>
-    inline void larfg(matrix<T>& a, diagonal_matrix<T>& t, diagonal_matrix<T>& d, size_t k){
-        kernels::larfg<T,TR>::spawn<complexity::N3>(a, t, d, k);
-    }
-
-    template<typename T>
-    inline void labrd_update_col(matrix<T>& say, const matrix<T>& sax, 
-                           matrix<T>& sy, const matrix<T>& sx, 
-                           diagonal_matrix<T>& tq, 
-                           diagonal_matrix<T>& d, 
-                           int i)
-    {
-        kernels::labrd_update_col<T>::spawn<complexity::N3>(say, sax, sy, sx, tq, d, i);
-    }
-
-    template<typename T>
-    inline void labrd_reduce_col(matrix<T>& say, const matrix<T>& sax, 
-                           matrix<T>& sy, const matrix<T>& sx, 
-                           int i)
-    {
-        kernels::labrd_reduce_col<T>::spawn<complexity::N3>(say, sax, sy, sx, i);
-    }
-
-    template<typename T>
-    inline void labrd_update_row(const matrix<T>& say, matrix<T>& sax, 
-                           const matrix<T>& sy, matrix<T>& sx, 
-                           diagonal_matrix<T>& tp, 
-                           diagonal_matrix<T>& e, 
-                           int i)
-    {
-        kernels::labrd_update_row<T>::spawn<complexity::N3>(say, sax, sy, sx, tp, e, i);
-    }
-
-    template<typename T>
-    inline void labrd_reduce_row(const matrix<T>& say, matrix<T>& sax, 
-                           const matrix<T>& sy, matrix<T>& sx, 
-                           int i)
-    {
-        kernels::labrd_reduce_row<T>::spawn<complexity::N3>(say, sax, sy, sx, i);
-    }
-
-    template<typename T>
     inline void svd(matrix<T>& a, matrix<T>& u, matrix<T>& vt, diagonal_matrix<double>& s){
         int m = num_rows(a);
         int n = num_cols(a);
@@ -170,7 +148,7 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void syev(const matrix<T>& a, matrix<T>& evecs, diagonal_matrix<double>& evals){
-        heev(a, evecs, evals);
+        heev(a, evecs, evals); // should it be syev instead?
     }
 
     template<typename T>
@@ -213,51 +191,6 @@ namespace ambient { namespace numeric {
         kernels::tsmlq<T,TR>::spawn<complexity::N3>(k, a1, a2, v, t);
     }
 
-    template<PLASMA_enum UL, size_t OFF, typename T>
-    inline void laset2(matrix<T>& a, const T& alfa = 0.0){
-        kernels::laset2<T,UL,OFF>::spawn<complexity::N2>(a, alfa);
-    }
-
-    template<typename T> 
-    inline void qr(matrix<T> a, matrix<T>& q, matrix<T>& r){ 
-        int m = num_rows(a);            
-        int n = num_cols(a);            
-        int k = std::min(m,n); 
-        resize(q, m, k);  
-        resize(r, k, n); 
-        kernels::qr<T>::spawn<complexity::N3>(a, q, r); 
-       printf("Using QR!\n"); 
-    }
-
-    template<typename T> 
-    inline void lq(matrix<T> a, matrix<T>& l, matrix<T>& q){ 
-        int m = num_rows(a);            
-        int n = num_cols(a);            
-        int k = std::min(m,n); 
-        resize(l, m, k); 
-        resize(q, k, n);  
-        kernels::lq<T>::spawn<complexity::N3>(a, l, q);  
-    } 
-
-    template<typename T>
-    inline matrix<T> exp(const matrix<T>& a, const T& alfa = 1.){
-        printf("ERROR: NOT TESTED (EXP)\n");
-        assert( false );
-        // TODO: - right eigenvalues/eigenvectors from geev
-        //       - inverse of eigenvectors (getrf && getri)
-        //       - return Nr * exp(S, alpha) * inverse(Nr);
-        return matrix<T>();
-    }
-
-    template<typename T>
-    inline matrix<T> exp_hermitian(const matrix<T>& a, const T& alfa = 1.){
-        printf("ERROR: NOT TESTED (EXP_HERMITIAN)\n");
-        diagonal_matrix<T> evals(a.num_rows());
-        matrix<T> evecs = matrix<T>();
-        heev(a, evecs, evals);
-        return (evecs * exp(evals, alfa))*conj(transpose(evecs));
-    }
-
     template<typename T> inline void resize(matrix<T>& a, size_t m, size_t n){ 
         assert(a.num_rows() != 0 && a.num_cols() != 0);
         if(a.num_rows() == m && a.num_cols() == n) return;
@@ -293,18 +226,6 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline const matrix<T>& conj(const matrix<T>& a){
-        //a.conj();
-        return a;
-    }
-
-    template<typename T>
-    inline void conj_inplace(matrix<T>& a){
-        // gs (doubles)
-        // does nothing for now
-    }
-
-    template<typename T>
     inline void transpose_inplace(matrix<T>& a){
         matrix<T> t(a.num_cols(), a.num_rows());
         kernels::transpose_out<T>::spawn<complexity::N2>(a, t);
@@ -314,21 +235,6 @@ namespace ambient { namespace numeric {
     template<typename T>
     inline transpose_view<matrix<T> > transpose(const matrix<T>& a){
         return transpose_view<matrix<T> >(a);
-    }
-
-    template<typename T>
-    inline void adjoint_inplace(matrix<T>& a){
-        transpose_inplace(a);
-    }
-
-    template<typename T>
-    inline transpose_view<matrix<T> > adjoint(const matrix<T>& a){
-        return transpose_view<matrix<T> >(a);
-    }
-
-    template<class Matrix>
-    inline void persist(const Matrix& a){
-        ambient::persist(a.core);
     }
 
     template<class Matrix>
@@ -348,27 +254,6 @@ namespace ambient { namespace numeric {
         kernels::init_value<typename Matrix::value_type>::spawn<complexity::N2>(a, value);
     }
 
-    template<typename T>
-    inline void remove_rows(matrix<T>& a, size_type i, difference_type k){
-        assert( i+k <= a.num_rows() );
-        assert(false); printf("ERROR: NOT TESTED (REMOVE ROWS)\n");
-        //kernels::remove_rows<T>::spawn<complexity::N2>(a, i, k);
-        resize(a, a.num_rows()-k, a.num_cols());
-    }
-
-    template<typename T>
-    inline void remove_cols(matrix<T>& a, size_type j, difference_type k){
-        assert( j+k <= a.num_cols() );
-        assert(false); printf("ERROR: NOT TESTED (REMOVE COLS)\n");
-        //kernels::remove_cols<T>::spawn<complexity::N2>(a, j, k);
-        resize(a, a.num_rows(), a.num_cols()-k);
-    }
-
-    template <int alfa, typename T>
-    inline void add_vectors(matrix<T>& lhs, size_t loffset, const matrix<T>& rhs, size_t roffset, size_t size){ 
-        kernels::add_vectors<alfa, T>::spawn<complexity::N2>(lhs, loffset, rhs, roffset, size); 
-    }
-
     template <typename T>
     inline void add_inplace(matrix<T>& lhs, const matrix<T>& rhs){ 
         kernels::add<T>::spawn<complexity::N2>(lhs, rhs); 
@@ -380,18 +265,6 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T>
-    inline void mul_inplace(matrix<T>& a, const matrix<T>& rhs){
-        assert(false); printf("ERROR: NOT TESTED (GEMM INPLACE)\n");
-        //kernels::gemm_inplace<T>::spawn(a, rhs);
-    }
-
-    template <typename T>
-    inline void mul_inplace(matrix<T>& a, const diagonal_matrix<T>& rhs){
-        assert(false); printf("ERROR: NOT TESTED (GEMM DIAG INPLACE)\n");
-        //kernels::gemm_diag_inplace<T>::spawn<complexity::N2>(a, rhs);
-    }
-
-    template <typename T>
     inline void mul_inplace(matrix<T>& a, const scalar_type& rhs) { 
         kernels::scale<T>::spawn<complexity::N2>(a, rhs); 
     }
@@ -399,16 +272,6 @@ namespace ambient { namespace numeric {
     template <typename T>
     inline void div_inplace(matrix<T>& a, const scalar_type& rhs) { 
         kernels::scale_inverse<T>::spawn<complexity::N2>(a, rhs); 
-    }
-
-    template <typename T>
-    inline void save(const matrix<T>& a, const size_t& tag) { 
-        kernels::save<T>::spawn<complexity::N2>(a, tag); 
-    }
-
-    template <typename T>
-    inline void load(matrix<T>& a, const size_t& tag) { 
-        kernels::load<T>::spawn<complexity::N2>(a, tag); 
     }
 
     template<typename T>
@@ -422,11 +285,6 @@ namespace ambient { namespace numeric {
                            size_t m, size_t n)
     {
         kernels::copy_block<T>::spawn<complexity::N2>(src, si, sj, dst, di, dj, m, n); 
-    }
-
-    template<PLASMA_enum UL, typename T>
-    inline void copy_band(const matrix<T>& src, matrix<T>& dst, size_t dj){
-        kernels::copy_band<T,UL>::spawn<complexity::N2>(src, dst, dj);
     }
 
     template<typename T>
@@ -455,12 +313,6 @@ namespace ambient { namespace numeric {
                               size_t m, size_t n)
     { 
         kernels::copy_block_sa<T>::spawn<complexity::N2>(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
-    }
-
-    template<typename T>
-    inline void destroy(matrix<T>& a){
-        if(a.core->weak()) delete a.core;
-        else ambient::destroy(a.core);
     }
 
     template<typename T>

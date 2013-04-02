@@ -1,0 +1,17 @@
+List of functions used by the ground state algorithm:
+
+ norm_square
+ overlap
+ transpose
+ transpose_inplace
+ trace
+ add_inplace
+ sub_inplace
+ resize
+ mul_inplace (scalar)
+ div_inplace (scalar)
+ copy
+ gemm (matrix-matrix)
+ gemm (matrix-diagonal)
+ svd
+ heev

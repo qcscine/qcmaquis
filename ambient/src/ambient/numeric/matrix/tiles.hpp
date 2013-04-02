@@ -261,16 +261,6 @@ namespace ambient { namespace numeric {
         ambient::numeric::resize(*this, m, n);
     }
 
-    template<class Matrix>
-    inline void tiles<Matrix>::remove_rows(size_type i, size_type k){
-        remove_rows(*this, i, k);
-    }
-
-    template<class Matrix>
-    inline void tiles<Matrix>::remove_cols(size_type j, size_type k){
-        remove_cols(*this, j, k); 
-    }
-
     template<class Matrix, class OtherMatrix>
     bool operator == (const tiles<Matrix>& a, const tiles<OtherMatrix>& b){
         bool result = true;
@@ -474,16 +464,6 @@ namespace ambient { namespace numeric {
     template<typename T>
     inline void tiles<diagonal_matrix<T> >::resize(size_type m, size_type n){
         ambient::numeric::resize(*this, m, n);
-    }
-
-    template<typename T>
-    inline void tiles<diagonal_matrix<T> >::remove_rows(size_type i, size_type k){
-        remove_rows(*this, i, k);
-    }
-
-    template<typename T>
-    inline void tiles<diagonal_matrix<T> >::remove_cols(size_type j, size_type k){
-        remove_cols(*this, j, k); 
     }
 
     template<typename T>
