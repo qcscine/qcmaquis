@@ -14,9 +14,10 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( IDENTITY, T, test_types)
 {
+    typedef alps::numeric::matrix<typename T::value_type> sMatrix;
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<typename T::value_type> > pMatrix;
     std::size_t accessx(T::valuex-1), accessy(T::valuey-1);
-    typename T::dbl x;
-    typename T::dbl y;
+    typename T::value_type x, y;
     // check if we are writing inside the matrix
     BOOST_STATIC_ASSERT(T::valuex-1>0);
     BOOST_STATIC_ASSERT(T::valuex-1>0);
@@ -39,7 +40,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( IDENTITY, T, test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( IDENTITY_TRACE, T, test_types)
 {
-    typename T::dbl x,y;
+    typedef alps::numeric::matrix<typename T::value_type> sMatrix;
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<typename T::value_type> > pMatrix;
+    typename T::value_type x, y;
     pMatrix pA = pMatrix::identity_matrix(T::valuex);
     sMatrix sA = sMatrix::identity_matrix(T::valuex);
     ambient::sync();

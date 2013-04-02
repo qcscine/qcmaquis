@@ -10,6 +10,9 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( ADD, T, test_types)
 {
+    typedef alps::numeric::matrix<typename T::value_type> sMatrix;
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<typename T::value_type> > pMatrix;
+
     pMatrix pA(T::valuex,T::valuey);
     pMatrix pB(T::valuex,T::valuey);
     pMatrix pC(T::valuex,T::valuey);
@@ -33,6 +36,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ADD, T, test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( ADD_ASSIGN, T, test_types)
 {
+    typedef alps::numeric::matrix<typename T::value_type> sMatrix;
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<typename T::value_type> > pMatrix;
+
     pMatrix pA(T::valuex,T::valuey);
     pMatrix pB(T::valuex,T::valuey);
 

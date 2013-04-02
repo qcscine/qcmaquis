@@ -14,6 +14,9 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_P2S, T, test_types)
 {
+    typedef alps::numeric::matrix<typename T::value_type> sMatrix;
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<typename T::value_type> > pMatrix;
+
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
     generate(pA);
@@ -23,6 +26,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_P2S, T, test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_S2P, T, test_types)
 {
+    typedef alps::numeric::matrix<typename T::value_type> sMatrix;
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<typename T::value_type> > pMatrix;
+
     pMatrix pA(T::valuex,T::valuey);
     sMatrix sA(T::valuex,T::valuey);
     generate(sA,Rd); // Rd is rand generator static variable inside utilities
