@@ -714,8 +714,65 @@ namespace ambient { namespace numeric {
         return a.num_cols();
     }
 
+    template<class MatrixA, class MatrixB, class Matrix>
+    void gemm_strassen(tiles<MatrixA>&& a, tiles<MatrixB>&& b, tiles<Matrix>&& c){
+        size_t n  = c.cols/2;
+        size_t nt = c.nt/2;
+        if(nt){
+            tiles<matrix<value_type> > m1(n, n);
+            tiles<matrix<value_type> > m2(n, n);
+            tiles<matrix<value_type> > m3(n, n);
+            tiles<matrix<value_type> > m4(n, n); m4 = a.subset(0, 0, nt, nt);
+            tiles<matrix<value_type> > m5(n, n); m5 = b.subset(0, 0, nt, nt);
+            tiles<matrix<value_type> > d(n*2, n*2); d = a;
+            tiles<matrix<value_type> > e(n*2, n*2); e = b;
+
+            d.subset(0,  0,  nt, nt) += a.subset(0,  nt, nt, nt);  e.subset(0,  0,  nt, nt) += b.subset(0,  nt, nt, nt);
+            d.subset(0,  nt, nt, nt) -= a.subset(nt, nt, nt, nt);  e.subset(0,  nt, nt, nt) -= b.subset(nt, nt, nt, nt);
+            d.subset(nt, nt, nt, nt) += a.subset(nt, 0,  nt, nt);  e.subset(nt, nt, nt, nt) += b.subset(nt, 0,  nt, nt);
+            d.subset(nt, 0,  nt, nt) -= a.subset(0,  0,  nt, nt);  e.subset(nt, 0,  nt, nt) -= b.subset(0,  0,  nt, nt);
+
+            m4 += a.subset(nt, nt, nt, nt);  m5 += b.subset(nt, nt, nt, nt);
+           
+            gemm_strassen(d.subset(0,  nt, nt, nt),
+                          e.subset(nt, nt, nt, nt),
+                          c.subset(0,  0,  nt, nt));
+            gemm_strassen(a.subset(0,  0,  nt, nt),
+                          e.subset(0,  nt, nt, nt),
+                          c.subset(0,  nt, nt, nt));
+            gemm_strassen(d.subset(nt, nt, nt, nt),
+                          b.subset(0,  0,  nt, nt),
+                          c.subset(nt, 0,  nt, nt));
+            gemm_strassen(d.subset(nt, 0,  nt, nt),
+                          e.subset(0,  0,  nt, nt),
+                          c.subset(nt, nt, nt, nt));
+
+            gemm_strassen(AMBIENT_MOVE(m4), AMBIENT_MOVE(m5),
+                          AMBIENT_MOVE(m1));
+            gemm_strassen(d.subset(0,  0,  nt, nt),
+                          b.subset(nt, nt, nt, nt),
+                          AMBIENT_MOVE(m2));
+            gemm_strassen(a.subset(nt, nt, nt, nt),
+                          e.subset(nt, 0,  nt, nt),
+                          AMBIENT_MOVE(m3));
+
+            c.subset(nt, nt, nt, nt) += c.subset(0,  nt, nt, nt);
+            c.subset(nt, nt, nt, nt) -= c.subset(nt, 0,  nt, nt);
+
+            c.subset(0,  0,  nt, nt) += m1;
+            c.subset(nt, nt, nt, nt) += m1;
+            c.subset(0,  nt, nt, nt) += m2;
+            c.subset(0,  0,  nt, nt) -= m2;
+            c.subset(0,  0,  nt, nt) += m3;
+            c.subset(nt, 0,  nt, nt) += m3;
+        }else{
+            gemm(a[0], b[0], c[0]);
+        }
+    }
+
 } }
 
+#undef value_type
 #undef size_type
 #undef real_type
 #undef scalar_type

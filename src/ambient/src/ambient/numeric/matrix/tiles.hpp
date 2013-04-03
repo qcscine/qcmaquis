@@ -42,6 +42,23 @@ namespace ambient { namespace numeric {
         sub_inplace(*this, rhs);
         return *this;
     }
+    
+    template<class Matrix>
+    template<class MatrixB>
+    inline tiles<subset_view<Matrix> >& tiles<subset_view<Matrix> >::operator = (const tiles<MatrixB>& rhs){
+        int size = rhs.data.size();
+        for(int i = 0; i < size; i++)
+            (*this)[i] = rhs[i];
+        return *this;
+    }
+    
+    template<class Matrix>
+    inline tiles<subset_view<Matrix> >& tiles<subset_view<Matrix> >::operator = (const tiles<subset_view<Matrix> >& rhs){
+        int size = rhs.data.size();
+        for(int i = 0; i < size; i++)
+            (*this)[i] = rhs[i];
+        return *this;
+    }
 
     template<class Matrix>
     inline Matrix& tiles<subset_view<Matrix> >::tile(size_type i, size_type j){
@@ -194,6 +211,15 @@ namespace ambient { namespace numeric {
     tiles<Matrix>& tiles<Matrix>::operator = (const tiles& rhs){
         tiles c(rhs);
         this->swap(c);
+        return *this;
+    }
+    
+    template<class Matrix>
+    template<class MatrixB>
+    inline tiles<Matrix>& tiles<Matrix>::operator = (const tiles<MatrixB>& rhs){
+        int size = rhs.data.size();
+        for(int i = 0; i < size; i++)
+            (*this)[i] = rhs[i];
         return *this;
     }
 
