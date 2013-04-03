@@ -199,7 +199,7 @@ namespace ambient { namespace numeric {
                 gemv<1,1>(a, AMBIENT_IB, i+1, transpose(sax), i+1, i, sx, AMBIENT_IB, i, m-AMBIENT_IB, n-i-1);
                 scale(sx, i+1, i, tp, i, i);
             }
-            /* {{{ explicit coreementation
+            /* {{{ explicit
             for(int i = 0; i < AMBIENT_IB; ++i){
         
                 int ri  = m-i;   //std::min(m-i, i*nb);

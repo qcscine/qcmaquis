@@ -1,5 +1,6 @@
 #ifndef AMBIENT_UTILS_TIMINGS
 #define AMBIENT_UTILS_TIMINGS
+#include "ambient/ambient.hpp"
 #include "ambient/utils/io.hpp"
 
 #define BILLION 0x3B9ACA00
@@ -12,16 +13,19 @@ namespace ambient {
         timer(std::string name): val(0.0), name(name), count(0), thread_(pthread_self()){}
        ~timer(){ report(); }
      
+        double get_time() const {
+            return val;
+        }
         void report(){
             ambient::cout << name << " " << val << ", count : " << count << "\n";
         }
-        inline void begin(){
-             pthread_getcpuclockid(this->thread_,&this->cid_);
-             struct timespec ts; // from time.h
-             clock_gettime(this->cid_, &ts);
-             this->t0 = ts.tv_sec+(((double)ts.tv_nsec / (double)(BILLION)));
+        void begin(){
+            pthread_getcpuclockid(this->thread_,&this->cid_);
+            struct timespec ts; // from time.h
+            clock_gettime(this->cid_, &ts);
+            this->t0 = ts.tv_sec+(((double)ts.tv_nsec / (double)(BILLION)));
         }    
-        inline void end(){
+        void end(){
             count++;
             struct timespec ts;
             clock_gettime(this->cid_, &ts);

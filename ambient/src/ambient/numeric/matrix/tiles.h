@@ -24,6 +24,7 @@ namespace ambient { namespace numeric {
         tiles<subset_view<Matrix> > subset(size_type i, size_type j, size_type mt, size_type nt) const;
         tiles(const tiles& a);
         tiles& operator = (const tiles& rhs);
+        template <class MatrixB> tiles& operator  = (const tiles<MatrixB>& rhs);
         size_type num_rows() const;
         size_type num_cols() const;
         scalar_type trace() const;
@@ -59,6 +60,7 @@ namespace ambient { namespace numeric {
     template <class Matrix>
     class tiles<subset_view<Matrix> >{
     public:
+        typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::size_type  size_type;
         typedef typename Matrix::value_type value_type;
         Matrix& tile(size_type i, size_type j);
@@ -68,6 +70,8 @@ namespace ambient { namespace numeric {
         tiles<subset_view<Matrix> > subset(size_type i, size_type j, size_type mt, size_type nt) const;
         template <class MatrixB> tiles& operator += (const tiles<MatrixB>& rhs);
         template <class MatrixB> tiles& operator -= (const tiles<MatrixB>& rhs);
+        template <class MatrixB> tiles& operator  = (const tiles<MatrixB>& rhs);
+        tiles& operator  = (const tiles& rhs);
         std::vector<subset_view<Matrix> > data;
         size_type num_rows() const;
         size_type num_cols() const;
