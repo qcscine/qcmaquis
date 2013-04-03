@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types)
         BB[i*M+j]=rand();
         CC[i*M+j]=-1;
      }
-   __a_timer time("time");
+   ambient::timer time("time");
    time.begin();
 /************  BLACS ***************************/
    Cblacs_pinfo( &myrank_mpi, &nprocs_mpi) ;

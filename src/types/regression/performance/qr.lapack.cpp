@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     sA = maquis::bindings::matrix_cast<sMatrix>(pA);
 
     ambient::sync();
-    __a_timer time("ambient");
+    ambient::timer time("ambient");
     time.begin();
     qr(sA, sQ, sR); 
     time.end();

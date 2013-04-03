@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
 
     ambient::numeric::gemm(pA, pB, pC); 
 
-    __a_timer time("ambient");
+    ambient::timer time("ambient");
     time.begin();
     ambient::sync();
     time.end();

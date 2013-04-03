@@ -9,7 +9,7 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
 
-    __a_timer gtime("total"); gtime.begin();
+    ambient::timer gtime("total"); gtime.begin();
 
     typedef ambient::dim2 dim;
     typedef alps::numeric::matrix<typename T::value_type> sMatrix;
@@ -22,6 +22,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     pMatrix pA(x, y);
     pMatrix pB(x, y);
     pMatrix pC(x, y);
+    pMatrix pC_orig(x, y);
 
     sMatrix sA(x, y);
     sMatrix sB(x, y);
@@ -33,17 +34,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     sB = maquis::bindings::matrix_cast<sMatrix>(pB);
     ambient::sync();
 
-    ambient::numeric::gemm(pA, pB, pC); 
-
-    printf("Computing GEMM now...\n");
-    __a_timer time("ambient");
-    time.begin();
+    printf("ambient::gemm strassen...\n");
+    ambient::numeric::gemm_strassen(AMBIENT_MOVE(pA), AMBIENT_MOVE(pB), AMBIENT_MOVE(pC)); 
+    ambient::timer time("ambient::gemm_strassen"); time.begin();
     ambient::sync();
     time.end();
 
+    printf("ambient::gemm...\n");
+    ambient::numeric::gemm(pA, pB, pC_orig); 
+    ambient::timer time_orig("ambient::gemm"); time_orig.begin();
+    ambient::sync();
+    time_orig.end();
+
+    report(time_orig, GFlopsGemm, x, y, nthreads);
     report(time, GFlopsGemm, x, y, nthreads);
 
     gtime.end();
     std::cout << "Global time: " << gtime.get_time() << "\n";
+    BOOST_CHECK(pC==pC_orig);
 }
 
