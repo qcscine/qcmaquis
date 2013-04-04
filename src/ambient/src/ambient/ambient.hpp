@@ -33,12 +33,14 @@
     #define AMBIENT_SMP_DISABLE
 #elif defined(AMBIENT_OMP)
     #include <omp.h>
-    #define AMBIENT_NUM_THREADS 12
     #define AMBIENT_THREAD_ID omp_get_thread_num()
     #define AMBIENT_PRAGMA(a) _Pragma( #a )
     #define AMBIENT_THREAD AMBIENT_PRAGMA(omp task untied)
     #define AMBIENT_SMP_ENABLE AMBIENT_PRAGMA(omp parallel) { AMBIENT_PRAGMA(omp single)
     #define AMBIENT_SMP_DISABLE }
+    #define AMBIENT_NUM_THREADS [&]()->int{ int n; AMBIENT_SMP_ENABLE \
+                                { n = omp_get_num_threads(); } \
+                                AMBIENT_SMP_DISABLE return n; }()
 #else
     #define AMBIENT_NUM_THREADS 1
     #define AMBIENT_THREAD_ID 0
@@ -54,6 +56,9 @@
 #endif
 
 namespace ambient {
+    inline int get_num_threads(){
+        static int n = AMBIENT_NUM_THREADS; return n;
+    }
     enum complexity { N, N2, N3 };
     enum locality   { remote, local, common };
     enum scope_t    { base, single, shared };
