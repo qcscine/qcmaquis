@@ -1,7 +1,5 @@
 #ifndef AMBIENT_NUMERIC_MATRIX_KERNELS
 #define AMBIENT_NUMERIC_MATRIX_KERNELS
-#define AMBIENT_IB 512
-#define PLASMA_IB 64
 
 #include "ambient/numeric/kernels/math.hpp"
 #include "ambient/numeric/kernels/utils.hpp"

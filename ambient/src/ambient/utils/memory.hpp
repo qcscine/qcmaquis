@@ -3,14 +3,6 @@
 #include "ambient/utils/singleton.hpp"
 #include "boost/pool/singleton_pool.hpp"
 
-#define FUTURE_SIZE 64
-#define BULK 41943040
-
-#define BULK_REGION 0
-#define DELEGATED_REGION 0 // same as bulk - don't deallocate
-#define DEFAULT_REGION 1
-#define PERSIST_REGION 13
-
 namespace ambient { namespace memory {
 
     template<size_t S>
@@ -53,7 +45,7 @@ namespace ambient { namespace memory {
     public:
         bulk(){
             this->arity = ambient::get_num_threads();
-            this->set   = new region<BULK>[arity];
+            this->set   = new region<AMBIENT_BULK_CHUNK>[arity];
         }
        ~bulk(){
             delete[] this->set;
@@ -69,7 +61,7 @@ namespace ambient { namespace memory {
             for(int i = 0; i < arity; i++) this->set[i].reset();
         }
     private:
-        region<BULK>* set;
+        region<AMBIENT_BULK_CHUNK>* set;
         int arity;
     };
 
@@ -92,11 +84,11 @@ namespace ambient { namespace memory {
        ~pool(){
         }
         void* malloc(size_t sz, int r){
-            if(r == 0 && sz < BULK) return ambient::bulk.malloc(sz);
+            if(r == 0 && sz < AMBIENT_BULK_CHUNK) return ambient::bulk.malloc(sz);
             return std::malloc(sz); 
         }
         void free(void* ptr, size_t sz, int r){
-            if(ptr == NULL || (r == 0 && sz < BULK)) return;
+            if(ptr == NULL || (r == 0 && sz < AMBIENT_BULK_CHUNK)) return;
             return std::free(ptr);
         }
         template<size_t S>

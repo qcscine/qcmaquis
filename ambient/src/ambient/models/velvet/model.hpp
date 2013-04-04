@@ -2,12 +2,12 @@ namespace ambient { namespace models { namespace velvet {
 
     inline void model::index(revision* r){
         r->sid = this->sid++;
-        this->sid %= MAX_SID;
+        this->sid %= AMBIENT_MAX_SID;
     }
 
     inline void model::index(transformable* v){
         v->sid = this->sid++;
-        this->sid %= MAX_SID;
+        this->sid %= AMBIENT_MAX_SID;
     }
 
     template<ambient::locality L>

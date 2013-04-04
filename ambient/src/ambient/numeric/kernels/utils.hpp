@@ -1,10 +1,6 @@
 #ifndef AMBIENT_NUMERIC_MATRIX_KERNELS_UTILS
 #define AMBIENT_NUMERIC_MATRIX_KERNELS_UTILS
 
-#ifdef AMBIENT_CHECK_BOUNDARIES
-#include <execinfo.h>
-#endif
-
 namespace ambient {
 
     template<typename T> inline dim2 dim(T& ref){ 
@@ -62,10 +58,7 @@ namespace ambient {
             ambient::cout << "Matrix src " << ambient::dim(src).x << "x" << ambient::dim(src).y << "\n";
             ambient::cout << "Src p " << src_p.x << "x" << src_p.y << "\n";
             ambient::cout << "Block size " << size.x << "x" << size.y << "\n";
-
-            void *array[10];
-            size_t size = backtrace(array, 10);
-            backtrace_symbols_fd(array, size, 2);
+            AMBIENT_TRACE
         }
         #endif
         int n = size.x;

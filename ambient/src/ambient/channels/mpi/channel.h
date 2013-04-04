@@ -63,8 +63,7 @@ namespace ambient { namespace channels { namespace mpi {
         request* get(transformable* v);
         request* set(transformable* v, int rank);
         bool  test(request* r);
-        void  replicate(vbp& p);
-        void  broadcast(vbp& p, bool root);
+
         void  emit(packet* p);
         void  spin();
        ~channel();

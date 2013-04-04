@@ -1,8 +1,6 @@
 #include "ambient/utils/io.hpp"
 #include "ambient/utils/timings.hpp"
 
-#define CONTROLLER_CHAINS_RESERVE 65536
-
 namespace ambient { namespace controllers { namespace velvet {
 
     using ambient::channels::mpi::packet_t;
@@ -12,8 +10,8 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline controller::controller()
     {
-        this->stack_m.reserve(CONTROLLER_CHAINS_RESERVE);
-        this->stack_s.reserve(CONTROLLER_CHAINS_RESERVE);
+        this->stack_m.reserve(AMBIENT_STACK_RESERVE);
+        this->stack_s.reserve(AMBIENT_STACK_RESERVE);
         this->chains = &this->stack_m;
         this->mirror = &this->stack_s;
         ambient::channel.init();
