@@ -6,10 +6,6 @@
 #include "utils/io.hpp"
 #include <alps/hdf5.hpp>
 
-#ifndef RVALUE
-#define RVALUE
-#endif
-
 namespace ambient { namespace numeric {
 
     template <class T>

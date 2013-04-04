@@ -1,10 +1,6 @@
 #ifndef AMBIENT_UTILS_AUXILIARY
 #define AMBIENT_UTILS_AUXILIARY
 
-#ifdef AMBIENT_TRACE_SYNC
-#include <execinfo.h>
-#endif
-
 namespace ambient {
 
     inline void persist(history* o){ 
@@ -25,11 +21,6 @@ namespace ambient {
     }
 
     inline void sync(){ 
-#ifdef AMBIENT_TRACE_SYNC
-        void *array[10];
-        size_t size = backtrace(array, 10);
-        backtrace_symbols_fd(array, size, 2);
-#endif
         controller.flush();
         controller.clear();  
         bulk.drop();

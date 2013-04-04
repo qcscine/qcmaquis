@@ -134,20 +134,6 @@ namespace ambient { namespace channels { namespace mpi {
         return false;
     }
 
-    inline void channel::replicate(vbp& p){
-        //pipe* queue = this->get_pipe(p->get_t(), pipe::OUT);
-        //queue->send(queue->attach_request(&p));
-    }
-
-    inline void channel::broadcast(vbp& p, bool root){
-        if(!root){ replicate(p); return; }
-        for(int i = 0; i < world->size; i++){
-            if(i == ambient::rank()) continue;
-            p.dest = (double)i;
-            replicate(p);
-        }
-    }
-
     inline void channel::emit(packet* p){
         packet* pk = static_cast<packet*>(p);
         if(pk->get<int>(A_DEST_FIELD) == ambient::rank()){

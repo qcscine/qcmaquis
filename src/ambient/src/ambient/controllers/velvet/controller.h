@@ -4,7 +4,6 @@
 #include "ambient/controllers/velvet/cfunctor.h"
 #include "ambient/controllers/velvet/iteratable.h"
 #include "ambient/utils/collector.h"
-#include <stack>
 
 namespace ambient { namespace controllers { namespace velvet {
 

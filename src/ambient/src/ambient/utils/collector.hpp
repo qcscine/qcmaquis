@@ -1,14 +1,11 @@
-#define COLLECTOR_STR_RESERVE 65536
-#define COLLECTOR_RAW_RESERVE 1024
-
 namespace ambient{
 
     using ambient::models::velvet::history;
     using ambient::models::velvet::revision;
 
     inline collector::collector(){
-        this->str.reserve(COLLECTOR_STR_RESERVE);
-        this->raw.reserve(COLLECTOR_RAW_RESERVE);
+        this->str.reserve(AMBIENT_COLLECTOR_STR_RESERVE);
+        this->raw.reserve(AMBIENT_COLLECTOR_RAW_RESERVE);
     }
 
     inline void collector::push_back(void* o){
@@ -40,7 +37,7 @@ namespace ambient{
     }
 
     inline void collector::delete_ptr::operator()( void* e ) const {
-        ambient::pool.free<FUTURE_SIZE>(e);
+        ambient::pool.free<AMBIENT_FUTURE_SIZE>(e);
     } 
 
     inline void collector::clear(){
@@ -51,4 +48,3 @@ namespace ambient{
     }
 
 }
-

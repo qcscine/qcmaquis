@@ -8,8 +8,6 @@
 #include "ambient/models/velvet/history.h"
 #include "ambient/models/velvet/transformable.h"
 
-#define MAX_SID 2147483647
-
 namespace ambient { namespace models { namespace velvet {
 
     class model : public singleton< model > {

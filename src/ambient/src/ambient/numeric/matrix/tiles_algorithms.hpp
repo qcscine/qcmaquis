@@ -385,7 +385,7 @@ namespace ambient { namespace numeric {
         resize(r, ak, an);
         
         tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
-        qr(AMBIENT_MOVE(a), AMBIENT_MOVE(t));
+        qr(std::move(a), std::move(t));
         
         // restoring R from A //
         for(int j = 0; j < a.nt; j++)
@@ -400,7 +400,7 @@ namespace ambient { namespace numeric {
         for(int i = 0; i < std::min(a.mt, a.nt); i++)
             fill_identity(q.tile(i,i));
        
-        orgqr(AMBIENT_MOVE(a), AMBIENT_MOVE(q), AMBIENT_MOVE(t)); 
+        orgqr(std::move(a), std::move(q), std::move(t)); 
         resize(q, am, ak);
     }
 
@@ -432,7 +432,7 @@ namespace ambient { namespace numeric {
         resize(q, am, an); // instead of ak
         
         tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
-        lq(AMBIENT_MOVE(a), AMBIENT_MOVE(t));
+        lq(std::move(a), std::move(t));
         
         // restoring L from A //
         for(int j = 0; j < std::min(a.mt, a.nt); ++j)
@@ -447,7 +447,7 @@ namespace ambient { namespace numeric {
         for(int i = 0; i < std::min(a.mt, a.nt); i++)
             fill_identity(q.tile(i,i));
        
-        orglq(AMBIENT_MOVE(a), AMBIENT_MOVE(q), AMBIENT_MOVE(t)); 
+        orglq(std::move(a), std::move(q), std::move(t)); 
         resize(q, ak, an);
     }
 
@@ -747,14 +747,14 @@ namespace ambient { namespace numeric {
                           e.subset(0,  0,  nt, nt),
                           c.subset(nt, nt, nt, nt));
 
-            gemm_strassen(AMBIENT_MOVE(m4), AMBIENT_MOVE(m5),
-                          AMBIENT_MOVE(m1));
+            gemm_strassen(std::move(m4), std::move(m5),
+                          std::move(m1));
             gemm_strassen(d.subset(0,  0,  nt, nt),
                           b.subset(nt, nt, nt, nt),
-                          AMBIENT_MOVE(m2));
+                          std::move(m2));
             gemm_strassen(a.subset(nt, nt, nt, nt),
                           e.subset(nt, 0,  nt, nt),
-                          AMBIENT_MOVE(m3));
+                          std::move(m3));
 
             c.subset(nt, nt, nt, nt) += c.subset(0,  nt, nt, nt);
             c.subset(nt, nt, nt, nt) -= c.subset(nt, 0,  nt, nt);

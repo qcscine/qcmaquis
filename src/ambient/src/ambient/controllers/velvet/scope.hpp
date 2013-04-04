@@ -1,8 +1,6 @@
 #ifndef AMBIENT_INTERFACE_SCOPE
 #define AMBIENT_INTERFACE_SCOPE
 
-#define MEMORY_SWITCH_FACTOR 20480
-
 namespace ambient { 
 
     using ambient::controllers::velvet::controller;
@@ -17,7 +15,7 @@ namespace ambient {
             this->round = ambient::channel.volume;
             this->state = ambient::rank() ? ambient::remote : ambient::local;
             this->sector = 0;
-            this->factor = MEMORY_SWITCH_FACTOR;
+            this->factor = AMBIENT_SCOPE_SWITCH_FACTOR;
             this->op_alloc = 0;
             this->op_transfer = 0;
         }
@@ -34,7 +32,7 @@ namespace ambient {
         virtual void toss(){
             if(this->op_transfer < this->op_alloc){
                 if(this->factor < this->op_alloc){
-                    this->factor = MEMORY_SWITCH_FACTOR;
+                    this->factor = AMBIENT_SCOPE_SWITCH_FACTOR;
                     ++this->sector %= this->round;
                     this->state = (this->sector == ambient::rank()) ? 
                                   ambient::local : ambient::remote;

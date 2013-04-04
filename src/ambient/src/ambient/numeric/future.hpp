@@ -21,7 +21,7 @@ namespace ambient { namespace numeric {
         typedef T value_type;
 
         void init(value_type v = T()){
-            core = new (ambient::pool.malloc<FUTURE_SIZE>()) transformable_value<T>(v);
+            core = new (ambient::pool.malloc<AMBIENT_FUTURE_SIZE>()) transformable_value<T>(v);
             valid = true;
         }
         template<typename S>
@@ -64,20 +64,20 @@ namespace ambient { namespace numeric {
     template<typename T> future<T> operator + (const future<T>& l, const future<T>& r){
         transformable* a = l.core; l.clear();
         transformable* b = r.core; r.clear();
-        return future<T>(new (ambient::pool.malloc<FUTURE_SIZE>()) 
+        return future<T>(new (ambient::pool.malloc<AMBIENT_FUTURE_SIZE>()) 
                          transformable_expr<T, decltype(&ambient::models::velvet::op_plus<T>), 
                                             ambient::models::velvet::op_plus>(a, b)
                         ); 
     }
     #ifdef AMBIENT_LOOSE_FUTURE
     template<typename T> future<T> operator / (const future<T>& l, const future<T>& r){ 
-        return future<T>(new (ambient::pool.malloc<FUTURE_SIZE>()) 
+        return future<T>(new (ambient::pool.malloc<AMBIENT_FUTURE_SIZE>()) 
                          transformable_expr<T, decltype(&ambient::models::velvet::op_div<T>),
                                             ambient::models::velvet::op_div>(l.core, r.core)
                         ); 
     }
     inline future<double> sqrt(const future<double>& f){
-        return future<double>(new (ambient::pool.malloc<FUTURE_SIZE>()) 
+        return future<double>(new (ambient::pool.malloc<AMBIENT_FUTURE_SIZE>()) 
                               transformable_expr<double, decltype(&ambient::models::velvet::op_sqrt<double>),
                               ambient::models::velvet::op_sqrt>(f.core)
                              ); 
@@ -91,8 +91,9 @@ namespace ambient { namespace numeric {
     template<typename T> const future<double>& real(const future<T>& f)                 { return *(future<double>*)&f; }
     template<typename T> std::vector<double> real(const std::vector<future<T> >& f){
         ambient::sync();
-        std::vector<double> res;
-        for(size_t k = 0; k < f.size(); ++k) res.push_back(std::real(f[k].get()));
+        int size = f.size();
+        std::vector<double> res; res.reserve(size);
+        for(size_t k = 0; k < size; ++k) res.push_back(std::real(f[k].get()));
         return res;
     }
 
