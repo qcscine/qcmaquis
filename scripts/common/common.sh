@@ -285,28 +285,32 @@ function run(){
     local target=`lookup ${1}`
     [[ ! -n $target ]] && die "couldn't find the binary      "
 
+    local socketlist="0 1"
+    local proclist="0,1,2,3,4,5,6,7,8,9,10,11"
+    local rank_var="OMPI_COMM_WORLD_NODE_RANK"
+
     [[ ! -z $VALGRIND         ]] && VALGRIND="valgrind --error-limit=no"
     [[ ! -z $CILK_NUM_THREADS ]] && CILK_NUM_THREADS="CILK_NWORKERS=$CILK_NUM_THREADS"
+    [[ ! -z $MPI_NUM_PROCS    ]] && HWLOC="hwloc-bind socket:\${socketlist[\$$rank_var]}" # --mempolicy firsttouch 
     if [ ! -z $OMP_NUM_THREADS  ]; then
-        local proclist="0,1,2,3,4,5,6,7,8,9,10,11"
         [[ $OMP_NUM_THREADS -eq 1  ]] && proclist="0 6 1 7 2 8 3 9 4 10 5 11"
         [[ $OMP_NUM_THREADS -eq 2  ]] && proclist="0,6 1,7 2,3 8,9 4,5 10,11"
         [[ $OMP_NUM_THREADS -eq 3  ]] && proclist="0,1,2 6,7,8 3,4,5 9,10,11"
         [[ $OMP_NUM_THREADS -eq 4  ]] && proclist="0,1,2,3 8,9,10,11 4,5,6,7"
         [[ $OMP_NUM_THREADS -eq 6  ]] && proclist="0,1,2,3,4,5 6,7,8,9,10,11"
-        OMP_NUM_THREADS="OMP_NUM_THREADS=$OMP_NUM_THREADS"
+        OMP_NUM_THREADS="KMP_AFFINITY=verbose,proclist=[\${proclist[\$$rank_var]}],explicit OMP_NUM_THREADS=$OMP_NUM_THREADS"
     fi
     
     local command="$OMP_NUM_THREADS 
-                   $CILK_NUM_THREADS 
+                   $CILK_NUM_THREADS
+                   $HWLOC
                    $VALGRIND 
                    $target $args"; 
 
     if [ ! -z "$MPI_NUM_PROCS" ]; then
-        # todo: hwloc-bind socket:0 --mempolicy firsttouch 
-        local rank_var="OMPI_COMM_WORLD_NODE_RANK"
         command="export proclist=($proclist); 
-                 command=\"KMP_AFFINITY=verbose,proclist=[\${proclist[\$$rank_var]}],explicit $command\"; 
+                 export socketlist=($socketlist); 
+                 command=\"$command\"; 
                  echo \$command;
                  echo
                  eval \$command"
