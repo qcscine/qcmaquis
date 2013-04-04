@@ -15,7 +15,7 @@ namespace ambient { namespace utils {
     class fstream {
     public: 
          fstream(){ 
-             vec_of_list_tiles_ = std::vector<std::list< boost::tuple<void*, size_t, size_t> > >(AMBIENT_NUM_THREADS); // idea : each thread saves in a seperate list, I avoid mutex
+             vec_of_list_tiles_ = std::vector<std::list< boost::tuple<void*, size_t, size_t> > >(ambient::get_num_threads()); // idea : each thread saves in a seperate list, I avoid mutex
          };
 
          void sort(std::list<boost::tuple<void*, size_t, size_t> >& full_list_tiles){

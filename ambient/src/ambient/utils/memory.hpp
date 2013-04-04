@@ -52,7 +52,7 @@ namespace ambient { namespace memory {
         // boost::details::pool::guard<mutex> g(mtx);
     public:
         bulk(){
-            this->arity = AMBIENT_NUM_THREADS;
+            this->arity = ambient::get_num_threads();
             this->set   = new region<BULK>[arity];
         }
        ~bulk(){
@@ -87,7 +87,7 @@ namespace ambient { namespace memory {
         struct empty {};
     public:
         pool(){
-            this->arity = AMBIENT_NUM_THREADS;
+            this->arity = ambient::get_num_threads();
         }
        ~pool(){
         }
