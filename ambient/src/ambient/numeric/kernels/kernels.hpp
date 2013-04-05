@@ -212,8 +212,8 @@ namespace ambient { namespace numeric { namespace kernels {
         double* tau  = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB>(); 
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dgeqrt(a.num_rows(), a.num_cols(), PLASMA_IB,
-                    (double*)s_updated(a), a.num_rows(),
-                    (double*)updated(t),   t.num_rows(), 
+                    (double*)revised(a), a.num_rows(),
+                    (double*)updated(t), t.num_rows(), 
                     tau, work);
     }
 
@@ -224,7 +224,7 @@ namespace ambient { namespace numeric { namespace kernels {
                     c.num_rows(), c.num_cols(), k, PLASMA_IB,
                     (double*)current(a), a.num_rows(),
                     (double*)current(t), t.num_rows(),
-                    (double*)s_updated(c), c.num_rows(),
+                    (double*)revised(c), c.num_rows(),
                     work, AMBIENT_IB);
     }
 
@@ -233,9 +233,9 @@ namespace ambient { namespace numeric { namespace kernels {
         double* tau  = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB>();
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dtsqrt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
-                    (double*)s_updated(a1), a1.num_rows(),
-                    (double*)s_updated(a2), a2.num_rows(),
-                    (double*)updated(t),     t.num_rows(),
+                    (double*)revised(a1), a1.num_rows(),
+                    (double*)revised(a2), a2.num_rows(),
+                    (double*)updated(t), t.num_rows(),
                     tau, work);
     }
 
@@ -244,8 +244,8 @@ namespace ambient { namespace numeric { namespace kernels {
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dtsmqr(PlasmaLeft, TR,
                     AMBIENT_IB, a1.num_cols(), a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
-                    (double*)s_updated(a1), a1.num_rows(),
-                    (double*)s_updated(a2), a2.num_rows(),
+                    (double*)revised(a1), a1.num_rows(),
+                    (double*)revised(a2), a2.num_rows(),
                     (double*)current(v), v.num_rows(),
                     (double*)current(t), t.num_rows(),
                     work, PLASMA_IB);
@@ -256,8 +256,8 @@ namespace ambient { namespace numeric { namespace kernels {
         double* tau  = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB>();
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dgelqt(a.num_rows(), a.num_cols(), PLASMA_IB,
-                    (double*)s_updated(a), a.num_rows(), 
-                    (double*)updated(t),   t.num_rows(),
+                    (double*)revised(a), a.num_rows(), 
+                    (double*)updated(t), t.num_rows(),
                     tau, work);
     }
 
@@ -268,7 +268,7 @@ namespace ambient { namespace numeric { namespace kernels {
                     c.num_rows(), c.num_cols(), k, PLASMA_IB,
                     (double*)current(a), a.num_rows(),
                     (double*)current(t), t.num_rows(),
-                    (double*)s_updated(c), c.num_rows(),
+                    (double*)revised(c), c.num_rows(),
                     work, AMBIENT_IB);
     }
 
@@ -277,9 +277,9 @@ namespace ambient { namespace numeric { namespace kernels {
         double* tau  = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB>();
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dtslqt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
-                    (double*)s_updated(a1), a1.num_rows(),
-                    (double*)s_updated(a2), a2.num_rows(),
-                    (double*)updated(t),     t.num_rows(),
+                    (double*)revised(a1), a1.num_rows(),
+                    (double*)revised(a2), a2.num_rows(),
+                    (double*)updated(t), t.num_rows(),
                     tau, work);
     }
 
@@ -288,8 +288,8 @@ namespace ambient { namespace numeric { namespace kernels {
         double* work = (double*)ambient::bulk.malloc<sizeof(T)*AMBIENT_IB*PLASMA_IB>();
         CORE_dtsmlq(PlasmaRight, TR,
                     a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
-                    (double*)s_updated(a1), a1.num_rows(),
-                    (double*)s_updated(a2), a2.num_rows(),
+                    (double*)revised(a1), a1.num_rows(),
+                    (double*)revised(a2), a2.num_rows(),
                     (double*)current(v), v.num_rows(),
                     (double*)current(t), t.num_rows(),
                     work, AMBIENT_IB);
@@ -297,8 +297,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<class ViewA, class ViewB, typename T>
     void gemm<ViewA, ViewB, T>::c(const matrix<T>& a, const matrix<T>& b, unbound< matrix<T> >& c){
-        if(!naked(a).valid() || !naked(b).valid()){
-            (T*)p_updated(c);
+        if(!raw(a).valid() || !raw(b).valid()){
+            emptied(c);
             return;
         }
         T* ad = current(a);
@@ -321,7 +321,7 @@ namespace ambient { namespace numeric { namespace kernels {
         int size = b.num_cols();
         int ONE  = 1;
         T* bd = current(b);
-        T* cd = p_updated(c);
+        T* cd = emptied(c);
         T* alpha = current(a_diag);
     
         for(int k = 0 ; k < sizey; k++){
@@ -331,10 +331,9 @@ namespace ambient { namespace numeric { namespace kernels {
         
     template<typename T, typename D>
     void gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D>::c(const matrix<D>& a_diag, const matrix<T>& b, unbound< matrix<T> >& c){
-        printf("Special DIAGONAL!\n");
         size_t sizex = b.num_cols();
         int size  = a_diag.num_rows();
-        T* cd = p_updated(c);
+        T* cd = emptied(c);
         T* alpha = current(a_diag);
     
         for(int k = 0 ; k < sizex; k++){
@@ -348,7 +347,7 @@ namespace ambient { namespace numeric { namespace kernels {
         int size = a.num_rows(); // for the case of complex
         int ONE = 1;
         T* ad = current(a);
-        T* cd = p_updated(c);
+        T* cd = emptied(c);
     	T* alpha = current(b_diag);
     
         for(int k = 0 ; k < sizex; k++){
@@ -358,12 +357,11 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T, typename D>
     void gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D>::c(const matrix<T>& a, const matrix<D>& b_diag, unbound< matrix<T> >& c){
-        printf("Special DIAGONAL!\n");
         int sizey = b_diag.num_rows();
         int size = a.num_cols();
         int ONE = 1;
         T* ad = current(a);
-        T* cd = p_updated(c);
+        T* cd = emptied(c);
     	T* alpha = current(b_diag);
     
         for(int k = 0 ; k < sizey; k++){
@@ -374,7 +372,7 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     void copy_rt<T>::c(const matrix<T>& a, unbound< matrix<T> >& t){
         T* ad  = current(a);
-        T* td  = p_updated(t);
+        T* td  = emptied(t);
         size_t sda = a.num_cols();
         size_t lda = a.num_rows();
         size_t ldt = t.num_rows();
@@ -387,7 +385,7 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     void copy_lt<T>::c(const matrix<T>& a, unbound< matrix<T> >& t){
         T* ad  = current(a);
-        T* td  = p_updated(t);
+        T* td  = emptied(t);
         size_t sdt = t.num_cols();
         size_t lda = a.num_rows();
         size_t ldt = t.num_rows();
@@ -403,7 +401,7 @@ namespace ambient { namespace numeric { namespace kernels {
                             const size_t& m, const size_t& n)
     {
         T* sd = current(src);
-        T* dd = m*n < ambient::square_dim(dst) ? (T*)s_updated(dst) : (T*)updated(dst);
+        T* dd = m*n < ambient::square_dim(dst) ? revised(dst) : updated(dst);
         ambient::memptf<T, ambient::memcpy>(dd, dst.num_rows(), dim2(dj, di), 
                                             sd, src.num_rows(), dim2(sj, si), 
                                             dim2( n, m ));
@@ -416,7 +414,7 @@ namespace ambient { namespace numeric { namespace kernels {
                             const size_t& m, const size_t& n)
     {
         T* sd = current(src);
-        T* dd = m*n < ambient::square_dim(dst) ? (T*)s_updated(dst) : (T*)updated(dst);
+        T* dd = m*n < ambient::square_dim(dst) ? revised(dst) : updated(dst);
         T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
         ambient::memptf<T, ambient::memscal>(dd, dst.num_rows(), dim2(dj, di), 
                                              sd, src.num_rows(), dim2(sj, si), 
@@ -430,7 +428,7 @@ namespace ambient { namespace numeric { namespace kernels {
                              const size_t& m, const size_t& n)
     {
         T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
-        ambient::memptf<T, ambient::memscala>(s_updated(dst), dst.num_rows(), dim2(dj, di), 
+        ambient::memptf<T, ambient::memscala>(revised(dst), dst.num_rows(), dim2(dj, di), 
                                               current(src), src.num_rows(), dim2(sj, si), 
                                               dim2( n, m ), factor);
     }
@@ -496,7 +494,7 @@ namespace ambient { namespace numeric { namespace kernels {
     template<typename T>
     void scale_offset<T>::c(matrix<T>& a, const size_t& ai, const size_t& aj, const matrix<T>& alfa, const size_t& alfai){
         int m = num_rows(a);
-        T* ad = &((T*)s_updated(a))[aj*m];
+        T* ad = &((T*)revised(a))[aj*m];
         T factor = ((T*)current(alfa))[alfai];
         for(int k = ai; k < m; k++) ad[k] *= factor;
     }
@@ -542,7 +540,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void resize<T>::c(unbound< matrix<T> >& r, const matrix<T>& a, const size_t& m, const size_t& n){
-        T* dd = m*n == ambient::square_dim(r) ? (T*)updated(r) : (T*)p_updated(r);
+        T* dd = m*n == ambient::square_dim(r) ? updated(r) : emptied(r);
         ambient::memptf<T, ambient::memcpy>(dd, r.num_rows(), dim2(0,0),
                                             current(a), a.num_rows(), dim2(0,0), dim2(n, m)); 
     }
@@ -551,7 +549,7 @@ namespace ambient { namespace numeric { namespace kernels {
     void init_identity<T>::c(unbound< matrix<T> >& a){
         size_t n = a.num_cols();
         size_t m = a.num_rows();
-        T* ad = p_updated(a);
+        T* ad = emptied(a);
 
         size_t sizex = std::min(m,n); // respecting borders
         for(size_t jj = 0; jj < sizex; ++jj) ad[jj + m*jj] = 1.;
@@ -699,7 +697,7 @@ namespace ambient { namespace numeric { namespace kernels {
             wd[i] = wd[m-i-1];
             wd[m-i-1] = s;
         } 
-        // Second we reverse the eigenvectors
+        // reversing eigenvectors
         size_t len = m*sizeof(T);
         work = (T*)realloc(work, len);
         for (int i=0; i < (int)(m/2); i++){ 
