@@ -85,7 +85,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T, PLASMA_enum UL, size_t OFF>
     void laset2<T,UL,OFF>::c(matrix<T>& a, const double& alfa){
-        double* ad = (double*)s_updated(a);
+        double* ad = revised(a);
         CORE_dlaset2(UL, a.num_rows()-OFF, a.num_cols()-OFF, alfa, ad + OFF*a.num_rows(), a.num_rows());
     }
 
@@ -111,12 +111,12 @@ namespace ambient { namespace numeric { namespace kernels {
         int ri = m-i;
         int rj = n-i-1;
 
-        T* sayd = s_updated(say); int ldsay = say.num_rows();
-        T* saxd = current(sax);   int ldsax = sax.num_rows();
-        T* syd  = s_updated(sy);  int ldsy = sy.num_rows();
-        T* sxd  = current(sx);    int ldsx = sx.num_rows();
-        T* tqd  = s_updated(tq);
-        T* dd   = s_updated(d);
+        T* sayd = revised(say); int ldsay = say.num_rows();
+        T* saxd = current(sax); int ldsax = sax.num_rows();
+        T* syd  = revised(sy);  int ldsy = sy.num_rows();
+        T* sxd  = current(sx);  int ldsx = sx.num_rows();
+        T* tqd  = revised(tq);
+        T* dd   = revised(d);
         
         if(i == 0){
             helper_lapack<T>::larfg(&ri, sayd, &sayd[1], &lone, tqd);
@@ -150,10 +150,10 @@ namespace ambient { namespace numeric { namespace kernels {
         int rj = n-i-1;
         int ari = AMBIENT_IB-i-1;
 
-        T* sayd = s_updated(say); int ldsay = say.num_rows();
-        T* saxd = current(sax);   int ldsax = sax.num_rows();
-        T* syd  = s_updated(sy);  int ldsy = sy.num_rows();
-        T* sxd  = current(sx);    int ldsx = sx.num_rows();
+        T* sayd = revised(say); int ldsay = say.num_rows();
+        T* saxd = current(sax); int ldsax = sax.num_rows();
+        T* syd  = revised(sy);  int ldsy = sy.num_rows();
+        T* sxd  = current(sx);  int ldsx = sx.num_rows();
         
         helper_blas<T>::gemv("T", &ri, &ari, &one, &sayd[i + (i+1)*ldsay], &ldsay, &sayd[i+i*ldsay], &lone, &zero, &syd[i+1 + i*ldsy], &lone); // part of big gemv
 
@@ -178,12 +178,12 @@ namespace ambient { namespace numeric { namespace kernels {
         int rij = m-i-1;
         int r3  = i+1;
 
-        T* sayd = current(say);     int ldsay = say.num_rows();
-        T* saxd = s_updated(sax);   int ldsax = sax.num_rows();
-        T* syd  = current(sy);      int ldsy = sy.num_rows();
-        T* sxd  = s_updated(sx);    int ldsx = sx.num_rows();
-        T* tpd  = s_updated(tp);
-        T* ed   = s_updated(e);
+        T* sayd = current(say); int ldsay = say.num_rows();
+        T* saxd = revised(sax); int ldsax = sax.num_rows();
+        T* syd  = current(sy);  int ldsy = sy.num_rows();
+        T* sxd  = revised(sx);  int ldsx = sx.num_rows();
+        T* tpd  = revised(tp);
+        T* ed   = revised(e);
         
         ambient::memptf<T, ambient::memcpy>(saxd, ldsax, dim2(i, i), 
                                             sayd, ldsay, dim2(i, i), 
@@ -212,10 +212,10 @@ namespace ambient { namespace numeric { namespace kernels {
         int r3  = i+1;
         int ari = AMBIENT_IB-i-1;
 
-        T* sayd = current(say);     int ldsay = say.num_rows();
-        T* saxd = s_updated(sax);   int ldsax = sax.num_rows();
-        T* syd  = current(sy);      int ldsy = sy.num_rows();
-        T* sxd  = s_updated(sx);    int ldsx = sx.num_rows();
+        T* sayd = current(say); int ldsay = say.num_rows();
+        T* saxd = revised(sax); int ldsax = sax.num_rows();
+        T* syd  = current(sy);  int ldsy = sy.num_rows();
+        T* sxd  = revised(sx);  int ldsx = sx.num_rows();
         
         helper_blas<T>::gemv("T", &rj, &r3, &one, &syd[i+1], &ldsy, &saxd[i+(i+1)*ldsax], &ldsax, &zero, &sxd[i*ldsx], &lone);
         helper_blas<T>::gemv("N", &rij, &r3, &mone, &sayd[i+1], &ldsay, &sxd[i*ldsx], &lone, &zero, &sxd[i+1+i*ldsx], &lone);
@@ -233,9 +233,9 @@ namespace ambient { namespace numeric { namespace kernels {
         T* alfa;
         T* x;
         
-        T* ad = (T*)s_updated(a);
-        T* td = (T*)s_updated(t);
-        T* dd = (T*)s_updated(d);
+        T* ad = revised(a);
+        T* td = revised(t);
+        T* dd = revised(d);
 
         if(TR == PlasmaNoTrans){
             alfa = &ad[k + k*a.num_rows()];
@@ -263,7 +263,7 @@ namespace ambient { namespace numeric { namespace kernels {
         int info;
 
         T* work = (T*)malloc(std::max(m,n)*sizeof(T));
-        helper_lapack<T>::gebd2(&m, &n, (T*)s_updated(a), &lda, (T*)updated(d), (T*)updated(e), (T*)updated(tq), (T*)updated(tp), work, &info);
+        helper_lapack<T>::gebd2(&m, &n, (T*)revised(a), &lda, (T*)updated(d), (T*)updated(e), (T*)updated(tq), (T*)updated(tp), work, &info);
         free(work);
     }
 
@@ -351,16 +351,16 @@ namespace ambient { namespace numeric { namespace kernels {
         int info;
         
         T* work = (T*)malloc(n*4*sizeof(T));
-        helper_lapack<T>::bdsqr("U", &n, &nv, &mu, &zero, (T*)s_updated(d), (T*)s_updated(e), 
-                (T*)s_updated(v), &mv, (T*)s_updated(u), &mu, NULL, &one, work, &info); free(work);
+        helper_lapack<T>::bdsqr("U", &n, &nv, &mu, &zero, (T*)revised(d), (T*)revised(e), 
+                (T*)revised(v), &mv, (T*)revised(u), &mu, NULL, &one, work, &info); free(work);
         // Uncomment for dc numerically loose algorithm:
-        // LAPACKE_dbdsdc(102, 'U', 'N', n, (T*)s_updated(d), (T*)s_updated(e),  (T*)s_updated(u), one, (T*)s_updated(v), one, NULL, NULL);
+        // LAPACKE_dbdsdc(102, 'U', 'N', n, (T*)revised(d), (T*)revised(e),  (T*)revised(u), one, (T*)revised(v), one, NULL, NULL);
     }
 
     template<typename T, PLASMA_enum UL>
     void copy_band<T,UL>::c(const matrix<T>& src, matrix<T>& dst, const size_t& dj){
-        T* sd = (T*)current(src);
-        T* dd = (T*)s_updated(dst);
+        T* sd = current(src);
+        T* dd = revised(dst);
         size_t ldd = dst.num_rows();
         size_t m = src.num_rows();
         size_t n = src.num_cols();
@@ -388,7 +388,7 @@ namespace ambient { namespace numeric { namespace kernels {
         T* ad = current(a);
         T* bd = current(b);
         T* fd = current(f);
-        T* cd = s_updated(c);
+        T* cd = revised(c);
         int lda = num_rows(a);
         int ldb = VB::inc(b);
         int ldc = VC::inc(c);
@@ -410,7 +410,7 @@ namespace ambient { namespace numeric { namespace kernels {
     {
         T* ad = current(a);
         T* bd = current(b);
-        T* cd = s_updated(c);
+        T* cd = revised(c);
         int lda = num_rows(a);
         int ldb = ViewB::inc(b);
         int ldc = ViewC::inc(c);

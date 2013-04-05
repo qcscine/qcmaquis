@@ -146,25 +146,11 @@ namespace ambient { namespace numeric {
     
     template <typename T>
     matrix<T>& matrix<T>::operator = (const matrix& rhs){
-        //assert(!rhs.core->weak()); // can be optimized if weak
+        assert(!rhs.core->weak()); // can be optimized if weak
         matrix c(rhs);
         this->swap(c);
         return *this;
     }
-
-#if 0
-    template <typename T>
-    inline matrix<T>::matrix(matrix&& a){
-        printf("ERROR: NOT TESTED (RVALUE COPY)\n");
-        this->core = a.core; // need to clear a.core
-    }
-
-    template <typename T>
-    matrix<T>& matrix<T>::operator = (matrix&& rhs){
-        this->swap(rhs);
-        return *this;
-    }
-#endif
 
     template<typename T>
     template<class M> 
@@ -282,16 +268,12 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline value_type& matrix<T>::operator() (size_type i, size_type j){
-        ambient::model.touch(core);
-        assert(ambient::model.common(r));
-        ambient::sync(); if(!core->current->valid()) ambient::controller.calloc(*core->current); return ((value_type*)*core->current)[ j*core->spec.dim.y + i ];
+        return ((T*)ambient::serial(*this))[ j*lda() + i ];
     }
 
     template<typename T>
     inline const value_type& matrix<T>::operator() (size_type i, size_type j) const {
-        ambient::model.touch(core);
-        assert(ambient::model.common(r));
-        ambient::sync(); if(!core->current->valid()) ambient::controller.calloc(*core->current); return ((value_type*)*core->current)[ j*core->spec.dim.y + i ];
+        return ((T*)ambient::serial(*this))[ j*lda() + i ];
     }
 
     template<typename T>
