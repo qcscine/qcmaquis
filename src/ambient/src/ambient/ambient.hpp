@@ -74,7 +74,8 @@ namespace ambient {
     }
     enum complexity { N, N2, N3 };
     enum locality   { remote, local, common };
-    enum scope_t    { base, single, shared };
+    enum scope_t    { base, single, shared  };
+    enum memory_t   { staged, normal, leak  };
 }
 
 #include "ambient/utils/memory.hpp"
@@ -85,4 +86,5 @@ namespace ambient {
 #include "ambient/utils/io.hpp"
 #include "ambient/interface/typed.hpp"
 #include "ambient/interface/kernel.hpp"
+#include "ambient/interface/access.hpp"
 #endif

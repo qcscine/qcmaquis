@@ -7,8 +7,8 @@
 #include "ambient/utils/numeric.h"
 
 namespace ambient { namespace numeric { namespace kernels {
+    using ambient::unbound;
     using ambient::numeric::matrix;
-    using ambient::numeric::weak_view;
     using maquis::traits::real_type;
 
     template<typename T> 
@@ -45,23 +45,23 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<class ViewA, class ViewB, typename T>
     struct gemm : public kernel< gemm<ViewA, ViewB, T> > 
-    { static void c(const matrix<T>& a, const matrix<T>& b, weak_view<T>& c); };
+    { static void c(const matrix<T>& a, const matrix<T>& b, unbound< matrix<T> >& c); };
         
     template<class ViewB, typename T, typename D>
     struct gemm_diagonal_lhs : public kernel< gemm_diagonal_lhs<ViewB,T,D> > 
-    { static void c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c); };
+    { static void c(const matrix<D>& a_diag, const matrix<T>& b, unbound< matrix<T> >& c); };
         
     template<typename T, typename D>
     struct gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D> : public kernel< gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D> > 
-    { static void c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c); };
+    { static void c(const matrix<D>& a_diag, const matrix<T>& b, unbound< matrix<T> >& c); };
         
     template<class ViewA, typename T, typename D>
     struct gemm_diagonal_rhs : public kernel< gemm_diagonal_rhs<ViewA,T,D> > 
-    { static void c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c); };
+    { static void c(const matrix<T>& a, const matrix<D>& b_diag, unbound< matrix<T> >& c); };
 
     template<typename T, typename D>
     struct gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D> : public kernel< gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D> > 
-    { static void c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c); };
+    { static void c(const matrix<T>& a, const matrix<D>& b_diag, unbound< matrix<T> >& c); };
         
     template<typename T>
     struct trace : public kernel< trace<T> > 
@@ -105,19 +105,19 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     struct transpose_out : public kernel< transpose_out<T> > 
-    { static void c(const matrix<T>& a, weak_view<T>& t); };
+    { static void c(const matrix<T>& a, unbound< matrix<T> >& t); };
 
     template<typename T>
     struct resize : public kernel< resize<T> > 
-    { static void c(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n); };
+    { static void c(unbound< matrix<T> >& r, const matrix<T>& a, const size_t& m, const size_t& n); };
         
     template<typename T>
     struct init_identity : public kernel< init_identity<T> > 
-    { static void c(weak_view<T>& a); };
+    { static void c(unbound< matrix<T> >& a); };
         
     template<typename T>
     struct init_value : public kernel< init_value<T> > 
-    { static void c(weak_view<T>& a, const T& value); };
+    { static void c(unbound< matrix<T> >& a, const T& value); };
         
     template<typename T>
     struct round_square : public kernel< round_square<T> > 
@@ -145,19 +145,19 @@ namespace ambient { namespace numeric { namespace kernels {
     
     template<typename T>
     struct svd : public kernel< svd<T> > 
-    { static void c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<typename real_type<T>::type>& s); };
+    { static void c(const matrix<T>& a, unbound< matrix<T> >& u, unbound< matrix<T> >& vt, unbound< matrix<typename real_type<T>::type> >& s); };
 
     template<typename T>
     struct heev : public kernel< heev<T> > 
-    { static void c(matrix<T>& a, weak_view<typename real_type<T>::type>& w); };
+    { static void c(matrix<T>& a, unbound< matrix<typename real_type<T>::type> >& w); };
 
     template<typename T>
     struct copy_rt : public kernel< copy_rt<T> > 
-    { static void c(const matrix<T>& a, weak_view<T>& t); };
+    { static void c(const matrix<T>& a, unbound< matrix<T> >& t); };
 
     template<typename T>
     struct copy_lt : public kernel< copy_lt<T> > 
-    { static void c(const matrix<T>& a, weak_view<T>& t); };
+    { static void c(const matrix<T>& a, unbound< matrix<T> >& t); };
 
     template<typename T>
     struct copy_block : public kernel< copy_block<T> > {
@@ -186,7 +186,7 @@ namespace ambient { namespace numeric { namespace kernels {
     struct init_random : public kernel< init_random<T> > {
         static void randomize(double& a);
         static void randomize(std::complex<double>& a);
-        static void c(weak_view<T>& a);
+        static void c(unbound< matrix<T> >& a);
     };
 
     template<typename T>
@@ -296,7 +296,7 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<class ViewA, class ViewB, typename T>
-    void gemm<ViewA, ViewB, T>::c(const matrix<T>& a, const matrix<T>& b, weak_view<T>& c){
+    void gemm<ViewA, ViewB, T>::c(const matrix<T>& a, const matrix<T>& b, unbound< matrix<T> >& c){
         if(!naked(a).valid() || !naked(b).valid()){
             (T*)p_updated(c);
             return;
@@ -316,7 +316,7 @@ namespace ambient { namespace numeric { namespace kernels {
     }
         
     template<class ViewB, typename T, typename D>
-    void gemm_diagonal_lhs<ViewB,T,D>::c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
+    void gemm_diagonal_lhs<ViewB,T,D>::c(const matrix<D>& a_diag, const matrix<T>& b, unbound< matrix<T> >& c){
         int sizey = a_diag.num_rows();
         int size = b.num_cols();
         int ONE  = 1;
@@ -330,7 +330,7 @@ namespace ambient { namespace numeric { namespace kernels {
     }
         
     template<typename T, typename D>
-    void gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D>::c(const matrix<D>& a_diag, const matrix<T>& b, weak_view<T>& c){
+    void gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D>::c(const matrix<D>& a_diag, const matrix<T>& b, unbound< matrix<T> >& c){
         printf("Special DIAGONAL!\n");
         size_t sizex = b.num_cols();
         int size  = a_diag.num_rows();
@@ -343,7 +343,7 @@ namespace ambient { namespace numeric { namespace kernels {
     }
         
     template<class ViewA, typename T, typename D>
-    void gemm_diagonal_rhs<ViewA,T,D>::c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
+    void gemm_diagonal_rhs<ViewA,T,D>::c(const matrix<T>& a, const matrix<D>& b_diag, unbound< matrix<T> >& c){
         size_t sizex = b_diag.num_rows();
         int size = a.num_rows(); // for the case of complex
         int ONE = 1;
@@ -357,7 +357,7 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T, typename D>
-    void gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D>::c(const matrix<T>& a, const matrix<D>& b_diag, weak_view<T>& c){
+    void gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D>::c(const matrix<T>& a, const matrix<D>& b_diag, unbound< matrix<T> >& c){
         printf("Special DIAGONAL!\n");
         int sizey = b_diag.num_rows();
         int size = a.num_cols();
@@ -372,7 +372,7 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T>
-    void copy_rt<T>::c(const matrix<T>& a, weak_view<T>& t){
+    void copy_rt<T>::c(const matrix<T>& a, unbound< matrix<T> >& t){
         T* ad  = current(a);
         T* td  = p_updated(t);
         size_t sda = a.num_cols();
@@ -385,7 +385,7 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T>
-    void copy_lt<T>::c(const matrix<T>& a, weak_view<T>& t){
+    void copy_lt<T>::c(const matrix<T>& a, unbound< matrix<T> >& t){
         T* ad  = current(a);
         T* td  = p_updated(t);
         size_t sdt = t.num_cols();
@@ -528,7 +528,7 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T>
-    void transpose_out<T>::c(const matrix<T>& a, weak_view<T>& t){
+    void transpose_out<T>::c(const matrix<T>& a, unbound< matrix<T> >& t){
         T* od = current(a);
         T* td = updated(t);
         int m = a.num_rows();
@@ -541,14 +541,14 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T>
-    void resize<T>::c(weak_view<T>& r, const matrix<T>& a, const size_t& m, const size_t& n){
+    void resize<T>::c(unbound< matrix<T> >& r, const matrix<T>& a, const size_t& m, const size_t& n){
         T* dd = m*n == ambient::square_dim(r) ? (T*)updated(r) : (T*)p_updated(r);
         ambient::memptf<T, ambient::memcpy>(dd, r.num_rows(), dim2(0,0),
                                             current(a), a.num_rows(), dim2(0,0), dim2(n, m)); 
     }
         
     template<typename T>
-    void init_identity<T>::c(weak_view<T>& a){
+    void init_identity<T>::c(unbound< matrix<T> >& a){
         size_t n = a.num_cols();
         size_t m = a.num_rows();
         T* ad = p_updated(a);
@@ -569,14 +569,14 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T>
-    void init_random<T>::c(weak_view<T>& a){
+    void init_random<T>::c(unbound< matrix<T> >& a){
         size_t size = ambient::square_dim(a);
         T* ad = updated(a);
         for(size_t i = 0; i < size; ++i) randomize(ad[i]);
     }
         
     template<typename T>
-    void init_value<T>::c(weak_view<T>& a, const T& value){
+    void init_value<T>::c(unbound< matrix<T> >& a, const T& value){
         size_t size = ambient::square_dim(a);
         T* ad = updated(a);
         for(size_t i = 0; i < size; ++i) ad[i] = value; // not a memset due to complex
@@ -666,7 +666,7 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T>
-    void svd<T>::c(const matrix<T>& a, weak_view<T>& u, weak_view<T>& vt, weak_view<typename real_type<T>::type>& s){
+    void svd<T>::c(const matrix<T>& a, unbound< matrix<T> >& u, unbound< matrix<T> >& vt, unbound< matrix<typename real_type<T>::type> >& s){
         int m = a.num_rows();
         int n = a.num_cols();
         int k = std::min(m,n);
@@ -681,7 +681,7 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T>
-    void heev<T>::c(matrix<T>& a, weak_view<typename real_type<T>::type>& w){
+    void heev<T>::c(matrix<T>& a, unbound< matrix<typename real_type<T>::type> >& w){
         int m = a.num_rows();
         int info, lwork = -1;
         T wkopt;

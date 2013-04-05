@@ -2,7 +2,6 @@
 #define AMBIENT_CONTROLLERS_VELVET_CONTROLLER
 
 #include "ambient/controllers/velvet/cfunctor.h"
-#include "ambient/controllers/velvet/iteratable.h"
 #include "ambient/utils/collector.h"
 
 namespace ambient { namespace controllers { namespace velvet {
@@ -70,6 +69,5 @@ namespace ambient {
 #include "ambient/controllers/velvet/scope.hpp"
 #include "ambient/controllers/velvet/controller.hpp"
 #include "ambient/utils/collector.hpp"
-#include "ambient/controllers/velvet/iteratable.hpp"
 #include "ambient/controllers/velvet/cfunctor.hpp"
 #endif

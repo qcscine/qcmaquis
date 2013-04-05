@@ -8,9 +8,6 @@
 
 namespace ambient { namespace numeric {
 
-    template <class T>
-    class weak_view;
-
     template <typename T>
     class matrix {
     public:
@@ -65,7 +62,6 @@ namespace ambient { namespace numeric {
         void load(alps::hdf5::archive & ar){};
         void save(alps::hdf5::archive & ar)const{};
         static const char* code();
-        operator weak_view<T>& (){ return *(weak_view<T>*)this; }
     public:
         ptr core;
         size_t ref;
@@ -89,12 +85,6 @@ namespace ambient { namespace numeric {
         operator Matrix& () const { return *(Matrix*)m; }
         ptr core;
         const Matrix* m;
-    };
-
-    template <class T>
-    class weak_view : public matrix<T> {
-    public:
-        weak_view(const typename matrix<T>::ptr& p, size_t r) : matrix<T>(p, r) {}
     };
 
     template <class Matrix>

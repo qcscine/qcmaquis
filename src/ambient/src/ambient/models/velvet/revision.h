@@ -24,7 +24,6 @@ namespace ambient { namespace models { namespace velvet {
         bool valid();
 
         size_t    extent;
-        revision* parent;
         void*     generator;
         void*     transfer;
         void*     data;
