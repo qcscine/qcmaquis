@@ -23,10 +23,10 @@ module load ${COMPILER}/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load ${CMAKE}
 ## common ##
-MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
-MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
-#MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
-#MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
+#MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
+#MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
+MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
+MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
 MAQUIS_COMMON_CMAKE_C_COMPILER=mpicc
 MAQUIS_COMMON_CMAKE_CXX_COMPILER=mpicxx
 MAQUIS_COMMON_MPI_CXX_FOUND=FALSE

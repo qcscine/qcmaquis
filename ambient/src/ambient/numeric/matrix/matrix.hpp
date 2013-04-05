@@ -284,14 +284,14 @@ namespace ambient { namespace numeric {
     inline value_type& matrix<T>::operator() (size_type i, size_type j){
         ambient::model.touch(core);
         assert(ambient::model.common(r));
-        ambient::sync(); return ((value_type*)*(c_revision*)core->current)[ j*core->spec.dim.y + i ];
+        ambient::sync(); if(!core->current->valid()) ambient::controller.calloc(*core->current); return ((value_type*)*core->current)[ j*core->spec.dim.y + i ];
     }
 
     template<typename T>
     inline const value_type& matrix<T>::operator() (size_type i, size_type j) const {
         ambient::model.touch(core);
         assert(ambient::model.common(r));
-        ambient::sync(); return ((value_type*)*(c_revision*)core->current)[ j*core->spec.dim.y + i ];
+        ambient::sync(); if(!core->current->valid()) ambient::controller.calloc(*core->current); return ((value_type*)*core->current)[ j*core->spec.dim.y + i ];
     }
 
     template<typename T>

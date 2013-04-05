@@ -1,5 +1,6 @@
 template< typename T0 , void(*fp)( T0& )>
 struct kernel_inliner<void(*)( T0& ), fp> {
+    typedef T0 t0;
     static const int arity = 1;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 ){
@@ -30,6 +31,7 @@ struct kernel_inliner<void(*)( T0& ), fp> {
 };
 template< typename T0 , typename T1 , void(*fp)( T0& , T1& )>
 struct kernel_inliner<void(*)( T0& , T1& ), fp> {
+    typedef T0 t0; typedef T1 t1;
     static const int arity = 2;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 ){
@@ -60,6 +62,7 @@ struct kernel_inliner<void(*)( T0& , T1& ), fp> {
 };
 template< typename T0 , typename T1 , typename T2 , void(*fp)( T0& , T1& , T2& )>
 struct kernel_inliner<void(*)( T0& , T1& , T2& ), fp> {
+    typedef T0 t0; typedef T1 t1; typedef T2 t2;
     static const int arity = 3;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 ){
@@ -90,6 +93,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& ), fp> {
 };
 template< typename T0 , typename T1 , typename T2 , typename T3 , void(*fp)( T0& , T1& , T2& , T3& )>
 struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& ), fp> {
+    typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3;
     static const int arity = 4;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 ){
@@ -120,6 +124,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& ), fp> {
 };
 template< typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , void(*fp)( T0& , T1& , T2& , T3& , T4& )>
 struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& ), fp> {
+    typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4;
     static const int arity = 5;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 ){
@@ -150,6 +155,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& ), fp> {
 };
 template< typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , void(*fp)( T0& , T1& , T2& , T3& , T4& , T5& )>
 struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& ), fp> {
+    typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4; typedef T5 t5;
     static const int arity = 6;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 ){
@@ -180,6 +186,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& ), fp> {
 };
 template< typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , void(*fp)( T0& , T1& , T2& , T3& , T4& , T5& , T6& )>
 struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& ), fp> {
+    typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4; typedef T5 t5; typedef T6 t6;
     static const int arity = 7;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 ){
@@ -210,6 +217,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& ), fp> {
 };
 template< typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , void(*fp)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& )>
 struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& ), fp> {
+    typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4; typedef T5 t5; typedef T6 t6; typedef T7 t7;
     static const int arity = 8;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 ){
@@ -240,6 +248,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& ), 
 };
 template< typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8 , void(*fp)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T8& )>
 struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T8& ), fp> {
+    typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4; typedef T5 t5; typedef T6 t6; typedef T7 t7; typedef T8 t8;
     static const int arity = 9;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 ){
@@ -270,6 +279,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
 };
 template< typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8 , typename T9 , void(*fp)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T8& , T9& )>
 struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T8& , T9& ), fp> {
+    typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4; typedef T5 t5; typedef T6 t6; typedef T7 t7; typedef T8 t8; typedef T9 t9;
     static const int arity = 10;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 , T9& arg9 ){
@@ -300,6 +310,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
 };
 template< typename T0 , typename T1 , typename T2 , typename T3 , typename T4 , typename T5 , typename T6 , typename T7 , typename T8 , typename T9 , typename T10 , void(*fp)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T8& , T9& , T10& )>
 struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T8& , T9& , T10& ), fp> {
+    typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4; typedef T5 t5; typedef T6 t6; typedef T7 t7; typedef T8 t8; typedef T9 t9; typedef T10 t10;
     static const int arity = 11;
     template<complexity O>
     static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 , T9& arg9 , T10& arg10 ){

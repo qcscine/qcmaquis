@@ -41,11 +41,11 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     struct gebrd : public kernel< gebrd<T> > 
-    { static void c(matrix<T>& a, weak_view<T>& d, weak_view<T>& e, weak_view<T>& q, weak_view<T>& p); };
+    { static void c(matrix<T>& a, unbound< matrix<T> >& d, unbound< matrix<T> >& e, unbound< matrix<T> >& q, unbound< matrix<T> >& p); };
 
     template<typename T>
     struct gbbrd : public kernel< gbbrd<T> > 
-    { static void c(matrix<T>& a, weak_view<T>& d, weak_view<T>& e, weak_view<T>& q, weak_view<T>& p); };
+    { static void c(matrix<T>& a, unbound< matrix<T> >& d, unbound< matrix<T> >& e, unbound< matrix<T> >& q, unbound< matrix<T> >& p); };
 
     template<typename T>
     struct bdsqr : public kernel< bdsqr<T> > 
@@ -268,7 +268,7 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T>
-    void gebrd<T>::c(matrix<T>& a, weak_view<T>& d, weak_view<T>& e, weak_view<T>& q, weak_view<T>& p){
+    void gebrd<T>::c(matrix<T>& a, unbound< matrix<T> >& d, unbound< matrix<T> >& e, unbound< matrix<T> >& q, unbound< matrix<T> >& p){
         static int zero = 0;
         static int one  = 1;
         int m = q.num_rows();
@@ -317,7 +317,7 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
     template<typename T>
-    void gbbrd<T>::c(matrix<T>& a, weak_view<T>& d, weak_view<T>& e, weak_view<T>& q, weak_view<T>& p){
+    void gbbrd<T>::c(matrix<T>& a, unbound< matrix<T> >& d, unbound< matrix<T> >& e, unbound< matrix<T> >& q, unbound< matrix<T> >& p){
         static int zero = 0;
         static int one  = 1;
         int m = q.num_rows();
