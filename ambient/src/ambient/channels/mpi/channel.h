@@ -16,6 +16,8 @@ namespace ambient { namespace channels { namespace mpi {
 
     class request {
     public:
+        void* operator new (size_t size){ return ambient::bulk.malloc<sizeof(request)>(); }
+        void operator delete (void* ptr){ }
         request(void* memory);
         MPI_Request mpi_request;
         void* memory;

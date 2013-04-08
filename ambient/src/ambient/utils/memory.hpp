@@ -42,7 +42,15 @@ namespace ambient { namespace memory {
         // for shared heap: (slightly improves consumption)
         // typedef boost::details::pool::default_mutex mutex;
         // boost::details::pool::guard<mutex> g(mtx);
-    public:
+    public:        
+        template <class T>
+        class allocator {
+            typedef T value_type;
+            template <class U> struct rebind { typedef allocator<U> other; };
+        public:
+            static T* allocate(std::size_t n);
+            static void deallocate(T* p, std::size_t n){}
+        };
         bulk(){
             this->arity = ambient::get_num_threads();
             this->set   = new region<AMBIENT_BULK_CHUNK>[arity];
@@ -69,9 +77,12 @@ namespace ambient { namespace memory {
 
 namespace ambient {
     extern memory::bulk& bulk;
-}
+namespace memory {
 
-namespace ambient { namespace memory {
+    template<class T>
+    inline T* bulk::allocator<T>::allocate(std::size_t n){
+        return (T*)ambient::bulk.malloc(n*sizeof(T));
+    }
 
     class pool : public singleton< pool >
     {

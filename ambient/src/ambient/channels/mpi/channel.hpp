@@ -68,7 +68,6 @@ namespace ambient { namespace channels { namespace mpi {
         return this->qs.back();
     }
 
-
     inline request::request(void* memory) 
     : memory(memory), mpi_request(MPI_REQUEST_NULL) 
     {
