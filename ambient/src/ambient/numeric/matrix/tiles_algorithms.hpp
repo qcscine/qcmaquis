@@ -290,7 +290,7 @@ namespace ambient { namespace numeric {
 
     template<class Matrix, class DiagonalMatrix>
     inline void syev(const tiles<Matrix>& a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
-        heev(a, evecs, evals); // should be call syev instead?
+        heev(a, evecs, evals); // should be call syev instead? -> Alex syev for double, heev for complex
     }
                 
     template<class Matrix>
@@ -325,15 +325,15 @@ namespace ambient { namespace numeric {
     void ormqr(tiles<Matrix>&& a, tiles<Matrix>&& b, tiles<Matrix>&& t){
         int k, m, n;
     
-       // PlasmaLeft / PlasmaTrans
+       // PlasmaLeft / trans_helper<value_type>::PlasmaTransValue
         for(k = 0; k < std::min(a.mt, a.nt); k++){
             size_t kmin = std::min(a.tile(k,k).num_rows(), a.tile(k,k).num_cols());
             for(n = 0; n < b.nt; n++){
-                ormqr<PlasmaTrans>(kmin, a.tile(k, k), t.tile(k, k), b.tile(k, n));
+                ormqr<trans_helper<value_type>::PlasmaTransValue>(kmin, a.tile(k, k), t.tile(k, k), b.tile(k, n));
             }
             for(m = k+1; m < b.mt; m++){
                 for(n = 0; n < b.nt; n++)
-                    tsmqr<PlasmaTrans>(kmin, b.tile(k, n), b.tile(m, n), a.tile(m, k), t.tile(m, k));
+                    tsmqr<trans_helper<value_type>::PlasmaTransValue>(kmin, b.tile(k, n), b.tile(m, n), a.tile(m, k), t.tile(m, k));
             }
         }
     }
@@ -342,15 +342,14 @@ namespace ambient { namespace numeric {
     void ormlq(tiles<Matrix>&& a, tiles<Matrix>&& b, tiles<Matrix>&& t){
         int k, m, n;
         
-        // PlasmaRight / PlasmaTrans
         for(k = 0; k < std::min(a.mt, a.nt); k++){
             size_t kmin = std::min(a.tile(k,k).num_rows(), a.tile(k,k).num_cols());
             for(m = 0; m < b.mt; m++){
-                ormlq<PlasmaTrans>(kmin, a.tile(k, k), t.tile(k, k), b.tile(m, k));
+                ormlq<trans_helper<value_type>::PlasmaTransValue>(kmin, a.tile(k, k), t.tile(k, k), b.tile(m, k));
             }
             for(n = k+1; n < b.nt; n++){
                 for(m = 0; m < b.mt; m++){
-                    tsmlq<PlasmaTrans>(kmin, b.tile(m, k), b.tile(m, n), a.tile(k, n), t.tile(k, n));
+                    tsmlq<trans_helper<value_type>::PlasmaTransValue>(kmin, b.tile(m, k), b.tile(m, n), a.tile(k, n), t.tile(k, n));
                 }
             }
         }
@@ -364,13 +363,13 @@ namespace ambient { namespace numeric {
             geqrt(a.tile(k, k), t.tile(k, k));
         
             for(n = k+1; n < a.nt; n++)
-                ormqr<PlasmaTrans>(a.tile(k,n).num_rows(), a.tile(k, k), t.tile(k, k), a.tile(k, n));
+                ormqr<trans_helper<value_type>::PlasmaTransValue>(a.tile(k,n).num_rows(), a.tile(k, k), t.tile(k, k), a.tile(k, n));
             
             for(m = k+1; m < a.mt; m++){
                 tsqrt(a.tile(k, k), a.tile(m, k), t.tile(m, k));
         
                 for(n = k+1; n < a.nt; n++)
-                    tsmqr<PlasmaTrans>(AMBIENT_IB, a.tile(k, n), a.tile(m, n), a.tile(m, k), t.tile(m, k));
+                    tsmqr<trans_helper<value_type>::PlasmaTransValue>(AMBIENT_IB, a.tile(k, n), a.tile(m, n), a.tile(m, k), t.tile(m, k));
             }
         }
     }
@@ -389,8 +388,8 @@ namespace ambient { namespace numeric {
         
         // restoring R from A //
         for(int j = 0; j < a.nt; j++)
-        for(int i = 0; i < j && i < std::min(a.mt, a.nt); i++)
-            copy(a.tile(i,j), r.tile(i,j));
+            for(int i = 0; i < j && i < std::min(a.mt, a.nt); i++)
+                copy(a.tile(i,j), r.tile(i,j));
         
         for(int k = 0; k < std::min(a.mt, a.nt); k++)
             copy_rt(a.tile(k,k), r.tile(k,k));
@@ -412,13 +411,13 @@ namespace ambient { namespace numeric {
             gelqt(a.tile(k, k), t.tile(k, k));
         
             for(m = k+1; m < a.mt; m++)
-                ormlq<PlasmaTrans>(a.tile(m, k).num_cols(), a.tile(k, k), t.tile(k, k), a.tile(m, k));
+                ormlq<trans_helper<value_type>::PlasmaTransValue>(a.tile(m, k).num_cols(), a.tile(k, k), t.tile(k, k), a.tile(m, k));
         
             for(n = k+1; n < a.nt; n++){
                 tslqt(a.tile(k, k), a.tile(k, n), t.tile(k, n));
         
                 for(m = k+1; m < a.mt; m++)
-                    tsmlq<PlasmaTrans>(AMBIENT_IB, a.tile(m, k), a.tile(m, n), a.tile(k, n), t.tile(k, n));
+                    tsmlq<trans_helper<value_type>::PlasmaTransValue>(AMBIENT_IB, a.tile(m, k), a.tile(m, n), a.tile(k, n), t.tile(k, n));
             }
         }
     }
