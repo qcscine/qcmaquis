@@ -8,11 +8,12 @@ namespace ambient { namespace controllers { namespace velvet {
     using ambient::channels::mpi::request;
 
     class cfunctor {
+        typedef ambient::memory::bulk::allocator<cfunctor*> allocator;
     public:
         virtual void invoke() = 0;
         virtual bool ready() = 0;
         void queue(cfunctor* d);
-        std::vector<cfunctor*> deps;
+        std::vector<cfunctor*, allocator> deps;
         void** arguments;
     };
 
