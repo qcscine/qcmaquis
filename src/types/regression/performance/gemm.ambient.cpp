@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     ambient::sync();
 
     printf("ambient::gemm strassen...\n");
-    ambient::numeric::gemm_strassen(AMBIENT_MOVE(pA), AMBIENT_MOVE(pB), AMBIENT_MOVE(pC)); 
+    ambient::numeric::gemm_strassen(std::move(pA), std::move(pB), std::move(pC)); 
     ambient::timer time("ambient::gemm_strassen"); time.begin();
     ambient::sync();
     time.end();
