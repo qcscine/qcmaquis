@@ -12,8 +12,25 @@
 
 namespace ambient { namespace numeric { namespace kernels {
 
-    inline int OptimalSize(double a){return (int)a;}
-    inline int OptimalSize(std::complex<double> a){return (int)a.real();}
+
+    template <class T>
+    inline int OptimalSize(T a){return (int)a;}
+
+    template <class T>
+    inline int OptimalSize(std::complex<T> a){return (int)a.real();}
+
+    template<class T, typename type = void>
+    struct helper_complex;
+
+    template<class T>
+    struct helper_complex<T, typename boost::enable_if<boost::is_floating_point<T> >::type>{
+        static T conj(T x) {return x;}
+    };
+   
+    template<class T>
+    struct helper_complex<T, typename boost::enable_if<boost::is_complex<T> >::type>{
+        static T conj(T x) {return std::conj(x);};
+    };
 
     template<class t, typename type = void>
     struct helper_blas;

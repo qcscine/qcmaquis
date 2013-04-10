@@ -108,6 +108,10 @@ namespace ambient { namespace numeric { namespace kernels {
     { static void c(const matrix<T>& a, unbound< matrix<T> >& t); };
 
     template<typename T>
+    struct conj_inplace_out : public kernel< conj_inplace_out<T> > 
+    { static void c(matrix<T>& a); };
+
+    template<typename T>
     struct resize : public kernel< resize<T> > 
     { static void c(unbound< matrix<T> >& r, const matrix<T>& a, const size_t& m, const size_t& n); };
         
@@ -531,6 +535,15 @@ namespace ambient { namespace numeric { namespace kernels {
             for(int j = 0; j < n; j++) *td++ = od[j*m];
             od++;
         }
+    }
+
+    template<typename T>
+    void conj_inplace_out<T>::c(matrix<T>& a){
+        size_t size = a.num_rows()*a.num_cols();
+        T* ad = current(a);
+        T* ar = updated(a);
+        for(int i=0; i < size; ++i)
+            ar[i] = helper_complex<T>::conj(ad[i]);   
     }
 
     template<typename T>

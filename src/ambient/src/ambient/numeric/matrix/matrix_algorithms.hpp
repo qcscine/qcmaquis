@@ -15,13 +15,14 @@ namespace ambient { namespace numeric {
     template<typename T>
     bool is_hermitian(const matrix<T>& a)
     {
-        /*if(num_rows(a) != num_cols(a))
+        if(num_rows(a) != num_cols(a))
             return false;
         for (size_t i=0; i < num_rows(a); ++i)
-            for(size_t j=0; j < num_cols(a); ++j)
-                if ( a(i,j) != conj(a(j,i)) )
-                    return false;*/
-        return false;
+            for(size_t j=0; j < num_cols(a); ++j){
+               if ( a(i,j) != ambient::numeric::kernels::helper_complex<T>::conj(a(j,i)))
+                   return false;
+            }
+        return true;
     }
 
     template<typename T>
@@ -44,15 +45,15 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline const matrix<T>& conj(const matrix<T>& a){
-        //a.conj();
-        return a;
+    inline const matrix<T> conj(const matrix<T>& a){
+        matrix<T> b(a);
+        conj_inplace(b);
+        return b;
     }
 
     template<typename T>
     inline void conj_inplace(matrix<T>& a){
-        // gs (doubles)
-        // does nothing for now
+        kernels::conj_inplace_out<T>::spawn<complexity::N>(a);
     }
 
     template<typename T>
