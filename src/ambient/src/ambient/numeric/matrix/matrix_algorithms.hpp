@@ -45,7 +45,7 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline const matrix<T> conj(const matrix<T>& a){
+    inline matrix<T> conj(const matrix<T>& a){
         matrix<T> b(a);
         conj_inplace(b);
         return b;
@@ -53,17 +53,7 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void conj_inplace(matrix<T>& a){
-        kernels::conj_inplace_out<T>::spawn<complexity::N>(a);
-    }
-
-    template<typename T>
-    inline void adjoint_inplace(matrix<T>& a){
-        transpose_inplace(a);
-    }
-
-    template<typename T>
-    inline transpose_view<matrix<T> > adjoint(const matrix<T>& a){
-        return transpose_view<matrix<T> >(a);
+        kernels::conj_inplace<T>::spawn<complexity::N>(a);
     }
 
     template<typename T>

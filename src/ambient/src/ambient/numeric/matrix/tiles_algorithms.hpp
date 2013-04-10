@@ -615,6 +615,7 @@ namespace ambient { namespace numeric {
         return b;
     }
 /*  // TIM: I think, this function is useless, it is not defined for alps::matrix, to remove ?
+    // Alex: we might need adjoint_view<Matrix> in future though..
     template<class Matrix>
     inline tiles<transpose_view<Matrix> > adjoint(const tiles<Matrix>& a){
         assert(false); 
