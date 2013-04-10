@@ -32,6 +32,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( HEEV_COMPARISON, T, test_types)
 
     heev(pA,pV,pE);
     heev(sA,sV,sE);
-     
     BOOST_CHECK(pE == sE);
 }
