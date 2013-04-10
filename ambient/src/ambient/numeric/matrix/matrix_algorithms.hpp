@@ -51,10 +51,11 @@ namespace ambient { namespace numeric {
         return b;
     }
 
-    template<typename T>
-    inline void conj_inplace(matrix<T>& a){
-        kernels::conj_inplace<T>::spawn<complexity::N>(a);
+    inline void conj_inplace(matrix<std::complex<double> >& a){
+        kernels::conj_inplace<std::complex<double> >::spawn<complexity::N>(a);
     }
+
+    inline void conj_inplace(matrix<double>& a){ }
 
     template<typename T>
     inline void remove_rows(matrix<T>& a, size_type i, difference_type k){
