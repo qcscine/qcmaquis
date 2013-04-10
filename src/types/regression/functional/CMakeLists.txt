@@ -34,6 +34,9 @@ add_executable( lapack.heev.out         lapack.heev.cpp       )
 add_executable( aux.cast.out            aux.cast.cpp          )
 add_executable( aux.sqrt.out            aux.sqrt.cpp          )
 add_executable( aux.exp.out             aux.exp.cpp           )
+add_executable( aux.conj.out            aux.conj.cpp          )
+add_executable( aux.adjoint.out         aux.adjoint.cpp       )
+add_executable( aux.hermitian.out       aux.hermitian.cpp       )
 
 foreach( functional_test
          blas.add.out
@@ -54,6 +57,9 @@ foreach( functional_test
          aux.cast.out
          aux.sqrt.out
          aux.exp.out
+         aux.conj.out
+         aux.adjoint.out
+         aux.hermitian.out
  )
     target_link_libraries (${functional_test} ambient ${BLAS_LAPACK} ${MPI_CXX_LIBRARIES} ${MAQUIS_TYPES_LIBRARIES}) 
     add_test(${functional_test} ${functional_test})
