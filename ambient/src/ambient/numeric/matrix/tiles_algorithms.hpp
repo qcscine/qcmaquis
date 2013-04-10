@@ -40,7 +40,19 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     bool is_hermitian(const tiles<Matrix>& a){
-        return false; // todo
+        if(a.num_rows() != a.num_cols())
+            return false;
+        //first check the diagonal block
+        for(int i=0; i < a.nt; ++i)
+           if(true != is_hermitian(a.tile(i,i)))
+                return false;
+        //second check the rest of the blocks
+        for(int i=1; i < a.mt; ++i) 
+            for(int j=i; j < a.nt; ++j) 
+                if(!(a.tile(i,j) == conj(a.tile(j,i))))
+                    return false; 
+
+        return true;
     }
 
     template<class Matrix>
@@ -49,14 +61,17 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix>
-    inline const tiles<Matrix>& conj(const tiles<Matrix>& a){
-        //a.conj();
-        return a; // todo for complex
+    inline const tiles<Matrix> conj(const tiles<Matrix>& a){
+        tiles<Matrix> b(a); 
+        conj_inplace(b);
+        return b; 
     }
 
     template<class Matrix>
     inline void conj_inplace(tiles<Matrix>& a){
-        // gs (doubles) // todo for complex
+        int size = a.data.size();
+        for(int i = 0; i < size; i++)
+            conj_inplace(a[i]);
     }
 
     template <class MatrixA, class MatrixB>
@@ -589,13 +604,22 @@ namespace ambient { namespace numeric {
     template<class Matrix>
     inline void adjoint_inplace(tiles<Matrix>& a){
         transpose_inplace(a);
+        conj_inplace(a);
     }
 
     template<class Matrix>
-    inline tiles<transpose_view<Matrix> > adjoint(const tiles<Matrix>& a){
-        return transpose(a);
+    inline const tiles<Matrix> adjoint(const tiles<Matrix>& a){
+        tiles<Matrix> b(a); 
+        transpose_inplace(b);
+        conj_inplace(b);
+        return b;
     }
-
+/*  // TIM: I think, this function is useless, it is not defined for alps::matrix, to remove ?
+    template<class Matrix>
+    inline tiles<transpose_view<Matrix> > adjoint(const tiles<Matrix>& a){
+        assert(false); 
+    }
+*/
     template<class Matrix, class G>
     inline void generate(tiles<Matrix>& a, G g){
         generate(a);
