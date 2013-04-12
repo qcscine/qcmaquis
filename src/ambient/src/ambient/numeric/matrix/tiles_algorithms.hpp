@@ -56,8 +56,55 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix>
+    inline tiles<Matrix> inverse(tiles<Matrix> a){
+        merge(a); 
+        inverse(a[0]);
+        split(a);
+        return a;
+    } 
+
+    template<class Matrix>
+    inline tiles<Matrix> exp_hermitian(const tiles<Matrix> a, const value_type& alfa = 1.){
+        std::cout << " NOT IMPLEMENTED FOR DOUBLE, RENAME THIS FUNCTION exp <-> exp_hermitian " << std::endl;
+        assert(false);
+        return a; 
+    }
+
+    template<class Matrix>
     inline tiles<Matrix> exp(const tiles<Matrix>& a, const value_type& alfa = 1.){
+        BOOST_STATIC_ASSERT( boost::is_complex<value_type>::value ); // exp(complex), exp_hermitian(double and compledx) : dummy name
+        assert(num_rows(a) == num_cols(a));
+        std::size_t n = num_cols(a);
+
+        tiles<Matrix> Nr(n, n), Nl(n, n);
+        tiles<diagonal_matrix<value_type> > Sv(num_rows(a)); 
+ 
+        geev(a, Nl, Nr, Sv);        
+      
+        tiles<Matrix> Nrinv = inverse(Nr);  
+
+/*
+        matrix<T, MemoryBlock> Nrinv = inverse(Nr);
+
+        typename associated_diagonal_matrix<matrix<T, MemoryBlock> >::type S(Sv);
+        S = exp(alpha*S);
+
+        alps::numeric::matrix<std::complex<double> > tmp;
+        gemm(Nr, S, tmp);
+        gemm(tmp, Nrinv, M);
+
+        return M;
+
+*/
+
         assert(false); printf("ERROR: NOT TESTED (EXP)\n");
+    }
+
+    template<class Matrix>
+    inline void geev(const tiles<Matrix>& a, tiles<Matrix>& lv, tiles<Matrix>& rv, tiles<diagonal_matrix<value_type> >& s){
+        merge(a); merge(lv); merge(rv); merge(s);
+        geev(a[0],lv[0],rv[0],s[0]);
+        split(a); split(lv); split(rv); split(s);
     }
 
     template<class Matrix>
@@ -308,6 +355,7 @@ namespace ambient { namespace numeric {
         heev(a, evecs, evals); // should be call syev instead? -> Alex syev for double, heev for complex
     }
                 
+
     template<class Matrix>
     void orgqr(const tiles<Matrix>&& a, tiles<Matrix>&& q, const tiles<Matrix>&& t){
         int k, m, n;

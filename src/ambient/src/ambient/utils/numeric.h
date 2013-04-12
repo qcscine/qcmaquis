@@ -91,6 +91,21 @@ namespace ambient { namespace numeric { namespace kernels {
            free(work);
        }
 
+       static void getrf(const int* m, const int*n, T* a, const int* lda, int* ipiv, int* info){
+           dgetrf_(m, n, a, lda, ipiv, info);
+       }
+
+       static void getri(const int*n, T* a, const int* lda, int* ipiv, int* info){
+           T* work;
+           T wkopt;
+           int lwork = -1;
+           dgetri_( n, a, lda, ipiv, &wkopt, &lwork, info);
+           lwork = OptimalSize(wkopt);
+           work = (T*)malloc(lwork*sizeof(T));
+           dgetri_( n, a, lda, ipiv, work, &lwork, info);
+           free(work);
+       }
+
        static void larfg(const int *n, T* alpha, T* x, int *incx, T* tau){
            dlarfg_(n, alpha, x, incx, tau); 
        }
@@ -140,6 +155,33 @@ namespace ambient { namespace numeric { namespace kernels {
            assert( info == 0 );
            free(work);
            delete [] rwork;
+       }
+  
+       static void geev(const char* jobvl, const char* jobvr, const int* n, T* a, const int* lda, T* s, T* ldv, const int* ldlv, T* rvd, const int* ldrv, T* wkopt, int* lwork, int* info){
+           typename T::value_type* rwork = new typename T::value_type[std::max(1,2*(*n))]; // from lapack doc
+           T* work;
+           zgeev_(jobvl, jobvr, n, a, lda, s, ldv, ldlv, rvd, ldrv, wkopt, lwork, rwork, info);
+           *lwork = OptimalSize(*wkopt);
+           work = (T*)malloc( (*lwork)*sizeof(T) );
+           zgeev_(jobvl, jobvr, n, a, lda, s, ldv, ldlv, rvd, ldrv, work, lwork, rwork, info);
+           assert( info == 0 );
+           free(work);
+           delete [] rwork;
+       } 
+
+       static void getrf(const int* m, const int*n, T* a, const int* lda, int* ipiv, int* info){
+           zgetrf_(m, n, a, lda, ipiv, info);
+       }
+
+       static void getri(const int*n, T* a, const int* lda, int* ipiv, int* info){
+           T* work;
+           T wkopt;
+           int lwork = -1;
+           zgetri_( n, a, lda, ipiv, &wkopt, &lwork, info);
+           lwork = OptimalSize(wkopt);
+           work = (T*)malloc(lwork*sizeof(T));
+           zgetri_( n, a, lda, ipiv, work, &lwork, info);
+           free(work);
        }
 
        static void larfg(const int *n, T* alpha, T* x, int *incx, T* tau){
