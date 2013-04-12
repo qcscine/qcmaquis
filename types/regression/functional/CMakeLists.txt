@@ -31,12 +31,14 @@ add_executable( lapack.qr.out           lapack.qr.cpp         )
 add_executable( lapack.lq.out           lapack.lq.cpp         )
 add_executable( lapack.svd.out          lapack.svd.cpp        )
 add_executable( lapack.heev.out         lapack.heev.cpp       )
+add_executable( lapack.geev.out         lapack.geev.cpp       )
+add_executable( lapack.inverse.out      lapack.inverse.cpp    )
 add_executable( aux.cast.out            aux.cast.cpp          )
 add_executable( aux.sqrt.out            aux.sqrt.cpp          )
 add_executable( aux.exp.out             aux.exp.cpp           )
 add_executable( aux.conj.out            aux.conj.cpp          )
 add_executable( aux.adjoint.out         aux.adjoint.cpp       )
-add_executable( aux.hermitian.out       aux.hermitian.cpp       )
+add_executable( aux.hermitian.out       aux.hermitian.cpp     )
 
 foreach( functional_test
          blas.add.out
@@ -54,6 +56,8 @@ foreach( functional_test
          lapack.lq.out
          lapack.svd.out
          lapack.heev.out
+         lapack.geev.out
+         lapack.inverse.out
          aux.cast.out
          aux.sqrt.out
          aux.exp.out
