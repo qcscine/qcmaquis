@@ -213,7 +213,10 @@ protected:
             Uterms[i].clear();
             Uterms[i].pfirst = gates_coeff[i].first;
             for (size_t p=gates_coeff[i].first; p<L-1; p+=2){
-                Uterms[i].add_term(p, op_exp(this->H.get_phys()*this->H.get_phys(), block_terms[p], gates_coeff[i].second*alpha));
+                if (this->parms.template get<std::string>("expm_method") == "heev")
+                    Uterms[i].add_term(p, op_exp_hermitian(this->H.get_phys()*this->H.get_phys(), block_terms[p], gates_coeff[i].second*alpha));
+                else
+                    Uterms[i].add_term(p, op_exp(this->H.get_phys()*this->H.get_phys(), block_terms[p], gates_coeff[i].second*alpha));
             }
         }
     }
