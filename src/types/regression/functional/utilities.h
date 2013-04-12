@@ -40,7 +40,7 @@ typedef boost::mpl::list<
                          size<3,-3,std::complex<double> >,
                          size<5,7,double>,
                          size<5,7,std::complex<double> >,
-                         size<5,-7,double>,
+                         size<5,0,double>,
                          size<5,-7,std::complex<double> >
                         > test_types; 
 
