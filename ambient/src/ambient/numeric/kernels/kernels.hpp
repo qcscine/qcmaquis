@@ -152,6 +152,14 @@ namespace ambient { namespace numeric { namespace kernels {
     { static void c(const matrix<T>& a, unbound< matrix<T> >& u, unbound< matrix<T> >& vt, unbound< matrix<typename real_type<T>::type> >& s); };
 
     template<typename T>
+    struct geev : public kernel< geev<T> > 
+    { static void c(const matrix<T>& a, unbound< matrix<T> >& lv, unbound< matrix<T> >& rv, unbound< matrix<T> >& s); };
+
+    template<typename T>
+    struct inverse : public kernel< inverse<T> > 
+    { static void c(matrix<T>& a); };
+
+    template<typename T>
     struct heev : public kernel< heev<T> > 
     { static void c(matrix<T>& a, unbound< matrix<typename real_type<T>::type> >& w); };
 
@@ -684,6 +692,31 @@ namespace ambient { namespace numeric { namespace kernels {
         T* vtd = updated(vt);
         typename real_type<T>::type* sd  = updated(s);
         helper_lapack<T>::gesvd( "S", "S", &m, &n, ad, &m, sd, ud, &m, vtd, &k, &wkopt, &lwork, &info );
+    }
+
+    template<typename T>
+    void geev<T>::c(const matrix<T>& a, unbound< matrix<T> >& lv, unbound< matrix<T> >& rv, unbound< matrix<T> >& s){
+        int n = a.num_cols();
+        int info;
+        int lwork = -1;
+        T wkopt;
+        T* ad  = current(a);
+        T* lvd = updated(lv);
+        T* rvd = updated(rv);
+        T* sd  = updated(s);
+        helper_lapack<T>::geev("N", "V", &n, ad, &n, sd, lvd, &n, rvd, &n, &wkopt, &lwork, &info); 
+    }
+
+    template<typename T>
+    void inverse<T>::c(matrix<T> & a){
+        int info;
+        int m = a.num_rows();
+        int n = a.num_cols();
+        T* ad = (T*)revised(a);    
+        int* ipivd = new int[n];
+        helper_lapack<T>::getrf(&m, &n, ad, &m, ipivd, &info);
+        helper_lapack<T>::getri(&n, ad, &n, ipivd, &info);
+        delete [] ipivd;
     }
 
     template<typename T>

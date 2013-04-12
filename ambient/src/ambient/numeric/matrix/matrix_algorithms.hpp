@@ -132,6 +132,16 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
+    inline void inverse(matrix<T>& a){
+        kernels::inverse<T>::spawn<complexity::N3>(a);
+    }
+
+    template<typename T>
+    inline void geev(matrix<T> a, matrix<T>& lv, matrix<T>& rv, diagonal_matrix<T>& s){
+        kernels::geev<T>::spawn<complexity::N3>(a, lv, rv, s); 
+    }
+
+    template<typename T>
     inline void heev(matrix<T> a, matrix<T>& evecs, diagonal_matrix<double>& evals){
         assert(num_rows(a) == num_cols(a) && num_rows(evals) == num_rows(a));
         kernels::heev<T>::spawn<complexity::N3>(a, evals); // destoys U triangle of M
