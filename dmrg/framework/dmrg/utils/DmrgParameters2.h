@@ -69,6 +69,8 @@ private:
         add_option("chkp_each", "", value(1)); 
         add_option("update_each", "", value(-1)); 
         
+        
+        add_option("expm_method", "algorithm used for exp(-i H dt): heev (default), geev", value("heev"));
         add_option("te_type", "time evolution algorithm: nn (default), mpo", value("nn"));
         add_option("te_optim", "optimized nn time evolution", value(true));
 		add_option("te_order", "trotter decomposition: second, fourth (default)", value("fourth"));

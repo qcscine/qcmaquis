@@ -440,13 +440,45 @@ block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
 //}
 
 template <class Matrix, class SymmGroup, class A>
+block_matrix<Matrix, SymmGroup> op_exp_hermitian(Index<SymmGroup> const & phys,
+                                                 block_matrix<Matrix, SymmGroup> M,
+                                                 A const & alpha = 1.)
+{
+    for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++)
+        if (M.has_block(it_c->first, it_c->first))
+            M(it_c->first, it_c->first) = exp_hermitian(M(it_c->first, it_c->first), alpha);
+        else
+            M.insert_block(Matrix::identity_matrix(phys.size_of_block(it_c->first)),
+                           it_c->first, it_c->first);
+    return M;
+}
+
+namespace detail {
+    
+    template <class Matrix>
+    typename boost::enable_if<boost::is_complex<typename Matrix::value_type>, Matrix>::type
+    exp_dispatcher(Matrix const& m, typename Matrix::value_type const& alpha)
+    {
+        return exp(m, alpha);
+    }
+
+    template <class Matrix>
+    typename boost::disable_if<boost::is_complex<typename Matrix::value_type>, Matrix>::type
+    exp_dispatcher(Matrix const& m, typename Matrix::value_type const& alpha)
+    {
+        throw std::runtime_error("Exponential of non-hermitian real matrices not implemented!");
+        return Matrix();
+    }
+}
+
+template <class Matrix, class SymmGroup, class A>
 block_matrix<Matrix, SymmGroup> op_exp(Index<SymmGroup> const & phys,
                                        block_matrix<Matrix, SymmGroup> M,
                                        A const & alpha = 1.)
 {
     for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++)
         if (M.has_block(it_c->first, it_c->first))
-            M(it_c->first, it_c->first) = exp(M(it_c->first, it_c->first), alpha);
+            M(it_c->first, it_c->first) = detail::exp_dispatcher(M(it_c->first, it_c->first), alpha);
         else
             M.insert_block(Matrix::identity_matrix(phys.size_of_block(it_c->first)),
                            it_c->first, it_c->first);
