@@ -39,6 +39,7 @@ add_executable( aux.exp.out             aux.exp.cpp           )
 add_executable( aux.conj.out            aux.conj.cpp          )
 add_executable( aux.adjoint.out         aux.adjoint.cpp       )
 add_executable( aux.hermitian.out       aux.hermitian.cpp     )
+add_executable( algo.exp.out            algo.exp.cpp          )
 
 foreach( functional_test
          blas.add.out
@@ -64,6 +65,7 @@ foreach( functional_test
          aux.conj.out
          aux.adjoint.out
          aux.hermitian.out
+         algo.exp.out
  )
     target_link_libraries (${functional_test} ambient ${BLAS_LAPACK} ${MPI_CXX_LIBRARIES} ${MAQUIS_TYPES_LIBRARIES}) 
     add_test(${functional_test} ${functional_test})

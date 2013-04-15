@@ -13,18 +13,6 @@
 
 #include <boost/numeric/bindings/lapack/driver/geev.hpp>
 
-template<class T>
-struct test_complex_only{
-    static void test(int size){}
-};
-
-template<class T>
-struct test_complex_only<std::complex <T> >{
-    static void test(int size){
-    }
-};
-
-
 // this function call geqrf and geqri so lapack test
 BOOST_AUTO_TEST_CASE_TEMPLATE( INVERSE_COMPARISON, T, test_types)
 {
