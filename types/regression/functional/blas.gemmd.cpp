@@ -35,5 +35,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GEMM_DIAGONAL, T, test_types)
     gemm(sC,sB,sA);
 
     BOOST_CHECK(pA==sA);
+
+    ambient::numeric::gemm(pB,pC,pA);
+    gemm(sB,sC,sA);
+    BOOST_CHECK(pA==sA);
+
 }
 
