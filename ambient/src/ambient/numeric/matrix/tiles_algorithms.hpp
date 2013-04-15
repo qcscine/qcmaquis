@@ -70,9 +70,16 @@ namespace ambient { namespace numeric {
         return a; 
     }
 
+    template<typename T>
+    inline tiles<diagonal_matrix<T> > exp(const tiles<diagonal_matrix<T> >& a, const T& alfa = 1.){
+        tiles<diagonal_matrix<T> > b(a); 
+        exp_inplace(b,alfa);
+        return b;
+    }
+
     template<class Matrix>
-    inline tiles<Matrix> exp(const tiles<Matrix>& a, const value_type& alfa = 1.){
-        BOOST_STATIC_ASSERT( boost::is_complex<value_type>::value ); // exp(complex), exp_hermitian(double and compledx) : dummy name
+    inline tiles<Matrix> exp(tiles<Matrix> a, const value_type& alfa = 1.){
+        BOOST_STATIC_ASSERT( boost::is_complex<value_type>::value ); // exp(complex), exp_hermitian(double and complex) : dummy name
         assert(num_rows(a) == num_cols(a));
         std::size_t n = num_cols(a);
 
@@ -82,22 +89,16 @@ namespace ambient { namespace numeric {
         geev(a, Nl, Nr, Sv);        
       
         tiles<Matrix> Nrinv = inverse(Nr);  
+        tiles<diagonal_matrix<value_type> > S(num_rows(a)); 
 
-/*
-        matrix<T, MemoryBlock> Nrinv = inverse(Nr);
+        S = exp(Sv, alfa);
 
-        typename associated_diagonal_matrix<matrix<T, MemoryBlock> >::type S(Sv);
-        S = exp(alpha*S);
+        tiles<Matrix> tmp(n,n);
 
-        alps::numeric::matrix<std::complex<double> > tmp;
         gemm(Nr, S, tmp);
-        gemm(tmp, Nrinv, M);
+        gemm(tmp, Nrinv, a);
 
-        return M;
-
-*/
-
-        assert(false); printf("ERROR: NOT TESTED (EXP)\n");
+        return a;
     }
 
     template<class Matrix>
@@ -844,6 +845,7 @@ namespace ambient { namespace numeric {
 
 } }
 
+#undef diag_value_type
 #undef value_type
 #undef size_type
 #undef real_type
