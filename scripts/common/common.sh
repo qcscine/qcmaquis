@@ -120,8 +120,8 @@ use_dashboards(){
     echo "set(PREDEFINED_CTEST_BUILD_NAME \"${PREFIX}_${COMPILER}_${MPI_WRAPPER}\")"       >> ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_SOURCE_DIRECTORY \"${ROOT_DIR}/${!target}\")"               >> ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${ROOT_DIR}/${!target}/${BUILD_NAME}\")" >> ./Dashboards/site.cmake
-    cat ${ROOT_DIR}/${!target}/Dashboards/site.cmake                                       >> ./Dashboards/site.cmake
-    cp ${ROOT_DIR}/${!target}/Dashboards/cmake_common.cmake ./Dashboards/
+    cat ${ROOT_DIR}/scripts/common/ctest/site.cmake                                        >> ./Dashboards/site.cmake
+    cp  ${ROOT_DIR}/scripts/common/ctest/cmake_common.cmake                                   ./Dashboards/
 }
 
 ## auxiliary functions ##
