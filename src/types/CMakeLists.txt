@@ -20,8 +20,6 @@ project (MAQUIS_TYPES)
 
 set(AMBIENT_SOURCES_DIR "../ambient" CACHE STRINGS "Location of the ambient source tree")
 
-option(ENABLE_MTM "Enable multi threads matrix class" OFF)
-option(USE_GPU "Use GPU in libmtm" OFF)
 option(ENABLE_PARALLEL "Enable parallel matrix classes" OFF)
 option(ENABLE_REGRESSION_FUNCTIONAL "Build regression functional tests" OFF)
 option(ENABLE_REGRESSION_PERFORMANCE "Build regression performance tests" OFF)
@@ -71,9 +69,6 @@ endif(ENABLE_PLOT)
 
 # Boost
 set(Boost_requirements bindings)
-if(BUILD_MTM)
-  list(APPEND Boost_requirements thread)
-endif(BUILD_MTM)
 if(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
   list(APPEND Boost_requirements unit_test_framework)
   list(APPEND Boost_requirements system)
@@ -110,22 +105,6 @@ if(ENABLE_ALGEBRA)
     find_package(BLAS)
     find_package(LAPACK)
 endif(ENABLE_ALGEBRA)
-
-if(BUILD_MTM)
-  # pthreads
-  find_package(Threads REQUIRED)
-  list(APPEND MAQUIS_TYPES_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
-  
-  if(USE_GPU)
-    # Cuda
-    find_package(CUDA)
-    include_directories(${CUDA_INCLUDE_DIRS})
-    list(APPEND MAQUIS_TYPES_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS})
-    list(APPEND MAQUIS_TYPES_LIBRARIES ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES})
-    add_definitions(-DUSE_GPU)
-  endif(USE_GPU)
-endif(BUILD_MTM)
-
 
 if(ENABLE_PARALLEL)
   # first we need BLAS/LAPAACK
@@ -205,9 +184,6 @@ if(ENABLE_REGRESSION_FUNCTIONAL)
   if(ENABLE_PARALLEL)
     add_subdirectory(regression/functional)
   endif(ENABLE_PARALLEL)
-  if(ENABLE_MTM)
-    add_subdirectory(regression/mt_matrix)
-  endif(ENABLE_MTM)
 endif(ENABLE_REGRESSION_FUNCTIONAL)
 
 if(ENABLE_REGRESSION_PERFORMANCE)
@@ -229,6 +205,3 @@ configure_file(MaquisTypesConfig.cmake.in ${CMAKE_BINARY_DIR}/MaquisTypesConfig.
 # Install / export
 install(FILES ${CMAKE_BINARY_DIR}/MaquisTypesConfig.cmake
         DESTINATION share COMPONENT dev)
-if(ENABLE_MTM)
-  install(EXPORT MaquisTypesTargets  DESTINATION share COMPONENT dev)
-endif(ENABLE_MTM)

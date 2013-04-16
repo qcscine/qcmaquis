@@ -12,12 +12,7 @@
 #include "dmrg/utils/DmrgParameters2.h"
 
 #include "dmrg/block_matrix/detail/alps.hpp"
-#ifdef USE_MTM
-#include "types/mt_matrix/mt_matrix.h"
-typedef alps::numeric::mt_matrix<double> Matrix;
-#else
 typedef alps::numeric::matrix<double> Matrix;
-#endif
 
 #include "dmrg/block_matrix/symmetry.h"
 

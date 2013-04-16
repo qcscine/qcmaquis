@@ -4,9 +4,6 @@ enable_omp_if_found()
 include_directories(. ${CMAKE_CURRENT_BINARY_DIR})
 
 set(DMRG_APP_LIBRARIES dmrg_utils dmrg_models ${DMRG_LIBRARIES})
-if(USE_MTM)
-  list(INSERT DMRG_APP_LIBRARIES 0 mtm)
-endif(USE_MTM)
 
 if(USE_AMBIENT)
   compile_with_ambient()
