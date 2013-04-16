@@ -257,7 +257,7 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void fill_value(Matrix& a, typename Matrix::value_type value){
-        if(kernels::helper_zero<typename Matrix::value_type>::zero(value)) return; // matrices are 0 by default
+        if(value == typename Matrix::value_type()) return; // matrices are 0 by default
         kernels::init_value<typename Matrix::value_type, typename Matrix::allocator_type>::spawn<complexity::N2>(a, value);
     }
 
