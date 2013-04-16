@@ -8,8 +8,7 @@
 ## targets ##
 AMBIENT=ambient
 DMRG=dmrg
-TYPES=types
-TARGETS="ambient dmrg types"
+TARGETS="ambient dmrg"
 
 RUN_PRESETS="short: ~/maquis2013/src/dmrg/configurations/ff_short.parms ~/maquis2013/src/dmrg/configurations/ff_short.model
              large: ~/maquis2013/benchmarks/dmrg/fflarge/parms ~/maquis2013/benchmarks/dmrg/fflarge/model
@@ -26,13 +25,6 @@ add_ambient(){
     local defines_common=`get_defines MAQUIS_COMMON`
     local defines_target=`get_defines MAQUIS_AMBIENT`
     eval cmake $defines_common $defines_target ${ROOT_DIR}/ambient
-}
-
-add_types(){
-    local defines_common=`get_defines MAQUIS_COMMON`
-    local defines_target=`get_defines MAQUIS_TYPES`
-    use_dashboards types
-    eval cmake $defines_common $defines_target ${ROOT_DIR}/types
 }
 
 add_dmrg(){
@@ -199,7 +191,6 @@ write_states(){
     echo "#!/bin/bash -l"                   >  $MOD
     echo "STATE=\"$STATE\""                 >> $MOD
     echo "STATE_AMBIENT=\"$STATE_AMBIENT\"" >> $MOD
-    echo "STATE_TYPES=\"$STATE_TYPES\""     >> $MOD
     echo "STATE_DMRG=\"$STATE_DMRG\""       >> $MOD
     tail -n +6 $ORIG                        >> $MOD
     mv $MOD $ORIG
@@ -216,7 +207,6 @@ function clean(){
       echo " $SELF ($state): cleaning build tree             "
       echo " -------------------------------------------------------------------------------------------------------------------<< "
       remove_target ambient
-      remove_target types
       remove_target dmrg
       set_state void
       echo " $SELF (void): build cleaning finished ...       "
@@ -232,7 +222,6 @@ function configure(){
     else
         echo " $SELF ($state): configuring build tree        "
         add_target ambient
-        add_target types
         add_target dmrg
         set_state configure
         echo " $SELF (configure): build configure is done    "
@@ -248,7 +237,6 @@ function build(){
     else
         echo " $SELF ($state): building source tree          "
         build_target ambient
-        build_target types
         build_target dmrg
         set_state build
         echo " $SELF (build): build has finished             "
@@ -264,7 +252,6 @@ function test(){
     else
         echo " $SELF ($state): running all tests             "
         test_target ambient
-        test_target types
         test_target dmrg
         echo " $SELF (build): testing has finished           "
     fi
@@ -336,7 +323,6 @@ function dash(){
     else
         echo " $SELF ($state): running all tests (dashboard) "
         dash_target ambient
-        dash_target types
         dash_target dmrg
         echo " $SELF (build): dashboard refresh has finished "
     fi

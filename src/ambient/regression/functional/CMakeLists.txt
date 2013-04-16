@@ -67,6 +67,6 @@ foreach( functional_test
          aux.hermitian.out
          algo.exp.out
  )
-    target_link_libraries (${functional_test} ambient ${BLAS_LAPACK} ${MPI_CXX_LIBRARIES} ${MAQUIS_TYPES_LIBRARIES}) 
+    target_link_libraries (${functional_test} ambient ${BLAS_LAPACK} ${MPI_CXX_LIBRARIES} ${MAQUIS_TESTS_LIBRARIES}) 
     add_test(${functional_test} ${functional_test})
 endforeach(functional_test)
