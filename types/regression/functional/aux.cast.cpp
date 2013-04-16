@@ -35,6 +35,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_S2P, T, test_types)
     pA = maquis::bindings::matrix_cast<pMatrix>(sA);
     BOOST_CHECK(sA==pA);
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_C2D, T, test_types) //complex to double only for TE into exp function heev
+{
+    typedef ambient::numeric::tiles<ambient::numeric::diagonal_matrix<double> > pDiagMatrixDouble;
+    typedef ambient::numeric::tiles<ambient::numeric::diagonal_matrix< std::complex<double> > > pDiagMatrixComplex;
+
+    pDiagMatrixDouble pAd(T::valuex,T::valuey);
+    pDiagMatrixDouble pBd(T::valuex,T::valuey);
+    pDiagMatrixComplex pAc(T::valuex,T::valuey);
+
+    generate(pAd,Rd); // Rd is rand generator static variable inside utilities
+    pAc = maquis::bindings::matrix_cast<pDiagMatrixComplex,pDiagMatrixDouble>(pAd);
+    pBd = maquis::bindings::matrix_cast<pDiagMatrixDouble,pDiagMatrixComplex>(pAc);
+    BOOST_CHECK(pAd==pBd);
+}
+
+
 /*
 BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_P2S_DIAG, T, test_types)
 {

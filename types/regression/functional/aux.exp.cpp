@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EXP_SCAL, T, test_types)
     sA = maquis::bindings::matrix_cast<sDiagMatrix>(pA);
 
     sA = exp(sA*a);
-    pA = exp(pA,a);
+    pA = expi(pA,a);
 
     BOOST_CHECK(pA==sA);
 }

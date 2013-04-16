@@ -28,6 +28,7 @@ struct size {
 typedef ambient::dim2 dim;
 
 typedef boost::mpl::list< 
+/*
                          size<2,0,double>,
                          size<2,0,std::complex<double> >,
                          size<2,3,double>,
@@ -38,8 +39,9 @@ typedef boost::mpl::list<
                          size<5,0,std::complex<double> >,
                          size<5,-7,double>,
                          size<5,-7,std::complex<double> >,
-                         size<5,7,double>,
-                         size<5,7,std::complex<double> >
+*/
+                         size<5,-7,double>,
+                         size<5,-7,std::complex<double> >
                         > test_types; 
 
 struct caveats {

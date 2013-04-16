@@ -11,7 +11,7 @@
 #include "ambient/numeric/matrix.hpp"
 #include "utilities.h"
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( HEEV_COMPARISON, T, test_types)
+BOOST_AUTO_TEST_CASE_TEMPLATE( HEEV_COMPARISON_VALUE, T, test_types)
 {
     typedef alps::numeric::matrix<typename T::value_type> sMatrix;
     typedef ambient::numeric::tiles<ambient::numeric::matrix<typename T::value_type> > pMatrix;
@@ -32,5 +32,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( HEEV_COMPARISON, T, test_types)
 
     heev(pA,pV,pE);
     heev(sA,sV,sE);
-    BOOST_CHECK(pE == sE);
+
+   // BOOST_CHECK(pE == sE);
+    BOOST_CHECK(pV == sV);
 }

@@ -55,3 +55,24 @@ struct helper_test<std::complex<T>, Size >{
 BOOST_AUTO_TEST_CASE_TEMPLATE( EXP_ALGO, T, test_types) {
     helper_test<typename T::value_type, T::valuex>::test(); 
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( EXP_ALGO_HERMITIAN, T, test_types) {
+    typedef alps::numeric::matrix<typename T::value_type> sMatrix;
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<typename T::value_type> > pMatrix;
+
+    typename T::value_type a; 
+    random_helper<typename T::value_type>::randomize(a);
+
+    int Size = T::valuex; 
+
+    pMatrix pA(Size, Size), pB(Size, Size);
+    sMatrix sA(Size, Size), sB(Size, Size);
+   
+    generate(pA);
+    sA = maquis::bindings::matrix_cast<sMatrix>(pA);
+
+    sB = exp_hermitian(sA,a);
+    pB = exp_hermitian(pA,a);
+
+    BOOST_CHECK(pB==sB);
+}
