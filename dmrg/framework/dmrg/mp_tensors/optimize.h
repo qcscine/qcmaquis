@@ -29,8 +29,8 @@ template<class Matrix, class SymmGroup>
 struct SiteProblem
 {
     SiteProblem(MPSTensor<Matrix, SymmGroup> const & ket_tensor_,
-                Boundary<Matrix, SymmGroup> const & left_,
-                Boundary<Matrix, SymmGroup> const & right_,
+                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
+                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
                 MPOTensor<Matrix, SymmGroup> const & mpo_)
     : ket_tensor(ket_tensor_)
     , left(left_)
@@ -38,8 +38,8 @@ struct SiteProblem
     , mpo(mpo_) { }
     
     MPSTensor<Matrix, SymmGroup> const & ket_tensor;
-    Boundary<Matrix, SymmGroup> const & left;
-    Boundary<Matrix, SymmGroup> const & right;
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
 };
 
@@ -98,14 +98,14 @@ protected:
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         MPSTensor<Matrix, SymmGroup> bkp = mps[site];
-        Boundary<Matrix, SymmGroup> left = contraction::overlap_mpo_left_step(mps[site], bkp, left_[site], mpo[site]);
+        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left = contraction::overlap_mpo_left_step(mps[site], bkp, left_[site], mpo[site]);
         left_[site+1] = left;        
     }
     
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         MPSTensor<Matrix, SymmGroup> bkp = mps[site];
-        Boundary<Matrix, SymmGroup> right = contraction::overlap_mpo_right_step(mps[site], bkp, right_[site+1], mpo[site]);
+        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right = contraction::overlap_mpo_right_step(mps[site], bkp, right_[site+1], mpo[site]);
         right_[site] = right;
     }
 
@@ -119,7 +119,7 @@ protected:
         right_stores_.resize(L+1, storage_master.child());
         left_stores_.resize(L+1, storage_master.child());
         
-        Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left = mps.left_boundary();
         storage::reset(left_stores_[0]);
         left_[0] = left;
         
@@ -131,7 +131,7 @@ protected:
         storage::store(left_[site], left_stores_[site]);
         
         
-        Boundary<Matrix, SymmGroup> right = mps.right_boundary();
+        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right = mps.right_boundary();
         storage::reset(right_stores_[L]);
         right_[L] = right;
                 
@@ -148,7 +148,7 @@ protected:
     MPO<Matrix, SymmGroup> mpo, mpo_orig;
     
     BaseParameters & parms;
-    std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
+    std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
     std::vector<typename StorageMaster::Storage> left_stores_, right_stores_;
     StorageMaster & storage_master;
 };

@@ -24,13 +24,64 @@
 /********************
  * Forward declarations
  ********************/
+
+class StreamStorageMaster;
+
 template<class Matrix, class SymmGroup>
 class block_matrix;
 template<class Matrix, class SymmGroup>
 class Boundary;
 
-class StreamStorageMaster;
+namespace alps { namespace numeric {
+    template <typename T, typename MemoryBlock> class matrix;
+} }
 
+#ifdef USE_AMBIENT
+namespace ambient { 
+    namespace numeric {
+    template <typename Matrix> class tiles;
+    template <typename T, class Allocator> class matrix;
+    }
+    template <class T>
+    class default_allocator {
+        typedef T value_type;
+        template <class U> struct rebind { typedef default_allocator<U> other; };
+    public:
+        static T* allocate(std::size_t n){ return (T*)malloc(sizeof(T)*n); }
+        static void deallocate(T* p, std::size_t n){ free(p); }
+    };
+}
+#endif
+
+namespace storage {
+
+    template <class T>
+    class constrained_allocator {
+        typedef T value_type;
+        template <class U> struct rebind { typedef constrained_allocator<U> other; };
+    public:
+        static T* allocate(std::size_t n){ return (T*)malloc(sizeof(T)*n); }
+        static void deallocate(T* p, std::size_t n){ free(p); }
+    };
+
+    template<class T>
+    class constrained { 
+        typedef T type;
+    };
+
+    template<typename T>
+    class constrained<alps::numeric::matrix<T, std::vector<T> > > {
+        typedef alps::numeric::matrix<T, std::vector<T, constrained_allocator<T> > > type;
+    };
+
+#ifdef USE_AMBIENT
+    template<typename T>
+    class constrained<ambient::numeric::tiles<ambient::numeric::matrix<T, ambient::default_allocator<T> > > > {
+        typedef ambient::numeric::tiles<ambient::numeric::matrix<T, constrained_allocator<T> > > type;
+    };
+#endif
+
+}
 
 /********************
  * StreamStorage
@@ -163,14 +214,14 @@ protected:
 
 
 /********************
- * Stream__Request_impl for Boundary<Matrix, SymmGroup>
+ * Stream__Request_impl for Boundary<typename storage::constrained<Matrix>::type, SymmGroup>
  ********************/
 
 template<class Matrix, class SymmGroup>
-class StreamReadRequest_impl<Boundary<Matrix, SymmGroup> >
+class StreamReadRequest_impl<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> >
 : public StreamRequest
 {
-    typedef Boundary<Matrix, SymmGroup> Object;
+    typedef Boundary<typename storage::constrained<Matrix>::type, SymmGroup> Object;
     
 public:
     StreamReadRequest_impl(StreamStorage * store_,
@@ -214,10 +265,10 @@ private:
 };
 
 template<class Matrix, class SymmGroup>
-class StreamWriteRequest_impl<Boundary<Matrix, SymmGroup> >
+class StreamWriteRequest_impl<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> >
 : public StreamRequest
 {
-    typedef Boundary<Matrix, SymmGroup> Object;
+    typedef Boundary<typename storage::constrained<Matrix>::type, SymmGroup> Object;
     
 public:
     StreamWriteRequest_impl(StreamStorage * store_,
@@ -370,6 +421,7 @@ private:
  * storage
  ********************/
 namespace storage {
+
     template<class T>
     void prefetch(T & o, StreamStorage & ss)
     {

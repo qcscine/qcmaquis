@@ -550,11 +550,11 @@ struct multigrid {
          * INIT BOUNDARIES
          */
         
-        std::vector<Boundary<Matrix, SymmGroup> > left_(LL+1), right_(L+1);        
+        std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_(LL+1), right_(L+1);        
         {
             left_[0] = mps_small.left_boundary();
             
-            Boundary<Matrix, SymmGroup> right = mps_small.right_boundary();
+            Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right = mps_small.right_boundary();
             right_[L] = right;
             
             for(int i = L-1; i >= 0; --i) {
@@ -591,10 +591,10 @@ struct multigrid {
 
             
             MPSTensor<Matrix, SymmGroup> bkp;
-            Boundary<Matrix, SymmGroup> right;
+            Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right;
             
             
-            Boundary<Matrix, SymmGroup> right_mixed;
+            Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right_mixed;
             if (p<L-1) {
                 right_mixed = right_[p+2];
                 bkp = mps_small[p+1];

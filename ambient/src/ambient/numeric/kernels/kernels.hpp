@@ -43,9 +43,9 @@ namespace ambient { namespace numeric { namespace kernels {
     struct tsmlq : public kernel< tsmlq<T,TR> > 
     { static void c(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t); };
 
-    template<class ViewA, class ViewB, typename T>
-    struct gemm : public kernel< gemm<ViewA, ViewB, T> > 
-    { static void c(const matrix<T>& a, const matrix<T>& b, unbound< matrix<T> >& c); };
+    template<class ViewA, class ViewB, class ViewC, typename T>
+    struct gemm : public kernel< gemm<ViewA, ViewB, ViewC, T> > 
+    { static void c(const matrix<T,typename ViewA::allocator_type>& a, const matrix<T,typename ViewB::allocator_type>& b, unbound< matrix<T,typename ViewC::allocator_type> >& c); };
         
     template<class ViewB, typename T, typename D>
     struct gemm_diagonal_lhs : public kernel< gemm_diagonal_lhs<ViewB,T,D> > 
@@ -63,9 +63,9 @@ namespace ambient { namespace numeric { namespace kernels {
     struct gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D> : public kernel< gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D> > 
     { static void c(const matrix<T>& a, const matrix<D>& b_diag, unbound< matrix<T> >& c); };
         
-    template<typename T>
-    struct trace : public kernel< trace<T> > 
-    { static void c(const matrix<T>& a, future<T>& trace); };
+    template<typename T, class A>
+    struct trace : public kernel< trace<T,A> > 
+    { static void c(const matrix<T,A>& a, future<T>& trace); };
         
     template<typename T>
     struct scalar_norm : public kernel< scalar_norm<T> > 
@@ -75,9 +75,9 @@ namespace ambient { namespace numeric { namespace kernels {
     struct overlap : public kernel< overlap<T> > 
     { static void c(const matrix<T>& a, const matrix<T>& b, future<T>& overlap); };
         
-    template<typename T>
-    struct add : public kernel< add<T> > 
-    { static void c(matrix<T>& a, const matrix<T>& b); };
+    template<typename T, class A>
+    struct add : public kernel< add<T,A> > 
+    { static void c(matrix<T,A>& a, const matrix<T,A>& b); };
         
     template<typename T>
     struct sub : public kernel< sub<T> > 
@@ -103,25 +103,25 @@ namespace ambient { namespace numeric { namespace kernels {
     struct exp_diagonal : public kernel< exp_diagonal<T> > 
     { static void c(matrix<T>& a, const T& alfa); };
 
-    template<typename T>
-    struct transpose_out : public kernel< transpose_out<T> > 
-    { static void c(const matrix<T>& a, unbound< matrix<T> >& t); };
+    template<typename T, class A>
+    struct transpose_out : public kernel< transpose_out<T,A> > 
+    { static void c(const matrix<T,A>& a, unbound< matrix<T,A> >& t); };
 
-    template<typename T>
-    struct conj_inplace : public kernel< conj_inplace<T> > 
-    { static void c(matrix<T>& a); };
+    template<typename T, class A>
+    struct conj_inplace : public kernel< conj_inplace<T,A> > 
+    { static void c(matrix<T,A>& a); };
 
-    template<typename T>
-    struct resize : public kernel< resize<T> > 
-    { static void c(unbound< matrix<T> >& r, const matrix<T>& a, const size_t& m, const size_t& n); };
+    template<typename T, class A>
+    struct resize : public kernel< resize<T,A> > 
+    { static void c(unbound< matrix<T,A> >& r, const matrix<T,A>& a, const size_t& m, const size_t& n); };
         
     template<typename T>
     struct init_identity : public kernel< init_identity<T> > 
     { static void c(unbound< matrix<T> >& a); };
         
-    template<typename T>
-    struct init_value : public kernel< init_value<T> > 
-    { static void c(unbound< matrix<T> >& a, const T& value); };
+    template<typename T, class A>
+    struct init_value : public kernel< init_value<T,A> > 
+    { static void c(unbound< matrix<T,A> >& a, const T& value); };
         
     template<typename T>
     struct round_square : public kernel< round_square<T> > 
@@ -186,11 +186,11 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& m, const size_t& n);
     };
 
-    template<typename T>
-    struct copy_block_sa : public kernel< copy_block_sa<T> > {
-        static void c(const matrix<T>& src, const size_t& si, const size_t& sj,
-                      matrix<T>& dst, const size_t& di, const size_t& dj, 
-                      const matrix<T>& alfa, const size_t& ai, const size_t& aj,
+    template<class A1, class A2, class A3, typename T>
+    struct copy_block_sa : public kernel< copy_block_sa<A1,A2,A3,T> > {
+        static void c(const matrix<T,A1>& src, const size_t& si, const size_t& sj,
+                      matrix<T,A2>& dst, const size_t& di, const size_t& dj, 
+                      const matrix<T,A3>& alfa, const size_t& ai, const size_t& aj,
                       const size_t& m, const size_t& n);
     };
        
@@ -306,8 +306,10 @@ namespace ambient { namespace numeric { namespace kernels {
                                 work, AMBIENT_IB);
     }
 
-    template<class ViewA, class ViewB, typename T>
-    void gemm<ViewA, ViewB, T>::c(const matrix<T>& a, const matrix<T>& b, unbound< matrix<T> >& c){
+    template<class ViewA, class ViewB, class ViewC, typename T>
+    void gemm<ViewA, ViewB, ViewC, T>::c(const matrix<T,typename ViewA::allocator_type>& a, 
+                                         const matrix<T,typename ViewB::allocator_type>& b, 
+                                      unbound< matrix<T,typename ViewC::allocator_type> >& c){
         if(!raw(a).valid() || !raw(b).valid()){
             emptied(c);
             return;
@@ -428,11 +430,11 @@ namespace ambient { namespace numeric { namespace kernels {
                                              dim2( n, m ), factor);
     }
 
-    template<typename T>
-    void copy_block_sa<T>::c(const matrix<T>& src, const size_t& si, const size_t& sj,
-                             matrix<T>& dst, const size_t& di, const size_t& dj, 
-                             const matrix<T>& alfa, const size_t& ai, const size_t& aj,
-                             const size_t& m, const size_t& n)
+    template<class A1, class A2, class A3, typename T>
+    void copy_block_sa<A1,A2,A3,T>::c(const matrix<T,A1>& src, const size_t& si, const size_t& sj,
+                                      matrix<T,A2>& dst, const size_t& di, const size_t& dj, 
+                                      const matrix<T,A3>& alfa, const size_t& ai, const size_t& aj,
+                                      const size_t& m, const size_t& n)
     {
         T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
         ambient::memptf<T, ambient::memscala>(revised(dst), dst.num_rows(), dim2(dj, di), 
@@ -440,8 +442,8 @@ namespace ambient { namespace numeric { namespace kernels {
                                               dim2( n, m ), factor);
     }
         
-    template<typename T>
-    void trace<T>::c(const matrix<T>& a, future<T>& trace){
+    template<typename T, class A>
+    void trace<T,A>::c(const matrix<T,A>& a, future<T>& trace){
         size_t m = a.num_rows();
         size_t n = a.num_cols();
         T* ad = current(a);
@@ -465,8 +467,8 @@ namespace ambient { namespace numeric { namespace kernels {
         overlap.get_naked() = ambient::dot(ad, bd, ambient::square_dim(a));
     }
 
-    template<typename T>
-    void add<T>::c(matrix<T>& a, const matrix<T>& b){
+    template<typename T, class A>
+    void add<T,A>::c(matrix<T,A>& a, const matrix<T,A>& b){
         T* ad = current(a);
         T* bd = current(b);
         T* ar = updated(a);
@@ -532,8 +534,8 @@ namespace ambient { namespace numeric { namespace kernels {
         for(size_t i = 0; i < size; ++i) ar[i] = std::exp(alfa*ad[i]);
     }
 
-    template<typename T>
-    void transpose_out<T>::c(const matrix<T>& a, unbound< matrix<T> >& t){
+    template<typename T, class A>
+    void transpose_out<T,A>::c(const matrix<T,A>& a, unbound< matrix<T,A> >& t){
         T* od = current(a);
         T* td = updated(t);
         int m = a.num_rows();
@@ -545,8 +547,8 @@ namespace ambient { namespace numeric { namespace kernels {
         }
     }
 
-    template<typename T>
-    void conj_inplace<T>::c(matrix<T>& a){
+    template<typename T, class A>
+    void conj_inplace<T,A>::c(matrix<T,A>& a){
         size_t size = a.num_rows()*a.num_cols();
         T* ad = current(a);
         T* ar = updated(a);
@@ -554,8 +556,8 @@ namespace ambient { namespace numeric { namespace kernels {
             ar[i] = helper_complex<T>::conj(ad[i]);   
     }
 
-    template<typename T>
-    void resize<T>::c(unbound< matrix<T> >& r, const matrix<T>& a, const size_t& m, const size_t& n){
+    template<typename T, class A>
+    void resize<T,A>::c(unbound< matrix<T,A> >& r, const matrix<T,A>& a, const size_t& m, const size_t& n){
         T* dd = m*n == ambient::square_dim(r) ? updated(r) : emptied(r);
         ambient::memptf<T, ambient::memcpy>(dd, r.num_rows(), dim2(0,0),
                                             current(a), a.num_rows(), dim2(0,0), dim2(n, m)); 
@@ -589,8 +591,8 @@ namespace ambient { namespace numeric { namespace kernels {
         for(size_t i = 0; i < size; ++i) randomize(ad[i]);
     }
         
-    template<typename T>
-    void init_value<T>::c(unbound< matrix<T> >& a, const T& value){
+    template<typename T, class A>
+    void init_value<T,A>::c(unbound< matrix<T,A> >& a, const T& value){
         size_t size = ambient::square_dim(a);
         T* ad = updated(a);
         for(size_t i = 0; i < size; ++i) ad[i] = value; // not a memset due to complex

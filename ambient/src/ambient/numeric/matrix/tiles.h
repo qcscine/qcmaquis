@@ -8,9 +8,10 @@ namespace ambient { namespace numeric {
     public:
         typedef typename Matrix::value_type  value_type;
         typedef typename Matrix::size_type   size_type;
-        typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::real_type   real_type;
         typedef typename Matrix::scalar_type scalar_type;
+        typedef typename Matrix::difference_type difference_type;
+        typedef typename Matrix::allocator_type allocator_type;
 
         void* operator new (size_t);
         void operator delete (void* ptr);
@@ -63,6 +64,8 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::size_type  size_type;
         typedef typename Matrix::value_type value_type;
+        typedef typename Matrix::allocator_type allocator_type;
+
         Matrix& tile(size_type i, size_type j);
         const Matrix& tile(size_type i, size_type j) const;
         Matrix& operator[] (size_type k);

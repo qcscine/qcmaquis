@@ -69,20 +69,20 @@ public:
     std::string description() const;
     
     void grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
-                        Boundary<Matrix, SymmGroup> const & left,
-                        Boundary<Matrix, SymmGroup> const & right,
+                        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left,
+                        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right,
                         std::size_t l, double alpha,
                         double cutoff, std::size_t Mmax,
                         Logger &);
     void grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
-                        Boundary<Matrix, SymmGroup> const & left,
-                        Boundary<Matrix, SymmGroup> const & right,
+                        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left,
+                        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right,
                         std::size_t l, double alpha,
                         double cutoff, std::size_t Mmax,
                         Logger &);
     
-    Boundary<Matrix, SymmGroup> left_boundary() const;
-    Boundary<Matrix, SymmGroup> right_boundary() const;
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left_boundary() const;
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right_boundary() const;
     
     friend void swap(MPS& a, MPS& b)
     {
