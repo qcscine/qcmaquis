@@ -164,11 +164,6 @@ endif(DMRG_VERSION_BUILD)
 set(DMRG_VERSION_STRING "DMRG version ${DMRG_VERSION}")
 MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}") 
 
-######################################################################
-# CPU Freq.
-######################################################################
-add_definitions(-DCPU_FREQ=${CPU_FREQ})
-
 
 ######################################################################
 # Parsing user options
