@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( TRACE, T, test_types)
     typename T::value_type sa = trace(sA);
     typename T::value_type pa = trace(pA);
 
-    maquis::cout << "Trace of sA " << sa << "; trace of pA " << pa << std::endl;
+    ambient::cout << "Trace of sA " << sa << "; trace of pA " << pa << std::endl;
     Boost_check_close_adapter(sa,pa);
 }
 
