@@ -23,7 +23,7 @@ set(AMBIENT_SOURCES_DIR "../ambient" CACHE STRINGS "Location of the ambient sour
 option(ENABLE_PARALLEL "Enable parallel matrix classes" OFF)
 option(ENABLE_REGRESSION_FUNCTIONAL "Build regression functional tests" OFF)
 option(ENABLE_REGRESSION_PERFORMANCE "Build regression performance tests" OFF)
-option(ENABLE_SANDBOX "play play play play" OFF)
+option(ENABLE_SANDBOX "Build regression sandbox" OFF)
 option(ENABLE_ALGEBRA "Enable algebra test " OFF)
 option(ENABLE_PLOT "Plot performance test " OFF)
 option(BUILD_AMBIENT "Build Ambient ? " OFF)
