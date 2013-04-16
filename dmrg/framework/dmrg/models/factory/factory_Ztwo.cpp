@@ -13,10 +13,7 @@
 
 typedef Ztwo grp;
 
-#if defined USE_MTM
-impl_init_model(mtmatrix, grp)
-impl_init_model(cmtmatrix, grp)
-#elif defined USE_AMBIENT
+#if defined USE_AMBIENT
 impl_init_model(pmatrix, grp)
 impl_init_model(cpmatrix, grp)
 #else

@@ -18,18 +18,7 @@
 
 #include "dmrg/block_matrix/detail/alps.hpp"
 
-#ifdef USE_GPU
-#include <cublas.h>
-#endif
-
-#ifdef USE_MTM
-#define USE_MTM_MAIN
-#include "types/mt_matrix/mt_matrix.h"
-#include "types/mt_matrix/algorithms.hpp"
-typedef alps::numeric::mt_matrix<double> Matrix;
-#else
 typedef alps::numeric::matrix<double> Matrix;
-#endif
 
 #include <alps/hdf5.hpp>
 
@@ -135,10 +124,6 @@ int main(int argc, char ** argv)
     }
     
     maquis::cout.precision(10);
-    
-#ifdef USE_GPU
-	cublasInit();
-#endif
     
     std::ifstream param_file(argv[1]);
     if (!param_file) {
@@ -471,7 +456,4 @@ int main(int argc, char ** argv)
     
     maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
     
-#ifdef USE_GPU
-	cublasShutdown();
-#endif
 }

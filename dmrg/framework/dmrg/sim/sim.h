@@ -21,14 +21,6 @@
 
 #include "utils/data_collector.hpp"
 
-//#ifdef USE_MTM
-//#include "types/mt_matrix/algorithms.hpp"
-//#endif
-
-#ifdef USE_GPU
-#include <cublas.h>
-#endif
-
 #include <alps/hdf5.hpp>
 
 #include "dmrg/utils/DmrgParameters2.h"

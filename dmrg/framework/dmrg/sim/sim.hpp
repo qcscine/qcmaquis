@@ -66,9 +66,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
     
     gettimeofday(&now, NULL);
 
-#ifdef USE_GPU
-    cublasInit();
-#endif
     restore = false;
     {
 		boost::filesystem::path p(chkpfile);
@@ -179,9 +176,6 @@ template <class Matrix, class SymmGroup>
 sim<Matrix, SymmGroup>::~sim()
 {
     ssm.sync();
-#ifdef USE_GPU
-    cublasShutdown();
-#endif
 }
 
 template <class Matrix, class SymmGroup>

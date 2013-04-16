@@ -13,10 +13,6 @@
     #include "dmrg/block_matrix/detail/ambient.hpp"
     typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
     typedef ambient::numeric::tiles<ambient::numeric::matrix< std::complex<double> > > cmatrix;
-#elif defined USE_MTM
-#include "types/mt_matrix/mt_matrix.h"
-    typedef alps::numeric::mt_matrix<double> matrix;
-    typedef alps::numeric::mt_matrix<std::complex<double> > cmatrix;
 #else
     #include "dmrg/block_matrix/detail/alps.hpp"
     typedef alps::numeric::matrix<double> matrix;

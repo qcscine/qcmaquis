@@ -34,8 +34,6 @@ set(BUILD_SYMMETRIES "U1;TwoU1;NONE" CACHE STRINGS "List of symmetry to include 
 option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" ON)
 option(ENABLE_OMP "Enable OpenMP" OFF)
 option(USE_AMBIENT "Enable Ambient" OFF)
-option(USE_MTM "Use multi threads matrix class" OFF)
-option(USE_GPU "Use GPU in libmtm" OFF)
 option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
 
 option(ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
@@ -106,9 +104,6 @@ mark_as_advanced(ALPS_LIBRARY_DIRS ALPS_INCLUDE_DIRS HDF5_INCLUDE_DIR HDF5_LIBRA
 
 # Boost
 set(Boost_requirements bindings date_time filesystem regex system serialization)
-if(USE_MTM)
-  list(APPEND Boost_requirements thread)
-endif(USE_MTM)
 if(BUILD_REGRESSION)
   list(APPEND Boost_requirements unit_test_framework)
 endif(BUILD_REGRESSION)
@@ -221,22 +216,6 @@ endif(${BLAS_LAPACK_SELECTOR} MATCHES "manual")
 # message("CMAKE_EXE_LINKER_FLAGS:"${CMAKE_EXE_LINKER_FLAGS})
 
 
-if(USE_MTM)
-  add_definitions(-DUSE_MTM)
-  if(USE_GPU)
-    find_package(CUDA)
-    include_directories(${CUDA_INCLUDE_DIRS})
-    list(APPEND DMRG_LIBRARIES ${CUDA_CUBLAS_LIBRARIES} ${CUDA_LIBRARIES})
-    add_definitions(-DUSE_GPU)
-  endif(USE_GPU)
-else(USE_MTM)
-  if(USE_GPU)
-    message(STATUS "USE_GPU only works if USE_MTM is enabled")
-  endif(USE_GPU)
-endif(USE_MTM)
-
-
-
 # OpenMP
 if(ENABLE_OMP)
   if(OPENMP_FOUND)
@@ -342,9 +321,6 @@ endif(USE_IMGTE_ONLY)
 
 
 # *** libraries / utilities
-if(USE_MTM)
-add_subdirectory(${MATRICES_DIR}/types/mt_matrix types/mt_matrix)
-endif(USE_MTM)
 add_subdirectory(framework/dmrg)
 
 # *** applications
