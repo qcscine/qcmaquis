@@ -3,7 +3,6 @@
 
 #include "ambient/ambient.hpp"
 #include "ambient/numeric/future.hpp"
-#include "utils/io.hpp"
 #include <alps/hdf5.hpp>
 
 namespace ambient { namespace numeric {
