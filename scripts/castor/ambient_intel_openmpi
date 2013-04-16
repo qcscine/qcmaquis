@@ -1,6 +1,6 @@
 #!/bin/bash -l
 STATE="void"
-STATE_AMBIENT="build"
+STATE_AMBIENT="configure"
 STATE_DMRG="configure"
 # end of target states #
 SHARED_FS=true

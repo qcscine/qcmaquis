@@ -192,7 +192,7 @@ write_states(){
     echo "STATE=\"$STATE\""                 >> $MOD
     echo "STATE_AMBIENT=\"$STATE_AMBIENT\"" >> $MOD
     echo "STATE_DMRG=\"$STATE_DMRG\""       >> $MOD
-    tail -n +6 $ORIG                        >> $MOD
+    tail -n +5 $ORIG                        >> $MOD
     mv $MOD $ORIG
 }
 
