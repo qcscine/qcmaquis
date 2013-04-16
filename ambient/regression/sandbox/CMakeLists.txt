@@ -21,6 +21,6 @@ endif()
 foreach( sandbox_test
          #test.binary
 )
-    target_link_libraries (${sandbox_test} ambient ${BLAS_LAPACK} ${MPI_CXX_LIBRARIES} ${MAQUIS_TYPES_LIBRARIES}) 
+    target_link_libraries (${sandbox_test} ambient ${BLAS_LAPACK} ${MPI_CXX_LIBRARIES} ${MAQUIS_TESTS_LIBRARIES}) 
     add_test(${sandbox_test} ${sandbox_test})
 endforeach(sandbox_test)

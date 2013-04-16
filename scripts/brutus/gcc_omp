@@ -1,7 +1,6 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_TYPES="void"
 STATE_DMRG="configure"
 # end of target states #
 PREFIX=default

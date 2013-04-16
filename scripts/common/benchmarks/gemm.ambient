@@ -1,7 +1,7 @@
 #!/bin/bash -l
 
 ## benchmark ##
-TARGET="types"
+TARGET="ambient"
 BENCHMARK="gemm.ambient"
 NAME="${SELF}_${BENCHMARK}"
 TITLE="Ambient DGEMM performance"

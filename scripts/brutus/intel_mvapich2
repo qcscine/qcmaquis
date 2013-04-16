@@ -1,7 +1,6 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_TYPES="void"
 STATE_DMRG="build"
 # end of target states #
 PREFIX=standard
@@ -25,11 +24,9 @@ module load ${COMPILER}/${COMPILER_VERSION}
 MAQUIS_COMMON_DEFAULT_BLAS_LAPACK=manual
 MAQUIS_COMMON_BLAS_LAPACK_MANUAL_INCLUDES=/cluster/apps/intel/composer_xe_2011_sp1.8.273/composer_xe_2011_sp1.8.273/mkl/include
 MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wall -O2 -funroll-loops -std=c++0x -m64 -mkl=parallel"
-## types ##
-MAQUIS_TYPES_BUILD_AMBIENT=OFF
-MAQUIS_TYPES_ENABLE_PARALLEL=OFF
-MAQUIS_TYPES_ENABLE_REGRESSION_FUNCTIONAL=OFF
-MAQUIS_TYPES_BOOST_BINDINGS_INCLUDE=/cluster/home/phys/ewartt/alps/include
+## ambient ##
+MAQUIS_AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=OFF
+MAQUIS_AMBIENT_BOOST_BINDINGS_INCLUDE=/cluster/home/phys/ewartt/alps/include
 ## dmrg ##
 MAQUIS_DMRG_ALPS_ROOT_DIR=/cluster/home/phys/ewartt/alps
 MAQUIS_DMRG_BUILD_REGRESSION=OFF 
