@@ -1,15 +1,4 @@
-#define BOOST_TEST_MODULE ambient_c_kernels
-#include <mpi.h>
-#include <omp.h>
-#include <boost/test/unit_test.hpp>
-#include <boost/test/test_case_template.hpp>
-#include <boost/mpl/list.hpp>
-
-#include "ambient/numeric/matrix.hpp"
-#include "alps/numeric/matrix.hpp"
-#include "alps/numeric/matrix/algorithms.hpp"
-#include "alps/numeric/diagonal_matrix.hpp"
-#include "utilities.h"
+#include "params.hpp"
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     typedef ambient::dim2 dim;

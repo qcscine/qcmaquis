@@ -162,14 +162,8 @@ message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
 ######################################################################
 
 # Include/Link Directories
-include_directories(${PROJECT_SOURCE_DIR}/src)
-include_directories(${CMAKE_BINARY_DIR}/src)
 list(APPEND MAQUIS_TYPES_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include)
 list(APPEND MAQUIS_TYPES_LIBRARY_DIRS ${CMAKE_INSTALL_PREFIX}/lib)
-
-
-# Targets
-add_subdirectory(src)
 
 
 # ALPS I need ALPS for Boost numeric
@@ -182,12 +176,14 @@ endif(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
 
 if(ENABLE_REGRESSION_FUNCTIONAL)
   if(ENABLE_PARALLEL)
+    include_directories(${PROJECT_SOURCE_DIR}/regression)
     add_subdirectory(regression/functional)
   endif(ENABLE_PARALLEL)
 endif(ENABLE_REGRESSION_FUNCTIONAL)
 
 if(ENABLE_REGRESSION_PERFORMANCE)
   if(ENABLE_PARALLEL)
+    include_directories(${PROJECT_SOURCE_DIR}/regression)
     add_subdirectory(regression/performance)
   endif(ENABLE_PARALLEL)
 endif(ENABLE_REGRESSION_PERFORMANCE)

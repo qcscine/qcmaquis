@@ -1,16 +1,4 @@
-#define BOOST_TEST_MODULE benchmarks
-#include <mpi.h>
-#include <omp.h>
-#include <boost/test/unit_test.hpp>
-#include <boost/test/test_case_template.hpp>
-#include <boost/mpl/list.hpp>
-
-#include <iostream>
-#include <cmath>
-#include <complex>
-
-#include "ambient/utils/timings.hpp"
-#include "utilities.h"
+#include "params.hpp"
 
 namespace Random{
    struct random {
