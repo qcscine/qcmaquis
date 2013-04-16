@@ -8,8 +8,7 @@
 #define size_type       typename tiles<Matrix>::size_type
 #define real_type       typename tiles<Matrix>::real_type
 #define scalar_type     typename tiles<Matrix>::scalar_type
-#define difference_type typename tiles<Matrix>::difference_type
-
+#define allocator_type  typename tiles<Matrix>::allocator_type
 
 namespace ambient { namespace numeric {
 
@@ -275,13 +274,13 @@ namespace ambient { namespace numeric {
                      factor, ai, aj, row.step, col.step);
     }
 
-    template<class Matrix>
-    inline void copy_block_sa(const tiles<Matrix>& in, size_t ii, size_t ij,
-                              tiles<Matrix>& out, size_t oi, size_t oj, 
-                              const tiles<Matrix>& alfa, size_t ai, size_t aj,
+    template<class M1, class M2, class M3>
+    inline void copy_block_sa(const tiles<M1>& in, size_t ii, size_t ij,
+                              tiles<M2>& out, size_t oi, size_t oj, 
+                              const tiles<M3>& alfa, size_t ai, size_t aj,
                               size_t m, size_t n)
     {
-        const Matrix& factor = alfa.locate(ai, aj); 
+        const M3& factor = alfa.locate(ai, aj); 
         ai %= AMBIENT_IB; aj %= AMBIENT_IB;
         for(cross_iterator row(oi,ii,m); !row.end(); ++row)
         for(cross_iterator col(oj,ij,n); !col.end(); ++col)
@@ -356,7 +355,6 @@ namespace ambient { namespace numeric {
         heev(a, evecs, evals); // should be call syev instead? -> Alex syev for double, heev for complex
     }
                 
-
     template<class Matrix>
     void orgqr(const tiles<Matrix>&& a, tiles<Matrix>&& q, const tiles<Matrix>&& t){
         int k, m, n;
@@ -763,8 +761,8 @@ namespace ambient { namespace numeric {
     }
 
     template <class Matrix, class MatrixB>
-    inline tiles<matrix<value_type> > operator * (const tiles<Matrix>& lhs, const tiles<MatrixB>& rhs){
-        tiles<matrix<value_type> > ret(lhs.num_rows(), rhs.num_cols());
+    inline tiles<matrix<value_type,allocator_type> > operator * (const tiles<Matrix>& lhs, const tiles<MatrixB>& rhs){
+        tiles<matrix<value_type,allocator_type> > ret(lhs.num_rows(), rhs.num_cols());
         gemm(lhs, rhs, ret);
         return ret; 
     }
@@ -792,13 +790,13 @@ namespace ambient { namespace numeric {
         size_t n  = c.cols/2;
         size_t nt = c.nt/2;
         if(nt){
-            tiles<matrix<value_type> > m1(n, n);
-            tiles<matrix<value_type> > m2(n, n);
-            tiles<matrix<value_type> > m3(n, n);
-            tiles<matrix<value_type> > m4(n, n); m4 = a.subset(0, 0, nt, nt);
-            tiles<matrix<value_type> > m5(n, n); m5 = b.subset(0, 0, nt, nt);
-            tiles<matrix<value_type> > d(n*2, n*2); d = a;
-            tiles<matrix<value_type> > e(n*2, n*2); e = b;
+            tiles<matrix<value_type,allocator_type> > m1(n, n);
+            tiles<matrix<value_type,allocator_type> > m2(n, n);
+            tiles<matrix<value_type,allocator_type> > m3(n, n);
+            tiles<matrix<value_type,allocator_type> > m4(n, n); m4 = a.subset(0, 0, nt, nt);
+            tiles<matrix<value_type,allocator_type> > m5(n, n); m5 = b.subset(0, 0, nt, nt);
+            tiles<matrix<value_type,allocator_type> > d(n*2, n*2); d = a;
+            tiles<matrix<value_type,allocator_type> > e(n*2, n*2); e = b;
 
             d.subset(0,  0,  nt, nt) += a.subset(0,  nt, nt, nt);  e.subset(0,  0,  nt, nt) += b.subset(0,  nt, nt, nt);
             d.subset(0,  nt, nt, nt) -= a.subset(nt, nt, nt, nt);  e.subset(0,  nt, nt, nt) -= b.subset(nt, nt, nt, nt);
@@ -845,10 +843,9 @@ namespace ambient { namespace numeric {
 
 } }
 
-#undef diag_value_type
 #undef value_type
 #undef size_type
 #undef real_type
 #undef scalar_type
-#undef difference_type 
+#undef allocator_type 
 #endif

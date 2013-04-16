@@ -19,14 +19,14 @@
 #include "utils/traits.hpp"
 
 template<class Matrix, class SymmGroup>
-std::vector<Boundary<Matrix, SymmGroup> >
+std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> >
 left_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo)
 {
     assert(mpo.length() == mps.length());
     std::size_t L = mps.length();
     
-    std::vector<Boundary<Matrix, SymmGroup> > left_(L+1);
-    Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+    std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_(L+1);
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left = mps.left_boundary();
     left_[0] = left;
     
     for (int i = 0; i < L; ++i) {
@@ -39,14 +39,14 @@ left_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> con
 }
 
 template<class Matrix, class SymmGroup>
-std::vector<Boundary<Matrix, SymmGroup> >
+std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> >
 right_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo)
 {
     assert(mpo.length() == mps.length());
     std::size_t L = mps.length();
     
-    std::vector<Boundary<Matrix, SymmGroup> > right_(L+1);
-    Boundary<Matrix, SymmGroup> right = mps.right_boundary();
+    std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > right_(L+1);
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right = mps.right_boundary();
     right_[L] = right;
     
     for (int i = L-1; i >= 0; --i) {
@@ -62,11 +62,11 @@ template<class Matrix, class SymmGroup>
 double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo, int d)
 {
     if (d == 0) {
-        std::vector<Boundary<Matrix, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
+        std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
         assert( check_real(left_[mps.length()][0].trace()) );
         return maquis::real(left_[mps.length()][0].trace());
     } else {
-        std::vector<Boundary<Matrix, SymmGroup> > right_ = right_mpo_overlaps(mps, mpo);
+        std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > right_ = right_mpo_overlaps(mps, mpo);
         assert( check_real(right_[0][0].trace()) );
         return maquis::real(right_[0][0].trace());
     }
@@ -79,7 +79,7 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     assert(mpo.length() == mps.length());
     std::size_t L = mps.length();
     
-    Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left = mps.left_boundary();
     
     for (int i = 0; i < L; ++i) {
         if (verbose)
@@ -98,7 +98,7 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matri
     assert(mpo.length() == mps.length());
     std::size_t L = mps.length();
     
-    Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left = mps.left_boundary();
     
     for (int i = 0; i < L; ++i) {
         MPSTensor<Matrix, SymmGroup> bkp = mps[i];

@@ -8,12 +8,13 @@
 
 namespace ambient { namespace numeric {
 
-    template <typename T>
+    template <typename T, class Allocator = ambient::default_allocator<T> >
     class matrix {
     public:
         typedef ambient::history I;
         typedef T value_type;
         typedef size_t size_type;
+        typedef Allocator allocator_type;
         typedef ptrdiff_t difference_type;
         typedef typename ambient::history* ptr;
         typedef typename ambient::numeric::future<double> real_type;
@@ -71,6 +72,7 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::value_type value_type;
         typedef typename Matrix::scalar_type scalar_type;
         typedef typename Matrix::difference_type difference_type;
+        typedef typename Matrix::allocator_type allocator_type;
         typedef typename Matrix::ptr ptr;
         subset_view(const Matrix& a) : core(a.core), m(&a) {}
         size_t num_rows(){ return m->num_rows(); };
@@ -91,6 +93,7 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::value_type value_type;
         typedef typename Matrix::scalar_type scalar_type;
         typedef typename Matrix::difference_type difference_type;
+        typedef typename Matrix::allocator_type allocator_type;
         void* operator new (size_t);
         void operator delete (void*);
         explicit transpose_view(const Matrix& a);

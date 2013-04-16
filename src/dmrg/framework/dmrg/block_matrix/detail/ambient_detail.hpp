@@ -94,8 +94,8 @@ namespace maquis { namespace dmrg { namespace detail {
                    ldim, rdim);
     }
     
-    template <class M>
-    inline void lb_tensor_mpo(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in, const ambient::numeric::tiles<M>& alfa,
+    template <class M1, class M2, class M3>
+    inline void lb_tensor_mpo(ambient::numeric::tiles<M1>& out, const ambient::numeric::tiles<M2>& in, const ambient::numeric::tiles<M3>& alfa,
                               size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
@@ -105,8 +105,8 @@ namespace maquis { namespace dmrg { namespace detail {
                       alfa, ss1, ss2, ldim, rdim);
     }
     
-    template <class M>
-    inline void rb_tensor_mpo(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in, const ambient::numeric::tiles<M>& alfa,
+    template <class M1, class M2, class M3>
+    inline void rb_tensor_mpo(ambient::numeric::tiles<M1>& out, const ambient::numeric::tiles<M2>& in, const ambient::numeric::tiles<M3>& alfa,
                               size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2)

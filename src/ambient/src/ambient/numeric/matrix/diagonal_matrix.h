@@ -3,7 +3,7 @@
 
 namespace ambient { namespace numeric {
    
-    template<typename T>
+    template<typename T, class Allocator>
     class matrix;
 
     template<typename T>

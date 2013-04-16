@@ -26,8 +26,8 @@ template<class Matrix, class SymmGroup>
 struct SiteProblem
 {
     SiteProblem(MPSTensor<Matrix, SymmGroup> const & ket_tensor_,
-                Boundary<Matrix, SymmGroup> const & left_,
-                Boundary<Matrix, SymmGroup> const & right_,
+                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
+                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
                 MPOTensor<Matrix, SymmGroup> const & mpo_)
     : ket_tensor(ket_tensor_)
     , left(left_)
@@ -35,8 +35,8 @@ struct SiteProblem
     , mpo(mpo_) { }
     
     MPSTensor<Matrix, SymmGroup> const & ket_tensor;
-    Boundary<Matrix, SymmGroup> const & left;
-    Boundary<Matrix, SymmGroup> const & right;
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
 };
 
@@ -134,7 +134,7 @@ private:
         right_stores_.resize(L+1, storage_master.child());
         left_stores_.resize(L+1, storage_master.child());
         
-        Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left = mps.left_boundary();
         left_[0] = left;
         
         storage::reset(left_stores_[0]);
@@ -148,7 +148,7 @@ private:
             storage::store(left_[i+1], left_stores_[i+1]);
         }
         
-        Boundary<Matrix, SymmGroup> right = mps.right_boundary();
+        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right = mps.right_boundary();
         right_[L] = right;
         
         storage::reset(right_stores_[L]);
@@ -168,7 +168,7 @@ private:
     MPO<Matrix, SymmGroup> mpo;
     
     BaseParameters & parms;
-    std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
+    std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
     std::vector<typename StorageMaster::Storage> left_stores_, right_stores_;
     StorageMaster & storage_master;
 };

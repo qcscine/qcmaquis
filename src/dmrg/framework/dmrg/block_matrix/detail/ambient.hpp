@@ -16,12 +16,12 @@
 
 namespace maquis { namespace traits {
 
-    template<typename T> struct scalar_type <ambient::numeric::matrix<T> > { typedef typename ambient::numeric::matrix<T>::scalar_type type; };
+    template<typename T, class Allocator> struct scalar_type <ambient::numeric::matrix<T,Allocator> > { typedef typename ambient::numeric::matrix<T,Allocator>::scalar_type type; };
     template<typename T> struct scalar_type <ambient::numeric::diagonal_matrix<T> > { typedef typename ambient::numeric::matrix<T>::scalar_type type; };
-    template<typename T> struct real_type <ambient::numeric::matrix<T> > { typedef typename ambient::numeric::matrix<T>::real_type type; };
+    template<typename T, class Allocator> struct real_type <ambient::numeric::matrix<T,Allocator> > { typedef typename ambient::numeric::matrix<T,Allocator>::real_type type; };
     template<typename T> struct real_type <ambient::numeric::diagonal_matrix<T> > { typedef typename ambient::numeric::matrix<T>::real_type type; };
 
-    template<typename T> struct transpose_view< ambient::numeric::matrix<T> > { typedef typename ambient::numeric::transpose_view<ambient::numeric::matrix<T> > type; };
+    template<typename T, class Allocator> struct transpose_view< ambient::numeric::matrix<T,Allocator> > { typedef typename ambient::numeric::transpose_view<ambient::numeric::matrix<T,Allocator> > type; };
     template<typename T> struct transpose_view< ambient::numeric::diagonal_matrix<T> > { typedef ambient::numeric::diagonal_matrix<T> type; };
 
     template<class M> struct scalar_type <ambient::numeric::tiles<M> > { typedef typename scalar_type<M>::type type; };
@@ -32,10 +32,10 @@ namespace maquis { namespace traits {
 
 namespace alps { namespace numeric {
 
-    template<typename T> struct associated_vector< ambient::numeric::matrix<T> > { typedef std::vector<T> type; };
-    template<typename T> struct associated_diagonal_matrix< ambient::numeric::matrix<T> > { typedef ambient::numeric::diagonal_matrix<T> type; };
-    template<typename T> struct associated_real_diagonal_matrix< ambient::numeric::matrix<T> > { typedef ambient::numeric::diagonal_matrix<typename maquis::traits::real_type<T>::type> type; };
-    template<typename T> struct associated_real_vector< ambient::numeric::matrix<T> > { typedef std::vector<typename maquis::traits::real_type<T>::type> type; };
+    template<typename T, class Allocator> struct associated_vector< ambient::numeric::matrix<T,Allocator> > { typedef std::vector<T> type; };
+    template<typename T, class Allocator> struct associated_diagonal_matrix< ambient::numeric::matrix<T,Allocator> > { typedef ambient::numeric::diagonal_matrix<T> type; };
+    template<typename T, class Allocator> struct associated_real_diagonal_matrix< ambient::numeric::matrix<T,Allocator> > { typedef ambient::numeric::diagonal_matrix<typename maquis::traits::real_type<T>::type> type; };
+    template<typename T, class Allocator> struct associated_real_vector< ambient::numeric::matrix<T,Allocator> > { typedef std::vector<typename maquis::traits::real_type<T>::type> type; };
 
     template<class M> struct associated_vector< ambient::numeric::tiles<M> > { typedef ambient::numeric::tiles< typename associated_vector<M>::type > type; };
     template<class M> struct associated_real_vector< ambient::numeric::tiles<M> > { typedef ambient::numeric::tiles< typename associated_real_vector<M>::type > type; };

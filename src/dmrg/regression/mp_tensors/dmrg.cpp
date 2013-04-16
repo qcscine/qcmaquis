@@ -18,7 +18,7 @@ typedef alps::numeric::matrix<double> Matrix;
 typedef TrivialGroup grp;
 
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
-typedef Boundary<Matrix, grp> boundary_t;
+typedef Boundary<typename storage::constrained<Matrix>::type, grp> boundary_t;
 
 int main()
 {

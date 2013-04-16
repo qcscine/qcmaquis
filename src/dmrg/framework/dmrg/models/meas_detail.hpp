@@ -94,7 +94,7 @@ namespace meas_detail {
             ident(0,0) = identity_matrix<Matrix>(phys_i);
             
             // init right_ & left_
-            Boundary<Matrix, SymmGroup> right = mps.right_boundary(), left = mps.left_boundary();
+            Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right = mps.right_boundary(), left = mps.left_boundary();
             right_[L-1] = right;
             left_[0] = left;
             for (int i = 1; i < L; ++i) {
@@ -144,7 +144,7 @@ namespace meas_detail {
             std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> vals; vals.reserve(L-1);
             std::vector<std::string> labels;
             MPOTensor<Matrix, SymmGroup> temp;
-            Boundary<Matrix, SymmGroup> tmp_b;
+            Boundary<typename storage::constrained<Matrix>::type, SymmGroup> tmp_b;
             
             for (int p = 0; p < L-1; ++p) {
                 temp(0,0) = ops[0].first;
@@ -173,7 +173,7 @@ namespace meas_detail {
         int L;
         Index<SymmGroup> phys_i;
         MPOTensor<Matrix, SymmGroup> ident;
-        std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
+        std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
 
     };
     

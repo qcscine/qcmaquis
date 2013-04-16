@@ -9,6 +9,7 @@
 #ifndef MPOTENSOR_H
 #define MPOTENSOR_H
 
+#include "dmrg/utils/stream_storage.h"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "utils/function_objects.h"
@@ -140,7 +141,7 @@ private:
 #include "dmrg/mp_tensors/mpotensor.hpp"
 
 template<class Matrix, class SymmGroup>
-Boundary<Matrix, SymmGroup> simplify(Boundary<Matrix, SymmGroup> b)
+Boundary<typename storage::constrained<Matrix>::type, SymmGroup> simplify(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> b)
 {
     typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
     
@@ -162,7 +163,7 @@ Boundary<Matrix, SymmGroup> simplify(Boundary<Matrix, SymmGroup> b)
 }
 
 template<class Matrix, class SymmGroup>
-std::size_t size_of(Boundary<Matrix, SymmGroup> const & m)
+std::size_t size_of(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & m)
 {
     size_t r = 0;
     for (size_t i = 0; i < m.aux_dim(); ++i)

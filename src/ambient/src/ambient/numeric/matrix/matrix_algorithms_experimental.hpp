@@ -5,10 +5,10 @@
 #include "ambient/numeric/kernels/kernels.hpp"
 #include "ambient/numeric/matrix/diagonal_matrix.hpp"
 
-#define size_type       typename matrix<T>::size_type
-#define real_type       typename matrix<T>::real_type
-#define scalar_type     typename matrix<T>::scalar_type
-#define difference_type typename matrix<T>::difference_type
+#define size_type       typename matrix<T,A>::size_type
+#define real_type       typename matrix<T,A>::real_type
+#define scalar_type     typename matrix<T,A>::scalar_type
+#define difference_type typename matrix<T,A>::difference_type
 
 namespace ambient { namespace numeric {
 
@@ -38,34 +38,34 @@ namespace ambient { namespace numeric {
                                                                     m, n); 
     }
 
-    template<typename T>
-    inline void gbbrd(matrix<T>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T>& u, matrix<T>& v){
+    template<typename T, class A>
+    inline void gbbrd(matrix<T,A>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T,A>& u, matrix<T,A>& v){
         kernels::gbbrd<T>::spawn<complexity::N3>(a, d, e, u, v);
     }
 
-    template<typename T>
-    inline void gebrd(matrix<T>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T>& u, matrix<T>& v){
+    template<typename T, class A>
+    inline void gebrd(matrix<T,A>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T,A>& u, matrix<T,A>& v){
         kernels::gebrd<T>::spawn<complexity::N3>(a, d, e, u, v);
     }
 
-    template<typename T>
-    inline void bdsqr(diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T>& u, matrix<T>& v){
+    template<typename T, class A>
+    inline void bdsqr(diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T,A>& u, matrix<T,A>& v){
         kernels::bdsqr<T>::spawn<complexity::N3>(d, e, u, v);
     }
 
-    template<typename T>
-    inline void gebd2(matrix<T>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, diagonal_matrix<T>& tq, diagonal_matrix<T>& tp){
+    template<typename T, class A>
+    inline void gebd2(matrix<T,A>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, diagonal_matrix<T>& tq, diagonal_matrix<T>& tp){
         kernels::gebd2<T>::spawn<complexity::N3>(a, d, e, tq, tp);
     }
 
-    template<PLASMA_enum TR, typename T>
-    inline void larfg(matrix<T>& a, diagonal_matrix<T>& t, diagonal_matrix<T>& d, size_t k){
+    template<PLASMA_enum TR, typename T, class A>
+    inline void larfg(matrix<T,A>& a, diagonal_matrix<T>& t, diagonal_matrix<T>& d, size_t k){
         kernels::larfg<T,TR>::spawn<complexity::N3>(a, t, d, k);
     }
 
-    template<typename T>
-    inline void labrd_update_col(matrix<T>& say, const matrix<T>& sax, 
-                           matrix<T>& sy, const matrix<T>& sx, 
+    template<typename T, class A>
+    inline void labrd_update_col(matrix<T,A>& say, const matrix<T,A>& sax, 
+                           matrix<T,A>& sy, const matrix<T,A>& sx, 
                            diagonal_matrix<T>& tq, 
                            diagonal_matrix<T>& d, 
                            int i)
@@ -73,17 +73,17 @@ namespace ambient { namespace numeric {
         kernels::labrd_update_col<T>::spawn<complexity::N3>(say, sax, sy, sx, tq, d, i);
     }
 
-    template<typename T>
-    inline void labrd_reduce_col(matrix<T>& say, const matrix<T>& sax, 
-                           matrix<T>& sy, const matrix<T>& sx, 
+    template<typename T, class A>
+    inline void labrd_reduce_col(matrix<T,A>& say, const matrix<T,A>& sax, 
+                           matrix<T,A>& sy, const matrix<T,A>& sx, 
                            int i)
     {
         kernels::labrd_reduce_col<T>::spawn<complexity::N3>(say, sax, sy, sx, i);
     }
 
-    template<typename T>
-    inline void labrd_update_row(const matrix<T>& say, matrix<T>& sax, 
-                           const matrix<T>& sy, matrix<T>& sx, 
+    template<typename T, class A>
+    inline void labrd_update_row(const matrix<T,A>& say, matrix<T,A>& sax, 
+                           const matrix<T,A>& sy, matrix<T,A>& sx, 
                            diagonal_matrix<T>& tp, 
                            diagonal_matrix<T>& e, 
                            int i)
@@ -91,26 +91,26 @@ namespace ambient { namespace numeric {
         kernels::labrd_update_row<T>::spawn<complexity::N3>(say, sax, sy, sx, tp, e, i);
     }
 
-    template<typename T>
-    inline void labrd_reduce_row(const matrix<T>& say, matrix<T>& sax, 
-                           const matrix<T>& sy, matrix<T>& sx, 
+    template<typename T, class A>
+    inline void labrd_reduce_row(const matrix<T,A>& say, matrix<T,A>& sax, 
+                           const matrix<T,A>& sy, matrix<T,A>& sx, 
                            int i)
     {
         kernels::labrd_reduce_row<T>::spawn<complexity::N3>(say, sax, sy, sx, i);
     }
 
-    template<PLASMA_enum UL, size_t OFF, typename T>
-    inline void laset2(matrix<T>& a, const T& alfa = 0.0){
+    template<PLASMA_enum UL, size_t OFF, typename T, class A>
+    inline void laset2(matrix<T,A>& a, const T& alfa = 0.0){
         kernels::laset2<T,UL,OFF>::spawn<complexity::N2>(a, alfa);
     }
 
-    template<PLASMA_enum UL, typename T>
-    inline void copy_band(const matrix<T>& src, matrix<T>& dst, size_t dj){
+    template<PLASMA_enum UL, typename T, class A>
+    inline void copy_band(const matrix<T,A>& src, matrix<T,A>& dst, size_t dj){
         kernels::copy_band<T,UL>::spawn<complexity::N2>(src, dst, dj);
     }
 
-    template <int alfa, typename T>
-    inline void add_vectors(matrix<T>& lhs, size_t loffset, const matrix<T>& rhs, size_t roffset, size_t size){ 
+    template <int alfa, typename T, class A>
+    inline void add_vectors(matrix<T,A>& lhs, size_t loffset, const matrix<T,A>& rhs, size_t roffset, size_t size){ 
         kernels::add_vectors<alfa, T>::spawn<complexity::N2>(lhs, loffset, rhs, roffset, size); 
     }
 

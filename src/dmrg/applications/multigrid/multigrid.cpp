@@ -53,15 +53,6 @@ typedef alps::numeric::matrix<double> Matrix;
 #include "dmrg/models/factory.h"
 #include "dmrg/models/continuum/factory.h"
 #include "dmrg/models/continuum/lattice.hpp"
-//#ifdef UseTwoU1
-//#include "dmrg/models/continuum/models_2u1.hpp"
-//#else
-//#ifdef UseNULL
-//#include "dmrg/models/continuum/models_none.hpp"
-//#else
-//#include "dmrg/models/continuum/models_u1.hpp"
-//#endif
-//#endif
 
 #ifdef UseTwoU1
 typedef TwoU1 grp;
@@ -74,7 +65,7 @@ typedef U1 grp;
 #endif
 
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
-typedef Boundary<Matrix, grp> boundary_t;
+typedef Boundary<typename storage::constrained<Matrix>::type, grp> boundary_t;
 
 template<class Matrix>
 mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)

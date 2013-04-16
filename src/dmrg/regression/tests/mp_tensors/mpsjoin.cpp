@@ -43,13 +43,13 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> & mps, block_matrix<mat
 }
 
 template<class Matrix, class SymmGroup>
-Boundary<Matrix, SymmGroup>
+Boundary<typename storage::constrained<Matrix>::type, SymmGroup>
 mixed_left_boundary(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> const & ket)
 {
     assert(ket.length() == bra.length());
     Index<SymmGroup> i = ket[0].row_dim();
     Index<SymmGroup> j = bra[0].row_dim();
-    Boundary<Matrix, SymmGroup> ret(i, j, 1);
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> ret(i, j, 1);
     
     for(typename Index<SymmGroup>::basis_iterator it1 = i.basis_begin(); !it1.end(); ++it1)
     	for(typename Index<SymmGroup>::basis_iterator it2 = j.basis_begin(); !it2.end(); ++it2)
@@ -68,7 +68,7 @@ typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & bra,
     assert(mpo.length() == bra.length() && bra.length() == ket.length());
     std::size_t L = bra.length();
     
-    Boundary<Matrix, SymmGroup> left = mixed_left_boundary(bra, ket);
+    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left = mixed_left_boundary(bra, ket);
     
     for (int i = 0; i < L; ++i) {
         if (verbose)
