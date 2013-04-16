@@ -35,6 +35,16 @@ namespace maquis { namespace bindings {
 
     using ambient::complexity;
 
+    template <typename T, typename D>
+    struct binding< ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >, ambient::numeric::tiles<ambient::numeric::diagonal_matrix<D> > >{
+       static  ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >convert(const ambient::numeric::tiles<ambient::numeric::diagonal_matrix<D> >& m){
+           ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> > pm(num_rows(m), num_cols(m));
+           for(size_t k = 0; k < m.data.size(); ++k)
+               ambient::numeric::kernels::cast_double_complex<T,D>::spawn<complexity::N2>(pm[k],m[k]);
+           return pm;
+       } 
+    };
+
     template <typename T, typename S, template<class M, class SS> class C>
     struct binding< std::vector< std::vector<T> >, C<ambient::numeric::diagonal_matrix<T>, S> > {
         static std::vector< std::vector<T> > convert(const C<ambient::numeric::diagonal_matrix<T>, S>& m){
