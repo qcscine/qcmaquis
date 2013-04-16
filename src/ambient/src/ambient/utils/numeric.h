@@ -13,6 +13,37 @@
 namespace ambient { namespace numeric { namespace kernels {
 
 
+    template<class T, typename type = void>
+    struct helper_zero;
+
+    template<class T>
+    struct helper_zero<T, typename boost::enable_if<boost::is_floating_point<T> >::type>{
+        static bool zero(T a) { if(a == 0.) return true;}
+    };
+
+    template<class T>
+    struct helper_zero<T, typename boost::enable_if<boost::is_complex<T> >::type>{
+        static bool zero(T a) { bool b = ((a.real() == 0.) and (a.imag() == 0. )) ? true : false ; return b;}
+    };
+
+    template<class T, class D, typename type = void>
+    struct helper_cast;
+
+    template<class T, class D>
+    struct helper_cast<T, D, typename boost::enable_if< boost::mpl::and_<boost::is_complex<T>, boost::is_floating_point<D> > >::type>{
+        static T cast(D a) {return static_cast<T>(a);}
+    };
+
+    template<class T, class D>
+    struct helper_cast<T, D, typename boost::enable_if< boost::mpl::and_<boost::is_floating_point<T>, boost::is_complex<D> > >::type>{
+        static T cast(D a) {return a.real();};
+    };
+
+    template<class T, class D>
+    struct helper_cast<T, D, typename boost::enable_if< boost::mpl::and_<boost::is_floating_point<T>, boost::is_floating_point<D> > >::type>{
+        static T cast(T a) {return a;};
+    };
+
     template <class T>
     inline int OptimalSize(T a){return (int)a;}
 
