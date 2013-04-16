@@ -1,15 +1,4 @@
-#define BOOST_TEST_MODULE scalapack_pdgemm 
-#include "mpi.h"
-#include <iostream>
-#include <stdlib.h>
-#include <complex>
-
-#include <boost/test/unit_test.hpp>
-#include <boost/test/test_case_template.hpp>
-#include <boost/mpl/list.hpp>
-
-#include "ambient/utils/timings.hpp"
-#include "utilities.h"
+#include "params.hpp"
 
 #define AA(i,j) AA[(i)*M+(j)]
 #define BB(i,j) BB[(i)*M+(j)]
