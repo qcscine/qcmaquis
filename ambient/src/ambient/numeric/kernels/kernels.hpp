@@ -139,6 +139,10 @@ namespace ambient { namespace numeric { namespace kernels {
     struct cast_from_vector_t : public kernel< cast_from_vector_t<T1,T2> > 
     { static void c(const std::vector<T1>*& ac, matrix<T2>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset); };
 
+    template<typename T,typename D>
+    struct cast_double_complex : public kernel< cast_double_complex<T, D> >
+    {static void c(matrix<T>& a, const matrix<D>& b); };
+
     template<typename T>
     struct save : public kernel< save<T> >
     { static void c(matrix<T> const& a, const size_t& tag); };
@@ -629,6 +633,15 @@ namespace ambient { namespace numeric { namespace kernels {
                 ad[j*m + i] = sd[j*lda + i];
     }
 
+    template<typename T, typename D>
+    void cast_double_complex<T,D>::c(matrix<T>& a, const matrix<D>& b){
+        T* ad = updated(a);
+        D* bd = current(b);
+        size_t size = a.num_rows();
+        for(size_t i = 0; i < size; ++i)
+            ad[i] = helper_cast<T,D>::cast(bd[i]);
+    };
+
     template<typename T>
     void save<T>::c(matrix<T> const& a, const size_t& tag ){
         T* ad = (T*)current(a);
@@ -736,7 +749,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
         typename real_type<T>::type s;
         for(int i=0; i < (int)(m/2); i++){ 
-            wkopt = wd[i];
+            s = wd[i];
             wd[i] = wd[m-i-1];
             wd[m-i-1] = s;
         } 

@@ -62,15 +62,8 @@ namespace ambient { namespace numeric {
         return a;
     } 
 
-    template<class Matrix>
-    inline tiles<Matrix> exp_hermitian(const tiles<Matrix> a, const value_type& alfa = 1.){
-        std::cout << " NOT IMPLEMENTED FOR DOUBLE, RENAME THIS FUNCTION exp <-> exp_hermitian " << std::endl;
-        assert(false);
-        return a; 
-    }
-
-    template<typename T>
-    inline tiles<diagonal_matrix<T> > exp(const tiles<diagonal_matrix<T> >& a, const T& alfa = 1.){
+    template<typename T> //  C - Tim, Alex I changed the name exp to expi due to the exp and a redondancy name
+    inline tiles<diagonal_matrix<T> > expi(const tiles<diagonal_matrix<T> >& a, const T& alfa = 1.){
         tiles<diagonal_matrix<T> > b(a); 
         exp_inplace(b,alfa);
         return b;
@@ -90,7 +83,7 @@ namespace ambient { namespace numeric {
         tiles<Matrix> Nrinv = inverse(Nr);  
         tiles<diagonal_matrix<value_type> > S(num_rows(a)); 
 
-        S = exp(Sv, alfa);
+        S = expi(Sv, alfa); //complex-complex
 
         tiles<Matrix> tmp(n,n);
 
@@ -98,6 +91,27 @@ namespace ambient { namespace numeric {
         gemm(tmp, Nrinv, a);
 
         return a;
+    }
+
+    template<class Matrix>
+    inline tiles<Matrix> exp_hermitian(tiles<Matrix> a, const value_type& alfa = 1.){
+        assert(num_rows(a) == num_cols(a));
+        std::size_t n = num_cols(a);
+        tiles<diagonal_matrix<double> > Sv(n); 
+        tiles<Matrix> tmp(n,n), N(n,n);
+   
+        heev(a, N, Sv);
+
+        tiles<diagonal_matrix<value_type> > S(n), S1(n); 
+
+        for(size_t k = 0; k < Sv.data.size(); ++k)
+             ambient::numeric::kernels::cast_double_complex<value_type,double>::spawn<complexity::N2>(S[k],Sv[k]); //can be complex/double or double/double
+
+        S1 = expi(S,alfa); 
+        gemm(N, S1, tmp);
+        gemm(tmp, adjoint(N), a);
+
+        return a; 
     }
 
     template<class Matrix>

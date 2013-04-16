@@ -4,6 +4,7 @@
 #include "ambient/numeric/matrix/matrix.h"
 #include "ambient/numeric/kernels/kernels.hpp"
 #include "ambient/numeric/matrix/diagonal_matrix.hpp"
+#include "ambient/utils/numeric.h"
 
 #define size_type       typename matrix<T,A>::size_type
 #define real_type       typename matrix<T,A>::real_type
@@ -256,7 +257,7 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void fill_value(Matrix& a, typename Matrix::value_type value){
-        if(value == 0.) return; // matrices are 0 by default
+        if(kernels::helper_zero<typename Matrix::value_type>::zero(value)) return; // matrices are 0 by default
         kernels::init_value<typename Matrix::value_type, typename Matrix::allocator_type>::spawn<complexity::N2>(a, value);
     }
 
