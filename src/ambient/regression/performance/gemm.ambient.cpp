@@ -23,8 +23,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     generate(pA);
     generate(pB);
 
-    sA = maquis::bindings::matrix_cast<sMatrix>(pA);
-    sB = maquis::bindings::matrix_cast<sMatrix>(pB);
+    sA = matrix_cast<sMatrix>(pA);
+    sB = matrix_cast<sMatrix>(pB);
     ambient::sync();
 
     printf("ambient::gemm strassen...\n");

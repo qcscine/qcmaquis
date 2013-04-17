@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     sMatrix sL(x, y);
 
     generate(pA);
-    sA = maquis::bindings::matrix_cast<sMatrix>(pA);
+    sA = matrix_cast<sMatrix>(pA);
 
     ambient::sync();
     lq(pA, pL, pQ); 

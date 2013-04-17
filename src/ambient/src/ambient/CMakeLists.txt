@@ -6,6 +6,6 @@
 
  install(TARGETS ambient COMPONENT libraries
                          DESTINATION lib
-                         EXPORT MaquisAmbientTargets)
- export(TARGETS ambient APPEND FILE ${CMAKE_BINARY_DIR}/MaquisAmbientTargets.cmake)
+                         EXPORT AmbientTargets)
+ export(TARGETS ambient APPEND FILE ${CMAKE_BINARY_DIR}/AmbientTargets.cmake)
 

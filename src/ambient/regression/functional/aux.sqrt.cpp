@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SQRT, T, test_types)
     sDiagMatrix sA((std::size_t)T::valuex);
 
     generate(pA);
-    sA = maquis::bindings::matrix_cast<sDiagMatrix>(pA);
+    sA = matrix_cast<sDiagMatrix>(pA);
 
     sA = sqrt(sA);
     ambient::numeric::sqrt_inplace(pA);

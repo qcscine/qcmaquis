@@ -22,14 +22,14 @@ BENCHMARK_SCRIPTS_DIR=${ROOT_DIR}/scripts/benchmarks
 SELF=$BUILD_NAME
 
 add_ambient(){
-    local defines_common=`get_defines MAQUIS_COMMON`
-    local defines_target=`get_defines MAQUIS_AMBIENT`
+    local defines_common=`get_defines COMMON`
+    local defines_target=`get_defines AMBIENT`
     eval cmake $defines_common $defines_target ${ROOT_DIR}/ambient
 }
 
 add_dmrg(){
-    local defines_common=`get_defines MAQUIS_COMMON`
-    local defines_target=`get_defines MAQUIS_DMRG`
+    local defines_common=`get_defines COMMON`
+    local defines_target=`get_defines DMRG`
     eval cmake $defines_common $defines_target ${ROOT_DIR}/dmrg
 }
 

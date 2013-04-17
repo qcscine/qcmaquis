@@ -91,4 +91,5 @@ double GFlopsGemm(size_t x, size_t y, double time){
     return 2*(double)x*(double)y*(double)y/(time*1.0e9);
 };
 
+using namespace maquis::bindings;
 #endif

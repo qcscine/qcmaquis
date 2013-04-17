@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CONJ_INPLACE, T, test_types)
     else
         generate(pA);
 
-    sA = maquis::bindings::matrix_cast<sMatrix>(pA);
+    sA = matrix_cast<sMatrix>(pA);
 
     bool bsA = is_hermitian(sA);
     bool bpA = is_hermitian(pA);
