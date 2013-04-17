@@ -23,8 +23,8 @@ module load hdf5
 module load cmake
 
 ## common ##
-# MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2012/src/types/src"
-# MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2012/src/types/src"
+# MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2012/src/types/src"
+# MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2012/src/types/src"
 ## dmrg ##
 MAQUIS_DMRG_DEFAULT_BLAS_LAPACK=manual
 MAQUIS_DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -fopenmp -lpthread -lm"

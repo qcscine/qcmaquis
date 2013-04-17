@@ -23,8 +23,8 @@ module load ${COMPILER}/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load ${CMAKE}
 ## common ##
-MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
-MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
+MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib"
+MAQUIS_COMMON_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib"
 MAQUIS_COMMON_CMAKE_C_COMPILER=mpicc
 MAQUIS_COMMON_CMAKE_CXX_COMPILER=mpicxx
 MAQUIS_COMMON_MPI_CXX_FOUND=FALSE
@@ -37,7 +37,7 @@ MAQUIS_AMBIENT_PLASMA_LIBRARY="-lplasma -lcoreblas -lcblas -llapacke -lquark"
 ## dmrg ##
 MAQUIS_DMRG_CMAKE_CXX_FLAGS="-w"
 MAQUIS_DMRG_DEFAULT_BLAS_LAPACK=manual
-MAQUIS_DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread -lplasma -lcoreblas -lcblas -llapacke -lquark"
+MAQUIS_DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread $MAQUIS_AMBIENT_PLASMA_LIBRARY"
 MAQUIS_DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/apps/castor/intel/mkl/lib/intel64
 MAQUIS_DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/apps/castor/intel/mkl/include
 MAQUIS_DMRG_ALPS_ROOT_DIR=/project/h07/ALPS_INTEL12_CASTOR2

@@ -37,9 +37,9 @@ namespace maquis { namespace dmrg { namespace detail {
         throw std::runtime_error("Not implemented.");
     }
 
-    template <typename T>
-    void op_kron(alps::numeric::matrix<T>& out, const alps::numeric::matrix<T>& in, const alps::numeric::matrix<T>& alfa,
-                 size_t out_y_offset, size_t out_x_offset, 
+    template <typename T, class A>
+    void op_kron(alps::numeric::matrix<T,A>& out, const alps::numeric::matrix<T,A>& in, const alps::numeric::matrix<T,A>& alfa,
+                 size_t out_y_offset, size_t out_x_offset,
                  size_t ldim1, size_t ldim2, 
                  size_t rdim1, size_t rdim2)
     {
@@ -51,8 +51,8 @@ namespace maquis { namespace dmrg { namespace detail {
                 in(l2, r2)*alfa(l1, r1);
     }
     
-    template <typename T>
-    void reshape_l2b(alps::numeric::matrix<T>& out, const alps::numeric::matrix<T>& in,
+    template <typename T, class A>
+    void reshape_l2b(alps::numeric::matrix<T,A>& out, const alps::numeric::matrix<T,A>& in,
                      size_t in_left_offset, size_t in_phys_offset, 
                      size_t out_left_offset, size_t out_right_offset,
                      size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
@@ -68,8 +68,8 @@ namespace maquis { namespace dmrg { namespace detail {
         }
     }
 
-    template <typename T>
-    void reshape_b2l(alps::numeric::matrix<T>& out, const alps::numeric::matrix<T>& in,
+    template <typename T, class A>
+    void reshape_b2l(alps::numeric::matrix<T,A>& out, const alps::numeric::matrix<T,A>& in,
                      size_t in_left_offset, size_t in_right_offset, 
                      size_t out_left_offset, size_t out_phys_offset,
                      size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
@@ -85,8 +85,8 @@ namespace maquis { namespace dmrg { namespace detail {
         }
     }
     
-    template <typename T>
-    void reshape_r2l(alps::numeric::matrix<T>& left, const alps::numeric::matrix<T>& right,
+    template <typename T, class A>
+    void reshape_r2l(alps::numeric::matrix<T,A>& left, const alps::numeric::matrix<T,A>& right,
                      size_t left_offset, size_t right_offset, 
                      size_t sdim, size_t ldim, size_t rdim)
     {
@@ -100,8 +100,8 @@ namespace maquis { namespace dmrg { namespace detail {
         //        sizeof(T) * ldim);
     }
     
-    template <typename T>
-    void reshape_l2r(const alps::numeric::matrix<T>& left, alps::numeric::matrix<T>& right,
+    template <typename T, class A>
+    void reshape_l2r(const alps::numeric::matrix<T,A>& left, alps::numeric::matrix<T,A>& right,
                      size_t left_offset, size_t right_offset, 
                      size_t sdim, size_t ldim, size_t rdim)
     {
@@ -111,14 +111,16 @@ namespace maquis { namespace dmrg { namespace detail {
                     right(ll, right_offset + ss*rdim+rr) = left(left_offset + ss*ldim+ll, rr);
     }
     
-    template <typename T>
-    void lb_tensor_mpo(alps::numeric::matrix<T>& out, const alps::numeric::matrix<T>& in, const alps::numeric::matrix<T>& alfa,
+    template <typename T1, class A1,
+              typename T2, class A2,
+              typename T3, class A3>
+    void lb_tensor_mpo(alps::numeric::matrix<T1,A1>& out, const alps::numeric::matrix<T2,A2>& in, const alps::numeric::matrix<T3,A3>& alfa,
                        size_t out_offset, size_t in_offset, 
                        size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
-                T alfa_t = alfa(ss1, ss2);
+                T3 alfa_t = alfa(ss1, ss2);
                 for(size_t rr = 0; rr < rdim; ++rr) {
                     iterator_axpy(&in(in_offset + ss1*ldim, rr),
                                   &in(in_offset + ss1*ldim, rr) + ldim, // bugbug
@@ -128,14 +130,16 @@ namespace maquis { namespace dmrg { namespace detail {
             }
     }
     
-    template <typename T>
-    void rb_tensor_mpo(alps::numeric::matrix<T>& out, const alps::numeric::matrix<T>& in, const alps::numeric::matrix<T>& alfa,
+    template <typename T1, class A1,
+              typename T2, class A2,
+              typename T3, class A3>
+    void rb_tensor_mpo(alps::numeric::matrix<T1,A1>& out, const alps::numeric::matrix<T2,A2>& in, const alps::numeric::matrix<T3,A3>& alfa,
                        size_t out_offset, size_t in_offset, 
                        size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
             for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
-                T alfa_t = alfa(ss1, ss2);
+                T3 alfa_t = alfa(ss1, ss2);
                 for(size_t rr = 0; rr < rdim; ++rr)
                     for(size_t ll = 0; ll < ldim; ++ll) {
                         out(ll, out_offset + ss2*rdim+rr) += in(ll, in_offset + ss1*rdim+rr) * alfa_t;
@@ -158,8 +162,8 @@ namespace maquis { namespace dmrg { namespace detail {
         return ret;
     }
     
-    template <typename T>
-    void left_right_boundary_init(alps::numeric::matrix<T> & M){
+    template <typename T, class A>
+    void left_right_boundary_init(alps::numeric::matrix<T,A> & M){
         //            memset((void*)&M(0,0),1,num_rows(M)*num_cols(M)*sizeof(T));
         for_each(elements(M).first,elements(M).second, boost::lambda::_1 = 1); // boost::lambda ^^' because iterable matrix concept 
     }

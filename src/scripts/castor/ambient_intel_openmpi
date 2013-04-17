@@ -1,7 +1,7 @@
 #!/bin/bash -l
 STATE="void"
-STATE_AMBIENT="configure"
-STATE_DMRG="configure"
+STATE_AMBIENT="void"
+STATE_DMRG="build"
 # end of target states #
 SHARED_FS=true
 PREFIX=ambient
@@ -22,28 +22,28 @@ module load ${COMPILER}/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load ${CMAKE}
 ## common ##
-#MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
-MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
+AMBIENT_FLAGS="-DAMBIENT_CILK"
+# AMBIENT_FLAGS="-openmp -DAMBIENT_OMP"
+MAQUIS_COMMON_CMAKE_CXX_FLAGS="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors $AMBIENT_FLAGS -L/apps/castor/plasma-2.4.6/lib"
 MAQUIS_COMMON_CMAKE_C_COMPILER=mpicc
 MAQUIS_COMMON_CMAKE_CXX_COMPILER=mpicxx
 MAQUIS_COMMON_MPI_CXX_FOUND=FALSE
 ## ambient ##
-MAQUIS_AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=ON
-MAQUIS_AMBIENT_ENABLE_REGRESSION_PERFORMANCE=ON
 MAQUIS_AMBIENT_BOOST_BINDINGS_INCLUDE=/project/h07/ALPS_INTEL12_CASTOR2/include
 MAQUIS_AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64"
 MAQUIS_AMBIENT_PLASMA_LIBRARY="-lplasma -lcoreblas -lcblas -llapacke -lquark"
+MAQUIS_AMBIENT_ENABLE_REGRESSION_PERFORMANCE=ON
+MAQUIS_AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=ON
 ## dmrg ##
-MAQUIS_DMRG_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib -I/users/akosenko/maquis2013/src/types/src"
-MAQUIS_DMRG_CMAKE_CXX_FLAGS="-w"
 MAQUIS_DMRG_DEFAULT_BLAS_LAPACK=manual
-MAQUIS_DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread -lplasma -lcoreblas -lcblas -llapacke -lquark"
+MAQUIS_DMRG_CMAKE_CXX_FLAGS_RELEASE="$MAQUIS_COMMON_CMAKE_CXX_FLAGS"
+MAQUIS_DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread $MAQUIS_AMBIENT_PLASMA_LIBRARY"
 MAQUIS_DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/apps/castor/intel/mkl/lib/intel64
 MAQUIS_DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/apps/castor/intel/mkl/include
 MAQUIS_DMRG_ALPS_ROOT_DIR=/project/h07/ALPS_INTEL12_CASTOR2
 MAQUIS_DMRG_BUILD_REGRESSION=OFF 
-MAQUIS_DMRG_BUILD_AMBIENT=ON
-MAQUIS_DMRG_USE_AMBIENT=ON
+MAQUIS_DMRG_BUILD_AMBIENT=OFF
+MAQUIS_DMRG_USE_AMBIENT=OFF
 
 source $ROOT_DIR/scripts/common/common.sh 
 execute $*
