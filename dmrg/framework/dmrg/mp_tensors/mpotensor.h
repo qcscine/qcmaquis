@@ -163,7 +163,7 @@ Boundary<typename storage::constrained<Matrix>::type, SymmGroup> simplify(Bounda
 }
 
 template<class Matrix, class SymmGroup>
-std::size_t size_of(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & m)
+std::size_t size_of(Boundary<Matrix, SymmGroup> const & m)
 {
     size_t r = 0;
     for (size_t i = 0; i < m.aux_dim(); ++i)
