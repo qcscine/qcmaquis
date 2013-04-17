@@ -20,7 +20,7 @@ set (AMBIENT_VERSION_MAJOR 2)
 set (AMBIENT_VERSION_MINOR 1)
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  set(CMAKE_INSTALL_PREFIX "/opt/maquis" CACHE PATH "MAQUIS install prefix" FORCE)
+  set(CMAKE_INSTALL_PREFIX "/opt/ambient" CACHE PATH "Ambient install prefix" FORCE)
 endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 if(!APPLE)
@@ -92,7 +92,7 @@ if(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
   link_directories(${MAQUIS_Boost_LIBRARY_DIRS})
   list(APPEND MAQUIS_AMBIENT_LIBRARY_DIRS ${MAQUIS_Boost_LIBRARY_DIRS})
 
-  list(APPEND MAQUIS_TESTS_LIBRARIES ${MAQUIS_Boost_LIBRARIES})
+  list(APPEND AMBIENT_TESTS_LIBRARIES ${MAQUIS_Boost_LIBRARIES})
     
   macro(compile_with_ambient)
     include_directories(${MAQUIS_AMBIENT_INCLUDE_DIRS})
@@ -173,8 +173,8 @@ list(APPEND AMBIENT_BUILD_COMPILE_FLAGS ${MPI_CXX_COMPILE_FLAGS})
 list(APPEND AMBIENT_BUILD_EXE_FLAGS ${MPI_CXX_COMPILE_FLAGS})
 list(APPEND AMBIENT_BUILD_EXE_FLAGS ${MPI_CXX_LINK_FLAGS})
 
-configure_file(MaquisAmbientConfig.cmake.in ${PROJECT_BINARY_DIR}/MaquisAmbientConfig.cmake)
-configure_file(MaquisAmbientBuildTree.cmake.in ${PROJECT_BINARY_DIR}/MaquisAmbientBuildTree.cmake)
+configure_file(AmbientConfig.cmake.in ${PROJECT_BINARY_DIR}/AmbientConfig.cmake)
+configure_file(AmbientBuildTree.cmake.in ${PROJECT_BINARY_DIR}/AmbientBuildTree.cmake)
 
 ########################################################################
 #
@@ -184,8 +184,8 @@ configure_file(MaquisAmbientBuildTree.cmake.in ${PROJECT_BINARY_DIR}/MaquisAmbie
 
 #install(FILES ${PROJECT_BINARY_DIR}/ambient/libambient.so DESTINATION lib)
 
-install(FILES ${PROJECT_BINARY_DIR}/MaquisAmbientConfig.cmake DESTINATION share)
-install(EXPORT MaquisAmbientTargets DESTINATION share COMPONENT dev)
+install(FILES ${PROJECT_BINARY_DIR}/AmbientConfig.cmake DESTINATION share)
+install(EXPORT AmbientTargets DESTINATION share COMPONENT dev)
 
 set(AMBIENT_INSTALL_HEADERS src/ambient/ambient.h
                             src/ambient/ambient.hpp

@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CONJ_INPLACE, T, test_types)
     sMatrix sA(T::valuex, T::valuey);
 
     generate(pA);
-    sA = maquis::bindings::matrix_cast<sMatrix>(pA);
+    sA = matrix_cast<sMatrix>(pA);
 
     conj_inplace(sA);
     conj_inplace(pA);
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(CONJ, T, test_types)
     sMatrix sB(T::valuex, T::valuey);
 
     generate(pA);
-    sA = maquis::bindings::matrix_cast<sMatrix>(pA);
+    sA = matrix_cast<sMatrix>(pA);
 
     sB = conj(sA);
     pB = conj(pA);
