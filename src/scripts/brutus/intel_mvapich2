@@ -21,17 +21,17 @@ module load ${COMPILER}/${COMPILER_VERSION}
 #module load ${BOOST}/${BOOST_VERSION}
 
 ## common ##
-MAQUIS_COMMON_DEFAULT_BLAS_LAPACK=manual
-MAQUIS_COMMON_BLAS_LAPACK_MANUAL_INCLUDES=/cluster/apps/intel/composer_xe_2011_sp1.8.273/composer_xe_2011_sp1.8.273/mkl/include
-MAQUIS_COMMON_CMAKE_CXX_FLAGS="-Wall -O2 -funroll-loops -std=c++0x -m64 -mkl=parallel"
+COMMON_DEFAULT_BLAS_LAPACK=manual
+COMMON_BLAS_LAPACK_MANUAL_INCLUDES=/cluster/apps/intel/composer_xe_2011_sp1.8.273/composer_xe_2011_sp1.8.273/mkl/include
+COMMON_CMAKE_CXX_FLAGS="-Wall -O2 -funroll-loops -std=c++0x -m64 -mkl=parallel"
 ## ambient ##
-MAQUIS_AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=OFF
-MAQUIS_AMBIENT_BOOST_BINDINGS_INCLUDE=/cluster/home/phys/ewartt/alps/include
+AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=OFF
+AMBIENT_BOOST_BINDINGS_INCLUDE=/cluster/home/phys/ewartt/alps/include
 ## dmrg ##
-MAQUIS_DMRG_ALPS_ROOT_DIR=/cluster/home/phys/ewartt/alps
-MAQUIS_DMRG_BUILD_REGRESSION=OFF 
-MAQUIS_DMRG_BUILD_AMBIENT=OFF
-MAQUIS_DMRG_USE_AMBIENT=OFF
+DMRG_ALPS_ROOT_DIR=/cluster/home/phys/ewartt/alps
+DMRG_BUILD_REGRESSION=OFF 
+DMRG_BUILD_AMBIENT=OFF
+DMRG_USE_AMBIENT=OFF
 
 source $ROOT_DIR/scripts/common/common.sh 
 execute $*
