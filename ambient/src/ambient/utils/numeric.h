@@ -163,7 +163,7 @@ namespace ambient { namespace numeric { namespace kernels {
        } 
 
        static void syev(const char* jobz, const char* uplo, const int* n, T* a, const int* lda, typename T::value_type* w, T* wkopt, int* lwork, int* info ){
-           typename T::value_type* rwork = new typename T::value_type[std::max(1,2*(*n))]; // from lapack doc
+           typename T::value_type* rwork = new typename T::value_type[std::max(1,3*(*n)-2)]; // from intel lapack doc
            T* work;
            zheev_(jobz, uplo, n, a, lda, w, wkopt, lwork, rwork, info);
            *lwork = OptimalSize(*wkopt);
