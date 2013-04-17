@@ -3,13 +3,13 @@
 
 #include "ambient/numeric/kernels/math.hpp"
 #include "ambient/numeric/kernels/utils.hpp"
-#include "utils/traits.hpp"
+#include "ambient/numeric/traits.hpp"
 #include "ambient/utils/numeric.h"
 
 namespace ambient { namespace numeric { namespace kernels {
     using ambient::unbound;
     using ambient::numeric::matrix;
-    using maquis::traits::real_type;
+    using ambient::numeric::traits::real_type;
 
     template<typename T> 
     struct geqrt : public kernel< geqrt<T> > 
