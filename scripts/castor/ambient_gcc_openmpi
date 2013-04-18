@@ -17,26 +17,26 @@ export CC=mpicc
 export CXX=mpicxx
 export BOOST_ROOT=/project/h07/boost_1_49_0/
 
-module load intel/2013
 module load ${COMPILER}/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load ${CMAKE}
 module load hdf5/1.8.9-gcc
 
 ## common ##
-COMMON_CMAKE_CXX_FLAGS="-w -O3 -fopenmp -DAMBIENT_OMP -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib"
-COMMON_CMAKE_CXX_FLAGS_RELEASE="-w -O3 -fopenmp -DAMBIENT_OMP -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib"
+THREADING_FLAGS="-fopenmp -DAMBIENT_OMP"
+COMMON_CMAKE_CXX_FLAGS="-std=c++11 -O3 -DNDEBUG -w $THREADING_FLAGS -L/apps/castor/plasma-2.4.6/lib"
 COMMON_CMAKE_C_COMPILER=mpicc
 COMMON_CMAKE_CXX_COMPILER=mpicxx
 COMMON_MPI_CXX_FOUND=FALSE
 ## ambient ##
-AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=ON
-AMBIENT_ENABLE_REGRESSION_PERFORMANCE=ON
 AMBIENT_BOOST_BINDINGS_INCLUDE=/project/h07/ALPS_INTEL12_CASTOR2/include
 AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64"
 AMBIENT_PLASMA_LIBRARY="-lplasma -lcoreblas -lcblas -llapacke -lquark"
+AMBIENT_ENABLE_REGRESSION_PERFORMANCE=ON
+AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=ON
 ## dmrg ##
 DMRG_DEFAULT_BLAS_LAPACK=manual
+DMRG_CMAKE_CXX_FLAGS_RELEASE="$COMMON_CMAKE_CXX_FLAGS"
 DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread $AMBIENT_PLASMA_LIBRARY"
 DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/apps/castor/intel/mkl/lib/intel64
 DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/apps/castor/intel/mkl/include
