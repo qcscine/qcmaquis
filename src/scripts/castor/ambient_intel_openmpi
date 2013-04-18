@@ -21,6 +21,7 @@ module load gcc/4.7.2
 module load ${COMPILER}/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load ${CMAKE}
+
 ## common ##
 THREADING_FLAGS="-DAMBIENT_CILK" # -openmp -DAMBIENT_OMP
 COMMON_CMAKE_CXX_FLAGS="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors $THREADING_FLAGS -L/apps/castor/plasma-2.4.6/lib"
