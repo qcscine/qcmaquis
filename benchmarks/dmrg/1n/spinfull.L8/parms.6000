@@ -3,15 +3,15 @@ max_bond_dimension = 6000
 truncation_initial = 0.0001
 truncation_final = 1e-12
 
-nsweeps = 3
+nsweeps = 5
 ngrowsweeps = 1
 nmainsweeps = 1
 
-resultfile = "ff_large.out.h5"
-chkpfile = "ff_large.out.h5"
+resultfile = "spinfull.L8.6000.out.h5"
+chkpfile = "spinfull.L8.6000.out.h5"
 donotsave = 1
 
 // possible values: singlesite, twosite
 optimization = "twosite"
 
-symmetry = "u1"
+symmetry = "2u1"
