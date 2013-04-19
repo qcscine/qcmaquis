@@ -1,0 +1,17 @@
+max_bond_dimension = 8000
+
+truncation_initial = 0.0001
+truncation_final = 1e-12
+
+nsweeps = 5
+ngrowsweeps = 1
+nmainsweeps = 1
+
+resultfile = "spinless.L8.8000.out.h5"
+chkpfile = "spinless.L8.8000.out.h5"
+donotsave = 1
+
+// possible values: singlesite, twosite
+optimization = "twosite"
+
+symmetry = "u1"
