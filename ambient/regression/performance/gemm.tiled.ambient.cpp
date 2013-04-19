@@ -19,8 +19,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     generate(pA);
     generate(pB);
 
-    sA = matrix_cast<sMatrix>(pA);
-    sB = matrix_cast<sMatrix>(pB);
+    sA = cast<sMatrix>(pA);
+    sB = cast<sMatrix>(pB);
     ambient::sync();
 
     ambient::numeric::gemm(pA, pB, pC); 

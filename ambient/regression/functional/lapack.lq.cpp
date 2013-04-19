@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( LQ_COMPARISON, T, test_types)
     sMatrix sQ(T::valuex,T::valuey);
 
     generate(pA);
-    sA = matrix_cast<sMatrix>(pA);
+    sA = cast<sMatrix>(pA);
  
     lq(pA,pL,pQ);
     lq(sA,sL,sQ);

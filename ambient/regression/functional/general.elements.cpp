@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( WRITE_ACCESS, T, test_types)
     sMatrix sA(T::valuex,T::valuey);
 
     generate(sA,Rd); // Rd is rand generator static variable inside utilities
-    pA = matrix_cast<pMatrix>(sA);
+    pA = cast<pMatrix>(sA);
 
     pA(accessx,accessy) = 3;
     ambient::sync();
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( READ_ACCESS, T, test_types)
     sMatrix sA(T::valuex,T::valuey);
 
     generate(sA,Rd); // Rd is rand generator static variable inside utilities
-    pA = matrix_cast<pMatrix>(sA);
+    pA = cast<pMatrix>(sA);
 
     x = sA(accessx,accessy);
     y = pA(accessx,accessy);

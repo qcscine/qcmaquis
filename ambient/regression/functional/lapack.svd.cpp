@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SVD_COMPARISON, T, test_types)
     sDiagMatrix sS((std::size_t)T::valuex); 
 
     generate(pA);
-    sA = matrix_cast<sMatrix>(pA);
+    sA = cast<sMatrix>(pA);
 
     svd(pA,pU,pV,pS);
     svd(sA,sU,sV,sS);

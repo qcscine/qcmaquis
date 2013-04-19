@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( TRACE, T, test_types)
     sMatrix sA(T::valuex,T::valuex);
 
     generate(pA);
-    sA = matrix_cast<sMatrix>(pA);
+    sA = cast<sMatrix>(pA);
 
     typename T::value_type sa = trace(sA);
     typename T::value_type pa = trace(pA);

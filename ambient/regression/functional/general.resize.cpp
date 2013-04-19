@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( RESIZE, T, test_types)
     sMatrix sA(T::valuex,T::valuey);
 
     generate(pA);
-    sA = matrix_cast<sMatrix>(pA);
+    sA = cast<sMatrix>(pA);
 
     sA.resize(4,2);
     pA.resize(4,2);

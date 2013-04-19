@@ -28,7 +28,7 @@ struct test_complex_only<std::complex <T> >{
         sDiagMatrix sS(size, 0);
         
         generate(pA);
-        sA = matrix_cast<sMatrix>(pA);
+        sA = cast<sMatrix>(pA);
         
         geev(pA,pLV,pRV,pS);
         

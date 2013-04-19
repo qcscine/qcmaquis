@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ADJOINT_INPLACE, T, test_types)
     sMatrix sA(T::valuex, T::valuey);
 
     generate(pA);
-    sA = matrix_cast<sMatrix>(pA);
+    sA = cast<sMatrix>(pA);
 
     adjoint_inplace(sA);
     adjoint_inplace(pA);
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(ADJOINT, T, test_types)
     sMatrix sB(T::valuex, T::valuey);
 
     generate(pA);
-    sA = matrix_cast<sMatrix>(pA);
+    sA = cast<sMatrix>(pA);
 
     sB = adjoint(sA);
     pB = adjoint(pA);
