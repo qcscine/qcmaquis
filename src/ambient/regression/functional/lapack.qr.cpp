@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( QR_COMPARISON, T, test_types)
 
 
     generate(pA);
-    sA = matrix_cast<sMatrix>(pA);
+    sA = cast<sMatrix>(pA);
 
     qr(pA,pQ,pR);
     qr(sA,sQ,sR);

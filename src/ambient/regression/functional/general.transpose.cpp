@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( TRANSPOSE, T, test_types)
     sMatrix sA(T::valuex,T::valuey);
 
     generate(pA);
-    sA = matrix_cast<sMatrix>(pA);
+    sA = cast<sMatrix>(pA);
 
     transpose_inplace(pA); 
     transpose_inplace(sA); 

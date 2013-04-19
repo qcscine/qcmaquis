@@ -31,7 +31,7 @@ struct helper_test<std::complex<T>, Size >{
          sMatrix sA(Size, Size), sB(Size, Size);
         
          generate(pA);
-         sA = matrix_cast<sMatrix>(pA);
+         sA = cast<sMatrix>(pA);
      
          sB = exp(sA,a);
          pB = exp(pA,a);
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EXP_ALGO_HERMITIAN, T, test_types) {
     sMatrix sA(Size, Size), sB(Size, Size);
    
     generate(pA);
-    sA = matrix_cast<sMatrix>(pA);
+    sA = cast<sMatrix>(pA);
 
     sB = exp_hermitian(sA,a);
     pB = exp_hermitian(pA,a);

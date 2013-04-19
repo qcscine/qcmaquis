@@ -18,8 +18,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GEMM_DIAGONAL, T, test_types)
     generate(pB);
     generate(pC);
 
-    sB = matrix_cast<sMatrix>(pB);
-    sC = matrix_cast<sDiagMatrix>(pC);
+    sB = cast<sMatrix>(pB);
+    sC = cast<sDiagMatrix>(pC);
 
     ambient::numeric::gemm(pC,pB,pA);
     gemm(sC,sB,sA);

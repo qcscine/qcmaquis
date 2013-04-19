@@ -13,7 +13,7 @@
 #include "alps/numeric/diagonal_matrix.hpp"
 #include "alps/numeric/matrix/algorithms.hpp"
 #include "ambient/numeric/matrix.hpp"
-#include "utils/bindings.hpp"
+#include "ambient/numeric/bindings.hpp"
 
 #define BOOST_CLOSE (double)1/0xF4240
 
@@ -90,5 +90,5 @@ double GFlopsGemm(size_t x, size_t y, double time){
     return 2*(double)x*(double)y*(double)y/(time*1.0e9);
 };
 
-using namespace maquis::bindings;
+using namespace ambient::numeric::bindings;
 #endif

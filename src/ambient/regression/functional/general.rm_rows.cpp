@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( REMOVE_FIRST_ROWS, T, test_types)
 
     generate(pA);
 
-    sA = matrix_cast<sMatrix>(pA);
+    sA = cast<sMatrix>(pA);
 
 //    sA.remove_rows(T::null,1);
 //    pA.remove_rows(T::null,1);
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( REMOVE_LAST_ROWS, T, test_types)
 
     generate(pA);
 
-    sA = matrix_cast<sMatrix>(pA);
+    sA = cast<sMatrix>(pA);
 
 //    sA.remove_rows(T::valuex-1,1);
 //    pA.remove_rows(T::valuex-1,1);
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( REMOVE_ROWS, T, test_types)
 
     generate(pA);
 
-    sA = matrix_cast<sMatrix>(pA);
+    sA = cast<sMatrix>(pA);
 
     int row =  Rd.IntRd()%(sA.num_rows());  
 //    sA.remove_rows(row,1);
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( REMOVE_SEVERAL_ROWS, T, test_types)
 
     generate(pA);
 
-    sA = matrix_cast<sMatrix>(pA);
+    sA = cast<sMatrix>(pA);
 
     int row =  Rd.IntRd()%(T::valuex-1);  
     int numrows = (int)(T::valuex-1 - row)/2;   

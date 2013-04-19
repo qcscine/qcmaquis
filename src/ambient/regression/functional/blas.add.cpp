@@ -16,9 +16,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ADD, T, test_types)
     generate(pA);
     generate(pB);
 
-    sA = matrix_cast<sMatrix>(pA);
-    sB = matrix_cast<sMatrix>(pB);
-    sC = matrix_cast<sMatrix>(pC);
+    sA = cast<sMatrix>(pA);
+    sB = cast<sMatrix>(pB);
+    sC = cast<sMatrix>(pC);
 
     sC = sA + sB;
     pC = pA + pB; 
@@ -40,8 +40,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( ADD_ASSIGN, T, test_types)
     generate(pA);
     generate(pB);
 
-    sA = matrix_cast<sMatrix>(pA);
-    sB = matrix_cast<sMatrix>(pB);
+    sA = cast<sMatrix>(pA);
+    sB = cast<sMatrix>(pB);
  
     sA += sB; 
     pA += pB; 

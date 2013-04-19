@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EXP, T, test_types)
     sDiagMatrix sA((std::size_t)T::valuex);
 
     generate(pA);
-    sA = matrix_cast<sDiagMatrix>(pA);
+    sA = cast<sDiagMatrix>(pA);
 
     sA = exp(sA);
     ambient::numeric::exp_inplace(pA);
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EXP_SCAL, T, test_types)
     sDiagMatrix sA((std::size_t)T::valuex);
 
     generate(pA);
-    sA = matrix_cast<sDiagMatrix>(pA);
+    sA = cast<sDiagMatrix>(pA);
 
     sA = exp(sA*a);
     pA = expi(pA,a);

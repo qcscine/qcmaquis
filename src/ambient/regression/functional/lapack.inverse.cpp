@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( INVERSE_COMPARISON, T, test_types)
         sMatrix  sAinv(size, size);
         
         generate(pA);
-        sA = matrix_cast<sMatrix>(pA);
+        sA = cast<sMatrix>(pA);
         pAinv = inverse(pA);
         sAinv = inverse(sA);
         
