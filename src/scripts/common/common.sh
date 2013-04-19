@@ -10,10 +10,10 @@ AMBIENT=ambient
 DMRG=dmrg
 TARGETS="ambient dmrg"
 
-RUN_PRESETS="n1.micro:        ~/maquis2013/benchmarks/dmrg/1n/micro/parms         ~/maquis2013/benchmarks/dmrg/1n/micro/model
-             n1.short:        ~/maquis2013/benchmarks/dmrg/1n/spinless/parms      ~/maquis2013/benchmarks/dmrg/1n/spinless/model
-             n1.middle:       ~/maquis2013/benchmarks/dmrg/1n/spinless/parms      ~/maquis2013/benchmarks/dmrg/1n/spinless/model
-             n1.large:        ~/maquis2013/benchmarks/dmrg/1n/spinless/parms      ~/maquis2013/benchmarks/dmrg/1n/spinless/model
+RUN_PRESETS="1n.micro:        ~/maquis2013/benchmarks/dmrg/1n/micro/parms         ~/maquis2013/benchmarks/dmrg/1n/micro/model
+             1n.short:        ~/maquis2013/benchmarks/dmrg/1n/spinless/parms      ~/maquis2013/benchmarks/dmrg/1n/spinless/model
+             1n.middle:       ~/maquis2013/benchmarks/dmrg/1n/spinless/parms      ~/maquis2013/benchmarks/dmrg/1n/spinless/model
+             1n.large:        ~/maquis2013/benchmarks/dmrg/1n/spinless/parms      ~/maquis2013/benchmarks/dmrg/1n/spinless/model
              fermiwideladder: ~/maquis2013/benchmarks/dmrg/fermiwideladder/parms  ~/maquis2013/benchmarks/dmrg/fermiwideladder/model"
 
 ## settings ##
