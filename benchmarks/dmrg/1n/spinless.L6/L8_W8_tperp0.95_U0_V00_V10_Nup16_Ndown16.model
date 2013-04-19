@@ -1,0 +1,16 @@
+LATTICE ="open ladder"
+L =8
+W =8
+MODEL ="fermion Hubbard"
+t0 =1
+t1 =0.95
+V0 =0
+V1 =0
+U = 0
+CONSERVED_QUANTUMNUMBERS ="Nup,Ndown"
+Nup_total =16
+Ndown_total =16
+MEASURE_LOCAL[D_up] = "n_up"
+MEASURE_LOCAL[D_down] = "n_down"
+MEASURE_HALF_CORRELATIONS[SPDM_up] = "cdag_up:c_up"
+MEASURE_HALF_CORRELATIONS[SPDM_down] = "cdag_down:c_down"

@@ -1,0 +1,13 @@
+LATTICE ="open ladder"
+L =8
+W =8
+MODEL ="spinless fermions"
+t0 =1
+t1 =0.95
+V0 =0
+V1 =0
+CONSERVED_QUANTUMNUMBERS ="N"
+N_total =32
+MEASURE_LOCAL[D] = "n"
+MEASURE_HALF_CORRELATIONS[SPDM] = "cdag:c"
+MEASURE_HALF_CORRELATIONS[DDCOR] = "n:n"
