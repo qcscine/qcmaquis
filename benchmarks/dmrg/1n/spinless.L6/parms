@@ -7,8 +7,8 @@ nsweeps = 3
 ngrowsweeps = 1
 nmainsweeps = 1
 
-resultfile = "ff_large.out.h5"
-chkpfile = "ff_large.out.h5"
+resultfile = "spinless.L6.out.h5"
+chkpfile = "spinless.L6.out.h5"
 donotsave = 1
 
 // possible values: singlesite, twosite
