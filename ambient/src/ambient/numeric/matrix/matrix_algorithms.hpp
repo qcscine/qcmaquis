@@ -90,12 +90,12 @@ namespace ambient { namespace numeric {
 
     template <typename T, class A>
     inline void save(const matrix<T,A>& a, const size_t& tag) { 
-        kernels::save<T>::spawn<complexity::N2>(a, tag); 
+        kernels::save<T,A>::spawn<complexity::N2>(a, tag); 
     }
 
     template <typename T, class A>
     inline void load(matrix<T,A>& a, const size_t& tag) { 
-        kernels::load<T>::spawn<complexity::N2>(a, tag); 
+        kernels::load<T,A>::spawn<complexity::N2>(a, tag); 
     }
 
     template<class Matrix>
@@ -286,12 +286,12 @@ namespace ambient { namespace numeric {
         ambient::fuse(src.core, dst.core);
     }
 
-    template<typename T, class A>
-    inline void copy_block(const matrix<T,A>& src, size_t si, size_t sj, 
-                           matrix<T,A>& dst, size_t di, size_t dj, 
+    template<class A1, class A2, typename T>
+    inline void copy_block(const matrix<T,A1>& src, size_t si, size_t sj, 
+                           matrix<T,A2>& dst, size_t di, size_t dj, 
                            size_t m, size_t n)
     {
-        kernels::copy_block<T>::spawn<complexity::N2>(src, si, sj, dst, di, dj, m, n); 
+        kernels::copy_block<A1,A2,T>::spawn<complexity::N2>(src, si, sj, dst, di, dj, m, n); 
     }
 
     template<typename T, class A>

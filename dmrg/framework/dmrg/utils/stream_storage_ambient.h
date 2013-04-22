@@ -18,10 +18,10 @@
 #endif
 
 template<class SymGroup>
-class StreamWriteRequest_impl< Boundary<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> >, SymGroup> >
+class StreamWriteRequest_impl< Boundary<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type, storage::constrained_allocator<dmrg_value_type> > >, SymGroup> >
 : public StreamRequest
 {
-    typedef Boundary<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> >, SymGroup> Object;
+    typedef Boundary<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type, storage::constrained_allocator<dmrg_value_type> > >, SymGroup> Object;
     typedef std::list< boost::tuple<void*, std::size_t, std::size_t> > ObjectList;
     
 public:
@@ -35,7 +35,7 @@ public:
         std::size_t tag(0);
         for (std::size_t i = 0; i < ptr_->aux_dim(); ++i)
             for (std::size_t k = 0; k < (*ptr_)[i].n_blocks(); ++k) {
-                typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> > tmp(num_rows((*ptr_)[i][k]), num_cols((*ptr_)[i][k]));
+                typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type, storage::constrained_allocator<dmrg_value_type> > > tmp(num_rows((*ptr_)[i][k]), num_cols((*ptr_)[i][k]));
                 ambient::numeric::save((*ptr_)[i][k],tag);
                 tag += (*ptr_)[i][k].data.size();
                 (*ptr_)[i][k].swap(tmp);
@@ -67,10 +67,10 @@ private:
 };
 
 template<class SymGroup>
-class StreamReadRequest_impl< Boundary<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> >, SymGroup> >
+class StreamReadRequest_impl< Boundary<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type, storage::constrained_allocator<dmrg_value_type> > >, SymGroup> >
 : public StreamRequest
 {
-    typedef Boundary<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> >, SymGroup> Object;
+    typedef Boundary<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type, storage::constrained_allocator<dmrg_value_type> > >, SymGroup> Object;
     typedef std::list< boost::tuple<void*, std::size_t, std::size_t> > ObjectList;
     
 public:
@@ -112,10 +112,10 @@ private:
 };
 
 template<class SymGroup>
-class StreamWriteRequest_impl< block_matrix<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> >, SymGroup> >
+class StreamWriteRequest_impl< block_matrix<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type, storage::constrained_allocator<dmrg_value_type> > >, SymGroup> >
 : public StreamRequest
 {
-    typedef block_matrix<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> >, SymGroup> Object;
+    typedef block_matrix<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type, storage::constrained_allocator<dmrg_value_type> > >, SymGroup> Object;
     typedef std::list< boost::tuple<void*, std::size_t, std::size_t> > ObjectList;
     
 public:
@@ -131,7 +131,7 @@ public:
         for (std::size_t k = 0; k < ptr_.n_blocks(); ++k) {
             ambient::numeric::save((*ptr_)[k],tag);
             tag +=  (*ptr_)[k].data.size();
-            typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> > tmp((*ptr_)[k].num_rows(), (*ptr_)[k].num_cols());                 
+            typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type, storage::constrained_allocator<dmrg_value_type> > > tmp((*ptr_)[k].num_rows(), (*ptr_)[k].num_cols());                 
             (*ptr_)[k].swap(tmp);
         }
 
@@ -161,10 +161,10 @@ private:
 };
 
 template<class SymGroup>
-class StreamReadRequest_impl< block_matrix<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> >, SymGroup> >
+class StreamReadRequest_impl< block_matrix<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type, storage::constrained_allocator<dmrg_value_type> > >, SymGroup> >
 : public StreamRequest
 {
-    typedef block_matrix<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> >, SymGroup> Object;
+    typedef block_matrix<typename ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type, storage::constrained_allocator<dmrg_value_type> > >, SymGroup> Object;
     typedef std::list< boost::tuple<void*, std::size_t, std::size_t> > ObjectList;
     
 public:

@@ -143,13 +143,13 @@ namespace ambient { namespace numeric { namespace kernels {
     struct cast_double_complex : public kernel< cast_double_complex<T, D> >
     {static void c(matrix<T>& a, const matrix<D>& b); };
 
-    template<typename T>
-    struct save : public kernel< save<T> >
-    { static void c(matrix<T> const& a, const size_t& tag); };
+    template<typename T, class A>
+    struct save : public kernel< save<T,A> >
+    { static void c(matrix<T,A> const& a, const size_t& tag); };
 
-    template<typename T>
-    struct load : public kernel< load<T> >
-    { static void c(matrix<T>& a, const size_t& tag); };
+    template<typename T, class A>
+    struct load : public kernel< load<T,A> >
+    { static void c(matrix<T,A>& a, const size_t& tag); };
     
     template<typename T>
     struct svd : public kernel< svd<T> > 
@@ -175,10 +175,10 @@ namespace ambient { namespace numeric { namespace kernels {
     struct copy_lt : public kernel< copy_lt<T> > 
     { static void c(const matrix<T>& a, unbound< matrix<T> >& t); };
 
-    template<typename T>
-    struct copy_block : public kernel< copy_block<T> > {
-        static void c(const matrix<T>& src, const size_t& si, const size_t& sj,
-                      matrix<T>& dst, const size_t& di, const size_t& dj, 
+    template<class A1, class A2, typename T>
+    struct copy_block : public kernel< copy_block<A1,A2,T> > {
+        static void c(const matrix<T,A1>& src, const size_t& si, const size_t& sj,
+                      matrix<T,A2>& dst, const size_t& di, const size_t& dj, 
                       const size_t& m, const size_t& n);
     };
 
@@ -408,10 +408,10 @@ namespace ambient { namespace numeric { namespace kernels {
         td[i+ldt*j] = ad[i+lda*j]; 
     }
 
-    template<typename T>
-    void copy_block<T>::c(const matrix<T>& src, const size_t& si, const size_t& sj,
-                            matrix<T>& dst, const size_t& di, const size_t& dj, 
-                            const size_t& m, const size_t& n)
+    template<class A1, class A2, typename T>
+    void copy_block<A1,A2,T>::c(const matrix<T,A1>& src, const size_t& si, const size_t& sj,
+                                matrix<T,A2>& dst, const size_t& di, const size_t& dj, 
+                                const size_t& m, const size_t& n)
     {
         T* sd = current(src);
         T* dd = m*n < ambient::square_dim(dst) ? revised(dst) : updated(dst);
@@ -642,14 +642,14 @@ namespace ambient { namespace numeric { namespace kernels {
             ad[i] = helper_cast<T,D>::cast(bd[i]);
     };
 
-    template<typename T>
-    void save<T>::c(matrix<T> const& a, const size_t& tag ){
+    template<typename T, class A>
+    void save<T,A>::c(matrix<T,A> const& a, const size_t& tag ){
         T* ad = (T*)current(a);
         ambient::fout.save(ad, tag, ambient::size(a)); 
     }
 
-    template<typename T>
-    void load<T>::c(matrix<T>& a, const size_t& tag){
+    template<typename T, class A>
+    void load<T,A>::c(matrix<T,A>& a, const size_t& tag){
         T* ad = (T*)updated(a);
         ambient::fout.load(ad, tag, ambient::size(a)); 
     }
