@@ -7,8 +7,9 @@ nsweeps = 5
 ngrowsweeps = 1
 nmainsweeps = 1
 
-resultfile = "spinfull.L8.8000.out.h5"
-chkpfile = "spinfull.L8.8000.out.h5"
+resultfile = "/users/akosenko/maquis2013/src/scratch/spinfull.L8.8000.out.h5"
+chkpfile = "/users/akosenko/maquis2013/src/scratch/spinfull.L8.8000.out.h5"
+storagedir = "/users/akosenko/maquis2013/src/scratch"
 donotsave = 1
 
 // possible values: singlesite, twosite
