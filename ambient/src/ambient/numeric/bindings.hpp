@@ -179,14 +179,14 @@ namespace ambient { namespace numeric { namespace bindings {
     }
     // }}}
 
-    template <typename O, typename I> struct casting {};
+    template <typename O, typename I> struct adaptor {};
 
     template <typename O, typename I> O cast(I const& input){
-       return casting<O,I>::convert(input);
+       return adaptor<O,I>::convert(input);
     }
 
     template <typename T, typename D>
-    struct casting< ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >, ambient::numeric::tiles<ambient::numeric::diagonal_matrix<D> > >{
+    struct adaptor< ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >, ambient::numeric::tiles<ambient::numeric::diagonal_matrix<D> > >{
         static ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> > convert(const ambient::numeric::tiles<ambient::numeric::diagonal_matrix<D> >& m){
             ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> > pm(num_rows(m), num_cols(m));
             ambient::numeric::bindings::convert<T,D>(pm, m);
@@ -195,7 +195,7 @@ namespace ambient { namespace numeric { namespace bindings {
     };
 
     template <typename T, typename S, template<class M, class SS> class C>
-    struct casting< std::vector< std::vector<T> >, C<ambient::numeric::diagonal_matrix<T>, S> > {
+    struct adaptor< std::vector< std::vector<T> >, C<ambient::numeric::diagonal_matrix<T>, S> > {
         static std::vector< std::vector<T> > convert(const C<ambient::numeric::diagonal_matrix<T>, S>& m){
             std::vector< std::vector<T> > set;
             ambient::numeric::bindings::convert(set, m);
@@ -204,7 +204,7 @@ namespace ambient { namespace numeric { namespace bindings {
     };
 
     template <typename T>
-    struct casting< ambient::numeric::matrix<T>, alps::numeric::matrix<T> > {
+    struct adaptor< ambient::numeric::matrix<T>, alps::numeric::matrix<T> > {
         static ambient::numeric::matrix<T> convert(const alps::numeric::matrix<T>& m){
             ambient::numeric::matrix<T> pm(num_rows(m), num_cols(m));    
             ambient::numeric::bindings::convert(pm, m);
@@ -213,7 +213,7 @@ namespace ambient { namespace numeric { namespace bindings {
     };
 
     template <typename T>
-    struct casting< alps::numeric::matrix<T>, ambient::numeric::matrix<T> > {
+    struct adaptor< alps::numeric::matrix<T>, ambient::numeric::matrix<T> > {
         static alps::numeric::matrix<T> convert(const ambient::numeric::matrix<T>& pm){
             alps::numeric::matrix<T> m(num_rows(pm), num_cols(pm));    
             ambient::numeric::bindings::convert(m, pm);
@@ -222,7 +222,7 @@ namespace ambient { namespace numeric { namespace bindings {
     };
 
     template <typename T>
-    struct casting< ambient::numeric::diagonal_matrix<T>, alps::numeric::diagonal_matrix<T> > {
+    struct adaptor< ambient::numeric::diagonal_matrix<T>, alps::numeric::diagonal_matrix<T> > {
         static ambient::numeric::diagonal_matrix<T> convert(const alps::numeric::diagonal_matrix<T>& m){
             ambient::numeric::diagonal_matrix<T> pm(num_rows(m));    
             ambient::numeric::bindings::convert(pm, m);
@@ -231,7 +231,7 @@ namespace ambient { namespace numeric { namespace bindings {
     };
 
     template <typename T>
-    struct casting< alps::numeric::diagonal_matrix<T>, ambient::numeric::diagonal_matrix<T> > {
+    struct adaptor< alps::numeric::diagonal_matrix<T>, ambient::numeric::diagonal_matrix<T> > {
         static alps::numeric::diagonal_matrix<T> convert(const ambient::numeric::diagonal_matrix<T>& pm){
             alps::numeric::diagonal_matrix<T> m(num_rows(pm));
             convert(m, pm);
@@ -240,14 +240,14 @@ namespace ambient { namespace numeric { namespace bindings {
     };
 
     template <typename T>
-    struct casting< std::vector<T>, ambient::numeric::diagonal_matrix<T> > {
+    struct adaptor< std::vector<T>, ambient::numeric::diagonal_matrix<T> > {
         static std::vector<T> convert(const ambient::numeric::diagonal_matrix<T>& pm){
-            return casting<alps::numeric::diagonal_matrix<T>, ambient::numeric::diagonal_matrix<T> >::convert(pm).get_values();
+            return adaptor<alps::numeric::diagonal_matrix<T>, ambient::numeric::diagonal_matrix<T> >::convert(pm).get_values();
         }
     };
 
     template <typename T, typename S, template<class M, class SS> class C>
-    struct casting< std::vector< std::vector<T> >, C<ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >, S> > {
+    struct adaptor< std::vector< std::vector<T> >, C<ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >, S> > {
         static std::vector< std::vector<T> > convert(const C<ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >, S>& m){
             std::vector< std::vector<T> > set;
             ambient::numeric::bindings::convert(set, m);
@@ -256,7 +256,7 @@ namespace ambient { namespace numeric { namespace bindings {
     };
 
     template <typename T>
-    struct casting< ambient::numeric::tiles<ambient::numeric::matrix<T> >, alps::numeric::matrix<T> > {
+    struct adaptor< ambient::numeric::tiles<ambient::numeric::matrix<T> >, alps::numeric::matrix<T> > {
         static ambient::numeric::tiles<ambient::numeric::matrix<T> > convert(const alps::numeric::matrix<T>& m){
             ambient::numeric::tiles<ambient::numeric::matrix<T> > pm(num_rows(m), num_cols(m));    
             ambient::numeric::bindings::convert(pm, m);
@@ -265,7 +265,7 @@ namespace ambient { namespace numeric { namespace bindings {
     };
 
     template <typename T2, typename T1>
-    struct casting< ambient::numeric::tiles<ambient::numeric::matrix<T2> >, alps::numeric::matrix<T1> > {
+    struct adaptor< ambient::numeric::tiles<ambient::numeric::matrix<T2> >, alps::numeric::matrix<T1> > {
         static ambient::numeric::tiles<ambient::numeric::matrix<T2> > convert(const alps::numeric::matrix<T1>& m){
             ambient::numeric::tiles<ambient::numeric::matrix<T2> > pm(num_rows(m), num_cols(m));    
             ambient::numeric::bindings::convert(pm, m);
@@ -274,7 +274,7 @@ namespace ambient { namespace numeric { namespace bindings {
     };
 
     template <typename T>
-    struct casting< alps::numeric::matrix<T>, ambient::numeric::tiles<ambient::numeric::matrix<T> > > {
+    struct adaptor< alps::numeric::matrix<T>, ambient::numeric::tiles<ambient::numeric::matrix<T> > > {
         static alps::numeric::matrix<T> convert(const ambient::numeric::tiles<ambient::numeric::matrix<T> >& pm){
             alps::numeric::matrix<T> m(num_rows(pm), num_cols(pm));    
             ambient::numeric::bindings::convert(m, pm);
@@ -283,7 +283,7 @@ namespace ambient { namespace numeric { namespace bindings {
     };
 
     template <typename T>
-    struct casting< ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >, alps::numeric::diagonal_matrix<T> > {
+    struct adaptor< ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >, alps::numeric::diagonal_matrix<T> > {
         static ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> > convert(const alps::numeric::diagonal_matrix<T>& m){
             ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> > pm(num_rows(m));
             ambient::numeric::bindings::convert(pm, m);
@@ -292,7 +292,7 @@ namespace ambient { namespace numeric { namespace bindings {
     };
 
     template <typename T>
-    struct casting< alps::numeric::diagonal_matrix<T>, ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> > > {
+    struct adaptor< alps::numeric::diagonal_matrix<T>, ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> > > {
         static alps::numeric::diagonal_matrix<T> convert(const ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >& pm){
             alps::numeric::diagonal_matrix<T> m(num_rows(pm));    
             ambient::numeric::bindings::convert(m, pm);
