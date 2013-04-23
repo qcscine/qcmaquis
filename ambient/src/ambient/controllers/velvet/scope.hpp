@@ -60,19 +60,40 @@ namespace ambient {
             factor = (int)(n / ambient::channel.volume); // iterations before switch
             effect = (int)n;
         }
-        scope(){
+        scope() : index(0) {
             ambient::controller.set_context(this);
             this->round = ambient::channel.volume;
+            this->shift();
+        }
+        scope(int start){
+            index = start; // due to shifting
+            ambient::controller.set_context(this);
+            this->round = ambient::channel.volume;
+            this->shift();
+        }
+        void shift(){
             this->sector = (++iterator %= round*factor)/factor;
             this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
+            if(effect && !--effect) factor = 1;
+        }
+        scope& operator++ (){
+            this->shift();
+            this->index++;
+            return *this;
+        }
+        operator size_t (){
+            return index;
+        }
+        bool operator < (size_t lim){
+            return index < lim;
         }
        ~scope(){
-            if(effect && !--effect) factor = 1;
             ambient::controller.pop_context();
         }
         virtual bool tunable(){ 
             return false; 
         }
+        size_t index;
     };
 
     template<>

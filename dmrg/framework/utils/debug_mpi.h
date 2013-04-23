@@ -1,6 +1,5 @@
 /*
  *  debug_mpi.h
- *  ambient_xcode
  *
  *  Created by Tim Ewart on 14.03.11.
  *  Copyright 2011 University of Geneva. All rights reserved.
