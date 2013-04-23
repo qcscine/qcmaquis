@@ -327,9 +327,9 @@ namespace ambient { namespace numeric { namespace kernels {
         int lda = a.num_rows();
         int ldb = b.num_rows();
         int ldc = c.num_rows();
-        static const double alpha(1.0); 
+        static const double alfa(1.0); 
         static const double beta(0.0);
-        helper_blas<T>::gemm(ViewA::code(), ViewB::code(), &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+        helper_blas<T>::gemm(ViewA::code(), ViewB::code(), &m, &n, &k, &alfa, ad, &lda, bd, &ldb, &beta, cd, &ldc);
     }
         
     template<class ViewB, typename T, typename D>
@@ -349,10 +349,10 @@ namespace ambient { namespace numeric { namespace kernels {
         size_t sizex = b.num_cols();
         int size  = a_diag.num_rows();
         T* cd = emptied(c);
-        D* alpha = current(a_diag);
+        D* alfa = current(a_diag);
     
         for(int k = 0 ; k < sizex; k++)
-    	    helper_blas<T>::axpy(&size, &alpha[k], &bd[k*size], &ONE, &cd[k], &size);// C - check carefully for TE a_diag double, b complex
+    	    helper_blas<T>::axpy(&size, &alfa[k], &bd[k*size], &ONE, &cd[k], &size);// C - check carefully for TE a_diag double, b complex
     }
         
     template<class ViewA, typename T, typename D>
@@ -362,10 +362,10 @@ namespace ambient { namespace numeric { namespace kernels {
         int ONE = 1;
         T* ad = current(a);
         T* cd = emptied(c);
-    	D* alpha = current(b_diag);
+    	D* alfa = current(b_diag);
     
         for(int k = 0 ; k < sizex; k++)
-    	    helper_blas<T>::axpy(&size, &alpha[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
+    	    helper_blas<T>::axpy(&size, &alfa[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
     }
 
     template<typename T, typename D>
@@ -375,10 +375,10 @@ namespace ambient { namespace numeric { namespace kernels {
         int ONE = 1;
         T* ad = current(a);
         T* cd = emptied(c);
-    	D* alpha = current(b_diag);
+    	D* alfa = current(b_diag);
     
         for(int k = 0 ; k < sizey; k++)
-    	   helper_blas<T>::axpy(&size, &alpha[k], &ad[k], &sizey, &cd[k*size], &ONE);// C - check carefully for TE b_diag double, b complex
+    	   helper_blas<T>::axpy(&size, &alfa[k], &ad[k], &sizey, &cd[k*size], &ONE);// C - check carefully for TE b_diag double, b complex
     }
 
     template<typename T>

@@ -1,9 +1,6 @@
 compile_with_ambient()
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 include_directories("${AMBIENT_SOURCES_DIR}")
-#include_directories("${ALPS_DIR}")
-
-set(PLASMA_LIBRARY "-lplasma -lcoreblas -lcblas -llapacke -lquark")
 
 add_definitions(-DBOOST_TEST_DYN_LINK -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
 
