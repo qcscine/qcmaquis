@@ -8,6 +8,7 @@
 
 import os
 import pyalps
+import pydmrg
 import numpy as np
 
 from exception import ObservableNotFound
@@ -58,15 +59,17 @@ def load_spectrum_observable(fname, observable, remove_equal_indexes=False):
             d.y[i] = d.y[i][ind]
     return d
 
-def load_iterations_observable(fname, observable):
+def load_iterations_observable(fname, observable, remove_equal_indexes=False):
     if not os.path.exists(fname):
         raise IOError('Archive `%s` not found.' % fname)
-    ## TODO: load iterations (time evolution) correctly
-    data = pyalps.loadEigenstateMeasurements([fname], [observable])
-    data = pyalps.flatten(data)
-    if len(data) == 0:
+    if remove_equal_indexes:
+        print 'WARNING:', 'removing index not implemented for iterations meas.'
+    data = pydmrg.LoadDMRGSweeps([fname], [observable])
+    obs = pyalps.collectXY(data, 'sweep', observable)
+    obs = pyalps.flatten(obs)
+    if len(obs) == 0:
         raise ObservableNotFound(fname, observable)
-    return data[0]
+    return obs[0]
 
 
 class reference_file(object):

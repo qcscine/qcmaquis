@@ -99,6 +99,7 @@ namespace ambient { namespace numeric {
         void* operator new (size_t);
         void operator delete (void* ptr);
 
+        explicit tiles();
         explicit tiles(size_type size, value_type init_value = value_type()); 
         tiles(const tiles& a);
         tiles& operator = (const tiles& rhs); 

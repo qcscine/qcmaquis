@@ -69,7 +69,6 @@ private:
         add_option("chkp_each", "", value(1)); 
         add_option("update_each", "", value(-1)); 
         
-        
         add_option("expm_method", "algorithm used for exp(-i H dt): heev (default), geev", value("heev"));
         add_option("te_type", "time evolution algorithm: nn (default), mpo", value("nn"));
         add_option("te_optim", "optimized nn time evolution", value(true));
@@ -82,6 +81,7 @@ private:
         
         add_option("init_state", "", value("default"));
         add_option("init_coeff", "coefficients for coherent init", value(""));
+        add_option("init_basis_state", "local indexes for basis state init", value(""));
         
         add_option("symmetry", "null, u1 or 2u1", value("u1"));
         add_option("lattice_library", "", value("alps"));

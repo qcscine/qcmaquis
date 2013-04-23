@@ -177,6 +177,101 @@ Matrix super_right(const Matrix& l)
 }
 
 
+/// Fuse indices n[i] into one p = \sum_i n[i] d^i
+template<class T, class A>
+T fuse(const A& ind, T d)
+{
+    T fused = 0;
+    T stride = 1;
+    for( T i = 0; i < ind.size(); ++i )
+    {
+        fused += ind[i] * stride;
+        stride *= d;
+    }
+    return fused;
+}
+
+///
+template<class T, class A>
+void unfuse(T fused, T d, A& ind)
+{
+    for( T i = 0; i < ind.size(); ++i )
+    {
+        ind[i] = fused % d;
+        fused /= d;
+    }
+    assert( fused == 0 );
+}
+
+
+
+///
+template<class Matrix>
+Matrix reshape_bond2site(const Matrix& a)
+{
+    typedef typename Matrix::size_type size_type;
+    size_type d4 = num_rows(a);
+    size_type d = sqrt(sqrt(d4));
+    assert( d4 == num_cols(a) );
+    assert( d4 == d*d*d*d );
+    
+    Matrix b(d4,d4);
+    boost::array<size_type,4> ii, jj, kk, ll;
+    for( size_type i = 0; i < d4; ++i )
+    {
+        unfuse(i,d,ii);
+        for( size_type j = 0; j < d4; ++j )
+        {
+            unfuse(j,d,jj);
+            kk[0] = ii[0]; kk[1] = ii[2]; kk[2] = jj[0]; kk[3] = jj[2];
+            ll[0] = ii[1]; ll[1] = ii[3]; ll[2] = jj[1]; ll[3] = jj[3];
+            b(fuse(kk,d),fuse(ll,d)) = a(i,j);
+        }
+    }
+    return b;
+}
+
+///
+template<class Op,class Matrix>
+std::vector< std::pair<Op,Op> > decompose_bond_super(const Matrix& bondop, const Index<TrivialGroup>& phys)
+{
+    Matrix rbond = reshape_bond2site(bondop);
+    
+    Matrix U, V;
+    typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type S, Ssqrt;
+    svd(rbond, U, V, S);
+    Ssqrt = sqrt(S);
+    
+    TrivialGroup::charge C = TrivialGroup::IdentityCharge;
+    Op left, right;
+    {
+        Matrix tmp;
+        gemm(U, Ssqrt, tmp);
+        left.insert_block(tmp, C, C);
+    }
+    {
+        Matrix tmp;
+        gemm(Ssqrt, V, tmp);
+        right.insert_block(tmp, C, C);
+    }
+    
+    std::vector<Op> leftops  = reshape_right_to_list(phys, left);
+    std::vector<Op> rightops = reshape_left_to_list (phys, right);
+    assert(leftops.size() == rightops.size());
+    
+    // discard terms with no weight
+    std::vector< std::pair<Op,Op> > terms;
+    for( unsigned i = 0; i < num_rows(S) && std::abs(S(i,i)) > 1e-10; ++i )
+    {
+        leftops[i].transpose_inplace();
+        rightops[i].transpose_inplace();
+        terms.push_back(std::pair<Op,Op>( leftops[i], rightops[i] ));
+    }
+    
+    return terms;
+}
+
+
 /* ****************** BOSE-HUBBARD */
 template<class Matrix>
 class SuperBoseHubbardNone : public Model<Matrix, TrivialGroup>
@@ -252,11 +347,14 @@ public:
         leftDestroy.insert_block(transpose(super_left(mdestroy)), C,C);
         rightCreate.insert_block(transpose(super_right(mcreate)), C,C);
         
+        std::vector< std::pair<op_t,op_t> > hopops = decompose_bond_super<op_t>(adjoint_hamiltonian(kron(mcreate, mdestroy)),phys);
+        
         
         // insert superoperators for each site
         for( int p=0; p < lat.size(); ++p ) 
         {
             // interaction H_U = U/2 n_i (n_i - 1)
+            if( U != 0 )
             {
                 hamterm_t term;
                 term.fill_operator = ident;
@@ -265,6 +363,7 @@ public:
             }
             
             // pump H_Delta = Delta (b_i^\dag^2 + b_i^2)
+            if( Delta != 0 )
             {
                 hamterm_t term;
                 term.fill_operator = ident;
@@ -274,6 +373,7 @@ public:
             
             // one-boson dissipation L_{1a} = Gamma_{1a} lind b_i
             //   = Gamma_{1a} (2 b_i rho b_i^\dag - b_i^\dag b_i rho - rho b_i^\dag b_i)
+            if( Gamma1a != 0 )
             {
                 hamterm_t term;
                 term.fill_operator = ident;
@@ -283,6 +383,7 @@ public:
             
             // two-boson dissipation L_2 = Gamma_2/2 lind b_i^2
             //   = Gamma_2/2 (2 b_i^2 rho b_i^\dag^2 - b_i^\dag^2 b_i^2 rho - rho b_i^\dag^2 b_i^2)
+            if( Gamma2 != 0 )
             {
                 hamterm_t term;
                 term.fill_operator = ident;
@@ -295,22 +396,26 @@ public:
             for( int n = 0; n < neighs.size(); ++n ) 
             {
                 // hopping H_J = -J (b_i^\dag b_{i+1} + b_i b_{i+1}^\dag)
+                for( unsigned i = 0; i < hopops.size(); ++i )
                 {
-                    hamterm_t term;
-                    term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, -t*create) );
-                    term.operators.push_back( std::make_pair(neighs[n], destroy) );
-                    terms.push_back(term);
-                }
-                {
-                    hamterm_t term;
-                    term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, -t*destroy) );
-                    term.operators.push_back( std::make_pair(neighs[n], create) );
-                    terms.push_back(term);
+                    {
+                        hamterm_t term;
+                        term.fill_operator = ident;
+                        term.operators.push_back( std::make_pair(p,      -t*hopops[i].first) );
+                        term.operators.push_back( std::make_pair(neighs[n], hopops[i].second) );
+                        terms.push_back(term);
+                    }
+                    {
+                        hamterm_t term;
+                        term.fill_operator = ident;
+                        term.operators.push_back( std::make_pair(p,      -t*hopops[i].second) );
+                        term.operators.push_back( std::make_pair(neighs[n], hopops[i].first) );
+                        terms.push_back(term);
+                    }
                 }
                 
                 // nearest-neighbor interaction H_V = V n_i n_{i+1}
+                if( V != 0 )
                 {
                     hamterm_t term;
                     term.fill_operator = ident;
@@ -325,6 +430,7 @@ public:
                 //  = Gamma_{1b}/2 (
                 //          (ad b^\dag)_i (b rho)_{i+1} + (b rho)_i (ad b^\dag)_{i+1}
                 //        - (ad b)_i (rho b^\dag)_{i+1} - (rho b^\dag)_i (ad b)_{i+1} )
+                if( Gamma1b != 0 )
                 {
                     hamterm_t term;
                     term.fill_operator = ident;
@@ -332,6 +438,7 @@ public:
                     term.operators.push_back( std::make_pair(neighs[n], leftDestroy) );
                     terms.push_back(term);
                 }
+                if( Gamma1b != 0 )
                 {
                     hamterm_t term;
                     term.fill_operator = ident;
@@ -339,17 +446,19 @@ public:
                     term.operators.push_back( std::make_pair(neighs[n], create) );
                     terms.push_back(term);
                 }
+                if( Gamma1b != 0 )
                 {
                     hamterm_t term;
                     term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, I*Gamma1b/2.*destroy) );
+                    term.operators.push_back( std::make_pair(p, -I*Gamma1b/2.*destroy) );
                     term.operators.push_back( std::make_pair(neighs[n], rightCreate) );
                     terms.push_back(term);
                 }
+                if( Gamma1b != 0 )
                 {
                     hamterm_t term;
                     term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, I*Gamma1b/2.*rightCreate) );
+                    term.operators.push_back( std::make_pair(p, -I*Gamma1b/2.*rightCreate) );
                     term.operators.push_back( std::make_pair(neighs[n], destroy) );
                     terms.push_back(term);
                 }
@@ -401,6 +510,18 @@ public:
             meas.add_term(term);
         }
         
+        if (model.get<bool>("ENABLE_MEASURE[Local density^2]")) {
+            mterm_t term;
+            term.fill_operator = ident_psi;
+            term.name = "Local density^2";
+            term.type = mterm_t::Local;
+            op_t count2_psi;
+            gemm(count_psi, count_psi, count2_psi);
+            term.operators.push_back( std::make_pair(count2_psi, false) );
+            
+            meas.add_term(term);
+        }
+
         if (model.get<bool>("ENABLE_MEASURE[Onebody density matrix]")) {
             mterm_t term;
             term.fill_operator = ident_psi;

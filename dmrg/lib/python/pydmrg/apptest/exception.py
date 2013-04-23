@@ -33,4 +33,4 @@ class ObservableNotMatch(TestFailed):
         self.rval = float(rval)
         self.tol  = float(tol)
     def __str__(self):
-        return 'Observable `%s` does not match with `%s` compared to %s with tolerance %s.' % (self.obs, self.tval, self.rval, self.tol)
+        return 'Observable `%s` does not match. `%s` more than %s different compared to %s.' % (self.obs, self.tval, self.tol, self.rval)
