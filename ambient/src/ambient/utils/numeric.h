@@ -94,7 +94,7 @@ namespace ambient { namespace numeric { namespace kernels {
            *lwork = OptimalSize(*wkopt);
            work = (T*)malloc( (*lwork)*sizeof(T) );
            dgesvd_(jobu, jobvt, m, n, ad, lda, sd, ud, ldu, vtd, ldvt, work, lwork, info);
-           assert( info == 0 ); // otherwise the algorithm computing atomic SVD failed to converge
+           assert( *info == 0 ); // otherwise the algorithm computing atomic SVD failed to converge
            free(work);
        } 
 
@@ -104,7 +104,7 @@ namespace ambient { namespace numeric { namespace kernels {
            *lwork = OptimalSize(*wkopt);
            work = (T*)malloc( (*lwork)*sizeof(T) );
            dsyev_(jobz, uplo, n, a, lda, w, work, lwork, info);
-           assert( info == 0 );
+           assert( *info == 0 );
            free(work);
        }
 
@@ -157,7 +157,7 @@ namespace ambient { namespace numeric { namespace kernels {
            *lwork = OptimalSize(*wkopt);
            work = (T*)malloc( (*lwork)*sizeof(T) );
            zgesvd_(jobu, jobvt, m, n, ad, lda, sd, ud, ldu, vtd, ldvt, work, lwork, rwork, info); //run
-           assert( info == 0 ); // otherwise the algorithm computing atomic SVD failed to converge
+           assert( *info == 0 ); // otherwise the algorithm computing atomic SVD failed to converge
            free(work);
            delete [] rwork;
        } 
@@ -169,7 +169,7 @@ namespace ambient { namespace numeric { namespace kernels {
            *lwork = OptimalSize(*wkopt);
            work = (T*)malloc( (*lwork)*sizeof(T) );
            zheev_(jobz, uplo, n, a, lda, w, work, lwork, rwork, info);
-           assert( info == 0 );
+           assert( *info == 0 );
            free(work);
            delete [] rwork;
        }
@@ -181,7 +181,7 @@ namespace ambient { namespace numeric { namespace kernels {
            *lwork = OptimalSize(*wkopt);
            work = (T*)malloc( (*lwork)*sizeof(T) );
            zgeev_(jobvl, jobvr, n, a, lda, s, ldv, ldlv, rvd, ldrv, work, lwork, rwork, info);
-           assert( info == 0 );
+           assert( *info == 0 );
            free(work);
            delete [] rwork;
        } 

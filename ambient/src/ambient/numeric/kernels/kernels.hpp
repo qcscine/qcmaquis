@@ -755,7 +755,7 @@ namespace ambient { namespace numeric { namespace kernels {
         } 
         // reversing eigenvectors
         size_t len = m*sizeof(T);
-        work = (T*)realloc(work, len);
+        work = (T*)std::malloc(len);
         for (int i=0; i < (int)(m/2); i++){ 
             std::memcpy(work, &ad[i*m], len);
             std::memcpy(&ad[i*m], &ad[(m-1-i)*m], len);

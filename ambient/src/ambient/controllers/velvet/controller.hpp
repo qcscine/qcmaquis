@@ -74,7 +74,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline bool controller::empty(){
-        this->chains->empty();
+        return this->chains->empty();
     }
 
     inline void controller::clear(){

@@ -20,7 +20,7 @@ namespace ambient { namespace models { namespace velvet {
     }
 
     inline void model::touch(const history* o){
-        if(o->back() == NULL) 
+        if(o->back() == NULL)
             this->add_revision<ambient::common>(const_cast<history*>(o));
     }
 

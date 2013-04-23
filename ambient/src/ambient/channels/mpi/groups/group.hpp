@@ -101,7 +101,7 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline size_t group::get_proc(size_t k){
-        assert(i < this->get_size());
+        assert(k < this->size);
         return this->procs[k];
     }
 
