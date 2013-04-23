@@ -13,7 +13,7 @@ namespace ambient {
         ambient::model.touch(obj.core);
         ambient::sync(); 
         revision& c = *obj.core->current;
-        assert(ambient::model.common(c));
+        assert(c.state == ambient::local || c.state == ambient::common);
         if(!c.valid()) ambient::controller.calloc(c);
         return c;
     }

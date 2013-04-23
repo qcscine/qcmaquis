@@ -146,7 +146,10 @@ namespace ambient { namespace numeric {
     
     template <typename T, class A>
     matrix<T,A>& matrix<T,A>::operator = (const matrix& rhs){
-        assert(!rhs.core->weak()); // can be optimized if weak
+        //if(rhs.core->weak() && this->core->weak()){
+        //    this->core->spec.dim = rhs.core->spec.dim;
+        //    return *this;
+        //}   // commented due to insignificance
         matrix c(rhs);
         this->swap(c);
         return *this;

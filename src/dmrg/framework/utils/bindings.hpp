@@ -116,7 +116,7 @@ namespace maquis {
     template <typename T,                          // value_type
              template<class AT> class A,           // allocator 
              template<class TT, class AA> class C> // vector<value_type, allocator>
-    inline const C<typename real_type<T>::type, A<typename real_type<T>::type> >& 
+    inline const C<typename real_type<T>::type, A<typename real_type<T>::type> >
     real(const C<ambient::numeric::future<T>, A<ambient::numeric::future<T> > >& f){
         return ambient::numeric::real(f);
     }

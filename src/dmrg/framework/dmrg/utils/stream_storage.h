@@ -65,18 +65,21 @@ namespace storage {
     };
 
     template<class T>
-    class constrained { 
+    class constrained {
+    public: 
         typedef T type;
     };
 
     template<typename T>
     class constrained<alps::numeric::matrix<T, std::vector<T> > > {
+    public: 
         typedef alps::numeric::matrix<T, std::vector<T, constrained_allocator<T> > > type;
     };
 
 #ifdef USE_AMBIENT
     template<typename T>
     class constrained<ambient::numeric::tiles<ambient::numeric::matrix<T, ambient::default_allocator<T> > > > {
+    public: 
         typedef ambient::numeric::tiles<ambient::numeric::matrix<T, constrained_allocator<T> > > type;
     };
 #endif
@@ -214,14 +217,14 @@ protected:
 
 
 /********************
- * Stream__Request_impl for Boundary<typename storage::constrained<Matrix>::type, SymmGroup>
+ * Stream__Request_impl for Boundary<Matrix, SymmGroup>
  ********************/
 
 template<class Matrix, class SymmGroup>
-class StreamReadRequest_impl<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> >
+class StreamReadRequest_impl<Boundary<Matrix, SymmGroup> >
 : public StreamRequest
 {
-    typedef Boundary<typename storage::constrained<Matrix>::type, SymmGroup> Object;
+    typedef Boundary<Matrix, SymmGroup> Object;
     
 public:
     StreamReadRequest_impl(StreamStorage * store_,
@@ -265,10 +268,10 @@ private:
 };
 
 template<class Matrix, class SymmGroup>
-class StreamWriteRequest_impl<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> >
+class StreamWriteRequest_impl<Boundary<Matrix, SymmGroup> >
 : public StreamRequest
 {
-    typedef Boundary<typename storage::constrained<Matrix>::type, SymmGroup> Object;
+    typedef Boundary<Matrix, SymmGroup> Object;
     
 public:
     StreamWriteRequest_impl(StreamStorage * store_,

@@ -87,11 +87,6 @@ private:
                     }
                 }
 #ifndef NDEBUG
-                if (charge_diffs.size() > 1) {
-                    std::copy(charge_diffs.begin(), charge_diffs.end(),
-                              std::ostream_iterator<typename SymmGroup::charge>(maquis::cout, " "));
-                    maquis::cout << std::endl;
-                }
                 assert( charge_diffs.size() <= 1 );
 #endif
                 if (charge_diffs.size() == 1)
