@@ -16,7 +16,7 @@
 #include "dmrg/block_matrix/indexing.h"
 
 struct contraction {
-    
+
     // output/input: left_i for bra_tensor, right_i for ket_tensor
     template<class Matrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
@@ -87,25 +87,13 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         
         size_t loop_max = left.aux_dim();
-#ifdef MAQUIS_OPENMP
-#pragma omp parallel for schedule(guided)
-#endif
-        #ifdef AMBIENT
-        ambient::log("BEGIN OF LEFT BOUNDARY TENSOR MPO 1");
-        ambient::scope<ambient::single>::compact(loop_max);
-        #endif
-        for(std::size_t b = 0; b < loop_max; ++b) {
-            #ifdef AMBIENT
-            ambient::scope<ambient::single> i;
-            #endif
+
+        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(left.data_[b]), mps.data_, tmp);
             reshape_right_to_left_new<Matrix>(mps.site_dim(), left.data_[b].right_basis(), mps.col_dim(),
                                               tmp, t[b]);
         }
-        #ifdef AMBIENT
-        ambient::log("END OF LEFT BOUNDARY TENSOR MPO 1");
-        #endif
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim();
         ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
@@ -119,17 +107,7 @@ struct contraction {
         mps.make_left_paired();
         loop_max = mpo.col_dim();
                     
-#ifdef MAQUIS_OPENMP
-#pragma omp parallel for schedule(guided)
-#endif
-        #ifdef AMBIENT
-        ambient::log("BEGIN OF LEFT BOUNDARY TENSOR MPO 2");
-        ambient::scope<ambient::single>::compact(loop_max);
-        #endif
-        for(size_t b2 = 0; b2 < loop_max; ++b2) {
-            #ifdef AMBIENT
-            ambient::scope<ambient::single> i;
-            #endif
+        parallel_for(locale::compact(loop_max), locale b2 = 0; b2 < loop_max; ++b2) {
             for (int run = 0; run < 2; ++run) {
                 if (run == 1)
                     ret.data_[b2].allocate_blocks();
@@ -204,9 +182,6 @@ struct contraction {
                 }
             }
         }
-        #ifdef AMBIENT
-        ambient::log("END OF LEFT BOUNDARY TENSOR MPO 2");
-        #endif
         
         return ret;
     }
@@ -225,28 +200,15 @@ struct contraction {
         mps.make_left_paired();
         
         std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
-        
         size_t loop_max = right.aux_dim();
-#ifdef MAQUIS_OPENMP
-#pragma omp parallel for schedule(guided)
-#endif
-        #ifdef AMBIENT
-        ambient::log("BEGIN OF RIGHT BOUNDARY TENSOR MPO 1");
-        ambient::scope<ambient::single>::compact(loop_max);
-        #endif
-        for(std::size_t b = 0; b < loop_max; ++b){
-            #ifdef AMBIENT
-            ambient::scope<ambient::single> i;
-            #endif
+
+        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
             gemm(mps.data_, right.data_[b], t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
             reshape_left_to_right<Matrix>(mps.site_dim(), mps.row_dim(), right.data_[b].right_basis(),
                                           t[b], tmp);
             swap(t[b], tmp);
         }
-        #ifdef AMBIENT
-        ambient::log("END OF RIGHT BOUNDARY TENSOR MPO 1");
-        #endif
 
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
@@ -260,19 +222,9 @@ struct contraction {
         ret.data_.resize(mpo.row_dim());
         
         mps.make_right_paired();
-        
         loop_max = mpo.row_dim();
-#ifdef MAQUIS_OPENMP
-#pragma omp parallel for schedule(guided)
-#endif
-        #ifdef AMBIENT
-        ambient::log("BEGIN OF RIGHT BOUNDARY TENSOR MPO 2");
-        ambient::scope<ambient::single>::compact(loop_max);
-        #endif
-        for(size_t b1 = 0; b1 < loop_max; ++b1) {
-            #ifdef AMBIENT
-            ambient::scope<ambient::single> i;
-            #endif
+
+        parallel_for(locale::compact(loop_max), locale b1 = 0; b1 < loop_max; ++b1) {
             for(int run = 0; run < 2; ++run) {
                 if(run == 1)
                     ret.data_[b1].allocate_blocks();
@@ -350,9 +302,6 @@ struct contraction {
                 }
             }
         }
-        #ifdef AMBIENT
-        ambient::log("END OF RIGHT BOUNDARY TENSOR MPO 2");
-        #endif
         
         return ret;
     }
@@ -371,25 +320,10 @@ struct contraction {
         bra_tensor.make_left_paired();
         Boundary<OtherMatrix, SymmGroup> ret;
         ret.data_.resize(mpo.col_dim());
-        
         std::size_t loop_max = mpo.col_dim();
 
-#ifdef MAQUIS_OPENMP
-#pragma omp parallel for schedule(guided)
-#endif
-        #ifdef AMBIENT
-        ambient::log("BEGIN OF OVERLAP MPO LEFT STEP");
-        ambient::scope<ambient::single>::compact(loop_max);
-        #endif
-        for(std::size_t b = 0; b < loop_max; ++b){
-            #ifdef AMBIENT
-            ambient::scope<ambient::single> i;
-            #endif
+        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
             gemm(transpose(lbtm.data_[b]), conjugate(bra_tensor.data()), ret.data_[b]);
-        }
-        #ifdef AMBIENT
-        ambient::log("END OF OVERLAP MPO LEFT STEP");
-        #endif
 
         return ret;
     }
@@ -406,25 +340,11 @@ struct contraction {
         bra_tensor.make_right_paired();
         Boundary<OtherMatrix, SymmGroup> ret;
         ret.data_.resize(mpo.row_dim());
-        
         std::size_t loop_max = mpo.row_dim();
         //block_matrix<Matrix, SymmGroup> tmp = adjoint(bra_tensor.data());
-#ifdef MAQUIS_OPENMP
-#pragma omp parallel for schedule(guided)
-#endif
-        #ifdef AMBIENT
-        ambient::log("BEGIN OF OVERLAP MPO RIGHT STEP");
-        ambient::scope<ambient::single>::compact(loop_max);
-        #endif
-        for(std::size_t b = 0; b < loop_max; ++b){
-            #ifdef AMBIENT
-            ambient::scope<ambient::single> i;
-            #endif
+
+        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
             gemm(rbtm.data_[b], transpose(conjugate(bra_tensor.data())), ret.data_[b]);
-        }
-        #ifdef AMBIENT
-        ambient::log("END OF OVERLAP MPO RIGHT STEP");
-        #endif
         
         return ret;
     }
@@ -448,36 +368,16 @@ struct contraction {
        
         std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max);
 
-#ifdef MAQUIS_OPENMP
-#pragma omp parallel for schedule(guided)
-#endif
-        #ifdef AMBIENT
-        ambient::log("BEGIN OF SITE HAMIL2");
-        ambient::scope<ambient::single>::compact(loop_max);
-        #endif
-        for(size_t b = 0; b < loop_max; ++b){
-            #ifdef AMBIENT
-            ambient::scope<ambient::single> i;
-            #endif
+        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
             gemm(left_mpo_mps.data_[b], right.data_[b], oblocks[b]);
-        }
            
         // proc 0 downloads oblocks[b] from proc 1 : 
-        #ifdef AMBIENT
-        ambient::scope<ambient::single>::compact(loop_max);
-        #endif
-        for (size_t b = 0; b < loop_max; ++b){
-            #ifdef AMBIENT
-            ambient::scope<ambient::single> i;
-            #endif
+        semi_parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
             for (size_t k = 0; k < oblocks[b].n_blocks(); ++k)
                 ret.data_.match_and_add_block(oblocks[b][k],
                                               oblocks[b].left_basis()[k].first,
                                               oblocks[b].right_basis()[k].first);
         }
-        #ifdef AMBIENT
-        ambient::log("END OF SITE HAMIL2");
-        #endif
         
         return ret;
     }

@@ -21,6 +21,21 @@
 
 #include <boost/lambda/lambda.hpp>
 
+#ifdef AMBIENT
+    typedef ambient::scope<ambient::single> locale;
+    #define parallel_for(constraint, ...) constraint; for(__VA_ARGS__)
+    #define semi_parallel_for(constraint, ...) constraint; for(__VA_ARGS__)
+#elif defined(MAQUIS_OPENMP)
+    typedef std::size_t locale;
+    #define parallel_pragma(a) _Pragma( #a )
+    #define parallel_for(constraint, ...) parallel_pragma(omp parallel for schedule(guided)) for(__VA_ARGS__)
+    #define semi_parallel_for(constraint, ...) for(__VA_ARGS__)
+#else
+    typedef std::size_t locale;
+    #define parallel_for(constraint, ...) for(__VA_ARGS__)
+    #define semi_parallel_for(constraint, ...) for(__VA_ARGS__)
+#endif
+
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm(block_matrix<Matrix1, SymmGroup> const & A,
           block_matrix<Matrix2, SymmGroup> const & B,
@@ -54,20 +69,10 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
     U = block_matrix<Matrix, SymmGroup>(r, m);
     V = block_matrix<Matrix, SymmGroup>(m, c);
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
-    
     std::size_t loop_max = M.n_blocks();
-#ifdef MAQUIS_OPENMP
-#pragma omp parallel for schedule(dynamic)
-#endif
-    #ifdef AMBIENT
-    ambient::scope<ambient::single>::compact(loop_max);
-    #endif
-    for(std::size_t k = 0; k < loop_max; ++k){
-        #ifdef AMBIENT
-        ambient::scope<ambient::single> i;
-        #endif
+    
+    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
         svd(M[k], U[k], V[k], S[k]);
-    }
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
@@ -79,19 +84,9 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
     evecs = block_matrix<Matrix, SymmGroup>(M.left_basis(), M.right_basis());
     evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
     std::size_t loop_max = M.n_blocks();
-#ifdef MAQUIS_OPENMP
-#pragma omp parallel for schedule(dynamic)
-#endif
-    #ifdef AMBIENT
-    ambient::scope<ambient::single>::compact(loop_max);
-    #endif
-    for(std::size_t k = 0; k < loop_max; ++k){
-        #ifdef AMBIENT
-        ambient::scope<ambient::single> i;
-        #endif
-        heev(M[k], evecs[k], evals[k]);
-    }
 
+    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+        heev(M[k], evecs[k], evals[k]);
 }
     
 template <class T>
@@ -108,7 +103,6 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
                          double & truncated_fraction, double & truncated_weight, double & smallest_ev)
 { // to be parallelized later (30.04.2012)
     #ifdef AMBIENT
-    ambient::log("BEGIN OF ESTIMATE TRUNCATION");
     ambient::scope<ambient::shared> i;
     #endif
     typedef typename DiagMatrix::value_type value_type;
@@ -153,10 +147,6 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
             evals_k.push_back(maquis::real(*it));
         keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
     }
-
-    #ifdef AMBIENT
-    ambient::log("END OF ESTIMATE TRUNCATION");
-    #endif
 }
 
 
@@ -293,18 +283,8 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
     Q = block_matrix<Matrix, SymmGroup>(m,k);
     R = block_matrix<Matrix, SymmGroup>(k,n);
     
-#ifdef MAQUIS_OPENMP
-#pragma omp parallel for schedule(dynamic)
-#endif
-    #ifdef AMBIENT
-    ambient::scope<ambient::single>::compact(M.n_blocks());
-    #endif
-    for(std::size_t k = 0; k < M.n_blocks(); ++k){
-        #ifdef AMBIENT
-        ambient::scope<ambient::single> i;
-        #endif
+    parallel_for(locale::compact(M.n_blocks()), locale k = 0; k < M.n_blocks(); ++k)
         qr(M[k], Q[k], R[k]);
-    }
     
     assert(Q.right_basis() == R.left_basis());
     assert(Q.reasonable());
@@ -324,18 +304,8 @@ void lq(block_matrix<Matrix, SymmGroup> & M,
     L = block_matrix<Matrix, SymmGroup>(m,k);
     Q = block_matrix<Matrix, SymmGroup>(k,n);
     
-#ifdef MAQUIS_OPENMP
-#pragma omp parallel for schedule(dynamic)
-#endif
-    #ifdef AMBIENT
-    ambient::scope<ambient::single>::compact(M.n_blocks());
-    #endif
-    for(std::size_t k = 0; k < M.n_blocks(); ++k){
-        #ifdef AMBIENT
-        ambient::scope<ambient::single> i;
-        #endif
+    parallel_for(locale::compact(M.n_blocks()), locale k = 0; k < M.n_blocks(); ++k)
         lq(M[k], L[k], Q[k]);
-    }
     
     assert(Q.left_basis() == L.right_basis());
     assert(Q.reasonable());
