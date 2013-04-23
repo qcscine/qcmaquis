@@ -467,10 +467,10 @@ void op_kron(Index<SymmGroup> const & phys,
     Index<SymmGroup> const & right_basis = phys;
     
     ProductBasis<SymmGroup> pb_left(left_basis, left_basis);
-    ProductBasis<SymmGroup> pb_right(right_basis, right_basis);
+    ProductBasis<SymmGroup> const & pb_right = pb_left;
     
-    for (int i=0; i<A.n_blocks(); ++i) {
-        for (int j=0; j<B.n_blocks(); ++j) {
+    for (int i = 0; i < A.n_blocks(); ++i) {
+        for (int j = 0; j < B.n_blocks(); ++j) {
             typename SymmGroup::charge new_right = SymmGroup::fuse(A.right_basis()[i].first, B.right_basis()[j].first);
             typename SymmGroup::charge new_left = SymmGroup::fuse(A.left_basis()[i].first, B.left_basis()[j].first);
             
