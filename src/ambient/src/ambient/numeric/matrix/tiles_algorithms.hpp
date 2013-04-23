@@ -581,6 +581,13 @@ namespace ambient { namespace numeric {
         }
     }
 
+    template<typename T> 
+    inline tiles<diagonal_matrix<T> > sqrt(const tiles<diagonal_matrix<T> >& a){
+        tiles<diagonal_matrix<T> > s(a); 
+        sqrt_inplace(s);
+        return s;
+    }
+
     template<typename T>
     inline void exp_inplace(tiles<diagonal_matrix<T> >& a, const T& alfa = 1.){
         int size = a.data.size();

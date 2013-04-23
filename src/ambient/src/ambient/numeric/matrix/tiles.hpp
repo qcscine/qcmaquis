@@ -412,6 +412,12 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T>
+    inline tiles<diagonal_matrix<T> >::tiles()
+    : size(0), nt(0)
+    {
+    }
+
+    template <typename T>
     inline tiles<diagonal_matrix<T> >::tiles(size_type size, value_type init_value)
     : size(size), nt(__a_ceil(size/AMBIENT_IB))
     {

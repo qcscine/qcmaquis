@@ -12,6 +12,7 @@
 
 #include "dmrg/utils/DmrgParameters2.h"
 #include "dmrg/mp_tensors/compression.h"
+#include "dmrg/mp_tensors/state_mps.h"
 
 template<class T>
 T tri_min(T a, T b, T c)
@@ -386,6 +387,37 @@ public:
     }
 private:
     std::vector<double> coeff;
+};
+
+template<class Matrix, class SymmGroup>
+class basis_dm_mps_init : public mps_initializer<Matrix, SymmGroup>
+{
+public:
+    basis_dm_mps_init(BaseParameters & params)
+    {
+        occupation = params.get<std::vector<int> >("init_basis_state");
+    }
+    void operator()(MPS<Matrix, SymmGroup> & mps,
+                    std::size_t Mmax,
+                    Index<SymmGroup> const & phys_rho,
+                    typename SymmGroup::charge right_end)
+    {
+        assert(occupation.size() == mps.length());
+        assert(phys_rho.size() == 1); // only for TrivialGroup
+        typedef typename SymmGroup::charge charge;
+        charge C = SymmGroup::IdentityCharge;
+        
+        using std::sqrt;
+        size_t N = sqrt(phys_rho[0].second);
+        
+        std::vector<boost::tuple<charge, size_t> > state(mps.length());
+        for (int i=0; i<mps.length(); ++i)
+            state[i] = boost::make_tuple(C, occupation[i] + occupation[i]*N);
+        mps = state_mps<Matrix>(state, phys_rho);
+    }
+    
+private:
+    std::vector<int> occupation;
 };
 
 
