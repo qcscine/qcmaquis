@@ -30,6 +30,11 @@ namespace ambient { namespace numeric { namespace kernels {
         static T cast(T a){ return a; }
     };
 
+    template<class T, class D>
+    struct helper_cast<T, D, typename boost::enable_if< boost::mpl::and_<boost::is_complex<T>, boost::is_complex<D> > >::type>{
+        static T cast(T a){ return a; }
+    };
+
     template <class T>
     inline int OptimalSize(T a){ return (int)a; }
 
@@ -78,8 +83,13 @@ namespace ambient { namespace numeric { namespace kernels {
           zgemv_(transa, m, n, alfa, ad, lda, bd, ldb, beta, cd, ldc);
        }
 
-       static void axpy(const int* n, const T* alpha, const T* ad, const int* inca, T* bd, const int* incb){
-          zaxpy_(n, alpha, ad, inca, bd, incb);
+       static void axpy(const int* n, const T* alfa, const T* ad, const int* inca, T* bd, const int* incb){ // use in exp algo only
+          zaxpy_(n, alfa, ad, inca, bd, incb); 
+       }
+
+       static void axpy(const int* n, const typename T::value_type* alfa, const T* ad, const int* inca, T* bd, const int* incb){ // use after SVD complex
+          T beta = static_cast<T>(*alfa); //double to complex with beta.imag() == 0.0 
+          zaxpy_(n, &beta, ad, inca, bd, incb);
        }
     };
 
@@ -101,6 +111,7 @@ namespace ambient { namespace numeric { namespace kernels {
        static void syev(const char* jobz, const char* uplo, const int* n, T* a, const int* lda, T* w, T* wkopt, int* lwork, int* info ){
            T* work;
            dsyev_(jobz, uplo, n, a, lda, w, wkopt, lwork, info);
+           assert( *info == 0 );
            *lwork = OptimalSize(*wkopt);
            work = (T*)malloc( (*lwork)*sizeof(T) );
            dsyev_(jobz, uplo, n, a, lda, w, work, lwork, info);
@@ -110,6 +121,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
        static void getrf(const int* m, const int*n, T* a, const int* lda, int* ipiv, int* info){
            dgetrf_(m, n, a, lda, ipiv, info);
+           assert( *info == 0 );
        }
 
        static void getri(const int*n, T* a, const int* lda, int* ipiv, int* info){
@@ -117,43 +129,52 @@ namespace ambient { namespace numeric { namespace kernels {
            T wkopt;
            int lwork = -1;
            dgetri_( n, a, lda, ipiv, &wkopt, &lwork, info);
+           assert( *info == 0 );
            lwork = OptimalSize(wkopt);
            work = (T*)malloc(lwork*sizeof(T));
            dgetri_( n, a, lda, ipiv, work, &lwork, info);
+           assert( *info == 0 );
            free(work);
        }
 
        static void larfg(const int *n, T* alpha, T* x, int *incx, T* tau){
            dlarfg_(n, alpha, x, incx, tau); 
+           assert( *info == 0 );
        }
 
        static void gebd2(const int* m, const int* n, T* a, const int* lda, T* d, T* e, T* tauq, T* taup, T* work, int* info){
            dgebd2_(m ,n, a, lda, d, e, tauq, taup, work, info);
+           assert( *info == 0 );
        }
 
        static void gebrd(const int* m, const int* n, T* a, const int* lda, T* d, T* e, T* tauq, T* taup, T* work, const int* lwork, int* info){
            dgebrd_(m, n, a, lda, d, e, tauq, taup, work, lwork, info);  
+           assert( *info == 0 );
        }
 
        static void orgbr(const char* vect, const int* m, const int* n, const int* k, T* a, const int* lda, const T* tau, T* work, const int* lwork, int* info){
            dorgbr_(vect, m, n, k, a, lda, tau, work, lwork, info);
+           assert( *info == 0 );
        }
 
        static void gbbrd (const char* vect, const int* m, const int* n, const int* ncc, const int* kl, const int* ku, T* ab, const int* ldab, T* d, T* e, T* q, const int* ldq, T* pt, const int* ldpt, T* c, const int* ldc, T* work, int* info ){
            dggbrd(vect, m, n, ncc, kl, ku, ab, ldab, d, e, q, ldq, pt, ldpt, c, ldc, work, info);
+           assert( *info == 0 );
        }
  
        static void bdsqr(const char* uplo, const int* n, const int* ncvt, const int* nru, const int* ncc, T* d, T* e, T* vt, const int* ldvt, T* u, const int* ldu, T* c, const int* ldc, T* work, int* info ){
            dbdsqr(uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u, ldu, c, ldc, work, info);
+           assert( *info == 0 );
        }
     };
 
     template<class T>
     struct helper_lapack<T, typename boost::enable_if<boost::mpl::and_<boost::is_complex<T>,boost::is_same<typename T::value_type, double> > >::type>{ //safety cgemm !=  zgemm, your class T must be std::complex<double> compatible
        static void gesvd(const char* jobu, const char* jobvt, const int* m, const int* n, T* ad, const int* lda, typename T::value_type* sd, T* ud, const int* ldu, T* vtd, const int* ldvt, T* wkopt, int* lwork, int* info){
-           typename T::value_type* rwork = new typename T::value_type[5*(*m)]; //from lapack doc
+           typename T::value_type* rwork = new typename T::value_type[std::max(1,5*std::min((*n),(*m)))]; //from lapack doc
            T* work;
            zgesvd_(jobu, jobvt, m, n, ad, lda, sd, ud, ldu, vtd, ldvt, wkopt, lwork, rwork, info); // query and allocate the optimal workspace
+           assert( *info == 0 );
            *lwork = OptimalSize(*wkopt);
            work = (T*)malloc( (*lwork)*sizeof(T) );
            zgesvd_(jobu, jobvt, m, n, ad, lda, sd, ud, ldu, vtd, ldvt, work, lwork, rwork, info); //run
@@ -166,6 +187,7 @@ namespace ambient { namespace numeric { namespace kernels {
            typename T::value_type* rwork = new typename T::value_type[std::max(1,3*(*n)-2)]; // from intel lapack doc
            T* work;
            zheev_(jobz, uplo, n, a, lda, w, wkopt, lwork, rwork, info);
+           assert( *info == 0 );
            *lwork = OptimalSize(*wkopt);
            work = (T*)malloc( (*lwork)*sizeof(T) );
            zheev_(jobz, uplo, n, a, lda, w, work, lwork, rwork, info);
@@ -178,6 +200,7 @@ namespace ambient { namespace numeric { namespace kernels {
            typename T::value_type* rwork = new typename T::value_type[std::max(1,2*(*n))]; // from lapack doc
            T* work;
            zgeev_(jobvl, jobvr, n, a, lda, s, ldv, ldlv, rvd, ldrv, wkopt, lwork, rwork, info);
+           assert( *info == 0 );
            *lwork = OptimalSize(*wkopt);
            work = (T*)malloc( (*lwork)*sizeof(T) );
            zgeev_(jobvl, jobvr, n, a, lda, s, ldv, ldlv, rvd, ldrv, work, lwork, rwork, info);
@@ -195,9 +218,11 @@ namespace ambient { namespace numeric { namespace kernels {
            T wkopt;
            int lwork = -1;
            zgetri_( n, a, lda, ipiv, &wkopt, &lwork, info);
+           assert( *info == 0 );
            lwork = OptimalSize(wkopt);
            work = (T*)malloc(lwork*sizeof(T));
            zgetri_( n, a, lda, ipiv, work, &lwork, info);
+           assert( *info == 0 );
            free(work);
        }
 
@@ -207,6 +232,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
        static void gebd2(const int* m, const int* n, T* a, const int* lda, T* d, T* e, T* tauq, T* taup, T* work, int* info){
            zgebd2_(m ,n, a, lda, d, e, tauq, taup, work, info);
+           assert( *info == 0 );
        }
 
        static void gebrd (const int* m, const int* n, T* a, const int* lda, T * d, T* e, T* tauq, T* taup, T* work,

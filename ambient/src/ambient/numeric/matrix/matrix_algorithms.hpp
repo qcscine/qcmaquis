@@ -367,7 +367,7 @@ namespace ambient { namespace numeric {
             for(size_type j=0; j < a.num_cols(); ++j){
                 std::cout << a(i,j) << " ";
             }
-            ambient::cout << "\n\n";
+            ambient::cout << "\n";
         }
         return o;
     }
