@@ -32,10 +32,11 @@ namespace ambient {
         do{ *dd++ += alfa*(*sd++); }while(--z > 0); // note: dd != sd
     }
 
-    template <typename T> inline T dot(T* a, T* b, int size){
-        T summ(0);
+    template <typename T>
+    inline typename std::complex<T>::value_type dot(std::complex<T>* a, std::complex<T>* b, int size){
+        typename std::complex<T>::value_type summ(0);
         for(size_t k=0; k < size; k++)
-           summ += a[k]*b[k];
+           summ += std::real(a[k]*std::conj(b[k]));
         return summ;
     }
 

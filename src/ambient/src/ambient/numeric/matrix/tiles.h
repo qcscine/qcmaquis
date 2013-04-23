@@ -48,8 +48,8 @@ namespace ambient { namespace numeric {
         template <typename T2> tiles& operator /= (const T2& t);
         value_type& operator() (size_type i, size_type j);
         const value_type& operator() (size_type i, size_type j) const;
-        void load(alps::hdf5::archive & ar){};
-        void save(alps::hdf5::archive & ar)const{};
+        void load(alps::hdf5::archive & ar){ assert(false);};
+        void save(alps::hdf5::archive & ar)const{ assert(false);};
     public:
         std::vector<Matrix*> data;
         size_type rows;

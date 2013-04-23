@@ -336,13 +336,12 @@ namespace ambient { namespace numeric { namespace kernels {
     void gemm_diagonal_lhs<ViewB,T,D>::c(const matrix<D>& a_diag, const matrix<T>& b, unbound< matrix<T> >& c){
         int sizey = a_diag.num_rows();
         int size = b.num_cols();
-        int ONE  = 1;
         T* bd = current(b);
         T* cd = emptied(c);
-        T* alpha = current(a_diag);
-    
+        D* alfa = current(a_diag);
+
         for(int k = 0 ; k < sizey; k++)
-    	    helper_blas<T>::axpy(&size, &alpha[k], &bd[k], &sizey, &cd[k], &sizey); // C - check carefully for TE a_diag double, b complex
+    	    helper_blas<T>::axpy(&size, &alfa[k], &bd[k], &sizey, &cd[k], &sizey);
     }
         
     template<typename T, typename D>
@@ -350,7 +349,7 @@ namespace ambient { namespace numeric { namespace kernels {
         size_t sizex = b.num_cols();
         int size  = a_diag.num_rows();
         T* cd = emptied(c);
-        T* alpha = current(a_diag);
+        D* alpha = current(a_diag);
     
         for(int k = 0 ; k < sizex; k++)
     	    helper_blas<T>::axpy(&size, &alpha[k], &bd[k*size], &ONE, &cd[k], &size);// C - check carefully for TE a_diag double, b complex
@@ -363,10 +362,10 @@ namespace ambient { namespace numeric { namespace kernels {
         int ONE = 1;
         T* ad = current(a);
         T* cd = emptied(c);
-    	T* alpha = current(b_diag);
+    	D* alpha = current(b_diag);
     
         for(int k = 0 ; k < sizex; k++)
-    	    helper_blas<T>::axpy(&size, &alpha[k], &ad[k*size], &ONE, &cd[k*size], &ONE);// C - check carefully for TE b_diag double, b complex
+    	    helper_blas<T>::axpy(&size, &alpha[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
     }
 
     template<typename T, typename D>
@@ -376,7 +375,7 @@ namespace ambient { namespace numeric { namespace kernels {
         int ONE = 1;
         T* ad = current(a);
         T* cd = emptied(c);
-    	T* alpha = current(b_diag);
+    	D* alpha = current(b_diag);
     
         for(int k = 0 ; k < sizey; k++)
     	   helper_blas<T>::axpy(&size, &alpha[k], &ad[k], &sizey, &cd[k*size], &ONE);// C - check carefully for TE b_diag double, b complex
@@ -678,6 +677,9 @@ namespace ambient { namespace numeric { namespace kernels {
         int count = 0;
         size_t sizey = std::min(a.num_rows(), b.num_rows());
         size_t sizex = std::min(a.num_cols(), b.num_cols());
+        
+        std::cout.precision(16);
+        std::cout.setf( std::ios::fixed, std:: ios::floatfield );
 
         for(size_t i=0; i < sizey; ++i){
             for(size_t j=0; j < sizex; ++j){
@@ -690,6 +692,7 @@ namespace ambient { namespace numeric { namespace kernels {
                     ret.get_naked() = false;
                     if(++count > 10) return;
                 }
+
             }
         }
     }
