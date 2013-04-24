@@ -507,7 +507,70 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
             }
         }
     }
-    
+
+    { // Example: MEASURE_LOCAL_AT[Custom correlation] = "bdag:b|(1,2),(3,4),(5,6)"
+        boost::regex expression("^MEASURE_LOCAL_AT\\[(.*)]$");
+        boost::smatch what;
+        for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
+            std::string lhs = it->key();
+            std::string value = it->value();
+            if (boost::regex_match(lhs, what, expression)) {
+                alps::SiteBasisDescriptor<I> b = model.site_basis(type);
+                int f_ops = 0;
+                
+                mterm_t term;
+                term.type = mterm_t::LocalAt;
+                term.name = what.str(1);
+                
+                boost::char_separator<char> part_sep("|");
+                tokenizer part_tokens(value, part_sep);
+                std::vector<std::string> parts;
+                std::copy( part_tokens.begin(), part_tokens.end(), std::back_inserter(parts) );
+                
+                if (parts.size() != 2)
+                    throw std::runtime_error("MEASURE_LOCAL_AT must contain a `|` delimiter.");
+                
+
+                boost::char_separator<char> op_sep(":");
+                tokenizer ops_tokens(parts[0], op_sep);
+                for (tokenizer::iterator it_op=ops_tokens.begin();
+                     it_op != ops_tokens.end(); it_op++)
+                {
+                    SiteOperator op = make_site_term(*it_op, parms);
+                    alps_matrix m = alps::get_matrix(value_type(), op, b, parms, true);
+                    bool f = b.is_fermionic(simplify_name(op));
+                    term.operators.push_back( std::make_pair(convert_matrix(m, type), f) );
+                    if (f) ++f_ops;
+                }
+
+                boost::regex pos_re("\\(([^(^)]*)\\)");
+                boost::sregex_token_iterator it_pos(parts[1].begin(), parts[1].end(), pos_re, 1);
+                boost::sregex_token_iterator it_pos_end;
+                for (; it_pos != it_pos_end; ++it_pos)
+                {
+                    boost::char_separator<char> int_sep(", ");
+                    std::string raw = *it_pos;
+                    tokenizer int_tokens(raw, int_sep);
+                    
+                    std::vector<std::size_t> pos;
+                    std::transform(int_tokens.begin(), int_tokens.end(), std::back_inserter(pos),
+                                   boost::lexical_cast<std::size_t, std::string>);
+                    term.positions.push_back(pos);
+                }
+                                
+                if (f_ops > 0)
+                    term.fill_operator = tfill[type];
+                else
+                    term.fill_operator = tident[type];
+                
+                if (f_ops % 2 != 0)
+                    throw std::runtime_error("Number of fermionic operators has to be even.");
+                
+                meas.add_term(term);
+            }
+        }
+    }
+
     {
         boost::regex expression("^MEASURE_MPS_BONDS\\[(.*)]$");
         boost::smatch what;

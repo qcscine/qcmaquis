@@ -310,7 +310,7 @@ public:
         
         typedef typename SymmGroup::charge charge;
         
-        using std::exp; using std::pow;
+        using std::exp; using std::sqrt; using std::pow;
         using boost::math::factorial;
         
         size_t L = coeff.size();
@@ -322,7 +322,7 @@ public:
             int s=0;
             Matrix m(phys[s].second, 1, 0.);
             for (int ss=0; ss<phys[s].second; ++ss) {
-                m(ss, 0) = pow(coeff[p], ss) / factorial<double>(ss);
+                m(ss, 0) = pow(coeff[p], ss) * sqrt(factorial<double>(ss)) / factorial<double>(ss);
             }
             block_matrix<Matrix, SymmGroup> block;
             block.insert_block(m, SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
@@ -360,7 +360,7 @@ public:
         
         typedef typename SymmGroup::charge charge;
         
-        using std::exp; using std::pow;
+        using std::exp; using std::sqrt; using std::pow;
         using boost::math::factorial;
         
         size_t L = coeff.size();
@@ -373,8 +373,8 @@ public:
             Matrix m(phys_rho[s].second, 1, 0.);
             for (int ss1=0; ss1<phys_psi[s].second; ++ss1)
                 for (int ss2=0; ss2<phys_psi[s].second; ++ss2) {
-                    m(ss1*phys_psi[s].second+ss2, 0)  = pow(coeff[p], ss1) / factorial<double>(ss1);
-                    m(ss1*phys_psi[s].second+ss2, 0) *= pow(coeff[p], ss2) / factorial<double>(ss2);
+                    m(ss1*phys_psi[s].second+ss2, 0)  = pow(coeff[p], ss1) * sqrt(factorial<double>(ss1)) / factorial<double>(ss1);
+                    m(ss1*phys_psi[s].second+ss2, 0) *= pow(coeff[p], ss2) * sqrt(factorial<double>(ss2)) / factorial<double>(ss2);
                 }
             block_matrix<Matrix, SymmGroup> block;
             block.insert_block(m, SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);

@@ -237,7 +237,66 @@ namespace meas_detail {
                 ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> >(1, vals));
         }
 	}
-    
+
+    template<class Matrix, class SymmGroup>
+	void measure_local_at(MPS<Matrix, SymmGroup> const & mps,
+                          const Lattice & lat,
+                          block_matrix<Matrix, SymmGroup> const & identity,
+                          block_matrix<Matrix, SymmGroup> const & fill,
+                          std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
+                          std::vector<std::vector<std::size_t> > const & positions,
+                          std::string const & h5name,
+                          std::string base_path,
+                          bool super_meas = false)
+	{
+        std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals;
+        
+        for (std::size_t p = 0; p < positions.size(); ++p)
+        {
+            assert( positions[p].size() == ops.size() );
+            for (std::size_t i=1; i<ops.size(); ++i)
+                if (positions[p][i-1] >= positions[p][i])
+                    throw std::runtime_error("measure_local_at requires i1<i2<...<in.");
+            
+            generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
+            generate_mpo::Operator_Term<Matrix, SymmGroup> term;
+            
+
+            for (std::size_t i=0; i<ops.size(); ++i)
+                term.operators.push_back( std::make_pair(positions[p][i], ops[i].first) );
+            
+            term.fill_operator = fill;
+            mpom.add_term(term);
+            MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
+            
+            if (!super_meas){
+                typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo);
+                vals.push_back(val);
+            } else {
+                Index<SymmGroup> phys_i = identity.left_basis();
+                typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, phys_i);
+                MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
+                typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(super_mpo, mps);
+                vals.push_back(val/nn);
+            }
+            
+        }
+        std::vector<std::string> labels = label_strings(lat, positions);
+        
+        
+        {
+            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+            ar << alps::make_pvp(base_path + std::string("/labels"), labels);
+            if ( all_true(ops.begin(), ops.end(), boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian),
+                                                              boost::bind<block_matrix<Matrix, SymmGroup> const&>(&std::pair<block_matrix<Matrix, SymmGroup>, bool>::first, _1))
+                          ) ) {
+                std::vector<std::vector<double> > tmp(1, maquis::real(vals));
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
+            } else
+                ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> >(1, vals));
+        }
+    }
+
     template<class Matrix, class SymmGroup>
     void measure_custom(MPS<Matrix, SymmGroup> const & mps,
                        const Lattice & lat,

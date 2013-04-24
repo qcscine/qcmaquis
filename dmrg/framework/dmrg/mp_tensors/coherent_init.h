@@ -18,13 +18,13 @@
 template <class SymmGroup>
 double coherent_weight(std::vector<double> const& coeff, std::vector<boost::tuple<typename SymmGroup::charge, size_t> > const& state)
 {
-    using std::exp; using std::pow;
+    using std::exp; using std::sqrt; using std::pow;
     using boost::math::factorial;
     
     double w = 1.;
     for (int p=0; p<state.size(); ++p) {
         int n = boost::get<1>(state[p]);
-        w *= pow(coeff[p], n) / factorial<double>(n);
+        w *= pow(coeff[p], n) * sqrt(factorial<double>(n)) / factorial<double>(n);
     }
     return w;
 }
@@ -70,7 +70,7 @@ MPS<Matrix,SymmGroup> coherent_init(std::vector<double> const& coeff, Index<Symm
     
     typedef typename SymmGroup::charge charge;
     
-    using std::exp; using std::pow;
+    using std::exp; using std::sqrt; using std::pow;
     using boost::math::factorial;
 
     size_t L = coeff.size();
@@ -83,7 +83,7 @@ MPS<Matrix,SymmGroup> coherent_init(std::vector<double> const& coeff, Index<Symm
         int s=0;
         Matrix m(phys[s].second, 1, 0.);
         for (int ss=0; ss<phys[s].second; ++ss) {
-            m(ss, 0) = pow(coeff[p], ss) / factorial<double>(ss);
+            m(ss, 0) = pow(coeff[p], ss) * sqrt(factorial<double>(ss)) / factorial<double>(ss);
         }
         block_matrix<Matrix, SymmGroup> block;
         block.insert_block(m, SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
@@ -146,7 +146,7 @@ MPS<Matrix,SymmGroup> coherent_init_dm(std::vector<double> const& coeff, Index<S
     
     typedef typename SymmGroup::charge charge;
     
-    using std::exp; using std::pow;
+    using std::exp; using std::sqrt; using std::pow;
     using boost::math::factorial;
     
     size_t L = coeff.size();
@@ -160,8 +160,8 @@ MPS<Matrix,SymmGroup> coherent_init_dm(std::vector<double> const& coeff, Index<S
         Matrix m(phys_rho[s].second, 1, 0.);
         for (int ss1=0; ss1<phys_psi[s].second; ++ss1)
             for (int ss2=0; ss2<phys_psi[s].second; ++ss2) {
-            m(ss1*phys_psi[s].second+ss2, 0)  = pow(coeff[p], ss1) / factorial<double>(ss1);
-            m(ss1*phys_psi[s].second+ss2, 0) *= pow(coeff[p], ss2) / factorial<double>(ss2);
+            m(ss1*phys_psi[s].second+ss2, 0)  = pow(coeff[p], ss1) * sqrt(factorial<double>(ss1)) / factorial<double>(ss1);
+            m(ss1*phys_psi[s].second+ss2, 0) *= pow(coeff[p], ss2) * sqrt(factorial<double>(ss2)) / factorial<double>(ss2);
         }
         block_matrix<Matrix, SymmGroup> block;
         block.insert_block(m, SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
