@@ -629,13 +629,14 @@ struct contraction {
                             for (size_t rr = 0; rr < right_i[rs].second; ++rr)
                                 for (size_t ss1 = 0; ss1 < phys_i[s1].second; ++ss1)
                                     for (size_t ss2 = 0; ss2 < phys_i[s2].second; ++ss2) {
-                                        
+#ifndef NDEBUG
                                         oblock(l_offset + ss2*left_i[ls].second + ll,
                                                r_offset + rr);
                                         iblock(i_l_offset + ss1*left_i[ls].second + ll,
                                                i_r_offset + rr);
                                         op_block(i_op_offset + ss1,
                                                  op_offset + ss2);
+#endif
                                         oblock(l_offset + ss2*left_i[ls].second + ll,
                                                r_offset + rr) += 
                                         iblock(i_l_offset + ss1*left_i[ls].second + ll,
