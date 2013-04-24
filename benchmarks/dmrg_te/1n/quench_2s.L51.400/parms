@@ -1,0 +1,15 @@
+symmetry="2u1"
+max_bond_dimension =400
+truncation_final = 1e-16
+resultfile =two_species_quench_M_51_chi_400_N1_26_N2_26_results.h5
+chkpfile =two_species_quench_M_51_chi_400_N1_26_N2_26_chkp.h5
+initfile =gs_init_two_species_quench_M_51_chi_400_N1_26_N2_26_chkp.h5
+
+nsweeps_img = 0
+nsweeps =100
+measure_each = 100
+chkp_each = 100
+dt =0.01
+
+te_type =nn
+te_order =second

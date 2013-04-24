@@ -1,0 +1,12 @@
+max_bond_dimension =200
+truncation_final = 1e-16
+resultfile =quench_M_51_chi_200_N1_26_N2_0_results.h5
+chkpfile =quench_M_51_chi_200_N1_26_N2_0_chkp.h5
+initfile =gs_init_quench_M_51_chi_200_N1_26_N2_0_chkp.h5 
+
+nsweeps_img = 0
+nsweeps =100
+dt =0.01
+
+te_type =nn
+te_order =second

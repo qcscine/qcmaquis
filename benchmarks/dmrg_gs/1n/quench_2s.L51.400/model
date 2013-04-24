@@ -1,0 +1,66 @@
+LATTICE_LIBRARY = "lattice_lib"
+LATTICE = "M=51"
+L =51
+
+MODEL = "fermion Hubbard"
+
+mu0 =10
+mu1 =0
+mu2 =10
+mu3 =0
+mu4 =10
+mu5 =0
+mu6 =10
+mu7 =0
+mu8 =10
+mu9 =0
+mu10 =10
+mu11 =0
+mu12 =10
+mu13 =0
+mu14 =10
+mu15 =0
+mu16 =10
+mu17 =0
+mu18 =10
+mu19 =0
+mu20 =10
+mu21 =0
+mu22 =10
+mu23 =0
+mu24 =10
+mu25 =0
+mu26 =10
+mu27 =0
+mu28 =10
+mu29 =0
+mu30 =10
+mu31 =0
+mu32 =10
+mu33 =0
+mu34 =10
+mu35 =0
+mu36 =10
+mu37 =0
+mu38 =10
+mu39 =0
+mu40 =10
+mu41 =0
+mu42 =10
+mu43 =0
+mu44 =10
+mu45 =0
+mu46 =10
+mu47 =0
+mu48 =10
+mu49 =0
+mu50 =10
+
+t = 1
+
+CONSERVED_QUANTUMNUMBERS = "Nup,Ndown"
+Nup_total =26
+Ndown_total =26
+
+
+MEASURE_LOCAL[D] = "n"
