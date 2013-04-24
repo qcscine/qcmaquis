@@ -113,7 +113,7 @@ public:
                     Useq_ameas.push_back(0); // odd
                 }
                 
-                maquis::cout << "Sequence initialiez with " << Useq.size() << " terms." << std::endl;
+                maquis::cout << "Sequence initialized with " << Useq.size() << " terms." << std::endl;
 				break;		
             }
             case fourth_order:
@@ -181,7 +181,7 @@ public:
                     Useq_ameas.push_back(1); // even
                     Useq_ameas.push_back(0); // odd
                 }
-                maquis::cout << "Sequence initialied with " << Useq.size() << " terms." << std::endl;
+                maquis::cout << "Sequence initialized with " << Useq.size() << " terms." << std::endl;
 
 				break;
             }
