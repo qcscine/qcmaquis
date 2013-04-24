@@ -1,3 +1,5 @@
+max_bond_dimension = 50
+
 alpha_initial = 0.01
 alpha_main = 1e-6
 alpha_final = 0
@@ -7,9 +9,8 @@ ietl_jcd_gmres = 0
 ietl_jcd_tol = 1e-8
 ietl_jcd_maxiter = 10
 
-chkpfile = micro.ckp.h5
-resultfile = micro.res.h5
-max_bond_dimension = 50
+chkpfile = "/users/akosenko/maquis2013/src/scratch/micro.ckp.h5"
+resultfile = "/users/akosenko/maquis2013/src/scratch/micro.res.h5"
 donotsave = 1
 
 nsweeps = 5

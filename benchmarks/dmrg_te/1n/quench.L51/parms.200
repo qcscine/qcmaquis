@@ -1,9 +1,9 @@
 max_bond_dimension = 200
 truncation_final = 1e-16
 
-initfile = gs_init_quench_M_51_chi_200_N1_26_N2_0_chkp.h5 
-chkpfile = quench_M_51_chi_200_N1_26_N2_0_chkp.h5
-resultfile = quench_M_51_chi_200_N1_26_N2_0_results.h5
+initfile = "/users/akosenko/maquis2013/src/scratch/quench_gs.L51.200.ckp.h5"
+chkpfile = "/users/akosenko/maquis2013/src/scratch/quench_te.L51.200.ckp.h5"
+resultfile = "/users/akosenko/maquis2013/src/scratch/quench_te.L51.200.res.h5"
 
 measure_each = 20
 chkp_each = 100

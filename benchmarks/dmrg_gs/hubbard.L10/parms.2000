@@ -1,4 +1,5 @@
 max_bond_dimension = 2000
+
 truncation_final = 1e-16
 
 nsweeps = 4
@@ -10,7 +11,7 @@ optimization = twosite
 donotsave = 1
 chkpfile = "/users/akosenko/maquis2013/src/scratch/hubbard.L10.2000.ckp.h5"
 resultfile = "/users/akosenko/maquis2013/src/scratch/hubbard.L10.2000.res.h5"
-storagedir = "bench_hubbard_large"
+storagedir = "/users/akosenko/maquis2013/src/scratch"
 //run_seconds = [INSERT NECESSARY VALUE HERE]
 
 use_compressed = 1

@@ -1,8 +1,9 @@
+max_bond_dimension = 600
+
 nsweeps = 4
 ngrowsweeps = 1
 nmainsweeps = 1
 
-max_bond_dimension = 600
 
 symmetry = "2u1"
 

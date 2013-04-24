@@ -1,4 +1,4 @@
-LATTICE_LIBRARY = "lattice"
+LATTICE_LIBRARY = "/users/akosenko/maquis2013/benchmarks/dmrg_te/1n/quench_2s.L51/lattice"
 LATTICE = "M=51"
 L =51
 
