@@ -289,7 +289,7 @@ struct contraction {
                                         = ret.data_[b1](out_l_charge, out_r_charge);
 
                                     maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock, out_right_offset, in_right_offset, 
-                                                  physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
+                                                                        physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
                                 }
                                 
                                 if (pretend)
@@ -560,39 +560,15 @@ struct contraction {
                                 
                                 assert( op.has_block(both_charge, both_charge) );
                                 
-                                // TODO: remove double lookup
-                                Matrix & oblock = ret(left_out_charge, right_out_charge);
-                                Matrix const & iblock = vec(left_vec_charge, right_vec_charge);
-                                Matrix const & op_block = op(both_charge, both_charge);
-                                
-                                size_t i_l_offset = left_pb(ilpc, lc);
-                                size_t i_r_offset = right_pb(irpc, rc);
-                                size_t l_offset = left_pb(lpc, lc);
-                                size_t r_offset = right_pb(rpc, rc);
-                                size_t i_op_offset = phys_pb(ilpc, irpc);
-                                size_t op_offset = phys_pb(lpc, rpc);
-                                
-                                for (size_t ll = 0; ll < left_i[ls].second; ++ll)
-                                    for (size_t rr = 0; rr < right_i[rs].second; ++rr)
-                                        for (size_t lp = 0; lp < phys_i[lps].second; ++lp)
-                                            for (size_t rp = 0; rp < phys_i[rps].second; ++rp)
-                                                for (size_t ilp = 0; ilp < phys_i[ilps].second; ++ilp)
-                                                    for (size_t irp = 0; irp < phys_i[irps].second; ++irp) {
-#ifndef NDEBUG
-                                                        oblock(l_offset + lp*left_i[ls].second + ll,
-                                                               r_offset + rp*right_i[rs].second + rr);
-                                                        iblock(i_l_offset + ilp*left_i[ls].second + ll,
-                                                               i_r_offset + irp*right_i[rs].second + rr);
-                                                        op_block(i_op_offset + ilp*phys_i[irps].second + irp,
-                                                                 op_offset + lp*phys_i[rps].second + rp);
-#endif                                                
-                                                        oblock(l_offset + lp*left_i[ls].second + ll,
-                                                               r_offset + rp*right_i[rs].second + rr) += 
-                                                        iblock(i_l_offset + ilp*left_i[ls].second + ll,
-                                                               i_r_offset + irp*right_i[rs].second + rr) *
-                                                        op_block(i_op_offset + ilp*phys_i[irps].second + irp,
-                                                                 op_offset + lp*phys_i[rps].second + rp);
-                                                    }
+                                maquis::dmrg::detail::mwt(ret(left_out_charge, right_out_charge), 
+                                                          vec(left_vec_charge, right_vec_charge), 
+                                                          op(both_charge, both_charge), 
+                                                          left_pb(lpc, lc), right_pb(rpc, rc),
+                                                          left_pb(ilpc, lc), right_pb(irpc, rc),
+                                                          phys_pb(ilpc, irpc), phys_pb(lpc, rpc),
+                                                          left_i[ls].second, right_i[rs].second,
+                                                          phys_i[lps].second, phys_i[rps].second,
+                                                          phys_i[ilps].second, phys_i[irps].second);
                             }
         
         return ret;
@@ -654,14 +630,12 @@ struct contraction {
                                 for (size_t ss1 = 0; ss1 < phys_i[s1].second; ++ss1)
                                     for (size_t ss2 = 0; ss2 < phys_i[s2].second; ++ss2) {
                                         
-#ifndef NDEBUG
                                         oblock(l_offset + ss2*left_i[ls].second + ll,
                                                r_offset + rr);
                                         iblock(i_l_offset + ss1*left_i[ls].second + ll,
                                                i_r_offset + rr);
                                         op_block(i_op_offset + ss1,
                                                  op_offset + ss2);
-#endif
                                         oblock(l_offset + ss2*left_i[ls].second + ll,
                                                r_offset + rr) += 
                                         iblock(i_l_offset + ss1*left_i[ls].second + ll,

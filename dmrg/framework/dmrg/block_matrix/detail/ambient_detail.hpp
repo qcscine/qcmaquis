@@ -115,6 +115,25 @@ namespace maquis { namespace dmrg { namespace detail {
                       out, 0, out_offset + ss2*rdim,
                       alfa, ss1, ss2, ldim, rdim);
     }
+    
+    template <class M1, class M2, class M3>
+    void mwt(ambient::numeric::tiles<M1>& out, const ambient::numeric::tiles<M2>& in, const ambient::numeric::tiles<M3>& alfa,
+             size_t out_y_offset,  size_t out_x_offset,
+             size_t in_y_offset,   size_t in_x_offset,
+             size_t alfa_y_offset, size_t alfa_x_offset,
+             size_t ldim,   size_t rdim,
+             size_t lpdim,  size_t rpdim,
+             size_t ilpdim, size_t irpdim)
+    {
+        for(size_t lp = 0; lp < lpdim; ++lp)
+        for(size_t rp = 0; rp < rpdim; ++rp)
+        for(size_t ilp = 0; ilp < ilpdim; ++ilp)
+        for(size_t irp = 0; irp < irpdim; ++irp)
+        copy_block_sa(in,   in_y_offset + ilp*ldim,           in_x_offset + irp*rdim,
+                      out,  out_y_offset + lp*ldim,           out_x_offset + rp*rdim,
+                      alfa, alfa_y_offset + ilp*irpdim + irp, alfa_x_offset + lp*rpdim + rp, 
+                      ldim, rdim);
+    }
    
     template<class M, class SymmGroup>
     std::vector<double> bond_renyi_entropies(const block_matrix<ambient::numeric::tiles<M>, SymmGroup>& set){

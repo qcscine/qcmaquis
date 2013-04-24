@@ -147,6 +147,28 @@ namespace maquis { namespace dmrg { namespace detail {
             }
     }
     
+    template <typename T1, class A1,
+              typename T2, class A2,
+              typename T3, class A3>
+    void mwt(alps::numeric::matrix<T1,A1>& out, const alps::numeric::matrix<T2,A2>& in, const alps::numeric::matrix<T3,A3>& alfa,
+             size_t out_y_offset,  size_t out_x_offset,
+             size_t in_y_offset,   size_t in_x_offset,
+             size_t alfa_y_offset, size_t alfa_x_offset,
+             size_t ldim,   size_t rdim,
+             size_t lpdim,  size_t rpdim,
+             size_t ilpdim, size_t irpdim)
+    {
+        for(size_t ll = 0; ll < ldim; ++ll)
+            for(size_t rr = 0; rr < rdim; ++rr)
+                for(size_t lp = 0; lp < lpdim; ++lp)
+                    for(size_t rp = 0; rp < rpdim; ++rp)
+                        for(size_t ilp = 0; ilp < ilpdim; ++ilp)
+                            for(size_t irp = 0; irp < irpdim; ++irp)
+                                out(out_y_offset + lp*ldim + ll, out_x_offset + rp*rdim + rr) +=  
+                                in(in_y_offset + ilp*ldim + ll, in_x_offset + irp*rdim + rr) *
+                                alfa(alfa_y_offset + ilp*irpdim + irp, alfa_x_offset + lp*rpdim + rp);
+    }
+    
     template<class T, class SymmGroup>
     std::vector<double> bond_renyi_entropies(const block_matrix<alps::numeric::diagonal_matrix<T>, SymmGroup>& set){
         std::vector<double> ret;
