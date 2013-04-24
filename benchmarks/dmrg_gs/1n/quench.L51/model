@@ -1,6 +1,6 @@
-LATTICE_LIBRARY = "lattice_lib"
+LATTICE_LIBRARY = "/users/akosenko/maquis2013/benchmarks/dmrg_gs/1n/quench.L51/lattice"
 LATTICE = "M=51"
-L =51
+L = 51
 
 MODEL = "spinless fermions"
 

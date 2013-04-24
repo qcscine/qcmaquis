@@ -7,7 +7,8 @@ ietl_jcd_gmres = 0
 ietl_jcd_tol = 1e-8
 ietl_jcd_maxiter = 10
 
-chkpfile = results.h5
+chkpfile = micro.ckp.h5
+resultfile = micro.res.h5
 max_bond_dimension = 50
 donotsave = 1
 
@@ -15,7 +16,6 @@ nsweeps = 5
 nmainsweeps = 1
 ngrowsweeps = 1
 
-resultfile = results.h5
 truncation_final = 1e-12
 truncation_initial = 0.0001
 

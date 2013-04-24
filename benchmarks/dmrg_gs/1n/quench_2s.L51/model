@@ -1,4 +1,4 @@
-LATTICE_LIBRARY = "lattice_lib"
+LATTICE_LIBRARY = "lattice"
 LATTICE = "M=51"
 L =51
 

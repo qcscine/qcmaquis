@@ -8,14 +8,14 @@ ietl_jcd_gmres = 0
 ietl_jcd_tol = 1e-8
 ietl_jcd_maxiter = 10
 
-chkpfile =gs_init_quench_M_51_chi_200_N1_26_N2_0_chkp.h5
+chkpfile = "/users/akosenko/maquis2013/src/scratch/quench.L51.200.ckp.h5"
+resultfile = "/users/akosenko/maquis2013/src/scratch/quench.L51.200.res.h5"
 max_bond_dimension =200
 
 nsweeps = 3
 nmainsweeps = 2
 ngrowsweeps = 1
 
-resultfile =gs_init_quench_M_51_chi_200_N1_26_N2_0_results.h5
 truncation_final = 1e-12
 truncation_initial = 0.0001
 
