@@ -10,15 +10,20 @@ AMBIENT=ambient
 DMRG=dmrg
 TARGETS="ambient dmrg"
 
-RUN_PRESETS="1n.micro:             ~/maquis2013/benchmarks/dmrg_gs/1n/micro/parms              ~/maquis2013/benchmarks/dmrg_gs/1n/micro/model
-             1n.short:             ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L6/parms        ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L6/model
+RUN_PRESETS="1n.micro:             ~/maquis2013/benchmarks/dmrg_gs/1n/micro.L4/parms.50        ~/maquis2013/benchmarks/dmrg_gs/1n/micro.L4/model
+             1n.short:             ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L6/parms.6000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L6/model
              1n.spinless.L8.6000:  ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/parms.6000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/model
              1n.spinless.L8.8000:  ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/parms.8000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/model
              1n.spinless.L8.10000: ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/parms.10000  ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/model
              1n.spinfull.L8.6000:  ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/parms.6000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/model
              1n.spinfull.L8.8000:  ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/parms.8000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/model
              1n.spinfull.L8.10000: ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/parms.10000  ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/model
-             fermiwideladder: ~/maquis2013/benchmarks/dmrg_gs/fermiwideladder/parms  ~/maquis2013/benchmarks/dmrg_gs/fermiwideladder/model"
+             1n.quench.L51.gs:     ~/maquis2013/benchmarks/dmrg_gs/1n/quench.L51/parms.200     ~/maquis2013/benchmarks/dmrg_gs/1n/quench.L51/model
+             1n.quench.L51.te:     ~/maquis2013/benchmarks/dmrg_te/1n/quench.L51/parms.200     ~/maquis2013/benchmarks/dmrg_te/1n/quench.L51/model
+             1n.quench_2s.L51.gs:  ~/maquis2013/benchmarks/dmrg_gs/1n/quench_2s.L51/parms.400  ~/maquis2013/benchmarks/dmrg_gs/1n/quench_2s.L51/model
+             1n.quench_2s.L51.te:  ~/maquis2013/benchmarks/dmrg_te/1n/quench_2s.L51/parms.400  ~/maquis2013/benchmarks/dmrg_te/1n/quench_2s.L51/model
+             fermiladder.L16:      ~/maquis2013/benchmarks/dmrg_gs/fermiladder.L16/parms.600   ~/maquis2013/benchmarks/dmrg_gs/fermiladder.L16/model
+             hubbard.L10:          ~/maquis2013/benchmarks/dmrg_gs/hubbard.L10/parms.2000      ~/maquis2013/benchmarks/dmrg_gs/hubbard.L10/model"
 
 ## settings ##
 

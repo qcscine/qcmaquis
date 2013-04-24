@@ -161,7 +161,11 @@ void sim<Matrix, SymmGroup>::mps_init()
     } else if (parms.get<std::string>("initfile").size() > 0) {
         maquis::cout << "Loading init state from " << parms.get<std::string>("initfile") << std::endl;
         mps = MPS<Matrix, SymmGroup>(lat->size());
+#ifdef AMBIENT
+        alps::hdf5::archive h5ar_in(parms.get<std::string>("initfile")+"."+boost::lexical_cast<std::string>(ambient::rank()));
+#else
         alps::hdf5::archive h5ar_in(parms.get<std::string>("initfile"));
+#endif
         h5ar_in >> alps::make_pvp("/state", mps);
     } else {
         mps = MPS<Matrix, SymmGroup>(lat->size(),
