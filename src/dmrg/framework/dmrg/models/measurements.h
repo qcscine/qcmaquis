@@ -37,7 +37,7 @@ class Measurement_Term
 {
 public:
     typedef block_matrix<Matrix, SymmGroup> op_t;
-    enum type_t {Local, MPSBonds, Average, Correlation, HalfCorrelation, CorrelationNN, HalfCorrelationNN, Custom, Overlap};
+    enum type_t {Local, LocalAt, MPSBonds, Average, Correlation, HalfCorrelation, CorrelationNN, HalfCorrelationNN, Custom, Overlap};
 
     Measurement_Term() {}
 
@@ -47,7 +47,11 @@ public:
     op_t fill_operator;
     
     // this is somewhat unlucky interface-wise, to say the least
+    // Custom: all inner vector are summed together
     std::vector< std::vector< std::pair<int, op_t> > > custom_ops;
+    
+    // used by LocalAt for the positions where ops are evaluated
+    std::vector< std::vector<std::size_t> > positions;
     
     Measurement_Term<Matrix, SymmGroup> * clone() const
     {
@@ -64,6 +68,8 @@ protected:
     , type(m.type)
     , operators(m.operators)
     , fill_operator(m.fill_operator)
+    , custom_ops(m.custom_ops)
+    , positions(m.positions)
     { }
 };
 template<class Matrix, class SymmGroup>
@@ -258,6 +264,11 @@ void measure_on_mps(MPS<Matrix, SymmGroup> & mps, Lattice const & lat,
                     meas_detail::measure_custom(mps, lat, meas.get_identity(),
                                                 meas[i].fill_operator, meas[i].custom_ops,
                                                 h5name, basepath + alps::hdf5_name_encode(meas[i].name));
+                    break;
+                case Measurement_Term<Matrix, SymmGroup>::LocalAt:
+                    meas_detail::measure_local_at(mps, lat, meas.get_identity(),
+                                                  meas[i].fill_operator, meas[i].operators, meas[i].positions,
+                                                  h5name, basepath + alps::hdf5_name_encode(meas[i].name));
                     break;
             }
         }
