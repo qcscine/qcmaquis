@@ -554,7 +554,7 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                     
                     std::vector<std::size_t> pos;
                     std::transform(int_tokens.begin(), int_tokens.end(), std::back_inserter(pos),
-                                   boost::lexical_cast<std::size_t, std::string>);
+                                   static_cast<std::size_t (*)(std::string const&)>(boost::lexical_cast<std::size_t, std::string>));
                     term.positions.push_back(pos);
                 }
                                 
