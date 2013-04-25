@@ -63,7 +63,7 @@ namespace conversion
             boost::char_separator<char> sep(",");
             tokenizer tokens(raw, sep);
             std::transform(tokens.begin(), tokens.end(), std::back_inserter(ret),
-                           boost::lexical_cast<T, std::string>);
+                           static_cast<T (*)(std::string const&)>(boost::lexical_cast<T, std::string>));
             return ret;
         }
     };
