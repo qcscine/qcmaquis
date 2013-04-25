@@ -287,7 +287,7 @@ function run(){
     local proclist="0,1,2,3,4,5,6,7,8,9,10,11"
     local rank_var="OMPI_COMM_WORLD_NODE_RANK"
 
-    [[ ! -z $VALGRIND         ]] && VALGRIND="valgrind --error-limit=no"
+    [[ ! -z $VALGRIND         ]] && VALGRIND="valgrind --error-limit=no --max-stackframe=120594112 --suppressions=${ROOT_DIR}/scripts/common/valgrind/openmpi.supp" && MCA="--mca btl tcp,self"
     [[ ! -z $CILK_NUM_THREADS ]] && CILK_NUM_THREADS="CILK_NWORKERS=$CILK_NUM_THREADS"
     [[ ! -z $MPI_NUM_PROCS    ]] && HWLOC="hwloc-bind socket:\${socketlist[\$$rank_var]}" # --mempolicy firsttouch 
     if [ ! -z $OMP_NUM_THREADS  ]; then
@@ -315,7 +315,7 @@ function run(){
         
         echo "#!/bin/bash
         $command; rm -f bootstrap.sh" &> bootstrap.sh; chmod +x bootstrap.sh;
-        command="mpiexec -np $MPI_NUM_PROCS bootstrap.sh"
+        command="mpiexec -np $MPI_NUM_PROCS $MCA bootstrap.sh"
     fi
 
     rm -f *.h5*
