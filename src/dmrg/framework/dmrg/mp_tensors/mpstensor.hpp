@@ -304,7 +304,6 @@ template<class Matrix, class SymmGroup>
 typename MPSTensor<Matrix, SymmGroup>::scalar_type
 MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const & rhs) const
 {
-
     make_left_paired();
     rhs.make_left_paired();
 
@@ -324,6 +323,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
 
     for (std::size_t b = 0; b < i1.size(); ++b) {
         typename SymmGroup::charge c = i1[b].first;
+        assert( data_.has_block(c,c) && rhs.data_.has_block(c,c) );
         vt.push_back(overlap(data_(c,c), rhs.data_(c,c)));
     } // should be reformulated in terms of reduction (todo: Matthias, 30.04.12 / scalar-value types)
     return maquis::accumulate(vt.begin(), vt.end(), scalar_type(0.));
@@ -419,7 +419,15 @@ MPSTensor<Matrix, SymmGroup>::operator+=(MPSTensor<Matrix, SymmGroup> const & rh
     rhs.make_left_paired();
     
     cur_normalization = Unorm;
-    data_ += rhs.data_;
+
+    for (std::size_t i = 0; i < data_.n_blocks(); ++i)
+    {
+        typename SymmGroup::charge lc = data_.left_basis()[i].first, rc = data_.right_basis()[i].first;
+        if (rhs.data_.has_block(lc,rc)) {
+            data_[i] += rhs.data_(lc,rc);
+        }
+    }
+    
     return *this;
 }
 
@@ -427,15 +435,23 @@ template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> const &
 MPSTensor<Matrix, SymmGroup>::operator-=(MPSTensor<Matrix, SymmGroup> const & rhs)
 {
-    assert(std::equal(left_i.begin(), left_i.end(), rhs.left_i.begin()));
-    assert(std::equal(right_i.begin(), right_i.end(), rhs.right_i.begin()));
-    assert(std::equal(phys_i.begin(), phys_i.end(), rhs.phys_i.begin()));
+//    assert(std::equal(left_i.begin(), left_i.end(), rhs.left_i.begin()));
+//    assert(std::equal(right_i.begin(), right_i.end(), rhs.right_i.begin()));
+//    assert(std::equal(phys_i.begin(), phys_i.end(), rhs.phys_i.begin()));
     
     make_left_paired();
     rhs.make_left_paired();
     
     cur_normalization = Unorm;
-    data_ -= rhs.data_;
+    
+    for (std::size_t i = 0; i < data_.n_blocks(); ++i)
+    {
+        typename SymmGroup::charge lc = data_.left_basis()[i].first, rc = data_.right_basis()[i].first;
+        if (rhs.data_.has_block(lc,rc)) {
+            data_[i] -= rhs.data_(lc,rc);
+        }
+    }
+    
     return *this;
 }
 
@@ -568,5 +584,11 @@ void MPSTensor<Matrix, SymmGroup>::check_equal (MPSTensor<Matrix, SymmGroup> con
     if (!error.empty())
         throw std::runtime_error(error);
         
+}
+
+template<class Matrix, class SymmGroup>
+std::size_t MPSTensor<Matrix, SymmGroup>::num_elements() const
+{
+    return data_.num_elements();
 }
 

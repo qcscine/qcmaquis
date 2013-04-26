@@ -73,8 +73,8 @@ namespace maquis { namespace dmrg { namespace detail {
         }
     }
 
-    template <class M>
-    inline void reshape_l2r(const ambient::numeric::tiles<M>& left, ambient::numeric::tiles<M>& right,
+    template <class M1, class M2>
+    inline void reshape_l2r(const ambient::numeric::tiles<M1>& left, ambient::numeric::tiles<M2>& right,
                             size_t left_offset, size_t right_offset, size_t sdim, size_t ldim, size_t rdim)
     {
         for(size_t ss = 0; ss < sdim; ++ss){
@@ -84,8 +84,8 @@ namespace maquis { namespace dmrg { namespace detail {
         }
     }
     
-    template <class M>
-    inline void reshape_r2l(ambient::numeric::tiles<M>& left, const ambient::numeric::tiles<M>& right,
+    template <class M1, class M2>
+    inline void reshape_r2l(ambient::numeric::tiles<M1>& left, const ambient::numeric::tiles<M2>& right,
                             size_t left_offset, size_t right_offset, size_t sdim, size_t ldim, size_t rdim)
     {
         for(size_t ss = 0; ss < sdim; ++ss)

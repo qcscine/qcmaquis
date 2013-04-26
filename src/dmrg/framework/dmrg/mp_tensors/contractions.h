@@ -18,12 +18,12 @@
 struct contraction {
 
     // output/input: left_i for bra_tensor, right_i for ket_tensor
-    template<class Matrix, class SymmGroup>
-    static block_matrix<Matrix, SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    static block_matrix<OtherMatrix, SymmGroup>
     overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                       MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                      block_matrix<Matrix, SymmGroup> const & left,
-                      block_matrix<Matrix, SymmGroup> * localop = NULL)
+                      block_matrix<OtherMatrix, SymmGroup> const & left,
+                      block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
     {
         if (localop != NULL)
             throw std::runtime_error("Not implemented!");
@@ -32,11 +32,12 @@ struct contraction {
         
         bra_tensor.make_left_paired();
         
-        block_matrix<Matrix, SymmGroup> t1, t3; //t2 = conjugate(bra_tensor.data_)
+        block_matrix<OtherMatrix, SymmGroup> t1;
+        block_matrix<Matrix, SymmGroup> t3; //t2 = conjugate(bra_tensor.data_)
         ket_tensor.make_right_paired();
         gemm(left, ket_tensor.data_, t1);
         
-        reshape_right_to_left_new(ket_tensor.phys_i, bra_tensor.row_dim(), ket_tensor.right_i,
+        reshape_right_to_left_new(ket_tensor.site_dim(), bra_tensor.row_dim(), ket_tensor.col_dim(),
                                   t1, t3);
         gemm(transpose(conjugate(bra_tensor.data_)), t3, t1);
         return t1;
@@ -47,12 +48,12 @@ struct contraction {
         // return transpose(t1);
     }
     
-    template<class Matrix, class SymmGroup>
-    static block_matrix<Matrix, SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    static block_matrix<OtherMatrix, SymmGroup>
     overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                        MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                       block_matrix<Matrix, SymmGroup> const & right,
-                       block_matrix<Matrix, SymmGroup> * localop = NULL)
+                       block_matrix<OtherMatrix, SymmGroup> const & right,
+                       block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
     {
         if (localop != NULL)
             throw std::runtime_error("Not implemented!");
@@ -62,9 +63,10 @@ struct contraction {
         bra_tensor.make_right_paired();
         ket_tensor.make_left_paired();
         
-        block_matrix<Matrix, SymmGroup> t1, t3;
+        block_matrix<OtherMatrix, SymmGroup> t1;
+        block_matrix<Matrix, SymmGroup> t3;
         gemm(ket_tensor.data_, transpose(right), t1);
-        reshape_left_to_right(ket_tensor.phys_i, ket_tensor.left_i, right.left_basis(), t1, t3);
+        reshape_left_to_right_new(ket_tensor.site_dim(), ket_tensor.row_dim(), bra_tensor.col_dim(), t1, t3);
         gemm(conjugate(bra_tensor.data_), transpose(t3), t1);
 
         return t1;
@@ -73,7 +75,7 @@ struct contraction {
     // note: this function changes the internal structure of Boundary,
     //       each block is transposed
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static Boundary<OtherMatrix, SymmGroup>
+    static Boundary<Matrix, SymmGroup>
     left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> const & mps,
                              Boundary<OtherMatrix, SymmGroup> const & left,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -98,7 +100,7 @@ struct contraction {
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim();
         ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
         
-        Boundary<OtherMatrix, SymmGroup> ret;
+        Boundary<Matrix, SymmGroup> ret;
         ret.data_.resize(mpo.col_dim());
         
         typedef typename SymmGroup::charge charge;
@@ -166,7 +168,7 @@ struct contraction {
                                 if (!pretend) {
                                     Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
                                     Matrix const & iblock = T(T_l_charge, T_r_charge);
-                                    OtherMatrix & oblock = ret.data_[b2](out_l_charge, out_r_charge);
+                                    Matrix & oblock = ret.data_[b2](out_l_charge, out_r_charge);
                                     
                                     maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
                                                                         physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
@@ -187,7 +189,7 @@ struct contraction {
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static Boundary<OtherMatrix, SymmGroup>
+    static Boundary<Matrix, SymmGroup>
     right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> const & mps,
                               Boundary<OtherMatrix, SymmGroup> const & right,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -218,7 +220,7 @@ struct contraction {
                                              boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                  -boost::lambda::_1, boost::lambda::_2));
         
-        Boundary<OtherMatrix, SymmGroup> ret;
+        Boundary<Matrix, SymmGroup> ret;
         ret.data_.resize(mpo.row_dim());
         
         mps.make_right_paired();
@@ -285,8 +287,7 @@ struct contraction {
                                 if (!pretend) {
                                     const Matrix & wblock = W(physical_i[s1].first, physical_i[s2].first);
                                     const Matrix & iblock = T(T_l_charge, T_r_charge);
-                                    OtherMatrix & oblock 
-                                        = ret.data_[b1](out_l_charge, out_r_charge);
+                                    Matrix & oblock = ret.data_[b1](out_l_charge, out_r_charge);
 
                                     maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock, out_right_offset, in_right_offset, 
                                                                         physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
@@ -315,7 +316,7 @@ struct contraction {
                           Boundary<OtherMatrix, SymmGroup> const & left,
                           MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        Boundary<OtherMatrix, SymmGroup> lbtm = left_boundary_tensor_mpo(ket_tensor, left, mpo, &bra_tensor.row_dim());
+        Boundary<Matrix, SymmGroup> lbtm = left_boundary_tensor_mpo(ket_tensor, left, mpo, &bra_tensor.row_dim());
         
         bra_tensor.make_left_paired();
         Boundary<OtherMatrix, SymmGroup> ret;
@@ -335,7 +336,7 @@ struct contraction {
                            Boundary<OtherMatrix, SymmGroup> const & right,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        Boundary<OtherMatrix, SymmGroup> rbtm = right_boundary_tensor_mpo(ket_tensor, right, mpo, &bra_tensor.col_dim());
+        Boundary<Matrix, SymmGroup> rbtm = right_boundary_tensor_mpo(ket_tensor, right, mpo, &bra_tensor.col_dim());
         
         bra_tensor.make_right_paired();
         Boundary<OtherMatrix, SymmGroup> ret;
@@ -356,7 +357,7 @@ struct contraction {
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        Boundary<OtherMatrix, SymmGroup> left_mpo_mps = left_boundary_tensor_mpo(ket_tensor, left, mpo);
+        Boundary<Matrix, SymmGroup> left_mpo_mps = left_boundary_tensor_mpo(ket_tensor, left, mpo);
         MPSTensor<Matrix, SymmGroup> ret = ket_tensor;
         ret.multiply_by_scalar(0);
         ret.make_left_paired();
@@ -395,7 +396,7 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> dm;
         gemm(mps.data_, transpose(conjugate(mps.data_)), dm);
         
-        Boundary<OtherMatrix, SymmGroup> half_dm = left_boundary_tensor_mpo(mps, left, mpo);
+        Boundary<Matrix, SymmGroup> half_dm = left_boundary_tensor_mpo(mps, left, mpo);
         
         mps.make_left_paired();
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
@@ -458,7 +459,7 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> dm;
         gemm(transpose(conjugate(mps.data_)), mps.data_, dm);
             
-        Boundary<OtherMatrix, SymmGroup> half_dm = right_boundary_tensor_mpo(mps, right, mpo);
+        Boundary<Matrix, SymmGroup> half_dm = right_boundary_tensor_mpo(mps, right, mpo);
         
         mps.make_right_paired();
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)

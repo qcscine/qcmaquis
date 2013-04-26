@@ -189,9 +189,10 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
 }
 
 template<class Matrix, class SymmGroup>
+template<class OtherMatrix>
 void MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
-                                            Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left,
-                                            Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right,
+                                            Boundary<OtherMatrix, SymmGroup> const & left,
+                                            Boundary<OtherMatrix, SymmGroup> const & right,
                                             std::size_t l, double alpha,
                                             double cutoff, std::size_t Mmax,
                                             Logger & logger)
@@ -204,9 +205,10 @@ void MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const &
 }
 
 template<class Matrix, class SymmGroup>
+template<class OtherMatrix>
 void MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
-                                            Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left,
-                                            Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right,
+                                            Boundary<OtherMatrix, SymmGroup> const & left,
+                                            Boundary<OtherMatrix, SymmGroup> const & right,
                                             std::size_t l, double alpha,
                                             double cutoff, std::size_t Mmax,
                                             Logger & logger)
@@ -220,11 +222,11 @@ void MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const &
 }
 
 template<class Matrix, class SymmGroup>
-Boundary<typename storage::constrained<Matrix>::type, SymmGroup>
+Boundary<Matrix, SymmGroup>
 MPS<Matrix, SymmGroup>::left_boundary() const
 {
     Index<SymmGroup> i = (*this)[0].row_dim();
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> ret(i, i, 1);
+    Boundary<Matrix, SymmGroup> ret(i, i, 1);
 
     for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
        maquis::dmrg::detail::left_right_boundary_init(ret[0][k]);
@@ -233,11 +235,11 @@ MPS<Matrix, SymmGroup>::left_boundary() const
 }
 
 template<class Matrix, class SymmGroup>
-Boundary<typename storage::constrained<Matrix>::type, SymmGroup>
+Boundary<Matrix, SymmGroup>
 MPS<Matrix, SymmGroup>::right_boundary() const
 {
     Index<SymmGroup> i = (*this)[length()-1].col_dim();
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> ret(i, i, 1);
+    Boundary<Matrix, SymmGroup> ret(i, i, 1);
 
 //    Original
 //    for(typename Index<SymmGroup>::basis_iterator it = i.basis_begin(); !it.end(); ++it)

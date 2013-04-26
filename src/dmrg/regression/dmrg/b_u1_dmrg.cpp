@@ -64,7 +64,7 @@ typedef U1 grp;
 #endif
 
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
-typedef Boundary<typename storage::constrained<Matrix>::type, grp> boundary_t;
+typedef Boundary<Matrix, grp> boundary_t;
 
 b_adj::Adjacency * adj_factory(BaseParameters & model)
 {

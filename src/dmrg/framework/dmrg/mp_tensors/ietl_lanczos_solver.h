@@ -49,8 +49,10 @@ template<class Matrix, class SymmGroup>
 class SingleSiteVS
 {
 public:
-    SingleSiteVS(MPSTensor<Matrix, SymmGroup> const & m)
+    SingleSiteVS(MPSTensor<Matrix, SymmGroup> const & m,
+                 std::vector<MPSTensor<Matrix, SymmGroup> > const & ortho_vecs)
     : instance(m)
+    , ortho_vecs(ortho_vecs)
     {
         for (std::size_t k = 0; k < m.data().n_blocks(); ++k)
             N += num_rows(m.data()[k]) * num_cols(m.data()[k]);
@@ -66,10 +68,17 @@ public:
         return vs.N;
     }
     
-    void project(MPSTensor<Matrix, SymmGroup> & x) const { }
+    void project(MPSTensor<Matrix, SymmGroup> & t) const
+    {
+        for (typename std::vector<MPSTensor<Matrix, SymmGroup> >::const_iterator it = ortho_vecs.begin();
+             it != ortho_vecs.end(); ++it)
+            t -= ietl::dot(*it,t)/ietl::dot(*it,*it)**it;
+    }
     
 private:
     MPSTensor<Matrix, SymmGroup> instance;
+    std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs;
+    
     std::size_t N;
 };
 
@@ -106,7 +115,7 @@ solve_ietl_lanczos(SiteProblem<Matrix, SymmGroup> & sp,
 {
     typedef MPSTensor<Matrix, SymmGroup> Vector;
     
-    SingleSiteVS<Matrix, SymmGroup> vs(initial);
+    SingleSiteVS<Matrix, SymmGroup> vs(initial, std::vector<MPSTensor<Matrix, SymmGroup> >());
     
     typedef ietl::vectorspace<Vector> Vecspace;
     typedef boost::lagged_fibonacci607 Gen;

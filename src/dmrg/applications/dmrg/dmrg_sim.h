@@ -49,7 +49,7 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     typedef optimizer_base<Matrix, SymmGroup, StreamStorageMaster> opt_base_t;
     
     typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
-    typedef Boundary<typename storage::constrained<Matrix>::type, SymmGroup> boundary_t;
+    typedef Boundary<Matrix, SymmGroup> boundary_t;
     
 public:
     

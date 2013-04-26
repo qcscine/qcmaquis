@@ -46,6 +46,7 @@ public:
 //  block_matrix(charge rc, charge cc, Matrix& m);
 
     std::string description() const;
+    std::size_t num_elements() const;
     
     Matrix &             operator[](size_type c);
     Matrix const &       operator[](size_type c) const;

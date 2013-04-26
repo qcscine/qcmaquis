@@ -85,8 +85,8 @@ namespace maquis { namespace dmrg { namespace detail {
         }
     }
     
-    template <typename T, class A>
-    void reshape_r2l(alps::numeric::matrix<T,A>& left, const alps::numeric::matrix<T,A>& right,
+    template <typename T, class A1, class A2>
+    void reshape_r2l(alps::numeric::matrix<T,A1>& left, const alps::numeric::matrix<T,A2>& right,
                      size_t left_offset, size_t right_offset, 
                      size_t sdim, size_t ldim, size_t rdim)
     {
@@ -100,8 +100,8 @@ namespace maquis { namespace dmrg { namespace detail {
         //        sizeof(T) * ldim);
     }
     
-    template <typename T, class A>
-    void reshape_l2r(const alps::numeric::matrix<T,A>& left, alps::numeric::matrix<T,A>& right,
+    template <typename T, class A1, class A2>
+    void reshape_l2r(const alps::numeric::matrix<T,A1>& left, alps::numeric::matrix<T,A2>& right,
                      size_t left_offset, size_t right_offset, 
                      size_t sdim, size_t ldim, size_t rdim)
     {

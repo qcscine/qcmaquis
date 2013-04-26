@@ -88,6 +88,9 @@ private:
         add_option("model_library", "", value("alps"));
         
         add_option("beta_mode", "", value(0));
+
+        add_option("n_ortho_states", "", value(0));
+        add_option("ortho_states", "", value(""));
     }
     
 };

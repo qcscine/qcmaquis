@@ -67,22 +67,24 @@ public:
     void move_normalization_r2l(size_t p1, size_t p2, DecompMethod method=DefaultSolver());
     
     std::string description() const;
-    
+   
+    template<class OtherMatrix> 
     void grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
-                        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left,
-                        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right,
+                        Boundary<OtherMatrix, SymmGroup> const & left,
+                        Boundary<OtherMatrix, SymmGroup> const & right,
                         std::size_t l, double alpha,
                         double cutoff, std::size_t Mmax,
                         Logger &);
+    template<class OtherMatrix> 
     void grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
-                        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left,
-                        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right,
+                        Boundary<OtherMatrix, SymmGroup> const & left,
+                        Boundary<OtherMatrix, SymmGroup> const & right,
                         std::size_t l, double alpha,
                         double cutoff, std::size_t Mmax,
                         Logger &);
     
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left_boundary() const;
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right_boundary() const;
+    Boundary<Matrix, SymmGroup> left_boundary() const;
+    Boundary<Matrix, SymmGroup> right_boundary() const;
     
     friend void swap(MPS& a, MPS& b)
     {

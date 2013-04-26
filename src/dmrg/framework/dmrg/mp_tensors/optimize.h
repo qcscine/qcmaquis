@@ -16,6 +16,8 @@
 #define HAVE_GETTIMEOFDAY
 #endif
 
+#include <boost/algorithm/string.hpp>
+
 #include "utils/sizeof.h"
 
 #include "ietl_lanczos_solver.h"
@@ -28,19 +30,22 @@
 template<class Matrix, class SymmGroup>
 struct SiteProblem
 {
-    SiteProblem(MPSTensor<Matrix, SymmGroup> const & ket_tensor_,
-                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
+    SiteProblem(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
                 Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
                 MPOTensor<Matrix, SymmGroup> const & mpo_)
-    : ket_tensor(ket_tensor_)
-    , left(left_)
+    : left(left_)
     , right(right_)
-    , mpo(mpo_) { }
+    , mpo(mpo_) 
+    {
+        #ifdef AMBIENT 
+            mpo.persist();
+        #endif
+    }
     
-    MPSTensor<Matrix, SymmGroup> const & ket_tensor;
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
+    double ortho_shift;
 };
 
 #ifdef HAVE_GETTIMEOFDAY
@@ -71,9 +76,9 @@ class optimizer_base
 {
 public:
     optimizer_base(MPS<Matrix, SymmGroup> const & mps_,
-             MPO<Matrix, SymmGroup> const & mpo_,
-             BaseParameters & parms_,
-             StorageMaster & sm)
+                   MPO<Matrix, SymmGroup> const & mpo_,
+                   BaseParameters & parms_,
+                   StorageMaster & sm)
     : mps(mps_)
     , mpo(mpo_)
     , mpo_orig(mpo_)
@@ -82,6 +87,20 @@ public:
     {
         mps.normalize_right();
 //        mps.canonize(0);
+        
+        northo = parms_.get<int>("n_ortho_states");
+        maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
+        ortho_mps.resize(northo);
+        std::string files_ = parms_.get<std::string>("ortho_states");
+        std::vector<std::string> files;
+        boost::split(files, files_, boost::is_any_of(", "));
+        for (int n = 0; n < northo; ++n) {
+            maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
+            alps::hdf5::archive ar(files[n]);
+            ar >> alps::make_pvp("/state", ortho_mps[n]);
+            maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
+        }
+        
         init_left_right(mpo, 0);
         maquis::cout << "Done init_left_right" << std::endl;
     }
@@ -97,16 +116,18 @@ protected:
 
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        MPSTensor<Matrix, SymmGroup> bkp = mps[site];
-        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left = contraction::overlap_mpo_left_step(mps[site], bkp, left_[site], mpo[site]);
-        left_[site+1] = left;        
+        left_[site+1] = contraction::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
+        
+        for (int n = 0; n < northo; ++n)
+            ortho_left_[n][site+1] = contraction::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
     }
     
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        MPSTensor<Matrix, SymmGroup> bkp = mps[site];
-        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right = contraction::overlap_mpo_right_step(mps[site], bkp, right_[site+1], mpo[site]);
-        right_[site] = right;
+        right_[site] = contraction::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
+        
+        for (int n = 0; n < northo; ++n)
+            ortho_right_[n][site] = contraction::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
     }
 
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
@@ -119,9 +140,18 @@ protected:
         right_stores_.resize(L+1, storage_master.child());
         left_stores_.resize(L+1, storage_master.child());
         
-        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left = mps.left_boundary();
+        ortho_left_.resize(northo);
+        ortho_right_.resize(northo);
+        for (int n = 0; n < northo; ++n) {
+            ortho_left_[n].resize(L+1);
+            ortho_right_[n].resize(L+1);
+            
+            ortho_left_[n][0] = *(block_matrix<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.left_boundary()[0];
+            ortho_right_[n][L] = *(block_matrix<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.right_boundary()[0];
+        }
+        
         storage::reset(left_stores_[0]);
-        left_[0] = left;
+        left_[0] = *(Boundary<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.left_boundary();
         
         for (int i = 0; i < site; ++i) {
             storage::reset(left_stores_[i+1]);
@@ -130,18 +160,15 @@ protected:
         }
         storage::store(left_[site], left_stores_[site]);
         
-        
-        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right = mps.right_boundary();
         storage::reset(right_stores_[L]);
-        right_[L] = right;
+        right_[L] = *(Boundary<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.right_boundary();
                 
-        for(int i = L-1; i >= site; --i) {
+        for (int i = L-1; i >= site; --i) {
             storage::reset(right_stores_[i]);
             boundary_right_step(mpo, i);
             storage::store(right_[i+1], right_stores_[i+1]);
         }
         storage::store(right_[site], right_stores_[site]);
-        
     }
     
     MPS<Matrix, SymmGroup> mps;
@@ -151,6 +178,11 @@ protected:
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
     std::vector<typename StorageMaster::Storage> left_stores_, right_stores_;
     StorageMaster & storage_master;
+    
+    /* This is used for multi-state targeting */
+    unsigned int northo;
+    std::vector< std::vector<block_matrix<typename storage::constrained<Matrix>::type, SymmGroup> > > ortho_left_, ortho_right_;
+    std::vector<MPS<Matrix, SymmGroup> > ortho_mps;
 };
 
 #include "ss_optimize.hpp"

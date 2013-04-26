@@ -134,30 +134,26 @@ private:
         right_stores_.resize(L+1, storage_master.child());
         left_stores_.resize(L+1, storage_master.child());
         
-        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left = mps.left_boundary();
-        left_[0] = left;
+        left_[0] = *(Boundary<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.left_boundary();
         
         storage::reset(left_stores_[0]);
         storage::store(left_[0], left_stores_[0]);
         
         for (int i = 0; i < L; ++i) {
-            left = contraction::overlap_mpo_left_step(mpsp[i], mps[i],
-                                                      left, mpo[i]);
-            left_[i+1] = left;
+            left_[i+1] = contraction::overlap_mpo_left_step(mpsp[i], mps[i],
+                                                            left_[i], mpo[i]);
             storage::reset(left_stores_[i+1]);
             storage::store(left_[i+1], left_stores_[i+1]);
         }
         
-        Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right = mps.right_boundary();
-        right_[L] = right;
+        right_[L] = *(Boundary<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.right_boundary();
         
         storage::reset(right_stores_[L]);
         storage::store(right_[L], right_stores_[L]);
         
         for(int i = L-1; i >= 0; --i) {
-            right = contraction::overlap_mpo_right_step(mpsp[i], mps[i],
-                                                        right, mpo[i]);
-            right_[i] = right;
+            right_[i] = contraction::overlap_mpo_right_step(mpsp[i], mps[i],
+                                                            right_[i+1], mpo[i]);
             
             storage::reset(right_stores_[i]);
             storage::store(right_[i], right_stores_[i]);

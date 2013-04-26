@@ -22,7 +22,7 @@ MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                          typename MPOTensor<Matrix, SymmGroup>::access_type const & ket_index,
                                          typename MPOTensor<Matrix, SymmGroup>::access_type const & bra_index)
 {
-    return data_(left_index, right_index)(ket_index, bra_index);
+    return data_[std::make_pair(left_index,right_index)](ket_index, bra_index);
 }
 
 template<class Matrix, class SymmGroup>
@@ -32,7 +32,7 @@ MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                          typename MPOTensor<Matrix, SymmGroup>::access_type const & ket_index,
                                          typename MPOTensor<Matrix, SymmGroup>::access_type const & bra_index) const
 {
-    return data_(left_index, right_index)(ket_index, bra_index);
+    return data_.find(std::make_pair(left_index,right_index))->second(ket_index, bra_index);
 }
 
 template<class Matrix, class SymmGroup>
