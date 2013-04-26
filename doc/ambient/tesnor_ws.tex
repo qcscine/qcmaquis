@@ -1,0 +1,37 @@
+\documentclass[a4paper]{article}
+
+%% do not edit the following macro
+\usepackage{graphics}
+\newcommand{\abs}[4]{
+\begin{center}
+  {\large\bf #1}
+
+   \vspace*{.6em}
+  {#2}
+
+   \vspace*{0.2em}
+  {\it #3}
+
+\end{center}
+{#4}
+}
+
+\begin{document}
+\abs{%
+% 1. Title of Your Talk
+Exposure of Dataflow parallelism in Density Matrix Renormalization Group}{%
+%%%% 2. List of Authors
+Alexandr Kosenkov$^1$, Michele Dolfi$^1$, Timothee Ewart$^2$, Adrian Kantian$^{2}$, Bela Bauer$^{3}$, Matthias Troyer$^1$}{%
+%%%% 3. List of Affiliations
+$^1$Theoretische Physik, ETH Zurich, 8093 Zurich, Switzerland\\
+$^2$DPMC-MaNEP, University of Geneva, 1211 Geneva, Switzerland\\
+$^3$Microsoft Research, Station Q, University of California, Santa Barbara, CA 93106, USA}{%
+%%%% 4. Abstract
+
+\begin{itemize}
+\item Density Matrix Renormalization Group application deals with tensor operations using complex matrices objects. The application is automatically parallelized using Ambient: dataflow distributed memory framework for linear algebra operations.
+\end{itemize}
+
+}
+
+\end{document}
