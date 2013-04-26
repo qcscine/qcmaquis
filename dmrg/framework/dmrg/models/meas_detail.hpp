@@ -98,14 +98,10 @@ namespace meas_detail {
             right_[L-1] = right;
             left_[0] = left;
             for (int i = 1; i < L; ++i) {
-                MPSTensor<Matrix, SymmGroup> bkp;
-
-                bkp = mps[L-i];
-                right = contraction::overlap_mpo_right_step(mps[L-i], bkp, right, ident);
+                right = contraction::overlap_mpo_right_step(mps[L-i], mps[L-i], right, ident);
                 right_[L-1-i] = right;
                 
-                bkp = mps[i-1];
-                left = contraction::overlap_mpo_left_step(mps[i-1], bkp, left, ident);
+                left = contraction::overlap_mpo_left_step(mps[i-1], mps[i-1], left, ident);
                 left_[i] = left;
             }
 
@@ -147,9 +143,7 @@ namespace meas_detail {
             
             for (int p = 0; p < L-1; ++p) {
                 temp(0,0) = ops[0].first;
-                MPSTensor<Matrix, SymmGroup> bkp = mps[p];
-                
-                Boundary<Matrix, SymmGroup> tmp_b = contraction::overlap_mpo_left_step(mps[p], bkp, left_[p], temp);
+                Boundary<Matrix, SymmGroup> tmp_b = contraction::overlap_mpo_left_step(mps[p], mps[p], left_[p], temp);
                 
                 temp(0,0) = ops[1].first;
                 MPSTensor<Matrix, SymmGroup> vec2 =
