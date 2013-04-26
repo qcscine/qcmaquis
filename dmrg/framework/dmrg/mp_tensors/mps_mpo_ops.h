@@ -19,41 +19,33 @@
 #include "utils/traits.hpp"
 
 template<class Matrix, class SymmGroup>
-std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> >
+std::vector<Boundary<Matrix, SymmGroup> >
 left_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo)
 {
     assert(mpo.length() == mps.length());
     std::size_t L = mps.length();
     
-    std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_(L+1);
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left = mps.left_boundary();
-    left_[0] = left;
+    std::vector<Boundary<Matrix, SymmGroup> > left_(L+1);
+    left_[0] = mps.left_boundary();
     
     for (int i = 0; i < L; ++i) {
-        MPSTensor<Matrix, SymmGroup> bkp = mps[i];
-        left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
-        left_[i+1] = left;
-//        maquis::cout << "Left at " << i+1 << " " << left.data_[0] << std::endl;
+        left_[i+1] = contraction::overlap_mpo_left_step(mps[i], mps[i], left_[i], mpo[i]);
     }
     return left_;
 }
 
 template<class Matrix, class SymmGroup>
-std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> >
+std::vector<Boundary<Matrix, SymmGroup> >
 right_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo)
 {
     assert(mpo.length() == mps.length());
     std::size_t L = mps.length();
     
-    std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > right_(L+1);
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right = mps.right_boundary();
-    right_[L] = right;
+    std::vector<Boundary<Matrix, SymmGroup> > right_(L+1);
+    right_[L] = mps.right_boundary();
     
     for (int i = L-1; i >= 0; --i) {
-        MPSTensor<Matrix, SymmGroup> bkp = mps[i];
-        right = contraction::overlap_mpo_right_step(mps[i], bkp, right, mpo[i]);
-        right_[i] = right;
-//        maquis::cout << "right at " << i << " " << right.data_[0] << std::endl;
+        right_[i] = contraction::overlap_mpo_right_step(mps[i], mps[i], right_[i+1], mpo[i]);
     }
     return right_;
 }
@@ -62,11 +54,11 @@ template<class Matrix, class SymmGroup>
 double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo, int d)
 {
     if (d == 0) {
-        std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
+        std::vector<Boundary<Matrix, SymmGroup> > left_ = left_mpo_overlaps(mps, mpo);
         assert( check_real(left_[mps.length()][0].trace()) );
         return maquis::real(left_[mps.length()][0].trace());
     } else {
-        std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > right_ = right_mpo_overlaps(mps, mpo);
+        std::vector<Boundary<Matrix, SymmGroup> > right_ = right_mpo_overlaps(mps, mpo);
         assert( check_real(right_[0][0].trace()) );
         return maquis::real(right_[0][0].trace());
     }
@@ -79,13 +71,12 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     assert(mpo.length() == mps.length());
     std::size_t L = mps.length();
     
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left = mps.left_boundary();
+    Boundary<Matrix, SymmGroup> left = mps.left_boundary();
     
     for (int i = 0; i < L; ++i) {
         if (verbose)
             maquis::cout << "expval site " << i << std::endl;
-        MPSTensor<Matrix, SymmGroup> bkp = mps[i];
-        left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
+        left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
     }
     
     return maquis::real(left[0].trace());
@@ -98,11 +89,10 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matri
     assert(mpo.length() == mps.length());
     std::size_t L = mps.length();
     
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> left = mps.left_boundary();
+    Boundary<Matrix, SymmGroup> left = mps.left_boundary();
     
     for (int i = 0; i < L; ++i) {
-        MPSTensor<Matrix, SymmGroup> bkp = mps[i];
-        left = contraction::overlap_mpo_left_step(mps[i], bkp, left, mpo[i]);
+        left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
     }
     
     return left.traces();

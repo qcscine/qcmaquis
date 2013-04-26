@@ -47,7 +47,7 @@ template <class Matrix, class SymmGroup>
 class sim {
     
     typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
-    typedef Boundary<typename storage::constrained<Matrix>::type, SymmGroup> boundary_t;
+    typedef Boundary<Matrix, SymmGroup> boundary_t;
         
 public:
     

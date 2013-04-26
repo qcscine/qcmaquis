@@ -100,7 +100,7 @@ void u1()
     
     mps.normalize_left(SVD);
     mps2 = mps;
-    Boundary<typename storage::constrained<Matrix>::type, grp> mleft(mps.row_dim(), mps.row_dim(), 1);
+    Boundary<Matrix, grp> mleft(mps.row_dim(), mps.row_dim(), 1);
     mleft.data_[0] = identity_matrix<Matrix, grp>(mps.row_dim());
 //    maquis::cout << mleft.data_[0] << std::endl;
 //    mleft = contraction::overlap_mpo_left_step(mps, mps2, mleft, splus);

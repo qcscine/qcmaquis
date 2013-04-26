@@ -141,7 +141,7 @@ private:
 #include "dmrg/mp_tensors/mpotensor.hpp"
 
 template<class Matrix, class SymmGroup>
-Boundary<typename storage::constrained<Matrix>::type, SymmGroup> simplify(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> b)
+Boundary<Matrix, SymmGroup> simplify(Boundary<Matrix, SymmGroup> b)
 {
     typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
     

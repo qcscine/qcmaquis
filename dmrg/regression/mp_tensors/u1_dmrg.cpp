@@ -32,7 +32,7 @@ typedef alps::numeric::matrix<double > Matrix;
 typedef U1 grp;
 
 typedef std::vector<MPOTensor<Matrix, grp> > mpo_t;
-typedef Boundary<typename storage::constrained<Matrix>::type, grp> boundary_t;
+typedef Boundary<Matrix, grp> boundary_t;
 
 adj::Adjacency * adj_factory(ModelParameters & model)
 {

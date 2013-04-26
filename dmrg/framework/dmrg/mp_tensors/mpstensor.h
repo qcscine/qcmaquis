@@ -53,6 +53,7 @@ public:
     Index<SymmGroup> const & row_dim() const;
     Index<SymmGroup> const & col_dim() const;
     bool isobccompatible(Indicator) const;
+    std::size_t num_elements() const;
     
     void replace_right_paired(block_matrix<Matrix, SymmGroup> const &, Indicator =Unorm);
     void replace_left_paired(block_matrix<Matrix, SymmGroup> const &, Indicator =Unorm);

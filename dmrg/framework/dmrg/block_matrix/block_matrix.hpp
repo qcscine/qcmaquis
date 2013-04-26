@@ -340,21 +340,13 @@ void block_matrix<Matrix, SymmGroup>::load(alps::hdf5::archive & ar)
         std::vector<LoadMatrix> tmp;
         ar >> alps::make_pvp("data_", tmp);
         for(typename std::vector<LoadMatrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
-#ifdef AMBIENT
             data_.push_back(new Matrix(maquis::bindings::matrix_cast<Matrix>(*it)));
-#else
-            data_.push_back(new Matrix(*it));
-#endif
     } else {
         typedef typename alps::numeric::matrix<typename Matrix::value_type> LoadMatrix;
         std::vector<LoadMatrix> tmp;
         ar >> alps::make_pvp("data_", tmp);
         for(typename std::vector<LoadMatrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
-#ifdef AMBIENT
             data_.push_back(new Matrix(maquis::bindings::matrix_cast<Matrix>(*it)));
-#else
-            data_.push_back(new Matrix(*it));
-#endif
     }
 }
 
@@ -428,4 +420,12 @@ bool block_matrix<Matrix, SymmGroup>::reasonable() const
     return true;
 }
 
+template<class Matrix, class SymmGroup>
+std::size_t block_matrix<Matrix, SymmGroup>::num_elements() const
+{
+    size_t ret = 0;
+    for (size_t k = 0; k < n_blocks(); ++k)
+        ret += num_rows(data_[k])*num_cols(data_[k]);
+    return ret;
+}
 

@@ -30,7 +30,7 @@ class multigrid_sim : public sim<Matrix, SymmGroup> {
     typedef optimizer_base<Matrix, SymmGroup, StreamStorageMaster> opt_base_t;
     
     typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
-    typedef Boundary<typename storage::constrained<Matrix>::type, SymmGroup> boundary_t;
+    typedef Boundary<Matrix, SymmGroup> boundary_t;
     
     enum measure_t {sweep_measure, mg_measure};
     

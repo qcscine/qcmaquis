@@ -25,7 +25,7 @@ class dmrg_tevol_sim : public sim<Matrix, SymmGroup> {
     
 public:
     typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
-    typedef Boundary<typename storage::constrained<Matrix>::type, SymmGroup> boundary_t;
+    typedef Boundary<Matrix, SymmGroup> boundary_t;
         
     dmrg_tevol_sim (DmrgParameters const & parms_, ModelParameters const  & model_)
     : base(parms_, model_, false)

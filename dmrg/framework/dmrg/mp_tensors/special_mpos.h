@@ -16,9 +16,8 @@ block_matrix<Matrix, SymmGroup> make_mpo_identity_block(Index<SymmGroup> phys_i)
 {
     block_matrix<Matrix, SymmGroup> ret;
     for (std::size_t k = 0; k < phys_i.size(); ++k)
-        ret.insert_block(boost::tuples::make_tuple(Matrix(phys_i[k].second, phys_i[k].second),
-                                                   phys_i[k].first,
-                                                   phys_i[k].first));
+        ret.insert_block(Matrix(phys_i[k].second, phys_i[k].second),
+                         phys_i[k].first, phys_i[k].first);
     ret *= 0;
     return ret;
 }

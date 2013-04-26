@@ -121,12 +121,37 @@ public:
 //            maquis::cout << "  MPS: " << utils::size_of(mps.begin(), mps.end())/1024.0/1024 << std::endl;
 //            maquis::cout << "  MPS[i]: " << utils::size_of(mps[site])/1024.0/1024 << std::endl;
             
-            SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
+            //SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
             
             timeval now, then;
 
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
           
+            std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
+            for (int n = 0; n < base::northo; ++n) {
+                base::ortho_mps[n][site].make_right_paired();
+                block_matrix<Matrix, SymmGroup> t, t2, t3;
+                gemm(base::ortho_left_[n][site], base::ortho_mps[n][site].data(), t);
+                reshape_right_to_left_new(mps[site].site_dim(),
+                                          base::ortho_left_[n][site].left_basis(), base::ortho_mps[n][site].col_dim(),
+                                          t, t2);
+                gemm(t2, transpose(base::ortho_right_[n][site+1]), t3);
+                
+                mps[site].make_left_paired();
+                t = mps[site].data();
+                reshape_and_pad_left(mps[site].site_dim(),
+                                     base::ortho_left_[n][site].left_basis(), base::ortho_right_[n][site+1].left_basis(),
+                                     mps[site].row_dim(), mps[site].col_dim(),
+                                     t3, t);
+                
+                MPSTensor<Matrix, SymmGroup> t4(mps[site].site_dim(),
+                                                mps[site].row_dim(), mps[site].col_dim(),
+                                                t, LeftPaired);
+                ortho_vecs[n] = t4;
+            }
+
+            SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site]);
+            
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
                 (d == RightOnly && lr == +1))
@@ -137,7 +162,7 @@ public:
                     END_TIMING("IETL")
                 } else if (parms.template get<std::string>("eigensolver") == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, mps[site], parms);
+                    res = solve_ietl_jcd(sp, mps[site], parms, ortho_vecs);
                     END_TIMING("JCD")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
@@ -146,6 +171,11 @@ public:
                 mps[site] = res.second;
             }
             
+#ifndef NDEBUG
+            // Caution: this is an O(L) operation, so it really should be done only in debug mode
+            for (int n = 0; n < base::northo; ++n)
+                maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
+#endif
             
             maquis::cout << "Energy " << lr << " " << res.first << std::endl;
 //            maquis::cout << "Energy check " << maquis::real(expval(mps, mpo)) << std::endl;

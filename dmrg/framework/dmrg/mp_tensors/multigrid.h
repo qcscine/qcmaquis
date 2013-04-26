@@ -550,17 +550,14 @@ struct multigrid {
          * INIT BOUNDARIES
          */
         
-        std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_(LL+1), right_(L+1);        
+        std::vector<Boundary<Matrix, SymmGroup> > left_(LL+1), right_(L+1);        
         {
             left_[0] = mps_small.left_boundary();
-            
-            Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right = mps_small.right_boundary();
-            right_[L] = right;
+            right_[L] = mps_small.right_boundary();
             
             for(int i = L-1; i >= 0; --i) {
                 MPSTensor<Matrix, SymmGroup> bkp = mps_small[i];
-                right = contraction::overlap_mpo_right_step(mps_small[i], bkp, right, mpos_mix[0][i]);
-                right_[i] = right;
+                right_[i] = contraction::overlap_mpo_right_step(mps_small[i], bkp, right_[i+1], mpos_mix[0][i]);
             }
         }
         
@@ -591,10 +588,10 @@ struct multigrid {
 
             
             MPSTensor<Matrix, SymmGroup> bkp;
-            Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right;
+            Boundary<Matrix, SymmGroup> right;
             
             
-            Boundary<typename storage::constrained<Matrix>::type, SymmGroup> right_mixed;
+            Boundary<Matrix, SymmGroup> right_mixed;
             if (p<L-1) {
                 right_mixed = right_[p+2];
                 bkp = mps_small[p+1];
@@ -644,7 +641,7 @@ struct multigrid {
                 if (p == 0)
                     left_[0] = mps_large.left_boundary();
                 
-                SiteProblem<Matrix, SymmGroup> sp(mps_large[2*p], left_[2*p], right, mpos_mix[p+1][2*p]);
+                SiteProblem<Matrix, SymmGroup> sp(left_[2*p], right, mpos_mix[p+1][2*p]);
 
                 
                 // solver
@@ -673,8 +670,8 @@ struct multigrid {
                 } else if (true) {
                     // Compute Energy
                     MPSTensor<Matrix, SymmGroup> vec2 =
-                    contraction::site_hamil2(sp.ket_tensor, sp.left, sp.right, sp.mpo);
-                    double energy = sp.ket_tensor.scalar_overlap(vec2);
+                    contraction::site_hamil2(mps_large[2*p], sp.left, sp.right, sp.mpo);
+                    double energy = mps_large[2*p].scalar_overlap(vec2);
                     maquis::cout << "Energy " << "finegraining_00 " << energy << std::endl;
                     iteration_log << make_log("Energy", energy);
 
@@ -702,7 +699,7 @@ struct multigrid {
                 left_[2*p+1] = contraction::overlap_mpo_left_step(mps_large[2*p], bkp,
                                                                   left_[2*p], mpos_mix[L][2*p]);
                 
-                SiteProblem<Matrix, SymmGroup> sp(mps_large[2*p+1], left_[2*p+1], right, mpos_mix[p+1][2*p+1]);
+                SiteProblem<Matrix, SymmGroup> sp(left_[2*p+1], right, mpos_mix[p+1][2*p+1]);
 
                 // solver
                 if (parms.get<bool>("finegrain_optim"))
@@ -730,8 +727,8 @@ struct multigrid {
                 } else if (true) {
                     // Compute Energy
                     MPSTensor<Matrix, SymmGroup> vec2 =
-                    contraction::site_hamil2(sp.ket_tensor, sp.left, sp.right, sp.mpo);
-                    double energy = sp.ket_tensor.scalar_overlap(vec2);
+                    contraction::site_hamil2(mps_large[2*p+1], sp.left, sp.right, sp.mpo);
+                    double energy = mps_large[2*p+1].scalar_overlap(vec2);
                     maquis::cout << "Energy " << "finegraining_01 " << energy << std::endl;
                     iteration_log << make_log("Energy", energy);
                 }
