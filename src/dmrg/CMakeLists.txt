@@ -77,6 +77,10 @@ endif(NOT OpenMP_FOUND)
 if(NOT ALPS_DIR AND ALPS_ROOT_DIR)
   set(ALPS_DIR ${ALPS_ROOT_DIR}/share/alps)
 endif(NOT ALPS_DIR AND ALPS_ROOT_DIR)
+if(NOT ALPS_DIR AND ENV{ALPS_ROOT})
+  set(ALPS_DIR $ENV{ALPS_ROOT}/share/alps)
+endif(NOT ALPS_DIR AND ENV{ALPS_ROOT})
+
 
 set(PREVENT_ALPS_COMPILERS ON)
 find_package(ALPS REQUIRED NO_SYSTEM_ENVIRONMENT_PATH)
@@ -369,4 +373,6 @@ install(DIRECTORY framework/dmrg framework/ietl framework/utils
         PATTERN "Makefile*" EXCLUDE
         )
 
-
+install(DIRECTORY lib/python DESTINATION lib  COMPONENT python
+        FILES_MATCHING PATTERN "*.py" PATTERN "*.pyc"
+        PATTERN ".svn" EXCLUDE PATTERN "CVS" EXCLUDE)
