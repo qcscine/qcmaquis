@@ -390,6 +390,34 @@ private:
 };
 
 template<class Matrix, class SymmGroup>
+class basis_mps_init : public mps_initializer<Matrix, SymmGroup>
+{
+public:
+    basis_mps_init(BaseParameters & params)
+    {
+        occupation = params.get<std::vector<int> >("init_basis_state");
+    }
+    void operator()(MPS<Matrix, SymmGroup> & mps,
+                    std::size_t Mmax,
+                    Index<SymmGroup> const & phys,
+                    typename SymmGroup::charge right_end)
+    {
+        assert(occupation.size() == mps.length());
+        assert(phys.size() == 1); // only for TrivialGroup
+        typedef typename SymmGroup::charge charge;
+        charge C = SymmGroup::IdentityCharge;
+        
+        std::vector<boost::tuple<charge, size_t> > state(mps.length());
+        for (int i=0; i<mps.length(); ++i)
+            state[i] = boost::make_tuple(C, occupation[i]);
+        mps = state_mps<Matrix>(state, phys);
+    }
+    
+private:
+    std::vector<int> occupation;
+};
+
+template<class Matrix, class SymmGroup>
 class basis_dm_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
 public:

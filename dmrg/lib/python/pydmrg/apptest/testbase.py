@@ -11,6 +11,7 @@ from os.path import expanduser
 import tempfile
 import shutil
 from datetime import datetime as dt
+import subprocess
 from subprocess import check_call
 import pyalps
 
@@ -20,6 +21,23 @@ def remove_if_exists(fname):
     """Remove file if exists."""
     if os.path.exists(fname):
         os.remove(fname)
+
+def exec_with_log(cmd, logbase):
+    """
+    Run the command redirecting stdout and stderr to logbase.log and
+    logbase.err.log, respectively. In case of failure the content of
+    stderr is printed before raising CalledProcessError exception."""
+    fp     = open(logbase+'.log', 'w')
+    fp_err = open(logbase+'.err.log', 'w+')
+    try:
+        check_call(cmd, stdout=fp, stderr=fp_err)
+    except subprocess.CalledProcessError as e:
+        fp_err.seek(0)
+        print 'The program crashed.\n',fp_err.read()
+        raise e
+    fp.close()
+    fp_err.close()
+    
 
 class DMRGTestBase(object):
     """
@@ -75,16 +93,12 @@ class DMRGTestBase(object):
         ## Execute DMRG app
         if dmrg_app is not None:
             cmd = [expanduser(dmrg_app), self.testname+'.parms', self.testname+'.model']
-            fp = open(self.testname+'.out.log', 'w')
-            check_call(cmd, stdout=fp, stderr=fp)    
-            fp.close()
+            exec_with_log(cmd, self.testname+'.out')
         
         ## Execute measure app
         if meas_app is not None:
             cmd = [expanduser(meas_app), self.testname+'.parms', self.testname+'.model']
-            fp = open(self.testname+'.out.meas.log', 'w')
-            check_call(cmd, stdout=fp, stderr=fp)    
-            fp.close()
+            exec_with_log(cmd, self.testname+'.out.meas')
         
         os.chdir(self.origdir)
     

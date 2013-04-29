@@ -254,11 +254,26 @@ namespace meas_detail {
             generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
             generate_mpo::Operator_Term<Matrix, SymmGroup> term;
             
-
-            for (std::size_t i=0; i<ops.size(); ++i)
-                term.operators.push_back( std::make_pair(positions[p][i], ops[i].first) );
-            
-            term.fill_operator = fill;
+            bool with_sign = false;
+            for (std::size_t i=0; i<ops.size(); ++i) {
+                std::size_t pos = positions[p][i];
+                typedef block_matrix<Matrix, SymmGroup> op_t;
+                op_t tmp;
+                if (!with_sign && ops[i].second) gemm(fill, ops[i].first, tmp);
+                else                             tmp = ops[i].first;
+                term.operators.push_back( std::make_pair(pos, tmp) );
+                
+                pos++;
+                with_sign = (ops[i].second) ? !with_sign : with_sign;
+                if (i != ops.size()-1)
+                    for (; pos<positions[p][i+1]; ++pos) {
+                        if (with_sign)
+                            term.operators.push_back( std::make_pair(pos, fill) );
+                        else
+                            term.operators.push_back( std::make_pair(pos, identity) );
+                    }
+            }
+            term.fill_operator = identity;
             mpom.add_term(term);
             MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
             

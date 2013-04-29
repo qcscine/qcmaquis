@@ -398,12 +398,14 @@ mps_initializer<Matrix, SymmGroup> * sim<Matrix, SymmGroup>::initializer_factory
         return new thin_mps_init<Matrix, SymmGroup>();
     else if (params.get<std::string>("init_state") == "thin_const")
         return new thin_const_mps_init<Matrix, SymmGroup>();
+    else if (params.get<std::string>("init_state") == "basis_state")
+        return new basis_mps_init<Matrix, SymmGroup>(params);
     else if (params.get<std::string>("init_state") == "coherent")
         return new coherent_mps_init<Matrix, SymmGroup>(params);
-    else if (params.get<std::string>("init_state") == "coherent_dm")
-        return new coherent_dm_mps_init<Matrix, SymmGroup>(params);
     else if (params.get<std::string>("init_state") == "basis_state_dm")
         return new basis_dm_mps_init<Matrix, SymmGroup>(params);
+    else if (params.get<std::string>("init_state") == "coherent_dm")
+        return new coherent_dm_mps_init<Matrix, SymmGroup>(params);
     else if (params.get<std::string>("init_state") == "hf")
         return detail::call_hf_init<Matrix, SymmGroup>::call(params);
     else {
