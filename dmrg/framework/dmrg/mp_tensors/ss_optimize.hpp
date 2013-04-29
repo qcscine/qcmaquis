@@ -126,32 +126,15 @@ public:
             timeval now, then;
 
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
-          
-            std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
-            for (int n = 0; n < base::northo; ++n) {
-                base::ortho_mps[n][site].make_right_paired();
-                block_matrix<Matrix, SymmGroup> t, t2, t3;
-                gemm(base::ortho_left_[n][site], base::ortho_mps[n][site].data(), t);
-                reshape_right_to_left_new(mps[site].site_dim(),
-                                          base::ortho_left_[n][site].left_basis(), base::ortho_mps[n][site].col_dim(),
-                                          t, t2);
-                gemm(t2, transpose(base::ortho_right_[n][site+1]), t3);
-                
-                mps[site].make_left_paired();
-                t = mps[site].data();
-                reshape_and_pad_left(mps[site].site_dim(),
-                                     base::ortho_left_[n][site].left_basis(), base::ortho_right_[n][site+1].left_basis(),
-                                     mps[site].row_dim(), mps[site].col_dim(),
-                                     t3, t);
-                
-                MPSTensor<Matrix, SymmGroup> t4(mps[site].site_dim(),
-                                                mps[site].row_dim(), mps[site].col_dim(),
-                                                t, LeftPaired);
-                ortho_vecs[n] = t4;
-            }
-
             SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site]);
             
+            /// Compute orthogonal vectors
+            std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
+            for (int n = 0; n < base::northo; ++n) {
+                ortho_vecs[n] = contraction::site_ortho_boundaries(mps[site], base::ortho_mps[n][site],
+                                                                    base::ortho_left_[n][site], base::ortho_right_[n][site+1]);
+            }
+
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
                 (d == RightOnly && lr == +1))
@@ -191,25 +174,9 @@ public:
             else
                 alpha = parms.template get<double>("alpha_final");
             
-            
-            double cutoff;
-            if (sweep >= parms.template get<int>("ngrowsweeps"))
-                cutoff = parms.template get<double>("truncation_final");
-            else
-                cutoff = log_interpolate(parms.template get<double>("truncation_initial"), parms.template get<double>("truncation_final"), parms.template get<int>("ngrowsweeps"), sweep);
-            
-            std::size_t Mmax;
-            if (parms.is_set("sweep_bond_dimensions")) {
-                std::vector<std::size_t> ssizes = parms.template get<std::vector<std::size_t> >("sweep_bond_dimensions");
-                if (sweep >= ssizes.size())
-                    Mmax = *ssizes.rbegin();
-                else
-                    Mmax = ssizes[sweep];
-            } else
-                Mmax = parms.template get<std::size_t>("max_bond_dimension");
-            
+            double cutoff = this->get_cutoff(sweep);
+            std::size_t Mmax = this->get_Mmax(sweep);
             std::pair<std::size_t, double> trunc;
-            
                 
             if (lr == +1) {
                 if (site < L-1) {

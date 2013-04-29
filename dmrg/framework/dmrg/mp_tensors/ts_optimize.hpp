@@ -123,6 +123,14 @@ public:
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
     	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
             SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);
+            
+            /// Compute orthogonal vectors
+            std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
+            for (int n = 0; n < base::northo; ++n) {
+                TwoSiteTensor<Matrix, SymmGroup> ts_ortho(base::ortho_mps[n][site1], base::ortho_mps[n][site2]);
+                ortho_vecs[n] = contraction::site_ortho_boundaries(twin_mps, ts_ortho.make_mps(),
+                                                                    base::ortho_left_[n][site1], base::ortho_right_[n][site2+1]);
+            }
 
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
            
@@ -136,7 +144,7 @@ public:
             	    END_TIMING("IETL")
                 } else if (parms.template get<std::string>("eigensolver") == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
-                    res = solve_ietl_jcd(sp, twin_mps, parms);
+                    res = solve_ietl_jcd(sp, twin_mps, parms, ortho_vecs);
             	    END_TIMING("JCD")
                 } else {
                     throw std::runtime_error("I don't know this eigensolver.");
@@ -145,22 +153,17 @@ public:
         		tst << res.second;
             }
 
+#ifndef NDEBUG
+            // Caution: this is an O(L) operation, so it really should be done only in debug mode
+            for (int n = 0; n < base::northo; ++n)
+                maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
+#endif
 
             maquis::cout << "Energy " << lr << " " << res.first << std::endl;
             iteration_log << make_log("Energy", res.first);
-        
-            double cutoff;
-            cutoff = parms.template get<double>("truncation_final");
-        
-            std::size_t Mmax;
-            if (parms.is_set("sweep_bond_dimensions")) {
-                std::vector<std::size_t> ssizes = parms.template get<std::vector<std::size_t> >("sweep_bond_dimensions");
-                if (sweep >= ssizes.size())
-                    Mmax = *ssizes.rbegin();
-                else
-                    Mmax = ssizes[sweep];
-            } else
-                Mmax = parms.template get<std::size_t>("max_bond_dimension");
+            
+            double cutoff = this->get_cutoff(sweep);
+            std::size_t Mmax = this->get_Mmax(sweep);
             
     	    if (lr == +1)
     	    {
