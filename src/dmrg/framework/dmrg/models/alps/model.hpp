@@ -75,6 +75,7 @@ public:
              it != charges.end(); ++it)
             phys_i.insert( std::make_pair(it->first, it->second) );
         
+        phys_i.sort();
         return phys_i;
     }
     
@@ -310,7 +311,7 @@ public:
     }
     
     Measurements<Matrix, SymmGroup> measurements () const;
-    
+
 private:
     
     template <class SiteOp>

@@ -20,6 +20,7 @@
 #include "dmrg/block_matrix/multi_index.h"
 
 #include <boost/lambda/lambda.hpp>
+#include <boost/function.hpp>
 
 #ifdef AMBIENT
     typedef ambient::scope<ambient::single> locale;
@@ -50,9 +51,9 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
         
         std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
         
-        C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
-                       A.left_basis()[k].first, B.right_basis()[matched_block].first);
-        gemm(A[k], B[matched_block], C[C.left_basis().position(A.left_basis()[k].first)]);
+        std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
+                                               A.left_basis()[k].first, B.right_basis()[matched_block].first);
+        gemm(A[k], B[matched_block], C[new_block]);
     }
 }
 
@@ -455,19 +456,19 @@ block_matrix<Matrix, SymmGroup> op_exp(Index<SymmGroup> const & phys,
     return M;
 }
 
-template<class Matrix, class SymmGroup>
+template<class Matrix1, class Matrix2, class SymmGroup>
 void op_kron(Index<SymmGroup> const & phys,
-             block_matrix<Matrix, SymmGroup> const & A,
-             block_matrix<Matrix, SymmGroup> const & B,
-             block_matrix<Matrix, SymmGroup> & C)
+             block_matrix<Matrix1, SymmGroup> const & A,
+             block_matrix<Matrix1, SymmGroup> const & B,
+             block_matrix<Matrix2, SymmGroup> & C)
 {
-    C = block_matrix<Matrix, SymmGroup>();
+    C = block_matrix<Matrix2, SymmGroup>();
     
     Index<SymmGroup> const & left_basis = phys;
     Index<SymmGroup> const & right_basis = phys;
     
     ProductBasis<SymmGroup> pb_left(left_basis, left_basis);
-    ProductBasis<SymmGroup> const & pb_right = pb_left;
+    ProductBasis<SymmGroup> const& pb_right = pb_left;
     
     for (int i = 0; i < A.n_blocks(); ++i) {
         for (int j = 0; j < B.n_blocks(); ++j) {
@@ -475,7 +476,7 @@ void op_kron(Index<SymmGroup> const & phys,
             typename SymmGroup::charge new_left = SymmGroup::fuse(A.left_basis()[i].first, B.left_basis()[j].first);
             
             
-            Matrix tmp(pb_left.size(A.left_basis()[i].first, B.left_basis()[j].first),
+            Matrix2 tmp(pb_left.size(A.left_basis()[i].first, B.left_basis()[j].first),
                        pb_right.size(A.right_basis()[i].first, B.right_basis()[j].first),
                        0);
 

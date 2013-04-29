@@ -277,9 +277,9 @@ BOOST_AUTO_TEST_CASE(block_matrix_remove_block){
 
     block_matrix<Matrix, U1> ba(rows,cols);
 
-    ba[0](0,0)=1;
-    ba[1](0,0)=2;
-    ba[2](0,0)=3;
+    ba[0](0,0)=1; // block (3,3)
+    ba[1](0,0)=2; // block (2,2)
+    ba[2](0,0)=3; // block (1,1)
 
     ba.remove_block(1);
     BOOST_CHECK_EQUAL(ba[0](0,0),1);
@@ -355,13 +355,15 @@ BOOST_AUTO_TEST_CASE(reserve){
     cols.insert(std::make_pair(2, 2));
 
     block_matrix<Matrix, U1> ba(rows,cols);
-   
+    BOOST_CHECK_EQUAL(true, ba.has_block(2,2));
+
     ba.reserve(2,2,3,4);
 
     BOOST_CHECK_EQUAL(ba.left_basis()[0].second,3);
     BOOST_CHECK_EQUAL(ba.right_basis()[0].second,4);
 
     ba.reserve(3,3,2,3);
+    BOOST_CHECK_EQUAL(true, ba.has_block(3,3));
 
     BOOST_CHECK_EQUAL(ba.left_basis()[0].second,2);
     BOOST_CHECK_EQUAL(ba.left_basis()[0].first,3);

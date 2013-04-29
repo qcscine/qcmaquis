@@ -178,7 +178,7 @@ void run_test_bosons(int L, Index<SymmGroup> const& phys,
         std::cout << "Making site "<<p<<" right_paired." << std::endl;
         block_matrix<matrix, SymmGroup> tmp;
         reshape_left_to_right<matrix>(phys, mps3[p].row_dim(), mps3[p].col_dim(), mps3[p].data(), tmp);
-        assert( mps3[p].row_dim() == tmp.left_basis() );
+        assert( weak_equal(mps3[p].row_dim(),tmp.left_basis()) );
         assert(mps3[p].reasonable());
         std::cout<< "site " << p << " is reasonable." <<std::endl;
         if (verbose)
