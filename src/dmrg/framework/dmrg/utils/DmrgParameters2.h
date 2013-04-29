@@ -181,6 +181,7 @@ private:
 
         add_option("ENABLE_MEASURE[Density]", "", value(false));
         add_option("ENABLE_MEASURE[Local density]", "", value(false));
+        add_option("ENABLE_MEASURE[Local density^2]", "", value(false));
         add_option("ENABLE_MEASURE[Onebody density matrix]", "", value(false));
         add_option("ENABLE_MEASURE[Density correlation]", "", value(false));
 }

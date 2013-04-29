@@ -17,7 +17,7 @@ struct model_factory<Matrix, TrivialGroup> {
     {
         if (model.get<std::string>("MODEL") == std::string("boson Hubbard"))
             return typename model_traits<Matrix, TrivialGroup>::model_ptr(
-                                                                          new BoseHubbardNone<Matrix>(lattice, model.get<int>("Nmax"), model.get<double>("t"), model.get<double>("U"), model.get<double>("V"))
+                                                                          new BoseHubbardNone<Matrix>(lattice, model)
                                                                 );
         else if (model.get<std::string>("MODEL") == std::string("super boson Hubbard"))
             return typename model_traits<Matrix, TrivialGroup>::model_ptr(
