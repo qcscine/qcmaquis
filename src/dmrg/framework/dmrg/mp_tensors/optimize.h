@@ -171,6 +171,31 @@ protected:
         storage::store(right_[site], right_stores_[site]);
     }
     
+    double get_cutoff(int sweep) const
+    {
+        double cutoff;
+        if (sweep >= parms.template get<int>("ngrowsweeps"))
+            cutoff = parms.template get<double>("truncation_final");
+        else
+            cutoff = log_interpolate(parms.template get<double>("truncation_initial"), parms.template get<double>("truncation_final"), parms.template get<int>("ngrowsweeps"), sweep);
+        return cutoff;
+    }
+
+    std::size_t get_Mmax(int sweep) const
+    {
+        std::size_t Mmax;
+        if (parms.is_set("sweep_bond_dimensions")) {
+            std::vector<std::size_t> ssizes = parms.template get<std::vector<std::size_t> >("sweep_bond_dimensions");
+            if (sweep >= ssizes.size())
+                Mmax = *ssizes.rbegin();
+            else
+                Mmax = ssizes[sweep];
+        } else
+            Mmax = parms.template get<std::size_t>("max_bond_dimension");
+        return Mmax;
+    }
+    
+    
     MPS<Matrix, SymmGroup> mps;
     MPO<Matrix, SymmGroup> mpo, mpo_orig;
     
