@@ -28,6 +28,11 @@
 #include <alps/hdf5.hpp>
 #endif
 
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/vector.hpp>
+
+
 namespace index_detail
 {
     template<class SymmGroup>
@@ -261,6 +266,22 @@ public:
                              static_cast<my_type const &>(*this));
     }
 #endif
+    
+    friend class boost::serialization::access;
+
+    template <class Archive>
+    void load(Archive & ar, const unsigned int version)
+    {
+        ar & boost::serialization::base_object<base_t>(*this);
+        calc_positions();
+    }
+    template <class Archive>
+    void save(Archive & ar, const unsigned int version) const
+    {
+        ar & boost::serialization::base_object<base_t>(*this);
+    }
+    
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
 template<class SymmGroup>

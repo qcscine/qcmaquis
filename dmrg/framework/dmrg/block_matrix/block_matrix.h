@@ -118,6 +118,9 @@ public:
     void save(alps::hdf5::archive & ar) const;
 #endif
     
+    template <class Archive>
+    inline void serialize(Archive & ar, const unsigned int version);
+    
     bool reasonable() const;
     
 private:

@@ -7,7 +7,7 @@ endif(USE_AMBIENT)
 #set(DMRG_APP_LIBRARIES dmrg_utils dmrg_models ${DMRG_LIBRARIES})
 add_definitions(-DHAVE_ALPS_HDF5)
 
-set(tests block_matrix) #thing to break the block_matrix tests by group, constructor, operators, free functions ...
+set(tests block_matrix serialize) #thing to break the block_matrix tests by group, constructor, operators, free functions ...
 set(types_of_matrices DENSE PDENSE) #the MT matrice ??
 
 if(USE_AMBIENT)

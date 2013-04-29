@@ -13,6 +13,9 @@
 
 #include <alps/type_traits/is_complex.hpp>
 
+#include <boost/serialization/serialization.hpp>
+#include <boost/ptr_container/serialize_ptr_vector.hpp>
+
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix() 
 {
@@ -368,6 +371,17 @@ void block_matrix<Matrix, SymmGroup>::save(alps::hdf5::archive & ar) const
 }
 
 #endif
+
+template<class Matrix, class SymmGroup>
+template <class Archive>
+void block_matrix<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
+{
+#ifdef AMBIENT
+    assert( false );
+#else
+    ar & rows_ & cols_ & data_;
+#endif
+}
 
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,

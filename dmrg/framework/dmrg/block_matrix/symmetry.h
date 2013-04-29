@@ -20,6 +20,9 @@
 #include <alps/hdf5.hpp>
 #endif
 
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/array.hpp>
+
 #include <boost/lexical_cast.hpp>
 
 class TrivialGroup
@@ -81,6 +84,13 @@ namespace alps {
 }
 #endif
 
+template <class Archive>
+inline void serialize(Archive & ar, TrivialGroup::charge & c, const unsigned int version)
+{
+    ar & c;
+}
+
+
 inline TrivialGroup::charge operator-(TrivialGroup::charge a) { return a; }
 
 class Ztwo
@@ -134,6 +144,12 @@ void load(alps::hdf5::archive & ar,
 }
 #endif
 
+template <class Archive>
+inline void serialize(Archive & ar, Ztwo::charge & c, const unsigned int version)
+{
+    ar & c;
+}
+
 inline Ztwo::charge operator-(Ztwo::charge a) { return a; }
 
 inline std::ostream& operator<<(std::ostream& ost, Ztwo::charge c)
@@ -175,6 +191,12 @@ public:
 		return ret;
 	}
 };
+
+template <class Archive>
+inline void serialize(Archive & ar, U1::charge & c, const unsigned int version)
+{
+    ar & c;
+}
 
 template<int Q>
 class ZqCharge
@@ -219,6 +241,12 @@ public:
     void save(alps::hdf5::archive & ar) const { ar << alps::make_pvp("c", c_); }
     void load(alps::hdf5::archive & ar) { ar >> alps::make_pvp("c", c_); }
 #endif
+    
+    template <class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & c_;
+    }
     
 protected:
     unsigned int c_;
@@ -288,6 +316,12 @@ public:
     }
 #endif
     
+    template <class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & data_;
+    }
+
 private:
     int data_[N];
 };
