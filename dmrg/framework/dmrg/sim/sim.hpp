@@ -152,6 +152,7 @@ void sim<Matrix, SymmGroup>::model_init()
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::mps_init()
 {
+    //Timer t("MPS init"); t.begin();
     assert(lat.get() != NULL);
     
     if (restore) {
@@ -173,6 +174,7 @@ void sim<Matrix, SymmGroup>::mps_init()
                                      phys, initc,
                                      *initializer_factory(parms));
     }
+    //t.end();
 }
 
 

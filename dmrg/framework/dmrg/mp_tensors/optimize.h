@@ -150,6 +150,7 @@ protected:
             ortho_right_[n][L] = *(block_matrix<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.right_boundary()[0];
         }
         
+        //Timer tlb("Init left boundaries"); tlb.begin();
         storage::reset(left_stores_[0]);
         left_[0] = *(Boundary<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.left_boundary();
         
@@ -159,7 +160,9 @@ protected:
             storage::store(left_[i], left_stores_[i]);
         }
         storage::store(left_[site], left_stores_[site]);
+        //tlb.end();
         
+        //Timer trb("Init right boundaries"); trb.begin();
         storage::reset(right_stores_[L]);
         right_[L] = *(Boundary<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.right_boundary();
                 
@@ -169,6 +172,7 @@ protected:
             storage::store(right_[i+1], right_stores_[i+1]);
         }
         storage::store(right_[site], right_stores_[site]);
+        //trb.end();
     }
     
     double get_cutoff(int sweep) const
