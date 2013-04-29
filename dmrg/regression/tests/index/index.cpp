@@ -60,7 +60,9 @@ BOOST_AUTO_TEST_CASE(sort_test){
     phys2.insert(std::make_pair(0, 1));
     phys2.insert(std::make_pair(1, 1));
     phys2.insert(std::make_pair(2, 1));
-
+    
+    phys2.sort();
+    
     BOOST_CHECK_EQUAL(phys,phys2);
 }
 
@@ -98,7 +100,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(charges_test, T, SymmGroupList){
     phys.insert(std::make_pair(1, 1));
     
     std::vector<typename T::charge> res(2);
-    res[0] = 1; res[1] = 0;  
+    res[0] = 1; res[1] = 0;
  
     std::vector<typename T::charge> vec = phys.charges();
    
@@ -112,7 +114,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(sizes_test, T, SymmGroupList){
     phys.insert(std::make_pair(1, 2));
     
     std::vector<std::size_t> res(2);
-    res[0] = 2; res[1] = 1;  
+    res[0] = 2; res[1] = 1;
  
     std::vector<std::size_t> vec = phys.sizes();
    

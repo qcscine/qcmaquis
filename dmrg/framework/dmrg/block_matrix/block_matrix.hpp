@@ -79,7 +79,7 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator-=(bl
 }
 
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1, charge c2)
+typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1, charge c2)
 {
     assert( !has_block(c1, c2) );
     
@@ -91,13 +91,14 @@ void block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1
     cols_.insert(i1, p2);
     data_.insert(data_.begin() + i1, new Matrix(mtx));
     
+    return i1;
     //rows_.push_back(p1);
     //cols_.push_back(p2);
     //data_.push_back(mtx);
 }
 
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::insert_block(Matrix * mtx, charge c1, charge c2)
+typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGroup>::insert_block(Matrix * mtx, charge c1, charge c2)
 {
     assert( !has_block(c1, c2) );
     
@@ -108,6 +109,8 @@ void block_matrix<Matrix, SymmGroup>::insert_block(Matrix * mtx, charge c1, char
     size_type i1 = rows_.insert(p1);
     cols_.insert(i1, p2);
     data_.insert(data_.begin() + i1, mtx);
+    
+    return i1;
 }
 
 template<class Matrix, class SymmGroup>
@@ -132,6 +135,16 @@ Matrix & block_matrix<Matrix, SymmGroup>::operator[](size_type c) { return data_
 
 template<class Matrix, class SymmGroup>
 Matrix const & block_matrix<Matrix, SymmGroup>::operator[](size_type c) const { return data_[c]; }
+
+template<class Matrix, class SymmGroup>
+typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGroup>::find_block(charge r, charge c) const
+{
+    std::size_t p1 = rows_.position(r);
+    std::size_t p2 = cols_.position(c);
+    
+    if (p1 == p2 && p1 != rows_.size()) return p1;
+    else                                return n_blocks();
+}
 
 template<class Matrix, class SymmGroup>
 bool block_matrix<Matrix, SymmGroup>::has_block(charge r, charge c) const

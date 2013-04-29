@@ -43,6 +43,12 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
     common_subset(ltemp, possible_rp);
     left_i = ltemp;
     
+    // this is safe, since sd \otimes ld = rd forces the block_matrix to be diagonal
+    lb.sort();
+    rb.sort();
+    left_i.sort();
+    right_i.sort();
+    
     data_ = block_matrix<Matrix, SymmGroup>(lb, rb);
     
     if (fillrand)
@@ -138,7 +144,7 @@ void MPSTensor<Matrix, SymmGroup>::make_left_paired() const
     swap(data_, tmp);
     cur_storage = LeftPaired;
     
-    assert( right_i == data_.right_basis() );
+    assert( weak_equal(right_i, data_.right_basis()) );
 }
 
 template<class Matrix, class SymmGroup>
@@ -153,7 +159,7 @@ void MPSTensor<Matrix, SymmGroup>::make_right_paired() const
     swap(data_, tmp);
     cur_storage = RightPaired;
     
-    assert( left_i == data_.left_basis() );
+    assert( weak_equal(left_i, data_.left_basis()) );
 }
 
 template<class Matrix, class SymmGroup>
@@ -411,9 +417,9 @@ template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> const &
 MPSTensor<Matrix, SymmGroup>::operator+=(MPSTensor<Matrix, SymmGroup> const & rhs)
 {
-    assert(std::equal(left_i.begin(), left_i.end(), rhs.left_i.begin()));
-    assert(std::equal(right_i.begin(), right_i.end(), rhs.right_i.begin()));
-    assert(std::equal(phys_i.begin(), phys_i.end(), rhs.phys_i.begin()));
+    assert( weak_equal(left_i, rhs.left_i) );
+    assert( weak_equal(right_i, rhs.right_i) );
+    assert( phys_i == rhs.phys_i );
     
     make_left_paired();
     rhs.make_left_paired();
@@ -423,8 +429,9 @@ MPSTensor<Matrix, SymmGroup>::operator+=(MPSTensor<Matrix, SymmGroup> const & rh
     for (std::size_t i = 0; i < data_.n_blocks(); ++i)
     {
         typename SymmGroup::charge lc = data_.left_basis()[i].first, rc = data_.right_basis()[i].first;
-        if (rhs.data_.has_block(lc,rc)) {
-            data_[i] += rhs.data_(lc,rc);
+        std::size_t matched_block = rhs.data_.find_block(lc,rc);
+        if (matched_block < rhs.data_.n_blocks()) {
+            data_[i] += rhs.data_[matched_block];
         }
     }
     
@@ -435,9 +442,9 @@ template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> const &
 MPSTensor<Matrix, SymmGroup>::operator-=(MPSTensor<Matrix, SymmGroup> const & rhs)
 {
-//    assert(std::equal(left_i.begin(), left_i.end(), rhs.left_i.begin()));
-//    assert(std::equal(right_i.begin(), right_i.end(), rhs.right_i.begin()));
-//    assert(std::equal(phys_i.begin(), phys_i.end(), rhs.phys_i.begin()));
+    assert( weak_equal(left_i, rhs.left_i) );
+    assert( weak_equal(right_i, rhs.right_i) );
+    assert( phys_i == rhs.phys_i );
     
     make_left_paired();
     rhs.make_left_paired();
@@ -499,7 +506,7 @@ bool MPSTensor<Matrix, SymmGroup>::reasonable() const
 {
     {
         make_left_paired();
-        if (right_i != data_.right_basis())
+        if ( !weak_equal(right_i, data_.right_basis()) )
             throw std::runtime_error("right basis is wrong");
         
 //        maquis::cout << "** reasonable left_paired **" << std::endl;
@@ -507,7 +514,7 @@ bool MPSTensor<Matrix, SymmGroup>::reasonable() const
 //        maquis::cout << "reasonable::right_i: " << right_i << std::endl;
 //        maquis::cout << "reasonable::data_:" << std::endl << data_ << std::endl;
         make_right_paired();
-        if (left_i != data_.left_basis())
+        if ( !weak_equal(left_i, data_.left_basis()) )
             throw std::runtime_error("left basis is wrong");
         
 //        maquis::cout << "** reasonable right_paired **" << std::endl;

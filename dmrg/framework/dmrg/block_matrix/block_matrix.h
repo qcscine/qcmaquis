@@ -41,7 +41,7 @@ public:
 
     Index<SymmGroup> const & left_basis() const;
     Index<SymmGroup> const & right_basis() const;
-    
+
 //  Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
 //  block_matrix(charge rc, charge cc, Matrix& m);
 
@@ -60,12 +60,13 @@ public:
     block_matrix const & operator/=(const scalar_type& v);
 
     size_type n_blocks() const;
+    size_type find_block(charge r, charge c) const;
     bool has_block(charge r, charge c) const;
     bool has_block(std::pair<charge, size_type> const & r,
                    std::pair<charge, size_type> const & c) const;
     
-    void insert_block(Matrix const &, charge, charge);
-    void insert_block(Matrix *, charge, charge);
+    size_type insert_block(Matrix const &, charge, charge);
+    size_type insert_block(Matrix *, charge, charge);
     void remove_block(charge r, charge c);
     void remove_block(std::size_t which);
 
@@ -144,6 +145,21 @@ block_matrix<Matrix, SymmGroup> operator*(block_matrix<Matrix, SymmGroup> bm,
     bm *= v;
     return bm;
 }
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> operator+(block_matrix<Matrix,SymmGroup> b1, block_matrix<Matrix, SymmGroup> const& b2)
+{
+    b1 += b2;
+    return b1;
+}
+
+template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup> operator-(block_matrix<Matrix,SymmGroup> b1, block_matrix<Matrix, SymmGroup> const& b2)
+{
+    b1 -= b2;
+    return b1;
+}
+
 
 template<class Matrix, class SymmGroup>
 std::size_t size_of(block_matrix<Matrix, SymmGroup> const & m)

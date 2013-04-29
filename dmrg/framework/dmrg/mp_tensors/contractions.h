@@ -414,7 +414,7 @@ struct contraction {
             }
         }
         mps.make_left_paired();
-        assert(dm.left_basis() == mps.data_.left_basis());
+        assert( weak_equal(dm.left_basis(), mps.data_.left_basis()) );
         
         block_matrix<Matrix, SymmGroup> U;
         block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
@@ -477,7 +477,7 @@ struct contraction {
         }
         
         mps.make_right_paired();
-        assert(dm.right_basis() == mps.data_.right_basis());
+        assert( weak_equal(dm.right_basis(), mps.data_.right_basis()) );
         
         block_matrix<Matrix, SymmGroup> U;
         block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
@@ -523,7 +523,7 @@ struct contraction {
         
         Index<SymmGroup> l_index = phys_i * left_i, r_index = adjoin(phys_i) * right_i;
         common_subset(l_index, r_index);
-        block_matrix<Matrix, SymmGroup> ret(l_index, r_index);
+        block_matrix<Matrix, SymmGroup> ret;
         
         ProductBasis<SymmGroup> left_pb(phys_i, left_i);
         ProductBasis<SymmGroup> right_pb(phys_i, right_i,
@@ -556,6 +556,10 @@ struct contraction {
                                     continue;
                                 if (SymmGroup::fuse(lpc, rpc) != SymmGroup::fuse(ilpc, irpc))
                                     continue;
+
+                                if (! ret.has_block(left_out_charge, right_out_charge))
+                                    ret.insert_block(Matrix(l_index.size_of_block(left_out_charge), r_index.size_of_block(right_out_charge), 0),
+                                                     left_out_charge, right_out_charge);
 
                                 charge both_charge = SymmGroup::fuse(lpc, rpc);
                                 
