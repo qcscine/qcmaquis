@@ -448,5 +448,35 @@ private:
     std::vector<int> occupation;
 };
 
+template<class Matrix, class SymmGroup>
+class basis_mps_init_generic : public mps_initializer<Matrix, SymmGroup>
+{
+public:
+    basis_mps_init_generic(BaseParameters & params)
+    {
+        basis_index = params.get<std::vector<int> >("init_basis_state");
+    }
+    void operator()(MPS<Matrix, SymmGroup> & mps,
+                    std::size_t Mmax,
+                    Index<SymmGroup> const & phys,
+                    typename SymmGroup::charge right_end)
+    {
+        assert(basis_index.size() == mps.length());
+        
+        std::vector<boost::tuple<typename SymmGroup::charge, size_t> > state(mps.length());
+        maquis::cout << "state: ";
+        for (int i=0; i<mps.length(); ++i) {
+            state[i] = phys.element(basis_index[i]);
+            maquis::cout << boost::get<0>(state[i]) << ":" << boost::get<1>(state[i])<< " ";
+        }
+        maquis::cout << "\n";
+        mps = state_mps<Matrix>(state, phys);
+        assert( mps[mps.length()-1].col_dim()[0].first == right_end );
+    }
+    
+private:
+    std::vector<int> basis_index;
+};
+
 
 #endif

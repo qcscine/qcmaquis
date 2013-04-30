@@ -216,20 +216,24 @@ calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
 template<class Matrix, class SymmGroup>
 typename MPS<Matrix, SymmGroup>::scalar_type dm_trace(MPS<Matrix, SymmGroup> const& mps, Index<SymmGroup> const& phys_psi)
 {
+    typedef typename SymmGroup::charge charge;
+    charge I = SymmGroup::IdentityCharge;
     size_t L = mps.length();
     
     Index<SymmGroup> phys_rho = phys_psi * adjoin(phys_psi);
+    ProductBasis<SymmGroup> pb(phys_psi, phys_psi, boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                                       boost::lambda::_1, -boost::lambda::_2));
     
-    Matrix identblock(phys_rho.size_of_block(SymmGroup::IdentityCharge), 1, 0.);
+    Matrix identblock(phys_rho.size_of_block(I), 1, 0.);
     for (int s=0; s<phys_psi.size(); ++s)
         for (int ss=0; ss<phys_psi[s].second; ++ss) {
-            identblock(ss*phys_psi[s].second+ss, 0) = 1.;
+            identblock(pb(phys_psi[s].first, phys_psi[s].first) + ss*phys_psi[s].second+ss, 0) = 1.;
         }
     block_matrix<Matrix, SymmGroup> ident;
-    ident.insert_block(identblock, SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
+    ident.insert_block(identblock, I, I);
     
     Index<SymmGroup> trivial_i;
-    trivial_i.insert(std::make_pair(SymmGroup::IdentityCharge, 1));
+    trivial_i.insert(std::make_pair(I, 1));
     MPSTensor<Matrix, SymmGroup> mident(phys_rho, trivial_i, trivial_i);
     mident.data() = ident;
     
