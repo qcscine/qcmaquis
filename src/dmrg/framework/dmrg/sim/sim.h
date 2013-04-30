@@ -34,7 +34,6 @@
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
-#include "dmrg/models/chem/mps_init_hf.hpp"
 
 #include "dmrg/utils/stream_storage.h"
 #include "dmrg/utils/logger.h"
@@ -68,11 +67,6 @@ protected:
     virtual int do_sweep (Logger&, double=-1) =0;
     virtual void do_sweep_measure (Logger&);
     virtual int advance (Logger&, int=1, double=-1);
-    
-private:
-    
-    mps_initializer<Matrix, SymmGroup> * initializer_factory(BaseParameters & params);
-    
     
 protected:
     DmrgParameters parms;

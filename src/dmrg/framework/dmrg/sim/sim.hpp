@@ -7,41 +7,6 @@
  *
  *****************************************************************************/
 
-namespace detail {
-    
-    template <class Matrix, class SymmGroup>
-    struct call_linear_init {
-        static mps_initializer<Matrix, SymmGroup> * call()
-        {
-            throw std::runtime_error("Linear MPS init is available only for U1 symmetry group.");
-            return new default_mps_init<Matrix, SymmGroup>();
-        }
-    };
-    template <class Matrix>
-    struct call_linear_init<Matrix, U1> {
-        static mps_initializer<Matrix, U1> * call()
-        {
-            return new linear_mps_init<Matrix>();
-        }
-    };
-
-    template <class Matrix, class SymmGroup>
-    struct call_hf_init {
-        static mps_initializer<Matrix, SymmGroup> * call(BaseParameters & params)
-        {
-            throw std::runtime_error("HF MPS init is available only for TwoU1 symmetry group.");
-            return new default_mps_init<Matrix, SymmGroup>();
-        }
-    };
-    template <class Matrix>
-    struct call_hf_init<Matrix, TwoU1> {
-        static mps_initializer<Matrix, TwoU1> * call(BaseParameters & params)
-        {
-            return new hf_mps_init<Matrix>(params);
-        }
-    }; 
-    
-}
 
 template <class Matrix, class SymmGroup>
 sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const & model_, bool fullinit)
@@ -179,7 +144,7 @@ void sim<Matrix, SymmGroup>::mps_init()
         mps = MPS<Matrix, SymmGroup>(lat->size(),
                                      parms.get<std::size_t>("init_bond_dimension"),
                                      phys, initc,
-                                     *initializer_factory(parms));
+                                     *(phys_model->initializer(parms)));
     }
     //t.end();
 }
@@ -389,39 +354,6 @@ void sim<Matrix, SymmGroup>::measure ()
             h5ar << alps::make_pvp("/spectrum/results/EnergyVariance/mean/value",
                                    std::vector<double>(1, energy2 - energy*energy));
         }
-    }
-}
-
-
-
-template <class Matrix, class SymmGroup>
-mps_initializer<Matrix, SymmGroup> * sim<Matrix, SymmGroup>::initializer_factory(BaseParameters & params)
-{
-    if (params.get<std::string>("init_state") == "default")
-        return new default_mps_init<Matrix, SymmGroup>();
-    else if (params.get<std::string>("init_state") == "linear")
-        return detail::call_linear_init<Matrix, SymmGroup>::call();
-    else if (params.get<std::string>("init_state") == "const")
-        return new const_mps_init<Matrix, SymmGroup>();
-    else if (params.get<std::string>("init_state") == "thin")
-        return new thin_mps_init<Matrix, SymmGroup>();
-    else if (params.get<std::string>("init_state") == "thin_const")
-        return new thin_const_mps_init<Matrix, SymmGroup>();
-    else if (params.get<std::string>("init_state") == "basis_state")
-        return new basis_mps_init<Matrix, SymmGroup>(params);
-    else if (params.get<std::string>("init_state") == "basis_state_generic")
-        return new basis_mps_init_generic<Matrix, SymmGroup>(params);
-    else if (params.get<std::string>("init_state") == "coherent")
-        return new coherent_mps_init<Matrix, SymmGroup>(params);
-    else if (params.get<std::string>("init_state") == "basis_state_dm")
-        return new basis_dm_mps_init<Matrix, SymmGroup>(params);
-    else if (params.get<std::string>("init_state") == "coherent_dm")
-        return new coherent_dm_mps_init<Matrix, SymmGroup>(params);
-    else if (params.get<std::string>("init_state") == "hf")
-        return detail::call_hf_init<Matrix, SymmGroup>::call(params);
-    else {
-        throw std::runtime_error("Don't know this initial state.");
-        return NULL;
     }
 }
 
