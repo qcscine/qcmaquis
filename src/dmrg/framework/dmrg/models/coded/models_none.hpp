@@ -139,7 +139,7 @@ public:
             meas.add_term(term);
         }
         
-        return Measurements<Matrix, TrivialGroup>();
+        return meas;
     }
     
     op_t get_op(std::string const & op) const
