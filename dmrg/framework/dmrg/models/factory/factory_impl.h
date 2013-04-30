@@ -11,6 +11,7 @@
 #include "dmrg/models/factory.h"
 #include "dmrg/models/coded/factory.h"
 #include "dmrg/models/continuum/factory.h"
+#include "dmrg/models/factory/initializer_factory.h"
 
 #ifdef ENABLE_LL_MODELS
 #include "dmrg/models/ll/ll_models.h"
