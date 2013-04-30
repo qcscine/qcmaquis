@@ -2,7 +2,7 @@
  *
  * MAQUIS DMRG Project
  *
- * Copyright (C) 2012-2012 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  *
  *****************************************************************************/
@@ -10,12 +10,65 @@
 #ifndef QC_HAMILTONIANS_HPP
 #define QC_HAMILTONIANS_HPP
 
-template<class Matrix>
-Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
+template <class Matrix>
+template <class M>
+Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
 {
-    std::vector<hamterm_t> terms;
+    std::vector<typename hamterm_t<M>::type > terms;
     std::vector<int> used_elements(matrix_elements.size(), 0);
-    
+
+    typename op_t<M>::type create_up, create_down, destroy_up, destroy_down;
+    typename op_t<M>::type count_up, count_down, doubly_occ, empty2doubly_occ, doubly_occ2empty;
+    typename op_t<M>::type ident, fill, sign_up, sign_down;
+
+    TwoU1::charge A(0), B(0), C(0), D(1);
+    B[0]=1; C[1]=1;
+    ident.insert_block(M(1, 1, 1), A, A);
+    ident.insert_block(M(1, 1, 1), B, B);
+    ident.insert_block(M(1, 1, 1), C, C);
+    ident.insert_block(M(1, 1, 1), D, D);
+
+    create_up.insert_block(M(1, 1, 1), A, B);
+    create_up.insert_block(M(1, 1, 1), C, D);
+    create_down.insert_block(M(1, 1, 1), A, C);
+    create_down.insert_block(M(1, 1, 1), B, D);
+
+    destroy_up.insert_block(M(1, 1, 1), B, A);
+    destroy_up.insert_block(M(1, 1, 1), D, C);
+    destroy_down.insert_block(M(1, 1, 1), C, A);
+    destroy_down.insert_block(M(1, 1, 1), D, B);
+
+    count_up.insert_block(M(1, 1, 1), B, B);
+    count_up.insert_block(M(1, 1, 1), D, D);
+
+    count_down.insert_block(M(1, 1, 1), C, C);
+    count_down.insert_block(M(1, 1, 1), D, D);
+
+    doubly_occ.insert_block(M(1, 1, 1), D, D);
+
+    empty2doubly_occ.insert_block(M(1, 1, 1), A, D);
+    doubly_occ2empty.insert_block(M(1, 1, 1), D, A);
+
+    sign_up.insert_block(M(1, 1, 1), A, A);
+    sign_up.insert_block(M(1, 1, -1), B, B);
+    sign_up.insert_block(M(1, 1, 1), C, C);
+    sign_up.insert_block(M(1, 1, -1), D, D);
+
+    sign_down.insert_block(M(1, 1, 1), A, A);
+    sign_down.insert_block(M(1, 1, 1), B, B);
+    sign_down.insert_block(M(1, 1, -1), C, C);
+    sign_down.insert_block(M(1, 1, -1), D, D);
+
+    gemm(sign_up, sign_down, fill);
+
+    typename op_t<M>::type tmp;
+
+    gemm(fill, create_down, tmp);
+    create_down = tmp;
+    gemm(destroy_down, fill, tmp);
+    destroy_down = tmp;
+
+ 
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         int i = idx[m][0]-1;
         int j = idx[m][1]-1;
@@ -24,7 +77,7 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
 
         // Core electrons energy
         if ( i==-1 && j==-1 && k==-1 && l==-1) {
-            hamterm_t term;
+            typename hamterm_t<M>::type term;
             term.fill_operator = ident;
             term.operators.push_back( std::make_pair(0, matrix_elements[m]*ident) );
             terms.push_back(term);
@@ -35,13 +88,13 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
         // On site energy t_ii
         else if ( i==j && k == -1 && l == -1) {
             {
-                hamterm_t term;
+                typename hamterm_t<M>::type term;
                 term.fill_operator = ident;
                 term.operators.push_back( std::make_pair(i, matrix_elements[m]*count_up) );
                 terms.push_back(term);
             }
             {
-                hamterm_t term;
+                typename hamterm_t<M>::type term;
                 term.fill_operator = ident;
                 term.operators.push_back( std::make_pair(i, matrix_elements[m]*count_down) );
                 terms.push_back(term);
@@ -57,18 +110,18 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
                 used_elements[m] += 1;
                 continue;
             }
-            terms.push_back( make_positional_two_term(true, fill, i, j, matrix_elements[m]*create_up, destroy_up) );
-            terms.push_back( make_positional_two_term(true, fill, i, j, matrix_elements[m]*create_down, destroy_down) );
+            terms.push_back( make_positional_two_term<M>(true, fill, i, j, matrix_elements[m]*create_up, destroy_up) );
+            terms.push_back( make_positional_two_term<M>(true, fill, i, j, matrix_elements[m]*create_down, destroy_down) );
 
-            terms.push_back( make_positional_two_term(true, fill, j, i, matrix_elements[m]*create_up, destroy_up) );
-            terms.push_back( make_positional_two_term(true, fill, j, i, matrix_elements[m]*create_down, destroy_down) );
+            terms.push_back( make_positional_two_term<M>(true, fill, j, i, matrix_elements[m]*create_up, destroy_up) );
+            terms.push_back( make_positional_two_term<M>(true, fill, j, i, matrix_elements[m]*create_down, destroy_down) );
 
             used_elements[m] += 1;
         }
 
         // On site Coulomb repulsion V_iiii
         else if ( i==j && j==k && k==l) {
-            hamterm_t term;
+            typename hamterm_t<M>::type term;
             term.fill_operator = ident;
             term.operators.push_back( std::make_pair(i, matrix_elements[m]*doubly_occ) );
             terms.push_back(term);
@@ -83,7 +136,7 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
                 continue;
             }
             int same_idx, pos1;
-            op_t tmp;
+            typename op_t<M>::type tmp;
 
             if ( i==j) { same_idx = i; pos1 = l; }
             if ( k==l) { same_idx = l; pos1 = i; }
@@ -91,24 +144,24 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
             // 1a
             // --> c_l_up * n_i_down * cdag_i_up
             gemm(count_down, create_up, tmp);
-            terms.push_back( make_positional_two_term(true, fill, same_idx, pos1,
+            terms.push_back( make_positional_two_term<M>(true, fill, same_idx, pos1,
                                            matrix_elements[m]*tmp, destroy_up) );
             // 1a_dagger
             // --> c_i_up * n_i_down * cdag_l_up
             gemm(destroy_up, count_down, tmp);
-            terms.push_back( make_positional_two_term(true, fill, same_idx, pos1,
+            terms.push_back( make_positional_two_term<M>(true, fill, same_idx, pos1,
                                            -1*matrix_elements[m]*tmp, create_up) );
 
             // 1b
             // --> c_l_down * n_i_up * cdag_i_down (1b)
             gemm(count_up, create_down, tmp);
-            terms.push_back( make_positional_two_term(true, fill, same_idx, pos1,
+            terms.push_back( make_positional_two_term<M>(true, fill, same_idx, pos1,
                                            matrix_elements[m]*tmp, destroy_down) );
 
             // (1b)_dagger
             // --> c_i_down * n_i_up * cdag_l_down
             gemm(destroy_down, count_up, tmp);
-            terms.push_back( make_positional_two_term(true, fill, same_idx, pos1,
+            terms.push_back( make_positional_two_term<M>(true, fill, same_idx, pos1,
                                            -1*matrix_elements[m]*tmp, create_down) );
 
             used_elements[m] += 1;
@@ -122,13 +175,13 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
                 continue;
             }
 
-            terms.push_back( make_two_term(false, ident, i, k,
+            terms.push_back( make_two_term<M>(false, ident, i, k,
                                             matrix_elements[m]*count_up, count_up) );
-            terms.push_back( make_two_term(false, ident, i, k,
+            terms.push_back( make_two_term<M>(false, ident, i, k,
                                             matrix_elements[m]*count_up, count_down) );
-            terms.push_back( make_two_term(false, ident, i, k,
+            terms.push_back( make_two_term<M>(false, ident, i, k,
                                             matrix_elements[m]*count_down, count_up) );
-            terms.push_back( make_two_term(false, ident, i, k,
+            terms.push_back( make_two_term<M>(false, ident, i, k,
                                             matrix_elements[m]*count_down, count_down) );
 
             used_elements[m] += 1;
@@ -141,29 +194,29 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
                 used_elements[m] += 1;
                 continue;
             }
-            op_t tmp1, tmp2;
+            typename op_t<M>::type tmp1, tmp2;
 
-            terms.push_back( make_two_term(false, ident, i, j,
+            terms.push_back( make_two_term<M>(false, ident, i, j,
                                             matrix_elements[m]*empty2doubly_occ, doubly_occ2empty) );
-            terms.push_back( make_two_term(false, ident, i, j,
+            terms.push_back( make_two_term<M>(false, ident, i, j,
                                             matrix_elements[m]*doubly_occ2empty, empty2doubly_occ) );
 
-            terms.push_back( make_two_term(false, ident, i, j,
+            terms.push_back( make_two_term<M>(false, ident, i, j,
                                             -1*matrix_elements[m]*count_up, count_up) );
-            terms.push_back( make_two_term(false, ident, i, j,
+            terms.push_back( make_two_term<M>(false, ident, i, j,
                                             -1*matrix_elements[m]*count_down, count_down) );
 
             // Could insert fill operators without changing the result
             // --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
             gemm(destroy_down, create_up, tmp1);
             gemm(destroy_up, create_down, tmp2);
-            terms.push_back( make_two_term(false, ident, i, j,
+            terms.push_back( make_two_term<M>(false, ident, i, j,
                                             -1*matrix_elements[m]*tmp1, tmp2) );
 
             // --> -c_i_up * cdag_i_down * c_j_down * cdag_j_up
             gemm(destroy_up, create_down, tmp1);
             gemm(destroy_down, create_up, tmp2);
-            terms.push_back( make_two_term(false, ident, i, j,
+            terms.push_back( make_two_term<M>(false, ident, i, j,
                                             -1*matrix_elements[m]*tmp1, tmp2) );
             
             used_elements[m] += 1;
@@ -183,29 +236,29 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
             if (k==l) { same_idx = k; k = i; l = j; }
 
             // n_up * cdag_up * c_up <--
-            terms.push_back( make_three_term(true, fill, same_idx, k, l,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, k, l,
                                              matrix_elements[m]*create_up, destroy_up, create_up, destroy_up));
             // n_up * cdag_down * c_down <--
-            terms.push_back( make_three_term(true, fill, same_idx, k, l,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, k, l,
                                              matrix_elements[m]*create_up, destroy_up, create_down, destroy_down));
             // n_down * cdag_up * c_up <--
-            terms.push_back( make_three_term(true, fill, same_idx, k, l,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, k, l,
                                              matrix_elements[m]*create_down, destroy_down, create_up, destroy_up));
             // n_down * cdag_down * c_down <--
-            terms.push_back( make_three_term(true, fill, same_idx, k, l,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, k, l,
                                              matrix_elements[m]*create_down, destroy_down, create_down, destroy_down));
 
             // --> n_up * c_up * cdag_up
-            terms.push_back( make_three_term(true, fill, same_idx, l, k,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, l, k,
                                              matrix_elements[m]*create_up, destroy_up, create_up, destroy_up));
             // --> n_up * c_down * cdag_down
-            terms.push_back( make_three_term(true, fill, same_idx, l, k,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, l, k,
                                              matrix_elements[m]*create_up, destroy_up, create_down, destroy_down));
             // --> n_down * c_up * cdag_up
-            terms.push_back( make_three_term(true, fill, same_idx, l, k,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, l, k,
                                              matrix_elements[m]*create_down, destroy_down, create_up, destroy_up));
             // --> n_down * c_down * cdag_down
-            terms.push_back( make_three_term(true, fill, same_idx, l, k,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, l, k,
                                              matrix_elements[m]*create_down, destroy_down, create_down, destroy_down));
 
             used_elements[m] += 1;
@@ -225,37 +278,37 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
             if (i==k) { same_idx = i; pos1 = l; pos2 = j; }
             if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
             if (j==l) { same_idx = j; pos1 = k; pos2 = i; }
-            op_t tmp;
+            typename op_t<M>::type tmp;
 
             gemm(create_up, fill, tmp);
-            terms.push_back( make_three_term(true, fill, same_idx, pos1, pos2,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, pos1, pos2,
                                              matrix_elements[m]*tmp, create_down, destroy_down, destroy_up) );
             gemm(create_down, fill, tmp);
-            terms.push_back( make_three_term(true, fill, same_idx, pos1, pos2,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, pos1, pos2,
                                              matrix_elements[m]*tmp, create_up, destroy_up, destroy_down) );
             gemm(destroy_down, fill, tmp);
-            terms.push_back( make_three_term(true, fill, same_idx, pos1, pos2,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, pos1, pos2,
                                              matrix_elements[m]*tmp, destroy_up, create_up, create_down) );
             gemm(destroy_up, fill, tmp);
-            terms.push_back( make_three_term(true, fill, same_idx, pos1, pos2,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, pos1, pos2,
                                              matrix_elements[m]*tmp, destroy_down, create_down, create_up) );
 
-            terms.push_back( make_three_term(true, fill, same_idx, pos1, pos2,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, pos1, pos2,
                                              -1*matrix_elements[m]*create_up, destroy_up, create_up, destroy_up) );
-            terms.push_back( make_three_term(true, fill, same_idx, pos1, pos2,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, pos1, pos2,
                                              -1*matrix_elements[m]*create_up, destroy_down, create_down, destroy_up) );
-            terms.push_back( make_three_term(true, fill, same_idx, pos1, pos2,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, pos1, pos2,
                                              -1*matrix_elements[m]*create_down, destroy_up, create_up, destroy_down) );
-            terms.push_back( make_three_term(true, fill, same_idx, pos1, pos2,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, pos1, pos2,
                                              -1*matrix_elements[m]*create_down, destroy_down, create_down, destroy_down) );
 
-            terms.push_back( make_three_term(true, fill, same_idx, pos2, pos1,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, pos2, pos1,
                                              -1*matrix_elements[m]*create_up, destroy_up, create_up, destroy_up) );
-            terms.push_back( make_three_term(true, fill, same_idx, pos2, pos1,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, pos2, pos1,
                                              -1*matrix_elements[m]*create_up, destroy_down, create_down, destroy_up) );
-            terms.push_back( make_three_term(true, fill, same_idx, pos2, pos1,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, pos2, pos1,
                                              -1*matrix_elements[m]*create_down, destroy_up, create_up, destroy_down) );
-            terms.push_back( make_three_term(true, fill, same_idx, pos2, pos1,
+            terms.push_back( make_three_term<M>(true, ident, fill, same_idx, pos2, pos1,
                                              -1*matrix_elements[m]*create_down, destroy_down, create_down, destroy_down) );
 
             used_elements[m] += 1;
@@ -271,43 +324,43 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
                 continue;
             }
             // 1
-            terms.push_back( make_positional_four_term(true, fill, i,k,l,j,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, i,k,l,j,
                              matrix_elements[m]*create_up, create_up, destroy_up, destroy_up) );
-            terms.push_back( make_positional_four_term(true, fill, i,k,l,j,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, i,k,l,j,
                              matrix_elements[m]*create_up, create_down, destroy_down, destroy_up) );
-            terms.push_back( make_positional_four_term(true, fill, i,k,l,j,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, i,k,l,j,
                              matrix_elements[m]*create_down, create_up, destroy_up, destroy_down) );
-            terms.push_back( make_positional_four_term(true, fill, i,k,l,j,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, i,k,l,j,
                              matrix_elements[m]*create_down, create_down, destroy_down, destroy_down) );
 
             // 2
-            terms.push_back( make_positional_four_term(true, fill, i,l,k,j,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, i,l,k,j,
                              matrix_elements[m]*create_up, create_up, destroy_up, destroy_up) );
-            terms.push_back( make_positional_four_term(true, fill, i,l,k,j,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, i,l,k,j,
                              matrix_elements[m]*create_up, create_down, destroy_down, destroy_up) );
-            terms.push_back( make_positional_four_term(true, fill, i,l,k,j,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, i,l,k,j,
                              matrix_elements[m]*create_down, create_up, destroy_up, destroy_down) );
-            terms.push_back( make_positional_four_term(true, fill, i,l,k,j,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, i,l,k,j,
                              matrix_elements[m]*create_down, create_down, destroy_down, destroy_down) );
 
             // 3
-            terms.push_back( make_positional_four_term(true, fill, j,k,l,i,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, j,k,l,i,
                              matrix_elements[m]*create_up, create_up, destroy_up, destroy_up) );
-            terms.push_back( make_positional_four_term(true, fill, j,k,l,i,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, j,k,l,i,
                              matrix_elements[m]*create_up, create_down, destroy_down, destroy_up) );
-            terms.push_back( make_positional_four_term(true, fill, j,k,l,i,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, j,k,l,i,
                              matrix_elements[m]*create_down, create_up, destroy_up, destroy_down) );
-            terms.push_back( make_positional_four_term(true, fill, j,k,l,i,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, j,k,l,i,
                              matrix_elements[m]*create_down, create_down, destroy_down, destroy_down) );
 
             // 4
-            terms.push_back( make_positional_four_term(true, fill, j,l,k,i,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, j,l,k,i,
                              matrix_elements[m]*create_up, create_up, destroy_up, destroy_up) );
-            terms.push_back( make_positional_four_term(true, fill, j,l,k,i,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, j,l,k,i,
                              matrix_elements[m]*create_up, create_down, destroy_down, destroy_up) );
-            terms.push_back( make_positional_four_term(true, fill, j,l,k,i,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, j,l,k,i,
                              matrix_elements[m]*create_down, create_up, destroy_up, destroy_down) );
-            terms.push_back( make_positional_four_term(true, fill, j,l,k,i,
+            terms.push_back( make_positional_four_term<M>(true, ident, fill, j,l,k,i,
                              matrix_elements[m]*create_down, create_down, destroy_down, destroy_down) );
 
             used_elements[m] += 1;
@@ -321,7 +374,7 @@ Hamiltonian<Matrix, TwoU1> qc_model<Matrix>::H() const
 
     maquis::cout << "The hamiltonian will contain " << terms.size() << " terms\n";
 
-    return ham(phys, ident, terms);
+    return Hamiltonian<M, TwoU1>(phys, ident, terms);
 
 }
     

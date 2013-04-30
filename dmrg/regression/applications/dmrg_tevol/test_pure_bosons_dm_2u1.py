@@ -29,7 +29,7 @@ parms = {
             'chkpfile'                   : testname+'.out.ckp.h5',
             
             'init_state'                 : 'basis_state_generic',
-            'init_basis_state'           : '12,9,12',
+            'init_basis_state'           : '3,6,3',
             
             'always_measure'             : 'Local density,Density',
             
@@ -88,4 +88,3 @@ class mytest_4th(apptest.DMRGTestBase):
 
 if __name__ == '__main__':
     apptest.main()
-

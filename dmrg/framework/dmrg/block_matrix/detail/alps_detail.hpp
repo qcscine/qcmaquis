@@ -37,9 +37,11 @@ namespace maquis { namespace dmrg { namespace detail {
         throw std::runtime_error("Not implemented.");
     }
 
-    template <typename T, class A>
-    void op_kron(alps::numeric::matrix<T,A>& out, const alps::numeric::matrix<T,A>& in, const alps::numeric::matrix<T,A>& alfa,
-                 size_t out_y_offset, size_t out_x_offset,
+    //template <typename T, class A>
+    //void op_kron(alps::numeric::matrix<T,A>& out, const alps::numeric::matrix<T,A>& in, const alps::numeric::matrix<T,A>& alfa,
+    template <class Matrix1, class Matrix2>
+    void op_kron(Matrix2& out, const Matrix1& in, const Matrix1& alfa,
+                 size_t out_y_offset, size_t out_x_offset, 
                  size_t ldim1, size_t ldim2, 
                  size_t rdim1, size_t rdim2)
     {

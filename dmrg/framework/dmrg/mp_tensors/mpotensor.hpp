@@ -41,10 +41,7 @@ block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()
 {
     assert( left_index < left_i );
     assert( right_index < right_i );
-    typename data_t::const_iterator match = data_.find( std::make_pair(left_index, right_index) );
-    if ( match == data_.end() )
-        throw std::runtime_error("The requested block does not exists.");
-    return match->second;
+    return data_.at(std::make_pair(left_index, right_index));
 }
 
 

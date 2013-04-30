@@ -11,6 +11,7 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/block_matrix/grouped_symmetry.h"
 
 #include <boost/function.hpp>
 
@@ -141,6 +142,110 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
         std::swap(left_i, right_i);
         std::swap(left_map, right_map);
         right_map.clear();
+    }
+    
+    return mps;
+}
+
+
+
+/*
+ * Building Super MPS from an MPO object
+ *
+ * When the code is used for density matrix `rho` evolution, measurements are
+ * computed as overlap with a Super MPS.
+ * The Super MPS is equivalent to an MPO where the two physical indexes are
+ * fused together.
+ *
+ * Since the MPO doesn't use symmetries for the auxiliary legs, they are mapped
+ * to a single block with charge SymmGroup::IdentityCharge.
+ *
+ * Operators in the MPO are supposed to be in the form:
+ *       O_{s1,s2}
+ * where s1 is the input state, and s2 the output.
+ * (transpose of conventional matrix form)
+ * The indexes are fused/grouped according to
+ s = <s1, adjoin(s2)>,
+ * so that s2 (output) is the most frequent running index.
+ */
+
+template <class Matrix, class InSymm>
+MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matrix, InSymm> const& mpo, Index<InSymm> const& phys_i,
+                                                                       std::vector<Index<typename grouped_symmetry<InSymm>::type> > const& allowed)
+{
+    typedef typename grouped_symmetry<InSymm>::type OutSymm;
+    typedef typename InSymm::charge in_charge;
+    typedef typename OutSymm::charge out_charge;
+    typedef boost::unordered_map<size_t,std::pair<out_charge,size_t> > bond_charge_map;
+    
+    MPS<Matrix, OutSymm> mps(mpo.size());
+    
+    boost::function<out_charge (in_charge, in_charge)> phys_group = boost::lambda::bind(static_cast<out_charge(*)(in_charge, in_charge)>(group),
+                                                                                        boost::lambda::_1, -boost::lambda::_2);
+    
+    Index<OutSymm> phys2_i = group(phys_i, adjoin(phys_i));
+    Index<OutSymm> left_i, right_i;
+    left_i.insert( std::make_pair(OutSymm::IdentityCharge, 1) );
+
+    for (int i=0; i<mpo.size(); ++i) {
+        ProductBasis<OutSymm> left_out(phys2_i, left_i);
+        
+        block_matrix<Matrix, OutSymm> out_block;
+            for (size_t b1=0; b1<mpo[i].row_dim(); ++b1)
+            {
+                for (size_t b2=0; b2<mpo[i].col_dim(); ++b2)
+                {
+                    if (!mpo[i].has(b1, b2))
+                        continue;
+                    for (size_t l=0; l<left_i.size(); ++l)
+                    {
+                        out_charge l_charge = left_i[l].first;
+                        size_t     l_size   = left_i[l].second;
+                        size_t     ll       = b1;
+                        
+                        block_matrix<Matrix, InSymm> const& in_block = mpo[i](b1, b2);
+                        for (size_t n=0; n<in_block.n_blocks(); ++n)
+                        {
+                            in_charge s1_charge; size_t size1;
+                            boost::tie(s1_charge, size1) = in_block.left_basis()[n];
+                            in_charge s2_charge; size_t size2;
+                            boost::tie(s2_charge, size2) = in_block.right_basis()[n];
+                            
+                            out_charge s_charge = phys_group(s1_charge, s2_charge);
+                            out_charge out_l_charge = OutSymm::fuse(s_charge, l_charge);
+                            out_charge out_r_charge = out_l_charge;
+                            
+                            if (! allowed[i+1].has(out_r_charge) )
+                                continue;
+                            
+                            if (!out_block.has_block(out_l_charge, out_r_charge))
+                                out_block.insert_block(Matrix(left_out.size(s_charge,l_charge), mpo[i].col_dim(), 0.),
+                                                       out_l_charge, out_r_charge);
+                            
+                            size_t phys_offset = 0;
+                            size_t left_offset = left_out(s_charge, l_charge);
+                            
+                            size_t rr = b2;
+                            
+                            Matrix & out_m = out_block(out_l_charge, out_r_charge);
+                            Matrix const& in_m = in_block[n];
+                            
+                            for (size_t ss2=0; ss2<size2; ++ss2)
+                                for (size_t ss1=0; ss1<size1; ++ss1)
+                                {
+                                    size_t ss = ss2 + ss1*size2 + phys_offset;
+                                    out_m(left_offset + ss*l_size + ll, rr) = in_m(ss1, ss2);
+                                }
+                        }
+                    }
+                }
+            }
+        
+        right_i = out_block.right_basis();
+        
+        mps[i] = MPSTensor<Matrix, OutSymm>(phys2_i, left_i, right_i,
+                                            out_block, LeftPaired);
+        std::swap(left_i, right_i);
     }
     
     return mps;

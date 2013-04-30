@@ -136,15 +136,22 @@ void sim<Matrix, SymmGroup>::model_init()
      maquis::cout << measurements << std::endl;
      maquis::cout << "Hamiltonian:" << std::endl << H << std::endl;
      */
-    
-    mpo = make_mpo(lat->size(), H);
-    mpoc = mpo;
-    if (parms.get<int>("use_compressed") > 0)
-        mpoc.compress(1e-12);
+
+    // For now, use new compression scheme only for quantum chemistry
+    if (model.get<std::string>("MODEL") == std::string("quantum_chemistry"))
+    {
+        make_compressed_mpo(mpoc, 1e-12, lat->size(), H);
+    } 
+    else {
+        mpo = make_mpo(lat->size(), H);
+        mpoc = mpo;
+        if (parms.get<int>("use_compressed") > 0)
+            mpoc.compress(1e-12);
+    }
 
     if (parms.get<std::string>("optimization") == "twosite") {
         Timer t("TS_MPO"); t.begin();
-        ts_cache_mpo = make_ts_cache_mpo(mpoc, phys);
+        make_ts_cache_mpo(mpoc, ts_cache_mpo, phys);
         t.end();
     }
 }

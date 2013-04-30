@@ -11,15 +11,9 @@
 #define MPS_INITIALIZER_H
 
 #include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/mp_tensors/mps_sectors.h"
 #include "dmrg/mp_tensors/compression.h"
 #include "dmrg/mp_tensors/state_mps.h"
-
-template<class T>
-T tri_min(T a, T b, T c)
-{
-    return std::min(std::min(a, b),
-                    std::min(a, c));
-}
 
 template<class Matrix, class SymmGroup>
 struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
@@ -40,80 +34,12 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
                       bool fillrand = true,
                       typename Matrix::value_type val = 0)
     {
-        bool finitegroup = SymmGroup::finite;
-        
         std::size_t L = mps.length();
         
         maquis::cout << "Phys: " << phys << std::endl;
         maquis::cout << "Right end: " << right_end << std::endl;
         
-        Index<SymmGroup> physc = phys;
-        physc.sort();
-        typename SymmGroup::charge cmax = physc.begin()->first;
-        typename SymmGroup::charge cmin = physc.rbegin()->first;
-        if (cmin > cmax) std::swap(cmin, cmax);
-        
-        typename SymmGroup::charge cmaxL=SymmGroup::IdentityCharge, cminL=SymmGroup::IdentityCharge;
-        for (int i = 1; i < L; ++i) {
-            cmaxL = SymmGroup::fuse(cmaxL, cmax);
-            cminL = SymmGroup::fuse(cminL, cmin);
-        }
-        
-        Index<SymmGroup> l_triv, r_triv;
-        l_triv.insert( std::make_pair(SymmGroup::IdentityCharge, 1) );
-        r_triv.insert( std::make_pair(right_end, 1) );
-        
-        std::vector<Index<SymmGroup> > left_allowed(L+1), right_allowed(L+1), allowed(L+1);
-        left_allowed[0] = l_triv;
-        right_allowed[L] = r_triv;
-        
-        typename SymmGroup::charge cmaxi=cmaxL, cmini=cminL;
-        for (int i = 1; i < L+1; ++i) {
-            left_allowed[i] = phys * left_allowed[i-1];
-            typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
-            while ( it != left_allowed[i].end() )
-            {
-                if (!finitegroup && SymmGroup::fuse(it->first, cmaxi) < right_end)
-                    it = left_allowed[i].erase(it);
-                else if (!finitegroup && SymmGroup::fuse(it->first, cmini) > right_end)
-                    it = left_allowed[i].erase(it);
-                else {
-                    it->second = std::min(Mmax, it->second);
-                    ++it;
-                }
-            }
-            cmaxi = SymmGroup::fuse(cmaxi, -cmax);
-            cmini = SymmGroup::fuse(cmini, -cmin);
-        }
-        cmaxi=cmaxL; cmini=cminL;
-        for (int i = L-1; i >= 0; --i) {
-            right_allowed[i] = adjoin(phys) * right_allowed[i+1];
-            
-            typename Index<SymmGroup>::iterator it = right_allowed[i].begin();
-            while ( it != right_allowed[i].end() )
-            {
-                if (!finitegroup && SymmGroup::fuse(it->first, -cmaxi) > SymmGroup::IdentityCharge)
-                    it = right_allowed[i].erase(it);
-                else if (!finitegroup && SymmGroup::fuse(it->first, -cmini) < SymmGroup::IdentityCharge)
-                    it = right_allowed[i].erase(it);
-                else {
-                    it->second = std::min(Mmax, it->second);
-                    ++it;
-                }
-            }
-            cmaxi = SymmGroup::fuse(cmaxi, -cmax);
-            cmini = SymmGroup::fuse(cmini, -cmin);
-
-        }
-        
-        for (int i = 0; i < L+1; ++i) {
-            allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
-            for (typename Index<SymmGroup>::iterator it = allowed[i].begin();
-                 it != allowed[i].end(); ++it)
-                it->second = tri_min(Mmax,
-                                     left_allowed[i].size_of_block(it->first),
-                                     right_allowed[i].size_of_block(it->first));
-        }
+        std::vector<Index<SymmGroup> > allowed = allowed_sectors(L, phys, right_end, Mmax);
         
         for (int i = 0; i < L; ++i) {
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys, allowed[i], allowed[i+1], fillrand, val);

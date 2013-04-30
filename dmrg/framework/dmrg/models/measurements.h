@@ -169,9 +169,7 @@ public:
     Measurements sublist(std::vector<std::string> const& meas_list) const
     {
         Measurements sublist(*this);
-        
-        typename boost::ptr_vector<mterm_t>::iterator tend = std::remove_if(sublist.terms.begin(), sublist.terms.end(), detail::name_not_in_list(meas_list));
-        sublist.terms.erase(tend, sublist.terms.end());
+        sublist.terms.erase_if( detail::name_not_in_list(meas_list) );
         return sublist;
     }
     

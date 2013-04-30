@@ -7,6 +7,7 @@
  *****************************************************************************/
 
 #include "dmrg/models/continuum/models_2u1.hpp"
+#include "dmrg/models/continuum/super_models_2u1.hpp"
 
 template<class Matrix>
 struct cont_model_factory<Matrix, TwoU1> {
@@ -18,6 +19,8 @@ struct cont_model_factory<Matrix, TwoU1> {
             return typename model_traits<Matrix, TwoU1>::model_ptr(
                         new FermiOpticalLattice<Matrix>(lattice, model)
                    );
+        else if (model.get<std::string>(model_str) == std::string("optical_lattice_cons_dm"))
+            return typename model_traits<Matrix, TwoU1>::model_ptr( new DMOpticalLatticeTwoU1<Matrix>(lattice, model) );
         else {
             throw std::runtime_error("Don't know this model!");
             return typename model_traits<Matrix, TwoU1>::model_ptr();

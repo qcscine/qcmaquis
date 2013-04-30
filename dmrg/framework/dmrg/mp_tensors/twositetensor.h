@@ -88,12 +88,12 @@ private:
 #include "twositetensor.hpp"
 
 #include "dmrg/mp_tensors/mpotensor.h"
-template<class Matrix, class SymmGroup>
-MPOTensor<Matrix, SymmGroup> make_twosite_mpo(MPOTensor<Matrix, SymmGroup> const & mpo1,
-                                              MPOTensor<Matrix, SymmGroup> const & mpo2, Index<SymmGroup> const & phys_i)
+template<class MPOMatrix, class MPSMatrix, class SymmGroup>
+MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup> const & mpo1,
+                                                 MPOTensor<MPOMatrix, SymmGroup> const & mpo2, Index<SymmGroup> const & phys_i)
 {
     assert(mpo1.col_dim() == mpo2.row_dim());
-    MPOTensor<Matrix, SymmGroup> mpo_big(mpo1.row_dim(), mpo2.col_dim());
+    MPOTensor<MPSMatrix, SymmGroup> mpo_big(mpo1.row_dim(), mpo2.col_dim());
     // TODO: use OpenMP, thread-safe reduction needed!
     std::size_t b1, b2, b3;
     for( b1=0; b1 < mpo1.row_dim(); ++b1)
@@ -102,7 +102,7 @@ MPOTensor<Matrix, SymmGroup> make_twosite_mpo(MPOTensor<Matrix, SymmGroup> const
             {
                 if (! (mpo1.has(b1, b2) && mpo2.has(b2, b3)) )
                     continue;
-                block_matrix<Matrix, SymmGroup> tmp;
+                block_matrix<MPSMatrix, SymmGroup> tmp;
                 op_kron(phys_i, mpo1(b1,b2), mpo2(b2,b3), tmp);
                 if (mpo_big.has(b1,b3))
                     mpo_big(b1,b3) += tmp;
@@ -113,17 +113,15 @@ MPOTensor<Matrix, SymmGroup> make_twosite_mpo(MPOTensor<Matrix, SymmGroup> const
     return mpo_big;
 }
 
-template<class Matrix, class SymmGroup>
-MPO<Matrix, SymmGroup> make_ts_cache_mpo(MPO<Matrix, SymmGroup> const & mpo_orig, Index<SymmGroup> const & site_dim)
+template<class MPOMatrix, class MPSMatrix, class SymmGroup>
+void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
+                       MPO<MPSMatrix, SymmGroup> & mpo_out, Index<SymmGroup> const & site_dim)
 {
     std::size_t L_ts = mpo_orig.length() - 1;
-    MPO<Matrix, SymmGroup> r(L_ts);
-    for(std::size_t p=0; p < L_ts; ++p)
-    {
-        r[p] = make_twosite_mpo(mpo_orig[p], mpo_orig[p+1], site_dim);
-    }
-
-    return r;
+    mpo_out.resize(L_ts);
+    // For now until above function is parallel
+    parallel_for(locale::compact(L_ts), locale p = 0; p < L_ts; ++p)
+        mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1], site_dim);
 
 }
 

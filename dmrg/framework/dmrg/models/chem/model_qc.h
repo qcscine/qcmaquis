@@ -2,7 +2,7 @@
  *
  * MAQUIS DMRG Project
  *
- * Copyright (C) 2012-2012 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  *
  *****************************************************************************/
@@ -18,18 +18,21 @@
 #include "dmrg/models/model.h"
 #include "dmrg/utils/BaseParameters.h"
 
+
 template<class Matrix>
 class qc_model : public Model<Matrix, TwoU1>
 {
+    template <class M>
+    struct hamterm_t { typedef typename Hamiltonian<M, TwoU1>::hamterm_t type; };
+
+    template <class M>
+    struct op_t { typedef typename Hamiltonian<M, TwoU1>::op_t type; };
+
+    //typedef typename HMatrix_trait<Matrix, TwoU1>::type one_matrix;
 public:
-    typedef Hamiltonian<Matrix, TwoU1> ham;        
-    typedef typename ham::hamterm_t hamterm_t;        
-    typedef typename ham::op_t op_t;
     
     qc_model(const Lattice& lat, BaseParameters & parms)
     {
-        op_t sign_up, sign_down;
-        
         TwoU1::charge A(0), B(0), C(0), D(1);
         B[0]=1; C[1]=1;
         phys.insert(std::make_pair(A, 1));
@@ -37,49 +40,6 @@ public:
         phys.insert(std::make_pair(C, 1));
         phys.insert(std::make_pair(D, 1));
         
-        ident.insert_block(Matrix(1, 1, 1), A, A);
-        ident.insert_block(Matrix(1, 1, 1), B, B);
-        ident.insert_block(Matrix(1, 1, 1), C, C);
-        ident.insert_block(Matrix(1, 1, 1), D, D);
-        
-        create_up.insert_block(Matrix(1, 1, 1), A, B);
-        create_up.insert_block(Matrix(1, 1, 1), C, D);
-        create_down.insert_block(Matrix(1, 1, 1), A, C);
-        create_down.insert_block(Matrix(1, 1, 1), B, D);
-        
-        destroy_up.insert_block(Matrix(1, 1, 1), B, A);
-        destroy_up.insert_block(Matrix(1, 1, 1), D, C);
-        destroy_down.insert_block(Matrix(1, 1, 1), C, A);
-        destroy_down.insert_block(Matrix(1, 1, 1), D, B);
-        
-        count_up.insert_block(Matrix(1, 1, 1), B, B);
-        count_up.insert_block(Matrix(1, 1, 1), D, D);
-        count_down.insert_block(Matrix(1, 1, 1), C, C);
-        count_down.insert_block(Matrix(1, 1, 1), D, D);
-        
-        doubly_occ.insert_block(Matrix(1, 1, 1), D, D);
-        empty2doubly_occ.insert_block(Matrix(1, 1, 1), A, D);
-        doubly_occ2empty.insert_block(Matrix(1, 1, 1), D, A);
-        
-        sign_up.insert_block(Matrix(1, 1, 1), A, A);
-        sign_up.insert_block(Matrix(1, 1, -1), B, B);
-        sign_up.insert_block(Matrix(1, 1, 1), C, C);
-        sign_up.insert_block(Matrix(1, 1, -1), D, D);
-        
-        sign_down.insert_block(Matrix(1, 1, 1), A, A);
-        sign_down.insert_block(Matrix(1, 1, 1), B, B);
-        sign_down.insert_block(Matrix(1, 1, -1), C, C);
-        sign_down.insert_block(Matrix(1, 1, -1), D, D);
-
-        gemm(sign_up, sign_down, fill);
-
-        op_t tmp;
-
-        gemm(fill, create_down, tmp);
-        create_down = tmp;
-        gemm(destroy_down, fill, tmp);
-        destroy_down = tmp;
-
         // ********************************************************************
         // *** Parse orbital data *********************************************
         // ********************************************************************
@@ -115,20 +75,27 @@ public:
         return phys;
     }
                             
-    Hamiltonian<Matrix, TwoU1> H () const;
+    Hamiltonian<Matrix, TwoU1> H () const
+    {
+        return H_impl<Matrix>();
+    }
+
+    //Hamiltonian<one_matrix, TwoU1> H1x1 () const
+    //{
+    //    return H_impl<one_matrix>();
+    //}
     
     Measurements<Matrix, TwoU1> measurements () const
     {
         return Measurements<Matrix, TwoU1>();
     }
-    
+
+    template <class M>
+    Hamiltonian<M, TwoU1> H_impl () const;
+
 private:
 
     Index<TwoU1> phys;
-
-    op_t create_up, create_down, destroy_up, destroy_down;
-    op_t count_up, count_down, doubly_occ, empty2doubly_occ, doubly_occ2empty;
-    op_t ident, fill;
 
     std::vector<double> matrix_elements;
     std::vector<std::vector<int> > idx;
@@ -140,10 +107,11 @@ private:
         return (parms.is_set(key.str())) ? parms.get<double>(key.str()) : parms.get<double>("t");
     }
 
-    hamterm_t make_two_term(bool sign, op_t fill_op, int i, int j,
-                            op_t op1, op_t op2) const
+    template <class M>
+    typename hamterm_t<M>::type make_two_term(bool sign, typename op_t<M>::type fill_op, int i, int j,
+                                     typename op_t<M>::type op1, typename op_t<M>::type op2) const
     {
-        hamterm_t term;
+        typename hamterm_t<M>::type term;
         term.with_sign = sign;
         term.fill_operator = fill_op;
         term.operators.push_back( std::make_pair(i, op1) );
@@ -151,14 +119,15 @@ private:
         return term;
     }
 
-    hamterm_t make_positional_two_term(bool sign, op_t fill_op, int i, int j,
-                                       op_t op1, op_t op2) const
+    template <class M>
+    typename hamterm_t<M>::type make_positional_two_term(bool sign, typename op_t<M>::type fill_op, int i, int j,
+                                     typename op_t<M>::type op1, typename op_t<M>::type op2) const
     {
-        hamterm_t term;
+        typename hamterm_t<M>::type term;
         term.with_sign = sign;
         term.fill_operator = fill_op;
 
-        op_t tmp;
+        typename op_t<M>::type tmp;
         if (i < j) {
             gemm(fill_op, op1, tmp);
             term.operators.push_back( std::make_pair(i, tmp) );
@@ -172,17 +141,22 @@ private:
         return term;
     }
 
-    static bool compare(std::pair<size_t, op_t> const & p1, std::pair<size_t, op_t> const & p2) {
+    template<class M>
+    static bool compare(std::pair<size_t, typename op_t<M>::type> const & p1,
+                        std::pair<size_t, typename op_t<M>::type> const & p2) {
         return p1.first < p2.first;
     }
 
-    hamterm_t make_three_term(bool sign, op_t fill_op, int pb, int p1, int p2,
-                              op_t opb1, op_t opb2, op_t op1, op_t op2) const
+    template<class M>
+    typename hamterm_t<M>::type make_three_term(bool sign, typename op_t<M>::type ident, typename op_t<M>::type fill_op,
+                                     int pb, int p1, int p2,
+                                     typename op_t<M>::type opb1, typename op_t<M>::type opb2,
+                                     typename op_t<M>::type op1,  typename op_t<M>::type op2) const
     {
-        hamterm_t term;
+        typename hamterm_t<M>::type term;
         term.with_sign = sign;
         term.fill_operator = fill_op;
-        op_t tmp, boson_op;
+        typename op_t<M>::type tmp, boson_op;
 
         if ( (pb>p1 && pb<p2) || (pb>p2 && pb<p1) ) {
             // if the bosonic operator is in between
@@ -203,11 +177,11 @@ private:
             op2 = -1*tmp;
         }
 
-        std::vector<std::pair<size_t, op_t> > sterm;
+        std::vector<std::pair<size_t, typename op_t<M>::type> > sterm;
         sterm.push_back( std::make_pair(pb, boson_op) );
         sterm.push_back( std::make_pair(p1, op1) );
         sterm.push_back( std::make_pair(p2, op2) );
-        std::sort(sterm.begin(), sterm.end(), compare);
+        std::sort(sterm.begin(), sterm.end(), compare<M>);
 
         term.operators.push_back(sterm[0]);
         if (pb == sterm[0].first)
@@ -215,7 +189,7 @@ private:
                 term.operators.push_back( std::make_pair(ipad, ident) );
         else
             for(int ipad=sterm[0].first +1; ipad < sterm[1].first; ++ipad)
-                term.operators.push_back( std::make_pair(ipad, fill) );
+                term.operators.push_back( std::make_pair(ipad, fill_op) );
 
         term.operators.push_back(sterm[1]);
         if (pb == sterm[2].first)
@@ -223,20 +197,23 @@ private:
                 term.operators.push_back( std::make_pair(ipad, ident) );
         else 
             for(int ipad=sterm[1].first +1; ipad < sterm[2].first; ++ipad)
-                term.operators.push_back( std::make_pair(ipad, fill) );
+                term.operators.push_back( std::make_pair(ipad, fill_op) );
 
         term.operators.push_back(sterm[2]);
 
         return term;
     }
-
-    hamterm_t make_positional_four_term(bool sign, op_t fill_op, int i, int j, int k, int l,
-                  op_t op_i, op_t op_j, op_t op_k, op_t op_l) const
+ 
+    template <class M>
+    typename hamterm_t<M>::type make_positional_four_term(bool sign, typename op_t<M>::type ident, typename op_t<M>::type fill_op,
+                                int i, int j, int k, int l,
+                                typename op_t<M>::type op_i, typename op_t<M>::type op_j,
+                                typename op_t<M>::type op_k, typename op_t<M>::type op_l) const
     {
-        hamterm_t term;
+        typename hamterm_t<M>::type term;
         term.with_sign = sign;
         term.fill_operator = fill_op ;
-        op_t tmp;
+        typename op_t<M>::type tmp;
 
         // Simple O(n^2) algorithm to determine sign of permutation
         int idx[] = { i,j,k,l };
@@ -245,16 +222,16 @@ private:
             for(int c2 = c1+1; c2 < n; c2++)
                 if(idx[c1] > idx[c2]) inv_count++;
 
-        std::vector<std::pair<size_t, op_t> > sterm;
+        std::vector<std::pair<size_t, typename op_t<M>::type> > sterm;
         sterm.push_back(std::make_pair(i, op_i));
         sterm.push_back(std::make_pair(j, op_j));
         sterm.push_back(std::make_pair(k, op_k));
         sterm.push_back(std::make_pair(l, op_l));
-        std::sort(sterm.begin(), sterm.end(), compare);
+        std::sort(sterm.begin(), sterm.end(), compare<M>);
 
-        gemm(fill, sterm[0].second, tmp);
+        gemm(fill_op, sterm[0].second, tmp);
         sterm[0].second = tmp;
-        gemm(fill, sterm[2].second, tmp);
+        gemm(fill_op, sterm[2].second, tmp);
         sterm[2].second = tmp;
         
         if (inv_count % 2) {
@@ -264,7 +241,7 @@ private:
         else
             term.operators.push_back(sterm[0]);
         for(int ipad=sterm[0].first +1; ipad < sterm[1].first; ++ipad)
-            term.operators.push_back( std::make_pair(ipad, fill) );
+            term.operators.push_back( std::make_pair(ipad, fill_op) );
 
         term.operators.push_back(sterm[1]);
         for(int ipad=sterm[1].first +1; ipad < sterm[2].first; ++ipad)
@@ -272,7 +249,7 @@ private:
 
         term.operators.push_back(sterm[2]);
         for(int ipad=sterm[2].first +1; ipad < sterm[3].first; ++ipad)
-            term.operators.push_back( std::make_pair(ipad, fill) );
+            term.operators.push_back( std::make_pair(ipad, fill_op) );
 
         term.operators.push_back(sterm[3]);
         return term;
