@@ -267,7 +267,6 @@ std::vector< std::pair<Op,Op> > decompose_bond_super(const Matrix& bondop, const
         rightops[i].transpose_inplace();
         terms.push_back(std::pair<Op,Op>( leftops[i], rightops[i] ));
     }
-    
     return terms;
 }
 
@@ -308,6 +307,7 @@ public:
         double Gamma1a = model.get<double>("Gamma1a");
         double Gamma1b = model.get<double>("Gamma1b");
         double Gamma2  = model.get<double>("Gamma2");
+        double nbar    = model.get<double>("nbar");
         
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
         const size_t N = Nmax+1;
@@ -342,6 +342,7 @@ public:
         Matrix sinteraction = adjoint_hamiltonian(minteraction);
         
         Matrix ldestroy  = super_lindblad(mdestroy );
+        Matrix lcreate   = super_lindblad(mcreate  );
         Matrix ldestroy2 = super_lindblad(mdestroy2);
         
         // cast superoperators to op_t
@@ -353,6 +354,7 @@ public:
         interaction.insert_block(transpose(sinteraction), C,C);
 
         lindDestroy .insert_block(transpose(ldestroy     ), C,C);
+        lindCreate  .insert_block(transpose(lcreate      ), C,C);
         lindDestroy2.insert_block(transpose(ldestroy2    ), C,C);
         
         leftDestroy.insert_block(transpose(super_left(mdestroy)), C,C);
@@ -402,14 +404,25 @@ public:
                 term.operators.push_back( std::make_pair(p, Delta*pump) );
                 terms.push_back(term);
             }
-            
-            // one-boson dissipation L_{1a} = Gamma_{1a} lind b_i
-            //   = Gamma_{1a} (2 b_i rho b_i^\dag - b_i^\dag b_i rho - rho b_i^\dag b_i)
+
+            // one-boson dissipation L_{1a} = Gamma_{1a} (1+\bar{n}) lind b_i
+            //   = Gamma_{1a} (1+\bar{n}) (2 b_i rho b_i^\dag - b_i^\dag b_i rho - rho b_i^\dag b_i)
             if( Gamma1a != 0 )
             {
                 hamterm_t term;
                 term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, I*Gamma1a*lindDestroy) );
+                term.operators.push_back( std::make_pair(p, I*Gamma1a*(1+nbar)*lindDestroy) );
+                terms.push_back(term);
+            }
+            
+            // one-boson dissipation at finite temperature (thermal population \bar{n})
+            // L_{1a} = Gamma_{1a} \bar{n} lind b_i^\dag
+            //   = Gamma_{1a} \bar{n} (2 b_i^\dag rho b_i - b_i b_i^\dag rho - rho b_i b_i^\dag)
+            if( Gamma1a*nbar != 0 )
+            {
+                hamterm_t term;
+                term.fill_operator = ident;
+                term.operators.push_back( std::make_pair(p, I*Gamma1a*nbar*lindCreate) );
                 terms.push_back(term);
             }
             
@@ -603,7 +616,7 @@ private:
     op_t ident;
     Matrix mcount, minteraction, mcreate, mdestroy;
     op_t create, destroy, drive, pump, count, interaction;
-    op_t lindDestroy, lindDestroy2, leftDestroy, rightCreate;
+    op_t lindDestroy, lindCreate, lindDestroy2, leftDestroy, rightCreate;
     Index<TrivialGroup> phys, phys_psi;
     
     std::vector<hamterm_t> terms;

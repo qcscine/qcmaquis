@@ -299,14 +299,23 @@ void sim<Matrix, SymmGroup>::do_sweep_measure (Logger&)
     if (!parms.get<std::string>("always_measure").empty())
         meas_always = measurements.sublist( parms.get<std::vector<std::string> >("always_measure") );
     
+    std::vector< std::vector<double> > * spectra;
+    if (parms.get<int>("entanglement_spectra"))
+        spectra = new std::vector< std::vector<double> >();
+    else
+        spectra = NULL;
+    
     maquis::cout << "Calculating vN entropy." << std::endl;
-    std::vector<double> entropies = calculate_bond_entropies(mps);
+    std::vector<double> entropies = calculate_bond_entropies(mps, spectra);
     
     {
         alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
 
         h5ar << alps::make_pvp(sweep_archive_path() + "/results/Iteration Entropies/mean/value",
                                entropies);
+        if (spectra != NULL)
+            h5ar << alps::make_pvp(sweep_archive_path() + "/results/Iteration Entanglement Spectra/mean/value",
+                                   *spectra);
     }
     
     {
