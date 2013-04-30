@@ -29,7 +29,7 @@ parms = {
             'chkpfile'                   : testname+'.out.ckp.h5',
             
             'init_state'                 : 'basis_state_generic',
-            'init_basis_state'           : '3,6,3',
+            'init_basis_state'           : '12,9,12',
             
             'always_measure'             : 'Local density,Density',
             

@@ -591,4 +591,3 @@ boost::array<T, L+1> operator^(T const & a, boost::array<T, L> const & b)
 
 
 #endif
-
