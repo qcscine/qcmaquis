@@ -166,6 +166,7 @@ private:
         add_option("shift", "", value(0.));
 
         add_option("V"      , "", value(0.));
+        add_option("Lambda"  , "", value(0.));
         add_option("Delta"  , "", value(0.));
         add_option("Gamma1a", "", value(0.));
         add_option("Gamma1b", "", value(0.));
@@ -175,6 +176,7 @@ private:
         add_option("u1_total_charge1", "");
         add_option("u1_total_charge2", "");
         
+        add_option("MEASURE_CONTINUUM[Psi energy]", "", value(false));
         add_option("MEASURE_CONTINUUM[Density]", "", value(true));
         add_option("MEASURE_CONTINUUM[Local density]", "", value(true));
         add_option("MEASURE_CONTINUUM[Onebody density matrix]", "", value(false));
@@ -184,7 +186,9 @@ private:
         add_option("ENABLE_MEASURE[Local density^2]", "", value(false));
         add_option("ENABLE_MEASURE[Onebody density matrix]", "", value(false));
         add_option("ENABLE_MEASURE[Density correlation]", "", value(false));
-}
+
+        add_option("RUN_FINITE_T", "", value(false));
+   }
 
 };
 

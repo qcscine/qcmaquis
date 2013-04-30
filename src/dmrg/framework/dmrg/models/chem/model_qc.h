@@ -28,7 +28,7 @@ class qc_model : public Model<Matrix, TwoU1>
     template <class M>
     struct op_t { typedef typename Hamiltonian<M, TwoU1>::op_t type; };
 
-    //typedef typename HMatrix_trait<Matrix, TwoU1>::type one_matrix;
+    typedef typename alps::numeric::associated_one_matrix<Matrix>::type one_matrix;
 public:
     
     qc_model(const Lattice& lat, BaseParameters & parms)
@@ -80,10 +80,10 @@ public:
         return H_impl<Matrix>();
     }
 
-    //Hamiltonian<one_matrix, TwoU1> H1x1 () const
-    //{
-    //    return H_impl<one_matrix>();
-    //}
+    Hamiltonian<one_matrix, TwoU1> H_chem () const
+    {
+        return H_impl<one_matrix>();
+    }
     
     Measurements<Matrix, TwoU1> measurements () const
     {

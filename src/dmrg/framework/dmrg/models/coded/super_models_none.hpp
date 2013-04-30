@@ -297,13 +297,14 @@ public:
     void do_init(const Lattice& lat, BaseParameters & model_, std::complex<double>)
     {
         // retrieve model parameters
-        int Nmax     = model.get<int>("Nmax");
-        double t     = model.get<double>("t");
-        double U     = model.get<double>("U");
-        double mu    = model.get<double>("mu");
-        double omega = model.get<double>("omega");
-        double V     = model.get<double>("V");
-        double Delta = model.get<double>("Delta");
+        int Nmax      = model.get<int>("Nmax");
+        double t      = model.get<double>("t");
+        double U      = model.get<double>("U");
+        double mu     = model.get<double>("mu");
+        double omega  = model.get<double>("omega");
+        double V      = model.get<double>("V");
+        double Lambda = model.get<double>("Lambda");
+        double Delta  = model.get<double>("Delta");
         double Gamma1a = model.get<double>("Gamma1a");
         double Gamma1b = model.get<double>("Gamma1b");
         double Gamma2  = model.get<double>("Gamma2");
@@ -335,6 +336,7 @@ public:
         // construct on-site superoperators
         Matrix screate      = adjoint_hamiltonian(mcreate);
         Matrix sdestroy     = adjoint_hamiltonian(mdestroy);
+        Matrix sdrive       = adjoint_hamiltonian(mcreate+mdestroy);
         Matrix spump        = adjoint_hamiltonian(mcreate2+mdestroy2);
         Matrix scount       = adjoint_hamiltonian(mcount);
         Matrix sinteraction = adjoint_hamiltonian(minteraction);
@@ -345,6 +347,7 @@ public:
         // cast superoperators to op_t
         create     .insert_block(transpose(screate     ), C,C);
         destroy    .insert_block(transpose(sdestroy    ), C,C);
+        drive      .insert_block(transpose(sdrive      ), C,C);
         pump       .insert_block(transpose(spump       ), C,C);
         count      .insert_block(transpose(scount      ), C,C);
         interaction.insert_block(transpose(sinteraction), C,C);
@@ -356,6 +359,7 @@ public:
         rightCreate.insert_block(transpose(super_right(mcreate)), C,C);
         
         std::vector< std::pair<op_t,op_t> > hopops = decompose_bond_super<op_t>(adjoint_hamiltonian(kron(mcreate, mdestroy)),phys);
+        std::vector< std::pair<op_t,op_t> > Vops = decompose_bond_super<op_t>(adjoint_hamiltonian(kron(mcount, mcount)),phys);
         
         // insert superoperators for each site
         for( int p=0; p < lat.size(); ++p ) 
@@ -381,6 +385,15 @@ public:
                 terms.push_back(term);
             }
             
+            // drive H_Lambda = Lambda (b_i^\dag + b_i)
+            if( Lambda != 0 )
+            {
+                hamterm_t term;
+                term.fill_operator = ident;
+                term.operators.push_back( std::make_pair(p, Lambda*drive) );
+                terms.push_back(term);
+            }
+
             // pump H_Delta = Delta (b_i^\dag^2 + b_i^2)
             if( Delta != 0 )
             {
@@ -436,11 +449,23 @@ public:
                 // nearest-neighbor interaction H_V = V n_i n_{i+1}
                 if( V != 0 )
                 {
-                    hamterm_t term;
-                    term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, V*count) );
-                    term.operators.push_back( std::make_pair(neighs[n], count) );
-                    terms.push_back(term);
+                    for( unsigned i = 0; i < Vops.size(); ++i )
+                    {
+                        {
+                            hamterm_t term;
+                            term.fill_operator = ident;
+                            term.operators.push_back( std::make_pair(p,        V*Vops[i].first) );
+                            term.operators.push_back( std::make_pair(neighs[n],  Vops[i].second) );
+                            terms.push_back(term);
+                        }
+                        {
+                            hamterm_t term;
+                            term.fill_operator = ident;
+                            term.operators.push_back( std::make_pair(p,        V*Vops[i].second) );
+                            term.operators.push_back( std::make_pair(neighs[n],  Vops[i].first) );
+                            terms.push_back(term);
+                        }
+                    }
                 }
             
                 // one-boson dissipation L_{1b} = -Gamma_{1b}/2 (
@@ -577,7 +602,7 @@ private:
     
     op_t ident;
     Matrix mcount, minteraction, mcreate, mdestroy;
-    op_t create, destroy, pump, count, interaction;
+    op_t create, destroy, drive, pump, count, interaction;
     op_t lindDestroy, lindDestroy2, leftDestroy, rightCreate;
     Index<TrivialGroup> phys, phys_psi;
     

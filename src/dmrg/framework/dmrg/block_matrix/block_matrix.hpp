@@ -131,6 +131,13 @@ std::string block_matrix<Matrix, SymmGroup>::description() const
 }
 
 template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::shift_basis(block_matrix<Matrix, SymmGroup>::charge diff)
+{
+    rows_.shift(diff);
+    cols_.shift(diff);
+}
+
+template<class Matrix, class SymmGroup>
 Matrix & block_matrix<Matrix, SymmGroup>::operator[](size_type c) { return data_[c]; }
 
 template<class Matrix, class SymmGroup>

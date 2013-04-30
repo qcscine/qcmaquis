@@ -90,11 +90,9 @@ void sim<Matrix, SymmGroup>::model_init()
 {
     model_parser<Matrix, SymmGroup>(parms.get<std::string>("lattice_library"), parms.get<std::string>("model_library"), model, lat, phys_model);
     initc = phys_model->initc(model);
-    H = phys_model->H();
     measurements = phys_model->measurements();
     parse_overlaps(model, sweep, measurements);
-    phys = H.get_phys();
-    
+
     /*
      maquis::cout << "initc: " << initc << std::endl;
      maquis::cout << "phys:" << std::endl << phys << std::endl;
@@ -102,22 +100,38 @@ void sim<Matrix, SymmGroup>::model_init()
      maquis::cout << "Hamiltonian:" << std::endl << H << std::endl;
      */
 
-    // For now, use new compression scheme only for quantum chemistry
     if (model.get<std::string>("MODEL") == std::string("quantum_chemistry"))
-    {
-        make_compressed_mpo(mpoc, 1e-12, lat->size(), H);
-    } 
-    else {
-        mpo = make_mpo(lat->size(), H);
+    {  
+        typedef typename alps::numeric::associated_one_matrix<Matrix>::type MPOMatrix;
+        MPO<MPOMatrix, SymmGroup> scratch_mpo;
+
+        Hamiltonian<MPOMatrix, SymmGroup> Hloc = phys_model->H_chem();
+        phys = Hloc.get_phys();
+
+        make_compressed_mpo(scratch_mpo, 1e-12, lat->size(), Hloc);
+        Timer t("DENSE_MPO conversion"); t.begin();
+        compressor<MPOMatrix, SymmGroup>::convert_to_dense_matrix(scratch_mpo, mpoc);
+        t.end();
+
+        if (parms.get<std::string>("optimization") == "twosite") {
+            Timer t("TS_MPO"); t.begin();
+            make_ts_cache_mpo(scratch_mpo, ts_cache_mpo, phys);
+            t.end();
+        }
+    }
+    else
+    {  
+        H = phys_model->H();
+        phys = H.get_phys();
+
+        mpo = make_mpo(lat->size(), H); 
         mpoc = mpo;
+
         if (parms.get<int>("use_compressed") > 0)
             mpoc.compress(1e-12);
-    }
 
-    if (parms.get<std::string>("optimization") == "twosite") {
-        Timer t("TS_MPO"); t.begin();
-        make_ts_cache_mpo(mpoc, ts_cache_mpo, phys);
-        t.end();
+        if (parms.get<std::string>("optimization") == "twosite")
+            make_ts_cache_mpo(mpoc, ts_cache_mpo, phys);
     }
 }
 

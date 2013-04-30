@@ -22,11 +22,40 @@
 #include "dmrg/models/meas_prepare.hpp"
 #include "dmrg/utils/BaseParameters.h"
 
+
+template<class Matrix>
+class mps_ident_init : public mps_initializer<Matrix, TwoU1>
+{
+public:
+    mps_ident_init(MPS<Matrix, TwoU1> const& mps_)
+    : mps_ident(mps_)
+    { }
+
+    void operator()(MPS<Matrix, TwoU1> & mps,
+                    std::size_t Mmax,
+                    Index<TwoU1> const & phys_rho,
+                    TwoU1::charge right_end)
+    {
+        assert( mps.length() == mps_ident.length() );
+        assert( right_end == mps_ident[mps.length()-1].col_dim()[0].first );
+
+        mps = mps_ident;
+    }
+    
+private:
+    MPS<Matrix, TwoU1> mps_ident;
+};
+
+
 /* ****************** OPTICAL LATTICE (with symmetry) */
 template<class Matrix>
 class DMOpticalLatticeTwoU1 : public Model<Matrix, TwoU1> {
+    typedef Model<Matrix, TwoU1> base;
+    
     typedef Hamiltonian<Matrix, TwoU1> ham;
     typedef typename ham::hamterm_t hamterm_t;
+    typedef Hamiltonian<Matrix, U1> psi_ham;
+    typedef typename psi_ham::hamterm_t psi_hamterm_t;
     typedef Measurement_Term<Matrix, TwoU1> mterm_t;
     typedef typename ham::op_t op_t;
     typedef block_matrix<Matrix, U1> psi_op;
@@ -99,7 +128,23 @@ public:
                 term.operators.push_back( std::make_pair(p, U*interaction) );
                 terms.push_back(term);
             }
+            if (U != 0.)
+            { // U * n * (n-1)
+                psi_hamterm_t term;
+                term.with_sign = false;
+                term.fill_operator = psi_ident;
+                term.operators.push_back( std::make_pair(p, U*psi_interaction) );
+                psi_terms.push_back(term);
+            }
             
+            if (mu != 0.)
+            { // mu * n
+                psi_hamterm_t term;
+                term.with_sign = false;
+                term.fill_operator = psi_ident;
+                term.operators.push_back( std::make_pair(p, mu*psi_count) );
+                psi_terms.push_back(term);
+            }
             if (mu != 0.)
             { // mu * n
                 hamterm_t term;
@@ -127,6 +172,14 @@ public:
                         term.operators.push_back( std::make_pair(neighs[n], hopops[i].second) );
                         terms.push_back(term);
                     }
+                }
+                if (t != 0.) {
+                    psi_hamterm_t term;
+                    term.with_sign = false;
+                    term.fill_operator = psi_ident;
+                    term.operators.push_back( std::make_pair(p, -t*psi_create) );
+                    term.operators.push_back( std::make_pair(neighs[n], psi_destroy) );
+                    psi_terms.push_back(term);
                 }
             }
         }
@@ -183,6 +236,19 @@ public:
             meas.add_term(term);
         }
         
+        if (model.get<bool>("MEASURE_CONTINUUM[Psi energy]")) {
+            rho_mterm_t term;
+            term.name = "Psi energy";
+            term.type = mterm_t::DMOverlap;
+            term.mps_ident = mps_ident;
+
+            psi_ham PsiH(psi_phys, psi_ident, psi_terms);
+            MPO<Matrix, U1> mpo = make_mpo(lat.size(), PsiH);
+            term.overlaps_mps.push_back( mpo_to_smps_group(mpo, psi_phys, allowed_blocks) );
+            
+            meas.add_term(term);
+        }
+        
 //        if (model.get<bool>("MEASURE_CONTINUUM[Onebody density matrix]")) {
 //            mterm_t term;
 //            term.fill_operator = psi_ident;
@@ -197,6 +263,17 @@ public:
         return meas;
     }
     
+    typename base::initializer_ptr initializer(BaseParameters & p_) const
+    {
+        if ( p_.get<std::string>("init_state") == "identity_mps" ) {
+            std::vector<Index<TwoU1> > allowed_blocks = allowed_sectors(lat.size(), phys, this->initc(model), 1);
+            return typename base::initializer_ptr( new mps_ident_init<Matrix>( identity_dm_mps<Matrix>(lat.size(), psi_phys, allowed_blocks) ) );
+        } else {
+            return base::initializer(p_);
+        }
+    }
+
+    
 private:
     
     op_t adjoint_site_term(psi_op h) const
@@ -207,7 +284,10 @@ private:
         dm_group_kron(psi_phys, h,         psi_ident, hid);
         h.transpose_inplace();
         dm_group_kron(psi_phys, psi_ident, h,         idh);
-        return idh - hid;
+        if ( model.get<bool>("RUN_FINITE_T") )
+            return idh;
+        else
+            return idh - hid;
     }
         
     std::vector<std::pair<op_t,op_t> > adjoint_bond_term(psi_op h1, psi_op h2) const
@@ -228,7 +308,8 @@ private:
         
         std::vector<std::pair<op_t,op_t> > ret; ret.reserve(2);
         ret.push_back( std::make_pair(idh1, idh2) );
-        ret.push_back( std::make_pair(-1.*h1id, h2id) );
+        if ( ! model.get<bool>("RUN_FINITE_T") )
+            ret.push_back( std::make_pair(-1.*h1id, h2id) );
         
         return ret;
     }
@@ -244,6 +325,7 @@ private:
     op_t ident, count, interaction;
     
     std::vector<hamterm_t> terms;
+    std::vector<psi_hamterm_t> psi_terms;
 };
 
 

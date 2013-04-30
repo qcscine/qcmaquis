@@ -34,6 +34,9 @@ public:
         return block_matrix<Matrix, SymmGroup>();
     }
     
+    virtual Hamiltonian<typename alps::numeric::associated_one_matrix<Matrix>::type , SymmGroup> H_chem() const
+    { return Hamiltonian<typename alps::numeric::associated_one_matrix<Matrix>::type, SymmGroup>(); }
+
     virtual typename SymmGroup::charge initc(BaseParameters & parms) const
     {
         return init_qn<SymmGroup>(parms);
