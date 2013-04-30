@@ -14,5 +14,10 @@ name = 'MAQUIS - DMRG'
 
 ##############################################################################
 
+def package_requirements():
+    import core.requirements
+    if not core.requirements.python_module_exists('pydmrg'):
+        raise core.requirements.MissingRequirement('pydmrg')
+
 def package_dependencies():
     return ['org.comp-phys.alps']

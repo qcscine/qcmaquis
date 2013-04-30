@@ -80,9 +80,10 @@ class extrapolator(object):
         q.x = self.xdata
         q.y = self.ydata[ii]
         q.props['ylabel'] = self.props['observable']
-        q.props['observable'] += ' - extrapolation(degree=%s, %s points)' % (degree, num_points)
         q.props['xlabel'] = self.xname
         
+        q.props['fitting_degree']     = degree
+        q.props['fitting_num_points'] = num_points
         q.props['fitted_x']     = xval
         q.props['fitted_value'] = self.fit_at(x=q.x, y=q.y, degree=degree, xval=xval, num_points=num_points)
         

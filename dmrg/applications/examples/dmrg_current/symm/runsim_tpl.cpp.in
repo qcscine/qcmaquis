@@ -1,0 +1,12 @@
+/*****************************************************************************
+ *
+ * MAQUIS DMRG Project
+ *
+ * Copyright (C) 2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *
+ *****************************************************************************/
+
+#include "dmrg/sim/runsim.h"
+
+typedef @CMAKE_SYMM_GROUP@ symm;
+#include "runsim.ipp"

@@ -10,10 +10,13 @@
 #ifndef TS_OPTIMIZE_H
 #define TS_OPTIMIZE_H
 
-#include <boost/tuple/tuple.hpp>
+#include "dmrg/mp_tensors/optimize.h"
 
 #include "dmrg/mp_tensors/twositetensor.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
+
+#include <boost/tuple/tuple.hpp>
+
 
 template<class Matrix, class SymmGroup, class StorageMaster>
 class ts_optimize : public optimizer_base<Matrix, SymmGroup, StorageMaster>
@@ -133,7 +136,7 @@ public:
             }
 
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
-           
+
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
                 (d == RightOnly && lr == +1))

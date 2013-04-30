@@ -14,5 +14,7 @@ from extrapolate import *
 
 _modules =  [
                 LoadTruncatedWeight,
+                (ExtrapolationData, {'abstract': True}),
                 ExtrapolateMeasurement,
+                ExtractExtrapolation,
             ]

@@ -13,6 +13,7 @@
 #include <boost/any.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
+#include <utility>
 
 namespace detail {
     class Logger_impl_base
@@ -33,7 +34,11 @@ namespace detail {
         
         void save(alps::hdf5::archive & ar) const
         {
-            ar << alps::make_pvp("mean/value", vals);
+            std::vector<T> allvalues;
+            if (ar.is_data("mean/value"))
+                ar >> alps::make_pvp("mean/value", allvalues);
+            std::copy(vals.begin(), vals.end(), std::back_inserter(allvalues));
+            ar << alps::make_pvp("mean/value", allvalues);
         }
         
     private:
