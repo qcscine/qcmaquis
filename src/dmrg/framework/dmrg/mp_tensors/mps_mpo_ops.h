@@ -163,7 +163,8 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_overlap(MPS<Matr
 
 template<class Matrix, class SymmGroup>
 std::vector<double>
-calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n) // to be optimized later
+calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n,
+                               std::vector< std::vector<double> > * spectra = NULL) // to be optimized later
 {
     std::size_t L = mps.length();
     std::vector<double> ret;
@@ -171,6 +172,9 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n) // to be 
     MPS<Matrix, SymmGroup> const& constmps = mps;
     
     block_matrix<Matrix, SymmGroup> lb;
+    
+    if (spectra != NULL)
+        spectra->clear();
     
     mps.canonize(0);
     for (std::size_t p = 1; p < L; ++p)
@@ -186,6 +190,9 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n) // to be 
         svd(t, u, v, s);
         
         std::vector<double> sv = maquis::dmrg::detail::bond_renyi_entropies(s);
+        
+        if (spectra != NULL)
+            spectra->push_back(sv);
         
         double S = 0;
         if (n == 1) {
@@ -208,9 +215,10 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n) // to be 
 
 template<class Matrix, class SymmGroup>
 std::vector<double>
-calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
+calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps,
+                         std::vector< std::vector<double> > * spectra = NULL)
 {
-    return calculate_bond_renyi_entropies(mps, 1);
+    return calculate_bond_renyi_entropies(mps, 1, spectra);
 }
 
 template<class Matrix, class SymmGroup>

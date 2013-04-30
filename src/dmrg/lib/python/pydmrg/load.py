@@ -82,3 +82,10 @@ def LoadDMRGSweeps(files, what, selector=None):
                 ret.append(tmp)
     return ret
 
+def LoadLastTruncation(sets, pname='TruncatedWeight'):
+    last_sweep_selector = lambda props: props['sweep'] == props['nsweeps']-1
+    for d in pyalps.flatten(sets):
+        truncs = LoadDMRGSweeps([d.props['filename']], what=pname, selector=last_sweep_selector)
+        if truncs:
+            d.props[pname] = max(pyalps.flatten(truncs)[0].y)
+

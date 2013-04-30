@@ -67,7 +67,9 @@ private:
         add_option("always_measure", "comma separated list of measurements", value(""));
         add_option("measure_each", "", value(1)); 
         add_option("chkp_each", "", value(1)); 
-        add_option("update_each", "", value(-1)); 
+        add_option("update_each", "", value(-1));
+        add_option("entanglement_spectra", "", value(0));
+        
         
         add_option("expm_method", "algorithm used for exp(-i H dt): heev (default), geev", value("heev"));
         add_option("te_type", "time evolution algorithm: nn (default), mpo", value("nn"));
@@ -171,6 +173,7 @@ private:
         add_option("Gamma1a", "", value(0.));
         add_option("Gamma1b", "", value(0.));
         add_option("Gamma2" , "", value(0.));
+        add_option("nbar"   , "", value(0.));
         
         add_option("u1_total_charge", "");
         add_option("u1_total_charge1", "");

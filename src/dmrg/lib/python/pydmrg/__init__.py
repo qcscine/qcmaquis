@@ -8,4 +8,4 @@
 
 import pyalps
 from load import *
-
+from extrapolate import extrapolator
