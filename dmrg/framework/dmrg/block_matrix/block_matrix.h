@@ -42,6 +42,8 @@ public:
     Index<SymmGroup> const & left_basis() const;
     Index<SymmGroup> const & right_basis() const;
 
+    void shift_basis(charge diff);
+
 //  Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
 //  block_matrix(charge rc, charge cc, Matrix& m);
 

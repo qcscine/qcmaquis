@@ -14,7 +14,6 @@
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple.hpp>
-//#include <boost/numeric/ublas/matrix_sparse.hpp>
 
 //#include "dmrg/block_matrix/detail/one_matrix.hpp"
 #include "dmrg/block_matrix/block_matrix.h"
@@ -463,8 +462,7 @@ template<class Matrix, class SymmGroup>
 class compressor
 {
     typedef typename SymmGroup::charge charge;
-    //typedef typename maquis::dmrg::associated_dense_matrix<Matrix>::type dense_matrix;
-    typedef Matrix dense_matrix;
+    typedef typename alps::numeric::associated_dense_matrix<Matrix>::type dense_matrix;
     typedef typename MPO<Matrix, SymmGroup>::elem_type elem_type;
     typedef typename MPOIndexer<Matrix, SymmGroup>::map_it_t map_it_t;
 

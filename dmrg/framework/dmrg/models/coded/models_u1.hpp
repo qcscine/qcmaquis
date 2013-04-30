@@ -280,6 +280,10 @@ public:
             return create;
         else if (op == "b")
             return destroy;
+        else if (op == "id")
+            return ident;
+        else if (op == "fill")
+            return ident;
         else
             throw std::runtime_error("Operator not valid for this model.");
         return op_t();
@@ -456,6 +460,8 @@ public:
         {Matrix tmp=Matrix::identity_matrix(2); tmp(1,1)=-1; sign_down.insert_block(tmp, 1, 1);}
         sign_down.insert_block(Matrix(1, 1, -1), 2, 2);
         
+        gemm(sign_up, sign_down, fill);
+        
         op_t tmp;
         for (int p=0; p<lat.size(); ++p) {
             { // U term
@@ -540,6 +546,10 @@ public:
             return destroy_up;
         else if (op == "c_down")
             return destroy_down;
+        else if (op == "id")
+            return ident;
+        else if (op == "fill")
+            return fill;
         else
             throw std::runtime_error("Operator not valid for this model.");
         return op_t();
@@ -550,7 +560,7 @@ private:
     Index<U1> phys;
     op_t create_up, create_down, destroy_up, destroy_down;
     op_t count_up, count_down, doubly_occ;
-    op_t sign_up, sign_down;
+    op_t sign_up, sign_down, fill;
     op_t ident;
     std::vector<hamterm_t> terms;
     

@@ -20,6 +20,12 @@ target_link_libraries(coherent_init.test ${DMRG_APP_LIBRARIES} ${MAQUIS_Boost_UN
 add_test(coherent_init coherent_init.test)
 
 
+add_executable(apply_op.test apply_op.cpp)
+target_link_libraries(apply_op.test dmrg_models ${DMRG_APP_LIBRARIES} ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+
+add_test(apply_op apply_op.test)
+
+
 add_executable(super_mpo.test super_mpo.cpp)
 target_link_libraries(super_mpo.test ${DMRG_APP_LIBRARIES})
 

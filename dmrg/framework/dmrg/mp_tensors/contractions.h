@@ -607,6 +607,90 @@ struct contraction {
         return ret;
     }
     
+    template<class Matrix, class SymmGroup>
+    static MPSTensor<Matrix, SymmGroup>
+    multiply_with_op(MPSTensor<Matrix, SymmGroup> const & mps, block_matrix<Matrix, SymmGroup> const & op)
+    {
+        typedef typename SymmGroup::charge charge;
+        
+        mps.make_left_paired();
+        block_matrix<Matrix, SymmGroup> const & vec = mps.data();
+        
+        Index<SymmGroup> const& phys_i  = mps.site_dim();
+        Index<SymmGroup> const& left_i  = mps.row_dim();
+        Index<SymmGroup> const& right_i = mps.col_dim();
+        
+        ProductBasis<SymmGroup> left_pb(phys_i, left_i);
+        
+        block_matrix<Matrix, SymmGroup> ret_vec;
+        Index<SymmGroup> out_left_i;
+
+        for (size_t ls = 0; ls < left_i.size(); ++ls)
+            for (size_t rs = 0; rs < right_i.size(); ++rs)
+                for (size_t s1 = 0; s1 < phys_i.size(); ++s1)
+                    for (size_t s2 = 0; s2 < phys_i.size(); ++s2) {
+                        
+                        charge lc  = left_i[ls].first, rc  = right_i[rs].first;
+                        charge s1c = phys_i[s1].first, s2c = phys_i[s2].first;
+                        
+                        if (! op.has_block(s1c, s2c) )
+                            continue;
+
+                        charge phys_diff = SymmGroup::fuse(s2c, -s1c);
+                        
+                        charge left_vec_charge  = SymmGroup::fuse(s1c, lc);
+                        charge right_vec_charge = rc;
+
+                        if (! vec.has_block(left_vec_charge, right_vec_charge) )
+                            continue;
+                        
+                        if (! out_left_i.has(lc))
+                            out_left_i.insert(left_i[ls]);
+                        
+                        charge left_out_charge  = SymmGroup::fuse(s2c, lc);
+                        charge right_out_charge = SymmGroup::fuse(rc, phys_diff);
+                        
+                        if (! ret_vec.has_block(left_out_charge, right_out_charge) )
+                            ret_vec.insert_block(new Matrix(left_pb.size(s2c, lc), right_i[rs].second, 0), left_out_charge, right_out_charge);
+                        
+                        Matrix & oblock         = ret_vec(left_out_charge, right_out_charge);
+                        Matrix const & iblock   = vec(left_vec_charge, right_vec_charge);
+                        Matrix const & op_block = op(s1c, s2c);
+                        
+                        size_t i_l_offset = left_pb(s1c, lc);
+                        size_t i_r_offset = 0;
+                        size_t l_offset = left_pb(s2c, lc);
+                        size_t r_offset = 0;
+                        size_t i_op_offset = 0;
+                        size_t op_offset = 0;
+                        
+                        printf("UNOPTIMIZED FUNCTION (MULTIPLY WITH OP!)\n");
+                        for (size_t ss1 = 0; ss1 < phys_i[s1].second; ++ss1) {
+                            for (size_t ss2 = 0; ss2 < phys_i[s2].second; ++ss2) {
+                                size_t o_l_start = l_offset + ss2*left_i[ls].second;
+                                size_t o_r_start = r_offset;
+                                
+                                size_t i_l_start = i_l_offset + ss1*left_i[ls].second;
+                                size_t i_r_start = i_r_offset;
+                                
+                                typename Matrix::value_type const & op_val = op_block(i_op_offset + ss1,  op_offset + ss2);
+                                
+                                // TODO: replace by kernel
+                                for (size_t rr = 0; rr < right_i[rs].second; ++rr) {
+                                    for (size_t ll = 0; ll < left_i[ls].second; ++ll) {
+                                        oblock(o_l_start+ll, o_r_start+rr) += iblock(i_l_start+ll, i_r_start+rr) * op_val;
+                                    }
+                                }
+                            }
+                        }
+                    }
+        
+        
+        MPSTensor<Matrix, SymmGroup> ret(phys_i, out_left_i, ret_vec.right_basis(), ret_vec, LeftPaired);
+        assert( ret.reasonable() );
+        return ret;
+    }
+    
     // tested only for diagonal operator
     template<class Matrix, class SymmGroup>
     static MPSTensor<Matrix, SymmGroup>

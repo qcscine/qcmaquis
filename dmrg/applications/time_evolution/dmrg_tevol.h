@@ -20,7 +20,6 @@
 #endif
 
 #include "dmrg/utils/DmrgParameters2.h"
-#include "dmrg/block_matrix/detail/alps.hpp"
 #include "dmrg/block_matrix/symmetry.h"
 
 // def. of run functions

@@ -245,6 +245,14 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
 }
 
 template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::shift_aux_charges(typename SymmGroup::charge diff)
+{
+    left_i.shift(diff);
+    right_i.shift(diff);    
+    data_.shift_basis(diff);
+}
+
+template<class Matrix, class SymmGroup>
 void
 MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<Matrix, SymmGroup> const & N)
 {

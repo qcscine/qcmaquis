@@ -51,6 +51,8 @@ MPS<Matrix, SymmGroup>::MPS(size_t L,
     init(*this, Mmax, phys, right_end);
     
     // MD: this is actually important
+    //     it turned out, this is also quite dangerous: if a block is 1x2,
+    //     normalize_left will resize it to 1x1
     for (int i = 0; i < L; ++i)
         (*this)[i].normalize_left(DefaultSolver());
 
@@ -250,6 +252,40 @@ MPS<Matrix, SymmGroup>::right_boundary() const
 
     return ret;
 }
+
+template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& op, MPS<Matrix, SymmGroup>::size_type p)
+{
+    typedef typename SymmGroup::charge charge;
+    using std::size_t;
+    
+    /// Compute (and check) charge difference
+    charge diff = SymmGroup::IdentityCharge;
+    if (op.n_blocks() > 0)
+        diff = SymmGroup::fuse(op.right_basis()[0].first, -op.left_basis()[0].first);
+    for (size_t n=0; n< op.n_blocks(); ++n) {
+        if ( SymmGroup::fuse(op.right_basis()[n].first, -op.left_basis()[n].first) != diff )
+            throw std::runtime_error("Operator not allowed. All non-zero blocks have to provide same `diff`.");
+    }
+    
+    /// Apply operator
+    (*this)[p] = contraction::multiply_with_op((*this)[p], op);
+    
+    /// Propagate charge difference
+    for (size_t i=p+1; i<length(); ++i) {
+        (*this)[i].shift_aux_charges(diff);
+    }
+}
+
+template<class Matrix, class SymmGroup>
+void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& fill, block_matrix<Matrix, SymmGroup> const& op, MPS<Matrix, SymmGroup>::size_type p)
+{
+    for (size_t i=0; i<p; ++i) {
+        (*this)[i] = contraction::multiply_with_op((*this)[i], fill);
+    }
+    apply(op, p);
+}
+
 
 #ifdef HAVE_ALPS_HDF5
 

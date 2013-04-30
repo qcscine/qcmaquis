@@ -73,6 +73,8 @@ public:
                                                     double truncation = 0,
                                                     Index<SymmGroup> bond_dim = Index<SymmGroup>());
     
+    void shift_aux_charges(typename SymmGroup::charge);
+    
     void multiply_from_left(block_matrix<Matrix, SymmGroup> const &);
     void multiply_from_right(block_matrix<Matrix, SymmGroup> const &);
     void multiply_by_scalar(const scalar_type&);

@@ -310,6 +310,23 @@ public:
          return c;*/
     }
     
+    block_matrix<Matrix, SymmGroup> get_op(std::string const & name) const
+    {
+        // TODO: hard coding site type = 0 !!
+        int type = 0;
+
+        if (name == "id") {
+            return tident[type];
+        } else if (name == "fill") {
+            return tfill[type];
+        } else {
+            alps::SiteBasisDescriptor<I> b = model.site_basis(type);
+            SiteOperator op = make_site_term(name, parms);
+            alps_matrix m = alps::get_matrix(value_type(), op, b, parms, true);
+            return convert_matrix(m, type);
+        }
+    }
+
     Measurements<Matrix, SymmGroup> measurements () const;
 
 private:

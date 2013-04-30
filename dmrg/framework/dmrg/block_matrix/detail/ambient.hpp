@@ -12,6 +12,7 @@
 
 #include <ambient/numeric/matrix.hpp>
 #include "dmrg/block_matrix/detail/ambient_detail.hpp"
+#include "dmrg/block_matrix/detail/alps.hpp"
 #include "utils/traits.hpp"
 
 namespace maquis { namespace traits {
@@ -33,12 +34,16 @@ namespace maquis { namespace traits {
 namespace alps { namespace numeric {
 
     template<typename T, class Allocator> struct associated_vector< ambient::numeric::matrix<T,Allocator> > { typedef std::vector<T> type; };
+    template<typename T, class Allocator> struct associated_one_matrix< ambient::numeric::matrix<T,Allocator> > { typedef ambient::numeric::matrix<T,Allocator> type; };
+    template<typename T, class Allocator> struct associated_dense_matrix< ambient::numeric::matrix<T,Allocator> > { typedef ambient::numeric::matrix<T,Allocator> type; };
     template<typename T, class Allocator> struct associated_diagonal_matrix< ambient::numeric::matrix<T,Allocator> > { typedef ambient::numeric::diagonal_matrix<T> type; };
     template<typename T, class Allocator> struct associated_real_diagonal_matrix< ambient::numeric::matrix<T,Allocator> > { typedef ambient::numeric::diagonal_matrix<typename maquis::traits::real_type<T>::type> type; };
     template<typename T, class Allocator> struct associated_real_vector< ambient::numeric::matrix<T,Allocator> > { typedef std::vector<typename maquis::traits::real_type<T>::type> type; };
 
     template<class M> struct associated_vector< ambient::numeric::tiles<M> > { typedef ambient::numeric::tiles< typename associated_vector<M>::type > type; };
     template<class M> struct associated_real_vector< ambient::numeric::tiles<M> > { typedef ambient::numeric::tiles< typename associated_real_vector<M>::type > type; };
+    template<class M> struct associated_one_matrix< ambient::numeric::tiles<M> > { typedef ambient::numeric::tiles<M> type; };
+    template<class M> struct associated_dense_matrix< ambient::numeric::tiles<M> > { typedef ambient::numeric::tiles<M> type; };
     template<class M> struct associated_diagonal_matrix< ambient::numeric::tiles<M> > { typedef ambient::numeric::tiles< typename associated_diagonal_matrix<M>::type > type; };
     template<class M> struct associated_real_diagonal_matrix< ambient::numeric::tiles<M> > { typedef ambient::numeric::tiles< typename associated_real_diagonal_matrix<M>::type > type; };
     
