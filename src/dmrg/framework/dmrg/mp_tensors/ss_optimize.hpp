@@ -10,6 +10,7 @@
 #define SS_OPTIMIZE_H
 
 #include "dmrg/mp_tensors/mpo_ops.h"
+#include "dmrg/mp_tensors/optimize.h"
 
 
 template<class Matrix, class SymmGroup, class StorageMaster>

@@ -225,22 +225,23 @@ bool sim<Matrix, SymmGroup>::run ()
             early_exit = true;
         
         
-        if (!early_exit &&
+        if (early_exit ||
             (   (sweep+1) % parms.get<int>("measure_each") == 0 
              || (sweep+1) == parms.get<int>("nsweeps") ))
         {
-            
-            do_sweep_measure(iteration_log);
-            
-            gettimeofday(&sthen, NULL);
-            double elapsed_measure = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
-            maquis::cout << "Sweep measure done after " << elapsed_measure << " seconds." << std::endl;
-            
-            gettimeofday(&then, NULL);
-            elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
-            if (rs > 0 && elapsed > rs)
-                early_exit = true;
-            
+            double elapsed_measure = 0.;
+            if (!early_exit) {
+                do_sweep_measure(iteration_log);
+                
+                gettimeofday(&sthen, NULL);
+                elapsed_measure = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
+                maquis::cout << "Sweep measure done after " << elapsed_measure << " seconds." << std::endl;
+                
+                gettimeofday(&then, NULL);
+                elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
+                if (rs > 0 && elapsed > rs)
+                    early_exit = true;
+            }
             
             // Write results
             {
