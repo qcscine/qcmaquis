@@ -14,6 +14,7 @@
 #include "dmrg/block_matrix/symmetry.h"
 
 #include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/chem_compression.h"
 
 #include "dmrg/models/lattice.h"
 
@@ -176,6 +177,7 @@ namespace generate_mpo
         , ident(ident_)
         , prempo(length)
         , maximum(2)
+        , finalized(false)
         , leftmost_right(length)
         {   
             for (size_t p = 0; p < length; ++p)
@@ -229,18 +231,7 @@ namespace generate_mpo
         
         MPO<Matrix, SymmGroup> create_mpo()
         {
-            for (typename std::map<std::size_t, op_t>::const_iterator it = site_terms.begin();
-                 it != site_terms.end(); ++it)
-                prempo[it->first].push_back( boost::make_tuple(0, 1, it->second) );
-            
-            for (size_t p = leftmost_right + 1; p < length; ++p)
-                prempo[p].push_back( boost::make_tuple(1, 1, ident) );
-            
-            for (typename vector<vector<block> >::iterator it = prempo.begin();
-                 it + 1 != prempo.end();
-                 ++it)
-                compress_on_bond(*it, *(it+1));
-            
+            if (!finalized) finalize(); 
             MPO<Matrix, SymmGroup> r(length);
             for (size_t p = 1; p < length - 1; ++p)
                 r[p] = as_bulk(prempo[p]);
@@ -249,8 +240,33 @@ namespace generate_mpo
             
             return r;
         }
+
+        MPO<Matrix, SymmGroup> create_compressed_mpo(Index<SymmGroup> const & phys, double cutoff)
+        {
+            if (!finalized) finalize();
+            MPO<Matrix, SymmGroup> r(length);
+            for (size_t p = 1; p < length - 1; ++p)
+                r[p] = as_bulk(prempo[p]);
+            r[0] = as_left(prempo[0]);
+            r[length-1] = as_right(prempo[length-1]);
+
+            charge_sort(get_prempo(), r);
+            MPO<Matrix, SymmGroup> mpo_sorted = create_mpo();
+
+            compressor<Matrix, SymmGroup> cpor(phys);
+            MPO<Matrix, SymmGroup> mpo_out(length);
+            cpor.compress(mpo_sorted, mpo_out, cutoff);
+
+            return mpo_out;
+        }
+
+        std::vector<std::vector<block> > & get_prempo()
+        {
+            return prempo;
+        }
         
     private:
+        bool finalized;
         std::size_t length;
         block_matrix<Matrix, SymmGroup> ident;
         vector<set<size_t> > used_dims;
@@ -258,6 +274,23 @@ namespace generate_mpo
         std::map<std::size_t, op_t> site_terms;
         
         size_t maximum, leftmost_right;
+
+        void finalize()
+        {
+            for (typename std::map<std::size_t, op_t>::const_iterator it = site_terms.begin();
+                 it != site_terms.end(); ++it)
+                prempo[it->first].push_back( boost::make_tuple(0, 1, it->second) );
+
+            for (size_t p = leftmost_right + 1; p < length; ++p)
+                prempo[p].push_back( boost::make_tuple(1, 1, ident) );
+
+            for (typename vector<vector<block> >::iterator it = prempo.begin();
+                 it + 1 != prempo.end();
+                 ++it)
+                compress_on_bond(*it, *(it+1));
+
+            finalized = true;
+        }
         
         MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops)
         {

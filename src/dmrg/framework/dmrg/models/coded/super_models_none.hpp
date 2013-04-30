@@ -286,20 +286,28 @@ public:
     SuperBoseHubbardNone(const Lattice& lat, BaseParameters & model_)
     : model(model_)
     {
-        do_init(lat,model.get<int>("Nmax"),model.get<double>("t"),model.get<double>("U"),model.get<double>("V"),
-                model.get<double>("Delta"),model.get<double>("Gamma1a"),model.get<double>("Gamma1b"),model.get<double>("Gamma2"),
-                typename Matrix::value_type());
+        do_init(lat,model,typename Matrix::value_type());
     }
     
-    void do_init(const Lattice& lat, int Nmax, double t, double U, double V, 
-                 double Delta, double Gamma1a, double Gamma1b, double Gamma2, double)
+    void do_init(const Lattice& lat, BaseParameters & model_, double)
     {
         throw std::runtime_error("need complex value type");
     }
     
-    void do_init(const Lattice& lat, int Nmax, double t, double U, double V, 
-                 double Delta, double Gamma1a, double Gamma1b, double Gamma2, std::complex<double>)
+    void do_init(const Lattice& lat, BaseParameters & model_, std::complex<double>)
     {
+        // retrieve model parameters
+        int Nmax     = model.get<int>("Nmax");
+        double t     = model.get<double>("t");
+        double U     = model.get<double>("U");
+        double mu    = model.get<double>("mu");
+        double omega = model.get<double>("omega");
+        double V     = model.get<double>("V");
+        double Delta = model.get<double>("Delta");
+        double Gamma1a = model.get<double>("Gamma1a");
+        double Gamma1b = model.get<double>("Gamma1b");
+        double Gamma2  = model.get<double>("Gamma2");
+        
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
         const size_t N = Nmax+1;
         const size_t N2 = N*N;
@@ -349,7 +357,6 @@ public:
         
         std::vector< std::pair<op_t,op_t> > hopops = decompose_bond_super<op_t>(adjoint_hamiltonian(kron(mcreate, mdestroy)),phys);
         
-        
         // insert superoperators for each site
         for( int p=0; p < lat.size(); ++p ) 
         {
@@ -359,6 +366,18 @@ public:
                 hamterm_t term;
                 term.fill_operator = ident;
                 term.operators.push_back( std::make_pair(p, 0.5*U*interaction) );
+                terms.push_back(term);
+            }
+            
+            // site-dependent chemical potential H_mu = -mu n_i
+            // harmonic trap H_omega = (omega x_i)^2/2 n_i
+            double x = p - 0.5*lat.size();
+            double mup = -mu + 0.5*omega*omega*x*x;
+            if( mup != 0 )
+            {
+                hamterm_t term;
+                term.fill_operator = ident;
+                term.operators.push_back( std::make_pair(p, mup*count) );
                 terms.push_back(term);
             }
             
@@ -426,7 +445,7 @@ public:
             
                 // one-boson dissipation L_{1b} = -Gamma_{1b}/2 (
                 //          2 b_{i+1} rho b_i^\dag - b_i^\dag b_{i+1} rho - rho b_i^\dag b_{i+1}
-                //        + 2 b_i rho b_{i+1}^\dag - b_{i+1}^\dag b_i rho - rho b_{i+1}^\dag b_i )
+                //        + 2 b_i rho b_{i+1}^\dag - b_i b_{i+1}^\dag rho - rho b_i b_{i+1}^\dag )
                 //  = Gamma_{1b}/2 (
                 //          (ad b^\dag)_i (b rho)_{i+1} + (b rho)_i (ad b^\dag)_{i+1}
                 //        - (ad b)_i (rho b^\dag)_{i+1} - (rho b^\dag)_i (ad b)_{i+1} )

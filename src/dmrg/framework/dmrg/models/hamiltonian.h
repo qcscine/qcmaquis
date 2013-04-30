@@ -82,6 +82,23 @@ MPO<Matrix, SymmGroup> make_mpo(std::size_t L, Hamiltonian<Matrix, SymmGroup> co
 }
 
 template<class Matrix, class SymmGroup>
+void make_compressed_mpo(
+     MPO<Matrix, SymmGroup> & mpoc,
+     double cutoff,
+     std::size_t L, Hamiltonian<Matrix, SymmGroup> const & H,
+     TermType what=all_term)
+{
+    generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity());
+
+    for (int i = 0; i < H.n_terms(what); ++i)
+    {
+        mpom.add_term(H[i]);
+    }
+
+    mpoc = mpom.create_compressed_mpo(H.get_phys(), cutoff);
+}
+
+template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, Hamiltonian_Term<Matrix, SymmGroup> const & h)
 {
     os << " - Fill operator:" << std::endl << h.fill_operator;

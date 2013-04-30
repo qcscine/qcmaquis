@@ -91,6 +91,10 @@ namespace MPOTensor_detail
     };
 }
 
+template <class Matrix, class SymmGroup> class column_iterator;
+template <class Matrix, class SymmGroup> class compressor;
+template <class Matrix, class SymmGroup> class MPOIndexer;
+
 template<class Matrix, class SymmGroup>
 class MPOTensor
 {
@@ -131,6 +135,10 @@ public:
 #endif
     
     bool has(std::size_t left_index, std::size_t right_index) const;
+
+    friend class column_iterator<Matrix, SymmGroup>;
+    friend class compressor<Matrix, SymmGroup>;
+    friend class MPOIndexer<Matrix, SymmGroup>;
     
 private:
     data_t data_;

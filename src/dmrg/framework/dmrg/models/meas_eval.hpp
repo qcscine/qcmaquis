@@ -381,9 +381,10 @@ namespace meas_eval {
             for (std::size_t i=0; i<super_mpos.size(); ++i) {
                 if (is_multi_overlap) {
                     std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> tmp = multi_overlap(super_mpos[i], mps);
+                    for(int i = 0; i < tmp.size(); ++i) tmp[i] /= nn;
                     std::copy(tmp.begin(), tmp.end(), std::back_inserter(vals));
                 } else {
-                    vals.push_back( overlap(super_mpos[i], mps) );
+                    vals.push_back( overlap(super_mpos[i], mps) / nn );
                 }
                 
             }

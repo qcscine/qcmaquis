@@ -207,8 +207,8 @@ struct contraction {
         parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
             gemm(mps.data_, right.data_[b], t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
-            reshape_left_to_right<Matrix>(mps.site_dim(), mps.row_dim(), right.data_[b].right_basis(),
-                                          t[b], tmp);
+            reshape_left_to_right_new<Matrix>(mps.site_dim(), mps.row_dim(), right.data_[b].right_basis(),
+                                              t[b], tmp);
             swap(t[b], tmp);
         }
 
