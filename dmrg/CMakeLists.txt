@@ -108,9 +108,6 @@ mark_as_advanced(ALPS_LIBRARY_DIRS ALPS_INCLUDE_DIRS HDF5_INCLUDE_DIR HDF5_LIBRA
 
 # Boost
 set(Boost_requirements bindings date_time filesystem regex system serialization)
-if(BUILD_REGRESSION)
-  list(APPEND Boost_requirements unit_test_framework)
-endif(BUILD_REGRESSION)
 
 include(${PROJECT_SOURCE_DIR}/config/find_boost.cmake)
 find_maquis_boost(COMPONENTS ${Boost_requirements})
