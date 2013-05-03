@@ -38,8 +38,10 @@ option(BUILD_AMBIENT "Build Ambient inside this build tree" OFF)
 
 option(ENABLE_COLLECTOR "Enable profiling through DataCollector object" OFF)
 
-option(BUILD_REGRESSION "Build regression tests" OFF)
-option(ENABLE_APPLICATION_TESTS "Run application tests" OFF)
+set(BENCHMARKS_DIR "../../benchmarks" CACHE PATH "Location of benchmarks directory.")
+option(REGRESSION_UNIT_TESTING      "Build and run regression unit testing" OFF)
+option(REGRESSION_APPLICATION_TESTS "Run application tests"                 OFF)
+option(REGRESSION_PERFORMANCE_TESTS "Run application benchmarks"            OFF)
 
 mark_as_advanced(ENABLE_COLLECTOR)
 
@@ -328,24 +330,27 @@ add_subdirectory(applications)
 
 
 # *** regression tests
-if(BUILD_REGRESSION)
+if(REGRESSION_UNIT_TESTING)
   enable_testing()
-	if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
-		message(WARNING "Tests should be checked in Debug mode!")
-	endif()
+  if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
+      message(WARNING "Tests should be checked in Debug mode!")
+  endif()
   add_subdirectory(regression/tests)
-# add_subdirectory(regression/block_matrix)
-# add_subdirectory(regression/mp_tensors)
-# add_subdirectory(regression/dmrg)
-# add_subdirectory(regression/te)
-  
-  if(ENABLE_APPLICATION_TESTS)
-    add_subdirectory(regression/applications)
-  endif(ENABLE_APPLICATION_TESTS)
-else(BUILD_REGRESSION)
-  add_subdirectory(regression/dmrg EXCLUDE_FROM_ALL)
-endif(BUILD_REGRESSION)
+  # add_subdirectory(regression/block_matrix)
+  # add_subdirectory(regression/mp_tensors)
+  # add_subdirectory(regression/dmrg)
+  # add_subdirectory(regression/te)
+endif(REGRESSION_UNIT_TESTING)
 
+if(REGRESSION_APPLICATION_TESTS)
+  enable_testing()
+  add_subdirectory(regression/applications)
+endif(REGRESSION_APPLICATION_TESTS)
+
+if(REGRESSION_PERFORMANCE_TESTS)
+  enable_testing()
+  add_subdirectory(${BENCHMARKS_DIR} benchmarks_refs)
+endif(REGRESSION_PERFORMANCE_TESTS)
 
 
 ######################################################################
