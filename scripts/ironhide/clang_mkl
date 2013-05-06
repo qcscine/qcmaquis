@@ -1,0 +1,43 @@
+#!/bin/bash -l
+STATE="configure"
+STATE_AMBIENT="build"
+STATE_DMRG="build"
+# end of target states #
+PREFIX=standard
+COMPILER=clang
+COMPILER_VERSION=4.2
+MPI_WRAPPER=openmpi
+MPI_WRAPPER_VERSION=xx
+
+DASHBOARD_ROOT=$HOME/Dashboards/maquis_dmrg
+
+
+export CXX=clang++
+export CC=clang
+export ALPS_ROOT=$HOME/opt/alps-clang
+
+export PATH=/opt/intel/lib:${ALPS_ROOT}/bin:$PATH
+export LD_LIBRARY_PATH=/opt/intel/mkl/lib:/opt/intel/lib:${ALPS_ROOT}/lib
+export DYLD_LIBRARY_PATH=/opt/intel/mkl/lib:/opt/intel/lib:${ALPS_ROOT}/lib
+export MKL_NUM_THREADS=4
+
+## sources ##
+
+
+## dmrg ##
+DMRG_BUILD_DMRG=ON
+DMRG_BUILD_TIME_EVOLUTION=ON
+DMRG_BUILD_MULTIGRID=ON
+DMRG_BUILD_CUSTOMAPP=ON
+DMRG_BUILD_DIAG=ON
+DMRG_REGRESSION_UNIT_TESTING=ON
+DMRG_REGRESSION_APPLICATION_TESTS=ON
+DMRG_REGRESSION_PERFORMANCE_TESTS=OFF
+DMRG_ENABLE_OMP=OFF
+DMRG_BLAS_LAPACK_SELECTOR=manual
+DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR="/opt/intel/mkl/lib;/opt/intel/lib"
+DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm"
+DMRG_CMAKE_INSTALL_PREFIX=/dev/null
+
+source $ROOT_DIR/scripts/common/common.sh 
+execute $*
