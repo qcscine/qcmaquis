@@ -1,0 +1,18 @@
+max_bond_dimension = 3000
+
+truncation_initial = 0.0001
+truncation_final = 1e-12
+
+nsweeps = 4
+ngrowsweeps = 1
+nmainsweeps = 1
+
+chkpfile = "spinless.W16.3000.ckp.h5"
+resultfile = "spinless.W16.3000.res.h5"
+//storagedir = "storage"
+donotsave = 1
+
+// possible values: singlesite, twosite
+optimization = "twosite"
+
+symmetry = "u1"

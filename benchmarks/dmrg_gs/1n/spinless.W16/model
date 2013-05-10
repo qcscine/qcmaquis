@@ -1,0 +1,9 @@
+LATTICE ="open ladder"
+L =2
+W =16
+MODEL ="spinless fermions"
+t0 =1
+t1 =1
+U = 0
+CONSERVED_QUANTUMNUMBERS ="N"
+N_total =16
