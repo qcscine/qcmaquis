@@ -49,6 +49,7 @@
 #endif
 
 //#define AMBIENT_COMPUTATIONAL_TIMINGS
+//#define AMBIENT_COMPUTATIONAL_DATAFLOW
 //#define AMBIENT_CHECK_BOUNDARIES
 //#define AMBIENT_TRACE void* b[10]; backtrace_symbols_fd(b,backtrace(b,10),2);
 //#define AMBIENT_LOOSE_FUTURE
