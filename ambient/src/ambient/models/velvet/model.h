@@ -12,7 +12,7 @@ namespace ambient { namespace models { namespace velvet {
 
     class model : public singleton< model > {
     public:
-        model() : clock(0), sid(0) {}
+        model() : clock(0), sid(0), op_sid(0) {}
         template<ambient::locality L> 
         void add_revision(history* o, void* g = NULL);
         void use_revision(history* o);
@@ -23,6 +23,7 @@ namespace ambient { namespace models { namespace velvet {
         void index(revision* r);
         void index(transformable* v);
         size_t clock;
+        size_t op_sid;
     private:
         int sid;
     };

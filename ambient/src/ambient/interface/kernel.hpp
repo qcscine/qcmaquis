@@ -22,7 +22,12 @@ namespace ambient {
             return ambient::bulk.malloc<sizeof(K)+sizeof(void*)*inliner::arity>();
         }
 
-        kernel(){ this->arguments = (void**)(this+1); } // note: trashing the vtptr of derived object
+        kernel(){ 
+            this->arguments = (void**)(this+1); // note: trashing the vtptr of derived object
+            #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+            this->number = ambient::model.op_sid++;
+            #endif
+        }
 
         virtual bool ready(){ 
             return inliner::ready(this);
@@ -37,6 +42,11 @@ namespace ambient {
             time.end();
             #endif
         }
+        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        virtual const char* name(){ 
+            return typeid(K).name(); 
+        }
+        #endif
         template <complexity O, class T0>
         static inline void spawn(T0& arg0){
             inliner::latch<O>(new kernel(), info<T0>::unfold<inliner::t0>(arg0));

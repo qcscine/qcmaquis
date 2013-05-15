@@ -12,6 +12,11 @@ namespace ambient { namespace controllers { namespace velvet {
     public:
         virtual void invoke() = 0;
         virtual bool ready() = 0;
+        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        virtual const char* name() = 0;
+        size_t id(){ return number; }
+        size_t number;
+        #endif
         void queue(cfunctor* d);
         std::vector<cfunctor*, allocator> deps;
         void** arguments;
@@ -30,6 +35,9 @@ namespace ambient { namespace controllers { namespace velvet {
         get(revision& r);
         virtual bool ready();
         virtual void invoke();
+        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        virtual const char* name(){ return "get"; }
+        #endif
     private:
         revision* target;
         request* handle;
@@ -50,6 +58,9 @@ namespace ambient { namespace controllers { namespace velvet {
         virtual void operator >> (int p);
         virtual bool ready();
         virtual void invoke();
+        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        virtual const char* name(){ return "set"; }
+        #endif
     private:
         bool evaluated;
         std::vector<bool>* states;
@@ -74,6 +85,9 @@ namespace ambient { namespace controllers { namespace velvet {
         virtual void operator >> (int p);
         virtual bool ready();
         virtual void invoke();
+        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        virtual const char* name(){ return "set"; }
+        #endif
     private:
         bool evaluated;
         std::vector<bool>* states;
@@ -91,6 +105,9 @@ namespace ambient { namespace controllers { namespace velvet {
         get(transformable& v);
         virtual bool ready();
         virtual void invoke();
+        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        virtual const char* name(){ return "get"; }
+        #endif
     private:
         request* handle;
     };
@@ -105,6 +122,9 @@ namespace ambient { namespace controllers { namespace velvet {
         set(transformable& v);
         virtual bool ready();
         virtual void invoke();
+        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        virtual const char* name(){ return "set"; }
+        #endif
     private:
         bool evaluated;
         std::vector<request*>* handles;

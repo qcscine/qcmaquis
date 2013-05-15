@@ -58,12 +58,22 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void controller::flush(){
         typedef typename std::vector<cfunctor*>::const_iterator veci;
         ambient::model.clock++;
+        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        printf("ambient::parallel graph dim: %d\n", chains->size());
+        for(veci i = chains->begin(); i != chains->end(); ++i)
+            printf("op%d[label=\"%s\"]\n", (*i)->id(), (*i)->name());
+        #endif
         AMBIENT_SMP_ENABLE
         while(!chains->empty()){
             for(veci i = chains->begin(); i != chains->end(); ++i){
                 if((*i)->ready()){
                     cfunctor* task = *i;
                     AMBIENT_THREAD task->invoke();
+                    #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+                    for(int n = 0; n < task->deps.size(); ++n)
+                        printf("op%d[label=\"%s\"]\nop%d -> op%d\n", task->deps[n]->id(), task->deps[n]->name(), 
+                                                                     task->id(), task->deps[n]->id());
+                    #endif
                     mirror->insert(mirror->end(), (*i)->deps.begin(), (*i)->deps.end());
                 }else mirror->push_back(*i);
             }
