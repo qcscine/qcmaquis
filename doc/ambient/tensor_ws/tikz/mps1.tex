@@ -1,0 +1,34 @@
+\documentclass{standalone}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{color}
+\usepackage{amsthm}
+
+
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{arrows,shapes,positioning,decorations.pathmorphing}
+
+
+\begin{document}
+
+
+\tikzset{spin/.style={circle=2pt,draw=black!100,fill=orange!20,inner sep=3pt}}
+\tikzset{hamil/.style={rectangle=2pt,draw=black!100,fill=red!40,inner sep=3pt}}
+\tikzset{coarse grain/.style={isosceles triangle,isosceles triangle stretches,draw, fill=green!15, anchor=center, inner sep=3pt, minimum width=.8cm, shape border rotate=270, thick}}
+\tikzset{arrow down/.style={single arrow, draw, fill, shape border rotate=270, anchor=center, minimum height=.4cm, single arrow head extend=.2cm, inner sep=8pt}}
+
+\begin{tikzpicture}
+
+\node[spin] (M) at (0,0) {};
+\draw[thick] (M.east) -- +(.4,0);
+\draw[thick] (M.west) -- +(-.4,0);
+\draw[thick] (M.south) -- +(0,-.25);
+
+\end{tikzpicture}
+
+\end{document}
