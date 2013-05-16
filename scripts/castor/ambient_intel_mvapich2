@@ -1,7 +1,7 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_DMRG="void"
+STATE_DMRG="build"
 # end of target states #
 SHARED_FS=true
 PREFIX=ambient
@@ -17,7 +17,7 @@ export CC=mpicc
 export CXX=mpicxx
 export BOOST_ROOT=/project/h07/BOOST_1_53/
 export MV2_ENABLE_AFFINITY=0
-export MV2_VBUF_POOL_SIZE=2048
+export MV2_VBUF_POOL_SIZE=8192
 export MV2_VBUF_SECONDARY_POOL_SIZE=1024
 export MV2_VBUF_TOTAL_SIZE=24k
 
@@ -45,7 +45,6 @@ DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl
 DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/apps/castor/intel/mkl/lib/intel64
 DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/apps/castor/intel/mkl/include
 DMRG_ALPS_ROOT_DIR=/project/h07/TEST_ALPS
-DMRG_BUILD_REGRESSION=OFF 
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
 
