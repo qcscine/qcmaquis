@@ -35,10 +35,10 @@ namespace ambient { namespace controllers { namespace velvet {
 
     template<int N>
     inline get<revision, N>::get(revision& r){
-        if(ambient::rank()){
+        /*if(ambient::rank()){
             if(r.valid()) printf("REPEATED RECV OF SZ %d\n", (int)r.extent);
             else printf("RECV OF SZ %d\n", (int)r.extent);
-        }
+        }*/
         if(r.region != PERSIST_REGION)
             r.region = BULK_REGION;
         ambient::controller.alloc(r);
