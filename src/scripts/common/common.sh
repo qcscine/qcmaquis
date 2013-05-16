@@ -315,7 +315,7 @@ function run(){
         
         echo "#!/bin/bash
         $command; rm -f bootstrap.sh" &> bootstrap.sh; chmod +x bootstrap.sh;
-        command="mpiexec -np $MPI_NUM_PROCS $MCA bootstrap.sh"
+        command="mpiexec -np $MPI_NUM_PROCS $MCA ./bootstrap.sh"
     fi
 
     rm -f *.h5*
