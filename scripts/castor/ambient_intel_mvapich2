@@ -17,6 +17,9 @@ export CC=mpicc
 export CXX=mpicxx
 export BOOST_ROOT=/project/h07/BOOST_1_53/
 export MV2_ENABLE_AFFINITY=0
+export MV2_VBUF_POOL_SIZE=2048
+export MV2_VBUF_SECONDARY_POOL_SIZE=1024
+export MV2_VBUF_TOTAL_SIZE=24k
 
 module load gcc/4.7.2
 module load ${COMPILER}/${COMPILER_VERSION}
