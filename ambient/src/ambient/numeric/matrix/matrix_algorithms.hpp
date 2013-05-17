@@ -54,7 +54,7 @@ namespace ambient { namespace numeric {
 
     template<class A>
     inline void conj_inplace(matrix<std::complex<double>, A>& a){
-        kernels::conj_inplace<std::complex<double>,A>::spawn<complexity::N>(a);
+        kernels::template conj_inplace<std::complex<double>,A>::template spawn<complexity::N>(a);
     }
 
     template<class A>
@@ -90,12 +90,12 @@ namespace ambient { namespace numeric {
 
     template <typename T, class A>
     inline void save(const matrix<T,A>& a, const size_t& tag) { 
-        kernels::save<T,A>::spawn<complexity::N2>(a, tag); 
+        kernels::template save<T,A>::template spawn<complexity::N2>(a, tag); 
     }
 
     template <typename T, class A>
     inline void load(matrix<T,A>& a, const size_t& tag) { 
-        kernels::load<T,A>::spawn<complexity::N2>(a, tag); 
+        kernels::template load<T,A>::template spawn<complexity::N2>(a, tag); 
     }
 
     template<class Matrix>
@@ -105,22 +105,22 @@ namespace ambient { namespace numeric {
 
     template<class MatrixViewA, class MatrixViewB, typename T, class A>
     inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T,A>& c){
-        kernels::gemm<MatrixViewA,MatrixViewB,matrix<T,A>,T>::spawn<complexity::N3>(a, b, c); 
+        kernels::template gemm<MatrixViewA,MatrixViewB,matrix<T,A>,T>::template spawn<complexity::N3>(a, b, c); 
     }
 
     template<class MatrixViewA, typename T, typename D, class A>
     inline void gemm(const MatrixViewA& a, const diagonal_matrix<D>& b, matrix<T,A>& c){ 
-        kernels::gemm_diagonal_rhs<MatrixViewA,T,D>::spawn<complexity::N3>(a, b, c); 
+        kernels::template gemm_diagonal_rhs<MatrixViewA,T,D>::template spawn<complexity::N3>(a, b, c); 
     }
 
     template<class MatrixViewB, typename T, typename D, class A>
     inline void gemm(const diagonal_matrix<D>& a, const MatrixViewB& b, matrix<T,A>& c){ 
-        kernels::gemm_diagonal_lhs<MatrixViewB,T,D>::spawn<complexity::N3>(a, b, c); 
+        kernels::template gemm_diagonal_lhs<MatrixViewB,T,D>::template spawn<complexity::N3>(a, b, c); 
     }
 
     template<typename T, class A>
     inline void scale(matrix<T,A>& a, size_t ai, size_t aj, const diagonal_matrix<T>& alfa, size_t alfai, size_t alfaj){
-        kernels::scale_offset<T>::spawn<complexity::N2>(a, ai, aj, alfa, alfai);
+        kernels::template scale_offset<T>::template spawn<complexity::N2>(a, ai, aj, alfa, alfai);
     }
 
     template<typename T, class A>
@@ -131,23 +131,23 @@ namespace ambient { namespace numeric {
         u.resize(m, k);
         vt.resize(k, n);
         s.resize(k, k);
-        kernels::svd<T>::spawn<complexity::N3>(a, u, vt, s);
+        kernels::template svd<T>::template spawn<complexity::N3>(a, u, vt, s);
     }
 
     template<typename T, class A>
     inline void inverse(matrix<T,A>& a){
-        kernels::inverse<T>::spawn<complexity::N3>(a);
+        kernels::template inverse<T>::template spawn<complexity::N3>(a);
     }
 
     template<typename T, class A>
     inline void geev(matrix<T,A> a, matrix<T,A>& lv, matrix<T,A>& rv, diagonal_matrix<T>& s){
-        kernels::geev<T>::spawn<complexity::N3>(a, lv, rv, s); 
+        kernels::template geev<T>::template spawn<complexity::N3>(a, lv, rv, s); 
     }
 
     template<typename T, class A>
     inline void heev(matrix<T,A> a, matrix<T,A>& evecs, diagonal_matrix<double>& evals){
         assert(num_rows(a) == num_cols(a) && num_rows(evals) == num_rows(a));
-        kernels::heev<T>::spawn<complexity::N3>(a, evals); // destoys U triangle of M
+        kernels::template heev<T>::template spawn<complexity::N3>(a, evals); // destoys U triangle of M
         evecs.swap(a);
     }
 
@@ -158,42 +158,42 @@ namespace ambient { namespace numeric {
 
     template<typename T, class A>
     inline void geqrt(matrix<T,A>& a, matrix<T,A>& t){
-        kernels::geqrt<T>::spawn<complexity::N3>(a, t);
+        kernels::template geqrt<T>::template spawn<complexity::N3>(a, t);
     }
 
     template<PLASMA_enum TR, typename T, class A>
     inline void ormqr(size_t k, const matrix<T,A>& a, const matrix<T,A>& t, matrix<T,A>& c){
-        kernels::ormqr<T,TR>::spawn<complexity::N3>(k, a, t, c);
+        kernels::template ormqr<T,TR>::template spawn<complexity::N3>(k, a, t, c);
     }
 
     template<typename T, class A>
     inline void tsqrt(matrix<T,A>& a1, matrix<T,A>& a2, matrix<T,A>& t){
-        kernels::tsqrt<T>::spawn<complexity::N3>(a1, a2, t);
+        kernels::template tsqrt<T>::template spawn<complexity::N3>(a1, a2, t);
     }
 
     template<PLASMA_enum TR, typename T, class A>
     inline void tsmqr(size_t k, matrix<T,A>& a1, matrix<T,A>& a2, const matrix<T,A>& v, const matrix<T,A>& t){
-        kernels::tsmqr<T,TR>::spawn<complexity::N3>(k, a1, a2, v, t);
+        kernels::template tsmqr<T,TR>::template spawn<complexity::N3>(k, a1, a2, v, t);
     }
 
     template<typename T, class A>
     inline void gelqt(matrix<T,A>& a, matrix<T,A>& t){
-        kernels::gelqt<T>::spawn<complexity::N3>(a, t);
+        kernels::template gelqt<T>::template spawn<complexity::N3>(a, t);
     }
 
     template<PLASMA_enum TR, typename T, class A>
     inline void ormlq(size_t k, const matrix<T,A>& a, const matrix<T,A>& t, matrix<T,A>& c){
-        kernels::ormlq<T,TR>::spawn<complexity::N3>(k, a, t, c);
+        kernels::template ormlq<T,TR>::template spawn<complexity::N3>(k, a, t, c);
     }
 
     template<typename T, class A>
     inline void tslqt(matrix<T,A>& a1, matrix<T,A>& a2, matrix<T,A>& t){
-        kernels::tslqt<T>::spawn<complexity::N3>(a1, a2, t);
+        kernels::template tslqt<T>::template spawn<complexity::N3>(a1, a2, t);
     }
 
     template<PLASMA_enum TR, typename T, class A>
     inline void tsmlq(size_t k, matrix<T,A>& a1, matrix<T,A>& a2, const matrix<T,A>& v, const matrix<T,A>& t){
-        kernels::tsmlq<T,TR>::spawn<complexity::N3>(k, a1, a2, v, t);
+        kernels::template tsmlq<T,TR>::template spawn<complexity::N3>(k, a1, a2, v, t);
     }
 
     template<typename T, class A> 
@@ -202,28 +202,28 @@ namespace ambient { namespace numeric {
         if(a.num_rows() == m && a.num_cols() == n) return;
         matrix<T,A> resized(m, n);
         if(!a.core->weak())
-            kernels::resize<T,A>::spawn<complexity::N2>(resized, a, std::min(m, a.num_rows()), std::min(n, a.num_cols()));
+            kernels::template resize<T,A>::template spawn<complexity::N2>(resized, a, std::min(m, a.num_rows()), std::min(n, a.num_cols()));
         a.swap(resized);
     }
 
     template<typename T, class A> 
     inline scalar_type trace(const matrix<T,A>& a){ 
         scalar_type trace(0.);
-        kernels::trace<T,A>::spawn<complexity::N>(a, trace);
+        kernels::template trace<T,A>::template spawn<complexity::N>(a, trace);
         return trace;
     }
 
     template <typename T, class A>
     inline real_type norm_square(const matrix<T,A>& a){ 
         real_type norm(0.); 
-        kernels::scalar_norm<T>::spawn<complexity::N2>(a, norm); 
+        kernels::template scalar_norm<T>::template spawn<complexity::N2>(a, norm); 
         return norm; 
     }
 
     template <typename T, class A>
     inline scalar_type overlap(const matrix<T,A>& a, const matrix<T,A>& b){ 
         scalar_type overlap(0.); 
-        kernels::overlap<T>::spawn<complexity::N2>(a, b, overlap); 
+        kernels::template overlap<T>::template spawn<complexity::N2>(a, b, overlap); 
         return overlap; 
     }
         
@@ -235,7 +235,7 @@ namespace ambient { namespace numeric {
     template<typename T, class A>
     inline void transpose_inplace(matrix<T,A>& a){
         matrix<T,A> t(a.num_cols(), a.num_rows());
-        kernels::transpose_out<T,A>::spawn<complexity::N2>(a, t);
+        kernels::template transpose_out<T,A>::template spawn<complexity::N2>(a, t);
         a.swap(t);
     }
 
@@ -246,44 +246,44 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void fill_identity(Matrix& a){
-        kernels::init_identity<typename Matrix::value_type>::spawn<complexity::N2>(a);
+        kernels::template init_identity<typename Matrix::value_type>::template spawn<complexity::N2>(a);
     }
 
     template<class Matrix>
     inline void fill_random(Matrix& a){
-        kernels::init_random<typename Matrix::value_type>::spawn<complexity::N2>(a);
+        kernels::template init_random<typename Matrix::value_type>::template spawn<complexity::N2>(a);
         // ambient::sync(); // uncomment for reproduceability
     }
 
     template<class Matrix>
     inline void fill_value(Matrix& a, typename Matrix::value_type value){
         if(value == typename Matrix::value_type()) return; // matrices are 0 by default
-        kernels::init_value<typename Matrix::value_type, typename Matrix::allocator_type>::spawn<complexity::N2>(a, value);
+        kernels::template init_value<typename Matrix::value_type, typename Matrix::allocator_type>::template spawn<complexity::N2>(a, value);
     }
 
     template <typename T, class A>
     inline void add_inplace(matrix<T,A>& lhs, const matrix<T,A>& rhs){ 
-        kernels::add<T,A>::spawn<complexity::N2>(lhs, rhs); 
+        kernels::template add<T,A>::template spawn<complexity::N2>(lhs, rhs); 
     }
 
     template <typename T, class A>
     inline void sub_inplace(matrix<T,A>& lhs, const matrix<T,A>& rhs){ 
-        kernels::sub<T>::spawn<complexity::N2>(lhs, rhs); 
+        kernels::template sub<T>::template spawn<complexity::N2>(lhs, rhs); 
     }
 
     template <typename T, class A>
     inline void mul_inplace(matrix<T,A>& a, const scalar_type& rhs) { 
-        kernels::scale<T>::spawn<complexity::N2>(a, rhs); 
+        kernels::template scale<T>::template spawn<complexity::N2>(a, rhs); 
     }
 
     template <typename T, class A>
     inline void div_inplace(matrix<T,A>& a, const scalar_type& rhs) { 
-        kernels::scale_inverse<T>::spawn<complexity::N2>(a, rhs); 
+        kernels::template scale_inverse<T>::template spawn<complexity::N2>(a, rhs); 
     }
 
     template<typename T, class A>
     inline void copy(const matrix<T,A>& src, matrix<T,A>& dst){
-        ambient::fuse(src.core, dst.core);
+        ambient::template fuse(src.core, dst.core);
     }
 
     template<class A1, class A2, typename T>
@@ -291,17 +291,17 @@ namespace ambient { namespace numeric {
                            matrix<T,A2>& dst, size_t di, size_t dj, 
                            size_t m, size_t n)
     {
-        kernels::copy_block<A1,A2,T>::spawn<complexity::N2>(src, si, sj, dst, di, dj, m, n); 
+        kernels::template copy_block<A1,A2,T>::template spawn<complexity::N2>(src, si, sj, dst, di, dj, m, n); 
     }
 
     template<typename T, class A>
     inline void copy_rt(const matrix<T,A>& src, matrix<T,A>& dst){ 
-        kernels::copy_rt<T>::spawn<complexity::N2>(src, dst);
+        kernels::template copy_rt<T>::template spawn<complexity::N2>(src, dst);
     }
 
     template<typename T, class A>
     inline void copy_lt(const matrix<T,A>& src, matrix<T,A>& dst){ 
-        kernels::copy_lt<T>::spawn<complexity::N2>(src, dst);
+        kernels::template copy_lt<T>::template spawn<complexity::N2>(src, dst);
     }
 
     template<typename T, class A>
@@ -310,7 +310,7 @@ namespace ambient { namespace numeric {
                              const matrix<T,A>& alfa, size_t ai, size_t aj,
                              size_t m, size_t n)
     { 
-        kernels::copy_block_s<T>::spawn<complexity::N2>(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
+        kernels::template copy_block_s<T>::template spawn<complexity::N2>(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
     }
 
     template<class A1, class A2, class A3, typename T>
@@ -319,7 +319,7 @@ namespace ambient { namespace numeric {
                               const matrix<T,A3>& alfa, size_t ai, size_t aj,
                               size_t m, size_t n)
     { 
-        kernels::copy_block_sa<A1,A2,A3,T>::spawn<complexity::N2>(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
+        kernels::template copy_block_sa<A1,A2,A3,T>::template spawn<complexity::N2>(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
     }
 
     template<typename T, class A>
@@ -330,7 +330,7 @@ namespace ambient { namespace numeric {
             return false;
         }
         ambient::numeric::future<bool> ret(true);
-        kernels::validation<T>::spawn<complexity::N2>(a, b, ret);
+        kernels::template validation<T>::template spawn<complexity::N2>(a, b, ret);
         return (bool)ret;
     }
 
@@ -343,7 +343,7 @@ namespace ambient { namespace numeric {
         }
         transpose_inplace(a);
         ambient::numeric::future<bool> ret(true);
-        kernels::validation<T>::spawn<complexity::N2>(a, b, ret);
+        kernels::template validation<T>::template spawn<complexity::N2>(a, b, ret);
         return (bool)ret;
     }
 
@@ -355,7 +355,7 @@ namespace ambient { namespace numeric {
             return false;
         }
         ambient::numeric::future<bool> ret(true);
-        kernels::validation<T>::spawn<complexity::N2>(a, b, ret);
+        kernels::template validation<T>::template spawn<complexity::N2>(a, b, ret);
         return (bool)ret;
     }
 

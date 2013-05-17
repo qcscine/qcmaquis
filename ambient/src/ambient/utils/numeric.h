@@ -5,6 +5,8 @@
 #ifndef AMBIENT_UTILS_NUMERIC
 #define AMBIENT_UTILS_NUMERIC
 
+#include <alps/hdf5.hpp>
+
 /*
 *  idea : partial specialization on the type : double or "complex", complex must be std::complex<double> compatible.
 *  The partial specialization adds a safety on the type, function can not be instantiated with float or std::complex<float>
@@ -46,12 +48,14 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<class T>
     struct helper_complex<T, typename boost::enable_if<boost::is_floating_point<T> >::type>{
-        static T conj(T x){ return x; }
+        static inline T conj(T x){ return x; }
+        static inline T real(T x){ return x; }
     };
    
     template<class T>
     struct helper_complex<T, typename boost::enable_if<boost::is_complex<T> >::type>{
-        static T conj(T x){ return std::conj(x); }
+        static inline T conj(T x){ return std::conj(x); }
+        static inline T real(T x){ return std::real(x); }
     };
 
     template<class t, typename type = void>
@@ -63,7 +67,7 @@ namespace ambient { namespace numeric { namespace kernels {
           dgemm_(transa, transb, m, n, k, alpha, ad, lda, bd, ldb, beta, cd, ldc);
        } 
     
-       static void gemv(const char* transa, const int* m, const int* n, const double* alpha, const T* ad, const int* lda, const T* bd, const int* ldb, const double* beta, const T* cd, const int* ldc){
+       static void gemv(const char* transa, const int* m, const int* n, const double* alfa, const T* ad, const int* lda, const T* bd, const int* ldb, const double* beta, T* cd, const int* ldc){
           dgemv_(transa, m, n, alfa, ad, lda, bd, ldb, beta, cd, ldc);
        }
 
@@ -79,7 +83,7 @@ namespace ambient { namespace numeric { namespace kernels {
           zgemm_(transa, transb, m, n, k, alpha, ad, lda, bd, ldb, beta, cd, ldc);
        } 
 
-       static void gemv(const char* transa, const int* m, const int* n, const double* alpha, const T* ad, const int* lda, const T* bd, const int* ldb, const double* beta, const T* cd, const int* ldc){
+       static void gemv(const char* transa, const int* m, const int* n, const double* alfa, const T* ad, const int* lda, const T* bd, const int* ldb, const double* beta, T* cd, const int* ldc){
           zgemv_(transa, m, n, alfa, ad, lda, bd, ldb, beta, cd, ldc);
        }
 
