@@ -15,6 +15,7 @@ RUN_PRESETS="1n.micro:             ~/maquis2013/benchmarks/dmrg_gs/1n/micro.L4/p
              1n.spinless.L8.6000:  ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/parms.6000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/model
              1n.spinless.L8.8000:  ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/parms.8000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/model
              1n.spinless.L8.10000: ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/parms.10000  ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/model
+             1n.spinless.W16.3000: ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.W16/parms.3000  ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.W16/model
              1n.spinfull.L8.6000:  ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/parms.6000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/model
              1n.spinfull.L8.8000:  ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/parms.8000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/model
              1n.spinfull.L8.10000: ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/parms.10000  ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/model
