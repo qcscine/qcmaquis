@@ -32,7 +32,7 @@ namespace ambient { namespace models { namespace velvet {
 
     template<typename T>
     inline transformable& transformable_value<T>::operator += (transformable& r){ 
-        return *new(this)transformable_expr<T, decltype(op_plus<T>), op_plus>(
+        return *new(this)transformable_expr<T, decltype(&op_plus<T>), op_plus>(
                    &r, 
                    new (ambient::pool.malloc<AMBIENT_FUTURE_SIZE>()) transformable_value(*this)
                );
@@ -50,7 +50,7 @@ namespace ambient { namespace models { namespace velvet {
 
     template <typename T, typename FP, FP OP>
     inline transformable& transformable_expr<T,FP,OP>::operator += (transformable& r){ 
-        return *new(this)transformable_expr<T, decltype(op_plus<T>), op_plus>(
+        return *new(this)transformable_expr<T, decltype(&op_plus<T>), op_plus>(
                    &r, 
                    new (ambient::pool.malloc<AMBIENT_FUTURE_SIZE>()) transformable_expr<T,FP,OP>(*this)
                ); 

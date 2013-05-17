@@ -105,7 +105,7 @@ namespace ambient { namespace numeric {
         tiles<diagonal_matrix<value_type> > S(n), S1(n); 
 
         for(size_t k = 0; k < Sv.data.size(); ++k)
-             ambient::numeric::kernels::cast_double_complex<value_type,double>::spawn<complexity::N2>(S[k],Sv[k]); //can be complex/double or double/double
+             ambient::numeric::kernels::template cast_double_complex<value_type,double>::template spawn<complexity::N2>(S[k],Sv[k]); //can be complex/double or double/double
 
         S1 = expi(S,alfa); 
         gemm(N, S1, tmp);

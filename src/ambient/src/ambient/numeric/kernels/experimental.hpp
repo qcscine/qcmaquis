@@ -84,8 +84,8 @@ namespace ambient { namespace numeric { namespace kernels {
 
 
     template<typename T, PLASMA_enum UL, size_t OFF>
-    void laset2<T,UL,OFF>::c(matrix<T>& a, const double& alfa){
-        double* ad = revised(a);
+    void laset2<T,UL,OFF>::c(matrix<T>& a, const T& alfa){
+        T* ad = revised(a);
         helper_plasma<T>::laset2(UL, a.num_rows()-OFF, a.num_cols()-OFF, alfa, ad + OFF*a.num_rows(), a.num_rows());
     }
 
@@ -424,3 +424,5 @@ namespace ambient { namespace numeric { namespace kernels {
     }
 
 } } }
+
+#endif

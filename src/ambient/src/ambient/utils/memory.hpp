@@ -45,9 +45,9 @@ namespace ambient { namespace memory {
     public:        
         template <class T>
         class allocator {
-            typedef T value_type;
-            template <class U> struct rebind { typedef allocator<U> other; };
         public:
+            template <class U> struct rebind { typedef allocator<U> other; };
+            typedef T value_type;
             static T* allocate(std::size_t n);
             static void deallocate(T* p, std::size_t n){}
         };
