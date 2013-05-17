@@ -3,9 +3,6 @@
 
 namespace ambient { namespace controllers { namespace velvet {
 
-    using ambient::channels::mpi::packet_t;
-    using ambient::channels::mpi::packet;
-
     inline controller::~controller(){ }
 
     inline controller::controller()

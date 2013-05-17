@@ -2,6 +2,7 @@
 #define AMBIENT_UTILS_TIMINGS
 #include "ambient/ambient.hpp"
 #include "ambient/utils/io.hpp"
+#include <pthread.h>
 
 #define BILLION 0x3B9ACA00
 
