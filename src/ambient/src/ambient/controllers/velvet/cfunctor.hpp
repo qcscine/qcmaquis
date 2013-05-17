@@ -104,6 +104,7 @@ namespace ambient { namespace controllers { namespace velvet {
             static_repeat<0, lim_expr(N)>()([&](int i){
                 (*handles)[i] = ambient::channel.set(target, (size_t)(*handles)[i]); 
             });
+            //if(N == (AMBIENT_NUM_PROCS-1)) printf("IT SHOULD BE A BROADCAST!\n");
         }
         return static_for<0, lim_expr(N)>()([&](int i){ 
             return ambient::channel.test((*handles)[i]);  // do we need to remove completed reqs?
