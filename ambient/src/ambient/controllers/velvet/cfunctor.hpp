@@ -11,14 +11,6 @@ namespace ambient { namespace controllers { namespace velvet {
          }
     };
 
-    template <int First, int Last>
-    struct static_repeat {
-         template <typename Fn>
-         void operator()(Fn const& fn) const {
-             if(First < Last){ fn(First); static_repeat<lim_expr(First+1), Last>()(fn); }
-         }
-    };
-
     inline void cfunctor::queue(cfunctor* d){
         this->deps.push_back(d);
     }
@@ -101,9 +93,8 @@ namespace ambient { namespace controllers { namespace velvet {
         if(target->generator != NULL) return false;
         if(!evaluated){
             evaluated = true;
-            static_repeat<0, lim_expr(N)>()([&](int i){
+            for(int i = 0; i < N; ++i)
                 (*handles)[i] = ambient::channel.set(target, (size_t)(*handles)[i]); 
-            });
             //if(N == (AMBIENT_NUM_PROCS-1)) printf("IT SHOULD BE A BROADCAST!\n");
         }
         return static_for<0, lim_expr(N)>()([&](int i){ 
@@ -134,7 +125,8 @@ namespace ambient { namespace controllers { namespace velvet {
                               ? ambient::pool.malloc<sizeof(set)>()
                               : ambient::bulk.malloc<sizeof(set)>())
                          set<revision>(r);
-        static_repeat<0, lim_expr(AMBIENT_NUM_PROCS)>()([&](int i){ (*(set<revision>*)r.transfer) >> i; });
+        for(int i = 0; i < AMBIENT_NUM_PROCS; ++i) 
+            (*(set<revision>*)r.transfer) >> i;
     }
 
     template<int NE>
@@ -150,9 +142,8 @@ namespace ambient { namespace controllers { namespace velvet {
         if(target->generator != NULL) return false;
         if(!evaluated){ 
             evaluated = true; 
-            static_repeat<0, lim_expr(AMBIENT_NUM_PROCS)>()([&](int i){
+            for(int i = 0; i < AMBIENT_NUM_PROCS; ++i)
                 (*handles)[i] = ambient::channel.set(target, (size_t)(*handles)[i]); 
-            });
         }
         return static_for<0, lim_expr(AMBIENT_NUM_PROCS)>()([&](int i){ 
             return ambient::channel.test((*handles)[i]);
@@ -204,9 +195,8 @@ namespace ambient { namespace controllers { namespace velvet {
         if(target->generator != NULL) return false;
         if(!evaluated){ 
             evaluated = true; 
-            static_repeat<0, lim_expr(AMBIENT_NUM_PROCS)>()([&](int i){
+            for(int i = 0; i < AMBIENT_NUM_PROCS; ++i)
                 (*handles)[i] = ambient::channel.set(target, i); 
-            });
         }
         return static_for<0, lim_expr(AMBIENT_NUM_PROCS)>()([&](int i){ 
             return ambient::channel.test((*handles)[i]);
