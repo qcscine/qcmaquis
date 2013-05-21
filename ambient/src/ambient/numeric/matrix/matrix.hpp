@@ -3,6 +3,10 @@
 
 #include "ambient/numeric/matrix/matrix.h"
 #include "ambient/numeric/matrix/matrix_algorithms.hpp"
+#ifdef AMBIENT_EXPERIMENTAL
+#include "ambient/numeric/matrix/matrix_algorithms_experimental.hpp"
+#endif
+
 
 namespace ambient { namespace numeric {
 

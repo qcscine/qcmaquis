@@ -47,13 +47,14 @@
     #define AMBIENT_SMP_DISABLE
 #endif
 
+#define AMBIENT_NUM_PROCS             12
+
+//#define AMBIENT_EXPERIMENTAL
 //#define AMBIENT_COMPUTATIONAL_TIMINGS
 //#define AMBIENT_COMPUTATIONAL_DATAFLOW
-//#define AMBIENT_CHECK_BOUNDARIES
 //#define AMBIENT_TRACE void* b[10]; backtrace_symbols_fd(b,backtrace(b,10),2);
+//#define AMBIENT_CHECK_BOUNDARIES
 //#define AMBIENT_LOOSE_FUTURE
-
-#define AMBIENT_NUM_PROCS             12
 
 #ifdef AMBIENT_CRAY
 #define AMBIENT_MAX_SID               4194304

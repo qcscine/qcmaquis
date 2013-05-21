@@ -74,6 +74,21 @@ namespace ambient { namespace numeric { namespace kernels {
                       const size_t& rows, const size_t& cols);
     };
 
+    template<typename T>
+    struct norm_vector : public kernel< norm_vector<T> > 
+    { static void c(const matrix<T>& a, matrix<typename real_type<T>::type>& b); };
+
+    template<typename T>
+    struct max_vector : public kernel< max_vector<T> > 
+    { static void c(const matrix<typename real_type<T>::type>& a, future<typename real_type<T>::type>& ret); };
+
+    template<typename T>
+    struct sqrt_inplace : public kernel< sqrt_inplace<typename real_type<T>::type> > 
+    { static void c(matrix<typename real_type<T>::type>& a); };
+
+    template<typename T>
+    struct init_gaussian : public kernel< init_gaussian<T> > 
+    { static void c(unbound< matrix<T> >& a); };
 
 
 
@@ -422,6 +437,46 @@ namespace ambient { namespace numeric { namespace kernels {
         if(*ViewA::code() == 'T') std::swap(m,n);
         helper_blas<T>::gemv(ViewA::code(), &m, &n, &salfa, &ad[aoffset], &lda, &bd[boffset], &ldb, &sbeta, &cd[coffset], &ldc);
     }
+
+    template<typename T>
+    void norm_vector<T>::c(const matrix<T>& a, matrix<typename real_type<T>::type>& b){
+        int m = num_rows(a);
+        int n = num_cols(a);
+        T* ad = current(a);
+        typename real_type<T>::type* bd = updated(b);
+        std::cout << " (m,n) " << m << " " << n << std::endl;
+        for(int i(0); i<n; ++i)
+            for(int j(0); j<m; ++j)
+                bd[i] += helper_complex<T>::real(ad[i*m+j]*helper_complex<T>::conj(ad[i*m+j])); 
+    }   
+        
+    template<typename T>
+    void max_vector<T>::c(const matrix<typename real_type<T>::type>& a, future<typename real_type<T>::type>& ret){
+        typename real_type<T>::type* ad = current(a);
+        typename real_type<T>::type tmp = ad[0];
+        int n = num_cols(a);
+            
+        for(int i(0); i<n; ++i)
+            tmp = std::max(tmp,ad[i]);
+        ret.get_naked() = tmp;
+    }
+
+    template<typename T>
+    void sqrt_inplace<T>::c(matrix<typename real_type<T>::type>& a){
+        size_t size = a.num_rows()*a.num_cols();
+        typename real_type<T>::type* ad = current(a);
+        typename real_type<T>::type* ar = updated(a);
+        for(int i=0; i < size; ++i)
+            ar[i] =sqrt(ad[i]);   
+    }
+
+    template<typename T>
+    void init_gaussian<T>::c(unbound< matrix<T> >& a){
+        size_t size = ambient::square_dim(a);
+        T* ad = updated(a);
+        // for(size_t i = 0; i < size; ++i) ad[i] = gaussian_generator(rng);
+    }
+
 
 } } }
 
