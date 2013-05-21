@@ -39,7 +39,7 @@
     #define AMBIENT_NUM_THREADS [&]()->int{ int n; AMBIENT_SMP_ENABLE \
                                 { n = omp_get_num_threads(); } \
                                 AMBIENT_SMP_DISABLE return n; }()
-#else
+#else // Note: use for Cray machines
     #define AMBIENT_NUM_THREADS 1
     #define AMBIENT_THREAD_ID   0
     #define AMBIENT_THREAD
@@ -54,7 +54,12 @@
 //#define AMBIENT_LOOSE_FUTURE
 
 #define AMBIENT_NUM_PROCS             12
+
+#ifdef AMBIENT_CRAY
+#define AMBIENT_MAX_SID               4194304
+#else
 #define AMBIENT_MAX_SID               2147483647
+#endif
 #define AMBIENT_STACK_RESERVE         65536
 #define AMBIENT_COLLECTOR_STR_RESERVE 65536
 #define AMBIENT_COLLECTOR_RAW_RESERVE 1024
