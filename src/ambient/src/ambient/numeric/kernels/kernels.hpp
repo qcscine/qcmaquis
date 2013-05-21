@@ -348,6 +348,8 @@ namespace ambient { namespace numeric { namespace kernels {
     void gemm_diagonal_lhs<transpose_view<matrix<T> >,T,D>::c(const matrix<D>& a_diag, const matrix<T>& b, unbound< matrix<T> >& c){
         size_t sizex = b.num_cols();
         int size  = a_diag.num_rows();
+        static const int ONE = 1;
+        T* bd = current(b);
         T* cd = emptied(c);
         D* alfa = current(a_diag);
     
@@ -359,7 +361,7 @@ namespace ambient { namespace numeric { namespace kernels {
     void gemm_diagonal_rhs<ViewA,T,D>::c(const matrix<T>& a, const matrix<D>& b_diag, unbound< matrix<T> >& c){
         size_t sizex = b_diag.num_rows();
         int size = a.num_rows(); // for the case of complex
-        int ONE = 1;
+        static const int ONE = 1;
         T* ad = current(a);
         T* cd = emptied(c);
     	D* alfa = current(b_diag);
@@ -372,7 +374,7 @@ namespace ambient { namespace numeric { namespace kernels {
     void gemm_diagonal_rhs<transpose_view<matrix<T> >,T,D>::c(const matrix<T>& a, const matrix<D>& b_diag, unbound< matrix<T> >& c){
         int sizey = b_diag.num_rows();
         int size = a.num_cols();
-        int ONE = 1;
+        static const int ONE = 1;
         T* ad = current(a);
         T* cd = emptied(c);
     	D* alfa = current(b_diag);
@@ -452,9 +454,8 @@ namespace ambient { namespace numeric { namespace kernels {
         T* ad = current(a);
     
         size_t sizex = std::min(n,m);
-        for(size_t jj = 0; jj < sizex; jj++){
+        for(size_t jj = 0; jj < sizex; jj++)
             trace.get_naked() += ad[jj + jj*m];
-        }
     }
         
     template<typename T>

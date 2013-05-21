@@ -7,6 +7,8 @@
 #define scalar_type     typename tiles<Matrix>::scalar_type
 #define difference_type typename tiles<Matrix>::difference_type
 
+#define PI_VALUE 3.14159265359 
+
 namespace ambient { namespace numeric {
 
     template<size_t OFF = 0, class Matrix>
@@ -371,11 +373,12 @@ namespace ambient { namespace numeric {
     }
 
     template<int alfa, int beta, class MatrixA, class MatrixB, class MatrixC>
-    inline void gemv(const MatrixA&  a, int ai, int aj, 
-                     const MatrixB&  b, int bi, int bj, 
+    inline void gemv(const tiles<MatrixA>&  a, int ai, int aj, 
+                     const tiles<MatrixB>&  b, int bi, int bj, 
                            MatrixC&  c, int ci, int cj,
                            int m, int n)
     {
+        std::cout << " JE SUIS LA ALEX SVD " << std::endl; // Tim
         if(m == 0 || n == 0) return;
 
         for(cross_iterator row(ai,ci,m); !row.end(); ++row){
@@ -392,6 +395,94 @@ namespace ambient { namespace numeric {
             add_vectors<beta>(c.locate(row.second, cj), c.addr(row.second, cj), *ctree[0], 0, row.step);
             for(int k = 0; k < ctree.size(); k++) delete ctree[k];
         }
+    }
+
+    template<int alfa, int beta, class Matrix>
+    inline void gemv(const tiles<Matrix>&  a, int ai, int aj,
+                     const tiles<Matrix>&  b, int bi, int bj,
+                           tiles<Matrix>&  c, int ci, int cj,
+                           int m, int n)
+    {
+        std::cout << " JE SUIS LA TIM SVD " << std::endl; // for Tim SVD only
+        if(m == 0 || n == 0) return;
+
+        for(cross_iterator row(ai,ci,m); !row.end(); ++row){
+            std::vector<Matrix*> ctree;
+            for(cross_iterator col(aj,bi,n); !col.end(); ++col){
+                Matrix* part = new Matrix(row.step, 1);
+                gemv<alfa,0>(a.locate(row.first,col.first), a.addr(row.first, col.first),
+                             b.locate(col.second,bj), b.addr(col.second, bj),
+                             *part, 0,
+                             row.step, col.step);
+                ctree.push_back(part);
+            }
+            __a_reduce(ctree);
+            add_vectors<beta>(c.locate(row.second, cj), c.addr(row.second, cj), *ctree[0], 0, row.step);
+            for(int k = 0; k < ctree.size(); k++) delete ctree[k];
+        }
+    }
+
+    template <class Matrix>
+    inline bool test_norm(const tiles<Matrix>& a, double epsilon){
+        int num_cols = a.num_cols();
+        tiles<matrix<double> > norm(1,num_cols); 
+           
+        for(int i=0; i<a.nt; ++i)
+            for(int j=0; j<a.mt; ++j)
+                norm_vector(a.tile(i,j),norm.tile(0,j));                    
+         
+        int size = norm.data.size();
+        for(int i = 0; i < size; ++i)
+            sqrt_inplace(norm[i]); 
+
+        std::vector<double> parts;
+        parts.reserve(num_cols);
+
+        for(int i = 0; i < size; ++i)
+            parts.push_back(max_vector(norm[i]));
+        
+        std::vector<double>::iterator maxit;
+
+        maxit = std::max_element(parts.begin(), parts.end());
+        
+        if(*maxit < epsilon/(10*sqrt(2/PI_VALUE))){
+            std::cout << " JE STOP " << std::endl;
+            return false; // we stop
+        }
+ 
+        std::cout << " JE CONTINUE (max,epsilon) " << *maxit << " " << epsilon  << std::endl;
+        return true;  // we continue
+    }
+ 
+    template<class Matrix, class DiagonalMatrix>
+    inline void svd_lowrank(const tiles<Matrix>& a, tiles<Matrix>& u, tiles<Matrix>& v, tiles<DiagonalMatrix>& s, real_type epsilon){
+        int r = 10; // to template later maybe
+        tiles<Matrix> omega(a.num_rows(),r);
+        generate_gaussian(omega);
+        omega *= a; // omega -> y, line 2
+        int j(0);
+        tiles<Matrix> Q(1,1);
+        tiles<Matrix> yn(a.num_rows(),1);
+        while(test_norm(omega,epsilon) == true){ // line 5
+            ++j; // line 6 ^_^
+            std::cout << " JE SUIS 0 " << std::endl;
+            tiles<Matrix> Id = tiles<Matrix>::identity_matrix(Q.num_rows());
+            std::cout << " JE SUIS 1 " << std::endl;
+            Id -= Q * adjoint(Q) ;
+            std::cout << " JE SUIS 2 " << std::endl;
+            std::cout << omega << std::endl;
+            gemv<1,1>(Id,0,0, omega,0,j, yn,0,0, 1, a.num_rows()); // y := alpha*A*x + beta*y,
+            std::cout << omega << std::endl;
+            assert(false);
+            std::cout << " JE SUIS 3 " << std::endl;
+        }
+    }
+
+    template<class Matrix>
+    inline void generate_gaussian(tiles<Matrix>& a){
+        int size = a.data.size();
+        for(int i = 0; i < size; i++)
+            fill_gaussian(a[i]);
     }
 
 } }

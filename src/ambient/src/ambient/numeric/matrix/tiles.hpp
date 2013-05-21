@@ -3,6 +3,9 @@
 
 #include "ambient/numeric/matrix/tiles.h"
 #include "ambient/numeric/matrix/tiles_algorithms.hpp"
+#ifdef AMBIENT_EXPERIMENTAL
+#include "ambient/numeric/matrix/tiles_algorithms_experimental.hpp"
+#endif
 
 // {{{ tiles< subset_view<Matrix> >
 #define size_type typename tiles<subset_view<Matrix> >::size_type

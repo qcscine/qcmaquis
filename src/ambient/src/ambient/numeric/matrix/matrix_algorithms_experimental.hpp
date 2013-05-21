@@ -3,6 +3,7 @@
 
 #include "ambient/numeric/matrix/matrix.h"
 #include "ambient/numeric/kernels/kernels.hpp"
+#include "ambient/numeric/kernels/experimental.hpp"
 #include "ambient/numeric/matrix/diagonal_matrix.hpp"
 
 #define size_type       typename matrix<T,A>::size_type
@@ -112,6 +113,28 @@ namespace ambient { namespace numeric {
     template <int alfa, typename T, class A>
     inline void add_vectors(matrix<T,A>& lhs, size_t loffset, const matrix<T,A>& rhs, size_t roffset, size_t size){ 
         kernels::add_vectors<alfa, T>::spawn<complexity::N2>(lhs, loffset, rhs, roffset, size); 
+    }
+
+    template<typename T, class A>
+    inline void sqrt_inplace(matrix<T,A>& a){
+        kernels::template sqrt_inplace<T>::template spawn<complexity::N>(a);
+    }
+
+    template<typename T, class A>
+    inline void norm_vector(const matrix<T,A>& a, matrix<T,A>& b){ 
+        kernels::template norm_vector<T>::template spawn<complexity::N>(a, b);
+    }
+
+    template<typename T, class A> 
+    inline double max_vector(const matrix<T,A>& a){ 
+        ambient::numeric::future<double> ret(0.0);
+        kernels::template max_vector<T>::template spawn<complexity::N>(a, ret);
+        return (double)ret; 
+    }
+
+    template<class Matrix>
+    inline void fill_gaussian(Matrix& a){
+        kernels::template init_gaussian<typename Matrix::value_type>::template spawn<complexity::N2>(a);
     }
 
 } }
