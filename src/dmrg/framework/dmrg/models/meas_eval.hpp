@@ -131,6 +131,10 @@ namespace meas_eval {
         , phys_i(mps[0].site_dim())
         , left_(L)
         , right_(L)
+        , initialized(false)
+        { }
+        
+        void init() const
         {
             ident(0,0) = identity_matrix<Matrix>(phys_i);
             
@@ -145,13 +149,15 @@ namespace meas_eval {
                 left = contraction::overlap_mpo_left_step(mps[i-1], mps[i-1], left, ident);
                 left_[i] = left;
             }
-
         }
         
         void site_term (std::pair<block_matrix<Matrix, SymmGroup>, bool> const & op,
                         std::string const & h5name,
                         std::string const & base_path) const
         {
+            if (!initialized)
+                init();
+            
             std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> vals; vals.reserve(L);
             std::vector<std::string> labels;
             MPOTensor<Matrix, SymmGroup> temp;
@@ -177,6 +183,9 @@ namespace meas_eval {
                         std::string const & base_path) const
         {
             assert(ops.size() == 2);
+            
+            if (!initialized)
+                init();
             
             std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> vals; vals.reserve(L-1);
             std::vector<std::string> labels;
@@ -206,8 +215,9 @@ namespace meas_eval {
         const Lattice & lat;
         int L;
         Index<SymmGroup> phys_i;
-        MPOTensor<Matrix, SymmGroup> ident;
-        std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
+        mutable MPOTensor<Matrix, SymmGroup> ident;
+        mutable std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
+        bool initialized;
 
     };
     
