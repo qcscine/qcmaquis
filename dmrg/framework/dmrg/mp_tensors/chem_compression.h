@@ -9,13 +9,13 @@
 #ifndef FAST_COMPRESSION_H
 #define FAST_COMPRESSION_H
 
+#include <unistd.h>
 #include <vector>
 #include <functional>
 #include <iostream>
 #include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple.hpp>
 
-//#include "dmrg/block_matrix/detail/one_matrix.hpp"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/block_matrix/symmetry.h"
@@ -23,6 +23,7 @@
 #include "dmrg/models/lattice.h"
 
 #include "dmrg/mp_tensors/mpotensor.h"
+
 
 template <class SymmGroup>
 double mem_index(Index<SymmGroup> const & li, Index<SymmGroup> const & ri)
@@ -359,6 +360,7 @@ public:
 
     column_iterator & operator++()
     {
+        // operator block
         block_pos++;
         if (block_pos >= block_size) {
             do {
@@ -371,6 +373,7 @@ public:
         }
         op_it_loc = op_it_low;
 
+        // intra operator block position (0,1,2,3)
         charge delta = SymmGroup::fuse(left_charge, -out_bond_charge[c]); 
         local_ls = 0;
         for (mpo_index_t ls = 0; ls < phys_i.size(); ++ls) {
@@ -425,6 +428,10 @@ public:
         return ret;
     }
 
+    mpo_index_t key() const {
+        return (mpo_index_t(c) << 4) + (local_ls << 2) + mpo_index_t(phys_i.position(op_out));
+    }
+
     inline bool end() const { return cur_col == coldim; }
     inline mpo_index_t col() const { return cur_col; }
     inline mpo_index_t col_dim() const { return coldim; }
@@ -465,6 +472,7 @@ class compressor
     typedef typename alps::numeric::associated_dense_matrix<Matrix>::type dense_matrix;
     typedef typename MPO<Matrix, SymmGroup>::elem_type elem_type;
     typedef typename MPOIndexer<Matrix, SymmGroup>::map_it_t map_it_t;
+    typedef typename MPOIndexer<Matrix, SymmGroup>::mpo_index_t mpo_index_t;
 
 public:
     compressor() {}
@@ -484,8 +492,8 @@ public:
 private:
     block_matrix<dense_matrix, SymmGroup> make_left_matrix(MPO<Matrix, SymmGroup> const & mpo_in, std::size_t p);
     block_matrix<dense_matrix, SymmGroup> make_right_matrix(MPO<Matrix, SymmGroup> const & mpo_in, std::size_t p);
-    block_matrix<dense_matrix, SymmGroup> make_M_matrix(MPO<Matrix, SymmGroup> const & mpo_in_l,
-                                                        MPO<Matrix, SymmGroup> const & mpo_in_r, std::size_t p);
+    block_matrix<dense_matrix, SymmGroup> make_M_matrix(MPO<Matrix, SymmGroup> const & mpo_in,
+                                                        MPO<Matrix, SymmGroup> & mpo_out, std::size_t p);
 
     void replace_pair(block_matrix<dense_matrix, SymmGroup> const & left,
                       block_matrix<dense_matrix, SymmGroup> const & right,
@@ -495,6 +503,7 @@ private:
     std::set<charge> phys_set;
 
     std::vector<charge> charge_deltas;
+    std::map<charge, std::vector<mpo_index_t> > M_keys;
     
     charge_overlap<Matrix, SymmGroup> op_offset;
     MPOIndexer<Matrix, SymmGroup> bond_descriptor;
@@ -530,37 +539,51 @@ void compressor<Matrix, SymmGroup>::compress(MPO<Matrix, SymmGroup> const & mpo_
     cot.begin();
 
     for (int p = 0; p < mpo_in.size()-1; ++p) {
+
+        //maquis::cout << "Stalling after replace @ p=" << p << std::endl;
+        //usleep(7*1000000);
         
         mm.begin();
-        block_matrix<dense_matrix, SymmGroup> MM = make_M_matrix( (p>0) ? mpo_out : mpo_in, mpo_in, p);
+        block_matrix<dense_matrix, SymmGroup> MM = make_M_matrix(mpo_in, mpo_out, p);
         mm.end();
-        //maquis::cout << "M@" << p << " finished\n";
 
-        block_matrix<dense_matrix, SymmGroup> left, right, U, V;
+        //maquis::cout << "Stalling after M @ p=" << p << std::endl;
+        //usleep(7*1000000);
+
+        block_matrix<dense_matrix, SymmGroup> U, V;
         block_matrix<typename alps::numeric::associated_real_diagonal_matrix<dense_matrix>::type, SymmGroup> S, Sqrt;
 
-        //maquis::cout << "M shape @ " << p << std::endl; mem_footprint(M); maquis::cout << std::endl;
+        //maquis::cout << "MM shape @ " << p << std::endl; mem_footprint(MM); maquis::cout << std::endl;
         tsvd.begin();
         maquis::cout << "starting svd_truncate @ " << p << std::endl;
         svd_truncate(MM, U, V, S, cutoff, 100000, false);
         tsvd.end();
 
         Sqrt = sqrt(S);
-        gemm(U, Sqrt, left);
-        gemm(Sqrt, V, right);
-        //maquis::cout << "left bond " << U.right_basis() << std::endl;
-        //maquis::cout << "right bond " << V.left_basis() << std::endl;
+        for (mpo_index_t k = 0; k < Sqrt.n_blocks(); ++k) {
+            for (mpo_index_t s = 0; s < Sqrt[k].num_cols(); ++s)
+                for( mpo_index_t j = 0; j < U[k].num_rows(); ++j)
+                    U[k](j,s) *= Sqrt[k](s,s);
+
+            for( mpo_index_t j = 0; j < V[k].num_cols(); ++j)
+                for (mpo_index_t s = 0; s < Sqrt[k].num_cols(); ++s)
+                    V[k](s,j) *= Sqrt[k](s,s);
+        }
+        //gemm(U, Sqrt, left);
+        //gemm(Sqrt, V, right);
+
+        //maquis::cout << "Stalling after SVD t @ p=" << p << std::endl;
+        //usleep(7*1000000);
         
         maquis::cout << "MPO bond truncation: " << bond_descriptor.index(p+1).sum_of_sizes() << " -> ";
         rep.begin();
-        replace_pair(left, right, mpo_in, mpo_out, p);
+        replace_pair(U, V, mpo_in, mpo_out, p);
         rep.end();
         maquis::cout << bond_descriptor.index(p+1).sum_of_sizes() << std::endl;
         maquis::cout << std::endl;
     }
     cot.end();
-    maquis::cout << "Rest: " << cot.get_time() - lm.get_time()
-                    - rm.get_time() - tsvd.get_time() - rep.get_time() - mm.get_time() << std::endl;
+    maquis::cout << "Rest: " << cot.get_time() - tsvd.get_time() - rep.get_time() - mm.get_time() << std::endl;
 }
 
 template <class Matrix, class SymmGroup>
@@ -584,16 +607,16 @@ block_matrix<typename compressor<Matrix, SymmGroup>::dense_matrix, SymmGroup> co
         }
     }
 
-    typedef std::set<std::pair<unsigned, unsigned>, compressor_detail::pair_cmp_inv> rset_t;
+    typedef std::set<std::pair<mpo_index_t, mpo_index_t>, compressor_detail::pair_cmp_inv> rset_t;
     rset_t col_order;
     for (map_it_t it = mpo_in[p].data_.begin(); it != mpo_in[p].data_.end(); ++it)
         col_order.insert(it->first);
 
-    std::map<charge, unsigned> visited_c_basis;
+    std::map<charge, mpo_index_t> visited_c_basis;
     charge rc = bond_descriptor[p+1][0], rcprev = rc;
-    unsigned cprev = 0;
-    for(rset_t::iterator it=col_order.begin(); it != col_order.end(); ++it) {
-        unsigned r = it->first, c = it->second;
+    mpo_index_t cprev = 0;
+    for(typename rset_t::iterator it=col_order.begin(); it != col_order.end(); ++it) {
+        mpo_index_t r = it->first, c = it->second;
 
         if (c != cprev) {
             rc = bond_descriptor[p+1][c];
@@ -605,7 +628,7 @@ block_matrix<typename compressor<Matrix, SymmGroup>::dense_matrix, SymmGroup> co
         block_matrix<Matrix, SymmGroup> const & op = mpo_in[p](r,c);
 
         charge delta = SymmGroup::fuse(bond_descriptor[p][r], -rc);
-        for (unsigned ls = 0; ls < phys_i.size(); ++ls) {
+        for (mpo_index_t ls = 0; ls < phys_i.size(); ++ls) {
 
                 charge op_out = SymmGroup::fuse(phys_i[ls].first, delta);
                 if (phys_set.count(op_out) == 0)
@@ -616,7 +639,7 @@ block_matrix<typename compressor<Matrix, SymmGroup>::dense_matrix, SymmGroup> co
                 if (! op.has_block(phys_i[ls].first, op_out) )
                     continue;                       
                 
-                unsigned cs = op.left_basis().position(phys_i[ls].first);
+                mpo_index_t cs = op.left_basis().position(phys_i[ls].first);
                 ret(std::make_pair(rc, outr),
                     std::make_pair(rc, visited_c_basis[rc])) = op[cs](0,0);
                 
@@ -626,6 +649,7 @@ block_matrix<typename compressor<Matrix, SymmGroup>::dense_matrix, SymmGroup> co
     return ret;
 }
 
+/*  Superseded by column_iterator (direct generation in make_M_matrix)
 template <class Matrix, class SymmGroup>
 block_matrix<typename compressor<Matrix, SymmGroup>::dense_matrix, SymmGroup> compressor<Matrix, SymmGroup>::make_right_matrix(MPO<Matrix, SymmGroup> const & mpo_in, std::size_t p)
 {
@@ -684,6 +708,7 @@ block_matrix<typename compressor<Matrix, SymmGroup>::dense_matrix, SymmGroup> co
     
     return ret;
 }
+*/
 
 template <class Value_Type>
 inline void axpy(const int*, const Value_Type*, const Value_Type*, const int*, Value_Type*, const int*)
@@ -698,7 +723,7 @@ inline void axpy(const int* nr, const std::complex<double>* val, const std::comp
 { zaxpy_(nr, val, x, ix, y, iy); }
 
 template <class Matrix, class SymmGroup> block_matrix<typename compressor<Matrix, SymmGroup>::dense_matrix, SymmGroup>
-compressor<Matrix, SymmGroup>::make_M_matrix(MPO<Matrix, SymmGroup> const & mpo_in_l, MPO<Matrix, SymmGroup> const & mpo_in_r, std::size_t p)
+compressor<Matrix, SymmGroup>::make_M_matrix(MPO<Matrix, SymmGroup> const & mpo_in, MPO<Matrix, SymmGroup> & mpo_out, std::size_t p)
 {
     Index<SymmGroup> left_i = phys_i * adjoin(phys_i) * bond_descriptor.index(p);
     Index<SymmGroup> mid_i1 = bond_descriptor.index(p+1);
@@ -708,56 +733,89 @@ compressor<Matrix, SymmGroup>::make_M_matrix(MPO<Matrix, SymmGroup> const & mpo_
     left_i = common_subset(left_i, mid_i1);
     right_i = common_subset(right_i, mid_i2);
 
-    block_matrix<dense_matrix, SymmGroup> left = make_left_matrix(mpo_in_l, p);
     if (left_i.size() != right_i.size()) { maquis::cout << "M index left != right in size\n"; }
-    block_matrix<dense_matrix, SymmGroup> ret(left_i, right_i);
+    block_matrix<dense_matrix, SymmGroup> left = make_left_matrix( (p>0) ? mpo_out : mpo_in, p);
+    //maquis::cout << "L shape @ " << p << std::endl; mem_footprint(left); maquis::cout << std::endl;
+
+    block_matrix<dense_matrix, SymmGroup> ret;
 
     // charge loop, 13 main blocks in chem
-    for (typename Index<SymmGroup>::const_iterator it = bond_descriptor.index(p+1).begin();
-                    it != bond_descriptor.index(p+1).end(); ++it)
+    for (mpo_index_t csl = 0; csl < left_i.size(); ++csl)
     {
-        column_iterator<Matrix, SymmGroup> rAdaptor(mpo_in_r[p+1], it->first,
+        std::vector<mpo_index_t> & locKey= M_keys[left_i[csl].first];
+        locKey.clear();
+
+        column_iterator<Matrix, SymmGroup> rAdaptor(mpo_in[p+1], left_i[csl].first,
                                        bond_descriptor.index(p+1), bond_descriptor[p+2], phys_i, op_offset);
 
+        //dense_matrix block(left_i[csl].second, right_i[csl].second);
+        mpo_index_t newpos = ret.insert_block(dense_matrix(left_i[csl].second, right_i[csl].second),
+                                              left_i[csl].first, left_i[csl].first);
+        dense_matrix & block = ret[newpos];
+
         // right columns
-        unsigned colcnt = 0;
-        unsigned csl = left.right_basis().position(it->first);
+        mpo_index_t colcnt = 0;
         for( ; !rAdaptor.end(); ++rAdaptor)
         {
             // left columns / right row
-            unsigned k = rAdaptor.col();
-            int nr = left[csl].num_rows(), one=1;
-            std::vector<std::pair<unsigned, typename Matrix::value_type> > mult = (*rAdaptor);
-            for (typename std::vector<std::pair<unsigned, typename Matrix::value_type> >::const_iterator col_it
+            //int nr = left[csl].num_rows(), one=1;
+            //mpo_index_t k = rAdaptor.col();
+            std::vector<std::pair<mpo_index_t, typename Matrix::value_type> > mult = (*rAdaptor);
+            for (typename std::vector<std::pair<mpo_index_t, typename Matrix::value_type> >::const_iterator col_it
                     = mult.begin(); col_it != mult.end(); ++col_it)
             {
-                unsigned s = col_it->first;
+                mpo_index_t s = col_it->first;
                 typename Matrix::value_type val = col_it->second;
 
                 // left row
-                for (unsigned l=0; l < left[csl].num_rows(); ++l)
-                    ret[csl](l, k) += left[csl](l,s) * val;
+                for (mpo_index_t l=0; l < left[csl].num_rows(); ++l)
+                    block(l, colcnt) += left[csl](l,s) * val;
+
                 //axpy(&nr, &val, left[csl].col(s).first, &one, ret[csl].col(colcnt).first, &one);
             }
 
-            //if (mult.size() > 0) colcnt++;
-            if ( mult.begin() != mult.end() ) colcnt++;
-        }
-            
-        //for (unsigned k=0; k < ret[csl].num_cols(); ++k) {
-        //    bool use_col = false;
-        //    for (unsigned l=0; l < ret[csl].num_rows(); ++l)
-        //        if (std::abs(ret[csl](l, k)) > 1e-40) {
-        //            maquis::cout << l << "," << k << "(" << ret[csl](l,k) << ") ";
-        //            use_col = true;
-        //        }
-        //    if (use_col)
-        //        maquis::cout << std::endl;
-        //}
+            if (mult.size() > 0) {
+                colcnt++;
+                locKey.push_back(rAdaptor.key());
+            }
 
-        //ret[csl].resize(left[csl].num_rows(), last_seen+1);
-        //maquis::cout << p << "("<< it->first << ")  nonzero cols: " << colcnt << std::endl;
-        // M-block complete
+            //mpo_index_t key = rAdaptor.key();
+            //maquis::cout << "site " << p << "k" << colcnt << "/" << k <<
+            //    " key: " << (key >> 4) << "," << ((key&12u) >> 2) << "," << (key&3u) << std::endl;
+        }
+        //maquis::cout << "resized " << p << "@" << left_i[csl].first << " block " << right_i[csl].second << " -> " << colcnt << std::endl;
+        ret.resize_block(left_i[csl].first, left_i[csl].first, left_i[csl].second, colcnt, false);
+
+        /*
+        maquis::cout << "row profiles: ";
+        for (int r=0; r < block.num_rows(); ++r) {
+            typedef typename dense_matrix::const_row_element_iterator cri;
+            std::pair<cri, cri> pr = block.row(r);
+            mpo_index_t non_zero_cnt=0;
+            for(;pr.first != pr.second; ++pr.first)
+                if ( std::abs(*pr.first) > 1e-40 ) non_zero_cnt++;
+
+            maquis::cout << non_zero_cnt << " ";
+        }
+        maquis::cout << std::endl;
+        */
+
+        //maquis::cout << "block num_cols " << block.num_cols() << " is shrinkable " << block.is_shrinkable() << std::endl;
+
+        // M-block built
+
+        //dense_matrix U, V, sU, sV;
+        //typename alps::numeric::associated_real_diagonal_matrix<dense_matrix>::type S;
+
+        //svd(block, U, V, S, 1e-12, 100000, false);
+        //sqrt(S);
+
+        //sU.resize(U.num_rows(), U.num_cols());
+        //sV.resize(V.num_rows(), V.num_cols());
+        //gemm(U, S, sU);
+        //gemm(S, V, sV);
+        //
+        //replace_pair(sU, sV, mpo_in, mpo_out, p);
     } 
     
     return ret;
@@ -776,12 +834,13 @@ void compressor<Matrix, SymmGroup>::replace_pair(block_matrix<typename compresso
     mpo_out[p] = MPOTensor<Matrix, SymmGroup>( (p>0) ? mpo_out[p].row_dim() : mpo_in[p].row_dim(),
                                               bond_descriptor.index(p+1).sum_of_sizes());
     
-    //std::map<charge, size_t> visited_c_basis;
+    mpo_index_t term_cnt=0;
     std::size_t bstart = 0, bend = 0;
     for ( typename Index<SymmGroup>::const_iterator it = left.right_basis().begin();
         it != left.right_basis().end(); ++it) {
         bend += it->second; 
         charge rc = bond_descriptor[p+1][bstart];
+        dense_matrix const & block = left(rc, rc);
 
         std::size_t cloc = 0;
         for (size_t c = bstart; c < bend; ++c) {
@@ -797,57 +856,54 @@ void compressor<Matrix, SymmGroup>::replace_pair(block_matrix<typename compresso
                     
                     outr++;
                     
-                    typename Matrix::value_type val = left(std::make_pair(rc, outr),
-                                                           std::make_pair(rc, cloc));
-                                                           //std::make_pair(rc, visited_c_basis[rc]));
-                    
-                    if (std::abs(val) > 1e-40)
+                    typename Matrix::value_type val = block(outr, cloc);
+                    if (std::abs(val) > 1e-40) {
+                        term_cnt++;
                         mpo_out[p](r,c).insert_block(Matrix(1,1,val), phys_i[ls].first, op_out);
+                    }
                 }
             }
             cloc++;
-            //visited_c_basis[bond_descriptor[p+1][c]]++;
         }
         bstart = bend; 
     }
+    //maquis::cout << "left replace @" << p << ": " << term_cnt << " terms in " << mpo_out[p].data_.size() << " map blocks\n";
+    //maquis::cout << "original size " << mpo_in[p].data_.size() << " map blocks\n";
     
     mpo_out[p+1] = MPOTensor<Matrix, SymmGroup>(bond_descriptor.index(p+1).sum_of_sizes(),
                                                 mpo_in[p+1].col_dim());
     
-    //std::map<charge, size_t> visited_r_basis;
+    term_cnt=0;
     bstart = 0, bend = 0;
     for ( typename Index<SymmGroup>::const_iterator it = left.right_basis().begin();
         it != left.right_basis().end(); ++it) {
         bend += it->second; 
         charge lc = bond_descriptor[p+1][bstart];
+        dense_matrix const & block = right(lc, lc);
+        std::vector<mpo_index_t> const & locKey = M_keys[lc];
 
         std::size_t rloc = 0;
         for (size_t r = bstart; r < bend; ++r) {
-            int outc = -1;
-            for (size_t c = 0; c < mpo_out[p+1].col_dim(); ++c) {
+            for (size_t k = 0; k < locKey.size(); ++k) {
 
-                charge delta = SymmGroup::fuse(lc, -bond_descriptor[p+2][c]);
-                for (size_t ls = 0; ls < phys_i.size(); ++ls)
-                {
-                    charge op_out = SymmGroup::fuse(phys_i[ls].first, delta);
-                    if (phys_set.count(op_out) == 0)
-                        continue;
-                    
-                    outc++;
-                    
-                    //typename Matrix::value_type val = right(std::make_pair(lc, visited_r_basis[lc]),
-                    typename Matrix::value_type val = right(std::make_pair(lc, rloc),
-                                                            std::make_pair(lc, outc));
-                    
-                    if (std::abs(val) > 1e-40)
-                        mpo_out[p+1](r,c).insert_block(Matrix(1,1,val), phys_i[ls].first, op_out);
+                typename Matrix::value_type val = block(rloc, k);
+                if (std::abs(val) > 1e-40) {
+                    term_cnt++;
+                    mpo_index_t key = locKey[k];
+                    mpo_index_t c = (key >> 4);
+                    mpo_out[p+1](r,c).insert_block(Matrix(1,1,val), phys_i[((key&12u)>>2)].first, phys_i[key&3u].first);
+                    // ***** Debug *********
+                    //maquis::cout << "right checkback " << p+1 << "(" << r << "," << c << ")[" << ls << "," << phys_i.position(op_out) << "]: " << val
+                    //             << " | key " << (key >> 4) << "," << ((key&12u)>>2) << "," << (key&3u) << std::endl;
                 }
             }
             rloc++;
-            //visited_r_basis[bond_descriptor[p+1][r]]++;
         }
         bstart = bend; 
     }
+    //maquis::cout << "right replace @" << (p+1) << ": " << term_cnt << " terms in " << mpo_out[p+1].data_.size() << " map blocks\n";
+    //maquis::cout << "original size " << mpo_in[p+1].data_.size() << " map blocks\n";
+
 }
 
 template <class Matrix, class SymmGroup>
