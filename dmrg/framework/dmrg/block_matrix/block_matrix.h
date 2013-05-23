@@ -36,6 +36,9 @@ public:
 
     block_matrix(Index<SymmGroup> rows,
                  Index<SymmGroup> cols);
+    
+    template <class OtherMatrix>
+    block_matrix(block_matrix<OtherMatrix,SymmGroup> const&);
 
     block_matrix& operator=(block_matrix rhs);
 

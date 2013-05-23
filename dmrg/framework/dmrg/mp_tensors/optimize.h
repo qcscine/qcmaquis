@@ -146,13 +146,13 @@ protected:
             ortho_left_[n].resize(L+1);
             ortho_right_[n].resize(L+1);
             
-            ortho_left_[n][0] = *(block_matrix<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.left_boundary()[0];
-            ortho_right_[n][L] = *(block_matrix<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.right_boundary()[0];
+            ortho_left_[n][0] = mps.left_boundary()[0];
+            ortho_right_[n][L] = mps.right_boundary()[0];
         }
         
         //Timer tlb("Init left boundaries"); tlb.begin();
         storage::reset(left_stores_[0]);
-        left_[0] = *(Boundary<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.left_boundary();
+        left_[0] = mps.left_boundary();
         
         for (int i = 0; i < site; ++i) {
             storage::reset(left_stores_[i+1]);
@@ -164,7 +164,7 @@ protected:
         
         //Timer trb("Init right boundaries"); trb.begin();
         storage::reset(right_stores_[L]);
-        right_[L] = *(Boundary<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.right_boundary();
+        right_[L] = mps.right_boundary();
                 
         for (int i = L-1; i >= site; --i) {
             storage::reset(right_stores_[i]);

@@ -33,6 +33,17 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows,
 }
 
 template<class Matrix, class SymmGroup>
+template <class OtherMatrix>
+block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<OtherMatrix,SymmGroup> const& rhs)
+: rows_(rhs.left_basis())
+, cols_(rhs.right_basis())
+{
+    data_.reserve(rhs.n_blocks());
+    for (size_type k = 0; k < rhs.n_blocks(); ++k)
+        data_.push_back(new Matrix(rhs[k]));
+}
+
+template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(block_matrix rhs)
 {
     swap(*this, rhs);
