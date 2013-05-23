@@ -22,7 +22,7 @@ enum MPSStorageLayout { LeftPaired, RightPaired };
 enum Indicator { Unorm, Lnorm, Rnorm };
 enum DecompMethod {QR, SVD}; 
 
-static DecompMethod DefaultSolver() {return SVD;} // QR or SVD
+static DecompMethod DefaultSolver() {return QR;} // QR or SVD
 
 template<class Matrix, class SymmGroup>
 class TwoSiteTensor;
