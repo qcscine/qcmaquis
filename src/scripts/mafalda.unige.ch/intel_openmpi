@@ -1,0 +1,44 @@
+#!/bin/bash -l
+STATE="configure"
+STATE_AMBIENT="configure"
+STATE_DMRG="configure"
+# end of target states #
+SHARED_FS=true
+PREFIX=standard
+COMPILER=intel
+COMPILER_VERSION=13.1.1
+MPI_WRAPPER=openmpi
+MPI_WRAPPER_VERSION=1.6.4/icc/13.1.1
+BOOST=boost
+BOOST_VERSION=1.53.0
+CMAKE=cmake
+
+export CXX=icpc
+export CC=icc
+module load boost/1.53
+module load gcc/4.7.2
+module load ${COMPILER}/${COMPILER_VERSION}
+module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
+module load ${CMAKE}
+
+## common ##
+COMMON_ENABLE_OMP=ON
+COMMON_CMAKE_CXX_FLAGS="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors"
+COMMON_CMAKE_CXX_FLAGS_RELEASE="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors"
+COMMON_CMAKE_C_COMPILER=icc
+COMMON_CMAKE_CXX_COMPILER=icpc
+## ambient ##
+AMBIENT_BOOST_BINDINGS_INCLUDE=/share/apps/bin/ALPS/revision-6866-icc-13.1.1
+AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64"
+## dmrg ##
+DMRG_DEFAULT_BLAS_LAPACK=manual
+DMRG_CMAKE_CXX_FLAGS_RELEASE="$COMMON_CMAKE_CXX_FLAGS"
+DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread $AMBIENT_PLASMA_LIBRARY"
+DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/share/apps/intel-compiler/13.1.1/mkl/lib/intel64
+DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/share/apps/intel-compiler/13.1.1/mkl/include
+DMRG_ALPS_ROOT_DIR=/share/apps/ALPS/revision-6866-icc-13.1.1
+DMRG_BUILD_REGRESSION=OFF 
+DMRG_USE_AMBIENT=OFF
+
+source $ROOT_DIR/scripts/common/common.sh 
+execute $*

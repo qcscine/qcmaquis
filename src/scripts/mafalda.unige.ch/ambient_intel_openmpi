@@ -1,0 +1,51 @@
+#!/bin/bash -l
+STATE="build"
+STATE_AMBIENT="build"
+STATE_DMRG="build"
+# end of target states #
+SHARED_FS=true
+PREFIX=ambient
+COMPILER=icc
+COMPILER_VERSION=13.1.1
+MPI_WRAPPER=openmpi
+MPI_WRAPPER_VERSION=1.6.4/icc/13.1.1
+BOOST=boost
+BOOST_VERSION=1.53.0
+CMAKE=cmake
+
+
+module load gcc/4.7.2
+module load boost/1.53/gcc/4.4.6
+module load ${COMPILER}/${COMPILER_VERSION}
+module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
+module load ${CMAKE}
+
+export CC=mpicc
+export CXX=mpicxx
+
+## common ##
+#THREADING_FLAGS="-DAMBIENT_CILK" # -openmp -DAMBIENT_OMP
+THREADING_FLAGS="-openmp -DAMBIENT_OMP"
+COMMON_CMAKE_CXX_FLAGS="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors $THREADING_FLAGS -L/share/apps/plasma/2.5.0/icc/13.1.1/lib"
+COMMON_CMAKE_C_COMPILER=mpicc
+COMMON_CMAKE_CXX_COMPILER=mpicxx
+COMMON_MPI_CXX_FOUND=FALSE
+## ambient ##
+AMBIENT_BOOST_BINDINGS_INCLUDE=/share/apps/bin/ALPS/revision-6866-icc-13.1.1
+AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64"
+AMBIENT_PLASMA_LIBRARY="-lplasma -lcoreblas -llapacke -lquark"
+AMBIENT_ENABLE_REGRESSION_PERFORMANCE=OFF
+AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=OFF
+## dmrg ##
+DMRG_DEFAULT_BLAS_LAPACK=manual
+DMRG_CMAKE_CXX_FLAGS_RELEASE="$COMMON_CMAKE_CXX_FLAGS"
+DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread $AMBIENT_PLASMA_LIBRARY"
+DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/share/apps/intel-compiler/13.1.1/mkl/lib/intel64
+DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/share/apps/intel-compiler/13.1.1/mkl/include
+DMRG_ALPS_ROOT_DIR=/share/apps/ALPS/r6866/icc/13.1.1
+DMRG_BUILD_REGRESSION=OFF 
+DMRG_BUILD_AMBIENT=ON
+DMRG_USE_AMBIENT=ON
+
+source $ROOT_DIR/scripts/common/common.sh 
+execute $*
