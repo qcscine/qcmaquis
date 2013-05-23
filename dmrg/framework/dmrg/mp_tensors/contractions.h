@@ -664,7 +664,9 @@ struct contraction {
                         size_t i_op_offset = 0;
                         size_t op_offset = 0;
                         
+#ifdef USE_AMBIENT
                         printf("UNOPTIMIZED FUNCTION (MULTIPLY WITH OP!)\n");
+#endif
                         for (size_t ss1 = 0; ss1 < phys_i[s1].second; ++ss1) {
                             for (size_t ss2 = 0; ss2 < phys_i[s2].second; ++ss2) {
                                 size_t o_l_start = l_offset + ss2*left_i[ls].second;
