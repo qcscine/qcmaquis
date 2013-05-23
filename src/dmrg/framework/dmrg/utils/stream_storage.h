@@ -70,12 +70,20 @@ namespace storage {
         typedef T type;
     };
 
+#ifdef USE_AMBIENT
     template<typename T>
     class constrained<alps::numeric::matrix<T, std::vector<T> > > {
     public: 
         typedef alps::numeric::matrix<T, std::vector<T, constrained_allocator<T> > > type;
     };
-
+#else
+    template<typename T>
+    class constrained<alps::numeric::matrix<T, std::vector<T> > > {
+    public:
+        typedef alps::numeric::matrix<T, std::vector<T, std::allocator<T> > > type;
+    };
+#endif
+    
 #ifdef USE_AMBIENT
     template<typename T>
     class constrained<ambient::numeric::tiles<ambient::numeric::matrix<T, ambient::default_allocator<T> > > > {
@@ -83,6 +91,7 @@ namespace storage {
         typedef ambient::numeric::tiles<ambient::numeric::matrix<T, constrained_allocator<T> > > type;
     };
 #endif
+
 
 }
 

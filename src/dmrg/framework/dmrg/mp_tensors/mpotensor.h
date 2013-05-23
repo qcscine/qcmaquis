@@ -31,7 +31,15 @@ public:
     : data_(ad, block_matrix<Matrix, SymmGroup>(ud, ld))
 //    , upper_i(ud), lower_i(ld)
     { }
-
+    
+    template <class OtherMatrix>
+    Boundary(Boundary<OtherMatrix, SymmGroup> const& rhs)
+    {
+        data_.reserve(rhs.aux_dim());
+        for (std::size_t n=0; n<rhs.aux_dim(); ++n)
+            data_.push_back(rhs[n]);
+    }
+    
     std::size_t aux_dim() const { return data_.size(); }
     
     value_type & operator()(std::size_t i, access_type j, access_type k) { return data_[i](j, k); } // I hope this is never used (30.04.2012 / scalar/value discussion)

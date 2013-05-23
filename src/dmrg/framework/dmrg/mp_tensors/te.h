@@ -134,7 +134,7 @@ private:
         right_stores_.resize(L+1, storage_master.child());
         left_stores_.resize(L+1, storage_master.child());
         
-        left_[0] = *(Boundary<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.left_boundary();
+        left_[0] = mps.left_boundary();
         
         storage::reset(left_stores_[0]);
         storage::store(left_[0], left_stores_[0]);
@@ -146,7 +146,7 @@ private:
             storage::store(left_[i+1], left_stores_[i+1]);
         }
         
-        right_[L] = *(Boundary<typename storage::constrained<Matrix>::type, SymmGroup>*)&mps.right_boundary();
+        right_[L] = mps.right_boundary();
         
         storage::reset(right_stores_[L]);
         storage::store(right_[L], right_stores_[L]);
