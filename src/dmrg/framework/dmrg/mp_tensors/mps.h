@@ -13,6 +13,7 @@
 
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
+#include "dmrg/mp_tensors/boundary.h"
 
 #include <limits>
 
