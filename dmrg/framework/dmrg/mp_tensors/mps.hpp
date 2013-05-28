@@ -53,8 +53,10 @@ MPS<Matrix, SymmGroup>::MPS(size_t L,
     // MD: this is actually important
     //     it turned out, this is also quite dangerous: if a block is 1x2,
     //     normalize_left will resize it to 1x1
-    for (int i = 0; i < L; ++i)
-        (*this)[i].normalize_left(DefaultSolver());
+    //     init() should take care of it, in case needed. Otherwise some
+    //     adhoc states will be broken (e.g. identity MPS)
+    // for (int i = 0; i < L; ++i)
+    //     (*this)[i].normalize_left(DefaultSolver());
 
     this->normalize_left();
 }
