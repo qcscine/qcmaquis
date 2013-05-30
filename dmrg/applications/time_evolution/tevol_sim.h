@@ -31,6 +31,7 @@ public:
     : base(parms_, model_, false)
     , parms_orig(parms_)
     , model_orig(model_)
+    , initialized(false)
     {
         base::parms = parms_orig.get_at_index("t", base::sweep);
         base::model = model_orig.get_at_index("t", base::sweep);
@@ -41,7 +42,7 @@ public:
     
     int advance (Logger& iteration_log, int nsteps, double time_limit)
     {
-        if (this->sweep == 0)
+        if (this->sweep == 0 || !initialized)
         {
             int pc = 0, mc = 0;
             this->parms = parms_orig.get_at_index("t", this->sweep, &pc);
@@ -49,6 +50,7 @@ public:
             if (mc > 0 || pc > 0)
                 this->model_init();
             prepare_te_terms();
+            initialized = true;
         } else if (this->parms.template get<int>("update_each") > -1 && (this->sweep % this->parms.template get<int>("update_each")) == 0)
         {
             int pc = 0, mc = 0;
@@ -99,6 +101,7 @@ protected:
     
     DmrgParameters parms_orig;
     ModelParameters model_orig;
+    bool initialized;
 };
 
 #endif
