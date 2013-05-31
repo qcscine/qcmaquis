@@ -206,7 +206,7 @@ protected:
             I = maquis::traits::real_identity<typename Matrix::value_type>::value;
         else
             I = maquis::traits::imag_identity<typename Matrix::value_type>::value;
-        typename Matrix::value_type alpha = -I*this->parms.template get<double>("dt");
+        typename Matrix::value_type alpha = -I * this->parms.template get<double>("dt") * this->parms.template get<double>("exp_rescaling");
         
         Uterms.resize(gates_coeff.size(), trotter_gate<Matrix, SymmGroup>(L));
         for (size_t i=0; i<gates_coeff.size(); ++i) {
