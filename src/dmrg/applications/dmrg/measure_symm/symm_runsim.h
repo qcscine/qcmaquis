@@ -13,7 +13,7 @@ namespace maquis { namespace dmrg {
     template <>
     void run_sim<grp>(DmrgParameters & parms, ModelParameters & model)
     {
-        dmrg_sim<matrix, grp> sim(parms, model);
+        dmrg_sim<matrix, grp> sim(parms, model, true);
         sim.measure();
     }
 } }
