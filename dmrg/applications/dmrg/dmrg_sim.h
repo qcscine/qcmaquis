@@ -53,10 +53,10 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     
 public:
     
-    dmrg_sim (DmrgParameters & parms_, ModelParameters & model_)
+    dmrg_sim (DmrgParameters & parms_, ModelParameters & model_, bool measure_only=false)
     : base(parms_, model_)
     {
-        if ( base::sweep < base::parms.template get<int>("nsweeps") )
+        if ( !measure_only &&  base::sweep < base::parms.template get<int>("nsweeps") )
         {
             if (parms_.get<std::string>("optimization") == "singlesite")
             {
