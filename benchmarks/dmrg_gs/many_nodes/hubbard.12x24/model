@@ -1,0 +1,9 @@
+LATTICE ="open square lattice"
+L =24
+W =12
+MODEL ="fermion Hubbard"
+t =1
+U =8
+CONSERVED_QUANTUMNUMBERS ="Nup,Ndown"
+Nup_total =126
+Ndown_total =126
