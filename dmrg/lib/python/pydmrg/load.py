@@ -51,6 +51,8 @@ def ReadDMRGSweeps(ar, measurements, props, path='/simulation', selector=None):
         elif sweep_name == 'results':
             props_sweep = deepcopy(props)
             props_sweep['sweep'] = -1
+            if 'parameters' in ar.list_children(path):
+                props_sweep.update( dict(ar[path+'/parameters']) )
             if selector==None or selector(props_sweep):
                 tmp = ReadMeasurements(ar, measurements, path+'/results', props_sweep)
                 if len(tmp) > 0:
