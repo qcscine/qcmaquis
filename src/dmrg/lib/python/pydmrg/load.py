@@ -12,6 +12,26 @@ from pyalps.ngs import archive
 
 from copy import deepcopy
 
+def ReadMeasurements(ar, measurements, path, props):
+    ret = []
+    for meas in measurements:
+        if meas in ar.list_children(path):
+            try:
+                d = pyalps.DataSet()
+                d.props = deepcopy(props)
+                d.props['observable'] = meas
+                d.props['hdf5_path'] = path+'/'+meas
+                d.y = ar[ d.props['hdf5_path']+'/mean/value' ]
+                if 'labels' in ar.list_children(d.props['hdf5_path']):
+                    d.x = parse_labels(ar[ d.props['hdf5_path']+'/labels' ])
+                else:
+                    d.x = range(len(d.y))
+                ret.append(d)
+            except Exception, e:
+                print "Could not load " + meas
+                print e
+                pass
+    return ret
 
 def ReadDMRGSweeps(ar, measurements, props, path='/simulation', selector=None):
     ret = []
@@ -25,25 +45,16 @@ def ReadDMRGSweeps(ar, measurements, props, path='/simulation', selector=None):
             if 'parameters' in ar.list_children(p_sweep):
                 props_sweep.update( dict(ar[p_sweep+'/parameters']) )
             if selector==None or selector(props_sweep):
-                for meas in measurements:
-                    if meas in ar.list_children(p_sweep+'/results'):
-                        try:
-                            d = pyalps.DataSet()
-                            d.props = deepcopy(props_sweep)
-                            d.props['observable'] = meas
-                            d.props['hdf5_path'] = p_sweep+'/results/'+meas
-                            d.y = ar[ d.props['hdf5_path']+'/mean/value' ]
-                            if 'labels' in ar.list_children(d.props['hdf5_path']):
-                                d.x = parse_labels(ar[ d.props['hdf5_path']+'/labels' ])
-                            else:
-                                d.x = range(len(d.y))
-                            ret_sweep.append(d)
-                        except Exception, e:
-                            print "Could not load " + meas
-                            print e
-                            pass
+                ret_sweep += ReadMeasurements(ar, measurements, p_sweep+'/results', props_sweep)
             if len(ret_sweep) > 0:
                 ret.append(ret_sweep)
+        elif sweep_name == 'results':
+            props_sweep = deepcopy(props)
+            props_sweep['sweep'] = -1
+            if selector==None or selector(props_sweep):
+                tmp = ReadMeasurements(ar, measurements, path+'/results', props_sweep)
+                if len(tmp) > 0:
+                    ret.append(tmp)
     return ret
 
 def LoadDMRGSweeps(files, what, selector=None):
