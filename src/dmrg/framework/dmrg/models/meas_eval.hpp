@@ -65,7 +65,7 @@ namespace meas_eval {
 			else
 				assert(order.size() == labels[i].size());
 #endif
-			ret[i].resize(order.size());
+			ret[i].resize(labels[i].size());
 
 
 			for (int j=0; j<order.size(); ++j) {
