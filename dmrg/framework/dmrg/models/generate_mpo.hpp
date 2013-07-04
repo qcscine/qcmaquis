@@ -25,12 +25,26 @@
 
 namespace generate_mpo
 {
+	template<class Matrix, class SymmGroup>
+	struct Operator_Tag_Term
+	{
+		typedef typename OPTagTable<Matrix, SymmGroup>::op_tag_t op_tag_t;
+        typedef typename Lattice::pos_t pos_t;
+		typedef std::pair<pos_t, op_tag_t> op_pair_t;
+        
+		std::vector<op_pair_t> operators;
+		op_tag_t fill_operator;
+        typename Matrix::value_type scale;
+        bool with_sign;
+        
+        Operator_Tag_Term() : scale(1.), with_sign(false) {}
+	};
     
 	template<class Matrix, class SymmGroup>
 	struct Operator_Term
 	{
 		typedef block_matrix<Matrix, SymmGroup> op_t;
-                typedef typename Lattice::pos_t pos_t;
+        typedef typename Lattice::pos_t pos_t;
 		typedef std::pair<pos_t, op_t> op_pair_t;
         
 		std::vector<op_pair_t> operators;
@@ -101,48 +115,36 @@ namespace generate_mpo
                 return k;
     }
     
-    template<class Matrix, class SymmGroup>
-    void compress_on_bond(std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > & pm1,
-                          std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > & pm2)
+    template<class Vector>
+    void compress_on_bond(Vector & pm1, Vector & pm2)
     {
-        typedef block_matrix<Matrix, SymmGroup> op_t;
-        typedef boost::tuple<size_t, size_t, op_t> block;
-        
-        set<size_t> bond_used_dims;
-        for (typename vector<block>::iterator it = pm1.begin(); it != pm1.end(); ++it)
+        std::set<size_t> bond_used_dims;
+        for (typename Vector::iterator it = pm1.begin(); it != pm1.end(); ++it)
             if (get<1>(*it) > 1)
                 bond_used_dims.insert(get<1>(*it));
-        for (typename vector<block>::iterator it = pm2.begin(); it != pm2.end(); ++it)
+        for (typename Vector::iterator it = pm2.begin(); it != pm2.end(); ++it)
             if (get<0>(*it) > 1)
                 bond_used_dims.insert(get<0>(*it));
         
-        //        maquis::cout << "Compression: " << *max_element(bond_used_dims.begin(),
-        //                                                bond_used_dims.end()) << " -> " << bond_used_dims.size() << std::endl;
-        
-        map<size_t, size_t> compression_map;
+        std::map<size_t, size_t> compression_map;
         size_t c = 2;
         for (set<size_t>::iterator it = bond_used_dims.begin();
              it != bond_used_dims.end(); ++it)
             compression_map[*it] = c++;
         
-        for (typename vector<block>::iterator it = pm1.begin(); it != pm1.end(); ++it)
+        for (typename Vector::iterator it = pm1.begin(); it != pm1.end(); ++it)
             if (compression_map.count(get<1>(*it)) > 0)
                 get<1>(*it) = compression_map[get<1>(*it)];
-        for (typename vector<block>::iterator it = pm2.begin(); it != pm2.end(); ++it)
+        for (typename Vector::iterator it = pm2.begin(); it != pm2.end(); ++it)
             if (compression_map.count(get<0>(*it)) > 0)
                 get<0>(*it) = compression_map[get<0>(*it)];
     }
-    
-    template<class Matrix, class SymmGroup>
-    std::pair<size_t, size_t>
-    rcdim(std::vector<boost::tuple<size_t, size_t, block_matrix<Matrix, SymmGroup> > > const & pm)
+
+    template<class Vector>
+    std::pair<size_t, size_t> rcdim(Vector const & pm)
     {
-        typedef block_matrix<Matrix, SymmGroup> op_t;
-        typedef boost::tuple<size_t, size_t, op_t> block;
-        
-        list<size_t> l, r;
-        
-        for (typename vector<block>::const_iterator it = pm.begin(); it != pm.end(); ++it) {
+        std::list<size_t> l, r;
+        for (typename Vector::const_iterator it = pm.begin(); it != pm.end(); ++it) {
             l.push_back( get<0>(*it) );
             r.push_back( get<1>(*it) );
         }
@@ -151,13 +153,12 @@ namespace generate_mpo
                          *max_element(r.begin(), r.end())+1);
     }
     
-    template<class Matrix, class SymmGroup>
-    bool compare(pair<size_t, block_matrix<Matrix, SymmGroup> > const & p1,
-                 pair<size_t, block_matrix<Matrix, SymmGroup> > const & p2)
+    template<class Pair>
+    bool compare(Pair const & p1, Pair const & p2)
     {
         return p1.first < p2.first;
     }
-    
+
     template<class Matrix, class SymmGroup>
     class MPOMaker
     {
@@ -183,7 +184,7 @@ namespace generate_mpo
             for (size_t p = 0; p < length; ++p)
             {
                 if (p+1 < length)
-                    prempo[p].push_back( boost::make_tuple(std::size_t(0), std::size_t(0), ident) );
+                    prempo[p].push_back(boost::make_tuple(std::size_t(0), std::size_t(0), ident));
             }
         }
         
@@ -192,7 +193,7 @@ namespace generate_mpo
             // TODO: removed const&, because of sorting (non-const operation)
             std::vector<std::pair<typename Lattice::pos_t, op_t> > ops = term.operators;
             
-            std::sort(ops.begin(), ops.end(), compare<Matrix, SymmGroup>);
+            std::sort(ops.begin(), ops.end(), compare<std::pair<typename Lattice::pos_t, op_t> >);
             
             vector<size_t> positions;
             for (typename vector<pair<typename Lattice::pos_t, op_t> >::const_iterator
@@ -212,7 +213,7 @@ namespace generate_mpo
                 size_t second_use_b = (it->first == maxp ? 1 : use_b);
                 assert( it->first < prempo.size() );
                 if (minp != maxp) { // bond term
-                    prempo[it->first].push_back( boost::make_tuple(first_use_b, second_use_b, it->second) );
+                    prempo[it->first].push_back(boost::make_tuple(first_use_b, second_use_b, it->second));
                     used_dims[it->first].insert(use_b);
                 } else // site term
                     site_terms[it->first] += it->second;
@@ -221,7 +222,7 @@ namespace generate_mpo
             
             for (size_t p = minp; p <= maxp; ++p)
                 if (!done[p]) {
-                    prempo[p].push_back( boost::make_tuple(use_b, use_b, term.fill_operator) );
+                    prempo[p].push_back( boost::make_tuple(use_b, use_b, term.fill_operator));
                     used_dims[p].insert(use_b);
                     done[p] = true;
                 }
@@ -325,6 +326,199 @@ namespace generate_mpo
             {
                 r(get<0>(*it), 0) = get<2>(*it);
             }
+            return r;
+        }
+    };
+
+    template<class Matrix, class SymmGroup>
+    class TaggedMPOMaker
+    {
+        typedef typename Matrix::value_type scale_type;
+        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+        typedef block_matrix<Matrix, SymmGroup> op_t;
+
+        typedef Lattice::pos_t pos_t;
+        typedef typename Operator_Tag_Term<Matrix, SymmGroup>::op_tag_t tag_t;
+        typedef typename Operator_Tag_Term<Matrix, SymmGroup>::op_pair_t op_pair_t;
+        typedef boost::tuple<std::size_t, std::size_t, tag_t, scale_type> tag_block;
+        
+    public:
+        TaggedMPOMaker(pos_t length_, tag_t ident_
+                      , boost::shared_ptr<OPTagTable<Matrix, SymmGroup> > op_tags_)
+        : length(length_)
+        , used_dims(length)
+        , ident(ident_)
+        , tag_prempo(length)
+        , maximum(2)
+        , finalized(false)
+        , leftmost_right(length)
+        , op_tags(op_tags_)
+        {   
+            for (size_t p = 0; p < length-1; ++p)
+                tag_prempo[p].push_back(boost::make_tuple(std::size_t(0), std::size_t(0), ident, 1.));
+        }
+        
+        void add_term(Operator_Tag_Term<Matrix, SymmGroup> const & term)
+        {
+            std::vector<op_pair_t> ops = term.operators;
+            std::sort(ops.begin(), ops.end(), compare<std::pair<typename Lattice::pos_t, typename OPTagTable<Matrix, SymmGroup>::op_tag_t> >);
+            
+            vector<pos_t> positions;
+            for (typename vector<op_pair_t>::const_iterator it = ops.begin(); it != ops.end(); ++it)
+                positions.push_back(it->first);
+
+            pos_t minp = *min_element(positions.begin(), positions.end());
+            pos_t maxp = *max_element(positions.begin(), positions.end());
+            
+            std::size_t use_b = maximum++;
+            
+            vector<bool> done(length, false);
+            for (typename vector<op_pair_t>::const_iterator it = ops.begin();
+                 it != ops.end(); ++it)
+            {
+                std::size_t first_use_b = (it->first == minp ? 0 : use_b);
+                std::size_t second_use_b = (it->first == maxp ? 1 : use_b);
+                assert(it->first < length);
+
+                // retrieve the actual operator from the tag table
+                op_t current_op = (*op_tags)[it->second];
+
+                // apply scaling factor to first operator
+                scale_type cur_scale = 1.;
+                if (it == ops.begin()) {
+                    current_op *= term.scale;
+                    cur_scale = term.scale;
+                }
+
+                if (minp != maxp) { // bond term
+                    /** tag_prempo filling **/
+                    tag_prempo[it->first].push_back(boost::make_tuple(first_use_b, second_use_b, it->second, cur_scale));
+
+                    used_dims[it->first].insert(use_b);
+                } else // site term
+                    site_terms[it->first] += current_op;
+                done[it->first] = true;
+            }
+            
+            // put fill ops in between the nontrivial ops  (only needed for 1- and 2-terms)
+            if (term.operators.size() <= 2) {
+                op_t fill = (*op_tags)[term.fill_operator];
+                for (pos_t p = minp; p <= maxp; ++p)
+                    if (!done[p]) {
+                        tag_prempo[p].push_back( boost::make_tuple(use_b, use_b, term.fill_operator, 1.) );
+                        used_dims[p].insert(use_b);
+                        done[p] = true;
+                    }
+            }
+            
+            leftmost_right = std::min(leftmost_right, maxp);
+        }
+
+        MPO<Matrix, SymmGroup> create_mpo()
+        {
+            if (!finalized) finalize(); 
+            MPO<Matrix, SymmGroup> r(length);
+            for (pos_t p = 1; p < length - 1; ++p)
+                r[p] = as_bulk(tag_prempo[p]);
+            r[0] = as_left(tag_prempo[0]);
+            r[length-1] = as_right(tag_prempo[length-1]);
+            
+            return r;
+        }
+
+        MPO<Matrix, SymmGroup> create_compressed_mpo(Index<SymmGroup> const & phys, double cutoff)
+        {
+            if (!finalized) finalize();
+            MPO<Matrix, SymmGroup> r = create_mpo();
+
+            charge_sort(get_tag_prempo(), r);
+            MPO<Matrix, SymmGroup> mpo_sorted = create_mpo();
+
+            compressor<Matrix, SymmGroup> cpor(phys);
+            MPO<Matrix, SymmGroup> mpo_out(length);
+            cpor.compress(mpo_sorted, mpo_out, cutoff);
+
+            return mpo_out;
+        }
+
+        std::vector<std::vector<tag_block> > & get_tag_prempo()
+        {
+            return tag_prempo;
+        }
+        
+    private:
+        bool finalized;
+        pos_t length;
+        tag_t ident;
+        vector<set<std::size_t> > used_dims;
+        std::map<pos_t, op_t> site_terms;
+
+        boost::shared_ptr<OPTagTable<Matrix, SymmGroup> > op_tags;
+        vector<vector<tag_block> > tag_prempo;
+        
+        pos_t maximum, leftmost_right;
+
+        void finalize()
+        {
+            for (typename std::map<pos_t, op_t>::const_iterator it = site_terms.begin();
+                 it != site_terms.end(); ++it) {
+
+                // TODO implement plus operation
+                tag_t site_tag = op_tags->register_site_op(it->second);
+                tag_prempo[it->first].push_back(boost::make_tuple(0, 1, site_tag, 1.));
+            }
+
+            for (pos_t p = leftmost_right + 1; p < length; ++p) {
+                tag_prempo[p].push_back(boost::make_tuple(1, 1, ident, 1.));
+            }
+
+            for (typename vector<vector<tag_block> >::iterator it = tag_prempo.begin();
+                 it + 1 != tag_prempo.end();
+                 ++it)
+                compress_on_bond(*it, *(it+1));
+
+            finalized = true;
+        }
+
+        MPOTensor<Matrix, SymmGroup> as_bulk(vector<tag_block> const & ops)
+        {
+            pair<std::size_t, std::size_t> rcd = rcdim(ops);
+            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second, ops, op_tags);
+            /*
+            for (typename vector<tag_block>::const_iterator it = ops.begin();
+                 it != ops.end(); ++it)
+            {
+                r(get<0>(*it), get<1>(*it)) = get<3>(*it) * (*op_tags)[get<2>(*it)];
+            }
+            */
+            return r;
+        }
+        
+        MPOTensor<Matrix, SymmGroup> as_left(vector<tag_block> const & ops)
+        {
+            pair<std::size_t, std::size_t> rcd = rcdim(ops);
+            MPOTensor<Matrix, SymmGroup> r(1, rcd.second, ops, op_tags);
+            /*
+            for (typename vector<tag_block>::const_iterator it = ops.begin();
+                 it != ops.end(); ++it)
+            {
+                r(0, get<1>(*it)) = get<3>(*it) * (*op_tags)[get<2>(*it)];
+            }
+            */
+            return r;
+        }
+        
+        MPOTensor<Matrix, SymmGroup> as_right(vector<tag_block> const & ops)
+        {
+            pair<std::size_t, std::size_t> rcd = rcdim(ops);
+            MPOTensor<Matrix, SymmGroup> r(rcd.first, 1, ops, op_tags);
+            /*
+            for (typename vector<tag_block>::const_iterator it = ops.begin();
+                 it != ops.end(); ++it)
+            {
+                r(get<0>(*it), 0) = get<3>(*it) * (*op_tags)[get<2>(*it)];
+            }
+            */
             return r;
         }
     };

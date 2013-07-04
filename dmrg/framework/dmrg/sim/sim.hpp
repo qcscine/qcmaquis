@@ -100,8 +100,10 @@ void sim<Matrix, SymmGroup>::model_init()
      maquis::cout << "Hamiltonian:" << std::endl << H << std::endl;
      */
 
-    if (model.get<std::string>("MODEL") == std::string("quantum_chemistry"))
+    if ((model.get<std::string>("MODEL") == std::string("quantum_chemistry")) && (parms.get<int>("use_compressed") > 0))
     {  
+        throw std::runtime_error("chem compression has been disabled");
+        /*
         typedef typename alps::numeric::associated_one_matrix<Matrix>::type MPOMatrix;
         MPO<MPOMatrix, SymmGroup> scratch_mpo;
 
@@ -118,6 +120,7 @@ void sim<Matrix, SymmGroup>::model_init()
             make_ts_cache_mpo(scratch_mpo, ts_cache_mpo, phys);
             t.end();
         }
+        */
     }
     else
     {  
@@ -130,8 +133,11 @@ void sim<Matrix, SymmGroup>::model_init()
         if (parms.get<int>("use_compressed") > 0)
             mpoc.compress(1e-12);
 
-        if (parms.get<std::string>("optimization") == "twosite")
+        if (parms.get<std::string>("optimization") == "twosite") {
+            Timer t("TS_MPO"); t.begin();
             make_ts_cache_mpo(mpoc, ts_cache_mpo, phys);
+            t.end();
+        }
     }
 }
 

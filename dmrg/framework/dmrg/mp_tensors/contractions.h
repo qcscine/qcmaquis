@@ -81,6 +81,11 @@ struct contraction {
                              MPOTensor<Matrix, SymmGroup> const & mpo,
                              Index<SymmGroup> const * in_low = NULL)
     {
+        typedef typename OtherMatrix::value_type value_type;
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
+
         if (in_low == NULL)
             in_low = &mps.row_dim();
         
@@ -115,11 +120,13 @@ struct contraction {
                     ret.data_[b2].allocate_blocks();
                 bool pretend = (run == 0);
                 
-                for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
-                    if (!mpo.has(b1, b2))
-                        continue;
+                col_proxy col_b2 = mpo.column(b2);
+                for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
+                    index_type b1 = col_it.index();
                     
-                    block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
+                    //block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
+                    std::pair<block_matrix<OtherMatrix, SymmGroup> const &, value_type> access = mpo.at(b1,b2);
+                    block_matrix<Matrix, SymmGroup> W = access.second * access.first;
                     if (W.n_blocks() == 0)
                         continue;
                     
@@ -195,6 +202,10 @@ struct contraction {
                               MPOTensor<Matrix, SymmGroup> const & mpo,
                               Index<SymmGroup> const * in_low = NULL)
     {
+        typedef typename OtherMatrix::value_type value_type;
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
         
         if (in_low == NULL)
             in_low = &mps.col_dim();
@@ -231,12 +242,14 @@ struct contraction {
                 if(run == 1)
                     ret.data_[b1].allocate_blocks();
                 bool pretend = (run == 0);
-                for(size_t b2 = 0; b2 < mpo.col_dim(); ++b2)
-                {
-                    if(!mpo.has(b1, b2))
-                        continue;
+
+                row_proxy row_b1 = mpo.row(b1);
+                for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
+                    index_type b2 = row_it.index();
                     
-                    block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
+                    //block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
+                    std::pair<block_matrix<OtherMatrix, SymmGroup> const &, value_type> access = mpo.at(b1,b2);
+                    block_matrix<Matrix, SymmGroup> W = access.second * access.first;
                     if (W.n_blocks() == 0)
                         continue;
                     
@@ -367,17 +380,24 @@ struct contraction {
         
         size_t loop_max = mpo.col_dim();
        
-        std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max);
+        /* avoid large temporary boundary ! */
+        //std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max);
 
-        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
-            gemm(left_mpo_mps.data_[b], right.data_[b], oblocks[b]);
+        //parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
+        //    gemm(left_mpo_mps.data_[b], right.data_[b], oblocks[b]);
            
         // proc 0 downloads oblocks[b] from proc 1 : 
         semi_parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
-            for (size_t k = 0; k < oblocks[b].n_blocks(); ++k)
-                ret.data_.match_and_add_block(oblocks[b][k],
-                                              oblocks[b].left_basis()[k].first,
-                                              oblocks[b].right_basis()[k].first);
+            block_matrix<Matrix, SymmGroup> tmp;
+            gemm(left_mpo_mps.data_[b], right.data_[b], tmp);
+            for (size_t k = 0; k < tmp.n_blocks(); ++k) {
+                ret.data_.match_and_add_block(tmp[k],
+                                              tmp.left_basis()[k].first,
+                                              tmp.right_basis()[k].first);
+                //ret.data_.match_and_add_block(oblocks[b][k],
+                //                              oblocks[b].left_basis()[k].first,
+                //                              oblocks[b].right_basis()[k].first);
+            }
         }
         
         return ret;
