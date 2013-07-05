@@ -117,9 +117,9 @@ void make_compressed_mpo(
      typename Lattice::pos_t L, Hamiltonian<Matrix, SymmGroup> const & H,
      TermType what=all_term)
 {
-    generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity_tag(), H.get_tag_table());
+    generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity_tag());
     for (std::size_t i = 0; i < H.n_tagterms(what); ++i)
-        mpom.add_term(H.tag(i));
+        mpom.add_term(H[i]);
 
     mpoc = mpom.create_compressed_mpo(H.get_phys(), cutoff);
 }

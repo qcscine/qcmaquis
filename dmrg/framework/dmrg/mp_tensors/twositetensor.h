@@ -178,15 +178,12 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
 
             for (typename op_scale_map::iterator it = uniform_ops.begin(); it != uniform_ops.end(); ++it) {
                 b3 = it->first;
-                //mpo_big(b1, b3) = it->second.second * kron_table[it->second.first];
-
                 prempo.push_back(boost::make_tuple(b1, b3, it->second.first, it->second.second));
             }
 
             for (typename std::set<index_type>::iterator it = non_uniform.begin(); it != non_uniform.end(); ++it) {
                 b3 = *it;
                 op_t & tmp = kron_sums[b3];
-                //mpo_big(b1, b3) = tmp;
 
                 std::pair<op_tag_t, value_type> scaled_tag = kron_table.checked_register(tmp);
                 prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
@@ -248,7 +245,7 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     boost::shared_ptr<OPTagTable<MPSMatrix, SymmGroup> > op_table = mpo_orig[0].get_tag_table();
     maquis::cout << "op_table total, site, prod, krons: " << (*op_table).total_size() << ", " << (*op_table).get_num_site_terms() << ", " 
                  << (*op_table).get_num_products() << ", " << (*op_table).get_num_kron_products() << std::endl;
-    maquis::cout << "duplicates in prod/kron_table: " << (*op_table).prod_duplicates() << ", " << (*op_table).kron_duplicates() << std::endl;
+    //maquis::cout << "duplicates in prod/kron_table: " << (*op_table).prod_duplicates() << ", " << (*op_table).kron_duplicates() << std::endl;
 
 }
 

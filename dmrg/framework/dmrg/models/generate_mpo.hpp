@@ -426,6 +426,7 @@ namespace generate_mpo
             return r;
         }
 
+        /* Disabled for now
         MPO<Matrix, SymmGroup> create_compressed_mpo(Index<SymmGroup> const & phys, double cutoff)
         {
             if (!finalized) finalize();
@@ -440,6 +441,7 @@ namespace generate_mpo
 
             return mpo_out;
         }
+        */
 
         std::vector<std::vector<tag_block> > & get_tag_prempo()
         {
@@ -484,13 +486,6 @@ namespace generate_mpo
         {
             pair<std::size_t, std::size_t> rcd = rcdim(ops);
             MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second, ops, op_tags);
-            /*
-            for (typename vector<tag_block>::const_iterator it = ops.begin();
-                 it != ops.end(); ++it)
-            {
-                r(get<0>(*it), get<1>(*it)) = get<3>(*it) * (*op_tags)[get<2>(*it)];
-            }
-            */
             return r;
         }
         
@@ -498,13 +493,6 @@ namespace generate_mpo
         {
             pair<std::size_t, std::size_t> rcd = rcdim(ops);
             MPOTensor<Matrix, SymmGroup> r(1, rcd.second, ops, op_tags);
-            /*
-            for (typename vector<tag_block>::const_iterator it = ops.begin();
-                 it != ops.end(); ++it)
-            {
-                r(0, get<1>(*it)) = get<3>(*it) * (*op_tags)[get<2>(*it)];
-            }
-            */
             return r;
         }
         
@@ -512,13 +500,6 @@ namespace generate_mpo
         {
             pair<std::size_t, std::size_t> rcd = rcdim(ops);
             MPOTensor<Matrix, SymmGroup> r(rcd.first, 1, ops, op_tags);
-            /*
-            for (typename vector<tag_block>::const_iterator it = ops.begin();
-                 it != ops.end(); ++it)
-            {
-                r(get<0>(*it), 0) = get<3>(*it) * (*op_tags)[get<2>(*it)];
-            }
-            */
             return r;
         }
     };

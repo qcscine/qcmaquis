@@ -24,6 +24,7 @@ template<class Matrix>
 class qc_model : public Model<Matrix, TwoU1>
 {
     typedef typename Lattice::pos_t pos_t;
+    typedef typename Matrix::value_type value_type;
     
     template <class M>
     struct hamterm_t { typedef typename Hamiltonian<M, TwoU1>::hamterm_t type; };
@@ -116,7 +117,7 @@ private:
 
     Index<TwoU1> phys;
 
-    std::vector<double> matrix_elements;
+    std::vector<value_type> matrix_elements;
     std::vector<std::vector<int> > idx;
     
     double get_t (BaseParameters & parms, int i)
@@ -141,7 +142,7 @@ private:
     template <class M>
     struct TermMaker {
 
-        static typename hamtagterm_t<M>::type two_term(bool sign, typename op_tag_t<M>::type fill_op, double scale, pos_t i, pos_t j,
+        static typename hamtagterm_t<M>::type two_term(bool sign, typename op_tag_t<M>::type fill_op, value_type scale, pos_t i, pos_t j,
                                          typename op_tag_t<M>::type op1, typename op_tag_t<M>::type op2,
                                          boost::shared_ptr<OPTagTable<M, TwoU1> > op_table)
         {
@@ -154,7 +155,7 @@ private:
             return term;
         }
 
-        static typename hamtagterm_t<M>::type positional_two_term(bool sign, typename op_tag_t<M>::type fill_op, double scale, pos_t i, pos_t j,
+        static typename hamtagterm_t<M>::type positional_two_term(bool sign, typename op_tag_t<M>::type fill_op, value_type scale, pos_t i, pos_t j,
                                          typename op_tag_t<M>::type op1, typename op_tag_t<M>::type op2,
                                          boost::shared_ptr<OPTagTable<M, TwoU1> > op_table)
         {
@@ -164,22 +165,24 @@ private:
             term.scale = scale;
 
             typename op_t<M>::type tmp;
+            std::pair<typename op_tag_t<M>::type, value_type> ptag;
             if (i < j) {
-                typename op_tag_t<M>::type tmp = op_table->get_prod_tag(fill_op, op1);
-                term.operators.push_back(std::make_pair(i, tmp));
+                ptag = op_table->get_product_tag(fill_op, op1);
+                term.operators.push_back(std::make_pair(i, ptag.first));
                 term.operators.push_back(std::make_pair(j, op2));
+                term.scale *= ptag.second;
             }
             else {
-                typename op_tag_t<M>::type tmp = op_table->get_prod_tag(fill_op, op2);
+                ptag = op_table->get_product_tag(fill_op, op2);
                 term.operators.push_back(std::make_pair(i, op1));
-                term.operators.push_back(std::make_pair(j, tmp));
-                term.scale = -term.scale;
+                term.operators.push_back(std::make_pair(j, ptag.first));
+                term.scale *= -ptag.second;
             }
             return term;
         }
 
         static typename hamtagterm_t<M>::type three_term(bool sign, typename op_tag_t<M>::type ident, typename op_tag_t<M>::type fill_op,
-                                         double scale, pos_t pb, pos_t p1, pos_t p2,
+                                         value_type scale, pos_t pb, pos_t p1, pos_t p2,
                                          typename op_tag_t<M>::type opb1, typename op_tag_t<M>::type opb2,
                                          typename op_tag_t<M>::type op1,  typename op_tag_t<M>::type op2,
                                          boost::shared_ptr<OPTagTable<M, TwoU1> > op_table)
@@ -190,23 +193,32 @@ private:
             term.scale = scale;
 
             typename op_tag_t<M>::type tmp, boson_op;
+            std::pair<typename op_tag_t<M>::type, value_type> ptag1, ptag2;
 
             if ( (pb>p1 && pb<p2) || (pb>p2 && pb<p1) ) {
                 // if the bosonic operator is in between
                 // the fermionic operators, multiply with fill
-                tmp = op_table->get_prod_tag(fill_op, opb2);
-                boson_op = op_table->get_prod_tag(tmp, opb1);
+                ptag1 = op_table->get_product_tag(fill_op, opb2);
+                term.scale *= ptag1.second;
+                ptag2 = op_table->get_product_tag(ptag1.first, opb1);
+                term.scale *= ptag2.second;
+                boson_op = ptag2.first;
             }
             else {
-                boson_op = op_table->get_prod_tag(opb2, opb1);
+                ptag1 = op_table->get_product_tag(opb2, opb1);
+                boson_op = ptag1.first;
+                term.scale *= ptag1.second; 
             }
             
             if (p1 < p2) {
-                op1 = op_table->get_prod_tag(fill_op, op1);
+                ptag1 = op_table->get_product_tag(fill_op, op1); 
+                op1 = ptag1.first;
+                term.scale *= ptag1.second;
             }
             else {
-                op2 = op_table->get_prod_tag(fill_op, op2);
-                term.scale = -term.scale;
+                ptag1 = op_table->get_product_tag(fill_op, op2); 
+                op2 = ptag1.first;
+                term.scale *= -ptag1.second;
             }
 
             std::vector<typename op_tag_pair_t<M>::type> sterm;
@@ -237,7 +249,7 @@ private:
         }
 
         static typename hamtagterm_t<M>::type four_term(bool sign, typename op_tag_t<M>::type ident, typename op_tag_t<M>::type fill_op,
-                                    double scale, pos_t i, pos_t j, pos_t k, pos_t l,
+                                    value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
                                     typename op_tag_t<M>::type op_i, typename op_tag_t<M>::type op_j,
                                     typename op_tag_t<M>::type op_k, typename op_tag_t<M>::type op_l,
                                     boost::shared_ptr<OPTagTable<M, TwoU1> > op_table)
@@ -261,8 +273,13 @@ private:
             sterm.push_back(std::make_pair(l, op_l));
             std::sort(sterm.begin(), sterm.end(), compare_tag<M>);
 
-            sterm[0].second = op_table->get_prod_tag(fill_op, sterm[0].second);
-            sterm[2].second = op_table->get_prod_tag(fill_op, sterm[2].second);
+            std::pair<typename op_tag_t<M>::type, value_type> ptag;
+            ptag = op_table->get_product_tag(fill_op, sterm[0].second);
+            sterm[0].second = ptag.first;
+            term.scale *= ptag.second;
+            ptag = op_table->get_product_tag(fill_op, sterm[2].second);
+            sterm[2].second = ptag.first;
+            term.scale *= ptag.second;
             
             if (inv_count % 2)
                 term.scale = -term.scale;
@@ -284,150 +301,6 @@ private:
             return term;
         }
     };
-
-    /*
-    template <class M>
-    typename hamterm_t<M>::type make_two_term(bool sign, typename op_t<M>::type fill_op, pos_t i, pos_t j,
-                                     typename op_t<M>::type op1, typename op_t<M>::type op2) const
-    {
-        typename hamterm_t<M>::type term;
-        term.with_sign = sign;
-        term.fill_operator = fill_op;
-        term.operators.push_back( std::make_pair(i, op1) );
-        term.operators.push_back( std::make_pair(j, op2) );
-        return term;
-    }
-
-    template <class M>
-    typename hamterm_t<M>::type make_positional_two_term(bool sign, typename op_t<M>::type fill_op, pos_t i, pos_t j,
-                                     typename op_t<M>::type op1, typename op_t<M>::type op2) const
-    {
-        typename hamterm_t<M>::type term;
-        term.with_sign = sign;
-        term.fill_operator = fill_op;
-
-        typename op_t<M>::type tmp;
-        if (i < j) {
-            gemm(fill_op, op1, tmp);
-            term.operators.push_back( std::make_pair(i, tmp) );
-            term.operators.push_back( std::make_pair(j, op2) );
-        }
-        else {
-            gemm(fill_op, op2, tmp);
-            term.operators.push_back( std::make_pair(i, op1) );
-            term.operators.push_back( std::make_pair(j, -1*tmp) );
-        }
-        return term;
-    }
-
-    template<class M>
-    typename hamterm_t<M>::type make_three_term(bool sign, typename op_t<M>::type ident, typename op_t<M>::type fill_op,
-                                     pos_t pb, pos_t p1, pos_t p2,
-                                     typename op_t<M>::type opb1, typename op_t<M>::type opb2,
-                                     typename op_t<M>::type op1,  typename op_t<M>::type op2) const
-    {  
-        typename hamterm_t<M>::type term;
-        term.with_sign = sign;
-        term.fill_operator = fill_op;
-        typename op_t<M>::type tmp, boson_op;
-
-        if ( (pb>p1 && pb<p2) || (pb>p2 && pb<p1) ) {
-            // if the bosonic operator is in between
-            // the fermionic operators, multiply with fill
-            gemm(fill_op, opb2, tmp);
-            gemm(tmp, opb1, boson_op);
-        }
-        else {
-            gemm(opb2, opb1, boson_op);
-        }
-
-        if (p1 < p2) {
-            gemm(fill_op, op1, tmp);
-            op1 = tmp;
-        }
-        else {
-            gemm(fill_op, op2, tmp);
-            op2 = -1*tmp;
-        }
-
-        std::vector<typename op_pair_t<M>::type> sterm;
-        sterm.push_back( std::make_pair(pb, boson_op) );
-        sterm.push_back( std::make_pair(p1, op1) );
-        sterm.push_back( std::make_pair(p2, op2) );
-        std::sort(sterm.begin(), sterm.end(), compare<M>);
-
-        term.operators.push_back(sterm[0]);
-        if (pb == sterm[0].first)
-            for(pos_t ipad=sterm[0].first +1; ipad < sterm[1].first; ++ipad)
-                term.operators.push_back( std::make_pair(ipad, ident) );
-        else
-            for(pos_t ipad=sterm[0].first +1; ipad < sterm[1].first; ++ipad)
-                term.operators.push_back( std::make_pair(ipad, fill_op) );
-
-        term.operators.push_back(sterm[1]);
-        if (pb == sterm[2].first)
-            for(pos_t ipad=sterm[1].first +1; ipad < sterm[2].first; ++ipad)
-                term.operators.push_back( std::make_pair(ipad, ident) );
-        else
-            for(pos_t ipad=sterm[1].first +1; ipad < sterm[2].first; ++ipad)
-                term.operators.push_back( std::make_pair(ipad, fill_op) );
-
-        term.operators.push_back(sterm[2]);
-
-        return term;
-    }
-
-    template <class M>
-    typename hamterm_t<M>::type make_positional_four_term(bool sign, typename op_t<M>::type ident, typename op_t<M>::type fill_op,
-                                pos_t i, pos_t j, pos_t k, pos_t l,
-                                typename op_t<M>::type op_i, typename op_t<M>::type op_j,
-                                typename op_t<M>::type op_k, typename op_t<M>::type op_l) const
-    {
-        typename hamterm_t<M>::type term;
-        term.with_sign = sign;
-        term.fill_operator = fill_op ;
-        typename op_t<M>::type tmp;
-
-        // Simple O(n^2) algorithm to determine sign of permutation
-        pos_t idx[] = { i,j,k,l };
-        pos_t inv_count=0, n=4;
-        for(pos_t c1 = 0; c1 < n - 1; c1++)
-            for(pos_t c2 = c1+1; c2 < n; c2++)
-                if(idx[c1] > idx[c2]) inv_count++;
-
-        std::vector<typename op_pair_t<M>::type> sterm;
-        sterm.push_back(std::make_pair(i, op_i));
-        sterm.push_back(std::make_pair(j, op_j));
-        sterm.push_back(std::make_pair(k, op_k));
-        sterm.push_back(std::make_pair(l, op_l));
-        std::sort(sterm.begin(), sterm.end(), compare<M>);
-
-        gemm(fill_op, sterm[0].second, tmp);
-        sterm[0].second = tmp;
-        gemm(fill_op, sterm[2].second, tmp);
-        sterm[2].second = tmp;
-
-        if (inv_count % 2)
-            sterm[0].second *= -1;
-
-        term.operators.push_back(sterm[0]);
-
-        for(pos_t ipad=sterm[0].first +1; ipad < sterm[1].first; ++ipad)
-            term.operators.push_back( std::make_pair(ipad, fill_op) );
-
-        term.operators.push_back(sterm[1]);
-        for(pos_t ipad=sterm[1].first +1; ipad < sterm[2].first; ++ipad)
-            term.operators.push_back( std::make_pair(ipad, ident) );
-
-        term.operators.push_back(sterm[2]);
-        for(pos_t ipad=sterm[2].first +1; ipad < sterm[3].first; ++ipad)
-            term.operators.push_back( std::make_pair(ipad, fill_op) );
-
-        term.operators.push_back(sterm[3]);
-        return term;
-    }
-    */
-
 };
 
 
