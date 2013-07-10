@@ -9,9 +9,9 @@ nmainsweeps = 1
 optimization = twosite
 
 donotsave = 1
-chkpfile = "/users/akosenko/maquis2013/src/scratch/hubbard.L10.2000.ckp.h5"
-resultfile = "/users/akosenko/maquis2013/src/scratch/hubbard.L10.2000.res.h5"
-storagedir = "/users/akosenko/maquis2013/src/scratch"
+chkpfile = "/scratch/castor/akosenko/hubbard.L10.2000.ckp.h5"
+resultfile = "/scratch/castor/akosenko/hubbard.L10.2000.res.h5"
+storagedir = "/scratch/castor/akosenko"
 //run_seconds = [INSERT NECESSARY VALUE HERE]
 
 use_compressed = 1

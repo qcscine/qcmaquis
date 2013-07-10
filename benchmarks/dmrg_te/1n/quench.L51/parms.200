@@ -1,9 +1,9 @@
 max_bond_dimension = 200
 truncation_final = 1e-16
 
-initfile = "/users/akosenko/maquis2013/src/scratch/quench_gs.L51.200.ckp.h5"
-chkpfile = "/users/akosenko/maquis2013/src/scratch/quench_te.L51.200.ckp.h5"
-resultfile = "/users/akosenko/maquis2013/src/scratch/quench_te.L51.200.res.h5"
+initfile = "/scratch/castor/akosenko/quench_gs.L51.200.ckp.h5"
+chkpfile = "/scratch/castor/akosenko/quench_te.L51.200.ckp.h5"
+resultfile = "/scratch/castor/akosenko/quench_te.L51.200.res.h5"
 
 measure_each = 20
 chkp_each = 100

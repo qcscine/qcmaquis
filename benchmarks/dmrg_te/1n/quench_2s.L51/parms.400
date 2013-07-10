@@ -3,9 +3,9 @@ max_bond_dimension = 400
 symmetry = "2u1"
 truncation_final = 1e-16
 
-initfile = "/users/akosenko/maquis2013/src/scratch/quench_2s_gs.L51.400.ckp.h5"
-chkpfile = "/users/akosenko/maquis2013/src/scratch/quench_2s_te.L51.400.ckp.h5"
-resultfile = "/users/akosenko/maquis2013/src/scratch/quench_2s_te.L51.400.res.h5"
+initfile = "/scratch/castor/akosenko/quench_2s_gs.L51.400.ckp.h5"
+chkpfile = "/scratch/castor/akosenko/quench_2s_te.L51.400.ckp.h5"
+resultfile = "/scratch/castor/akosenko/quench_2s_te.L51.400.res.h5"
 
 nsweeps_img = 0
 nsweeps = 100

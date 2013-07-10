@@ -10,9 +10,9 @@ ietl_jcd_gmres = 0
 ietl_jcd_tol = 1e-8
 ietl_jcd_maxiter = 10
 
-chkpfile = "/users/akosenko/maquis2013/src/scratch/quench_gs.L51.200.ckp.h5"
-resultfile = "/users/akosenko/maquis2013/src/scratch/quench_gs.L51.200.res.h5"
-storagedir = "/users/akosenko/maquis2013/src/scratch"
+chkpfile = "/scratch/castor/akosenko/quench_gs.L51.200.ckp.h5"
+resultfile = "/scratch/castor/akosenko/quench_gs.L51.200.res.h5"
+storagedir = "/scratch/castor/akosenko"
 
 nsweeps = 3
 nmainsweeps = 2

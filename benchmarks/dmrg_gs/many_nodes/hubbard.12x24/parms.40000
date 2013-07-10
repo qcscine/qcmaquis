@@ -7,9 +7,9 @@ nsweeps = 5
 ngrowsweeps = 1
 nmainsweeps = 1
 
-chkpfile = "/users/akosenko/maquis2013/src/scratch/hubbard.12x24.40000.ckp.h5"
-resultfile = "/users/akosenko/maquis2013/src/scratch/hubbard.12x24.40000.res.h5"
-storagedir = "/users/akosenko/maquis2013/src/scratch"
+chkpfile = "/scratch/castor/akosenko/hubbard.12x24.40000.ckp.h5"
+resultfile = "/scratch/castor/akosenko/hubbard.12x24.40000.res.h5"
+storagedir = "/scratch/castor/akosenko"
 donotsave = 1
 
 // possible values: singlesite, twosite
