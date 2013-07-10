@@ -363,6 +363,7 @@ struct contraction {
         return ret;
     }
     
+    /*
     template<class Matrix, class OtherMatrix, class SymmGroup>
     static MPSTensor<Matrix, SymmGroup>
     site_hamil2(MPSTensor<Matrix, SymmGroup> const & ket_tensor,
@@ -380,7 +381,7 @@ struct contraction {
         
         size_t loop_max = mpo.col_dim();
        
-        /* avoid large temporary boundary ! */
+        // avoid large temporary boundary !
         //std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max);
 
         //parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
@@ -402,6 +403,134 @@ struct contraction {
         
         return ret;
     }
+    */
+
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    static MPSTensor<Matrix, SymmGroup>
+    site_hamil2(MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                Boundary<OtherMatrix, SymmGroup> const & left,
+                Boundary<OtherMatrix, SymmGroup> const & right,
+                MPOTensor<Matrix, SymmGroup> const & mpo)
+    {
+        typedef typename OtherMatrix::value_type value_type;
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
+
+        typedef typename SymmGroup::charge charge;
+        typedef std::size_t size_t;
+
+        MPSTensor<Matrix, SymmGroup> ret;
+        
+        ket_tensor.make_right_paired();
+        
+        std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
+        size_t loop_max = left.aux_dim();
+
+        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b) {
+            block_matrix<Matrix, SymmGroup> tmp;
+            gemm(transpose(left.data_[b]), ket_tensor.data_, tmp);
+            reshape_right_to_left_new<Matrix>(ket_tensor.site_dim(), left.data_[b].right_basis(), ket_tensor.col_dim(),
+                                              tmp, t[b]);
+        }
+        
+        Index<SymmGroup> const & physical_i = ket_tensor.site_dim(), & left_i = ket_tensor.row_dim(), & right_i = ket_tensor.col_dim();
+        ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
+        
+        ket_tensor.make_left_paired();
+        loop_max = mpo.col_dim();
+                    
+        parallel_for(locale::compact(loop_max), locale b2 = 0; b2 < loop_max; ++b2) {
+            block_matrix<Matrix, SymmGroup> collector;
+            for (int run = 0; run < 2; ++run) {
+                if (run == 1)
+                    collector.allocate_blocks();
+                bool pretend = (run == 0);
+                
+                col_proxy col_b2 = mpo.column(b2);
+                for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
+                    index_type b1 = col_it.index();
+                    
+                    std::pair<block_matrix<OtherMatrix, SymmGroup> const &, value_type> access = mpo.at(b1,b2);
+                    block_matrix<Matrix, SymmGroup> W = access.second * access.first;
+                    //if (W.n_blocks() == 0)
+                    //    continue;
+                    
+                    block_matrix<Matrix, SymmGroup> const & T = t[b1];
+                    
+                    ProductBasis<SymmGroup> in_left_pb(physical_i, left.data_[b1].right_basis());
+                    
+                    Index<SymmGroup> out_left_i = physical_i * left_i;
+                    
+                    for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
+                    {
+                        assert( physical_i.has(W.left_basis()[w_block].first) );
+                        assert( physical_i.has(W.right_basis()[w_block].first) );
+                        
+                        size_t s1 = physical_i.position(W.left_basis()[w_block].first);
+                        size_t s2 = physical_i.position(W.right_basis()[w_block].first);
+                       
+                        for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block)
+                        {
+                            size_t r = right_i.position(T.right_basis()[t_block].first);
+                            if(r == right_i.size()) continue;
+                            size_t l = left_i.position(SymmGroup::fuse(T.left_basis()[t_block].first,
+                                                                       -physical_i[s1].first));
+                            if(l == left_i.size()) continue;
+                            
+                            {
+                                charge T_l_charge = SymmGroup::fuse(physical_i[s1].first, left_i[l].first);
+                                charge T_r_charge = right_i[r].first;
+                                
+                                if (! T.has_block(T_l_charge, T_r_charge) )
+                                    continue;
+                                
+                                charge out_l_charge = SymmGroup::fuse(physical_i[s2].first, left_i[l].first);
+                                charge out_r_charge = right_i[r].first;
+                                
+                                if (! left.data_[b1].right_basis().has(left_i[l].first) )
+                                    continue;
+                                if (! ket_tensor.col_dim().has(right_i[r].first) )
+                                    continue;
+                                if (! out_left_i.has(out_l_charge) )
+                                    continue;
+                                
+                                size_t in_left_offset = in_left_pb(physical_i[s1].first, left_i[l].first);
+                                size_t out_left_offset = out_left_pb(physical_i[s2].first, left_i[l].first);
+                                
+                                if (!pretend) {
+                                    Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
+                                    Matrix const & iblock = T(T_l_charge, T_r_charge);
+                                    Matrix & oblock = collector(out_l_charge, out_r_charge);
+                                    
+                                    maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
+                                                                        physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
+                                }
+                                
+                                if (pretend)
+                                    collector.reserve(out_l_charge, out_r_charge,
+                                                          out_left_i.size_of_block(out_l_charge),
+                                                          right_i[r].second);
+                            }
+                        } // T block
+                    } // operator
+                } // b1
+            } // run
+
+            block_matrix<Matrix, SymmGroup> tmp;
+            gemm(collector, right.data_[b2], tmp);
+            #pragma omp critical
+            for (size_t k = 0; k < tmp.n_blocks(); ++k)
+                ret.data_.match_and_add_block(tmp[k], tmp.left_basis()[k].first, tmp.right_basis()[k].first);
+
+        } // b2
+
+        //MPSTensor<Matrix, SymmGroup> ret(ket_tensor.site_dim(), ket_tensor.row_dim(), ket_tensor.col_dim(), collector);
+        ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
+        return ret;
+    }
+
+        
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
     static MPSTensor<Matrix, SymmGroup>
