@@ -131,6 +131,24 @@ namespace maquis { namespace dmrg { namespace detail {
                 }
             }
     }
+    template <typename T1, class A1,
+              typename T2, class A2,
+              typename T3, class A3>
+    void lb_tensor_mpo_tag(alps::numeric::matrix<T1,A1>& out, const alps::numeric::matrix<T2,A2>& in, const alps::numeric::matrix<T3,A3>& alfa,
+                       size_t out_offset, size_t in_offset, 
+                       size_t sdim1, size_t sdim2, size_t ldim, size_t rdim, T2 alfa_scale)
+    {
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
+            for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
+                T3 alfa_t = alfa(ss1, ss2) * alfa_scale;
+                for(size_t rr = 0; rr < rdim; ++rr) {
+                    iterator_axpy(&in(in_offset + ss1*ldim, rr),
+                                  &in(in_offset + ss1*ldim, rr) + ldim, // bugbug
+                                  &out(out_offset + ss2*ldim, rr),
+                                  alfa_t);
+                }
+            }
+    }
     
     template <typename T1, class A1,
               typename T2, class A2,

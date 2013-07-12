@@ -452,7 +452,8 @@ struct contraction {
                     index_type b1 = col_it.index();
                     
                     std::pair<block_matrix<OtherMatrix, SymmGroup> const &, value_type> access = mpo.at(b1,b2);
-                    block_matrix<Matrix, SymmGroup> W = access.second * access.first;
+                    block_matrix<Matrix, SymmGroup> const & W = access.first;
+                    //block_matrix<Matrix, SymmGroup> W = access.second * access.first;
                     //if (W.n_blocks() == 0)
                     //    continue;
                     
@@ -503,8 +504,8 @@ struct contraction {
                                     Matrix const & iblock = T(T_l_charge, T_r_charge);
                                     Matrix & oblock = collector(out_l_charge, out_r_charge);
                                     
-                                    maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
-                                                                        physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
+                                    maquis::dmrg::detail::lb_tensor_mpo_tag(oblock, iblock, wblock, out_left_offset, in_left_offset,
+                                                physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second, access.second);
                                 }
                                 
                                 if (pretend)

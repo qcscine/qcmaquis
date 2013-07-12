@@ -112,7 +112,6 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
         // TODO: This is ugly, improve interface... (maybe make this a MPO member or friend function)
         typename MPOTensor<MPSMatrix, SymmGroup>::tag_table_ptr op_table = mpo1.get_tag_table();
 
-        // use global tag table for all mpotensors
         OPTagTable<MPSMatrix, SymmGroup> & kron_table = *op_table;
 
         /* new CSR code */

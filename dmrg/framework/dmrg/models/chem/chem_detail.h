@@ -7,22 +7,9 @@
  *
  *****************************************************************************/
 
-#ifndef QC_HAMILTONIANS_H
-#define QC_HAMILTONIANS_H
+#ifndef QC_CHEM_DETAIL_H
+#define QC_CHEM_DETAIL_H
 
-#include <cmath>
-#include <sstream>
-#include <fstream>
-#include <iterator>
-#include <boost/shared_ptr.hpp>
-
-#include "dmrg/models/model.h"
-#include "dmrg/utils/BaseParameters.h"
-
-#include "dmrg/models/chem/term_maker.h"
-#include "dmrg/models/chem/chem_detail.h"
-
-/*
 struct HamiltonianTraits {
 
     template <class M>
@@ -49,7 +36,6 @@ namespace chem_detail {
     class IndexTuple : public NU1Charge<4>
     {
     public:
-
         IndexTuple() {}
         IndexTuple(int i, int j, int k, int l) {
             (*this)[0] = i; (*this)[1] = j; (*this)[2] = k; (*this)[3] = l;
@@ -87,6 +73,15 @@ namespace chem_detail {
         os << ">";
         return os;
     }
+
+    class TermTuple : public NU1Charge<8>
+    {
+    public:
+        TermTuple() {}
+        TermTuple(IndexTuple const & a, IndexTuple const & b) {
+            for (int i=0; i<4; i++) { (*this)[i] = a[i]; (*this)[i+4] = b[i]; }
+        }
+    };
 
     template <typename M>
     class ChemHelper : HamiltonianTraits
@@ -195,78 +190,5 @@ namespace chem_detail {
 
     };
 }
-*/
-
-template<class Matrix>
-class qc_model : public Model<Matrix, TwoU1>, HamiltonianTraits
-{
-    typedef typename Lattice::pos_t pos_t;
-    typedef typename Matrix::value_type value_type;
-    typedef typename alps::numeric::associated_one_matrix<Matrix>::type one_matrix;
-
-public:
-    
-    qc_model(Lattice const & lat_, BaseParameters & parms_) : lat(lat_), parms(parms_)
-    {
-        TwoU1::charge A(0), B(0), C(0), D(1);
-        B[0]=1; C[1]=1;
-        phys.insert(std::make_pair(A, 1));
-        phys.insert(std::make_pair(B, 1));
-        phys.insert(std::make_pair(C, 1));
-        phys.insert(std::make_pair(D, 1));
-        
-    }
-
-    Index<TwoU1> get_phys() const
-    {
-        return phys;
-    }
-                            
-    Hamiltonian<Matrix, TwoU1> H () const
-    {
-        return H_impl<Matrix>();
-    }
-
-    /* Disabled - need to implement iterators for one_matrix */
-    /*
-    Hamiltonian<one_matrix, TwoU1> H_chem () const
-    {
-        return H_impl<one_matrix>();
-    }
-    */
-    
-    Measurements<Matrix, TwoU1> measurements () const
-    {
-        return Measurements<Matrix, TwoU1>();
-    }
-
-    template <class M>
-    Hamiltonian<M, TwoU1> H_impl () const;
-
-private:
-
-    Index<TwoU1> phys;
-
-    Lattice const & lat;
-    mutable BaseParameters parms;
-    
-    double get_t (BaseParameters & parms, int i)
-    {
-        std::ostringstream key;
-        key << "t" << (i+1);
-        return (parms.is_set(key.str())) ? parms.get<double>(key.str()) : parms.get<double>("t");
-    }
-
-    /*
-    template<class M>
-    static bool compare(typename op_pair_t<M>::type const & p1,
-                            typename op_pair_t<M>::type const & p2) {
-        return p1.first < p2.first;
-    }
-    */
-};
-
-
-#include "dmrg/models/chem/model_qc.hpp"
 
 #endif
