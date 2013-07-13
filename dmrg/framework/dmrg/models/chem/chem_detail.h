@@ -107,12 +107,23 @@ namespace chem_detail {
         
         int idx(int m, int pos) { return idx_[m][pos]; }
 
+        void commit_three_terms(std::vector<typename hamtagterm_t<M>::type> & tagterms) {
+            for (typename std::map<TermTuple, typename hamtagterm_t<M>::type>::const_iterator it = three_terms.begin();
+                    it != three_terms.end(); ++it)
+                tagterms.push_back(it->second);
+        }
+
         void add_term(std::vector<typename hamtagterm_t<M>::type> & tagterms,
                            value_type scale, int s, int p1, int p2, tag_t op_i, tag_t op_k, tag_t op_l, tag_t op_j) {
 
             typename hamtagterm_t<M>::type
             term = TermMaker<M>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, op_table);
-            tagterms.push_back(term);
+            TermTuple id(IndexTuple(s,s,p1,p2),IndexTuple(op_i,op_k,op_l,op_j));
+            if (three_terms.count(id) == 0) {
+                three_terms[id] = term;
+            }
+            else
+                three_terms[id].scale += term.scale;
     
         }
 
@@ -187,6 +198,8 @@ namespace chem_detail {
         std::vector<std::vector<int> > idx_;
 
         std::map<IndexTuple, value_type> coefficients;
+
+        std::map<TermTuple, typename hamtagterm_t<M>::type> three_terms;
 
     };
 }

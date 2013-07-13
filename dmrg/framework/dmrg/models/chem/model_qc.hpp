@@ -373,9 +373,8 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
     it_0 = std::find(used_elements.begin(), used_elements.end(), 0);
     assert( it_0 == used_elements.end() );
 
+    term_assistant.commit_three_terms(tagterms);
     maquis::cout << "The hamiltonian will contain " << tagterms.size() << " terms\n";
-    //maquis::cout << term_assistant.c4 << " formal terms, " << term_assistant.c4eff << " effective, " << term_assistant.c4pot << " potential\n";
-    //maquis::cout << term_assistant.rej << " rejected, " << term_assistant.acc << " accepted\n";
 
     return Hamiltonian<M, TwoU1>(phys, ident_op, terms, ident, tagterms, op_table);
 
