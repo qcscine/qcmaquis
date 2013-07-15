@@ -121,10 +121,8 @@ public:
     template<class Matrix_, class SymmGroup_>
     friend MPSTensor<Matrix_, SymmGroup_> join(MPSTensor<Matrix_, SymmGroup_> const &, MPSTensor<Matrix_, SymmGroup_> const &, boundary_flag_t);
 
-#ifdef HAVE_ALPS_HDF5
-    void load(alps::hdf5::archive & ar);
-    void save(alps::hdf5::archive & ar) const;
-#endif
+    template<class Archive> void load(Archive & ar);
+    template<class Archive> void save(Archive & ar) const;
     
     void check_equal(MPSTensor<Matrix, SymmGroup> const &) const;
     bool reasonable() const;

@@ -8,8 +8,6 @@
 typedef alps::numeric::matrix<double > Matrix;
 
 
-#include <alps/hdf5.hpp>
-
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
@@ -27,7 +25,7 @@ typedef alps::numeric::matrix<double > Matrix;
 #include "dmrg/utils/DmrgParameters.h"
 #include "utils/timings.h"
 
-#include "dmrg/utils/stream_storage.h"
+#include "dmrg/utils/storage.h"
 
 typedef U1 grp;
 
@@ -36,19 +34,19 @@ typedef Boundary<Matrix, grp> boundary_t;
 
 adj::Adjacency * adj_factory(ModelParameters & model)
 {
-    if (model.get<std::string>("lattice") == std::string("square_lattice"))
+    if (model["lattice"] == std::string("square_lattice"))
         return new adj::SquareAdj(model.get<int>("L"), model.get<int>("W"));
-    else if (model.get<std::string>("lattice") == std::string("chain_lattice"))
+    else if (model["lattice"] == std::string("chain_lattice"))
         return new adj::ChainAdj(model.get<int>("L"));
-    else if (model.get<std::string>("lattice") == std::string("cylinder_lattice"))
+    else if (model["lattice"] == std::string("cylinder_lattice"))
         return new adj::CylinderAdj(model.get<int>("L"), model.get<int>("W"));
-    else if (model.get<std::string>("lattice") == std::string("periodic_chain_lattice"))
+    else if (model["lattice"] == std::string("periodic_chain_lattice"))
         return new adj::PeriodicChainAdj(model.get<int>("L"));
-    else if (model.get<std::string>("lattice") == std::string("periodic_ladder_lattice"))
+    else if (model["lattice"] == std::string("periodic_ladder_lattice"))
         return new adj::PeriodicLadderAdj(model.get<int>("L"));
-    else if (model.get<std::string>("lattice") == std::string("periodic_square_lattice"))
+    else if (model["lattice"] == std::string("periodic_square_lattice"))
         return new adj::PeriodicSquareLatticeAdj(model.get<int>("L"), model.get<int>("W"));
-    else if (model.get<std::string>("lattice") == std::string("snake_square_lattice"))
+    else if (model["lattice"] == std::string("snake_square_lattice"))
         return new adj::SnakeSquareAdj(model.get<int>("L"), model.get<int>("W"));
     else {
         throw std::runtime_error("Don't know this lattice!");
@@ -59,15 +57,15 @@ adj::Adjacency * adj_factory(ModelParameters & model)
 template<class Matrix>
 mpos::Hamiltonian<Matrix, U1> * hamil_factory(ModelParameters & model)
 {
-    if (model.get<std::string>("model") == std::string("heisenberg"))
+    if (model["model"] == std::string("heisenberg"))
         return new mpos::Heisenberg<Matrix>(model.get<double>("Jxy"), model.get<double>("Jz"));
-    else if (model.get<std::string>("model") == std::string("biquadratic"))
+    else if (model["model"] == std::string("biquadratic"))
         return new mpos::Spin1BlBq<Matrix>(cos(M_PI * model.get<double>("theta")),
                                            sin(M_PI * model.get<double>("theta")),
                                            model.get<double>("h0"));
-    else if (model.get<std::string>("model") == std::string("HCB"))
+    else if (model["model"] == std::string("HCB"))
         return new mpos::HCB<Matrix>();
-    else if (model.get<std::string>("model") == std::string("FreeFermions"))
+    else if (model["model"] == std::string("FreeFermions"))
         return new mpos::FreeFermions<Matrix>();
     else {
         throw std::runtime_error("Don't know this model!");
@@ -102,8 +100,9 @@ int main(int argc, char ** argv)
     }
     ModelParameters model(model_file);
     
-    std::string chkpfile = parms.get<std::string>("chkpfile");
-    std::string rfile = parms.get<std::string>("resultfile");
+    std::string chkpfile = parms["chkpfile"];
+    std::string rfile = parms["resultfile"];
+
     bool dns = (parms.get<int>("donotsave") != 0);
     
     bool restore = false;
@@ -125,25 +124,25 @@ int main(int argc, char ** argv)
     
     int sweep = 0;
     if (restore) {
-        alps::hdf5::archive h5ar_in(chkpfile);
-        h5ar_in >> alps::make_pvp("/state", mps);
-        h5ar_in >> alps::make_pvp("/status/sweep", sweep);
+        storage::archive ar_in(chkpfile);
+        ar_in["/state"] >> mps;
+        ar_in["/status/sweep"] >> sweep;
         ++sweep;
     }
     
     {
-        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-        h5ar << alps::make_pvp("/parameters", parms);
-        h5ar << alps::make_pvp("/parameters", model);
+        storage::archive ar(rfile, "w");
+        ar["/parameters"] << parms;
+        ar["/parameters"] << model;
     }
     
     if (!dns) {
-        alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-        h5ar << alps::make_pvp("/parameters", parms);
-        h5ar << alps::make_pvp("/parameters", model);
+        storage::archive ar(chkpfile, "w");
+        ar["/parameters"] << parms;
+        ar["/parameters"] << model;
     }
     
-    StreamStorageMaster ssm(parms.get<std::string>("storagedir").c_str());
+    storage::setup(parms);
     
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
@@ -161,15 +160,13 @@ int main(int argc, char ** argv)
     maquis::cout << maquis::real(expval(mps, mpo, 0)) << std::endl;
     maquis::cout << maquis::real(expval(mps, mpo, 1)) << std::endl;
     {   
-        ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(mps, parms, ssm);
+        ss_optimize<Matrix, grp, storage::disk> optimizer(mps, parms);
         
         for (int sweep = 0; sweep < parms.get<int>("nsweeps"); ++sweep) {
             gettimeofday(&snow, NULL);
             
-            Logger iteration_log;
-            
             std::pair<std::vector<double>, std::vector<std::size_t> > r;
-            optimizer.sweep(mpo, sweep, iteration_log);
+            optimizer.sweep(mpo, sweep);
             
             entropies = calculate_bond_entropies(mps);
             
@@ -177,29 +174,29 @@ int main(int argc, char ** argv)
             double elapsed = sthen.tv_sec-snow.tv_sec + 1e-6 * (sthen.tv_usec-snow.tv_usec);
             
             {
-                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+                storage::archive ar(rfile, "w");
                 
                 std::ostringstream oss;
                 oss << "/simulation/sweep" << sweep << "/results";
-                h5ar << alps::make_pvp(oss.str().c_str(), iteration_log);
+                ar[oss.str().c_str()] << storage::log;
                 
                 oss.str("");
                 oss << "/simulation/sweep" << sweep << "/results/Iteration Entropies/mean/value";
-                h5ar << alps::make_pvp(oss.str().c_str(), entropies);
+                ar[oss.str().c_str()] << entropies;
                 
                 maquis::cout << "Sweep done after " << elapsed << " seconds." << std::endl;
                 oss.str("");
                 oss << "/simulation/sweep" << sweep << "/results/Runtime/mean/value";
-                h5ar << alps::make_pvp(oss.str().c_str(), std::vector<double>(1, elapsed));
+                ar[oss.str().c_str()] << std::vector<double>(1, elapsed);
             }
                 
-                if (parms.get<int>("donotsave") == 0)
-                {
-                    alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-                    
-                    h5ar << alps::make_pvp("/state", mps);
-                    h5ar << alps::make_pvp("/status/sweep", sweep);
-                }
+            if (!dns)
+            {
+                storage::archive ar(chkpfile, "w");
+                
+                ar["/state"] << mps;
+                ar["/status/sweep"] << sweep;
+            }
             
             gettimeofday(&then, NULL);
             elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec); 
@@ -212,23 +209,23 @@ int main(int argc, char ** argv)
     }
     
     
-    ssm.sync();
+    storage::disk::sync();
     
     if (!early_exit)
     {
-        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+        storage::archive ar(rfile, "w");
         
-        measure(mps, *adj, *H, model, h5ar);
+        measure(mps, *adj, *H, model, ar);
         
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
         
         maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
         
-        h5ar << alps::make_pvp("/simulation/results/Iteration Energy/mean/value", energies);
-        h5ar << alps::make_pvp("/simulation/results/Runtime/mean/value", std::vector<double>(1, elapsed));
+        ar["/simulation/results/Iteration Energy/mean/value"] << energies;
+        ar["/simulation/results/Runtime/mean/value"] << std::vector<double>(1, elapsed);
         
-        h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
+        ar["/spectrum/results/Entropy/mean/value"] << entropies;
         
         everything.end();
     }

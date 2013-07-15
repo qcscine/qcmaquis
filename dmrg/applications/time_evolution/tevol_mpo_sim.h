@@ -12,7 +12,7 @@
 #include <cmath>
 #include <sys/stat.h>
 
-#include "dmrg/utils/noop_storage.h"
+#include "dmrg/utils/storage.h"
 #include "dmrg/sim/te_utils.hpp"
 #include "dmrg/mp_tensors/te.h"
 
@@ -54,15 +54,15 @@ protected:
             Uterms[i] = make_exp_mpo(this->lat->size(), hamils[i], alpha);
     }
     
-    void evolve_time_step(Logger & iteration_log)
+    void evolve_time_step()
     {
         for (int which = 0; which < Uterms.size(); ++which)
         {
-            time_evolve<Matrix, SymmGroup, NoopStorageMaster> evolution(this->mps,
-                                                                        Uterms[which],
-                                                                        this->parms, nossm);
+            time_evolve<Matrix, SymmGroup, storage::nop> evolution(this->mps,
+                                                                   Uterms[which],
+                                                                   this->parms);
             for (int k = 0; k < 5; ++k)
-                evolution.sweep(this->sweep, iteration_log);
+                evolution.sweep(this->sweep);
             evolution.finalize();
             this->mps = evolution.get_current_mps();
         }
@@ -72,8 +72,6 @@ protected:
 private:        
     std::vector<Hamiltonian<Matrix, SymmGroup> > hamils;
     std::vector<MPO<Matrix, SymmGroup> > Uterms;
-    
-    NoopStorageMaster nossm;
 };
 
 #endif

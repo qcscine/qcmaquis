@@ -8,10 +8,6 @@
 #include <vector>
 #include <map>
 
-#ifdef HAVE_ALPS_HDF5
-#include <alps/hdf5.hpp>
-#endif
-
 class DataCollector;
 
 #ifdef ENABLE_DATACOLLECTORS
@@ -22,11 +18,11 @@ class DataCollector;
 #define DCOLLECTOR_ADD(var, value) var.add_data(value);
 #define DCOLLECTOR_ADD_VERB(var, value) var.add_data(value, true);
 #define DCOLLECTOR_ADD_AT(var, keyname, value) var.add_data(keyname, value);
-#define DCOLLECTOR_SAVE(var, ar, path) ar << alps::make_pvp(path, var);
+#define DCOLLECTOR_SAVE(var, ar, path) ar[path] << var;
 #define DCOLLECTOR_SAVE_TO_FILE(var, fname, path)                           \
 {                                                                           \
-    alps::hdf5::archive h5ar_dcollector(fname, alps::hdf5::archive::WRITE); \
-    h5ar_dcollector << alps::make_pvp(path, var);                           \
+    storage::archive ar_dcollector(fname, "w");                             \
+    ar_dcollector[path] << var;                                             \
 }
 
 extern DataCollector gemm_collector;
@@ -93,11 +89,11 @@ public:
         data[key][val]++;
 	}
 
-#ifdef HAVE_ALPS_HDF5
-	void save(alps::hdf5::archive & ar) const
+    template<class Archive>
+	void save(Archive & ar) const
 	{
         if (data.size() == 1) {
-			ar << alps::make_pvp(name_ + "/mean/value", data.begin()->second);
+			ar[name_ + "/mean/value"] << data.begin()->second;
 		} else if (data.size() > 1) {
 			std::vector<std::string> keys;
             std::vector<std::vector<size_t> > values;
@@ -108,11 +104,10 @@ public:
                 keys.push_back(it->first);
                 values.push_back(it->second);
 			}
-			ar << alps::make_pvp(name_ + "/mean/value", values);
-			ar << alps::make_pvp(name_ + "/labels", keys);
+			ar[name_ + "/mean/value"] << values;
+			ar[name_ + "/labels"] << keys;
 		}
 	}
-#endif
 
 private:
     std::size_t maxsize;

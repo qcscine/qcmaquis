@@ -14,10 +14,6 @@
 
 #include <boost/functional/hash.hpp>
 
-#ifdef HAVE_ALPS_HDF5
-#include <alps/hdf5.hpp>
-#endif
-
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/array.hpp>
 

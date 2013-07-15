@@ -4,11 +4,12 @@
 template<class Matrix>
 struct measure_<Matrix, TwoU1>
 {
+    template<class Archive>
     void measure_blbq(MPS<Matrix, TwoU1> & mps,
                       b_adj::Adjacency & adj,
                       b_mpos::Hamiltonian<Matrix, TwoU1> & H,
                       BaseParameters & model,
-                      alps::hdf5::archive & ar)
+                      Archive & ar)
     {
         TwoU1::charge A, B, C;
         B[0] = 1;
@@ -50,7 +51,7 @@ struct measure_<Matrix, TwoU1>
             }
             
             std::string n = std::string("/spectrum/results/") + names[i] + std::string("/mean/value");
-            ar << alps::make_pvp(n, magns);
+            ar[n] << magns;
         }
         
         for (int i = 0; i < 4; ++i)
@@ -128,16 +129,17 @@ struct measure_<Matrix, TwoU1>
             
             maquis::cout << "Bond energy sum: " << sum << std::endl;
             
-            ar << alps::make_pvp("/spectrum/results/BondEnergies/mean/value", bond_e);
-            ar << alps::make_pvp("/spectrum/results/BondEnergies/labels", bond_names);
+            ar["/spectrum/results/BondEnergies/mean/value"] << bond_e;
+            ar["/spectrum/results/BondEnergies/labels"] << bond_names;
         }
     }
     
+    template<class Archive>
     void measure_fermi_hubbard(MPS<Matrix, TwoU1> & mps,
                                b_adj::Adjacency & adj,
                                b_mpos::Hamiltonian<Matrix, TwoU1> & H,
                                BaseParameters & model,
-                               alps::hdf5::archive & ar)
+                               Archive & ar)
     {
         block_matrix<Matrix, TwoU1> create_up, create_down;
         block_matrix<Matrix, TwoU1> destroy_up, destroy_down;
@@ -211,13 +213,13 @@ struct measure_<Matrix, TwoU1>
             density_down.push_back(val);
             
         }
-        ar << alps::make_pvp("/spectrum/results/DensityUp/mean/value", density_up);
-        ar << alps::make_pvp("/spectrum/results/DensityDown/mean/value", density_down);
+        ar["/spectrum/results/DensityUp/mean/value"] << density_up;
+        ar["/spectrum/results/DensityDown/mean/value"] << density_down;
 
         double total_count = 0.;
         total_count += std::accumulate(density_up.begin(), density_up.end(), 0.);
         total_count += std::accumulate(density_down.begin(), density_down.end(), 0.);
-        ar << alps:: make_pvp("/spectrum/results/Filling/mean/value", total_count);
+        ar["/spectrum/results/Filling/mean/value"] << total_count;
         
         
         maquis::cout << "Calculating z-z spin correlation." << std::endl;
@@ -329,16 +331,16 @@ struct measure_<Matrix, TwoU1>
 
     }
 
-    
+    template<class Archive>
     void operator()(MPS<Matrix, TwoU1> & mps,
                     b_adj::Adjacency & adj,
                     b_mpos::Hamiltonian<Matrix, TwoU1> & H,
                     BaseParameters & model,
-                    alps::hdf5::archive & ar)
+                    Archive & ar)
     {
-        if (model.get<std::string>("model") == std::string("biquadratic"))
+        if (model["model"] == std::string("biquadratic"))
             measure_blbq(mps, adj, H, model, ar);
-        else if (model.get<std::string>("model") == std::string("fermi_hubbard"))
+        else if (model["model"] == std::string("fermi_hubbard"))
             measure_fermi_hubbard(mps, adj, H, model, ar);
     }
 };

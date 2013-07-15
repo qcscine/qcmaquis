@@ -147,7 +147,7 @@ namespace maquis { namespace dmrg { namespace detail {
         for(size_t k = 0; k < k_max; ++k){
             for(size_t kk = 0; kk < set[k].data.size(); kk++){
                 std::vector<value_type>* v_ptr = &r[vi++];
-                ambient::numeric::kernels::round_square<value_type>::spawn<complexity::N>(set[k][kk], v_ptr);
+                ambient::numeric::kernels::template round_square<value_type>::template spawn<complexity::N>(set[k][kk], v_ptr);
             }
         }
         ambient::sync();

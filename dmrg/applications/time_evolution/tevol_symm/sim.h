@@ -13,30 +13,30 @@
 template <>
 void run_tevol<matrix, grp>(DmrgParameters & parms, ModelParameters & model)
 {
-    if (parms.get<std::string>("te_type") == "nn")
+    if (parms["te_type"] == "nn")
     {
         dmrg_tevol_nn_sim<matrix, grp> sim(parms, model);
         sim.run();
-    } else if (parms.get<std::string>("te_type") == "mpo") {
+    } else if (parms["te_type"] == "mpo") {
         dmrg_tevol_mpo_sim<matrix, grp> sim(parms, model);
         sim.run();
     } else {
-        throw std::runtime_error("Don't know this time evolution. ("+parms.get<std::string>("te_type")+")");
+        throw std::runtime_error("Don't know this time evolution. ("+parms["te_type"]+")");
     }
 }
 
 template <>
 void run_tevol<cmatrix, grp>(DmrgParameters & parms, ModelParameters & model)
 {
-    if (parms.get<std::string>("te_type") == "nn")
+    if (parms["te_type"] == "nn")
     {
         dmrg_tevol_nn_sim<cmatrix, grp> sim(parms, model);
         sim.run();
-    } else if (parms.get<std::string>("te_type") == "mpo") {
+    } else if (parms["te_type"] == "mpo") {
         dmrg_tevol_mpo_sim<cmatrix, grp> sim(parms, model);
         sim.run();
     } else {
-        throw std::runtime_error("Don't know this time evolution. ("+parms.get<std::string>("te_type")+")");
+        throw std::runtime_error("Don't know this time evolution. ("+parms["te_type"]+")");
     }
 }
 

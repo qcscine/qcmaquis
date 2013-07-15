@@ -115,21 +115,25 @@ public:
     {
         return defined(key);
     }
+
+    const std::string operator[](std::string key){
+        return get<std::string>(key);
+    }
     
     template<class T> T get(std::string const & key)
     {
         if (!defined(key))
             if (defaults.count(key) > 0)
-                (*this)[key] = defaults[key];
+                alps::Parameters::operator[](key) = defaults[key];
             else
                 boost::throw_exception(std::runtime_error("parameter " + key + " not defined"));
         conversion::get_<T> g;
-        return g((*this)[key]);
+        return g(alps::Parameters::operator[](key));
     }
     
     template<class T> void set(std::string const & key, T const & value)
     {
-        (*this)[key] = boost::lexical_cast<std::string>(value);
+        alps::Parameters::operator[](key) = boost::lexical_cast<std::string>(value);
     }
     
     BaseParameters get_at_index(std::string const & var, std::size_t val, int* counter = NULL)
@@ -142,11 +146,11 @@ public:
             std::string key = it->key();
             if (boost::regex_match(key, what, expression)) {
                 conversion::get_<std::vector<value_type> > g;
-                std::vector<value_type> v = g((*this)[key]);
+                std::vector<value_type> v = g(alps::Parameters::operator[](key));
                 if (val < v.size())
-                    p[what.str(1)] = v[val];
+                    p.set(what.str(1), v[val]);
                 else
-                    p[what.str(1)] = *(v.rbegin());
+                    p.set(what.str(1), *(v.rbegin()));
                 
                 if (counter)
                     ++(*counter);

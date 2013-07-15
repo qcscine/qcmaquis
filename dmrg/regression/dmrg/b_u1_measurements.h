@@ -4,11 +4,12 @@
 template<class Matrix>
 struct measure_<Matrix, U1>
 {
+    template<class Archive>
     void measure_blbq(MPS<Matrix, U1> & mps,
                       b_adj::Adjacency & adj,
                       b_mpos::Hamiltonian<Matrix, U1> & H,
                       BaseParameters & model,
-                      alps::hdf5::archive & ar)
+                      Archive & ar)
     {
         std::vector<double> magns;
         
@@ -46,7 +47,7 @@ struct measure_<Matrix, U1>
             }
             
             std::string n = std::string("/spectrum/results/") + names[i] + std::string("/mean/value");
-            ar << alps::make_pvp(n, magns);
+            ar[n] << magns;
         }
         
         for (int i = 0; i < 4; ++i)
@@ -138,16 +139,17 @@ struct measure_<Matrix, U1>
             
             maquis::cout << "Bond energy sum: " << sum << std::endl;
             
-            ar << alps::make_pvp("/spectrum/results/BondEnergies/mean/value", bond_e);
-            ar << alps::make_pvp("/spectrum/results/BondEnergies/labels", bond_names);
+            ar["/spectrum/results/BondEnergies/mean/value"] << bond_e;
+            ar["/spectrum/results/BondEnergies/labels"] << bond_names;
         }
     }
     
+    template<class Archive>
     void measure_superf(MPS<Matrix, U1> & mps,
                         b_adj::Adjacency & adj,
                         b_mpos::Hamiltonian<Matrix, U1> & H,
                         BaseParameters & model,
-                        alps::hdf5::archive & ar)
+                        Archive & ar)
     {
         std::vector<double> magns;
         
@@ -167,7 +169,7 @@ struct measure_<Matrix, U1>
             magns.push_back(val);
         }
         
-        ar << alps::make_pvp("/spectrum/results/Density/mean/value", magns);
+        ar["/spectrum/results/Density/mean/value"] << magns;
         
         std::vector<double> corrs;
         
@@ -189,14 +191,15 @@ struct measure_<Matrix, U1>
             }
         }
         
-        ar << alps::make_pvp("/spectrum/results/NNDensityCorrelation/mean/value", corrs);
+        ar["/spectrum/results/NNDensityCorrelation/mean/value"] << corrs;
     }
-    
+   
+    template<class Archive> 
     void measure_ff(MPS<Matrix, U1> & mps,
                     b_adj::Adjacency & adj,
                     b_mpos::Hamiltonian<Matrix, U1> & H,
                     BaseParameters & model,
-                    alps::hdf5::archive & ar)
+                    Archive & ar)
     {
         block_matrix<Matrix, U1> dens, create, destroy, sign, ident;
         
@@ -222,7 +225,7 @@ struct measure_<Matrix, U1>
             double val = maquis::real(expval(mps, mpo, 0));
             density.push_back(val);
         }
-        ar << alps::make_pvp("/spectrum/results/Density/mean/value", density);
+        ar["/spectrum/results/Density/mean/value"] << density;
         
         std::vector<block_matrix<Matrix, U1> > density_corr;
         density_corr.push_back( dens );
@@ -239,18 +242,18 @@ struct measure_<Matrix, U1>
                                 "/spectrum/results/OneBodyDM");
     }
     
-    
+    template<class Archive>
     void operator()(MPS<Matrix, U1> & mps,
                     b_adj::Adjacency & adj,
                     b_mpos::Hamiltonian<Matrix, U1> & H,
                     BaseParameters & model,
-                    alps::hdf5::archive & ar)
+                    Archive & ar)
     {
-        if (model.get<std::string>("model") == std::string("biquadratic"))
+        if (model["model"] == std::string("biquadratic"))
             measure_blbq(mps, adj, H, model, ar);
-        else if (model.get<std::string>("model") == std::string("superfermion"))
+        else if (model["model"] == std::string("superfermion"))
             measure_superf(mps, adj, H, model, ar);
-        else if (model.get<std::string>("model") == std::string("FreeFermions"))
+        else if (model["model"] == std::string("FreeFermions"))
             measure_ff(mps, adj, H, model, ar);
     }
 };

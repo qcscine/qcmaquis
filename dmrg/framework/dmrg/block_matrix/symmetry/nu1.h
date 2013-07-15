@@ -16,10 +16,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/functional/hash.hpp>
 
-#ifdef HAVE_ALPS_HDF5
-#include <alps/hdf5.hpp>
-#endif
-
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/array.hpp>
 
@@ -46,20 +42,20 @@ public:
     
     int & operator[](std::size_t p) { return data_[p]; }
     int const & operator[](std::size_t p) const { return data_[p]; }
-    
-#ifdef HAVE_ALPS_HDF5
-    void save(alps::hdf5::archive & ar) const
+   
+    template<class Archive> 
+    void save(Archive & ar) const
     {
         for (int i = 0; i < N; ++i)
-            ar << alps::make_pvp(boost::lexical_cast<std::string>(i), (*this)[i]);
+            ar[boost::lexical_cast<std::string>(i)] << (*this)[i];
     }
     
-    void load(alps::hdf5::archive & ar)
+    template<class Archive> 
+    void load(Archive & ar)
     {
         for (int i = 0; i < N; ++i)
-            ar >> alps::make_pvp(boost::lexical_cast<std::string>(i), (*this)[i]);
+            ar[boost::lexical_cast<std::string>(i)] >> (*this)[i];
     }
-#endif
     
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)

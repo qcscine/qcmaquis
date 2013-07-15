@@ -18,29 +18,26 @@
 #include <boost/tuple/tuple.hpp>
 
 
-template<class Matrix, class SymmGroup, class StorageMaster>
-class ts_optimize : public optimizer_base<Matrix, SymmGroup, StorageMaster>
+template<class Matrix, class SymmGroup, class Storage>
+class ts_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {
 public:
 
-    typedef optimizer_base<Matrix, SymmGroup, StorageMaster> base;
+    typedef optimizer_base<Matrix, SymmGroup, Storage> base;
     using base::mpo;
     using base::mpo_orig;
     using base::mps;
     using base::left_;
-    using base::left_stores_;
     using base::right_;
-    using base::right_stores_;
     using base::parms;
 
     ts_optimize(MPS<Matrix, SymmGroup> const & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 MPO<Matrix, SymmGroup> const & ts_mpo_,
-                BaseParameters & parms_,
-                StorageMaster & sm)
-    : ts_cache_mpo(ts_mpo_), base(mps_, mpo_, parms_, sm) { }
+                BaseParameters & parms_)
+    : ts_cache_mpo(ts_mpo_), base(mps_, mpo_, parms_) { }
 
-    int sweep(int sweep, Logger & iteration_log,
+    int sweep(int sweep,
                OptimizeDirection d = Both,
                int resume_at = -1,
                int max_secs = -1)
@@ -65,8 +62,8 @@ public:
             this->init_left_right(mpo, site);
         }
 
-        storage::prefetch(left_[0], left_stores_[0]);
-        storage::prefetch(right_[2], right_stores_[2]);
+        Storage::prefetch(left_[0]);
+        Storage::prefetch(right_[2]);
 
 #ifndef NDEBUG
     	maquis::cout << mps.description() << std::endl;
@@ -101,22 +98,23 @@ public:
                         this->init_left_right(mpo, 0);
                 } else if (sweep == 0 && lr == -1 && site == L-1) {
                     mpo = mpo_orig;
-                    // this is not needed, but when enabled is showing a bug in StreamStorage
-                    // todo: need more investigation
-                    //this->init_left_right(mpo, site);
                 }
             }
         
-        
-            storage::load(left_[site1], left_stores_[site1]);
-            storage::load(right_[site2+1], right_stores_[site2+1]);
+            if (_site != L-1)
+            { 
+                Storage::fetch(left_[site1]);
+                Storage::fetch(right_[site2+1]);
+            }
 
             if (lr == +1) {
-                if (site2+2 < right_.size())
-                    storage::prefetch(right_[site2+2], right_stores_[site2+2]);
+                if (site2+2 < right_.size()){
+                    Storage::prefetch(right_[site2+2]);
+                }
             } else {
-                if (site1 > 1)
-                    storage::prefetch(left_[site1-1], left_stores_[site1-1]);
+                if (site1 > 0){
+                    Storage::prefetch(left_[site1-1]);
+                }
             }
 
 
@@ -141,11 +139,11 @@ public:
                 (d == LeftOnly && lr == -1) ||
                 (d == RightOnly && lr == +1))
             {
-                if (parms.template get<std::string>("eigensolver") == std::string("IETL")) {
+                if (parms["eigensolver"] == std::string("IETL")) {
             	    BEGIN_TIMING("IETL")
                     res = solve_ietl_lanczos(sp, twin_mps, parms);
             	    END_TIMING("IETL")
-                } else if (parms.template get<std::string>("eigensolver") == std::string("IETL_JCD")) {
+                } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
             	    BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, twin_mps, parms, ortho_vecs);
             	    END_TIMING("JCD")
@@ -163,7 +161,7 @@ public:
 #endif
 
             maquis::cout << "Energy " << lr << " " << res.first << std::endl;
-            iteration_log << make_log("Energy", res.first);
+            storage::log << std::make_pair("Energy", res.first);
             
             double cutoff = this->get_cutoff(sweep);
             std::size_t Mmax = this->get_Mmax(sweep);
@@ -171,7 +169,7 @@ public:
     	    if (lr == +1)
     	    {
         		// Write back result from optimization
-        		boost::tie(mps[site1], mps[site2]) = tst.split_mps_l2r(Mmax, cutoff, &iteration_log);
+        		boost::tie(mps[site1], mps[site2]) = tst.split_mps_l2r(Mmax, cutoff);
 
         		block_matrix<Matrix, SymmGroup> t;
 		
@@ -184,12 +182,16 @@ public:
                 maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site2 < L-1) mps[site2+1].multiply_from_left(t);
 
-                storage::reset(left_stores_[site2]); // left_stores_[site2] is outdated
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
+
+                if (site1 != L-2){ 
+                    Storage::evict(left_[site1]);
+                    Storage::drop(right_[site2+1]);
+                }
     	    }
     	    if (lr == -1){
         		// Write back result from optimization
-        		boost::tie(mps[site1], mps[site2]) = tst.split_mps_r2l(Mmax, cutoff, &iteration_log);
+        		boost::tie(mps[site1], mps[site2]) = tst.split_mps_r2l(Mmax, cutoff);
 
         		block_matrix<Matrix, SymmGroup> t;
 
@@ -202,15 +204,14 @@ public:
                 maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site1 > 0) mps[site1-1].multiply_from_right(t);
 
-                storage::reset(right_stores_[site2]); // right_stores_[site2] is outdated
                 this->boundary_right_step(mpo, site2); // creating right_[site2]
+
+                if(site1 != 0){
+                    Storage::evict(right_[site2+1]); 
+                    Storage::drop(left_[site1]);
+                }
     	    }
             
-            if (_site != L-1)
-            { 
-                storage::store(left_[site1], left_stores_[site1]); // store currently used boundary
-                storage::store(right_[site2+1], right_stores_[site2+1]); // store currently used boundary
-            }
             
             gettimeofday(&sweep_then, NULL);
             double elapsed = sweep_then.tv_sec-sweep_now.tv_sec + 1e-6 * (sweep_then.tv_usec-sweep_now.tv_usec);

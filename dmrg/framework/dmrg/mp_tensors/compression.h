@@ -21,8 +21,7 @@ struct compression {
     replace_two_sites_l2r(MPS<Matrix, SymmGroup> & mps,
                           std::size_t Mmax, double cutoff,
                           block_matrix<Matrix, SymmGroup> const & t,
-                          std::size_t p,
-                          Logger * logger = NULL)
+                          std::size_t p)
     {
         block_matrix<Matrix, SymmGroup> u, v;
         
@@ -31,7 +30,7 @@ struct compression {
         block_matrix<dmt, SymmGroup> s;
         
         svd_truncate(t, u, v, s,
-                     cutoff, Mmax, true, logger);
+                     cutoff, Mmax, true);
         
         mps[p].replace_left_paired(u, Lnorm);
         
@@ -44,8 +43,7 @@ struct compression {
     replace_two_sites_r2l(MPS<Matrix, SymmGroup> & mps,
                           std::size_t Mmax, double cutoff,
                           block_matrix<Matrix, SymmGroup> const & t,
-                          std::size_t p,
-                          Logger * logger = NULL)
+                          std::size_t p)
     {
         block_matrix<Matrix, SymmGroup> u, v;
         
@@ -54,7 +52,7 @@ struct compression {
         block_matrix<dmt, SymmGroup> s;
         
         svd_truncate(t, u, v, s,
-                     cutoff, Mmax, true, logger);
+                     cutoff, Mmax, true);
         
         mps[p+1].replace_right_paired(v, Rnorm);
         
@@ -65,8 +63,7 @@ struct compression {
     template<class Matrix, class SymmGroup>
     static void compress_two_sites(MPS<Matrix, SymmGroup> & mps,
                                    std::size_t Mmax, double cutoff,
-                                   std::size_t p,
-                                   Logger * logger = NULL)
+                                   std::size_t p)
     {
         block_matrix<Matrix, SymmGroup> t;
         
@@ -75,14 +72,13 @@ struct compression {
         
         gemm(mps[p].data(), mps[p+1].data(), t);
         
-        replace_two_sites_l2r(mps, Mmax, cutoff, t, p, logger);
+        replace_two_sites_l2r(mps, Mmax, cutoff, t, p);
     }
         
     template<class Matrix, class SymmGroup>
     MPS<Matrix, SymmGroup>
     static l2r_compress(MPS<Matrix, SymmGroup> mps,
                         std::size_t Mmax, double cutoff,
-                        Logger * logger = NULL,
                         bool verbose = false)
     {
         std::size_t L = mps.length();
@@ -100,7 +96,7 @@ struct compression {
                 maquis::cout.flush();
             }
             
-            compress_two_sites(mps, Mmax, cutoff, p-1, logger);
+            compress_two_sites(mps, Mmax, cutoff, p-1);
             
             t = mps[p].normalize_left(DefaultSolver());
             
@@ -117,7 +113,6 @@ struct compression {
     MPS<Matrix, SymmGroup>
     static r2l_compress(MPS<Matrix, SymmGroup> mps,
                         std::size_t Mmax, double cutoff,
-                        Logger * logger = NULL,
                         bool verbose = false)
     {
         std::size_t L = mps.length();
@@ -135,7 +130,7 @@ struct compression {
                 maquis::cout.flush();
             }
             
-            compress_two_sites(mps, Mmax, cutoff, p-1, logger);
+            compress_two_sites(mps, Mmax, cutoff, p-1);
             
             t = mps[p-1].normalize_right(DefaultSolver());
             

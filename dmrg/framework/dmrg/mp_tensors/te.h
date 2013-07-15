@@ -19,8 +19,6 @@
 #endif
 
 #include "dmrg/utils/BaseParameters.h"
-#include "dmrg/utils/logger.h"
-//#include "dmrg/utils/stream_storage.h"
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem
@@ -46,25 +44,23 @@ gettimeofday(&now, NULL);
 gettimeofday(&then, NULL); \
 maquis::cout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << std::endl;
 
-template<class Matrix, class SymmGroup, class StorageMaster>
+template<class Matrix, class SymmGroup, class Storage>
 class time_evolve
 {
 public:
     time_evolve(MPS<Matrix, SymmGroup> const & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
-                BaseParameters & parms_,
-                StorageMaster & sm)
+                BaseParameters & parms_)
     : mps(mps_)
     , mpsp(mps_)
     , mpo(mpo_)
     , parms(parms_)
-    , storage_master(sm)
     {
         mps.canonize(0);
         mpsp = mps;
     }
     
-    int sweep(int sweep, Logger & iteration_log)
+    int sweep(int sweep)
     {
         timeval sweep_now, sweep_then;
         gettimeofday(&sweep_now, NULL);
@@ -131,32 +127,24 @@ private:
         left_.resize(mpo.length()+1);
         right_.resize(mpo.length()+1);
         
-        right_stores_.resize(L+1, storage_master.child());
-        left_stores_.resize(L+1, storage_master.child());
-        
+        Storage::drop(left_[0]);
         left_[0] = mps.left_boundary();
-        
-        storage::reset(left_stores_[0]);
-        storage::store(left_[0], left_stores_[0]);
+        Storage::evict(left_[0]);
         
         for (int i = 0; i < L; ++i) {
-            left_[i+1] = contraction::overlap_mpo_left_step(mpsp[i], mps[i],
-                                                            left_[i], mpo[i]);
-            storage::reset(left_stores_[i+1]);
-            storage::store(left_[i+1], left_stores_[i+1]);
+            Storage::drop(left_[i+1]);
+            left_[i+1] = contraction::overlap_mpo_left_step(mpsp[i], mps[i], left_[i], mpo[i]);
+            Storage::evict(left_[i+1]);
         }
         
+        Storage::drop(right_[L]);
         right_[L] = mps.right_boundary();
-        
-        storage::reset(right_stores_[L]);
-        storage::store(right_[L], right_stores_[L]);
+        Storage::evict(right_[L]);
         
         for(int i = L-1; i >= 0; --i) {
-            right_[i] = contraction::overlap_mpo_right_step(mpsp[i], mps[i],
-                                                            right_[i+1], mpo[i]);
-            
-            storage::reset(right_stores_[i]);
-            storage::store(right_[i], right_stores_[i]);
+            Storage::drop(right_[i]);
+            right_[i] = contraction::overlap_mpo_right_step(mpsp[i], mps[i], right_[i+1], mpo[i]);
+            Storage::evict(right_[i]);
         }
     }
     
@@ -165,8 +153,6 @@ private:
     
     BaseParameters & parms;
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
-    std::vector<typename StorageMaster::Storage> left_stores_, right_stores_;
-    StorageMaster & storage_master;
 };
 
 #endif

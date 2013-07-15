@@ -18,12 +18,14 @@
 
 #include "utils/timings.h"
 #include "utils/traits.hpp"
+#include "dmrg/utils/storage.h"
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
 template<class Matrix, class SymmGroup>
 class block_matrix
 {
+    friend class block_matrix<typename storage::constrained<Matrix>::type, SymmGroup>;
 private:
     typedef typename SymmGroup::charge charge;
 public:
@@ -41,6 +43,8 @@ public:
     block_matrix(block_matrix<OtherMatrix,SymmGroup> const&);
 
     block_matrix& operator=(block_matrix rhs);
+    template<class OtherMatrix>
+    block_matrix& operator=(const block_matrix<OtherMatrix, SymmGroup>& rhs);
 
     Index<SymmGroup> const & left_basis() const;
     Index<SymmGroup> const & right_basis() const;
@@ -119,10 +123,8 @@ public:
         return data_[rows_.position(r)];
     }
     
-#ifdef HAVE_ALPS_HDF5
-    void load(alps::hdf5::archive & ar);
-    void save(alps::hdf5::archive & ar) const;
-#endif
+    template<class Archive> void load(Archive & ar);
+    template<class Archive> void save(Archive & ar) const;
     
     template <class Archive>
     inline void serialize(Archive & ar, const unsigned int version);

@@ -18,8 +18,6 @@
 #include "dmrg/utils/utils.hpp"
 #include "utils/traits.hpp"
 
-#include <alps/hdf5.hpp>
-
 namespace meas_eval {
     
     // forward declaration
@@ -85,7 +83,7 @@ namespace meas_eval {
     		         std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
                      std::string const & h5name, std::string base_path)
     {
-        alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+        storage::archive ar(h5name, "w");
         
         if ( all_true(ops.begin(), ops.end(),
                       boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian),
@@ -93,9 +91,9 @@ namespace meas_eval {
                       ) )
         {
             std::vector<double> tmp(1, maquis::real(val));
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
+            ar[base_path + std::string("/mean/value")] << tmp;
         } else {
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<T>(1, val));
+            ar[base_path + std::string("/mean/value")] << std::vector<T>(1, val);
         }
     }
 
@@ -104,18 +102,18 @@ namespace meas_eval {
     		         std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
                      std::string const & h5name, std::string base_path)
     {
-        alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+        storage::archive ar(h5name, "w");
         
-        ar << alps::make_pvp(base_path + std::string("/labels"), labels);
+        ar[base_path + std::string("/labels")] << labels;
         if ( all_true(ops.begin(), ops.end(),
                       boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian),
                                   boost::bind<block_matrix<Matrix, SymmGroup> const&>(&std::pair<block_matrix<Matrix, SymmGroup>, bool>::first, _1))
                       ) )
         {
             std::vector<std::vector<double> > tmp(1, maquis::real(val));
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
+            ar[base_path + std::string("/mean/value")] << tmp;
         } else {
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<std::vector<T> >(1, val));
+            ar[base_path + std::string("/mean/value")] << std::vector<std::vector<T> >(1, val);
         }
     }
 
@@ -171,10 +169,10 @@ namespace meas_eval {
             } // should return a vector of pairs or pair of vectors (todo: 30.04.12 / Matthias scalar/value types discussion)
             
             { // should be moved out to the main loop (todo: 30.04.12 / Matthias scalar/value types discussion)
-                alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+                storage::archive ar(h5name, "w");
                 std::vector<std::vector<double> > tmp(1, maquis::real(vals));
-                ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
-                ar << alps::make_pvp(base_path + std::string("/labels"), labels);
+                ar[base_path + std::string("/mean/value")] << tmp;
+                ar[base_path + std::string("/labels")] << labels;
             }
         }
         
@@ -203,10 +201,10 @@ namespace meas_eval {
             } // same here (todo: 30.04.12 / Matthias scalar/value types discussion)
             
             {
-                alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+                storage::archive ar(h5name, "w");
                 std::vector<std::vector<double> > tmp(1, maquis::real(vals));
-                ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
-                ar << alps::make_pvp(base_path + std::string("/labels"), labels);
+                ar[base_path + std::string("/mean/value")] << tmp;
+                ar[base_path + std::string("/labels")] << labels;
             }
         }
         
@@ -340,8 +338,8 @@ namespace meas_eval {
         double val = expval(mps, mpo);
 
         {
-            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), std::vector<double>(1, val));
+            storage::archive ar(h5name, "w");
+            ar[base_path + std::string("/mean/value")] << std::vector<double>(1, val);
         }
     }
    
@@ -384,8 +382,8 @@ namespace meas_eval {
             typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(super_mpos[0], mps) / nn;
             std::vector<double> tmp(1, maquis::real(val));
             
-            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
+            storage::archive ar(h5name, "w");
+            ar[base_path + std::string("/mean/value")] << tmp;
         } else {
             std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals;
             for (std::size_t i=0; i<super_mpos.size(); ++i) {
@@ -399,9 +397,9 @@ namespace meas_eval {
                 
             }
             std::vector<std::vector<double> > tmp(1, maquis::real(vals));
-            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
-            ar << alps::make_pvp(base_path + std::string("/labels"), labels);
+            storage::archive ar(h5name, "w");
+            ar[base_path + std::string("/mean/value")] << tmp;
+            ar[base_path + std::string("/labels")] << labels;
         }
 	}
 
@@ -413,8 +411,8 @@ namespace meas_eval {
         MPS<Matrix, SymmGroup> bra_mps;
         maquis::cout << "Measuring overlap with " << bra_ckp << "." << std::endl;
         {
-            alps::hdf5::archive ar(bra_ckp, alps::hdf5::archive::READ);
-            ar >> alps::make_pvp("/state", bra_mps);
+            storage::archive ar(bra_ckp);
+            ar["/state"] >> bra_mps;
         }
         
         std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals(1);
@@ -423,14 +421,14 @@ namespace meas_eval {
             typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(bra_mps, mps);
             
             std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> tmp(1, val);
-            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
+            storage::archive ar(h5name, "w");
+            ar[base_path + std::string("/mean/value")] << tmp;
         } else {
             std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals = multi_overlap(bra_mps, mps);
             
             std::vector<std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> > tmp(1, vals);
-            alps::hdf5::archive ar(h5name, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            ar << alps::make_pvp(base_path + std::string("/mean/value"), tmp);
+            storage::archive ar(h5name, "w");
+            ar[base_path + std::string("/mean/value")] << tmp;
         }
 	}
     

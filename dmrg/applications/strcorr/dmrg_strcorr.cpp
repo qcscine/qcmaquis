@@ -33,7 +33,7 @@ int main(int argc, char ** argv)
     }
     ModelParameters model(model_file);
     
-    if (model.get<std::string>("MODEL") != "optical_lattice")
+    if (model["MODEL"] != "optical_lattice")
         throw std::runtime_error("This application works only with `optical_lattice` continuum models.");
     
     

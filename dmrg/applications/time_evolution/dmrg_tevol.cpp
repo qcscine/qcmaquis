@@ -37,7 +37,7 @@ void dmrg_tevol(DmrgParameters & parms, ModelParameters & model)
         factory_map["2u1"] = run_tevol<cmatrix, TwoU1>;
 #endif
     
-    std::string symm_name = parms.get<std::string>("symmetry");
+    std::string symm_name = parms["symmetry"];
     
     if (factory_map.find(symm_name) != factory_map.end())
         factory_map[symm_name](parms, model);

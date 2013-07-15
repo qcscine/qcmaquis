@@ -12,12 +12,13 @@
 #include <iostream>
 
 #include <boost/functional/hash.hpp>
-
+ 
 #ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
 #endif
 
 #include <boost/serialization/serialization.hpp>
+#include <boost/array.hpp>
 
 class TrivialGroup
 {
@@ -50,31 +51,24 @@ namespace boost {
 };
 
 #ifdef HAVE_ALPS_HDF5
-namespace alps {
-    namespace hdf5 {
-        
-        inline void save(
-                         alps::hdf5::archive & ar
-                         , std::string const & path
-                         , TrivialGroup::charge const & value
-                         , std::vector<std::size_t> size = std::vector<std::size_t>()
-                         , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-                         , std::vector<std::size_t> offset = std::vector<std::size_t>())
-        {
-            int k = 1;
-            ar << alps::make_pvp(path, k);            
-        }
-        inline void load(
-                         alps::hdf5::archive & ar
-                         , std::string const & path
-                         , TrivialGroup::charge & value
-                         , std::vector<std::size_t> chunk = std::vector<std::size_t>()
-                         , std::vector<std::size_t> offset = std::vector<std::size_t>())
-        {
-            value = TrivialGroup::Plus;
-        }
-        
-    }
+inline void save(alps::hdf5::archive & ar
+                 , std::string const & path
+                 , TrivialGroup::charge const & value
+                 , std::vector<std::size_t> size = std::vector<std::size_t>()
+                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+                 , std::vector<std::size_t> offset = std::vector<std::size_t>())
+{
+    int k = 1;
+    ar[path] << k;
+}
+
+inline void load(alps::hdf5::archive & ar
+                 , std::string const & path
+                 , TrivialGroup::charge & value
+                 , std::vector<std::size_t> chunk = std::vector<std::size_t>()
+                 , std::vector<std::size_t> offset = std::vector<std::size_t>())
+{             
+    value = TrivialGroup::Plus;
 }
 #endif
 

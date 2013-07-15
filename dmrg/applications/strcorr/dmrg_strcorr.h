@@ -23,7 +23,6 @@ typedef alps::numeric::matrix<double> matrix;
 
 #include "dmrg/utils/DmrgParameters2.h"
 
-#include <alps/hdf5.hpp>
 #include <alps/numeric/real.hpp>
 #include <boost/filesystem.hpp>
 
@@ -37,14 +36,14 @@ public:
     , model(model_)
     {
         // Loading state
-        if (! boost::filesystem::exists(parms.get<std::string>("chkpfile")))
+        if (! boost::filesystem::exists(parms["chkpfile"]))
             throw std::runtime_error("Checkpoint file doesn not exist.");
         size_t graining = 0;
         {
-            alps::hdf5::archive ar(parms.get<std::string>("chkpfile"));
-            ar >> alps::make_pvp("/state", mps);
+            storage::archive ar(parms["chkpfile"]);
+            ar["/state"] >> mps;
             if (ar.is_data("/status/graining"))
-                ar >> alps::make_pvp("/status/graining", graining);
+                ar["/status/graining"] >> graining;
         }
         
         // Init model
@@ -84,9 +83,8 @@ public:
         // eval & save
         matrix::value_type val = expval(mps,mpo);
         {
-            alps::hdf5::archive ar(parms.get<std::string>("resultfile"), alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            ar << alps::make_pvp(std::string("/spectrum/results/String order SS ") + boost::lexical_cast<std::string>(l) + std::string("/mean/value"),
-                                 std::vector<double>(1, maquis::real(val)));
+            storage::archive ar(parms["resultfile"], "w");
+            ar[std::string("/spectrum/results/String order SS ") + boost::lexical_cast<std::string>(l) + std::string("/mean/value")] << std::vector<double>(1, maquis::real(val));
         }
     }
     
@@ -117,9 +115,8 @@ public:
         // eval & save
         matrix::value_type val = expval(mps,mpo) * exp(-filling*double(l/N));
         {
-            alps::hdf5::archive ar(parms.get<std::string>("resultfile"), alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            ar << alps::make_pvp(std::string("/spectrum/results/String order UC ") + boost::lexical_cast<std::string>(l) + std::string("/mean/value"),
-                                 std::vector<double>(1, maquis::real(val)));
+            storage::archive ar(parms["resultfile"], "w");
+            ar[std::string("/spectrum/results/String order UC ") + boost::lexical_cast<std::string>(l) + std::string("/mean/value")] << std::vector<double>(1, maquis::real(val));
         }
     }
     

@@ -12,8 +12,6 @@ using std::endl;
 
 typedef alps::numeric::matrix<std::complex<double> > Matrix;
 
-#include <alps/hdf5.hpp>
-
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
@@ -82,12 +80,12 @@ int main(int argc, char ** argv)
         MPS<Matrix, grp> mps1, mps2;
         
         {
-            alps::hdf5::archive ar(argv[1]);
-            ar >> alps::make_pvp("/state", mps1);
+            storage::archive ar(argv[1]);
+            ar["/state"] >> mps1;
         }
         {
-            alps::hdf5::archive ar(argv[2]);
-            ar >> alps::make_pvp("/state", mps2);
+            storage::archive ar(argv[2]);
+            ar["/state"] >> mps2;
         }
         
         if (true) {

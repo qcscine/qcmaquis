@@ -23,7 +23,7 @@ template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>
 evolve(MPS<Matrix, SymmGroup> mps,
        block_matrix<Matrix, SymmGroup> const & op,
-       std::size_t Mmax, double cutoff, Logger * logger = NULL)
+       std::size_t Mmax, double cutoff)
 {
     std::size_t L = mps.length();
     
@@ -44,7 +44,7 @@ evolve(MPS<Matrix, SymmGroup> mps,
                                                     mps[p].row_dim(), mps[p+1].col_dim(),
                                                     mps[p].site_dim());
             
-            compression::replace_two_sites_l2r(mps, Mmax, cutoff, v1, p, logger);
+            compression::replace_two_sites_l2r(mps, Mmax, cutoff, v1, p);
             
             // move two to the right, if possible
             t = mps[p+1].normalize_left(DefaultSolver());
@@ -70,7 +70,7 @@ void
 evolve_l2r(MPS<Matrix, SymmGroup> & mps,
            std::vector<block_matrix<Matrix, SymmGroup> > const & ops,
            std::vector<long> const & idx,
-           int pfirst, std::size_t Mmax, double cutoff, Logger * logger = NULL)
+           int pfirst, std::size_t Mmax, double cutoff)
 {
     assert(mps.length() == idx.size());
     std::size_t L = mps.length();
@@ -93,7 +93,7 @@ evolve_l2r(MPS<Matrix, SymmGroup> & mps,
             v1 = contraction::multiply_with_twosite(v0, ops[idx[p]],
                                                     constmps[p].row_dim(), constmps[p+1].col_dim(),
                                                     constmps[p].site_dim());
-            compression::replace_two_sites_l2r(mps, Mmax, cutoff, v1, p, logger);
+            compression::replace_two_sites_l2r(mps, Mmax, cutoff, v1, p);
         }
         mps.move_normalization_l2r(p+1, p+3, DefaultSolver());
     }
@@ -107,7 +107,7 @@ void
 evolve_r2l(MPS<Matrix, SymmGroup> & mps,
            std::vector<block_matrix<Matrix, SymmGroup> > const & ops,
            std::vector<long> const & idx,
-           int pfirst, std::size_t Mmax, double cutoff, Logger * logger = NULL)
+           int pfirst, std::size_t Mmax, double cutoff)
 {
     assert(mps.length() == idx.size());
     std::size_t L = mps.length();
@@ -131,7 +131,7 @@ evolve_r2l(MPS<Matrix, SymmGroup> & mps,
             v1 = contraction::multiply_with_twosite(v0, ops[idx[p]],
                                                     constmps[p].row_dim(), constmps[p+1].col_dim(),
                                                     constmps[p].site_dim());
-            compression::replace_two_sites_r2l(mps, Mmax, cutoff, v1, p, logger);
+            compression::replace_two_sites_r2l(mps, Mmax, cutoff, v1, p);
         }
         mps.move_normalization_r2l(p, std::max(static_cast<long>(p)-2,0L), DefaultSolver());
     }
