@@ -29,14 +29,14 @@ public:
     dmrg_init(DmrgParameters const & parms_, ModelParameters const & model_)
     : parms(parms_)
     , model(model_)
-    , chkpfile(parms.get<std::string>("chkpfile"))
+    , chkpfile(parms["chkpfile"])
     , nthreads(1)
     {
         maquis::cout << DMRG_VERSION_STRING << std::endl;
         
         // TODO: insert boost::chrono timers
         
-        model_parser<Matrix, SymmGroup>(parms.get<std::string>("lattice_library"), parms.get<std::string>("model_library"),
+        model_parser<Matrix, SymmGroup>(parms["lattice_library"], parms["model_library"],
                                         model, lat, phys_model);
         initc = phys_model->initc(model);
         phys = phys_model->H().get_phys();
@@ -101,12 +101,12 @@ public:
         }
         
         // write parameters and mps
-        alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-        h5ar << alps::make_pvp("/parameters", parms);
-        h5ar << alps::make_pvp("/parameters", model);
-        h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
-        h5ar << alps::make_pvp("/state", mps);
-        h5ar << alps::make_pvp("/status/sweep", 0);
+        storage::archive ar(chkpfile, "w");
+        ar["/parameters"] << parms;
+        ar["/parameters"] << model;
+        ar["/version"] << DMRG_VERSION_STRING;
+        ar["/state"] << mps;
+        ar["/status/sweep"] << 0;
     }
     
 private:

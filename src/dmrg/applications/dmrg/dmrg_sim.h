@@ -46,32 +46,32 @@ template <class Matrix, class SymmGroup>
 class dmrg_sim : public sim<Matrix, SymmGroup> {
     
     typedef sim<Matrix, SymmGroup> base;
-    typedef optimizer_base<Matrix, SymmGroup, StreamStorageMaster> opt_base_t;
+    typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
     
     typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
     typedef Boundary<Matrix, SymmGroup> boundary_t;
     
 public:
     
-    dmrg_sim (DmrgParameters & parms_, ModelParameters & model_, bool measure_only=false)
+    dmrg_sim (DmrgParameters & parms_, ModelParameters & model_, bool measure_only = false)
     : base(parms_, model_)
     {
         if ( !measure_only &&  base::sweep < base::parms.template get<int>("nsweeps") )
         {
-            if (parms_.get<std::string>("optimization") == "singlesite")
+            if (parms_["optimization"] == "singlesite")
             {
                 optimizer = 
-                boost::shared_ptr<opt_base_t> ( new ss_optimize<Matrix, SymmGroup, StreamStorageMaster>
+                boost::shared_ptr<opt_base_t> ( new ss_optimize<Matrix, SymmGroup, storage::disk>
                                                (base::mps, base::mpoc,
-                                                base::parms, base::ssm) );
+                                                base::parms) );
             } 
             
-            else if(parms_.get<std::string>("optimization") == "twosite")
+            else if(parms_["optimization"] == "twosite")
             {
                 optimizer =
-                boost::shared_ptr<opt_base_t> ( new ts_optimize<Matrix, SymmGroup, StreamStorageMaster>
+                boost::shared_ptr<opt_base_t> ( new ts_optimize<Matrix, SymmGroup, storage::disk>
                                                (base::mps, base::mpoc, base::ts_cache_mpo,
-                                                base::parms, base::ssm) );
+                                                base::parms) );
             }
 
             else
@@ -79,11 +79,11 @@ public:
         }
     }
     
-    int do_sweep (Logger& iteration_log, double time_limit = -1)
+    int do_sweep (double time_limit = -1)
     {
-        int exit_site = optimizer->sweep(base::sweep, iteration_log, Both,
+        int exit_site = optimizer->sweep(base::sweep, Both,
                                          base::site, time_limit);
-        base::ssm.sync();
+        storage::disk::sync();
         
         base::mps = optimizer->get_current_mps();
         
@@ -92,7 +92,7 @@ public:
 
     ~dmrg_sim()
     {
-        base::ssm.sync();
+        storage::disk::sync();
     }    
 private:
     

@@ -16,10 +16,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/functional/hash.hpp>
 
-#ifdef HAVE_ALPS_HDF5
-#include <alps/hdf5.hpp>
-#endif
-
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/array.hpp>
 
@@ -63,10 +59,8 @@ public:
     
     unsigned int get() { return c_; }
     
-#ifdef HAVE_ALPS_HDF5
-    void save(alps::hdf5::archive & ar) const { ar << alps::make_pvp("c", c_); }
-    void load(alps::hdf5::archive & ar) { ar >> alps::make_pvp("c", c_); }
-#endif
+    template<class Archive> void save(Archive & ar) const { ar["c"] << c_; }
+    template<class Archive> void load(Archive & ar) { ar["c"] >> c_; }
     
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)

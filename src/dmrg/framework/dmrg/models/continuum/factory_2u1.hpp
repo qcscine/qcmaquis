@@ -15,11 +15,11 @@ struct cont_model_factory<Matrix, TwoU1> {
     (Lattice const & lattice, BaseParameters & model)
     {
         std::string model_str = model.is_set("model") ? "model" : "MODEL";
-        if (model.get<std::string>(model_str) == std::string("fermi_optical_lattice"))
+        if (model[model_str] == std::string("fermi_optical_lattice"))
             return typename model_traits<Matrix, TwoU1>::model_ptr(
                         new FermiOpticalLattice<Matrix>(lattice, model)
                    );
-        else if (model.get<std::string>(model_str) == std::string("optical_lattice_cons_dm"))
+        else if (model[model_str] == std::string("optical_lattice_cons_dm"))
             return typename model_traits<Matrix, TwoU1>::model_ptr( new DMOpticalLatticeTwoU1<Matrix>(lattice, model) );
         else {
             throw std::runtime_error("Don't know this model!");

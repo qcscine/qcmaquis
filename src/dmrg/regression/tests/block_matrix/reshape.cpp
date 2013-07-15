@@ -15,8 +15,6 @@ using std::endl;
 
 #include "dmrg/block_matrix/detail/alps.hpp"
 
-//#include <alps/hdf5.hpp>
-
 #include "dmrg/utils/DmrgParameters2.h"
 
 #include "dmrg/block_matrix/indexing.h"
@@ -29,7 +27,6 @@ using std::endl;
 
 #include "dmrg/models/generate_mpo.hpp"
 
-//#include "dmrg/utils/logger.h"
 //#include "dmrg/utils/random.hpp"
 //#include "utils/timings.h"
 

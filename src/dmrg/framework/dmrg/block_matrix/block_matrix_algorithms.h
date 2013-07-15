@@ -157,8 +157,7 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                   block_matrix<Matrix, SymmGroup> & V,
                   block_matrix<DiagMatrix, SymmGroup> & S,
                   double rel_tol, std::size_t Mmax,
-                  bool verbose = true,
-                  Logger * logger = NULL)
+                  bool verbose = true)
 { 
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
     svd(M, U, V, S);
@@ -208,14 +207,13 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
         maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << std::endl;
     }
     
-    if (logger != NULL) {
-        *logger << make_log("BondDimension", S.left_basis().sum_of_sizes());
-        // MD: for singuler values we care about summing the square of the discraded
-        *logger << make_log("TruncatedWeight", truncated_weight);
-        // MD: sum of the discarded values is stored elsewhere
-        *logger << make_log("TruncatedFraction", truncated_fraction);
-        *logger << make_log("SmallestEV", smallest_ev);
-    }
+    
+    /*storage::log << std::make_pair("BondDimension", S.left_basis().sum_of_sizes());
+    // MD: for singuler values we care about summing the square of the discraded
+    storage::log << std::make_pair("TruncatedWeight", truncated_weight);
+    // MD: sum of the discarded values is stored elsewhere
+    storage::log << std::make_pair("TruncatedFraction", truncated_fraction);
+    storage::log << std::make_pair("SmallestEV", smallest_ev);*/
     
     delete[] keeps; 
 }
@@ -225,7 +223,6 @@ void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                    block_matrix<Matrix, SymmGroup> & evecs,
                    block_matrix<DiagMatrix, SymmGroup> & evals,
                    double cutoff, std::size_t Mmax,
-                   Logger & logger,
                    bool verbose = true)
 {
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
@@ -264,10 +261,10 @@ void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << std::endl;
     }
     
-    logger << make_log("BondDimension", evals.left_basis().sum_of_sizes());
+    /*storage::log << std::make_pair("BondDimension", evals.left_basis().sum_of_sizes());
     // MD: for eigenvalues we care about summing the discraded
-    logger << make_log("TruncatedWeight", truncated_fraction);
-    logger << make_log("SmallestEV", smallest_ev);
+    storage::log << std::make_pair("TruncatedWeight", truncated_fraction);
+    storage::log << std::make_pair("SmallestEV", smallest_ev);*/
     delete[] keeps; 
 }
 

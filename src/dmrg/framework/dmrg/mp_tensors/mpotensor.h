@@ -9,7 +9,6 @@
 #ifndef MPOTENSOR_H
 #define MPOTENSOR_H
 
-#include "dmrg/utils/stream_storage.h"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "utils/function_objects.h"

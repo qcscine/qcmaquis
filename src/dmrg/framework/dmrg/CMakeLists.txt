@@ -19,7 +19,7 @@ endif(ENABLE_LL_MODELS)
 
 
 # *** Libraries
-add_library(dmrg_utils STATIC block_matrix/symmetry.cpp utils/utils.cpp utils/stream_storage.cpp sim/symm_factory.cpp)
+add_library(dmrg_utils STATIC block_matrix/symmetry.cpp utils/utils.cpp sim/symm_factory.cpp)
 add_library(dmrg_models STATIC ${DMRG_MODELS_SOURCES})
 
 

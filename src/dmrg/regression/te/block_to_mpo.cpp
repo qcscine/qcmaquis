@@ -7,8 +7,6 @@
 #include "dmrg/block_matrix/detail/alps.hpp"
 typedef alps::numeric::matrix<double> Matrix;
 
-#include <alps/hdf5.hpp>
-
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"

@@ -39,7 +39,6 @@ DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpth
 DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/apps/castor/intel/mkl/lib/intel64
 DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/apps/castor/intel/mkl/include
 DMRG_ALPS_ROOT_DIR=/project/h07/TEST_ALPS
-DMRG_BUILD_REGRESSION=OFF 
 DMRG_USE_AMBIENT=OFF
 
 source $ROOT_DIR/scripts/common/common.sh 

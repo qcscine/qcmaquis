@@ -265,7 +265,7 @@ public:
     
     typename base::initializer_ptr initializer(BaseParameters & p_) const
     {
-        if ( p_.get<std::string>("init_state") == "identity_mps" ) {
+        if ( p_["init_state"] == "identity_mps" ) {
             std::vector<Index<TwoU1> > allowed_blocks = allowed_sectors(lat.size(), phys, this->initc(model), 1);
             return typename base::initializer_ptr( new mps_ident_init<Matrix>( identity_dm_mps<Matrix>(lat.size(), psi_phys, allowed_blocks) ) );
         } else {

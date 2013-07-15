@@ -9,8 +9,6 @@
 #ifndef MPS_H
 #define MPS_H
 
-#include "dmrg/utils/logger.h"
-
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/boundary.h"
@@ -74,15 +72,13 @@ public:
                         Boundary<OtherMatrix, SymmGroup> const & left,
                         Boundary<OtherMatrix, SymmGroup> const & right,
                         std::size_t l, double alpha,
-                        double cutoff, std::size_t Mmax,
-                        Logger &);
+                        double cutoff, std::size_t Mmax);
     template<class OtherMatrix> 
     void grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                         Boundary<OtherMatrix, SymmGroup> const & left,
                         Boundary<OtherMatrix, SymmGroup> const & right,
                         std::size_t l, double alpha,
-                        double cutoff, std::size_t Mmax,
-                        Logger &);
+                        double cutoff, std::size_t Mmax);
     
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;
@@ -97,10 +93,8 @@ public:
         swap(a.canonized_i, b.canonized_i);
     }
 
-#ifdef HAVE_ALPS_HDF5
-    void load(alps::hdf5::archive & ar);
-    void save(alps::hdf5::archive & ar) const;
-#endif
+    template<class Archive> void load(Archive & ar);
+    template<class Archive> void save(Archive & ar) const;
     
 private:
     

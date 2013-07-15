@@ -6,7 +6,6 @@
  *
  *****************************************************************************/
 
-#include "dmrg/utils/logger.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "contractions.h"
 #include <boost/math/special_functions/binomial.hpp>
@@ -198,11 +197,10 @@ void MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const &
                                             Boundary<OtherMatrix, SymmGroup> const & left,
                                             Boundary<OtherMatrix, SymmGroup> const & right,
                                             std::size_t l, double alpha,
-                                            double cutoff, std::size_t Mmax,
-                                            Logger & logger)
+                                            double cutoff, std::size_t Mmax)
 { // canonized_i invalided through (*this)[] 
     MPSTensor<Matrix, SymmGroup> new_mps =
-    contraction::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, logger);
+    contraction::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
     (*this)[l+1] = contraction::predict_lanczos_l2r_sweep((*this)[l+1],
                                                           (*this)[l], new_mps);
     (*this)[l] = new_mps;
@@ -214,11 +212,10 @@ void MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const &
                                             Boundary<OtherMatrix, SymmGroup> const & left,
                                             Boundary<OtherMatrix, SymmGroup> const & right,
                                             std::size_t l, double alpha,
-                                            double cutoff, std::size_t Mmax,
-                                            Logger & logger)
+                                            double cutoff, std::size_t Mmax)
 { // canonized_i invalided through (*this)[] 
     MPSTensor<Matrix, SymmGroup> new_mps =
-    contraction::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, logger);
+    contraction::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
     
     (*this)[l-1] = contraction::predict_lanczos_r2l_sweep((*this)[l-1],
                                                           (*this)[l], new_mps);
@@ -288,24 +285,20 @@ void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& fill, 
     apply(op, p);
 }
 
-
-#ifdef HAVE_ALPS_HDF5
-
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::load(alps::hdf5::archive & ar)
+template<class Archive>
+void MPS<Matrix, SymmGroup>::load(Archive & ar)
 {
     canonized_i = std::numeric_limits<size_t>::max();
-    ar >> alps::make_pvp("MPS", data_);
+    ar["MPS"] >> data_;
 }
 
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::save(alps::hdf5::archive & ar) const
+template<class Archive>
+void MPS<Matrix, SymmGroup>::save(Archive & ar) const
 {
-    ar << alps::make_pvp("MPS", data_);
+    ar["MPS"] << data_;
 }
-
-#endif
-
 
 template <class Matrix, class SymmGroup>
 void check_equal_mps (MPS<Matrix, SymmGroup> const & mps1, MPS<Matrix, SymmGroup> const & mps2)

@@ -50,6 +50,20 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(blo
     return *this;
 }
 
+template<class Matrix, class SymmGroup>
+template<class OtherMatrix>
+block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(const block_matrix<OtherMatrix, SymmGroup> & rhs)
+{
+    rows_ = rhs.rows_;
+    cols_ = rhs.cols_;
+    data_.resize(rhs.data_.size());
+    for(int k = 0; k < data_.size(); k++){
+        data_[k].resize(num_rows(rhs.data_[k]), num_cols(rhs.data_[k]));
+        data_[k] = rhs.data_[k];
+    }
+    return *this;
+}
+
 // Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
 //template<class Matrix, class SymmGroup>
 //block_matrix<Matrix, SymmGroup>::block_matrix(charge rc, charge cc, Matrix& m)
@@ -360,58 +374,45 @@ void block_matrix<Matrix, SymmGroup>::remove_block(std::size_t which)
     data_.erase(data_.begin() + which);
 }
 
-#ifdef HAVE_ALPS_HDF5
-
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::load(alps::hdf5::archive & ar)
+template<class Archive>
+void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
 {
-    ar >> alps::make_pvp("rows_", rows_);
-    ar >> alps::make_pvp("cols_", cols_);
+    ar["rows_"] >> rows_;
+    ar["cols_"] >> cols_;
 
     if (alps::is_complex<typename Matrix::value_type>() && !ar.is_complex("data_"))
     {
+        printf("ERROR: NOT TESTED!\n\n");
         typedef typename alps::numeric::matrix<typename alps::numeric::real_type<typename Matrix::value_type>::type> LoadMatrix;
         std::vector<LoadMatrix> tmp;
-        ar >> alps::make_pvp("data_", tmp);
+        ar["data_"] >> tmp;
         for(typename std::vector<LoadMatrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
             data_.push_back(new Matrix(maquis::bindings::matrix_cast<Matrix>(*it)));
     } else {
-        typedef typename alps::numeric::matrix<typename Matrix::value_type> LoadMatrix;
-        std::vector<LoadMatrix> tmp;
-        ar >> alps::make_pvp("data_", tmp);
-        for(typename std::vector<LoadMatrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
-            data_.push_back(new Matrix(maquis::bindings::matrix_cast<Matrix>(*it)));
+        std::vector<Matrix> tmp;
+        ar["data_"] >> tmp;
+        for(typename std::vector<Matrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
+            data_.push_back(new Matrix(*it));
     }
 }
 
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::save(alps::hdf5::archive & ar) const
+template<class Archive>
+void block_matrix<Matrix, SymmGroup>::save(Archive & ar) const
 {
-    ar << alps::make_pvp("rows_", rows_);
-    ar << alps::make_pvp("cols_", cols_);
+    ar["rows_"] << rows_;
+    ar["cols_"] << cols_;
 
-#ifdef AMBIENT
-    std::vector<alps::numeric::matrix<typename Matrix::value_type> > tmp;
-    tmp.reserve(data_.size());
-    for(int i = 0; i < data_.size(); i++)
-        tmp.push_back(maquis::bindings::matrix_cast< alps::numeric::matrix<typename Matrix::value_type> >(data_[i]));
-#else
     std::vector<Matrix> tmp(data_.begin(), data_.end());
-#endif
-    ar << alps::make_pvp("data_", tmp);
+    ar["data_"] << tmp;
 }
-
-#endif
 
 template<class Matrix, class SymmGroup>
 template <class Archive>
 void block_matrix<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
 {
-#ifdef AMBIENT
-    assert( false );
-#else
     ar & rows_ & cols_ & data_;
-#endif
 }
 
 template<class Matrix, class SymmGroup>

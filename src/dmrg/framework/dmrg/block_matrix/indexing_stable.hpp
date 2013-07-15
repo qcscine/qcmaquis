@@ -24,10 +24,6 @@
 #include <mp_tensors/wrappers.h>
 #endif
 
-#ifdef HAVE_ALPS_HDF5
-#include <alps/hdf5.hpp>
-#endif
-
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/utility.hpp>
 #include <boost/serialization/vector.hpp>
@@ -264,21 +260,19 @@ public:
         return this->insert(p.data_);
     }
 #endif /* PYTHON_EXPORTS */
-    
-#ifdef HAVE_ALPS_HDF5
-    void load(alps::hdf5::archive & ar)
+   
+    template <class Archive>
+    void load(Archive & ar)
     {
         typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > my_type;
-        ar >> alps::make_pvp("Index",
-                             static_cast<my_type&>(*this));
+        ar["Index"] >> static_cast<my_type&>(*this);
     }
-    void save(alps::hdf5::archive & ar) const
+    template <class Archive>
+    void save(Archive & ar) const
     {
         typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > my_type;
-        ar << alps::make_pvp("Index",
-                             static_cast<my_type const &>(*this));
+        ar["Index"] << static_cast<my_type const &>(*this);
     }
-#endif
     
     friend class boost::serialization::access;
 

@@ -13,28 +13,25 @@
 #include "dmrg/mp_tensors/optimize.h"
 
 
-template<class Matrix, class SymmGroup, class StorageMaster>
-class ss_optimize : public optimizer_base<Matrix, SymmGroup, StorageMaster>
+template<class Matrix, class SymmGroup, class Storage>
+class ss_optimize : public optimizer_base<Matrix, SymmGroup, Storage>
 {
 public:
 
-    typedef optimizer_base<Matrix, SymmGroup, StorageMaster> base;
+    typedef optimizer_base<Matrix, SymmGroup, Storage> base;
     using base::mpo;
     using base::mpo_orig;
     using base::mps;
     using base::left_;
-    using base::left_stores_;
     using base::right_;
-    using base::right_stores_;
     using base::parms;
 
     ss_optimize(MPS<Matrix, SymmGroup> const & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
-                BaseParameters & parms_,
-                StorageMaster & sm)
-    : base(mps_, mpo_, parms_, sm) { }
+                BaseParameters & parms_)
+    : base(mps_, mpo_, parms_) { }
     
-    int sweep(int sweep, Logger & iteration_log,
+    int sweep(int sweep,
                OptimizeDirection d = Both,
                int resume_at = -1,
                int max_secs = -1)
@@ -64,8 +61,8 @@ public:
 //            this->init_left_right(mpo, site);
 //        }
         
-        storage::prefetch(left_[0], left_stores_[0]);
-        storage::prefetch(right_[1], right_stores_[1]);
+        Storage::prefetch(left_[0]);
+        Storage::prefetch(right_[1]);
         
 #ifndef NDEBUG
         maquis::cout << mps.description() << std::endl;
@@ -84,11 +81,10 @@ public:
 
             if (lr == -1 && site == L-1) {
                 maquis::cout << "Syncing storage" << std::endl;
-                base::storage_master.sync();
+                Storage::sync();
             }
             
             maquis::cout << "Sweep " << sweep << ", optimizing site " << site << std::endl;
-//            storage_master.print_size();
             
 //            mps[site].make_left_paired();
             
@@ -104,16 +100,14 @@ public:
             }
             
             
-            storage::load(left_[site], left_stores_[site]);
-            storage::load(right_[site+1], right_stores_[site+1]);
+            Storage::fetch(left_[site]);
+            Storage::fetch(right_[site+1]);
             
-            if (lr == +1) {
-                storage::prefetch(left_[site+1], left_stores_[site+1]);
-            } else {
-                storage::prefetch(right_[site], right_stores_[site]);
-            }
-            assert( left_[site].reasonable() );    // in case something is wrong with storage
-            assert( right_[site+1].reasonable() ); // in case something is wrong with storage
+            if (lr == +1) Storage::prefetch(left_[site+1]);
+            else          Storage::prefetch(right_[site]);
+            
+            assert( left_[site].reasonable() );    // in case something went wrong
+            assert( right_[site+1].reasonable() ); // in case something went wrong
             
             
 //            maquis::cout << "My size: " << std::endl;
@@ -140,11 +134,11 @@ public:
                 (d == LeftOnly && lr == -1) ||
                 (d == RightOnly && lr == +1))
             {
-                if (parms.template get<std::string>("eigensolver") == std::string("IETL")) {
+                if (parms["eigensolver"] == std::string("IETL")) {
                     BEGIN_TIMING("IETL")
                     res = solve_ietl_lanczos(sp, mps[site], parms);
                     END_TIMING("IETL")
-                } else if (parms.template get<std::string>("eigensolver") == std::string("IETL_JCD")) {
+                } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                     BEGIN_TIMING("JCD")
                     res = solve_ietl_jcd(sp, mps[site], parms, ortho_vecs);
                     END_TIMING("JCD")
@@ -164,7 +158,7 @@ public:
             maquis::cout << "Energy " << lr << " " << res.first << std::endl;
 //            maquis::cout << "Energy check " << maquis::real(expval(mps, mpo)) << std::endl;
             
-            iteration_log << make_log("Energy", res.first);
+            storage::log << std::make_pair("Energy", res.first);
             
             double alpha;
             int ngs = parms.template get<int>("ngrowsweeps"), nms = parms.template get<int>("nmainsweeps");
@@ -183,7 +177,7 @@ public:
                 if (site < L-1) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
-                                       site, alpha, cutoff, Mmax, iteration_log);
+                                       site, alpha, cutoff, Mmax);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
                     if (site < L-1)
@@ -191,14 +185,14 @@ public:
                 }
                 
                 
-                storage::reset(left_stores_[site+1]); // left_stores_[site+1] is outdated
+                Storage::drop(left_[site+1]); // left_[site+1] is outdated
                 this->boundary_left_step(mpo, site); // creating left_[site+1]
             } else if (lr == -1) {
                 if (site > 0) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     // Invalid read occurs after this!\n
                     mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
-                                       site, alpha, cutoff, Mmax, iteration_log);
+                                       site, alpha, cutoff, Mmax);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
                     if (site > 0)
@@ -206,12 +200,12 @@ public:
                 }
                 
                 
-                storage::reset(right_stores_[site]); // right_stores_[site] is outdated
+                Storage::drop(right_[site]); // right_[site] is outdated
                 this->boundary_right_step(mpo, site); // creating right_[site]
             }
             
-        	storage::store(left_[site], left_stores_[site]); // store currently used boundary
-        	storage::store(right_[site+1], right_stores_[site+1]); // store currently used boundary
+        	Storage::evict(left_[site]); // move to out of core currently used boundary
+        	Storage::evict(right_[site+1]); // move to out of core currently used boundary
 
             
             

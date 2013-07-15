@@ -45,7 +45,7 @@ public:
         // ********************************************************************
 
         std::ifstream orb_file;
-        orb_file.open(parms.get<std::string>("integral_file").c_str());
+        orb_file.open(parms["integral_file"].c_str());
         for(int i=0; i < 4; ++i){
             orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
         }
