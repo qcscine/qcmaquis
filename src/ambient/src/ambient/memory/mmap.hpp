@@ -88,7 +88,7 @@ namespace ambient { namespace memory {
             enum { core, store, uncore, prefetch, load } state;
             bool dumped;
 
-            region(size_t length) : state(core), dumped(false), dropped(false), length(length) {
+            region(size_t length) : state(core), dumped(false), length(length) {
                 sid = pool::instance().index();
                 buffer = std::malloc(length);
                 iterator = (char*)buffer;
@@ -129,11 +129,10 @@ namespace ambient { namespace memory {
             };
 
             void unmap(){
-                if(dropped) printf("WAR: UNMAPPING DROPPED!\n");
                 if(state == core){ /* ok */ }
                 else if(state == store) return;
                 else if(state == uncore) return;
-                else if(state == prefetch){ worker.join(); printf("WARNING: UNMAP OF PREFETCHED!\n"); }
+                //else if(state == prefetch){ worker.join(); printf("WARNING: UNMAP OF PREFETCHED!\n"); }
                 //else if(state == load) worker.join();
 
                 pbuffer = buffer;
@@ -147,7 +146,6 @@ namespace ambient { namespace memory {
                 }
             }
             void fetch(){
-                if(dropped) printf("WAR: FETCHING DROPPED!\n");
                 if(state == core) return;
                 else if(state == store) worker.join();
                 else if(state == uncore){ /* ok */ }
@@ -159,10 +157,9 @@ namespace ambient { namespace memory {
                 worker = boost::thread(remapx(pool::instance().fp(sid), buffer, length));
             }
             void remap(){
-                if(dropped) printf("WAR: REMAPPING DROPPED!\n");
                 if(state == core) return;
-                else if(state == store){ fetch(); worker.join(); printf("WARNING: UNPREFETCHED REMAP!\n"); }
-                else if(state == uncore){ fetch(); worker.join(); printf("WARNING: UNPREFETCHED REMAP!\n"); }
+                //else if(state == store){ fetch(); worker.join(); printf("WARNING: UNPREFETCHED REMAP!\n"); }
+                //else if(state == uncore){ fetch(); worker.join(); printf("WARNING: UNPREFETCHED REMAP!\n"); }
                 else if(state == prefetch) worker.join();
                 //else if(state == load) return;
 
@@ -173,12 +170,11 @@ namespace ambient { namespace memory {
             }
             void drop(){
                 if(state == core) std::free(buffer);
-                else if(state == store){ worker.join(); printf("WARNING: DROP OF ALREADY STORED DATA!\n"); }
-                else if(state == uncore){ /* ok */ printf("WARNING: DROP OF ALREADY STORED DATA!\n"); }
-                else if(state == prefetch){ worker.join(); std::free(buffer); printf("WARNING: DROP OF PREFETCHED DATA!\n"); }
+                //else if(state == store){ worker.join(); printf("WARNING: DROP OF ALREADY STORED DATA!\n"); }
+                //else if(state == uncore){ /* ok */ printf("WARNING: DROP OF ALREADY STORED DATA!\n"); }
+                //else if(state == prefetch){ worker.join(); std::free(buffer); printf("WARNING: DROP OF PREFETCHED DATA!\n"); }
                 //else if(state == load) return;
 
-                dropped = true;
                 pool::instance().release(sid);
             }
         public: // private
@@ -188,7 +184,6 @@ namespace ambient { namespace memory {
             size_t length;
             std::atomic<char*> iterator;
             boost::thread worker;
-            bool dropped;
         };
 
         class descriptor {
@@ -221,6 +216,7 @@ namespace ambient { namespace memory {
         };
 
         static inline void init(const std::string& path){
+            if(ambient::rank() == 0) printf("Temporary storage enabled in %s\n", path.c_str());
             pool::instance().init(path);
         }
 

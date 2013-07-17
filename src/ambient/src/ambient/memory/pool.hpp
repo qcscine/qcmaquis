@@ -32,11 +32,9 @@
 
 namespace ambient { namespace memory {
 
-    extern std::atomic<long int> fixed_count;
-
     struct standard {
-        static void* malloc(size_t sz){ fixed_count++; return std::malloc(sz); }
-        static void free(void* ptr){ fixed_count--; std::free(ptr);  }
+        static void* malloc(size_t sz){ return std::malloc(sz); }
+        static void free(void* ptr){ std::free(ptr);  }
         static int signature(){
             return DEFAULT_REGION;
         }
@@ -129,7 +127,7 @@ namespace ambient {
 
     namespace pool {
         struct descriptor {
-            descriptor(size_t e, int r = DEFAULT_REGION) : extent(e), region(r), mmap(NULL), weak(true) {}
+            descriptor(size_t e, int r = DEFAULT_REGION) : extent(e), region(r), mmap(NULL) {}
             void* mmap;
             size_t extent;
 
@@ -137,16 +135,13 @@ namespace ambient {
                 //region = PERSIST_REGION;
             }
             void protect(){
-                if(!weak) printf("PROTECTING ALREADY ALLOCATED REGION!\n");
                 region++;
             }
             void weaken(){
-                if(!weak) printf("WEACKENING ALREADY ALLOCATED REGION!\n");
                 region--;
             }
             void reuse(descriptor& d){
                 region   = d.region;
-                weak     = d.weak;
                 d.region = DELEGATED_REGION;
             }
             bool conserves(descriptor& p){
@@ -156,7 +151,6 @@ namespace ambient {
                 return (region == 0);
             }
             int region;
-            bool weak;
         };
 
         template<class Memory>           static void* malloc(size_t sz){ return Memory::malloc(sz);            }
@@ -168,20 +162,17 @@ namespace ambient {
 
         template<class Memory>
         static void* malloc(descriptor& d){
-            d.weak = false;
             d.region = Memory::signature();
             return Memory::malloc(d.extent);
             // return Memory::malloc(d.mmap, sz);
         }
         template<>
         static void* malloc<outofcore>(descriptor& d){
-            d.weak = false;
             d.region = outofcore::signature();
             return outofcore::malloc(d.extent, d.mmap);
         }
 
         static void* malloc(descriptor& d){
-            d.weak = false;
             if(d.region == 0){ if(d.extent >= AMBIENT_BULK_CHUNK) printf("ERROR: TOO BIG ALLOCATION!\n\n\n\n\n"); return malloc<bulk>(d.extent); }
             else return malloc<standard>(d.extent);
         }

@@ -28,15 +28,10 @@
 #include "ambient/utils/timings.hpp"
 #define ALL -1
 
-namespace ambient { namespace memory {
-    extern std::atomic<long int> fixed_count;
-} }
-
 namespace ambient { namespace controllers { namespace velvet {
 
     inline controller::~controller(){ 
         this->clear();
-        printf("%d: remaining objects: %ld\n", (int)ambient::rank(), (long int)memory::fixed_count);
     }
 
     inline controller::controller()
@@ -91,7 +86,6 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::flush(){
-        static ambient::timer time("Ambient::sync"); time.begin();
         typedef typename std::vector<cfunctor*>::const_iterator veci;
         #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
         printf("ambient::parallel graph dim: %d\n", chains->size());
@@ -135,7 +129,6 @@ namespace ambient { namespace controllers { namespace velvet {
             std::swap(chains,mirror);
         }
         AMBIENT_SMP_DISABLE
-        time.end();
         ambient::model.clock++;
     }
 
