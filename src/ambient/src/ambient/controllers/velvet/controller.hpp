@@ -42,7 +42,8 @@ namespace ambient { namespace controllers { namespace velvet {
         this->mirror = &this->stack_s;
         ambient::channel.init();
         if(ambient::rank()) ambient::rank.mute();
-        this->context = new ambient::scope<base>();
+        this->context_base = new ambient::scope<base>();
+        this->context = this->context_base;
     }
 
     inline bool controller::tunable(){
@@ -65,12 +66,11 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::set_context(scope* s){
-        this->context_c = this->context;
         this->context = s; // no nesting
     }
 
     inline void controller::pop_context(){
-        this->context = this->context_c;
+        this->context = this->context_base;
     }
 
     inline bool controller::remote(){
