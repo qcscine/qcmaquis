@@ -35,8 +35,8 @@ namespace ambient {
         return (ambient::rank() == 0);
     }
 
-    inline void persist(history* o){ 
-        controller.persist(o); 
+    inline void make_persistent(history* o){ 
+        o->back()->spec.zombie();
     }
 
     template<typename T>

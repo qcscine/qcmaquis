@@ -42,9 +42,6 @@ struct SiteProblem
     , right(right_)
     , mpo(mpo_)
     {
-#ifdef AMBIENT
-        mpo.persist();
-#endif
     }
     
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;

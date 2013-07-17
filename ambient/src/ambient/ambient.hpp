@@ -104,7 +104,7 @@
 #define PAGE_SIZE 4096
 #define ALIGNMENT 16
 
-#define AMBIENT_PERSISTENT_TRANSFERS
+//#define AMBIENT_PERSISTENT_TRANSFERS
 
 namespace ambient {
     inline int get_num_threads(){

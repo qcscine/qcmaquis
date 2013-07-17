@@ -29,6 +29,7 @@ namespace storage {
 #endif
 
 template<class Matrix, class SymmGroup> class Boundary;
+template<class Matrix, class SymmGroup> class MPSTensor;
 template<class Matrix, class SymmGroup> class block_matrix;
 
 namespace alps { namespace numeric {
@@ -110,6 +111,12 @@ namespace storage {
         template<class T> static void prefetch(serializable<T>& t){ if(impl::enabled()) t.prefetch(); }
         template<class T> static void evict(serializable<T>& t)   { if(impl::enabled()) t.unmap(); }
         template<class T> static void drop(serializable<T>& t)    { if(impl::enabled()) t.drop();  }
+
+        template<class Matrix, class SymmGroup> 
+        static void evict(MPSTensor<Matrix, SymmGroup>& t){
+            for(int i = 0; i < t.data().n_blocks(); ++i) 
+            ambient::make_dedicated(t.data()[i]);
+        }
     };
 
 #else
@@ -275,6 +282,7 @@ namespace storage {
         template<class T> static void evict(serializable<T>& t)   { if(enabled()) t.evict();    }
         template<class T> static void drop(serializable<T>& t)    { if(enabled()) t.drop();     }
         template<class T> static void pin(serializable<T>& t)     { }
+        template<class T> static void evict(T& object)            { }
 
         disk() : active(false), sid(0) {}
         std::vector<descriptor*> queue;
