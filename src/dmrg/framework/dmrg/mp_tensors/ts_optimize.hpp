@@ -35,7 +35,14 @@ public:
                 MPO<Matrix, SymmGroup> const & mpo_,
                 MPO<Matrix, SymmGroup> const & ts_mpo_,
                 BaseParameters & parms_)
-    : ts_cache_mpo(ts_mpo_), base(mps_, mpo_, parms_) { }
+    : ts_cache_mpo(ts_mpo_), base(mps_, mpo_, parms_) {
+        #ifdef AMBIENT 
+            for(int i = 0; i < ts_mpo_.length(); ++i)
+                for(typename MPOTensor<Matrix, SymmGroup>::data_t::const_iterator it = ts_mpo_[i].data().begin(); it != ts_mpo_[i].data().end(); ++it)
+                    for(size_t k = 0; k < (it->second).n_blocks(); k++)
+                        ambient::make_persistent((it->second)[k]);
+        #endif
+    }
 
     int sweep(int sweep,
                OptimizeDirection d = Both,
@@ -185,6 +192,7 @@ public:
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
 
                 if (site1 != L-2){ 
+                    Storage::evict(mps[site1]);
                     Storage::evict(left_[site1]);
                     Storage::drop(right_[site2+1]);
                 }
@@ -207,6 +215,7 @@ public:
                 this->boundary_right_step(mpo, site2); // creating right_[site2]
 
                 if(site1 != 0){
+                    Storage::evict(mps[site2]);
                     Storage::evict(right_[site2+1]); 
                     Storage::drop(left_[site1]);
                 }

@@ -24,7 +24,32 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "ambient/numeric/matrix/matrix.hpp"
-#include "ambient/numeric/matrix/diagonal_matrix.hpp"
-#include "ambient/numeric/matrix/tiles.hpp"
-#include "ambient/numeric/utils.hpp"
+#ifndef AMBIENT_NUMERIC_UTILS
+#define AMBIENT_NUMERIC_UTILS
+
+namespace ambient {
+
+    template<class Matrix>
+    inline void make_persistent(const Matrix& a){
+        ambient::make_persistent(a.core);
+    }
+
+    template<class Matrix>
+    inline void make_persistent(const numeric::tiles<Matrix>& a){
+        int size = a.data.size();
+        for(int i = 0; i < size; i++){
+            make_persistent(a[i]);
+        }
+    }
+
+    template<class Matrix>
+    inline void make_dedicated(const numeric::tiles<Matrix>& a){
+        int size = a.data.size();
+        for(int i = 0; i < size; i++){
+            //persist(a[i]);
+        }
+    }
+
+}
+
+#endif

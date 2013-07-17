@@ -71,11 +71,10 @@ public:
     block_matrix<Matrix, SymmGroup> & operator()(std::size_t left_index,
                                                  std::size_t right_index);
     
+    const data_t& data() const;
+
     void multiply_by_scalar(const scalar_type&);
     void divide_by_scalar(const scalar_type&);
-#ifdef AMBIENT
-    void persist() const;
-#endif
     
     bool has(std::size_t left_index, std::size_t right_index) const;
 

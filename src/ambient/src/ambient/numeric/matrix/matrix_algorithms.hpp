@@ -119,11 +119,6 @@ namespace ambient { namespace numeric {
         kernels::template touch<T,A>::template spawn<complexity::N>(a); 
     }
 
-    template<class Matrix>
-    inline void persist(const Matrix& a){
-        ambient::persist(a.core);
-    }
-
     template<class MatrixViewA, class MatrixViewB, typename T, class A>
     inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T,A>& c){
         kernels::template gemm<MatrixViewA,MatrixViewB,matrix<T,A>,T>::template spawn<complexity::N3>(a, b, c); 

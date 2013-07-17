@@ -179,10 +179,6 @@ namespace ambient { namespace controllers { namespace velvet {
         this->garbage.push_back(o);
     }
 
-    inline void controller::persist(history* o){
-        o->back()->spec.zombie();
-    }
-
 } } }
 
 #undef ALL

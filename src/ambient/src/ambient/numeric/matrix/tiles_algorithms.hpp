@@ -728,14 +728,6 @@ namespace ambient { namespace numeric {
         }
     }
 
-    template<class Matrix>
-    inline void persist(const tiles<Matrix>& a){
-        int size = a.data.size();
-        for(int i = 0; i < size; i++){
-            persist(a[i]);
-        }
-    }
-
     template <class MatrixA, class MatrixB>
     inline void add_inplace(tiles<MatrixA>& lhs, const tiles<MatrixB>& rhs){
         int size = lhs.data.size();

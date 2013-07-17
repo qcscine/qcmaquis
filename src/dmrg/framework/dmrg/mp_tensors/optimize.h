@@ -36,9 +36,6 @@ struct SiteProblem
     , right(right_)
     , mpo(mpo_) 
     {
-        #ifdef AMBIENT 
-            mpo.persist();
-        #endif
     }
     
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
@@ -83,8 +80,9 @@ public:
     , parms(parms_)
     {
         mps.normalize_right();
-//        mps.canonize(0);
-        
+        for(int i = 0; i < mps.length(); ++i)
+        Storage::evict(mps[i]);
+
         northo = parms_.get<int>("n_ortho_states");
         maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
         ortho_mps.resize(northo);
