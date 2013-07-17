@@ -74,8 +74,8 @@ namespace ambient { namespace controllers { namespace velvet {
         bool local();
         int which();
 
-        scope* context_c;
         scope* context;
+        scope* context_base;
     private:
         std::vector< cfunctor* > stack_m;
         std::vector< cfunctor* > stack_s;

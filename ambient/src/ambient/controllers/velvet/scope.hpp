@@ -87,13 +87,15 @@ namespace ambient {
             effect = (int)n;
         }
         scope() : index(0) {
-            ambient::controller.set_context(this);
+            if(ambient::controller.context != ambient::controller.context_base) dry = true;
+            else{ dry = false; ambient::controller.set_context(this); }
             this->round = ambient::channel.dim();
             this->shift();
         }
         scope(int start){
             index = start; // due to shifting
-            ambient::controller.set_context(this);
+            if(ambient::controller.context != ambient::controller.context_base) dry = true;
+            else{ dry = false; ambient::controller.set_context(this); }
             this->round = ambient::channel.dim();
             this->shift();
         }
@@ -114,12 +116,13 @@ namespace ambient {
             return index < lim;
         }
        ~scope(){
-            ambient::controller.pop_context();
+            if(!dry) ambient::controller.pop_context();
         }
         virtual bool tunable(){ 
             return false; 
         }
         size_t index;
+        bool dry;
     };
 
     template<>

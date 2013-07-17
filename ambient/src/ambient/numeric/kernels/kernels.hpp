@@ -171,7 +171,11 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T, class A>
     struct touch : public kernel< touch<T,A> >
-    { static void c(matrix<T,A> const& a); };
+    { static void c(const matrix<T,A>& a); };
+
+    template<typename T, class A>
+    struct migrate : public kernel< migrate<T,A> >
+    { static void c(matrix<T,A>& a); };
 
     template<typename T>
     struct svd : public kernel< svd<T> > 
@@ -665,7 +669,10 @@ namespace ambient { namespace numeric { namespace kernels {
     };
 
     template<typename T, class A>
-    void touch<T,A>::c(matrix<T,A> const& a){ }
+    void touch<T,A>::c(const matrix<T,A>& a){ }
+
+    template<typename T, class A>
+    void migrate<T,A>::c(matrix<T,A>& a){ revised(a); }
 
     template<typename T> 
     double validation<T>::distance(const std::complex<double>& a, const std::complex<double>& b){ 

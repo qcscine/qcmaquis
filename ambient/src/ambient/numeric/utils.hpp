@@ -44,10 +44,11 @@ namespace ambient {
 
     template<class Matrix>
     inline void make_dedicated(const numeric::tiles<Matrix>& a){
-        int size = a.data.size();
+    /*    int size = a.data.size();
         for(int i = 0; i < size; i++){
-            //persist(a[i]);
+            migrate(a[i]);
         }
+        */
     }
 
 }
