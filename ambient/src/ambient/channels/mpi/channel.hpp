@@ -43,6 +43,7 @@ namespace ambient { namespace channels { namespace mpi {
         this->volume = this->world->size;
         if(this->volume > AMBIENT_MAX_NUM_PROCS) 
             printf("Error: The proc count exceeds AMBIENT_MAX_NUM_PROCS\n");
+        this->db_volume = this->volume > AMBIENT_DB_PROCS ? AMBIENT_DB_PROCS : 0;
     }
 
     inline size_t channel::dim(){

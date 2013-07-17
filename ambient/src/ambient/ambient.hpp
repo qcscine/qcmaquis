@@ -74,6 +74,7 @@
 #endif
 
 #define AMBIENT_MAX_NUM_PROCS         12
+#define AMBIENT_DB_PROCS              1
 
 //#define AMBIENT_EXPERIMENTAL
 //#define AMBIENT_COMPUTATIONAL_TIMINGS

@@ -54,9 +54,10 @@ namespace ambient { namespace channels { namespace mpi {
         request* set(transformable* v, int rank);
         bool test(request* r);
         bool wait(request* r);
-    public:
         group* world;
+    private:
         size_t volume;
+        size_t db_volume;
     };
 
 } } }

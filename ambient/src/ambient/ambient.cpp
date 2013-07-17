@@ -36,7 +36,4 @@ namespace ambient {
     controllers::velvet::controller& controller = controllers::velvet::controller::instance();
     utils::mpostream cout;
     utils::mpostream cerr;
-    namespace memory {
-        std::atomic<long int> fixed_count = 0;
-    }
 }

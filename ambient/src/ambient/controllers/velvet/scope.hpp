@@ -38,7 +38,7 @@ namespace ambient {
     class scope<base> : public controller::scope {
     public:
         scope(){
-            this->round = ambient::channel.volume;
+            this->round = ambient::channel.dim();
             this->state = ambient::rank() ? ambient::remote : ambient::local;
             this->sector = 0;
             this->factor = AMBIENT_SCOPE_SWITCH_FACTOR;
@@ -82,19 +82,19 @@ namespace ambient {
         static int effect;
         static void compact(size_t n){
             iterator = 0;
-            if(n <= ambient::channel.volume) return;
-            factor = (int)(n / ambient::channel.volume); // iterations before switch
+            if(n <= ambient::channel.dim()) return;
+            factor = (int)(n / ambient::channel.dim()); // iterations before switch
             effect = (int)n;
         }
         scope() : index(0) {
             ambient::controller.set_context(this);
-            this->round = ambient::channel.volume;
+            this->round = ambient::channel.dim();
             this->shift();
         }
         scope(int start){
             index = start; // due to shifting
             ambient::controller.set_context(this);
-            this->round = ambient::channel.volume;
+            this->round = ambient::channel.dim();
             this->shift();
         }
         void shift(){
@@ -127,7 +127,7 @@ namespace ambient {
     public:
         scope(){
             ambient::controller.set_context(this);
-            this->round = ambient::channel.volume;
+            this->round = ambient::channel.dim();
             this->state = ambient::common;
         }
        ~scope(){

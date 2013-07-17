@@ -102,7 +102,9 @@ namespace storage {
             impl::descriptor& pivot;
         };
        
-        static void init(const std::string& path){ impl::init(path); }
+        static void init(const std::string& path){ 
+            impl::init(path);
+        }
         template<class T> static void fetch(serializable<T>& t)   { if(impl::enabled() && t.remap()) load_archive(t) >> static_cast<T&>(t); }
         template<class T> static void pin(serializable<T>& t)     { if(impl::enabled()){ pin_archive(t) >> static_cast<T&>(t); t.reserve(); } }
         template<class T> static void prefetch(serializable<T>& t){ if(impl::enabled()) t.prefetch(); }
@@ -243,6 +245,7 @@ namespace storage {
             return singleton;
         }
         static void init(const std::string& path){
+            maquis::cout << "Temporary storage enabled in " << path << "\n";
             instance().active = true;
             instance().path = path;
         }
@@ -286,7 +289,6 @@ namespace storage {
             boost::filesystem::path dp = boost::filesystem::unique_path(parms["storagedir"] + std::string("/storage_temp_%%%%%%%%%%%%/"));
             try {
                 boost::filesystem::create_directories(dp);
-                maquis::cout << "Temporary storage enabled in " << dp.string() << std::endl;
             } catch (...) {
                 maquis::cerr << "Error creating dir/file at " << dp << ". Try different 'storagedir'.\n";
                 throw;
