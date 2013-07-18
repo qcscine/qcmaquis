@@ -260,7 +260,7 @@ namespace storage {
             return instance().active;
         }
         static std::string fp(size_t sid){
-            return (instance().path + std::to_string(sid));
+            return (instance().path + boost::lexical_cast<std::string>(sid));
         }
         static size_t index(){
             return instance().sid++;
