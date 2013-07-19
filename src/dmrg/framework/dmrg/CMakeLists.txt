@@ -25,8 +25,7 @@ add_library(dmrg_models STATIC ${DMRG_MODELS_SOURCES})
 
 # *** Install
 
-install(TARGETS dmrg_utils COMPONENT libraries
-                           DESTINATION lib)
-
-install(TARGETS dmrg_models COMPONENT libraries
-                            DESTINATION lib)
+install(TARGETS dmrg_utils dmrg_models
+        EXPORT DMRGTargets COMPONENT libraries DESTINATION lib)
+export(TARGETS dmrg_utils dmrg_models
+       FILE "${PROJECT_BINARY_DIR}/DMRGTargets.cmake")
