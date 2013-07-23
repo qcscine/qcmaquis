@@ -66,32 +66,38 @@ else() # by hand, I only set up the new flags of FindMPI to respect the new norm
     set(MPIEXEC_MAX_NUMPROCS ${MPIEXEC_MAX_NUMPROCS} "2" CACHE STRING "Maximum number of processors available to run MPI applications.")
 endif(NOT MPI_CXX_FOUND)
 
+## if ALPS is present, load its environment
+if(ALPS_ROOT_DIR)
+    set(ALPS_DIR ${ALPS_ROOT_DIR}/share/alps)
+    set(PREVENT_ALPS_COMPILERS ON)
+    find_package(ALPS NO_SYSTEM_ENVIRONMENT_PATH)
+else()
+    set(ALPS_DIR $ENV{ALPS_ROOT} CACHE PATH "Path to the Alps include, need for boost numeric")
+endif(ALPS_ROOT_DIR)
+
+## set Boost dependencies
 set(Boost_requirements unit_test_framework)
 if(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
   list(APPEND Boost_requirements bindings)
   list(APPEND Boost_requirements system)
+endif(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
 
-  if(ALPS_ROOT_DIR)
-      set(ALPS_DIR ${ALPS_ROOT_DIR}/share/alps)
-      set(PREVENT_ALPS_COMPILERS ON)
-      find_package(ALPS NO_SYSTEM_ENVIRONMENT_PATH)
-  else()
-      set(ALPS_DIR $ENV{ALPS_ROOT} CACHE PATH "Path to the Alps include, need for boost numeric")
-  endif(ALPS_ROOT_DIR)
+## MAQUIS find_boost fall back on ALPS pre-compiled Boost, if ALPS is present
+include(${PROJECT_SOURCE_DIR}/config/find_boost.cmake)
+find_maquis_boost(COMPONENTS ${Boost_requirements})
 
-  include(${PROJECT_SOURCE_DIR}/config/find_boost.cmake)
-  find_maquis_boost(COMPONENTS ${Boost_requirements})
+message(STATUS "Boost include: ${MAQUIS_Boost_INCLUDE_DIRS}")
+message(STATUS "Boost libs: ${MAQUIS_Boost_LIBRARIES}")
+message(STATUS "Boost unit_test: ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")
 
-  message(STATUS "Boost include: ${MAQUIS_Boost_INCLUDE_DIRS}")
-  message(STATUS "Boost libs: ${MAQUIS_Boost_LIBRARIES}")
-  message(STATUS "Boost unit_test: ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")
+include_directories(${MAQUIS_Boost_INCLUDE_DIRS})
+list(APPEND AMBIENT_INCLUDE_DIRS ${MAQUIS_Boost_INCLUDE_DIRS})
 
-  include_directories(${MAQUIS_Boost_INCLUDE_DIRS})
-  list(APPEND AMBIENT_INCLUDE_DIRS ${MAQUIS_Boost_INCLUDE_DIRS})
+link_directories(${MAQUIS_Boost_LIBRARY_DIRS})
+list(APPEND AMBIENT_LIBRARY_DIRS ${MAQUIS_Boost_LIBRARY_DIRS})
 
-  link_directories(${MAQUIS_Boost_LIBRARY_DIRS})
-  list(APPEND AMBIENT_LIBRARY_DIRS ${MAQUIS_Boost_LIBRARY_DIRS})
-
+## Additional libraries / macros for tests
+if(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
   list(APPEND AMBIENT_TESTS_LIBRARIES ${MAQUIS_Boost_LIBRARIES})
     
   macro(compile_with_ambient)
@@ -100,13 +106,6 @@ if(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AMBIENT_COMPILE_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${AMBIENT_EXE_FLAGS}")
   endmacro(compile_with_ambient)
-else()
-  find_package (Boost COMPONENTS ${Boost_requirements})
-  if(Boost_FOUND)
-      include_directories(${Boost_INCLUDE_DIRS})
-  else()
-      message(FATAL_ERROR "Boost libraries not found. Please specify location using the BOOST_DIR variable")
-  endif()
 endif(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
 
 if(NOT BLAS_FOUND)
