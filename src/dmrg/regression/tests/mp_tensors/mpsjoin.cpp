@@ -52,7 +52,7 @@ mixed_left_boundary(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> c
     
     for(typename Index<SymmGroup>::basis_iterator it1 = i.basis_begin(); !it1.end(); ++it1)
     	for(typename Index<SymmGroup>::basis_iterator it2 = j.basis_begin(); !it2.end(); ++it2)
-            ret(0, *it1, *it2) = 1;
+            ret[0](*it1, *it2) = 1;
     
     return ret;
 }

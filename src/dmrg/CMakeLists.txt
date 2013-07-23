@@ -327,6 +327,9 @@ add_subdirectory(framework/dmrg)
 # *** applications
 add_subdirectory(applications)
 
+# *** benchmark applications
+add_subdirectory(regression/benchmarks)
+
 #add_subdirectory(tests)
 
 

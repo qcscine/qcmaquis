@@ -182,7 +182,7 @@ private:
     
     void init_optimizer()
     {
-        if (base::parms.template["optimization"] == "singlesite")
+        if (base::parms["optimization"] == "singlesite")
         {
             optimizer = 
             boost::shared_ptr<opt_base_t> ( new ss_optimize<Matrix, SymmGroup, storage::disk>
@@ -190,7 +190,7 @@ private:
                                             base::parms) );
         } 
         
-        else if (base::parms.template["optimization"] == "twosite")
+        else if (base::parms["optimization"] == "twosite")
         {
             optimizer = 
             boost::shared_ptr<opt_base_t> ( new ts_optimize<Matrix, SymmGroup, storage::disk>
