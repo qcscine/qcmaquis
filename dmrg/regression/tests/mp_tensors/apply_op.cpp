@@ -41,14 +41,14 @@ struct U1System {
     static ModelParameters parms()
     {
         ModelParameters p;
-        p["LATTICE"] = "open chain lattice";
-        p["L"]       = 10;
+        p.set("LATTICE", "open chain lattice");
+        p.set("L", 10);
         
-        p["MODEL"]           = "boson Hubbard";
-        p["Nmax"]            = 2;
-        p["t"]               = 1.;
-        p["U"]               = 1.;
-        p["u1_total_charge"] = 4;
+        p.set("MODEL",           "boson Hubbard");
+        p.set("Nmax",            2              );
+        p.set("t",               1.             );
+        p.set("U",               1.             );
+        p.set("u1_total_charge", 4              );
         
         return p;
     }
@@ -91,15 +91,16 @@ struct TwoU1System {
     static ModelParameters parms()
     {
         ModelParameters p;
-        p["LATTICE"] = "open chain lattice";
-        p["L"]       = 10;
+        p.set("LATTICE", "open chain lattice");
+        p.set("L", 10);
         
-        p["MODEL"]                     = "fermion Hubbard";
-        p["t"]                         = 1.;
-        p["U"]                         = 1.;
-        p["CONSERVED_QUANTUMNUMBERS"]  = "Nup,Ndown";
-        p["Nup_total"]                 = 4;
-        p["Ndown_total"]               = 4;
+        p.set("MODEL",                    "fermion Hubbard");
+        p.set("Nmax",                     2                );
+        p.set("t",                        1.               );
+        p.set("U",                        1.               );
+        p.set("CONSERVED_QUANTUMNUMBERS", "Nup,Ndown"      );
+        p.set("Nup_total",                4                );
+        p.set("Ndown_total",              4                );
         
         return p;
     }
@@ -145,13 +146,13 @@ struct U1DegSystem {
     static ModelParameters parms()
     {
         ModelParameters p;
-        p["LATTICE"] = "open chain lattice";
-        p["L"]       = 10;
+        p.set("LATTICE", "open chain lattice");
+        p.set("L", 10);
         
-        p["MODEL"]                     = "fermion Hubbard";
-        p["t"]                         = 1.;
-        p["U"]                         = 1.;
-        p["u1_total_charge"]           = 6;
+        p.set("MODEL",           "fermion Hubbard");
+        p.set("t",               1.);
+        p.set("U",               1.);
+        p.set("u1_total_charge", 6);
         
         return p;
     }

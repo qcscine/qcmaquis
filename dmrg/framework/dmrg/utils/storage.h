@@ -20,6 +20,8 @@
 #include "utils.hpp"
 #include "utils/timings.h"
 
+#include "dmrg/utils/BaseParameters.h"
+
 #ifdef HAVE_ALPS_HDF5
 #include "dmrg/utils/archive.h"
 #include "dmrg/utils/logger.h"

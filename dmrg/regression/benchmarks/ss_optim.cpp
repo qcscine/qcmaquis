@@ -142,13 +142,12 @@ int main(int argc, char ** argv)
         std::size_t Mmax = parms.get<int>("max_bond_dimension");
         
         /// Optimization: grow alpha
-        Logger iteration_log;
         std::pair<std::size_t, double> trunc;
         tim_optim_alpha.begin();
         if (lr == +1) {
             if (site < L-1) {
                 maquis::cout << "Growing, alpha = " << alpha << std::endl;
-                mps.grow_l2r_sweep(mpo[site], left, right, site, alpha, cutoff, Mmax, iteration_log);
+                mps.grow_l2r_sweep(mpo[site], left, right, site, alpha, cutoff, Mmax);
             } else {
                 block_matrix<matrix, grp> t = mps[site].normalize_left(DefaultSolver());
                 if (site < L-1)
@@ -157,7 +156,7 @@ int main(int argc, char ** argv)
         } else if (lr == -1) {
             if (site > 0) {
                 maquis::cout << "Growing, alpha = " << alpha << std::endl;
-                mps.grow_r2l_sweep(mpo[site], left, right, site, alpha, cutoff, Mmax, iteration_log);
+                mps.grow_r2l_sweep(mpo[site], left, right, site, alpha, cutoff, Mmax);
             } else {
                 block_matrix<matrix, grp> t = mps[site].normalize_right(DefaultSolver());
                 if (site > 0)
