@@ -26,7 +26,7 @@ module load hdf5
 module load cmake
 
 ## common ##
-COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -gcc-name=g++-gcc-4.7.2 -L$HOME/opt/plasma-intel/lib"
+COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -gcc-name=g++-gcc-4.7.2 -L$HOME/opt/plasma-intel/lib"
 COMMON_CMAKE_CXX_FLAGS_RELEASE=${MAQUIS_COMMON_CMAKE_CXX_FLAGS}
 ## dmrg ##
 DMRG_ALPS_ROOT_DIR=$ALPS_ROOT
