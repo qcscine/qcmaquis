@@ -35,8 +35,8 @@
 template<class Matrix, class SymmGroup>
 struct SiteProblem
 {
-    SiteProblem(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
-                Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
+    SiteProblem(Boundary<Matrix, SymmGroup> const & left_,
+                Boundary<Matrix, SymmGroup> const & right_,
                 MPOTensor<Matrix, SymmGroup> const & mpo_)
     : left(left_)
     , right(right_)
@@ -44,8 +44,8 @@ struct SiteProblem
     {
     }
     
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
-    Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
+    Boundary<Matrix, SymmGroup> const & left;
+    Boundary<Matrix, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
     double ortho_shift;
 };
