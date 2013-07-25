@@ -44,6 +44,8 @@ namespace ambient { namespace channels { namespace mpi {
         int cast_to_child(int rank, const group* source, const group* target) const;
         bool belongs(const group* target) const;
         bool masters(const group* target) const;
+        int neighbor(); // can be also object
+        int dedicated();
         void mute();
         bool verbose;
     };
@@ -61,7 +63,6 @@ namespace ambient { namespace channels { namespace mpi {
 
 namespace ambient {
     extern channels::mpi::multirank& rank;
-    int neighbor(); // can be also object
 }
 
 #endif

@@ -67,7 +67,7 @@ namespace ambient { namespace controllers { namespace velvet {
 #ifndef AMBIENT_PERSISTENT_TRANSFERS
         if(N == AMBIENT_MAX_NUM_PROCS) return;
         new (this) set<revision, AMBIENT_MAX_NUM_PROCS>(this);
-        if(p == ALL) p = ambient::neighbor();
+        if(p == ALL) p = ambient::rank.neighbor();
         handle = (request*)(size_t)p;
         if(target->generator != NULL) ((cfunctor*)target->generator)->queue(this);
         else{
@@ -101,7 +101,7 @@ namespace ambient { namespace controllers { namespace velvet {
             new (this) set<revision, AMBIENT_MAX_NUM_PROCS>(this);
             if(p == ALL){
                 for(int i = 0; i < ambient::channel.dim(); ++i) (*states)[i] = true;
-                p = ambient::neighbor();
+                p = ambient::rank.neighbor();
             }
             handle = (request*)(size_t)p;
             if(target->generator != NULL) ((cfunctor*)target->generator)->queue(this);
@@ -153,19 +153,6 @@ namespace ambient { namespace controllers { namespace velvet {
     // }}}
     // {{{ get revision
 
-    inline pass<revision>::pass(revision& r, int rank) : target(&r) {
-        target->use();
-        handle = ambient::channel.set(target, rank); 
-    }
-    
-    inline bool pass<revision>::ready(){
-        return ambient::channel.test(handle);
-    }
-    
-    inline void pass<revision>::invoke(){
-        target->release(); 
-    }
-
     inline void get<revision>::spawn(revision& r){
         if(r.transfer == NULL){
 #ifdef AMBIENT_PERSISTENT_TRANSFERS
@@ -187,7 +174,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline get<revision>::get(revision& r)
-    : target(&r) 
+    : target(&r)
     {
         target->generator = this;
 #ifdef AMBIENT_PERSISTENT_TRANSFERS
@@ -233,7 +220,7 @@ namespace ambient { namespace controllers { namespace velvet {
     inline get<transformable>::get(transformable& v, int owner)
     : target(&v), evaluated(false) {
         handle = ambient::channel.get(target);
-        if(ambient::neighbor() == owner) evaluated = true;
+        if(ambient::rank.neighbor() == owner) evaluated = true;
     }
     inline set<transformable, AMBIENT_MAX_NUM_PROCS>::set(transformable& v) 
     : target(&v), handle(NULL) {
@@ -242,7 +229,7 @@ namespace ambient { namespace controllers { namespace velvet {
     inline bool get<transformable>::ready(){
         if(ambient::channel.test(handle)){
             if(!evaluated){
-                handle = ambient::channel.set(target, ambient::neighbor());
+                handle = ambient::channel.set(target, ambient::rank.neighbor());
                 evaluated = true;
             }
             return ambient::channel.test(handle);
@@ -251,7 +238,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
     inline bool set<transformable, AMBIENT_MAX_NUM_PROCS>::ready(){
         if(target->generator != NULL) return false;
-        if(!handle) handle = ambient::channel.set(target, ambient::neighbor()); 
+        if(!handle) handle = ambient::channel.set(target, ambient::rank.neighbor()); 
         return ambient::channel.test(handle);
     }
 

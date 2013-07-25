@@ -116,8 +116,10 @@ namespace storage {
 
         template<class Matrix, class SymmGroup> 
         static void evict(MPSTensor<Matrix, SymmGroup>& t){
+            if(!ambient::channel.db_dim()) return;
+            ambient::scope<ambient::dedicated> i;
             for(int i = 0; i < t.data().n_blocks(); ++i) 
-            ambient::make_dedicated(t.data()[i]);
+            ambient::migrate(t.data()[i]);
         }
     };
 

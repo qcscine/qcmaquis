@@ -48,6 +48,8 @@ namespace ambient { namespace channels { namespace mpi {
        ~channel();
         void  init();
         size_t dim();
+        size_t wk_dim();
+        size_t db_dim();
         request* get(revision* r);
         request* set(revision* r, int rank);
         request* get(transformable* v);

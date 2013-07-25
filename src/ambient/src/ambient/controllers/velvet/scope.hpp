@@ -38,7 +38,7 @@ namespace ambient {
     class scope<base> : public controller::scope {
     public:
         scope(){
-            this->round = ambient::channel.dim();
+            this->round = ambient::channel.wk_dim();
             this->state = ambient::rank() ? ambient::remote : ambient::local;
             this->sector = 0;
             this->factor = AMBIENT_SCOPE_SWITCH_FACTOR;
@@ -72,41 +72,49 @@ namespace ambient {
         size_t factor;
         size_t op_alloc;
         size_t op_transfer;
+        int round;
     };
 
     template<>
     class scope<single> : public controller::scope {
     public:
-        static int iterator;
-        static int factor;
-        static int effect;
+        static int compact_factor;
         static void compact(size_t n){
-            iterator = 0;
-            if(n <= ambient::channel.dim()) return;
-            factor = (int)(n / ambient::channel.dim()); // iterations before switch
-            effect = (int)n;
+            if(n <= ambient::channel.wk_dim()) return;
+            compact_factor = (int)(n / ambient::channel.wk_dim()); // iterations before switch
         }
-        scope() : index(0) {
+        scope() : index(0), iterator(0) {
+            this->factor = compact_factor; compact_factor = 1;
+
             if(ambient::controller.context != ambient::controller.context_base) dry = true;
             else{ dry = false; ambient::controller.set_context(this); }
-            this->round = ambient::channel.dim();
+            this->round = ambient::channel.wk_dim();
             this->shift();
         }
-        scope(int start){
-            index = start; // due to shifting
+        scope(int start, int start_i = 0) : index(start), iterator(start_i) {
+            this->factor = compact_factor; compact_factor = 1;
+
             if(ambient::controller.context != ambient::controller.context_base) dry = true;
             else{ dry = false; ambient::controller.set_context(this); }
-            this->round = ambient::channel.dim();
+            this->round = ambient::channel.wk_dim();
             this->shift();
         }
         void shift(){
-            this->sector = (++iterator %= round*factor)/factor;
+            this->sector = (++this->iterator %= this->round*this->factor)/this->factor;
             this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
-            if(effect && !--effect) factor = 1;
+        }
+        void shift_back(){
+            this->sector = (--this->iterator %= this->round*this->factor)/this->factor;
+            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
         }
         scope& operator++ (){
             this->shift();
             this->index++;
+            return *this;
+        }
+        scope& operator-- (){
+            this->shift_back();
+            this->index--;
             return *this;
         }
         operator size_t (){
@@ -123,6 +131,25 @@ namespace ambient {
         }
         size_t index;
         bool dry;
+        int factor;
+        int iterator;
+        int round;
+    };
+
+    template<>
+    class scope<dedicated> : public controller::scope {
+    public:
+        scope(){
+            ambient::controller.set_context(this);
+            this->sector = ambient::rank.dedicated();
+            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
+        }
+       ~scope(){
+            ambient::controller.pop_context();
+        }
+        virtual bool tunable(){ 
+            return false; 
+        }
     };
 
     template<>
@@ -130,7 +157,6 @@ namespace ambient {
     public:
         scope(){
             ambient::controller.set_context(this);
-            this->round = ambient::channel.dim();
             this->state = ambient::common;
         }
        ~scope(){

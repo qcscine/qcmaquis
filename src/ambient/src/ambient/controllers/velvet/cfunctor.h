@@ -51,12 +51,11 @@ namespace ambient { namespace controllers { namespace velvet {
         #endif
         void queue(cfunctor* d){ deps.push_back(d); }
         std::vector<cfunctor*, allocator> deps;
-        void** arguments;
+        void* arguments[1]; // note: trashing the vtptr of derived object
     };
 
     template<class T> class get {};
     template<class T, int N = 0> class set {};
-    template<class T> class pass {};
 
     // {{{ revision get/set
 
@@ -81,21 +80,9 @@ namespace ambient { namespace controllers { namespace velvet {
         std::vector<request*>* handles;
         #endif
     private:
+        revision* target;
+        request* handle;
         bool evaluated;
-        request* handle;
-        revision* target;
-    };
-
-    class pass<revision> : public cfunctor {
-    public:
-        void* operator new (size_t size){ return ambient::pool::malloc<bulk,pass>(); }
-        void operator delete (void* ptr){ }
-        pass(revision& r, int rank);
-        virtual bool ready();
-        virtual void invoke();
-    private:
-        request* handle;
-        revision* target;
     };
 
     struct assistance {

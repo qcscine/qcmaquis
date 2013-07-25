@@ -72,14 +72,16 @@ namespace ambient { namespace channels { namespace mpi {
         return (target->rank == target->master);
     }
 
+    inline int multirank::neighbor(){
+        return ((*this)()+1) % ambient::channel.dim();
+    }
+
+    inline int multirank::dedicated(){
+        return ambient::channel.wk_dim();
+    }
+
     inline void multirank::mute(){
         this->verbose = false;
     }
 
 } } }
-
-namespace ambient {
-    inline int neighbor(){
-        return (ambient::rank()+1) % ambient::channel.dim();
-    }
-}

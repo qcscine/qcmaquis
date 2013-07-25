@@ -50,6 +50,14 @@ namespace ambient { namespace channels { namespace mpi {
         return this->volume;
     }
 
+    inline size_t channel::wk_dim(){
+        return (this->volume-this->db_volume);
+    }
+
+    inline size_t channel::db_dim(){
+        return this->db_volume;
+    }
+
     inline request::request(void* memory) 
     : memory(memory), mpi_request(MPI_REQUEST_NULL) 
     {

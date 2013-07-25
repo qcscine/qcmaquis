@@ -27,9 +27,7 @@
 #include "ambient/ambient.hpp"
 
 namespace ambient {
-    int scope<single>::factor = 1;
-    int scope<single>::effect = 0;
-    int scope<single>::iterator = 0;
+    int scope<single>::compact_factor = 1;
     models::velvet::model& model = models::velvet::model::instance();
     channels::mpi::channel& channel = channels::mpi::channel::instance();
     channels::mpi::multirank& rank = channels::mpi::multirank::instance();
