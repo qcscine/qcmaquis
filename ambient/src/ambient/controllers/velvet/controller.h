@@ -41,7 +41,6 @@ namespace ambient { namespace controllers { namespace velvet {
         class scope {
         public:
             int sector;
-            int round;
             int gauge;
             ambient::locality state;
             virtual bool tunable() = 0;
@@ -82,6 +81,7 @@ namespace ambient { namespace controllers { namespace velvet {
         std::vector< cfunctor* >* chains;
         std::vector< cfunctor* >* mirror;
         ambient::memory::collector garbage;
+        bool serial;
     };
     
 } } }

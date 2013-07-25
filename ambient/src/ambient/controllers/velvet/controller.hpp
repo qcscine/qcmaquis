@@ -34,8 +34,7 @@ namespace ambient { namespace controllers { namespace velvet {
         this->clear();
     }
 
-    inline controller::controller()
-    {
+    inline controller::controller(){
         this->stack_m.reserve(AMBIENT_STACK_RESERVE);
         this->stack_s.reserve(AMBIENT_STACK_RESERVE);
         this->chains = &this->stack_m;
@@ -44,6 +43,7 @@ namespace ambient { namespace controllers { namespace velvet {
         if(ambient::rank()) ambient::rank.mute();
         this->context_base = new ambient::scope<base>();
         this->context = this->context_base;
+        this->serial = (ambient::channel.dim() == 1) ? true : false;
     }
 
     inline bool controller::tunable(){
@@ -146,12 +146,12 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::sync(revision* r){
-        if(context->round == 1) return;
+        if(serial) return;
         if(ambient::model.common(r)) return;
         if(ambient::model.feeds(r)) ambient::controllers::velvet::set<revision>::spawn(*r) >> ALL;
         else{
             ambient::controllers::velvet::get<revision>::spawn(*r);
-            if(r->owner != ambient::neighbor()) ambient::controllers::velvet::get<revision>::assist(*r, ambient::neighbor());
+            if(r->owner != ambient::rank.neighbor()) ambient::controllers::velvet::get<revision>::assist(*r, ambient::rank.neighbor());
         }
     }
 
@@ -167,7 +167,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::lsync(transformable* v){
-        if(context->round == 1) return;
+        if(serial) return;
         ambient::controllers::velvet::set<transformable, AMBIENT_MAX_NUM_PROCS>::spawn(*v, which());
     }
 

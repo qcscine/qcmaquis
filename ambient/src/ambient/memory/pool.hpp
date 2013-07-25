@@ -35,8 +35,8 @@ namespace ambient { namespace memory {
     struct standard {
         static void* malloc(size_t sz){ return std::malloc(sz); }
         static void free(void* ptr){ std::free(ptr);  }
-        static int signature(){
-            return DEFAULT_REGION;
+        static region_t signature(){
+            return region_t::rstandard;
         }
     };
 
@@ -48,8 +48,8 @@ namespace ambient { namespace memory {
 
     struct outofcore {
         static void* malloc(size_t sz, void* pool){ return ((ambient::memory::mmap::descriptor*)pool)->malloc(sz);  }
-        static int signature(){
-            return DELEGATED_REGION;
+        static region_t signature(){
+            return region_t::rdelegated;
         }
     };
 
@@ -109,8 +109,8 @@ namespace ambient { namespace memory {
             bulk& pool = instance();
             for(int i = 0; i < pool.arity; i++) pool.set[i].reset();
         }
-        static int signature(){
-            return BULK_REGION;
+        static region_t signature(){
+            return region_t::rbulked;
         }
     private:
         region<AMBIENT_BULK_CHUNK>* set;
@@ -127,30 +127,39 @@ namespace ambient {
 
     namespace pool {
         struct descriptor {
-            descriptor(size_t e, int r = DEFAULT_REGION) : extent(e), region(r), mmap(NULL) {}
+
+            descriptor(size_t e, region_t r = region_t::rstandard) : extent(e), region(r), mmap(NULL), persistency(1), mediator(false), copied(false) {}
             void* mmap;
             size_t extent;
 
             void zombie(){
-                //region = PERSIST_REGION;
+                //region = region_t::rpersist;
             }
             void protect(){
-                region++;
+                assert(region != region_t::rdelegated);
+                if(!(persistency++)) region = region_t::rstandard;
+                copied = true;
             }
             void weaken(){
-                region--;
+                assert(region != region_t::rbulked);
+                assert(region != region_t::rdelegated);
+                if(!(--persistency)) region = region_t::rbulked;
             }
             void reuse(descriptor& d){
                 region   = d.region;
-                d.region = DELEGATED_REGION;
+                d.region = region_t::rdelegated;
             }
             bool conserves(descriptor& p){
+                assert(p.region != region_t::rdelegated && region != region_t::rdelegated);
                 return (!p.bulked() || bulked());
             }
             bool bulked(){
-                return (region == 0);
+                return (region == region_t::rbulked);
             }
-            int region;
+            region_t region;
+            int persistency;
+            bool mediator;
+            bool copied;
         };
 
         template<class Memory>           static void* malloc(size_t sz){ return Memory::malloc(sz);            }
@@ -164,7 +173,6 @@ namespace ambient {
         static void* malloc(descriptor& d){
             d.region = Memory::signature();
             return Memory::malloc(d.extent);
-            // return Memory::malloc(d.mmap, sz);
         }
         template<>
         static void* malloc<outofcore>(descriptor& d){
@@ -173,12 +181,15 @@ namespace ambient {
         }
 
         static void* malloc(descriptor& d){
-            if(d.region == 0){ if(d.extent >= AMBIENT_BULK_CHUNK) printf("ERROR: TOO BIG ALLOCATION!\n\n\n\n\n"); return malloc<bulk>(d.extent); }
-            else return malloc<standard>(d.extent);
+            assert(d.region != region_t::rdelegated);
+            if(d.region == region_t::rbulked){ 
+                assert(d.extent < AMBIENT_BULK_CHUNK);
+                return malloc<bulk>(d.extent); 
+            } else return malloc<standard>(d.extent);
         }
         static void free(void* ptr, descriptor& d){ 
-            if(ptr == NULL) return;
-            if(d.region == 0) free<bulk>(ptr);
+            if(ptr == NULL || d.region == region_t::rdelegated) return;
+            if(d.region == region_t::rbulked) free<bulk>(ptr);
             else free<standard>(ptr);
         }
     }

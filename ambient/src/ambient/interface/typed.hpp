@@ -39,6 +39,7 @@ namespace ambient {
     template<typename T> class default_allocator;
     using ambient::controllers::velvet::cfunctor;
     using ambient::models::velvet::history;
+    using ambient::models::velvet::revision;
     // {{{ compile-time type info: singular types + inplace and future specializations
     template <typename T> struct singular_info {
         template<size_t arg> static void deallocate     (cfunctor* m){                        }
@@ -95,6 +96,7 @@ namespace ambient {
         static void modify_remote(T& obj){
             history* o = obj.core;
             ambient::model.touch(o);
+            o->back()->spec.mediator = true;
             ambient::controller.rsync(o->back());
             ambient::model.add_revision<ambient::remote>(o, ambient::controller.which()); 
         }
@@ -102,6 +104,7 @@ namespace ambient {
         static void modify_local(T& obj, cfunctor* m){
             history* o = obj.core;
             m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(o, ambient::model.time(o));
+            o->back()->spec.mediator = true;
             ambient::controller.lsync(o->back());
             ambient::model.add_revision<ambient::local>(o, m); 
         }
@@ -109,6 +112,7 @@ namespace ambient {
         static void modify(T& obj, cfunctor* m){
             history* o = obj.core;
             m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(o, ambient::model.time(o));
+            o->back()->spec.mediator = true;
             ambient::controller.sync(o->back());
             ambient::model.add_revision<ambient::common>(o, m); 
         }
@@ -168,16 +172,19 @@ namespace ambient {
         template<size_t arg> static void modify_remote(T& obj){
             history* o = obj.core;
             ambient::model.touch(o);
+            o->back()->spec.mediator = true;
             ambient::model.add_revision<ambient::remote>(o, ambient::controller.which()); 
         }
         template<size_t arg> static void modify_local(T& obj, cfunctor* m){
             history* o = obj.core;
             m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(o, ambient::model.time(o));
+            o->back()->spec.mediator = true;
             ambient::model.add_revision<ambient::local>(o, m); 
         }
         template<size_t arg> static void modify(T& obj, cfunctor* m){
             history* o = obj.core;
             m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(o, ambient::model.time(o));
+            o->back()->spec.mediator = true;
             ambient::model.add_revision<ambient::common>(o, m); 
         }
         template<size_t arg> static bool pin(cfunctor* m){ return false; }

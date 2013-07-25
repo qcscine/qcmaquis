@@ -48,17 +48,16 @@ namespace ambient {
             return ambient::pool::malloc<bulk,sizeof(K)+sizeof(void*)*inliner::arity>();
         }
 
+        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
         kernel(){ 
-            this->arguments = (void**)(this+1); // note: trashing the vtptr of derived object
-            #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
             this->number = ambient::model.op_sid++;
-            #endif
         }
+        #endif
 
         virtual bool ready(){ 
             return inliner::ready(this);
         }
-        virtual void invoke(){ 
+        virtual void invoke(){
             #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
             static ambient::timer time(typeid(K).name()); time.begin();
             #endif

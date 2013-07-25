@@ -74,7 +74,7 @@
 #endif
 
 #define AMBIENT_MAX_NUM_PROCS         12
-#define AMBIENT_DB_PROCS              1
+#define AMBIENT_DB_PROCS              0
 
 //#define AMBIENT_EXPERIMENTAL
 //#define AMBIENT_COMPUTATIONAL_TIMINGS
@@ -96,15 +96,10 @@
 #define AMBIENT_FUTURE_SIZE           64
 #define AMBIENT_IB                    512
 
-#define BULK_REGION      0
-#define DELEGATED_REGION 0 // same as bulk - don't deallocate
-#define DEFAULT_REGION   1
-#define PERSIST_REGION   13
-
 #define PAGE_SIZE 4096
 #define ALIGNMENT 16
 
-//#define AMBIENT_PERSISTENT_TRANSFERS
+#define AMBIENT_PERSISTENT_TRANSFERS
 
 namespace ambient {
     inline int get_num_threads(){
@@ -112,8 +107,8 @@ namespace ambient {
     }
     enum complexity { N, N2, N3 };
     enum locality   { remote, local, common };
-    enum scope_t    { base, single, shared  };
-    enum memory_t   { staged, normal, leak  };
+    enum scope_t    { base, single, shared, dedicated };
+    enum region_t   { rbulked, rstandard, rpersist, rdelegated };
 }
 
 #include "ambient/channels/mpi/groups/multirank.h"
