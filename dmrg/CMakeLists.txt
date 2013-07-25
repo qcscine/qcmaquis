@@ -327,14 +327,9 @@ add_subdirectory(framework/dmrg)
 # *** applications
 add_subdirectory(applications)
 
-# *** benchmark applications
-add_subdirectory(regression/benchmarks)
-
-#add_subdirectory(tests)
-
-
 # *** regression tests
 if(REGRESSION_UNIT_TESTING)
+  #add_subdirectory(tests)
   enable_testing()
   if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
       message(WARNING "Tests should be checked in Debug mode!")
@@ -352,6 +347,8 @@ if(REGRESSION_APPLICATION_TESTS)
 endif(REGRESSION_APPLICATION_TESTS)
 
 if(REGRESSION_PERFORMANCE_TESTS)
+# *** benchmark applications
+  add_subdirectory(regression/benchmarks)
   enable_testing()
   add_subdirectory(${BENCHMARKS_DIR} benchmarks_refs)
 endif(REGRESSION_PERFORMANCE_TESTS)
