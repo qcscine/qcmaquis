@@ -35,7 +35,8 @@ namespace meas_eval {
     
 	inline std::vector<std::string> label_strings (const Lattice& lat, const std::vector<std::vector<std::size_t> >& labels)
 	{
-		std::vector<std::string> ret(labels.size());
+        std::vector<std::string> ret;
+        ret.reserve(labels.size());
 		std::vector<std::string>::iterator ot = ret.begin();
 		for (std::vector<std::vector<std::size_t> >::const_iterator it = labels.begin();
 			 it != labels.end(); ++it)
@@ -46,7 +47,7 @@ namespace meas_eval {
 				if (it2 + 1 != it->end())
 					oss << " -- ";
 			}
-			*(ot++) = oss.str();
+            ret.push_back(oss.str());
 		}
 		assert( ot == ret.end() );
 		return ret;

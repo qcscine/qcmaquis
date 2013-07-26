@@ -335,7 +335,7 @@ namespace generate_mpo
     public:
         virtual MPO<Matrix, SymmGroup> create_mpo()=0;
         virtual std::string description () const=0;
-        virtual vector<vector<size_t> > numeric_labels()=0;
+        virtual vector<vector<size_t> > const& numeric_labels()=0;
     };
 
     template<class Matrix, class SymmGroup>
@@ -392,7 +392,7 @@ namespace generate_mpo
         	return ss.str();
         }
         
-        vector<vector<size_t> > numeric_labels() { return labels; }
+        vector<vector<size_t> > const& numeric_labels() { return labels; }
         
     private:
         vector<vector<block> > prempo;
@@ -542,7 +542,7 @@ namespace generate_mpo
             return r;
         }
         
-        vector<vector<size_t> > numeric_labels() { return labels; }
+        vector<vector<size_t> > const& numeric_labels() { return labels; }
         
         std::string description () const
         {
