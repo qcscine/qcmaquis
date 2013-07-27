@@ -37,7 +37,6 @@ namespace meas_eval {
 	{
         std::vector<std::string> ret;
         ret.reserve(labels.size());
-		std::vector<std::string>::iterator ot = ret.begin();
 		for (std::vector<std::vector<std::size_t> >::const_iterator it = labels.begin();
 			 it != labels.end(); ++it)
 		{
@@ -49,7 +48,6 @@ namespace meas_eval {
 			}
             ret.push_back(oss.str());
 		}
-		assert( ot == ret.end() );
 		return ret;
 	}
 	inline std::vector<std::vector<std::size_t> > resort_labels (const std::vector<std::vector<std::size_t> >& labels,
