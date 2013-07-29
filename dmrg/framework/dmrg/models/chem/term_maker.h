@@ -18,7 +18,7 @@ struct TermMaker {
 
     struct hamtagterm_t { typedef typename Hamiltonian<M, TwoU1>::hamtagterm_t type; };
 
-    struct op_tag_t { typedef typename OPTagTable<M, TwoU1>::op_tag_t type; };
+    struct tag_type { typedef typename OPTable<M, TwoU1>::tag_type type; };
 
     struct op_tag_pair_t { typedef typename generate_mpo::Operator_Tag_Term<M, TwoU1>::op_pair_t type; };
 
@@ -28,9 +28,9 @@ struct TermMaker {
         return p1.first < p2.first;
     }
 
-    static typename hamtagterm_t::type two_term(bool sign, typename op_tag_t::type fill_op, value_type scale, pos_t i, pos_t j,
-                                     typename op_tag_t::type op1, typename op_tag_t::type op2,
-                                     boost::shared_ptr<OPTagTable<M, TwoU1> > op_table)
+    static typename hamtagterm_t::type two_term(bool sign, typename tag_type::type fill_op, value_type scale, pos_t i, pos_t j,
+                                     typename tag_type::type op1, typename tag_type::type op2,
+                                     boost::shared_ptr<OPTable<M, TwoU1> > op_table)
     {
         typename hamtagterm_t::type term;
         term.with_sign = sign;
@@ -41,9 +41,9 @@ struct TermMaker {
         return term;
     }
 
-    static typename hamtagterm_t::type positional_two_term(bool sign, typename op_tag_t::type fill_op, value_type scale, pos_t i, pos_t j,
-                                     typename op_tag_t::type op1, typename op_tag_t::type op2,
-                                     boost::shared_ptr<OPTagTable<M, TwoU1> > op_table)
+    static typename hamtagterm_t::type positional_two_term(bool sign, typename tag_type::type fill_op, value_type scale, pos_t i, pos_t j,
+                                     typename tag_type::type op1, typename tag_type::type op2,
+                                     boost::shared_ptr<OPTable<M, TwoU1> > op_table)
     {
         typename hamtagterm_t::type term;
         term.with_sign = sign;
@@ -51,7 +51,7 @@ struct TermMaker {
         term.scale = scale;
 
         //typename op_t::type tmp;
-        std::pair<typename op_tag_t::type, value_type> ptag;
+        std::pair<typename tag_type::type, value_type> ptag;
         if (i < j) {
             ptag = op_table->get_product_tag(fill_op, op1);
             term.operators.push_back(std::make_pair(i, ptag.first));
@@ -67,19 +67,19 @@ struct TermMaker {
         return term;
     }
 
-    static typename hamtagterm_t::type three_term(typename op_tag_t::type ident, typename op_tag_t::type fill_op,
+    static typename hamtagterm_t::type three_term(typename tag_type::type ident, typename tag_type::type fill_op,
                                      value_type scale, pos_t pb, pos_t p1, pos_t p2,
-                                     typename op_tag_t::type opb1, typename op_tag_t::type opb2,
-                                     typename op_tag_t::type op1,  typename op_tag_t::type op2,
-                                     boost::shared_ptr<OPTagTable<M, TwoU1> > op_table)
+                                     typename tag_type::type opb1, typename tag_type::type opb2,
+                                     typename tag_type::type op1,  typename tag_type::type op2,
+                                     boost::shared_ptr<OPTable<M, TwoU1> > op_table)
     {
         typename hamtagterm_t::type term;
         term.with_sign = true;
         term.fill_operator = fill_op;
         term.scale = scale;
 
-        typename op_tag_t::type tmp, boson_op;
-        std::pair<typename op_tag_t::type, value_type> ptag1, ptag2;
+        typename tag_type::type tmp, boson_op;
+        std::pair<typename tag_type::type, value_type> ptag1, ptag2;
 
         if ( (pb>p1 && pb<p2) || (pb>p2 && pb<p1) ) {
             // if the bosonic operator is in between
@@ -134,11 +134,11 @@ struct TermMaker {
         return term;
     }
 
-    static typename hamtagterm_t::type four_term(typename op_tag_t::type ident, typename op_tag_t::type fill_op,
+    static typename hamtagterm_t::type four_term(typename tag_type::type ident, typename tag_type::type fill_op,
                                 value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
-                                typename op_tag_t::type op_i, typename op_tag_t::type op_j,
-                                typename op_tag_t::type op_k, typename op_tag_t::type op_l,
-                                boost::shared_ptr<OPTagTable<M, TwoU1> > op_table)
+                                typename tag_type::type op_i, typename tag_type::type op_j,
+                                typename tag_type::type op_k, typename tag_type::type op_l,
+                                boost::shared_ptr<OPTable<M, TwoU1> > op_table)
     {
         typename hamtagterm_t::type term;
         term.with_sign = true;
@@ -159,7 +159,7 @@ struct TermMaker {
         sterm.push_back(std::make_pair(l, op_l));
         std::sort(sterm.begin(), sterm.end(), compare_tag);
 
-        std::pair<typename op_tag_t::type, value_type> ptag;
+        std::pair<typename tag_type::type, value_type> ptag;
         ptag = op_table->get_product_tag(fill_op, sterm[0].second);
         sterm[0].second = ptag.first;
         term.scale *= ptag.second;

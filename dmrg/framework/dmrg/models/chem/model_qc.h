@@ -35,7 +35,7 @@ struct HamiltonianTraits {
     struct op_t { typedef typename Hamiltonian<M, TwoU1>::op_t type; };
 
     template <class M>
-    struct op_tag_t { typedef typename OPTagTable<M, TwoU1>::op_tag_t type; };
+    struct tag_type { typedef typename OPTable<M, TwoU1>::tag_type type; };
 
     template <class M>
     struct op_pair_t { typedef typename generate_mpo::Operator_Term<M, TwoU1>::op_pair_t type; };
@@ -93,10 +93,10 @@ namespace chem_detail {
     {
     public:
         typedef typename M::value_type value_type;
-        typedef typename op_tag_t<M>::type tag_t;
+        typedef typename tag_type<M>::type tag_type;
 
         ChemHelper(BaseParameters & parms, Lattice const & lat,
-                   tag_t ident_, tag_t fill_, boost::shared_ptr<OPTagTable<M, TwoU1> > op_table_) 
+                   tag_type ident_, tag_type fill_, boost::shared_ptr<OPTable<M, TwoU1> > op_table_) 
             : ident(ident_), fill(fill_), op_table(op_table_)
         {
             this->parse_integrals(parms, lat);
@@ -113,7 +113,7 @@ namespace chem_detail {
         int idx(int m, int pos) { return idx_[m][pos]; }
 
         void add_term(std::vector<typename hamtagterm_t<M>::type> & tagterms,
-                           value_type scale, int s, int p1, int p2, tag_t op_i, tag_t op_k, tag_t op_l, tag_t op_j) {
+                           value_type scale, int s, int p1, int p2, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j) {
 
             typename hamtagterm_t<M>::type
             term = TermMaker<M>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, op_table);
@@ -122,7 +122,7 @@ namespace chem_detail {
         }
 
         void add_term(std::vector<typename hamtagterm_t<M>::type> & tagterms,
-                           int i, int k, int l, int j, tag_t op_i, tag_t op_k, tag_t op_l, tag_t op_j)
+                           int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
         {
             // Collapse terms with identical operators and different scales into one term
             if (op_i == op_k && op_j == op_l) {
@@ -185,8 +185,8 @@ namespace chem_detail {
             
         }
 
-        tag_t ident, fill;
-        boost::shared_ptr<OPTagTable<M, TwoU1> > op_table;
+        tag_type ident, fill;
+        boost::shared_ptr<OPTable<M, TwoU1> > op_table;
 
         std::vector<value_type> matrix_elements;
         std::vector<std::vector<int> > idx_;

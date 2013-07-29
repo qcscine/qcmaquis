@@ -21,12 +21,12 @@
 
 namespace tag_detail {
 
-    typedef unsigned op_tag_t;
+    typedef unsigned tag_type;
 
     struct pair_cmp
     {
-        bool operator()(std::pair<op_tag_t, op_tag_t> const & i,
-                        std::pair<op_tag_t, op_tag_t> const & j) const
+        bool operator()(std::pair<tag_type, tag_type> const & i,
+                        std::pair<tag_type, tag_type> const & j) const
         {
             if (i.first < j.first)
                 return true;
@@ -39,32 +39,32 @@ namespace tag_detail {
 }
 
 template <class Matrix, class SymmGroup>
-class OPTagTable : public std::vector<block_matrix<Matrix, SymmGroup> >
+class OPTable : public std::vector<block_matrix<Matrix, SymmGroup> >
 {
 public:
-    typedef tag_detail::op_tag_t op_tag_t;
+    typedef tag_detail::tag_type tag_type;
     typedef block_matrix<Matrix, SymmGroup> op_t;
 private:
     typedef typename Matrix::value_type value_type;
-    typedef std::map<std::pair<op_tag_t, op_tag_t>, std::pair<op_tag_t, value_type>, tag_detail::pair_cmp> pair_map_t;
+    typedef std::map<std::pair<tag_type, tag_type>, std::pair<tag_type, value_type>, tag_detail::pair_cmp> pair_map_t;
     typedef typename pair_map_t::const_iterator pair_map_it_t;
 public:
 
-    op_tag_t
+    tag_type
     register_op(const op_t & op_);
 
-    std::pair<op_tag_t, value_type>
+    std::pair<tag_type, value_type>
     checked_register(op_t & sample);
 
-    op_tag_t
+    tag_type
     register_site_op(const op_t & op_);
 
     /* WARNING: not thread safe! */
-    std::pair<op_tag_t, value_type>
-    get_product_tag(const op_tag_t t1, const op_tag_t t2);
+    std::pair<tag_type, value_type>
+    get_product_tag(const tag_type t1, const tag_type t2);
 
-    op_tag_t
-    get_kron_tag(Index<SymmGroup> const & phys_i, const op_tag_t t1, const op_tag_t t2);
+    tag_type
+    get_kron_tag(Index<SymmGroup> const & phys_i, const tag_type t1, const tag_type t2);
 
     // TODO: fix const_element_iterator bug in alps::numeric::matrix to restore const-correctness here
     /* Check if two operators are equal modulo a scale factor*/
@@ -74,28 +74,28 @@ public:
     //static bool full_equal(op_t & op1, op_t & op2);
 
     /* Diagnostics *************************************/
-    op_tag_t kron_duplicates() const { return duplicates_(kron_tags); }
-    op_tag_t prod_duplicates() const { return duplicates_(product_tags); }
+    tag_type kron_duplicates() const { return duplicates_(kron_tags); }
+    tag_type prod_duplicates() const { return duplicates_(product_tags); }
 
-    op_tag_t get_num_products() const;
-    op_tag_t get_num_kron_products() const;
-    op_tag_t get_num_site_terms() const { return site_terms.size(); }
-    op_tag_t total_size() const { return this->size(); }
+    tag_type get_num_products() const;
+    tag_type get_num_kron_products() const;
+    tag_type get_num_site_terms() const { return site_terms.size(); }
+    tag_type total_size() const { return this->size(); }
 
     /***************************************************/
 
-    bool is_site_op(op_tag_t tag_) const { return site_terms.count(tag_) > 0; }
+    bool is_site_op(tag_type tag_) const { return site_terms.count(tag_) > 0; }
 
 private:
 
     // slow N^2 algorithm, use hashes to get NlogN if necessary    
     template <class Map>
-    op_tag_t duplicates_(Map & sample);
+    tag_type duplicates_(Map & sample);
 
     pair_map_t product_tags;
     pair_map_t kron_tags;
     // Keep track of site_terms, they are non-uniformly scaled
-    std::set<op_tag_t> site_terms;
+    std::set<tag_type> site_terms;
 };
 
 #include "dmrg/models/tag_table.hpp"

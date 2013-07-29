@@ -47,9 +47,9 @@ namespace MPOTensor_detail
     struct row_cmp
     {
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-        typedef typename OPTagTable<Matrix, SymmGroup>::op_tag_t tag_t;
+        typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
         typedef typename Matrix::value_type value_type;
-        typedef boost::tuple<index_type, index_type, tag_t, value_type> tag_block;
+        typedef boost::tuple<index_type, index_type, tag_type, value_type> tag_block;
         bool operator() (tag_block const & i, tag_block const & j) const
         {
             if ( get<0>(i) < get<0>(j))
@@ -65,9 +65,9 @@ namespace MPOTensor_detail
     struct col_cmp
     {
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-        typedef typename OPTagTable<Matrix, SymmGroup>::op_tag_t tag_t;
+        typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
         typedef typename Matrix::value_type value_type;
-        typedef boost::tuple<index_type, index_type, tag_t, value_type> tag_block;
+        typedef boost::tuple<index_type, index_type, tag_type, value_type> tag_block;
         bool operator() (tag_block const & i, tag_block const & j) const
         {
             if ( get<1>(i) < get<1>(j))
@@ -93,15 +93,14 @@ public:
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
     typedef std::pair<typename SymmGroup::charge, index_type> access_type;
 
-    typedef typename OPTagTable<Matrix, SymmGroup>::op_tag_t tag_t;
-    typedef std::vector<boost::tuple<index_type, index_type, tag_t, value_type> > tag_data_t;
-    typedef boost::shared_ptr<OPTagTable<Matrix, SymmGroup> > tag_table_ptr;
+    typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
+    typedef boost::shared_ptr<OPTable<Matrix, SymmGroup> > op_table_ptr;
 
-    typedef boost::numeric::ublas::compressed_matrix< std::pair<tag_t, value_type>,
+    typedef boost::numeric::ublas::compressed_matrix< std::pair<tag_type, value_type>,
                                                       boost::numeric::ublas::row_major
                                                       , 0, boost::numeric::ublas::unbounded_array<index_type> 
                                                     > CSRMatrix;
-    typedef boost::numeric::ublas::compressed_matrix< std::pair<tag_t, value_type>,
+    typedef boost::numeric::ublas::compressed_matrix< std::pair<tag_type, value_type>,
                                                       boost::numeric::ublas::column_major
                                                       , 0, boost::numeric::ublas::unbounded_array<index_type> 
                                                     > CSCMatrix;
@@ -115,11 +114,11 @@ private:
     typedef std::map<key_t, value_t, MPOTensor_detail::pair_cmp<Matrix, SymmGroup> > data_t;
     typedef std::set<index_type> used_set_t;
 
-    typedef std::vector<boost::tuple<std::size_t, std::size_t, tag_t, value_type> > prempo_t;
+    typedef std::vector<boost::tuple<std::size_t, std::size_t, tag_type, value_type> > prempo_t;
     
 public:
     
-    MPOTensor(index_type = 1, index_type = 1, prempo_t const & = prempo_t(), tag_table_ptr = tag_table_ptr());
+    MPOTensor(index_type = 1, index_type = 1, prempo_t const & = prempo_t(), op_table_ptr = op_table_ptr());
     
     index_type row_dim() const;
     index_type col_dim() const;
@@ -150,20 +149,20 @@ public:
     }
 
     // to be changed into operator()
-    std::pair<typename OPTagTable<Matrix, SymmGroup>::op_t const &, value_type>
+    std::pair<typename OPTable<Matrix, SymmGroup>::op_t const &, value_type>
     at(index_type left_index, index_type right_index) const {
         typename CSRMatrix::value_type const & p = row_tags(left_index, right_index);
-        return std::make_pair<typename OPTagTable<Matrix, SymmGroup>::op_t const &,
-                              typename Matrix::value_type>((*op_tags)[p.first], p.second);
+        return std::make_pair<typename OPTable<Matrix, SymmGroup>::op_t const &,
+                              typename Matrix::value_type>((*operator_table)[p.first], p.second);
     }
 
-    tag_t tag_number(index_type left_index, index_type right_index) const {
+    tag_type tag_number(index_type left_index, index_type right_index) const {
         return row_tags(left_index, right_index).first;
     }
 
-    bool tag_ready() const { return (row_tags.size1() > 0 && col_tags.size1() > 0 && op_tags.get() != NULL); }
+    bool tag_ready() const { return (row_tags.size1() > 0 && col_tags.size1() > 0 && operator_table.get() != NULL); }
 
-    tag_table_ptr get_tag_table() const { return op_tags; }
+    op_table_ptr get_tag_table() const { return operator_table; }
 
     /*********/
     
@@ -182,10 +181,9 @@ public:
 private:
     data_t data_;
 
-    //tag_data_t row_tags, col_tags;
     CSRMatrix row_tags;
     CSCMatrix col_tags;
-    tag_table_ptr op_tags;
+    op_table_ptr operator_table;
     
     index_type left_i, right_i;
 };

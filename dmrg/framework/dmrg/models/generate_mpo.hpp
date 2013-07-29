@@ -28,12 +28,12 @@ namespace generate_mpo
 	template<class Matrix, class SymmGroup>
 	struct Operator_Tag_Term
 	{
-		typedef typename OPTagTable<Matrix, SymmGroup>::op_tag_t op_tag_t;
+		typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
         typedef typename Lattice::pos_t pos_t;
-		typedef std::pair<pos_t, op_tag_t> op_pair_t;
+		typedef std::pair<pos_t, tag_type> op_pair_t;
         
 		std::vector<op_pair_t> operators;
-		op_tag_t fill_operator;
+		tag_type fill_operator;
         typename Matrix::value_type scale;
         bool with_sign;
         
@@ -338,13 +338,13 @@ namespace generate_mpo
         typedef block_matrix<Matrix, SymmGroup> op_t;
 
         typedef Lattice::pos_t pos_t;
-        typedef typename Operator_Tag_Term<Matrix, SymmGroup>::op_tag_t tag_t;
+        typedef typename Operator_Tag_Term<Matrix, SymmGroup>::tag_type tag_type;
         typedef typename Operator_Tag_Term<Matrix, SymmGroup>::op_pair_t op_pair_t;
-        typedef boost::tuple<std::size_t, std::size_t, tag_t, scale_type> tag_block;
+        typedef boost::tuple<std::size_t, std::size_t, tag_type, scale_type> tag_block;
         
     public:
-        TaggedMPOMaker(pos_t length_, tag_t ident_
-                      , boost::shared_ptr<OPTagTable<Matrix, SymmGroup> > op_tags_)
+        TaggedMPOMaker(pos_t length_, tag_type ident_
+                      , boost::shared_ptr<OPTable<Matrix, SymmGroup> > op_tags_)
         : length(length_)
         , used_dims(length)
         , ident(ident_)
@@ -361,7 +361,7 @@ namespace generate_mpo
         void add_term(Operator_Tag_Term<Matrix, SymmGroup> const & term)
         {
             std::vector<op_pair_t> ops = term.operators;
-            std::sort(ops.begin(), ops.end(), compare<std::pair<typename Lattice::pos_t, typename OPTagTable<Matrix, SymmGroup>::op_tag_t> >);
+            std::sort(ops.begin(), ops.end(), compare<std::pair<typename Lattice::pos_t, typename OPTable<Matrix, SymmGroup>::tag_type> >);
             
             vector<pos_t> positions;
             for (typename vector<op_pair_t>::const_iterator it = ops.begin(); it != ops.end(); ++it)
@@ -451,11 +451,11 @@ namespace generate_mpo
     private:
         bool finalized;
         pos_t length;
-        tag_t ident;
+        tag_type ident;
         vector<set<std::size_t> > used_dims;
         std::map<pos_t, op_t> site_terms;
 
-        boost::shared_ptr<OPTagTable<Matrix, SymmGroup> > op_tags;
+        boost::shared_ptr<OPTable<Matrix, SymmGroup> > op_tags;
         vector<vector<tag_block> > tag_prempo;
         
         pos_t maximum, leftmost_right;
@@ -466,7 +466,7 @@ namespace generate_mpo
                  it != site_terms.end(); ++it) {
 
                 // TODO implement plus operation
-                tag_t site_tag = op_tags->register_site_op(it->second);
+                tag_type site_tag = op_tags->register_site_op(it->second);
                 tag_prempo[it->first].push_back(boost::make_tuple(0, 1, site_tag, 1.));
             }
 

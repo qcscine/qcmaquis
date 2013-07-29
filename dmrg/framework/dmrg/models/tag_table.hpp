@@ -10,14 +10,14 @@
 #define MAQUIS_DMRG_MODELS_TAG_TABLE_HPP
 
 template <class Matrix, class SymmGroup>
-typename OPTagTable<Matrix, SymmGroup>::op_tag_t OPTagTable<Matrix, SymmGroup>::register_op(const op_t & op_) {
-    op_tag_t ret = this->size();
+typename OPTable<Matrix, SymmGroup>::tag_type OPTable<Matrix, SymmGroup>::register_op(const op_t & op_) {
+    tag_type ret = this->size();
     this->push_back(op_);
     return ret;
 }
 
 template <class Matrix, class SymmGroup>
-std::pair<typename OPTagTable<Matrix, SymmGroup>::op_tag_t, typename OPTagTable<Matrix, SymmGroup>::value_type> OPTagTable<Matrix, SymmGroup>::checked_register(op_t & sample) {
+std::pair<typename OPTable<Matrix, SymmGroup>::tag_type, typename OPTable<Matrix, SymmGroup>::value_type> OPTable<Matrix, SymmGroup>::checked_register(op_t & sample) {
 
     std::pair<bool, value_type> cmp_result;
     typename std::vector<op_t>::iterator it_pt = this->begin();
@@ -35,17 +35,17 @@ std::pair<typename OPTagTable<Matrix, SymmGroup>::op_tag_t, typename OPTagTable<
 }
 
 template <class Matrix, class SymmGroup>
-typename OPTagTable<Matrix, SymmGroup>::op_tag_t OPTagTable<Matrix, SymmGroup>::register_site_op(const op_t & op_) {
-    op_tag_t ret = this->register_op(op_);
+typename OPTable<Matrix, SymmGroup>::tag_type OPTable<Matrix, SymmGroup>::register_site_op(const op_t & op_) {
+    tag_type ret = this->register_op(op_);
     site_terms.insert(ret);
     return ret;
 }
 
 template <class Matrix, class SymmGroup>
-std::pair<typename OPTagTable<Matrix, SymmGroup>::op_tag_t,
-          typename OPTagTable<Matrix, SymmGroup>::value_type> OPTagTable<Matrix, SymmGroup>::get_product_tag
-                    (const typename OPTagTable<Matrix, SymmGroup>::op_tag_t t1,
-                     const typename OPTagTable<Matrix, SymmGroup>::op_tag_t t2) {
+std::pair<typename OPTable<Matrix, SymmGroup>::tag_type,
+          typename OPTable<Matrix, SymmGroup>::value_type> OPTable<Matrix, SymmGroup>::get_product_tag
+                    (const typename OPTable<Matrix, SymmGroup>::tag_type t1,
+                     const typename OPTable<Matrix, SymmGroup>::tag_type t2) {
     assert( t1 < this->size() && t2 < this->size() );
 
     // return tag of product, if already there
@@ -61,17 +61,17 @@ std::pair<typename OPTagTable<Matrix, SymmGroup>::op_tag_t,
         op_t& op2 = (*this)[t2];
 
         gemm(op1, op2, product);
-        std::pair<op_tag_t, value_type> ret = this->checked_register(product);
+        std::pair<tag_type, value_type> ret = this->checked_register(product);
         product_tags[std::make_pair(t1, t2)] = ret;
         return ret;
     }
 }
 
 template <class Matrix, class SymmGroup>
-typename OPTagTable<Matrix, SymmGroup>::op_tag_t OPTagTable<Matrix, SymmGroup>::get_kron_tag
+typename OPTable<Matrix, SymmGroup>::tag_type OPTable<Matrix, SymmGroup>::get_kron_tag
             (Index<SymmGroup> const & phys_i,
-            const typename OPTagTable<Matrix, SymmGroup>::op_tag_t t1,
-            const typename OPTagTable<Matrix, SymmGroup>::op_tag_t t2) {
+            const typename OPTable<Matrix, SymmGroup>::tag_type t1,
+            const typename OPTable<Matrix, SymmGroup>::tag_type t2) {
     assert( t1 < this->size() && t2 < this->size() );
 
     // return tag of kronecker product, if already there
@@ -88,7 +88,7 @@ typename OPTagTable<Matrix, SymmGroup>::op_tag_t OPTagTable<Matrix, SymmGroup>::
         op_t& op2 = (*this)[t2];
 
         op_kron(phys_i, op1, op2, product);
-        op_tag_t ret = this->register_op(product);
+        tag_type ret = this->register_op(product);
         kron_tags[std::make_pair(t1, t2)] = std::make_pair(ret, 1.0);
 
         return ret;
@@ -96,7 +96,7 @@ typename OPTagTable<Matrix, SymmGroup>::op_tag_t OPTagTable<Matrix, SymmGroup>::
 }
 
 template <class Matrix, class SymmGroup>
-std::pair<bool, typename OPTagTable<Matrix, SymmGroup>::value_type> OPTagTable<Matrix, SymmGroup>::equal(op_t & reference, op_t & sample) {
+std::pair<bool, typename OPTable<Matrix, SymmGroup>::value_type> OPTable<Matrix, SymmGroup>::equal(op_t & reference, op_t & sample) {
     if (reference.left_basis() != sample.left_basis() || reference.right_basis() != sample.right_basis())
         return std::make_pair(false, 0.);
 
@@ -131,7 +131,7 @@ std::pair<bool, typename OPTagTable<Matrix, SymmGroup>::value_type> OPTagTable<M
 
 /*
 template <class Matrix, class SymmGroup>
-bool OPTagTable<Matrix, SymmGroup>::full_equal(op_t & op1, op_t & op2) {
+bool OPTable<Matrix, SymmGroup>::full_equal(op_t & op1, op_t & op2) {
     if (op1.left_basis() != op2.left_basis() || op1.right_basis() != op2.right_basis())
         return false;
 
@@ -150,14 +150,14 @@ bool OPTagTable<Matrix, SymmGroup>::full_equal(op_t & op1, op_t & op2) {
 // * Diagnostics *************************************
 template <class Matrix, class SymmGroup>
 template <class Map>
-typename OPTagTable<Matrix, SymmGroup>::op_tag_t OPTagTable<Matrix, SymmGroup>::duplicates_(Map & sample) {
+typename OPTable<Matrix, SymmGroup>::tag_type OPTable<Matrix, SymmGroup>::duplicates_(Map & sample) {
     typedef typename Map::const_iterator it_t;
 
-    std::vector<op_tag_t> unique_ops;
+    std::vector<tag_type> unique_ops;
     for (it_t it_s = sample.begin(); it_s != sample.end(); ++it_s) 
     {
         bool unique = true;
-        for (typename std::vector<op_tag_t>::iterator it_unique = unique_ops.begin(); it_unique != unique_ops.end(); ++it_unique)
+        for (typename std::vector<tag_type>::iterator it_unique = unique_ops.begin(); it_unique != unique_ops.end(); ++it_unique)
             if (equal((*this)[(*it_s).second.first], (*this)[*it_unique]).first)
             {
                 unique = false;
@@ -173,8 +173,8 @@ typename OPTagTable<Matrix, SymmGroup>::op_tag_t OPTagTable<Matrix, SymmGroup>::
 
 
 template <class Matrix, class SymmGroup>
-typename OPTagTable<Matrix, SymmGroup>::op_tag_t OPTagTable<Matrix, SymmGroup>::get_num_products() const {
-    std::set<op_tag_t> utags;
+typename OPTable<Matrix, SymmGroup>::tag_type OPTable<Matrix, SymmGroup>::get_num_products() const {
+    std::set<tag_type> utags;
     for (pair_map_it_t it = product_tags.begin(); it != product_tags.end(); ++it)
         utags.insert(it->second.first);
 
@@ -182,8 +182,8 @@ typename OPTagTable<Matrix, SymmGroup>::op_tag_t OPTagTable<Matrix, SymmGroup>::
 }
 
 template <class Matrix, class SymmGroup>
-typename OPTagTable<Matrix, SymmGroup>::op_tag_t OPTagTable<Matrix, SymmGroup>::get_num_kron_products() const {
-    std::set<op_tag_t> utags;
+typename OPTable<Matrix, SymmGroup>::tag_type OPTable<Matrix, SymmGroup>::get_num_kron_products() const {
+    std::set<tag_type> utags;
     for (pair_map_it_t it = kron_tags.begin(); it != kron_tags.end(); ++it)
         utags.insert(it->second.first);
 

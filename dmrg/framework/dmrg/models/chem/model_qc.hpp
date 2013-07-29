@@ -14,7 +14,7 @@ template <class Matrix>
 template <class M>
 Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
 {
-    typedef typename op_tag_t<M>::type tag_t;
+    typedef typename tag_type<M>::type tag_type;
 
     typename op_t<M>::type create_up_op, create_down_op, destroy_up_op, destroy_down_op,
                            count_up_op, count_down_op, docc_op, e2d_op, d2e_op,
@@ -64,8 +64,8 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
     /*** Create operator tag table ****************************************/
     /**********************************************************************/
 
-    boost::shared_ptr<OPTagTable<M, TwoU1> > op_table(new OPTagTable<M, TwoU1>());
-    tag_t create_up, create_down, destroy_up, destroy_down,
+    boost::shared_ptr<OPTable<M, TwoU1> > op_table(new OPTable<M, TwoU1>());
+    tag_type create_up, create_down, destroy_up, destroy_down,
           count_up, count_down, docc, e2d, d2e,
           fill, ident;
 
@@ -171,7 +171,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
             if ( i==j) { same_idx = i; pos1 = l; }
             if ( k==l) { same_idx = l; pos1 = i; }
 
-            std::pair<tag_t, value_type> ptag;
+            std::pair<tag_type, value_type> ptag;
 
             // 1a
             // --> c_l_up * n_i_down * cdag_i_up
@@ -239,7 +239,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
             tagterms.push_back( TermMaker<M>::two_term(false, ident, -matrix_elements[m], i, j,
                                             count_down, count_down, op_table) );
 
-            std::pair<tag_t, value_type> ptag1, ptag2;
+            std::pair<tag_type, value_type> ptag1, ptag2;
 
             // Could insert fill operators without changing the result
             // --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
@@ -306,7 +306,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
             if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
             if (j==l) { same_idx = j; pos1 = k; pos2 = i; }
 
-            std::pair<tag_t, value_type> ptag;
+            std::pair<tag_type, value_type> ptag;
 
             ptag = op_table->get_product_tag(create_up, fill);
             term_assistant.add_term(tagterms, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_down , destroy_down, destroy_up);

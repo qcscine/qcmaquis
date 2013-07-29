@@ -12,23 +12,24 @@ template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
                                         index_type rd,
                                         prempo_t const & tags,
-                                        tag_table_ptr op_tags_)
+                                        op_table_ptr operator_table_)
 : left_i(ld)
 , right_i(rd)
-, op_tags(op_tags_)
+, operator_table(operator_table_)
 , row_tags(ld, rd)
 , col_tags(ld, rd)
 {
     using namespace boost::tuples;
+    typedef std::vector<boost::tuple<index_type, index_type, tag_type, value_type> > tag_data_t;
 
-    if (tags.size() > 0 && op_tags.get() != NULL) {
+    if (tags.size() > 0 && operator_table.get() != NULL) {
         tag_data_t tmp_tags;
         
         for (typename prempo_t::const_iterator it = tags.begin(); it != tags.end(); ++it) {
 
             index_type row_i = (left_i == 1) ? 0 : index_type(get<0>(*it));
             index_type col_i = (right_i == 1) ? 0 : index_type(get<1>(*it));
-            boost::tuple<index_type, index_type, tag_t, value_type>
+            boost::tuple<index_type, index_type, tag_type, value_type>
             tag = boost::make_tuple(row_i, col_i, get<2>(*it), get<3>(*it));
 
             tmp_tags.push_back(tag);
@@ -79,7 +80,7 @@ block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()
              boost::make_tuple(left_index, right_index, 0, 0.),
              MPOTensor_detail::row_cmp<Matrix, SymmGroup>());
 
-    return boost::tuples::get<3>(*it) * (*op_tags)[boost::tuples::get<2>(*it)];
+    return boost::tuples::get<3>(*it) * (*operator_table)[boost::tuples::get<2>(*it)];
     */
 }
 
@@ -100,7 +101,7 @@ block_matrix<Matrix, SymmGroup> & MPOTensor<Matrix, SymmGroup>::operator()(index
              boost::make_tuple(left_index, right_index, 0, 0.),
              MPOTensor_detail::row_cmp<Matrix, SymmGroup>());
 
-    return boost::tuples::get<3>(*it) * (*op_tags)[boost::tuples::get<2>(*it)];
+    return boost::tuples::get<3>(*it) * (*operator_table)[boost::tuples::get<2>(*it)];
     */
 }
 

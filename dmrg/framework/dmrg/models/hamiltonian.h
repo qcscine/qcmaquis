@@ -34,7 +34,7 @@ struct Hamiltonian_Term : public generate_mpo::Operator_Term<Matrix, SymmGroup>
 template<class Matrix, class SymmGroup>
 class Hamiltonian
 {
-    typedef typename OPTagTable<Matrix, SymmGroup>::op_tag_t tag_t;
+    typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
 public:
     typedef Hamiltonian_Term<Matrix, SymmGroup> hamterm_t;
     typedef typename generate_mpo::Operator_Tag_Term<Matrix, SymmGroup> hamtagterm_t;
@@ -46,9 +46,9 @@ public:
     Hamiltonian (Index<SymmGroup> const & phys_
                  , op_t ident_
                  , std::vector<hamterm_t> const & terms_
-                 , tag_t ident_tag_ = 0
+                 , tag_type ident_tag_ = 0
                  , std::vector<hamtagterm_t> const & tagterms_ = std::vector<hamtagterm_t>()
-                 , boost::shared_ptr<OPTagTable<Matrix, SymmGroup> > op_tags_ = boost::shared_ptr<OPTagTable<Matrix, SymmGroup> >() )
+                 , boost::shared_ptr<OPTable<Matrix, SymmGroup> > op_tags_ = boost::shared_ptr<OPTable<Matrix, SymmGroup> >() )
     : phys(phys_)
     , ident(ident_)
     , ident_tag(ident_tag_)
@@ -68,7 +68,7 @@ public:
     virtual Index<SymmGroup> get_phys () const { return phys; }
     virtual void set_phys (Index<SymmGroup> const & phys_) { phys = phys_; }
     virtual op_t const & get_identity () const { return ident; }
-    virtual tag_t const & get_identity_tag () const { return ident_tag; }
+    virtual tag_type const & get_identity_tag () const { return ident_tag; }
     virtual void set_identity (op_t const & ident_) { ident = ident_; }
     
     const_iterator begin () const { return terms.begin(); }
@@ -77,16 +77,16 @@ public:
     iterator begin () { return terms.begin(); }
     iterator end () { return terms.end(); }
 
-    boost::shared_ptr<OPTagTable<Matrix, SymmGroup> > get_tag_table() const { return op_tags; }
+    boost::shared_ptr<OPTable<Matrix, SymmGroup> > get_tag_table() const { return op_tags; }
 
 protected:
     std::vector<hamterm_t> terms;
     Index<SymmGroup> phys;
     op_t ident;
-    tag_t ident_tag;
+    tag_type ident_tag;
 
     std::vector<hamtagterm_t> tagterms;
-    boost::shared_ptr<OPTagTable<Matrix, SymmGroup> > op_tags;
+    boost::shared_ptr<OPTable<Matrix, SymmGroup> > op_tags;
 };
 
 template<class Matrix, class SymmGroup>
