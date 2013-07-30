@@ -13,9 +13,9 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
 , model(model_)
 , sweep(0)
 , site(-1)
-, chkpfile(parms["chkpfile"])
-, rfile(parms["resultfile"])
-, dns( (parms.get<int>("donotsave") != 0) )
+, chkpfile(parms["chkpfile"].str())
+, rfile(parms["resultfile"].str())
+, dns( (parms["donotsave"] != 0) )
 { 
     maquis::cout << DMRG_VERSION_STRING << std::endl;
     storage::setup(parms);
@@ -52,9 +52,9 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
     
 #ifndef WIN32
     // drand48 does not seem to be used anymore anyway
-    srand48(parms.get<int>("seed"));
+    srand48(parms["seed"]);
 #endif
-    dmrg_random::engine.seed(parms.get<int>("seed"));
+    dmrg_random::engine.seed(parms["seed"]);
     
     if (fullinit) {
         model_init();
@@ -121,7 +121,7 @@ void sim<Matrix, SymmGroup>::model_init()
         mpo = make_mpo(lat->size(), H); 
         mpoc = mpo;
 
-        if (parms.get<int>("use_compressed") > 0)
+        if (parms["use_compressed"] > 0)
             mpoc.compress(1e-12);
 
         if (parms["optimization"] == "twosite")
@@ -138,14 +138,14 @@ void sim<Matrix, SymmGroup>::mps_init()
         mps = MPS<Matrix, SymmGroup>(lat->size());
         storage::archive ar_in(chkpfile);
         ar_in["/state"] >> mps;
-    } else if (parms["initfile"].size() > 0) {
+    } else if (!parms["initfile"].empty()) {
         maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
         mps = MPS<Matrix, SymmGroup>(lat->size());
-        storage::archive ar_in(parms["initfile"]);
+        storage::archive ar_in(parms["initfile"].str());
         ar_in["/state"] >> mps;
     } else {
         mps = MPS<Matrix, SymmGroup>(lat->size(),
-                                     parms.get<std::size_t>("init_bond_dimension"),
+                                     parms["init_bond_dimension"],
                                      phys, initc,
                                      *(phys_model->initializer(parms)));
     }
@@ -177,26 +177,30 @@ bool sim<Matrix, SymmGroup>::run ()
 {
     bool early_exit = false;
     
-    int nsteps = parms.get<int>("nsweeps");
-    if (parms.get<int>("measure_each") > -1)
-        nsteps = std::min(nsteps, parms.get<int>("measure_each"));
-    if (parms.get<int>("measure_each") > -1)
-        nsteps = std::min(nsteps, parms.get<int>("chkp_each"));
-    if (parms.get<int>("update_each") > -1)
-        nsteps = std::min(nsteps, parms.get<int>("update_each"));
+    int measure_each = parms["measure_each"];
+    int chkp_each    = parms["chkp_each"];
+    int update_each  = parms["update_each"];
     
-    while (sweep < parms.get<int>("nsweeps")) {
+    int nsteps = parms["nsweeps"];
+    if (measure_each > -1)
+        nsteps = std::min(nsteps, measure_each);
+    if (chkp_each > -1)
+        nsteps = std::min(nsteps, chkp_each);
+    if (update_each > -1)
+        nsteps = std::min(nsteps, update_each);
+    
+    while (sweep < parms["nsweeps"]) {
         DCOLLECTOR_GROUP(gemm_collector, "sweep"+boost::lexical_cast<std::string>(sweep))
         DCOLLECTOR_GROUP(svd_collector, "sweep"+boost::lexical_cast<std::string>(sweep))
         gettimeofday(&snow, NULL);
         
-        int rs = parms.get<int>("run_seconds");
+        int rs = parms["run_seconds"];
         
         gettimeofday(&then, NULL);
         double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
         
         int sweep_after = sweep + nsteps - 1;
-        site = advance(std::min(parms.get<int>("nsweeps")-sweep, nsteps), rs > 0 ? rs-elapsed : -1);
+        site = advance(std::min(parms["nsweeps"]-sweep, nsteps), rs > 0 ? rs-elapsed : -1);
         early_exit = (site >= 0);
         assert(sweep == sweep_after);
         
@@ -212,8 +216,8 @@ bool sim<Matrix, SymmGroup>::run ()
         
         
         if (early_exit ||
-            (   (sweep+1) % parms.get<int>("measure_each") == 0 
-             || (sweep+1) == parms.get<int>("nsweeps") ))
+            (   (sweep+1) % measure_each == 0 
+             || (sweep+1) == parms["nsweeps"] ))
         {
             double elapsed_measure = 0.;
             if (!early_exit) {
@@ -241,8 +245,8 @@ bool sim<Matrix, SymmGroup>::run ()
         
         // Write checkpoint
         if (!dns && (early_exit ||
-                     (sweep+1) % parms.get<int>("chkp_each") == 0 ||
-                     (sweep+1) == parms.get<int>("nsweeps")))
+                     (sweep+1) % chkp_each == 0 ||
+                     (sweep+1) == parms["nsweeps"]))
         {
             storage::archive ar(chkpfile, "w");
             ar["/state"] << mps;
@@ -273,7 +277,7 @@ void sim<Matrix, SymmGroup>::do_sweep_measure()
         meas_always = measurements.sublist( parms.get<std::vector<std::string> >("always_measure") );
     
     std::vector< std::vector<double> > * spectra;
-    if (parms.get<int>("entanglement_spectra"))
+    if (parms["entanglement_spectra"])
         spectra = new std::vector< std::vector<double> >();
     else
         spectra = NULL;
@@ -333,7 +337,7 @@ void sim<Matrix, SymmGroup>::measure ()
         ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
     }
     
-    if (parms.get<int>("calc_h2") > 0) {
+    if (parms["calc_h2"] > 0) {
         MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpoc);
         mpo2.compress(1e-12);
         

@@ -22,9 +22,9 @@ public:
     typedef Lattice::pos_t pos_t;
     
     ContChain (BaseParameters & parms, bool pbc_=false)
-    : L(parms.get<int>("L"))
-    , N(parms.get<int>("Ndiscr"))
-    , a(parms.get<double>("a"))
+    : L(parms["L"])
+    , N(parms["Ndiscr"])
+    , a(parms["a"])
     , pbc(pbc_)
     {}
     
@@ -117,14 +117,14 @@ public:
     MixedContChain (BaseParameters & parms1, int L1_, BaseParameters & parms2, int L2_, bool pbc_=false)
     : L1(L1_)
     , L2(L2_)
-    , Lphys(parms1.get<double>("L"))
-    , N1(parms1.get<int>("Ndiscr"))
-    , a1(parms1.get<double>("a"))
-    , N2(parms2.get<int>("Ndiscr"))
-    , a2(parms2.get<double>("a"))
+    , Lphys(parms1["L"])
+    , N1(parms1["Ndiscr"])
+    , a1(parms1["a"])
+    , N2(parms2["Ndiscr"])
+    , a2(parms2["a"])
     , pbc(pbc_)
     {
-        assert( parms1.get<double>("L") == parms1.get<double>("L") );
+        assert( parms1["L"] == parms1["L"] );
         if (pbc)
             throw std::runtime_error("Periodic boundary conditions are not implemented for the MixedChain.");
     }
@@ -248,14 +248,14 @@ public:
     MixedContChain_c (BaseParameters & parms1, int L1_, BaseParameters & parms2, int L2_, bool pbc_=false)
     : L1(L1_)
     , L2(L2_)
-    , Lphys(parms1.get<double>("L"))
-    , N1(parms1.get<int>("Ndiscr"))
-    , a1(parms1.get<double>("a"))
-    , N2(parms2.get<int>("Ndiscr"))
-    , a2(parms2.get<double>("a"))
+    , Lphys(parms1["L"])
+    , N1(parms1["Ndiscr"])
+    , a1(parms1["a"])
+    , N2(parms2["Ndiscr"])
+    , a2(parms2["a"])
     , pbc(pbc_)
     {
-        assert( parms1.get<double>("L") == parms1.get<double>("L") );
+        assert( parms1["L"] == parms1["L"] );
         if (pbc)
             throw std::runtime_error("Periodic boundary conditions are not implemented for the MixedChain.");
     }

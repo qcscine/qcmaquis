@@ -47,7 +47,7 @@ int main(int argc, char ** argv)
         // use exceptions if time limit is exceeded. time limit was in parms
         optimizer.sweep();
         // alternative: maquis::dmrg::single_site_sweep(mps,mpo,parms);
-        storage::archive ar(parms["resultfile"], "w");
+        storage::archive ar(parms["resultfile"].str(), "w");
         std::string iteration_path = std::string("/simulation/sweeps/")+sweep; // maybe boost::lexical_cast
         ar[iteration_path + "/parameters"] << parms;
         ar[iteration_path + "/parameters"] << model_parms;
@@ -61,7 +61,7 @@ int main(int argc, char ** argv)
       // maquis::measurements results(mps, lattice, model.measurements());
 
       /// Write results
-      storage::archive ar(parms["resultfile"], "w");
+      storage::archive ar(parms["resultfile"].str(), "w");
       ar["/spectrum/results"] << results;
       ar["/parameters"] << parms;
       ar["/parameters"] << model_parms;

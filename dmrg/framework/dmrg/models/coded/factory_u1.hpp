@@ -16,7 +16,7 @@ struct model_factory<Matrix, U1> {
     {
         if (model["MODEL"] == std::string("heisenberg"))
             return typename model_traits<Matrix, U1>::model_ptr(
-                        new Heisenberg<Matrix>(lattice, model.get<double>("Jxy"), model.get<double>("Jz"))
+                        new Heisenberg<Matrix>(lattice, model["Jxy"], model["Jz"])
                    );
         else if (model["MODEL"] == std::string("HCB"))
             return typename model_traits<Matrix, U1>::model_ptr(
@@ -24,7 +24,7 @@ struct model_factory<Matrix, U1> {
                    );
         else if (model["MODEL"] == std::string("boson Hubbard"))
             return typename model_traits<Matrix, U1>::model_ptr(
-                        new BoseHubbard<Matrix>(lattice, model.get<int>("Nmax"), model.get<double>("t"), model.get<double>("U"), model.get<double>("V"))
+                        new BoseHubbard<Matrix>(lattice, model["Nmax"], model["t"], model["U"], model["V"])
                                                                 );
         else if (model["MODEL"] == std::string("fermion Hubbard"))
             return typename model_traits<Matrix, U1>::model_ptr(
@@ -32,7 +32,7 @@ struct model_factory<Matrix, U1> {
                                                                 );
         else if (model["MODEL"] == std::string("FreeFermions"))
             return typename model_traits<Matrix, U1>::model_ptr(
-                        new FreeFermions<Matrix>(lattice, model.get<double>("t"))
+                        new FreeFermions<Matrix>(lattice, model["t"])
                    );
         else if (model["MODEL"] == std::string("bela_chiral"))
             return typename model_traits<Matrix, U1>::model_ptr(

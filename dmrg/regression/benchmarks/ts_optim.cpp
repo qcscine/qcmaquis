@@ -79,7 +79,7 @@ int main(int argc, char ** argv)
         tim_model.begin();
         boost::shared_ptr<Lattice> lattice;
         boost::shared_ptr<Model<matrix, grp> > model;
-        model_parser<matrix, grp>(parms.get<std::string>("lattice_library"), parms.get<std::string>("model_library"), model_parms,
+        model_parser<matrix, grp>(parms["lattice_library"], parms["model_library"], model_parms,
                                   lattice, model);
         
         Hamiltonian<matrix, grp> H = model->H();
@@ -93,7 +93,7 @@ int main(int argc, char ** argv)
         MPS<matrix, grp> mps(L);
         int _site;
         {
-            alps::hdf5::archive ar(parms.get<std::string>("chkpfile"));
+            alps::hdf5::archive ar(parms["chkpfile"].str());
             ar["/state"]       >> mps;
             ar["/status/site"] >> _site;
         }
@@ -145,9 +145,9 @@ int main(int argc, char ** argv)
         maquis::cout << "Energy " << lr << " " << res.first << std::endl;
         tim_optim_jcd.end();
         
-        double alpha = parms.get<double>("alpha_main");
-        double cutoff = parms.get<double>("truncation_final");
-        std::size_t Mmax = parms.get<int>("max_bond_dimension");
+        double alpha = parms["alpha_main"];
+        double cutoff = parms["truncation_final"];
+        std::size_t Mmax = parms["max_bond_dimension"];
         
         /// Truncation of MPS
         tim_truncation.begin();

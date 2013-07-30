@@ -36,11 +36,11 @@ public:
     , model(model_)
     {
         // Loading state
-        if (! boost::filesystem::exists(parms["chkpfile"]))
+        if (! boost::filesystem::exists(parms["chkpfile"].str()))
             throw std::runtime_error("Checkpoint file doesn not exist.");
         size_t graining = 0;
         {
-            storage::archive ar(parms["chkpfile"]);
+            storage::archive ar(parms["chkpfile"].str());
             ar["/state"] >> mps;
             if (ar.is_data("/status/graining"))
                 ar["/status/graining"] >> graining;
@@ -83,7 +83,7 @@ public:
         // eval & save
         matrix::value_type val = expval(mps,mpo);
         {
-            storage::archive ar(parms["resultfile"], "w");
+            storage::archive ar(parms["resultfile"].str(), "w");
             ar[std::string("/spectrum/results/String order SS ") + boost::lexical_cast<std::string>(l) + std::string("/mean/value")] << std::vector<double>(1, maquis::real(val));
         }
     }
@@ -115,7 +115,7 @@ public:
         // eval & save
         matrix::value_type val = expval(mps,mpo) * exp(-filling*double(l/N));
         {
-            storage::archive ar(parms["resultfile"], "w");
+            storage::archive ar(parms["resultfile"].str(), "w");
             ar[std::string("/spectrum/results/String order UC ") + boost::lexical_cast<std::string>(l) + std::string("/mean/value")] << std::vector<double>(1, maquis::real(val));
         }
     }

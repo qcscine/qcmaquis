@@ -30,7 +30,7 @@ public:
         
         throw std::runtime_error("This model is broken, it has to be adapted to the one above...");
         
-        int phys_size = model.get<int>("Nmax")+1;
+        int phys_size = model["Nmax"]+1;
         TrivialGroup::charge c = TrivialGroup::IdentityCharge;
         
         phys.insert(std::make_pair(c, phys_size));
@@ -40,7 +40,7 @@ public:
         create.insert_block(Matrix(phys_size, phys_size, 0), c, c);
         destroy.insert_block(Matrix(phys_size, phys_size, 0), c, c);
         
-        for (int n=1; n<=model.get<int>("Nmax"); ++n)
+        for (int n=1; n<=model["Nmax"]; ++n)
         {                                
             count[0](n, n) = n;
             
@@ -63,14 +63,14 @@ public:
         std::vector<hamterm_t> terms;
         for (int p=0; p<lat.size(); ++p)
         {
-            double exp_potential = model.get<double>("V0")*std::pow( std::cos(model.get<double>("k")*lat.get_prop<double>("x", p)), 2 );
+            double exp_potential = model["V0"]*std::pow( std::cos(model["k"]*lat.get_prop<double>("x", p)), 2 );
             
-            double U = model.get<double>("c")/lat.get_prop<double>("dx", p);
-            double mu = ( -model.get<double>("mu")
-                         + exp_potential
-                         + model.get<double>("h")/(lat.get_prop<double>("dx", p)*lat.get_prop<double>("dx", p)) );
+            double U = model["c"]/lat.get_prop<double>("dx", p);
+            double mu = (  exp_potential
+                         - model["mu"]
+                         + model["h"]/(lat.get_prop<double>("dx", p)*lat.get_prop<double>("dx", p)) );
             if (!lat.get_prop<bool>("at_open_boundary", p))
-                mu += model.get<double>("h")/(lat.get_prop<double>("dx", p)*lat.get_prop<double>("dx", p));
+                mu += model["h"]/(lat.get_prop<double>("dx", p)*lat.get_prop<double>("dx", p));
             
             op_t site_op;
             site_op.insert_block(U*interaction[0]+mu*count[0], c, c);
@@ -102,7 +102,7 @@ public:
             std::vector<int> neighs = lat.forward(p);
             for (int n=0; n<neighs.size(); ++n) { // hopping
                 
-                double t = model.get<double>("h") / (lat.get_prop<double>("dx", p, neighs[n])*lat.get_prop<double>("dx", p, neighs[n]));
+                double t = model["h"] / (lat.get_prop<double>("dx", p, neighs[n])*lat.get_prop<double>("dx", p, neighs[n]));
                 
                 {
                     hamterm_t term;
@@ -131,7 +131,7 @@ public:
         Measurements<Matrix, TrivialGroup> meas;
         meas.set_identity(ident);
         
-        if (model.get<bool>("MEASURE_CONTINUUM[Density]")) {
+        if (model["MEASURE_CONTINUUM[Density]"]) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Density";
@@ -140,7 +140,7 @@ public:
             
             meas.add_term(term);
         }
-        if (model.get<bool>("MEASURE_CONTINUUM[Local density]")) {
+        if (model["MEASURE_CONTINUUM[Local density]"]) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Local density";
@@ -150,7 +150,7 @@ public:
             meas.add_term(term);
         }
 
-        if (model.get<bool>("MEASURE_CONTINUUM[Onebody density matrix]")) {
+        if (model["MEASURE_CONTINUUM[Onebody density matrix]"]) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Onebody density matrix";

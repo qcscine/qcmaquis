@@ -32,7 +32,8 @@ public:
         phys.insert(std::make_pair(0, 1));
         ident.insert_block(Matrix(1, 1, 1), 0, 0);
         
-        for (int n=1; n<=model.get<int>("Nmax"); ++n)
+        int Nmax = model["Nmax"];
+        for (int n=1; n<=Nmax; ++n)
         {
             phys.insert(std::make_pair(n, 1));
             
@@ -54,7 +55,8 @@ public:
     }
 
     Hamiltonian<Matrix, U1> H () const
-    {
+    {   
+        
         std::vector<hamterm_t> terms;
         for (int p=0; p<lat.size(); ++p)
         {
@@ -69,7 +71,7 @@ public:
             //                    neighs.push_back(p-2);
             
             
-            double exp_potential = model.get<double>("V0")*std::pow( std::cos(model.get<double>("k")*lat.get_prop<double>("x", p)), 2 );
+            double exp_potential = model["V0"]*std::pow( std::cos(model["k"]*lat.get_prop<double>("x", p)), 2 );
             
             //              double dx = std::min(lat.get_prop<double>("dx", p, p+1), lat.get_prop<double>("dx", p-1, p));
             double dx1 = lat.get_prop<double>("dx", p, neighs[0]);
@@ -103,29 +105,31 @@ public:
                 //                    coeff0 = -coeff1;
             }
             
-            double U = model.get<double>("c") / dx0;
-            double mu = -model.get<double>("mu") + exp_potential;
-            mu += -coeff0 * model.get<double>("h");
+            double U = model["c"] / dx0;
+            double mu = exp_potential - model["mu"];
+            mu += -coeff0 * model["h"];
+            
             
 #ifndef NDEBUG
-            maquis::cout << "U = " << U << ", mu = " << mu << ", t = " << coeff1 * model.get<double>("h") << std::endl;
+            maquis::cout << "U = " << U << ", mu = " << mu << ", t = " << coeff1 * model["h"] << std::endl;
 #endif
             
             /*
              if (!lat.get_prop<bool>("at_open_boundary", p) && equal_grid)
-             mu += 2 * model.get<double>("h") / (dx*dx);
+             mu += 2 * model["h"] / (dx*dx);
              else if (lat.get_prop<bool>("at_open_boundary", p) && equal_grid)
-             mu += model.get<double>("h") / (dx*dx);
+             mu += model["h"] / (dx*dx);
              else if (!lat.get_prop<bool>("at_open_boundary", p) && !equal_grid)
-             mu += model.get<double>("h") / (dx*dx);
+             mu += model["h"] / (dx*dx);
              else if (lat.get_prop<bool>("at_open_right_boundary", p))
-             mu += 2./3. * model.get<double>("h") / (dx*dx);
+             mu += 2./3. * model["h"] / (dx*dx);
              else if (lat.get_prop<bool>("at_open_left_boundary", p))
-             mu += 1./3. * model.get<double>("h") / (dx*dx);
+             mu += 1./3. * model["h"] / (dx*dx);
              */
             
+            int Nmax = model["Nmax"];
             op_t site_op;
-            for (int n=1; n<=model.get<int>("Nmax"); ++n)
+            for (int n=1; n<=Nmax; ++n)
                 if (U*(n*n-n)+mu*n != 0)
                     site_op.insert_block(Matrix(1, 1, U*(n*n-n)+mu*n), n, n);
             
@@ -160,18 +164,18 @@ public:
                 /*
                  // if (equal_grid || lat.get_prop<bool>("at_open_boundary", p))
                  if (equal_grid)
-                 t = model.get<double>("h") / (dx*dx);
+                 t = model["h"] / (dx*dx);
                  else if (lat.get_prop<double>("dx", p, neighs[n]) == dx)
-                 t = 2./3. * model.get<double>("h") / (dx*dx);
+                 t = 2./3. * model["h"] / (dx*dx);
                  else if (lat.get_prop<double>("dx", p, neighs[n]) == 2*dx)
-                 t = 1./3. * model.get<double>("h") / (dx*dx);
+                 t = 1./3. * model["h"] / (dx*dx);
                  else
                  throw std::runtime_error("I don't know the Laplacian operator in this kind of lattice!");
                  */
                 if (lat.get_prop<double>("dx", p, neighs[n]) == dx1)
-                    t = coeff1 * model.get<double>("h");
+                    t = coeff1 * model["h"];
                 else
-                    t = coeff2 * model.get<double>("h");
+                    t = coeff2 * model["h"];
                 
                 {
                     hamterm_t term;
@@ -192,7 +196,7 @@ public:
         Measurements<Matrix, U1> meas;
         meas.set_identity(ident);
         
-        if (model.get<bool>("MEASURE_CONTINUUM[Density]")) {
+        if (model["MEASURE_CONTINUUM[Density]"]) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Density";
@@ -202,7 +206,7 @@ public:
             meas.add_term(term);
         }
         
-        if (model.get<bool>("MEASURE_CONTINUUM[Local density]")) {
+        if (model["MEASURE_CONTINUUM[Local density]"]) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Local density";
@@ -212,7 +216,7 @@ public:
             meas.add_term(term);
         }
 
-        if (model.get<bool>("MEASURE_CONTINUUM[Onebody density matrix]")) {
+        if (model["MEASURE_CONTINUUM[Onebody density matrix]"]) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Onebody density matrix";

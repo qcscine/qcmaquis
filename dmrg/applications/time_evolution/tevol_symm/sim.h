@@ -21,7 +21,7 @@ void run_tevol<matrix, grp>(DmrgParameters & parms, ModelParameters & model)
         dmrg_tevol_mpo_sim<matrix, grp> sim(parms, model);
         sim.run();
     } else {
-        throw std::runtime_error("Don't know this time evolution. ("+parms["te_type"]+")");
+        throw std::runtime_error("Don't know this time evolution. ("+parms["te_type"].str()+")");
     }
 }
 
@@ -36,7 +36,7 @@ void run_tevol<cmatrix, grp>(DmrgParameters & parms, ModelParameters & model)
         dmrg_tevol_mpo_sim<cmatrix, grp> sim(parms, model);
         sim.run();
     } else {
-        throw std::runtime_error("Don't know this time evolution. ("+parms["te_type"]+")");
+        throw std::runtime_error("Don't know this time evolution. ("+parms["te_type"].str()+")");
     }
 }
 

@@ -29,7 +29,7 @@ public:
     dmrg_init(DmrgParameters const & parms_, ModelParameters const & model_)
     : parms(parms_)
     , model(model_)
-    , chkpfile(parms["chkpfile"])
+    , chkpfile(parms["chkpfile"].str())
     , nthreads(1)
     {
         maquis::cout << DMRG_VERSION_STRING << std::endl;
