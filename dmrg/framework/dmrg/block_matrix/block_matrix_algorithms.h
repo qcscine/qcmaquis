@@ -37,6 +37,22 @@
     #define semi_parallel_for(constraint, ...) for(__VA_ARGS__)
 #endif
 
+struct truncation_results {
+    std::size_t bond_dimension;     // new bond dimension
+    double      truncated_weight;   // sum of discarded eigenvalues (square of singuler values)
+    double      truncated_fraction; // sum of discarded singular values
+    double      smallest_ev;        // smallest eigenvalue kept
+
+    truncation_results() { }
+    
+    truncation_results(std::size_t m, double tw, double tf, double se)
+    : bond_dimension(m)
+    , truncated_weight(tw)
+    , truncated_fraction(tf)
+    , smallest_ev(se)
+    { }
+};
+
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm(block_matrix<Matrix1, SymmGroup> const & A,
           block_matrix<Matrix2, SymmGroup> const & B,
@@ -152,12 +168,12 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
 
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
-void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
-                  block_matrix<Matrix, SymmGroup> & U,
-                  block_matrix<Matrix, SymmGroup> & V,
-                  block_matrix<DiagMatrix, SymmGroup> & S,
-                  double rel_tol, std::size_t Mmax,
-                  bool verbose = true)
+truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
+                                block_matrix<Matrix, SymmGroup> & U,
+                                block_matrix<Matrix, SymmGroup> & V,
+                                block_matrix<DiagMatrix, SymmGroup> & S,
+                                double rel_tol, std::size_t Mmax,
+                                bool verbose = true)
 { 
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
     svd(M, U, V, S);
@@ -202,28 +218,24 @@ void svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                            V.right_basis()[k].second);
         }
     } 
-  
+    delete[] keeps;
+
+    std::size_t bond_dimension = S.left_basis().sum_of_sizes();
     if(verbose){
-        maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << S.left_basis().sum_of_sizes() << std::endl;
+        maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << bond_dimension << std::endl;
     }
     
-    
-    /*storage::log << std::make_pair("BondDimension", S.left_basis().sum_of_sizes());
     // MD: for singuler values we care about summing the square of the discraded
-    storage::log << std::make_pair("TruncatedWeight", truncated_weight);
     // MD: sum of the discarded values is stored elsewhere
-    storage::log << std::make_pair("TruncatedFraction", truncated_fraction);
-    storage::log << std::make_pair("SmallestEV", smallest_ev);*/
-    
-    delete[] keeps; 
+    return truncation_results(bond_dimension, truncated_weight, truncated_fraction, smallest_ev);
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
-void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
-                   block_matrix<Matrix, SymmGroup> & evecs,
-                   block_matrix<DiagMatrix, SymmGroup> & evals,
-                   double cutoff, std::size_t Mmax,
-                   bool verbose = true)
+truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
+                                 block_matrix<Matrix, SymmGroup> & evecs,
+                                 block_matrix<DiagMatrix, SymmGroup> & evals,
+                                 double cutoff, std::size_t Mmax,
+                                 bool verbose = true)
 {
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
     heev(M, evecs, evals);
@@ -256,16 +268,15 @@ void heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                keep);
         }
     }
+    delete[] keeps;
 
+    std::size_t bond_dimension = evals.left_basis().sum_of_sizes();
     if(verbose){
-        maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << evals.left_basis().sum_of_sizes() << std::endl;
+        maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << bond_dimension << std::endl;
     }
     
-    /*storage::log << std::make_pair("BondDimension", evals.left_basis().sum_of_sizes());
     // MD: for eigenvalues we care about summing the discraded
-    storage::log << std::make_pair("TruncatedWeight", truncated_fraction);
-    storage::log << std::make_pair("SmallestEV", smallest_ev);*/
-    delete[] keeps; 
+    return truncation_results(bond_dimension, truncated_fraction, truncated_fraction, smallest_ev);
 }
 
 template<class Matrix, class SymmGroup>

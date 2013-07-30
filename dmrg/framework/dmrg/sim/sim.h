@@ -2,7 +2,7 @@
  *
  * MAQUIS DMRG Project
  *
- * Copyright (C) 2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ * Copyright (C) 2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  *
  *****************************************************************************/
@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 
 #include "utils/data_collector.hpp"
 
@@ -34,48 +35,40 @@
 #include "dmrg/mp_tensors/mps_initializers.h"
 
 #include "dmrg/utils/random.hpp"
+#include "dmrg/utils/time_stopper.h"
 #include "utils/timings.h"
 
 #include "dmrg/models/factory.h"
 
 template <class Matrix, class SymmGroup>
 class sim {
-    
-    typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
-    typedef Boundary<Matrix, SymmGroup> boundary_t;
-        
 public:
-    
-    sim (DmrgParameters const &, ModelParameters const &, bool fullinit=true);    
+    sim(DmrgParameters const &, ModelParameters const &, bool fullinit=true);    
     ~sim();
     
-    virtual bool run ();
-    
-    virtual void measure ();
+    virtual void run() =0;
     
 protected:
+    virtual std::string results_archive_path(int sweep) const;
     
-    virtual std::string sweep_archive_path ();
+    virtual void model_init(boost::optional<int> opt_sweep=boost::optional<int>());
+    virtual void mps_init();
+    virtual void measure(std::string archive_path, Measurements<Matrix, SymmGroup> const& meas);
+    // TODO: can be made const, now only problem are parameters
     
-    virtual void model_init ();
-    virtual void mps_init ();
-    
-    virtual int do_sweep (double=-1) =0;
-    virtual void do_sweep_measure ();
-    virtual int advance (int=1, double=-1);
+    virtual void checkpoint_state(MPS<Matrix, SymmGroup> const& state, int sweep, int site);
     
 protected:
     DmrgParameters parms;
     ModelParameters model;
-    
-    timeval now, then, snow, sthen;
-    
+        
+    int init_sweep, init_site;
     bool dns;
-    int sweep;
-    int site;
     std::string chkpfile;
     std::string rfile;
     bool restore;
+    
+    time_stopper stop_callback;
     
     Lattice_ptr lat;
     typename model_traits<Matrix, SymmGroup>::model_ptr phys_model;
@@ -83,9 +76,8 @@ protected:
     Index<SymmGroup> phys;
     typename SymmGroup::charge initc;
     MPS<Matrix, SymmGroup> mps;
-    MPO<Matrix, SymmGroup> mpo, mpoc, ts_cache_mpo;
+    MPO<Matrix, SymmGroup> mpo, mpoc;
     Measurements<Matrix, SymmGroup> measurements;
-    Measurements<Matrix, SymmGroup> meas_always;
 };
 
 #include "sim.hpp"

@@ -191,6 +191,9 @@ private:
         add_option("ENABLE_MEASURE[Onebody density matrix]", "", value(false));
         add_option("ENABLE_MEASURE[Density correlation]", "", value(false));
 
+        add_option("ENABLE_MEASURE[Entropy]", "", value(false));
+        add_option("ENABLE_MEASURE[Renyi2]", "", value(false));
+
         add_option("RUN_FINITE_T", "", value(false));
    }
 

@@ -49,6 +49,7 @@ class mytest(apptest.DMRGTestBase):
                             'MEASURE_LOCAL[Local density down]'                 : 'n_down',
                             'MEASURE_CORRELATIONS[Onebody density matrix up]'   : 'cdag_up:c_up',
                             'MEASURE_CORRELATIONS[Onebody density matrix down]' : 'cdag_down:c_down',
+                            'ENABLE_MEASURE[Entropy]'      : 1,
                           },
                   }
     observables = [

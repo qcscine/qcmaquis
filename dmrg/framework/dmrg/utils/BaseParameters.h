@@ -65,7 +65,7 @@ public:
         }
     }
     
-    bool is_set (std::string const & key)
+    bool is_set (std::string const & key) const
     {
         return defined(key);
     }
