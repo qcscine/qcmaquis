@@ -35,19 +35,19 @@ typedef Boundary<Matrix, grp> boundary_t;
 adj::Adjacency * adj_factory(ModelParameters & model)
 {
     if (model["lattice"] == std::string("square_lattice"))
-        return new adj::SquareAdj(model.get<int>("L"), model.get<int>("W"));
+        return new adj::SquareAdj(model["L"], model["W"]);
     else if (model["lattice"] == std::string("chain_lattice"))
-        return new adj::ChainAdj(model.get<int>("L"));
+        return new adj::ChainAdj(model["L"]);
     else if (model["lattice"] == std::string("cylinder_lattice"))
-        return new adj::CylinderAdj(model.get<int>("L"), model.get<int>("W"));
+        return new adj::CylinderAdj(model["L"], model["W"]);
     else if (model["lattice"] == std::string("periodic_chain_lattice"))
-        return new adj::PeriodicChainAdj(model.get<int>("L"));
+        return new adj::PeriodicChainAdj(model["L"]);
     else if (model["lattice"] == std::string("periodic_ladder_lattice"))
-        return new adj::PeriodicLadderAdj(model.get<int>("L"));
+        return new adj::PeriodicLadderAdj(model["L"]);
     else if (model["lattice"] == std::string("periodic_square_lattice"))
-        return new adj::PeriodicSquareLatticeAdj(model.get<int>("L"), model.get<int>("W"));
+        return new adj::PeriodicSquareLatticeAdj(model["L"], model["W"]);
     else if (model["lattice"] == std::string("snake_square_lattice"))
-        return new adj::SnakeSquareAdj(model.get<int>("L"), model.get<int>("W"));
+        return new adj::SnakeSquareAdj(model["L"], model["W"]);
     else {
         throw std::runtime_error("Don't know this lattice!");
         return NULL;
@@ -58,11 +58,11 @@ template<class Matrix>
 mpos::Hamiltonian<Matrix, U1> * hamil_factory(ModelParameters & model)
 {
     if (model["model"] == std::string("heisenberg"))
-        return new mpos::Heisenberg<Matrix>(model.get<double>("Jxy"), model.get<double>("Jz"));
+        return new mpos::Heisenberg<Matrix>(model["Jxy"], model["Jz"]);
     else if (model["model"] == std::string("biquadratic"))
-        return new mpos::Spin1BlBq<Matrix>(cos(M_PI * model.get<double>("theta")),
-                                           sin(M_PI * model.get<double>("theta")),
-                                           model.get<double>("h0"));
+        return new mpos::Spin1BlBq<Matrix>(cos(M_PI * model["theta"]),
+                                           sin(M_PI * model["theta"]),
+                                           model["h0"]);
     else if (model["model"] == std::string("HCB"))
         return new mpos::HCB<Matrix>();
     else if (model["model"] == std::string("FreeFermions"))
@@ -103,7 +103,7 @@ int main(int argc, char ** argv)
     std::string chkpfile = parms["chkpfile"];
     std::string rfile = parms["resultfile"];
 
-    bool dns = (parms.get<int>("donotsave") != 0);
+    bool dns = (parms["donotsave"] != 0);
     
     bool restore = false;
     {
@@ -119,7 +119,7 @@ int main(int argc, char ** argv)
     mpos::Hamiltonian<Matrix, grp> * H = hamil_factory<Matrix>(model);
     Index<U1> phys = H->get_phys();
     
-    int total_charge = model.get<int>("u1_total_charge");
+    int total_charge = model["u1_total_charge"];
     MPS<Matrix, grp> mps(adj->size(), 5, phys, total_charge, *new default_mps_init<Matrix, grp>);
     
     int sweep = 0;
@@ -162,7 +162,7 @@ int main(int argc, char ** argv)
     {   
         ss_optimize<Matrix, grp, storage::disk> optimizer(mps, parms);
         
-        for (int sweep = 0; sweep < parms.get<int>("nsweeps"); ++sweep) {
+        for (int sweep = 0; sweep < parms["nsweeps"]; ++sweep) {
             gettimeofday(&snow, NULL);
             
             std::pair<std::vector<double>, std::vector<std::size_t> > r;
@@ -200,7 +200,7 @@ int main(int argc, char ** argv)
             
             gettimeofday(&then, NULL);
             elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec); 
-            int rs = parms.get<int>("run_seconds");
+            int rs = parms["run_seconds"];
             if (rs > 0 && elapsed > rs) {
                 early_exit = true;
                 break;

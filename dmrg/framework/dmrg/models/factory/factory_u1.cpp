@@ -28,5 +28,5 @@ impl_init_model(cmatrix, grp)
 template <>
 U1::charge init_qn<U1> (BaseParameters & model)
 {
-    return model.get<int>("u1_total_charge");
+    return model["u1_total_charge"];
 }

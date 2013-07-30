@@ -33,8 +33,8 @@ int main(int argc, char ** argv)
     }
     ModelParameters model(model_file);
     
-    DCOLLECTOR_SET_SIZE(gemm_collector, parms.get<int>("max_bond_dimension")+1)
-    DCOLLECTOR_SET_SIZE(svd_collector, parms.get<int>("max_bond_dimension")+1)
+    DCOLLECTOR_SET_SIZE(gemm_collector, parms["max_bond_dimension"]+1)
+    DCOLLECTOR_SET_SIZE(svd_collector, parms["max_bond_dimension"]+1)
     
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);

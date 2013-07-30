@@ -109,11 +109,11 @@ int main(int argc, char ** argv)
     std::string chkpfile = parms["chkpfile"];
     std::string rfile = parms["resultfile"];
     
-    srand48(parms.get<int>("seed"));
+    srand48(parms["seed"]);
     
-    b_adj::Adjacency * adj = new b_adj::ChainAdj(model.get<int>("L"));
-    b_mpos::Hamiltonian<Matrix, grp> * H = new b_mpos::Heisenberg<Matrix>(model.get<double>("Jxy")/4,
-                                                                          model.get<double>("Jz")/4);
+    b_adj::Adjacency * adj = new b_adj::ChainAdj(model["L"]);
+    b_mpos::Hamiltonian<Matrix, grp> * H = new b_mpos::Heisenberg<Matrix>(model["Jxy"]/4,
+                                                                          model["Jz"]/4);
     Index<grp> phys = H->get_phys();
     
     b_mpos::MPOMaker<Matrix, grp> mpom(*adj, *H);
@@ -121,9 +121,9 @@ int main(int argc, char ** argv)
     H->push_extra_terms(mpom, *adj);
     MPO<Matrix, grp> mpo = mpom.create_mpo();
     
-    int initc = model.get<int>("u1_total_charge");
+    int initc = model["u1_total_charge"];
     MPS<Matrix, grp> mps(adj->size(),
-                         parms.get<std::size_t>("init_bond_dimension"),
+                         parms["init_bond_dimension"],
                          phys, initc,
                          *initializer_factory<Matrix>(parms));
     

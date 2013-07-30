@@ -42,19 +42,19 @@ typedef Boundary<Matrix, grp> boundary_t;
 b_adj::Adjacency * adj_factory(BaseParameters & model)
 {
     if (model["lattice"] == std::string("square_lattice"))
-        return new b_adj::SquareAdj(model.get<int>("L"), model.get<int>("W"));
+        return new b_adj::SquareAdj(model["L"], model["W"]);
     else if (model["lattice"] == std::string("chain_lattice"))
-        return new b_adj::ChainAdj(model.get<int>("L"));
+        return new b_adj::ChainAdj(model["L"]);
     else if (model["lattice"] == std::string("cylinder_lattice"))
-        return new b_adj::CylinderAdj(model.get<int>("L"), model.get<int>("W"));
+        return new b_adj::CylinderAdj(model["L"], model["W"]);
     else if (model["lattice"] == std::string("periodic_chain_lattice"))
-        return new b_adj::PeriodicChainAdj(model.get<int>("L"));
+        return new b_adj::PeriodicChainAdj(model["L"]);
     else if (model["lattice"] == std::string("periodic_ladder_lattice"))
-        return new b_adj::PeriodicLadderAdj(model.get<int>("L"));
+        return new b_adj::PeriodicLadderAdj(model["L"]);
     else if (model["lattice"] == std::string("periodic_square_lattice"))
-        return new b_adj::PeriodicSquareLatticeAdj(model.get<int>("L"), model.get<int>("W"));
+        return new b_adj::PeriodicSquareLatticeAdj(model["L"], model["W"]);
     else if (model["lattice"] == std::string("snake_square_lattice"))
-        return new b_adj::SnakeSquareAdj(model.get<int>("L"), model.get<int>("W"));
+        return new b_adj::SnakeSquareAdj(model["L"], model["W"]);
     else if (model["lattice"] == std::string("alps_lattice"))
         return new adj::ALPSAdj(model["alps_lattice"]);
     else {
@@ -70,14 +70,14 @@ b_mpos::Hamiltonian<Matrix, grp> * hamil_factory(BaseParameters & model, int swe
     if (model["model"] == std::string("biquadratic"))
         return new b_mpos::TwoU1_Spin1BlBq<Matrix>(model);
     else if (model["model"] == std::string("fermi_hubbard"))
-        return new b_mpos::TwoU1_FermiHubbard<Matrix>(model.get<double>("t"), model.get<double>("U"));
+        return new b_mpos::TwoU1_FermiHubbard<Matrix>(model["t"], model["U"]);
     else {
         throw std::runtime_error("Don't know this model!");
         return NULL;
     }
 #else
     if (model["model"] == std::string("heisenberg"))
-        return new b_mpos::Heisenberg<Matrix>(model.get<double>("Jxy"), model.get<double>("Jz"));
+        return new b_mpos::Heisenberg<Matrix>(model["Jxy"], model["Jz"]);
     else if (model["model"] == std::string("biquadratic"))
         return new b_mpos::Spin1BlBq<Matrix>(model);
     else if (model["model"] == std::string("HCB"))
@@ -142,7 +142,7 @@ int main(int argc, char ** argv)
     std::string chkpfile = parms["chkpfile"];
   
    std::string rfile = parms["resultfile"];
-    bool dns = (parms.get<int>("donotsave") != 0);
+    bool dns = (parms["donotsave"] != 0);
     
     bool restore = false;
     {
@@ -154,7 +154,7 @@ int main(int argc, char ** argv)
         }
     }
     
-    srand48(parms.get<int>("seed"));
+    srand48(parms["seed"]);
     
     b_adj::Adjacency * adj = adj_factory(model);
     b_mpos::Hamiltonian<Matrix, grp> * H = hamil_factory<Matrix>(model, 0);
@@ -166,20 +166,20 @@ int main(int argc, char ** argv)
     
     MPO<Matrix, grp> mpo = mpom.create_mpo();
     MPO<Matrix, grp> mpoc = mpo;
-    if(parms.get<int>("use_compressed") > 0)
+    if(parms["use_compressed"] > 0)
         mpoc.compress(1e-12);
     
 #ifdef UseTwoU1
-    int tc1 = model.get<int>("u1_total_charge1");
-    int tc2 = model.get<int>("u1_total_charge2");
+    int tc1 = model["u1_total_charge1"];
+    int tc2 = model["u1_total_charge2"];
     grp::charge initc;
     initc[0] = tc1;
     initc[1] = tc2;
 #else
-    int initc = model.get<int>("u1_total_charge");
+    int initc = model["u1_total_charge"];
 #endif
     MPS<Matrix, grp> mps(adj->size(),
-                         parms.get<std::size_t>("init_bond_dimension"),
+                         parms["init_bond_dimension"],
                          phys, initc,
                          *initializer_factory<Matrix>(parms));
     
@@ -221,10 +221,10 @@ int main(int argc, char ** argv)
     bool early_exit = false;
     {   
         ss_optimize<Matrix, grp, storage::disk> optimizer(mps,
-                                                          parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
+                                                          parms["use_compressed"] == 0 ? mpo : mpoc,
                                                           parms);
         
-        for(; sweep < parms.get<int>("nsweeps"); ++sweep)
+        for(; sweep < parms["nsweeps"]; ++sweep)
         {
             gettimeofday(&snow, NULL);
             //assert(false);
@@ -261,7 +261,7 @@ int main(int argc, char ** argv)
                 ar[oss.str().c_str()] << std::vector<double>(1, elapsed);
             }
                 
-            if (parms.get<int>("donotsave") == 0)
+            if (parms["donotsave"] == 0)
             {
                 storage::archive ar(chkpfile, "w");
                 
@@ -270,7 +270,7 @@ int main(int argc, char ** argv)
             }
             gettimeofday(&then, NULL);
             elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
-            int rs = parms.get<int>("run_seconds");
+            int rs = parms["run_seconds"];
             if (rs > 0 && elapsed > rs) {
                 early_exit = true;
                 break;
@@ -304,7 +304,7 @@ int main(int argc, char ** argv)
         maquis::cout << "Energy after: " << maquis::real(expval(mps, mpoc)) << std::endl;
         ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
         
-        if (parms.get<int>("calc_h2") > 0) {
+        if (parms["calc_h2"] > 0) {
             Timer tt1("square"), tt2("compress");
             tt1.begin(); MPO<Matrix, grp> mpo2 = square_mpo(mpo); tt1.end();
             tt2.begin(); mpo2.compress(1e-12); tt2.end();

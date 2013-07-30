@@ -16,7 +16,7 @@ void dmrg_tevol(DmrgParameters & parms, ModelParameters & model)
 {
     std::map<std::string, boost::function<void (DmrgParameters & p, ModelParameters & m)> > factory_map;
     
-    bool img_only = ( parms.get<int>("nsweeps") == parms.get<int>("nsweeps_img") );
+    bool img_only = ( parms["nsweeps"] == parms["nsweeps_img"] );
     
 #ifdef HAVE_TrivialGroup
     if (img_only)
@@ -69,8 +69,8 @@ int main(int argc, char ** argv)
     }
     ModelParameters model(model_file);
     
-    DCOLLECTOR_SET_SIZE(gemm_collector, parms.get<int>("max_bond_dimension")+1)
-    DCOLLECTOR_SET_SIZE(svd_collector, parms.get<int>("max_bond_dimension")+1)
+    DCOLLECTOR_SET_SIZE(gemm_collector, parms["max_bond_dimension"]+1)
+    DCOLLECTOR_SET_SIZE(svd_collector, parms["max_bond_dimension"]+1)
     
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
