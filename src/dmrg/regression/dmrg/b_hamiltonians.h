@@ -216,7 +216,7 @@ namespace b_mpos {
                      hopto != neighs.end(); ++hopto)
                 {
                     double phase = 1;
-                    if (parms.get<double>("twist") == 1 && adj.wraps_pbc(p, *hopto))
+                    if (parms["twist"] == 1 && adj.wraps_pbc(p, *hopto))
                         phase = -1;
                     
                     term.clear();
@@ -257,8 +257,8 @@ namespace b_mpos {
         typedef std::vector<op_pair> op_pairs;
         
         Spin1BlBq(BaseParameters & parms_)
-        : Jbl(cos(M_PI * parms_.get<double>("theta")))
-        , Jbq(sin(M_PI * parms_.get<double>("theta")))
+        : Jbl(cos(M_PI * parms_["theta"]))
+        , Jbq(sin(M_PI * parms_["theta"]))
         , parms(parms_)
         {   
             block_matrix<Matrix, U1> ident, splus, sminus, sz, spp, smm, spm, smp, szz, szp, spz, szm, smz;
@@ -338,11 +338,11 @@ namespace b_mpos {
             c[1].insert_block(Matrix(1, 1, 1), 0, 0);
             c[2].insert_block(Matrix(1, 1, 1), 1, 1);
             
-            double h0 = parms.get<double>("h0");
-            int W = parms.get<int>("W");
+            double h0 = parms["h0"];
+            int W = parms["W"];
             
-            if (parms.get<int>("pin") > 0) {
-                for (int i = 0; i < parms.get<int>("pin"); ++i)
+            if (parms["pin"] > 0) {
+                for (int i = 0; i < parms["pin"]; ++i)
                 {
                     terms.clear();
                     terms.push_back( std::make_pair(i, h0*c[(i+2*(i/W))%3]) );
@@ -350,8 +350,8 @@ namespace b_mpos {
                 }
             }
             
-            if (parms.get<int>("pin") < 0) {
-                for (int i = 0; i < -parms.get<int>("pin"); ++i)
+            if (parms["pin"] < 0) {
+                for (int i = 0; i < -parms["pin"]; ++i)
                 {
                     terms.clear();
                     int t = (i % 2 == 0 ? 0 : 2);

@@ -92,8 +92,8 @@ struct measure_<Matrix, U1>
             std::vector<double> bond_e;
             std::vector<std::string> bond_names;
             
-            double Jbl = cos(M_PI * model.get<double>("theta"));
-            double Jbq = sin(M_PI * model.get<double>("theta"));
+            double Jbl = cos(M_PI * model["theta"]);
+            double Jbq = sin(M_PI * model["theta"]);
             
             double sum = 0;
             

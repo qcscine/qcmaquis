@@ -18,8 +18,8 @@ namespace b_mpos {
         typedef std::vector<op_pair> op_pairs;
         
         TwoU1_Spin1BlBq(BaseParameters & parms_)
-        : Jbl(cos(M_PI * parms_.get<double>("theta")))
-        , Jbq(sin(M_PI * parms_.get<double>("theta")))
+        : Jbl(cos(M_PI * parms_["theta"]))
+        , Jbq(sin(M_PI * parms_["theta"]))
         , parms(parms_)
         {  
             block_matrix<Matrix, TwoU1> ident, aa, bb, cc, ab, ba, ac, ca, bc, cb;
@@ -100,9 +100,9 @@ namespace b_mpos {
                 for (vector<int>::iterator neigh = neighs.begin(); neigh != neighs.end(); ++neigh) {
                     double K;
                     if (adj.bond_type(p, *neigh) == 0)
-                        K = parms.get<double>("K0");
+                        K = parms["K0"];
                     else
-                        K = parms.get<double>("K1");
+                        K = parms["K1"];
                     
                     if (K == 0)
                         continue;
@@ -129,11 +129,11 @@ namespace b_mpos {
             c[1].insert_block(Matrix(1, 1, 1), B, B);
             c[2].insert_block(Matrix(1, 1, 1), C, C); 
 
-            double h0 = parms.get<double>("h0");
-            int W = parms.get<int>("W");
+            double h0 = parms["h0"];
+            int W = parms["W"];
             
-            if (parms.get<int>("pin") > 0) {
-                for (int i = 0; i < parms.get<int>("pin"); ++i)
+            if (parms["pin"] > 0) {
+                for (int i = 0; i < parms["pin"]; ++i)
                 {
                     terms.clear();
                     terms.push_back( std::make_pair(i, h0*c[(i+2*(i/W))%3]) );
@@ -141,7 +141,7 @@ namespace b_mpos {
                 }
             }
             
-            if (parms.get<int>("pin") < 0) {
+            if (parms["pin"] < 0) {
                 for (int i = 0; i < adj.size(); ++i) {
                     if (adj.site_type(i) > 0) {
                         maquis::cout << "Pinning on site " << i << " to color " << adj.site_type(i)-1 << std::endl;

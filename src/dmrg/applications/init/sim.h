@@ -75,12 +75,12 @@ public:
                 for (int i=0; i<L; ++i)
                     assert(vmps2[rank][i].reasonable());
                 maquis::cout << "final merge" << std::endl;
-                if (num_states1[rank] == parms.get<size_t>("init_bond_dimension"))
+                if (num_states1[rank] == parms["init_bond_dimension"])
                     vmps1[rank].normalize_left();
                 vmps2[rank].normalize_left();
                 vmps1[rank] = join(vmps1[rank], vmps2[rank], std::sqrt(num_states1[rank]), std::sqrt(num_states2[rank]));
                 // compress & normalize
-                vmps1[rank] = compression::l2r_compress(vmps1[rank], parms.get<size_t>("init_bond_dimension"), parms.get<double>("truncation_initial"));
+                vmps1[rank] = compression::l2r_compress(vmps1[rank], parms["init_bond_dimension"], parms["truncation_initial"]);
                 vmps2[rank] = MPS<Matrix, SymmGroup>();
                 num_states1[rank] += num_states2[rank];
                 num_states2[rank] = 0;
@@ -95,7 +95,7 @@ public:
             if (num_states2[n] > 0) {
                 mps = join(mps, vmps1[n], std::sqrt(num_states1[0]), std::sqrt(num_states1[n]));
                 mps.normalize_left();
-                mps = compression::l2r_compress(mps, parms.get<size_t>("init_bond_dimension"), parms.get<double>("truncation_initial"));
+                mps = compression::l2r_compress(mps, parms["init_bond_dimension"], parms["truncation_initial"]);
                 num_states1[0] += num_states1[n];
             }
         }
@@ -234,8 +234,8 @@ private:
         MPS<Matrix, SymmGroup> & mps1=vmps1[rank], mps2=vmps2[rank];
         size_t nstates1=num_states1[rank], nstates2=num_states2[rank], tstates=totstates[rank];
         
-        MPS<Matrix, SymmGroup> & curr = (nstates1 < parms.get<size_t>("init_bond_dimension")) ? vmps1[rank] : vmps2[rank];
-        size_t & nstates = (nstates1 < parms.get<size_t>("init_bond_dimension")) ? nstates1 : nstates2;
+        MPS<Matrix, SymmGroup> & curr = (nstates1 < parms["init_bond_dimension"]) ? vmps1[rank] : vmps2[rank];
+        size_t & nstates = (nstates1 < parms["init_bond_dimension"]) ? nstates1 : nstates2;
         
         MPS<Matrix, SymmGroup> temp = state_mps(state);
         if (curr.length() > 1)
@@ -245,13 +245,13 @@ private:
         nstates += 1;
         tstates += 1;
         
-        if (nstates2 > parms.get<size_t>("init_bond_dimension")) {
-            if (nstates1 == parms.get<size_t>("init_bond_dimension"))
+        if (nstates2 > parms["init_bond_dimension"]) {
+            if (nstates1 == parms["init_bond_dimension"])
                 mps1.normalize_left();
             mps2.normalize_left();
             mps1 = join(mps1, mps2, std::sqrt(nstates1), std::sqrt(nstates2));
             // compress & normalize
-            mps1 = compression::l2r_compress(mps1, parms.get<size_t>("init_bond_dimension"), parms.get<double>("truncation_initial"));
+            mps1 = compression::l2r_compress(mps1, parms["init_bond_dimension"], parms["truncation_initial"]);
             mps2 = MPS<Matrix, SymmGroup>();
             nstates1 += nstates2;
             nstates2 = 0;
