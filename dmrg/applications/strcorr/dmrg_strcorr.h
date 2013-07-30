@@ -49,7 +49,7 @@ public:
         // Init model
         model = model_.get_at_index("graining", graining);
         init_model();
-        L = model.get<int>("L"); N = model.get<int>("Ndiscr");
+        L = model["L"]; N = model["Ndiscr"];
         Ltot = L * N;
         
         if (Ltot != mps.length())
@@ -62,7 +62,7 @@ public:
     {
         op_t strop;
         strop.insert_block(matrix(1, 1, -1), 0, 0);
-        for (int n=1; n<=model.get<int>("Nmax"); ++n)
+        for (int n=1; n<=model["Nmax"]; ++n)
         {
             if ((n-1) % 2 == 0)
                 strop.insert_block(matrix(1, 1, 1), n, n);
@@ -91,10 +91,10 @@ public:
     // Unite-cell string operator of length l unit cells
     void measure_uc_string(size_t l)
     {
-        int filling = model.get<int>("u1_total_charge") / L;
+        int filling = model["u1_total_charge"] / L;
         op_t strop;
         strop.insert_block(matrix(1, 1, 1), 0, 0);
-        for (int n=1; n<=model.get<int>("Nmax"); ++n)
+        for (int n=1; n<=model["Nmax"]; ++n)
         {
             if (n % 2 == 0)
                 strop.insert_block(matrix(1, 1, 1), n, n);
@@ -128,7 +128,7 @@ private:
         phys.insert(std::make_pair(0, 1));
         ident.insert_block(matrix(1, 1, 1), 0, 0);
         
-        for (int n=1; n<=model.get<int>("Nmax"); ++n)
+        for (int n=1; n<=model["Nmax"]; ++n)
         {
             phys.insert(std::make_pair(n, 1));
             ident.insert_block(matrix(1, 1, 1), n, n);

@@ -168,7 +168,7 @@ public:
             
             ++graining;
             this->sweep = 0;
-        } while (graining < parms_orig.get<int>("ngrainings"));
+        } while (graining < parms_orig["ngrainings"]);
     
         return early_exit;
     }

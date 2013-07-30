@@ -87,7 +87,7 @@ namespace b_mpos
         void push_extra_terms(MPOMaker<Matrix, U1> & mm,
                               b_adj::Adjacency & adj)
         {
-            double penalty = parms.get<double>("penalty");
+            double penalty = parms["penalty"];
             
             for (int p = 0; p < adj.size(); ++p)
             {   
@@ -229,7 +229,7 @@ namespace b_mpos
         void push_extra_terms(MPOMaker<Matrix, U1> & mm,
                               b_adj::Adjacency & adj)
         {
-            double penalty = parms.get<double>("penalty");
+            double penalty = parms["penalty"];
             
             for (int p = 0; p < adj.size(); ++p)
             {   
@@ -253,7 +253,7 @@ namespace b_mpos
                      hopto != neighs.end(); ++hopto)
                 {
                     double phase = 1;
-                    if (parms.get<double>("twist") == 1 && adj.wraps_pbc(p, *hopto))
+                    if (parms["twist"] == 1 && adj.wraps_pbc(p, *hopto))
                         phase = -1;
                     
                     term.clear();

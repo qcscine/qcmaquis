@@ -518,20 +518,20 @@ struct multigrid {
          * INIT SWEEP PARAMETERS
          */
         double alpha;
-        int ngs = parms.get<int>("ngrowsweeps"), nms = parms.get<int>("nmainsweeps");
+        int ngs = parms["ngrowsweeps"], nms = parms["nmainsweeps"];
         if (sweep < ngs)
-            alpha = parms.get<double>("alpha_initial");
+            alpha = parms["alpha_initial"];
         else if (sweep < ngs + nms)
-            alpha = parms.get<double>("alpha_main");
+            alpha = parms["alpha_main"];
         else
-            alpha = parms.get<double>("alpha_final");
+            alpha = parms["alpha_final"];
         
         
         double cutoff;
-        if (sweep >= parms.get<int>("ngrowsweeps"))
-            cutoff = parms.get<double>("truncation_final");
+        if (sweep >= parms["ngrowsweeps"])
+            cutoff = parms["truncation_final"];
         else
-            cutoff = log_interpolate(parms.get<double>("truncation_initial"), parms.get<double>("truncation_final"), parms.get<int>("ngrowsweeps"), sweep);
+            cutoff = log_interpolate(parms["truncation_initial"], parms["truncation_final"], parms["ngrowsweeps"], sweep);
         
         std::size_t Mmax;
         if (parms.is_set("sweep_bond_dimensions")) {
@@ -541,7 +541,7 @@ struct multigrid {
             else
                 Mmax = ssizes[sweep];
         } else
-            Mmax = parms.get<std::size_t>("max_bond_dimension");
+            Mmax = parms["max_bond_dimension"];
         
         
         mps_small.normalize_right();
@@ -640,7 +640,7 @@ struct multigrid {
 
                 
                 // solver
-                if (parms.get<bool>("finegrain_optim"))
+                if (parms["finegrain_optim"])
                 {
                     
                     std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
@@ -696,7 +696,7 @@ struct multigrid {
                 SiteProblem<Matrix, SymmGroup> sp(left_[2*p+1], right, mpos_mix[p+1][2*p+1]);
 
                 // solver
-                if (parms.get<bool>("finegrain_optim"))
+                if (parms["finegrain_optim"])
                 {
                     
                     std::pair<double, MPSTensor<Matrix, SymmGroup> > res;

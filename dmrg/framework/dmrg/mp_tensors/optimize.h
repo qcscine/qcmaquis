@@ -83,7 +83,7 @@ public:
         for(int i = 0; i < mps.length(); ++i)
         Storage::evict(mps[i]);
 
-        northo = parms_.get<int>("n_ortho_states");
+        northo = parms_["n_ortho_states"];
         maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
         ortho_mps.resize(northo);
         std::string files_ = parms_["ortho_states"];
