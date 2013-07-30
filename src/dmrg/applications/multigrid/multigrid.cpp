@@ -137,8 +137,8 @@ int main(int argc, char ** argv)
     }
     ModelParameters raw_model(model_file);
     
-    srand48(raw_parms.get<int>("seed"));
-    dmrg_random::engine.seed(raw_parms.get<int>("seed"));
+    srand48(raw_parms["seed"]);
+    dmrg_random::engine.seed(raw_parms["seed"]);
     
     std::string chkpfile = raw_parms["chkpfile"];
     std::string rfile = raw_parms["resultfile"];
@@ -203,7 +203,7 @@ int main(int argc, char ** argv)
         
         mpo = make_mpo(lat->size(), H);
         mpoc = mpo;
-        if (parms.get<int>("use_compressed") > 0)
+        if (parms["use_compressed"] > 0)
             mpoc.compress(1e-12);
     }
     
@@ -248,7 +248,7 @@ int main(int argc, char ** argv)
         
         MPO<Matrix, grp> t_mpo = make_mpo(lat->size(), H);
         MPO<Matrix, grp> t_mpoc = t_mpo;
-        if (parms.get<int>("use_compressed") > 0)
+        if (parms["use_compressed"] > 0)
             t_mpoc.compress(1e-12);
         
         
@@ -262,9 +262,9 @@ int main(int argc, char ** argv)
             boost::shared_ptr<mps_initializer<Matrix, grp> > initializer = boost::shared_ptr<mps_initializer<Matrix, grp> > (new empty_mps_init<Matrix, grp>());
             initial_mps = MPS<Matrix, grp>(lat->size(), 1, phys, initc, *initializer);
                         
-            int oldL = old_model.get<double>("Ndiscr") * old_model.get<double>("L");
+            int oldL = old_model["Ndiscr"] * old_model["L"];
             std::vector<MPO<Matrix, grp> > mpo_mix(oldL+1, MPO<Matrix, grp>(0));
-            double r = model.get<double>("Ndiscr")/old_model.get<double>("Ndiscr");
+            double r = model["Ndiscr"]/old_model["Ndiscr"];
             for (int i=0; i<=oldL; ++i)
                 mpo_mix[i] = mixed_mpo(model, r*i, old_model, oldL-i);
             
@@ -304,7 +304,7 @@ int main(int argc, char ** argv)
             initial_mps = cur_mps;
         } else {
             initial_mps = MPS<Matrix, grp>(lat->size(),
-                                         parms.get<std::size_t>("init_bond_dimension"),
+                                         parms["init_bond_dimension"],
                                          phys, initc,
                                          *initializer_factory<Matrix>(parms));
         }
@@ -322,10 +322,10 @@ int main(int argc, char ** argv)
         {   
             maquis::cout << "*** Starting optimization ***" << std::endl;
             ss_optimize<Matrix, grp, storage::disk> optimizer(initial_mps,
-                                                                      parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
+                                                                      parms["use_compressed"] == 0 ? mpo : mpoc,
                                                                       parms);
             
-            for ( ; sweep < parms.get<int>("nsweeps"); ++sweep) {
+            for ( ; sweep < parms["nsweeps"]; ++sweep) {
                 gettimeofday(&snow, NULL);
                 
                 optimizer.sweep(sweep);
@@ -377,7 +377,7 @@ int main(int argc, char ** argv)
                 
                 gettimeofday(&then, NULL);
                 elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
-                int rs = parms.get<int>("run_seconds");
+                int rs = parms["run_seconds"];
                 if (rs > 0 && elapsed > rs) {
                     early_exit = true;
                     break;
@@ -389,7 +389,7 @@ int main(int argc, char ** argv)
 #endif
 
         ++graining;
-    } while (graining < raw_parms.get<int>("ngrainings"));
+    } while (graining < raw_parms["ngrainings"]);
     
 #ifdef MEASURE_ONLY
     {
@@ -422,7 +422,7 @@ int main(int argc, char ** argv)
             ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
         }
         
-        if (raw_parms.get<int>("calc_h2") > 0) {
+        if (raw_parms["calc_h2"] > 0) {
             MPO<Matrix, grp> mpo2 = square_mpo(mpo);
             mpo2.compress(1e-12);
             

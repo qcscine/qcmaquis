@@ -45,10 +45,10 @@ int main(int argc, char ** argv)
         StrCorr sim(parms, model);
         
         for (int l=1; l<=8; ++l) {
-            maquis::cout << "Measure single-site string operator, size " << l*model.get<size_t>("Ndiscr") << "." << std::endl;
-            sim.measure_ss_string_unit(l*model.get<size_t>("Ndiscr"));
+            maquis::cout << "Measure single-site string operator, size " << l*model["Ndiscr"] << "." << std::endl;
+            sim.measure_ss_string_unit(l*model["Ndiscr"]);
             maquis::cout << "Measure unit-cell string operator, size " << l << "." << std::endl;
-            sim.measure_uc_string(l*model.get<size_t>("Ndiscr"));
+            sim.measure_uc_string(l*model["Ndiscr"]);
         }
         
     } catch (std::exception & e) {

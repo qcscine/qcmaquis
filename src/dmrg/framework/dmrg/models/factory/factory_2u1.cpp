@@ -30,7 +30,7 @@ template <>
 TwoU1::charge init_qn<TwoU1> (BaseParameters & model)
 {
     TwoU1::charge initc;
-    initc[0] = model.get<int>("u1_total_charge1");
-    initc[1] = model.get<int>("u1_total_charge2");
+    initc[0] = model["u1_total_charge1"];
+    initc[1] = model["u1_total_charge2"];
     return initc;
 }

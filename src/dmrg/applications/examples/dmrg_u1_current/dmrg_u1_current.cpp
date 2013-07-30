@@ -68,7 +68,7 @@ int main(int argc, char ** argv)
         
         
         /// Initialize MPS
-        MPS<matrix, symm> mps(lattice->size(), parms.get<std::size_t>("init_bond_dimension"),
+        MPS<matrix, symm> mps(lattice->size(), parms["init_bond_dimension"],
                                    H.get_phys(), model->initc(model_parms),
                                    *(model->initializer(parms)));
         
@@ -76,10 +76,10 @@ int main(int argc, char ** argv)
         storage::setup(parms);
 
         ss_optimize<matrix, symm, storage::disk> optimizer(mps, mpo, parms);
-        int sweeps = parms.get<int>("nsweeps");
+        int sweeps = parms["nsweeps"];
         
         /// Optimize
-        for (int sweep=0; sweep<parms.get<int>("nsweeps"); ++sweep) {
+        for (int sweep=0; sweep<parms["nsweeps"]; ++sweep) {
             int exit_site = optimizer.sweep(sweep, Both, -1 /* starting site */, -1 /* runlimit */);
             
             /// Write iteration results
