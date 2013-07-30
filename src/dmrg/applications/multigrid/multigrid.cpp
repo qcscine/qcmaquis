@@ -142,7 +142,7 @@ int main(int argc, char ** argv)
     
     std::string chkpfile = raw_parms["chkpfile"];
     std::string rfile = raw_parms["resultfile"];
-    bool dns = (raw_parms.get<int>("donotsave") != 0);
+    bool dns = (raw_parms["donotsave"] != 0);
     
     int graining = 0;
     int sweep = 0;
@@ -211,7 +211,7 @@ int main(int argc, char ** argv)
         storage::archive ar(chkpfile);
         ar["/state"] >> cur_mps;
     } else if (raw_parms["initfile"].size() > 0) {
-        storage::archive ar(raw_parms["initfile"]);
+        storage::archive ar(raw_parms["initfile"].str());
         ar["/state"] >> cur_mps;
     }
     

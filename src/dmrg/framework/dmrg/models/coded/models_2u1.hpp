@@ -69,12 +69,14 @@ public:
         sign_down.insert_block(Matrix(1, 1, -1), C, C);
         sign_down.insert_block(Matrix(1, 1, -1), D, D);
         
+        
+        double U = parms["U"];
         op_t tmp;
         for (int p=0; p<lat.size(); ++p) {
             { // U term
                 hamterm_t term;
                 term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, parms.get<double>("U")*doubly_occ) );
+                term.operators.push_back( std::make_pair(p, U*doubly_occ) );
                 terms.push_back(term);
             }
             
@@ -148,7 +150,7 @@ private:
     {
         std::ostringstream key;
         key << "t" << (i+1);
-        return (parms.is_set(key.str())) ? parms.get<double>(key.str()) : parms.get<double>("t");
+        return (parms.is_set(key.str())) ? parms[key.str()] : parms["t"];
     }
 };
 

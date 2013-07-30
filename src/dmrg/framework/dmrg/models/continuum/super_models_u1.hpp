@@ -35,7 +35,8 @@ public:
         psi_phys.insert(std::make_pair(0, 1));
         psi_ident.insert_block(Matrix(1, 1, 1), 0, 0);
         
-        for (int n=1; n<=model.get<int>("Nmax"); ++n)
+        int Nmax = model["Nmax"];
+        for (int n=1; n<=Nmax; ++n)
         {
             psi_phys.insert(std::make_pair(n, 1));
             
@@ -62,7 +63,7 @@ public:
         {
             std::vector<int> neighs = lat.all(p);
             
-            double exp_potential = model.get<double>("V0")*std::pow( std::cos(model.get<double>("k")*lat.get_prop<double>("x", p)), 2 );
+            double exp_potential = model["V0"]*std::pow( std::cos(model["k"]*lat.get_prop<double>("x", p)), 2 );
             
             double dx1 = lat.get_prop<double>("dx", p, neighs[0]);
             double dx2;
@@ -80,12 +81,12 @@ public:
             double coeff2 = 2. / (dx2*dx2 - dx1*dx2);
             double coeff0 = -(coeff1 + coeff2);
             
-            double U = model.get<double>("c") / dx0;
-            double mu = -model.get<double>("mu") + exp_potential;
-            mu += -coeff0 * model.get<double>("h");
+            double U = model["c"] / dx0;
+            double mu = exp_potential - model["mu"];
+            mu += -coeff0 * model["h"];
             
 #ifndef NDEBUG
-            maquis::cout << "U = " << U << ", mu = " << mu << ", t = " << coeff1 * model.get<double>("h") << std::endl;
+            maquis::cout << "U = " << U << ", mu = " << mu << ", t = " << coeff1 * model["h"] << std::endl;
 #endif
             
             if (U != 0.)
@@ -110,9 +111,9 @@ public:
                 
                 double t;
                 if (lat.get_prop<double>("dx", p, neighs[n]) == dx1)
-                    t = coeff1 * model.get<double>("h");
+                    t = coeff1 * model["h"];
                 else
-                    t = coeff2 * model.get<double>("h");
+                    t = coeff2 * model["h"];
                 
                 if (t != 0.) {
                     for( unsigned i = 0; i < hopops.size(); ++i )
@@ -144,7 +145,7 @@ public:
         Measurements<Matrix, U1> meas(Measurements<Matrix, U1>::Densitymatrix);
         meas.set_identity(psi_ident);
         
-        if (model.get<bool>("MEASURE_CONTINUUM[Density]")) {
+        if (model["MEASURE_CONTINUUM[Density]"]) {
             mterm_t term;
             term.fill_operator = psi_ident;
             term.name = "Density";
@@ -154,7 +155,7 @@ public:
             meas.add_term(term);
         }
         
-        if (model.get<bool>("MEASURE_CONTINUUM[Local density]")) {
+        if (model["MEASURE_CONTINUUM[Local density]"]) {
             mterm_t term;
             term.fill_operator = psi_ident;
             term.name = "Local density";
@@ -164,7 +165,7 @@ public:
             meas.add_term(term);
         }
         
-        if (model.get<bool>("MEASURE_CONTINUUM[Onebody density matrix]")) {
+        if (model["MEASURE_CONTINUUM[Onebody density matrix]"]) {
             mterm_t term;
             term.fill_operator = psi_ident;
             term.name = "Onebody density matrix";

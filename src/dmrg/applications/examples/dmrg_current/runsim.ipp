@@ -55,7 +55,7 @@ namespace maquis { namespace dmrg {
                 std::stringstream iteration_path;
                 iteration_path << "/simulation/sweep" << sweep;
                 
-                storage::archive ar(parms["resultfile"], "w");
+                storage::archive ar(parms["resultfile"].str(), "w");
                 
                 ar[iteration_path.str() + "/parameters"] << parms;
                 ar[iteration_path.str() + "/parameters"] << model_parms;
@@ -71,7 +71,7 @@ namespace maquis { namespace dmrg {
         
         /// Write parameters
         {
-            storage::archive ar(parms["resultfile"], "w");
+            storage::archive ar(parms["resultfile"].str(), "w");
             
             ar["/parameters"] << parms;
             ar["/parameters"] << model_parms;

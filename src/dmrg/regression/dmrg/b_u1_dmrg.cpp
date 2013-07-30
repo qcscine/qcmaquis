@@ -189,8 +189,8 @@ int main(int argc, char ** argv)
         ar_in["/state"] >> mps;
         ar_in["/status/sweep"] >> sweep;
         ++sweep;
-    } else if (parms["initfile"].size() > 0) {
-        storage::archive ar_in(parms["initfile"]);
+    } else if (!parms["initfile"].empty()) {
+        storage::archive ar_in(parms["initfile"].str());
         ar_in["/state"] >> mps;
     }
     

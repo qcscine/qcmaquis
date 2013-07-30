@@ -297,8 +297,8 @@ namespace storage {
 #endif
 
     inline static void setup(BaseParameters& parms){
-        if(parms["storagedir"].size() > 0){
-            boost::filesystem::path dp = boost::filesystem::unique_path(parms["storagedir"] + std::string("/storage_temp_%%%%%%%%%%%%/"));
+        if(!parms["storagedir"].empty()){
+            boost::filesystem::path dp = boost::filesystem::unique_path(parms["storagedir"].as<std::string>() + std::string("/storage_temp_%%%%%%%%%%%%/"));
             try {
                 boost::filesystem::create_directories(dp);
             } catch (...) {

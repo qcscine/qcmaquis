@@ -87,7 +87,7 @@ int main(int argc, char ** argv)
                 std::stringstream iteration_path;
                 iteration_path << "/simulation/sweep" << sweep;
 
-                storage::archive ar(parms["resultfile"], "w");
+                storage::archive ar(parms["resultfile"].str(), "w");
                 
                 ar[iteration_path.str() + "/parameters"] << parms;
                 ar[iteration_path.str() + "/parameters"] << model_parms;
@@ -103,7 +103,7 @@ int main(int argc, char ** argv)
 
         /// Write parameters
         {
-            storage::archive ar(parms["resultfile"], "w");
+            storage::archive ar(parms["resultfile"].str(), "w");
             
             ar["/parameters"] << parms;
             ar["/parameters"] << model_parms;

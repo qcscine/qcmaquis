@@ -21,56 +21,10 @@
 #include <alps/parameter.h>
 #include "utils/io.hpp"
 
-namespace conversion
-{
-    // this can be specialized to provide conversion for types that cannot be read
-    // with the boost::any_cast, or whatever program options uses for the as<>
-    // method
-    template<class T> struct get_
-    {
-        T operator()(std::string const & val)
-        {
-            try {
-                return boost::lexical_cast<T>(val);
-            } catch (std::exception &e) {
-                maquis::cerr << "Exception raised casting " << val << " to type " << typeid(T).name() << std::endl;
-                throw e;
-            }
-        }
-    };
-    
-	// eliminating quatation marks around strings
-	template <> struct get_<std::string>
-    {
-		std::string operator()(std::string const & val)
-        {
-            std::string ret = val;
-			boost::trim_if(ret, boost::is_any_of("\"'"));
-            return ret;
-        }
-    };	
-    
-    template<class T> struct get_<std::vector<T> >
-    {
-        std::vector<T> operator()(std::string const & val)
-        {
-            //            maquis::cerr << "reading " << key << std::endl;
-            std::string raw = val;
-			boost::trim_if(raw, boost::is_any_of("\"'"));
-            std::vector<T> ret;
-            
-            typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-            boost::char_separator<char> sep(",");
-            tokenizer tokens(raw, sep);
-            std::transform(tokens.begin(), tokens.end(), std::back_inserter(ret),
-                           static_cast<T (*)(std::string const&)>(boost::lexical_cast<T, std::string>));
-            return ret;
-        }
-    };
-}
+#include "dmrg/utils/parameter_proxy.h"
 
+                
 namespace parameters {
-    
     class value {
     public:
         value () : val_(""), empty_(true) { }
@@ -89,7 +43,7 @@ namespace parameters {
         
     };
 }
-
+                
 class BaseParameters : public alps::Parameters
 {
 public:
@@ -116,19 +70,21 @@ public:
         return defined(key);
     }
 
-    const std::string operator[](std::string key){
-        return get<std::string>(key);
-    }
-    
-    template<class T> T get(std::string const & key)
+    parameters::proxy operator[](std::string const& key)
     {
-        if (!defined(key))
+        if (!defined(key)) {
             if (defaults.count(key) > 0)
                 alps::Parameters::operator[](key) = defaults[key];
             else
                 boost::throw_exception(std::runtime_error("parameter " + key + " not defined"));
-        conversion::get_<T> g;
-        return g(alps::Parameters::operator[](key));
+        }
+        return parameters::proxy(alps::Parameters::operator[](key));
+    }
+    
+    template<class T> T get(std::string const & key)
+    {
+        parameters::proxy const& p = (*this)[key];
+        return p.as<T>();
     }
     
     template<class T> void set(std::string const & key, T const & value)
@@ -145,8 +101,7 @@ public:
         for (alps::Parameters::const_iterator it=p.begin();it != p.end();++it) {
             std::string key = it->key();
             if (boost::regex_match(key, what, expression)) {
-                conversion::get_<std::vector<value_type> > g;
-                std::vector<value_type> v = g(alps::Parameters::operator[](key));
+                std::vector<value_type> v = (*this)[key];
                 if (val < v.size())
                     p.set(what.str(1), v[val]);
                 else

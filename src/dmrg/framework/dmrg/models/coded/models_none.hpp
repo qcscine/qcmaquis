@@ -28,10 +28,10 @@ public:
     BoseHubbardNone (const Lattice& lat, BaseParameters & model_)
     : model(model_)
     {
-        int Nmax = model.get<int>("Nmax");
-        double U = model.get<double>("U");
-        double t = model.get<double>("t");
-        double V = model.get<double>("V");
+        int Nmax = model["Nmax"];
+        double U = model["U"];
+        double t = model["t"];
+        double V = model["V"];
         
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
         size_t N = Nmax+1;
@@ -109,7 +109,7 @@ public:
         Measurements<Matrix, TrivialGroup> meas;
         meas.set_identity(ident);
         
-        if (model.get<bool>("ENABLE_MEASURE[Density]")) {
+        if (model["ENABLE_MEASURE[Density]"]) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Density";
@@ -118,7 +118,7 @@ public:
             
             meas.add_term(term);
         }
-        if (model.get<bool>("ENABLE_MEASURE[Local density]")) {
+        if (model["ENABLE_MEASURE[Local density]"]) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Local density";
@@ -128,7 +128,7 @@ public:
             meas.add_term(term);
         }
         
-        if (model.get<bool>("ENABLE_MEASURE[Onebody density matrix]")) {
+        if (model["ENABLE_MEASURE[Onebody density matrix]"]) {
             mterm_t term;
             term.fill_operator = ident;
             term.name = "Onebody density matrix";

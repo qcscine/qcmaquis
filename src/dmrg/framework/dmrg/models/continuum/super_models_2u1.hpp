@@ -67,7 +67,8 @@ public:
         psi_phys.insert(std::make_pair(0, 1));
         psi_ident.insert_block(Matrix(1, 1, 1), 0, 0);
         
-        for (int n=1; n<=model.get<int>("Nmax"); ++n)
+        int Nmax = model["Nmax"];
+        for (int n=1; n<=Nmax; ++n)
         {
             psi_phys.insert(std::make_pair(n, 1));
             
@@ -94,7 +95,7 @@ public:
         {
             std::vector<int> neighs = lat.all(p);
             
-            double exp_potential = model.get<double>("V0")*std::pow( std::cos(model.get<double>("k")*lat.get_prop<double>("x", p)), 2 );
+            double exp_potential = model["V0"]*std::pow( std::cos(model["k"]*lat.get_prop<double>("x", p)), 2 );
             
             double dx1 = lat.get_prop<double>("dx", p, neighs[0]);
             double dx2;
@@ -112,12 +113,12 @@ public:
             double coeff2 = 2. / (dx2*dx2 - dx1*dx2);
             double coeff0 = -(coeff1 + coeff2);
             
-            double U = model.get<double>("c") / dx0;
-            double mu = -model.get<double>("mu") + exp_potential;
-            mu += -coeff0 * model.get<double>("h");
+            double U = model["c"] / dx0;
+            double mu = exp_potential - model["mu"];
+            mu += -coeff0 * model["h"];
             
 #ifndef NDEBUG
-            maquis::cout << "U = " << U << ", mu = " << mu << ", t = " << coeff1 * model.get<double>("h") << std::endl;
+            maquis::cout << "U = " << U << ", mu = " << mu << ", t = " << coeff1 * model["h"] << std::endl;
 #endif
             
             if (U != 0.)
@@ -158,9 +159,9 @@ public:
                 
                 double t;
                 if (lat.get_prop<double>("dx", p, neighs[n]) == dx1)
-                    t = coeff1 * model.get<double>("h");
+                    t = coeff1 * model["h"];
                 else
-                    t = coeff2 * model.get<double>("h");
+                    t = coeff2 * model["h"];
                 
                 if (t != 0.) {
                     for( unsigned i = 0; i < hopops.size(); ++i )
@@ -205,7 +206,7 @@ public:
         
         MPS<Matrix, TwoU1> mps_ident = identity_dm_mps<Matrix>(lat.size(), psi_phys, allowed_blocks);
         
-        if (model.get<bool>("MEASURE_CONTINUUM[Density]")) {
+        if (model["MEASURE_CONTINUUM[Density]"]) {
             rho_mterm_t term;
             term.name = "Density";
             term.type = mterm_t::DMOverlap;
@@ -218,7 +219,7 @@ public:
             meas.add_term(term);
         }
         
-        if (model.get<bool>("MEASURE_CONTINUUM[Local density]")) {
+        if (model["MEASURE_CONTINUUM[Local density]"]) {
             rho_mterm_t term;
             term.name = "Local density";
             term.type = mterm_t::DMOverlap;
@@ -232,11 +233,11 @@ public:
             term.overlaps_mps.reserve(tmeas.first.size());
             for (size_t i=0; i<tmeas.first.size(); ++i)
                 term.overlaps_mps.push_back( mpo_to_smps_group(tmeas.first[i], psi_phys, allowed_blocks) );
-                        
+            
             meas.add_term(term);
         }
         
-        if (model.get<bool>("MEASURE_CONTINUUM[Psi energy]")) {
+        if (model["MEASURE_CONTINUUM[Psi energy]"]) {
             rho_mterm_t term;
             term.name = "Psi energy";
             term.type = mterm_t::DMOverlap;
@@ -249,7 +250,7 @@ public:
             meas.add_term(term);
         }
         
-//        if (model.get<bool>("MEASURE_CONTINUUM[Onebody density matrix]")) {
+//        if (model["MEASURE_CONTINUUM[Onebody density matrix]"]) {
 //            mterm_t term;
 //            term.fill_operator = psi_ident;
 //            term.name = "Onebody density matrix";
@@ -266,6 +267,7 @@ public:
     typename base::initializer_ptr initializer(BaseParameters & p_) const
     {
         if ( p_["init_state"] == "identity_mps" ) {
+            std::cout << "Identity MPS chosen." << std::endl;
             std::vector<Index<TwoU1> > allowed_blocks = allowed_sectors(lat.size(), phys, this->initc(model), 1);
             return typename base::initializer_ptr( new mps_ident_init<Matrix>( identity_dm_mps<Matrix>(lat.size(), psi_phys, allowed_blocks) ) );
         } else {
@@ -284,7 +286,7 @@ private:
         dm_group_kron(psi_phys, h,         psi_ident, hid);
         h.transpose_inplace();
         dm_group_kron(psi_phys, psi_ident, h,         idh);
-        if ( model.get<bool>("RUN_FINITE_T") )
+        if ( model["RUN_FINITE_T"] )
             return idh;
         else
             return idh - hid;
@@ -308,7 +310,7 @@ private:
         
         std::vector<std::pair<op_t,op_t> > ret; ret.reserve(2);
         ret.push_back( std::make_pair(idh1, idh2) );
-        if ( ! model.get<bool>("RUN_FINITE_T") )
+        if ( ! model["RUN_FINITE_T"] )
             ret.push_back( std::make_pair(-1.*h1id, h2id) );
         
         return ret;
