@@ -64,12 +64,12 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
     /*** Create operator tag table ****************************************/
     /**********************************************************************/
 
-    boost::shared_ptr<OPTable<M, TwoU1> > op_table(new OPTable<M, TwoU1>());
+    boost::shared_ptr<OPTable<M, TwoU1> > operator_table(new OPTable<M, TwoU1>());
     tag_type create_up, create_down, destroy_up, destroy_down,
           count_up, count_down, docc, e2d, d2e,
           fill, ident;
 
-    #define REGISTER(op) op = op_table->register_op(op ## _op);
+    #define REGISTER(op) op = operator_table->register_op(op ## _op);
 
     REGISTER(ident)
     REGISTER(fill)
@@ -86,7 +86,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
     #undef REGISTER
     /**********************************************************************/
 
-    chem_detail::ChemHelper<M> term_assistant(parms, lat, ident, fill, op_table);
+    chem_detail::ChemHelper<M> term_assistant(parms, lat, ident, fill, operator_table);
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
     std::vector<typename hamterm_t<M>::type > terms;
@@ -140,10 +140,10 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
                 used_elements[m] += 1;
                 continue;
             }
-            tagterms.push_back(TermMaker<M>::positional_two_term(true, fill, matrix_elements[m], i, j, create_up, destroy_up, op_table));
-            tagterms.push_back(TermMaker<M>::positional_two_term(true, fill, matrix_elements[m], i, j, create_down, destroy_down, op_table));
-            tagterms.push_back(TermMaker<M>::positional_two_term(true, fill, matrix_elements[m], j, i, create_up, destroy_up, op_table));
-            tagterms.push_back(TermMaker<M>::positional_two_term(true, fill, matrix_elements[m], j, i, create_down, destroy_down, op_table));
+            tagterms.push_back(TermMaker<M>::positional_two_term(true, fill, matrix_elements[m], i, j, create_up, destroy_up, operator_table));
+            tagterms.push_back(TermMaker<M>::positional_two_term(true, fill, matrix_elements[m], i, j, create_down, destroy_down, operator_table));
+            tagterms.push_back(TermMaker<M>::positional_two_term(true, fill, matrix_elements[m], j, i, create_up, destroy_up, operator_table));
+            tagterms.push_back(TermMaker<M>::positional_two_term(true, fill, matrix_elements[m], j, i, create_down, destroy_down, operator_table));
 
             used_elements[m] += 1;
         }
@@ -175,27 +175,27 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
 
             // 1a
             // --> c_l_up * n_i_down * cdag_i_up
-            ptag = op_table->get_product_tag(count_down, create_up);
+            ptag = operator_table->get_product_tag(count_down, create_up);
             tagterms.push_back( TermMaker<M>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, destroy_up, op_table) );
+                                           ptag.first, destroy_up, operator_table) );
 
             // 1a_dagger
             // --> c_i_up * n_i_down * cdag_l_up
-            ptag = op_table->get_product_tag(destroy_up, count_down);
+            ptag = operator_table->get_product_tag(destroy_up, count_down);
             tagterms.push_back( TermMaker<M>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, create_up, op_table) );
+                                           ptag.first, create_up, operator_table) );
 
             // 1b
             // --> c_l_down * n_i_up * cdag_i_down (1b)
-            ptag = op_table->get_product_tag(count_up, create_down);
+            ptag = operator_table->get_product_tag(count_up, create_down);
             tagterms.push_back( TermMaker<M>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, destroy_down, op_table) );
+                                           ptag.first, destroy_down, operator_table) );
 
             // (1b)_dagger
             // --> c_i_down * n_i_up * cdag_l_down
-            ptag = op_table->get_product_tag(destroy_down, count_up);
+            ptag = operator_table->get_product_tag(destroy_down, count_up);
             tagterms.push_back( TermMaker<M>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, create_down, op_table) );
+                                           ptag.first, create_down, operator_table) );
 
             used_elements[m] += 1;
         }
@@ -209,13 +209,13 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
             }
 
             tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, k,
-                                            count_up, count_up, op_table) );
+                                            count_up, count_up, operator_table) );
             tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, k,
-                                            count_up, count_down, op_table) );
+                                            count_up, count_down, operator_table) );
             tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, k,
-                                            count_down, count_up, op_table) );
+                                            count_down, count_up, operator_table) );
             tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, k,
-                                            count_down, count_down, op_table) );
+                                            count_down, count_down, operator_table) );
 
             used_elements[m] += 1;
         }
@@ -230,29 +230,29 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
             typename op_t<M>::type tmp1, tmp2;
 
             tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, j,
-                                            e2d, d2e, op_table) );
+                                            e2d, d2e, operator_table) );
             tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, j,
-                                            d2e, e2d, op_table) );
+                                            d2e, e2d, operator_table) );
 
             tagterms.push_back( TermMaker<M>::two_term(false, ident, -matrix_elements[m], i, j,
-                                            count_up, count_up, op_table) );
+                                            count_up, count_up, operator_table) );
             tagterms.push_back( TermMaker<M>::two_term(false, ident, -matrix_elements[m], i, j,
-                                            count_down, count_down, op_table) );
+                                            count_down, count_down, operator_table) );
 
             std::pair<tag_type, value_type> ptag1, ptag2;
 
             // Could insert fill operators without changing the result
             // --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
-            ptag1 = op_table->get_product_tag(destroy_down, create_up);
-            ptag2 = op_table->get_product_tag(destroy_up, create_down);
+            ptag1 = operator_table->get_product_tag(destroy_down, create_up);
+            ptag2 = operator_table->get_product_tag(destroy_up, create_down);
             tagterms.push_back(TermMaker<M>::two_term(false, ident, -matrix_elements[m] * ptag1.second * ptag2.second, i, j,
-                            ptag1.first, ptag2.first, op_table));
+                            ptag1.first, ptag2.first, operator_table));
 
             // --> -c_i_up * cdag_i_down * c_j_down * cdag_j_up
-            ptag1 = op_table->get_product_tag(destroy_up, create_down);
-            ptag2 = op_table->get_product_tag(destroy_down, create_up);
+            ptag1 = operator_table->get_product_tag(destroy_up, create_down);
+            ptag2 = operator_table->get_product_tag(destroy_down, create_up);
             tagterms.push_back(TermMaker<M>::two_term(false, ident, -matrix_elements[m] * ptag1.second * ptag2.second, i, j,
-                            ptag1.first, ptag2.first, op_table));
+                            ptag1.first, ptag2.first, operator_table));
             
             used_elements[m] += 1;
         }
@@ -308,13 +308,13 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
 
             std::pair<tag_type, value_type> ptag;
 
-            ptag = op_table->get_product_tag(create_up, fill);
+            ptag = operator_table->get_product_tag(create_up, fill);
             term_assistant.add_term(tagterms, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_down , destroy_down, destroy_up);
-            ptag = op_table->get_product_tag(create_down, fill);
+            ptag = operator_table->get_product_tag(create_down, fill);
             term_assistant.add_term(tagterms, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_up   , destroy_up  , destroy_down);
-            ptag = op_table->get_product_tag(destroy_down, fill);
+            ptag = operator_table->get_product_tag(destroy_down, fill);
             term_assistant.add_term(tagterms, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_up  , create_up   , create_down);
-            ptag = op_table->get_product_tag(destroy_up, fill);
+            ptag = operator_table->get_product_tag(destroy_up, fill);
             term_assistant.add_term(tagterms, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_down, create_down , create_up);
 
             term_assistant.add_term(tagterms, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_up,   create_up,   destroy_up);
@@ -376,7 +376,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
     term_assistant.commit_three_terms(tagterms);
     maquis::cout << "The hamiltonian will contain " << tagterms.size() << " terms\n";
 
-    return Hamiltonian<M, TwoU1>(phys, ident_op, terms, ident, tagterms, op_table);
+    return Hamiltonian<M, TwoU1>(phys, ident_op, terms, ident, tagterms, operator_table);
 
 }
     

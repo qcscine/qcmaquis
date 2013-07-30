@@ -71,7 +71,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                     } else {
                         if (non_uniform.count(b3) == 0) {
 
-                            // only needed if the operator_table is shared amoung mpotensors
+                            // only needed if the operator_table is shared among mpotensors
                             #ifdef MAQUIS_OPENMP
                             #pragma omp critical
                             #endif

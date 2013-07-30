@@ -4,6 +4,7 @@
  *
  * Copyright (C) 2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
+ *
  *****************************************************************************/
 
 #ifndef MAQUIS_DMRG_MODELS_TAG_TABLE_HPP

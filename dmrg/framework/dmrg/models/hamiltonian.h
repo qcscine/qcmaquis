@@ -48,13 +48,13 @@ public:
                  , std::vector<hamterm_t> const & terms_
                  , tag_type ident_tag_ = 0
                  , std::vector<hamtagterm_t> const & tagterms_ = std::vector<hamtagterm_t>()
-                 , boost::shared_ptr<OPTable<Matrix, SymmGroup> > op_tags_ = boost::shared_ptr<OPTable<Matrix, SymmGroup> >() )
+                 , boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_ = boost::shared_ptr<OPTable<Matrix, SymmGroup> >() )
     : phys(phys_)
     , ident(ident_)
     , ident_tag(ident_tag_)
     , terms(terms_)
     , tagterms(tagterms_)
-    , op_tags(op_tags_)
+    , shared_op_table(tbl_)
     {}
     
     virtual std::size_t n_terms (TermType what=all_term) const { return terms.size(); }
@@ -77,7 +77,7 @@ public:
     iterator begin () { return terms.begin(); }
     iterator end () { return terms.end(); }
 
-    boost::shared_ptr<OPTable<Matrix, SymmGroup> > get_tag_table() const { return op_tags; }
+    boost::shared_ptr<OPTable<Matrix, SymmGroup> > get_operator_table() const { return shared_op_table; }
 
 protected:
     std::vector<hamterm_t> terms;
@@ -86,7 +86,7 @@ protected:
     tag_type ident_tag;
 
     std::vector<hamtagterm_t> tagterms;
-    boost::shared_ptr<OPTable<Matrix, SymmGroup> > op_tags;
+    boost::shared_ptr<OPTable<Matrix, SymmGroup> > shared_op_table;
 };
 
 template<class Matrix, class SymmGroup>
@@ -94,7 +94,7 @@ MPO<Matrix, SymmGroup> make_mpo(typename Lattice::pos_t L, Hamiltonian<Matrix, S
 {
     // Use tags if available
     if (H.n_tagterms(what) > 0) {
-        generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity_tag(), H.get_tag_table());
+        generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity_tag(), H.get_operator_table());
         for (std::size_t i = 0; i < H.n_tagterms(what); ++i)
             mpom.add_term(H.tag(i));
 

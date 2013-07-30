@@ -344,7 +344,7 @@ namespace generate_mpo
         
     public:
         TaggedMPOMaker(pos_t length_, tag_type ident_
-                      , boost::shared_ptr<OPTable<Matrix, SymmGroup> > op_tags_)
+                      , boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_)
         : length(length_)
         , used_dims(length)
         , ident(ident_)
@@ -352,7 +352,7 @@ namespace generate_mpo
         , maximum(2)
         , finalized(false)
         , leftmost_right(length)
-        , op_tags(op_tags_)
+        , operator_table(tbl_)
         {   
             for (size_t p = 0; p < length-1; ++p)
                 tag_prempo[p].push_back(boost::make_tuple(std::size_t(0), std::size_t(0), ident, 1.));
@@ -380,29 +380,31 @@ namespace generate_mpo
                 std::size_t second_use_b = (it->first == maxp ? 1 : use_b);
                 assert(it->first < length);
 
-                // retrieve the actual operator from the tag table
-                op_t current_op = (*op_tags)[it->second];
 
                 // apply scaling factor to first operator
                 scale_type cur_scale = 1.;
-                if (it == ops.begin()) {
-                    current_op *= term.scale;
+                if (it == ops.begin())
                     cur_scale = term.scale;
-                }
 
                 if (minp != maxp) { // bond term
+
                     /** tag_prempo filling **/
                     tag_prempo[it->first].push_back(boost::make_tuple(first_use_b, second_use_b, it->second, cur_scale));
-
                     used_dims[it->first].insert(use_b);
-                } else // site term
+
+                } else { // site term
+
+                    // retrieve the actual operator from the tag table
+                    op_t current_op = (*operator_table)[it->second];
+                    current_op *= term.scale;
                     site_terms[it->first] += current_op;
+                }
                 done[it->first] = true;
             }
             
             // put fill ops in between the nontrivial ops  (only needed for 1- and 2-terms)
             if (term.operators.size() <= 2) {
-                op_t fill = (*op_tags)[term.fill_operator];
+                op_t fill = (*operator_table)[term.fill_operator];
                 for (pos_t p = minp; p <= maxp; ++p)
                     if (!done[p]) {
                         tag_prempo[p].push_back( boost::make_tuple(use_b, use_b, term.fill_operator, 1.) );
@@ -455,7 +457,7 @@ namespace generate_mpo
         vector<set<std::size_t> > used_dims;
         std::map<pos_t, op_t> site_terms;
 
-        boost::shared_ptr<OPTable<Matrix, SymmGroup> > op_tags;
+        boost::shared_ptr<OPTable<Matrix, SymmGroup> > operator_table;
         vector<vector<tag_block> > tag_prempo;
         
         pos_t maximum, leftmost_right;
@@ -466,7 +468,7 @@ namespace generate_mpo
                  it != site_terms.end(); ++it) {
 
                 // TODO implement plus operation
-                tag_type site_tag = op_tags->register_site_op(it->second);
+                tag_type site_tag = operator_table->register_site_op(it->second);
                 tag_prempo[it->first].push_back(boost::make_tuple(0, 1, site_tag, 1.));
             }
 
@@ -485,21 +487,21 @@ namespace generate_mpo
         MPOTensor<Matrix, SymmGroup> as_bulk(vector<tag_block> const & ops)
         {
             pair<std::size_t, std::size_t> rcd = rcdim(ops);
-            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second, ops, op_tags);
+            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second, ops, operator_table);
             return r;
         }
         
         MPOTensor<Matrix, SymmGroup> as_left(vector<tag_block> const & ops)
         {
             pair<std::size_t, std::size_t> rcd = rcdim(ops);
-            MPOTensor<Matrix, SymmGroup> r(1, rcd.second, ops, op_tags);
+            MPOTensor<Matrix, SymmGroup> r(1, rcd.second, ops, operator_table);
             return r;
         }
         
         MPOTensor<Matrix, SymmGroup> as_right(vector<tag_block> const & ops)
         {
             pair<std::size_t, std::size_t> rcd = rcdim(ops);
-            MPOTensor<Matrix, SymmGroup> r(rcd.first, 1, ops, op_tags);
+            MPOTensor<Matrix, SymmGroup> r(rcd.first, 1, ops, operator_table);
             return r;
         }
     };

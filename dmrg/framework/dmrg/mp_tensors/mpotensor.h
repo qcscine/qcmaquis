@@ -43,41 +43,52 @@ namespace MPOTensor_detail
         }
     };
 
-    template<class Matrix, class SymmGroup>
+    template<class Tuple>
     struct row_cmp
     {
-        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-        typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
-        typedef typename Matrix::value_type value_type;
-        typedef boost::tuple<index_type, index_type, tag_type, value_type> tag_block;
-        bool operator() (tag_block const & i, tag_block const & j) const
+        bool operator() (Tuple const & i, Tuple const & j) const
         {
-            if ( get<0>(i) < get<0>(j))
+            if (get<0>(i) < get<0>(j))
                 return true;
-            else if ( get<0>(i) > get<0>(j))
+            else if (get<0>(i) > get<0>(j))
                 return false;
             else
                 return get<1>(i) < get<1>(j);
         }
     };
 
-    template<class Matrix, class SymmGroup>
+    template<class Tuple>
     struct col_cmp
     {
-        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-        typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
-        typedef typename Matrix::value_type value_type;
-        typedef boost::tuple<index_type, index_type, tag_type, value_type> tag_block;
-        bool operator() (tag_block const & i, tag_block const & j) const
+        bool operator() (Tuple const & i, Tuple const & j) const
         {
-            if ( get<1>(i) < get<1>(j))
+            if (get<1>(i) < get<1>(j))
                 return true;
-            else if ( get<1>(i) > get<1>(j))
+            else if (get<1>(i) > get<1>(j))
                 return false;
             else
                 return get<0>(i) < get<0>(j);
         }
     };
+
+    /* 
+    template <class Tag, class Scale>
+    class term_descriptor {
+    public:
+        term_descriptor() {}
+        term_descriptor(Tag t, Scale s) : first(t), second(s) {}
+
+        Tag first;
+        Scale second;
+    };
+
+    template <class Tag, class Scale>
+    term_descriptor<Tag, Scale> make_term_descriptor(Tag t, Scale s)
+    {
+        return term_descriptor<Tag, Scale>(t, s);
+    }
+    */
+
 }
 
 template <class Matrix, class SymmGroup> class column_iterator;
@@ -91,16 +102,18 @@ public:
     typedef std::size_t index_type;
     typedef typename Matrix::value_type value_type;
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
-    typedef std::pair<typename SymmGroup::charge, index_type> access_type;
+    //typedef std::pair<typename SymmGroup::charge, index_type> access_type;
 
     typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
     typedef boost::shared_ptr<OPTable<Matrix, SymmGroup> > op_table_ptr;
 
     typedef boost::numeric::ublas::compressed_matrix< std::pair<tag_type, value_type>,
+    //typedef boost::numeric::ublas::compressed_matrix< typename MPOTensor_detail::term_descriptor<tag_type, value_type>,
                                                       boost::numeric::ublas::row_major
                                                       , 0, boost::numeric::ublas::unbounded_array<index_type> 
                                                     > CSRMatrix;
     typedef boost::numeric::ublas::compressed_matrix< std::pair<tag_type, value_type>,
+    //typedef boost::numeric::ublas::compressed_matrix< typename MPOTensor_detail::term_descriptor<tag_type, value_type>,
                                                       boost::numeric::ublas::column_major
                                                       , 0, boost::numeric::ublas::unbounded_array<index_type> 
                                                     > CSCMatrix;
@@ -123,6 +136,7 @@ public:
     index_type row_dim() const;
     index_type col_dim() const;
     
+    /*
     value_type & operator()(index_type left_index,
                             index_type right_index,
                             access_type const & ket_index,
@@ -131,6 +145,7 @@ public:
                                   index_type right_index,
                                   access_type const & ket_index,
                                   access_type const & bra_index) const;
+    */
     
     block_matrix<Matrix, SymmGroup> const & operator()(index_type left_index,
                                                        index_type right_index) const;
