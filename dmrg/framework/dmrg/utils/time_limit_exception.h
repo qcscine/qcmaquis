@@ -20,8 +20,8 @@ namespace dmrg {
         : sweep_(sw)
         , site_(st)
         , std::runtime_error(  std::string("time limit reached. current status is [ ")
-                             + std::string("sweep=") + boost::lexical_cast<std::string>(sweep_) + std::string(", ")
-                             + std::string("site=" ) + boost::lexical_cast<std::string>(site_ ) + std::string(" ]."))
+                             + std::string("sweep=") + boost::lexical_cast<std::string>(sw) + std::string(", ")
+                             + std::string("site=" ) + boost::lexical_cast<std::string>(st) + std::string(" ]."))
         { }
         
         int sweep() const throw()
