@@ -77,7 +77,6 @@ public:
 private:
     void evolve_time_step()
     {
-        // TODO: use iteration_results
         for (int which = 0; which < Uterms.size(); ++which)
         {
             time_evolve<Matrix, SymmGroup, storage::nop> evolution(*mps,
