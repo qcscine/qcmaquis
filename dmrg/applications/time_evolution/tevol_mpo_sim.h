@@ -15,61 +15,91 @@
 #include "dmrg/utils/storage.h"
 #include "dmrg/sim/te_utils.hpp"
 #include "dmrg/mp_tensors/te.h"
-
-#include "tevol_sim.h"
+#include "dmrg/utils/results_collector.h"
 
 // ******   SIMULATION CLASS   ******
 template <class Matrix, class SymmGroup>
-class dmrg_tevol_mpo_sim : public dmrg_tevol_sim<Matrix, SymmGroup> {
-    
-    typedef dmrg_tevol_sim<Matrix, SymmGroup> base;
-    
+class mpo_evolver {
 public:
-    typedef typename base::mpo_t mpo_t;
-    typedef typename base::boundary_t boundary_t;
-    
-    dmrg_tevol_mpo_sim(DmrgParameters const & parms_, ModelParameters const  & model_)
-    : base(parms_, model_)
+    mpo_evolver(DmrgParameters * parms_, MPS<Matrix, SymmGroup> * mps_,
+                Lattice_ptr lat_, Hamiltonian<Matrix, SymmGroup> const* H_,
+                int init_sweep=0)
+    : parms(parms_)
+    , mps(mps_)
+    , lat(lat_)
+    , H(H_)
+    , sweep_(init_sweep)
+    , hamils(separate_overlaps(*H))
     {
         maquis::cout << "Using MPO time evolution." << std::endl;
+        
+        maquis::cout << "Found " << hamils.size() << " non overlapping Hamiltonians." << std::endl;
     }
     
-protected:
-    void prepare_te_terms(bool split_hamil=true)
+    void prepare_te_terms()
     {
-        if (split_hamil) {
-            hamils = separate_overlaps(this->H);
-            maquis::cout << "Found " << hamils.size() << " non overlapping Hamiltonians." << std::endl;
-        }
-
+        double dt = (*parms)["dt"];
         typename Matrix::value_type I;
-        if (this->sweep < this->parms.template get<int>("nsweeps_img"))
+        if (sweep_ < (*parms)["nsweeps_img"])
             I = maquis::traits::real_identity<typename Matrix::value_type>::value;
         else
             I = maquis::traits::imag_identity<typename Matrix::value_type>::value;
-        typename Matrix::value_type alpha = -I*this->parms.template get<double>("dt");
+        typename Matrix::value_type alpha = -I*dt;
         
         Uterms.resize(hamils.size());
         for (int i=0; i<hamils.size(); ++i)
-            Uterms[i] = make_exp_mpo(this->lat->size(), hamils[i], alpha);
+            Uterms[i] = make_exp_mpo(lat->size(), hamils[i], alpha);
     }
     
+    void operator()(int nsteps)
+    {
+        iteration_results_.clear();
+        
+        int ns = sweep_ + nsteps;
+        for (int i=sweep_; i < ns; ++i) {
+            sweep_ = i;
+            (*parms).set("sweep", sweep_);
+            evolve_time_step();
+        }
+        assert(sweep_ == ns-1);
+    }
+    
+    int sweep() const
+    {
+        return sweep_;
+    }
+    
+    results_collector const& iteration_results() const
+    {
+        return iteration_results_;
+    }
+    
+private:
     void evolve_time_step()
     {
+        // TODO: use iteration_results
         for (int which = 0; which < Uterms.size(); ++which)
         {
-            time_evolve<Matrix, SymmGroup, storage::nop> evolution(this->mps,
+            time_evolve<Matrix, SymmGroup, storage::nop> evolution(*mps,
                                                                    Uterms[which],
-                                                                   this->parms);
+                                                                   (*parms));
             for (int k = 0; k < 5; ++k)
-                evolution.sweep(this->sweep);
+                evolution.sweep(sweep_);
             evolution.finalize();
-            this->mps = evolution.get_current_mps();
+            *mps = evolution.get_current_mps();
         }
     }
 
-        
+    
 private:        
+    DmrgParameters * parms;
+    MPS<Matrix, SymmGroup> * mps;
+    Lattice_ptr lat;
+    Hamiltonian<Matrix, SymmGroup> const * H;
+    int sweep_;
+    
+    results_collector iteration_results_;
+    
     std::vector<Hamiltonian<Matrix, SymmGroup> > hamils;
     std::vector<MPO<Matrix, SymmGroup> > Uterms;
 };

@@ -14,10 +14,9 @@
 #include <iostream>
 #include <sys/stat.h>
 
-#include "tevol_sim.h"
-
 #include "dmrg/sim/te_utils.hpp"
 #include "dmrg/mp_tensors/evolve.h"
+#include "dmrg/utils/results_collector.h"
 
 
 // ******     HELPER OBJECTS     ******
@@ -47,47 +46,46 @@ struct trotter_gate {
     }
 };
 
+enum tevol_order_tag {order_unknown, second_order, fourth_order};
+inline std::ostream& operator<< (std::ostream& os, tevol_order_tag o)
+{
+    switch (o)
+    {
+        case second_order:
+            os << "Second order Trotter decomposition";
+            break;
+        case fourth_order:
+            os << "Fourth order Trotter decomposition";
+            break;
+        default:
+            os << "uknown Trotter decomposition";
+    }
+    return os;
+}
+
 
 // ******   SIMULATION CLASS   ******
 template <class Matrix, class SymmGroup>
-class dmrg_tevol_nn_sim : public dmrg_tevol_sim<Matrix, SymmGroup> {
-    
-    typedef dmrg_tevol_sim<Matrix, SymmGroup> base;
-    	
-	enum order_t {order_unknown, second_order, fourth_order};
-	
+class nearest_neighbors_evolver {
 public:
-    typedef typename base::mpo_t mpo_t;
-    typedef typename base::boundary_t boundary_t;
-
-	friend
-    std::ostream& operator<< (std::ostream& os, order_t const&  o)
-    {
-        switch (o)
-        {
-            case second_order:
-                os << "Second order Trotter decomposition";
-                break;
-            case fourth_order:
-                os << "Fourth order Trotter decomposition";
-                break;
-            default:
-                os << "uknown Trotter decomposition";
-        }
-        return os;
-    }
-	
-    dmrg_tevol_nn_sim (DmrgParameters const & parms_, ModelParameters const  & model_)
-    : base(parms_, model_)
-    , trotter_order(parse_trotter_order(this->parms["te_order"]))
+    nearest_neighbors_evolver(DmrgParameters * parms_, MPS<Matrix, SymmGroup> * mps_,
+                              Lattice_ptr lat_, Hamiltonian<Matrix, SymmGroup> const* H_,
+                              int init_sweep=0)
+    : parms(parms_)
+    , mps(mps_)
+    , lat(lat_)
+    , H(H_)
+    , sweep_(init_sweep)
+    , trotter_order(parse_trotter_order((*parms)["te_order"]))
+    , block_terms(hamil_to_blocks(*H, lat->size()))
     {
         maquis::cout << "Using nearest-neighbors time evolution." << std::endl;
         maquis::cout << "Using " << trotter_order << std::endl;
         maquis::cout << "Time evolution optimization is "
-                     << ((this->parms.template get<bool>("te_optim")) ? "enabled" : "disabled")
+                     << (((*parms)["te_optim"]) ? "enabled" : "disabled")
                      << std::endl;
         
-        // alpha coeffiecients and set sequence of Uterms according to trotter order
+        /// alpha coeffiecients and set sequence of Uterms according to trotter order
         switch (trotter_order){
 			case second_order:
             {
@@ -98,7 +96,7 @@ public:
 				Useq.push_back(1); // even
 				Useq.push_back(0); // odd
 
-                if (this->parms.template get<bool>("te_optim"))
+                if ((*parms)["te_optim"])
                 {
                     gates_coeff.push_back(std::make_pair(0,1.));     // 2-term
 
@@ -142,7 +140,7 @@ public:
 				Useq.push_back(1); // even
 				Useq.push_back(0); // odd
 				
-                if (this->parms.template get<bool>("te_optim"))
+                if ((*parms)["te_optim"])
                 {
                     gates_coeff.push_back(std::make_pair(0,alpha_1));                 // 4-term
                     gates_coeff.push_back(std::make_pair(0,alpha_3*0.5+alpha_1*0.5)); // 5-term
@@ -191,88 +189,83 @@ public:
                 break;
             }
 		}
+        
+        /// compute the time evolution gates
+        prepare_te_terms();
     }
     
 
-protected:
-    void prepare_te_terms(bool split_hamil=true)
+    void prepare_te_terms()
     {
-        size_t L = this->lat->size();
-        if (split_hamil)
-            block_terms = hamil_to_blocks(this->H, L);
+        size_t L = lat->size();
         
+        double dt = (*parms)["dt"];
         typename Matrix::value_type I;
-        if (this->sweep < this->parms.template get<int>("nsweeps_img"))
+        if (sweep_ < (*parms)["nsweeps_img"])
             I = maquis::traits::real_identity<typename Matrix::value_type>::value;
         else
             I = maquis::traits::imag_identity<typename Matrix::value_type>::value;
-        typename Matrix::value_type alpha = -I * this->parms.template get<double>("dt") * this->parms.template get<double>("exp_rescaling");
+        typename Matrix::value_type alpha = -I * dt;
         
         Uterms.resize(gates_coeff.size(), trotter_gate<Matrix, SymmGroup>(L));
         for (size_t i=0; i<gates_coeff.size(); ++i) {
             Uterms[i].clear();
             Uterms[i].pfirst = gates_coeff[i].first;
             for (size_t p=gates_coeff[i].first; p<L-1; p+=2){
-                if (this->parms["expm_method"] == "heev")
-                    Uterms[i].add_term(p, op_exp_hermitian(this->H.get_phys()*this->H.get_phys(), block_terms[p], gates_coeff[i].second*alpha));
+                if ((*parms)["expm_method"] == "heev")
+                    Uterms[i].add_term(p, op_exp_hermitian(H->get_phys()*H->get_phys(), block_terms[p], gates_coeff[i].second*alpha));
                 else
-                    Uterms[i].add_term(p, op_exp(this->H.get_phys()*this->H.get_phys(), block_terms[p], gates_coeff[i].second*alpha));
+                    Uterms[i].add_term(p, op_exp(H->get_phys()*H->get_phys(), block_terms[p], gates_coeff[i].second*alpha));
             }
         }
     }
     
-    void evolve_time_step()
-    { return evolve_time_step(Useq); }
-    
-    void evolve_time_step(std::vector<std::size_t> const & gates_i)
+    void operator()(int nsteps)
     {
-        assert(gates_i.size() > 0);
-        for (size_t i=0; i<gates_i.size(); ++i) {
-            if (this->mps.canonization(true) < this->mps.length()/2)
-                evolve_l2r(this->mps, Uterms[gates_i[i]].vgates, Uterms[gates_i[i]].idx, Uterms[gates_i[i]].pfirst,
-                           this->parms.template get<std::size_t>("max_bond_dimension"),
-                           this->parms.template get<double>("truncation_final"));
-            else
-                evolve_r2l(this->mps, Uterms[gates_i[i]].vgates, Uterms[gates_i[i]].idx, Uterms[gates_i[i]].pfirst,
-                           this->parms.template get<std::size_t>("max_bond_dimension"),
-                           this->parms.template get<double>("truncation_final"));
-        }
-    }
-    
-    void evolve_ntime_steps(int nsteps)
-    {
-        int ns = this->sweep + nsteps;
-
-        if (nsteps < 2 || !this->parms.template get<bool>("te_optim")) {
+        iteration_results_.clear();
+        
+        int ns = sweep_ + nsteps;
+        
+        if (nsteps < 2 || !(*parms)["te_optim"]) {
             // nsteps sweeps
-            for (; this->sweep < ns; ++(this->sweep))
+            for (int i=sweep_; i < ns; ++i)
             {
-                this->parms.set("sweep", this->sweep);
+                sweep_ = i;
+                (*parms).set("sweep", sweep_);
                 evolve_time_step(Useq);
             }
         } else {
-            this->parms.set("sweep", this->sweep);
             // one sweep
+            (*parms).set("sweep", sweep_);
             evolve_time_step(Useq_bmeas);
-            ++(this->sweep);
             
-            // nsteps - 2 sweep
-            for (; this->sweep < ns-1; ++(this->sweep))
+            // nsteps - 2 sweeps
+            for (int i=sweep_+1; i<ns-1; ++i) {
+                sweep_ = i;
+                (*parms).set("sweep", sweep_);
                 evolve_time_step(Useq_double);
+            }
             
             // one sweep
+            sweep_ += 1;
+            (*parms).set("sweep", sweep_);
             evolve_time_step(Useq_ameas);
-            ++(this->sweep);
         }
-        // this->sweep = ns!
-        --(this->sweep);
-        this->parms.set("sweep", this->sweep);
+        assert(sweep_ == ns-1);
     }
-
+    
+    int sweep() const
+    {
+        return sweep_;
+    }
+    
+    results_collector const& iteration_results() const
+    {
+        return iteration_results_;
+    }
     
 private:
-    
-	order_t parse_trotter_order (std::string const & trotter_param)
+    tevol_order_tag parse_trotter_order (std::string const & trotter_param)
     {
         if (trotter_param == "second")
             return second_order;
@@ -283,9 +276,115 @@ private:
             return order_unknown;
         }
     }
-    
+
+    void evolve_time_step(std::vector<std::size_t> const & gates_i)
+    {
+        assert(gates_i.size() > 0);
         
-	order_t trotter_order;
+        for (size_t i=0; i<gates_i.size(); ++i) {
+            if (mps->canonization(true) < mps->length()/2)
+                evolve_l2r(gates_i[i]);
+            else
+                evolve_r2l(gates_i[i]);
+        }
+    }
+    
+    void evolve_l2r(std::size_t gate_index)
+    {
+        std::size_t L = mps->length();
+        std::vector<block_matrix<Matrix, SymmGroup> > const & ops = Uterms[gate_index].vgates;
+        std::vector<long> const & idx = Uterms[gate_index].idx;
+        int pfirst = Uterms[gate_index].pfirst;
+        std::size_t Mmax=(*parms)["max_bond_dimension"];
+        double cutoff=(*parms)["truncation_final"];
+        MPS<Matrix, SymmGroup> const& constmps = *mps;
+        
+        assert(L == idx.size());
+
+        if (mps->canonization() != pfirst + 1)
+            mps->canonize(pfirst + 1);
+        
+        // TODO: remove pfirst!
+        for (std::size_t p = pfirst; p <= L-1; p += 2)
+        {
+            if (idx[p] != -1)
+            {
+                constmps[p].make_left_paired();
+                constmps[p+1].make_right_paired();
+                
+                block_matrix<Matrix, SymmGroup> v0, v1;
+                gemm(constmps[p].data(), constmps[p+1].data(), v0); // outer product of two sites
+                
+                v1 = contraction::multiply_with_twosite(v0, ops[idx[p]],
+                                                        constmps[p].row_dim(), constmps[p+1].col_dim(),
+                                                        constmps[p].site_dim());
+                truncation_results trunc = compression::replace_two_sites_l2r(*mps, Mmax, cutoff, v1, p);
+                iteration_results_["BondDimension"]     << trunc.bond_dimension;
+                iteration_results_["TruncatedWeight"]   << trunc.truncated_weight;
+                iteration_results_["TruncatedFraction"] << trunc.truncated_fraction;
+                iteration_results_["SmallestEV"]        << trunc.smallest_ev;
+            }
+            mps->move_normalization_l2r(p+1, p+3, DefaultSolver());
+        }
+        mps->canonization(true);
+        assert(mps->canonization() == L-1);
+        // maquis::cout << "Norm loss " << i << ": " << trace(t) << " " << -log(trace(t)) << std::endl;
+    }
+    
+    void evolve_r2l(std::size_t gate_index)
+    {
+        std::size_t L = mps->length();
+        std::vector<block_matrix<Matrix, SymmGroup> > const & ops = Uterms[gate_index].vgates;
+        std::vector<long> const & idx = Uterms[gate_index].idx;
+        int pfirst = Uterms[gate_index].pfirst;
+        std::size_t Mmax=(*parms)["max_bond_dimension"];
+        double cutoff=(*parms)["truncation_final"];
+        MPS<Matrix, SymmGroup> const& constmps = *mps;
+
+        assert(L == idx.size());
+        
+        int startpos = std::min(L-2-(L-pfirst)%2, L-2);
+        if (mps->canonization() != startpos)
+            mps->canonize(startpos);
+        
+        for (int p = std::min(L-2-(L-pfirst)%2, L-2); p >= pfirst; p -= 2)
+        {
+            if (idx[p] != -1)
+            {
+                constmps[p].make_left_paired();
+                constmps[p+1].make_right_paired();
+                
+                block_matrix<Matrix, SymmGroup> v0, v1;
+                gemm(constmps[p].data(), constmps[p+1].data(), v0); // outer product of two sites
+                
+                v1 = contraction::multiply_with_twosite(v0, ops[idx[p]],
+                                                        constmps[p].row_dim(), constmps[p+1].col_dim(),
+                                                        constmps[p].site_dim());
+                truncation_results trunc = compression::replace_two_sites_r2l(*mps, Mmax, cutoff, v1, p);
+                iteration_results_["BondDimension"]     << trunc.bond_dimension;
+                iteration_results_["TruncatedWeight"]   << trunc.truncated_weight;
+                iteration_results_["TruncatedFraction"] << trunc.truncated_fraction;
+                iteration_results_["SmallestEV"]        << trunc.smallest_ev;
+            }
+            mps->move_normalization_r2l(p, std::max(static_cast<long>(p)-2,0L), DefaultSolver());
+        }
+        
+        
+        mps->canonization(true);
+        assert(mps->canonization() == 0);
+        // maquis::cout << "Norm loss " << i << ": " << trace(t) << " " << -log(trace(t)) << std::endl;
+    }
+
+private:
+    DmrgParameters * parms;
+    MPS<Matrix, SymmGroup> * mps;
+    Lattice_ptr lat;
+    Hamiltonian<Matrix, SymmGroup> const * H;
+    int sweep_;
+    
+    results_collector iteration_results_;
+    
+	tevol_order_tag trotter_order;
     std::vector<block_matrix<Matrix, SymmGroup> > block_terms;
     std::vector<std::pair<std::size_t,double> > gates_coeff;
     std::vector<trotter_gate<Matrix, SymmGroup> > Uterms;

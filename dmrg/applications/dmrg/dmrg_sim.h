@@ -85,7 +85,7 @@ public:
                     
                     /// measure observables specified in 'always_measure'
                     if (!parms["always_measure"].empty())
-                        this->measure(this->results_archive_path(sweep) + "/results", measurements.sublist(parms["always_measure"]));
+                        this->measure(this->results_archive_path(sweep) + "/results/", measurements.sublist(parms["always_measure"]));
                 }
                 
                 /// write checkpoint

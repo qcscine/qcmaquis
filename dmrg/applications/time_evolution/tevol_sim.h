@@ -2,7 +2,7 @@
  *
  * MAQUIS DMRG Project
  *
- * Copyright (C) 2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
+ * Copyright (C) 2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *
  *****************************************************************************/
 
@@ -15,93 +15,114 @@
 #include <sys/stat.h>
 
 #include "dmrg/sim/sim.h"
-
 #include "dmrg/sim/te_utils.hpp"
 
-template <class Matrix, class SymmGroup>
-class dmrg_tevol_sim : public sim<Matrix, SymmGroup> {
+template <class Matrix, class SymmGroup, class TimeEvolver>
+class tevol_sim : public sim<Matrix, SymmGroup> {
     
     typedef sim<Matrix, SymmGroup> base;
     
+    using base::mps;
+    using base::mpo;
+    using base::lat;
+    using base::H;
+    using base::parms;
+    using base::model;
+    using base::measurements;
+    using base::stop_callback;
+    using base::init_sweep;
+    using base::rfile;
+    
 public:
-    typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
-    typedef Boundary<Matrix, SymmGroup> boundary_t;
-        
-    dmrg_tevol_sim (DmrgParameters const & parms_, ModelParameters const  & model_)
-    : base(parms_, model_, false)
-    , parms_orig(parms_)
-    , model_orig(model_)
-    , initialized(false)
-    {
-        base::parms = parms_orig.get_at_index("t", base::sweep);
-        base::model = model_orig.get_at_index("t", base::sweep);
-        
-        base::model_init();
-        base::mps_init();
-    }
+    tevol_sim(DmrgParameters const & parms_, ModelParameters const  & model_)
+    : base(parms_.get_at_index("t", base::init_sweep), model_.get_at_index("t", base::init_sweep))
+    , evolver(&parms, &mps, lat, &H, init_sweep)
+    { }
     
-    int advance (int nsteps, double time_limit)
+    void run()
     {
-        if (this->sweep == 0 || !initialized)
-        {
-            int pc = 0, mc = 0;
-            this->parms = parms_orig.get_at_index("t", this->sweep, &pc);
-            this->model = model_orig.get_at_index("t", this->sweep, &mc);
-            if (mc > 0 || pc > 0)
-                this->model_init();
-            prepare_te_terms();
-            initialized = true;
-        } else if (this->parms.template get<int>("update_each") > -1 && (this->sweep % this->parms.template get<int>("update_each")) == 0)
-        {
-            int pc = 0, mc = 0;
-            this->parms = parms_orig.get_at_index("t", this->sweep, &pc);
-            this->model = model_orig.get_at_index("t", this->sweep, &mc);
-            if (mc > 0 || pc > 0) {
-                this->model_init();
-                prepare_te_terms();
+        int meas_each    = parms["measure_each"];
+        int chkp_each    = parms["chkp_each"];
+        int update_each  = parms["update_each"];
+        int nsweeps     = parms["nsweeps"];
+        int nsweeps_img = parms["nsweeps_img"];
+        
+        /// compute nsteps as the min of the three above
+        int nsteps = parms["nsweeps"];
+        if (meas_each > -1)
+            nsteps = std::min(nsteps, meas_each);
+        if (chkp_each > -1)
+            nsteps = std::min(nsteps, chkp_each);
+        if (update_each > -1)
+            nsteps = std::min(nsteps, update_each);
+        
+        #define CHECK_MULTIPLICITY(var)                                               \
+        if (var > 0 && var % nsteps != 0)                                             \
+            throw std::runtime_error("var must be a multiple of 'nsteps'.");  
+        CHECK_MULTIPLICITY(nsweeps)
+        CHECK_MULTIPLICITY(nsweeps_img)
+        CHECK_MULTIPLICITY(meas_each)
+        CHECK_MULTIPLICITY(chkp_each)
+        CHECK_MULTIPLICITY(update_each)
+        #undef CHECK_MULTIPLICITY
+        
+        int n = nsweeps / nsteps;
+        for (int i=0; i < n; ++i) {
+            // TODO: introduce some timings
+            
+            int sweep = i*nsteps;
+            if (update_each > -1 && (sweep % update_each) == 0)
+            {
+                int pc = 0, mc = 0;
+                parms = parms.get_at_index("t", sweep, &pc);
+                model = model.get_at_index("t", sweep, &mc);
+                if (mc > 0 || pc > 0) {
+                    this->model_init(sweep);
+                    evolver = TimeEvolver(&parms, &mps, lat, &H, sweep);
+                }
+            } else if (sweep == nsweeps_img) {
+                    // since this is just a change in the time step, there is
+                    // no need to split the hamiltonian in non-overlapping terms.
+                    evolver.prepare_te_terms();
             }
-        } else {
-            if (this->sweep == this->parms.template get<int>("nsweeps_img"))
-                // since this is just a change in the time step, there is
-                // no need to split the hamiltonian in non-overlapping terms.
-                prepare_te_terms(false);
-        }
-        
-        // apply time evolution operators
-        evolve_ntime_steps(nsteps);
-        
-        double energy = maquis::real(expval(this->mps, this->mpo));
-        maquis::cout << "Energy " << energy << std::endl;
-        storage::log << std::make_pair("Energy", energy);
-        
-        return -1; // no early exit
-    }
+            
+            /// time evolution
+            evolver(nsteps);
+            sweep = evolver.sweep();
+            
+            /// measurements
+            if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
+            {
+                /// measure energy
+                double energy = maquis::real(expval(mps, mpo));
+                maquis::cout << "Energy " << energy << std::endl;
+                
+                /// measure observables specified in 'always_measure'
+                if (!parms["always_measure"].empty())
+                    this->measure(this->results_archive_path(sweep) + "/results/", measurements.sublist(parms["always_measure"]));
 
-    int do_sweep (double time_limit = -1)
-    {
-        throw std::runtime_error("do_sweep not implemented for time evolution.");
-        return -1;
-    }
-    
-protected:
-    virtual void prepare_te_terms(bool split_hamil=true) =0;
-    virtual void evolve_time_step() =0;
-    
-    virtual void evolve_ntime_steps(int nsteps)
-    {
-        int ns = base::sweep + nsteps;
-        for (; base::sweep < ns; ++base::sweep)
-        {
-            this->parms.set("sweep", base::sweep);
-            evolve_time_step();
+                /// write iteration results
+                {
+                    storage::archive ar(rfile, "w");
+                    ar[this->results_archive_path(sweep) + "/parameters"] << parms;
+                    ar[this->results_archive_path(sweep) + "/parameters"] << model;
+                    ar[this->results_archive_path(sweep) + "/results"] << evolver.iteration_results();
+                    ar[this->results_archive_path(sweep) + "/results/Energy/mean/value"] << std::vector<double>(1, energy);
+                    // ar[this->results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+                }
+            }
+            
+            /// write checkpoint
+            bool stopped = stop_callback();
+            if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
+                this->checkpoint_state(mps, sweep, -1);
+            
+            if (stopped) break;
         }
-        // base::sweep = ns!
-        --base::sweep;
     }
     
-    DmrgParameters parms_orig;
-    ModelParameters model_orig;
-    bool initialized;
+private:
+    TimeEvolver evolver;
 };
 
 #endif

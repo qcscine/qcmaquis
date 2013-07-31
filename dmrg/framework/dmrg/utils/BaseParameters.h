@@ -92,7 +92,7 @@ public:
         alps::Parameters::operator[](key) = boost::lexical_cast<std::string>(value);
     }
     
-    BaseParameters get_at_index(std::string const & var, std::size_t val, int* counter = NULL)
+    BaseParameters get_at_index(std::string const & var, std::size_t val, int* counter = NULL) const
     {
         BaseParameters p(*this);
         
@@ -101,7 +101,7 @@ public:
         for (alps::Parameters::const_iterator it=p.begin();it != p.end();++it) {
             std::string key = it->key();
             if (boost::regex_match(key, what, expression)) {
-                std::vector<value_type> v = (*this)[key];
+                std::vector<value_type> v = p[key];
                 if (val < v.size())
                     p.set(what.str(1), v[val]);
                 else
@@ -111,6 +111,7 @@ public:
                     ++(*counter);
             }
         }
+        p.set("var_"+var, val);
         
         return p;
     }
