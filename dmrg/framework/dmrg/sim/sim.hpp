@@ -193,7 +193,7 @@ void sim<Matrix, SymmGroup>::measure(std::string archive_path, Measurements<Matr
         if (renyi2.size() > 0)
             ar[archive_path + "/Renyi2/mean/value"] << renyi2;
         if (spectra != NULL)
-            ar[archive_path + "/Iteration Entanglement Spectra/mean/value"] << *spectra;
+            ar[archive_path + "/Entanglement Spectra/mean/value"] << *spectra;
     }
 }
 
