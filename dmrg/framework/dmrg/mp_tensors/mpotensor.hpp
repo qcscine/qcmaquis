@@ -37,37 +37,17 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
 
         for (typename converted_prempo_t::const_iterator it = tmp_tags.begin(); it != tmp_tags.end(); ++it)
             row_tags(get<0>(*it), get<1>(*it)) = std::make_pair(get<2>(*it), get<3>(*it));
-            //row_tags(get<0>(*it), get<1>(*it)) = MPOTensor_detail::make_term_descriptor(get<2>(*it), get<3>(*it));
 
         std::sort(tmp_tags.begin(), tmp_tags.end(), MPOTensor_detail::col_cmp<prempo_descriptor>());
 
         for (typename converted_prempo_t::const_iterator it = tmp_tags.begin(); it != tmp_tags.end(); ++it)
             col_tags(get<0>(*it), get<1>(*it)) = std::make_pair(get<2>(*it), get<3>(*it));
-            //col_tags(get<0>(*it), get<1>(*it)) = MPOTensor_detail::make_term_descriptor(get<2>(*it), get<3>(*it));
+    }
+    else {
+        // Initialize a private operator table
+        operator_table = op_table_ptr(new OPTable<Matrix, SymmGroup>());
     }
 }
-
-/*
-template<class Matrix, class SymmGroup>
-typename MPOTensor<Matrix, SymmGroup>::value_type & 
-MPOTensor<Matrix, SymmGroup>::operator()(index_type left_index,
-                                         index_type right_index,
-                                         typename MPOTensor<Matrix, SymmGroup>::access_type const & ket_index,
-                                         typename MPOTensor<Matrix, SymmGroup>::access_type const & bra_index)
-{
-    return data_[std::make_pair(left_index,right_index)](ket_index, bra_index);
-}
-
-template<class Matrix, class SymmGroup>
-typename MPOTensor<Matrix, SymmGroup>::value_type const & 
-MPOTensor<Matrix, SymmGroup>::operator()(index_type left_index,
-                                         index_type right_index,
-                                         typename MPOTensor<Matrix, SymmGroup>::access_type const & ket_index,
-                                         typename MPOTensor<Matrix, SymmGroup>::access_type const & bra_index) const
-{
-    return data_.find(std::make_pair(left_index,right_index))->second(ket_index, bra_index);
-}
-*/
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()(index_type left_index,
@@ -93,16 +73,14 @@ template<class Matrix, class SymmGroup>
 bool MPOTensor<Matrix, SymmGroup>::has(index_type left_index,
                                        index_type right_index) const
 {
-    return std::abs(row_tags(left_index, right_index).second) > 1.e-40;
+    assert(row_tags.find_element(left_index, right_index)
+            == col_tags.find_element(left_index, right_index));
+    return row_tags.find_element(left_index, right_index) != NULL;
 }
 
 template<class Matrix, class SymmGroup>
 void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(const scalar_type& v)
 {
-    //for (typename std::vector<block_matrix<Matrix, SymmGroup> >::iterator it = data_.begin();
-    //     it != data_.end(); ++it)
-    //    *it *= v;
-
     for (typename CSRMatrix::iterator1 it1 = row_tags.begin1(); it1 != row_tags.end1(); ++it1)
         for (typename CSRMatrix::iterator2 it2 = it1.begin(); it2 != it1.end(); ++it2)
             it2->second *= v; 
@@ -115,10 +93,6 @@ void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(const scalar_type& v)
 template<class Matrix, class SymmGroup>
 void MPOTensor<Matrix, SymmGroup>::divide_by_scalar(const scalar_type& v)
 {
-    //for (typename std::vector<block_matrix<Matrix, SymmGroup> >::iterator it = data_.begin();
-    //     it != data_.end(); ++it)
-    //    *it /= v;
-
     for (typename CSRMatrix::iterator1 it1 = row_tags.begin1(); it1 != row_tags.end1(); ++it1)
         for (typename CSRMatrix::iterator2 it2 = it1.begin(); it2 != it1.end(); ++it2)
             it2->second /= v; 

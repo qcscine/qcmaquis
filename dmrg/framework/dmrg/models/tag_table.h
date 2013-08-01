@@ -46,19 +46,19 @@ public:
     typedef block_matrix<Matrix, SymmGroup> op_t;
 
 private:
-    typedef typename Matrix::value_type value_type;
-    typedef std::map<std::pair<tag_type, tag_type>, std::pair<tag_type, value_type>, tag_detail::pair_cmp> pair_map_t;
+    typedef typename Matrix::value_type mvalue_type;
+    typedef std::map<std::pair<tag_type, tag_type>, std::pair<tag_type, mvalue_type>, tag_detail::pair_cmp> pair_map_t;
     typedef typename pair_map_t::const_iterator pair_map_it_t;
 
 public:
     tag_type register_op(const op_t & op_);
 
-    std::pair<tag_type, value_type> checked_register(op_t & sample);
+    std::pair<tag_type, mvalue_type> checked_register(op_t & sample);
 
     tag_type register_site_op(const op_t & op_);
 
     /* WARNING: not thread safe! */
-    std::pair<tag_type, value_type> get_product_tag(const tag_type t1, const tag_type t2);
+    std::pair<tag_type, mvalue_type> get_product_tag(const tag_type t1, const tag_type t2);
 
     tag_type get_kron_tag(Index<SymmGroup> const & phys_i, const tag_type t1, const tag_type t2);
 
@@ -80,7 +80,7 @@ private:
 
     // TODO: fix const_element_iterator bug in alps::numeric::matrix to restore const-correctness here
     /* Check if two operators are equal modulo a scale factor*/
-    static std::pair<bool, value_type> equal(op_t & reference, op_t & sample);
+    static std::pair<bool, mvalue_type> equal(op_t & reference, op_t & sample);
 
     //static bool full_equal(op_t & op1, op_t & op2);
 

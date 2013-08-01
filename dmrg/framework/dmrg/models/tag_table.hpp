@@ -18,9 +18,9 @@ typename OPTable<Matrix, SymmGroup>::tag_type OPTable<Matrix, SymmGroup>::regist
 }
 
 template <class Matrix, class SymmGroup>
-std::pair<typename OPTable<Matrix, SymmGroup>::tag_type, typename OPTable<Matrix, SymmGroup>::value_type> OPTable<Matrix, SymmGroup>::checked_register(op_t & sample) {
+std::pair<typename OPTable<Matrix, SymmGroup>::tag_type, typename OPTable<Matrix, SymmGroup>::mvalue_type> OPTable<Matrix, SymmGroup>::checked_register(op_t & sample) {
 
-    std::pair<bool, value_type> cmp_result;
+    std::pair<bool, mvalue_type> cmp_result;
     typename std::vector<op_t>::iterator it_pt = this->begin();
     for (; it_pt != this->end(); ++it_pt) { 
         cmp_result = equal(*it_pt, sample);
@@ -44,7 +44,7 @@ typename OPTable<Matrix, SymmGroup>::tag_type OPTable<Matrix, SymmGroup>::regist
 
 template <class Matrix, class SymmGroup>
 std::pair<typename OPTable<Matrix, SymmGroup>::tag_type,
-          typename OPTable<Matrix, SymmGroup>::value_type> OPTable<Matrix, SymmGroup>::get_product_tag
+          typename OPTable<Matrix, SymmGroup>::mvalue_type> OPTable<Matrix, SymmGroup>::get_product_tag
                     (const typename OPTable<Matrix, SymmGroup>::tag_type t1,
                      const typename OPTable<Matrix, SymmGroup>::tag_type t2) {
     assert( t1 < this->size() && t2 < this->size() );
@@ -62,7 +62,7 @@ std::pair<typename OPTable<Matrix, SymmGroup>::tag_type,
         op_t& op2 = (*this)[t2];
 
         gemm(op1, op2, product);
-        std::pair<tag_type, value_type> ret = this->checked_register(product);
+        std::pair<tag_type, mvalue_type> ret = this->checked_register(product);
         product_tags[std::make_pair(t1, t2)] = ret;
         return ret;
     }
@@ -97,7 +97,7 @@ typename OPTable<Matrix, SymmGroup>::tag_type OPTable<Matrix, SymmGroup>::get_kr
 }
 
 template <class Matrix, class SymmGroup>
-std::pair<bool, typename OPTable<Matrix, SymmGroup>::value_type> OPTable<Matrix, SymmGroup>::equal(op_t & reference, op_t & sample) {
+std::pair<bool, typename OPTable<Matrix, SymmGroup>::mvalue_type> OPTable<Matrix, SymmGroup>::equal(op_t & reference, op_t & sample) {
     if (reference.left_basis() != sample.left_basis() || reference.right_basis() != sample.right_basis())
         return std::make_pair(false, 0.);
 

@@ -125,8 +125,8 @@ struct contraction {
                     index_type b1 = col_it.index();
                     
                     //block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
-                    std::pair<block_matrix<OtherMatrix, SymmGroup> const &, value_type> access = mpo.at(b1,b2);
-                    block_matrix<Matrix, SymmGroup> W = access.second * access.first;
+                    MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
+                    block_matrix<Matrix, SymmGroup> W = access.scale * access.op;
                     if (W.n_blocks() == 0)
                         continue;
                     
@@ -248,8 +248,8 @@ struct contraction {
                     index_type b2 = row_it.index();
                     
                     //block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
-                    std::pair<block_matrix<OtherMatrix, SymmGroup> const &, value_type> access = mpo.at(b1,b2);
-                    block_matrix<Matrix, SymmGroup> W = access.second * access.first;
+                    MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
+                    block_matrix<Matrix, SymmGroup> W = access.scale * access.op;
                     if (W.n_blocks() == 0)
                         continue;
                     
@@ -451,11 +451,8 @@ struct contraction {
                 for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
                     index_type b1 = col_it.index();
                     
-                    std::pair<block_matrix<OtherMatrix, SymmGroup> const &, value_type> access = mpo.at(b1,b2);
-                    block_matrix<Matrix, SymmGroup> const & W = access.first;
-                    //block_matrix<Matrix, SymmGroup> W = access.second * access.first;
-                    //if (W.n_blocks() == 0)
-                    //    continue;
+                    MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
+                    block_matrix<Matrix, SymmGroup> const & W = access.op;
                     
                     block_matrix<Matrix, SymmGroup> const & T = t[b1];
                     
@@ -505,7 +502,7 @@ struct contraction {
                                     Matrix & oblock = collector(out_l_charge, out_r_charge);
                                     
                                     maquis::dmrg::detail::lb_tensor_mpo_tag(oblock, iblock, wblock, out_left_offset, in_left_offset,
-                                                physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second, access.second);
+                                                physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second, access.scale);
                                 }
                                 
                                 if (pretend)

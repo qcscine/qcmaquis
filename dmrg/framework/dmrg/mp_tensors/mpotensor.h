@@ -71,23 +71,43 @@ namespace MPOTensor_detail
         }
     };
 
-    /* 
-    template <class Tag, class Scale>
+    template <class Matrix, class SymmGroup>
     class term_descriptor {
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+        typedef typename Matrix::value_type value_type;
     public:
         term_descriptor() {}
-        term_descriptor(Tag t, Scale s) : first(t), second(s) {}
+        term_descriptor(op_t & op_, value_type & s_) : op(op_), scale(s_) {}
 
-        Tag first;
-        Scale second;
+        op_t & op;
+        value_type & scale;
     };
 
-    template <class Tag, class Scale>
-    term_descriptor<Tag, Scale> make_term_descriptor(Tag t, Scale s)
+    template <class Matrix, class SymmGroup>
+    term_descriptor<Matrix, SymmGroup> make_term_descriptor(
+        typename term_descriptor<Matrix, SymmGroup>::op_t & op_, typename Matrix::value_type & s_)
     {
-        return term_descriptor<Tag, Scale>(t, s);
+        return term_descriptor<Matrix, SymmGroup>(op_, s_);
     }
-    */
+
+    template <class Matrix, class SymmGroup>
+    class const_term_descriptor {
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+        typedef typename Matrix::value_type value_type;
+    public:
+        const_term_descriptor() {}
+        const_term_descriptor(op_t const & op_, value_type s_) : op(op_), scale(s_) {}
+
+        op_t const & op;
+        value_type scale;
+    };
+
+    template <class Matrix, class SymmGroup, typename Scale>
+    const_term_descriptor<Matrix, SymmGroup> make_const_term_descriptor(
+        block_matrix<Matrix, SymmGroup> const & op_, Scale s_)
+    {
+        return const_term_descriptor<Matrix, SymmGroup>(op_, s_);
+    }
 
 }
 
@@ -102,18 +122,20 @@ public:
     typedef std::size_t index_type;
     typedef typename Matrix::value_type value_type;
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
-    //typedef std::pair<typename SymmGroup::charge, index_type> access_type;
 
     typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
+    typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
     typedef boost::shared_ptr<OPTable<Matrix, SymmGroup> > op_table_ptr;
 
-    typedef boost::numeric::ublas::compressed_matrix< std::pair<tag_type, value_type>,
-    //typedef boost::numeric::ublas::compressed_matrix< typename MPOTensor_detail::term_descriptor<tag_type, value_type>,
+private:
+    typedef std::pair<tag_type, value_type> internal_value_type;
+
+public:
+    typedef boost::numeric::ublas::compressed_matrix< internal_value_type,
                                                       boost::numeric::ublas::row_major
                                                       , 0, boost::numeric::ublas::unbounded_array<index_type> 
                                                     > CSRMatrix;
-    typedef boost::numeric::ublas::compressed_matrix< std::pair<tag_type, value_type>,
-    //typedef boost::numeric::ublas::compressed_matrix< typename MPOTensor_detail::term_descriptor<tag_type, value_type>,
+    typedef boost::numeric::ublas::compressed_matrix< internal_value_type,
                                                       boost::numeric::ublas::column_major
                                                       , 0, boost::numeric::ublas::unbounded_array<index_type> 
                                                     > CSCMatrix;
@@ -125,7 +147,6 @@ private:
     typedef std::pair<index_type, index_type> key_t;
     typedef block_matrix<Matrix, SymmGroup> value_t;
     typedef std::map<key_t, value_t, MPOTensor_detail::pair_cmp<Matrix, SymmGroup> > data_t;
-    typedef std::set<index_type> used_set_t;
 
     typedef std::vector<boost::tuple<std::size_t, std::size_t, tag_type, value_type> > prempo_t;
     
@@ -136,23 +157,34 @@ public:
     index_type row_dim() const;
     index_type col_dim() const;
     
-    /*
-    value_type & operator()(index_type left_index,
-                            index_type right_index,
-                            access_type const & ket_index,
-                            access_type const & bra_index);
-    value_type const & operator()(index_type left_index,
-                                  index_type right_index,
-                                  access_type const & ket_index,
-                                  access_type const & bra_index) const;
-    */
-    
     block_matrix<Matrix, SymmGroup> const & operator()(index_type left_index,
                                                        index_type right_index) const;
     block_matrix<Matrix, SymmGroup> & operator()(index_type left_index,
                                                  index_type right_index);
 
-    /* new CSR code */
+    /**** new CSR code **********/
+
+    // tagged operator ()
+    void set(index_type li, index_type ri, op_t const & op, value_type scale_ = 1.0){
+        if (this->has(li, ri)) {
+            row_tags.find_element(ri, li)->second = scale_;
+            col_tags.find_element(ri, li)->second = scale_;
+            (*operator_table)[row_tags.find_element(li, ri)->first] = op;
+        }
+        else {
+            tag_type new_op = operator_table->register_op(op);
+            row_tags(li, ri) = internal_value_type(new_op, scale_);
+            col_tags(li, ri) = internal_value_type(new_op, scale_);
+        }
+    }
+
+    // tagged operator() const
+    MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup>
+    at(index_type left_index, index_type right_index) const {
+        typename CSRMatrix::value_type const & p = row_tags(left_index, right_index);
+        return MPOTensor_detail::make_const_term_descriptor((*operator_table)[p.first], p.second);
+    }
+
     row_proxy row(index_type row_i) const
     {
         return row_proxy(row_tags, row_i);
@@ -163,23 +195,15 @@ public:
         return col_proxy(col_tags, col_i);
     }
 
-    // to be changed into operator()
-    std::pair<typename OPTable<Matrix, SymmGroup>::op_t const &, value_type>
-    at(index_type left_index, index_type right_index) const {
-        typename CSRMatrix::value_type const & p = row_tags(left_index, right_index);
-        return std::make_pair<typename OPTable<Matrix, SymmGroup>::op_t const &,
-                              typename Matrix::value_type>((*operator_table)[p.first], p.second);
-    }
-
     tag_type tag_number(index_type left_index, index_type right_index) const {
         return row_tags(left_index, right_index).first;
     }
 
     bool tag_ready() const { return (row_tags.size1() > 0 && col_tags.size1() > 0 && operator_table.get() != NULL); }
 
-    op_table_ptr get_tag_table() const { return operator_table; }
+    op_table_ptr get_operator_table() const { return operator_table; }
 
-    /*********/
+    /************************************/
     
     void multiply_by_scalar(const scalar_type&);
     void divide_by_scalar(const scalar_type&);
