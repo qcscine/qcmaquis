@@ -44,6 +44,9 @@ public:
     
     void run()
     {
+        this->model_init();
+        this->mps_init();
+        
         this->measure("/spectrum/results/", measurements);
         
         double energy = maquis::real(expval(mps, mpoc));
