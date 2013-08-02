@@ -8,11 +8,12 @@
  *****************************************************************************/
 
 template <class Matrix, class SymmGroup>
-sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const & model_, bool fullinit)
+sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const & model_)
 : parms(parms_)
 , model(model_)
 , init_sweep(0)
 , init_site(-1)
+, restore(false)
 , chkpfile(parms["chkpfile"].str())
 , rfile(parms["resultfile"].str())
 , dns( (parms["donotsave"] != 0) )
@@ -21,7 +22,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
     maquis::cout << DMRG_VERSION_STRING << std::endl;
     storage::setup(parms);
     
-    restore = false;
     {
 		boost::filesystem::path p(chkpfile);
 		if (boost::filesystem::exists(p) && boost::filesystem::is_regular_file(p))
@@ -36,23 +36,18 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
                 
                 if (init_site == -1)
                     ++init_sweep;
-                    
+                
                 maquis::cout << "Restoring state." << std::endl;
                 maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
                 restore = true;
             } else {
-                maquis::cout << "Invalid checkpoint, overwriting." << std::endl; 
+                maquis::cout << "A fresh simulation will start." << std::endl;
             }
         }
     }
     
     dmrg_random::engine.seed(parms["seed"]);
     
-    if (fullinit) {
-        model_init();
-        mps_init();
-    }
-
     {
         storage::archive ar(rfile, "w");
         
@@ -145,22 +140,21 @@ sim<Matrix, SymmGroup>::~sim()
 }
 
 template <class Matrix, class SymmGroup>
-void sim<Matrix, SymmGroup>::checkpoint_state(MPS<Matrix, SymmGroup> const& state, int sweep, int site)
+void sim<Matrix, SymmGroup>::checkpoint_state(MPS<Matrix, SymmGroup> const& state, status_type const& status)
 {
     if (!dns) {
         storage::archive ar(chkpfile, "w");
-        ar["/state"]        << state;
-        ar["/status/sweep"] << sweep;
-        ar["/status/site"]  << site;
+        ar["/state"]  << state;
+        ar["/status"] << status;
     }
 }
 
 template <class Matrix, class SymmGroup>
-std::string sim<Matrix, SymmGroup>::results_archive_path(int sweep) const
+std::string sim<Matrix, SymmGroup>::results_archive_path(status_type const& status) const
 {
     std::ostringstream oss;
     oss.str("");
-    oss << "/simulation/sweep" << sweep;
+    oss << "/simulation/sweep" << status.at("sweep");
     return oss.str();
 }
 

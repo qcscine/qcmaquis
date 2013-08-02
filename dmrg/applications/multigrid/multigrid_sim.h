@@ -28,45 +28,136 @@ class multigrid_sim : public sim<Matrix, SymmGroup> {
     
     typedef sim<Matrix, SymmGroup> base;
     typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
-    
-    typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
-    typedef Boundary<Matrix, SymmGroup> boundary_t;
-    
+    typedef typename base::status_type status_type;
+
     enum measure_t {sweep_measure, mg_measure};
     
-public:
+    using base::mps;
+    using base::mpo;
+    using base::lat;
+    using base::mpoc;
+    using base::parms;
+    using base::model;
+    using base::measurements;
+    using base::stop_callback;
+    using base::init_sweep;
+    using base::init_site;
+    using base::rfile;
     
-    multigrid_sim (DmrgParameters & parms_, ModelParameters & model_)
-    : base(parms_, model_, false)
-    , parms_orig(parms_)
-    , model_orig(model_)
-    , graining(0)
-    , m_type(sweep_measure)
+public:
+    multigrid_sim(DmrgParameters & parms_, ModelParameters & model_)
+    : base(parms_, model_)
+    , initial_graining(0)
     {
-        assert(parms_orig["lattice_library"] == "continuum");
-        assert(parms_orig["model_library"] == "continuum");
+        assert(parms["lattice_library"] == "continuum");
+        assert(parms["model_library"] == "continuum");
         
         if (this->restore)
         {
             storage::archive ar(this->chkpfile);
-            ar["/status/graining"] >> graining;
+            ar["/status/graining"] >> initial_graining;
         }
-        
-        base::parms = parms_orig.get_at_index("graining", graining);
-        base::model = model_orig.get_at_index("graining", graining);
-        
-        base::model_init();
-        base::mps_init();
-        cur_graining = graining;
     }
     
-    std::string sweep_archive_path ()
+    void run()
+    {
+        /// Set current status in parms
+        parms = parms.get_at_index("graining", initial_graining);
+        model = model.get_at_index("graining", initial_graining);
+        /// Build current model and load/build MPS
+        this->model_init();
+        this->mps_init();
+        
+        for (int graining=initial_graining; graining < parms["ngrainings"]; ++graining)
+        {
+            /// usual optimization
+            if (init_sweep < parms["nsweeps"])
+                dmrg_run(graining);
+            
+            if ( stop_callback() ) {
+                maquis::cout << "Time limit reached." << std::endl;
+                break;
+            }
+
+            /// fine graining
+            maquis::cout << "*** Starting grainings ***" << std::endl;
+            
+            parms = parms.get_at_index("graining", graining+1);
+            model = model.get_at_index("graining", graining+1);
+            this->model_init();
+            
+            boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > initializer = boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > (new empty_mps_init<Matrix, SymmGroup>());
+            MPS<Matrix, SymmGroup> new_mps = MPS<Matrix, SymmGroup>(lat->size(), 1, this->phys, this->initc, *initializer);
+            
+            int curL = mps.length();
+            BaseParameters oldmodel = model.get_at_index("graining", graining);
+            
+            std::vector<MPO<Matrix, SymmGroup> > mpo_mix(curL+1, MPO<Matrix, SymmGroup>(0));
+            double r = lat->size() / curL;
+            for (int i=0; i<=curL; ++i)
+                mpo_mix[i] = mixed_mpo(base::model, r*i, oldmodel, curL-i);
+            
+            results_collector graining_results;
+            if (curL < new_mps.length())
+                graining_results = multigrid::extension_optim(base::parms, mps, new_mps, mpo_mix);
+            else if (this->mps.length() > new_mps.length())
+                throw std::runtime_error("Restriction operation not really implemented.");
+                // graining_results = multigrid::restriction(this->mps, initial_mps);
+            
+            /// swap mps
+            swap(mps, new_mps);
+            
+            
+            /// write iteration results
+            {
+                storage::archive ar(rfile, "w");
+                ar[results_archive_path(0, graining, mg_measure) + "/parameters"] << parms;
+                ar[results_archive_path(0, graining, mg_measure) + "/parameters"] << model;
+                ar[results_archive_path(0, graining, mg_measure) + "/results"] << graining_results;
+            }
+
+            /// measure observables specified in 'always_measure'
+            if (!parms["always_measure"].empty())
+                this->measure(results_archive_path(0, graining, mg_measure) + "/results/", measurements.sublist(parms["always_measure"]));
+
+            /// checkpoint new mps
+            this->checkpoint_state(mps, 0, -1, graining+1);
+            
+            if ( stop_callback() ) {
+                maquis::cout << "Time limit reached." << std::endl;
+                break;
+            }
+        }
+    }
+    
+    ~multigrid_sim()
+    {
+        storage::disk::sync();
+    }
+    
+private:
+    
+    std::string results_archive_path(status_type const& status) const
+    {
+        throw std::runtime_error("do not use in multigrid.");
+    }
+    
+    void checkpoint_state(MPS<Matrix, SymmGroup> const& state, int sweep, int site, int graining)
+    {
+        status_type status;
+        status["sweep"]    = sweep;
+        status["site"]     = site;
+        status["graining"] = graining;
+        return base::checkpoint_state(state, status);
+    }
+
+    std::string results_archive_path(int sweep, int graining, measure_t m_type) const
     {
         std::ostringstream oss;
         oss.str("");
         switch (m_type) {
             case sweep_measure:
-                oss << "/simulation/iteration/graining/" << graining << "/sweep" << this->sweep;
+                oss << "/simulation/iteration/graining/" << graining << "/sweep" << sweep;
                 break;
             case mg_measure:
                 oss << "/simulation/iteration/graining/" << graining;
@@ -75,136 +166,77 @@ public:
         return oss.str();
     }
     
-    int do_sweep (double time_limit = -1)
+    void dmrg_run(int graining)
     {
-        int exit_site = optimizer->sweep(base::sweep, Both,
-                                         base::site, time_limit);
-        storage::disk::sync();
+        int meas_each = parms["measure_each"];
+        int chkp_each = parms["chkp_each"];
         
-        base::mps = optimizer->get_current_mps();
+        boost::shared_ptr<opt_base_t> optimizer;
+        if (parms["optimization"] == "singlesite")
+        {
+            optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
+                            (mps, mpoc, parms, stop_callback, init_sweep, init_site) );
+        }
         
-        return exit_site;
-    }
-    
-    bool run ()
-    {
-        bool early_exit = false;
-        do {
-            MPS<Matrix, SymmGroup> initial_mps;
-            
-            
-            m_type = mg_measure;
-
-            if (cur_graining != graining)
-            {
-                maquis::cout << "*** Starting grainings ***" << std::endl;
+        else if(parms["optimization"] == "twosite")
+        {
+            optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
+                            (mps, mpoc, parms, stop_callback, init_sweep, init_site) );
+        }
+        else {
+            throw std::runtime_error("Don't know this optimizer");
+        }
+        
+        try {
+            for (int sweep=init_sweep; sweep < parms["nsweeps"]; ++sweep) {
+                // TODO: introduce some timings
                 
-                base::parms = parms_orig.get_at_index("graining", graining);
-                base::model = model_orig.get_at_index("graining", graining);
-                base::model_init();
+                optimizer->sweep(sweep, Both);
+                storage::disk::sync();
                 
-                boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > initializer = boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > (new empty_mps_init<Matrix, SymmGroup>());
-                initial_mps = MPS<Matrix, SymmGroup>(this->lat->size(), 1, this->phys, this->initc, *initializer);
-                
-                int curL = this->mps.length();
-                BaseParameters oldmodel = model_orig.get_at_index("graining", graining-1);
-                
-                std::vector<MPO<Matrix, SymmGroup> > mpo_mix(curL+1, MPO<Matrix, SymmGroup>(0));
-                double r = this->lat->size() / curL;
-                for (int i=0; i<=curL; ++i)
-                    mpo_mix[i] = mixed_mpo(base::model, r*i, oldmodel, curL-i);
-                
-                //            maquis::cout << "Old MPS:" << std::endl << initial_mps.description() << std::endl;
-                if (curL < initial_mps.length())
-                    multigrid::extension_optim(base::parms,
-                                               this->mps, initial_mps, mpo_mix);
-                else if (this->mps.length() > initial_mps.length())
-                    throw std::runtime_error("Restriction operation not really implemented.");
-//                    multigrid::restriction(this->mps, initial_mps);
-                //            maquis::cout << "New MPS:" << std::endl << initial_mps.description();
-                
-                this->mps = initial_mps;
-                cur_graining = graining;
-                
-                this->do_sweep_measure();
-                { // TODO: port this to a function in the base class!
-                    storage::archive ar(this->rfile, "w");
-                    
-                    ar[this->sweep_archive_path() + "/parameters"] << this->parms;
-                    ar[this->sweep_archive_path() + "/parameters"] << this->model;
-                    
-                    ar[this->sweep_archive_path() + "/results"] << storage::log;
-                }
-                if (!this->dns)
+                if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
                 {
-                    storage::archive ar(this->chkpfile, "w");
+                    /// write iteration results
+                    {
+                        storage::archive ar(rfile, "w");
+                        ar[results_archive_path(sweep, graining, sweep_measure) + "/parameters"] << parms;
+                        ar[results_archive_path(sweep, graining, sweep_measure) + "/parameters"] << model;
+                        ar[results_archive_path(sweep, graining, sweep_measure) + "/results"] << optimizer->iteration_results();
+                        // ar[results_archive_path(sweep, graining, sweep_measure) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+                    }
                     
-                    ar["/state"] << this->mps;
-                    ar["/status/sweep"] << this->sweep;
-                    ar["/status/graining"] << this->cur_graining;
-                    ar["/status/site"] << -1;
+                    /// measure observables specified in 'always_measure'
+                    if (!parms["always_measure"].empty())
+                        this->measure(results_archive_path(sweep, graining, sweep_measure) + "/results/", measurements.sublist(parms["always_measure"]));
                 }
-            } else {
-                { // TODO: port this to a function in the base class!
-                    storage::archive ar(this->rfile, "w");
-                    
-                    ar[this->sweep_archive_path() + "/parameters"] << this->parms;
-                    ar[this->sweep_archive_path() + "/parameters"] << this->model;
-                }
-            }
                 
-            
-            // OPTIM
-            m_type = sweep_measure;
-            init_optimizer();
-            early_exit = base::run();
-            if (!this->dns)
-            {
-                storage::archive ar(this->chkpfile, "w");
-                ar["/status/graining"] << this->cur_graining;
+                /// write checkpoint
+                bool stopped = stop_callback();
+                if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
+                    this->checkpoint_state(mps, sweep, -1, graining);
+                
+                if (stopped) break;
             }
-            if (early_exit)
-                break;
+        } catch (dmrg::time_limit const& e) {
+            maquis::cout << e.what() << " checkpointing partial result." << std::endl;
+            this->checkpoint_state(mps, e.sweep(), e.site(), graining);
             
-            ++graining;
-            this->sweep = 0;
-        } while (graining < parms_orig["ngrainings"]);
-    
-        return early_exit;
-    }
-    
-    
-    ~multigrid_sim()
-    {
-        storage::disk::sync();
-    }    
-private:
-    
-    void init_optimizer()
-    {
-        if (base::parms["optimization"] == "singlesite")
-        {
-            optimizer = 
-            boost::shared_ptr<opt_base_t> ( new ss_optimize<Matrix, SymmGroup, storage::disk>
-                                           (base::mps, base::mpoc,
-                                            base::parms) );
-        } 
-        
-        else if (base::parms["optimization"] == "twosite")
-        {
-            optimizer = 
-            boost::shared_ptr<opt_base_t> ( new ts_optimize<Matrix, SymmGroup, storage::disk>
-                                           (base::mps, base::mpoc, base::ts_cache_mpo,
-                                            base::parms) );
+            {
+                storage::archive ar(rfile, "w");
+                ar[results_archive_path(e.sweep(), graining, sweep_measure) + "/parameters"] << parms;
+                ar[results_archive_path(e.sweep(), graining, sweep_measure) + "/parameters"] << model;
+                ar[results_archive_path(e.sweep(), graining, sweep_measure) + "/results"] << optimizer->iteration_results();
+                // ar[results_archive_path(e.sweep(), graining, sweep_measure) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+            }
         }
         
-        else
-        {
-            throw std::runtime_error("Don't know this optimization!");
-        }
+        /// for the next graining level
+        init_sweep = 0;
+        init_site  = -1;
     }
+
     
-    MPO<Matrix, SymmGroup> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & parms2, int L2)
+    MPO<Matrix, SymmGroup> mixed_mpo(BaseParameters & parms1, int L1, BaseParameters & parms2, int L2)
     {
         assert( parms1["LATTICE"] == parms2["LATTICE"] );
         
@@ -235,11 +267,8 @@ private:
         return mpo;
     }
     
-    BaseParameters parms_orig;
-    BaseParameters model_orig;
-    int graining, cur_graining;
-    measure_t m_type;
-    boost::shared_ptr<opt_base_t> optimizer;
+private:
+    int initial_graining;
 };
 
 #endif

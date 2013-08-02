@@ -7,12 +7,12 @@
  *****************************************************************************/
 
 
-#include "multigrid_sim.h"
+#include "mg_meas_sim.h"
 
 template <>
 void run_mg_meas<grp>(DmrgParameters & parms, ModelParameters & model)
 {
-    multigrid_sim<Matrix, grp> sim(parms, model);
-    sim.measure();
+    mg_meas_sim<Matrix, grp> sim(parms, model);
+    sim.run();
 }
 

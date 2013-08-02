@@ -26,7 +26,8 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     
     typedef sim<Matrix, SymmGroup> base;
     typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
-    
+    typedef typename base::status_type status_type;
+
     using base::mps;
     using base::mpo;
     using base::mpoc;
@@ -48,6 +49,9 @@ public:
     {
         int meas_each = parms["measure_each"];
         int chkp_each = parms["chkp_each"];
+        
+        this->model_init();
+        this->mps_init();
         
         boost::shared_ptr<opt_base_t> optimizer;
         if (parms["optimization"] == "singlesite")
@@ -77,10 +81,10 @@ public:
                     /// write iteration results
                     {
                         storage::archive ar(rfile, "w");
-                        ar[this->results_archive_path(sweep) + "/parameters"] << parms;
-                        ar[this->results_archive_path(sweep) + "/parameters"] << model;
-                        ar[this->results_archive_path(sweep) + "/results"] << optimizer->iteration_results();
-                        // ar[this->results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+                        ar[results_archive_path(sweep) + "/parameters"] << parms;
+                        ar[results_archive_path(sweep) + "/parameters"] << model;
+                        ar[results_archive_path(sweep) + "/results"] << optimizer->iteration_results();
+                        // ar[results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
                     }
                     
                     /// measure observables specified in 'always_measure'
@@ -91,20 +95,20 @@ public:
                 /// write checkpoint
                 bool stopped = stop_callback();
                 if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
-                    this->checkpoint_state(mps, sweep, -1);
+                    checkpoint_state(mps, sweep, -1);
                 
                 if (stopped) break;
             }
         } catch (dmrg::time_limit const& e) {
             maquis::cout << e.what() << " checkpointing partial result." << std::endl;
-            this->checkpoint_state(mps, e.sweep(), e.site());
+            checkpoint_state(mps, e.sweep(), e.site());
             
             {
                 storage::archive ar(rfile, "w");
-                ar[this->results_archive_path(e.sweep()) + "/parameters"] << parms;
-                ar[this->results_archive_path(e.sweep()) + "/parameters"] << model;
-                ar[this->results_archive_path(e.sweep()) + "/results"] << optimizer->iteration_results();
-                // ar[this->results_archive_path(e.sweep()) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
+                ar[results_archive_path(e.sweep()) + "/parameters"] << parms;
+                ar[results_archive_path(e.sweep()) + "/parameters"] << model;
+                ar[results_archive_path(e.sweep()) + "/results"] << optimizer->iteration_results();
+                // ar[results_archive_path(e.sweep()) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
             }
         }
     }
@@ -113,6 +117,23 @@ public:
     {
         storage::disk::sync();
     }
+
+private:
+    std::string results_archive_path(int sweep) const
+    {
+        status_type status;
+        status["sweep"] = sweep;
+        return base::results_archive_path(status);
+    }
+    
+    void checkpoint_state(MPS<Matrix, SymmGroup> const& state, int sweep, int site)
+    {
+        status_type status;
+        status["sweep"] = sweep;
+        status["site"]  = site;
+        return base::checkpoint_state(state, status);
+    }
+
 };
 
 #endif

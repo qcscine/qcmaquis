@@ -13,6 +13,7 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/optimize.h"
+#include "dmrg/utils/results_collector.h"
 
 #include <boost/optional.hpp>
 
@@ -501,16 +502,18 @@ struct multigrid {
     
     
     template<class Matrix, class SymmGroup>
-    void
-    static extension_optim (BaseParameters & parms,
-                            MPS<Matrix, SymmGroup> mps_small,
-                            MPS<Matrix, SymmGroup> & mps_large,
-                            std::vector<MPO<Matrix, SymmGroup> > const & mpos_mix)
+    static
+    results_collector extension_optim (BaseParameters & parms,
+                                       MPS<Matrix, SymmGroup> mps_small,
+                                       MPS<Matrix, SymmGroup> & mps_large,
+                                       std::vector<MPO<Matrix, SymmGroup> > const & mpos_mix)
     {
                 
         std::size_t L = mps_small.length();
         std::size_t LL = mps_large.length();
         assert(LL == 2*L);
+        
+        results_collector graining_results;
         
         int sweep = 0;
         
@@ -660,7 +663,7 @@ struct multigrid {
                     mps_large[2*p] = res.second;
                     
                     maquis::cout << "Energy " << "finegraining_1 " << res.first << std::endl;
-                    storage::log << std::make_pair("Energy", res.first);
+                    graining_results["Energy"] << res.first;
 
                 } else if (true) {
                     // Compute Energy
@@ -668,7 +671,7 @@ struct multigrid {
                     contraction::site_hamil2(mps_large[2*p], sp.left, sp.right, sp.mpo);
                     double energy = mps_large[2*p].scalar_overlap(vec2);
                     maquis::cout << "Energy " << "finegraining_00 " << energy << std::endl;
-                    storage::log << std::make_pair("Energy", energy);
+                    graining_results["Energy"] << energy;
 
                 }
                 
@@ -716,7 +719,7 @@ struct multigrid {
                     mps_large[2*p+1] = res.second;
                     
                     maquis::cout << "Energy " << "finegraining_2 " << res.first << std::endl;
-                    storage::log << std::make_pair("Energy", res.first);
+                    graining_results["Energy"] << res.first;
 
                 } else if (true) {
                     // Compute Energy
@@ -724,7 +727,7 @@ struct multigrid {
                     contraction::site_hamil2(mps_large[2*p+1], sp.left, sp.right, sp.mpo);
                     double energy = mps_large[2*p+1].scalar_overlap(vec2);
                     maquis::cout << "Energy " << "finegraining_01 " << energy << std::endl;
-                    storage::log << std::make_pair("Energy", energy);
+                    graining_results["Energy"] << energy;
                 }
                 
                 // growing
@@ -766,6 +769,7 @@ struct multigrid {
         maquis::cout << "Energy " << "finegraining_final " << energy << std::endl;
 #endif
         
+        return graining_results;
     }
     
 };

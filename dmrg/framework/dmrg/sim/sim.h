@@ -43,30 +43,32 @@
 template <class Matrix, class SymmGroup>
 class sim {
 public:
-    sim(DmrgParameters const &, ModelParameters const &, bool fullinit=true);    
+    sim(DmrgParameters const &, ModelParameters const &);
     ~sim();
     
     virtual void run() =0;
     
 protected:
-    virtual std::string results_archive_path(int sweep) const;
+    typedef std::map<std::string, int> status_type;
+    
+    virtual std::string results_archive_path(status_type const&) const;
     
     virtual void model_init(boost::optional<int> opt_sweep=boost::optional<int>());
     virtual void mps_init();
     virtual void measure(std::string archive_path, Measurements<Matrix, SymmGroup> const& meas);
     // TODO: can be made const, now only problem are parameters
     
-    virtual void checkpoint_state(MPS<Matrix, SymmGroup> const& state, int sweep, int site);
+    virtual void checkpoint_state(MPS<Matrix, SymmGroup> const& state, status_type const&);
     
 protected:
     DmrgParameters parms;
     ModelParameters model;
         
     int init_sweep, init_site;
+    bool restore;
     bool dns;
     std::string chkpfile;
     std::string rfile;
-    bool restore;
     
     time_stopper stop_callback;
     

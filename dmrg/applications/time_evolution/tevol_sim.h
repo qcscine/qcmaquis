@@ -21,6 +21,7 @@ template <class Matrix, class SymmGroup, class TimeEvolver>
 class tevol_sim : public sim<Matrix, SymmGroup> {
     
     typedef sim<Matrix, SymmGroup> base;
+    typedef typename base::status_type status_type;
     
     using base::mps;
     using base::mpo;
@@ -35,8 +36,7 @@ class tevol_sim : public sim<Matrix, SymmGroup> {
     
 public:
     tevol_sim(DmrgParameters const & parms_, ModelParameters const  & model_)
-    : base(parms_.get_at_index("t", base::init_sweep), model_.get_at_index("t", base::init_sweep))
-    , evolver(&parms, &mps, lat, &H, init_sweep)
+    : base(parms_, model_)
     { }
     
     void run()
@@ -46,6 +46,12 @@ public:
         int update_each  = parms["update_each"];
         int nsweeps     = parms["nsweeps"];
         int nsweeps_img = parms["nsweeps_img"];
+        
+        parms = parms.get_at_index("t", init_sweep);
+        model = model.get_at_index("t", init_sweep);
+
+        this->model_init();
+        this->mps_init();
         
         /// compute nsteps as the min of the three above
         int nsteps = parms["nsweeps"];
@@ -65,6 +71,8 @@ public:
         CHECK_MULTIPLICITY(chkp_each)
         CHECK_MULTIPLICITY(update_each)
         #undef CHECK_MULTIPLICITY
+        
+        TimeEvolver evolver(&parms, &mps, lat, &H, init_sweep);
         
         int n = nsweeps / nsteps;
         for (int i=0; i < n; ++i) {
@@ -115,14 +123,27 @@ public:
             /// write checkpoint
             bool stopped = stop_callback();
             if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
-                this->checkpoint_state(mps, sweep, -1);
+                checkpoint_state(mps, sweep);
             
             if (stopped) break;
         }
     }
     
 private:
-    TimeEvolver evolver;
+    std::string results_archive_path(int sweep) const
+    {
+        status_type status;
+        status["sweep"] = sweep;
+        return base::results_archive_path(status);
+    }
+    
+    void checkpoint_state(MPS<Matrix, SymmGroup> const& state, int sweep)
+    {
+        status_type status;
+        status["sweep"] = sweep;
+        status["site"]  = -1;
+        return base::checkpoint_state(state, status);
+    }
 };
 
 #endif
