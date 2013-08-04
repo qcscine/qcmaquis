@@ -73,10 +73,10 @@ private:
                     assert( bond_index_charges[p-1].count(r) > 0 );
                     if (!(*this)[p-1].has(r,c))
                         continue;
-                    for (size_t b = 0; b < (*this)[p-1](r, c).n_blocks(); ++b) {
+                    for (size_t b = 0; b < (*this)[p-1].at(r, c).op.n_blocks(); ++b) {
                         charge_diffs.insert(SymmGroup::fuse(bond_index_charges[p-1][r],
-                                                            SymmGroup::fuse((*this)[p-1](r,c).left_basis()[b].first,
-                                                                            -(*this)[p-1](r,c).right_basis()[b].first)));
+                                                            SymmGroup::fuse((*this)[p-1].at(r,c).op.left_basis()[b].first,
+                                                                            -(*this)[p-1].at(r,c).op.right_basis()[b].first)));
 //                        maquis::cout << r << " " << c << std::endl;
 //                        maquis::cout << bond_index_charges[p-1][r] << std::endl;
 //                        maquis::cout << (*this)[p-1](r,c).left_basis()[b].first << std::endl;
@@ -123,8 +123,8 @@ private:
             {
                 if (!(*this)[p].has(r,c))
                     continue;
-                for (size_t cs = 0; cs < (*this)[p](r, c).left_basis().size(); ++cs) {
-                    std::pair<charge, size_t> sector = (*this)[p](r, c).left_basis()[cs];
+                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.left_basis().size(); ++cs) {
+                    std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
                     if (! phys_i.has(sector.first))
                         phys_i.insert(sector);
                 }
@@ -155,21 +155,21 @@ private:
                         
                         if (! (*this)[p].has(r,c))
                             continue;
-                        if (! (*this)[p](r,c).has_block(phys_i[ls].first, phys_i[rs].first) )
+                        if (! (*this)[p].at(r,c).op.has_block(phys_i[ls].first, phys_i[rs].first) )
                             continue;                       
                         
-                        std::size_t cs = (*this)[p](r, c).left_basis().position(phys_i[ls].first);
+                        std::size_t cs = (*this)[p].at(r, c).op.left_basis().position(phys_i[ls].first);
                         
                         assert( lc == rc );
                         assert( outr < left_i.size_of_block(lc) );
                         
                         // ...for now...
-                        assert( num_rows((*this)[p](r,c)[cs]) == 1 );
-                        assert( num_cols((*this)[p](r,c)[cs]) == 1 );
+                        assert( num_rows((*this)[p].at(r,c).op[cs]) == 1 );
+                        assert( num_cols((*this)[p].at(r,c).op[cs]) == 1 );
                         
                         ret(std::make_pair(lc, outr),
                             std::make_pair(rc, visited_c_basis[rc])) =
-                        (*this)[p](r,c)[cs](0,0);
+                        (*this)[p].at(r,c).op[cs](0,0);
                         
 //                        maquis::cout << (*this)[p](r,c)[cs](0,0) << " | ";
 //                        maquis::cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
@@ -195,8 +195,8 @@ private:
             {
                 if (!(*this)[p].has(r,c))
                     continue;
-                for (size_t cs = 0; cs < (*this)[p](r, c).left_basis().size(); ++cs) {
-                    std::pair<charge, size_t> sector = (*this)[p](r, c).left_basis()[cs];
+                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.left_basis().size(); ++cs) {
+                    std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
                     if (! phys_i.has(sector.first))
                         phys_i.insert(sector);
                 }
@@ -227,21 +227,21 @@ private:
                         
                         if (! (*this)[p].has(r,c))
                             continue;
-                        if (! (*this)[p](r, c).has_block(phys_i[ls].first, phys_i[rs].first) )
+                        if (! (*this)[p].at(r, c).op.has_block(phys_i[ls].first, phys_i[rs].first) )
                             continue;
                         
-                        std::size_t cs = (*this)[p](r, c).left_basis().position(phys_i[ls].first);
+                        std::size_t cs = (*this)[p].at(r, c).op.left_basis().position(phys_i[ls].first);
                         
                         assert( lc == rc );
                         assert( outc < right_i.size_of_block(rc) );
                         
                         // ...for now...
-                        assert( num_rows((*this)[p](r,c)[cs]) == 1 );
-                        assert( num_cols((*this)[p](r,c)[cs]) == 1 );
+                        assert( num_rows((*this)[p].at(r,c).op[cs]) == 1 );
+                        assert( num_cols((*this)[p].at(r,c).op[cs]) == 1 );
                         
                         ret(std::make_pair(lc, visited_r_basis[lc]),
                             std::make_pair(rc, outc)) =
-                        (*this)[p](r,c)[cs](0,0);
+                        (*this)[p].at(r,c).op[cs](0,0);
                         
 //                        maquis::cout << (*this)[p](r,c)[cs](0,0) << " | ";
 //                        maquis::cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
@@ -267,8 +267,8 @@ private:
         for (size_t r = 0; r < (*this)[p].row_dim(); ++r)
             for (size_t c = 0; c < (*this)[p].col_dim(); ++c)
             {
-                for (size_t cs = 0; cs < (*this)[p](r, c).left_basis().size(); ++cs) {
-                    std::pair<charge, size_t> sector = (*this)[p](r, c).left_basis()[cs];
+                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.left_basis().size(); ++cs) {
+                    std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
                     if (! phys_i.has(sector.first))
                         phys_i.insert(sector);
                 }
@@ -284,8 +284,8 @@ private:
                 bond_index_charges[p+1][count++] = (*it).first;
         }
         
-        (*this)[p] = MPOTensor<Matrix, SymmGroup>((*this)[p].row_dim(),
-                                                  bond_indices[p+1].sum_of_sizes());
+        //(*this)[p] = MPOTensor<Matrix, SymmGroup>((*this)[p].row_dim(),
+        //                                          bond_indices[p+1].sum_of_sizes());
         
         std::map<charge, size_t> visited_c_basis;
         for (size_t c = 0; c < (*this)[p].col_dim(); ++c) {
@@ -308,10 +308,13 @@ private:
                                                                std::make_pair(rc, visited_c_basis[rc]));
                         
                         if (std::abs(val) > 1e-40) {
-                            block_matrix<Matrix, SymmGroup> & block = (*this)[p](r,c);
-                            charge blc = phys_i[ls].first, brc = phys_i[rs].first;
-                            
-                            block.insert_block(Matrix(1, 1, val), blc, brc);
+                            //block_matrix<Matrix, SymmGroup> & block = (*this)[p](r,c);
+                            //charge blc = phys_i[ls].first, brc = phys_i[rs].first;
+                            //block.insert_block(Matrix(1, 1, val), blc, brc);
+                            //block_matrix<Matrix, SymmGroup> block = (*this)[p].at(r,c).op;
+                            //charge blc = phys_i[ls].first, brc = phys_i[rs].first;
+                            //block.insert_block(Matrix(1, 1, val), blc, brc);
+                            //(*this)[p].set(r, c, block);
                             
 //                            maquis::cout << val << " | ";
 //                            maquis::cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
@@ -322,8 +325,8 @@ private:
             visited_c_basis[bond_index_charges[p+1][c]]++;
         }
         
-        (*this)[p+1] = MPOTensor<Matrix, SymmGroup>(bond_indices[p+1].sum_of_sizes(),
-                                                    (*this)[p+1].col_dim());
+        //(*this)[p+1] = MPOTensor<Matrix, SymmGroup>(bond_indices[p+1].sum_of_sizes(),
+        //                                            (*this)[p+1].col_dim());
         
         std::map<charge, size_t> visited_r_basis;
         for (size_t r = 0; r < (*this)[p+1].row_dim(); ++r) {
@@ -346,10 +349,13 @@ private:
                                                                 std::make_pair(rc, outc));
                         
                         if (std::abs(val) > 1e-40) {
-                            block_matrix<Matrix, SymmGroup> & block = (*this)[p+1](r,c);
-                            charge blc = phys_i[ls].first, brc = phys_i[rs].first;
-                            
-                            block.insert_block(Matrix(1, 1, val), blc, brc);
+                            //block_matrix<Matrix, SymmGroup> & block = (*this)[p+1](r,c);
+                            //charge blc = phys_i[ls].first, brc = phys_i[rs].first;
+                            //block.insert_block(Matrix(1, 1, val), blc, brc);
+                            //block_matrix<Matrix, SymmGroup> block = (*this)[p+1].at(r,c).op;
+                            //charge blc = phys_i[ls].first, brc = phys_i[rs].first;
+                            //block.insert_block(Matrix(1, 1, val), blc, brc);
+                            //(*this)[p+1].set(r, c, block);
                             
 //                            maquis::cout << val << " | ";
 //                            maquis::cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;

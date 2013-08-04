@@ -53,6 +53,7 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()(index_type left_index,
                                                                          index_type right_index) const
 {
+    throw std::runtime_error("operator() doens't work for MPOTensors anymore!\n");
     assert( left_index < left_i );
     assert( right_index < right_i );
     return (*operator_table)[row_tags(left_index, right_index).first];
@@ -63,6 +64,7 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & MPOTensor<Matrix, SymmGroup>::operator()(index_type left_index,
                                                                          index_type right_index)
 {
+    throw std::runtime_error("operator() doens't work for MPOTensors anymore!\n");
     assert( left_index < left_i );
     assert( right_index < right_i );
     typename CSRMatrix::value_type const & p = row_tags(left_index, right_index);
