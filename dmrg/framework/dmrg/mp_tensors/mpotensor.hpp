@@ -145,6 +145,12 @@ void MPOTensor<Matrix, SymmGroup>::divide_by_scalar(const scalar_type& v)
 }
 
 template<class Matrix, class SymmGroup>
+typename MPOTensor<Matrix, SymmGroup>::op_table_ptr MPOTensor<Matrix, SymmGroup>::get_operator_table() const
+{
+    return operator_table;
+}
+
+template<class Matrix, class SymmGroup>
 typename MPOTensor<Matrix, SymmGroup>::index_type MPOTensor<Matrix, SymmGroup>::row_dim() const
 {
     return left_i;

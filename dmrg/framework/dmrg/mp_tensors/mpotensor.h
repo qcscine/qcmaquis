@@ -130,7 +130,6 @@ public:
 private:
     typedef std::pair<tag_type, value_type> internal_value_type;
 
-public:
     typedef boost::numeric::ublas::compressed_matrix< internal_value_type,
                                                       boost::numeric::ublas::row_major
                                                       , 0, boost::numeric::ublas::unbounded_array<index_type> 
@@ -139,7 +138,7 @@ public:
                                                       boost::numeric::ublas::column_major
                                                       , 0, boost::numeric::ublas::unbounded_array<index_type> 
                                                     > CSCMatrix;
-
+public:
     typedef boost::numeric::ublas::matrix_row<const CSRMatrix> row_proxy;
     typedef boost::numeric::ublas::matrix_column<const CSCMatrix> col_proxy;
 
@@ -175,7 +174,7 @@ public:
     col_proxy column(index_type col_i) const;
 
     tag_type tag_number(index_type left_index, index_type right_index) const;
-    op_table_ptr get_operator_table() const { return operator_table; }
+    op_table_ptr get_operator_table() const;
 
     /************************************/
     
