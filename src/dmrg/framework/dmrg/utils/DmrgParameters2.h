@@ -77,7 +77,6 @@ private:
 		add_option("te_order", "trotter decomposition: second, fourth (default)", value("fourth"));
         add_option("dt", "time step in time eovlution", value(1e-3));
         add_option("nsweeps_img", "number of imaginary time steps", value(0));
-        add_option("exp_rescaling", "rescale H before exp(-I*H*dt)", value(1.));
         
         add_option("ngrainings", "", value(0));
         add_option("finegrain_optim", "", value(false));
@@ -190,6 +189,9 @@ private:
         add_option("ENABLE_MEASURE[Local density^2]", "", value(false));
         add_option("ENABLE_MEASURE[Onebody density matrix]", "", value(false));
         add_option("ENABLE_MEASURE[Density correlation]", "", value(false));
+
+        add_option("ENABLE_MEASURE[Entropy]", "", value(false));
+        add_option("ENABLE_MEASURE[Renyi2]", "", value(false));
 
         add_option("RUN_FINITE_T", "", value(false));
    }

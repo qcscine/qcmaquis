@@ -66,11 +66,10 @@ evolve(MPS<Matrix, SymmGroup> mps,
 // Same function, but working with different matrix on each bond.
 // map_op should already contain non overlapping terms.
 template<class Matrix, class SymmGroup>
-void
-evolve_l2r(MPS<Matrix, SymmGroup> & mps,
-           std::vector<block_matrix<Matrix, SymmGroup> > const & ops,
-           std::vector<long> const & idx,
-           int pfirst, std::size_t Mmax, double cutoff)
+truncation_results evolve_l2r(MPS<Matrix, SymmGroup> & mps,
+                              std::vector<block_matrix<Matrix, SymmGroup> > const & ops,
+                              std::vector<long> const & idx,
+                              int pfirst, std::size_t Mmax, double cutoff)
 {
     assert(mps.length() == idx.size());
     std::size_t L = mps.length();
