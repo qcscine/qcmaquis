@@ -185,7 +185,7 @@ namespace chem_detail {
             #ifndef NDEBUG
             for (std::size_t m = 0; m < matrix_elements.size(); ++m)
             {
-                assert( *max_element(idx[m].begin(), idx[m].end()) <= lat.size() );
+                //assert( *std::max_element(idx[m].begin(), idx[m].end()) <= lat.size() );
             }
             #endif
             

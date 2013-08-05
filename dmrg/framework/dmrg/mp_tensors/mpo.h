@@ -46,6 +46,7 @@ public:
             Sqrt = sqrt(S);
             gemm(U, Sqrt, left);
             gemm(Sqrt, V, right);
+            //maquis::cout << "Sqrt: " << Sqrt[0] << ", " << Sqrt[1] << ", " << Sqrt[2] << std::endl;
             
             maquis::cout << "MPO bond truncation: " << bond_indices[p+1].sum_of_sizes() << " -> ";
             replace_pair(left, right, p);
@@ -284,8 +285,8 @@ private:
                 bond_index_charges[p+1][count++] = (*it).first;
         }
         
-        //(*this)[p] = MPOTensor<Matrix, SymmGroup>((*this)[p].row_dim(),
-        //                                          bond_indices[p+1].sum_of_sizes());
+        (*this)[p] = MPOTensor<Matrix, SymmGroup>((*this)[p].row_dim(),
+                                                  bond_indices[p+1].sum_of_sizes());
         
         std::map<charge, size_t> visited_c_basis;
         for (size_t c = 0; c < (*this)[p].col_dim(); ++c) {
@@ -311,10 +312,13 @@ private:
                             //block_matrix<Matrix, SymmGroup> & block = (*this)[p](r,c);
                             //charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             //block.insert_block(Matrix(1, 1, val), blc, brc);
-                            //block_matrix<Matrix, SymmGroup> block = (*this)[p].at(r,c).op;
-                            //charge blc = phys_i[ls].first, brc = phys_i[rs].first;
-                            //block.insert_block(Matrix(1, 1, val), blc, brc);
-                            //(*this)[p].set(r, c, block);
+
+                            block_matrix<Matrix, SymmGroup> block;
+                            charge blc = phys_i[ls].first, brc = phys_i[rs].first;
+                            if ( (*this)[p].has(r,c) )
+                                block = (*this)[p].at(r,c).op;
+                            block.insert_block(Matrix(1, 1, val), blc, brc);
+                            (*this)[p].set(r, c, block);
                             
 //                            maquis::cout << val << " | ";
 //                            maquis::cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;
@@ -325,8 +329,8 @@ private:
             visited_c_basis[bond_index_charges[p+1][c]]++;
         }
         
-        //(*this)[p+1] = MPOTensor<Matrix, SymmGroup>(bond_indices[p+1].sum_of_sizes(),
-        //                                            (*this)[p+1].col_dim());
+        (*this)[p+1] = MPOTensor<Matrix, SymmGroup>(bond_indices[p+1].sum_of_sizes(),
+                                                    (*this)[p+1].col_dim());
         
         std::map<charge, size_t> visited_r_basis;
         for (size_t r = 0; r < (*this)[p+1].row_dim(); ++r) {
@@ -352,10 +356,13 @@ private:
                             //block_matrix<Matrix, SymmGroup> & block = (*this)[p+1](r,c);
                             //charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             //block.insert_block(Matrix(1, 1, val), blc, brc);
-                            //block_matrix<Matrix, SymmGroup> block = (*this)[p+1].at(r,c).op;
-                            //charge blc = phys_i[ls].first, brc = phys_i[rs].first;
-                            //block.insert_block(Matrix(1, 1, val), blc, brc);
-                            //(*this)[p+1].set(r, c, block);
+
+                            block_matrix<Matrix, SymmGroup> block;
+                            charge blc = phys_i[ls].first, brc = phys_i[rs].first;
+                            if ( (*this)[p+1].has(r,c) )
+                                block = (*this)[p+1].at(r,c).op;
+                            block.insert_block(Matrix(1, 1, val), blc, brc);
+                            (*this)[p+1].set(r, c, block);
                             
 //                            maquis::cout << val << " | ";
 //                            maquis::cout << r << " " << c << " " << phys_i[ls].first << " " << phys_i[rs].first;

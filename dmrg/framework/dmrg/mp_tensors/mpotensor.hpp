@@ -75,8 +75,8 @@ template<class Matrix, class SymmGroup>
 bool MPOTensor<Matrix, SymmGroup>::has(index_type left_index,
                                        index_type right_index) const
 {
-    assert(row_tags.find_element(left_index, right_index)
-            == col_tags.find_element(left_index, right_index));
+    assert( (row_tags.find_element(left_index, right_index) != NULL)
+            == (col_tags.find_element(left_index, right_index) != NULL) );
     return row_tags.find_element(left_index, right_index) != NULL;
 }
 

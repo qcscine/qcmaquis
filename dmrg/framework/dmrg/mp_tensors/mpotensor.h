@@ -167,14 +167,15 @@ public:
     // tagged operator ()
     void set(index_type li, index_type ri, op_t const & op, value_type scale_ = 1.0){
         if (this->has(li, ri)) {
-            row_tags.find_element(ri, li)->second = scale_;
-            col_tags.find_element(ri, li)->second = scale_;
+            assert(row_tags.find_element(li, ri)->first == col_tags.find_element(li, ri)->first);
+            row_tags.find_element(li, ri)->second = scale_;
+            col_tags.find_element(li, ri)->second = scale_;
             (*operator_table)[row_tags.find_element(li, ri)->first] = op;
         }
         else {
-            tag_type new_op = operator_table->register_op(op);
-            row_tags(li, ri) = internal_value_type(new_op, scale_);
-            col_tags(li, ri) = internal_value_type(new_op, scale_);
+            tag_type new_tag = operator_table->register_op(op);
+            row_tags(li, ri) = internal_value_type(new_tag, scale_);
+            col_tags(li, ri) = internal_value_type(new_tag, scale_);
         }
     }
 

@@ -300,7 +300,6 @@ namespace generate_mpo
             for (typename vector<block>::const_iterator it = ops.begin();
                  it != ops.end(); ++it)
             {
-                //r(get<0>(*it), get<1>(*it)) = get<2>(*it);
                 r.set(get<0>(*it), get<1>(*it), get<2>(*it));
             }
             return r;
@@ -313,7 +312,6 @@ namespace generate_mpo
             for (typename vector<block>::const_iterator it = ops.begin();
                  it != ops.end(); ++it)
             {
-                //r(0, get<1>(*it)) = get<2>(*it);
                 r.set(0, get<1>(*it), get<2>(*it));
             }
             return r;
@@ -326,7 +324,6 @@ namespace generate_mpo
             for (typename vector<block>::const_iterator it = ops.begin();
                  it != ops.end(); ++it)
             {
-                //r(get<0>(*it), 0) = get<2>(*it);
                 r.set(get<0>(*it), 0, get<2>(*it));
             }
             return r;
