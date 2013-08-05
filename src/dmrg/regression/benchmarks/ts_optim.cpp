@@ -151,16 +151,17 @@ int main(int argc, char ** argv)
         
         /// Truncation of MPS
         tim_truncation.begin();
+        truncation_results trunc;
         if (lr == +1)
         {
-            boost::tie(mps[site], mps[site+1]) = tst.split_mps_l2r(Mmax, cutoff);
+            boost::tie(mps[site], mps[site+1], trunc) = tst.split_mps_l2r(Mmax, cutoff);
             
             block_matrix<matrix, grp> t;
             t = mps[site+1].normalize_left(DefaultSolver());
             if (site+1 < L-1) mps[site+2].multiply_from_left(t);
         }
         if (lr == -1){
-            boost::tie(mps[site], mps[site+1]) = tst.split_mps_r2l(Mmax, cutoff);
+            boost::tie(mps[site], mps[site+1], trunc) = tst.split_mps_r2l(Mmax, cutoff);
             
             block_matrix<matrix, grp> t;
             t = mps[site].normalize_right(DefaultSolver());
