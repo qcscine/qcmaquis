@@ -80,48 +80,50 @@ public:
             }
 
             /// fine graining
-            maquis::cout << "*** Starting grainings ***" << std::endl;
-            
-            parms = parms.get_at_index("graining", graining+1);
-            model = model.get_at_index("graining", graining+1);
-            this->model_init();
-            
-            boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > initializer = boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > (new empty_mps_init<Matrix, SymmGroup>());
-            MPS<Matrix, SymmGroup> new_mps = MPS<Matrix, SymmGroup>(lat->size(), 1, this->phys, this->initc, *initializer);
-            
-            int curL = mps.length();
-            BaseParameters oldmodel = model.get_at_index("graining", graining);
-            
-            std::vector<MPO<Matrix, SymmGroup> > mpo_mix(curL+1, MPO<Matrix, SymmGroup>(0));
-            double r = lat->size() / curL;
-            for (int i=0; i<=curL; ++i)
-                mpo_mix[i] = mixed_mpo(base::model, r*i, oldmodel, curL-i);
-            
-            results_collector graining_results;
-            if (curL < new_mps.length())
-                graining_results = multigrid::extension_optim(base::parms, mps, new_mps, mpo_mix);
-            else if (this->mps.length() > new_mps.length())
-                throw std::runtime_error("Restriction operation not really implemented.");
+            if (graining < parms["ngrainings"]-1) {
+                maquis::cout << "*** Starting grainings ***" << std::endl;
+                
+                parms = parms.get_at_index("graining", graining+1);
+                model = model.get_at_index("graining", graining+1);
+                this->model_init();
+                
+                boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > initializer = boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > (new empty_mps_init<Matrix, SymmGroup>());
+                MPS<Matrix, SymmGroup> new_mps = MPS<Matrix, SymmGroup>(lat->size(), 1, this->phys, this->initc, *initializer);
+                
+                int curL = mps.length();
+                BaseParameters oldmodel = model.get_at_index("graining", graining);
+                
+                std::vector<MPO<Matrix, SymmGroup> > mpo_mix(curL+1, MPO<Matrix, SymmGroup>(0));
+                double r = lat->size() / curL;
+                for (int i=0; i<=curL; ++i)
+                    mpo_mix[i] = mixed_mpo(base::model, r*i, oldmodel, curL-i);
+                
+                results_collector graining_results;
+                if (curL < new_mps.length())
+                    graining_results = multigrid::extension_optim(base::parms, mps, new_mps, mpo_mix);
+                else if (this->mps.length() > new_mps.length())
+                    throw std::runtime_error("Restriction operation not really implemented.");
                 // graining_results = multigrid::restriction(this->mps, initial_mps);
-            
-            /// swap mps
-            swap(mps, new_mps);
-            
-            
-            /// write iteration results
-            {
-                storage::archive ar(rfile, "w");
-                ar[results_archive_path(0, graining, mg_measure) + "/parameters"] << parms;
-                ar[results_archive_path(0, graining, mg_measure) + "/parameters"] << model;
-                ar[results_archive_path(0, graining, mg_measure) + "/results"] << graining_results;
+                
+                /// swap mps
+                swap(mps, new_mps);
+                
+                
+                /// write iteration results
+                {
+                    storage::archive ar(rfile, "w");
+                    ar[results_archive_path(0, graining, mg_measure) + "/parameters"] << parms;
+                    ar[results_archive_path(0, graining, mg_measure) + "/parameters"] << model;
+                    ar[results_archive_path(0, graining, mg_measure) + "/results"] << graining_results;
+                }
+                
+                /// measure observables specified in 'always_measure'
+                if (!parms["always_measure"].empty())
+                    this->measure(results_archive_path(0, graining, mg_measure) + "/results/", measurements.sublist(parms["always_measure"]));
+                
+                /// checkpoint new mps
+                this->checkpoint_state(mps, 0, -1, graining+1);
             }
-
-            /// measure observables specified in 'always_measure'
-            if (!parms["always_measure"].empty())
-                this->measure(results_archive_path(0, graining, mg_measure) + "/results/", measurements.sublist(parms["always_measure"]));
-
-            /// checkpoint new mps
-            this->checkpoint_state(mps, 0, -1, graining+1);
             
             if ( stop_callback() ) {
                 maquis::cout << "Time limit reached." << std::endl;
@@ -251,12 +253,12 @@ private:
         
 #ifndef NDEBUG
         // debugging output, to be removed soon!
-        maquis::cout << "MIXED LATTICE ( " << L1 << ", " <<  L2 << " )" << std::endl;
-        for (int p=0; p<lat->size(); ++p) {
-            maquis::cout << lat->get_prop<std::string>("label", p) << ": " << lat->get_prop<double>("dx", p) << std::endl;
-            maquis::cout << lat->get_prop<std::string>("label", p, p+1) << ": " << lat->get_prop<double>("dx", p, p+1) << std::endl;
-            maquis::cout << lat->get_prop<std::string>("label", p, p-1) << ": " << lat->get_prop<double>("dx", p, p-1) << std::endl;
-        }
+//        maquis::cout << "MIXED LATTICE ( " << L1 << ", " <<  L2 << " )" << std::endl;
+//        for (int p=0; p<lat->size(); ++p) {
+//            maquis::cout << lat->get_prop<std::string>("label", p) << ": " << lat->get_prop<double>("dx", p) << std::endl;
+//            maquis::cout << lat->get_prop<std::string>("label", p, p+1) << ": " << lat->get_prop<double>("dx", p, p+1) << std::endl;
+//            maquis::cout << lat->get_prop<std::string>("label", p, p-1) << ": " << lat->get_prop<double>("dx", p, p-1) << std::endl;
+//        }
 #endif
          
         typename model_traits<Matrix, SymmGroup>::model_ptr tmpmodel;
