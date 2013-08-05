@@ -10,21 +10,22 @@ AMBIENT=ambient
 DMRG=dmrg
 TARGETS="ambient dmrg"
 
-RUN_PRESETS="1n.micro:             ~/maquis2013/benchmarks/dmrg_gs/1n/micro.L4/parms.50        ~/maquis2013/benchmarks/dmrg_gs/1n/micro.L4/model
-             1n.short:             ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L6/parms.6000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L6/model
-             1n.spinless.L8.6000:  ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/parms.6000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/model
-             1n.spinless.L8.8000:  ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/parms.8000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/model
-             1n.spinless.L8.10000: ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/parms.10000  ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.L8/model
-             1n.spinless.W16.3000: ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.W16/parms.3000  ~/maquis2013/benchmarks/dmrg_gs/1n/spinless.W16/model
-             1n.spinfull.L8.6000:  ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/parms.6000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/model
-             1n.spinfull.L8.8000:  ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/parms.8000   ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/model
-             1n.spinfull.L8.10000: ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/parms.10000  ~/maquis2013/benchmarks/dmrg_gs/1n/spinfull.L8/model
-             1n.quench.L51.gs:     ~/maquis2013/benchmarks/dmrg_gs/1n/quench.L51/parms.200     ~/maquis2013/benchmarks/dmrg_gs/1n/quench.L51/model
-             1n.quench.L51.te:     ~/maquis2013/benchmarks/dmrg_te/1n/quench.L51/parms.200     ~/maquis2013/benchmarks/dmrg_te/1n/quench.L51/model
-             1n.quench_2s.L51.gs:  ~/maquis2013/benchmarks/dmrg_gs/1n/quench_2s.L51/parms.400  ~/maquis2013/benchmarks/dmrg_gs/1n/quench_2s.L51/model
-             1n.quench_2s.L51.te:  ~/maquis2013/benchmarks/dmrg_te/1n/quench_2s.L51/parms.400  ~/maquis2013/benchmarks/dmrg_te/1n/quench_2s.L51/model
-             fermiladder.L16:      ~/maquis2013/benchmarks/dmrg_gs/fermiladder.L16/parms.600   ~/maquis2013/benchmarks/dmrg_gs/fermiladder.L16/model
-             hubbard.L10:          ~/maquis2013/benchmarks/dmrg_gs/hubbard.L10/parms.2000      ~/maquis2013/benchmarks/dmrg_gs/hubbard.L10/model"
+RUN_PRESETS="1n.micro:             ~/maquis2014/benchmarks/dmrg_gs/1n/micro.L4/parms.50                 ~/maquis2014/benchmarks/dmrg_gs/1n/micro.L4/model
+             1n.short:             ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L6/parms.6000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L6/model
+             1n.spinless.L8.6000:  ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/parms.6000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/model
+             1n.spinless.L8.8000:  ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/parms.8000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/model
+             1n.spinless.L8.10000: ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/parms.10000           ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/model
+             1n.spinless.W16.3000: ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.W16/parms.3000           ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.W16/model
+             Xn.hubbard.12x24.20k: ~/maquis2014/benchmarks/dmrg_gs/many_nodes/hubbard.12x24/parms.20000 ~/maquis2014/benchmarks/dmrg_gs/many_nodes/hubbard.12x24/model
+             1n.spinfull.L8.6000:  ~/maquis2014/benchmarks/dmrg_gs/1n/spinfull.L8/parms.6000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinfull.L8/model
+             1n.spinfull.L8.8000:  ~/maquis2014/benchmarks/dmrg_gs/1n/spinfull.L8/parms.8000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinfull.L8/model
+             1n.spinfull.L8.10000: ~/maquis2014/benchmarks/dmrg_gs/1n/spinfull.L8/parms.10000           ~/maquis2014/benchmarks/dmrg_gs/1n/spinfull.L8/model
+             1n.quench.L51.gs:     ~/maquis2014/benchmarks/dmrg_gs/1n/quench.L51/parms.200              ~/maquis2014/benchmarks/dmrg_gs/1n/quench.L51/model
+             1n.quench.L51.te:     ~/maquis2014/benchmarks/dmrg_te/1n/quench.L51/parms.200              ~/maquis2014/benchmarks/dmrg_te/1n/quench.L51/model
+             1n.quench_2s.L51.gs:  ~/maquis2014/benchmarks/dmrg_gs/1n/quench_2s.L51/parms.400           ~/maquis2014/benchmarks/dmrg_gs/1n/quench_2s.L51/model
+             1n.quench_2s.L51.te:  ~/maquis2014/benchmarks/dmrg_te/1n/quench_2s.L51/parms.400           ~/maquis2014/benchmarks/dmrg_te/1n/quench_2s.L51/model
+             fermiladder.L16:      ~/maquis2014/benchmarks/dmrg_gs/fermiladder.L16/parms.600            ~/maquis2014/benchmarks/dmrg_gs/fermiladder.L16/model
+             hubbard.L10:          ~/maquis2014/benchmarks/dmrg_gs/hubbard.L10/parms.2000               ~/maquis2014/benchmarks/dmrg_gs/hubbard.L10/model"
 
 ## settings ##
 
@@ -284,13 +285,24 @@ function run(){
     local target=`lookup ${1}`
     [[ ! -n $target ]] && die "couldn't find the binary      "
 
-    local socketlist="0 1"
+    local corelist="socket:0 socket:1"
     local proclist="0,1,2,3,4,5,6,7,8,9,10,11"
-    local rank_var="OMPI_COMM_WORLD_NODE_RANK"
+    local rank_var="";
 
-    [[ ! -z $VALGRIND         ]] && VALGRIND="valgrind --error-limit=no --max-stackframe=120594112 --suppressions=${ROOT_DIR}/scripts/common/valgrind/openmpi.supp" && MCA="--mca btl tcp,self"
+    [[ "$MPI_WRAPPER" == "openmpi"  ]] && MPIEXEC="mpirun --mca btl self,openib"    && rank_var="OMPI_COMM_WORLD_NODE_RANK"
+    [[ "$MPI_WRAPPER" == "mvapich2" ]] && MPIEXEC="mpiexec.hydra " && rank_var="MV2_COMM_WORLD_LOCAL_RANK" #-rmk slurm -ppn 1
+
     [[ ! -z $CILK_NUM_THREADS ]] && CILK_NUM_THREADS="CILK_NWORKERS=$CILK_NUM_THREADS"
-    [[ ! -z $MPI_NUM_PROCS    ]] && HWLOC="hwloc-bind socket:\${socketlist[\$$rank_var]}" # --mempolicy firsttouch 
+    [[ ! -z $VALGRIND         ]] && VALGRIND="valgrind --error-limit=no --max-stackframe=120594112 --suppressions=${ROOT_DIR}/scripts/common/valgrind/openmpi.supp" && MCA="--mca btl tcp,self"
+    if [ ! -z $MPI_NUM_PROCS   ]; then
+        [[ $MPI_NUM_PROCS -eq 12 ]] && corelist="0 6 1 7 2 8 3 9 4 10 5 11"
+        [[ $MPI_NUM_PROCS -eq 6  ]] && corelist="0-1 2-3 4-5 6-7 8-9 10-11"
+        [[ $MPI_NUM_PROCS -eq 4  ]] && corelist="0-2 6-8 3-5 9-11"
+        [[ $MPI_NUM_PROCS -eq 3  ]] && corelist="0-3 8-11 4-7"
+        [[ $MPI_NUM_PROCS -eq 2  ]] && corelist="0-5 6-11"
+        [[ $MPI_NUM_PROCS -eq 1  ]] && corelist="0-11"
+        HWLOC="hwloc-bind core:\${corelist[\$$rank_var]}"
+    fi # --mempolicy firsttouch 
     if [ ! -z $OMP_NUM_THREADS  ]; then
         [[ $OMP_NUM_THREADS -eq 1  ]] && proclist="0 6 1 7 2 8 3 9 4 10 5 11"
         [[ $OMP_NUM_THREADS -eq 2  ]] && proclist="0,6 1,7 2,3 8,9 4,5 10,11"
@@ -298,7 +310,9 @@ function run(){
         [[ $OMP_NUM_THREADS -eq 4  ]] && proclist="0,1,2,3 8,9,10,11 4,5,6,7"
         [[ $OMP_NUM_THREADS -eq 6  ]] && proclist="0,1,2,3,4,5 6,7,8,9,10,11"
         OMP_NUM_THREADS="KMP_AFFINITY=verbose,proclist=[\${proclist[\$$rank_var]}],explicit OMP_NUM_THREADS=$OMP_NUM_THREADS"
+        #[[ "$COMPILER" == "gcc"  ]] && OMP_NUM_THREADS="GOMP_CPU_AFFINITY=\"\${proclist[\$$rank_var]}\" OMP_NUM_THREADS=$OMP_NUM_THREADS"
     fi
+
     
     local command="$OMP_NUM_THREADS 
                    $CILK_NUM_THREADS
@@ -308,7 +322,7 @@ function run(){
 
     if [ ! -z "$MPI_NUM_PROCS" ]; then
         command="export proclist=($proclist); 
-                 export socketlist=($socketlist); 
+                 export corelist=($corelist); 
                  command=\"$command\"; 
                  echo \$command;
                  echo
@@ -316,7 +330,7 @@ function run(){
         
         echo "#!/bin/bash
         $command; rm -f bootstrap.sh" &> bootstrap.sh; chmod +x bootstrap.sh;
-        command="mpiexec -np $MPI_NUM_PROCS $MCA ./bootstrap.sh"
+        command="$MPIEXEC -np $MPI_NUM_PROCS ./bootstrap.sh" # -np $MPI_NUM_PROCS $MCA ./bootstrap.sh"
     fi
 
     rm -f *.h5*

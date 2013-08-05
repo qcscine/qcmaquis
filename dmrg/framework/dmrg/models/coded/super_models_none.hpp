@@ -296,18 +296,18 @@ public:
     void do_init(const Lattice& lat, BaseParameters & model_, std::complex<double>)
     {
         // retrieve model parameters
-        int Nmax      = model.get<int>("Nmax");
-        double t      = model.get<double>("t");
-        double U      = model.get<double>("U");
-        double mu     = model.get<double>("mu");
-        double omega  = model.get<double>("omega");
-        double V      = model.get<double>("V");
-        double Lambda = model.get<double>("Lambda");
-        double Delta  = model.get<double>("Delta");
-        double Gamma1a = model.get<double>("Gamma1a");
-        double Gamma1b = model.get<double>("Gamma1b");
-        double Gamma2  = model.get<double>("Gamma2");
-        double nbar    = model.get<double>("nbar");
+        int Nmax      = model["Nmax"];
+        double t      = model["t"];
+        double U      = model["U"];
+        double mu     = model["mu"];
+        double omega  = model["omega"];
+        double V      = model["V"];
+        double Lambda = model["Lambda"];
+        double Delta  = model["Delta"];
+        double Gamma1a = model["Gamma1a"];
+        double Gamma1b = model["Gamma1b"];
+        double Gamma2  = model["Gamma2"];
+        double nbar    = model["nbar"];
         
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
         const size_t N = Nmax+1;
@@ -547,7 +547,7 @@ public:
         Measurements<Matrix, TrivialGroup> meas(Measurements<Matrix, TrivialGroup>::Densitymatrix);
         meas.set_identity(ident_psi);
         
-        if (model.get<bool>("ENABLE_MEASURE[Density]")) {
+        if (model["ENABLE_MEASURE[Density]"]) {
             mterm_t term;
             term.fill_operator = ident_psi;
             term.name = "Density";
@@ -557,7 +557,7 @@ public:
             meas.add_term(term);
         }
         
-        if (model.get<bool>("ENABLE_MEASURE[Local density]")) {
+        if (model["ENABLE_MEASURE[Local density]"]) {
             mterm_t term;
             term.fill_operator = ident_psi;
             term.name = "Local density";
@@ -567,7 +567,7 @@ public:
             meas.add_term(term);
         }
         
-        if (model.get<bool>("ENABLE_MEASURE[Local density^2]")) {
+        if (model["ENABLE_MEASURE[Local density^2]"]) {
             mterm_t term;
             term.fill_operator = ident_psi;
             term.name = "Local density^2";
@@ -579,7 +579,7 @@ public:
             meas.add_term(term);
         }
 
-        if (model.get<bool>("ENABLE_MEASURE[Onebody density matrix]")) {
+        if (model["ENABLE_MEASURE[Onebody density matrix]"]) {
             mterm_t term;
             term.fill_operator = ident_psi;
             term.name = "Onebody density matrix";
@@ -590,7 +590,7 @@ public:
             meas.add_term(term);
         }
 
-        if (model.get<bool>("ENABLE_MEASURE[Density correlation]")) {
+        if (model["ENABLE_MEASURE[Density correlation]"]) {
             mterm_t term;
             term.fill_operator = ident_psi;
             term.name = "Density correlation";

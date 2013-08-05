@@ -503,7 +503,6 @@ struct multigrid {
     template<class Matrix, class SymmGroup>
     void
     static extension_optim (BaseParameters & parms,
-                            Logger & iteration_log,
                             MPS<Matrix, SymmGroup> mps_small,
                             MPS<Matrix, SymmGroup> & mps_large,
                             std::vector<MPO<Matrix, SymmGroup> > const & mpos_mix)
@@ -519,20 +518,20 @@ struct multigrid {
          * INIT SWEEP PARAMETERS
          */
         double alpha;
-        int ngs = parms.get<int>("ngrowsweeps"), nms = parms.get<int>("nmainsweeps");
+        int ngs = parms["ngrowsweeps"], nms = parms["nmainsweeps"];
         if (sweep < ngs)
-            alpha = parms.get<double>("alpha_initial");
+            alpha = parms["alpha_initial"];
         else if (sweep < ngs + nms)
-            alpha = parms.get<double>("alpha_main");
+            alpha = parms["alpha_main"];
         else
-            alpha = parms.get<double>("alpha_final");
+            alpha = parms["alpha_final"];
         
         
         double cutoff;
-        if (sweep >= parms.get<int>("ngrowsweeps"))
-            cutoff = parms.get<double>("truncation_final");
+        if (sweep >= parms["ngrowsweeps"])
+            cutoff = parms["truncation_final"];
         else
-            cutoff = log_interpolate(parms.get<double>("truncation_initial"), parms.get<double>("truncation_final"), parms.get<int>("ngrowsweeps"), sweep);
+            cutoff = log_interpolate(parms["truncation_initial"], parms["truncation_final"], parms["ngrowsweeps"], sweep);
         
         std::size_t Mmax;
         if (parms.is_set("sweep_bond_dimensions")) {
@@ -542,7 +541,7 @@ struct multigrid {
             else
                 Mmax = ssizes[sweep];
         } else
-            Mmax = parms.get<std::size_t>("max_bond_dimension");
+            Mmax = parms["max_bond_dimension"];
         
         
         mps_small.normalize_right();
@@ -641,16 +640,16 @@ struct multigrid {
 
                 
                 // solver
-                if (parms.get<bool>("finegrain_optim"))
+                if (parms["finegrain_optim"])
                 {
                     
                     std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
                     timeval now, then;
-                    if (parms.get<std::string>("eigensolver") == std::string("IETL")) {
+                    if (parms["eigensolver"] == std::string("IETL")) {
                         BEGIN_TIMING("IETL")
                         res = solve_ietl_lanczos(sp, mps_large[2*p], parms);
                         END_TIMING("IETL")
-                    } else if (parms.get<std::string>("eigensolver") == std::string("IETL_JCD")) {
+                    } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                         BEGIN_TIMING("JCD")
                         res = solve_ietl_jcd(sp, mps_large[2*p], parms);
                         END_TIMING("JCD")
@@ -661,7 +660,7 @@ struct multigrid {
                     mps_large[2*p] = res.second;
                     
                     maquis::cout << "Energy " << "finegraining_1 " << res.first << std::endl;
-                    iteration_log << make_log("Energy", res.first);
+                    storage::log << std::make_pair("Energy", res.first);
 
                 } else if (true) {
                     // Compute Energy
@@ -669,7 +668,7 @@ struct multigrid {
                     contraction::site_hamil2(mps_large[2*p], sp.left, sp.right, sp.mpo);
                     double energy = mps_large[2*p].scalar_overlap(vec2);
                     maquis::cout << "Energy " << "finegraining_00 " << energy << std::endl;
-                    iteration_log << make_log("Energy", energy);
+                    storage::log << std::make_pair("Energy", energy);
 
                 }
                 
@@ -678,7 +677,7 @@ struct multigrid {
                 
                 maquis::cout << "Growing, alpha = " << alpha << std::endl;
                 mps_large.grow_l2r_sweep(mpos_mix[L][2*p], left_[2*p], right,
-                                         2*p, alpha, cutoff, Mmax, iteration_log);                
+                                         2*p, alpha, cutoff, Mmax);
                  */
                  
                 t_norm = mps_large[2*p].normalize_left(DefaultSolver());
@@ -697,16 +696,16 @@ struct multigrid {
                 SiteProblem<Matrix, SymmGroup> sp(left_[2*p+1], right, mpos_mix[p+1][2*p+1]);
 
                 // solver
-                if (parms.get<bool>("finegrain_optim"))
+                if (parms["finegrain_optim"])
                 {
                     
                     std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
                     timeval now, then;
-                    if (parms.get<std::string>("eigensolver") == std::string("IETL")) {
+                    if (parms["eigensolver"] == std::string("IETL")) {
                         BEGIN_TIMING("IETL")
                         res = solve_ietl_lanczos(sp, mps_large[2*p+1], parms);
                         END_TIMING("IETL")
-                    } else if (parms.get<std::string>("eigensolver") == std::string("IETL_JCD")) {
+                    } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
                         BEGIN_TIMING("JCD")
                         res = solve_ietl_jcd(sp, mps_large[2*p+1], parms);
                         END_TIMING("JCD")
@@ -717,7 +716,7 @@ struct multigrid {
                     mps_large[2*p+1] = res.second;
                     
                     maquis::cout << "Energy " << "finegraining_2 " << res.first << std::endl;
-                    iteration_log << make_log("Energy", res.first);
+                    storage::log << std::make_pair("Energy", res.first);
 
                 } else if (true) {
                     // Compute Energy
@@ -725,7 +724,7 @@ struct multigrid {
                     contraction::site_hamil2(mps_large[2*p+1], sp.left, sp.right, sp.mpo);
                     double energy = mps_large[2*p+1].scalar_overlap(vec2);
                     maquis::cout << "Energy " << "finegraining_01 " << energy << std::endl;
-                    iteration_log << make_log("Energy", energy);
+                    storage::log << std::make_pair("Energy", energy);
                 }
                 
                 // growing
@@ -734,7 +733,7 @@ struct multigrid {
                 if (p < L-1) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     MPSTensor<Matrix, SymmGroup> new_mps =
-                    contraction::predict_new_state_l2r_sweep(mps_large[2*p+1], mpos_mix[L][2*p+1], left_[2*p+1], right, alpha, cutoff, Mmax, iteration_log);
+                    contraction::predict_new_state_l2r_sweep(mps_large[2*p+1], mpos_mix[L][2*p+1], left_[2*p+1], right, alpha, cutoff, Mmax);
                     // New tensor for next iteration
                     Msmall = contraction::predict_lanczos_l2r_sweep(mps_small[p+1],
                                                                     mps_large[2*p+1], new_mps);

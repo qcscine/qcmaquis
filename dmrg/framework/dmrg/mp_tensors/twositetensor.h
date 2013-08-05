@@ -57,9 +57,9 @@ public:
     
     MPSTensor<Matrix, SymmGroup> make_mps() const;
     std::pair<MPSTensor<Matrix, SymmGroup>,
-              MPSTensor<Matrix, SymmGroup> > split_mps_l2r(std::size_t Mmax, double cutoff, Logger * iter_log = NULL) const;
+              MPSTensor<Matrix, SymmGroup> > split_mps_l2r(std::size_t Mmax, double cutoff) const;
     std::pair<MPSTensor<Matrix, SymmGroup>,
-              MPSTensor<Matrix, SymmGroup> > split_mps_r2l(std::size_t Mmax, double cutoff, Logger * iter_log = NULL) const;
+              MPSTensor<Matrix, SymmGroup> > split_mps_r2l(std::size_t Mmax, double cutoff) const;
     
     void swap_with(TwoSiteTensor & b);
 
@@ -67,11 +67,9 @@ public:
     {
         a.swap_with(b);
     }
-    
-#ifdef HAVE_ALPS_HDF5
-    void load(alps::hdf5::archive & ar);
-    void save(alps::hdf5::archive & ar) const;
-#endif
+   
+    template<class Archive> void load(Archive & ar);
+    template<class Archive> void save(Archive & ar) const;
     
 private:
     MultiIndex<SymmGroup> midx;

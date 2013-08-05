@@ -80,7 +80,7 @@ private:
     {
         std::ostringstream key;
         key << "t" << (i+1);
-        return (parms.is_set(key.str())) ? parms.get<double>(key.str()) : parms.get<double>("t");
+        return (parms.is_set(key.str())) ? parms[key.str()] : parms["t"];
     }
 
 };

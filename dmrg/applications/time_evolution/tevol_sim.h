@@ -40,7 +40,7 @@ public:
         base::mps_init();
     }
     
-    int advance (Logger& iteration_log, int nsteps, double time_limit)
+    int advance (int nsteps, double time_limit)
     {
         if (this->sweep == 0 || !initialized)
         {
@@ -68,16 +68,16 @@ public:
         }
         
         // apply time evolution operators
-        evolve_ntime_steps(nsteps, iteration_log);
+        evolve_ntime_steps(nsteps);
         
         double energy = maquis::real(expval(this->mps, this->mpo));
         maquis::cout << "Energy " << energy << std::endl;
-        iteration_log << make_log("Energy", energy);
+        storage::log << std::make_pair("Energy", energy);
         
         return -1; // no early exit
     }
 
-    int do_sweep (Logger& iteration_log, double time_limit = -1)
+    int do_sweep (double time_limit = -1)
     {
         throw std::runtime_error("do_sweep not implemented for time evolution.");
         return -1;
@@ -85,15 +85,15 @@ public:
     
 protected:
     virtual void prepare_te_terms(bool split_hamil=true) =0;
-    virtual void evolve_time_step(Logger &) =0;
+    virtual void evolve_time_step() =0;
     
-    virtual void evolve_ntime_steps(int nsteps, Logger & iteration_log)
+    virtual void evolve_ntime_steps(int nsteps)
     {
         int ns = base::sweep + nsteps;
         for (; base::sweep < ns; ++base::sweep)
         {
             this->parms.set("sweep", base::sweep);
-            evolve_time_step(iteration_log);
+            evolve_time_step();
         }
         // base::sweep = ns!
         --base::sweep;

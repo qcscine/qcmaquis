@@ -15,11 +15,11 @@ struct model_factory<Matrix, TrivialGroup> {
     static typename model_traits<Matrix, TrivialGroup>::model_ptr parse
     (Lattice const & lattice, BaseParameters & model)
     {
-        if (model.get<std::string>("MODEL") == std::string("boson Hubbard"))
+        if (model["MODEL"] == std::string("boson Hubbard"))
             return typename model_traits<Matrix, TrivialGroup>::model_ptr(
                                                                           new BoseHubbardNone<Matrix>(lattice, model)
                                                                 );
-        else if (model.get<std::string>("MODEL") == std::string("super boson Hubbard"))
+        else if (model["MODEL"] == std::string("super boson Hubbard"))
             return typename model_traits<Matrix, TrivialGroup>::model_ptr(
                                                                           new SuperBoseHubbardNone<Matrix>(lattice, model)
                                                                 );

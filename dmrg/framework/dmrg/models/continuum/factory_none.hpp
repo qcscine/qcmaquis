@@ -14,7 +14,7 @@ struct cont_model_factory<Matrix, TrivialGroup> {
     (Lattice const & lattice, BaseParameters & model)
     {
         std::string model_str = model.is_set("model") ? "model" : "MODEL";
-        if (model.get<std::string>(model_str) == std::string("optical_lattice"))
+        if (model[model_str] == std::string("optical_lattice"))
             return typename model_traits<Matrix, TrivialGroup>::model_ptr(
                         new OpticalLatticeNull<Matrix>(lattice, model)
                    );

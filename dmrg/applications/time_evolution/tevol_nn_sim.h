@@ -79,7 +79,7 @@ public:
 	
     dmrg_tevol_nn_sim (DmrgParameters const & parms_, ModelParameters const  & model_)
     : base(parms_, model_)
-    , trotter_order(parse_trotter_order(this->parms.template get<std::string>("te_order")))
+    , trotter_order(parse_trotter_order(this->parms["te_order"]))
     {
         maquis::cout << "Using nearest-neighbors time evolution." << std::endl;
         maquis::cout << "Using " << trotter_order << std::endl;
@@ -213,7 +213,7 @@ protected:
             Uterms[i].clear();
             Uterms[i].pfirst = gates_coeff[i].first;
             for (size_t p=gates_coeff[i].first; p<L-1; p+=2){
-                if (this->parms.template get<std::string>("expm_method") == "heev")
+                if (this->parms["expm_method"] == "heev")
                     Uterms[i].add_term(p, op_exp_hermitian(this->H.get_phys()*this->H.get_phys(), block_terms[p], gates_coeff[i].second*alpha));
                 else
                     Uterms[i].add_term(p, op_exp(this->H.get_phys()*this->H.get_phys(), block_terms[p], gates_coeff[i].second*alpha));
@@ -221,27 +221,25 @@ protected:
         }
     }
     
-    void evolve_time_step(Logger & iteration_log)
-    { return evolve_time_step(Useq, iteration_log); }
+    void evolve_time_step()
+    { return evolve_time_step(Useq); }
     
-    void evolve_time_step(std::vector<std::size_t> const & gates_i, Logger & iteration_log)
+    void evolve_time_step(std::vector<std::size_t> const & gates_i)
     {
         assert(gates_i.size() > 0);
         for (size_t i=0; i<gates_i.size(); ++i) {
             if (this->mps.canonization(true) < this->mps.length()/2)
                 evolve_l2r(this->mps, Uterms[gates_i[i]].vgates, Uterms[gates_i[i]].idx, Uterms[gates_i[i]].pfirst,
                            this->parms.template get<std::size_t>("max_bond_dimension"),
-                           this->parms.template get<double>("truncation_final"),
-                           &iteration_log);
+                           this->parms.template get<double>("truncation_final"));
             else
                 evolve_r2l(this->mps, Uterms[gates_i[i]].vgates, Uterms[gates_i[i]].idx, Uterms[gates_i[i]].pfirst,
                            this->parms.template get<std::size_t>("max_bond_dimension"),
-                           this->parms.template get<double>("truncation_final"),
-                           &iteration_log);
+                           this->parms.template get<double>("truncation_final"));
         }
     }
     
-    void evolve_ntime_steps(int nsteps, Logger & iteration_log)
+    void evolve_ntime_steps(int nsteps)
     {
         int ns = this->sweep + nsteps;
 
@@ -250,20 +248,20 @@ protected:
             for (; this->sweep < ns; ++(this->sweep))
             {
                 this->parms.set("sweep", this->sweep);
-                evolve_time_step(Useq, iteration_log);
+                evolve_time_step(Useq);
             }
         } else {
             this->parms.set("sweep", this->sweep);
             // one sweep
-            evolve_time_step(Useq_bmeas, iteration_log);
+            evolve_time_step(Useq_bmeas);
             ++(this->sweep);
             
             // nsteps - 2 sweep
             for (; this->sweep < ns-1; ++(this->sweep))
-                evolve_time_step(Useq_double, iteration_log);
+                evolve_time_step(Useq_double);
             
             // one sweep
-            evolve_time_step(Useq_ameas, iteration_log);
+            evolve_time_step(Useq_ameas);
             ++(this->sweep);
         }
         // this->sweep = ns!

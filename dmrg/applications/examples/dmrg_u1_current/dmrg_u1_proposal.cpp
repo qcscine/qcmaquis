@@ -9,7 +9,6 @@
 
 #include "maquis/dmrg.hpp"
 #include <alps/numeric/matrix.hpp>
-#include <alps/hdf5.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iostream>
 
@@ -26,7 +25,6 @@ int main(int argc, char ** argv)
       
       maquis::parameters parms(argv[1],maquis::dmrg::default_parms);  
       maquis::parameters model_parms(argv[2],maquis::model::default_parms);
-      //maquis::storage::set_directory(parms["storagedir"]);
       maquis::storage::setup(parms);
 
       /// Parsing model
@@ -49,11 +47,11 @@ int main(int argc, char ** argv)
         // use exceptions if time limit is exceeded. time limit was in parms
         optimizer.sweep();
         // alternative: maquis::dmrg::single_site_sweep(mps,mpo,parms);
-        alps::hdf5::archive h5ar(parms["resultfile"], "w");
+        storage::archive ar(parms["resultfile"].str(), "w");
         std::string iteration_path = std::string("/simulation/sweeps/")+sweep; // maybe boost::lexical_cast
-        h5ar << alps::make_pvp(iteration_path + "/parameters", parms);
-        h5ar << alps::make_pvp(iteration_path + "/parameters", model_parms);
-        h5ar << alps::make_pvp(iteration_path + "/results", optimizer.iteration_results());
+        ar[iteration_path + "/parameters"] << parms;
+        ar[iteration_path + "/parameters"] << model_parms;
+        ar[iteration_path + "/results"] << optimizer.iteration_results();
       }
       // drop it since the optimizer should reference the mps
       //  mps = optimizer.get_current_mps();
@@ -63,10 +61,10 @@ int main(int argc, char ** argv)
       // maquis::measurements results(mps, lattice, model.measurements());
 
       /// Write results
-      alps::hdf5::archive h5ar(parms["resultfile"], "w");
-      h5ar << alps::make_pvp("/spectrum/results", results);
-      h5ar << alps::make_pvp("/parameters", parms);
-      h5ar << alps::make_pvp("/parameters", model_parms);
+      storage::archive ar(parms["resultfile"].str(), "w");
+      ar["/spectrum/results"] << results;
+      ar["/parameters"] << parms;
+      ar["/parameters"] << model_parms;
 
     } catch (std::exception & e) {
       maquis::cerr << "Exception thrown!" << std::endl;

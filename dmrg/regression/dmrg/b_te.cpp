@@ -9,33 +9,6 @@
 //typedef alps::numeric::matrix<double, std::vector<double, aligned_allocator<double> > > Matrix;
 typedef alps::numeric::matrix<std::complex<double> > Matrix;
 
-#include <alps/hdf5.hpp>
-//template<class T, class A>
-//void save(alps::hdf5::archive & ar,
-//          std::string const & p,
-//          std::vector<T, A> const & v,
-//          std::vector<std::size_t> size = std::vector<std::size_t>(),
-//          std::vector<std::size_t> chunk = std::vector<std::size_t>(),
-//          std::vector<std::size_t> offset = std::vector<std::size_t>())
-//{
-//    std::vector<T> foo(v.begin(), v.end());
-//    ar << alps::make_pvp(p, foo);
-//}
-//
-//template<class T, class A>
-//void load(alps::hdf5::archive & ar,
-//          std::string const & p,
-//          std::vector<T, A> & v,
-//          std::vector<std::size_t> size = std::vector<std::size_t>(),
-//          std::vector<std::size_t> chunk = std::vector<std::size_t>(),
-//          std::vector<std::size_t> offset = std::vector<std::size_t>())
-//{
-//    std::vector<T> foo;
-//    ar >> alps::make_pvp(p, foo);
-//    v.resize(foo.size());
-//    std::copy(foo.begin(), foo.end(), v.begin());
-//}
-
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
@@ -44,8 +17,7 @@ typedef alps::numeric::matrix<std::complex<double> > Matrix;
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
 
-#include "dmrg/utils/stream_storage.h"
-#include "dmrg/utils/logger.h"
+#include "dmrg/utils/storage.h"
 
 #include "dmrg/mp_tensors/compression.h"
 #include "dmrg/mp_tensors/evolve.h"
@@ -72,13 +44,13 @@ typedef Boundary<Matrix, grp> boundary_t;
 template<class Matrix>
 mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 {
-    if (params.get<std::string>("init_state") == "default")
+    if (params["init_state"] == "default")
         return new default_mps_init<Matrix, grp>();
-    else if (params.get<std::string>("init_state") == "const")
+    else if (params["init_state"] == "const")
         return new const_mps_init<Matrix, grp>();
-    else if (params.get<std::string>("init_state") == "thin")
+    else if (params["init_state"] == "thin")
         return new thin_mps_init<Matrix, grp>();
-    else if (params.get<std::string>("init_state") == "thin_const")
+    else if (params["init_state"] == "thin_const")
         return new thin_const_mps_init<Matrix, grp>();
     else {
         throw std::runtime_error("Don't know this initial state.");
@@ -134,14 +106,14 @@ int main(int argc, char ** argv)
     }
     b_ModelParameters model(model_file);
     
-    std::string chkpfile = parms.get<std::string>("chkpfile");
-    std::string rfile = parms.get<std::string>("resultfile");
+    std::string chkpfile = parms["chkpfile"];
+    std::string rfile = parms["resultfile"];
     
-    srand48(parms.get<int>("seed"));
+    srand48(parms["seed"]);
     
-    b_adj::Adjacency * adj = new b_adj::ChainAdj(model.get<int>("L"));
-    b_mpos::Hamiltonian<Matrix, grp> * H = new b_mpos::Heisenberg<Matrix>(model.get<double>("Jxy")/4,
-                                                                          model.get<double>("Jz")/4);
+    b_adj::Adjacency * adj = new b_adj::ChainAdj(model["L"]);
+    b_mpos::Hamiltonian<Matrix, grp> * H = new b_mpos::Heisenberg<Matrix>(model["Jxy"]/4,
+                                                                          model["Jz"]/4);
     Index<grp> phys = H->get_phys();
     
     b_mpos::MPOMaker<Matrix, grp> mpom(*adj, *H);
@@ -149,9 +121,9 @@ int main(int argc, char ** argv)
     H->push_extra_terms(mpom, *adj);
     MPO<Matrix, grp> mpo = mpom.create_mpo();
     
-    int initc = model.get<int>("u1_total_charge");
+    int initc = model["u1_total_charge"];
     MPS<Matrix, grp> mps(adj->size(),
-                         parms.get<std::size_t>("init_bond_dimension"),
+                         parms["init_bond_dimension"],
                          phys, initc,
                          *initializer_factory<Matrix>(parms));
     
@@ -162,11 +134,9 @@ int main(int argc, char ** argv)
     
     for (int i = 0; i < 10000; ++i)
     {
-        if (i == 100)
-            op = get_hb(dt, false);
-        maquis::cout << maquis::real((expval(mps, mpo)) << std::endl;
+        if (i == 100) op = get_hb(dt, false);
+        maquis::cout << maquis::real(expval(mps, mpo)) << std::endl;
         mps = evolve(mps, op, 100, 1e-10);
-//        maquis::cout << norm(mps) << std::endl;
     }
     
 //    mps = compression::l2r_compress(mps, 100, 1e-8);

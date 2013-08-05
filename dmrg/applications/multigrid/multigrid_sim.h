@@ -27,7 +27,7 @@ template <class Matrix, class SymmGroup>
 class multigrid_sim : public sim<Matrix, SymmGroup> {
     
     typedef sim<Matrix, SymmGroup> base;
-    typedef optimizer_base<Matrix, SymmGroup, StreamStorageMaster> opt_base_t;
+    typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
     
     typedef std::vector<MPOTensor<Matrix, SymmGroup> > mpo_t;
     typedef Boundary<Matrix, SymmGroup> boundary_t;
@@ -43,13 +43,13 @@ public:
     , graining(0)
     , m_type(sweep_measure)
     {
-        assert(parms_orig.get<std::string>("lattice_library") == "continuum");
-        assert(parms_orig.get<std::string>("model_library") == "continuum");
+        assert(parms_orig["lattice_library"] == "continuum");
+        assert(parms_orig["model_library"] == "continuum");
         
         if (this->restore)
         {
-            alps::hdf5::archive h5ar_in(this->chkpfile);
-            h5ar_in >> alps::make_pvp("/status/graining", graining);
+            storage::archive ar(this->chkpfile);
+            ar["/status/graining"] >> graining;
         }
         
         base::parms = parms_orig.get_at_index("graining", graining);
@@ -75,11 +75,11 @@ public:
         return oss.str();
     }
     
-    int do_sweep (Logger& iteration_log, double time_limit = -1)
+    int do_sweep (double time_limit = -1)
     {
-        int exit_site = optimizer->sweep(base::sweep, iteration_log, Both,
+        int exit_site = optimizer->sweep(base::sweep, Both,
                                          base::site, time_limit);
-        base::ssm.sync();
+        storage::disk::sync();
         
         base::mps = optimizer->get_current_mps();
         
@@ -98,7 +98,6 @@ public:
             if (cur_graining != graining)
             {
                 maquis::cout << "*** Starting grainings ***" << std::endl;
-                Logger iteration_log;
                 
                 base::parms = parms_orig.get_at_index("graining", graining);
                 base::model = model_orig.get_at_index("graining", graining);
@@ -117,7 +116,7 @@ public:
                 
                 //            maquis::cout << "Old MPS:" << std::endl << initial_mps.description() << std::endl;
                 if (curL < initial_mps.length())
-                    multigrid::extension_optim(base::parms, iteration_log,
+                    multigrid::extension_optim(base::parms,
                                                this->mps, initial_mps, mpo_mix);
                 else if (this->mps.length() > initial_mps.length())
                     throw std::runtime_error("Restriction operation not really implemented.");
@@ -127,30 +126,30 @@ public:
                 this->mps = initial_mps;
                 cur_graining = graining;
                 
-                this->do_sweep_measure(iteration_log);
+                this->do_sweep_measure();
                 { // TODO: port this to a function in the base class!
-                    alps::hdf5::archive h5ar(this->rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+                    storage::archive ar(this->rfile, "w");
                     
-                    h5ar << alps::make_pvp(this->sweep_archive_path() + "/parameters", this->parms);
-                    h5ar << alps::make_pvp(this->sweep_archive_path() + "/parameters", this->model);
+                    ar[this->sweep_archive_path() + "/parameters"] << this->parms;
+                    ar[this->sweep_archive_path() + "/parameters"] << this->model;
                     
-                    h5ar << alps::make_pvp(this->sweep_archive_path() + "/results", iteration_log);
+                    ar[this->sweep_archive_path() + "/results"] << storage::log;
                 }
                 if (!this->dns)
                 {
-                    alps::hdf5::archive h5ar(this->chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+                    storage::archive ar(this->chkpfile, "w");
                     
-                    h5ar << alps::make_pvp("/state", this->mps);
-                    h5ar << alps::make_pvp("/status/sweep", this->sweep);
-                    h5ar << alps::make_pvp("/status/graining", this->cur_graining);
-                    h5ar << alps::make_pvp("/status/site", -1);
+                    ar["/state"] << this->mps;
+                    ar["/status/sweep"] << this->sweep;
+                    ar["/status/graining"] << this->cur_graining;
+                    ar["/status/site"] << -1;
                 }
             } else {
                 { // TODO: port this to a function in the base class!
-                    alps::hdf5::archive h5ar(this->rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+                    storage::archive ar(this->rfile, "w");
                     
-                    h5ar << alps::make_pvp(this->sweep_archive_path() + "/parameters", this->parms);
-                    h5ar << alps::make_pvp(this->sweep_archive_path() + "/parameters", this->model);
+                    ar[this->sweep_archive_path() + "/parameters"] << this->parms;
+                    ar[this->sweep_archive_path() + "/parameters"] << this->model;
                 }
             }
                 
@@ -161,15 +160,15 @@ public:
             early_exit = base::run();
             if (!this->dns)
             {
-                alps::hdf5::archive h5ar(this->chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-                h5ar << alps::make_pvp("/status/graining", this->cur_graining);
+                storage::archive ar(this->chkpfile, "w");
+                ar["/status/graining"] << this->cur_graining;
             }
             if (early_exit)
                 break;
             
             ++graining;
             this->sweep = 0;
-        } while (graining < parms_orig.get<int>("ngrainings"));
+        } while (graining < parms_orig["ngrainings"]);
     
         return early_exit;
     }
@@ -177,26 +176,26 @@ public:
     
     ~multigrid_sim()
     {
-        base::ssm.sync();
+        storage::disk::sync();
     }    
 private:
     
     void init_optimizer()
     {
-        if (base::parms.template get<std::string>("optimization") == "singlesite")
+        if (base::parms["optimization"] == "singlesite")
         {
             optimizer = 
-            boost::shared_ptr<opt_base_t> ( new ss_optimize<Matrix, SymmGroup, StreamStorageMaster>
+            boost::shared_ptr<opt_base_t> ( new ss_optimize<Matrix, SymmGroup, storage::disk>
                                            (base::mps, base::mpoc,
-                                            base::parms, base::ssm) );
+                                            base::parms) );
         } 
         
-        else if (base::parms.template get<std::string>("optimization") == "twosite")
+        else if (base::parms["optimization"] == "twosite")
         {
             optimizer = 
-            boost::shared_ptr<opt_base_t> ( new ts_optimize<Matrix, SymmGroup, StreamStorageMaster>
+            boost::shared_ptr<opt_base_t> ( new ts_optimize<Matrix, SymmGroup, storage::disk>
                                            (base::mps, base::mpoc, base::ts_cache_mpo,
-                                            base::parms, base::ssm) );
+                                            base::parms) );
         }
         
         else
@@ -207,13 +206,13 @@ private:
     
     MPO<Matrix, SymmGroup> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & parms2, int L2)
     {
-        assert( parms1.get<std::string>("LATTICE") == parms2.get<std::string>("LATTICE") );
+        assert( parms1["LATTICE"] == parms2["LATTICE"] );
         
         Lattice_ptr lat;
-        if (parms1.get<std::string>("LATTICE") == "continuous_chain"
-            || parms1.get<std::string>("LATTICE") == std::string("continuous_left_chain"))
+        if (parms1["LATTICE"] == "continuous_chain"
+            || parms1["LATTICE"] == std::string("continuous_left_chain"))
             lat = Lattice_ptr(new MixedContChain(parms1, L1, parms2, L2));
-        else if (parms2.get<std::string>("LATTICE") == std::string("continuous_center_chain"))
+        else if (parms2["LATTICE"] == std::string("continuous_center_chain"))
             lat = Lattice_ptr(new MixedContChain_c(parms1, L1, parms2, L2));
         else
             throw std::runtime_error("Don't know this lattice!");

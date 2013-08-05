@@ -21,8 +21,6 @@
 
 #include "utils/data_collector.hpp"
 
-#include <alps/hdf5.hpp>
-
 #include "dmrg/utils/DmrgParameters2.h"
 
 #include "dmrg/block_matrix/indexing.h"
@@ -35,8 +33,6 @@
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
 
-#include "dmrg/utils/stream_storage.h"
-#include "dmrg/utils/logger.h"
 #include "dmrg/utils/random.hpp"
 #include "utils/timings.h"
 
@@ -64,9 +60,9 @@ protected:
     virtual void model_init ();
     virtual void mps_init ();
     
-    virtual int do_sweep (Logger&, double=-1) =0;
-    virtual void do_sweep_measure (Logger&);
-    virtual int advance (Logger&, int=1, double=-1);
+    virtual int do_sweep (double=-1) =0;
+    virtual void do_sweep_measure ();
+    virtual int advance (int=1, double=-1);
     
 protected:
     DmrgParameters parms;
@@ -90,11 +86,6 @@ protected:
     MPO<Matrix, SymmGroup> mpo, mpoc, ts_cache_mpo;
     Measurements<Matrix, SymmGroup> measurements;
     Measurements<Matrix, SymmGroup> meas_always;
-    
-    StreamStorageMaster ssm;
-    
-private:
-    
 };
 
 #include "sim.hpp"

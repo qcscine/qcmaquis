@@ -20,8 +20,6 @@
 
 typedef alps::numeric::matrix<double> Matrix;
 
-#include <alps/hdf5.hpp>
-
 #include "dmrg/utils/DmrgParameters2.h"
 
 #include "dmrg/block_matrix/indexing.h"
@@ -33,7 +31,7 @@ typedef alps::numeric::matrix<double> Matrix;
 #include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/mp_tensors/multigrid.h"
 
-#include "dmrg/utils/stream_storage.h"
+#include "dmrg/utils/storage.h"
 #include "dmrg/utils/logger.h"
 #include "dmrg/utils/random.hpp"
 
@@ -59,13 +57,13 @@ typedef Boundary<Matrix, grp> boundary_t;
 template<class Matrix>
 mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 {
-    if (params.get<std::string>("init_state") == "default")
+    if (params["init_state"] == "default")
         return new default_mps_init<Matrix, grp>();
-    else if (params.get<std::string>("init_state") == "const")
+    else if (params["init_state"] == "const")
         return new const_mps_init<Matrix, grp>();
-    else if (params.get<std::string>("init_state") == "thin")
+    else if (params["init_state"] == "thin")
         return new thin_mps_init<Matrix, grp>();
-    else if (params.get<std::string>("init_state") == "thin_const")
+    else if (params["init_state"] == "thin_const")
         return new thin_const_mps_init<Matrix, grp>();
     else {
         throw std::runtime_error("Don't know this initial state.");
@@ -76,14 +74,14 @@ mps_initializer<Matrix, grp> * initializer_factory(BaseParameters & params)
 
 MPO<Matrix, grp> mixed_mpo (BaseParameters & parms1, int L1, BaseParameters & parms2, int L2)
 {
-    assert( parms1.get<std::string>("LATTICE") == parms2.get<std::string>("LATTICE") );
+    assert( parms1["LATTICE"] == parms2["LATTICE"] );
     
     
     Lattice_ptr lat;
-    if (parms1.get<std::string>("LATTICE") == "continuous_chain"
-        || parms1.get<std::string>("LATTICE") == std::string("continuous_left_chain"))
+    if (parms1["LATTICE"] == "continuous_chain"
+        || parms1["LATTICE"] == std::string("continuous_left_chain"))
         lat = Lattice_ptr(new MixedContChain(parms1, L1, parms2, L2));
-    else if (parms2.get<std::string>("LATTICE") == std::string("continuous_center_chain"))
+    else if (parms2["LATTICE"] == std::string("continuous_center_chain"))
         lat = Lattice_ptr(new MixedContChain_c(parms1, L1, parms2, L2));
     else
         throw std::runtime_error("Don't know this lattice!");
@@ -139,12 +137,12 @@ int main(int argc, char ** argv)
     }
     ModelParameters raw_model(model_file);
     
-    srand48(raw_parms.get<int>("seed"));
-    dmrg_random::engine.seed(raw_parms.get<int>("seed"));
+    srand48(raw_parms["seed"]);
+    dmrg_random::engine.seed(raw_parms["seed"]);
     
-    std::string chkpfile = raw_parms.get<std::string>("chkpfile");
-    std::string rfile = raw_parms.get<std::string>("resultfile");
-    bool dns = (raw_parms.get<int>("donotsave") != 0);
+    std::string chkpfile = raw_parms["chkpfile"];
+    std::string rfile = raw_parms["resultfile"];
+    bool dns = (raw_parms["donotsave"] != 0);
     
     int graining = 0;
     int sweep = 0;
@@ -156,26 +154,24 @@ int main(int argc, char ** argv)
             maquis::cout << "Restoring state." << std::endl;
             restore = true;
             
-            alps::hdf5::archive h5ar_in(chkpfile);
-            h5ar_in >> alps::make_pvp("/status/sweep", sweep);
-            ++sweep;
-            h5ar_in >> alps::make_pvp("/status/graining", graining);
-            
+            storage::archive ar(chkpfile);
+            ar["/status/sweep"] >> sweep; ++sweep;
+            ar["/status/graining"] >> graining;
         }
     }
     
     
     {
-        alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-        h5ar << alps::make_pvp("/parameters", raw_parms);
-        h5ar << alps::make_pvp("/parameters", raw_model);
-        h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
+        storage::archive ar(rfile, "w");
+        ar["/parameters"] << raw_parms;
+        ar["/parameters"] << raw_model;
+        ar["/version"] << DMRG_VERSION_STRING;
     }
     if (!dns) {
-        alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-        h5ar << alps::make_pvp("/parameters", raw_parms);
-        h5ar << alps::make_pvp("/parameters", raw_model);
-        h5ar << alps::make_pvp("/version", DMRG_VERSION_STRING);
+        storage::archive ar(chkpfile, "w");
+        ar["/parameters"] << raw_parms;
+        ar["/parameters"] << raw_model;
+        ar["/version"] << DMRG_VERSION_STRING;
     }
     
     Lattice_ptr lat;
@@ -207,16 +203,16 @@ int main(int argc, char ** argv)
         
         mpo = make_mpo(lat->size(), H);
         mpoc = mpo;
-        if (parms.get<int>("use_compressed") > 0)
+        if (parms["use_compressed"] > 0)
             mpoc.compress(1e-12);
     }
     
     if (restore) {
-        alps::hdf5::archive h5ar_in(chkpfile);
-        h5ar_in >> alps::make_pvp("/state", cur_mps);
-    } else if (raw_parms.get<std::string>("initfile").size() > 0) {
-        alps::hdf5::archive h5ar_in(raw_parms.get<std::string>("initfile"));
-        h5ar_in >> alps::make_pvp("/state", cur_mps);
+        storage::archive ar(chkpfile);
+        ar["/state"] >> cur_mps;
+    } else if (raw_parms["initfile"].size() > 0) {
+        storage::archive ar(raw_parms["initfile"].str());
+        ar["/state"] >> cur_mps;
     }
     
     timeval now, then, snow, sthen;
@@ -243,7 +239,7 @@ int main(int argc, char ** argv)
 #endif
         
         Measurements<Matrix, grp> meas_always;
-        if (!parms.get<std::string>("always_measure").empty()) {
+        if (!parms["always_measure"].empty()) {
             meas_always.set_identity(measurements.get_identity());
             std::vector<std::string> meas_list = parms.get<std::vector<std::string> >("always_measure");
             for (int i=0; i<meas_list.size(); ++i)
@@ -252,7 +248,7 @@ int main(int argc, char ** argv)
         
         MPO<Matrix, grp> t_mpo = make_mpo(lat->size(), H);
         MPO<Matrix, grp> t_mpoc = t_mpo;
-        if (parms.get<int>("use_compressed") > 0)
+        if (parms["use_compressed"] > 0)
             t_mpoc.compress(1e-12);
         
         
@@ -262,21 +258,19 @@ int main(int argc, char ** argv)
         if (cur_mps.length() > 0 && cur_mps.length() != lat->size())
         {
             maquis::cout << "*** Starting grainings ***" << std::endl;
-            Logger iteration_log;
             
             boost::shared_ptr<mps_initializer<Matrix, grp> > initializer = boost::shared_ptr<mps_initializer<Matrix, grp> > (new empty_mps_init<Matrix, grp>());
             initial_mps = MPS<Matrix, grp>(lat->size(), 1, phys, initc, *initializer);
                         
-            int oldL = old_model.get<double>("Ndiscr") * old_model.get<double>("L");
+            int oldL = old_model["Ndiscr"] * old_model["L"];
             std::vector<MPO<Matrix, grp> > mpo_mix(oldL+1, MPO<Matrix, grp>(0));
-            double r = model.get<double>("Ndiscr")/old_model.get<double>("Ndiscr");
+            double r = model["Ndiscr"]/old_model["Ndiscr"];
             for (int i=0; i<=oldL; ++i)
                 mpo_mix[i] = mixed_mpo(model, r*i, old_model, oldL-i);
             
 //            maquis::cout << "Old MPS:" << std::endl << initial_mps.description() << std::endl;
             if (cur_mps.length() < initial_mps.length())
-                multigrid::extension_optim(parms, iteration_log,
-                                           cur_mps, initial_mps, mpo_mix);
+                multigrid::extension_optim(parms, cur_mps, initial_mps, mpo_mix);
             else if (cur_mps.length() > initial_mps.length())
                 multigrid::restriction(cur_mps, initial_mps);
 //            maquis::cout << "New MPS:" << std::endl << initial_mps.description();
@@ -285,20 +279,20 @@ int main(int argc, char ** argv)
             entropies = calculate_bond_entropies(initial_mps);
                         
             {
-                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+                storage::archive ar(rfile, "w");
                 
                 std::ostringstream oss;
                 
                 oss.str("");
                 oss << "/simulation/iteration/graining/" << graining << "/parameters";
-                h5ar << alps::make_pvp(oss.str(), parms);
-                h5ar << alps::make_pvp(oss.str(), model);
+                ar[oss.str()] << parms;
+                ar[oss.str()] << model;
                 
                 oss.str("");
                 oss << "/simulation/iteration/graining/" << graining << "/results";
                 
-                h5ar << alps::make_pvp(oss.str(), iteration_log);
-                h5ar << alps::make_pvp(oss.str()+"/Iteration Entropies/mean/value", entropies);
+                ar[oss.str()] << storage::log;
+                ar[oss.str()+"/Iteration Entropies/mean/value"] << entropies;
             }
             {
                 std::ostringstream oss;
@@ -310,7 +304,7 @@ int main(int argc, char ** argv)
             initial_mps = cur_mps;
         } else {
             initial_mps = MPS<Matrix, grp>(lat->size(),
-                                         parms.get<std::size_t>("init_bond_dimension"),
+                                         parms["init_bond_dimension"],
                                          phys, initc,
                                          *initializer_factory<Matrix>(parms));
         }
@@ -322,24 +316,20 @@ int main(int argc, char ** argv)
         
 #ifndef MEASURE_ONLY
         
-        //    BaseStorageMaster * bsm = bsm_factory(parms);
-        StreamStorageMaster ssm(parms.get<std::string>("storagedir"));
-        
+        storage::setup(parms);
         
         bool early_exit = false;
         {   
             maquis::cout << "*** Starting optimization ***" << std::endl;
-            ss_optimize<Matrix, grp, StreamStorageMaster> optimizer(initial_mps,
-                                                                    parms.get<int>("use_compressed") == 0 ? mpo : mpoc,
-                                                                    parms, ssm);
+            ss_optimize<Matrix, grp, storage::disk> optimizer(initial_mps,
+                                                                      parms["use_compressed"] == 0 ? mpo : mpoc,
+                                                                      parms);
             
-            for ( ; sweep < parms.get<int>("nsweeps"); ++sweep) {
+            for ( ; sweep < parms["nsweeps"]; ++sweep) {
                 gettimeofday(&snow, NULL);
                 
-                Logger iteration_log;
-                
-                optimizer.sweep(sweep, iteration_log);
-                ssm.sync();
+                optimizer.sweep(sweep);
+                storage::disk::sync();
                 
                 cur_mps = optimizer.get_current_mps();
                 
@@ -353,21 +343,21 @@ int main(int argc, char ** argv)
                 maquis::cout << "Sweep done after " << elapsed << " seconds." << std::endl;
                 
                 {
-                    alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+                    storage::archive ar(rfile, "w");
                     
                     std::ostringstream oss;
                     
                     oss.str("");
                     oss << "/simulation/iteration/graining/" << graining << "/parameters";
-                    h5ar << alps::make_pvp(oss.str(), parms);
-                    h5ar << alps::make_pvp(oss.str(), model);
+                    ar[oss.str()] << parms;
+                    ar[oss.str()] << model;
                     
                     oss.str("");
                     oss << "/simulation/iteration/graining/" << graining << "/sweep" << sweep << "/results";
                     
-                    h5ar << alps::make_pvp(oss.str(), iteration_log);                    
-                    h5ar << alps::make_pvp(oss.str()+"/Iteration Entropies/mean/value", entropies);
-                    h5ar << alps::make_pvp(oss.str()+"/Runtime/mean/value", std::vector<double>(1, elapsed));                
+                    ar[oss.str()] << storage::log;                    
+                    ar[oss.str()+"/Iteration Entropies/mean/value"] << entropies;
+                    ar[oss.str()+"/Runtime/mean/value"] << std::vector<double>(1, elapsed);
                 }
                 {
                     std::ostringstream oss;
@@ -378,28 +368,28 @@ int main(int argc, char ** argv)
                 
                 if (!dns)
                 {
-                    alps::hdf5::archive h5ar(chkpfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+                    storage::archive ar(chkpfile, "w");
                     
-                    h5ar << alps::make_pvp("/state", cur_mps);
-                    h5ar << alps::make_pvp("/status/sweep", sweep);
-                    h5ar << alps::make_pvp("/status/graining", graining);
+                    ar["/state"] << cur_mps;
+                    ar["/status/sweep"] << sweep;
+                    ar["/status/graining"] << graining;
                 }
                 
                 gettimeofday(&then, NULL);
                 elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);            
-                int rs = parms.get<int>("run_seconds");
+                int rs = parms["run_seconds"];
                 if (rs > 0 && elapsed > rs) {
                     early_exit = true;
                     break;
                 }
             }
-            ssm.sync();
+            storage::disk::sync();
         }
         sweep = 0;
 #endif
 
         ++graining;
-    } while (graining < raw_parms.get<int>("ngrainings"));
+    } while (graining < raw_parms["ngrainings"]);
     
 #ifdef MEASURE_ONLY
     {
@@ -417,22 +407,22 @@ int main(int argc, char ** argv)
         renyi2 = calculate_bond_renyi_entropies(mps, 2);
         
         {
-            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
+            storage::archive ar(rfile, "w");
             if (entropies.size() > 0)
-                h5ar << alps::make_pvp("/spectrum/results/Entropy/mean/value", entropies);
+                ar["/spectrum/results/Entropy/mean/value"] << entropies;
             if (renyi2.size() > 0)
-                h5ar << alps::make_pvp("/spectrum/results/Renyi2/mean/value", renyi2);
+                ar["/spectrum/results/Renyi2/mean/value"] << renyi2;
         }
         
         double energy = maquis::real(expval(mps, mpoc));
         maquis::cout << "Energy before: " << maquis::real(expval(mps, mpo)) << std::endl;
         maquis::cout << "Energy after: " << maquis::real(expval(mps, mpoc)) << std::endl;
         {
-            alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            h5ar << alps::make_pvp("/spectrum/results/Energy/mean/value", std::vector<double>(1, energy));
+            storage::archive ar(rfile, "w");
+            ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
         }
         
-        if (raw_parms.get<int>("calc_h2") > 0) {
+        if (raw_parms["calc_h2"] > 0) {
             MPO<Matrix, grp> mpo2 = square_mpo(mpo);
             mpo2.compress(1e-12);
             
@@ -442,10 +432,9 @@ int main(int argc, char ** argv)
             maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;
             
             {
-                alps::hdf5::archive h5ar(rfile, alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-                h5ar << alps::make_pvp("/spectrum/results/Energy^2/mean/value", std::vector<double>(1, energy2));
-                h5ar << alps::make_pvp("/spectrum/results/EnergyVariance/mean/value",
-                                       std::vector<double>(1, energy2 - energy*energy));
+                storage::archive ar(rfile, "w");
+                ar["/spectrum/results/Energy^2/mean/value"] << std::vector<double>(1, energy2);
+                ar["/spectrum/results/EnergyVariance/mean/value"] << std::vector<double>(1, energy2 - energy*energy);
             }
         }
     }

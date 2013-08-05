@@ -24,8 +24,7 @@
 #include "ietl_jacobi_davidson.h"
 
 #include "dmrg/utils/BaseParameters.h"
-#include "dmrg/utils/logger.h"
-#include "dmrg/utils/stream_storage.h"
+#include "dmrg/utils/storage.h"
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem
@@ -37,9 +36,6 @@ struct SiteProblem
     , right(right_)
     , mpo(mpo_) 
     {
-        #ifdef AMBIENT 
-            mpo.persist();
-        #endif
     }
     
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
@@ -71,33 +67,32 @@ inline double log_interpolate(double y0, double y1, int N, int i)
 
 enum OptimizeDirection { Both, LeftOnly, RightOnly };
 
-template<class Matrix, class SymmGroup, class StorageMaster>
+template<class Matrix, class SymmGroup, class Storage>
 class optimizer_base
 {
 public:
     optimizer_base(MPS<Matrix, SymmGroup> const & mps_,
                    MPO<Matrix, SymmGroup> const & mpo_,
-                   BaseParameters & parms_,
-                   StorageMaster & sm)
+                   BaseParameters & parms_)
     : mps(mps_)
     , mpo(mpo_)
     , mpo_orig(mpo_)
     , parms(parms_)
-    , storage_master(sm)
     {
         mps.normalize_right();
-//        mps.canonize(0);
-        
-        northo = parms_.get<int>("n_ortho_states");
+        for(int i = 0; i < mps.length(); ++i)
+        Storage::evict(mps[i]);
+
+        northo = parms_["n_ortho_states"];
         maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
         ortho_mps.resize(northo);
-        std::string files_ = parms_.get<std::string>("ortho_states");
+        std::string files_ = parms_["ortho_states"];
         std::vector<std::string> files;
         boost::split(files, files_, boost::is_any_of(", "));
         for (int n = 0; n < northo; ++n) {
             maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
-            alps::hdf5::archive ar(files[n]);
-            ar >> alps::make_pvp("/state", ortho_mps[n]);
+            storage::archive ar(files[n]);
+            ar["/state"] >> ortho_mps[n];
             maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
         }
         
@@ -105,7 +100,7 @@ public:
         maquis::cout << "Done init_left_right" << std::endl;
     }
     
-    virtual int sweep(int sweep, Logger & iteration_log,
+    virtual int sweep(int sweep,
                OptimizeDirection d = Both,
                int resume_at = -1,
                int max_secs = -1) = 0;
@@ -117,6 +112,7 @@ protected:
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         left_[site+1] = contraction::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
+        Storage::pin(left_[site+1]);
         
         for (int n = 0; n < northo; ++n)
             ortho_left_[n][site+1] = contraction::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
@@ -125,6 +121,7 @@ protected:
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         right_[site] = contraction::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
+        Storage::pin(right_[site]);
         
         for (int n = 0; n < northo; ++n)
             ortho_right_[n][site] = contraction::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
@@ -137,9 +134,6 @@ protected:
         left_.resize(mpo.length()+1);
         right_.resize(mpo.length()+1);
         
-        right_stores_.resize(L+1, storage_master.child());
-        left_stores_.resize(L+1, storage_master.child());
-        
         ortho_left_.resize(northo);
         ortho_right_.resize(northo);
         for (int n = 0; n < northo; ++n) {
@@ -151,27 +145,29 @@ protected:
         }
         
         //Timer tlb("Init left boundaries"); tlb.begin();
-        storage::reset(left_stores_[0]);
+        Storage::drop(left_[0]);
         left_[0] = mps.left_boundary();
+        Storage::pin(left_[0]);
         
         for (int i = 0; i < site; ++i) {
-            storage::reset(left_stores_[i+1]);
+            Storage::drop(left_[i+1]);
             boundary_left_step(mpo, i);
-            storage::store(left_[i], left_stores_[i]);
+            Storage::evict(left_[i]);
         }
-        storage::store(left_[site], left_stores_[site]);
+        Storage::evict(left_[site]);
         //tlb.end();
         
         //Timer trb("Init right boundaries"); trb.begin();
-        storage::reset(right_stores_[L]);
+        Storage::drop(right_[L]);
         right_[L] = mps.right_boundary();
+        Storage::pin(right_[L]);
                 
         for (int i = L-1; i >= site; --i) {
-            storage::reset(right_stores_[i]);
+            Storage::drop(right_[i]);
             boundary_right_step(mpo, i);
-            storage::store(right_[i+1], right_stores_[i+1]);
+            Storage::evict(right_[i+1]);
         }
-        storage::store(right_[site], right_stores_[site]);
+        Storage::evict(right_[site]);
         //trb.end();
     }
     
@@ -205,8 +201,6 @@ protected:
     
     BaseParameters & parms;
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
-    std::vector<typename StorageMaster::Storage> left_stores_, right_stores_;
-    StorageMaster & storage_master;
     
     /* This is used for multi-state targeting */
     unsigned int northo;

@@ -34,13 +34,13 @@ solve_ietl_jcd(SiteProblem<Matrix, SymmGroup> & sp,
     SingleSiteVS<Matrix, SymmGroup> vs(initial, ortho_vecs);
     
     ietl::jcd_gmres_solver<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
-    jcd_gmres(sp, vs, params.get<int>("ietl_jcd_gmres"));
+    jcd_gmres(sp, vs, params["ietl_jcd_gmres"]);
     
     ietl::jacobi_davidson<SiteProblem<Matrix, SymmGroup>, SingleSiteVS<Matrix, SymmGroup> >
     jd(sp, vs, ietl::Smallest);
     
-    double tol = params.get<double>("ietl_jcd_tol");
-    ietl::basic_iteration<double> iter(params.get<int>("ietl_jcd_maxiter"), tol, tol);
+    double tol = params["ietl_jcd_tol"];
+    ietl::basic_iteration<double> iter(params["ietl_jcd_maxiter"], tol, tol);
     
 //    maquis::cout << "Ortho vecs " << ortho_vecs.size() << std::endl;
     for (int n = 0; n < ortho_vecs.size(); ++n) {
@@ -70,17 +70,17 @@ solve_ietl_new_jd(SiteProblem<Matrix, SymmGroup> & sp,
     Vecspace vs(initial);
 
     int n_evals = 1;   // number of eigenpairs to be calculated
-    int max_iter = params.get<int>("ietl_jcd_maxiter"); // maximal number of iterations
+    int max_iter = params["ietl_jcd_maxiter"]; // maximal number of iterations
 
     int m_max = 40;
     int m_min = 20;
 
     // tolerance
-    double rel_tol = params.get<double>("ietl_jcd_tol");
+    double rel_tol = params["ietl_jcd_tol"];
     double abs_tol = rel_tol;
 
     // maximal iterations for the correction equation solver
-    unsigned max_cor_iter = params.get<int>("ietl_jcd_gmres");
+    unsigned max_cor_iter = params["ietl_jcd_gmres"];
 
     ietl::jd_iteration<double> iter(max_iter, m_min, m_max, rel_tol, abs_tol);
     ietl::jd<Operator, Vecspace> jd(sp, vs);

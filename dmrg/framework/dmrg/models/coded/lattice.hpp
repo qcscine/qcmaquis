@@ -9,8 +9,8 @@ public:
     typedef Lattice::pos_t pos_t;
     
     ChainLattice (BaseParameters & parms, bool pbc_=false)
-    : L(parms.get<int>("L"))
-    , a(parms.get<double>("a"))
+    : L(parms["L"])
+    , a(parms["a"])
     , pbc(pbc_)
     { }
 
@@ -102,9 +102,9 @@ class SquareLattice : public Lattice
 {
 public:
     SquareLattice(BaseParameters & parms)
-    : L_(parms.get<int>("L"))
-    , W_(parms.get<int>("W"))
-    , a(parms.get<double>("a"))
+    : L_(parms["L"])
+    , W_(parms["W"])
+    , a(parms["a"])
     { }
     
     /*

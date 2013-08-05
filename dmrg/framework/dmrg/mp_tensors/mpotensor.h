@@ -9,7 +9,6 @@
 #ifndef MPOTENSOR_H
 #define MPOTENSOR_H
 
-#include "dmrg/utils/stream_storage.h"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "utils/function_objects.h"
@@ -206,11 +205,10 @@ public:
 
     /************************************/
     
+    const data_t& data() const;
+
     void multiply_by_scalar(const scalar_type&);
     void divide_by_scalar(const scalar_type&);
-#ifdef AMBIENT
-    void persist() const;
-#endif
     
     bool has(index_type left_index, index_type right_index) const;
 

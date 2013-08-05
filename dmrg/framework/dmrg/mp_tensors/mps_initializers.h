@@ -41,7 +41,7 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
         
         std::vector<Index<SymmGroup> > allowed = allowed_sectors(L, phys, right_end, Mmax);
         
-        for (int i = 0; i < L; ++i) {
+        parallel_for(locale::compact(L), locale i = 0; i < L; ++i) {
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys, allowed[i], allowed[i+1], fillrand, val);
             mps[i].divide_by_scalar(mps[i].scalar_norm());
         }

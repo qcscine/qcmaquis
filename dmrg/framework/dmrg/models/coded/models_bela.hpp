@@ -53,12 +53,12 @@ public:
         sz.insert_block(Matrix(1, 1, 0.5), 1, 1);
         sz.insert_block(Matrix(1, 1, -0.5), -1, -1);
         
-        K2 = parms.get<double>("K2");
-        K3 = parms.get<double>("K3");
-        K4 = parms.get<double>("K4");
+        K2 = parms["K2"];
+        K3 = parms["K3"];
+        K4 = parms["K4"];
         delta = 1;
-        stag = parms.get<int>("stag");
-        alt = parms.get<int>("alt");
+        stag = parms["stag"];
+        alt = parms["alt"];
         
         L = lat.size();
         std::vector<int> last_adj = lat.all(L-1);

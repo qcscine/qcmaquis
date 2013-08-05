@@ -107,6 +107,11 @@ endif(LAPACK_FOUND)
 
 mark_as_advanced(ALPS_LIBRARY_DIRS ALPS_INCLUDE_DIRS HDF5_INCLUDE_DIR HDF5_LIBRARIES)
 
+if (ALPS_PYTHON_INTERPRETER)
+  set(ALPS_INCLUDE_DIRS ${ALPS_INCLUDE_DIRS} ${ALPS_PYTHON_INCLUDE_DIRS} ${ALPS_PYTHON_NUMPY_INCLUDE_DIR})
+  list(APPEND DMRG_LIBRARIES ${ALPS_PYTHON_LIBRARY})
+endif (ALPS_PYTHON_INTERPRETER)
+
 
 # Boost
 set(Boost_requirements bindings date_time filesystem regex system serialization)
@@ -114,8 +119,6 @@ set(Boost_requirements bindings date_time filesystem regex system serialization)
 include(${PROJECT_SOURCE_DIR}/config/find_boost.cmake)
 find_maquis_boost(COMPONENTS ${Boost_requirements})
 
-include_directories(${MAQUIS_Boost_INCLUDE_DIRS})
-link_directories(${MAQUIS_Boost_LIBRARY_DIRS})
 message(STATUS "Boost include: ${MAQUIS_Boost_INCLUDE_DIRS}")
 message(STATUS "Boost libs: ${MAQUIS_Boost_LIBRARIES}")
 message(STATUS "Boost unit_test: ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")
@@ -173,12 +176,11 @@ MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
 # Parsing user options
 ######################################################################
 
+set(DMRG_INCLUDE_DIRS ${MAQUIS_Boost_INCLUDE_DIRS} ${HDF5_LIBRARIES})
+set(DMRG_LIBRARY_DIRS ${MAQUIS_Boost_LIBRARY_DIRS})
+set(DMRG_DEFINITIONS)
 set(DMRG_LIBRARIES alps ${MAQUIS_Boost_LIBRARIES} ${HDF5_LIBRARIES})
 
-if (ALPS_PYTHON_INTERPRETER)
-  set(ALPS_INCLUDE_DIRS ${ALPS_INCLUDE_DIRS} ${ALPS_PYTHON_INCLUDE_DIRS} ${ALPS_PYTHON_NUMPY_INCLUDE_DIR})
-  list(APPEND DMRG_LIBRARIES ${ALPS_PYTHON_LIBRARY})
-endif (ALPS_PYTHON_INTERPRETER)
 
 # BLAS/LAPACK selector
 if(${BLAS_LAPACK_SELECTOR} MATCHES "alps")
@@ -190,7 +192,7 @@ if(${BLAS_LAPACK_SELECTOR} MATCHES "alps")
   set(BLAS_LAPACK_LIBRARIES ${ALPS_LAPACK_LIBRARIES} ${ALPS_LAPACK_LIBRARY}
       ${ALPS_BLAS_LIBRARIES} ${ALPS_BLAS_LIBRARY})
   list(APPEND DMRG_LIBRARIES ${BLAS_LAPACK_LIBRARIES})
-  add_definitions(${ALPS_LAPACK_DEFINITIONS})
+  list(APPEND DMRG_DEFINITIONS ${ALPS_LAPACK_DEFINITIONS})
 endif(${BLAS_LAPACK_SELECTOR} MATCHES "alps")
 if(${BLAS_LAPACK_SELECTOR} MATCHES "veclib")
   if(APPLE)
@@ -204,15 +206,10 @@ endif(${BLAS_LAPACK_SELECTOR} MATCHES "veclib")
 if(${BLAS_LAPACK_SELECTOR} MATCHES "manual")
   set(BLAS_LAPACK_LIBRARIES ${BLAS_LAPACK_MANUAL_LIBS})
   list(APPEND DMRG_LIBRARIES ${BLAS_LAPACK_LIBRARIES})
-  add_definitions(${BLAS_LAPACK_MANUAL_DEFINITIONS})
-  include_directories(${BLAS_LAPACK_MANUAL_INCLUDES})
-  link_directories(${BLAS_LAPACK_MANUAL_LIBS_DIR})
+  list(APPEND DMRG_DEFINITIONS ${BLAS_LAPACK_MANUAL_DEFINITIONS})
+  list(APPEND DMRG_INCLUDE_DIRS ${BLAS_LAPACK_MANUAL_INCLUDES})
+  list(APPEND DMRG_LIBRARY_DIRS ${BLAS_LAPACK_MANUAL_LIBS_DIR})
 endif(${BLAS_LAPACK_SELECTOR} MATCHES "manual")
-
-# LIST(REVERSE CMAKE_EXE_LINKER_FLAGS)
-# LIST(REMOVE_DUPLICATES CMAKE_EXE_LINKER_FLAGS)
-# LIST(REVERSE CMAKE_EXE_LINKER_FLAGS)
-# message("CMAKE_EXE_LINKER_FLAGS:"${CMAKE_EXE_LINKER_FLAGS})
 
 
 # OpenMP
@@ -280,7 +277,7 @@ endmacro(configure_symm_file)
 foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_group_name(SYMM_NAME ${SYMM})
   message(STATUS "Enabling ${SYMM_NAME} symmetry.")
-  add_definitions(-DHAVE_${SYMM_NAME})
+  list(APPEND DMRG_DEFINITIONS -DHAVE_${SYMM_NAME})
 endforeach(SYMM)
 
 
@@ -290,10 +287,13 @@ endforeach(SYMM)
 # Include / link directories
 ######################################################################
 
-include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework
-                    ${MATRICES_DIR}
-                    ${HDF5_INCLUDE_DIR} ${ALPS_INCLUDE_DIRS})
-link_directories(${ALPS_LIBRARY_DIRS})
+list(APPEND DMRG_INCLUDE_DIRS ${MATRICES_DIR} ${HDF5_INCLUDE_DIR} ${ALPS_INCLUDE_DIRS})
+list(APPEND DMRG_LIBRARY_DIRS ${ALPS_LIBRARY_DIRS})
+
+include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${DMRG_INCLUDE_DIRS})
+link_directories(${DMRG_LIBRARY_DIRS})
+add_definitions(${DMRG_DEFINITIONS})
+
 set(DMRG_FRAMEWORK_DIR ${PROJECT_SOURCE_DIR}/framework)
 
 
@@ -327,11 +327,9 @@ add_subdirectory(framework/dmrg)
 # *** applications
 add_subdirectory(applications)
 
-#add_subdirectory(tests)
-
-
 # *** regression tests
 if(REGRESSION_UNIT_TESTING)
+  #add_subdirectory(tests)
   enable_testing()
   if(NOT ${CMAKE_BUILD_TYPE} MATCHES "Debug")
       message(WARNING "Tests should be checked in Debug mode!")
@@ -349,19 +347,37 @@ if(REGRESSION_APPLICATION_TESTS)
 endif(REGRESSION_APPLICATION_TESTS)
 
 if(REGRESSION_PERFORMANCE_TESTS)
+# *** benchmark applications
+  add_subdirectory(regression/benchmarks)
   enable_testing()
   add_subdirectory(${BENCHMARKS_DIR} benchmarks_refs)
 endif(REGRESSION_PERFORMANCE_TESTS)
 
 
 ######################################################################
-# Install
+# DMRG exports
 ######################################################################
 
+## For build tree
+set(CONF_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${DMRG_INCLUDE_DIRS})
+configure_file(MAQUIS_DMRGConfig.cmake.in ${PROJECT_BINARY_DIR}/MAQUIS_DMRGConfig.cmake @ONLY)
+
+## For install
+set(CONF_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include ${DMRG_INCLUDE_DIRS})
+configure_file(MAQUIS_DMRGConfig.cmake.in ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/MAQUIS_DMRGConfig.cmake @ONLY)
+
+install(FILES ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/MAQUIS_DMRGConfig.cmake DESTINATION share/cmake  COMPONENT dev)
+install(EXPORT DMRGTargets DESTINATION share/cmake COMPONENT dev)
+
+
+######################################################################
+# Install
+######################################################################
 
 install(FILES ${CMAKE_BINARY_DIR}/framework/dmrg_version.h
         DESTINATION include COMPONENT headers)
 
+#TODO: improve using GLOB
 install(DIRECTORY framework/dmrg framework/ietl framework/utils
         DESTINATION include
         COMPONENT headers

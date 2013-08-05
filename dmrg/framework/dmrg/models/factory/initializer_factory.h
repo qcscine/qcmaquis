@@ -50,37 +50,37 @@ namespace detail {
 template <class Matrix, class SymmGroup>
 typename Model<Matrix,SymmGroup>::initializer_ptr Model<Matrix,SymmGroup>::initializer(BaseParameters & params) const
 {
-    if (params.get<std::string>("init_state") == "default")
+    if (params["init_state"] == "default")
         return initializer_ptr(new default_mps_init<Matrix, SymmGroup>());
     
-    else if (params.get<std::string>("init_state") == "linear")
+    else if (params["init_state"] == "linear")
         return detail::call_linear_init<Matrix, SymmGroup>::call();
     
-    else if (params.get<std::string>("init_state") == "const")
+    else if (params["init_state"] == "const")
         return initializer_ptr(new const_mps_init<Matrix, SymmGroup>());
     
-    else if (params.get<std::string>("init_state") == "thin")
+    else if (params["init_state"] == "thin")
         return initializer_ptr(new thin_mps_init<Matrix, SymmGroup>());
     
-    else if (params.get<std::string>("init_state") == "thin_const")
+    else if (params["init_state"] == "thin_const")
         return initializer_ptr(new thin_const_mps_init<Matrix, SymmGroup>());
     
-    else if (params.get<std::string>("init_state") == "basis_state")
+    else if (params["init_state"] == "basis_state")
         return initializer_ptr(new basis_mps_init<Matrix, SymmGroup>(params));
     
-    else if (params.get<std::string>("init_state") == "basis_state_generic")
+    else if (params["init_state"] == "basis_state_generic")
         return initializer_ptr(new basis_mps_init_generic<Matrix, SymmGroup>(params));
     
-    else if (params.get<std::string>("init_state") == "coherent")
+    else if (params["init_state"] == "coherent")
         return initializer_ptr(new coherent_mps_init<Matrix, SymmGroup>(params));
     
-    else if (params.get<std::string>("init_state") == "basis_state_dm")
+    else if (params["init_state"] == "basis_state_dm")
         return initializer_ptr(new basis_dm_mps_init<Matrix, SymmGroup>(params));
     
-    else if (params.get<std::string>("init_state") == "coherent_dm")
+    else if (params["init_state"] == "coherent_dm")
         return initializer_ptr(new coherent_dm_mps_init<Matrix, SymmGroup>(params));
     
-    else if (params.get<std::string>("init_state") == "hf")
+    else if (params["init_state"] == "hf")
         return detail::call_hf_init<Matrix, SymmGroup>::call(params);
     
     else {

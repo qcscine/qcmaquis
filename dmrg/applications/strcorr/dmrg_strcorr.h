@@ -23,7 +23,6 @@ typedef alps::numeric::matrix<double> matrix;
 
 #include "dmrg/utils/DmrgParameters2.h"
 
-#include <alps/hdf5.hpp>
 #include <alps/numeric/real.hpp>
 #include <boost/filesystem.hpp>
 
@@ -37,20 +36,20 @@ public:
     , model(model_)
     {
         // Loading state
-        if (! boost::filesystem::exists(parms.get<std::string>("chkpfile")))
+        if (! boost::filesystem::exists(parms["chkpfile"].str()))
             throw std::runtime_error("Checkpoint file doesn not exist.");
         size_t graining = 0;
         {
-            alps::hdf5::archive ar(parms.get<std::string>("chkpfile"));
-            ar >> alps::make_pvp("/state", mps);
+            storage::archive ar(parms["chkpfile"].str());
+            ar["/state"] >> mps;
             if (ar.is_data("/status/graining"))
-                ar >> alps::make_pvp("/status/graining", graining);
+                ar["/status/graining"] >> graining;
         }
         
         // Init model
         model = model_.get_at_index("graining", graining);
         init_model();
-        L = model.get<int>("L"); N = model.get<int>("Ndiscr");
+        L = model["L"]; N = model["Ndiscr"];
         Ltot = L * N;
         
         if (Ltot != mps.length())
@@ -63,7 +62,7 @@ public:
     {
         op_t strop;
         strop.insert_block(matrix(1, 1, -1), 0, 0);
-        for (int n=1; n<=model.get<int>("Nmax"); ++n)
+        for (int n=1; n<=model["Nmax"]; ++n)
         {
             if ((n-1) % 2 == 0)
                 strop.insert_block(matrix(1, 1, 1), n, n);
@@ -84,19 +83,18 @@ public:
         // eval & save
         matrix::value_type val = expval(mps,mpo);
         {
-            alps::hdf5::archive ar(parms.get<std::string>("resultfile"), alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            ar << alps::make_pvp(std::string("/spectrum/results/String order SS ") + boost::lexical_cast<std::string>(l) + std::string("/mean/value"),
-                                 std::vector<double>(1, maquis::real(val)));
+            storage::archive ar(parms["resultfile"].str(), "w");
+            ar[std::string("/spectrum/results/String order SS ") + boost::lexical_cast<std::string>(l) + std::string("/mean/value")] << std::vector<double>(1, maquis::real(val));
         }
     }
     
     // Unite-cell string operator of length l unit cells
     void measure_uc_string(size_t l)
     {
-        int filling = model.get<int>("u1_total_charge") / L;
+        int filling = model["u1_total_charge"] / L;
         op_t strop;
         strop.insert_block(matrix(1, 1, 1), 0, 0);
-        for (int n=1; n<=model.get<int>("Nmax"); ++n)
+        for (int n=1; n<=model["Nmax"]; ++n)
         {
             if (n % 2 == 0)
                 strop.insert_block(matrix(1, 1, 1), n, n);
@@ -117,9 +115,8 @@ public:
         // eval & save
         matrix::value_type val = expval(mps,mpo) * exp(-filling*double(l/N));
         {
-            alps::hdf5::archive ar(parms.get<std::string>("resultfile"), alps::hdf5::archive::WRITE | alps::hdf5::archive::REPLACE);
-            ar << alps::make_pvp(std::string("/spectrum/results/String order UC ") + boost::lexical_cast<std::string>(l) + std::string("/mean/value"),
-                                 std::vector<double>(1, maquis::real(val)));
+            storage::archive ar(parms["resultfile"].str(), "w");
+            ar[std::string("/spectrum/results/String order UC ") + boost::lexical_cast<std::string>(l) + std::string("/mean/value")] << std::vector<double>(1, maquis::real(val));
         }
     }
     
@@ -131,7 +128,7 @@ private:
         phys.insert(std::make_pair(0, 1));
         ident.insert_block(matrix(1, 1, 1), 0, 0);
         
-        for (int n=1; n<=model.get<int>("Nmax"); ++n)
+        for (int n=1; n<=model["Nmax"]; ++n)
         {
             phys.insert(std::make_pair(n, 1));
             ident.insert_block(matrix(1, 1, 1), n, n);

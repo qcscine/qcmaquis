@@ -12,7 +12,7 @@
 #include <iostream>
 
 #include <boost/functional/hash.hpp>
-
+ 
 #ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
 #endif
@@ -20,9 +20,7 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/array.hpp>
 
-
-class Ztwo
-	{
+class Ztwo {
 	public:
 		typedef enum { Plus = 0, Minus = 1 } charge;
 		
@@ -45,29 +43,28 @@ class Ztwo
 				v[0] = fuse(v[0], v[i]);
 			return v[0];
 		}
-	};	
+};
 
 #ifdef HAVE_ALPS_HDF5
-inline
-void save(alps::hdf5::archive & ar,
-          std::string const & p,
-          Ztwo::charge const & v,
-          std::vector<std::size_t> size = std::vector<std::size_t>(),
-          std::vector<std::size_t> chunk = std::vector<std::size_t>(),
-          std::vector<std::size_t> offset = std::vector<std::size_t>())
+inline void save(alps::hdf5::archive & ar,
+                 std::string const & p,
+                 Ztwo::charge const & v,
+                 std::vector<std::size_t> size = std::vector<std::size_t>(),
+                 std::vector<std::size_t> chunk = std::vector<std::size_t>(),
+                 std::vector<std::size_t> offset = std::vector<std::size_t>())
 {
-    ar << alps::make_pvp(p, static_cast<int>(v));
+    ar[p] << static_cast<int>(v);
 }
-inline
-void load(alps::hdf5::archive & ar,
-          std::string const & p,
-          Ztwo::charge & v,
-          std::vector<std::size_t> size = std::vector<std::size_t>(),
-          std::vector<std::size_t> chunk = std::vector<std::size_t>(),
-          std::vector<std::size_t> offset = std::vector<std::size_t>())
+
+inline void load(alps::hdf5::archive & ar,
+                 std::string const & p,
+                 Ztwo::charge & v,
+                 std::vector<std::size_t> size = std::vector<std::size_t>(),
+                 std::vector<std::size_t> chunk = std::vector<std::size_t>(),
+                 std::vector<std::size_t> offset = std::vector<std::size_t>())
 {
     int t;
-    ar >> alps::make_pvp(p, t);
+    ar[p] >> t;
     v = (t == 0 ? Ztwo::Plus : Ztwo::Minus);
 }
 #endif

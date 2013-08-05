@@ -6,7 +6,6 @@
  *
  *****************************************************************************/
 
-#include "dmrg/utils/logger.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "contractions.h"
 #include <boost/math/special_functions/binomial.hpp>
@@ -111,6 +110,9 @@ void MPS<Matrix, SymmGroup>::normalize_left()
 {
     canonize(length()-1);
     // now state is: A A A A A A M
+    #ifdef AMBIENT
+    locale::compact(length()); locale l(length()-1,length()-1);
+    #endif
     block_matrix<Matrix, SymmGroup> t = (*this)[length()-1].normalize_left(DefaultSolver());
     // now state is: A A A A A A A
     canonized_i = length()-1;
@@ -121,6 +123,9 @@ void MPS<Matrix, SymmGroup>::normalize_right()
 {
     canonize(0);
     // now state is: M B B B B B B
+    #ifdef AMBIENT
+    locale::compact(length()); locale l(0,0);
+    #endif
     block_matrix<Matrix, SymmGroup> t = (*this)[0].normalize_right(DefaultSolver());
     // now state is: B B B B B B B
     canonized_i = 0;
@@ -157,8 +162,14 @@ void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2, Decomp
     {
         if ((*this)[i].isleftnormalized())
             continue;
+        #ifdef AMBIENT
+        locale::compact(length()); locale l(i,i);
+        #endif
         block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_left(method);
-        if (i < length()-1) {
+        if (i < length()-1) { 
+             #ifdef AMBIENT
+             ++l;
+             #endif
             (*this)[i+1].multiply_from_left(t);
             (*this)[i+1].divide_by_scalar((*this)[i+1].scalar_norm());
         }
@@ -180,8 +191,14 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
     {
         if ((*this)[i].isrightnormalized())
             continue;
+        #ifdef AMBIENT
+        locale::compact(length()); locale l(i,i);
+        #endif
         block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(method);
-        if (i > 0) {
+        if (i > 0) { 
+            #ifdef AMBIENT
+            --l;
+            #endif
             (*this)[i-1].multiply_from_right(t);
             (*this)[i-1].divide_by_scalar((*this)[i-1].scalar_norm());
         }
@@ -198,11 +215,10 @@ void MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const &
                                             Boundary<OtherMatrix, SymmGroup> const & left,
                                             Boundary<OtherMatrix, SymmGroup> const & right,
                                             std::size_t l, double alpha,
-                                            double cutoff, std::size_t Mmax,
-                                            Logger & logger)
+                                            double cutoff, std::size_t Mmax)
 { // canonized_i invalided through (*this)[] 
     MPSTensor<Matrix, SymmGroup> new_mps =
-    contraction::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, logger);
+    contraction::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
     (*this)[l+1] = contraction::predict_lanczos_l2r_sweep((*this)[l+1],
                                                           (*this)[l], new_mps);
     (*this)[l] = new_mps;
@@ -214,11 +230,10 @@ void MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const &
                                             Boundary<OtherMatrix, SymmGroup> const & left,
                                             Boundary<OtherMatrix, SymmGroup> const & right,
                                             std::size_t l, double alpha,
-                                            double cutoff, std::size_t Mmax,
-                                            Logger & logger)
+                                            double cutoff, std::size_t Mmax)
 { // canonized_i invalided through (*this)[] 
     MPSTensor<Matrix, SymmGroup> new_mps =
-    contraction::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax, logger);
+    contraction::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
     
     (*this)[l-1] = contraction::predict_lanczos_r2l_sweep((*this)[l-1],
                                                           (*this)[l], new_mps);
@@ -288,24 +303,20 @@ void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& fill, 
     apply(op, p);
 }
 
-
-#ifdef HAVE_ALPS_HDF5
-
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::load(alps::hdf5::archive & ar)
+template<class Archive>
+void MPS<Matrix, SymmGroup>::load(Archive & ar)
 {
     canonized_i = std::numeric_limits<size_t>::max();
-    ar >> alps::make_pvp("MPS", data_);
+    ar["MPS"] >> data_;
 }
 
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::save(alps::hdf5::archive & ar) const
+template<class Archive>
+void MPS<Matrix, SymmGroup>::save(Archive & ar) const
 {
-    ar << alps::make_pvp("MPS", data_);
+    ar["MPS"] << data_;
 }
-
-#endif
-
 
 template <class Matrix, class SymmGroup>
 void check_equal_mps (MPS<Matrix, SymmGroup> const & mps1, MPS<Matrix, SymmGroup> const & mps2)

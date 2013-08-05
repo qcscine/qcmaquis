@@ -9,8 +9,6 @@
 #ifndef MEASUREMENTS_H
 #define MEASUREMENTS_H
 
-#include <alps/hdf5.hpp>
-
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 
 #include "dmrg/deprecated/mpos/adjacency.h"
@@ -22,20 +20,21 @@
 template<class Matrix, class SymmGroup>
 struct measure_
 {
+    template<class Archive>
     void operator()(MPS<Matrix, SymmGroup> & mps,
                     adj::Adjacency & adj,
                     mpos::Hamiltonian<Matrix, SymmGroup> & H,
                     BaseParameters & model,
-                    alps::hdf5::archive & ar)
+                    Archive & ar)
     { }
 };
 
-template<class Matrix, class SymmGroup>
+template<class Matrix, class SymmGroup, class Archive>
 void measure_2pt_correlation(MPS<Matrix, SymmGroup> & mps,
                              adj::Adjacency & adj,
                              block_matrix<Matrix, SymmGroup> const & identity,
                              block_matrix<Matrix, SymmGroup> const & fill,
-                             alps::hdf5::archive & ar,
+                             Archive & ar,
                              std::vector<block_matrix<Matrix, SymmGroup> > & ops,
                              std::string base_path)
 {
@@ -53,20 +52,19 @@ void measure_2pt_correlation(MPS<Matrix, SymmGroup> & mps,
         std::copy(lbt.begin(), lbt.end(), std::back_inserter(labels));
     }
     
-    //std::copy(labels.begin(), labels.end(), std::ostream_iterator<std::string>(maquis::cout, " ")); maquis::cout << std::endl;
-    //ar << alps::make_pvp(base_path + std::string("/labels"), labels);
-    ar << alps::make_pvp(base_path + std::string("/mean/value"), dc);
-    ar << alps::make_pvp(base_path + std::string("/labels"), labels);
+    ar[base_path + std::string("/mean/value")] << dc;
+    ar[base_path + std::string("/labels")] << labels;
 }
 
 template<class Matrix>
 struct measure_<Matrix, U1>
 {
+    template<class Archive>
     void measure_blbq(MPS<Matrix, U1> & mps,
                       adj::Adjacency & adj,
                       mpos::Hamiltonian<Matrix, U1> & H,
                       BaseParameters & model,
-                      alps::hdf5::archive & ar)
+                      Archive & ar)
     {
         std::vector<double> magns;
 
@@ -103,7 +101,8 @@ struct measure_<Matrix, U1>
             }
             
             std::string n = std::string("/spectrum/results/") + names[i] + std::string("/mean/value");
-            ar << alps::make_pvp(n, magns);
+            ar[n] << magns;
+
         }
      
         for (int i = 0; i < 4; ++i)
@@ -116,20 +115,19 @@ struct measure_<Matrix, U1>
 //            
 //            std::vector<double> mc_v = maquis::real(multi_expval(mps, mpo));
             std::string name = std::string("/spectrum/results/") + names[i] + std::string("Correlation");
-//            ar << alps::make_pvp(name + std::string("/labels"), mcorr.label_strings());
-//            ar << alps::make_pvp(name + std::string("/mean/value"), mc_v);
             
             measure_2pt_correlation(mps, adj, ident, ident, ar,
                                     corr, name);
         }
         
     }
-    
+   
+    template<class Archive>
     void measure_superf(MPS<Matrix, U1> & mps,
                         adj::Adjacency & adj,
                         mpos::Hamiltonian<Matrix, U1> & H,
                         BaseParameters & model,
-                        alps::hdf5::archive & ar)
+                        Archive & ar)
     {
         std::vector<double> magns;
         
@@ -149,7 +147,7 @@ struct measure_<Matrix, U1>
             magns.push_back(val);
         }
             
-        ar << alps::make_pvp("/spectrum/results/Density/mean/value", magns);
+        ar["/spectrum/results/Density/mean/value"] << magns;
         
         std::vector<double> corrs;
         
@@ -171,14 +169,15 @@ struct measure_<Matrix, U1>
             }
         }
         
-        ar << alps::make_pvp("/spectrum/results/NNDensityCorrelation/mean/value", corrs);
+        ar["/spectrum/results/NNDensityCorrelation/mean/value"] << corrs;
     }
     
+    template<class Archive>
     void measure_ff(MPS<Matrix, U1> & mps,
                     adj::Adjacency & adj,
                     mpos::Hamiltonian<Matrix, U1> & H,
                     BaseParameters & model,
-                    alps::hdf5::archive & ar)
+                    Archive & ar)
     {
         block_matrix<Matrix, U1> dens, create, destroy, sign, ident;
         
@@ -204,7 +203,7 @@ struct measure_<Matrix, U1>
             double val = maquis::real(expval(mps, mpo));
             density.push_back(val);
         }
-        ar << alps::make_pvp("/spectrum/results/Density/mean/value", density);
+        ar["/spectrum/results/Density/mean/value"] << density;
         
         std::vector<block_matrix<Matrix, U1> > density_corr;
         density_corr.push_back( dens );
@@ -221,26 +220,26 @@ struct measure_<Matrix, U1>
                                 "/spectrum/results/OneBodyDM");
     }
     
-    
+    template<class Archive>
     void operator()(MPS<Matrix, U1> & mps,
                     adj::Adjacency & adj,
                     mpos::Hamiltonian<Matrix, U1> & H,
                     BaseParameters & model,
-                    alps::hdf5::archive & ar)
+                    Archive & ar)
     {
-        if (model.get<std::string>("model") == std::string("biquadratic"))
+        if (model["model"] == std::string("biquadratic"))
             measure_blbq(mps, adj, H, model, ar);
-        else if (model.get<std::string>("model") == std::string("FreeFermions"))
+        else if (model["model"] == std::string("FreeFermions"))
             measure_ff(mps, adj, H, model, ar);
     }
 };
 
-template<class Matrix, class SymmGroup>
+template<class Matrix, class SymmGroup, class Archive>
 void measure(MPS<Matrix, SymmGroup> & mps,
              adj::Adjacency & adj,
              mpos::Hamiltonian<Matrix, SymmGroup> & H,
              BaseParameters & model,
-             alps::hdf5::archive & ar)
+             Archive & ar)
 {
     measure_<Matrix, SymmGroup>()(mps, adj, H, model, ar);
 }

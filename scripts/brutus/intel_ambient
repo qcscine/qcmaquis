@@ -1,0 +1,40 @@
+#!/bin/bash -l
+STATE="void"
+STATE_AMBIENT="void"
+STATE_DMRG="build"
+# end of target states #
+PREFIX=ambient
+COMPILER=intel
+COMPILER_VERSION=13.1
+MPI_WRAPPER=open_mpi
+MPI_WRAPPER_VERSION=1.4
+ALPS_DIR=$HOME/opt/alps-intel
+
+export CC=mpicc
+export CXX=mpicxx
+
+export ALPS_ROOT=${ALPS_DIR}
+export PATH=${ALPS_DIR}/bin:${PATH}
+export PYTHONPATH=${ALPS_DIR}/lib:${PYTHONPATH}
+
+module purge
+module load goto2 python
+module load gcc/4.7.2
+module load ${COMPILER}/${COMPILER_VERSION}
+module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
+module load hdf5
+module load cmake
+
+## common ##
+COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -gcc-name=g++-gcc-4.7.2 -L$HOME/opt/plasma-intel/lib"
+COMMON_CMAKE_CXX_FLAGS_RELEASE=${MAQUIS_COMMON_CMAKE_CXX_FLAGS}
+## dmrg ##
+DMRG_ALPS_ROOT_DIR=$ALPS_ROOT
+DMRG_DEFAULT_BLAS_LAPACK=manual
+DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread -lplasma -lcoreblas -llapacke -lquark"
+DMRG_ENABLE_OMP=OFF
+DMRG_BUILD_AMBIENT=ON
+DMRG_USE_AMBIENT=ON
+
+source $ROOT_DIR/scripts/common/common.sh 
+execute $*

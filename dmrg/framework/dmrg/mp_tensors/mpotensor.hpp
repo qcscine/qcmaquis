@@ -79,6 +79,11 @@ bool MPOTensor<Matrix, SymmGroup>::has(index_type left_index,
             == (col_tags.find_element(left_index, right_index) != NULL) );
     return row_tags.find_element(left_index, right_index) != NULL;
 }
+    
+template<class Matrix, class SymmGroup>
+const typename MPOTensor<Matrix, SymmGroup>::data_t& MPOTensor<Matrix, SymmGroup>::data() const {
+    return this->data_;
+}
 
 template<class Matrix, class SymmGroup>
 void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(const scalar_type& v)
@@ -104,19 +109,6 @@ void MPOTensor<Matrix, SymmGroup>::divide_by_scalar(const scalar_type& v)
             it1->second /= v; 
 }
 
-#ifdef AMBIENT
-template<class Matrix, class SymmGroup>
-void MPOTensor<Matrix, SymmGroup>::persist() const
-{
-    //for(typename data_t::const_iterator it = data_.begin(); it != data_.end(); ++it)
-    //    for(index_type k = 0; k < (it->second).n_blocks(); k++)
-    //       ambient::numeric::persist((it->second)[k]);
-    for(typename OPTable<Matrix, SymmGroup>::const_iterator it = operator_table.begin(); it != operator_table.end(); ++it)
-        for(index_type k = 0; k < it->n_blocks(); k++)
-           ambient::numeric::persist((*it)[k]);
-}
-#endif
-
 template<class Matrix, class SymmGroup>
 typename MPOTensor<Matrix, SymmGroup>::index_type MPOTensor<Matrix, SymmGroup>::row_dim() const
 {
@@ -128,4 +120,3 @@ typename MPOTensor<Matrix, SymmGroup>::index_type MPOTensor<Matrix, SymmGroup>::
 {
     return right_i;
 }
-

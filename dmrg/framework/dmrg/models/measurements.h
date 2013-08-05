@@ -18,11 +18,6 @@
 #include <string>
 #include <iostream>
 
-#ifdef HAVE_ALPS_HDF5
-#include <alps/hdf5.hpp>
-#include <alps/utility/encode.hpp>
-#endif
-
 #include "dmrg/models/lattice.h"
 #include "dmrg/models/generate_mpo.hpp"
 
@@ -230,69 +225,69 @@ void measure_on_mps(MPS<Matrix, SymmGroup> & mps, Lattice const & lat,
                     assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
                     if (!super_meas && meas[i].operators.size() == 1) // Local measurements are fast and efficient!
                         local_measurement->site_term(meas[i].operators[0],
-                                                    h5name, basepath + alps::hdf5_name_encode(meas[i].name));
+                                                    h5name, basepath + storage::encode(meas[i].name));
                     else
                         meas_eval::measure_local(mps, lat,
                                                    meas.get_identity(), meas[i].fill_operator,
                                                    meas[i].operators,
-                                                   h5name, basepath + alps::hdf5_name_encode(meas[i].name), super_meas);
+                                                   h5name, basepath + storage::encode(meas[i].name), super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::MPSBonds:
                     assert(meas[i].operators.size() == 2);
                     local_measurement->bond_term(meas[i].operators,
-                                                h5name, basepath + alps::hdf5_name_encode(meas[i].name));
+                                                h5name, basepath + storage::encode(meas[i].name));
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::Average:
                     assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
                     meas_eval::measure_average(mps, lat,
                                                  meas.get_identity(), meas[i].fill_operator,
                                                  meas[i].operators,
-                                                 h5name, basepath + alps::hdf5_name_encode(meas[i].name), super_meas);
+                                                 h5name, basepath + storage::encode(meas[i].name), super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::Overlap:
                     meas_eval::measure_overlap(mps, dynamic_cast<OverlapMeasurement<Matrix, SymmGroup> const & >(meas[i]).bra_ckp,
-                                                 h5name, basepath + alps::hdf5_name_encode(meas[i].name));
+                                                 h5name, basepath + storage::encode(meas[i].name));
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::Correlation:
                     meas_eval::measure_correlation(mps, lat, meas.get_identity(),
                                                      meas[i].fill_operator, meas[i].operators,
-                                                     h5name, basepath + alps::hdf5_name_encode(meas[i].name), false, false, super_meas);
+                                                     h5name, basepath + storage::encode(meas[i].name), false, false, super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::HalfCorrelation:
                     meas_eval::measure_correlation(mps, lat, meas.get_identity(),
                                                      meas[i].fill_operator, meas[i].operators,
-                                                     h5name, basepath + alps::hdf5_name_encode(meas[i].name), true, false, super_meas);
+                                                     h5name, basepath + storage::encode(meas[i].name), true, false, super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::CorrelationNN:
                     if (meas[i].operators.size() % 2 != 0)
                         throw std::runtime_error("Next neighbors correlators have to have even number of operators");
                     meas_eval::measure_correlation(mps, lat, meas.get_identity(),
                                                      meas[i].fill_operator, meas[i].operators,
-                                                     h5name, basepath + alps::hdf5_name_encode(meas[i].name), false, true, super_meas);
+                                                     h5name, basepath + storage::encode(meas[i].name), false, true, super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::HalfCorrelationNN:
                     if (meas[i].operators.size() % 2 != 0)
                         throw std::runtime_error("Next neighbors correlators have to have even number of operators");
                     meas_eval::measure_correlation(mps, lat, meas.get_identity(),
                                                      meas[i].fill_operator, meas[i].operators,
-                                                     h5name, basepath + alps::hdf5_name_encode(meas[i].name), true, true, super_meas);
+                                                     h5name, basepath + storage::encode(meas[i].name), true, true, super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::Custom:
                     meas_eval::measure_custom(mps, lat, meas.get_identity(),
                                                 meas[i].fill_operator, meas[i].custom_ops,
-                                                h5name, basepath + alps::hdf5_name_encode(meas[i].name));
+                                                h5name, basepath + storage::encode(meas[i].name));
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::LocalAt:
                     meas_eval::measure_local_at(mps, lat, meas.get_identity(),
                                                   meas[i].fill_operator, meas[i].operators, meas[i].positions,
-                                                  h5name, basepath + alps::hdf5_name_encode(meas[i].name));
+                                                  h5name, basepath + storage::encode(meas[i].name));
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::DMOverlap:
                 case Measurement_Term<Matrix, SymmGroup>::DMMultioverlap:
                     DMOverlapMeasurement<Matrix, SymmGroup> const & cast_meas = dynamic_cast<DMOverlapMeasurement<Matrix, SymmGroup> const & >(meas[i]);
                     bool is_multi_overlap = (meas[i].type == Measurement_Term<Matrix, SymmGroup>::DMMultioverlap);
                     meas_eval::dm_overlap(mps, cast_meas.mps_ident, cast_meas.overlaps_mps, cast_meas.labels, is_multi_overlap,
-                                            h5name, basepath + alps::hdf5_name_encode(meas[i].name));
+                                            h5name, basepath + storage::encode(meas[i].name));
                     break;
             }
         }
@@ -306,7 +301,7 @@ void parse_overlaps(BaseParameters const & parms, size_t sweep, Measurements<Mat
      *  (1) MEASURE_OVERLAP[obsname] = "/path/to/ckp.h5"
      *  (2) MEASURE_OVERLAP[obsname(sweep)] = "/path/to/ckp.h5"
      *
-     * `obsname` is the name that will be given in hdf5 output.
+     * `obsname` is the name that will be given in archive output.
      * if `sweep` is prensent, the overlap will only be computed when the sweep number
      * matches the given one.
      */
