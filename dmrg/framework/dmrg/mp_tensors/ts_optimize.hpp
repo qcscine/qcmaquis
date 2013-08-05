@@ -25,64 +25,62 @@ public:
 
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
     using base::mpo;
-    using base::mpo_orig;
     using base::mps;
     using base::left_;
     using base::right_;
     using base::parms;
-
-    ts_optimize(MPS<Matrix, SymmGroup> const & mps_,
+    using base::iteration_results_;
+    using base::initial_site;
+    using base::stop_callback;
+    
+    ts_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
-                MPO<Matrix, SymmGroup> const & ts_mpo_,
-                BaseParameters & parms_)
-    : ts_cache_mpo(ts_mpo_), base(mps_, mpo_, parms_) {
+                BaseParameters & parms_,
+                boost::function<bool ()> stop_callback_,
+                int initial_sweep_ = 0,
+                int initial_site_ = 0)
+    : base(mps_, mpo_, parms_, stop_callback_, initial_sweep_, initial_site_)
+    {
         #ifdef AMBIENT 
             for(int i = 0; i < ts_mpo_.length(); ++i)
                 for(typename MPOTensor<Matrix, SymmGroup>::data_t::const_iterator it = ts_mpo_[i].data().begin(); it != ts_mpo_[i].data().end(); ++it)
                     for(size_t k = 0; k < (it->second).n_blocks(); k++)
                         ambient::make_persistent((it->second)[k]);
         #endif
+        
+        /// cache twosite mpo
+        make_ts_cache_mpo(mpo, ts_cache_mpo, mps[0].site_dim());
     }
 
-    int sweep(int sweep,
-               OptimizeDirection d = Both,
-               int resume_at = -1,
-               int max_secs = -1)
+    void sweep(int sweep, OptimizeDirection d = Both)
     {
-        // Sebastian: Is this still necessary?
-        mpo = mpo_orig;
-
     	timeval sweep_now, sweep_then;
     	gettimeofday(&sweep_now, NULL);
 
+        iteration_results_.clear();
         
         std::size_t L = mps.length();
 
-        if (resume_at != -1)
-        {
-            int site;
-            if (resume_at < L)
-                site = resume_at;
-            else
-                site = 2*L-resume_at-2;
-            mps.canonize(site);
-            this->init_left_right(mpo, site);
+        int _site = 0, site = 0;
+        if (initial_site != -1) {
+            _site = initial_site;
+            site = (_site < L) ? _site : 2*L-_site-1;
         }
-
-        Storage::prefetch(left_[0]);
-        Storage::prefetch(right_[2]);
+        
+        Storage::prefetch(left_[site]);
+        Storage::prefetch(right_[site+2]);
 
 #ifndef NDEBUG
     	maquis::cout << mps.description() << std::endl;
 #endif
-        for (int _site = (resume_at == -1 ? 0 : resume_at); _site < 2*L-2; ++_site) {
+        for (; _site < 2*L-2; ++_site) {
 	/* (0,1), (1,2), ... , (L-1,L), (L-1,L), (L-2, L-1), ... , (0,1)
 	    | |                        |
        site 1 |                        |
 	      |         left to right  | right to left, lr = -1
 	      site 2                   |                               */
 
-            int site, lr, site1, site2;
+            int lr, site1, site2;
             if (_site < L-1) {
                 site = _site;
                 lr = 1;
@@ -98,15 +96,16 @@ public:
     	    maquis::cout << std::endl;
             maquis::cout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
 
-            if (parms.template get<bool>("beta_mode")) {
-                if (sweep == 0 && lr == 1) {
-                    mpo = zero_after(mpo_orig, 0);
-                    if (site == 0)
-                        this->init_left_right(mpo, 0);
-                } else if (sweep == 0 && lr == -1 && site == L-1) {
-                    mpo = mpo_orig;
-                }
-            }
+            // MD: some changes needed to re-enable it.
+//            if (parms.template get<bool>("beta_mode")) {
+//                if (sweep == 0 && lr == 1) {
+//                    mpo = zero_after(mpo_orig, 0);
+//                    if (site == 0)
+//                        this->init_left_right(mpo, 0);
+//                } else if (sweep == 0 && lr == -1 && site == L-1) {
+//                    mpo = mpo_orig;
+//                }
+//            }
         
             if (_site != L-1)
             { 
@@ -168,15 +167,16 @@ public:
 #endif
 
             maquis::cout << "Energy " << lr << " " << res.first << std::endl;
-            storage::log << std::make_pair("Energy", res.first);
+            iteration_results_["Energy"] << res.first;
             
             double cutoff = this->get_cutoff(sweep);
             std::size_t Mmax = this->get_Mmax(sweep);
+            truncation_results trunc;
             
     	    if (lr == +1)
     	    {
         		// Write back result from optimization
-        		boost::tie(mps[site1], mps[site2]) = tst.split_mps_l2r(Mmax, cutoff);
+        		boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_l2r(Mmax, cutoff);
 
         		block_matrix<Matrix, SymmGroup> t;
 		
@@ -199,7 +199,7 @@ public:
     	    }
     	    if (lr == -1){
         		// Write back result from optimization
-        		boost::tie(mps[site1], mps[site2]) = tst.split_mps_r2l(Mmax, cutoff);
+        		boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_r2l(Mmax, cutoff);
 
         		block_matrix<Matrix, SymmGroup> t;
 
@@ -221,21 +221,24 @@ public:
                 }
     	    }
             
+            iteration_results_["BondDimension"]     << trunc.bond_dimension;
+            iteration_results_["TruncatedWeight"]   << trunc.truncated_weight;
+            iteration_results_["TruncatedFraction"] << trunc.truncated_fraction;
+            iteration_results_["SmallestEV"]        << trunc.smallest_ev;
+            
             
             gettimeofday(&sweep_then, NULL);
             double elapsed = sweep_then.tv_sec-sweep_now.tv_sec + 1e-6 * (sweep_then.tv_usec-sweep_now.tv_usec);
             maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
-            if (max_secs != -1 && elapsed > max_secs && _site+1<2*L) {
-                return _site+1;
-            } else
-                maquis::cout << max_secs - elapsed << " seconds left." << std::endl;
-    	} // for sites
+            
+            if (stop_callback())
+                throw dmrg::time_limit(sweep, _site+1);
 
-        return -1;
+    	} // for sites
     } // sweep
 
 private:
-    MPO<Matrix, SymmGroup> const & ts_cache_mpo;
+    MPO<Matrix, SymmGroup> ts_cache_mpo;
 };
 
 #endif

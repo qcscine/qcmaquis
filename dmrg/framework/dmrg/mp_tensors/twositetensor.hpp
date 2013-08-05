@@ -130,7 +130,7 @@ MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps() const
 }
 
 template<class Matrix, class SymmGroup>
-std::pair<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup> >
+boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
 TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff) const
 {
     make_both_paired();
@@ -139,7 +139,7 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff)
     block_matrix<Matrix, SymmGroup> u, v;
     block_matrix<dmt, SymmGroup> s;
     
-    svd_truncate(data_, u, v, s, cutoff, Mmax, true);
+    truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true);
     
     MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_orig, left_i, u.right_basis(), false, 0),
                                  mps_tensor2(phys_i_orig, v.left_basis(), right_i, false, 0);
@@ -153,11 +153,11 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff)
     mps_tensor2.replace_right_paired(u);
     // mps_tensor2.data() = u;
     
-    return std::make_pair(mps_tensor1, mps_tensor2);
+    return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
 
 template<class Matrix, class SymmGroup>
-std::pair<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup> >
+boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
 TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff) const
 {
     make_both_paired();
@@ -166,7 +166,7 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff)
     block_matrix<Matrix, SymmGroup> u, v;
     block_matrix<dmt, SymmGroup> s;
     
-    svd_truncate(data_, u, v, s, cutoff, Mmax, true);
+    truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true);
     
     MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_orig, left_i, /*right_i*/ u.right_basis(), false, 0),
                                  mps_tensor2(phys_i_orig, /*left_i*/ v.left_basis(), right_i, false, 0);
@@ -176,7 +176,7 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff)
     gemm(u, s, v);
     mps_tensor1.replace_left_paired(v);
     
-    return std::make_pair(mps_tensor1, mps_tensor2);
+    return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
 
 template<class Matrix, class SymmGroup>

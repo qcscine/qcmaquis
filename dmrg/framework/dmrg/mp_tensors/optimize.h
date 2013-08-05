@@ -24,7 +24,9 @@
 #include "ietl_jacobi_davidson.h"
 
 #include "dmrg/utils/BaseParameters.h"
+#include "dmrg/utils/results_collector.h"
 #include "dmrg/utils/storage.h"
+#include "dmrg/utils/time_limit_exception.h"
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem
@@ -71,17 +73,24 @@ template<class Matrix, class SymmGroup, class Storage>
 class optimizer_base
 {
 public:
-    optimizer_base(MPS<Matrix, SymmGroup> const & mps_,
+    optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    MPO<Matrix, SymmGroup> const & mpo_,
-                   BaseParameters & parms_)
+                   BaseParameters & parms_,
+                   boost::function<bool ()> stop_callback_,
+                   int initial_sweep_,
+                   int initial_site_)
     : mps(mps_)
     , mpo(mpo_)
-    , mpo_orig(mpo_)
     , parms(parms_)
+    , stop_callback(stop_callback_)
+    , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
-        mps.normalize_right();
+        int L = mps.length();
+        int site = (initial_site < L) ? initial_site : 2*L-initial_site-1;
+        
+        mps.canonize(site);
         for(int i = 0; i < mps.length(); ++i)
-        Storage::evict(mps[i]);
+            Storage::evict(mps[i]);
 
         northo = parms_["n_ortho_states"];
         maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
@@ -96,16 +105,13 @@ public:
             maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
         }
         
-        init_left_right(mpo, 0);
+        init_left_right(mpo, site);
         maquis::cout << "Done init_left_right" << std::endl;
     }
     
-    virtual int sweep(int sweep,
-               OptimizeDirection d = Both,
-               int resume_at = -1,
-               int max_secs = -1) = 0;
+    virtual void sweep(int sweep, OptimizeDirection d = Both) = 0;
     
-    MPS<Matrix, SymmGroup> get_current_mps() const { return mps; }
+    results_collector const& iteration_results() const { return iteration_results_; }
 
 protected:
 
@@ -196,10 +202,15 @@ protected:
     }
     
     
-    MPS<Matrix, SymmGroup> mps;
-    MPO<Matrix, SymmGroup> mpo, mpo_orig;
+    results_collector iteration_results_;
+    
+    MPS<Matrix, SymmGroup> & mps;
+    MPO<Matrix, SymmGroup> const& mpo;
     
     BaseParameters & parms;
+    boost::function<bool ()> stop_callback;
+    int initial_site;
+
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
     
     /* This is used for multi-state targeting */

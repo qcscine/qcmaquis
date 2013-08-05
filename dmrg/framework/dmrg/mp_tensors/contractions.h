@@ -411,7 +411,7 @@ struct contraction {
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static MPSTensor<Matrix, SymmGroup>
+    static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
                                 Boundary<OtherMatrix, SymmGroup> const & left,
@@ -444,11 +444,11 @@ struct contraction {
         
         block_matrix<Matrix, SymmGroup> U;
         block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
-        heev_truncate(dm, U, S, cutoff, Mmax);
+        truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax);
       
         MPSTensor<Matrix, SymmGroup> ret = mps;
         ret.replace_left_paired(U);
-        return ret;
+        return std::make_pair(ret, trunc);
     }
     
     template<class Matrix, class SymmGroup>
@@ -468,7 +468,7 @@ struct contraction {
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static MPSTensor<Matrix, SymmGroup>
+    static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
                                 Boundary<OtherMatrix, SymmGroup> const & left,
@@ -501,11 +501,11 @@ struct contraction {
         
         block_matrix<Matrix, SymmGroup> U;
         block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
-        heev_truncate(dm, U, S, cutoff, Mmax);
+        truncation_results trunc = heev_truncate(dm, U, S, cutoff, Mmax);
         
         MPSTensor<Matrix, SymmGroup> ret = mps;
         ret.replace_right_paired(adjoint(U));
-        return ret; 
+        return std::make_pair(ret, trunc);
     }
     
     template<class Matrix, class SymmGroup>

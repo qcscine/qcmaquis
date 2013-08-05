@@ -56,10 +56,12 @@ public:
     void make_right_paired() const;
     
     MPSTensor<Matrix, SymmGroup> make_mps() const;
-    std::pair<MPSTensor<Matrix, SymmGroup>,
-              MPSTensor<Matrix, SymmGroup> > split_mps_l2r(std::size_t Mmax, double cutoff) const;
-    std::pair<MPSTensor<Matrix, SymmGroup>,
-              MPSTensor<Matrix, SymmGroup> > split_mps_r2l(std::size_t Mmax, double cutoff) const;
+    
+    boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
+    split_mps_l2r(std::size_t Mmax, double cutoff) const;
+    
+    boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
+    split_mps_r2l(std::size_t Mmax, double cutoff) const;
     
     void swap_with(TwoSiteTensor & b);
 
