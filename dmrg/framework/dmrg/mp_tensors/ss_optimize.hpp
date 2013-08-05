@@ -20,57 +20,54 @@ public:
 
     typedef optimizer_base<Matrix, SymmGroup, Storage> base;
     using base::mpo;
-    using base::mpo_orig;
     using base::mps;
     using base::left_;
     using base::right_;
     using base::parms;
+    using base::iteration_results_;
+    using base::initial_site;
+    using base::stop_callback;
 
-    ss_optimize(MPS<Matrix, SymmGroup> const & mps_,
+    ss_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
-                BaseParameters & parms_)
-    : base(mps_, mpo_, parms_) { }
+                BaseParameters & parms_,
+                boost::function<bool ()> stop_callback_,
+                int initial_sweep_ = 0,
+                int initial_site_ = 0)
+    : base(mps_, mpo_, parms_, stop_callback_, initial_sweep_, initial_site_)
+    { }
     
-    int sweep(int sweep,
-               OptimizeDirection d = Both,
-               int resume_at = -1,
-               int max_secs = -1)
+    void sweep(int sweep, OptimizeDirection d = Both)
     {
-        mpo = mpo_orig;
-        
         timeval sweep_now, sweep_then;
         gettimeofday(&sweep_now, NULL);
         
+        iteration_results_.clear();
+        
         std::size_t L = mps.length();
         
-        if (resume_at != -1)
-        {
-            int site;
-            if (resume_at < L)
-                site = resume_at;
-            else
-                site = 2*L-resume_at-1;
-            mps.canonize(site);
-            this->init_left_right(mpo, site);
+        int _site = 0, site = 0;
+        if (initial_site != -1) {
+            _site = initial_site;
+            site = (_site < L) ? _site : 2*L-_site-1;
         }
-
-//        if (parms.template <bool>("beta_mode") && sweep == 0 && resume_at < L) {
+        
+//        if (parms["beta_mode"] && sweep == 0 && resume_at < L) {
 //            int site = (resume_at == -1) ? 0 : resume_at;
 //            mpo = zero_after(mpo_orig, site+2);
 //            mps.canonize(site);
 //            this->init_left_right(mpo, site);
 //        }
         
-        Storage::prefetch(left_[0]);
-        Storage::prefetch(right_[1]);
+        Storage::prefetch(left_[site]);
+        Storage::prefetch(right_[site+1]);
         
 #ifndef NDEBUG
         maquis::cout << mps.description() << std::endl;
 #endif
-        for (int _site = (resume_at == -1 ? 0 : resume_at);
-             _site < 2*L; ++_site) {
+        for (; _site < 2*L; ++_site) {
             
-            int site, lr;
+            int lr;
             if (_site < L) {
                 site = _site;
                 lr = 1;
@@ -78,7 +75,7 @@ public:
                 site = 2*L-_site-1;
                 lr = -1;
             }
-
+            
             if (lr == -1 && site == L-1) {
                 maquis::cout << "Syncing storage" << std::endl;
                 Storage::sync();
@@ -88,16 +85,17 @@ public:
             
 //            mps[site].make_left_paired();
             
-            if (parms.template get<bool>("beta_mode")) {
-                if (sweep == 0 && lr == 1) {
-                    mpo = zero_after(mpo_orig, 0);
-                    if (site == 0)
-                        this->init_left_right(mpo, 0);
-                } else if (sweep == 0 && lr == -1 && site == L-1) {
-                    mpo = mpo_orig;
-                    //this->init_left_right(mpo, site);
-                }
-            }
+            // MD: some changes needed to re-enable it.
+//            if (parms.["beta_mode"]) {
+//                if (sweep == 0 && lr == 1) {
+//                    mpo = zero_after(mpo_orig, 0);
+//                    if (site == 0)
+//                        this->init_left_right(mpo, 0);
+//                } else if (sweep == 0 && lr == -1 && site == L-1) {
+//                    mpo = mpo_orig;
+//                    //this->init_left_right(mpo, site);
+//                }
+//            }
             
             
             Storage::fetch(left_[site]);
@@ -158,7 +156,7 @@ public:
             maquis::cout << "Energy " << lr << " " << res.first << std::endl;
 //            maquis::cout << "Energy check " << maquis::real(expval(mps, mpo)) << std::endl;
             
-            storage::log << std::make_pair("Energy", res.first);
+            iteration_results_["Energy"] << res.first;
             
             double alpha;
             int ngs = parms.template get<int>("ngrowsweeps"), nms = parms.template get<int>("nmainsweeps");
@@ -171,13 +169,13 @@ public:
             
             double cutoff = this->get_cutoff(sweep);
             std::size_t Mmax = this->get_Mmax(sweep);
-            std::pair<std::size_t, double> trunc;
-                
+            truncation_results trunc;
+            
             if (lr == +1) {
                 if (site < L-1) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
-                    mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
-                                       site, alpha, cutoff, Mmax);
+                    trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
+                                               site, alpha, cutoff, Mmax);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
                     if (site < L-1)
@@ -191,8 +189,8 @@ public:
                 if (site > 0) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     // Invalid read occurs after this!\n
-                    mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
-                                       site, alpha, cutoff, Mmax);
+                    trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
+                                               site, alpha, cutoff, Mmax);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
                     if (site > 0)
@@ -207,19 +205,17 @@ public:
         	Storage::evict(left_[site]); // move to out of core currently used boundary
         	Storage::evict(right_[site+1]); // move to out of core currently used boundary
 
-            
+            iteration_results_["BondDimension"]   << trunc.bond_dimension;
+            iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
+            iteration_results_["SmallestEV"]      << trunc.smallest_ev;
             
             gettimeofday(&sweep_then, NULL);
             double elapsed = sweep_then.tv_sec-sweep_now.tv_sec + 1e-6 * (sweep_then.tv_usec-sweep_now.tv_usec);
             maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
-            if (max_secs != -1 && elapsed > max_secs && _site+1<2*L) {
-                return _site+1;
-            }
-            else
-               maquis::cout << max_secs - elapsed << " seconds left." << std::endl;
+            
+            if (stop_callback())
+                throw dmrg::time_limit(sweep, _site+1);
         }
-        
-        return -1;
     }
     
 };

@@ -9,15 +9,14 @@
 #ifndef COMPRESSION_H
 #define COMPRESSION_H
 
-#include "dmrg/mp_tensors/mpstensor.h"
-#include "dmrg/mp_tensors/mpotensor.h"
+#include "dmrg/mp_tensors/mps.h"
 
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/indexing.h"
 
 struct compression {
     template<class Matrix, class SymmGroup>
-    void static
+    static truncation_results
     replace_two_sites_l2r(MPS<Matrix, SymmGroup> & mps,
                           std::size_t Mmax, double cutoff,
                           block_matrix<Matrix, SymmGroup> const & t,
@@ -29,17 +28,19 @@ struct compression {
         
         block_matrix<dmt, SymmGroup> s;
         
-        svd_truncate(t, u, v, s,
-                     cutoff, Mmax, true);
+        truncation_results trunc = svd_truncate(t, u, v, s,
+                                                cutoff, Mmax, true);
         
         mps[p].replace_left_paired(u, Lnorm);
         
         gemm(s, v, u);
         mps[p+1].replace_right_paired(u);
+        
+        return trunc;
     }
 
     template<class Matrix, class SymmGroup>
-    void static
+    static truncation_results
     replace_two_sites_r2l(MPS<Matrix, SymmGroup> & mps,
                           std::size_t Mmax, double cutoff,
                           block_matrix<Matrix, SymmGroup> const & t,
@@ -51,13 +52,15 @@ struct compression {
         
         block_matrix<dmt, SymmGroup> s;
         
-        svd_truncate(t, u, v, s,
-                     cutoff, Mmax, true);
+        truncation_results trunc = svd_truncate(t, u, v, s,
+                                                cutoff, Mmax, true);
         
         mps[p+1].replace_right_paired(v, Rnorm);
         
         gemm(u, s, v);
         mps[p].replace_left_paired(v);
+        
+        return trunc;
     }
     
     template<class Matrix, class SymmGroup>
