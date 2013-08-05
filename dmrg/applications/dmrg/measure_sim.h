@@ -44,7 +44,10 @@ public:
     
     void run()
     {
-        this->measure("/spectrum/results", measurements);
+        this->model_init();
+        this->mps_init();
+        
+        this->measure("/spectrum/results/", measurements);
         
         double energy = maquis::real(expval(mps, mpoc));
         // MD: removed redundant energy calculation
