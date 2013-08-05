@@ -41,6 +41,8 @@ public:
     typedef typename hamterm_t::op_t op_t;
     typedef typename std::vector<hamterm_t>::const_iterator const_iterator;
     typedef typename std::vector<hamterm_t>::iterator iterator;
+    typedef OPTable<Matrix, SymmGroup> op_table_type;
+    typedef boost::shared_ptr<op_table_type> op_table_ptr;
     
     Hamiltonian () {}
     Hamiltonian (Index<SymmGroup> const & phys_
@@ -48,7 +50,7 @@ public:
                  , std::vector<hamterm_t> const & terms_
                  , tag_type ident_tag_ = 0
                  , std::vector<hamtagterm_t> const & tagterms_ = std::vector<hamtagterm_t>()
-                 , boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_ = boost::shared_ptr<OPTable<Matrix, SymmGroup> >() )
+                 , op_table_ptr tbl_ = op_table_ptr() )
     : phys(phys_)
     , ident(ident_)
     , ident_tag(ident_tag_)
@@ -86,7 +88,7 @@ protected:
     tag_type ident_tag;
 
     std::vector<hamtagterm_t> tagterms;
-    boost::shared_ptr<OPTable<Matrix, SymmGroup> > shared_op_table;
+    op_table_ptr shared_op_table;
 };
 
 template<class Matrix, class SymmGroup>
