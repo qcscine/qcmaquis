@@ -2,7 +2,8 @@
  *
  * MAQUIS DMRG Project
  *
- * Copyright (C) 2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ * Copyright (C) 2013-2013 by Bela Bauer <bauerb@phys.ethz.ch>
+ *                            Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  *****************************************************************************/
 
@@ -164,49 +165,20 @@ public:
     /**** new CSR code **********/
 
     // tagged operator ()
-    void set(index_type li, index_type ri, op_t const & op, value_type scale_ = 1.0){
-        if (this->has(li, ri)) {
-            assert(row_tags.find_element(li, ri)->first == col_tags.find_element(li, ri)->first);
-            row_tags.find_element(li, ri)->second = scale_;
-            col_tags.find_element(li, ri)->second = scale_;
-            (*operator_table)[row_tags.find_element(li, ri)->first] = op;
-        }
-        else {
-            tag_type new_tag = operator_table->register_op(op);
-            row_tags(li, ri) = internal_value_type(new_tag, scale_);
-            col_tags(li, ri) = internal_value_type(new_tag, scale_);
-        }
-    }
+    void set(index_type li, index_type ri, op_t const & op, value_type scale_ = 1.0);
 
     // tagged operator() const
     MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup>
-    at(index_type left_index, index_type right_index) const {
-        typename CSRMatrix::value_type const & p = row_tags(left_index, right_index);
-        return MPOTensor_detail::make_const_term_descriptor((*operator_table)[p.first], p.second);
-    }
+    at(index_type left_index, index_type right_index) const;
 
-    row_proxy row(index_type row_i) const
-    {
-        return row_proxy(row_tags, row_i);
-    }
+    row_proxy row(index_type row_i) const;
+    col_proxy column(index_type col_i) const;
 
-    col_proxy column(index_type col_i) const
-    {
-        return col_proxy(col_tags, col_i);
-    }
-
-    tag_type tag_number(index_type left_index, index_type right_index) const {
-        return row_tags(left_index, right_index).first;
-    }
-
-    bool tag_ready() const { return (row_tags.size1() > 0 && col_tags.size1() > 0 && operator_table.get() != NULL); }
-
+    tag_type tag_number(index_type left_index, index_type right_index) const;
     op_table_ptr get_operator_table() const { return operator_table; }
 
     /************************************/
     
-    const data_t& data() const;
-
     void multiply_by_scalar(const scalar_type&);
     void divide_by_scalar(const scalar_type&);
     

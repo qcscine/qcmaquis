@@ -123,10 +123,10 @@ square_mpo(MPO<Matrix, SymmGroup> const & mpo)
                             continue;
                         
                         block_matrix<Matrix, SymmGroup> t;
-                        gemm(inp(r1, c1), inp(r2, c2), t);
+                        gemm(inp.at(r1, c1).op, inp.at(r2, c2).op, t);
                         if (t.n_blocks() > 0)
                             ret(r1*inp.row_dim()+r2,
-                                c1*inp.col_dim()+c2) = t;
+                                c1*inp.col_dim()+c2) = t * (inp.at(r1, c1).scale * inp.at(r2, c2).scale);
                     }
         
         sq[p] = ret;
@@ -144,15 +144,19 @@ template<class Matrix, class SymmGroup>
 MPO<Matrix, SymmGroup>
 zero_after(MPO<Matrix, SymmGroup> mpo, int p0)
 {
+    typedef typename MPOTensor<Matrix, SymmGroup>::CSRMatrix CSRMatrix;
+    typedef typename MPOTensor<Matrix, SymmGroup>::CSCMatrix CSCMatrix;
+
     maquis::cout << "Zeroing out MPO after site " << p0 << std::endl;
+
     for (int p = p0+1; p < mpo.size(); ++p) {
         for (int k = 2; k < mpo[p].row_dim(); ++k)
             for (int l = 2; l < mpo[p].col_dim(); ++l)
                 if (mpo[p].has(k,l))
-                    mpo[p](k,l) *= 0;
+                    mpo[p].set(k,l, mpo[p].at(k,l).op, 0.0);
     
         if (mpo[p].has(0,1))
-            mpo[p](0,1) *= 0;
+            mpo[p].set(0,1, mpo[p].at(0,1).op, 0.0);
     }
     
     return mpo;

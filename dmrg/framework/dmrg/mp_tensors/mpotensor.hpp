@@ -2,7 +2,8 @@
  *
  * MAQUIS DMRG Project
  *
- * Copyright (C) 2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ * Copyright (C) 2013-2013 by Bela Bauer <bauerb@phys.ethz.ch>
+ *                            Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  *****************************************************************************/
 
@@ -53,7 +54,7 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()(index_type left_index,
                                                                          index_type right_index) const
 {
-    throw std::runtime_error("operator() doens't work for MPOTensors anymore!\n");
+    throw std::runtime_error("operator() doesn't work for MPOTensors anymore!\n");
     assert( left_index < left_i );
     assert( right_index < right_i );
     return (*operator_table)[row_tags(left_index, right_index).first];
@@ -64,7 +65,7 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & MPOTensor<Matrix, SymmGroup>::operator()(index_type left_index,
                                                                          index_type right_index)
 {
-    throw std::runtime_error("operator() doens't work for MPOTensors anymore!\n");
+    throw std::runtime_error("operator() doesn't work for MPOTensors anymore!\n");
     assert( left_index < left_i );
     assert( right_index < right_i );
     typename CSRMatrix::value_type const & p = row_tags(left_index, right_index);
@@ -79,10 +80,44 @@ bool MPOTensor<Matrix, SymmGroup>::has(index_type left_index,
             == (col_tags.find_element(left_index, right_index) != NULL) );
     return row_tags.find_element(left_index, right_index) != NULL;
 }
-    
+
 template<class Matrix, class SymmGroup>
-const typename MPOTensor<Matrix, SymmGroup>::data_t& MPOTensor<Matrix, SymmGroup>::data() const {
-    return this->data_;
+void MPOTensor<Matrix, SymmGroup>::set(index_type li, index_type ri, op_t const & op, value_type scale_){
+    if (this->has(li, ri)) {
+        assert(row_tags.find_element(li, ri)->first == col_tags.find_element(li, ri)->first);
+        row_tags.find_element(li, ri)->second = scale_;
+        col_tags.find_element(li, ri)->second = scale_;
+        (*operator_table)[row_tags.find_element(li, ri)->first] = op;
+    }
+    else {
+        tag_type new_tag = operator_table->register_op(op);
+        row_tags(li, ri) = internal_value_type(new_tag, scale_);
+        col_tags(li, ri) = internal_value_type(new_tag, scale_);
+    }
+}
+
+template<class Matrix, class SymmGroup>
+MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup>
+MPOTensor<Matrix, SymmGroup>::at(index_type left_index, index_type right_index) const {
+    typename CSRMatrix::value_type const & p = row_tags(left_index, right_index);
+    return MPOTensor_detail::make_const_term_descriptor((*operator_table)[p.first], p.second);
+}
+
+template<class Matrix, class SymmGroup>
+typename MPOTensor<Matrix, SymmGroup>::row_proxy MPOTensor<Matrix, SymmGroup>::row(index_type row_i) const
+{  
+    return row_proxy(row_tags, row_i);
+}
+
+template<class Matrix, class SymmGroup>
+typename MPOTensor<Matrix, SymmGroup>::col_proxy MPOTensor<Matrix, SymmGroup>::column(index_type col_i) const
+{  
+    return col_proxy(col_tags, col_i);
+}
+
+template<class Matrix, class SymmGroup>
+typename MPOTensor<Matrix, SymmGroup>::tag_type MPOTensor<Matrix, SymmGroup>::tag_number(index_type left_index, index_type right_index) const {
+    return row_tags(left_index, right_index).first;
 }
 
 template<class Matrix, class SymmGroup>
