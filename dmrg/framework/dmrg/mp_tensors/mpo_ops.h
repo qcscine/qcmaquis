@@ -39,13 +39,13 @@ void follow_mpo(MPO<Matrix, SymmGroup> const & mpo,
 {
     for (size_t k = 0; k < mpo[p].col_dim(); ++k)
     {
-        if (mpo[p](start,k).n_blocks() == 0)
+        if (mpo[p].at(start,k).op.n_blocks() == 0)
             continue;
         
         std::ostringstream oss;
 //        oss << mpo[p](start, k) << std::endl;
 //        oss << "(" << start << "," << k << ") ";
-        oss << " " << identify_op(mpo[p](start, k)) << " ";
+        oss << " " << identify_op(mpo[p].at(start, k).op) << " ";
         if (p+1 < mpo.length())
             follow_mpo(mpo, s+oss.str(), p+1, k);
         else
@@ -63,10 +63,10 @@ void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
     {
         if (!in_mpo[p].has(start,k))
             continue;
-        if (in_mpo[p](start,k).n_blocks() == 0)
+        if (in_mpo[p].at(start,k).op.n_blocks() == 0)
             continue;
         
-        ops[p] = boost::make_tuple(start, k, in_mpo[p](start, k));
+        ops[p] = boost::make_tuple(start, k, in_mpo[p].at(start, k).op * in_mpo[p].at(start, k).scale);
         
         if (p+1 < in_mpo.length())
             cleanup_mpo_(in_mpo, out_mpo, ops, p+1, k);
@@ -74,11 +74,13 @@ void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
         {
             assert( ops.size() == out_mpo.length() );
             for (std::size_t t = 0; t < in_mpo.length(); ++t) {
-                block_matrix<Matrix, SymmGroup> & out_b = out_mpo[t](boost::tuples::get<0>(ops[t]),
-                                                                     boost::tuples::get<1>(ops[t]));
+                //block_matrix<Matrix, SymmGroup> & out_b = out_mpo[t](boost::tuples::get<0>(ops[t]),
+                //                                                     boost::tuples::get<1>(ops[t]));
                 
-                if (out_b.n_blocks() == 0)
-                    out_b = boost::tuples::get<2>(ops[t]);
+                //if (out_b.n_blocks() == 0)
+                //    out_b = boost::tuples::get<2>(ops[t]);
+                if (out_mpo[t].at(boost::tuples::get<0>(ops[t]), boost::tuples::get<1>(ops[t])).op.n_blocks() == 0)
+                    out_mpo[t].set(boost::tuples::get<0>(ops[t]), boost::tuples::get<1>(ops[t]), boost::tuples::get<2>(ops[t]));
             }
         }
     }

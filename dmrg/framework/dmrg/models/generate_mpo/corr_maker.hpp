@@ -168,7 +168,7 @@ namespace generate_mpo
             pair<size_t, size_t> rcd = rcdim(ops);
             MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second);
             for (typename vector<block>::const_iterator it = ops.begin(); it != ops.end(); ++it)
-                r(get<0>(*it), get<1>(*it)) = get<2>(*it);
+                r.set(get<0>(*it), get<1>(*it), get<2>(*it));
             return r;
         }
         
@@ -177,7 +177,7 @@ namespace generate_mpo
             pair<size_t, size_t> rcd = rcdim(ops);
             MPOTensor<Matrix, SymmGroup> r(1, rcd.second);
             for (typename vector<block>::const_iterator it = ops.begin(); it != ops.end(); ++it)
-                r(0, get<1>(*it)) = get<2>(*it);
+                r.set(0, get<1>(*it), get<2>(*it));
             return r;
         }
         
@@ -186,7 +186,7 @@ namespace generate_mpo
             pair<size_t, size_t> rcd = rcdim(ops);
             MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second);
             for (typename vector<block>::const_iterator it = ops.begin(); it != ops.end(); ++it)
-                r(get<0>(*it), get<1>(*it)) = get<2>(*it);
+                r.set(get<0>(*it), get<1>(*it), get<2>(*it));
             return r;
         }
     };
@@ -332,7 +332,7 @@ namespace generate_mpo
             pair<size_t, size_t> rcd = rcdim(ops);
             MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second);
             for (typename vector<block>::const_iterator it = ops.begin(); it != ops.end(); ++it)
-                r(get<0>(*it), get<1>(*it)) = get<2>(*it);
+                r.set(get<0>(*it), get<1>(*it), get<2>(*it));
             return r;
         }
         
@@ -341,7 +341,7 @@ namespace generate_mpo
             pair<size_t, size_t> rcd = rcdim(ops);
             MPOTensor<Matrix, SymmGroup> r(1, rcd.second);
             for (typename vector<block>::const_iterator it = ops.begin(); it != ops.end(); ++it)
-                r(0, get<1>(*it)) = get<2>(*it);
+                r.set(0, get<1>(*it), get<2>(*it));
             return r;
         }
         
@@ -350,7 +350,7 @@ namespace generate_mpo
             pair<size_t, size_t> rcd = rcdim(ops);
             MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second);
             for (typename vector<block>::const_iterator it = ops.begin(); it != ops.end(); ++it)
-                r(get<0>(*it), get<1>(*it)) = get<2>(*it);
+                r.set(get<0>(*it), get<1>(*it), get<2>(*it));
             return r;
         }
     };
