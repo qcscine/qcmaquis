@@ -17,12 +17,13 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
 : left_i(ld)
 , right_i(rd)
 , operator_table(tbl_)
-, row_tags(ld, rd)
 , col_tags(ld, rd)
 {
     using namespace boost::tuples;
     typedef boost::tuple<index_type, index_type, tag_type, value_type> prempo_descriptor;
     typedef std::vector<prempo_descriptor> converted_prempo_t;
+
+    row_index.resize(ld);
 
     if (tags.size() > 0 && operator_table.get() != NULL) {
         converted_prempo_t tmp_tags;
@@ -34,15 +35,13 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
             tmp_tags.push_back( prempo_descriptor(row_i, col_i, get<2>(*it), get<3>(*it)) );
         }
 
-        std::sort(tmp_tags.begin(), tmp_tags.end(), MPOTensor_detail::row_cmp<prempo_descriptor>());
-
-        for (typename converted_prempo_t::const_iterator it = tmp_tags.begin(); it != tmp_tags.end(); ++it)
-            row_tags(get<0>(*it), get<1>(*it)) = std::make_pair(get<2>(*it), get<3>(*it));
 
         std::sort(tmp_tags.begin(), tmp_tags.end(), MPOTensor_detail::col_cmp<prempo_descriptor>());
 
-        for (typename converted_prempo_t::const_iterator it = tmp_tags.begin(); it != tmp_tags.end(); ++it)
+        for (typename converted_prempo_t::const_iterator it = tmp_tags.begin(); it != tmp_tags.end(); ++it) {
             col_tags(get<0>(*it), get<1>(*it)) = std::make_pair(get<2>(*it), get<3>(*it));
+            row_index[get<0>(*it)].insert(get<1>(*it));
+        }
     }
     else {
         // Initialize a private operator table
@@ -57,7 +56,7 @@ block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()
     throw std::runtime_error("operator() doesn't work for MPOTensors anymore!\n");
     assert( left_index < left_i );
     assert( right_index < right_i );
-    return (*operator_table)[row_tags(left_index, right_index).first];
+    return (*operator_table)[col_tags(left_index, right_index).first];
 }
 
 
@@ -68,7 +67,7 @@ block_matrix<Matrix, SymmGroup> & MPOTensor<Matrix, SymmGroup>::operator()(index
     throw std::runtime_error("operator() doesn't work for MPOTensors anymore!\n");
     assert( left_index < left_i );
     assert( right_index < right_i );
-    typename CSRMatrix::value_type const & p = row_tags(left_index, right_index);
+    typename CSCMatrix::value_type const & p = col_tags(left_index, right_index);
     return (*operator_table)[p.first];
 }
 
@@ -76,37 +75,34 @@ template<class Matrix, class SymmGroup>
 bool MPOTensor<Matrix, SymmGroup>::has(index_type left_index,
                                        index_type right_index) const
 {
-    assert( (row_tags.find_element(left_index, right_index) != NULL)
-            == (col_tags.find_element(left_index, right_index) != NULL) );
-    return row_tags.find_element(left_index, right_index) != NULL;
+    assert(left_index < left_i && right_index < right_i);
+    return col_tags.find_element(left_index, right_index) != NULL;
 }
 
 template<class Matrix, class SymmGroup>
 void MPOTensor<Matrix, SymmGroup>::set(index_type li, index_type ri, op_t const & op, value_type scale_){
     if (this->has(li, ri)) {
-        assert(row_tags.find_element(li, ri)->first == col_tags.find_element(li, ri)->first);
-        row_tags.find_element(li, ri)->second = scale_;
         col_tags.find_element(li, ri)->second = scale_;
-        (*operator_table)[row_tags.find_element(li, ri)->first] = op;
+        (*operator_table)[col_tags.find_element(li, ri)->first] = op;
     }
     else {
         tag_type new_tag = operator_table->register_op(op);
-        row_tags(li, ri) = internal_value_type(new_tag, scale_);
         col_tags(li, ri) = internal_value_type(new_tag, scale_);
+        row_index[li].insert(ri);
     }
 }
 
 template<class Matrix, class SymmGroup>
 MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup>
 MPOTensor<Matrix, SymmGroup>::at(index_type left_index, index_type right_index) const {
-    typename CSRMatrix::value_type const & p = row_tags(left_index, right_index);
+    typename CSCMatrix::value_type const & p = col_tags(left_index, right_index);
     return MPOTensor_detail::make_const_term_descriptor((*operator_table)[p.first], p.second);
 }
 
 template<class Matrix, class SymmGroup>
 typename MPOTensor<Matrix, SymmGroup>::row_proxy MPOTensor<Matrix, SymmGroup>::row(index_type row_i) const
 {  
-    return row_proxy(row_tags, row_i);
+    return row_proxy(row_index[row_i].begin(), row_index[row_i].end());
 }
 
 template<class Matrix, class SymmGroup>
@@ -116,17 +112,14 @@ typename MPOTensor<Matrix, SymmGroup>::col_proxy MPOTensor<Matrix, SymmGroup>::c
 }
 
 template<class Matrix, class SymmGroup>
-typename MPOTensor<Matrix, SymmGroup>::tag_type MPOTensor<Matrix, SymmGroup>::tag_number(index_type left_index, index_type right_index) const {
-    return row_tags(left_index, right_index).first;
+typename MPOTensor<Matrix, SymmGroup>::tag_type
+MPOTensor<Matrix, SymmGroup>::tag_number(index_type left_index, index_type right_index) const {
+    return col_tags(left_index, right_index).first;
 }
 
 template<class Matrix, class SymmGroup>
 void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(const scalar_type& v)
 {
-    for (typename CSRMatrix::iterator1 it1 = row_tags.begin1(); it1 != row_tags.end1(); ++it1)
-        for (typename CSRMatrix::iterator2 it2 = it1.begin(); it2 != it1.end(); ++it2)
-            it2->second *= v; 
-
     for (typename CSCMatrix::iterator2 it2 = col_tags.begin2(); it2 != col_tags.end2(); ++it2)
         for (typename CSCMatrix::iterator1 it1 = it2.begin(); it1 != it2.end(); ++it1)
             it1->second *= v; 
@@ -135,10 +128,6 @@ void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(const scalar_type& v)
 template<class Matrix, class SymmGroup>
 void MPOTensor<Matrix, SymmGroup>::divide_by_scalar(const scalar_type& v)
 {
-    for (typename CSRMatrix::iterator1 it1 = row_tags.begin1(); it1 != row_tags.end1(); ++it1)
-        for (typename CSRMatrix::iterator2 it2 = it1.begin(); it2 != it1.end(); ++it2)
-            it2->second /= v; 
-
     for (typename CSCMatrix::iterator2 it2 = col_tags.begin2(); it2 != col_tags.end2(); ++it2)
         for (typename CSCMatrix::iterator1 it1 = it2.begin(); it1 != it2.end(); ++it1)
             it1->second /= v; 

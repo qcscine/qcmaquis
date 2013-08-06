@@ -124,7 +124,6 @@ struct contraction {
                 for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
                     index_type b1 = col_it.index();
                     
-                    //block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                     MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
                     block_matrix<Matrix, SymmGroup> W = access.scale * access.op;
                     if (W.n_blocks() == 0)
@@ -247,7 +246,6 @@ struct contraction {
                 for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
                     index_type b2 = row_it.index();
                     
-                    //block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                     MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
                     block_matrix<Matrix, SymmGroup> W = access.scale * access.op;
                     if (W.n_blocks() == 0)

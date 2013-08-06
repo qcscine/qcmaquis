@@ -10,15 +10,16 @@
 #ifndef MPOTENSOR_H
 #define MPOTENSOR_H
 
+#include <iostream>
+#include <set>
+#include <iterator>
+#include <boost/numeric/ublas/matrix_sparse.hpp>
+#include <boost/numeric/ublas/matrix_proxy.hpp>
+
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "utils/function_objects.h"
 #include "dmrg/models/tag_table.h"
-
-#include <iostream>
-#include <set>
-#include <boost/numeric/ublas/matrix_sparse.hpp>
-#include <boost/numeric/ublas/matrix_proxy.hpp>
 
 template<class Matrix, class SymmGroup>
 class MPOTensor;
@@ -109,7 +110,47 @@ namespace MPOTensor_detail
         return const_term_descriptor<Matrix, SymmGroup>(op_, s_);
     }
 
+    template <class ConstIterator>
+    class IteratorWrapper
+    {
+        typedef ConstIterator internal_iterator;
+
+    public:
+        typedef IteratorWrapper<ConstIterator> self_type;
+        typedef typename std::iterator_traits<internal_iterator>::value_type value_type;
+
+        IteratorWrapper(internal_iterator i) : it_(i) { }
+
+        void operator++() { ++it_; }
+        void operator++(int) {it_++; }
+        bool operator!=(self_type const & rhs) { return it_ != rhs.it_; }
+
+        value_type index() const { return *it_; }
+        value_type operator*() const {
+            throw std::runtime_error("direct MPOTensor access via row iterators currently not implemented\n");
+            return *it_;
+        }
+        
+    private:
+       internal_iterator it_; 
+    };
+    
+    template <class ConstIterator>
+    class row_proxy : public std::pair<ConstIterator, ConstIterator>
+    {
+        typedef ConstIterator internal_iterator;
+        typedef std::pair<internal_iterator, internal_iterator> base;
+
+    public:
+        typedef IteratorWrapper<ConstIterator> const_iterator;
+        row_proxy(internal_iterator b, internal_iterator e) : base(b, e) { } 
+
+        const_iterator begin() const { return const_iterator(base::first); }
+        const_iterator end() const { return const_iterator(base::second); }
+    };
 }
+
+
 
 template <class Matrix, class SymmGroup> class column_iterator;
 template <class Matrix, class SymmGroup> class compressor;
@@ -131,15 +172,14 @@ private:
     typedef std::pair<tag_type, value_type> internal_value_type;
 
     typedef boost::numeric::ublas::compressed_matrix< internal_value_type,
-                                                      boost::numeric::ublas::row_major
-                                                      , 0, boost::numeric::ublas::unbounded_array<index_type> 
-                                                    > CSRMatrix;
-    typedef boost::numeric::ublas::compressed_matrix< internal_value_type,
                                                       boost::numeric::ublas::column_major
                                                       , 0, boost::numeric::ublas::unbounded_array<index_type> 
                                                     > CSCMatrix;
+
+    typedef std::vector<std::set<index_type> > RowIndex;
+    
 public:
-    typedef boost::numeric::ublas::matrix_row<const CSRMatrix> row_proxy;
+    typedef MPOTensor_detail::row_proxy<typename RowIndex::value_type::const_iterator> row_proxy;
     typedef boost::numeric::ublas::matrix_column<const CSCMatrix> col_proxy;
 
 private:
@@ -183,6 +223,7 @@ public:
     
     bool has(index_type left_index, index_type right_index) const;
 
+    // These will be removed soon
     friend class column_iterator<Matrix, SymmGroup>;
     friend class compressor<Matrix, SymmGroup>;
     friend class MPOIndexer<Matrix, SymmGroup>;
@@ -190,8 +231,8 @@ public:
 private:
     data_t data_;
 
-    CSRMatrix row_tags;
     CSCMatrix col_tags;
+    RowIndex row_index;
     op_table_ptr operator_table;
     
     index_type left_i, right_i;
