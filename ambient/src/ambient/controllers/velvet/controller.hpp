@@ -86,6 +86,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::flush(){
+        ambient::timer timeout("timeout");
         typedef typename std::vector<cfunctor*>::const_iterator veci;
         #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
         printf("ambient::parallel graph dim: %d\n", chains->size());
@@ -112,6 +113,7 @@ namespace ambient { namespace controllers { namespace velvet {
         }*/
         AMBIENT_SMP_ENABLE
         while(!chains->empty()){
+            timeout.begin();
             for(veci i = chains->begin(); i != chains->end(); ++i){
                 if((*i)->ready()){
                     cfunctor* task = *i;
@@ -127,9 +129,14 @@ namespace ambient { namespace controllers { namespace velvet {
             }
             chains->clear();
             std::swap(chains,mirror);
+            timeout.end();
+            if(timeout.get_time() > 300){
+                 std::cout << ambient::rank() << ": playout took " << timeout.get_time() << "\n";
+                 timeout.reset();
+            }
         }
         AMBIENT_SMP_DISABLE
-        ambient::model.clock++;
+            ambient::model.clock++;
     }
 
     inline bool controller::empty(){

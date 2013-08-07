@@ -38,13 +38,16 @@ namespace ambient {
     public:
         timer(std::string name, pthread_t thread): val(0.0), name(name), count(0), thread_(thread){}
         timer(std::string name): val(0.0), name(name), count(0), thread_(pthread_self()){}
-       ~timer(){ report(); }
+           ~timer(){ } // report();
      
         double get_time() const {
             return val;
         }
         void report(){
             std::cout << name << " " << val << ", count : " << count << "\n";
+        }
+        void reset(){
+            this->val = 0;
         }
         void begin(){
             pthread_getcpuclockid(this->thread_,&this->cid_);
