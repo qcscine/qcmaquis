@@ -20,7 +20,7 @@
 
 #include "dmrg/models/lattice.h"
 
-#include "dmrg/models/tag_table.h"
+#include "dmrg/models/op_table.h"
 #include "dmrg/models/generate_mpo.hpp"
 
 enum TermType {all_term, site_term, bond_term};

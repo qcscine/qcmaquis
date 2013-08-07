@@ -94,6 +94,6 @@ private:
     std::set<tag_type> site_terms;
 };
 
-#include "dmrg/models/tag_table.hpp"
+#include "dmrg/models/op_table.hpp"
 
 #endif

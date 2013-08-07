@@ -70,11 +70,10 @@ public:
     Hamiltonian<M, TwoU1> H_impl () const;
 
 private:
-
     Index<TwoU1> phys;
 
     Lattice const & lat;
-    mutable BaseParameters parms;
+    BaseParameters & parms;
     
     double get_t (BaseParameters & parms, int i)
     {

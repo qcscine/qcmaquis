@@ -89,7 +89,6 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
     chem_detail::ChemHelper<M> term_assistant(parms, lat, ident, fill, operator_table);
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
-    std::vector<typename hamterm_t<M>::type > terms;
     std::vector<int> used_elements(matrix_elements.size(), 0);
  
     /**********************************************************************/
@@ -376,6 +375,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
     term_assistant.commit_three_terms(tagterms);
     maquis::cout << "The hamiltonian will contain " << tagterms.size() << " terms\n";
 
+    std::vector<typename hamterm_t<M>::type > terms;
     return Hamiltonian<M, TwoU1>(phys, ident_op, terms, ident, tagterms, operator_table);
 
 }
