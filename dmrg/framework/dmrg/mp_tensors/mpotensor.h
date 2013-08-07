@@ -20,136 +20,7 @@
 #include "dmrg/block_matrix/indexing.h"
 #include "utils/function_objects.h"
 #include "dmrg/models/tag_table.h"
-
-template<class Matrix, class SymmGroup>
-class MPOTensor;
-
-namespace MPOTensor_detail
-{
-    using namespace boost::tuples;
-
-    template<class Matrix, class SymmGroup>
-    struct pair_cmp
-    {
-        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-        bool operator()(std::pair<index_type, index_type> const & i,
-                        std::pair<index_type, index_type> const & j) const
-        {
-            if (i.first < j.first)
-                return true;
-            else if (i.first > j.first)
-                return false;
-            else
-                return i.second < j.second;
-        }
-    };
-
-    template<class Tuple>
-    struct row_cmp
-    {
-        bool operator() (Tuple const & i, Tuple const & j) const
-        {
-            if (get<0>(i) < get<0>(j))
-                return true;
-            else if (get<0>(i) > get<0>(j))
-                return false;
-            else
-                return get<1>(i) < get<1>(j);
-        }
-    };
-
-    template<class Tuple>
-    struct col_cmp
-    {
-        bool operator() (Tuple const & i, Tuple const & j) const
-        {
-            if (get<1>(i) < get<1>(j))
-                return true;
-            else if (get<1>(i) > get<1>(j))
-                return false;
-            else
-                return get<0>(i) < get<0>(j);
-        }
-    };
-
-    template <class Matrix, class SymmGroup>
-    class term_descriptor {
-        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-        typedef typename Matrix::value_type value_type;
-    public:
-        term_descriptor() {}
-        term_descriptor(op_t & op_, value_type & s_) : op(op_), scale(s_) {}
-
-        op_t & op;
-        value_type & scale;
-    };
-
-    template <class Matrix, class SymmGroup>
-    term_descriptor<Matrix, SymmGroup> make_term_descriptor(
-        typename term_descriptor<Matrix, SymmGroup>::op_t & op_, typename Matrix::value_type & s_)
-    {
-        return term_descriptor<Matrix, SymmGroup>(op_, s_);
-    }
-
-    template <class Matrix, class SymmGroup>
-    class const_term_descriptor {
-        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
-        typedef typename Matrix::value_type value_type;
-    public:
-        const_term_descriptor() {}
-        const_term_descriptor(op_t const & op_, value_type s_) : op(op_), scale(s_) {}
-
-        op_t const & op;
-        value_type scale;
-    };
-
-    template <class Matrix, class SymmGroup, typename Scale>
-    const_term_descriptor<Matrix, SymmGroup> make_const_term_descriptor(
-        block_matrix<Matrix, SymmGroup> const & op_, Scale s_)
-    {
-        return const_term_descriptor<Matrix, SymmGroup>(op_, s_);
-    }
-
-    template <class ConstIterator>
-    class IteratorWrapper
-    {
-        typedef ConstIterator internal_iterator;
-
-    public:
-        typedef IteratorWrapper<ConstIterator> self_type;
-        typedef typename std::iterator_traits<internal_iterator>::value_type value_type;
-
-        IteratorWrapper(internal_iterator i) : it_(i) { }
-
-        void operator++() { ++it_; }
-        void operator++(int) {it_++; }
-        bool operator!=(self_type const & rhs) { return it_ != rhs.it_; }
-
-        value_type index() const { return *it_; }
-        value_type operator*() const {
-            throw std::runtime_error("direct MPOTensor access via row iterators currently not implemented\n");
-            return *it_;
-        }
-        
-    private:
-       internal_iterator it_; 
-    };
-    
-    template <class ConstIterator>
-    class row_proxy : public std::pair<ConstIterator, ConstIterator>
-    {
-        typedef ConstIterator internal_iterator;
-        typedef std::pair<internal_iterator, internal_iterator> base;
-
-    public:
-        typedef IteratorWrapper<ConstIterator> const_iterator;
-        row_proxy(internal_iterator b, internal_iterator e) : base(b, e) { } 
-
-        const_iterator begin() const { return const_iterator(base::first); }
-        const_iterator end() const { return const_iterator(base::second); }
-    };
-}
-
+#include "dmrg/mp_tensors/mpotensor_detail.h"
 
 
 template <class Matrix, class SymmGroup> class column_iterator;
@@ -183,25 +54,18 @@ public:
     typedef boost::numeric::ublas::matrix_column<const CSCMatrix> col_proxy;
 
 private:
-    typedef std::pair<index_type, index_type> key_t;
-    typedef block_matrix<Matrix, SymmGroup> value_t;
-    typedef std::map<key_t, value_t, MPOTensor_detail::pair_cmp<Matrix, SymmGroup> > data_t;
-
     typedef std::vector<boost::tuple<std::size_t, std::size_t, tag_type, value_type> > prempo_t;
     
 public:
-    
     MPOTensor(index_type = 1, index_type = 1, prempo_t const & = prempo_t(), op_table_ptr = op_table_ptr());
     
     index_type row_dim() const;
     index_type col_dim() const;
     
-    block_matrix<Matrix, SymmGroup> const & operator()(index_type left_index,
-                                                       index_type right_index) const;
-    block_matrix<Matrix, SymmGroup> & operator()(index_type left_index,
-                                                 index_type right_index);
-
-    /**** new CSR code **********/
+    //block_matrix<Matrix, SymmGroup> const & operator()(index_type left_index,
+    //                                                   index_type right_index) const;
+    //block_matrix<Matrix, SymmGroup> & operator()(index_type left_index,
+    //                                             index_type right_index);
 
     // tagged operator ()
     void set(index_type li, index_type ri, op_t const & op, value_type scale_ = 1.0);
@@ -216,8 +80,6 @@ public:
     tag_type tag_number(index_type left_index, index_type right_index) const;
     op_table_ptr get_operator_table() const;
 
-    /************************************/
-    
     void multiply_by_scalar(const scalar_type&);
     void divide_by_scalar(const scalar_type&);
     
@@ -229,8 +91,6 @@ public:
     friend class MPOIndexer<Matrix, SymmGroup>;
     
 private:
-    data_t data_;
-
     CSCMatrix col_tags;
     RowIndex row_index;
     op_table_ptr operator_table;

@@ -49,6 +49,7 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
     }
 }
 
+/*
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()(index_type left_index,
                                                                          index_type right_index) const
@@ -70,6 +71,7 @@ block_matrix<Matrix, SymmGroup> & MPOTensor<Matrix, SymmGroup>::operator()(index
     typename CSCMatrix::value_type const & p = col_tags(left_index, right_index);
     return (*operator_table)[p.first];
 }
+*/
 
 template<class Matrix, class SymmGroup>
 bool MPOTensor<Matrix, SymmGroup>::has(index_type left_index,

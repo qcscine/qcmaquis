@@ -103,6 +103,8 @@ MPO<Matrix, SymmGroup>
 square_mpo(MPO<Matrix, SymmGroup> const & mpo)
 {
     typedef typename SymmGroup::charge charge;
+    typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
+    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
     
     size_t L = mpo.length();
     
@@ -115,21 +117,30 @@ square_mpo(MPO<Matrix, SymmGroup> const & mpo)
         MPOTensor<Matrix, SymmGroup> ret(inp.row_dim()*inp.row_dim(),
                                          inp.col_dim()*inp.col_dim());
         
-        for (size_t r1 = 0; r1 < inp.row_dim(); ++r1)
-            for (size_t r2 = 0; r2 < inp.row_dim(); ++r2)
-                for (size_t c1 = 0; c1 < inp.col_dim(); ++c1)
-                    for (size_t c2 = 0; c2 < inp.col_dim(); ++c2) {
-                        if (!inp.has(r1, c1))
-                            continue;
-                        if (!inp.has(r2, c2))
-                            continue;
+        for (index_type r1 = 0; r1 < inp.row_dim(); ++r1)
+        {
+            row_proxy row1 = inp.row(r1);
+            for (index_type r2 = 0; r2 < inp.row_dim(); ++r2)
+            {
+                row_proxy row2 = inp.row(r2);
+                for (typename row_proxy::const_iterator it1 = row1.begin(); it1 != row1.end(); ++it1)
+                {
+                    index_type c1 = it1.index();
+                    for (typename row_proxy::const_iterator it2 = row2.begin(); it2 != row2.end(); ++it2) {
+                        index_type c2 = it2.index();
+
+                        assert(inp.has(r1, c1));
+                        assert(inp.has(r2, c2));
                         
                         block_matrix<Matrix, SymmGroup> t;
                         gemm(inp.at(r1, c1).op, inp.at(r2, c2).op, t);
                         if (t.n_blocks() > 0)
-                            ret(r1*inp.row_dim()+r2,
-                                c1*inp.col_dim()+c2) = t * (inp.at(r1, c1).scale * inp.at(r2, c2).scale);
+                            ret.set(r1*inp.row_dim()+r2, c1*inp.col_dim()+c2, 
+                                        t * (inp.at(r1, c1).scale * inp.at(r2, c2).scale));
                     }
+                }
+            }
+        }
         
         sq[p] = ret;
     }

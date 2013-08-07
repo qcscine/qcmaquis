@@ -16,8 +16,8 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> identity_dm_mps(std::size_t
                                                                      std::vector<Index<typename grouped_symmetry<InSymm>::type> > const& allowed)
 {
     MPOTensor<Matrix, InSymm> t(1,1);
-    t(0,0) = identity_matrix<Matrix>(phys_psi);
-    
+    t.set(0, 0, identity_matrix<Matrix>(phys_psi));
+
     MPO<Matrix, InSymm> mpo(L, t);
     return mpo_to_smps_group(mpo, phys_psi, allowed);
 }

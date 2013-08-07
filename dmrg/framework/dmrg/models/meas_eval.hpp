@@ -133,7 +133,7 @@ namespace meas_eval {
         
         void init() const
         {
-            ident(0,0) = identity_matrix<Matrix>(phys_i);
+            ident.set(0, 0, identity_matrix<Matrix>(phys_i));
             
             // init right_ & left_
             Boundary<Matrix, SymmGroup> right = mps.right_boundary(), left = mps.left_boundary();
@@ -158,7 +158,7 @@ namespace meas_eval {
             std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> vals; vals.reserve(L);
             std::vector<std::string> labels;
             MPOTensor<Matrix, SymmGroup> temp;
-            temp(0,0) = op.first;
+            temp.set(0, 0, op.first);
 
             for (int p = 0; p < L; ++p) {
                 MPSTensor<Matrix, SymmGroup> vec2 =
@@ -189,10 +189,10 @@ namespace meas_eval {
             MPOTensor<Matrix, SymmGroup> temp;
             
             for (int p = 0; p < L-1; ++p) {
-                temp(0,0) = ops[0].first;
+                temp.set(0, 0, ops[0].first);
                 Boundary<Matrix, SymmGroup> tmp_b = contraction::overlap_mpo_left_step(mps[p], mps[p], left_[p], temp);
                 
-                temp(0,0) = ops[1].first;
+                temp.set(0, 0, ops[1].first);
                 MPSTensor<Matrix, SymmGroup> vec2 =
                 contraction::site_hamil2(mps[p+1], tmp_b, right_[p+1], temp);
                 vals.push_back( maquis::real(mps[p+1].scalar_overlap(vec2)) ); // MD todo: allow complex numbers

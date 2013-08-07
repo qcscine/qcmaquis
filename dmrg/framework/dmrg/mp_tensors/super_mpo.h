@@ -43,6 +43,7 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
 {
     typedef typename SymmGroup::charge charge;
     typedef boost::unordered_map<size_t,std::pair<charge,size_t> > bond_charge_map;
+    typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
     
     MPS<Matrix, SymmGroup> mps(mpo.size());
     
@@ -68,17 +69,19 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
         for (int run=0; run<=1; ++run)
             for (size_t b1=0; b1<mpo[i].row_dim(); ++b1)
             {
-                for (size_t b2=0; b2<mpo[i].col_dim(); ++b2)
+                //for (size_t b2=0; b2<mpo[i].col_dim(); ++b2)
+                row_proxy row_b1 = mpo[i].row(b1);
+                for (typename row_proxy::const_iterator it = row_b1.begin(); it != row_b1.end(); ++it)
                 {
-                    if (!mpo[i].has(b1, b2))
-                        continue;
+                    size_t b2 = it.index(); 
                     
                     /// note: this has to be here, because we don't know if b1 exists
                     charge l_charge; size_t ll;
                     boost::tie(l_charge, ll) = left_map[b1];
                     size_t l_size = left_i[left_i.position(l_charge)].second;
                     
-                    block_matrix<Matrix, SymmGroup> const& in_block = mpo[i](b1, b2);
+                    typename Matrix::value_type scale = mpo[i].at(b1, b2).scale;
+                    block_matrix<Matrix, SymmGroup> const& in_block = mpo[i].at(b1, b2).op;
                     for (size_t n=0; n<in_block.n_blocks(); ++n)
                     {
                         charge s1_charge; size_t size1;
@@ -129,7 +132,8 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
                             for (size_t ss1=0; ss1<size1; ++ss1)
                             {
                                 size_t ss = ss2 + ss1*size2 + phys_offset;
-                                out_m(left_offset + ss*l_size + ll, rr) = in_m(ss1, ss2);
+                                // TODO: Sebastian thinks, this is correct but should be checked
+                                out_m(left_offset + ss*l_size + ll, rr) = in_m(ss1, ss2) * scale;
                             }
                     }
                 }
@@ -177,6 +181,7 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matri
     typedef typename InSymm::charge in_charge;
     typedef typename OutSymm::charge out_charge;
     typedef boost::unordered_map<size_t,std::pair<out_charge,size_t> > bond_charge_map;
+    typedef typename MPOTensor<Matrix, InSymm>::row_proxy row_proxy;
     
     MPS<Matrix, OutSymm> mps(mpo.size());
     
@@ -191,19 +196,28 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matri
         ProductBasis<OutSymm> left_out(phys2_i, left_i);
         
         block_matrix<Matrix, OutSymm> out_block;
+            //for (size_t b1=0; b1<mpo[i].row_dim(); ++b1)
+            //{
+            //    for (size_t b2=0; b2<mpo[i].col_dim(); ++b2)
+            //    {
+            //        if (!mpo[i].has(b1, b2))
+            //            continue;
+            
             for (size_t b1=0; b1<mpo[i].row_dim(); ++b1)
             {
-                for (size_t b2=0; b2<mpo[i].col_dim(); ++b2)
+                row_proxy row_b1 = mpo[i].row(b1);
+                for (typename row_proxy::const_iterator it = row_b1.begin(); it != row_b1.end(); ++it)
                 {
-                    if (!mpo[i].has(b1, b2))
-                        continue;
+                    size_t b2 = it.index(); 
+
                     for (size_t l=0; l<left_i.size(); ++l)
                     {
                         out_charge l_charge = left_i[l].first;
                         size_t     l_size   = left_i[l].second;
                         size_t     ll       = b1;
                         
-                        block_matrix<Matrix, InSymm> const& in_block = mpo[i](b1, b2);
+                        typename Matrix::value_type scale = mpo[i].at(b1, b2).scale;
+                        block_matrix<Matrix, InSymm> const& in_block = mpo[i].at(b1, b2).op;
                         for (size_t n=0; n<in_block.n_blocks(); ++n)
                         {
                             in_charge s1_charge; size_t size1;
@@ -234,7 +248,8 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matri
                                 for (size_t ss1=0; ss1<size1; ++ss1)
                                 {
                                     size_t ss = ss2 + ss1*size2 + phys_offset;
-                                    out_m(left_offset + ss*l_size + ll, rr) = in_m(ss1, ss2);
+                                    // TODO: Sebastian thinks, this is correct but should be checked
+                                    out_m(left_offset + ss*l_size + ll, rr) = in_m(ss1, ss2) * scale;
                                 }
                         }
                     }

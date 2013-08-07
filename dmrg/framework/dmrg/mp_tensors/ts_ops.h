@@ -2,7 +2,7 @@
  *
  * MAQUIS DMRG Project
  *
- * Copyright (C) 2013-2011 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  *
  *****************************************************************************/
