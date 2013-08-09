@@ -47,7 +47,7 @@ public:
               Index<SymmGroup> const& ld,
               Index<SymmGroup> const& rd,
               block_matrix<Matrix, SymmGroup> const& block,
-              MPSStorageLayout layout = LeftPaired);
+              MPSStorageLayout layout);
 
     Index<SymmGroup> const & site_dim() const;
     Index<SymmGroup> const & row_dim() const;
@@ -95,11 +95,6 @@ public:
     template<class Matrix_, class SymmGroup_>
     friend std::ostream& operator<<(std::ostream&, MPSTensor<Matrix_, SymmGroup_> const &);
     
-    friend struct contraction;
-    friend struct compression;
-    friend struct multigrid;
-    friend class  TwoSiteTensor<Matrix, SymmGroup>;
-    
     // math functions: these are not part of the Python code, but required by IETL
     MPSTensor const & operator*=(const scalar_type&);
     MPSTensor const & operator/=(const scalar_type&);
@@ -110,17 +105,14 @@ public:
     void make_left_paired() const;
     void make_right_paired() const;
     
-    void swap_with(MPSTensor & b);
-    friend void swap(MPSTensor & a, MPSTensor & b)
-    {
-        a.swap_with(b);
-    }
-    
     void conjugate_inplace();
-    
+    void swap_with(MPSTensor & b);
+    friend void swap(MPSTensor& a, MPSTensor& b){
+        a.swap_with(b); 
+    }
     template<class Matrix_, class SymmGroup_>
     friend MPSTensor<Matrix_, SymmGroup_> join(MPSTensor<Matrix_, SymmGroup_> const &, MPSTensor<Matrix_, SymmGroup_> const &, boundary_flag_t);
-
+    
     template<class Archive> void load(Archive & ar);
     template<class Archive> void save(Archive & ar) const;
     
@@ -130,10 +122,13 @@ public:
     
 private:
     Index<SymmGroup> phys_i, left_i, right_i;
-    mutable block_matrix<Matrix, SymmGroup> data_;
-    mutable MPSStorageLayout cur_storage;
+    mutable block_matrix<Matrix, SymmGroup> lp_data_;
+    mutable block_matrix<Matrix, SymmGroup> rp_data_;
     Indicator cur_normalization;
+    mutable MPSStorageLayout cur_storage;
+    mutable bool repaired;
 };
+
 
 // this is also required by IETL
 template<class Matrix, class SymmGroup>

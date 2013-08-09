@@ -39,6 +39,8 @@ public:
     block_matrix(Index<SymmGroup> rows,
                  Index<SymmGroup> cols);
     
+    block_matrix(block_matrix const&);
+
     template <class OtherMatrix>
     block_matrix(block_matrix<OtherMatrix,SymmGroup> const&);
 

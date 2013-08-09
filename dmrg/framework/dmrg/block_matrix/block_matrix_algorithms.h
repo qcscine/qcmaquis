@@ -351,7 +351,7 @@ typename block_matrix<Matrix, SymmGroup>::scalar_type trace(block_matrix<Matrix,
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> adjoin(block_matrix<Matrix, SymmGroup> const & m)
+block_matrix<Matrix, SymmGroup> adjoin(block_matrix<Matrix, SymmGroup> const & m) // error: it should be adjoin_t_
 {
     block_matrix<Matrix, SymmGroup> ret;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)

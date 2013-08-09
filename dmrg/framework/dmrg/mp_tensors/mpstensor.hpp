@@ -49,27 +49,30 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
     left_i.sort();
     right_i.sort();
     
-    data_ = block_matrix<Matrix, SymmGroup>(lb, rb);
+    data() = block_matrix<Matrix, SymmGroup>(lb, rb);
     
     if (fillrand)
-        data_.generate(static_cast<dmrg_random::value_type(*)()>(&dmrg_random::uniform));
+        data().generate(static_cast<dmrg_random::value_type(*)()>(&dmrg_random::uniform));
     else
-        data_.generate(utils::constant<typename Matrix::value_type>(val));
+        data().generate(utils::constant<typename Matrix::value_type>(val));
 }
 
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const& sd,
-          Index<SymmGroup> const& ld,
-          Index<SymmGroup> const& rd,
-          block_matrix<Matrix, SymmGroup> const& block,
-          MPSStorageLayout layout)
+                                        Index<SymmGroup> const& ld,
+                                        Index<SymmGroup> const& rd,
+                                        block_matrix<Matrix, SymmGroup> const& block,
+                                        MPSStorageLayout layout)
 : phys_i(sd)
 , left_i(ld)
 , right_i(rd)
-, data_(block)
 , cur_storage(layout)
 , cur_normalization(Unorm)
-{ }
+, repaired(false)
+{
+    if(layout == RightPaired) rp_data_ = block;
+    else lp_data_ = block;
+}
 
 template<class Matrix, class SymmGroup>
 void MPSTensor<Matrix, SymmGroup>::replace_left_paired(block_matrix<Matrix, SymmGroup> const & rhs, Indicator normalization)
@@ -85,8 +88,7 @@ void MPSTensor<Matrix, SymmGroup>::replace_left_paired(block_matrix<Matrix, Symm
     right_i = new_right_i;
     left_i = old_left_i;
     
-    data_ = rhs;
-    
+    data() = rhs;
     cur_normalization = normalization;
 }
 
@@ -104,7 +106,7 @@ void MPSTensor<Matrix, SymmGroup>::replace_right_paired(block_matrix<Matrix, Sym
     left_i = new_left_i;
     right_i = old_right_i;
     
-    data_ = rhs;
+    data() = rhs;
     cur_normalization = normalization;
 }
 
@@ -137,14 +139,19 @@ void MPSTensor<Matrix, SymmGroup>::make_left_paired() const
 {
     if (cur_storage == LeftPaired)
         return;
+    if (repaired == true) {
+        cur_storage = LeftPaired;
+        return;
+    }
     
     block_matrix<Matrix, SymmGroup> tmp;
     reshape_right_to_left_new<Matrix>(phys_i, left_i, right_i,
-                                      data_, tmp);
-    swap(data_, tmp);
+                                      data(), tmp);
     cur_storage = LeftPaired;
+    swap(lp_data_, tmp);
+    repaired = true;
     
-    assert( weak_equal(right_i, data_.right_basis()) );
+    assert( weak_equal(right_i, data().right_basis()) );
 }
 
 template<class Matrix, class SymmGroup>
@@ -152,14 +159,19 @@ void MPSTensor<Matrix, SymmGroup>::make_right_paired() const
 {   
     if (cur_storage == RightPaired)
         return;
+    if (repaired == true) {
+        cur_storage = RightPaired;
+        return;
+    }
     
     block_matrix<Matrix, SymmGroup> tmp;
     reshape_left_to_right_new<Matrix>(phys_i, left_i, right_i,
-                                  data_, tmp);
-    swap(data_, tmp);
+                                      data(), tmp);
     cur_storage = RightPaired;
+    swap(rp_data_, tmp);
+    repaired = true;
     
-    assert( weak_equal(left_i, data_.left_basis()) );
+    assert( weak_equal(left_i, data().left_basis()) );
 }
 
 template<class Matrix, class SymmGroup>
@@ -174,10 +186,10 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
             make_left_paired();
             
             block_matrix<Matrix, SymmGroup> Q, R;
-            qr(data_, Q, R);
+            qr(data(), Q, R);
             
-            swap(data_, Q);
-            right_i = data_.right_basis();
+            swap(data(), Q);
+            right_i = data().right_basis();
             assert(right_i == R.left_basis());
             
             cur_normalization = Lnorm;
@@ -188,19 +200,19 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
             block_matrix<Matrix, SymmGroup> U, V;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
             
-            svd(data_, U, V, S);
+            svd(data(), U, V, S);
             
             right_i = U.right_basis();
-            assert(data_.left_basis() == U.left_basis());
+            assert(data().left_basis() == U.left_basis());
             
-            swap(data_, U);
+            swap(data(), U);
             gemm(S, V, U);
 
             cur_normalization = Lnorm;
             return U;
         }
     }
-    return identity_matrix<Matrix>(data_.right_basis());
+    return identity_matrix<Matrix>(data().right_basis());
 }
 
 template<class Matrix, class SymmGroup>
@@ -215,10 +227,10 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             make_right_paired();
             
             block_matrix<Matrix, SymmGroup> L, Q;
-            lq(data_, L, Q);
+            lq(data(), L, Q);
             
-            swap(data_, Q);
-            left_i = data_.left_basis();
+            swap(data(), Q);
+            left_i = data().left_basis();
             assert(left_i == L.right_basis());
             
             cur_normalization = Rnorm;
@@ -229,11 +241,11 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             block_matrix<Matrix, SymmGroup> U, V;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
             
-            svd(data_, U, V, S);
+            svd(data(), U, V, S);
             
             left_i = V.left_basis();
-            assert(data_.right_basis() == V.right_basis());
-            swap(data_, V);
+            assert(data().right_basis() == V.right_basis());
+            swap(data(), V);
             
             gemm(U, S, V);
             
@@ -241,7 +253,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             return V;
         }
     }
-    return identity_matrix<Matrix>(data_.left_basis());
+    return identity_matrix<Matrix>(data().left_basis());
 }
 
 template<class Matrix, class SymmGroup>
@@ -249,7 +261,7 @@ void MPSTensor<Matrix, SymmGroup>::shift_aux_charges(typename SymmGroup::charge 
 {
     left_i.shift(diff);
     right_i.shift(diff);    
-    data_.shift_basis(diff);
+    data().shift_basis(diff);
 }
 
 template<class Matrix, class SymmGroup>
@@ -259,7 +271,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<Matrix, SymmGroup
     cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;
     make_left_paired();
-    gemm(data_, N, tmp);
+    gemm(data(), N, tmp);
     replace_left_paired(tmp);
 }
 
@@ -270,7 +282,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<Matrix, SymmGroup>
     cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;
     make_right_paired();
-    gemm(N, data_, tmp);
+    gemm(N, data(), tmp);
     replace_right_paired(tmp);
 }
 
@@ -294,14 +306,14 @@ template<class Matrix, class SymmGroup>
 void
 MPSTensor<Matrix, SymmGroup>::conjugate_inplace()
 {
-    data_ = data_.inplace_conjugate();
+    data() = data().inplace_conjugate();
 }
 
 template<class Matrix, class SymmGroup>
 typename MPSTensor<Matrix, SymmGroup>::real_type
 MPSTensor<Matrix, SymmGroup>::scalar_norm() const 
 {
-    return data_.norm();
+    return data().norm();
 }
 
 template<class T>
@@ -331,14 +343,14 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     // Bela says: this is a workaround for the very rare condition that site_hamil2 removes blocks
     // This shouldn't be necessary, but as of Rev. 1702, is necessary in some cases
     // If I haven't fixed this by the end of Feb 2012, remind me
-    Index<SymmGroup> i1 = data_.left_basis(), i2 = rhs.data_.left_basis();
+    Index<SymmGroup> i1 = data().left_basis(), i2 = rhs.data().left_basis();
     common_subset(i1, i2);
     std::vector<scalar_type> vt; vt.reserve(i1.size());
 
     for (std::size_t b = 0; b < i1.size(); ++b) {
         typename SymmGroup::charge c = i1[b].first;
-        assert( data_.has_block(c,c) && rhs.data_.has_block(c,c) );
-        vt.push_back(overlap(data_(c,c), rhs.data_(c,c)));
+        assert( data().has_block(c,c) && rhs.data().has_block(c,c) );
+        vt.push_back(overlap(data()(c,c), rhs.data()(c,c)));
     } // should be reformulated in terms of reduction (todo: Matthias, 30.04.12 / scalar-value types)
     return maquis::accumulate(vt.begin(), vt.end(), scalar_type(0.));
 }
@@ -349,7 +361,7 @@ std::ostream& operator<<(std::ostream& os, MPSTensor<Matrix, SymmGroup> const & 
     os << "Physical space: " << mps.phys_i << std::endl;
     os << "Left space: " << mps.left_i << std::endl;
     os << "Right space: " << mps.right_i << std::endl;
-    os << mps.data_;
+    os << mps.data();
     return os;
 }
 
@@ -384,8 +396,15 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> &
 MPSTensor<Matrix, SymmGroup>::data()
 {
+    repaired = false;
     cur_normalization = Unorm;
-    return data_;
+    if(cur_storage == LeftPaired){
+        if(repaired){ repaired = false; rp_data_.clear(); }
+        return lp_data_;
+    }else{ 
+        if(repaired){ repaired = false; lp_data_.clear(); }
+        return rp_data_;
+    }
 }
 
 template<class Matrix, class SymmGroup>
@@ -399,7 +418,8 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const &
 MPSTensor<Matrix, SymmGroup>::const_data() const
 {
-    return data_;
+    if(cur_storage == LeftPaired) return lp_data_;
+    else return rp_data_;
 }
 
 
@@ -407,8 +427,7 @@ template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> const &
 MPSTensor<Matrix, SymmGroup>::operator*=(const scalar_type& t)
 {
-    cur_normalization = Unorm;
-    data_ *= t;
+    data() *= t;
     return *this;
 }
 
@@ -416,8 +435,7 @@ template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> const &
 MPSTensor<Matrix, SymmGroup>::operator/=(const scalar_type& t)
 {
-    cur_normalization = Unorm;
-    data_ /= t;
+    data() /= t;
     return *this;
 }
 
@@ -428,18 +446,19 @@ MPSTensor<Matrix, SymmGroup>::operator+=(MPSTensor<Matrix, SymmGroup> const & rh
     assert( weak_equal(left_i, rhs.left_i) );
     assert( weak_equal(right_i, rhs.right_i) );
     assert( phys_i == rhs.phys_i );
-    
+   
+    // what if both are right_paired?
     make_left_paired();
     rhs.make_left_paired();
     
     cur_normalization = Unorm;
 
-    for (std::size_t i = 0; i < data_.n_blocks(); ++i)
+    for (std::size_t i = 0; i < data().n_blocks(); ++i)
     {
-        typename SymmGroup::charge lc = data_.left_basis()[i].first, rc = data_.right_basis()[i].first;
-        std::size_t matched_block = rhs.data_.find_block(lc,rc);
-        if (matched_block < rhs.data_.n_blocks()) {
-            data_[i] += rhs.data_[matched_block];
+        typename SymmGroup::charge lc = data().left_basis()[i].first, rc = data().right_basis()[i].first;
+        std::size_t matched_block = rhs.data().find_block(lc,rc);
+        if (matched_block < rhs.data().n_blocks()) {
+            data()[i] += rhs.data()[matched_block];
         }
     }
     
@@ -459,11 +478,11 @@ MPSTensor<Matrix, SymmGroup>::operator-=(MPSTensor<Matrix, SymmGroup> const & rh
     
     cur_normalization = Unorm;
     
-    for (std::size_t i = 0; i < data_.n_blocks(); ++i)
+    for (std::size_t i = 0; i < data().n_blocks(); ++i)
     {
-        typename SymmGroup::charge lc = data_.left_basis()[i].first, rc = data_.right_basis()[i].first;
-        if (rhs.data_.has_block(lc,rc)) {
-            data_[i] -= rhs.data_(lc,rc);
+        typename SymmGroup::charge lc = data().left_basis()[i].first, rc = data().right_basis()[i].first;
+        if (rhs.data().has_block(lc,rc)) {
+            data()[i] -= rhs.data()(lc,rc);
         }
     }
     
@@ -477,7 +496,9 @@ void MPSTensor<Matrix, SymmGroup>::swap_with(MPSTensor<Matrix, SymmGroup> & b)
     swap(this->phys_i, b.phys_i);
     swap(this->left_i, b.left_i);
     swap(this->right_i, b.right_i);
-    swap(this->data_, b.data_);
+    swap(this->lp_data_, b.lp_data_);
+    swap(this->rp_data_, b.rp_data_);
+    swap(this->repaired, b.repaired);
     swap(this->cur_storage, b.cur_storage);
     swap(this->cur_normalization, b.cur_normalization);
 }
@@ -486,12 +507,13 @@ template<class Matrix, class SymmGroup>
 template<class Archive>
 void MPSTensor<Matrix, SymmGroup>::load(Archive & ar)
 {
-    data_.clear();
+    lp_data_.clear();
+    rp_data_.clear();
     make_left_paired();
     ar["phys_i"] >> phys_i;
     ar["left_i"] >> left_i;
     ar["right_i"] >> right_i;
-    ar["data_"] >> data_;
+    ar["data_"] >> data();
     cur_normalization = Unorm;
 }
 
@@ -503,7 +525,7 @@ void MPSTensor<Matrix, SymmGroup>::save(Archive & ar) const
     ar["phys_i"] << phys_i;
     ar["left_i"] << left_i;
     ar["right_i"] << right_i;
-    ar["data_"] << data_;
+    ar["data_"] << data();
 }
 
 template<class Matrix, class SymmGroup>
@@ -511,27 +533,27 @@ bool MPSTensor<Matrix, SymmGroup>::reasonable() const
 {
     {
         make_left_paired();
-        if ( !weak_equal(right_i, data_.right_basis()) )
+        if ( !weak_equal(right_i, data().right_basis()) )
             throw std::runtime_error("right basis is wrong");
         
 //        maquis::cout << "** reasonable left_paired **" << std::endl;
 //        maquis::cout << "reasonable::left_i: " << left_i << std::endl;
 //        maquis::cout << "reasonable::right_i: " << right_i << std::endl;
-//        maquis::cout << "reasonable::data_:" << std::endl << data_ << std::endl;
+//        maquis::cout << "reasonable::data_:" << std::endl << data() << std::endl;
         make_right_paired();
-        if ( !weak_equal(left_i, data_.left_basis()) )
+        if ( !weak_equal(left_i, data().left_basis()) )
             throw std::runtime_error("left basis is wrong");
         
 //        maquis::cout << "** reasonable right_paired **" << std::endl;
 //        maquis::cout << "reasonable::left_i: " << left_i << std::endl;
 //        maquis::cout << "reasonable::right_i: " << right_i << std::endl;
-//        maquis::cout << "reasonable::data_:" << std::endl << data_ << std::endl;
+//        maquis::cout << "reasonable::data_:" << std::endl << data() << std::endl;
     }
     
     {
-        for (std::size_t i = 0; i < data_.n_blocks(); ++i)
+        for (std::size_t i = 0; i < data().n_blocks(); ++i)
         {
-            if (data_.left_basis()[i].first != data_.right_basis()[i].first)
+            if (data().left_basis()[i].first != data().right_basis()[i].first)
                 throw std::runtime_error("particle number is wrong");
         }
     }
@@ -541,14 +563,14 @@ bool MPSTensor<Matrix, SymmGroup>::reasonable() const
 template<class Matrix, class SymmGroup>
 bool MPSTensor<Matrix, SymmGroup>::num_check() const
 {
-        for (std::size_t k = 0; k < data_.n_blocks(); ++k)
+        for (std::size_t k = 0; k < data().n_blocks(); ++k)
         {
-            for (size_t i = 0; i<num_rows(data_[k]); ++i)
-                for (size_t j = 0; j<num_cols(data_[k]); ++j)
+            for (size_t i = 0; i<num_rows(data()[k]); ++i)
+                for (size_t j = 0; j<num_cols(data()[k]); ++j)
                 {
-                    if ( alps::numeric::isnan(data_[k](i,j)) )
+                    if ( alps::numeric::isnan(data()[k](i,j)) )
                         throw std::runtime_error("NaN found!");
-                    if ( alps::numeric::isinf(data_[k](i,j)) )
+                    if ( alps::numeric::isinf(data()[k](i,j)) )
                         throw std::runtime_error("INF found!");
                 }
         }
@@ -580,15 +602,15 @@ void MPSTensor<Matrix, SymmGroup>::check_equal (MPSTensor<Matrix, SymmGroup> con
     rhs.make_left_paired();
     
     // Data
-    if (data_.n_blocks() != rhs.data_.n_blocks())
+    if (data().n_blocks() != rhs.data().n_blocks())
         error += "n_blocks doesn't match. ";
     else {
-        for (int b=0; b<data_.n_blocks(); ++b) {
-            if (data_[b].num_cols() != rhs.data_[b].num_cols() || data_[b].num_rows() != rhs.data_[b].num_rows())
+        for (int b=0; b < data().n_blocks(); ++b) {
+            if (data()[b].num_cols() != rhs.data()[b].num_cols() || data()[b].num_rows() != rhs.data()[b].num_rows())
                 error += "Size of block doesn't match. ";
-            for (int i=0; i<data_[b].num_rows() && error.empty(); ++i)
-                for (int j=0; j<data_[b].num_cols() && error.empty(); ++j)
-                    if (data_[b](i,j) != rhs.data_[b](i,j))
+            for (int i=0; i < data()[b].num_rows() && error.empty(); ++i)
+                for (int j=0; j < data()[b].num_cols() && error.empty(); ++j)
+                    if (data()[b](i,j) != rhs.data()[b](i,j))
                         error += "Data doesn't match. ";
         }
     }
@@ -601,6 +623,6 @@ void MPSTensor<Matrix, SymmGroup>::check_equal (MPSTensor<Matrix, SymmGroup> con
 template<class Matrix, class SymmGroup>
 std::size_t MPSTensor<Matrix, SymmGroup>::num_elements() const
 {
-    return data_.num_elements();
+    return data().num_elements();
 }
 
