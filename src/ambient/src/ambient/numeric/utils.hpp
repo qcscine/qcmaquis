@@ -26,6 +26,10 @@
 
 #ifndef AMBIENT_NUMERIC_UTILS
 #define AMBIENT_NUMERIC_UTILS
+    
+#ifdef AMBIENT_TRACKING
+#include <ambient/utils/overseer.hpp>
+#endif
 
 namespace ambient {
 
@@ -49,6 +53,26 @@ namespace ambient {
             migrate(a[i]);
         }
     }
+
+#ifdef AMBIENT_TRACKING
+    template<class Matrix>
+    inline void track(const Matrix& a, const std::string& label){
+        ambient::overseer::track(a.core, label);
+    }
+
+    template<typename T>
+    inline void track(const diagonal_matrix<T>& a, const std::string& label){
+        ambient::overseer::track(a.get_data().core, label);
+    }
+
+    template<class Matrix>
+    inline void track(numeric::tiles<Matrix>& a, const std::string& label){
+        int size = a.data.size();
+        for(int i = 0; i < size; i++){
+            track(a[i], label);
+        }
+    }
+#endif
 
 }
 

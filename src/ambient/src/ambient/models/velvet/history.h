@@ -47,6 +47,10 @@ namespace ambient { namespace models { namespace velvet {
         size_t extent;
         size_t clock;
         dim2 dim;
+#ifdef AMBIENT_TRACKING
+        std::string label;
+        size_t id;
+#endif
     };
 
 } } }

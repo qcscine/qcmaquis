@@ -37,6 +37,9 @@ namespace ambient { namespace models { namespace velvet {
     inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(dim.square()*ts) {
         this->clock = ambient::model.clock;
         this->content.reserve(2); 
+        #ifdef AMBIENT_TRACKING
+        ambient::model.index(this);
+        #endif
     }
 
     inline void history::init_state(){

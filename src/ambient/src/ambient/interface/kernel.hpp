@@ -37,7 +37,16 @@ namespace ambient {
     using ambient::controllers::velvet::cfunctor;
 
     template<typename FP, FP fp> struct kernel_inliner{};
+    #ifdef AMBIENT_TRACKING
+    #define AMBIENT_TRACKING_BEGIN ambient::overseer::log::begin(o);
+    #define AMBIENT_TRACKING_END   ambient::overseer::log::end(o);
+    #else
+    #define AMBIENT_TRACKING_BEGIN
+    #define AMBIENT_TRACKING_END
+    #endif
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
+    #undef AMBIENT_TRACKING_BEGIN
+    #undef AMBIENT_TRACKING_END
 
     template<class K>
     class kernel : public cfunctor {
@@ -48,9 +57,9 @@ namespace ambient {
             return ambient::pool::malloc<bulk,sizeof(K)+sizeof(void*)*inliner::arity>();
         }
 
-        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        #if defined(AMBIENT_COMPUTATIONAL_DATAFLOW) || defined(AMBIENT_TRACKING)
         kernel(){ 
-            this->number = ambient::model.op_sid++;
+            this->id = ambient::model.op_sid++;
         }
         #endif
 
@@ -67,7 +76,7 @@ namespace ambient {
             time.end();
             #endif
         }
-        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        #if defined(AMBIENT_COMPUTATIONAL_DATAFLOW) || defined(AMBIENT_TRACKING)
         virtual const char* name(){ 
             return typeid(K).name(); 
         }
