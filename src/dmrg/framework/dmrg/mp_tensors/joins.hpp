@@ -102,7 +102,7 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
     }
     
     // check right_pairing
-    assert( weak_equal(ret.right_i, ret.data_.right_basis()) );
+    assert( weak_equal(ret.right_i, ret.data().right_basis()) );
     
     return ret;
 }

@@ -122,7 +122,6 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     // For now until above function is parallel
     parallel_for(locale::compact(L_ts), locale p = 0; p < L_ts; ++p)
         mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1], site_dim);
-
 }
-
+        
 #endif
