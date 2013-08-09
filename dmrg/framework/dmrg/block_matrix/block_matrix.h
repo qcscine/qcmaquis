@@ -109,6 +109,10 @@ public:
         swap(x.data_, y.data_);
         swap(x.rows_, y.rows_);
         swap(x.cols_, y.cols_);
+#ifdef AMBIENT_TRACKING
+        __ambient_track_as(x, x.label);
+        __ambient_track_as(y, y.label);
+#endif
     }
     
     Matrix const & operator()(charge r, charge c) const
@@ -133,6 +137,9 @@ public:
     
     bool reasonable() const;
     
+#ifdef AMBIENT_TRACKING
+    std::string label;
+#endif
 private:
     boost::ptr_vector<Matrix> data_;
     Index<SymmGroup> rows_, cols_;
