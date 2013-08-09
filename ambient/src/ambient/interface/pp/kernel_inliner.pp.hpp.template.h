@@ -90,7 +90,9 @@ struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP
             BOOST_PP_REPEAT(TYPES_NUMBER, extract_remote_arguments, ~)
             return;
         }else if(ambient::controller.local()){
+            AMBIENT_TRACKING_BEGIN
             BOOST_PP_REPEAT(TYPES_NUMBER, extract_local_arguments, ~) 
+            AMBIENT_TRACKING_END
         }else{
             BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 
         }

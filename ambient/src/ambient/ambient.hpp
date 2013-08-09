@@ -45,7 +45,7 @@
 #include <fstream>
 #include <sys/time.h>
 #include <algorithm>
-// #include <execinfo.h>
+#include <execinfo.h>
 // }}}
 
 #ifdef AMBIENT_CILK
@@ -79,9 +79,10 @@
 //#define AMBIENT_EXPERIMENTAL
 //#define AMBIENT_COMPUTATIONAL_TIMINGS
 //#define AMBIENT_COMPUTATIONAL_DATAFLOW
-//#define AMBIENT_TRACE void* b[10]; backtrace_symbols_fd(b,backtrace(b,10),2);
+#define AMBIENT_TRACE void* b[10]; backtrace_symbols_fd(b,backtrace(b,10),2);
 //#define AMBIENT_CHECK_BOUNDARIES
 //#define AMBIENT_LOOSE_FUTURE
+//#define AMBIENT_TRACKING
 
 #ifdef AMBIENT_CRAY
 #define AMBIENT_MAX_SID               4194304
@@ -120,6 +121,7 @@ namespace ambient {
 #include "ambient/controllers/velvet/controller.h"
 #include "ambient/utils/auxiliary.hpp"
 #include "ambient/utils/io.hpp"
+#include "ambient/utils/overseer.hpp"
 #include "ambient/interface/typed.hpp"
 #include "ambient/interface/kernel.hpp"
 #include "ambient/memory/archive.hpp"

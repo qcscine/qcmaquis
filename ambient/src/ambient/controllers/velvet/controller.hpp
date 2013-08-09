@@ -26,6 +26,7 @@
 
 #include "ambient/utils/io.hpp"
 #include "ambient/utils/timings.hpp"
+#include "ambient/utils/overseer.hpp"
 #define ALL -1
 
 namespace ambient { namespace controllers { namespace velvet {
@@ -132,11 +133,17 @@ namespace ambient { namespace controllers { namespace velvet {
             timeout.end();
             if(timeout.get_time() > 300){
                  std::cout << ambient::rank() << ": playout took " << timeout.get_time() << "\n";
+                 #ifdef AMBIENT_TRACE
+                     AMBIENT_TRACE
+                 #endif
                  timeout.reset();
             }
         }
         AMBIENT_SMP_DISABLE
-            ambient::model.clock++;
+        ambient::model.clock++;
+        #ifdef AMBIENT_TRACKING
+        ambient::overseer::log::stop();
+        #endif
     }
 
     inline bool controller::empty(){
