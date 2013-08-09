@@ -1,0 +1,87 @@
+/* general */
+
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    display: block;
+    background-color: #FCFAFF;
+}
+body {
+    display: table;
+    clear: both;
+    font-family: arial;
+    font-size: 12px;
+    padding: 30px;
+}
+a {
+    cursor: pointer;
+    color: #333;
+    text-decoration: none;
+}
+div {
+    margin: 0px;
+    padding: 0px;
+    display: block;
+    font-family: arial;
+    font-size: 13px;
+    font-family: Interstate, 'Lucida Grande', Arial, sans-serif;
+}
+div.meta-content {
+    display: none;
+}
+div.kernel {
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 5px;
+    margin: 5px;
+    font-size: 12px;
+    display: inline-block;
+}
+div.output {
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: black;
+    color: white;
+    display: inline-block;
+}
+div.import {
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: red;
+    display: inline-block;
+}
+div.rename {
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: #EEE;
+    display: none; /* inline-block */
+    margin: 5px;
+}
+div.cut {
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: black;
+    width: 10px;
+    height: 10px;
+    margin-left: 50%;
+    display: block;
+}
+div.region {
+    display: block;
+    margin-top: 0px;
+    margin-bottom: 30px;
+}
+div.gemm {
+    background-color: #9FFF9F;
+    padding: 20px;
+}
+div.selector {
+    display: inline-block;
+    margin: 20px;
+    width: 20px;
+    padding: 10px;
+    font-size: 22px;
+}
