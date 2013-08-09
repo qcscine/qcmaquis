@@ -84,16 +84,23 @@
 //#define AMBIENT_LOOSE_FUTURE
 //#define AMBIENT_TRACKING
 
+#define AMBIENT_LARGE_BULK
+#ifdef AMBIENT_LARGE_BULK
+#define AMBIENT_BULK_CHUNK            4194304000
+#else
+#define AMBIENT_BULK_CHUNK            41943040
+#endif
+
 #ifdef AMBIENT_CRAY
 #define AMBIENT_MAX_SID               4194304
 #else
 #define AMBIENT_MAX_SID               2147483647
 #endif
+
 #define AMBIENT_STACK_RESERVE         65536
 #define AMBIENT_COLLECTOR_STR_RESERVE 65536
 #define AMBIENT_COLLECTOR_RAW_RESERVE 1024
 #define AMBIENT_SCOPE_SWITCH_FACTOR   20480
-#define AMBIENT_BULK_CHUNK            41943040
 #define AMBIENT_FUTURE_SIZE           64
 #define AMBIENT_IB                    512
 
