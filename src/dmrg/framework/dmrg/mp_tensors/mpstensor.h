@@ -120,8 +120,8 @@ public:
     bool reasonable() const;
     bool num_check() const; // checks for nan or inf
     
-private:
     Index<SymmGroup> phys_i, left_i, right_i;
+private:
     mutable block_matrix<Matrix, SymmGroup> lp_data_;
     mutable block_matrix<Matrix, SymmGroup> rp_data_;
     Indicator cur_normalization;
