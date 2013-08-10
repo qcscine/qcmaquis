@@ -91,8 +91,8 @@ namespace chem_detail {
         typedef typename tag_type<M>::type tag_type;
 
         ChemHelper(BaseParameters & parms, Lattice const & lat,
-                   tag_type ident_, tag_type fill_, boost::shared_ptr<OPTable<M, TwoU1> > op_table_) 
-            : ident(ident_), fill(fill_), op_table(op_table_)
+                   tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, TwoU1> > tag_handler_) 
+            : ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
             this->parse_integrals(parms, lat);
 
@@ -117,7 +117,7 @@ namespace chem_detail {
                            value_type scale, int s, int p1, int p2, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j) {
 
             typename hamtagterm_t<M>::type
-            term = TermMaker<M>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, op_table);
+            term = TermMaker<M>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler);
             TermTuple id(IndexTuple(s,s,p1,p2),IndexTuple(op_i,op_k,op_l,op_j));
             if (three_terms.count(id) == 0) {
                 three_terms[id] = term;
@@ -142,7 +142,7 @@ namespace chem_detail {
                 
                     typename hamtagterm_t<M>::type
                     term = TermMaker<M>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
-                                                   op_i, op_k, op_l, op_j, op_table);
+                                                   op_i, op_k, op_l, op_j, tag_handler);
 
                     term.scale += value_type(sign(twin)) * coefficients[align(twin)];
 
@@ -152,7 +152,7 @@ namespace chem_detail {
             }
             else {
                 tagterms.push_back( TermMaker<M>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
-                                   op_i, op_k, op_l, op_j, op_table) );
+                                   op_i, op_k, op_l, op_j, tag_handler) );
             }
         }
     
@@ -192,7 +192,7 @@ namespace chem_detail {
         }
 
         tag_type ident, fill;
-        boost::shared_ptr<OPTable<M, TwoU1> > op_table;
+        boost::shared_ptr<TagHandler<M, TwoU1> > tag_handler;
 
         std::vector<value_type> matrix_elements;
         std::vector<std::vector<int> > idx_;

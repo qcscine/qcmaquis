@@ -89,23 +89,23 @@ public:
         /*** Create operator tag table ****************************************/
         /**********************************************************************/
 
-        boost::shared_ptr<OPTable<Matrix, TwoU1> > operator_table(new OPTable<Matrix, TwoU1>());
+        boost::shared_ptr<TagHandler<Matrix, TwoU1> > tag_handler(new TagHandler<Matrix, TwoU1>());
         tag_type create_up, create_down, destroy_up, destroy_down,
               count_up, count_down, doubly_occ,
               ident, sign_up, sign_down;
 
-        #define REGISTER(op) op = operator_table->register_op(op ## _op);
+        #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
 
-        REGISTER(ident)
-        REGISTER(sign_up)
-        REGISTER(sign_down)
-        REGISTER(create_up)
-        REGISTER(create_down)
-        REGISTER(destroy_up)
-        REGISTER(destroy_down)
-        REGISTER(count_up)
-        REGISTER(count_down)
-        REGISTER(doubly_occ)
+        REGISTER(ident,        tag_detail::bosonic)
+        REGISTER(sign_up,      tag_detail::bosonic)
+        REGISTER(sign_down,    tag_detail::bosonic)
+        REGISTER(create_up,    tag_detail::fermionic)
+        REGISTER(create_down,  tag_detail::fermionic)
+        REGISTER(destroy_up,   tag_detail::fermionic)
+        REGISTER(destroy_down, tag_detail::fermionic)
+        REGISTER(count_up,     tag_detail::bosonic)
+        REGISTER(count_down,   tag_detail::bosonic)
+        REGISTER(doubly_occ,   tag_detail::bosonic)
 
         #undef REGISTER
         /**********************************************************************/
@@ -134,7 +134,7 @@ public:
                     term.scale = -ti;
 
                     //gemm(sign_up, create_up, tmp); 
-                    ptag = operator_table->get_product_tag(sign_up, create_up); // Note inverse notation because of notation in operator.
+                    ptag = tag_handler->get_product_tag(sign_up, create_up); // Note inverse notation because of notation in operator.
                     term.scale *= ptag.second;
 
                     term.operators.push_back( std::make_pair(p, ptag.first) );
@@ -148,7 +148,7 @@ public:
                     term.scale = -ti;
 
                     //gemm(destroy_up, sign_up, tmp);
-                    ptag = operator_table->get_product_tag(destroy_up, sign_up); // Note inverse notation because of notation in operator.
+                    ptag = tag_handler->get_product_tag(destroy_up, sign_up); // Note inverse notation because of notation in operator.
                     term.scale *= ptag.second;
 
                     term.operators.push_back( std::make_pair(p, ptag.first) );
@@ -162,7 +162,7 @@ public:
                     term.scale = -ti;
 
                     //gemm(sign_down, create_down, tmp);
-                    ptag = operator_table->get_product_tag(sign_down, create_down); // Note inverse notation because of notation in operator.
+                    ptag = tag_handler->get_product_tag(sign_down, create_down); // Note inverse notation because of notation in operator.
                     term.scale *= ptag.second;
 
                     term.operators.push_back( std::make_pair(p, ptag.first) );
@@ -176,7 +176,7 @@ public:
                     term.scale = -ti;
 
                     //gemm(destroy_down, sign_down, tmp);
-                    ptag = operator_table->get_product_tag(destroy_down, sign_down); // Note inverse notation because of notation in operator.
+                    ptag = tag_handler->get_product_tag(destroy_down, sign_down); // Note inverse notation because of notation in operator.
                     term.scale *= ptag.second;
 
                     term.operators.push_back( std::make_pair(p, ptag.first) );
@@ -187,7 +187,7 @@ public:
         }
 
         std::vector<hamterm_t> terms_ops;
-        return ham(phys, ident_op, terms_ops, ident, terms, operator_table);
+        return ham(phys, ident_op, terms_ops, ident, terms, tag_handler);
     }
     
     Measurements<Matrix, TwoU1> measurements () const

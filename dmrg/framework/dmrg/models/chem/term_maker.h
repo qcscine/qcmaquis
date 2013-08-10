@@ -18,7 +18,7 @@ struct TermMaker {
 
     struct hamtagterm_t { typedef typename Hamiltonian<M, TwoU1>::hamtagterm_t type; };
 
-    struct tag_type { typedef typename OPTable<M, TwoU1>::tag_type type; };
+    struct tag_type { typedef typename TagHandler<M, TwoU1>::tag_type type; };
 
     struct op_tag_pair_t { typedef typename generate_mpo::Operator_Tag_Term<M, TwoU1>::op_pair_t type; };
 
@@ -30,7 +30,7 @@ struct TermMaker {
 
     static typename hamtagterm_t::type two_term(bool sign, typename tag_type::type fill_op, value_type scale, pos_t i, pos_t j,
                                      typename tag_type::type op1, typename tag_type::type op2,
-                                     boost::shared_ptr<OPTable<M, TwoU1> > op_table)
+                                     boost::shared_ptr<TagHandler<M, TwoU1> > op_table)
     {
         typename hamtagterm_t::type term;
         term.with_sign = sign;
@@ -43,7 +43,7 @@ struct TermMaker {
 
     static typename hamtagterm_t::type positional_two_term(bool sign, typename tag_type::type fill_op, value_type scale, pos_t i, pos_t j,
                                      typename tag_type::type op1, typename tag_type::type op2,
-                                     boost::shared_ptr<OPTable<M, TwoU1> > op_table)
+                                     boost::shared_ptr<TagHandler<M, TwoU1> > op_table)
     {
         typename hamtagterm_t::type term;
         term.with_sign = sign;
@@ -71,7 +71,7 @@ struct TermMaker {
                                      value_type scale, pos_t pb, pos_t p1, pos_t p2,
                                      typename tag_type::type opb1, typename tag_type::type opb2,
                                      typename tag_type::type op1,  typename tag_type::type op2,
-                                     boost::shared_ptr<OPTable<M, TwoU1> > op_table)
+                                     boost::shared_ptr<TagHandler<M, TwoU1> > op_table)
     {
         typename hamtagterm_t::type term;
         term.with_sign = true;
@@ -138,7 +138,7 @@ struct TermMaker {
                                 value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
                                 typename tag_type::type op_i, typename tag_type::type op_j,
                                 typename tag_type::type op_k, typename tag_type::type op_l,
-                                boost::shared_ptr<OPTable<M, TwoU1> > op_table)
+                                boost::shared_ptr<TagHandler<M, TwoU1> > op_table)
     {
         typename hamtagterm_t::type term;
         term.with_sign = true;

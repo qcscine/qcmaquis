@@ -20,7 +20,7 @@
 
 #include "dmrg/models/lattice.h"
 
-#include "dmrg/models/op_table.h"
+#include "dmrg/models/op_handler.h"
 #include "dmrg/models/generate_mpo.hpp"
 
 enum TermType {all_term, site_term, bond_term};
@@ -41,8 +41,8 @@ public:
     typedef typename hamterm_t::op_t op_t;
     typedef typename std::vector<hamterm_t>::const_iterator const_iterator;
     typedef typename std::vector<hamterm_t>::iterator iterator;
-    typedef OPTable<Matrix, SymmGroup> op_table_type;
-    typedef boost::shared_ptr<op_table_type> op_table_ptr;
+    typedef TagHandler<Matrix, SymmGroup> table_type;
+    typedef boost::shared_ptr<table_type> table_ptr;
     
     Hamiltonian () {}
     Hamiltonian (Index<SymmGroup> const & phys_
@@ -50,13 +50,13 @@ public:
                  , std::vector<hamterm_t> const & terms_
                  , tag_type ident_tag_ = 0
                  , std::vector<hamtagterm_t> const & tagterms_ = std::vector<hamtagterm_t>()
-                 , op_table_ptr tbl_ = op_table_ptr() )
+                 , table_ptr tbl_ = table_ptr() )
     : phys(phys_)
     , ident(ident_)
     , ident_tag(ident_tag_)
     , terms(terms_)
     , tagterms(tagterms_)
-    , shared_op_table(tbl_)
+    , tag_handler(tbl_)
     {}
     
     virtual std::size_t n_terms (TermType what=all_term) const { return terms.size(); }
@@ -79,7 +79,7 @@ public:
     iterator begin () { return terms.begin(); }
     iterator end () { return terms.end(); }
 
-    boost::shared_ptr<OPTable<Matrix, SymmGroup> > get_operator_table() const { return shared_op_table; }
+    table_ptr get_operator_table() const { return tag_handler; }
 
 protected:
     std::vector<hamterm_t> terms;
@@ -88,7 +88,7 @@ protected:
     tag_type ident_tag;
 
     std::vector<hamtagterm_t> tagterms;
-    op_table_ptr shared_op_table;
+    table_ptr tag_handler;
 };
 
 template<class Matrix, class SymmGroup>
