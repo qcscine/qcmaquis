@@ -1,24 +1,26 @@
 /* general */
 
 html, body {
-    width: 100%;
     height: 100%;
     margin: 0px;
     padding: 0px;
     display: block;
     background-color: #FCFAFF;
+    overflow-x: hidden;
 }
 body {
     display: table;
     clear: both;
     font-family: arial;
     font-size: 12px;
-    padding: 30px;
+    padding: 0px;
 }
 a {
     cursor: pointer;
     color: #333;
     text-decoration: none;
+}
+a.index {
 }
 div {
     margin: 0px;
@@ -78,6 +80,16 @@ div.gemm {
     background-color: #9FFF9F;
     padding: 20px;
 }
+div#selector-container {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 10%;
+    width: 100%;
+    background-color: white;
+    box-shadow: 10px 0px 24px -10px rgba(0,0,0,0.6);
+}
 div.selector {
     display: inline-block;
     position: fixed;
@@ -90,4 +102,21 @@ div.selector {
     border-radius: 20px;
     font-size: 10px;
     text-align: center;
+}
+iframe#screen {
+    position: fixed;
+    left: 34%;
+    top: 12%;
+    height: 88%;
+    width: 66%;
+    border: 0;
+}
+div#region-container {
+    display: block;
+    position: absolute;
+    top: 12%;
+    height: 88%;
+    padding-left: 2%;
+    width: 32%;
+    overflow: scroll;
 }
