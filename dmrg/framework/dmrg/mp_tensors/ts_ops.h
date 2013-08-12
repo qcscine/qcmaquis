@@ -192,9 +192,11 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
         
     /* Diagnosis */
     boost::shared_ptr<OPTable<MPSMatrix, SymmGroup> > op_table = mpo_orig[0].get_operator_table();
-    maquis::cout << "number of ops, krons: " << op_table->size() << ", "
-                 << kron_handler->get_num_kron_products() << std::endl;
-    //maquis::cout << "duplicates in kron_table: " << kron_handler->kron_duplicates() << std::endl;
+    if (global_table) {
+        maquis::cout << "number of ops, krons: " << op_table->size() << ", "
+                  << kron_handler->get_num_kron_products() << std::endl;
+        //maquis::cout << "duplicates in kron_table: " << kron_handler->kron_duplicates() << std::endl;
+    }
 
 }
 
