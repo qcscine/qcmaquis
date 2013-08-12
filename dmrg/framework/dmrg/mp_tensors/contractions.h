@@ -343,10 +343,10 @@ struct contraction {
         Boundary<OtherMatrix, SymmGroup> ret;
         ret.resize(mpo.row_dim());
         std::size_t loop_max = mpo.row_dim();
-
-        block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> t = transpose(conjugate(bra_tensor.data()));
+        
+        block_matrix<Matrix, SymmGroup> t = conjugate(bra_tensor.data());
         parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
-            gemm(rbtm[b], t, ret[b]);
+            gemm(rbtm[b], transpose(t), ret[b]);
         }
        
         return ret;
