@@ -756,11 +756,6 @@ struct contraction {
                     }
         
         
-        ret.cur_storage = LeftPaired;
-        ret.phys_i = phys_i;
-        ret.left_i = left_i;
-        ret.right_i = right_i;     
-        
         assert( ret.reasonable() );
         return ret;
     }
