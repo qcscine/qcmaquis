@@ -80,8 +80,14 @@ div.gemm {
 }
 div.selector {
     display: inline-block;
+    position: fixed;
+    top: 0;
     margin: 20px;
     width: 20px;
     padding: 10px;
     font-size: 22px;
+    border: 1px solid black;
+    border-radius: 20px;
+    font-size: 10px;
+    text-align: center;
 }

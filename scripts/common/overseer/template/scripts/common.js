@@ -47,11 +47,15 @@ function adjust(){
         $(this).html("<a href='log."+rank+"."+count+".html'>"+title+"</a>");
         count++;
     });
+    var offset = 50;
+    var left = ($(window).width() - ($("div.selector").size()+1) * offset)/2
     $("div.selector").each(function(){
         var link = $(this).find("a.link").each(function(){
             if(rank == $(this).text()) $(this).css({color: "red"});
             else $(this).css({color: "black"});
         });
+        $(this).css({left: left});
+        left += offset;
     });
 }
 
