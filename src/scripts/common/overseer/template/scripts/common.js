@@ -44,7 +44,11 @@ function adjust(){
     var count = 0;
     $("div.region").each(function(){
         var title = $(this).data("title");
-        $(this).html("<a href='log."+rank+"."+count+".html'>"+title+"</a>");
+        if($(this).find("a.index").length) $(this).find("a.index").attr("href", "log."+rank+"."+count+".html");
+        else $(this).html("<a class='index' href='log."+rank+"."+count+".html' target='screen'>"+title+"</a>");
+        if($(this).find("a.index").css("color") == "rgb(255, 0, 0)"){
+            $("iframe#screen").attr("src", "log."+rank+"."+count+".html");
+        }
         count++;
     });
     var offset = 50;
@@ -60,6 +64,17 @@ function adjust(){
 }
 
 $(document).ready(function() {
+    $("body").append("<iframe id=\"screen\"></iframe>");
+    if($("div.selector").length){ 
+        $("body").append("<div id='selector-container'></div>"); 
+        $('div#selector-container').append($("div.selector"));
+        $("body").prepend("<div id='region-container'></div>"); 
+        $("div.region").appendTo($("div#region-container"));
+        $("a.index").live("click", function(){
+            $("a.index").css({color: "black"});
+            $(this).css({color: "red"});
+        });
+    }
 
     get_rank(); adjust();
 
@@ -74,4 +89,17 @@ $(document).ready(function() {
         $(this).html("<small>rename:</small> "+object_label+"["+object_id+"]");
     });
 
+    $(window).keydown(function(e) {
+        var keyCode = e.keyCode || e.which; 
+        if (keyCode == 9){ 
+            e.preventDefault();
+            var current;
+            $("div.selector").each(function(){
+                if(rank == $(this).find("a.link").text()) current = $(this);
+            });
+            var neighbor = current.next();
+            if(!neighbor.length) neighbor = $("div.selector:first");
+            neighbor.find("a.link").click();
+        } 
+    });
 });
