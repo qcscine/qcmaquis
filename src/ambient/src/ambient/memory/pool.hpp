@@ -182,14 +182,13 @@ namespace ambient {
 
         static void* malloc(descriptor& d){
             assert(d.region != region_t::rdelegated);
-            if(d.region == region_t::rbulked){ 
-                assert(d.extent < AMBIENT_BULK_CHUNK);
+            if(d.region == region_t::rbulked && d.extent < AMBIENT_BULK_CHUNK){ 
                 return malloc<bulk>(d.extent); 
             } else return malloc<standard>(d.extent);
         }
         static void free(void* ptr, descriptor& d){ 
             if(ptr == NULL || d.region == region_t::rdelegated) return;
-            if(d.region == region_t::rbulked) free<bulk>(ptr);
+            if(d.region == region_t::rbulked && d.extent < AMBIENT_BULK_CHUNK) free<bulk>(ptr);
             else free<standard>(ptr);
         }
     }
