@@ -26,7 +26,6 @@
 
 #ifndef AMBIENT_MEMORY_POOL
 #define AMBIENT_MEMORY_POOL
-#include "boost/pool/singleton_pool.hpp"
 
 #include <sys/mman.h>
 
