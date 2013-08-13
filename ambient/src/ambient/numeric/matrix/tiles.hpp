@@ -159,10 +159,8 @@ namespace ambient { namespace numeric {
     template <class Matrix>
     inline tiles<Matrix> tiles<Matrix>::identity_matrix(size_type size){
         tiles t(size, size);
-        int tailn = __a_mod(size, AMBIENT_IB);
-        for(int i = 0; i < t.nt-1; i++)
+        for(int i = 0; i < t.nt; i++)
             fill_identity(*t.data[i*t.nt + i]);
-        fill_identity(*t.data[t.nt*t.nt-1]);
         return t;
     }
 
