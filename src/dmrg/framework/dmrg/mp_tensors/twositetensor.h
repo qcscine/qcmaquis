@@ -120,8 +120,14 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     std::size_t L_ts = mpo_orig.length() - 1;
     mpo_out.resize(L_ts);
     // For now until above function is parallel
+    #ifdef AMBIENT_TRACKING
+    ambient::overseer::log::region("parallel_for::make_ts_cache_mpo::make_twosite_mpo");
+    #endif
     parallel_for(locale::compact(L_ts), locale p = 0; p < L_ts; ++p)
         mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1], site_dim);
-}
+    #ifdef AMBIENT_TRACKING
+    ambient::overseer::log::region("serial::continue");
+    #endif
+}       
         
 #endif

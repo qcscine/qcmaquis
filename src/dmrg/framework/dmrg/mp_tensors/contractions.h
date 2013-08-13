@@ -316,6 +316,9 @@ struct contraction {
                           Boundary<OtherMatrix, SymmGroup> const & left,
                           MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        #ifdef AMBIENT_TRACKING
+        ambient::overseer::log::region("parallel::overlap_mpo_left_step");
+        #endif
         Boundary<Matrix, SymmGroup> lbtm = left_boundary_tensor_mpo(ket_tensor, left, mpo, &bra_tensor.row_dim());
         
         bra_tensor.make_left_paired();
@@ -326,6 +329,9 @@ struct contraction {
         block_matrix<Matrix, SymmGroup> t = conjugate(bra_tensor.data());
         parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
             gemm(transpose(lbtm[b]), t, ret[b]);
+        #ifdef AMBIENT_TRACKING
+        ambient::overseer::log::region("serial::continue");
+        #endif
 
         return ret;
     }
@@ -337,6 +343,9 @@ struct contraction {
                            Boundary<OtherMatrix, SymmGroup> const & right,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        #ifdef AMBIENT_TRACKING
+        ambient::overseer::log::region("parallel::overlap_mpo_right_step");
+        #endif
         Boundary<Matrix, SymmGroup> rbtm = right_boundary_tensor_mpo(ket_tensor, right, mpo, &bra_tensor.col_dim());
         
         bra_tensor.make_right_paired();
@@ -348,6 +357,9 @@ struct contraction {
         parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
             gemm(rbtm[b], transpose(t), ret[b]);
         }
+        #ifdef AMBIENT_TRACKING
+        ambient::overseer::log::region("serial::continue");
+        #endif
        
         return ret;
     }
