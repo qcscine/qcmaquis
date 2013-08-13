@@ -49,12 +49,14 @@ namespace ambient { namespace controllers { namespace velvet {
             #ifdef AMBIENT_CILK
             ambient::cout << "ambient: initialized (using cilk)\n";
             #elif defined(AMBIENT_OMP)
-            ambient::cout << "ambient: initialized Ambient (using openmp)\n";
+            ambient::cout << "ambient: initialized (using openmp)\n";
             #else
-            ambient::cout << "ambient: initialized Ambient (no threading)\n";
+            ambient::cout << "ambient: initialized (no threading)\n";
             #endif
             #ifdef AMBIENT_PERSISTENT_TRANSFERS
             ambient::cout << "ambient: persistent transfers are enabled\n";
+            #else 
+            ambient::cout << "ambient: persistent transfers are disabled\n";
             #endif
             ambient::cout << "ambient: size of ambient bulk chunks: " << AMBIENT_BULK_CHUNK << "\n";
             ambient::cout << "ambient: maximum sid value: " << AMBIENT_MAX_SID << "\n";

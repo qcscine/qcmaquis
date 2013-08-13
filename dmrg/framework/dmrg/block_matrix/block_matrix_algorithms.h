@@ -327,6 +327,9 @@ block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> t
     block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> ret; 
     for(size_t k=0; k<m.n_blocks(); ++k) 
         ret.insert_block(transpose(m[k]), m.right_basis()[k].first, m.left_basis()[k].first);
+#ifdef AMBIENT_TRACKING
+    __ambient_track_as(ret, m.label);
+#endif
     return ret; 
 } 
 
