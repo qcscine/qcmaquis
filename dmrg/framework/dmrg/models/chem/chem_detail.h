@@ -195,6 +195,13 @@ namespace chem_detail {
                 matrix_elements.push_back(*it++);
                 std::vector<int> tmp;
                 std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
+
+                IndexTuple aligned = align(tmp[0], tmp[1], tmp[2], tmp[3]);
+                tmp[0] = aligned[0];
+                tmp[1] = aligned[1];
+                tmp[2] = aligned[2];
+                tmp[3] = aligned[3];
+
                 idx_.push_back(tmp);
                 it += 4;
             }
