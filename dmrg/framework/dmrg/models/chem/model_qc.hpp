@@ -207,6 +207,12 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
                 continue;
             }
 
+            term_assistant.add_term(tagterms, matrix_elements[m], i, k, count_up, count_up);
+            term_assistant.add_term(tagterms, matrix_elements[m], i, k, count_up, count_down);
+            term_assistant.add_term(tagterms, matrix_elements[m], i, k, count_down, count_up);
+            term_assistant.add_term(tagterms, matrix_elements[m], i, k, count_down, count_down);
+
+            /*
             tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, k,
                                             count_up, count_up, tag_handler) );
             tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, k,
@@ -215,6 +221,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
                                             count_down, count_up, tag_handler) );
             tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, k,
                                             count_down, count_down, tag_handler) );
+            */
 
             used_elements[m] += 1;
         }
@@ -228,15 +235,10 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
             }
             typename op_t<M>::type tmp1, tmp2;
 
-            tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, j,
-                                            e2d, d2e, tag_handler) );
-            tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, j,
-                                            d2e, e2d, tag_handler) );
-
-            tagterms.push_back( TermMaker<M>::two_term(false, ident, -matrix_elements[m], i, j,
-                                            count_up, count_up, tag_handler) );
-            tagterms.push_back( TermMaker<M>::two_term(false, ident, -matrix_elements[m], i, j,
-                                            count_down, count_down, tag_handler) );
+            term_assistant.add_term(tagterms,  matrix_elements[m], i, j, e2d, d2e);
+            term_assistant.add_term(tagterms,  matrix_elements[m], i, j, d2e, e2d);
+            term_assistant.add_term(tagterms, -matrix_elements[m], i, j, count_up, count_up);
+            term_assistant.add_term(tagterms, -matrix_elements[m], i, j, count_down, count_down);
 
             std::pair<tag_type, value_type> ptag1, ptag2;
 
@@ -244,14 +246,16 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
             // --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
             ptag1 = tag_handler->get_product_tag(destroy_down, create_up);
             ptag2 = tag_handler->get_product_tag(destroy_up, create_down);
-            tagterms.push_back(TermMaker<M>::two_term(false, ident, -matrix_elements[m] * ptag1.second * ptag2.second, i, j,
-                            ptag1.first, ptag2.first, tag_handler));
+            term_assistant.add_term(
+                tagterms, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
+            );
 
             // --> -c_i_up * cdag_i_down * c_j_down * cdag_j_up
             ptag1 = tag_handler->get_product_tag(destroy_up, create_down);
             ptag2 = tag_handler->get_product_tag(destroy_down, create_up);
-            tagterms.push_back(TermMaker<M>::two_term(false, ident, -matrix_elements[m] * ptag1.second * ptag2.second, i, j,
-                            ptag1.first, ptag2.first, tag_handler));
+            term_assistant.add_term(
+                tagterms, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
+            );
             
             used_elements[m] += 1;
         }
@@ -308,23 +312,47 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
             std::pair<tag_type, value_type> ptag;
 
             ptag = tag_handler->get_product_tag(create_up, fill);
-            term_assistant.add_term(tagterms, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_down , destroy_down, destroy_up);
+            term_assistant.add_term(
+                tagterms, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_down , destroy_down, destroy_up
+            );
             ptag = tag_handler->get_product_tag(create_down, fill);
-            term_assistant.add_term(tagterms, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_up   , destroy_up  , destroy_down);
+            term_assistant.add_term(
+                tagterms, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_up   , destroy_up  , destroy_down
+            );
             ptag = tag_handler->get_product_tag(destroy_down, fill);
-            term_assistant.add_term(tagterms, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_up  , create_up   , create_down);
+            term_assistant.add_term(
+                tagterms, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_up  , create_up   , create_down
+            );
             ptag = tag_handler->get_product_tag(destroy_up, fill);
-            term_assistant.add_term(tagterms, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_down, create_down , create_up);
+            term_assistant.add_term(
+                tagterms, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_down, create_down , create_up
+            );
 
-            term_assistant.add_term(tagterms, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_up,   create_up,   destroy_up);
-            term_assistant.add_term(tagterms, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_down, create_down, destroy_up);
-            term_assistant.add_term(tagterms, -matrix_elements[m], same_idx, pos1, pos2, create_down, destroy_up,   create_up,   destroy_down);
-            term_assistant.add_term(tagterms, -matrix_elements[m], same_idx, pos1, pos2, create_down, destroy_down, create_down, destroy_down);
+            term_assistant.add_term(
+                tagterms, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_up,   create_up,   destroy_up
+            );
+            term_assistant.add_term(
+                tagterms, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_down, create_down, destroy_up
+            );
+            term_assistant.add_term(
+                tagterms, -matrix_elements[m], same_idx, pos1, pos2, create_down, destroy_up,   create_up,   destroy_down
+            );
+            term_assistant.add_term(
+                tagterms, -matrix_elements[m], same_idx, pos1, pos2, create_down, destroy_down, create_down, destroy_down
+            );
 
-            term_assistant.add_term(tagterms, -matrix_elements[m], same_idx, pos2, pos1, create_up,   destroy_up,   create_up,   destroy_up);
-            term_assistant.add_term(tagterms, -matrix_elements[m], same_idx, pos2, pos1, create_up,   destroy_down, create_down, destroy_up);
-            term_assistant.add_term(tagterms, -matrix_elements[m], same_idx, pos2, pos1, create_down, destroy_up,   create_up,   destroy_down);
-            term_assistant.add_term(tagterms, -matrix_elements[m], same_idx, pos2, pos1, create_down, destroy_down, create_down, destroy_down);
+            term_assistant.add_term(
+                tagterms, -matrix_elements[m], same_idx, pos2, pos1, create_up,   destroy_up,   create_up,   destroy_up
+            );
+            term_assistant.add_term(
+                tagterms, -matrix_elements[m], same_idx, pos2, pos1, create_up,   destroy_down, create_down, destroy_up
+            );
+            term_assistant.add_term(
+                tagterms, -matrix_elements[m], same_idx, pos2, pos1, create_down, destroy_up,   create_up,   destroy_down
+            );
+            term_assistant.add_term(
+                tagterms, -matrix_elements[m], same_idx, pos2, pos1, create_down, destroy_down, create_down, destroy_down
+            );
 
             used_elements[m] += 1;
         }
@@ -372,7 +400,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
     it_0 = std::find(used_elements.begin(), used_elements.end(), 0);
     assert( it_0 == used_elements.end() );
 
-    term_assistant.commit_three_terms(tagterms);
+    term_assistant.commit_terms(tagterms);
     maquis::cout << "The hamiltonian will contain " << tagterms.size() << " terms\n";
 
     std::vector<typename hamterm_t<M>::type > terms;

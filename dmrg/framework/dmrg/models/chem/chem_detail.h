@@ -107,14 +107,31 @@ namespace chem_detail {
         
         int idx(int m, int pos) { return idx_[m][pos]; }
 
-        void commit_three_terms(std::vector<typename hamtagterm_t<M>::type> & tagterms) {
+        void commit_terms(std::vector<typename hamtagterm_t<M>::type> & tagterms) {
+            for (typename std::map<IndexTuple, typename hamtagterm_t<M>::type>::const_iterator it = two_terms.begin();
+                    it != two_terms.end(); ++it)
+                tagterms.push_back(it->second);
+
             for (typename std::map<TermTuple, typename hamtagterm_t<M>::type>::const_iterator it = three_terms.begin();
                     it != three_terms.end(); ++it)
                 tagterms.push_back(it->second);
         }
 
         void add_term(std::vector<typename hamtagterm_t<M>::type> & tagterms,
-                           value_type scale, int s, int p1, int p2, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j) {
+                      value_type scale, int p1, int p2, tag_type op_1, tag_type op_2) {
+
+            typename hamtagterm_t<M>::type
+            term = TermMaker<M>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler);
+            IndexTuple id(p1, p2, op_1, op_2);
+            if (two_terms.count(id) == 0) {
+                two_terms[id] = term;
+            }
+            else 
+                two_terms[id].scale += term.scale;
+        }
+
+        void add_term(std::vector<typename hamtagterm_t<M>::type> & tagterms,
+                      value_type scale, int s, int p1, int p2, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j) {
 
             typename hamtagterm_t<M>::type
             term = TermMaker<M>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler);
@@ -128,7 +145,7 @@ namespace chem_detail {
         }
 
         void add_term(std::vector<typename hamtagterm_t<M>::type> & tagterms,
-                           int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
+                      int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
         {
             // Collapse terms with identical operators and different scales into one term
             if (op_i == op_k && op_j == op_l) {
@@ -200,6 +217,7 @@ namespace chem_detail {
         std::map<IndexTuple, value_type> coefficients;
 
         std::map<TermTuple, typename hamtagterm_t<M>::type> three_terms;
+        std::map<IndexTuple, typename hamtagterm_t<M>::type> two_terms;
 
     };
 }
