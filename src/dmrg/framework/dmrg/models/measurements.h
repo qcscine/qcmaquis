@@ -250,26 +250,26 @@ void measure_on_mps(MPS<Matrix, SymmGroup> const& mps, Lattice const & lat,
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::Correlation:
                     meas_eval::measure_correlation(mps, lat, meas.get_identity(),
-                                                     meas[i].fill_operator, meas[i].operators,
+                                                     meas[i].fill_operator, meas[i].positions, meas[i].operators,
                                                      h5name, basepath + storage::encode(meas[i].name), false, false, super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::HalfCorrelation:
                     meas_eval::measure_correlation(mps, lat, meas.get_identity(),
-                                                     meas[i].fill_operator, meas[i].operators,
+                                                     meas[i].fill_operator, meas[i].positions, meas[i].operators,
                                                      h5name, basepath + storage::encode(meas[i].name), true, false, super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::CorrelationNN:
                     if (meas[i].operators.size() % 2 != 0)
                         throw std::runtime_error("Next neighbors correlators have to have even number of operators");
                     meas_eval::measure_correlation(mps, lat, meas.get_identity(),
-                                                     meas[i].fill_operator, meas[i].operators,
+                                                     meas[i].fill_operator, meas[i].positions, meas[i].operators,
                                                      h5name, basepath + storage::encode(meas[i].name), false, true, super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::HalfCorrelationNN:
                     if (meas[i].operators.size() % 2 != 0)
                         throw std::runtime_error("Next neighbors correlators have to have even number of operators");
                     meas_eval::measure_correlation(mps, lat, meas.get_identity(),
-                                                     meas[i].fill_operator, meas[i].operators,
+                                                     meas[i].fill_operator, meas[i].positions, meas[i].operators,
                                                      h5name, basepath + storage::encode(meas[i].name), true, true, super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::Custom:
