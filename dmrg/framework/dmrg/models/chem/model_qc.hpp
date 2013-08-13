@@ -139,10 +139,18 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
                 used_elements[m] += 1;
                 continue;
             }
-            tagterms.push_back(TermMaker<M>::positional_two_term(true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler));
-            tagterms.push_back(TermMaker<M>::positional_two_term(true, fill, matrix_elements[m], i, j, create_down, destroy_down, tag_handler));
-            tagterms.push_back(TermMaker<M>::positional_two_term(true, fill, matrix_elements[m], j, i, create_up, destroy_up, tag_handler));
-            tagterms.push_back(TermMaker<M>::positional_two_term(true, fill, matrix_elements[m], j, i, create_down, destroy_down, tag_handler));
+            tagterms.push_back(TermMaker<M>::positional_two_term(
+                true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler)
+            );
+            tagterms.push_back(TermMaker<M>::positional_two_term(
+                true, fill, matrix_elements[m], i, j, create_down, destroy_down, tag_handler)
+            );
+            tagterms.push_back(TermMaker<M>::positional_two_term(
+                true, fill, matrix_elements[m], j, i, create_up, destroy_up, tag_handler)
+            );
+            tagterms.push_back(TermMaker<M>::positional_two_term(
+                true, fill, matrix_elements[m], j, i, create_down, destroy_down, tag_handler)
+            );
 
             used_elements[m] += 1;
         }

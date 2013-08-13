@@ -50,7 +50,7 @@ namespace tag_detail {
             for ( ; it != op[b].elements().second; ++it) {
                 typename Matrix::value_type normalized = std::abs(*it * invscale);
                 // if not 1 and not 0
-                if (std::abs(normalized-1.0) > 1e-20 && normalized > 1e-20)
+                if (std::abs(normalized-1.0) > 1e-15 && normalized > 1e-15)
                     return false;
             }
         }
@@ -71,13 +71,13 @@ namespace tag_detail {
         // determine scale of matrices
         for (typename Matrix::const_element_iterator it = reference[0].elements().first;
                 it != reference[0].elements().second; ++it)
-            if (std::abs(*it) > 1.e-20) {
+            if (std::abs(*it) > 1.e-15) {
                 invscale1 = 1./(*it);
                 break;
             }
         for (typename Matrix::const_element_iterator it = sample[0].elements().first;
                 it != sample[0].elements().second; ++it)
-            if (std::abs(*it) > 1.e-20) {
+            if (std::abs(*it) > 1.e-15) {
                 invscale2 = 1./(*it);
                 break;
             }
@@ -88,8 +88,11 @@ namespace tag_detail {
             typename Matrix::const_element_iterator it1 = reference[b].elements().first,
                                                     it2 = sample[b].elements().first;
             for ( ; it1 != reference[b].elements().second; ++it1, ++it2)
-                if (std::abs(*it1 * invscale1 - *it2 * invscale2) > 1e-20)
+            {
+                typename Matrix::value_type t1 = *it1 * invscale1, t2 = *it2 * invscale2;
+                if (std::abs(t1 - t2) > 1e-15)
                     return std::make_pair(false, 0.);
+            }
         }
 
         return std::make_pair(true, invscale1/invscale2);

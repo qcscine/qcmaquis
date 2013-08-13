@@ -59,66 +59,61 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                 {
                     b3 = it2.index();
                     assert((mpo1.has(b1, b2) && mpo2.has(b2, b3)));
-                    tag_type tmptag;
+                    tag_type kron_tag;
 
                     const_term_descriptor<MPSMatrix, SymmGroup> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
-                    if (!kron_handler->is_uniform(mpo1.tag_number(b1,b2)) || !kron_handler->is_uniform(mpo2.tag_number(b2,b3))) {
+                    #ifdef MAQUIS_OPENMP
+                    #pragma omp critical
+                    #endif // Compute the Kronecker product
+                    kron_tag = kron_handler->get_kron_tag(phys_i, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3));
+
+                    if (!kron_handler->is_uniform(mpo1.tag_number(b1,b2)) ||
+                        !kron_handler->is_uniform(mpo2.tag_number(b2,b3)) ||
+                        uniform_ops.count(b3) > 0)
+                    {
                         non_uniform.insert(b3);
-                    } else {
-                        if (non_uniform.count(b3) == 0) {
-
-                            #ifdef MAQUIS_OPENMP
-                            #pragma omp critical
-                            #endif // Compute the Kronecker product
-                            tmptag = kron_handler->get_kron_tag(phys_i, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3));
-
-                            if (uniform_ops.count(b3) == 0) { // New product tmptag is the first in the output b3-column
-                                uniform_ops[b3].first = tmptag;
-                                uniform_ops[b3].second = (p1.scale * p2.scale);
-
-                            } else { // New product is not the first in b3 column, we have to add
-                                if (kron_handler->get_op(uniform_ops[b3].first).left_basis() != kron_handler->get_op(tmptag).left_basis() ||
-                                    kron_handler->get_op(uniform_ops[b3].first).right_basis() != kron_handler->get_op(tmptag).right_basis())
-
-                                    // The sum of the two kronecker products cannot be expressed with a uniformly scaled operator,
-                                    // since they have different bases, so we request a new tag
-                                    non_uniform.insert(b3);
-                                else
-                                    // Here we could potentially reuse the existing tag (uniform_ops[b3].first), but we
-                                    // would also need to check if the matrices can me matched to scale
-                                    throw std::runtime_error("Need to get tag for a kronecker sum, which is not implemented\n");
-                            }
-                        }
-
-                        else
-                            uniform_ops.erase(b3);
+                    }
+                    else {
+                        uniform_ops[b3].first = kron_tag;
+                        uniform_ops[b3].second = (p1.scale * p2.scale);
                     }
 
                     block_matrix<MPSMatrix, SymmGroup> tmp_op;
-                    // only needed if the operator_table is shared among mpotensors
-                    #ifdef MAQUIS_OPENMP
-                    #pragma omp critical
-                    #endif
-                    tmp_op = kron_handler->get_op(kron_handler->get_kron_tag(phys_i, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3)));
+                    tmp_op = kron_handler->get_op(kron_tag);
                     tmp_op *= (p1.scale * p2.scale);
                     out_row[b3] += tmp_op;
                 }
-
             }
 
-            for (typename op_scale_map::iterator it = uniform_ops.begin(); it != uniform_ops.end(); ++it) {
+            for (b3 = 0; b3 < mpo2.col_dim(); ++b3) {
+                if (non_uniform.count(b3) == 0 && uniform_ops.count(b3) == 0)
+                    continue;
+
+                if (non_uniform.count(b3) > 0) {
+                    std::pair<tag_type, value_type> scaled_tag;
+                    #ifdef MAQUIS_OPENMP
+                    #pragma omp critical
+                    #endif
+                    scaled_tag = kron_handler->get_kronecker_table()->checked_register(out_row[b3]);
+                    prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
+                }
+                else {
+                    prempo.push_back(boost::make_tuple(b1, b3, uniform_ops[b3].first, uniform_ops[b3].second));
+                }
+            }
+
+            /*
+            #ifdef MAQUIS_OPENMP
+            #pragma omp critical
+            #endif
+            for (typename op_map::iterator it = out_row.begin(); it != out_row.end(); ++it) {
                 b3 = it->first;
-                prempo.push_back(boost::make_tuple(b1, b3, it->second.first, it->second.second));
-            }
-
-            for (typename std::set<index_type>::iterator it = non_uniform.begin(); it != non_uniform.end(); ++it) {
-                b3 = *it;
-                op_t & tmp = out_row[b3];
-
+                op_t & tmp = it->second;
                 std::pair<tag_type, value_type> scaled_tag = kron_handler->get_kronecker_table()->checked_register(tmp);
                 prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
             }
+            */
         } 
 
         using boost::tuples::get;
