@@ -54,6 +54,33 @@ void follow_mpo(MPO<Matrix, SymmGroup> const & mpo,
 }
 
 template<class Matrix, class SymmGroup>
+void follow_and_print_terms(MPO<Matrix, SymmGroup> const& mpo, int p, int b1, int b2, std::string s="", typename MPOTensor<Matrix,SymmGroup>::value_type scale=1.)
+{
+    std::stringstream ss;
+    ss << s;
+    
+    if (p > -1) {
+        MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo[p].at(b1,b2);
+        scale *= access.scale;
+        ss << " {" << mpo[p].tag_number(b1,b2) << "}(" << p << ")";
+    }
+    
+    if (p == mpo.size()-1) {
+        maquis::cout << "---" << std::endl;
+        maquis::cout << "scale: " << scale << std::endl;
+        maquis::cout << "term: "  << ss.str() << std::endl;
+        return;
+    }
+    
+    typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
+    typedef typename MPOTensor<Matrix, SymmGroup>::col_proxy col_proxy;
+    row_proxy myrow = mpo[p+1].row(b2);
+    for (typename row_proxy::const_iterator row_it = myrow.begin(); row_it != myrow.end(); ++row_it)
+        follow_and_print_terms(mpo, p+1, b2, row_it.index(), ss.str(), scale);
+}
+
+
+template<class Matrix, class SymmGroup>
 void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
                   MPO<Matrix, SymmGroup> & out_mpo,
                   std::vector<boost::tuple<int, int, block_matrix<Matrix, SymmGroup> > > & ops,

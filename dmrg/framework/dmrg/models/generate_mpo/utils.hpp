@@ -37,6 +37,19 @@ namespace generate_mpo
         Operator_Tag_Term() : scale(1.), with_sign(false) {}
 	};
     
+    template<class Matrix, class SymmGroup>
+    std::ostream & operator<< (std::ostream & os, Operator_Tag_Term<Matrix, SymmGroup> const& op)
+    {
+        os << "fill: " << op.fill_operator << std::endl;
+        os << "sign: " << op.with_sign << std::endl;
+        os << "scale: " << op.scale << std::endl;
+        os << "operators:";
+        for (int i=0; i<op.operators.size(); ++i)
+            os << " {"  << op.operators[i].first << "," << op.operators[i].second << "}";
+            os << std::endl;
+        return os;
+    }
+    
 	template<class Matrix, class SymmGroup>
 	struct Operator_Term
 	{

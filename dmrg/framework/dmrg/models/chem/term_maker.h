@@ -114,21 +114,7 @@ struct TermMaker {
         std::sort(sterm.begin(), sterm.end(), compare_tag);
 
         term.operators.push_back(sterm[0]);
-        if (pb == sterm[0].first)
-            for(pos_t ipad=sterm[0].first +1; ipad < sterm[1].first; ++ipad)
-                term.operators.push_back( std::make_pair(ipad, ident) );
-        else
-            for(pos_t ipad=sterm[0].first +1; ipad < sterm[1].first; ++ipad)
-                term.operators.push_back( std::make_pair(ipad, fill_op) );
-
         term.operators.push_back(sterm[1]);
-        if (pb == sterm[2].first)
-            for(pos_t ipad=sterm[1].first +1; ipad < sterm[2].first; ++ipad)
-                term.operators.push_back( std::make_pair(ipad, ident) );
-        else 
-            for(pos_t ipad=sterm[1].first +1; ipad < sterm[2].first; ++ipad)
-                term.operators.push_back( std::make_pair(ipad, fill_op) );
-
         term.operators.push_back(sterm[2]);
 
         return term;
@@ -171,18 +157,8 @@ struct TermMaker {
             term.scale = -term.scale;
 
         term.operators.push_back(sterm[0]);
-
-        for(pos_t ipad=sterm[0].first +1; ipad < sterm[1].first; ++ipad)
-            term.operators.push_back( std::make_pair(ipad, fill_op) );
-
         term.operators.push_back(sterm[1]);
-        for(pos_t ipad=sterm[1].first +1; ipad < sterm[2].first; ++ipad)
-            term.operators.push_back( std::make_pair(ipad, ident) );
-
         term.operators.push_back(sterm[2]);
-        for(pos_t ipad=sterm[2].first +1; ipad < sterm[3].first; ++ipad)
-            term.operators.push_back( std::make_pair(ipad, fill_op) );
-
         term.operators.push_back(sterm[3]);
         return term;
     }
