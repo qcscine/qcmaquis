@@ -346,9 +346,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     Index<SymmGroup> i1 = data().left_basis(), i2 = rhs.data().left_basis();
     common_subset(i1, i2);
     std::vector<scalar_type> vt; vt.reserve(i1.size());
-    #ifdef AMBIENT
-    ambient::sync();
-    #endif
 
     for (std::size_t b = 0; b < i1.size(); ++b) {
         typename SymmGroup::charge c = i1[b].first;
@@ -356,9 +353,6 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
         vt.push_back(overlap(data()(c,c), rhs.data()(c,c)));
     } // should be reformulated in terms of reduction (todo: Matthias, 30.04.12 / scalar-value types)
 
-    #ifdef AMBIENT
-    ambient::sync();
-    #endif
     return maquis::accumulate(vt.begin(), vt.end(), scalar_type(0.));
 }
 
