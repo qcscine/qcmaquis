@@ -45,6 +45,22 @@ namespace ambient { namespace controllers { namespace velvet {
         this->context_base = new ambient::scope<base>();
         this->context = this->context_base;
         this->serial = (ambient::channel.dim() == 1) ? true : false;
+        #ifdef AMBIENT_VERBOSE
+            #ifdef AMBIENT_CILK
+            ambient::cout << "ambient: initialized (using cilk)\n";
+            #elif defined(AMBIENT_OMP)
+            ambient::cout << "ambient: initialized Ambient (using openmp)\n";
+            #else
+            ambient::cout << "ambient: initialized Ambient (no threading)\n";
+            #endif
+            #ifdef AMBIENT_PERSISTENT_TRANSFERS
+            ambient::cout << "ambient: persistent transfers are enabled\n";
+            #endif
+            ambient::cout << "ambient: size of ambient bulk chunks: " << AMBIENT_BULK_CHUNK << "\n";
+            ambient::cout << "ambient: maximum sid value: " << AMBIENT_MAX_SID << "\n";
+            ambient::cout << "ambient: max number of proc: " << AMBIENT_MAX_NUM_PROCS << "\n";
+            ambient::cout << "ambient: number of database proc: " << AMBIENT_DB_PROCS << "\n";
+        #endif
     }
 
     inline bool controller::tunable(){

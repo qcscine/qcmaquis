@@ -48,6 +48,8 @@
 #include <execinfo.h>
 // }}}
 
+#define AMBIENT_VERBOSE
+
 #ifdef AMBIENT_CILK
     #include <cilk/cilk.h>
     #define AMBIENT_NUM_THREADS __cilkrts_get_total_workers()
