@@ -21,7 +21,7 @@ template<class MPOMatrix, class MPSMatrix, class SymmGroup>
 MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup> const & mpo1,
                                                  MPOTensor<MPOMatrix, SymmGroup> const & mpo2,
                                                  Index<SymmGroup> const & phys_i,
-                                                 boost::shared_ptr<KronHandler<MPOMatrix, SymmGroup> > kron_handler)
+                                                 bool global_table)
 {
     using MPOTensor_detail::const_term_descriptor;
 
@@ -36,12 +36,15 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
     typedef std::map<index_type, op_t> op_map;
     typedef std::vector<boost::tuple<index_type, index_type, tag_type, value_type> > prempo_t;
 
-    if (kron_handler.get()) {
+
+    if (global_table) {
+        KronHandler<MPOMatrix, SymmGroup> kron_handler(mpo1.get_operator_table());
+
         typedef std::map<index_type, std::pair<tag_type, value_type> > op_scale_map;
 
         prempo_t prempo;
 
-        typename MPOTensor<MPOMatrix, SymmGroup>::op_table_ptr op_table = kron_handler->get_operator_table();
+        typename MPOTensor<MPOMatrix, SymmGroup>::op_table_ptr op_table = kron_handler.get_operator_table();
 
         index_type b1, b2, b3;
         for (b1=0; b1 < mpo1.row_dim(); ++b1) {
@@ -63,13 +66,11 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
 
                     const_term_descriptor<MPSMatrix, SymmGroup> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
-                    #ifdef MAQUIS_OPENMP
-                    #pragma omp critical
-                    #endif // Compute the Kronecker product
-                    kron_tag = kron_handler->get_kron_tag(phys_i, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3));
+                    // Compute the Kronecker product
+                    kron_tag = kron_handler.get_kron_tag(phys_i, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3));
 
-                    if (!kron_handler->is_uniform(mpo1.tag_number(b1,b2)) ||
-                        !kron_handler->is_uniform(mpo2.tag_number(b2,b3)) ||
+                    if (!kron_handler.is_uniform(mpo1.tag_number(b1,b2)) ||
+                        !kron_handler.is_uniform(mpo2.tag_number(b2,b3)) ||
                         uniform_ops.count(b3) > 0)
                     {
                         non_uniform.insert(b3);
@@ -80,7 +81,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                     }
 
                     block_matrix<MPSMatrix, SymmGroup> tmp_op;
-                    tmp_op = kron_handler->get_op(kron_tag);
+                    tmp_op = kron_handler.get_op(kron_tag);
                     tmp_op *= (p1.scale * p2.scale);
                     out_row[b3] += tmp_op;
                 }
@@ -92,10 +93,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
 
                 if (non_uniform.count(b3) > 0) {
                     std::pair<tag_type, value_type> scaled_tag;
-                    #ifdef MAQUIS_OPENMP
-                    #pragma omp critical
-                    #endif
-                    scaled_tag = kron_handler->get_kronecker_table()->checked_register(out_row[b3]);
+                    scaled_tag = kron_handler.get_kronecker_table()->checked_register(out_row[b3]);
                     prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
                 }
                 else {
@@ -110,14 +108,22 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
             for (typename op_map::iterator it = out_row.begin(); it != out_row.end(); ++it) {
                 b3 = it->first;
                 op_t & tmp = it->second;
-                std::pair<tag_type, value_type> scaled_tag = kron_handler->get_kronecker_table()->checked_register(tmp);
+                std::pair<tag_type, value_type> scaled_tag = kron_handler.get_kronecker_table()->checked_register(tmp);
                 prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
             }
             */
         } 
 
+
+
+        #ifdef MAQUIS_OPENMP
+        #pragma omp critical
+        #endif
+        maquis::cout << "TSMPOTensor: " << mpo1.row_dim() << "x" << mpo2.col_dim() << ",  " << prempo.size() 
+                     << " operators, " << kron_handler.get_kronecker_table()->size() << " tags\n";
+
         using boost::tuples::get;
-        MPOTensor<MPSMatrix, SymmGroup> mpo_big_tag(mpo1.row_dim(), mpo2.col_dim(), prempo, kron_handler->get_kronecker_table());
+        MPOTensor<MPSMatrix, SymmGroup> mpo_big_tag(mpo1.row_dim(), mpo2.col_dim(), prempo, kron_handler.get_kronecker_table());
 
         return mpo_big_tag;
 
@@ -177,21 +183,15 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     for (int p=0; p<L_ts && global_table; ++p)
         global_table = (mpo_orig[p].get_operator_table() == mpo_orig[0].get_operator_table());
 
-    boost::shared_ptr<KronHandler<MPOMatrix, SymmGroup> >  kron_handler;
-    if (global_table)
-        kron_handler.reset(new KronHandler<MPOMatrix, SymmGroup>(mpo_orig[0].get_operator_table()));
-
     // For now until above function is parallel
     parallel_for(locale::compact(L_ts), locale p = 0; p < L_ts; ++p)
-        mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1], site_dim, kron_handler);
+        mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1], site_dim, global_table);
         
-    /* Diagnosis */
-    boost::shared_ptr<OPTable<MPSMatrix, SymmGroup> > op_table = mpo_orig[0].get_operator_table();
-    if (global_table) {
-        maquis::cout << "number of ops, krons: " << op_table->size() << ", "
-                  << kron_handler->get_num_kron_products() << std::endl;
-        //maquis::cout << "duplicates in kron_table: " << kron_handler->kron_duplicates() << std::endl;
+    std::size_t ntags=0;
+    for (int p=0; p<mpo_out.length(); ++p) {
+        ntags += mpo_out[p].get_operator_table()->size();
     }
+    maquis::cout << "Total number of tags: " << ntags << std::endl;
 
 }
 

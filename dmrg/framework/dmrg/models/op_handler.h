@@ -147,7 +147,6 @@ public:
     boost::shared_ptr<OPTable<Matrix, SymmGroup> > get_kronecker_table() { return kronecker_table; }
 
     /* Diagnostics *************************************/
-    //tag_type kron_duplicates() const { return base::duplicates_(kron_tags); }
     tag_type get_num_kron_products() const;
 
 private:
