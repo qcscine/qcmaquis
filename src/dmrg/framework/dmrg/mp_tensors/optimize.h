@@ -87,7 +87,7 @@ public:
     {
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("optimizer_base::optimizer_base");
-        for(int i = 0; i < mps.length(); ++i) __ambient_track_array(mps, i);
+        for(int i = 0; i < mps.length(); ++i) ambient_track_array(mps, i);
         #endif
         int L = mps.length();
         int site = (initial_site < L) ? initial_site : 2*L-initial_site-1;
@@ -179,7 +179,7 @@ protected:
             mps[i].make_right_paired();
             mps[i].make_left_paired();
             #ifdef AMBIENT_TRACKING
-            __ambient_track_array(mps, i);
+            ambient_track_array(mps, i);
             #endif
         }
         #ifdef AMBIENT_TRACKING
