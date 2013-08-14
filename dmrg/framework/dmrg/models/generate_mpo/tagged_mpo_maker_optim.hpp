@@ -176,7 +176,6 @@ namespace generate_mpo
                 swap(left, right);
             }
             
-            follow_and_print_terms(mpo, -1, 0, 0);
             return mpo;
         }
         
