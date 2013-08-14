@@ -231,7 +231,7 @@ namespace storage {
                 state = prefetching;
                 this->thread(new boost::thread(fetch_request<T>(disk::fp(sid), (T*)this)));
             }
-            void evict(){ 
+            void evict(){
                 if(state == core){
                     if(!dumped){
                         state = storing;
@@ -287,7 +287,9 @@ namespace storage {
         template<class T> static void evict(serializable<T>& t)   { if(enabled()) t.evict();    }
         template<class T> static void drop(serializable<T>& t)    { if(enabled()) t.drop();     }
         template<class T> static void pin(serializable<T>& t)     { }
-        template<class T> static void evict(T& object)            { }
+
+        template<class Matrix, class SymmGroup> 
+        static void evict(MPSTensor<Matrix, SymmGroup>& t){ }
 
         disk() : active(false), sid(0) {}
         std::vector<descriptor*> queue;
