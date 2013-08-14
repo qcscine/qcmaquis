@@ -36,13 +36,13 @@ namespace generate_mpo
 //            typedef tag_detail::tag_type tag_type;
 //            typedef unsigned index_type;
             typedef std::pair<pos_t, tag_type> pos_op_type;
-            enum kind_type {trivial_left, bulk, trivial_right};
+            enum kind_type {trivial_left, bulk, bulk_no_merge, trivial_right};
             
             kind_type kind;
             std::vector<pos_op_type> pos_op;
             index_type offset;
             
-            prempo_key(kind_type k_=bulk) : kind(k_), offset(0) { }
+            prempo_key(kind_type k_=bulk, index_type o_=0) : kind(k_), offset(o_) { }
             prempo_key(std::vector<pos_op_type> const& po_, index_type o_=0) : kind(bulk), pos_op(po_), offset(o_) { }
             
             bool operator==(prempo_key const& lhs) const
@@ -122,8 +122,7 @@ namespace generate_mpo
                     add_4term(ops, term.scale, term.fill_operator);
                     break;
                 default:
-                    // hint: use key.offset
-                    throw std::runtime_error("not yet implemented.");
+                    add_nterm(ops, term.scale); /// here filling has to be done manually
                     break;
             }
             
@@ -301,6 +300,40 @@ namespace generate_mpo
                 int i = 3;
                 insert_operator(ops[i].first, make_pair(k1, trivial_right), prempo_value_type(ops[i].second, 1.), detach);
             }
+        }
+
+        void add_nterm(std::vector<pos_op_type> const& ops, scale_type matrix_element)
+        {
+            int nops = ops.size();
+            assert( nops > 2 );
+            
+            static index_type next_offset = 0;
+            index_type current_offset = (next_offset++);
+            
+            prempo_key_type k1 = trivial_left;
+            prempo_key_type k2(prempo_key_type::bulk_no_merge, current_offset);
+            k2.pos_op.push_back( ops[nops-1] );
+            
+            {
+                int i = 0;
+                insert_operator(ops[i].first, make_pair(k1, k2), prempo_value_type(ops[i].second, matrix_element), detach);
+                k1 = k2;
+                
+                if (i < nops-1 && ops[i].first+1 != ops[i+1].first)
+                    throw std::runtime_error("for n > 4 operators filling is assumed to be done manually. the list of operators contains empty sites.");
+            }
+
+            
+            for (int i = 1; i < nops; ++i) {
+                if (i == nops-1)
+                    k2 = trivial_right;
+                
+                insert_operator(ops[i].first, make_pair(k1, k2), prempo_value_type(ops[i].second, 1.), detach);
+                
+                if (i < nops-1 && ops[i].first+1 != ops[i+1].first)
+                    throw std::runtime_error("for n > 4 operators filling is assumed to be done manually. the list of operators contains empty sites.");
+            }
+            
         }
 
 		void insert_filling(pos_t i, pos_t j, prempo_key_type k, tag_type op)
