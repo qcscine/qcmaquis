@@ -134,7 +134,7 @@ void sim<Matrix, SymmGroup>::mps_init()
                                      phys, initc,
                                      *(phys_model->initializer(parms)));
         #ifdef AMBIENT_TRACKING
-        for(int i = 0; i < mps.length(); ++i) __ambient_track_array(mps, i);
+        for(int i = 0; i < mps.length(); ++i) ambient_track_array(mps, i);
         #endif
     }
 }

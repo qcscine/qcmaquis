@@ -110,8 +110,8 @@ public:
         swap(x.rows_, y.rows_);
         swap(x.cols_, y.cols_);
 #ifdef AMBIENT_TRACKING
-        __ambient_track_as(x, x.label);
-        __ambient_track_as(y, y.label);
+        ambient_track_as(x, x.label);
+        ambient_track_as(y, y.label);
 #endif
     }
     

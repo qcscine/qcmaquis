@@ -45,7 +45,7 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys, allowed[i], allowed[i+1], fillrand, val);
             mps[i].divide_by_scalar(mps[i].scalar_norm());
             #ifdef AMBIENT_TRACKING
-            __ambient_track_array(mps, i);
+            ambient_track_array(mps, i);
             #endif
         }
         

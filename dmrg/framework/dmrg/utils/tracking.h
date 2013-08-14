@@ -2,8 +2,8 @@
 #define TRACKING_H
 
 #ifdef AMBIENT_TRACKING
-    #define __ambient_track(variable) __ambient_track_as(variable, #variable)
-    #define __ambient_track_array(variable, i) __ambient_track_as( variable[i], (std::string(#variable) + "[" + std::to_string(i) + "]") )
+    #define ambient_track(variable) ambient_track_as(variable, #variable)
+    #define ambient_track_array(variable, i) ambient_track_as( variable[i], (std::string(#variable) + "[" + std::to_string(i) + "]") )
 
     template<class Matrix, class SymmGroup> class Boundary;
     template<class Matrix, class SymmGroup> class MPSTensor;
@@ -22,13 +22,13 @@
     }
 
     template<typename T>
-    void __ambient_track_as(T& object, const std::string& label){
+    void ambient_track_as(T& object, const std::string& label){
         track(object, label);
     }
 #else
-    #define __ambient_track(variable)
-    #define __ambient_track_array(variable, i)
-    #define __ambient_track_as(variable, label)
+    #define ambient_track(variable)
+    #define ambient_track_array(variable, i)
+    #define ambient_track_as(variable, label)
 #endif
 
 #endif
