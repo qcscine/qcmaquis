@@ -30,7 +30,7 @@ RUN_PRESETS="1n.micro:             ~/maquis2014/benchmarks/dmrg_gs/1n/micro.L4/p
 
 ## settings ##
 
-BUILD_NAME=${PREFIX}_${COMPILER}_${MPI_WRAPPER}
+[[ -z "${BUILD_NAME}" ]] && BUILD_NAME=${PREFIX}_${COMPILER}_${MPI_WRAPPER}
 [[ $SHARED_FS ]] && BUILD_NAME=${HOST}/${BUILD_NAME}
 BENCHMARK_SCRIPTS_DIR=${ROOT_DIR}/scripts/benchmarks
 SELF=$BUILD_NAME
@@ -123,7 +123,7 @@ use_dashboards(){
     mkdir Dashboards &> /dev/null
     local target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
     echo "set(PREDEFINED_CTEST_SITE \"${HOST}\")"                                          >  ./Dashboards/site.cmake
-    echo "set(PREDEFINED_CTEST_BUILD_NAME \"${PREFIX}_${COMPILER}_${MPI_WRAPPER}\")"       >> ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_BUILD_NAME \"${BUILD_NAME}\")"                              >> ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_SOURCE_DIRECTORY \"${ROOT_DIR}/${!target}\")"               >> ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${ROOT_DIR}/${!target}/${BUILD_NAME}\")" >> ./Dashboards/site.cmake
     cat ${ROOT_DIR}/scripts/common/ctest/site.cmake                                        >> ./Dashboards/site.cmake
