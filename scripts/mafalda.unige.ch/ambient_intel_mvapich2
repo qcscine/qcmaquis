@@ -1,36 +1,42 @@
 #!/bin/bash -l
-STATE="build"
-STATE_AMBIENT="build"
-STATE_DMRG="build"
+STATE="void"
+STATE_AMBIENT="void"
+STATE_DMRG="configure"
 # end of target states #
 SHARED_FS=true
 PREFIX=ambient
 COMPILER=intel
 COMPILER_VERSION=13.1.1
-MPI_WRAPPER=openmpi
-MPI_WRAPPER_VERSION=1.6.4/icc/13.1.1
+MPI_WRAPPER=mvapich2
+MPI_WRAPPER_VERSION=1.9/icc/13.1.1
 BOOST=boost
 BOOST_VERSION=1.53.0
 CMAKE=cmake/2.8.9
 
-module load gcc/4.7.2
+export CC=mpicc
+export CXX=mpicxx
+export BOOST_ROOT=/project/h07/BOOST_1_53/
+export MV2_ENABLE_AFFINITY=0
+export MV2_VBUF_POOL_SIZE=8192
+export MV2_VBUF_SECONDARY_POOL_SIZE=1024
+export MV2_VBUF_TOTAL_SIZE=24k
+
+module purge
+module load gcc/4.7.3
 module load boost/1.53/gcc/4.4.6
 module load intel-compiler/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
+module load hwloc/1.7.1/icc/13.1.1
 module load ${CMAKE}
 
-export CC=mpicc
-export CXX=mpicxx
-
 ## common ##
-#THREADING_FLAGS="-openmp -DAMBIENT_OMP"
-THREADING_FLAGS="-DAMBIENT_CILK"
+THREADING_FLAGS="-DAMBIENT_CILK" #-openmp -DAMBIENT_OMP" #-DAMBIENT_CILK"
 COMMON_CMAKE_CXX_FLAGS="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors $THREADING_FLAGS -L/share/apps/plasma/2.5.0/icc/13.1.1/lib"
 COMMON_CMAKE_C_COMPILER=mpicc
 COMMON_CMAKE_CXX_COMPILER=mpicxx
 COMMON_MPI_CXX_FOUND=FALSE
 ## ambient ##
-AMBIENT_BOOST_BINDINGS_INCLUDE=/share/apps/alps/r6979/icc/13.1.1/include/boost
+AMBIENT_BOOST_BINDINGS_INCLUDE=/share/apps/alps/r6979/icc/13.1.1-nompi/include/boost
 AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64"
 AMBIENT_PLASMA_LIBRARY="-lplasma -lcoreblas -llapacke -lquark"
 AMBIENT_ENABLE_REGRESSION_PERFORMANCE=OFF
@@ -41,10 +47,14 @@ DMRG_CMAKE_CXX_FLAGS_RELEASE="$COMMON_CMAKE_CXX_FLAGS"
 DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread $AMBIENT_PLASMA_LIBRARY"
 DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/share/apps/Intel/compiler/13.1.1/mkl/lib/intel64
 DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/share/apps/Intel/compiler/13.1.1/mkl/include
-DMRG_ALPS_ROOT_DIR=/share/apps/alps/r6979/icc/13.1.1
-DMRG_BUILD_REGRESSION=OFF 
+DMRG_ALPS_ROOT_DIR=/share/apps/alps/r6979/icc/13.1.1-nompi
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
+
+DMRG_REGRESSION_UNIT_TESTING=OFF    
+DMRG_REGRESSION_APPLICATION_TESTS=OFF
+DMRG_REGRESSION_PERFORMANCE_TESTS=OFF
+
 
 source $ROOT_DIR/scripts/common/common.sh 
 execute $*
