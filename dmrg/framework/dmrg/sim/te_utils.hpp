@@ -259,7 +259,7 @@ private:
     MPO<Matrix, SymmGroup> get_simple_mpo(typename Matrix::value_type const & alpha) const
     {
         op_t bond_exp;
-        bond_exp = op_exp(phys*phys, bond_op, alpha);
+        bond_exp = op_exp_hermitian(phys*phys, bond_op, alpha);
         bond_exp = reshape_2site_op(phys, bond_exp);
         block_matrix<Matrix, SymmGroup> U, V, left, right;
         block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S, Ssqrt;
@@ -301,7 +301,7 @@ private:
         for (size_t p=pos1+1; p<=pos2; ++p)
                 op_basis = op_basis * phys;
         
-        op_t bond_exp = op_exp(op_basis, bond_op, alpha);
+        op_t bond_exp = op_exp_hermitian(op_basis, bond_op, alpha);
         MPO<Matrix, SymmGroup> block_mpo = block_to_mpo(phys, bond_exp, pos2-pos1+1);
         return block_mpo;
     }

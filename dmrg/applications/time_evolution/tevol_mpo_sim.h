@@ -34,6 +34,9 @@ public:
         maquis::cout << "Using MPO time evolution." << std::endl;
         
         maquis::cout << "Found " << hamils.size() << " non overlapping Hamiltonians." << std::endl;
+        
+        /// compute the time evolution gates
+        prepare_te_terms();
     }
     
     void prepare_te_terms()
@@ -79,9 +82,7 @@ private:
     {
         for (int which = 0; which < Uterms.size(); ++which)
         {
-            time_evolve<Matrix, SymmGroup, storage::nop> evolution(*mps,
-                                                                   Uterms[which],
-                                                                   (*parms));
+            time_evolve<Matrix, SymmGroup, storage::nop> evolution(*mps, Uterms[which], (*parms));
             for (int k = 0; k < 5; ++k)
                 evolution.sweep(sweep_);
             evolution.finalize();
