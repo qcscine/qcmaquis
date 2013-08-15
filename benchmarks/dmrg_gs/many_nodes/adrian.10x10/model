@@ -1,0 +1,11 @@
+LATTICE = "open ladder"
+L = 10
+W = 10
+MODEL = "spinless fermions"
+t0 = 0.95
+t1 = 1
+V0 = 0
+V1 = 0
+CONSERVED_QUANTUMNUMBERS = "N"
+N_total = 50
+

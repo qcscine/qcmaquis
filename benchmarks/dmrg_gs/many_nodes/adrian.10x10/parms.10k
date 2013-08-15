@@ -1,0 +1,12 @@
+max_bond_dimension = 10000
+truncation_final = 1e-16
+
+nsweeps = 10
+ngrowsweeps = 0
+sweep_bond_dimensions = "10000"
+optimization = twosite
+symmetry = u1
+
+chkpfile = "/disks/disk-3-01/akosenko/scratch/adrian.10k.ckp.h5"
+resultfile = "/disks/disk-3-01/akosenko/scratch/adrian.10k.res.h5"
+storagedir = "/disks/disk-3-01/akosenko/scratch"
