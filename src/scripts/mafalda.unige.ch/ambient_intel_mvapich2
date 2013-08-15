@@ -6,16 +6,10 @@ STATE_DMRG="configure"
 SHARED_FS=true
 PREFIX=ambient
 COMPILER=intel
-COMPILER_VERSION=13.1.1
 MPI_WRAPPER=mvapich2
-MPI_WRAPPER_VERSION=1.9/icc/13.1.1
-BOOST=boost
-BOOST_VERSION=1.53.0
-CMAKE=cmake/2.8.9
 
 export CC=mpicc
 export CXX=mpicxx
-export BOOST_ROOT=/project/h07/BOOST_1_53/
 export MV2_ENABLE_AFFINITY=0
 export MV2_VBUF_POOL_SIZE=8192
 export MV2_VBUF_SECONDARY_POOL_SIZE=1024
@@ -24,13 +18,13 @@ export MV2_VBUF_TOTAL_SIZE=24k
 module purge
 module load gcc/4.7.3
 module load boost/1.53/gcc/4.4.6
-module load intel-compiler/${COMPILER_VERSION}
-module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
+module load intel-compiler/13.1.1
+module load mvapich2/1.9/icc/13.1.1
 module load hwloc/1.7.1/icc/13.1.1
-module load ${CMAKE}
+module load cmake/2.8.9
 
 ## common ##
-THREADING_FLAGS="-DAMBIENT_CILK" #-openmp -DAMBIENT_OMP" #-DAMBIENT_CILK"
+THREADING_FLAGS="-DAMBIENT_CILK"
 COMMON_CMAKE_CXX_FLAGS="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors $THREADING_FLAGS -L/share/apps/plasma/2.5.0/icc/13.1.1/lib"
 COMMON_CMAKE_C_COMPILER=mpicc
 COMMON_CMAKE_CXX_COMPILER=mpicxx
