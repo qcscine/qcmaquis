@@ -1,29 +1,23 @@
 #!/bin/bash -l
-STATE="build"
-STATE_AMBIENT="build"
-STATE_DMRG="build"
+STATE="void"
+STATE_AMBIENT="void"
+STATE_DMRG="void"
 # end of target states #
 SHARED_FS=true
 PREFIX=ambient
 COMPILER=intel
-COMPILER_VERSION=13.1.1
 MPI_WRAPPER=openmpi
-MPI_WRAPPER_VERSION=1.6.4/icc/13.1.1
-BOOST=boost
-BOOST_VERSION=1.53.0
-CMAKE=cmake/2.8.9
-
-module load gcc/4.7.2
-module load boost/1.53/gcc/4.4.6
-module load intel-compiler/${COMPILER_VERSION}
-module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
-module load ${CMAKE}
 
 export CC=mpicc
 export CXX=mpicxx
 
+module load gcc/4.7.2
+module load boost/1.53/gcc/4.4.6
+module load intel-compiler/13.1.1
+module load openmpi/1.6.4/icc/13.1.1
+module load cmake/2.8.9
+
 ## common ##
-#THREADING_FLAGS="-openmp -DAMBIENT_OMP"
 THREADING_FLAGS="-DAMBIENT_CILK"
 COMMON_CMAKE_CXX_FLAGS="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors $THREADING_FLAGS -L/share/apps/plasma/2.5.0/icc/13.1.1/lib"
 COMMON_CMAKE_C_COMPILER=mpicc
@@ -42,7 +36,6 @@ DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl
 DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/share/apps/Intel/compiler/13.1.1/mkl/lib/intel64
 DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/share/apps/Intel/compiler/13.1.1/mkl/include
 DMRG_ALPS_ROOT_DIR=/share/apps/alps/r6979/icc/13.1.1
-DMRG_BUILD_REGRESSION=OFF 
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
 

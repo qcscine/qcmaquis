@@ -1,17 +1,12 @@
 #!/bin/bash -l
-STATE="configure"
-STATE_AMBIENT="configure"
-STATE_DMRG="configure"
+STATE="void"
+STATE_AMBIENT="void"
+STATE_DMRG="void"
 # end of target states #
 SHARED_FS=true
 PREFIX=standard
-#COMPILER=intel
-#COMPILER_VERSION=13.1.1
-#MPI_WRAPPER=openmpi
-#MPI_WRAPPER_VERSION=1.6.4/icc/13.1.1
-#BOOST=boost
-#BOOST_VERSION=1.53.0
-#CMAKE=cmake
+COMPILER=intel
+MPI_WRAPPER=shared
 
 export CXX=icpc
 export CC=icc
@@ -37,7 +32,6 @@ DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl
 DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/share/apps/Intel/compiler/13.1.1/mkl/lib/intel64
 DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/share/apps/Intel/compiler/13.1.1/mkl/include
 DMRG_ALPS_ROOT_DIR=/share/apps/alps/r6979/icc/13.1.1
-DMRG_BUILD_REGRESSION=OFF 
 DMRG_USE_AMBIENT=OFF
 
 source $ROOT_DIR/scripts/common/common.sh 
