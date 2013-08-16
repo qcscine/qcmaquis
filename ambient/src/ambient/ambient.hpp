@@ -105,6 +105,7 @@
 #define AMBIENT_SCOPE_SWITCH_FACTOR   20480
 #define AMBIENT_FUTURE_SIZE           64
 #define AMBIENT_IB                    512
+#define AMBIENT_IB_EXTENT             512*512*16
 
 #define PAGE_SIZE 4096
 #define ALIGNMENT 16
