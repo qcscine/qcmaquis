@@ -184,6 +184,7 @@ namespace storage {
             for (std::size_t i = 0; i < o.aux_dim(); ++i)
             for (std::size_t k = 0; k < o[i].n_blocks(); ++k)
             o[i][k] = Matrix();
+            std::remove(fp.c_str());
         }
     private:
         std::string fp;
