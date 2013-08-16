@@ -245,6 +245,7 @@ namespace storage {
                 assert(this->state != prefetching); // evict of prefetched
             }
             void drop(){
+                std::remove(disk::fp(sid).c_str());
                 if(state == core) drop_request<T>(disk::fp(sid), (T*)this)();
                 assert(this->state != storing);     // drop of already stored data
                 assert(this->state != uncore);      // drop of already stored data

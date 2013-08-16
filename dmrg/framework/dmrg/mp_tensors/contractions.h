@@ -221,7 +221,8 @@ struct contraction {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
         
-        Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low;
+        Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
+                         out_right_i = adjoin(physical_i) * right_i;
         ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
                                              boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                  -boost::lambda::_1, boost::lambda::_2));
@@ -250,8 +251,6 @@ struct contraction {
                     ProductBasis<SymmGroup> in_right_pb(physical_i, right[b2].right_basis(),
                                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                             -boost::lambda::_1, boost::lambda::_2));
-                    
-                    Index<SymmGroup> out_right_i = adjoin(physical_i) * right_i;
                     
                     for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
                     {
@@ -318,6 +317,9 @@ struct contraction {
                           Boundary<OtherMatrix, SymmGroup> const & left,
                           MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        #ifdef AMBIENT_TRACKING
+        ambient::overseer::log::region("parallel::overlap_mpo_left_step");
+        #endif
         Boundary<Matrix, SymmGroup> lbtm = left_boundary_tensor_mpo(ket_tensor, left, mpo, &bra_tensor.row_dim());
         
         bra_tensor.make_left_paired();
@@ -329,6 +331,9 @@ struct contraction {
             gemm(transpose(lbtm[b]), bra_conj, tmp);
             swap(tmp, lbtm[b]);
         }
+        #ifdef AMBIENT_TRACKING
+        ambient::overseer::log::region("serial::continue");
+        #endif
 
         return lbtm;
     }
@@ -340,17 +345,23 @@ struct contraction {
                            Boundary<OtherMatrix, SymmGroup> const & right,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        #ifdef AMBIENT_TRACKING
+        ambient::overseer::log::region("parallel::overlap_mpo_right_step");
+        #endif
         Boundary<Matrix, SymmGroup> rbtm = right_boundary_tensor_mpo(ket_tensor, right, mpo, &bra_tensor.col_dim());
         
         bra_tensor.make_right_paired();
         std::size_t loop_max = mpo.row_dim();
 
-        block_matrix<Matrix, SymmGroup> bra_conj = transpose(conjugate(bra_tensor.data()));
+        block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
         parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
-            gemm(rbtm[b], bra_conj, tmp);
+            gemm(rbtm[b], transpose(bra_conj), tmp);
             swap(tmp, rbtm[b]);
         }
+        #ifdef AMBIENT_TRACKING
+        ambient::overseer::log::region("serial::continue");
+        #endif
         
         return rbtm;
     }
@@ -508,7 +519,9 @@ struct contraction {
 
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(collector, right[b2], tmp);
+            #ifdef MAQUIS_OPENMP
             #pragma omp critical
+            #endif
             for (size_t k = 0; k < tmp.n_blocks(); ++k)
                 ret.data_.match_and_add_block(tmp[k], tmp.left_basis()[k].first, tmp.right_basis()[k].first);
 
