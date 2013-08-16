@@ -44,6 +44,9 @@ gettimeofday(&now, NULL);
 gettimeofday(&then, NULL); \
 maquis::cout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << std::endl;
 
+/// TODO: 1) implement two-site time evolution. (single-site is stuck in initial MPS structure)
+///       2) implement zip-up compression. E. M. Stoudenmire and S. R. White, New Journal of Physics 12, 055026 (2010).
+
 template<class Matrix, class SymmGroup, class Storage>
 class time_evolve
 {
@@ -57,19 +60,22 @@ public:
     , parms(parms_)
     {
         mps.canonize(0);
+        init_left_right(mpo);
+        
         mpsp = mps;
     }
     
-    int sweep(int sweep)
+    std::pair<double,double> sweep(int sweep)
     {
         timeval sweep_now, sweep_then;
         gettimeofday(&sweep_now, NULL);
         
-        
         std::size_t L = mps.length();
         
-        init_left_right(mpo);
-        
+        std::pair<double,double> eps;
+        block_matrix<Matrix, SymmGroup> norm_boudary;
+        norm_boudary.insert_block(Matrix(1, 1, 1), SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
+    
         for (int _site = 0; _site < 2*L; ++_site)
         {
             int site, lr;
@@ -82,7 +88,6 @@ public:
             }
             
             SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
-            
             ietl::mult(sp, mps[site], mpsp[site]);
             
             if (lr == +1) {
@@ -92,8 +97,8 @@ public:
                     mpsp[site+1].multiply_from_left(t);
                 }
                 
-                left_[site+1] = contraction::overlap_mpo_left_step(mpsp[site], mps[site],
-                                                                   left_[site], mpo[site]);
+                left_[site+1] = contraction::overlap_mpo_left_step(mpsp[site], mps[site], left_[site], mpo[site]);
+                norm_boudary = contraction::overlap_left_step(mpsp[site], MPSTensor<Matrix,SymmGroup>(mpsp[site]), norm_boudary);
             } else if (lr == -1) {
                 if (site > 0) {
                     block_matrix<Matrix, SymmGroup> t;
@@ -101,14 +106,27 @@ public:
                     mpsp[site-1].multiply_from_right(t);
                 }   
                 
-                right_[site] = contraction::overlap_mpo_right_step(mpsp[site], mps[site],
-                                                                   right_[site+1], mpo[site]);
+                right_[site] = contraction::overlap_mpo_right_step(mpsp[site], mps[site], right_[site+1], mpo[site]);
+                norm_boudary = contraction::overlap_right_step(mpsp[site], MPSTensor<Matrix,SymmGroup>(mpsp[site]), norm_boudary);
             }
             
+            if (_site == L-1) {
+                double nn = maquis::real( norm_boudary.trace() );
+                eps.first = nn - 2.*maquis::real(left_[L][0].trace());
+                
+                /// prepare backward sweep
+                norm_boudary = block_matrix<Matrix, SymmGroup>();
+                norm_boudary.insert_block(Matrix(1, 1, 1), mps[L-1].col_dim()[0].first, mps[L-1].col_dim()[0].first);
+            }
+            
+            if (_site == 2*L-1) {
+                double nn = maquis::real( norm_boudary.trace() );
+                eps.second = nn - 2.*maquis::real(right_[0][0].trace());
+            }
             
         }
         
-        return -1;
+        return eps; /// note: the actual eps contain a constant, which is not important here.
     }
     
     void finalize()
@@ -149,7 +167,7 @@ private:
     }
     
     MPS<Matrix, SymmGroup> mps, mpsp;
-    MPO<Matrix, SymmGroup> mpo;
+    MPO<Matrix, SymmGroup> const& mpo;
     
     BaseParameters & parms;
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;

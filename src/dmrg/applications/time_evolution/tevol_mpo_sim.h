@@ -82,9 +82,14 @@ private:
     {
         for (int which = 0; which < Uterms.size(); ++which)
         {
+            int maxiter = 6; double tol = 1e-6;
             time_evolve<Matrix, SymmGroup, storage::nop> evolution(*mps, Uterms[which], (*parms));
-            for (int k = 0; k < 5; ++k)
-                evolution.sweep(sweep_);
+            for (int k = 0; k < maxiter; ++k) {
+                std::pair<double,double> eps = evolution.sweep(sweep_);
+                double rel_error = std::abs( (eps.first-eps.second) / eps.second );
+                if (rel_error < tol)
+                    break;
+            }
             evolution.finalize();
             *mps = evolution.get_current_mps();
         }
