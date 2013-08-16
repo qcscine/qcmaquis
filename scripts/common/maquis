@@ -14,11 +14,14 @@ if [ ! -z "${CONFIG_NAME}" ]; then
    alias clean='$CONFIG_DIR/$CONFIG_NAME clean'
    alias configure='$CONFIG_DIR/$CONFIG_NAME configure'
    alias build='$CONFIG_DIR/$CONFIG_NAME build'
+   alias install='$CONFIG_DIR/$CONFIG_NAME install'
    alias test='$CONFIG_DIR/$CONFIG_NAME test'
    alias run='$CONFIG_DIR/$CONFIG_NAME run'
    alias dash='$CONFIG_DIR/$CONFIG_NAME dash'
    alias benchmark='$CONFIG_DIR/$CONFIG_NAME benchmark'
    alias envset='source $CONFIG_DIR/$CONFIG_NAME'
+   alias parse='$ROOT_DIR/scripts/common/overseer/parse'
+   alias parseall='$ROOT_DIR/scripts/common/overseer/parseall'
    [[ $CONFIG_ENV ]] && source $CONFIG_DIR/$CONFIG_NAME;
    return
 fi

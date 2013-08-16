@@ -1,17 +1,14 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_DMRG="build"
+STATE_DMRG="void"
 # end of target states #
 SHARED_FS=true
 PREFIX=ambient
 COMPILER=intel
 COMPILER_VERSION=2013
 MPI_WRAPPER=openmpi
-MPI_WRAPPER_VERSION=1.6.3-intel
-BOOST=boost
-BOOST_VERSION=1.53.0
-CMAKE=cmake
+MPI_WRAPPER_VERSION=1.7.1-intel
 
 export CC=mpicc
 export CXX=mpicxx
@@ -20,10 +17,10 @@ export BOOST_ROOT=/project/h07/BOOST_1_53/
 module load gcc/4.7.2
 module load ${COMPILER}/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
-module load ${CMAKE}
+module load cmake
 
 ## common ##
-THREADING_FLAGS="-DAMBIENT_CILK" # -openmp -DAMBIENT_OMP
+THREADING_FLAGS="-openmp -DAMBIENT_OMP"
 COMMON_CMAKE_CXX_FLAGS="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors $THREADING_FLAGS -L/apps/castor/plasma-2.4.6/lib"
 COMMON_CMAKE_C_COMPILER=mpicc
 COMMON_CMAKE_CXX_COMPILER=mpicxx

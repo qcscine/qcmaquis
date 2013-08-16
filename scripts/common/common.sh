@@ -11,15 +11,17 @@ DMRG=dmrg
 TARGETS="ambient dmrg"
 
 RUN_PRESETS="1n.micro:             ~/maquis2014/benchmarks/dmrg_gs/1n/micro.L4/parms.50                 ~/maquis2014/benchmarks/dmrg_gs/1n/micro.L4/model
+             leakcheck:            ~/maquis2014/benchmarks/dmrg_gs/1n/leakcheck/parms                   ~/maquis2014/benchmarks/dmrg_gs/1n/leakcheck/model
              1n.short:             ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L6/parms.6000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L6/model
              1n.spinless.L8.6000:  ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/parms.6000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/model
              1n.spinless.L8.8000:  ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/parms.8000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/model
              1n.spinless.L8.10000: ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/parms.10000           ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/model
              1n.spinless.W16.3000: ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.W16/parms.3000           ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.W16/model
-             Xn.hubbard.12x24.20k: ~/maquis2014/benchmarks/dmrg_gs/many_nodes/hubbard.12x24/parms.20000 ~/maquis2014/benchmarks/dmrg_gs/many_nodes/hubbard.12x24/model
              1n.spinfull.L8.6000:  ~/maquis2014/benchmarks/dmrg_gs/1n/spinfull.L8/parms.6000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinfull.L8/model
              1n.spinfull.L8.8000:  ~/maquis2014/benchmarks/dmrg_gs/1n/spinfull.L8/parms.8000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinfull.L8/model
              1n.spinfull.L8.10000: ~/maquis2014/benchmarks/dmrg_gs/1n/spinfull.L8/parms.10000           ~/maquis2014/benchmarks/dmrg_gs/1n/spinfull.L8/model
+             Xn.adrian.10x10.10k:  ~/maquis2014/benchmarks/dmrg_gs/many_nodes/adrian.10x10/parms.10k    ~/maquis2014/benchmarks/dmrg_gs/many_nodes/adrian.10x10/model
+             Xn.hubbard.12x24.20k: ~/maquis2014/benchmarks/dmrg_gs/many_nodes/hubbard.12x24/parms.20000 ~/maquis2014/benchmarks/dmrg_gs/many_nodes/hubbard.12x24/model
              1n.quench.L51.gs:     ~/maquis2014/benchmarks/dmrg_gs/1n/quench.L51/parms.200              ~/maquis2014/benchmarks/dmrg_gs/1n/quench.L51/model
              1n.quench.L51.te:     ~/maquis2014/benchmarks/dmrg_te/1n/quench.L51/parms.200              ~/maquis2014/benchmarks/dmrg_te/1n/quench.L51/model
              1n.quench_2s.L51.gs:  ~/maquis2014/benchmarks/dmrg_gs/1n/quench_2s.L51/parms.400           ~/maquis2014/benchmarks/dmrg_gs/1n/quench_2s.L51/model
@@ -29,7 +31,7 @@ RUN_PRESETS="1n.micro:             ~/maquis2014/benchmarks/dmrg_gs/1n/micro.L4/p
 
 ## settings ##
 
-BUILD_NAME=${PREFIX}_${COMPILER}_${MPI_WRAPPER}
+[[ -z "${BUILD_NAME}" ]] && BUILD_NAME=${PREFIX}_${COMPILER}_${MPI_WRAPPER}
 [[ $SHARED_FS ]] && BUILD_NAME=${HOST}/${BUILD_NAME}
 BENCHMARK_SCRIPTS_DIR=${ROOT_DIR}/scripts/benchmarks
 SELF=$BUILD_NAME
@@ -82,6 +84,18 @@ build_target(){
     set_state ${1} build
 }
 
+install_target(){
+    local self="${SELF}/${1} (`get_state ${1}`)"
+    local target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
+    echo " ------------------------------------------------------------------------------------------ "
+    echo " $self: installing"
+    echo " ------------------------------------------------------------------------------------------ "
+    pushd . &> /dev/null
+    cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
+    make install
+    popd &> /dev/null
+}
+
 test_target(){
     local self="${SELF}/${1} (`get_state ${1}`)"
     local target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
@@ -122,7 +136,7 @@ use_dashboards(){
     mkdir Dashboards &> /dev/null
     local target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
     echo "set(PREDEFINED_CTEST_SITE \"${HOST}\")"                                          >  ./Dashboards/site.cmake
-    echo "set(PREDEFINED_CTEST_BUILD_NAME \"${PREFIX}_${COMPILER}_${MPI_WRAPPER}\")"       >> ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_BUILD_NAME \"${BUILD_NAME}\")"                              >> ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_SOURCE_DIRECTORY \"${ROOT_DIR}/${!target}\")"               >> ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${ROOT_DIR}/${!target}/${BUILD_NAME}\")" >> ./Dashboards/site.cmake
     cat ${ROOT_DIR}/scripts/common/ctest/site.cmake                                        >> ./Dashboards/site.cmake
@@ -256,6 +270,20 @@ function build(){
     fi
 }
 
+function install(){
+    local state=`get_state ${1}`
+    [[ "$state" != "build" ]] && build ${1}
+    if [ -n "${1}" ]
+    then
+        install_target ${1}
+    else
+        echo " $SELF ($state): installing build tree         "
+        install_target ambient
+        install_target dmrg
+        echo " $SELF (build): installation has finished      "
+    fi
+}
+
 function test(){
     local state=`get_state ${1}`
     [[ "$state" != "build" ]] && build ${1}
@@ -374,7 +402,7 @@ function execute(){
         [[ "$action" != "clean" ]] && [[ "$action" != "configure" ]] && 
         [[ "$action" != "build" ]] && [[ "$action" != "test"      ]] &&
         [[ "$action" != "dash"  ]] && [[ "$action" != "benchmark" ]] &&
-        [[ "$action" != "run"   ]] && 
+        [[ "$action" != "run"   ]] && [[ "$action" != "install"   ]] && 
         echo "  Usage: ./config {clean, configure, build, test, run, dashboard, benchmark} [targets]" &&
         echo "  Note: in order to set the environment use \`source ./config\`" && echo && exit
 

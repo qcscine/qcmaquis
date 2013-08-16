@@ -38,9 +38,7 @@ namespace ambient { namespace channels { namespace mpi {
     public:
         void* operator new (size_t size){ return ambient::pool::malloc<bulk,request>(); }
         void operator delete (void* ptr){ }
-        request(void* memory);
         MPI_Request mpi_request;
-        void* memory;
     };
 
     class channel : public singleton< channel > {

@@ -26,6 +26,7 @@
 
 #include "ambient/utils/io.hpp"
 #include "ambient/utils/timings.hpp"
+#include "ambient/utils/overseer.hpp"
 #define ALL -1
 
 namespace ambient { namespace controllers { namespace velvet {
@@ -44,6 +45,25 @@ namespace ambient { namespace controllers { namespace velvet {
         this->context_base = new ambient::scope<base>();
         this->context = this->context_base;
         this->serial = (ambient::channel.dim() == 1) ? true : false;
+        #ifdef AMBIENT_VERBOSE
+            #ifdef AMBIENT_CILK
+            ambient::cout << "ambient: initialized (using cilk)\n";
+            #elif defined(AMBIENT_OMP)
+            ambient::cout << "ambient: initialized (using openmp)\n";
+            #else
+            ambient::cout << "ambient: initialized (no threading)\n";
+            #endif
+            #ifdef AMBIENT_PERSISTENT_TRANSFERS
+            ambient::cout << "ambient: persistent transfers are enabled\n";
+            #else 
+            ambient::cout << "ambient: persistent transfers are disabled\n";
+            #endif
+            ambient::cout << "ambient: size of ambient bulk chunks: " << AMBIENT_BULK_CHUNK << "\n";
+            ambient::cout << "ambient: maximum sid value: " << AMBIENT_MAX_SID << "\n";
+            ambient::cout << "ambient: max number of proc: " << AMBIENT_MAX_NUM_PROCS << "\n";
+            ambient::cout << "ambient: number of database proc: " << AMBIENT_DB_PROCS << "\n";
+            ambient::cout << "ambient: number of work proc: " << ambient::channel.wk_dim() << "\n";
+        #endif
     }
 
     inline bool controller::tunable(){
@@ -86,6 +106,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::flush(){
+        ambient::timer timeout("timeout");
         typedef typename std::vector<cfunctor*>::const_iterator veci;
         #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
         printf("ambient::parallel graph dim: %d\n", chains->size());
@@ -112,6 +133,7 @@ namespace ambient { namespace controllers { namespace velvet {
         }*/
         AMBIENT_SMP_ENABLE
         while(!chains->empty()){
+            timeout.begin();
             for(veci i = chains->begin(); i != chains->end(); ++i){
                 if((*i)->ready()){
                     cfunctor* task = *i;
@@ -127,9 +149,20 @@ namespace ambient { namespace controllers { namespace velvet {
             }
             chains->clear();
             std::swap(chains,mirror);
+            timeout.end();
+            if(timeout.get_time() > 300){
+                 std::cout << ambient::rank() << ": playout took " << timeout.get_time() << "\n";
+                 #ifdef AMBIENT_TRACE
+                     AMBIENT_TRACE
+                 #endif
+                 timeout.reset();
+            }
         }
         AMBIENT_SMP_DISABLE
         ambient::model.clock++;
+        #ifdef AMBIENT_TRACKING
+        ambient::overseer::log::stop();
+        #endif
     }
 
     inline bool controller::empty(){

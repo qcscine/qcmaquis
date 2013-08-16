@@ -41,9 +41,13 @@ namespace ambient { namespace models { namespace velvet {
         void add_revision(history* o, G g);
         void use_revision(history* o);
         bool feeds(const revision* r);
+        bool remote(const revision* r);
         bool common(const revision* r);
         size_t time(const history* o);
         void touch(const history* o);
+        #ifdef AMBIENT_TRACKING
+        void index(history* h);
+        #endif
         void index(revision* r);
         void index(const transformable* v);
         size_t clock;

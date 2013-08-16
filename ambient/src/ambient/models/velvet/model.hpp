@@ -26,6 +26,13 @@
 
 namespace ambient { namespace models { namespace velvet {
 
+    #ifdef AMBIENT_TRACKING
+    inline void model::index(history* h){
+        h->id = this->sid++;
+        this->sid %= AMBIENT_MAX_SID;
+    }
+    #endif
+
     inline void model::index(revision* r){
         r->sid = this->sid++;
         this->sid %= AMBIENT_MAX_SID;
@@ -57,6 +64,10 @@ namespace ambient { namespace models { namespace velvet {
 
     inline bool model::feeds(const revision* r){
         return (r->state == ambient::local);
+    }
+
+    inline bool model::remote(const revision* r){
+        return (r->state == ambient::remote);
     }
 
     inline bool model::common(const revision* r){

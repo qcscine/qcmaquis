@@ -25,8 +25,8 @@
  */
 
 #define AMBIENT_MASTER_RANK 0
-#define AMBIENT_MPI_THREADING MPI_THREAD_MULTIPLE
-//#define AMBIENT_MPI_THREADING MPI_THREAD_FUNNELED
+//#define AMBIENT_MPI_THREADING MPI_THREAD_MULTIPLE
+#define AMBIENT_MPI_THREADING MPI_THREAD_FUNNELED
 
 namespace ambient { namespace channels { namespace mpi {
 
@@ -36,9 +36,9 @@ namespace ambient { namespace channels { namespace mpi {
 
     inline void channel::init(){
         int level, zero = 0;
-        MPI_Init(&zero, NULL);
-        //MPI_Init_thread(&zero, NULL, AMBIENT_MPI_THREADING, &level);
-        //if(level != AMBIENT_MPI_THREADING) printf("Error: Wrong threading level\n");
+        //MPI_Init(&zero, NULL);
+        MPI_Init_thread(&zero, NULL, AMBIENT_MPI_THREADING, &level);
+        if(level != AMBIENT_MPI_THREADING) printf("Error: Wrong threading level\n");
         this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
         this->volume = this->world->size;
         if(this->volume > AMBIENT_MAX_NUM_PROCS) 
@@ -58,15 +58,10 @@ namespace ambient { namespace channels { namespace mpi {
         return this->db_volume;
     }
 
-    inline request::request(void* memory) 
-    : memory(memory), mpi_request(MPI_REQUEST_NULL) 
-    {
-    };
-
     inline request* channel::get(transformable* v){
-        request* q = new request(&v->v);
-        MPI_Irecv(q->memory, 
-                  (int)sizeof(transformable::numeric_union)/sizeof(double), 
+        request* q = new request();
+        MPI_Irecv(&v->v, 
+                  (int)sizeof(transformable::numeric_union)/sizeof(double), // should be multiple of 8
                   MPI_DOUBLE, 
                   MPI_ANY_SOURCE, 
                   v->sid, 
@@ -77,9 +72,9 @@ namespace ambient { namespace channels { namespace mpi {
 
     inline request* channel::set(transformable* v, int rank){
         if(rank == ambient::rank()) return NULL;
-        request* q = new request(&v->v);
-        MPI_Isend(q->memory, 
-                  (int)sizeof(transformable::numeric_union)/sizeof(double), 
+        request* q = new request();
+        MPI_Isend(&v->v, 
+                  (int)sizeof(transformable::numeric_union)/sizeof(double), // should be multiple of 8
                   MPI_DOUBLE, 
                   rank, 
                   v->sid, 
@@ -89,8 +84,8 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline request* channel::get(revision* r){
-        request* q = new request(r->data);
-        MPI_Irecv(q->memory, 
+        request* q = new request();
+        MPI_Irecv(r->data, 
                   (int)r->spec.extent/sizeof(double), 
                   MPI_DOUBLE, 
                   MPI_ANY_SOURCE, 
@@ -102,9 +97,9 @@ namespace ambient { namespace channels { namespace mpi {
 
     inline request* channel::set(revision* r, int rank){
         if(rank == ambient::rank()) return NULL;
-        request* q = new request(r->data);
+        request* q = new request();
         // can be ready-send
-        MPI_Isend(q->memory, 
+        MPI_Isend(r->data, 
                   (int)r->spec.extent/sizeof(double), 
                   MPI_DOUBLE, 
                   rank, 

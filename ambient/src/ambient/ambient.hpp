@@ -45,8 +45,10 @@
 #include <fstream>
 #include <sys/time.h>
 #include <algorithm>
-// #include <execinfo.h>
+#include <execinfo.h>
 // }}}
+
+#define AMBIENT_VERBOSE
 
 #ifdef AMBIENT_CILK
     #include <cilk/cilk.h>
@@ -79,22 +81,31 @@
 //#define AMBIENT_EXPERIMENTAL
 //#define AMBIENT_COMPUTATIONAL_TIMINGS
 //#define AMBIENT_COMPUTATIONAL_DATAFLOW
-//#define AMBIENT_TRACE void* b[10]; backtrace_symbols_fd(b,backtrace(b,10),2);
+#define AMBIENT_TRACE void* b[10]; backtrace_symbols_fd(b,backtrace(b,10),2);
 //#define AMBIENT_CHECK_BOUNDARIES
 //#define AMBIENT_LOOSE_FUTURE
+//#define AMBIENT_TRACKING
+
+#define AMBIENT_LARGE_BULK
+#ifdef AMBIENT_LARGE_BULK
+#define AMBIENT_BULK_CHUNK            4194304000
+#else
+#define AMBIENT_BULK_CHUNK            41943040
+#endif
 
 #ifdef AMBIENT_CRAY
 #define AMBIENT_MAX_SID               4194304
 #else
 #define AMBIENT_MAX_SID               2147483647
 #endif
+
 #define AMBIENT_STACK_RESERVE         65536
 #define AMBIENT_COLLECTOR_STR_RESERVE 65536
 #define AMBIENT_COLLECTOR_RAW_RESERVE 1024
 #define AMBIENT_SCOPE_SWITCH_FACTOR   20480
-#define AMBIENT_BULK_CHUNK            41943040
 #define AMBIENT_FUTURE_SIZE           64
 #define AMBIENT_IB                    512
+#define AMBIENT_IB_EXTENT             512*512*16
 
 #define PAGE_SIZE 4096
 #define ALIGNMENT 16
@@ -120,6 +131,7 @@ namespace ambient {
 #include "ambient/controllers/velvet/controller.h"
 #include "ambient/utils/auxiliary.hpp"
 #include "ambient/utils/io.hpp"
+#include "ambient/utils/overseer.hpp"
 #include "ambient/interface/typed.hpp"
 #include "ambient/interface/kernel.hpp"
 #include "ambient/memory/archive.hpp"

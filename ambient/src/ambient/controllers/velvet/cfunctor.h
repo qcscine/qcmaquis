@@ -44,10 +44,9 @@ namespace ambient { namespace controllers { namespace velvet {
     public:
         virtual void invoke() = 0;
         virtual bool ready() = 0;
-        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        #if defined(AMBIENT_COMPUTATIONAL_DATAFLOW) || defined(AMBIENT_TRACKING)
         virtual const char* name() = 0;
-        size_t id(){ return number; }
-        size_t number;
+        size_t id;
         #endif
         void queue(cfunctor* d){ deps.push_back(d); }
         std::vector<cfunctor*, allocator> deps;
@@ -72,7 +71,7 @@ namespace ambient { namespace controllers { namespace velvet {
         virtual void operator >> (int p);
         virtual bool ready();
         virtual void invoke();
-        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        #if defined(AMBIENT_COMPUTATIONAL_DATAFLOW) || defined(AMBIENT_TRACKING)
         virtual const char* name(){ return "set"; }
         #endif
         #ifdef AMBIENT_PERSISTENT_TRANSFERS
@@ -110,7 +109,7 @@ namespace ambient { namespace controllers { namespace velvet {
         get(revision& r);
         virtual bool ready();
         virtual void invoke();
-        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        #if defined(AMBIENT_COMPUTATIONAL_DATAFLOW) || defined(AMBIENT_TRACKING)
         virtual const char* name(){ return "get"; }
         #endif
     private:
@@ -130,7 +129,7 @@ namespace ambient { namespace controllers { namespace velvet {
         get(transformable& v, int owner);
         virtual bool ready();
         virtual void invoke();
-        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        #if defined(AMBIENT_COMPUTATIONAL_DATAFLOW) || defined(AMBIENT_TRACKING)
         virtual const char* name(){ return "get"; }
         #endif
     private:
@@ -147,7 +146,7 @@ namespace ambient { namespace controllers { namespace velvet {
         set(transformable& v);
         virtual bool ready();
         virtual void invoke();
-        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
+        #if defined(AMBIENT_COMPUTATIONAL_DATAFLOW) || defined(AMBIENT_TRACKING)
         virtual const char* name(){ return "set"; }
         #endif
     private:

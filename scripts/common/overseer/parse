@@ -1,0 +1,61 @@
+#!/bin/bash
+
+echo parsing $1...
+
+cat $1 | grep -n "region"
+
+regions=`grep -n region $1 | cut -d ":" -f1`
+
+begin=0
+count=0
+contents=index.html
+incremental=false
+[[ -f $contents ]] && incremental=true && echo "(using existing contents)"
+
+if [ "$incremental" == "false" ]
+then
+    cat $ROOT_DIR/scripts/common/overseer/template/top.html > $contents
+    cat $ROOT_DIR/scripts/common/overseer/template/bottom.html >> $contents
+    echo "<div class=\"region\" data-title=\"begin\"></div>" >> $contents
+fi
+
+echo "<div class=\"selector\">$1</div>" >> $contents
+
+for i in $regions
+do
+    tmp=$1.$count.tmp
+    output=$1.$count.html
+    end=$(($i-1))
+    delta=$(($end - $begin));
+    echo cutting $begin to $end: $delta lines
+    head -n $end $1 | tail -n $delta | c++filt -n -t &> $tmp
+
+    sed -i -e "s/<double>//g" $tmp
+    sed -i -e "s/ambient::numeric::kernels:://g" $tmp
+    sed -i -e "s/ambient::numeric:://g" $tmp
+    sed -i -e "s/matrix<double, ambient::default_allocator >, //g" $tmp
+    sed -i -e "s/matrix<double, ambient::constrained_allocator >, //g" $tmp
+    sed -i -e "s/ambient::default_allocator, //g" $tmp
+    sed -i -e "s/ambient::constrained_allocator, //g" $tmp
+    sed -i -e "s/<double, ambient::default_allocator >//g" $tmp
+    sed -i -e "s/<double, ambient::constrained_allocator >//g" $tmp
+    sed -i -e "s/<double, 111>//g" $tmp
+    sed -i -e "s/<double>//g" $tmp
+    sed -i -e "s/<transpose_view<matrix >, double>//g" $tmp
+
+    cat $ROOT_DIR/scripts/common/overseer/template/top.html > $output
+    cat $tmp >> $output
+    cat $ROOT_DIR/scripts/common/overseer/template/bottom.html >> $output
+    rm $tmp
+
+    begin=$(($end))
+    count=$(($count+1))
+
+    [[ "$incremental" == "false" ]] && grep "region" $output >> $contents
+done
+
+
+
+#[[ -z "$2" ]] && exit;
+
+#delta=$(($3 - $2));

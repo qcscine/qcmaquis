@@ -63,13 +63,13 @@ namespace maquis {
 
         using ambient::numeric::bindings::adaptor;
         
-        template <typename T> struct binding< am_matrix<T>, al_matrix<T> > : public adaptor< am_matrix<T>, al_matrix<T> > {};
-        template <typename T> struct binding< al_matrix<T>, am_matrix<T> > : public adaptor< al_matrix<T>, am_matrix<T> > {};
+        template <typename T, class A> struct binding< am_matrix<T,A>, al_matrix<T> > : public adaptor< am_matrix<T,A>, al_matrix<T> > {};
+        template <typename T, class A> struct binding< al_matrix<T>, am_matrix<T,A> > : public adaptor< al_matrix<T>, am_matrix<T,A> > {};
         template <typename T> struct binding< am_diagonal<T>, al_diagonal<T> > : public adaptor< am_diagonal<T>, al_diagonal<T> > {};
         template <typename T> struct binding< al_diagonal<T>, am_diagonal<T> > : public adaptor< al_diagonal<T>, am_diagonal<T> > {};
-        template <typename T> struct binding< am_tiles<am_matrix<T> >, al_matrix<T> > : public adaptor< am_tiles<am_matrix<T> >, al_matrix<T> > {};
-        template <typename T2, typename T1> struct binding< am_tiles<am_matrix<T2> >, al_matrix<T1> > : public adaptor< am_tiles<am_matrix<T2> >, al_matrix<T1> > {};
-        template <typename T> struct binding< al_matrix<T>, am_tiles<am_matrix<T> > > : public adaptor< al_matrix<T>, am_tiles<am_matrix<T> > > {};
+        template <typename T, class A> struct binding< am_tiles<am_matrix<T,A> >, al_matrix<T> > : public adaptor< am_tiles<am_matrix<T,A> >, al_matrix<T> > {};
+        template <typename T2, typename T1, class A> struct binding< am_tiles<am_matrix<T2,A> >, al_matrix<T1> > : public adaptor< am_tiles<am_matrix<T2,A> >, al_matrix<T1> > {};
+        template <typename T, class A> struct binding< al_matrix<T>, am_tiles<am_matrix<T,A> > > : public adaptor< al_matrix<T>, am_tiles<am_matrix<T,A> > > {};
         template <typename T> struct binding< am_tiles<am_diagonal<T> >, al_diagonal<T> > : public adaptor< am_tiles<am_diagonal<T> >, al_diagonal<T> > {};
         template <typename T> struct binding< al_diagonal<T>, am_tiles<am_diagonal<T> > > : public adaptor< al_diagonal<T>, am_tiles<am_diagonal<T> > > {};
         template <typename T> struct binding< std::vector<T>, am_diagonal<T> > : public adaptor< std::vector<T>, am_diagonal<T> > {};
