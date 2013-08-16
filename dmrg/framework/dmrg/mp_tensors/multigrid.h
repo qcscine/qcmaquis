@@ -174,13 +174,8 @@ struct multigrid {
                     }
                     
                 }
-        
-        MPSTensor<Matrix, SymmGroup> M;
-        swap(M.data_, data);
-        M.cur_storage = LeftPaired;
-        M.left_i = left_i;
-        M.right_i = right_i;
-        M.phys_i = phys_small;
+        // todo: use swap for data
+        MPSTensor<Matrix, SymmGroup> M(phys_small, left_i, right_i, data, LeftPaired);
         return M;
     }
     
@@ -374,12 +369,7 @@ struct multigrid {
                                 
                             }
             
-            
-            mps_small[p].data() = M;
-            mps_small[p].left_i = alpha_basis;
-            mps_small[p].right_i = beta_basis;
-            mps_small[p].cur_storage = LeftPaired;
-            
+            mps_small[p] = MPSTensor<Matrix, SymmGroup>(s_basis, alpha_basis, beta_basis, M, LeftPaired);
         }
         
         mps_small.normalize_left();
@@ -462,16 +452,18 @@ struct multigrid {
         svd(M, left, V, S);
         gemm(S, V, right);
         
-        M1.data() = left; // replace_left_paired cannot be used here
-        M1.left_i = alpha_basis;
-        M1.right_i = left.right_basis();
-        M1.cur_storage = LeftPaired;
-        
-        M2.data() = right; // replace_right_paired cannot be used here
-        M2.right_i = beta_basis;
-        M2.left_i = right.left_basis();
-        M2.cur_storage = RightPaired;
-        
+//        M1.data() = left; // replace_left_paired cannot be used here
+//        M1.left_i = alpha_basis;
+//        M1.right_i = left.right_basis();
+//        M1.cur_storage = LeftPaired;
+        M1 = MPSTensor<Matrix, SymmGroup>(s1_basis, alpha_basis, left.right_basis(), left, LeftPaired);
+
+//        M2.data() = right; // replace_right_paired cannot be used here
+//        M2.right_i = beta_basis;
+//        M2.left_i = right.left_basis();
+//        M2.cur_storage = RightPaired;
+        M2 = MPSTensor<Matrix, SymmGroup>(s2_basis, right.left_basis(), beta_basis, right, RightPaired);
+
     }
 
     

@@ -327,6 +327,9 @@ block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> t
     block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> ret; 
     for(size_t k=0; k<m.n_blocks(); ++k) 
         ret.insert_block(transpose(m[k]), m.right_basis()[k].first, m.left_basis()[k].first);
+#ifdef AMBIENT_TRACKING
+    ambient_track_as(ret, m.label);
+#endif
     return ret; 
 } 
 
@@ -351,7 +354,7 @@ typename block_matrix<Matrix, SymmGroup>::scalar_type trace(block_matrix<Matrix,
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> adjoin(block_matrix<Matrix, SymmGroup> const & m)
+block_matrix<Matrix, SymmGroup> adjoin(block_matrix<Matrix, SymmGroup> const & m) // error: it should be adjoin_t_
 {
     block_matrix<Matrix, SymmGroup> ret;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)

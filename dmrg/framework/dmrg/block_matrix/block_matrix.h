@@ -39,6 +39,8 @@ public:
     block_matrix(Index<SymmGroup> rows,
                  Index<SymmGroup> cols);
     
+    block_matrix(block_matrix const&);
+
     template <class OtherMatrix>
     block_matrix(block_matrix<OtherMatrix,SymmGroup> const&);
 
@@ -107,6 +109,10 @@ public:
         swap(x.data_, y.data_);
         swap(x.rows_, y.rows_);
         swap(x.cols_, y.cols_);
+#ifdef AMBIENT_TRACKING
+        ambient_track_as(x, x.label);
+        ambient_track_as(y, y.label);
+#endif
     }
     
     Matrix const & operator()(charge r, charge c) const
@@ -131,6 +137,9 @@ public:
     
     bool reasonable() const;
     
+#ifdef AMBIENT_TRACKING
+    std::string label;
+#endif
 private:
     boost::ptr_vector<Matrix> data_;
     Index<SymmGroup> rows_, cols_;

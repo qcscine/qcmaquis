@@ -44,6 +44,9 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
         parallel_for(locale::compact(L), locale i = 0; i < L; ++i) {
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys, allowed[i], allowed[i+1], fillrand, val);
             mps[i].divide_by_scalar(mps[i].scalar_norm());
+            #ifdef AMBIENT_TRACKING
+            ambient_track_array(mps, i);
+            #endif
         }
         
 #ifndef NDEBUG

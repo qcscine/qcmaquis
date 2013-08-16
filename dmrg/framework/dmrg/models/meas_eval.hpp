@@ -14,6 +14,7 @@
 
 #include <sstream>
 #include <algorithm>
+#include <boost/iterator/counting_iterator.hpp>
 
 #include "dmrg/utils/utils.hpp"
 #include "utils/traits.hpp"
@@ -491,6 +492,7 @@ namespace meas_eval {
 							  const Lattice & lat,
 							  block_matrix<Matrix, SymmGroup> const & identity,
 							  block_matrix<Matrix, SymmGroup> const & fill,
+                              std::vector<std::size_t> const& positions_first,
 							  std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
 							  std::vector<std::size_t> const & order,
 							  bool is_nn,
@@ -500,14 +502,19 @@ namespace meas_eval {
 	{
         typedef boost::shared_ptr<generate_mpo::CorrMakerBase<Matrix, SymmGroup> > maker_ptr;
 
-        for (size_t p = 0; p < lat.size()-(ops.size()-1); ++p) {
+//        for (size_t p = 0; p < lat.size()-(ops.size()-1); ++p) {
+        for (std::vector<std::size_t>::const_iterator it = positions_first.begin();
+             it != positions_first.end(); ++it) {
+            if (*it >= lat.size()-(ops.size()-1))
+                throw std::runtime_error("cannot measure correlation with first operator at p="+boost::lexical_cast<std::string>(*it)+".");
+            maquis::cout << "  site " << *it << std::endl;
 			std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
 			std::vector<std::vector<std::size_t> > num_labels;
             maker_ptr dcorr;
             if (is_nn)
-                dcorr.reset(new generate_mpo::CorrMakerNN<Matrix, SymmGroup>(mps.length(), identity, fill, ops, p) );
+                dcorr.reset(new generate_mpo::CorrMakerNN<Matrix, SymmGroup>(mps.length(), identity, fill, ops, *it) );
             else
-                dcorr.reset(new generate_mpo::CorrMaker<Matrix, SymmGroup>(mps.length(), identity, fill, ops, p) );
+                dcorr.reset(new generate_mpo::CorrMaker<Matrix, SymmGroup>(mps.length(), identity, fill, ops, *it) );
             
             MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
             
@@ -541,6 +548,7 @@ namespace meas_eval {
 							 const Lattice & lat,
 							 block_matrix<Matrix, SymmGroup> const & identity,
 							 block_matrix<Matrix, SymmGroup> const & fill,
+							 std::vector<std::vector<std::size_t> > const & positions,
 							 std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
 							 std::string const & h5name,
 							 std::string base_path,
@@ -548,14 +556,24 @@ namespace meas_eval {
 							 bool is_nn=false,
                              bool super_meas=false)
 	{
-	    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dc;
+        std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dc;
 	    std::vector<std::string> labels;
+        
+        assert(positions.size() < 2);
+        std::vector<std::size_t> positions_first;
+        if (positions.size() == 1) {
+            positions_first = positions[0];
+        } else {
+            std::copy(boost::counting_iterator<int>(0), boost::counting_iterator<int>(lat.size()-(ops.size()-1)),
+                      back_inserter(positions_first));
+        }
+        
 	    if (half) {
-	    	measure_correlation_(mps, lat, identity, fill, ops, std::vector<std::size_t>(), is_nn, dc, labels, super_meas);
+	    	measure_correlation_(mps, lat, identity, fill, positions_first, ops, std::vector<std::size_t>(), is_nn, dc, labels, super_meas);
 	    } else {
 	    	CorrPermutator<Matrix, SymmGroup> perm(ops, is_nn);
 	    	for (int i=0; i<perm.size(); ++i) {
-		    	measure_correlation_(mps, lat, identity, fill, perm[i], perm.order(i), is_nn, dc, labels, super_meas);
+		    	measure_correlation_(mps, lat, identity, fill, positions_first, perm[i], perm.order(i), is_nn, dc, labels, super_meas);
 	    	}
 	    }
         

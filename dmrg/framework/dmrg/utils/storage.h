@@ -21,7 +21,7 @@
 #include "utils/timings.h"
 
 #include "dmrg/utils/BaseParameters.h"
-//#include "dmrg/utils/tracking.h"
+#include "dmrg/utils/tracking.h"
 
 #ifdef HAVE_ALPS_HDF5
 #include "dmrg/utils/archive.h"

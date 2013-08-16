@@ -680,8 +680,13 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                 alps::SiteBasisDescriptor<I> b = model.site_basis(type);
                 int f_ops = 0;
                 
+                /// split op1:op2:...@p1,p2,p3,... into {op1:op2:...}, {p1,p2,p3,...}
+                std::vector<std::string> value_split;
+                boost::split( value_split, value, boost::is_any_of("@"));
+                
+                /// parse operators op1:op2:...
                 boost::char_separator<char> sep(":");
-                tokenizer corr_tokens(value, sep);
+                tokenizer corr_tokens(value_split[0], sep);
                 for (tokenizer::iterator it2=corr_tokens.begin();
                      it2 != corr_tokens.end();
                      it2++)
@@ -704,7 +709,16 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
 
                 if (f_ops % 2 != 0)
                     throw std::runtime_error("Number of fermionic operators has to be even.");
-
+                
+                /// parse positions p1,p2,p3,... (or `space`)
+                if (value_split.size() > 1) {
+                    boost::char_separator<char> pos_sep(", ");
+                    tokenizer pos_tokens(value_split[1], pos_sep);
+                    term.positions.resize(1);
+                    std::transform(pos_tokens.begin(), pos_tokens.end(), std::back_inserter(term.positions[0]),
+                                   static_cast<std::size_t (*)(std::string const&)>(boost::lexical_cast<std::size_t, std::string>));
+                }
+                
                 meas.add_term(term);
             }
         }

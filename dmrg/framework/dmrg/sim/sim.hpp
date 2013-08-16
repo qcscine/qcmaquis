@@ -118,6 +118,9 @@ void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::mps_init()
 {
+    #ifdef AMBIENT_TRACKING
+    ambient::overseer::log::region("sim::mps_init");
+    #endif
     assert(lat.get() != NULL);
     
     if (restore) {
@@ -134,6 +137,9 @@ void sim<Matrix, SymmGroup>::mps_init()
                                      parms["init_bond_dimension"],
                                      phys, initc,
                                      *(phys_model->initializer(parms)));
+        #ifdef AMBIENT_TRACKING
+        for(int i = 0; i < mps.length(); ++i) ambient_track_array(mps, i);
+        #endif
     }
 }
 

@@ -54,6 +54,9 @@ public:
 
     void sweep(int sweep, OptimizeDirection d = Both)
     {
+        #ifdef AMBIENT_TRACKING
+        ambient::overseer::log::region("ts_optimize::sweep");
+        #endif
     	timeval sweep_now, sweep_then;
     	gettimeofday(&sweep_now, NULL);
 

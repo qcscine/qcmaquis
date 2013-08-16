@@ -33,6 +33,20 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows,
 }
 
 template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix const& rhs)
+: rows_(rhs.left_basis())
+, cols_(rhs.right_basis())
+, data_(rhs.data_)
+{
+    #ifdef AMBIENT_TRACKING
+    if(!rhs.label.empty()){
+        this->label = rhs.label + "'";
+        ambient_track_as(*this, this->label);
+    }
+    #endif
+}
+
+template<class Matrix, class SymmGroup>
 template <class OtherMatrix>
 block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<OtherMatrix,SymmGroup> const& rhs)
 : rows_(rhs.left_basis())
@@ -114,7 +128,11 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
     
     size_type i1 = rows_.insert(p1);
     cols_.insert(i1, p2);
-    data_.insert(data_.begin() + i1, new Matrix(mtx));
+    Matrix* block = new Matrix(mtx);
+    data_.insert(data_.begin() + i1, block);
+#ifdef AMBIENT_TRACKING
+    ambient_track_as(*block, this->label);
+#endif
     
     return i1;
     //rows_.push_back(p1);
@@ -134,6 +152,9 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
     size_type i1 = rows_.insert(p1);
     cols_.insert(i1, p2);
     data_.insert(data_.begin() + i1, mtx);
+#ifdef AMBIENT_TRACKING
+    ambient_track_as(*mtx, this->label);
+#endif
     
     return i1;
 }
@@ -436,10 +457,11 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         
         size_type i1 = rows_.insert(p1);
         cols_.insert(i1, p2);
-        data_.insert(data_.begin() + i1, new Matrix(1,1)); 
-        /*rows_.push_back(p1);
-        cols_.push_back(p2);
-        data_.push_back(Matrix());*/
+        Matrix* block = new Matrix(1,1);
+        data_.insert(data_.begin() + i1, block); 
+#ifdef AMBIENT_TRACKING
+        ambient_track_as(*block, this->label);
+#endif
     }
     assert( this->has_block(c1,c2) );
 }
