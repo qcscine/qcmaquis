@@ -17,6 +17,7 @@ module load openmpi/1.6.4/icc/13.1.1
 module load cmake/2.8.9
 
 ## common ##
+COMMON_CMAKE_INSTALL_PREFIX=~/opt/dmrg
 COMMON_ENABLE_OMP=ON
 COMMON_CMAKE_CXX_FLAGS="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors"
 COMMON_CMAKE_CXX_FLAGS_RELEASE="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors"

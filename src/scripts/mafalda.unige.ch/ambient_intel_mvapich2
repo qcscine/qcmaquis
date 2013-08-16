@@ -1,7 +1,7 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_DMRG="configure"
+STATE_DMRG="build"
 # end of target states #
 SHARED_FS=true
 PREFIX=ambient
@@ -29,6 +29,7 @@ COMMON_CMAKE_CXX_FLAGS="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors $THREADING_FLA
 COMMON_CMAKE_C_COMPILER=mpicc
 COMMON_CMAKE_CXX_COMPILER=mpicxx
 COMMON_MPI_CXX_FOUND=FALSE
+COMMON_CMAKE_INSTALL_PREFIX=~/opt/dmrg
 ## ambient ##
 AMBIENT_BOOST_BINDINGS_INCLUDE=/share/apps/alps/r6979/icc/13.1.1-nompi/include/boost
 AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64"

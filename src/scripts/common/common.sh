@@ -84,6 +84,18 @@ build_target(){
     set_state ${1} build
 }
 
+install_target(){
+    local self="${SELF}/${1} (`get_state ${1}`)"
+    local target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
+    echo " ------------------------------------------------------------------------------------------ "
+    echo " $self: installing"
+    echo " ------------------------------------------------------------------------------------------ "
+    pushd . &> /dev/null
+    cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
+    make install
+    popd &> /dev/null
+}
+
 test_target(){
     local self="${SELF}/${1} (`get_state ${1}`)"
     local target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
@@ -258,6 +270,20 @@ function build(){
     fi
 }
 
+function install(){
+    local state=`get_state ${1}`
+    [[ "$state" != "build" ]] && build ${1}
+    if [ -n "${1}" ]
+    then
+        install_target ${1}
+    else
+        echo " $SELF ($state): installing build tree         "
+        install_target ambient
+        install_target dmrg
+        echo " $SELF (build): installation has finished      "
+    fi
+}
+
 function test(){
     local state=`get_state ${1}`
     [[ "$state" != "build" ]] && build ${1}
@@ -376,7 +402,7 @@ function execute(){
         [[ "$action" != "clean" ]] && [[ "$action" != "configure" ]] && 
         [[ "$action" != "build" ]] && [[ "$action" != "test"      ]] &&
         [[ "$action" != "dash"  ]] && [[ "$action" != "benchmark" ]] &&
-        [[ "$action" != "run"   ]] && 
+        [[ "$action" != "run"   ]] && [[ "$action" != "install"   ]] && 
         echo "  Usage: ./config {clean, configure, build, test, run, dashboard, benchmark} [targets]" &&
         echo "  Note: in order to set the environment use \`source ./config\`" && echo && exit
 
