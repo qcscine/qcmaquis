@@ -194,135 +194,136 @@ std::vector<block_matrix<Matrix, SymmGroup> > hamil_to_blocks(Hamiltonian<Matrix
 }
 
 template <class Matrix, class SymmGroup>
-class term_exp_mpo {
+class exp_mpo_maker {
     typedef block_matrix<Matrix, SymmGroup> op_t;
-    typedef typename MultiIndex<SymmGroup>::index_id index_id;
-    typedef typename MultiIndex<SymmGroup>::set_id set_id;
 
 public:
-    term_exp_mpo(Index<SymmGroup>const & phys_, op_t const & ident_,
-                 std::size_t pos1_, std::size_t pos2_,
-                 bool s = true)
-    : simple(s)
-    , ident(ident_)
+    exp_mpo_maker(Index<SymmGroup> const& phys_, op_t const& ident_,
+                 std::size_t pos1_, std::size_t pos2_)
+    : ident(ident_)
     , phys(phys_)
-    , pos1(pos1_)
-    , pos2(pos2_)
+    , pos1(pos1_), pos2(pos2_), L(pos2-pos1+1)
+    , n_boso(0), n_ferm(0)
+    { }
+    
+    void add_term(Hamiltonian_Term<Matrix, SymmGroup> const & term, typename Matrix::value_type const & alpha = 1.)
     {
-        if (!simple) {
-            std::vector<std::pair<index_id, bool> > left_vec, right_vec;
-            for (size_t p=pos1; p<=pos2; ++p) {
-                index_id id1 = midx.insert_index(phys);
-                index_id id2 = midx.insert_index(phys);
-                
-                left_vec.push_back( std::make_pair(id1, true) );
-                right_vec.push_back( std::make_pair(id2, true) );
-                
-            }
-            op_set = midx.create_set(left_vec, right_vec);
+        if (term.operators.size() > 2)
+            throw std::runtime_error("time evolution requires at max bond term.");
+        
+        /// kron product of operators
+        op_t bond_op;
+        if (term.operators.size() == 2)
+            op_kron(phys, term.operators[0].second, term.operators[1].second, bond_op);
+        else if (term.operators[0].first == pos1)
+            op_kron(phys, term.operators[0].second, ident, bond_op);
+        else if (term.operators[0].first == pos2)
+            op_kron(phys, ident, term.operators[0].second, bond_op);
+        else
+            throw std::runtime_error("Operator k not matching any valid position.");
+        
+        if (term.with_sign) {
+            fermionic_bond += bond_op;
+            n_ferm += 1;
+            fill = term.fill_operator;
+        } else {
+            bosonic_bond += bond_op;
+            n_boso += 1;
         }
     }
     
-    void add_term(Hamiltonian_Term<Matrix, SymmGroup> const & term)
+    MPO<Matrix, SymmGroup> exp_mpo(typename Matrix::value_type const & alpha = 1.) const
     {
-        op_t tmp;
-        if (term.operators.size() == 2)
-            kron_ops(term.operators[0].second, term.operators[1].second, term.fill_operator, tmp);
-        else if (term.operators[0].first == pos1)
-            kron_ops(term.operators[0].second, ident, ident, tmp);
-        else if (term.operators[0].first == pos2)
-            kron_ops(ident, term.operators[0].second, ident, tmp);
-        else
-            throw std::runtime_error("Operator k not matching any valid position.");
-        bond_op += tmp;
-
-    }
-    
-    inline MPO<Matrix, SymmGroup> get_exp_mpo(typename Matrix::value_type const & alpha = 1.) const
-    {
-        if (simple)
-            return get_simple_mpo(alpha);
-        else
-            return get_gen_mpo(alpha);
+        std::size_t maximum_b = 0;
+        MPO<Matrix, SymmGroup> mpo(L);
+        
+        if (n_boso > 0) {
+            std::vector<op_t> left_ops, right_ops;
+            exp_and_split(bosonic_bond, alpha, left_ops, right_ops);
+            
+            maximum_b = add_to_mpo(mpo, maximum_b, left_ops, right_ops, 1., ident);
+        }
+        
+        if (n_ferm > 0) {
+            /// exp(alpha * op1 \otimes op2)
+            {
+                std::vector<op_t> left_ops, right_ops;
+                exp_and_split(fermionic_bond, alpha, left_ops, right_ops);
+                
+                maximum_b = add_to_mpo(mpo, maximum_b, left_ops, right_ops, .5, ident);
+                maximum_b = add_to_mpo(mpo, maximum_b, left_ops, right_ops, .5, fill);
+            }
+            
+            /// exp(-alpha * op1 \otimes op2)
+            {
+                std::vector<op_t> left_ops, right_ops;
+                exp_and_split(fermionic_bond, -alpha, left_ops, right_ops);
+                
+                maximum_b = add_to_mpo(mpo, maximum_b, left_ops, right_ops, .5, ident);
+                maximum_b = add_to_mpo(mpo, maximum_b, left_ops, right_ops, -.5, fill);
+            }
+        }
+        return mpo;
     }
     
 private:
     
-    inline void kron_ops(op_t const &op1, op_t const & op2, op_t const & fill, op_t & bond) const
-    {
-        if (simple)
-            op_kron(phys, op1, op2, bond);
-        else
-            op_kron_long(midx, op_set, op1, op2, fill, pos2-pos1, bond);
-    }
-    
-    MPO<Matrix, SymmGroup> get_simple_mpo(typename Matrix::value_type const & alpha) const
+    void exp_and_split(op_t const& bond_op, typename Matrix::value_type const & alpha,
+                       std::vector<op_t> & left_ops, std::vector<op_t> &  right_ops) const
     {
         op_t bond_exp;
         bond_exp = op_exp_hermitian(phys*phys, bond_op, alpha);
         bond_exp = reshape_2site_op(phys, bond_exp);
+        typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type diag_matrix;
         block_matrix<Matrix, SymmGroup> U, V, left, right;
-        block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S, Ssqrt;
+        block_matrix<diag_matrix, SymmGroup> S, Ssqrt;
         svd(bond_exp, U, V, S);
         Ssqrt = sqrt(S);
         gemm(U, Ssqrt, left);
         gemm(Ssqrt, V, right);
         
-        // reshape and write back
-        std::vector<block_matrix<Matrix, SymmGroup> > U_list = reshape_right_to_list(phys, left);
-        std::vector<block_matrix<Matrix, SymmGroup> > V_list = reshape_left_to_list(phys, right);
-        assert(U_list.size() == V_list.size());
-        
-        MPOTensor<Matrix, SymmGroup> left_tensor(1, U_list.size());
-        MPOTensor<Matrix, SymmGroup> middle_tensor(U_list.size(), U_list.size());
-        MPOTensor<Matrix, SymmGroup> right_tensor(U_list.size(), 1);
-        
-        for (std::size_t use_b=0; use_b<U_list.size(); ++use_b)
-        {
-            left_tensor(0, use_b) = U_list[use_b];
-            middle_tensor(use_b, use_b) = ident;
-            right_tensor(use_b, 0) = V_list[use_b];
+        for(std::size_t k = 0; k < S.n_blocks(); ++k){
+            std::vector<typename diag_matrix::value_type> sk = maquis::bindings::matrix_cast< std::vector<typename diag_matrix::value_type> >(S[k]);
+            int keep = std::find_if(sk.begin(), sk.end(), boost::lambda::_1 < 1e-10)-sk.begin();
+            
+            left.resize_block(left.left_basis()[k].first, left.right_basis()[k].first,
+                              left.left_basis()[k].second, keep);
+            right.resize_block(right.left_basis()[k].first, right.right_basis()[k].first,
+                               keep, right.right_basis()[k].second);
         }
         
-        MPO<Matrix, SymmGroup> mpo(pos2-pos1+1);
-        mpo[0] = left_tensor;
-        mpo[pos2-pos1] = right_tensor;
-        for (std::size_t p=1; p<pos2-pos1; ++p)
-        {
-            mpo[p] = middle_tensor;
-        }
-
-        return mpo;
+        left_ops  = reshape_right_to_list(phys, left);
+        right_ops = reshape_left_to_list(phys, right);
+        assert(left_ops.size() == right_ops.size());
     }
     
-    MPO<Matrix, SymmGroup> get_gen_mpo(typename Matrix::value_type const & alpha) const
+    std::size_t add_to_mpo(MPO<Matrix, SymmGroup> & mpo, std::size_t maximum_b, 
+                           std::vector<op_t> const& left_ops, std::vector<op_t> const& right_ops,
+                           double s, op_t const& fill) const
     {
-        Index<SymmGroup> op_basis = phys;
-        for (size_t p=pos1+1; p<=pos2; ++p)
-                op_basis = op_basis * phys;
-        
-        op_t bond_exp = op_exp_hermitian(op_basis, bond_op, alpha);
-        MPO<Matrix, SymmGroup> block_mpo = block_to_mpo(phys, bond_exp, pos2-pos1+1);
-        return block_mpo;
+        for (std::size_t i=0; i<left_ops.size(); ++i)
+        {
+            std::size_t b = (maximum_b++);
+            mpo[0](0, b) = s*left_ops[i];
+            mpo[L-1](b, 0) = right_ops[i];
+            for (std::size_t p=1; p<L-1; ++p)
+                mpo[p](b, b) = fill;
+        }
+        return maximum_b;
     }
-
     
-    op_t ident;
+    op_t ident, fill;
     Index<SymmGroup> phys;
-    std::size_t pos1, pos2;
-    bool simple;
-    op_t bond_op;
-    
-    MultiIndex<SymmGroup> midx;
-    set_id op_set;
-    
+    std::size_t pos1, pos2, L;
+    std::size_t n_boso, n_ferm;
+    op_t bosonic_bond, fermionic_bond;
 };
 
 // Precondition: Hamiltonian has to be sorted with bond terms coming before site terms (default behaviour of Operator_Term::operator<())
 template <class Matrix, class SymmGroup>
-MPO<Matrix, SymmGroup> make_exp_mpo (std::size_t length,
-                                     Hamiltonian<Matrix, SymmGroup> const & H,
-                                     typename Matrix::value_type const & alpha = 1)
+MPO<Matrix, SymmGroup> make_exp_mpo(std::size_t length,
+                                    Hamiltonian<Matrix, SymmGroup> const & H,
+                                    typename Matrix::value_type const & alpha = 1)
 {
     typedef Hamiltonian<Matrix, SymmGroup> ham;
     
@@ -335,16 +336,15 @@ MPO<Matrix, SymmGroup> make_exp_mpo (std::size_t length,
         int pos1 = H[n].operators[0].first;
         int pos2 = H[n].operators[1].first;
         
-        term_exp_mpo<Matrix, SymmGroup> t(H.get_phys(), H.get_identity(), pos1, pos2,
-                                          !H[n].with_sign);
+        exp_mpo_maker<Matrix, SymmGroup> maker(H.get_phys(), H.get_identity(), pos1, pos2);
         
-        t.add_term(H[n]);
+        maker.add_term(H[n]);
         
         int k = n+1;
         for (; k<H.n_terms() && H[n].site_match(H[k]); ++k)
-            t.add_term(H[k]);
+            maker.add_term(H[k]);
         
-        MPO<Matrix, SymmGroup> block_mpo = t.get_exp_mpo(alpha);
+        MPO<Matrix, SymmGroup> const& block_mpo = maker.exp_mpo(alpha);
         for (size_t p=0; p<pos2-pos1+1; ++p) {
             mpo[pos1+p] = block_mpo[p];
             used_p[pos1+p] = true;
