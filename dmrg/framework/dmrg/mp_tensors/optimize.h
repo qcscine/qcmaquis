@@ -172,20 +172,6 @@ protected:
         right_[L] = mps.right_boundary();
         Storage::pin(right_[L]);
 
-        #ifdef AMBIENT_TRACKING
-        ambient::overseer::log::region("optimizer::repairing");
-        #endif
-        parallel_for(locale::compact(L), locale i = 0; i < L; ++i) {
-            mps[i].make_right_paired();
-            mps[i].make_left_paired();
-            #ifdef AMBIENT_TRACKING
-            ambient_track_array(mps, i);
-            #endif
-        }
-        #ifdef AMBIENT_TRACKING
-        ambient::overseer::log::region("optimizer::continue");
-        #endif
-
         for (int i = L-1; i >= site; --i) {
             Storage::drop(right_[i]);
             boundary_right_step(mpo, i);
