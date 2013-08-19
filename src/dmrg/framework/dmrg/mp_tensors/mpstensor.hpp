@@ -66,12 +66,10 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const& sd,
 : phys_i(sd)
 , left_i(ld)
 , right_i(rd)
+, data_(block)
 , cur_storage(layout)
 , cur_normalization(Unorm)
-, repaired(false)
 {
-    if(layout == RightPaired) rp_data_ = block;
-    else lp_data_ = block;
 }
 
 template<class Matrix, class SymmGroup>
@@ -139,17 +137,12 @@ void MPSTensor<Matrix, SymmGroup>::make_left_paired() const
 {
     if (cur_storage == LeftPaired)
         return;
-    if (repaired == true) {
-        cur_storage = LeftPaired;
-        return;
-    }
     
     block_matrix<Matrix, SymmGroup> tmp;
     reshape_right_to_left_new<Matrix>(phys_i, left_i, right_i,
                                       data(), tmp);
     cur_storage = LeftPaired;
-    swap(lp_data_, tmp);
-    repaired = true;
+    swap(data_, tmp);
     
     assert( weak_equal(right_i, data().right_basis()) );
 }
@@ -159,17 +152,12 @@ void MPSTensor<Matrix, SymmGroup>::make_right_paired() const
 {   
     if (cur_storage == RightPaired)
         return;
-    if (repaired == true) {
-        cur_storage = RightPaired;
-        return;
-    }
     
     block_matrix<Matrix, SymmGroup> tmp;
     reshape_left_to_right_new<Matrix>(phys_i, left_i, right_i,
                                       data(), tmp);
     cur_storage = RightPaired;
-    swap(rp_data_, tmp);
-    repaired = true;
+    swap(data_, tmp);
     
     assert( weak_equal(left_i, data().left_basis()) );
 }
@@ -397,15 +385,8 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> &
 MPSTensor<Matrix, SymmGroup>::data()
 {
-    repaired = false;
     cur_normalization = Unorm;
-    if(cur_storage == LeftPaired){
-        if(repaired){ repaired = false; rp_data_.clear(); }
-        return lp_data_;
-    }else{ 
-        if(repaired){ repaired = false; lp_data_.clear(); }
-        return rp_data_;
-    }
+    return data_;
 }
 
 template<class Matrix, class SymmGroup>
@@ -419,8 +400,7 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const &
 MPSTensor<Matrix, SymmGroup>::const_data() const
 {
-    if(cur_storage == LeftPaired) return lp_data_;
-    else return rp_data_;
+    return data_;
 }
 
 
@@ -497,9 +477,7 @@ void MPSTensor<Matrix, SymmGroup>::swap_with(MPSTensor<Matrix, SymmGroup> & b)
     swap(this->phys_i, b.phys_i);
     swap(this->left_i, b.left_i);
     swap(this->right_i, b.right_i);
-    swap(this->lp_data_, b.lp_data_);
-    swap(this->rp_data_, b.rp_data_);
-    swap(this->repaired, b.repaired);
+    swap(this->data_, b.data_);
     swap(this->cur_storage, b.cur_storage);
     swap(this->cur_normalization, b.cur_normalization);
 }
@@ -508,8 +486,7 @@ template<class Matrix, class SymmGroup>
 template<class Archive>
 void MPSTensor<Matrix, SymmGroup>::load(Archive & ar)
 {
-    lp_data_.clear();
-    rp_data_.clear();
+    data_.clear();
     make_left_paired();
     ar["phys_i"] >> phys_i;
     ar["left_i"] >> left_i;

@@ -122,13 +122,10 @@ public:
     
     Index<SymmGroup> phys_i, left_i, right_i;
 private:
-    mutable block_matrix<Matrix, SymmGroup> lp_data_;
-    mutable block_matrix<Matrix, SymmGroup> rp_data_;
-    Indicator cur_normalization;
+    mutable block_matrix<Matrix, SymmGroup> data_;
     mutable MPSStorageLayout cur_storage;
-    mutable bool repaired;
+    Indicator cur_normalization;
 };
-
 
 // this is also required by IETL
 template<class Matrix, class SymmGroup>
