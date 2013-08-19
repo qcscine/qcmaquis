@@ -41,7 +41,10 @@ block_matrix<Matrix, SymmGroup> const & MPOTensor<Matrix, SymmGroup>::operator()
 {
     assert( left_index < left_i );
     assert( right_index < right_i );
-    return data_.at(std::make_pair(left_index, right_index));
+    typename data_t::const_iterator match = data_.find( std::make_pair(left_index, right_index) );
+    if (match == data_.end())
+        throw std::out_of_range("element not found in MPOTensor");
+    return match->second;
 }
 
 
@@ -49,8 +52,8 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                                                            std::size_t right_index)
 {
-    assert( left_index < left_i );
-    assert( right_index < right_i );
+    if (left_index > left_i)   left_i  = left_index+1;
+    if (right_index > right_i) right_i = right_index+1;
     block_matrix<Matrix, SymmGroup> * ret;
     ret = &data_[std::make_pair(left_index, right_index)];
     return *ret;
