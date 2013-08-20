@@ -154,11 +154,14 @@ namespace ambient { namespace numeric {
         void operator delete (void* ptr);
 
         explicit tiles();
-        explicit tiles(size_type size, value_type init_value = value_type()); 
+        explicit tiles(size_type rows, size_type cols, value_type init_value = value_type()); 
         tiles(const tiles& a);
         tiles& operator = (const tiles& rhs); 
        ~tiles();
     public:
+        std::pair<const value_type*,const value_type*> diagonal() const;
+        const value_type* begin() const;
+        const value_type* end() const; // actual only for merged case
         size_type num_rows() const;
         size_type num_cols() const;
         void swap(tiles& r);

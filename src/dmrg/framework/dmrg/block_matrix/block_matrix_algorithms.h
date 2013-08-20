@@ -106,6 +106,41 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
         heev(M[k], evecs[k], evals[k]);
 }
     
+#ifdef AMBIENT
+template<class Matrix, class DiagMatrix, class SymmGroup>
+void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
+                block_matrix<Matrix, SymmGroup> & U,
+                block_matrix<Matrix, SymmGroup> & V,
+                block_matrix<DiagMatrix, SymmGroup> & S)
+{
+    Index<SymmGroup> r = M.left_basis(), c = M.right_basis(), m = M.left_basis();
+    for (std::size_t i = 0; i < M.n_blocks(); ++i)
+        m[i].second = std::min(r[i].second, c[i].second);
+    
+    U = block_matrix<Matrix, SymmGroup>(r, m);
+    V = block_matrix<Matrix, SymmGroup>(m, c);
+    S = block_matrix<DiagMatrix, SymmGroup>(m, m);
+    std::size_t loop_max = M.n_blocks();
+    
+    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+        svd_merged(M[k], U[k], V[k], S[k]);
+}
+
+template<class Matrix, class DiagMatrix, class SymmGroup>
+void heev_merged(block_matrix<Matrix, SymmGroup> const & M,
+                 block_matrix<Matrix, SymmGroup> & evecs,
+                 block_matrix<DiagMatrix, SymmGroup> & evals)
+{
+
+    evecs = block_matrix<Matrix, SymmGroup>(M.left_basis(), M.right_basis());
+    evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
+    std::size_t loop_max = M.n_blocks();
+
+    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+        heev_merged(M[k], evecs[k], evals[k]);
+}
+#endif
+
 template <class T>
 typename maquis::traits::real_type<T>::type gather_real_pred(T const & val)
 {
@@ -119,9 +154,6 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
                          size_t Mmax, double cutoff, size_t* keeps, 
                          double & truncated_fraction, double & truncated_weight, double & smallest_ev)
 { // to be parallelized later (30.04.2012)
-    #ifdef AMBIENT
-    ambient::scope<ambient::shared> i;
-    #endif
     typedef typename DiagMatrix::value_type value_type;
 
     size_t length = 0;
@@ -131,11 +163,17 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     
     typedef std::vector<typename maquis::traits::real_type<value_type>::type > real_vector_t;
     real_vector_t allevals(length);
-    std::vector< std::vector<value_type> > evals_vector = maquis::bindings::matrix_cast< std::vector< std::vector<value_type> > >(evals);
+#ifdef AMBIENT
+    ambient::scope<ambient::shared> i;
+    for(std::size_t k = 0; k < evals.n_blocks(); ++k){
+        ambient::numeric::touch(evals[k][0]);
+    }
+    ambient::sync();
+#endif
     
     std::size_t position = 0;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
-        std::transform(evals_vector[k].begin(), evals_vector[k].end(), allevals.begin()+position, gather_real_pred<value_type>);
+        std::transform(evals[k].diagonal().first, evals[k].diagonal().second, allevals.begin()+position, gather_real_pred<value_type>);
         position += num_rows(evals[k]);
     }
     
@@ -159,9 +197,8 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     truncated_weight /= std::accumulate(allevals.begin(), allevals.end(), 0.0,  boost::lambda::_1 + boost::lambda::_2 *boost::lambda::_2);
     
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
-        std::vector<typename maquis::traits::real_type<value_type>::type> evals_k;
-        for (typename std::vector<value_type>::const_iterator it = evals_vector[k].begin(); it != evals_vector[k].end(); ++it)
-            evals_k.push_back(maquis::real(*it));
+        real_vector_t evals_k(num_rows(evals[k]));
+        std::transform(evals[k].diagonal().first, evals[k].diagonal().second, evals_k.begin(), gather_real_pred<value_type>);
         keeps[k] = std::find_if(evals_k.begin(), evals_k.end(), boost::lambda::_1 < evalscut)-evals_k.begin();
     }
 }
@@ -176,7 +213,11 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                 bool verbose = true)
 { 
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
+    #ifdef AMBIENT
+    svd_merged(M, U, V, S);
+    #else
     svd(M, U, V, S);
+    #endif
     
     Index<SymmGroup> old_basis = S.left_basis();
     size_t* keeps = new size_t[S.n_blocks()];
@@ -191,9 +232,6 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     {
        size_t keep = keeps[k];
   
-       if (keep >= num_rows(S[k]))
-            continue;
-        
         if (keep == 0) {
             S.remove_block(S.left_basis()[k].first,
                            S.right_basis()[k].first);
@@ -203,21 +241,28 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                            V.right_basis()[k].first);
   // C- idem heev_truncate          --k; // everything gets shifted, to we have to look into the same k again
         } else {
+            #ifdef AMBIENT
+            ambient::numeric::split(S(S.left_basis()[k].first, S.right_basis()[k].first));
+            ambient::numeric::split(U(U.left_basis()[k].first, U.right_basis()[k].first));
+            ambient::numeric::split(V(V.left_basis()[k].first, V.right_basis()[k].first));
+            #endif
+
+            if (keep >= num_rows(S[k])) continue;
+        
             S.resize_block(S.left_basis()[k].first,
                            S.right_basis()[k].first,
                            keep, keep);
-            
             U.resize_block(U.left_basis()[k].first,
                            U.right_basis()[k].first,
                            U.left_basis()[k].second,
                            keep);
-            
             V.resize_block(V.left_basis()[k].first,
                            V.right_basis()[k].first,
                            keep,
                            V.right_basis()[k].second);
         }
-    } 
+    }
+
     delete[] keeps;
 
     std::size_t bond_dimension = S.left_basis().sum_of_sizes();
@@ -238,7 +283,11 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                  bool verbose = true)
 {
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
+    #ifdef AMBIENT
+    heev_merged(M, evecs, evals);
+    #else
     heev(M, evecs, evals);
+    #endif
     Index<SymmGroup> old_basis = evals.left_basis();
     size_t* keeps = new size_t[evals.n_blocks()];
     double truncated_fraction, truncated_weight, smallest_ev;
@@ -248,8 +297,6 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     for ( int k = evals.n_blocks() - 1; k >= 0; --k) // C - we reverse faster and safer ! we avoid bug if keeps[k] = 0
     {
         size_t keep = keeps[k];
-        if (keep >= num_rows(evals[k]))
-            continue;
         
         if (keep == 0) {
             evals.remove_block(evals.left_basis()[k].first,
@@ -259,6 +306,13 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 //            --k; // everything gets shifted, to we have to look into the same k again
 // C - Tim : I reversed the loop because the new version was incompatible with the keeps array, and created a bug when keeps[k]=0.
         } else {
+            #ifdef AMBIENT
+            ambient::numeric::split(evals(evals.left_basis()[k].first, evals.right_basis()[k].first));
+            ambient::numeric::split(evecs(evecs.left_basis()[k].first, evecs.right_basis()[k].first));
+            #endif
+
+            if(keep >= num_rows(evals[k])) continue;
+
             evals.resize_block(evals.left_basis()[k].first,
                                evals.right_basis()[k].first,
                                keep, keep);

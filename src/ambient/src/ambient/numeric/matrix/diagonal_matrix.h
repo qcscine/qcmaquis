@@ -43,15 +43,13 @@ namespace ambient { namespace numeric {
         typedef typename container::real_type real_type;
         typedef typename container::size_type size_type;
         
-        diagonal_matrix(size_t rows, const value_type& init = value_type());
+        diagonal_matrix(size_t rows, size_t cols, value_type init = value_type());
         size_type num_rows() const;
         size_type num_cols() const;
         const value_type& operator[](size_t i) const;
         value_type& operator[](size_t i); 
         const value_type& operator()(size_t i, size_t j) const;
         value_type& operator()(size_t i, size_t j);
-        void remove_rows(size_t i, size_t m = 1);
-        void remove_cols(size_t j, size_t n = 1);
         diagonal_matrix& locate(size_t i, size_t j);
         const diagonal_matrix& locate(size_t i, size_t j) const;
         size_t addr(size_t i, size_t j) const;
