@@ -341,9 +341,9 @@ namespace ambient { namespace numeric {
     template<typename T, class A>
     template<class Archive>
     void matrix<T,A>::save(Archive & ar) const {
-        // relying on base-scope
-        ambient::numeric::touch(*this);
-        ambient::sync();
+        // relying on base-scope to touch explicitely
+        // ambient::numeric::touch(*this);
+        // ambient::sync();
         ar["y"] << core->dim.y;
         ar["x"] << core->dim.x;
         

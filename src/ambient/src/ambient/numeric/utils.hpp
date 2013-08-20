@@ -47,6 +47,14 @@ namespace ambient {
     }
 
     template<class Matrix>
+    inline void touch(const numeric::tiles<Matrix>& a){
+        int size = a.data.size();
+        for(int i = 0; i < size; i++){
+            touch(a[i]);
+        }
+    }
+
+    template<class Matrix>
     inline void migrate(numeric::tiles<Matrix>& a){
         int size = a.data.size();
         for(int i = 0; i < size; i++){

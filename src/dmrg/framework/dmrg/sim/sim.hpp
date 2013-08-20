@@ -149,6 +149,16 @@ template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::checkpoint_state(MPS<Matrix, SymmGroup> const& state, status_type const& status)
 {
     if (!dns) {
+        #ifdef AMBIENT
+        locale::compact(state.length()); locale l(0,0);
+        for(int k = 0; k < state.length(); ++k) 
+        for(int i = 0; i < state[k].data().n_blocks(); ++i){
+            state[k].make_left_paired();
+            ambient::touch(state[k].data()[i]);
+        }
+        ambient::sync();
+        if(!ambient::master()) return;
+        #endif
         storage::archive ar(chkpfile, "w");
         ar["/state"]  << state;
         ar["/status"] << status;
