@@ -332,8 +332,8 @@ namespace ambient { namespace numeric {
         int n = num_cols(a);
         int k = std::min(m,n);
         
-        tiles<DiagonalMatrix> tp(k);
-        tiles<DiagonalMatrix> tq(k);
+        tiles<DiagonalMatrix> tp(k, k);
+        tiles<DiagonalMatrix> tq(k, k);
         tiles<Matrix> x(m, AMBIENT_IB);
         tiles<Matrix> y(n, AMBIENT_IB);
         resize(d, k, k);
@@ -367,7 +367,7 @@ namespace ambient { namespace numeric {
         size_t m = num_rows(a);
         size_t n = num_cols(a);
         size_t k = std::min(m,n);
-        tiles<DiagonalMatrix> e(k);
+        tiles<DiagonalMatrix> e(k,k);
 
         s.resize(k, k);
         u.resize(m, m); 

@@ -258,16 +258,6 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T, class A>
-    inline void matrix<T,A>::remove_rows(size_type i, size_type k){
-        ambient::numeric::remove_rows(*this, i, k);
-    }
-
-    template<typename T, class A>
-    inline void matrix<T,A>::remove_cols(size_type j, size_type k){
-        ambient::numeric::remove_cols(*this, j, k); 
-    }
-
-    template<typename T, class A>
     inline matrix<T,A>& matrix<T,A>::locate(size_type i, size_type j){
         return *this;
     }

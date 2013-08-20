@@ -282,9 +282,16 @@ private:
         gemm(U, Ssqrt, left);
         gemm(Ssqrt, V, right);
         
+#ifdef AMBIENT
+        ambient::scope<ambient::shared> i;
         for(std::size_t k = 0; k < S.n_blocks(); ++k){
-            std::vector<typename diag_matrix::value_type> sk = maquis::bindings::matrix_cast< std::vector<typename diag_matrix::value_type> >(S[k]);
-            int keep = std::find_if(sk.begin(), sk.end(), boost::lambda::_1 < 1e-10)-sk.begin();
+            ambient::numeric::merge(S[k]);
+            ambient::numeric::touch(S[k][0]);
+        }
+        ambient::sync();
+#endif
+        for(std::size_t k = 0; k < S.n_blocks(); ++k){
+            int keep = std::find_if(S[k].diagonal().first, S[k].diagonal().second, boost::lambda::_1 < 1e-10)-S[k].diagonal().first;
             
             left.resize_block(left.left_basis()[k].first, left.right_basis()[k].first,
                               left.left_basis()[k].second, keep);

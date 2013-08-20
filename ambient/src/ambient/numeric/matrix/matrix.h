@@ -71,8 +71,6 @@ namespace ambient { namespace numeric {
         template<typename TT> 
         friend void swap(matrix& x, matrix& y);
         void resize(size_type m, size_type n); 
-        void remove_rows(size_type i, size_type k = 1);
-        void remove_cols(size_type j, size_type k = 1);
         matrix& locate(size_type i, size_type j);
         const matrix& locate(size_type i, size_type j) const;
         size_t addr(size_type i, size_type j) const;

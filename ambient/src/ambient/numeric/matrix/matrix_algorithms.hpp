@@ -53,25 +53,6 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T, class A>
-    inline matrix<T,A> exp(const matrix<T,A>& a, const T& alfa = 1.){
-        printf("ERROR: NOT TESTED (EXP)\n");
-        assert( false );
-        // TODO: - right eigenvalues/eigenvectors from geev
-        //       - inverse of eigenvectors (getrf && getri)
-        //       - return Nr * exp(S, alpha) * inverse(Nr);
-        return matrix<T,A>();
-    }
-
-    template<typename T, class A>
-    inline matrix<T,A> exp_hermitian(const matrix<T,A>& a, const T& alfa = 1.){
-        printf("ERROR: NOT TESTED (EXP_HERMITIAN)\n");
-        diagonal_matrix<T> evals(a.num_rows());
-        matrix<T,A> evecs = matrix<T,A>();
-        heev(a, evecs, evals);
-        return (evecs * exp(evals, alfa))*conj(transpose(evecs));
-    }
-
-    template<typename T, class A>
     inline matrix<T,A> conj(const matrix<T,A>& a){
         matrix<T,A> b(a);
         conj_inplace(b);
@@ -86,41 +67,18 @@ namespace ambient { namespace numeric {
     template<class A>
     inline void conj_inplace(matrix<double, A>& a){ }
 
-    template<typename T, class A>
-    inline void remove_rows(matrix<T,A>& a, size_type i, difference_type k){
-        assert( i+k <= a.num_rows() );
-        assert(false); printf("ERROR: NOT TESTED (REMOVE ROWS)\n");
-        //kernels::remove_rows<T>::spawn<complexity::N2>(a, i, k);
-        resize(a, a.num_rows()-k, a.num_cols());
-    }
-
-    template<typename T, class A>
-    inline void remove_cols(matrix<T,A>& a, size_type j, difference_type k){
-        assert( j+k <= a.num_cols() );
-        assert(false); printf("ERROR: NOT TESTED (REMOVE COLS)\n");
-        //kernels::remove_cols<T>::spawn<complexity::N2>(a, j, k);
-        resize(a, a.num_rows(), a.num_cols()-k);
-    }
-
     template <typename T, class A>
-    inline void mul_inplace(matrix<T,A>& a, const matrix<T,A>& rhs){
-        assert(false); printf("ERROR: NOT TESTED (GEMM INPLACE)\n");
-        //kernels::gemm_inplace<T>::spawn(a, rhs);
-    }
-
-    template <typename T, class A>
-    inline void mul_inplace(matrix<T,A>& a, const diagonal_matrix<T>& rhs){
-        assert(false); printf("ERROR: NOT TESTED (GEMM DIAG INPLACE)\n");
-        //kernels::gemm_diag_inplace<T>::spawn<complexity::N2>(a, rhs);
-    }
-
-    template <typename T, class A>
-    inline void touch(const matrix<T,A>& a) { 
+    inline void touch(const matrix<T,A>& a){
         kernels::template touch<T,A>::template spawn<complexity::N>(a); 
     }
 
+    template <typename T>
+    inline void touch(const diagonal_matrix<T>& a){
+        kernels::template touch<T,ambient::default_allocator<T> >::template spawn<complexity::N>(a); 
+    }
+
     template <typename T, class A>
-    inline void migrate(matrix<T,A>& a) { 
+    inline void migrate(matrix<T,A>& a){
         kernels::template migrate<T,A>::template spawn<complexity::N>(a); 
     }
 
@@ -146,12 +104,6 @@ namespace ambient { namespace numeric {
 
     template<typename T, class A>
     inline void svd(matrix<T,A>& a, matrix<T,A>& u, matrix<T,A>& vt, diagonal_matrix<double>& s){
-        int m = num_rows(a);
-        int n = num_cols(a);
-        int k = std::min(m,n);
-        u.resize(m, k);
-        vt.resize(k, n);
-        s.resize(k, k);
         kernels::template svd<T>::template spawn<complexity::N3>(a, u, vt, s);
     }
 
@@ -161,19 +113,19 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T, class A>
-    inline void geev(matrix<T,A> a, matrix<T,A>& lv, matrix<T,A>& rv, diagonal_matrix<T>& s){
+    inline void geev(matrix<T,A>& a, matrix<T,A>& lv, matrix<T,A>& rv, diagonal_matrix<T>& s){
         kernels::template geev<T>::template spawn<complexity::N3>(a, lv, rv, s); 
     }
 
     template<typename T, class A>
-    inline void heev(matrix<T,A> a, matrix<T,A>& evecs, diagonal_matrix<double>& evals){
+    inline void heev(matrix<T,A>& a, matrix<T,A>& evecs, diagonal_matrix<double>& evals){
         assert(num_rows(a) == num_cols(a) && num_rows(evals) == num_rows(a));
         kernels::template heev<T>::template spawn<complexity::N3>(a, evals); // destoys U triangle of M
         evecs.swap(a);
     }
 
     template<typename T, class A>
-    inline void syev(const matrix<T,A>& a, matrix<T,A>& evecs, diagonal_matrix<double>& evals){
+    inline void syev(matrix<T,A>& a, matrix<T,A>& evecs, diagonal_matrix<double>& evals){
         heev(a, evecs, evals); // should it be syev instead?
     }
 

@@ -102,12 +102,12 @@ namespace ambient { namespace numeric {
         std::size_t n = num_cols(a);
 
         tiles<Matrix> Nr(n, n), Nl(n, n);
-        tiles<diagonal_matrix<value_type> > Sv(num_rows(a)); 
+        tiles<diagonal_matrix<value_type> > Sv(num_rows(a), num_rows(a)); 
  
         geev(a, Nl, Nr, Sv);        
       
         tiles<Matrix> Nrinv = inverse(Nr);  
-        tiles<diagonal_matrix<value_type> > S(num_rows(a)); 
+        tiles<diagonal_matrix<value_type> > S(num_rows(a), num_rows(a)); 
 
         S = expi(Sv, alfa); //complex-complex
 
@@ -123,12 +123,12 @@ namespace ambient { namespace numeric {
     inline tiles<Matrix> exp_hermitian(tiles<Matrix> a, const value_type& alfa = 1.){
         assert(num_rows(a) == num_cols(a));
         std::size_t n = num_cols(a);
-        tiles<diagonal_matrix<double> > Sv(n); 
+        tiles<diagonal_matrix<double> > Sv(n,n);
         tiles<Matrix> tmp(n,n), N(n,n);
    
         heev(a, N, Sv);
 
-        tiles<diagonal_matrix<value_type> > S(n), S1(n); 
+        tiles<diagonal_matrix<value_type> > S(n,n), S1(n,n); 
 
         for(size_t k = 0; k < Sv.data.size(); ++k)
              ambient::numeric::kernels::template cast_double_complex<value_type,double>::template spawn<complexity::N2>(S[k],Sv[k]); //can be complex/double or double/double
@@ -141,10 +141,10 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix>
-    inline void geev(const tiles<Matrix>& a, tiles<Matrix>& lv, tiles<Matrix>& rv, tiles<diagonal_matrix<value_type> >& s){
+    inline void geev(tiles<Matrix> a, tiles<Matrix>& lv, tiles<Matrix>& rv, tiles<diagonal_matrix<value_type> >& s){
         merge(a); merge(lv); merge(rv); merge(s);
         geev(a[0],lv[0],rv[0],s[0]);
-        split(a); split(lv); split(rv); split(s);
+        split(lv); split(rv); split(s);
     }
 
     template<class Matrix>
@@ -250,7 +250,7 @@ namespace ambient { namespace numeric {
         if(a.data.size() == 1) return;
 
         std::vector<diagonal_matrix<T> *> m; 
-        m.push_back(new diagonal_matrix<T>(a.size));
+        m.push_back(new diagonal_matrix<T>(a.size, a.size));
 
         for(int i = 0; i < a.nt; i++){
             const diagonal_matrix<T>* src = a.data[i];
@@ -270,8 +270,8 @@ namespace ambient { namespace numeric {
         int tailm = __a_mod(a.size, AMBIENT_IB);
         s.reserve(a.nt);
         for(int i = 1; i < a.nt; i++) 
-            s.push_back(new diagonal_matrix<T>(AMBIENT_IB));
-        s.push_back(new diagonal_matrix<T>(tailm));
+            s.push_back(new diagonal_matrix<T>(AMBIENT_IB, AMBIENT_IB));
+        s.push_back(new diagonal_matrix<T>(tailm, tailm));
 
         const diagonal_matrix<T>* src = a.data[0];
 
@@ -384,15 +384,29 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix, class DiagonalMatrix>
-    inline void heev(const tiles<Matrix>& a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
-        merge(a); merge(evecs); merge(evals);
-        heev(a[0], evecs[0], evals[0]);
-        split(a); split(evecs); split(evals);
+    inline void svd_merged(tiles<Matrix> a, tiles<Matrix>& u, tiles<Matrix>& v, tiles<DiagonalMatrix>& s){
+        merge(a); merge(u); merge(v); merge(s);
+        svd(a[0], u[0], v[0], s[0]);
     }
 
     template<class Matrix, class DiagonalMatrix>
-    inline void syev(const tiles<Matrix>& a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
-        heev(a, evecs, evals); // should be call syev instead? -> Alex syev for double, heev for complex
+    inline void heev(tiles<Matrix> a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
+        merge(a); merge(evecs); merge(evals);
+        heev(a[0], evecs[0], evals[0]);
+        split(evecs); split(evals);
+    }
+
+    template<class Matrix, class DiagonalMatrix>
+    inline void heev_merged(tiles<Matrix> a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
+        merge(a); merge(evecs); merge(evals);
+        heev(a[0], evecs[0], evals[0]);
+    }
+
+    template<class Matrix, class DiagonalMatrix>
+    inline void syev(tiles<Matrix> a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
+        merge(a); merge(evecs); merge(evals);
+        heev(a[0], evecs[0], evals[0]);
+        split(evecs); split(evals);
     }
                 
     template<class Matrix>
@@ -583,7 +597,7 @@ namespace ambient { namespace numeric {
     template<typename T> 
     inline void resize(tiles<diagonal_matrix<T> >& a, size_t m, size_t n){
         if(a.num_rows() == m) return;
-        tiles<diagonal_matrix<T> > r(m);
+        tiles<diagonal_matrix<T> > r(m, m);
 
         int nb_min = std::min(r.nt, a.nt);
         
