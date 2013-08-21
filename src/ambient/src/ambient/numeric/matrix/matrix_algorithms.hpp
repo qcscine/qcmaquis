@@ -256,7 +256,7 @@ namespace ambient { namespace numeric {
 
     template<typename T, class A>
     inline void copy(const matrix<T,A>& src, matrix<T,A>& dst){
-        ambient::template fuse(src.core, dst.core);
+        ambient::fuse(src.core, dst.core);
     }
 
     template<class A1, class A2, typename T>

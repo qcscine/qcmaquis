@@ -127,7 +127,7 @@ namespace ambient {
     namespace pool {
         struct descriptor {
 
-            descriptor(size_t e, region_t r = region_t::rstandard) : extent(e), region(r), mmap(NULL), persistency(1), mediator(false), copied(false) {}
+            descriptor(size_t e, region_t r = region_t::rstandard) : extent(e), region(r), mmap(NULL), persistency(1) {}
             void* mmap;
             size_t extent;
 
@@ -137,7 +137,6 @@ namespace ambient {
             void protect(){
                 assert(region != region_t::rdelegated);
                 if(!(persistency++)) region = region_t::rstandard;
-                copied = true;
             }
             void weaken(){
                 assert(region != region_t::rbulked);
@@ -157,8 +156,6 @@ namespace ambient {
             }
             region_t region;
             int persistency;
-            bool mediator;
-            bool copied;
         };
 
         template<class Memory>           static void* malloc(size_t sz){ return Memory::malloc(sz);            }

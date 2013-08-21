@@ -53,7 +53,6 @@ namespace ambient {
     template <typename T> static revision& current(T& obj){ 
         revision& c = *obj.core->content[obj.ref];
         if(!c.valid()){
-            if(!c.spec.copied && c.spec.mediator) c.spec.region = region_t::rbulked;
             c.embed(T::allocator_type::calloc(c.spec));
         }
         return c;
@@ -64,7 +63,6 @@ namespace ambient {
         revision& p = *obj.core->content[obj.ref];
         if(p.valid() && !p.locked() && c.spec.conserves(p.spec)) c.reuse(p);
         else{
-            if(!c.spec.copied && c.spec.mediator) c.spec.region = region_t::rbulked;
             c.embed(T::allocator_type::alloc(c.spec));
         }
         return c;
@@ -74,11 +72,9 @@ namespace ambient {
         revision& c = *obj.core->content[obj.ref+1]; assert(!c.valid());
         revision& p = *obj.core->content[obj.ref];
         if(!p.valid()){
-            if(!c.spec.copied && c.spec.mediator) c.spec.region = region_t::rbulked;
             c.embed(T::allocator_type::calloc(c.spec));
         }else if(!p.locked() && c.spec.conserves(p.spec)) c.reuse(p);
         else{
-            if(!c.spec.copied && c.spec.mediator) c.spec.region = region_t::rbulked;
             c.embed(T::allocator_type::alloc(c.spec));
             memcpy((T*)c, (T*)p, p.spec.extent);
         }

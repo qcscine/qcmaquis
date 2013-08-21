@@ -36,16 +36,19 @@ namespace ambient{ namespace memory {
     public:
         struct delete_ptr {
             void operator()( history* element ) const;
+            void operator()( revision* element ) const;
             void operator()( void* element ) const;
         };
 
         collector();
-        void push_back(void* o);
         void push_back(history* o);
+        void push_back(revision* o);
+        void push_back(void* o);
         void clear();
     private:
-        std::vector< history* > str;
-        std::vector< void* > raw;
+        std::vector< history* >  str;
+        std::vector< revision* > rev;
+        std::vector< void* >     raw;
     };
 
 } }
