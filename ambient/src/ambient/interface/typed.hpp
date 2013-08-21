@@ -97,19 +97,19 @@ namespace ambient {
         static void modify_remote(T& obj){
             history* o = obj.core;
             ambient::model.touch(o);
-            o->back()->spec.mediator = true;
             ambient::controller.rsync(o->back());
+            ambient::controller.destroy(o->back());
             ambient::model.add_revision<ambient::remote>(o, ambient::controller.which()); 
         }
         template<size_t arg>
         static void modify_local(T& obj, cfunctor* m){
             history* o = obj.core;
             m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(o, ambient::model.time(o));
-            o->back()->spec.mediator = true;
             #ifdef AMBIENT_TRACKING
             if(ambient::model.remote(o->back()) && o->back()->transfer == NULL) ambient::overseer::log::get(o, m);
             #endif
             ambient::controller.lsync(o->back());
+            ambient::controller.destroy(o->back());
             ambient::model.add_revision<ambient::local>(o, m); 
             ambient::model.use_revision(o);
             #ifdef AMBIENT_TRACKING
@@ -120,11 +120,11 @@ namespace ambient {
         static void modify(T& obj, cfunctor* m){
             history* o = obj.core;
             m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(o, ambient::model.time(o));
-            o->back()->spec.mediator = true;
             #ifdef AMBIENT_TRACKING
             if(ambient::model.remote(o->back()) && o->back()->transfer == NULL) ambient::overseer::log::get(o, m);
             #endif
             ambient::controller.sync(o->back());
+            ambient::controller.destroy(o->back());
             ambient::model.add_revision<ambient::common>(o, m); 
             ambient::model.use_revision(o);
             #ifdef AMBIENT_TRACKING
@@ -193,13 +193,13 @@ namespace ambient {
         template<size_t arg> static void modify_remote(T& obj){
             history* o = obj.core;
             ambient::model.touch(o);
-            o->back()->spec.mediator = true;
+            ambient::controller.destroy(o->back());
             ambient::model.add_revision<ambient::remote>(o, ambient::controller.which()); 
         }
         template<size_t arg> static void modify_local(T& obj, cfunctor* m){
             history* o = obj.core;
             m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(o, ambient::model.time(o));
-            o->back()->spec.mediator = true;
+            ambient::controller.destroy(o->back());
             ambient::model.add_revision<ambient::local>(o, m); 
             ambient::model.use_revision(o);
             #ifdef AMBIENT_TRACKING
@@ -209,7 +209,7 @@ namespace ambient {
         template<size_t arg> static void modify(T& obj, cfunctor* m){
             history* o = obj.core;
             m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(o, ambient::model.time(o));
-            o->back()->spec.mediator = true;
+            ambient::controller.destroy(o->back());
             ambient::model.add_revision<ambient::common>(o, m); 
             ambient::model.use_revision(o);
             #ifdef AMBIENT_TRACKING

@@ -65,17 +65,6 @@ namespace ambient { namespace models { namespace velvet {
         ambient::model.index(r);
     }
 
-    inline void history::fuse(const history* src){
-        if(src->weak()) return;
-        revision* r = src->back();
-        this->content.push_back(r);
-        this->current = r;
-        // do not deallocate or reuse
-        if(!r->valid()) r->spec.protect();
-        assert(!r->valid() || !r->spec.bulked()); // can't rely on bulk memory
-        r->use();
-    }
-        
     inline size_t history::time() const {
         return this->content.size()-1;
     } 
