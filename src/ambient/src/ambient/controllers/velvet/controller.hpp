@@ -72,7 +72,7 @@ namespace ambient { namespace controllers { namespace velvet {
 
     template<complexity O>
     inline void controller::schedule(){
-        context->toss();
+        const_cast<scope*>(context)->toss();
     }
 
     inline void controller::intend_fetch(history* o){
@@ -85,7 +85,7 @@ namespace ambient { namespace controllers { namespace velvet {
         context->consider_allocation(o->extent);
     }
 
-    inline void controller::set_context(scope* s){
+    inline void controller::set_context(const scope* s){
         this->context = s; // no nesting
     }
 

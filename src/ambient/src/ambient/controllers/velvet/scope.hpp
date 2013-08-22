@@ -45,13 +45,13 @@ namespace ambient {
             this->op_alloc = 0;
             this->op_transfer = 0;
         }
-        virtual bool tunable(){ 
+        virtual bool tunable() const { 
             return false; // can be enabled but the algorithm should be finalized
         }
-        virtual void consider_allocation(size_t size){
+        virtual void consider_allocation(size_t size) const {
             this->op_alloc += size;
         }
-        virtual void consider_transfer(size_t size, ambient::locality l){
+        virtual void consider_transfer(size_t size, ambient::locality l) const {
             if(l == ambient::common) return;
             this->op_transfer += size;
         }
@@ -70,8 +70,8 @@ namespace ambient {
             this->op_transfer = 0;
         }
         size_t factor;
-        size_t op_alloc;
-        size_t op_transfer;
+        mutable size_t op_alloc;
+        mutable size_t op_transfer;
         int round;
     };
 
@@ -126,7 +126,7 @@ namespace ambient {
        ~scope(){
             if(!dry) ambient::controller.pop_context();
         }
-        virtual bool tunable(){ 
+        virtual bool tunable() const {
             return false; 
         }
         size_t index;
@@ -134,6 +134,38 @@ namespace ambient {
         int factor;
         int iterator;
         int round;
+    };
+
+    template<>
+    class scope<funnel> : public controller::scope {
+    public:
+        scope(){
+            this->sector = -1;
+        }
+        scope(int s){
+            this->latch(s);
+        }
+        scope& operator = (const scope<single>& s){
+            this->sector = s.sector;
+            this->state = s.state;
+            return *this;
+        }
+        void latch(int s){
+            this->sector = s;
+            this->state = (s == ambient::rank()) ? ambient::local : ambient::remote;
+        }
+        void push() const {
+            parent = ambient::controller.context;
+            if(this->sector == -1) printf("Warning: uninitialized context!\n");
+            else ambient::controller.set_context(this);
+        }
+        void pop() const {
+            ambient::controller.set_context(parent);
+        }
+        virtual bool tunable() const {
+            return false; 
+        }
+        mutable const controller::scope* parent;
     };
 
     template<>
@@ -147,7 +179,7 @@ namespace ambient {
        ~scope(){
             ambient::controller.pop_context();
         }
-        virtual bool tunable(){ 
+        virtual bool tunable() const {
             return false; 
         }
     };
@@ -162,7 +194,7 @@ namespace ambient {
        ~scope(){
             ambient::controller.pop_context();
         }
-        virtual bool tunable(){ 
+        virtual bool tunable() const { 
             return false; 
         }
     };

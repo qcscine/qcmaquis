@@ -119,7 +119,7 @@ namespace ambient {
     }
     enum complexity { N, N2, N3 };
     enum locality   { remote, local, common };
-    enum scope_t    { base, single, shared, dedicated };
+    enum scope_t    { base, single, funnel, shared, dedicated };
     enum region_t   { rbulked, rstandard, rpersist, rdelegated };
 }
 
