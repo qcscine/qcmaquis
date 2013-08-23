@@ -132,6 +132,9 @@ public:
     	    // Create TwoSite objects
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
     	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
+            #ifdef AMBIENT_TRACKING
+            ambient_track_as(twin_mps, "twin_mps");
+            #endif
             SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);
             
             /// Compute orthogonal vectors
@@ -180,6 +183,14 @@ public:
     	    {
         		// Write back result from optimization
         		boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_l2r(Mmax, cutoff);
+                #ifdef AMBIENT_TRACKING
+                ambient_track_array(mps, site1);
+                ambient_track_array(mps, site2);
+                #endif
+                #ifdef AMBIENT
+                { locale::compact(L); locale l(site1,site1); storage::migrate(mps[site1]); }
+                { locale::compact(L); locale l(site2,site2); storage::migrate(mps[site2]); }
+                #endif
 
         		block_matrix<Matrix, SymmGroup> t;
 		
@@ -203,6 +214,10 @@ public:
     	    if (lr == -1){
         		// Write back result from optimization
         		boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_r2l(Mmax, cutoff);
+                #ifdef AMBIENT_TRACKING
+                ambient_track_array(mps, site1);
+                ambient_track_array(mps, site2);
+                #endif
 
         		block_matrix<Matrix, SymmGroup> t;
 
