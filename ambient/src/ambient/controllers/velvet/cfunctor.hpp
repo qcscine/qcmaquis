@@ -64,6 +64,7 @@ namespace ambient { namespace controllers { namespace velvet {
     
     template<int N>
     inline void set<revision, N>::operator >> (int p){
+        int dim = ambient::channel.dim();
 #ifndef AMBIENT_PERSISTENT_TRANSFERS
         if(N == AMBIENT_MAX_NUM_PROCS) return;
         new (this) set<revision, AMBIENT_MAX_NUM_PROCS>(this);
@@ -79,14 +80,15 @@ namespace ambient { namespace controllers { namespace velvet {
 #else
         if(N == AMBIENT_MAX_NUM_PROCS){
             if(p == ALL){
-                for(int i = 0; i < ambient::channel.dim(); ++i) (*states)[i] = true;
+                #pragma ivdep
+                for(int i = 0; i < dim; i++) (*states)[i] = true;
             }else
                 (*states)[p] = true;
             return;
         }
         if(N == AMBIENT_MAX_NUM_PROCS+1){
             if(p == ALL){
-                for(int i = 0; i < ambient::channel.dim(); ++i) (*this) >> i;
+                for(int i = 0; i < dim; i++) (*this) >> i;
                 return;
             }
             if((*states)[p]) return;
@@ -100,7 +102,8 @@ namespace ambient { namespace controllers { namespace velvet {
         }else{
             new (this) set<revision, AMBIENT_MAX_NUM_PROCS>(this);
             if(p == ALL){
-                for(int i = 0; i < ambient::channel.dim(); ++i) (*states)[i] = true;
+                #pragma ivdep
+                for(int i = 0; i < dim; i++) (*states)[i] = true;
                 p = ambient::rank.neighbor();
             }
             handle = (request*)(size_t)p;
@@ -128,7 +131,8 @@ namespace ambient { namespace controllers { namespace velvet {
 #else
         if(N == AMBIENT_MAX_NUM_PROCS+1){
             bool result = true;
-            for(int i = 0; i < handles->size(); ++i)
+            int size = handles->size();
+            for(int i = 0; i < size; i++)
                 if(!ambient::channel.test((*handles)[i])) result = false;
             if(!result) return false;
             delete handles;

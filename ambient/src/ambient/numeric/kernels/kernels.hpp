@@ -504,7 +504,8 @@ namespace ambient { namespace numeric { namespace kernels {
         T* ar = updated(a);
 
         int size = ambient::square_dim(a);
-        for(int k = 0; k < size; k++) 
+        #pragma vector always
+        for(int k = 0; k < size; k++)
             ar[k] = ad[k] + bd[k];
     }
 
@@ -516,7 +517,8 @@ namespace ambient { namespace numeric { namespace kernels {
         T* ar = updated(a);
 
         int size = ambient::square_dim(a);
-        for(int k = 0; k < size; k++) 
+        #pragma vector always
+        for(int k = 0; k < size; k++)
             ar[k] = ad[k] - bd[k];
     }
         
@@ -526,7 +528,8 @@ namespace ambient { namespace numeric { namespace kernels {
         T* ar = updated(a);
         T factor = t.get_naked();
         int size = ambient::square_dim(a);
-        for(int k=0; k < size; k++) 
+        #pragma vector always
+        for(int k = 0; k < size; k++)
             ar[k] = ad[k] * factor;
     }
         
@@ -544,7 +547,8 @@ namespace ambient { namespace numeric { namespace kernels {
         T* ar = updated(a);
         T factor = t.get_naked();
         int size = ambient::square_dim(a);
-        for(int k=0; k < size; k++) 
+        #pragma vector always
+        for(int k = 0; k < size; k++)
             ar[k] = ad[k] / factor;
     }
         
@@ -772,7 +776,7 @@ namespace ambient { namespace numeric { namespace kernels {
         helper_lapack<T>::syev("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
 
         typename real_type<T>::type s;
-        for(int i=0; i < (int)(m/2); i++){ 
+        for(int i=0; i < (int)(m/2); i++){
             s = wd[i];
             wd[i] = wd[m-i-1];
             wd[m-i-1] = s;
@@ -780,7 +784,7 @@ namespace ambient { namespace numeric { namespace kernels {
         // reversing eigenvectors
         size_t len = m*sizeof(T);
         work = (T*)std::malloc(len);
-        for (int i=0; i < (int)(m/2); i++){ 
+        for (int i=0; i < (int)(m/2); i++){
             std::memcpy(work, &ad[i*m], len);
             std::memcpy(&ad[i*m], &ad[(m-1-i)*m], len);
             std::memcpy(&ad[(m-1-i)*m], work, len);

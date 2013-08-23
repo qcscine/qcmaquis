@@ -143,7 +143,8 @@ namespace ambient { namespace controllers { namespace velvet {
                         printf("op%d[label=\"%s\"]\nop%d -> op%d\n", task->deps[n]->id(), task->deps[n]->name(), 
                                                                      task->id(), task->deps[n]->id());
                     #endif
-                    for(int n = 0; n < task->deps.size(); ++n) task->deps[n]->ready();
+                    int size = task->deps.size();
+                    for(int n = 0; n < size; n++) task->deps[n]->ready();
                     mirror->insert(mirror->end(), task->deps.begin(), task->deps.end());
                 }else mirror->push_back(*i);
             }
