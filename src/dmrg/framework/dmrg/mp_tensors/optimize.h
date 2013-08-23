@@ -85,11 +85,11 @@ public:
     , stop_callback(stop_callback_)
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
+        std::size_t L = mps.length();
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("optimizer_base::optimizer_base");
-        for(int i = 0; i < mps.length(); ++i) ambient_track_array(mps, i);
+        for(int i = 0; i < L; ++i) ambient_track_array(mps, i);
         #endif
-        int L = mps.length();
         int site = (initial_site < L) ? initial_site : 2*L-initial_site-1;
         
         mps.canonize(site);
