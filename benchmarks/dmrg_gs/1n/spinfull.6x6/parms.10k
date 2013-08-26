@@ -1,14 +1,13 @@
 max_bond_dimension = 10000
 truncation_final = 1e-16
 
-nsweeps = 10
+nsweeps = 5
 ngrowsweeps = 0
 sweep_bond_dimensions = "10000"
 optimization = twosite
-symmetry = u1
+symmetry = 2u1
 
-chkpfile = "/state/partition1/adrian.10k.ckp.h5"
-resultfile = "/state/partition1/adrian.10k.res.h5"
+chkpfile = "/state/partition1/spinful.6x6.10k.ckp.h5"
+resultfile = "/state/partition1/spinful.6x6.10k.res.h5"
 storagedir = "/state/partition1"
-//donotsave = 1
 
