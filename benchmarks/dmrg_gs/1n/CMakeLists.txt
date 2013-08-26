@@ -18,7 +18,7 @@ add_dmrg_bench(spinless.L8  6000)
 add_dmrg_bench(spinless.L8  8000)
 add_dmrg_bench(spinless.L8  10000)
 
-# spinfull.L8
-add_dmrg_bench(spinfull.L8  6000)
-add_dmrg_bench(spinfull.L8  8000)
-add_dmrg_bench(spinfull.L8  10000)
+# spinful.L8
+add_dmrg_bench(spinful.L8  6000)
+add_dmrg_bench(spinful.L8  8000)
+add_dmrg_bench(spinful.L8  10000)
