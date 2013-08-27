@@ -28,6 +28,7 @@
 #define AMBIENT_MEMORY_POOL
 
 #include <sys/mman.h>
+#include <boost/pool/singleton_pool.hpp>
 
 namespace ambient { namespace memory {
 
@@ -53,7 +54,78 @@ namespace ambient { namespace memory {
     };
 
     struct bulk {
+
         template<size_t S>
+        class factory {
+        public:
+            typedef boost::details::pool::default_mutex mutex;
+
+            static factory& instance(){
+                static factory singleton;
+                return singleton;
+            }
+            factory(){
+                this->buffers.push_back(std::malloc(S));
+                this->buffer = &this->buffers[0];
+            }
+            static void* provide(){
+                factory& s = instance();
+                boost::details::pool::guard<mutex> g(s.mtx);
+                void* chunk = *s.buffer;
+
+                if(*s.buffer == s.buffers.back()){
+                    s.buffers.push_back(std::malloc(S));
+                    s.buffer = &s.buffers.back();
+                }else
+                    s.buffer++;
+
+                return chunk;
+            }
+            static void reset(){
+                factory& s = instance();
+                s.buffer = &s.buffers[0];
+                /*void* tmp = s.buffers[0];
+                for(int i = 1; i < s.buffers.size(); i++)
+                    std::free(s.buffers[i]);
+                s.buffers.clear();
+                s.buffers.push_back(tmp);
+                s.buffer = &s.buffers[0];*/
+            }
+            static size_t size(){
+                factory& s = instance();
+                return (s.buffer - &s.buffers[0]);
+            }
+            mutex mtx;
+            std::vector<void*> buffers;
+            void** buffer;
+        };
+
+        template<size_t S>
+        class region {
+        public:
+            region(){
+                this->buffer = NULL;
+                this->iterator = (char*)this->buffer+S;
+            }
+            void realloc(){
+                this->buffer = factory<S>::provide();
+                this->iterator = (char*)this->buffer;
+            }
+            void* malloc(size_t sz){
+                if(((size_t)iterator + sz - (size_t)this->buffer) >= S) realloc();
+                void* m = (void*)iterator;
+                iterator += aligned(sz);
+                return m;
+            }
+            void reset(){
+                this->iterator = (char*)this->buffer+S;
+            }
+        private:
+            void* buffer;
+            char* iterator;
+        };
+
+        /*template<size_t S>
         class region {
         public:
             region(){
@@ -83,11 +155,8 @@ namespace ambient { namespace memory {
             std::vector<void*> buffers;
             void** buffer;
             char* iterator;
-        };
+        };*/
 
-        // for shared heap: (slightly improves consumption)
-        // typedef boost::details::pool::default_mutex mutex;
-        // boost::details::pool::guard<mutex> g(mtx);
        ~bulk(){ 
             delete[] this->set; 
         }
@@ -104,9 +173,24 @@ namespace ambient { namespace memory {
         template<size_t S> static void free(void* ptr)   { }
                            static void free(void* ptr)   { }
 
+        static void report(){
+            bulk& pool = instance();
+            size_t pools = factory<AMBIENT_BULK_CHUNK>::size();
+            if(pools > 4){
+                std::cout << "Bulk memory: " << pools << " full chunks used\n";
+                #ifdef AMBIENT_TRACE
+                AMBIENT_TRACE
+                #endif
+            }
+        }
+
         static void drop(){
+            #ifdef AMBIENT_REPORT_BULK_USAGE
+            report();
+            #endif
             bulk& pool = instance();
             for(int i = 0; i < pool.arity; i++) pool.set[i].reset();
+            factory<AMBIENT_BULK_CHUNK>::reset();
         }
         static region_t signature(){
             return region_t::rbulked;
