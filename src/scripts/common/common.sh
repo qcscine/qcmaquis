@@ -83,7 +83,7 @@ build_target(){
     echo " ------------------------------------------------------------------------------------------ "
     pushd . &> /dev/null
     cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
-    make -j
+    make -j6
     popd &> /dev/null
     set_state ${1} build
 }
