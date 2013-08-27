@@ -89,9 +89,9 @@
 
 #define AMBIENT_LARGE_BULK
 #ifdef AMBIENT_LARGE_BULK
-#define AMBIENT_BULK_CHUNK            4194304000
+#define AMBIENT_BULK_CHUNK            134217728 // 128 MB
 #else
-#define AMBIENT_BULK_CHUNK            41943040
+#define AMBIENT_BULK_CHUNK            41943040 // 40 MB
 #endif
 
 #ifdef AMBIENT_CRAY
