@@ -168,7 +168,7 @@ protected:
         Storage::evict(left_[site]);
         //tlb.end();
 
-        maquis::cout("Boundaries are partially initialized...");
+        maquis::cout << "Boundaries are partially initialized...\n";
         
         //Timer trb("Init right boundaries"); trb.begin();
         Storage::drop(right_[L]);
@@ -184,7 +184,7 @@ protected:
         Storage::evict(right_[site]);
         //trb.end();
 
-        maquis::cout("Boundaries are fully initialized...");
+        maquis::cout << "Boundaries are fully initialized...\n";
     }
     
     double get_cutoff(int sweep) const
