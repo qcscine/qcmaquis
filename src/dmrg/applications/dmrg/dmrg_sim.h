@@ -53,6 +53,8 @@ public:
         this->model_init();
         this->mps_init();
         
+        maquis::cout("MPS initialization has finished..."); // MPS restored now
+
         boost::shared_ptr<opt_base_t> optimizer;
         if (parms["optimization"] == "singlesite")
         {
