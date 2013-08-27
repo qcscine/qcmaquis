@@ -147,6 +147,10 @@ public:
 
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
 
+            #ifdef AMBIENT_TRACKING
+            ambient::overseer::log::region("ts_optimize::jcd");
+            #endif
+
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
                 (d == RightOnly && lr == +1))
@@ -165,6 +169,10 @@ public:
 
         		tst << res.second;
             }
+
+            #ifdef AMBIENT_TRACKING
+            ambient::overseer::log::region("ts_optimize::continue");
+            #endif
 
 #ifndef NDEBUG
             // Caution: this is an O(L) operation, so it really should be done only in debug mode

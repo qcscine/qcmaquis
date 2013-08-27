@@ -163,9 +163,12 @@ protected:
             Storage::drop(left_[i+1]);
             boundary_left_step(mpo, i);
             Storage::evict(left_[i]);
+            ambient::sync(); // to scale down memory
         }
         Storage::evict(left_[site]);
         //tlb.end();
+
+        maquis::cout("Boundaries are partially initialized...");
         
         //Timer trb("Init right boundaries"); trb.begin();
         Storage::drop(right_[L]);
@@ -176,9 +179,12 @@ protected:
             Storage::drop(right_[i]);
             boundary_right_step(mpo, i);
             Storage::evict(right_[i+1]);
+            ambient::sync(); // to scale down memory
         }
         Storage::evict(right_[site]);
         //trb.end();
+
+        maquis::cout("Boundaries are fully initialized...");
     }
     
     double get_cutoff(int sweep) const
