@@ -81,10 +81,11 @@
 //#define AMBIENT_EXPERIMENTAL
 //#define AMBIENT_COMPUTATIONAL_TIMINGS
 //#define AMBIENT_COMPUTATIONAL_DATAFLOW
-#define AMBIENT_TRACE void* b[10]; backtrace_symbols_fd(b,backtrace(b,10),2);
+//#define AMBIENT_TRACE void* b[10]; backtrace_symbols_fd(b,backtrace(b,10),2);
 //#define AMBIENT_CHECK_BOUNDARIES
 //#define AMBIENT_LOOSE_FUTURE
 //#define AMBIENT_TRACKING
+#define AMBIENT_REPORT_BULK_USAGE
 
 #define AMBIENT_LARGE_BULK
 #ifdef AMBIENT_LARGE_BULK
@@ -109,7 +110,7 @@
 #define AMBIENT_IB_EXTENT             512*512*16
 
 #define PAGE_SIZE 4096
-#define ALIGNMENT 16
+#define ALIGNMENT 64
 
 #define AMBIENT_PERSISTENT_TRANSFERS
 
