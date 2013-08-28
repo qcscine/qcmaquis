@@ -782,22 +782,6 @@ namespace ambient { namespace numeric {
     }
  
     template <class Matrix>
-    inline void save(const tiles<Matrix>& a, size_t tag){
-        split(a);
-        int size = a.data.size();
-        for(int i = 0; i < size; ++i)
-           save(a[i], (tag+i));//tag is done over blocks      
-    }
-
-    template <class Matrix>
-    inline void load(tiles<Matrix>& a, size_t tag){
-        split(a);
-        int size = a.data.size();
-        for(int i = 0; i < size; ++i)
-           load(a[i], (tag+i));        
-    }
-
-    template <class Matrix>
     std::ostream& operator << (std::ostream& o, const tiles<Matrix>& a){
         int size = a.data.size();
         for(int i = 0; i < size; i++)

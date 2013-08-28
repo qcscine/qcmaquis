@@ -27,6 +27,8 @@
 #ifndef AMBIENT_NUMERIC_TILES_H
 #define AMBIENT_NUMERIC_TILES_H
 
+#include <alps/ngs/hdf5.hpp>
+
 namespace ambient { namespace numeric {
 
     template <class Matrix>
@@ -74,30 +76,67 @@ namespace ambient { namespace numeric {
         value_type& operator() (size_type i, size_type j);
         const value_type& operator() (size_type i, size_type j) const;
 
-        template<class Archive>
-        void load(Archive & ar){
-            ar["rows"] >> rows;
-            ar["cols"] >> cols;
-            ar["mt"] >> mt;
-            ar["nt"] >> nt;
+        friend void load(alps::hdf5::archive& ar
+                         , std::string const& path
+                         , tiles<Matrix>& m
+                         , std::vector<std::size_t> chunk  = std::vector<std::size_t>()
+                         , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                         ) 
+        {
+            std::vector<std::size_t> size(ar.extent(path));
+            tiles<Matrix> r(size[0], size[1]);
+            m.swap(r);
 
-            std::vector<Matrix> tmp;
-            ar["data"] >> tmp;
-            data.reserve(tmp.size());
-            for(int i = 0; i < tmp.size(); ++i)
-                data.push_back(new Matrix(tmp[i]));
+            std::vector<std::size_t> first(alps::hdf5::get_extent(m(0,0)));
+
+            chunk.resize(2); 
+            std::copy(first.begin(), first.end(), std::back_inserter(chunk));
+
+            offset.resize(2);
+            std::fill_n(std::back_inserter(offset), first.size(), 0);
+
+            for(int j = 0; j < m.nt; ++j){
+                for(int i = 0; i < m.mt; ++i){
+                    chunk[0] = m.tile(i,j).num_rows();
+                    chunk[1] = m.tile(i,j).num_cols();
+                    offset[0] = i*AMBIENT_IB;
+                    offset[1] = j*AMBIENT_IB;
+
+                    ar.read(path, (value_type*)ambient::serial(*m.data[i]), chunk, offset);
+                } 
+            }
         }
 
-        template<class Archive>
-        void save(Archive & ar) const {
-            ar["rows"] << rows;
-            ar["cols"] << cols;
-            ar["mt"] << mt;
-            ar["nt"] << nt;
-            
-            std::vector<Matrix> tmp; tmp.reserve(data.size());
-            for(int i = 0; i < data.size(); ++i) tmp.push_back(*data[i]);
-            ar["data"] << tmp;
+        friend void save(alps::hdf5::archive& ar
+                         , std::string const& path
+                         , tiles<Matrix> const& m
+                         , std::vector<std::size_t> size   = std::vector<std::size_t>()
+                         , std::vector<std::size_t> chunk  = std::vector<std::size_t>()
+                         , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                         ) 
+        {
+            size.resize(2); 
+            size[0] = m.rows; 
+            size[1] = m.cols;
+            std::vector<std::size_t> first(alps::hdf5::get_extent(m(0,0)));
+            std::copy(first.begin(), first.end(), std::back_inserter(size));
+
+            chunk.resize(2); 
+            std::copy(first.begin(), first.end(), std::back_inserter(chunk));
+
+            offset.resize(2); 
+            std::fill_n(std::back_inserter(offset), first.size(), 0);
+
+            for(int j = 0; j < m.nt; ++j){
+                for(int i = 0; i < m.mt; ++i){
+                    chunk[0] = m.tile(i,j).num_rows();
+                    chunk[1] = m.tile(i,j).num_cols();
+                    offset[0] = i*AMBIENT_IB;
+                    offset[1] = j*AMBIENT_IB;
+
+                    ar.write(path, (value_type*)ambient::serial(*m.data[i]), size, chunk, offset);
+                } 
+            }
         }
 
         template<class Archive>
