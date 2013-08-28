@@ -313,35 +313,6 @@ namespace ambient { namespace numeric {
         return "N"; 
     }
 
-    template<typename T, class A>
-    template<class Archive>
-    void matrix<T,A>::load(Archive & ar){
-        ambient::scope<ambient::shared> c;
-        ar["y"] >> core->dim.y;
-        ar["x"] >> core->dim.x;
-        core->extent = core->dim.square()*sizeof(value_type);
-
-        std::vector<value_type> tmp;
-        ar["data"] >> tmp;
-
-        value_type* naked = ((T*)ambient::serial(*this));
-        for(int i = 0; i < tmp.size(); ++i) naked[i] = tmp[i];
-    }
-
-    template<typename T, class A>
-    template<class Archive>
-    void matrix<T,A>::save(Archive & ar) const {
-        // relying on base-scope to touch explicitely
-        // ambient::numeric::touch(*this);
-        // ambient::sync();
-        ar["y"] << core->dim.y;
-        ar["x"] << core->dim.x;
-        
-        value_type* naked = ((T*)ambient::serial(*this));
-        std::vector<value_type> tmp(naked, naked+core->dim.square());
-        ar["data"] << tmp;
-    }
-
     #undef size_type
     #undef value_type
     #undef scalar_type

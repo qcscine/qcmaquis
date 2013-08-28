@@ -81,8 +81,6 @@ namespace ambient { namespace numeric {
         value_type& operator() (size_type i, size_type j);
         const value_type& operator() (size_type i, size_type j) const;
         static const char* code();
-        template<class Archive> void load(Archive & ar);
-        template<class Archive> void save(Archive & ar) const;
         template<class Archive>
         void serialize(Archive & ar, const unsigned int){ 
             ar & core->dim.y & core->dim.x & core->extent & ((T*)ambient::serial(*this));
