@@ -34,7 +34,7 @@ namespace ambient { namespace models { namespace velvet {
         ambient::pool::free<ambient::fixed,history>(ptr);
     }
 
-    inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(dim.square()*ts) {
+    inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(dim.square()*ts), temporary(false) {
         this->clock = ambient::model.clock;
         this->content.reserve(2); 
         #ifdef AMBIENT_TRACKING

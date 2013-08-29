@@ -27,6 +27,12 @@
 #ifndef AMBIENT_INTERFACE_ACCESS
 #define AMBIENT_INTERFACE_ACCESS
 
+#ifdef AMBIENT_PRESERVE_BULK
+#define AMBIENT_RESTRICT_SPEC if(!obj.core->temporary && c.spec.region == region_t::rbulked){ c.spec.region = region_t::rstandard; }
+#else
+#define AMBIENT_RESTRICT_SPEC
+#endif
+
 namespace ambient {
 
     using ambient::models::velvet::revision;
@@ -45,14 +51,17 @@ namespace ambient {
         ambient::sync(); 
         revision& c = *obj.core->current;
         assert(c.state == ambient::local || c.state == ambient::common);
-        if(!c.valid())
+        if(!c.valid()){
+            AMBIENT_RESTRICT_SPEC
             c.embed(T::allocator_type::calloc(c.spec));
+        }
         return c;
     }
 
     template <typename T> static revision& current(T& obj){ 
         revision& c = *obj.core->content[obj.ref];
         if(!c.valid()){
+            AMBIENT_RESTRICT_SPEC
             c.embed(T::allocator_type::calloc(c.spec));
         }
         return c;
@@ -63,6 +72,7 @@ namespace ambient {
         revision& p = *obj.core->content[obj.ref];
         if(p.valid() && !p.locked() && c.spec.conserves(p.spec)) c.reuse(p);
         else{
+            AMBIENT_RESTRICT_SPEC
             c.embed(T::allocator_type::alloc(c.spec));
         }
         return c;
@@ -72,9 +82,11 @@ namespace ambient {
         revision& c = *obj.core->content[obj.ref+1]; assert(!c.valid());
         revision& p = *obj.core->content[obj.ref];
         if(!p.valid()){
+            AMBIENT_RESTRICT_SPEC
             c.embed(T::allocator_type::calloc(c.spec));
         }else if(!p.locked() && c.spec.conserves(p.spec)) c.reuse(p);
         else{
+            AMBIENT_RESTRICT_SPEC
             c.embed(T::allocator_type::alloc(c.spec));
             memcpy((T*)c, (T*)p, p.spec.extent);
         }
@@ -88,4 +100,5 @@ namespace ambient {
     }
 }
 
+#undef AMBIENT_RESTRICT_SPEC
 #endif
