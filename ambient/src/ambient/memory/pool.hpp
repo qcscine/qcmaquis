@@ -176,7 +176,7 @@ namespace ambient { namespace memory {
         static void report(){
             bulk& pool = instance();
             size_t pools = factory<AMBIENT_BULK_CHUNK>::size();
-            if(pools > 4){
+            if(pools > 2*pool.arity){
                 std::cout << "Bulk memory: " << pools << " full chunks used\n";
                 #ifdef AMBIENT_TRACE
                 AMBIENT_TRACE
