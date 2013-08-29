@@ -167,6 +167,7 @@ namespace ambient { namespace memory {
         bulk(){
             this->arity = ambient::get_num_threads();
             this->set = new region<AMBIENT_BULK_CHUNK>[arity];
+            this->active = true;
         }
         template<size_t S> static void* malloc()         { return instance().set[AMBIENT_THREAD_ID].malloc(S);  }
                            static void* malloc(size_t sz){ return instance().set[AMBIENT_THREAD_ID].malloc(sz); }
@@ -192,11 +193,21 @@ namespace ambient { namespace memory {
             for(int i = 0; i < pool.arity; i++) pool.set[i].reset();
             factory<AMBIENT_BULK_CHUNK>::reset();
         }
+        static bool enabled(){
+            return instance().active;
+        }
+        static void enable(){
+            instance().active = true;
+        }
+        static void disable(){
+            instance().active = false;
+        }
         static region_t signature(){
             return region_t::rbulked;
         }
     private:
         region<AMBIENT_BULK_CHUNK>* set;
+        bool active;
         int arity;
     };
 
