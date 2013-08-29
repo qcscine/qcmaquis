@@ -40,7 +40,7 @@ namespace ambient { namespace memory {
     }
 
     inline void collector::push_back(revision* o){
-        if(!o->valid()) o->spec.weaken();
+        if(!o->valid() && ambient::memory::bulk::enabled()) o->spec.weaken();
         this->rev.push_back(o);
     }
 
