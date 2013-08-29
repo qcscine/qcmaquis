@@ -41,6 +41,7 @@ namespace ambient { namespace models { namespace velvet {
         revision* back() const;
         size_t time() const;
         bool weak() const;
+        bool temporary;
         std::vector<revision*> content;
         revision* current;
         size_t extent;

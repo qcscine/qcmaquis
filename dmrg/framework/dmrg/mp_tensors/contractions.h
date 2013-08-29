@@ -93,10 +93,8 @@ struct contraction {
         parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(left[b]), mps.data(), tmp);
-            ambient::memory::bulk::disable();
             reshape_right_to_left_new<Matrix>(mps.site_dim(), left[b].right_basis(), mps.col_dim(),
                                               tmp, t[b]);
-            ambient::memory::bulk::enable();
         }
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim();
@@ -110,9 +108,7 @@ struct contraction {
         
         mps.make_left_paired();
         loop_max = mpo.col_dim();
-        ambient::sync();
 
-        ambient::memory::bulk::disable();
         parallel_for(locale::compact(loop_max), locale b2 = 0; b2 < loop_max; ++b2) {
             for (int run = 0; run < 2; ++run) {
                 if (run == 1)
@@ -188,7 +184,6 @@ struct contraction {
                 }
             }
         }
-        ambient::memory::bulk::enable();
         
         return ret;
     }
@@ -200,7 +195,6 @@ struct contraction {
                               MPOTensor<Matrix, SymmGroup> const & mpo,
                               Index<SymmGroup> const * in_low = NULL)
     {
-        
         if (in_low == NULL)
             in_low = &mps.col_dim();
         
@@ -212,10 +206,8 @@ struct contraction {
         parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
             gemm(mps.data(), right[b], t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
-            ambient::memory::bulk::disable();
             reshape_left_to_right_new<Matrix>(mps.site_dim(), mps.row_dim(), right[b].right_basis(),
                                               t[b], tmp);
-            ambient::memory::bulk::enable();
             swap(t[b], tmp);
         }
 
@@ -232,9 +224,7 @@ struct contraction {
         
         mps.make_right_paired();
         loop_max = mpo.row_dim();
-        ambient::sync();
 
-        ambient::memory::bulk::disable();
         parallel_for(locale::compact(loop_max), locale b1 = 0; b1 < loop_max; ++b1) {
             for(int run = 0; run < 2; ++run) {
                 if(run == 1)
@@ -312,8 +302,7 @@ struct contraction {
                 }
             }
         }
-        ambient::memory::bulk::enable();
-        
+
         return ret;
     }
     
