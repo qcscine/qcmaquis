@@ -49,8 +49,10 @@ public:
     : base(parms_, model_)
     , initial_graining(0)
     {
-        assert(parms["lattice_library"] == "continuum");
-        assert(parms["model_library"] == "continuum");
+        if (parms["lattice_library"] != "continuum")
+            throw std::runtime_error("multigrid only possible for `continuum` lattice_library.");
+        if (parms["model_library"] != "continuum")
+            throw std::runtime_error("multigrid only possible for `continuum` model_library.");
         
         if (this->restore)
         {
