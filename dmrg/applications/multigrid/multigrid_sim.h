@@ -54,7 +54,7 @@ public:
         
         if (this->restore)
         {
-            storage::archive ar(this->chkpfile);
+            storage::archive ar(this->chkpfile+"/props.h5");
             ar["/status/graining"] >> initial_graining;
         }
     }
@@ -122,7 +122,7 @@ public:
                     this->measure(results_archive_path(0, graining, mg_measure) + "/results/", measurements.sublist(parms["always_measure"]));
                 
                 /// checkpoint new mps
-                this->checkpoint_state(mps, 0, -1, graining+1);
+                this->checkpoint_simulation(mps, 0, -1, graining+1);
             }
             
             if ( stop_callback() ) {
@@ -144,13 +144,13 @@ private:
         throw std::runtime_error("do not use in multigrid.");
     }
     
-    void checkpoint_state(MPS<Matrix, SymmGroup> const& state, int sweep, int site, int graining)
+    void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, int sweep, int site, int graining)
     {
         status_type status;
         status["sweep"]    = sweep;
         status["site"]     = site;
         status["graining"] = graining;
-        return base::checkpoint_state(state, status);
+        return base::checkpoint_simulation(state, status);
     }
 
     std::string results_archive_path(int sweep, int graining, measure_t m_type) const
@@ -215,13 +215,13 @@ private:
                 /// write checkpoint
                 bool stopped = stop_callback();
                 if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
-                    this->checkpoint_state(mps, sweep, -1, graining);
+                    this->checkpoint_simulation(mps, sweep, -1, graining);
                 
                 if (stopped) break;
             }
         } catch (dmrg::time_limit const& e) {
             maquis::cout << e.what() << " checkpointing partial result." << std::endl;
-            this->checkpoint_state(mps, e.sweep(), e.site(), graining);
+            this->checkpoint_simulation(mps, e.sweep(), e.site(), graining);
             
             {
                 storage::archive ar(rfile, "w");

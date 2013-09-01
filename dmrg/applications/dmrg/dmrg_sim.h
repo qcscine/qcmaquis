@@ -97,13 +97,13 @@ public:
                 /// write checkpoint
                 bool stopped = stop_callback();
                 if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
-                    checkpoint_state(mps, sweep, -1);
+                    checkpoint_simulation(mps, sweep, -1);
                 
                 if (stopped) break;
             }
         } catch (dmrg::time_limit const& e) {
             maquis::cout << e.what() << " checkpointing partial result." << std::endl;
-            checkpoint_state(mps, e.sweep(), e.site());
+            checkpoint_simulation(mps, e.sweep(), e.site());
             
             {
                 storage::archive ar(rfile, "w");
@@ -128,12 +128,12 @@ private:
         return base::results_archive_path(status);
     }
     
-    void checkpoint_state(MPS<Matrix, SymmGroup> const& state, int sweep, int site)
+    void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, int sweep, int site)
     {
         status_type status;
         status["sweep"] = sweep;
         status["site"]  = site;
-        return base::checkpoint_state(state, status);
+        return base::checkpoint_simulation(state, status);
     }
 
 };

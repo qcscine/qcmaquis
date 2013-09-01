@@ -78,15 +78,8 @@ int main(int argc, char ** argv)
             return 1;
         }
         MPS<Matrix, grp> mps1, mps2;
-        
-        {
-            storage::archive ar(argv[1]);
-            ar["/state"] >> mps1;
-        }
-        {
-            storage::archive ar(argv[2]);
-            ar["/state"] >> mps2;
-        }
+        load(argv[1], mps1);
+        load(argv[2], mps2);
         
         if (true) {
             std::cout << "<mps1 | mps2> = " << overlap(mps1, mps2) << std::endl;

@@ -38,11 +38,7 @@ int main(int argc, char ** argv)
             return 1;
         }
         MPS<Matrix, grp> mps;
-        
-        {
-            storage::archive ar(argv[1]);
-            ar["/state"] >> mps;
-        }
+        load(argv[1], mps);
         
         for (int i=0; i<mps.length(); ++i) {
             std::string fname = "mps_stats."+boost::lexical_cast<std::string>(i)+".dat";

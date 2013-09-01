@@ -315,18 +315,49 @@ void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& fill, 
 }
 
 template<class Matrix, class SymmGroup>
-template<class Archive>
-void MPS<Matrix, SymmGroup>::load(Archive & ar)
+void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
 {
-    canonized_i = std::numeric_limits<size_t>::max();
-    ar["MPS"] >> data_;
+    /// get size of MPS
+    std::size_t L = 0;
+    while (boost::filesystem::exists( dirname + "/mps" + boost::lexical_cast<std::string>(++L) + ".h5" ));
+    
+    /// load tensors
+    MPS<Matrix, SymmGroup> tmp(L);
+    for (std::size_t i = 0; i < tmp.length(); ++i) {
+        std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>(i)+".h5";
+        alps::hdf5::archive ar(fname);
+        ar["/tensor"] >> tmp[i];
+    }
+    swap(mps, tmp);
 }
 
 template<class Matrix, class SymmGroup>
-template<class Archive>
-void MPS<Matrix, SymmGroup>::save(Archive & ar) const
+void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
 {
-    ar["MPS"] << data_;
+#ifdef AMBIENT
+    locale::compact(mps.length()); locale l(0,0);
+    for(int k = 0; k < mps.length(); ++k)
+        for(int i = 0; i < mps[k].data().n_blocks(); ++i){
+            mps[k].make_left_paired();
+            ambient::touch(mps[k].data()[i]);
+        }
+    ambient::sync();
+#endif
+    
+#ifdef USE_AMBIENT
+    if (ambient::master() && !boost::filesystem::exists(dirname))
+        boost::filesystem::create_directory(dirname);
+#else
+    if (!boost::filesystem::exists(dirname))
+        boost::filesystem::create_directory(dirname);
+#endif
+    
+    // MD: should we first write in tmpdir, then move?
+    for (std::size_t i = 0; i < mps.length(); ++i) {
+        std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>(i)+".h5";
+        alps::hdf5::archive ar(fname, "w");
+        ar["/tensor"] << mps[i];
+    }
 }
 
 template <class Matrix, class SymmGroup>
