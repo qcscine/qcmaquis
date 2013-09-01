@@ -92,15 +92,17 @@ public:
         swap(a.data_, b.data_);
         swap(a.canonized_i, b.canonized_i);
     }
-
-    template<class Archive> void load(Archive & ar);
-    template<class Archive> void save(Archive & ar) const;
     
 private:
     
     data_t data_;
     mutable size_t canonized_i;
 };
+
+template<class Matrix, class SymmGroup>
+void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps);
+template<class Matrix, class SymmGroup>
+void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps);
 
 template<class Matrix, class SymmGroup>
 struct mps_initializer

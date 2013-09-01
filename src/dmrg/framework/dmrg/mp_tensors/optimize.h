@@ -104,8 +104,7 @@ public:
         boost::split(files, files_, boost::is_any_of(", "));
         for (int n = 0; n < northo; ++n) {
             maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
-            storage::archive ar(files[n]);
-            ar["/state"] >> ortho_mps[n];
+            load(files[n], ortho_mps[n]);
             maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
         }
         
