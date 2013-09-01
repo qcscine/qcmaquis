@@ -14,6 +14,7 @@
 #include "ambient/ambient.hpp"
 #endif
 
+#include <boost/utility.hpp>
 #include <alps/hdf5.hpp>
 #include <alps/utility/encode.hpp>
 
@@ -32,12 +33,12 @@ namespace storage {
         #endif
     }
 
-    class archive {
+    class archive : boost::noncopyable {
     public:
         archive(std::string fp) : write(false), fp(fp) {
             impl = new alps::hdf5::archive(fp);
         }
-        archive(std::string fp, const char* rights) : write(true), fp(fp) {
+        archive(std::string fp, const char* rights) : write(strcmp(rights,"w") == 0), fp(fp) {
             impl = new alps::hdf5::archive(once(fp), rights); 
         }
        ~archive(){
