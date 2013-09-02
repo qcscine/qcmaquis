@@ -27,14 +27,14 @@ typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > ambient_matri
 
 #include "utils/bindings.hpp"
 
-#ifdef USE_TWOU1
+#if defined(USE_NONE)
+typedef TrivialGroup grp;
+#elif defined(USE_U1)
+typedef U1 grp;
+#elif defined(USE_TWOU1)
 typedef TwoU1 grp;
 #else
-#ifdef USE_NONE
-typedef TrivialGroup grp;
-#else
-typedef U1 grp;
-#endif
+#error "SymmGroup has to be defined explicitly. (-DUSE_NONE, -DUSE_U1, -DUSE_TWOU1)"
 #endif
 
 
