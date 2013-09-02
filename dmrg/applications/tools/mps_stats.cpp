@@ -8,9 +8,13 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include "dmrg/block_matrix/detail/alps.hpp"
-
-typedef alps::numeric::matrix<double> Matrix;
+#ifdef USE_AMBIENT
+    #include "dmrg/block_matrix/detail/ambient.hpp"
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > Matrix;
+#else
+    #include "dmrg/block_matrix/detail/alps.hpp"
+    typedef alps::numeric::matrix<double> Matrix;
+#endif
 
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
