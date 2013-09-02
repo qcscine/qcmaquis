@@ -113,14 +113,12 @@ namespace ambient { namespace channels { namespace mpi {
         if(q == NULL) return true; // for transformable
         int flag = 0;
         MPI_Test(&(q->mpi_request), &flag, MPI_STATUS_IGNORE);
-        if(flag) return true;
-        return false;
+        return flag;
     }
 
-    inline bool channel::wait(request* q){
-        if(q == NULL) return true; // for transformable
+    inline void channel::wait(request* q){
+        if(q == NULL) return; // for transformable
         MPI_Wait(&(q->mpi_request), MPI_STATUS_IGNORE);
-        return true;
     }
 
 } } }
