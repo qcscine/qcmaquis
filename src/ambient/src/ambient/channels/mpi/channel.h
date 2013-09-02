@@ -53,7 +53,7 @@ namespace ambient { namespace channels { namespace mpi {
         request* get(transformable* v);
         request* set(transformable* v, int rank);
         bool test(request* r);
-        bool wait(request* r);
+        void wait(request* r);
         group* world;
     private:
         size_t volume;
