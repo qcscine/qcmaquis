@@ -27,7 +27,10 @@
 #ifndef AMBIENT_NUMERIC_TILES_H
 #define AMBIENT_NUMERIC_TILES_H
 
+#include "ambient/numeric/traits.hpp"
+
 #include <alps/ngs/hdf5.hpp>
+#include <alps/ngs/hdf5/complex.hpp>
 
 namespace ambient { namespace numeric {
 
@@ -108,7 +111,7 @@ namespace ambient { namespace numeric {
                     offset[offset_row_index] = i*AMBIENT_IB;
                     offset[offset_col_index] = j*AMBIENT_IB;
 
-                    ar.read(path, (value_type*)ambient::serial(m.tile(i,j)), chunk, offset);
+                    ar.read(path, (typename traits::real_type<value_type>::type *)ambient::serial(m.tile(i,j)), chunk, offset);
                 }
             }
         }
@@ -144,8 +147,9 @@ namespace ambient { namespace numeric {
                     chunk[chunk_row_index] = m.tile(i,j).num_rows();
                     offset[offset_row_index] = i*AMBIENT_IB;
                     offset[offset_col_index] = j*AMBIENT_IB;
-
-                    ar.write(path, (value_type*)ambient::serial(m.tile(i,j)), size, chunk, offset);
+                    
+                    using alps::hdf5::detail::get_pointer;
+                    ar.write(path, (typename traits::real_type<value_type>::type *)ambient::serial(m.tile(i,j)), size, chunk, offset);
                 }
             }
         }
@@ -226,6 +230,13 @@ namespace ambient { namespace numeric {
         size_type nt;
     };
 
+} }
+
+namespace alps { namespace hdf5 {
+    template<class Matrix>
+    struct has_complex_elements<ambient::numeric::tiles<Matrix> >
+    : public has_complex_elements<typename alps::detail::remove_cvr<typename Matrix::value_type>::type>
+    {};
 } }
 
 #endif
