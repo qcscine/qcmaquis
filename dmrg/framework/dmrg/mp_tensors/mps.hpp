@@ -325,7 +325,7 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
     MPS<Matrix, SymmGroup> tmp(L);
     for (std::size_t i = 0; i < tmp.length(); ++i) {
         std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>(i)+".h5";
-        alps::hdf5::archive ar(fname);
+        storage::archive ar(fname);
         ar["/tensor"] >> tmp[i];
     }
     swap(mps, tmp);
@@ -355,7 +355,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
     // MD: should we first write in tmpdir, then move?
     for (std::size_t i = 0; i < mps.length(); ++i) {
         std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>(i)+".h5";
-        alps::hdf5::archive ar(fname, "w");
+        storage::archive ar(fname, "w");
         ar["/tensor"] << mps[i];
     }
 }
