@@ -127,6 +127,9 @@ namespace ambient { namespace memory {
             }
             static size_t size(){
                 factory& s = instance();
+                for(int i = 0; i < s.counts.size(); i++){
+                    if(s.counts[i] > 0) printf("Remaining usage (%d): %ld\n", i, s.counts[i]);
+                }
                 return (s.buffer - &s.buffers[0]);
             }
             mutex mtx;
