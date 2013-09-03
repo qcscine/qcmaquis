@@ -22,14 +22,14 @@ namespace storage {
 
     inline std::string once(std::string fp){
         #ifdef USE_AMBIENT
-        if(!ambient::master()) return fp+"."+std::to_string(ambient::rank());
+        if(!ambient::master() && !ambient::parallel()) return fp+"."+std::to_string(ambient::rank());
         #endif
         return fp;
     }
 
     inline void uniq(std::string fp){
         #ifdef USE_AMBIENT
-        if(!ambient::master()) std::remove(once(fp).c_str());
+        if(!ambient::master() && !ambient::parallel()) std::remove(once(fp).c_str());
         #endif
     }
 
