@@ -16,7 +16,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
 , init_sweep(0)
 , init_site(-1)
 , restore(false)
-, chkpfile(parms["chkpfile"].str())
+, chkpfile(boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ ")))
 , rfile(parms["resultfile"].str())
 , dns( (parms["donotsave"] != 0) )
 , stop_callback(static_cast<double>(parms["run_seconds"]))
