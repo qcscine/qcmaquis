@@ -66,37 +66,73 @@ namespace ambient { namespace memory {
             }
             factory(){
                 this->buffers.push_back(std::malloc(S));
+                this->counts.push_back(0);
                 this->buffer = &this->buffers[0];
             }
             static void* provide(){
                 factory& s = instance();
                 boost::details::pool::guard<mutex> g(s.mtx);
-                void* chunk = *s.buffer;
+                void* chunk;
 
-                if(*s.buffer == s.buffers.back()){
-                    s.buffers.push_back(std::malloc(S));
-                    s.buffer = &s.buffers.back();
-                }else
-                    s.buffer++;
+                if(s.r_buffers.empty()){
+                    chunk = *s.buffer;
+                    if(*s.buffer == s.buffers.back()){
+                        s.buffers.push_back(std::malloc(S));
+                        s.counts.push_back(0);
+                        s.buffer = &s.buffers.back();
+                    }else
+                        s.buffer++;
+                }else{
+                    chunk = s.r_buffers.back();
+                    s.r_buffers.pop_back();
+                    printf("REUSING OLD BUFFER!\n");
+                }
 
                 return chunk;
+            }
+            static void collect(void* chunk, long int usage){
+                factory& s = instance();
+                boost::details::pool::guard<mutex> g(s.mtx);
+
+                for(int i = 0; i < s.buffers.size(); i++){
+                    if(s.buffers[i] == chunk){
+                        s.counts[i] += usage;
+                        if(s.counts[i] == 0){ 
+                            s.r_buffers.push_back(chunk);
+                        }
+                        break;
+                    }
+                }
+            }
+            static void reuse(void* ptr){
+                factory& s = instance();
+                boost::details::pool::guard<mutex> g(s.mtx);
+
+                for(int i = 0; i < s.buffers.size(); i++){
+                    if((size_t)ptr < ((size_t)s.buffers[i] + S) && (size_t)ptr >= (size_t)s.buffers[i]){
+                        s.counts[i]--;
+                        if(s.counts[i] == 0){
+                            s.r_buffers.push_back(s.buffers[i]);
+                        }
+                        break;
+                    }
+                }
             }
             static void reset(){
                 factory& s = instance();
                 s.buffer = &s.buffers[0];
-                /*void* tmp = s.buffers[0];
-                for(int i = 1; i < s.buffers.size(); i++)
-                    std::free(s.buffers[i]);
-                s.buffers.clear();
-                s.buffers.push_back(tmp);
-                s.buffer = &s.buffers[0];*/
+                s.r_buffers.clear();
+                for(int i = 0; i < s.counts.size(); i++)
+                    s.counts[i] = 0;
             }
             static size_t size(){
                 factory& s = instance();
                 return (s.buffer - &s.buffers[0]);
             }
             mutex mtx;
+            std::vector<long int> counts;
             std::vector<void*> buffers;
+            std::vector<void*> r_buffers;
             void** buffer;
         };
 
@@ -106,8 +142,13 @@ namespace ambient { namespace memory {
             region(){
                 this->buffer = NULL;
                 this->iterator = (char*)this->buffer+S;
+                this->count = 0;
             }
             void realloc(){
+                if(this->count){
+                     factory<S>::collect(this->buffer, this->count);
+                     this->count = 0;
+                }
                 this->buffer = factory<S>::provide();
                 this->iterator = (char*)this->buffer;
             }
@@ -115,14 +156,17 @@ namespace ambient { namespace memory {
                 if(((size_t)iterator + sz - (size_t)this->buffer) >= S) realloc();
                 void* m = (void*)iterator;
                 iterator += aligned(sz);
+                this->count++;
                 return m;
             }
             void reset(){
                 this->iterator = (char*)this->buffer+S;
+                this->count = 0; 
             }
         private:
             void* buffer;
             char* iterator;
+            long int count;
         };
 
         /*template<size_t S>
@@ -170,6 +214,7 @@ namespace ambient { namespace memory {
         }
         template<size_t S> static void* malloc()         { return instance().set[AMBIENT_THREAD_ID].malloc(S);  }
                            static void* malloc(size_t sz){ return instance().set[AMBIENT_THREAD_ID].malloc(sz); }
+                           static void reuse(void* ptr)  { factory<AMBIENT_BULK_CHUNK>::reuse(ptr); }
         template<size_t S> static void free(void* ptr)   { }
                            static void free(void* ptr)   { }
 
@@ -262,13 +307,17 @@ namespace ambient {
 
         static void* malloc(descriptor& d){
             assert(d.region != region_t::rdelegated);
-            if(d.region == region_t::rbulked && d.extent <= AMBIENT_IB_EXTENT){ 
+            if(d.region == region_t::rbulked){
+                if(d.extent > AMBIENT_IB_EXTENT){
+                    d.region = region_t::rstandard;
+                    return malloc<standard>(d.extent);
+                }
                 return malloc<bulk>(d.extent); 
             } else return malloc<standard>(d.extent);
         }
         static void free(void* ptr, descriptor& d){ 
             if(ptr == NULL || d.region == region_t::rdelegated) return;
-            if(d.region == region_t::rbulked && d.extent <= AMBIENT_IB_EXTENT) free<bulk>(ptr);
+            if(d.region == region_t::rbulked) free<bulk>(ptr);
             else free<standard>(ptr);
         }
     }

@@ -92,6 +92,22 @@ namespace ambient {
             EXTRACT(o);
             o->core->content[o->ref+1]->complete();
             o->core->content[o->ref+1]->release();
+            #ifdef AMBIENT_MEMORY_SQUEEZE
+            if(o->core->content[o->ref]->valid() &&
+              !o->core->content[o->ref]->locked()){
+                if(o->core->content[o->ref]->spec.region == ambient::rbulked){ 
+                    ambient::memory::bulk::reuse(o->core->content[o->ref]->data);
+                }
+            }
+            /*if(o->core->current == o->core->content[o->ref+1] && 
+               o->core->current->valid() &&
+              !o->core->current->locked()){
+                if(o->core->current->spec.region == ambient::rbulked){ 
+                    ambient::memory::bulk::reuse(o->core->current->data); // useless computations were performed (!)
+                    printf("Useless computation by %s\n", m->name());
+                }
+            }*/
+            #endif
         }
         template<size_t arg>
         static void modify_remote(T& obj){
@@ -160,6 +176,14 @@ namespace ambient {
         template<size_t arg> static void deallocate(cfunctor* m){
             EXTRACT(o);
             o->core->content[o->ref]->release();
+            #ifdef AMBIENT_MEMORY_SQUEEZE
+            if(o->core->current == o->core->content[o->ref] && 
+               o->core->current->valid() &&
+              !o->core->current->locked()){
+                if(o->core->current->spec.region == ambient::rbulked) 
+                    ambient::memory::bulk::reuse(o->core->current->data);
+            }
+            #endif
         }
         template<size_t arg> static void modify_remote(T& obj){
             history* o = obj.core;

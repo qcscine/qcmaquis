@@ -48,6 +48,12 @@ namespace ambient { namespace memory {
         o->temporary = true;
         this->push_back(o->current);
         this->str.push_back(o);
+        #ifdef AMBIENT_MEMORY_SQUEEZE
+        if(o->current->valid() && !o->current->locked() && o->current->spec.region == ambient::rstandard){
+            ambient::pool::free(o->current->data, o->current->spec);
+            o->current->spec.region = ambient::rdelegated;
+        }
+        #endif
     }
 
     inline void collector::delete_ptr::operator()( revision* r ) const {
