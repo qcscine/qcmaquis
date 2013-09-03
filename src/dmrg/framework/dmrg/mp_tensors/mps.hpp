@@ -323,10 +323,11 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
     
     /// load tensors
     MPS<Matrix, SymmGroup> tmp(L);
-    for (std::size_t i = 0; i < tmp.length(); ++i) {
-        std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>(i)+".h5";
+    size_t loop_max = tmp.length();
+    semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
+        std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
         storage::archive ar(fname);
-        ar["/tensor"] >> tmp[i];
+        ar["/tensor"] >> tmp[k];
     }
     swap(mps, tmp);
 }
@@ -334,29 +335,19 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
 template<class Matrix, class SymmGroup>
 void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
 {
+    size_t loop_max = mps.length();
 #ifdef AMBIENT
-    locale::compact(mps.length()); locale l(0,0);
-    for(int k = 0; k < mps.length(); ++k)
-        for(int i = 0; i < mps[k].data().n_blocks(); ++i){
-            mps[k].make_left_paired();
-            ambient::touch(mps[k].data()[i]);
-        }
+    semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+        mps[k].make_left_paired();
     ambient::sync();
 #endif
-    
-#ifdef USE_AMBIENT
-    if (ambient::master() && !boost::filesystem::exists(dirname))
-        boost::filesystem::create_directory(dirname);
-#else
-    if (!boost::filesystem::exists(dirname))
-        boost::filesystem::create_directory(dirname);
+    semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
+#ifdef AMBIENT
+        if(!ambient::controller.local()) continue;
 #endif
-    
-    // MD: should we first write in tmpdir, then move?
-    for (std::size_t i = 0; i < mps.length(); ++i) {
-        std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>(i)+".h5";
+        std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
         storage::archive ar(fname, "w");
-        ar["/tensor"] << mps[i];
+        ar["/tensor"] << mps[k];
     }
 }
 

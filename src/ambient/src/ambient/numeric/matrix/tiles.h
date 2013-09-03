@@ -111,7 +111,8 @@ namespace ambient { namespace numeric {
                     offset[offset_row_index] = i*AMBIENT_IB;
                     offset[offset_col_index] = j*AMBIENT_IB;
 
-                    ar.read(path, (typename traits::real_type<value_type>::type *)ambient::serial(m.tile(i,j)), chunk, offset);
+                    if(!ambient::exclusive(m.tile(i,j)))
+                    ar.read(path, (typename traits::real_type<value_type>::type *)ambient::naked(m.tile(i,j)), chunk, offset);
                 }
             }
         }
@@ -149,7 +150,8 @@ namespace ambient { namespace numeric {
                     offset[offset_col_index] = j*AMBIENT_IB;
                     
                     using alps::hdf5::detail::get_pointer;
-                    ar.write(path, (typename traits::real_type<value_type>::type *)ambient::serial(m.tile(i,j)), size, chunk, offset);
+                    if(ambient::naked(m.tile(i,j)).state != ambient::local) printf("Warning: Attempting to write other proc data!\n");
+                    ar.write(path, (typename traits::real_type<value_type>::type *)ambient::naked(m.tile(i,j)), size, chunk, offset);
                 }
             }
         }

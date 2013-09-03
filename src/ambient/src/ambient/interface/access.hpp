@@ -37,6 +37,23 @@ namespace ambient {
 
     using ambient::models::velvet::revision;
 
+    template <typename T> static bool exclusive(T& obj){
+        ambient::model.touch(obj.core);
+        revision& c = *obj.core->current;
+        if(ambient::controller.remote()){ 
+            c.state = ambient::remote;
+            return true;
+        }else{
+            c.state = ambient::local;
+            if(!c.valid()) c.embed(T::allocator_type::calloc(c.spec));
+            return false;
+        }
+    }
+
+    template <typename T> static revision& naked(T& obj){
+        return *obj.core->current;
+    }
+
     template <typename T> static revision& raw(T& obj){ 
         return *obj.core->content[obj.ref];     
     }
