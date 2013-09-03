@@ -195,10 +195,6 @@ public:
                 ambient_track_array(mps, site1);
                 ambient_track_array(mps, site2);
                 #endif
-                #ifdef AMBIENT
-                { locale::compact(L); locale l(site1,site1); storage::migrate(mps[site1]); }
-                { locale::compact(L); locale l(site2,site2); storage::migrate(mps[site2]); }
-                #endif
 
         		block_matrix<Matrix, SymmGroup> t;
 		
@@ -218,6 +214,10 @@ public:
                     Storage::evict(left_[site1]);
                     Storage::drop(right_[site2+1]);
                 }
+                #ifdef AMBIENT
+                { locale::compact(L); locale l(site1,site1); storage::migrate(mps[site1]); }
+                { locale::compact(L); locale l(site2,site2); storage::migrate(mps[site2]); }
+                #endif
     	    }
     	    if (lr == -1){
         		// Write back result from optimization
@@ -245,6 +245,10 @@ public:
                     Storage::evict(right_[site2+1]); 
                     Storage::drop(left_[site1]);
                 }
+                #ifdef AMBIENT
+                { locale::compact(L); locale l(site1,site1); storage::migrate(mps[site1]); }
+                { locale::compact(L); locale l(site2,site2); storage::migrate(mps[site2]); }
+                #endif
     	    }
             
             iteration_results_["BondDimension"]     << trunc.bond_dimension;

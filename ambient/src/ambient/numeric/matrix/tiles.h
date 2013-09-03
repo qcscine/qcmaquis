@@ -150,7 +150,7 @@ namespace ambient { namespace numeric {
                     offset[offset_col_index] = j*AMBIENT_IB;
                     
                     using alps::hdf5::detail::get_pointer;
-                    if(ambient::naked(m.tile(i,j)).state != ambient::local) printf("Warning: Attempting to write other proc data!\n");
+                    assert(ambient::naked(m.tile(i,j)).state == ambient::local);
                     ar.write(path, (typename traits::real_type<value_type>::type *)ambient::naked(m.tile(i,j)), size, chunk, offset);
                 }
             }
