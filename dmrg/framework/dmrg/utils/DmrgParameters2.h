@@ -178,6 +178,9 @@ private:
         add_option("u1_total_charge", "");
         add_option("u1_total_charge1", "");
         add_option("u1_total_charge2", "");
+
+        add_option("orbital_order", "comma separated list of orbital numbers");
+        add_option("hf_occ", "comma separated list of orbital occupancies for Hartree Fock initial state");
         
         add_option("MEASURE_CONTINUUM[Psi energy]", "", value(false));
         add_option("MEASURE_CONTINUUM[Density]", "", value(true));

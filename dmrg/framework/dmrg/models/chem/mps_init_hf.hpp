@@ -15,7 +15,7 @@
 template<class Matrix>
 struct hf_mps_init : public mps_initializer<Matrix, TwoU1>
 {
-    hf_mps_init(BaseParameters& params_) : params(params_) {}
+    hf_mps_init(BaseParameters& parms_, BaseParameters& model_) : parms(parms_), model(model_) {}
 
     typedef Lattice::pos_t pos_t;
     typedef std::size_t size_t;
@@ -28,16 +28,26 @@ struct hf_mps_init : public mps_initializer<Matrix, TwoU1>
         default_mps_init<Matrix, TwoU1> di;
         di.init_sectors(mps, 5, phys, right_end, true);
 
-        std::vector<std::size_t> hf_init = params.template get<std::vector<std::size_t> >("hf_occ");
+        std::vector<std::size_t> hf_init = model["hf_occ"];
+
+        std::vector<pos_t> order(mps.length());
+        if (!model.is_set("orbital_order"))
+            for (pos_t p = 0; p < mps.length(); ++p)
+                order[p] = p;
+        else
+            order = model["orbital_order"];
+
+        std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+
         if (hf_init.size() != mps.length())
             throw std::runtime_error("HF occupation vector length != MPS length\n");
 
         TwoU1::charge max_charge = TwoU1::IdentityCharge;
-        for (int i = 0; i < mps.length(); ++i)
+        for (pos_t i = 0; i < mps.length(); ++i)
         {
             mps[i].multiply_by_scalar(0.);
 
-            size_t site_charge_up, site_charge_down, sc_input = hf_init[i];
+            size_t site_charge_up, site_charge_down, sc_input = hf_init[order[i]];
             if (sc_input > 4)
                 throw std::runtime_error(
                     "The hf_occ format has been changed to: 1=empty, 2=down, 3=up, 4=updown\n (not cumulative anymore)\n"
@@ -89,7 +99,8 @@ struct hf_mps_init : public mps_initializer<Matrix, TwoU1>
         //}
     }
 
-    BaseParameters params;
+    BaseParameters parms;
+    BaseParameters model;
 };
 
 #endif

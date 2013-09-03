@@ -135,7 +135,6 @@ struct contraction {
                             charge out_l_charge = SymmGroup::fuse(physical_i[s2].first, left_i[l].first);
                             charge out_r_charge = right_i[r].first;
                             
-                            assert(ket_tensor.col_dim().has(right_i[r].first) );
                             if (! out_left_i.has(out_l_charge) )
                                 continue;
                             
@@ -225,8 +224,6 @@ struct contraction {
                             
                             assert( T_r_charge == SymmGroup::fuse(-physical_i[s1].first,
                                                                   right_i[r].first) );
-                            
-                            assert( mps.row_dim().has(left_i[l].first) );
                             if (! out_right_i.has(out_r_charge) )
                                 continue;
                             

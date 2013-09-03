@@ -68,6 +68,8 @@ public:
         typedef typename Hamiltonian<Matrix, TwoU1>::op_t op_t;
         op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
              count_up_op, count_down_op, docc_op, e2d_op, d2e_op,
+             swap_d2u_op, swap_u2d_op,
+             create_up_count_down_op, create_down_count_up_op, destroy_up_count_down_op, destroy_down_count_up_op,
              ident_op, fill_op;
 
         TwoU1::charge A(0), B(0), C(0), D(1);
@@ -94,6 +96,9 @@ public:
 
         docc_op.insert_block(Matrix(1, 1, 1), D, D);
 
+        e2d_op.insert_block(Matrix(1, 1, 1), A, D);
+        d2e_op.insert_block(Matrix(1, 1, 1), D, A);
+
         fill_op.insert_block(Matrix(1, 1, 1), A, A);
         fill_op.insert_block(Matrix(1, 1, -1), B, B);
         fill_op.insert_block(Matrix(1, 1, -1), C, C);
@@ -105,6 +110,13 @@ public:
         create_down_op = tmp;
         gemm(destroy_down_op, fill_op, tmp);
         destroy_down_op = tmp;
+
+        gemm(create_up_op, destroy_down_op, swap_d2u_op);
+        gemm(destroy_up_op, create_down_op, swap_u2d_op);
+        gemm(count_down_op, create_up_op, create_up_count_down_op);
+        gemm(count_up_op, create_down_op, create_down_count_up_op);
+        gemm(count_down_op, destroy_up_op, destroy_up_count_down_op);
+        gemm(count_up_op, destroy_down_op, destroy_down_count_up_op);
 
         typedef Measurement_Term<Matrix, TwoU1> mterm_t;
         Measurements<Matrix, TwoU1> meas;
@@ -126,7 +138,7 @@ public:
                         term.operators.push_back(std::make_pair(count_up_op, false));
                     else if (it->value() == "Ndown")
                         term.operators.push_back(std::make_pair(count_down_op, false));
-                    else if (it->value() == "Nup:Ndown")
+                    else if (it->value() == "Nup*Ndown" || it->value() == "docc")
                         term.operators.push_back(std::make_pair(docc_op, false));
                     else
                         throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nup\" and \"Ndown\"\n");
@@ -147,7 +159,7 @@ public:
             std::string value;
 
             mterm_t term;
-            term.fill_operator = fill_op;
+            term.fill_operator = ident_op;
 
             bool found = false;
             if (boost::regex_match(lhs, what, expression)) {
@@ -189,19 +201,66 @@ public:
                      it2 != corr_tokens.end();
                      it2++)
                 {
-                    bool f = true;
-                    if (*it2 == "c_up")
-                        term.operators.push_back( std::make_pair(destroy_up_op, f) );
-                    else if (*it2 == "c_down")
-                        term.operators.push_back( std::make_pair(destroy_down_op, f) );
-                    else if (*it2 == "cdag_up")
-                        term.operators.push_back( std::make_pair(create_up_op, f) );
-                    else if (*it2 == "cdag_down")
-                        term.operators.push_back( std::make_pair(create_down_op, f) );
-                    else
-                        throw std::runtime_error("Unrecognized operator in correlation measurement\n");
+                    if (*it2 == "c_up") {
+                        term.operators.push_back( std::make_pair(destroy_up_op, true) );
+                        ++f_ops;
+                    }
+                    else if (*it2 == "c_down") {
+                        term.operators.push_back( std::make_pair(destroy_down_op, true) );
+                        ++f_ops;
+                    }
+                    else if (*it2 == "cdag_up") {
+                        term.operators.push_back( std::make_pair(create_up_op, true) );
+                        ++f_ops;
+                    }
+                    else if (*it2 == "cdag_down") {
+                        term.operators.push_back( std::make_pair(create_down_op, true) );
+                        ++f_ops;
+                    }
 
-                    if (f) ++f_ops;
+                    else if (*it2 == "Nup") {
+                        term.operators.push_back( std::make_pair(count_up_op, false) );
+                    }
+                    else if (*it2 == "Ndown") {
+                        term.operators.push_back( std::make_pair(count_down_op, false) );
+                    }
+                    else if (*it2 == "docc" || *it2 == "Nup*Ndown") {
+                        term.operators.push_back( std::make_pair(docc_op, false) );
+                    }
+                    else if (*it2 == "cdag_up*c_down") {
+                        term.operators.push_back( std::make_pair(swap_d2u_op, false) );
+                    }
+                    else if (*it2 == "cdag_down*c_up") {
+                        term.operators.push_back( std::make_pair(swap_u2d_op, false) );
+                    }
+
+                    else if (*it2 == "cdag_up*cdag_down") {
+                        term.operators.push_back( std::make_pair(e2d_op, false) );
+                    }
+                    else if (*it2 == "c_up*c_down") {
+                        term.operators.push_back( std::make_pair(d2e_op, false) );
+                    }
+
+                    else if (*it2 == "cdag_up*Ndown") {
+                        term.operators.push_back( std::make_pair(create_up_count_down_op, true) );
+                        ++f_ops;
+                    }
+                    else if (*it2 == "cdag_down*Nup") {
+                        term.operators.push_back( std::make_pair(create_down_count_up_op, true) );
+                        ++f_ops;
+                    }
+                    else if (*it2 == "c_up*Ndown") {
+                        term.operators.push_back( std::make_pair(destroy_up_count_down_op, true) );
+                        ++f_ops;
+                    }
+                    else if (*it2 == "c_down*Nup") {
+                        term.operators.push_back( std::make_pair(destroy_down_count_up_op, true) );
+                        ++f_ops;
+                    }
+                    else
+                        throw std::runtime_error("Unrecognized operator in correlation measurement: " 
+                                                    + boost::lexical_cast<std::string>(*it2) + "\n");
+
                 }
                 //if (term.operators.size() == 1) {
                 //    term.operators.push_back(term.operators[0]);
@@ -209,12 +268,11 @@ public:
                 //}
 
 
-                if (f_ops > 0) {
+                if (f_ops > 0)
                     term.fill_operator = fill_op;
-                }
 
                 if (f_ops % 2 != 0)
-                    throw std::runtime_error("Number of fermionic operators has to be even in correlation measurements.");
+                    throw std::runtime_error("In " + term.name + ": Number of fermionic operators has to be even in correlation measurements.");
 
                 /// parse positions p1,p2,p3,... (or `space`)
                 if (value_split.size() > 1) {

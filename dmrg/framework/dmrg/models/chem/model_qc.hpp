@@ -175,8 +175,9 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
             int same_idx, pos1;
             typename op_t<M>::type tmp;
 
-            if ( i==j) { same_idx = i; pos1 = l; }
-            if ( k==l) { same_idx = l; pos1 = i; }
+            if      (i==j) { same_idx = i; pos1 = l; }
+            else if (k==l) { same_idx = l; pos1 = i; }
+            else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
 
             std::pair<tag_type, value_type> ptag;
 

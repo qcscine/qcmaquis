@@ -91,14 +91,6 @@ void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
         Timer t("DENSE_MPO conversion"); t.begin();
         compressor<MPOMatrix, SymmGroup>::convert_to_dense_matrix(scratch_mpo, mpoc);
         t.end();
-        
-        // TODO: move to ts_optim init
-        if (parms["optimization"] == "twosite") {
-            Timer t("TS_MPO"); t.begin();
-            throw std::runtime_error("compression should be moved inside ts_optim constructor.");
-//            make_ts_cache_mpo(scratch_mpo, ts_cache_mpo, phys);
-            t.end();
-        }
         */
     }
     else
@@ -136,7 +128,7 @@ void sim<Matrix, SymmGroup>::mps_init()
         mps = MPS<Matrix, SymmGroup>(lat->size(),
                                      parms["init_bond_dimension"],
                                      phys, initc,
-                                     *(phys_model->initializer(parms)));
+                                     *(phys_model->initializer(parms, model)));
         #ifdef AMBIENT_TRACKING
         for(int i = 0; i < mps.length(); ++i) ambient_track_array(mps, i);
         #endif

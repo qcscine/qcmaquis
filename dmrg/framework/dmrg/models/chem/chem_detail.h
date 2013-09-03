@@ -46,6 +46,7 @@ namespace chem_detail {
         if (i<j) std::swap(i,j);
         if (k<l) std::swap(k,l);
         if (i<k) { std::swap(i,k); std::swap(j,l); }
+        if (i==k && j<l) { std::swap(j,l); }
         return IndexTuple(i,j,k,l);
     }
     
@@ -84,7 +85,7 @@ namespace chem_detail {
     };
 
     template <typename M>
-    class ChemHelper : HamiltonianTraits
+    class ChemHelper : public HamiltonianTraits
     {
     public:
         typedef typename M::value_type value_type;
@@ -105,7 +106,11 @@ namespace chem_detail {
 
         std::vector<value_type> & getMatrixElements() { return matrix_elements; }
         
-        int idx(int m, int pos) { return idx_[m][pos]; }
+        int idx(int m, int pos) const {
+            //int tmp = idx_[m][pos];
+            //return tmp >= 0 ? inv_order[tmp] : tmp;
+            return idx_[m][pos];
+        }
 
         void commit_terms(std::vector<typename hamtagterm_t<M>::type> & tagterms) {
             for (typename std::map<IndexTuple, typename hamtagterm_t<M>::type>::const_iterator it = two_terms.begin();
@@ -176,6 +181,21 @@ namespace chem_detail {
     private:
         void parse_integrals(BaseParameters & parms, Lattice const & lat) {
 
+            // load ordering and determine inverse ordering
+            order = parms["orbital_order"];
+            if (order.size() != lat.size())
+                throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
+
+            std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+            inv_order.resize(order.size());
+            for (int p = 0; p < order.size(); ++p)
+                inv_order[p] = std::find(order.begin(), order.end(), p) - order.begin();
+
+            std::copy(order.begin(), order.end(), std::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
+            maquis::cout << std::endl;
+            std::copy(inv_order.begin(), inv_order.end(), std::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
+            maquis::cout << std::endl;
+
             // ********************************************************************
             // *** Parse orbital data *********************************************
             // ********************************************************************
@@ -196,7 +216,7 @@ namespace chem_detail {
                 std::vector<int> tmp;
                 std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
 
-                IndexTuple aligned = align(tmp[0], tmp[1], tmp[2], tmp[3]);
+                IndexTuple aligned = align(reorder(tmp[0]), reorder(tmp[1]), reorder(tmp[2]), reorder(tmp[3]));
                 tmp[0] = aligned[0];
                 tmp[1] = aligned[1];
                 tmp[2] = aligned[2];
@@ -209,10 +229,14 @@ namespace chem_detail {
             #ifndef NDEBUG
             for (std::size_t m = 0; m < matrix_elements.size(); ++m)
             {
-                //assert( *std::max_element(idx[m].begin(), idx[m].end()) <= lat.size() );
+                assert( *std::max_element(idx_[m].begin(), idx_[m].end()) <= lat.size() );
             }
             #endif
             
+        }
+
+        int reorder(int p) {
+            return p >= 0 ? inv_order[p] : p;
         }
 
         tag_type ident, fill;
@@ -220,6 +244,8 @@ namespace chem_detail {
 
         std::vector<value_type> matrix_elements;
         std::vector<std::vector<int> > idx_;
+        std::vector<int> order;
+        std::vector<int> inv_order;
 
         std::map<IndexTuple, value_type> coefficients;
 
