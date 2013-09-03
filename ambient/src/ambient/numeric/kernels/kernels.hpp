@@ -440,6 +440,9 @@ namespace ambient { namespace numeric { namespace kernels {
                                 matrix<T,A2>& dst, const size_t& di, const size_t& dj, 
                                 const size_t& m, const size_t& n)
     {
+        if(dst.core->content[dst.ref+1] == dst.core->current && dst.core->current->users == 1 && dst.core->current->spec.region == ambient::rbulked){
+            return; // the resulting dst is not used by anyone
+        }
         T* sd = current(src);
         T* dd = m*n < ambient::square_dim(dst) ? revised(dst) : updated(dst);
         ambient::memptf<T, ambient::memcpy>(dd, dst.num_rows(), dim2(dj, di), 
@@ -467,6 +470,9 @@ namespace ambient { namespace numeric { namespace kernels {
                                       const matrix<T,A3>& alfa, const size_t& ai, const size_t& aj,
                                       const size_t& m, const size_t& n)
     {
+        if(dst.core->content[dst.ref+1] == dst.core->current && dst.core->current->users == 1 && dst.core->current->spec.region == ambient::rbulked){
+            return; // the resulting dst is not used by anyone
+        }
         T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
         ambient::memptf<T, ambient::memscala>(revised(dst), dst.num_rows(), dim2(dj, di), 
                                               current(src), src.num_rows(), dim2(sj, si), 
@@ -620,6 +626,9 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void init_random<T>::c(unbound< matrix<T> >& a){
+        if(a.core->content[a.ref+1] == a.core->current && a.core->current->users == 1 && a.core->current->spec.region == ambient::rbulked){
+            return; // the resulting a is not used by anyone
+        }
         size_t size = ambient::square_dim(a);
         T* ad = updated(a);
         for(size_t i = 0; i < size; ++i) randomize(ad[i]);
