@@ -88,11 +88,11 @@ int main(int argc, char ** argv)
         /// Initialize & load MPS
         tim_load.begin();
         int L = lattice->size();
-        MPS<matrix, grp> mps(L);
+        MPS<matrix, grp> mps;
+        load(parms["chkpfile"].str(), mps);
         int _site;
         {
-            alps::hdf5::archive ar(parms["chkpfile"].str());
-            ar["/state"]       >> mps;
+            alps::hdf5::archive ar(parms["chkpfile"].str()+"/props.h5");
             ar["/status/site"] >> _site;
         }
         int site, lr;
