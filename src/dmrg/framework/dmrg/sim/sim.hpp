@@ -26,6 +26,14 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
     
     {
 		boost::filesystem::path p(chkpfile);
+		if (!boost::filesystem::exists(p)){
+            try {
+                boost::filesystem::create_directories(p);
+            } catch (...) {
+                maquis::cerr << "Error creating dir at " << p << ". Try different 'chkpfile'.\n";
+                throw;
+            }
+        }
 		if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
         {
             storage::archive ar_in(chkpfile+"/props.h5");
