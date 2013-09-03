@@ -85,11 +85,11 @@ public:
     , stop_callback(stop_callback_)
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
+        std::size_t L = mps.length();
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("optimizer_base::optimizer_base");
-        for(int i = 0; i < mps.length(); ++i) ambient_track_array(mps, i);
+        for(int i = 0; i < L; ++i) ambient_track_array(mps, i);
         #endif
-        int L = mps.length();
         int site = (initial_site < L) ? initial_site : 2*L-initial_site-1;
         
         mps.canonize(site);
@@ -104,8 +104,7 @@ public:
         boost::split(files, files_, boost::is_any_of(", "));
         for (int n = 0; n < northo; ++n) {
             maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
-            storage::archive ar(files[n]);
-            ar["/state"] >> ortho_mps[n];
+            load(files[n], ortho_mps[n]);
             maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
         }
         
@@ -163,36 +162,32 @@ protected:
             Storage::drop(left_[i+1]);
             boundary_left_step(mpo, i);
             Storage::evict(left_[i]);
+            #ifdef AMBIENT
+            ambient::sync(); // to scale down memory
+            #endif
         }
         Storage::evict(left_[site]);
         //tlb.end();
+
+        maquis::cout << "Boundaries are partially initialized...\n";
         
         //Timer trb("Init right boundaries"); trb.begin();
         Storage::drop(right_[L]);
         right_[L] = mps.right_boundary();
         Storage::pin(right_[L]);
 
-        #ifdef AMBIENT_TRACKING
-        ambient::overseer::log::region("optimizer::repairing");
-        #endif
-        parallel_for(locale::compact(L), locale i = 0; i < L; ++i) {
-            mps[i].make_right_paired();
-            mps[i].make_left_paired();
-            #ifdef AMBIENT_TRACKING
-            ambient_track_array(mps, i);
-            #endif
-        }
-        #ifdef AMBIENT_TRACKING
-        ambient::overseer::log::region("optimizer::continue");
-        #endif
-
         for (int i = L-1; i >= site; --i) {
             Storage::drop(right_[i]);
             boundary_right_step(mpo, i);
             Storage::evict(right_[i+1]);
+            #ifdef AMBIENT
+            ambient::sync(); // to scale down memory
+            #endif
         }
         Storage::evict(right_[site]);
         //trb.end();
+
+        maquis::cout << "Boundaries are fully initialized...\n";
     }
     
     double get_cutoff(int sweep) const

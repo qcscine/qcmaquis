@@ -101,11 +101,11 @@ public:
         }
         
         // write parameters and mps
-        storage::archive ar(chkpfile, "w");
+        save(chkpfile, mps);
+        storage::archive ar(chkpfile+"/props.h5", "w");
         ar["/parameters"] << parms;
         ar["/parameters"] << model;
         ar["/version"] << DMRG_VERSION_STRING;
-        ar["/state"] << mps;
         ar["/status/sweep"] << 0;
     }
     

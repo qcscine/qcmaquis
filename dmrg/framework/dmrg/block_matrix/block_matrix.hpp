@@ -402,9 +402,12 @@ void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
     ar["rows_"] >> rows_;
     ar["cols_"] >> cols_;
 
+    data_.clear();
     if (alps::is_complex<typename Matrix::value_type>() && !ar.is_complex("data_"))
     {
+        #ifdef USE_AMBIENT
         printf("ERROR: NOT TESTED!\n\n");
+        #endif
         typedef typename alps::numeric::matrix<typename alps::numeric::real_type<typename Matrix::value_type>::type> LoadMatrix;
         std::vector<LoadMatrix> tmp;
         ar["data_"] >> tmp;
@@ -413,6 +416,7 @@ void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
     } else {
         std::vector<Matrix> tmp;
         ar["data_"] >> tmp;
+        // TODO: is swap here possible?
         for(typename std::vector<Matrix>::const_iterator it = tmp.begin(); it != tmp.end(); ++it)
             data_.push_back(new Matrix(*it));
     }

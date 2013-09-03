@@ -287,7 +287,7 @@ struct contraction {
         
         mps.make_left_paired();
         loop_max = mpo.col_dim();
-                    
+
         parallel_for(locale::compact(loop_max), locale b2 = 0; b2 < loop_max; ++b2) {
             ret[b2] = lbtm_kernel(b2, left, t, mpo, physical_i, left_i, right_i, out_left_i, out_left_pb);
         }
@@ -304,7 +304,7 @@ struct contraction {
     {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
-        
+
         if (in_low == NULL)
             in_low = &mps.col_dim();
         
@@ -333,7 +333,7 @@ struct contraction {
         parallel_for(locale::compact(loop_max), locale b1 = 0; b1 < loop_max; ++b1) {
             ret[b1] = rbtm_kernel(b1, right, t, mpo, physical_i, left_i, right_i, out_right_i, out_right_pb);
         }
-        
+
         return ret;
     }
     

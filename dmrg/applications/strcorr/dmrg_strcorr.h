@@ -39,9 +39,9 @@ public:
         if (! boost::filesystem::exists(parms["chkpfile"].str()))
             throw std::runtime_error("Checkpoint file doesn not exist.");
         size_t graining = 0;
+        load(parms["chkpfile"].str(), mps);
         {
-            storage::archive ar(parms["chkpfile"].str());
-            ar["/state"] >> mps;
+            storage::archive ar(parms["chkpfile"].str()+"/props.h5");
             if (ar.is_data("/status/graining"))
                 ar["/status/graining"] >> graining;
         }

@@ -315,18 +315,40 @@ void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& fill, 
 }
 
 template<class Matrix, class SymmGroup>
-template<class Archive>
-void MPS<Matrix, SymmGroup>::load(Archive & ar)
+void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
 {
-    canonized_i = std::numeric_limits<size_t>::max();
-    ar["MPS"] >> data_;
+    /// get size of MPS
+    std::size_t L = 0;
+    while (boost::filesystem::exists( dirname + "/mps" + boost::lexical_cast<std::string>(++L) + ".h5" ));
+    
+    /// load tensors
+    MPS<Matrix, SymmGroup> tmp(L);
+    size_t loop_max = tmp.length();
+    semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
+        std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
+        storage::archive ar(fname);
+        ar["/tensor"] >> tmp[k];
+    }
+    swap(mps, tmp);
 }
 
 template<class Matrix, class SymmGroup>
-template<class Archive>
-void MPS<Matrix, SymmGroup>::save(Archive & ar) const
+void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
 {
-    ar["MPS"] << data_;
+    size_t loop_max = mps.length();
+#ifdef AMBIENT
+    semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+        mps[k].make_left_paired();
+    ambient::sync();
+#endif
+    semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
+#ifdef AMBIENT
+        if(!ambient::controller.local()) continue;
+#endif
+        std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
+        storage::archive ar(fname, "w");
+        ar["/tensor"] << mps[k];
+    }
 }
 
 template <class Matrix, class SymmGroup>

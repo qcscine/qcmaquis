@@ -58,7 +58,7 @@ protected:
     virtual void measure(std::string archive_path, Measurements<Matrix, SymmGroup> const& meas);
     // TODO: can be made const, now only problem are parameters
     
-    virtual void checkpoint_state(MPS<Matrix, SymmGroup> const& state, status_type const&);
+    virtual void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const&);
     
 protected:
     DmrgParameters parms;

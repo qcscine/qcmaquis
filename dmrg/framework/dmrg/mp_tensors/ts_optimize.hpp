@@ -132,6 +132,9 @@ public:
     	    // Create TwoSite objects
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
     	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
+            #ifdef AMBIENT_TRACKING
+            ambient_track_as(twin_mps, "twin_mps");
+            #endif
             SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);
             
             /// Compute orthogonal vectors
@@ -143,6 +146,10 @@ public:
             }
 
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
+
+            #ifdef AMBIENT_TRACKING
+            ambient::overseer::log::region("ts_optimize::jcd");
+            #endif
 
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
@@ -163,6 +170,10 @@ public:
         		tst << res.second;
             }
 
+            #ifdef AMBIENT_TRACKING
+            ambient::overseer::log::region("ts_optimize::continue");
+            #endif
+
 #ifndef NDEBUG
             // Caution: this is an O(L) operation, so it really should be done only in debug mode
             for (int n = 0; n < base::northo; ++n)
@@ -180,6 +191,10 @@ public:
     	    {
         		// Write back result from optimization
         		boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_l2r(Mmax, cutoff);
+                #ifdef AMBIENT_TRACKING
+                ambient_track_array(mps, site1);
+                ambient_track_array(mps, site2);
+                #endif
 
         		block_matrix<Matrix, SymmGroup> t;
 		
@@ -201,10 +216,18 @@ public:
                     Storage::evict(mps[site1]);
                     Storage::evict(left_[site1]);
                 }
+                #ifdef AMBIENT
+                { locale::compact(L); locale l(site1,site1); storage::migrate(mps[site1]); }
+                { locale::compact(L); locale l(site2,site2); storage::migrate(mps[site2]); }
+                #endif
     	    }
     	    if (lr == -1){
         		// Write back result from optimization
         		boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_r2l(Mmax, cutoff);
+                #ifdef AMBIENT_TRACKING
+                ambient_track_array(mps, site1);
+                ambient_track_array(mps, site2);
+                #endif
 
         		block_matrix<Matrix, SymmGroup> t;
 
@@ -226,6 +249,10 @@ public:
                     Storage::evict(mps[site2]);
                     Storage::evict(right_[site2+1]); 
                 }
+                #ifdef AMBIENT
+                { locale::compact(L); locale l(site1,site1); storage::migrate(mps[site1]); }
+                { locale::compact(L); locale l(site2,site2); storage::migrate(mps[site2]); }
+                #endif
     	    }
             
             iteration_results_["BondDimension"]     << trunc.bond_dimension;

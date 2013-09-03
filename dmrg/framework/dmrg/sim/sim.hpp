@@ -7,6 +7,8 @@
  *
  *****************************************************************************/
 
+#include <boost/algorithm/string.hpp>
+
 template <class Matrix, class SymmGroup>
 sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const & model_)
 : parms(parms_)
@@ -14,7 +16,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
 , init_sweep(0)
 , init_site(-1)
 , restore(false)
-, chkpfile(parms["chkpfile"].str())
+, chkpfile(boost::trim_right_copy_if(parms["chkpfile"].str(), boost::is_any_of("/ ")))
 , rfile(parms["resultfile"].str())
 , dns( (parms["donotsave"] != 0) )
 , stop_callback(static_cast<double>(parms["run_seconds"]))
@@ -23,11 +25,11 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
     storage::setup(parms);
     
     {
-		boost::filesystem::path p(chkpfile);
-		if (boost::filesystem::exists(p) && boost::filesystem::is_regular_file(p))
+        boost::filesystem::path p(chkpfile);
+        if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
         {
-            storage::archive ar_in(chkpfile);
-            if (ar_in.is_group("/state") && ar_in.is_scalar("/status/sweep"))
+            storage::archive ar_in(chkpfile+"/props.h5");
+            if (ar_in.is_scalar("/status/sweep"))
             {
                 ar_in["/status/sweep"] >> init_sweep;
                 
@@ -57,7 +59,9 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
     }
     if (!dns)
     {
-        storage::archive ar(chkpfile, "w");
+        if (!boost::filesystem::exists(chkpfile))
+            boost::filesystem::create_directory(chkpfile);
+        storage::archive ar(chkpfile+"/props.h5", "w");
         
         ar["/parameters"] << parms;
         ar["/parameters"] << model;
@@ -116,14 +120,10 @@ void sim<Matrix, SymmGroup>::mps_init()
     assert(lat.get() != NULL);
     
     if (restore) {
-        mps = MPS<Matrix, SymmGroup>(lat->size());
-        storage::archive ar_in(chkpfile);
-        ar_in["/state"] >> mps;
+        load(chkpfile, mps);
     } else if (!parms["initfile"].empty()) {
         maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
-        mps = MPS<Matrix, SymmGroup>(lat->size());
-        storage::archive ar_in(parms["initfile"].str());
-        ar_in["/state"] >> mps;
+        load(parms["initfile"].str(), mps);
     } else {
         mps = MPS<Matrix, SymmGroup>(lat->size(),
                                      parms["init_bond_dimension"],
@@ -133,6 +133,7 @@ void sim<Matrix, SymmGroup>::mps_init()
         for(int i = 0; i < mps.length(); ++i) ambient_track_array(mps, i);
         #endif
     }
+    assert(mps.length() == lat->size());
 }
 
 
@@ -142,11 +143,25 @@ sim<Matrix, SymmGroup>::~sim()
 }
 
 template <class Matrix, class SymmGroup>
-void sim<Matrix, SymmGroup>::checkpoint_state(MPS<Matrix, SymmGroup> const& state, status_type const& status)
+void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status)
 {
     if (!dns) {
-        storage::archive ar(chkpfile, "w");
-        ar["/state"]  << state;
+        /// create chkp dir
+        #ifdef USE_AMBIENT
+        if (ambient::master() && !boost::filesystem::exists(chkpfile))
+            boost::filesystem::create_directory(chkpfile);
+        #else
+        if (!boost::filesystem::exists(chkpfile))
+            boost::filesystem::create_directory(chkpfile);
+        #endif
+        /// save state to chkp dir
+        save(chkpfile, state);
+        
+        /// save status
+        #ifdef USE_AMBIENT
+        if(!ambient::master()) return;
+        #endif
+        storage::archive ar(chkpfile+"/props.h5", "w");
         ar["/status"] << status;
     }
 }

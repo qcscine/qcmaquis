@@ -408,12 +408,9 @@ namespace meas_eval {
                          const std::string & bra_ckp,
                          std::string const & h5name, std::string const & base_path)
 	{
-        MPS<Matrix, SymmGroup> bra_mps;
         maquis::cout << "Measuring overlap with " << bra_ckp << "." << std::endl;
-        {
-            storage::archive ar(bra_ckp);
-            ar["/state"] >> bra_mps;
-        }
+        MPS<Matrix, SymmGroup> bra_mps;
+        load(bra_ckp, bra_mps);
         
         std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals(1);
         if (bra_mps[bra_mps.length()-1].col_dim().sum_of_sizes() == 1)

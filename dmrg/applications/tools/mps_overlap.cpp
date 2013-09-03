@@ -8,9 +8,13 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include "dmrg/block_matrix/detail/alps.hpp"
-
-typedef alps::numeric::matrix<std::complex<double> > Matrix;
+#ifdef USE_AMBIENT
+    #include "dmrg/block_matrix/detail/ambient.hpp"
+    typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > Matrix;
+#else
+    #include "dmrg/block_matrix/detail/alps.hpp"
+    typedef alps::numeric::matrix<double> Matrix;
+#endif
 
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
@@ -78,15 +82,8 @@ int main(int argc, char ** argv)
             return 1;
         }
         MPS<Matrix, grp> mps1, mps2;
-        
-        {
-            storage::archive ar(argv[1]);
-            ar["/state"] >> mps1;
-        }
-        {
-            storage::archive ar(argv[2]);
-            ar["/state"] >> mps2;
-        }
+        load(argv[1], mps1);
+        load(argv[2], mps2);
         
         if (true) {
             std::cout << "<mps1 | mps2> = " << overlap(mps1, mps2) << std::endl;
@@ -102,7 +99,7 @@ int main(int argc, char ** argv)
             MPO<Matrix, grp> mpo;
             
             MPOTensor<Matrix, grp> mpot;
-            mpot(0,0) = ident;
+            mpot.set(0,0, ident);
             mpo = MPO<Matrix, grp>(mps1.length());
             for (int p=0; p<mps1.length(); ++p)
                 mpo[p] = mpot;

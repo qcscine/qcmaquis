@@ -53,7 +53,7 @@ public:
         
         if (this->restore)
         {
-            storage::archive ar(this->chkpfile);
+            storage::archive ar(this->chkpfile+"/props.h5");
             ar["/status/graining"] >> initial_graining;
         }
     }
