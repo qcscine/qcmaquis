@@ -301,7 +301,7 @@ set(DMRG_FRAMEWORK_DIR ${PROJECT_SOURCE_DIR}/framework)
 # Configure files
 ######################################################################
 
-configure_file(framework/dmrg_version.h.in ${CMAKE_BINARY_DIR}/framework/dmrg_version.h)
+configure_file(framework/dmrg/version.h.in ${CMAKE_BINARY_DIR}/framework/dmrg/version.h)
 
 
 ######################################################################
@@ -374,7 +374,7 @@ install(EXPORT DMRGTargets DESTINATION share/cmake COMPONENT dev)
 # Install
 ######################################################################
 
-install(FILES ${CMAKE_BINARY_DIR}/framework/dmrg_version.h
+install(FILES ${CMAKE_BINARY_DIR}/framework/dmrg/version.h
         DESTINATION include COMPONENT headers)
 
 #TODO: improve using GLOB
