@@ -9,7 +9,7 @@
 #ifndef MAQUIS_DMRG_DMRG_INIT_SIM_H
 #define MAQUIS_DMRG_DMRG_INIT_SIM_H
 
-#include "dmrg_version.h"
+#include "dmrg/version.h"
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/compression.h"
