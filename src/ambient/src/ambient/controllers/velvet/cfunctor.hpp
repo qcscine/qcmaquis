@@ -39,6 +39,11 @@ namespace ambient { namespace controllers { namespace velvet {
             r.transfer = new (ambient::pool::malloc<bulk,set>())
 #endif
                          set<revision>(r);
+            ((set*)r.transfer)->clock = ambient::model.clock;
+            ((set*)r.transfer)->sid = ambient::channel.index();
+        }else if(((set*)r.transfer)->clock != ambient::model.clock){
+            ((set*)r.transfer)->clock = ambient::model.clock;
+            ((set*)r.transfer)->sid = ambient::channel.index();
         }
         return *(set<revision>*)r.transfer;
     }
@@ -73,7 +78,7 @@ namespace ambient { namespace controllers { namespace velvet {
         if(target->generator != NULL) ((cfunctor*)target->generator)->queue(this);
         else{
             evaluated = true; // can send right now
-            handle = ambient::channel.set(target, (size_t)handle); 
+            handle = ambient::channel.set(target, (size_t)handle, sid); 
             ambient::controller.queue(this);
         }
         target->use();
@@ -97,7 +102,7 @@ namespace ambient { namespace controllers { namespace velvet {
                 ambient::controller.queue(this);
                 target->use();
             }
-            handles->push_back(ambient::channel.set(target, (size_t)p)); 
+            handles->push_back(ambient::channel.set(target, (size_t)p, sid)); 
             evaluated = true;
         }else{
             new (this) set<revision, AMBIENT_MAX_NUM_PROCS>(this);
@@ -110,7 +115,7 @@ namespace ambient { namespace controllers { namespace velvet {
             if(target->generator != NULL) ((cfunctor*)target->generator)->queue(this);
             else{
                 evaluated = true; // can send right now
-                handle = ambient::channel.set(target, (size_t)handle); 
+                handle = ambient::channel.set(target, (size_t)handle, sid); 
                 ambient::controller.queue(this);
             }
             target->use();
@@ -124,7 +129,7 @@ namespace ambient { namespace controllers { namespace velvet {
         if(target->generator != NULL) return false;
         if(!evaluated){
             evaluated = true;
-            handle = ambient::channel.set(target, (size_t)handle); 
+            handle = ambient::channel.set(target, (size_t)handle, sid); 
         }
 #ifndef AMBIENT_PERSISTENT_TRANSFERS
         return ambient::channel.test(handle);
@@ -168,14 +173,17 @@ namespace ambient { namespace controllers { namespace velvet {
             r.transfer = new (ambient::pool::malloc<bulk,get>())
 #endif
                               get<revision>(r);
-        }
-        assist(r, ambient::rank());
+            assist(r, ambient::rank());
+            ((get<revision>*)r.transfer)->handle = ambient::channel.get(&r, ((assistance*)r.assist.second)->sid);
+        }else
+            assist(r, ambient::rank());
     }
 
     inline void get<revision>::assist(revision& r, int rank){
         if(r.assist.first != ambient::model.clock){
             r.assist.first = ambient::model.clock;
             r.assist.second = new (ambient::pool::malloc<bulk,assistance>()) assistance();
+            ((assistance*)r.assist.second)->sid = ambient::channel.index();
         }
         *(assistance*)r.assist.second += rank;
     }
@@ -189,7 +197,6 @@ namespace ambient { namespace controllers { namespace velvet {
 #else
         target->embed(ambient::pool::malloc<bulk>(target->spec));
 #endif
-        handle = ambient::channel.get(target);
         ambient::controller.queue(this);
         target->use();
     }
@@ -199,7 +206,7 @@ namespace ambient { namespace controllers { namespace velvet {
             if(target->assist.first == ambient::model.clock){
                 assistance* a = (assistance*)target->assist.second;
                 if(a->handle >= 0)
-                    handle = ambient::channel.set(target, a->handle);
+                    handle = ambient::channel.set(target, a->handle, a->sid);
                 target->assist.first--; // invalidate
             }
             //return true;

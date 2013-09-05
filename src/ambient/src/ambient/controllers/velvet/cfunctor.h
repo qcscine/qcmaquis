@@ -82,6 +82,8 @@ namespace ambient { namespace controllers { namespace velvet {
         revision* target;
         request* handle;
         bool evaluated;
+        size_t clock;
+        size_t sid;
     };
 
     struct assistance {
@@ -96,6 +98,7 @@ namespace ambient { namespace controllers { namespace velvet {
         bool states[AMBIENT_MAX_NUM_PROCS];
         bool valid;
         int handle;
+        int sid;
     };
 
     class get<revision> : public cfunctor {

@@ -33,11 +33,6 @@ namespace ambient { namespace models { namespace velvet {
     }
     #endif
 
-    inline void model::index(revision* r){
-        r->sid = this->sid++;
-        this->sid %= AMBIENT_MAX_SID;
-    }
-
     inline void model::index(const transformable* v){
         v->sid = this->sid++;
         this->sid %= AMBIENT_MAX_SID;

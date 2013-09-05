@@ -48,7 +48,6 @@ namespace ambient { namespace models { namespace velvet {
         #ifdef AMBIENT_TRACKING
         void index(history* h);
         #endif
-        void index(revision* r);
         void index(const transformable* v);
         size_t clock;
         size_t op_sid;
