@@ -62,12 +62,20 @@ namespace ambient { namespace models { namespace velvet {
         generator = NULL;
     }
 
-    inline bool revision::locked(){
+    inline bool revision::locked() const {
         return (users != 0);
     }
 
-    inline bool revision::valid(){
+    inline bool revision::locked_once() const {
+        return (users == 1);
+    }
+
+    inline bool revision::valid() const {
         return (data != NULL);
+    }
+
+    inline bool revision::referenced() const {
+        return (spec.crefs != 0);
     }
 
     // }}}

@@ -146,6 +146,9 @@ namespace ambient { namespace controllers { namespace velvet {
     
     template<int N>
     inline void set<revision, N>::invoke(){
+        #ifdef AMBIENT_MEMORY_SQUEEZE
+        ambient::controller.squeeze(target);
+        #endif
         target->release(); 
 #ifdef AMBIENT_PERSISTENT_TRANSFERS
         new (this) set<revision, AMBIENT_MAX_NUM_PROCS+1>(this);
@@ -188,6 +191,7 @@ namespace ambient { namespace controllers { namespace velvet {
 #endif
         handle = ambient::channel.get(target);
         ambient::controller.queue(this);
+        target->use();
     }
     
     inline bool get<revision>::ready(){
@@ -205,6 +209,10 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void get<revision>::invoke(){
+        #ifdef AMBIENT_MEMORY_SQUEEZE
+        ambient::controller.squeeze(target);
+        #endif
+        target->release();
         target->complete();
 #ifndef AMBIENT_PERSISTENT_TRANSFERS
         target->transfer = NULL;

@@ -59,7 +59,8 @@ namespace ambient { namespace controllers { namespace velvet {
         void rsync (revision* r);
         void lsync (transformable* v);
         void rsync (transformable* v);
-        template<typename T> void destroy(T* o);
+        template<typename T> void collect(T* o);
+        void squeeze(revision* r) const;
 
         bool tunable();
         template<complexity O> void schedule();

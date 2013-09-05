@@ -46,7 +46,7 @@ namespace ambient {
 
     template<typename T>
     inline void destroy(T* o){ 
-        controller.destroy(o); 
+        controller.collect(o); 
     }
 
     inline bool verbose(){ 
@@ -72,7 +72,7 @@ namespace ambient {
         // do not deallocate or reuse
         if(!r->valid()) r->spec.protect();
         assert(!r->valid() || !r->spec.bulked()); // can't rely on bulk memory
-        r->use();
+        r->spec.crefs++;
     }
 
 }
