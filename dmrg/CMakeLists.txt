@@ -349,8 +349,8 @@ endif(REGRESSION_APPLICATION_TESTS)
 if(REGRESSION_PERFORMANCE_TESTS)
 # *** benchmark applications
   add_subdirectory(regression/benchmarks)
-  enable_testing()
-  add_subdirectory(${BENCHMARKS_DIR} benchmarks_refs)
+  #enable_testing()
+  #add_subdirectory(${BENCHMARKS_DIR} benchmarks_refs)
 endif(REGRESSION_PERFORMANCE_TESTS)
 
 
