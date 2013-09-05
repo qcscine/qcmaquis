@@ -54,7 +54,6 @@ namespace ambient { namespace models { namespace velvet {
         void* generator;
         void* transfer;
         void* data;
-        int   sid;
         int   owner;
         std::atomic<int> users;
         ambient::locality state;

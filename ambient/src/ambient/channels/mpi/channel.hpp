@@ -58,6 +58,12 @@ namespace ambient { namespace channels { namespace mpi {
         return this->db_volume;
     }
 
+    inline int channel::index(){
+        int s = this->sid++;
+        this->sid %= AMBIENT_MAX_SID;
+        return s;
+    }
+
     inline request* channel::get(transformable* v){
         request* q = new request();
         MPI_Irecv(&v->v, 
@@ -83,19 +89,19 @@ namespace ambient { namespace channels { namespace mpi {
         return q;
     }
 
-    inline request* channel::get(revision* r){
+    inline request* channel::get(revision* r, int tag){
         request* q = new request();
         MPI_Irecv(r->data, 
                   (int)r->spec.extent/sizeof(double), 
                   MPI_DOUBLE, 
                   MPI_ANY_SOURCE, 
-                  r->sid, 
+                  tag, 
                   MPI_COMM_WORLD, 
                   &(q->mpi_request));
         return q;
     }
 
-    inline request* channel::set(revision* r, int rank){
+    inline request* channel::set(revision* r, int rank, int tag){
         if(rank == ambient::rank()) return NULL;
         request* q = new request();
         // can be ready-send
@@ -103,7 +109,7 @@ namespace ambient { namespace channels { namespace mpi {
                   (int)r->spec.extent/sizeof(double), 
                   MPI_DOUBLE, 
                   rank, 
-                  r->sid, 
+                  tag, 
                   MPI_COMM_WORLD, 
                   &(q->mpi_request));
         return q;

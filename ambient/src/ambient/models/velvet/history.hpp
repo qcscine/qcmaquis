@@ -46,7 +46,6 @@ namespace ambient { namespace models { namespace velvet {
         revision* r = new revision(extent, NULL, ambient::common); 
         this->content.push_back(r);
         this->current = r;
-        ambient::model.index(r);
     }
 
     template<ambient::locality L>
@@ -54,7 +53,6 @@ namespace ambient { namespace models { namespace velvet {
         revision* r = new revision(extent, g, L); 
         this->content.push_back(r);
         this->current = r;
-        ambient::model.index(r);
     }
 
     template<ambient::locality L>
@@ -62,7 +60,6 @@ namespace ambient { namespace models { namespace velvet {
         revision* r = new revision(extent, NULL, L, g); 
         this->content.push_back(r);
         this->current = r;
-        ambient::model.index(r);
     }
 
     inline size_t history::time() const {

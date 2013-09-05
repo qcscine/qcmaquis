@@ -48,16 +48,18 @@ namespace ambient { namespace channels { namespace mpi {
         size_t dim();
         size_t wk_dim();
         size_t db_dim();
-        request* get(revision* r);
-        request* set(revision* r, int rank);
+        request* get(revision* r, int tag);
+        request* set(revision* r, int rank, int tag);
         request* get(transformable* v);
         request* set(transformable* v, int rank);
         bool test(request* r);
         void wait(request* r);
+        int index();
         group* world;
     private:
         size_t volume;
         size_t db_volume;
+        int sid;
     };
 
 } } }
