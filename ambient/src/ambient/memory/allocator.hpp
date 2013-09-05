@@ -36,7 +36,7 @@ namespace ambient {
             return ambient::pool::malloc(spec);
         }
         static void* calloc(pool::descriptor& spec){
-            void* m = ambient::pool::malloc(spec);
+            void* m = alloc(spec);
             memset(m, 0, spec.extent);
             return m;
         }

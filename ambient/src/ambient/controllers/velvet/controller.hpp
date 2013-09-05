@@ -209,8 +209,20 @@ namespace ambient { namespace controllers { namespace velvet {
         ambient::controllers::velvet::get<transformable>::spawn(*v, which());
     }
 
-    template<typename T> void controller::destroy(T* o){
+    template<typename T> void controller::collect(T* o){
         this->garbage.push_back(o);
+    }
+
+    inline void controller::squeeze(revision* r) const {
+        if(r->valid() && !r->referenced() && r->locked_once()){
+            if(r->spec.region == ambient::rstandard){
+                ambient::pool::free(r->data, r->spec);
+                r->spec.region = ambient::rdelegated;
+            }else if(r->spec.region == ambient::rbulked){
+                ambient::memory::bulk::reuse(r->data);
+                r->spec.region = ambient::rdelegated;
+            }
+        }
     }
 
 } } }

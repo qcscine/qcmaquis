@@ -68,6 +68,7 @@ namespace ambient { namespace memory {
                 this->buffers.push_back(std::malloc(S));
                 this->counts.push_back(0);
                 this->buffer = &this->buffers[0];
+                this->reuse_count = 0;
             }
             static void* provide(){
                 factory& s = instance();
@@ -85,7 +86,7 @@ namespace ambient { namespace memory {
                 }else{
                     chunk = s.r_buffers.back();
                     s.r_buffers.pop_back();
-                    printf("REUSING OLD BUFFER!\n");
+                    s.reuse_count++;
                 }
 
                 return chunk;
@@ -97,9 +98,7 @@ namespace ambient { namespace memory {
                 for(int i = 0; i < s.buffers.size(); i++){
                     if(s.buffers[i] == chunk){
                         s.counts[i] += usage;
-                        if(s.counts[i] == 0){ 
-                            s.r_buffers.push_back(chunk);
-                        }
+                        if(s.counts[i] == 0) s.r_buffers.push_back(chunk);
                         break;
                     }
                 }
@@ -111,9 +110,7 @@ namespace ambient { namespace memory {
                 for(int i = 0; i < s.buffers.size(); i++){
                     if((size_t)ptr < ((size_t)s.buffers[i] + S) && (size_t)ptr >= (size_t)s.buffers[i]){
                         s.counts[i]--;
-                        if(s.counts[i] == 0){
-                            s.r_buffers.push_back(s.buffers[i]);
-                        }
+                        if(s.counts[i] == 0) s.r_buffers.push_back(s.buffers[i]);
                         break;
                     }
                 }
@@ -124,28 +121,38 @@ namespace ambient { namespace memory {
                 s.r_buffers.clear();
                 for(int i = 0; i < s.counts.size(); i++)
                     s.counts[i] = 0;
+                s.reuse_count = 0;
             }
             static size_t size(){
                 factory& s = instance();
-                for(int i = 0; i < s.counts.size(); i++){
-                    if(s.counts[i] > 0) printf("Remaining usage (%d): %ld\n", i, s.counts[i]);
-                }
                 return (s.buffer - &s.buffers[0]);
+            }
+            static size_t reused(){
+                factory& s = instance();
+                return s.reuse_count;
+            }
+            static size_t reserved(){
+                factory& s = instance();
+                return (s.counts.size());
             }
             mutex mtx;
             std::vector<long int> counts;
             std::vector<void*> buffers;
             std::vector<void*> r_buffers;
+            size_t reuse_count;
             void** buffer;
         };
 
         template<size_t S>
         class region {
         public:
+            typedef boost::details::pool::default_mutex mutex;
+
             region(){
                 this->buffer = NULL;
                 this->iterator = (char*)this->buffer+S;
                 this->count = 0;
+                this->block_count = 0;
             }
             void realloc(){
                 if(this->count){
@@ -154,8 +161,10 @@ namespace ambient { namespace memory {
                 }
                 this->buffer = factory<S>::provide();
                 this->iterator = (char*)this->buffer;
+                this->block_count++;
             }
             void* malloc(size_t sz){
+                boost::details::pool::guard<mutex> g(this->mtx);
                 if(((size_t)iterator + sz - (size_t)this->buffer) >= S) realloc();
                 void* m = (void*)iterator;
                 iterator += aligned(sz);
@@ -165,47 +174,18 @@ namespace ambient { namespace memory {
             void reset(){
                 this->iterator = (char*)this->buffer+S;
                 this->count = 0; 
+                this->block_count = 0;
             }
+            int block_count;
         private:
             void* buffer;
             char* iterator;
             long int count;
+            mutex mtx;
         };
 
-        /*template<size_t S>
-        class region {
-        public:
-            region(){
-                this->buffers.push_back(std::malloc(S));
-                this->buffer = &this->buffers[0];
-                this->iterator = (char*)*this->buffer;
-            }
-            void realloc(){
-                if(*this->buffer == this->buffers.back()){
-                    this->buffers.push_back(std::malloc(S));
-                    this->buffer = &this->buffers.back();
-                }else
-                    this->buffer++;
-                this->iterator = (char*)*this->buffer;
-            }
-            void* malloc(size_t sz){
-                if(((size_t)iterator + sz - (size_t)*this->buffer) >= S) realloc();
-                void* m = (void*)iterator;
-                iterator += aligned(sz);
-                return m;
-            }
-            void reset(){
-                this->buffer = &this->buffers[0];
-                this->iterator = (char*)*this->buffer;
-            }
-        private:
-            std::vector<void*> buffers;
-            void** buffer;
-            char* iterator;
-        };*/
-
        ~bulk(){ 
-            delete[] this->set; 
+            delete this->master; 
         }
         static bulk& instance(){
             static bulk singleton;
@@ -213,18 +193,27 @@ namespace ambient { namespace memory {
         }
         bulk(){
             this->arity = ambient::get_num_threads();
-            this->set = new region<AMBIENT_BULK_CHUNK>[arity];
+            this->master = new region<AMBIENT_BULK_CHUNK>();
+            this->slave  = new region<AMBIENT_BULK_CHUNK>();
         }
-        template<size_t S> static void* malloc()         { return instance().set[AMBIENT_THREAD_ID].malloc(S);  }
-                           static void* malloc(size_t sz){ return instance().set[AMBIENT_THREAD_ID].malloc(sz); }
+        template<size_t S> static void* malloc()         { return instance().master->malloc(S);  }
+                           static void* malloc(size_t sz){ return instance().master->malloc(sz); }
                            static void reuse(void* ptr)  { factory<AMBIENT_BULK_CHUNK>::reuse(ptr); }
         template<size_t S> static void free(void* ptr)   { }
                            static void free(void* ptr)   { }
+        static void* reserve(size_t sz){
+            if(instance().slave->block_count < factory<AMBIENT_BULK_CHUNK>::reserved()/2)
+                return instance().slave->malloc(sz);
+            else 
+                return instance().master->malloc(sz); 
+        }
 
         static void report(){
             bulk& pool = instance();
             size_t pools = factory<AMBIENT_BULK_CHUNK>::size();
             if(pools > 2*pool.arity){
+                std::cout << "Reused chunks: " << factory<AMBIENT_BULK_CHUNK>::reused() << "!\n";
+                std::cout << "Reserved chunks: " << instance().slave->block_count << "!\n";
                 std::cout << "Bulk memory: " << pools << " full chunks used\n";
                 #ifdef AMBIENT_TRACE
                 AMBIENT_TRACE
@@ -237,14 +226,16 @@ namespace ambient { namespace memory {
             report();
             #endif
             bulk& pool = instance();
-            for(int i = 0; i < pool.arity; i++) pool.set[i].reset();
+            pool.master->reset();
+            pool.slave->reset();
             factory<AMBIENT_BULK_CHUNK>::reset();
         }
         static region_t signature(){
             return region_t::rbulked;
         }
     private:
-        region<AMBIENT_BULK_CHUNK>* set;
+        region<AMBIENT_BULK_CHUNK>* master;
+        region<AMBIENT_BULK_CHUNK>* slave;
         int arity;
     };
 
@@ -259,9 +250,7 @@ namespace ambient {
     namespace pool {
         struct descriptor {
 
-            descriptor(size_t e, region_t r = region_t::rstandard) : extent(e), region(r), mmap(NULL), persistency(1) {}
-            void* mmap;
-            size_t extent;
+            descriptor(size_t e, region_t r = region_t::rstandard) : extent(e), region(r), mmap(NULL), persistency(1), crefs(1), reusable(false) {}
 
             void zombie(){
                 //region = region_t::rpersist;
@@ -280,14 +269,22 @@ namespace ambient {
                 d.region = region_t::rdelegated;
             }
             bool conserves(descriptor& p){
-                assert(p.region != region_t::rdelegated && region != region_t::rdelegated);
+                assert(p.region == region_t::rdelegated && region != region_t::rdelegated);
                 return (!p.bulked() || bulked());
             }
             bool bulked(){
                 return (region == region_t::rbulked);
             }
+            void reserve(){
+                reusable = true;
+            }
+
+            void* mmap;
+            size_t extent;
             region_t region;
             int persistency;
+            int crefs;
+            bool reusable;
         };
 
         template<class Memory>           static void* malloc(size_t sz){ return Memory::malloc(sz);            }
@@ -314,6 +311,9 @@ namespace ambient {
                 if(d.extent > AMBIENT_IB_EXTENT){
                     d.region = region_t::rstandard;
                     return malloc<standard>(d.extent);
+                }
+                if(d.reusable){
+                    return ambient::memory::bulk::reserve(d.extent);
                 }
                 return malloc<bulk>(d.extent); 
             } else return malloc<standard>(d.extent);

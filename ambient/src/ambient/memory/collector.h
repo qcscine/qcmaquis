@@ -46,6 +46,7 @@ namespace ambient{ namespace memory {
         void push_back(void* o);
         void clear();
     private:
+        size_t reserve_limit;
         std::vector< history* >  str;
         std::vector< revision* > rev;
         std::vector< void* >     raw;
