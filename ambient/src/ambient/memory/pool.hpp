@@ -269,7 +269,7 @@ namespace ambient {
                 d.region = region_t::rdelegated;
             }
             bool conserves(descriptor& p){
-                assert(p.region == region_t::rdelegated && region != region_t::rdelegated);
+                assert(p.region != region_t::rdelegated && region != region_t::rdelegated);
                 return (!p.bulked() || bulked());
             }
             bool bulked(){
