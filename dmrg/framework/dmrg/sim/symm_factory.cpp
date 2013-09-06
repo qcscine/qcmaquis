@@ -48,6 +48,9 @@ namespace maquis { namespace dmrg {
             factory_map[symm_name](parms, model);
         else
             throw std::runtime_error("Don't know this symmetry group. Please, check your compilation flags.");
+#ifdef AMBIENT
+        ambient::sync();
+#endif
     }
 
 } }

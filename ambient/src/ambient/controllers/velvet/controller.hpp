@@ -32,6 +32,7 @@
 namespace ambient { namespace controllers { namespace velvet {
 
     inline controller::~controller(){ 
+        if(!chains->empty()) printf("Ambient:: exiting with operations still in queue!\n");
         this->clear();
     }
 
