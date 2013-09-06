@@ -52,7 +52,6 @@ namespace ambient { namespace models { namespace velvet {
         const transformable* r;
         mutable numeric_union v;
         void* generator;
-        mutable int sid;
     };
 
     template <typename T>

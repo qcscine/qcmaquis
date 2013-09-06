@@ -47,7 +47,6 @@ namespace ambient { namespace models { namespace velvet {
 
     template<typename T>
     inline transformable_value<T>::transformable_value(T value){
-        ambient::model.index(this);
         this->v = value;
     }
 
@@ -70,7 +69,6 @@ namespace ambient { namespace models { namespace velvet {
         ambient::pool::free<fixed,AMBIENT_FUTURE_SIZE>((void*)this->l);
         ambient::pool::free<fixed,AMBIENT_FUTURE_SIZE>((void*)this->r);
         new((void*)this)transformable_value<T>(*(transformable_value<T>*)this);
-        ambient::model.index((transformable*)this);
         return this->v;
     }
 
