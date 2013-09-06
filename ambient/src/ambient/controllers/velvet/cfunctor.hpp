@@ -238,17 +238,19 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline get<transformable>::get(transformable& v, int owner)
     : target(&v), evaluated(false) {
-        handle = ambient::channel.get(target);
+        sid = ambient::channel.index();
+        handle = ambient::channel.get(target, sid);
         if(ambient::rank.neighbor() == owner) evaluated = true;
     }
     inline set<transformable, AMBIENT_MAX_NUM_PROCS>::set(transformable& v) 
     : target(&v), handle(NULL) {
+        sid = ambient::channel.index();
     }
 
     inline bool get<transformable>::ready(){
         if(ambient::channel.test(handle)){
             if(!evaluated){
-                handle = ambient::channel.set(target, ambient::rank.neighbor());
+                handle = ambient::channel.set(target, ambient::rank.neighbor(), sid);
                 evaluated = true;
             }
             return ambient::channel.test(handle);
@@ -257,7 +259,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
     inline bool set<transformable, AMBIENT_MAX_NUM_PROCS>::ready(){
         if(target->generator != NULL) return false;
-        if(!handle) handle = ambient::channel.set(target, ambient::rank.neighbor()); 
+        if(!handle) handle = ambient::channel.set(target, ambient::rank.neighbor(), sid); 
         return ambient::channel.test(handle);
     }
 

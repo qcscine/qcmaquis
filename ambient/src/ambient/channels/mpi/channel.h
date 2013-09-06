@@ -50,8 +50,8 @@ namespace ambient { namespace channels { namespace mpi {
         size_t db_dim();
         request* get(revision* r, int tag);
         request* set(revision* r, int rank, int tag);
-        request* get(transformable* v);
-        request* set(transformable* v, int rank);
+        request* get(transformable* v, int tag);
+        request* set(transformable* v, int rank, int tag);
         bool test(request* r);
         void wait(request* r);
         int index();

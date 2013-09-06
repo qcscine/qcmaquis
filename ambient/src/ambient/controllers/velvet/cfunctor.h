@@ -83,7 +83,7 @@ namespace ambient { namespace controllers { namespace velvet {
         request* handle;
         bool evaluated;
         size_t clock;
-        size_t sid;
+        int sid;
     };
 
     struct assistance {
@@ -139,6 +139,7 @@ namespace ambient { namespace controllers { namespace velvet {
         bool evaluated;
         request* handle;
         transformable* target;
+        int sid;
     };
     template<>
     class set<transformable, AMBIENT_MAX_NUM_PROCS> : public cfunctor {
@@ -155,6 +156,7 @@ namespace ambient { namespace controllers { namespace velvet {
     private:
         request* handle;
         transformable* target;
+        int sid;
     };
 
     // }}}
