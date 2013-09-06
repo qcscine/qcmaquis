@@ -29,8 +29,8 @@
 
 #include "ambient/numeric/traits.hpp"
 
-#include <alps/ngs/hdf5.hpp>
-#include <alps/ngs/hdf5/complex.hpp>
+#include <alps/hdf5.hpp>
+#include <alps/hdf5/complex.hpp>
 
 namespace ambient { namespace numeric {
 
