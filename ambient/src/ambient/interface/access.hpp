@@ -34,12 +34,13 @@ namespace ambient {
     template <typename T> static bool exclusive(T& obj){
         ambient::model.touch(obj.core);
         revision& c = *obj.core->current;
-        if(ambient::controller.remote()){ 
+        if(ambient::controller.remote()){
             c.state = ambient::remote;
+            c.owner = ambient::controller.which();
             return true;
         }else{
             c.state = ambient::local;
-            if(!c.valid()) c.embed(T::allocator_type::calloc(c.spec));
+            if(!c.valid()) c.embed(T::allocator_type::alloc(c.spec));
             return false;
         }
     }

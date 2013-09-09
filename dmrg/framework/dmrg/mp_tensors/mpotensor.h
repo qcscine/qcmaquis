@@ -41,13 +41,11 @@ template <class Matrix, class SymmGroup> class MPOIndexer;
 template<class Matrix, class SymmGroup>
 class MPOTensor
 {
+public:
     typedef std::pair<std::size_t, std::size_t> key_t;
     typedef block_matrix<Matrix, SymmGroup> value_t;
     typedef std::map<key_t, value_t, MPOTensor_detail::pair_cmp> data_t;
-    
     typedef std::set<std::size_t> used_set_t;
-    
-public:
     typedef typename Matrix::value_type value_type;
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
     typedef std::pair<typename SymmGroup::charge, std::size_t> access_type;
