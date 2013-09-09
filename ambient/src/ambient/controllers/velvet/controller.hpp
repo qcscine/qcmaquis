@@ -64,6 +64,7 @@ namespace ambient { namespace controllers { namespace velvet {
             ambient::cout << "ambient: max number of proc: " << AMBIENT_MAX_NUM_PROCS << "\n";
             ambient::cout << "ambient: number of database proc: " << AMBIENT_DB_PROCS << "\n";
             ambient::cout << "ambient: number of work proc: " << ambient::channel.wk_dim() << "\n";
+            ambient::cout << "ambient: number of threads per proc: " << ambient::get_num_threads() << "\n";
         #endif
     }
 
