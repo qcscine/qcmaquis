@@ -169,6 +169,9 @@ int main(int argc, char ** argv)
         }
         tim_truncation.end();
 
+        #ifdef AMBIENT
+        ambient::sync();
+        #endif
         /// Compute new boundary
         // TODO: optional here...
         
