@@ -212,9 +212,9 @@ namespace ambient { namespace memory {
             bulk& pool = instance();
             size_t pools = factory<AMBIENT_BULK_CHUNK>::size();
             if(pools > 2*pool.arity){
-                std::cout << "Reused chunks: " << factory<AMBIENT_BULK_CHUNK>::reused() << "!\n";
-                std::cout << "Reserved chunks: " << instance().slave->block_count << "!\n";
-                std::cout << "Bulk memory: " << pools << " full chunks used\n";
+                std::cout << "R" << ambient::rank() << ": reused chunks: " << factory<AMBIENT_BULK_CHUNK>::reused() << "!\n";
+                std::cout << "R" << ambient::rank() << ": reserved chunks: " << instance().slave->block_count << "!\n";
+                std::cout << "R" << ambient::rank() << ": bulk memory: " << pools << " full chunks used\n";
                 #ifdef AMBIENT_TRACE
                 AMBIENT_TRACE
                 #endif
