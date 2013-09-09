@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#define AMBIENT_RESERVE_LIMIT AMBIENT_BULK_CHUNK*80
+#define AMBIENT_RESERVE_LIMIT (size_t)AMBIENT_BULK_CHUNK*80
 
 namespace ambient { namespace memory {
 
