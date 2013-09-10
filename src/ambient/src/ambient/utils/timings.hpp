@@ -36,9 +36,8 @@ namespace ambient {
 
     class timer {
     public:
-        timer(std::string name, pthread_t thread): val(0.0), name(name), count(0), thread_(thread){}
         timer(std::string name): val(0.0), name(name), count(0), thread_(pthread_self()){}
-           ~timer(){ report(); }
+       ~timer(){ report(); }
      
         double get_time() const {
             return val;
@@ -67,6 +66,19 @@ namespace ambient {
         double val, t0;
         unsigned long long count;
         std::string name;
+    };
+
+    class synctime : public timer {
+    public:
+        synctime(std::string name) : timer(name){}
+        void begin(){
+            ambient::sync();
+            timer::begin();
+        }    
+        void end(){
+            ambient::sync();
+            timer::end();
+        }
     };
 }
 
