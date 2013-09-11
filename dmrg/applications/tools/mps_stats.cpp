@@ -49,7 +49,7 @@ int main(int argc, char ** argv)
             std::ofstream ofs(fname.c_str());
             mps[i].make_left_paired();
             for (int k=0; k<mps[i].data().n_blocks(); ++k)
-                ofs << num_rows(mps[i].data()[k]) << "    " << num_rows(mps[i].data()[k]) << std::endl;
+                ofs << num_rows(mps[i].data()[k]) << "    " << num_cols(mps[i].data()[k]) << std::endl;
         }
         
     } catch (std::exception& e) {
