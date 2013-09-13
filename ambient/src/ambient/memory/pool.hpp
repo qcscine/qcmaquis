@@ -32,6 +32,9 @@
 
 namespace ambient { namespace memory {
 
+    constexpr size_t paged(size_t size)  {  return PAGE_SIZE * (size_t)((size+PAGE_SIZE-1)/PAGE_SIZE); }
+    constexpr size_t aligned(size_t size){  return ALIGNMENT * (size_t)((size+ALIGNMENT-1)/ALIGNMENT); }
+
     struct standard {
         static void* malloc(size_t sz){ return std::malloc(sz); }
         static void free(void* ptr){ std::free(ptr);  }
@@ -44,13 +47,6 @@ namespace ambient { namespace memory {
         // note: singleton_pool contains implicit mutex (critical for gcc)
         template<size_t S> static void* malloc(){ return std::malloc(S); } // boost::singleton_pool<fixed,S>::malloc(); 
         template<size_t S> static void free(void* ptr){ std::free(ptr);  } // boost::singleton_pool<fixed,S>::free(ptr);
-    };
-
-    struct outofcore {
-        static void* malloc(size_t sz, void* pool){ return ((ambient::memory::mmap::descriptor*)pool)->malloc(sz);  }
-        static region_t signature(){
-            return region_t::rdelegated;
-        }
     };
 
     struct bulk {
@@ -242,7 +238,6 @@ namespace ambient { namespace memory {
 } }
 
 namespace ambient {
-    using memory::outofcore;
     using memory::standard;
     using memory::fixed;
     using memory::bulk;
@@ -250,7 +245,7 @@ namespace ambient {
     namespace pool {
         struct descriptor {
 
-            descriptor(size_t e, region_t r = region_t::rstandard) : extent(e), region(r), mmap(NULL), persistency(1), crefs(1), reusable(false) {}
+            descriptor(size_t e, region_t r = region_t::rstandard) : extent(e), region(r), persistency(1), crefs(1), reusable(false) {}
 
             void zombie(){
                 //region = region_t::rpersist;
@@ -279,7 +274,6 @@ namespace ambient {
                 reusable = true;
             }
 
-            void* mmap;
             size_t extent;
             region_t region;
             int persistency;
@@ -298,11 +292,6 @@ namespace ambient {
         static void* malloc(descriptor& d){
             d.region = Memory::signature();
             return Memory::malloc(d.extent);
-        }
-        template<>
-        static void* malloc<outofcore>(descriptor& d){
-            d.region = outofcore::signature();
-            return outofcore::malloc(d.extent, d.mmap);
         }
 
         static void* malloc(descriptor& d){

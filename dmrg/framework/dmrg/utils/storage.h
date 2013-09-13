@@ -22,6 +22,7 @@
 
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/utils/tracking.h"
+#include "dmrg/utils/parallel_for.hpp"
 
 #ifdef HAVE_ALPS_HDF5
 #include "dmrg/utils/archive.h"
@@ -56,7 +57,7 @@ namespace ambient { namespace numeric {
 namespace storage {
     template<typename T> 
     struct constrained<ambient::numeric::tiles<ambient::numeric::matrix<T, ambient::default_allocator<T> > > > {
-        typedef ambient::numeric::tiles<ambient::numeric::matrix<T, ambient::constrained_allocator<T> > > type;
+        typedef ambient::numeric::tiles<ambient::numeric::matrix<T, ambient::default_allocator<T> > > type;
     };
 }
 #endif
@@ -72,64 +73,6 @@ namespace storage {
         static void sync(){}
     };
 
-#ifdef AMBIENT
-    class disk : public nop {
-    public:
-        typedef ambient::memory::mmap impl;
-        template<class T> class serializable : public impl::descriptor { };
-
-        class pin_archive : public ambient::memory::iarchive<pin_archive> {
-        public:
-            template<class T, class A> void load_override(ambient::numeric::matrix<T,A>& t, int){
-                ambient::safe_raw(t).spec.mmap = &pivot;
-                if(ambient::safe_raw(t).state != ambient::remote)
-                pivot.size += ambient::memory::aligned(ambient::safe_raw(t).spec.extent);
-            }
-            template<class T> void load_override(T& t, int stub){
-                ambient::memory::iarchive<pin_archive>::load_override(t,stub);
-            }
-            pin_archive(impl::descriptor& p) : pivot(p){}
-        private:
-            impl::descriptor& pivot;
-        };
-
-        class load_archive : public ambient::memory::iarchive<load_archive> {
-        public:
-            template<class T, class A> void load_override(ambient::numeric::matrix<T,A>& t, int){
-                if(ambient::safe_raw(t).data) pivot.update(ambient::safe_raw(t).data);
-            }
-            template<class T> void load_override(T& t, int stub){
-                ambient::memory::iarchive<load_archive>::load_override(t,stub);
-            }
-            load_archive(impl::descriptor& p) : pivot(p){}
-        private:
-            impl::descriptor& pivot;
-        };
-       
-        static void init(const std::string& path){ 
-            impl::init(path);
-        }
-        template<class T> static void fetch(serializable<T>& t)   { if(impl::enabled() && t.remap()) load_archive(t) >> static_cast<T&>(t); }
-        template<class T> static void pin(serializable<T>& t)     { if(impl::enabled()){ pin_archive(t) >> static_cast<T&>(t); t.reserve(); } }
-        template<class T> static void prefetch(serializable<T>& t){ if(impl::enabled()) t.prefetch(); }
-        template<class T> static void evict(serializable<T>& t)   { if(impl::enabled()) t.unmap(); }
-        template<class T> static void drop(serializable<T>& t)    { if(impl::enabled()) t.drop();  }
-
-        template<class Matrix, class SymmGroup> 
-        static void evict(MPSTensor<Matrix, SymmGroup>& t){
-            if(!ambient::channel.db_dim()) return;
-            ambient::scope<ambient::dedicated> i;
-            migrate(t);
-        }
-    };
-
-    template<class Matrix, class SymmGroup> 
-    static void migrate(MPSTensor<Matrix, SymmGroup>& t){
-        for(int i = 0; i < t.data().n_blocks(); ++i) 
-        ambient::migrate(t.data()[i]);
-    }
-#else
-
     template<class T> class evict_request {};
     template<class T> class fetch_request {};
     template<class T> class drop_request {};
@@ -141,14 +84,28 @@ namespace storage {
         void operator()(){
             std::ofstream ofs(fp.c_str(), std::ofstream::binary);
             Boundary<Matrix, SymmGroup>& o = *ptr;
-            for (std::size_t i = 0; i < o.aux_dim(); ++i)
-                for (std::size_t k = 0; k < o[i].n_blocks(); ++k){
-                    for (std::size_t c = 0; c < num_cols(o[i][k]); ++c)
-                        ofs.write((char*)(&o[i][k](0, c)),
-                                 num_rows(o[i][k]) *
+            size_t loop_max = o.aux_dim();
+            for(size_t b = 0; b < loop_max; ++b){
+                for (std::size_t k = 0; k < o[b].n_blocks(); ++k){
+                    Matrix& m = o[b][k];
+#ifdef AMBIENT
+                    for(int j = 0; j < m.nt; ++j)
+                    for(int i = 0; i < m.mt; ++i){
+                        if(ambient::naked(m.tile(i,j)).state != ambient::local) continue;
+                        char* data = (char*)ambient::naked(m.tile(i,j));
+                        ofs.write(data, m.tile(i,j).num_cols() * m.tile(i,j).num_rows() *
+                                  sizeof(typename Matrix::value_type)/sizeof(char));
+                        std::free(data);
+                        ambient::naked(m.tile(i,j)).data = NULL;
+                    }
+#else
+                    for (std::size_t c = 0; c < num_cols(m); ++c)
+                        ofs.write((char*)(&m(0, c)), num_rows(m)*
                                  sizeof(typename Matrix::value_type)/sizeof(char));
-                    o[i][k] = Matrix();
+                    m = Matrix();
+#endif
                 }
+            }
             ofs.close();
         }
     private:
@@ -163,15 +120,27 @@ namespace storage {
         void operator()(){
             std::ifstream ifs(fp.c_str(), std::ifstream::binary);
             Boundary<Matrix, SymmGroup>& o = *ptr;
-            for (std::size_t i = 0; i < o.aux_dim(); ++i)
-                for (std::size_t k = 0; k < o[i].n_blocks(); ++k){
-                    o[i][k] = Matrix(o[i].left_basis()[k].second,
-                                     o[i].right_basis()[k].second);
-                    ifs.read((char*)(&o[i][k](0,0)),
-                             o[i].left_basis()[k].second*
-                             o[i].right_basis()[k].second*
+            size_t loop_max = o.aux_dim();
+            for(size_t b = 0; b < loop_max; ++b){
+                for (std::size_t k = 0; k < o[b].n_blocks(); ++k){
+#ifdef AMBIENT
+                    Matrix& m = o[b][k];
+                    for(int j = 0; j < m.nt; ++j)
+                    for(int i = 0; i < m.mt; ++i){
+                        if(ambient::naked(m.tile(i,j)).state != ambient::local) continue;
+                        ambient::naked(m.tile(i,j)).data = std::malloc(ambient::naked(m.tile(i,j)).spec.extent);
+                        ifs.read((char*)ambient::naked(m.tile(i,j)), m.tile(i,j).num_cols() * m.tile(i,j).num_rows() *
+                                 sizeof(typename Matrix::value_type)/sizeof(char));
+                    }
+#else
+                    o[b][k] = Matrix(o[b].left_basis()[k].second,
+                                     o[b].right_basis()[k].second);
+                    Matrix& m = o[b][k];
+                    ifs.read((char*)(&m(0,0)), num_cols(m)*num_rows(m)*
                              sizeof(typename Matrix::value_type)/sizeof(char));
+#endif
                 }
+            }
             ifs.close();
         }
     private:
@@ -185,9 +154,20 @@ namespace storage {
         drop_request(std::string fp, Boundary<Matrix, SymmGroup>* ptr) : fp(fp), ptr(ptr) { }
         void operator()(){
             Boundary<Matrix, SymmGroup>& o = *ptr;
-            for (std::size_t i = 0; i < o.aux_dim(); ++i)
-            for (std::size_t k = 0; k < o[i].n_blocks(); ++k)
-            o[i][k] = Matrix();
+            for (std::size_t b = 0; b < o.aux_dim(); ++b)
+            for (std::size_t k = 0; k < o[b].n_blocks(); ++k){
+#ifdef AMBIENT
+                    Matrix& m = o[b][k];
+                    for(int j = 0; j < m.nt; ++j)
+                    for(int i = 0; i < m.mt; ++i){
+                        if(ambient::naked(m.tile(i,j)).state != ambient::local) continue;
+                        char* data = (char*)ambient::naked(m.tile(i,j)); std::free(data);
+                        ambient::naked(m.tile(i,j)).data = NULL;
+                    }
+#else
+                    o[b][k] = Matrix();
+#endif
+            }
         }
     private:
         std::string fp;
@@ -240,9 +220,15 @@ namespace storage {
                     if(!dumped){
                         state = storing;
                         dumped = true;
+                        #ifdef AMBIENT
+                        ambient::sync();
+                        #endif
                         this->thread(new boost::thread(evict_request<T>(disk::fp(sid), (T*)this)));
                     }else{
                         state = uncore;
+                        #ifdef AMBIENT
+                        ambient::sync();
+                        #endif
                         drop_request<T>(disk::fp(sid), (T*)this)();
                     }
                 } 
@@ -293,8 +279,17 @@ namespace storage {
         template<class T> static void drop(serializable<T>& t)    { if(enabled()) t.drop();     }
         template<class T> static void pin(serializable<T>& t)     { }
 
+#ifdef AMBIENT
+        template<class Matrix, class SymmGroup> 
+        static void evict(MPSTensor<Matrix, SymmGroup>& t){
+            if(!ambient::channel.db_dim()) return;
+            ambient::scope<ambient::dedicated> i;
+            migrate(t);
+        }
+#else
         template<class Matrix, class SymmGroup> 
         static void evict(MPSTensor<Matrix, SymmGroup>& t){ }
+#endif
 
         disk() : active(false), sid(0) {}
         std::vector<descriptor*> queue;
@@ -302,6 +297,13 @@ namespace storage {
         bool active; 
         size_t sid;
     };
+
+#ifdef AMBIENT
+    template<class Matrix, class SymmGroup> 
+    static void migrate(MPSTensor<Matrix, SymmGroup>& t){
+        for(int i = 0; i < t.data().n_blocks(); ++i) 
+        ambient::migrate(t.data()[i]);
+    }
 #endif
 
     inline static void setup(BaseParameters& parms){
@@ -320,8 +322,4 @@ namespace storage {
     }
 }
 
-#ifdef AMBIENT
-BOOST_SERIALIZATION_REGISTER_ARCHIVE(storage::disk::pin_archive)
-BOOST_SERIALIZATION_REGISTER_ARCHIVE(storage::disk::load_archive)
-#endif
 #endif

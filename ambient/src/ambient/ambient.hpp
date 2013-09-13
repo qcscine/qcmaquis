@@ -126,7 +126,6 @@ namespace ambient {
 }
 
 #include "ambient/channels/mpi/groups/multirank.h"
-#include "ambient/memory/mmap.hpp"
 #include "ambient/memory/pool.hpp"
 #include "ambient/memory/allocator.hpp"
 #include "ambient/models/velvet/model.h"
