@@ -33,6 +33,10 @@
 #define BILLION 0x3B9ACA00
 
 namespace ambient {
+    void sync();
+}
+
+namespace ambient {
 
     class timer {
     public:

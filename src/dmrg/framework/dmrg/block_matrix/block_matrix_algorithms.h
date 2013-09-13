@@ -22,20 +22,7 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/function.hpp>
 
-#ifdef AMBIENT
-    typedef ambient::scope<ambient::single> locale;
-    #define parallel_for(constraint, ...) constraint; for(__VA_ARGS__)
-    #define semi_parallel_for(constraint, ...) constraint; for(__VA_ARGS__)
-#elif defined(MAQUIS_OPENMP)
-    typedef std::size_t locale;
-    #define parallel_pragma(a) _Pragma( #a )
-    #define parallel_for(constraint, ...) parallel_pragma(omp parallel for schedule(dynamic, 1)) for(__VA_ARGS__)
-    #define semi_parallel_for(constraint, ...) for(__VA_ARGS__)
-#else
-    typedef std::size_t locale;
-    #define parallel_for(constraint, ...) for(__VA_ARGS__)
-    #define semi_parallel_for(constraint, ...) for(__VA_ARGS__)
-#endif
+#include "dmrg/utils/parallel_for.hpp"
 
 struct truncation_results {
     std::size_t bond_dimension;     // new bond dimension
