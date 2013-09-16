@@ -90,7 +90,7 @@ namespace ambient { namespace numeric {
             tiles<Matrix> r(size[chunk.size()+1], size[chunk.size()]);
             m.swap(r);
 
-            std::vector<std::size_t> first(alps::hdf5::get_extent(m(0,0)));
+            std::vector<std::size_t> first(alps::hdf5::get_extent(value_type()));
             
             std::size_t const chunk_cols_index = chunk.size();
             chunk.push_back(0); // to be filled later
@@ -127,7 +127,7 @@ namespace ambient { namespace numeric {
         {
             size.push_back(m.cols);
             size.push_back(m.rows);
-            std::vector<std::size_t> first(alps::hdf5::get_extent(m(0,0)));
+            std::vector<std::size_t> first(alps::hdf5::get_extent(value_type()));
             std::copy(first.begin(), first.end(), std::back_inserter(size));
             
             std::size_t const chunk_cols_index = chunk.size();
@@ -154,11 +154,6 @@ namespace ambient { namespace numeric {
                     ar.write(path, (typename traits::real_type<value_type>::type *)ambient::naked(m.tile(i,j)), size, chunk, offset);
                 }
             }
-        }
-
-        template<class Archive>
-        void serialize(Archive & ar, const unsigned int){
-            ar & data;
         }
     public:
         std::vector<Matrix*> data;

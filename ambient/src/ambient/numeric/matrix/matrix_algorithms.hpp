@@ -82,6 +82,11 @@ namespace ambient { namespace numeric {
         kernels::template migrate<T,A>::template spawn<complexity::N>(a); 
     }
 
+    template <typename T>
+    inline void migrate(diagonal_matrix<T>& a){
+        kernels::template migrate<T,ambient::default_allocator<T> >::template spawn<complexity::N>(a); 
+    }
+
     template<class MatrixViewA, class MatrixViewB, typename T, class A>
     inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T,A>& c){
         kernels::template gemm<MatrixViewA,MatrixViewB,matrix<T,A>,T>::template spawn<complexity::N3>(a, b, c); 
