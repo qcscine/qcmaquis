@@ -153,7 +153,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
 #ifdef AMBIENT
     ambient::scope<ambient::shared> i;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
-        ambient::numeric::touch(evals[k][0]);
+        ambient::numeric::migrate(const_cast<DiagMatrix&>(evals[k])[0]);
     }
     ambient::sync();
 #endif
