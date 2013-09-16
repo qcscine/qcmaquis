@@ -45,8 +45,9 @@ namespace ambient { namespace memory {
 
     struct fixed {
         // note: singleton_pool contains implicit mutex (critical for gcc)
-        template<size_t S> static void* malloc(){ return std::malloc(S); } // boost::singleton_pool<fixed,S>::malloc(); 
-        template<size_t S> static void free(void* ptr){ std::free(ptr);  } // boost::singleton_pool<fixed,S>::free(ptr);
+        template<size_t S> static void* malloc(){ return std::malloc(S);   } // boost::singleton_pool<fixed,S>::malloc(); 
+        template<size_t S> static void* calloc(){ return std::calloc(1,S); } // boost::singleton_pool<fixed,S>::malloc(); 
+        template<size_t S> static void free(void* ptr){ std::free(ptr);    } // boost::singleton_pool<fixed,S>::free(ptr);
     };
 
     struct bulk {
@@ -284,6 +285,9 @@ namespace ambient {
         template<class Memory>           static void* malloc(size_t sz){ return Memory::malloc(sz);            }
         template<class Memory, size_t S> static void* malloc()         { return Memory::template malloc<S>();  }
         template<class Memory, class  T> static void* malloc()         { return malloc<Memory, sizeof(T)>();   }
+        template<class Memory>           static void* calloc(size_t sz){ return Memory::calloc(sz);            }
+        template<class Memory, size_t S> static void* calloc()         { return Memory::template calloc<S>();  }
+        template<class Memory, class  T> static void* calloc()         { return calloc<Memory, sizeof(T)>();   }
         template<class Memory>           static void free(void* ptr)   { return Memory::free(ptr);             }
         template<class Memory, size_t S> static void free(void* ptr)   { return Memory::template free<S>(ptr); }
         template<class Memory, class  T> static void free(void* ptr)   { return free<Memory, sizeof(T)>(ptr);  }
@@ -297,14 +301,14 @@ namespace ambient {
         static void* malloc(descriptor& d){
             assert(d.region != region_t::rdelegated);
             if(d.region == region_t::rbulked){
-                if(d.extent > AMBIENT_IB_EXTENT){
+                //if(d.extent > AMBIENT_IB_EXTENT){
                     d.region = region_t::rstandard;
                     return malloc<standard>(d.extent);
-                }
-                if(d.reusable){
-                    return ambient::memory::bulk::reserve(d.extent);
-                }
-                return malloc<bulk>(d.extent); 
+                //}
+                //if(d.reusable){
+                //    return ambient::memory::bulk::reserve(d.extent);
+                //}
+                //return malloc<bulk>(d.extent); 
             } else return malloc<standard>(d.extent);
         }
         static void free(void* ptr, descriptor& d){ 

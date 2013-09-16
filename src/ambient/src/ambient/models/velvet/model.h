@@ -43,7 +43,6 @@ namespace ambient { namespace models { namespace velvet {
         bool feeds(const revision* r);
         bool remote(const revision* r);
         bool common(const revision* r);
-        size_t time(const history* o);
         void touch(const history* o);
         size_t clock;
         int sid;

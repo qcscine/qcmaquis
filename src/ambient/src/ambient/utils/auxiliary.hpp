@@ -67,7 +67,6 @@ namespace ambient {
         assert(dst->current == NULL);
         if(src->weak()) return;
         revision* r = src->back();
-        dst->content.push_back(r);
         dst->current = r;
         // do not deallocate or reuse
         if(!r->valid()) r->spec.protect();

@@ -48,11 +48,6 @@ namespace ambient { namespace models { namespace velvet {
             const_cast<history*>(o)->init_state();
     }
 
-    inline size_t model::time(const history* o){
-        this->touch(o);
-        return o->time();
-    }
-
     inline bool model::feeds(const revision* r){
         return (r->state == ambient::local);
     }

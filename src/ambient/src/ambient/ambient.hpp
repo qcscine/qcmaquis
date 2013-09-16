@@ -56,7 +56,7 @@
     #define AMBIENT_THREAD_ID __cilkrts_get_worker_number()
     #define AMBIENT_THREAD cilk_spawn
     #define AMBIENT_SMP_ENABLE
-    #define AMBIENT_SMP_DISABLE
+    #define AMBIENT_SMP_DISABLE cilk_sync;
 #elif defined(AMBIENT_OMP)
     #include <omp.h>
     #define AMBIENT_THREAD_ID omp_get_thread_num()
