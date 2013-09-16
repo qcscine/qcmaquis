@@ -156,6 +156,7 @@ namespace ambient { namespace controllers { namespace velvet {
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::stop();
         #endif
+        ambient::channel.barrier();
     }
 
     inline bool controller::empty(){

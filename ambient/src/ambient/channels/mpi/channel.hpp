@@ -46,6 +46,10 @@ namespace ambient { namespace channels { namespace mpi {
         this->db_volume = this->volume > AMBIENT_DB_PROCS ? AMBIENT_DB_PROCS : 0;
     }
 
+    inline void channel::barrier(){
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+
     inline size_t channel::dim(){
         return this->volume;
     }

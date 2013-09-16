@@ -36,8 +36,6 @@ namespace ambient { namespace channels { namespace mpi {
 
     class request {
     public:
-        void* operator new (size_t size){ return ambient::pool::malloc<bulk,request>(); }
-        void operator delete (void* ptr){ }
         MPI_Request mpi_request;
     };
 
@@ -45,6 +43,7 @@ namespace ambient { namespace channels { namespace mpi {
     public:
        ~channel();
         void  init();
+        void  barrier();
         size_t dim();
         size_t wk_dim();
         size_t db_dim();

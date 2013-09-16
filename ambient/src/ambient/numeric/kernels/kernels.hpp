@@ -468,7 +468,7 @@ namespace ambient { namespace numeric { namespace kernels {
                                 matrix<T,A2>& dst, const size_t& di, const size_t& dj, 
                                 const size_t& m, const size_t& n)
     {
-        if(dst.core->content[dst.ref+1] == dst.core->current && dst.core->current->users == 1 && dst.core->current->spec.region == ambient::rbulked){
+        if(dst.after == dst.core->current && dst.core->current->users == 1 && dst.core->current->spec.region == ambient::rbulked){
             return; // the resulting dst is not used by anyone
         }
         T* sd = current(src);
@@ -498,7 +498,7 @@ namespace ambient { namespace numeric { namespace kernels {
                                       const matrix<T,A3>& alfa, const size_t& ai, const size_t& aj,
                                       const size_t& m, const size_t& n)
     {
-        if(dst.core->content[dst.ref+1] == dst.core->current && dst.core->current->users == 1 && dst.core->current->spec.region == ambient::rbulked){
+        if(dst.after == dst.core->current && dst.core->current->users == 1 && dst.core->current->spec.region == ambient::rbulked){
             return; // the resulting dst is not used by anyone
         }
         T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
@@ -654,7 +654,7 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void init_random<T>::c(unbound< matrix<T> >& a){
-        if(a.core->content[a.ref+1] == a.core->current && a.core->current->users == 1 && a.core->current->spec.region == ambient::rbulked){
+        if(a.after == a.core->current && a.core->current->users == 1 && a.core->current->spec.region == ambient::rbulked){
             return; // the resulting a is not used by anyone
         }
         size_t size = ambient::square_dim(a);

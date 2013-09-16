@@ -61,7 +61,7 @@ namespace ambient { namespace memory {
         this->str.push_back(o);
         #ifdef AMBIENT_MEMORY_SQUEEZE
         // let's try to reuse based upon death-order
-        if(this->reserve_limit > AMBIENT_IB_EXTENT)
+        /*if(this->reserve_limit > AMBIENT_IB_EXTENT)
         if(!o->current->referenced() && 
             o->clock == ambient::model.clock &&
             o->time() == 1 &&
@@ -72,7 +72,7 @@ namespace ambient { namespace memory {
           ){
             o->content[1]->spec.reserve();
             this->reserve_limit -= o->content[1]->spec.extent;
-           }
+           }*/
         #endif
     }
 

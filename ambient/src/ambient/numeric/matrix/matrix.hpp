@@ -76,7 +76,7 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     transpose_view<Matrix>::operator Matrix () const {
-        Matrix t(Matrix(this->core,0));
+        Matrix t(Matrix(this->core));
         transpose_inplace(t); 
         return t;
     }
@@ -152,8 +152,8 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T, class A>
-    inline matrix<T,A>::matrix(const ptr& p, size_t r) 
-    : core(p), ref(r)
+    inline matrix<T,A>::matrix(const ptr& p) 
+    : core(p)
     {
     }
 
