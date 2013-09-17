@@ -75,7 +75,7 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
     std::size_t loop_max = M.n_blocks();
     
-    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+    parallel_for(locale k = 0; k < loop_max; ++k)
         svd(M[k], U[k], V[k], S[k]);
 }
 
@@ -89,7 +89,7 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
     evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
     std::size_t loop_max = M.n_blocks();
 
-    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+    parallel_for(locale k = 0; k < loop_max; ++k)
         heev(M[k], evecs[k], evals[k]);
 }
     
@@ -109,7 +109,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
     std::size_t loop_max = M.n_blocks();
     
-    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+    parallel_for(locale k = 0; k < loop_max; ++k)
         svd_merged(M[k], U[k], V[k], S[k]);
 }
 
@@ -123,7 +123,7 @@ void heev_merged(block_matrix<Matrix, SymmGroup> const & M,
     evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
     std::size_t loop_max = M.n_blocks();
 
-    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+    parallel_for(locale k = 0; k < loop_max; ++k)
         heev_merged(M[k], evecs[k], evals[k]);
 }
 #endif
@@ -385,7 +385,7 @@ void qr(block_matrix<Matrix, SymmGroup> const& M,
     Q = block_matrix<Matrix, SymmGroup>(m,k);
     R = block_matrix<Matrix, SymmGroup>(k,n);
     
-    parallel_for(locale::compact(M.n_blocks()), locale k = 0; k < M.n_blocks(); ++k)
+    parallel_for(locale k = 0; k < M.n_blocks(); ++k)
         qr(M[k], Q[k], R[k]);
     
     assert(Q.right_basis() == R.left_basis());
@@ -406,7 +406,7 @@ void lq(block_matrix<Matrix, SymmGroup> const& M,
     L = block_matrix<Matrix, SymmGroup>(m,k);
     Q = block_matrix<Matrix, SymmGroup>(k,n);
     
-    parallel_for(locale::compact(M.n_blocks()), locale k = 0; k < M.n_blocks(); ++k)
+    parallel_for(locale k = 0; k < M.n_blocks(); ++k)
         lq(M[k], L[k], Q[k]);
     
     assert(Q.left_basis() == L.right_basis());

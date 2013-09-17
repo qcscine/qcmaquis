@@ -78,43 +78,20 @@ namespace ambient {
     template<>
     class scope<single> : public controller::scope {
     public:
-        static int compact_factor;
-        static void compact(size_t n){
-            if(n <= ambient::channel.wk_dim()) return;
-            compact_factor = (int)(n / ambient::channel.wk_dim()); // iterations before switch
-        }
-        scope() : index(0), iterator(0) {
-            this->factor = compact_factor; compact_factor = 1;
-
-            if(ambient::controller.context != ambient::controller.context_base) dry = true;
-            else{ dry = false; ambient::controller.set_context(this); }
-            this->round = ambient::channel.wk_dim();
-            this->shift();
-        }
-        scope(int start, int start_i = 0) : index(start), iterator(start_i) {
-            this->factor = compact_factor; compact_factor = 1;
-
+        scope(int value = 0) : index(value), iterator(value) {
             if(ambient::controller.context != ambient::controller.context_base) dry = true;
             else{ dry = false; ambient::controller.set_context(this); }
             this->round = ambient::channel.wk_dim();
             this->shift();
         }
         void shift(){
-            this->sector = (++this->iterator %= this->round*this->factor)/this->factor;
+            this->sector = (++this->iterator %= this->round);
             this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
-        }
-        void shift_back(){
-            this->sector = (--this->iterator %= this->round*this->factor)/this->factor;
-            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
+            if(this->sector == 0 && this->round > 1) this->shift();
         }
         scope& operator++ (){
             this->shift();
             this->index++;
-            return *this;
-        }
-        scope& operator-- (){
-            this->shift_back();
-            this->index--;
             return *this;
         }
         operator size_t (){
@@ -131,7 +108,6 @@ namespace ambient {
         }
         size_t index;
         bool dry;
-        int factor;
         int iterator;
         int round;
     };
