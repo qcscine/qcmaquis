@@ -23,6 +23,7 @@ RUN_PRESETS="1n.micro:             ~/maquis2014/benchmarks/dmrg_gs/1n/micro.L4/p
              1n.spinful.6x6.10k:   ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.6x6/parms.10k             ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.6x6/model
              1n.spinful.6x6.20k:   ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.6x6/parms.20k             ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.6x6/model
              1n.spinful.6x6.30k:   ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.6x6/parms.30k             ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.6x6/model
+             Xn.spinful.3x20.10k:  ~/maquis2014/benchmarks/dmrg_gs/many_nodes/spinful.3x20/parms.10k    ~/maquis2014/benchmarks/dmrg_gs/many_nodes/spinful.3x20/model
              Xn.adrian.10x10.10k:  ~/maquis2014/benchmarks/dmrg_gs/many_nodes/adrian.10x10/parms.10k    ~/maquis2014/benchmarks/dmrg_gs/many_nodes/adrian.10x10/model
              Xn.adrian.10x10.10k:  ~/maquis2014/benchmarks/dmrg_gs/many_nodes/adrian.10x10/parms.10k    ~/maquis2014/benchmarks/dmrg_gs/many_nodes/adrian.10x10/model
              Xn.hubbard.12x24.20k: ~/maquis2014/benchmarks/dmrg_gs/many_nodes/hubbard.12x24/parms.20000 ~/maquis2014/benchmarks/dmrg_gs/many_nodes/hubbard.12x24/model
