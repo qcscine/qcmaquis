@@ -179,6 +179,9 @@ namespace storage {
         class descriptor {
         public:
             descriptor() : state(core), dumped(false), sid(disk::index()), worker(NULL) {}
+           ~descriptor(){
+                this->join();
+            }
             void thread(boost::thread* t){
                 this->worker = t;
                 disk::track(this);
@@ -200,6 +203,11 @@ namespace storage {
 
         template<class T> class serializable : public descriptor {
         public: 
+            serializable& operator = (const serializable& rhs){
+                this->join();
+                descriptor::operator=(rhs);
+                return *this;
+            }
             void fetch(){
                 if(this->state == core) return;
                 else if(this->state == prefetching) this->join();
