@@ -44,6 +44,12 @@ public:
             data_[b] = rhs[b];
         return *this;
     }
+    
+    Boundary& operator = (const Boundary& rhs){
+        storage::disk::serializable<Boundary>::operator=(rhs);
+        data_ = rhs.data_;
+        return *this;
+    }
 
     template <class OtherMatrix>
     Boundary(Boundary<OtherMatrix, SymmGroup> const& rhs)

@@ -89,9 +89,19 @@ namespace ambient {
             this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
             if(this->sector == 0 && this->round > 1) this->shift();
         }
+        void shift_back(){ 
+            this->sector = (--this->iterator); 
+            if(this->sector == 0 && this->round > 1) this->sector = this->round-1;
+            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote; 
+        } 
         scope& operator++ (){
             this->shift();
             this->index++;
+            return *this;
+        }
+        scope& operator-- (){
+            this->shift_back();
+            this->index--;
             return *this;
         }
         operator size_t (){
