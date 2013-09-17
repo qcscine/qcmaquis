@@ -262,6 +262,58 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     return truncation_results(bond_dimension, truncated_weight, truncated_fraction, smallest_ev);
 }
 
+// TODO: not yet working properly.
+template<class Matrix, class DiagMatrix, class SymmGroup>
+truncation_results alt_svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
+                                    block_matrix<Matrix, SymmGroup> & U,
+                                    block_matrix<Matrix, SymmGroup> & V,
+                                    block_matrix<DiagMatrix, SymmGroup> & S,
+                                    double rel_tol, std::size_t Mmax,
+                                    bool verbose = true)
+{
+    assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
+
+    block_matrix<Matrix, SymmGroup> t;
+    block_matrix<Matrix, SymmGroup> R;
+    block_matrix<DiagMatrix, SymmGroup> D;
+    
+//    maquis::cout << "M:" << std::endl << M;
+
+    
+    block_matrix<Matrix, SymmGroup> Mconj = conjugate(M);
+    
+    gemm(M, transpose(Mconj), t);    
+    truncation_results res = heev_truncate(t, U, D, rel_tol, Mmax, verbose);
+    
+    gemm(transpose(Mconj), U, t);
+    qr(t, V, R);
+    
+    maquis::cout << "S.n_blocks: " << D.n_blocks() << std::endl;
+    maquis::cout << "S.trace: " << trace(D) << std::endl;
+    maquis::cout << "R.n_blocks: " << R.n_blocks() << std::endl;
+    maquis::cout << "R.trace: " << trace(R) << std::endl;
+    
+//    maquis::cout << "S:" << std::endl << S;
+//    maquis::cout << "R:" << std::endl << R;
+    
+    using std::abs;
+    for (int n=0; n<D.n_blocks(); ++n)
+        for (int i=0; i<num_rows(D[n]); ++i)
+            if ( abs(D[n](i,i) - R[n](i,i)*R[n](i,i)) > 1e-6 )
+                maquis::cout << "n=" << n << ", i=" << i << " broken. D=" << D[n](i,i) << ", td=" << R[n](i,i)*R[n](i,i) << std::endl;
+    
+    S = sqrt(D);
+    S /= trace(S);
+    V.adjoint_inplace();
+    
+    maquis::cout << "U:\n" << U.left_basis() << "\n" << U.right_basis() << std::endl;
+    maquis::cout << "S:\n" << S.left_basis() << "\n" << S.right_basis() << std::endl;
+    maquis::cout << "V:\n" << V.left_basis() << "\n" << V.right_basis() << std::endl;
+    
+//    assert( td == S );
+    return res;
+}
+
 template<class Matrix, class DiagMatrix, class SymmGroup>
 truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                  block_matrix<Matrix, SymmGroup> & evecs,
@@ -321,7 +373,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 }
 
 template<class Matrix, class SymmGroup>
-void qr(block_matrix<Matrix, SymmGroup> & M,
+void qr(block_matrix<Matrix, SymmGroup> const& M,
         block_matrix<Matrix, SymmGroup> & Q,
         block_matrix<Matrix, SymmGroup> & R)
 {
@@ -342,7 +394,7 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
 }
 
 template<class Matrix, class SymmGroup>
-void lq(block_matrix<Matrix, SymmGroup> & M,
+void lq(block_matrix<Matrix, SymmGroup> const& M,
         block_matrix<Matrix, SymmGroup> & L,
         block_matrix<Matrix, SymmGroup> & Q)
 {
