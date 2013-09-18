@@ -40,7 +40,7 @@ public:
     Boundary& operator = (const Boundary<OtherMatrix, SymmGroup>& rhs){
         size_t loop_max = rhs.aux_dim();
         resize(loop_max);
-        parallel_for(locale b = 0; b < loop_max; ++b)
+        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
             data_[b] = rhs[b];
         return *this;
     }
