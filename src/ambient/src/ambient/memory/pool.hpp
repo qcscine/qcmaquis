@@ -301,7 +301,7 @@ namespace ambient {
         static void* malloc(descriptor& d){
             assert(d.region != region_t::rdelegated);
             if(d.region == region_t::rbulked){
-                //if(d.extent > AMBIENT_IB_EXTENT){
+                //if(d.extent > AMBIENT_IB_EXTENT || bulk::factory<AMBIENT_BULK_CHUNK>::size() > AMBIENT_BULK_LIMIT){
                     d.region = region_t::rstandard;
                     return malloc<standard>(d.extent);
                 //}

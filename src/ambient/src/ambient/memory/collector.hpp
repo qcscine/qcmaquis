@@ -81,18 +81,6 @@ namespace ambient { namespace memory {
             ambient::pool::free(r->data, r->spec); // artifacts
             r->spec = ambient::rdelegated;
         }
-#ifdef AMBIENT_PERSISTENT_TRANSFERS
-        using ambient::controllers::velvet::set;
-        using ambient::controllers::velvet::get;
-        if(r->transfer != NULL){
-            if(r->state == ambient::local){
-                delete ((set<revision,AMBIENT_MAX_NUM_PROCS+1>*)r->transfer)->states;
-                ambient::pool::free<fixed,set<revision,AMBIENT_MAX_NUM_PROCS+1> >(r->transfer); 
-            }else if(r->state == ambient::remote){
-                ambient::pool::free<fixed,get<revision> >(r->transfer);
-            }
-        }
-#endif
         delete r; 
     }
 
