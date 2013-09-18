@@ -65,6 +65,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline bool controller::tunable(){
+        if(serial) return false;
         return context->tunable();
     }
 
@@ -73,14 +74,16 @@ namespace ambient { namespace controllers { namespace velvet {
         const_cast<scope*>(context)->toss();
     }
 
-    inline void controller::intend_fetch(history* o){
-        revision* r = o->back();
-        if(r == NULL) return context->consider_allocation(o->extent); // do we have to?
-        context->consider_transfer(r->spec.extent, r->state);
+    inline void controller::intend_read(history* o){
+        revision* r = o->back(); if(r == NULL || ambient::model.common(r)) return;
+        int candidate = ambient::model.remote(r) ? r->owner : (int)ambient::rank();
+        context->score(candidate, r->spec.extent);
     }
 
     inline void controller::intend_write(history* o){
-        context->consider_allocation(o->extent);
+        revision* r = o->back(); if(r == NULL || ambient::model.common(r)) return;
+        int candidate = ambient::model.remote(r) ? r->owner : (int)ambient::rank();
+        context->select(candidate);
     }
 
     inline void controller::set_context(const scope* s){
