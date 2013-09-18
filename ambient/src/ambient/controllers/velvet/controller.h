@@ -43,8 +43,8 @@ namespace ambient { namespace controllers { namespace velvet {
             int sector;
             ambient::locality state;
             virtual bool tunable() const = 0;
-            virtual void consider_transfer(size_t size, ambient::locality l) const {}
-            virtual void consider_allocation(size_t size) const {}
+            virtual void score(int c, size_t v) const {}
+            virtual void select(int c) const {}
             virtual void toss(){}
         };
 
@@ -64,7 +64,7 @@ namespace ambient { namespace controllers { namespace velvet {
 
         bool tunable();
         template<complexity O> void schedule();
-        void intend_fetch(history* o);
+        void intend_read(history* o);
         void intend_write(history* o);
 
         void set_context(const scope* s);

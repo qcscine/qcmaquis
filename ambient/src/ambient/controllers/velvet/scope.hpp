@@ -41,37 +41,41 @@ namespace ambient {
             this->round = ambient::channel.wk_dim();
             this->state = ambient::rank() ? ambient::remote : ambient::local;
             this->sector = 0;
-            this->factor = AMBIENT_SCOPE_SWITCH_FACTOR;
-            this->op_alloc = 0;
-            this->op_transfer = 0;
+            this->scores.resize(round, 0);
         }
         virtual bool tunable() const { 
-            return false; // can be enabled but the algorithm should be finalized
+            return true;
         }
-        virtual void consider_allocation(size_t size) const {
-            this->op_alloc += size;
+        virtual void score(int c, size_t v) const {
+            this->scores[c] += v;
         }
-        virtual void consider_transfer(size_t size, ambient::locality l) const {
-            if(l == ambient::common) return;
-            this->op_transfer += size;
+        virtual void select(int c) const {
+            this->stakeholders.push_back(c);
         }
         virtual void toss(){
-            if(this->op_transfer < this->op_alloc){
-                if(this->factor < this->op_alloc){
-                    this->factor = AMBIENT_SCOPE_SWITCH_FACTOR;
-                    ++this->sector %= this->round;
-                    this->state = (this->sector == ambient::rank()) ? 
-                                  ambient::local : ambient::remote;
-                }else{
-                    this->factor -= this->op_alloc;
+            int max = 0;
+            if(stakeholders.empty()){
+                for(int i = 0; i < round; i++)
+                if(scores[i] >= max){
+                    max = scores[i];
+                    this->sector = i;
                 }
+            }else{
+                for(int i = 0; i < stakeholders.size(); i++){
+                    int k = stakeholders[i];
+                    if(scores[k] >= max){
+                        max = scores[k];
+                        this->sector = k;
+                    }
+                }
+                stakeholders.clear();
             }
-            this->op_alloc = 0;
-            this->op_transfer = 0;
+            std::fill(scores.begin(), scores.end(), 0);
+            this->state = (this->sector == ambient::rank()) ? 
+                          ambient::local : ambient::remote;
         }
-        size_t factor;
-        mutable size_t op_alloc;
-        mutable size_t op_transfer;
+        mutable std::vector<int> stakeholders;
+        mutable std::vector<int> scores;
         int round;
     };
 
@@ -126,38 +130,6 @@ namespace ambient {
         int iterator;
         int factor;
         int round;
-    };
-
-    template<>
-    class scope<funnel> : public controller::scope {
-    public:
-        scope(){
-            this->sector = -1;
-        }
-        scope(int s){
-            this->latch(s);
-        }
-        scope& operator = (const scope<single>& s){
-            this->sector = s.sector;
-            this->state = s.state;
-            return *this;
-        }
-        void latch(int s){
-            this->sector = s;
-            this->state = (s == ambient::rank()) ? ambient::local : ambient::remote;
-        }
-        void push() const {
-            parent = ambient::controller.context;
-            if(this->sector == -1) printf("Warning: uninitialized context!\n");
-            else ambient::controller.set_context(this);
-        }
-        void pop() const {
-            ambient::controller.set_context(parent);
-        }
-        virtual bool tunable() const {
-            return false; 
-        }
-        mutable const controller::scope* parent;
     };
 
     template<>

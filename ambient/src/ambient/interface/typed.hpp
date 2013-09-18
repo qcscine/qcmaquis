@@ -162,7 +162,7 @@ namespace ambient {
         }
         template<size_t arg> 
         static void score(T& obj){
-            ambient::controller.intend_fetch(obj.core);
+            ambient::controller.intend_read(obj.core);
             ambient::controller.intend_write(obj.core);
         }
         template<size_t arg> 
@@ -214,7 +214,7 @@ namespace ambient {
         }
         template<size_t arg> 
         static void score(T& obj){
-            ambient::controller.intend_fetch(obj.core);
+            ambient::controller.intend_read(obj.core);
         }
     };
     template <typename T> struct write_iteratable_info : public iteratable_info<T> {
