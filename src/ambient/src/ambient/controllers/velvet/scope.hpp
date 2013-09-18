@@ -78,21 +78,26 @@ namespace ambient {
     template<>
     class scope<single> : public controller::scope {
     public:
+        static int compact_factor; 
+        static void compact(size_t n){ 
+            if(n <= ambient::channel.wk_dim()) return; 
+            compact_factor = (int)(n / ambient::channel.wk_dim()); // iterations before switch 
+        } 
         scope(int value = 0) : index(value), iterator(value) {
+            this->factor = compact_factor; compact_factor = 1;
             if(ambient::controller.context != ambient::controller.context_base) dry = true;
             else{ dry = false; ambient::controller.set_context(this); }
             this->round = ambient::channel.wk_dim();
             this->shift();
         }
         void shift(){
-            this->sector = (++this->iterator %= this->round);
+            this->sector = (++this->iterator %= this->round*this->factor)/this->factor;
             this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
-            if(this->sector == 0 && this->round > 1) this->shift();
         }
         void shift_back(){ 
-            this->sector = (--this->iterator); 
-            if(this->sector == 0 && this->round > 1) this->sector = this->round-1;
-            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote; 
+            this->sector = (--this->iterator)/this->factor; 
+            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
+            if(this->sector < 0) printf("Error: shift_back to negative in scope!\n\n\n"); 
         } 
         scope& operator++ (){
             this->shift();
@@ -119,6 +124,7 @@ namespace ambient {
         size_t index;
         bool dry;
         int iterator;
+        int factor;
         int round;
     };
 

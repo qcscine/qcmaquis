@@ -215,8 +215,8 @@ public:
                     Storage::drop(right_[site2+1]);
                 }
                 #ifdef AMBIENT
-                { locale l(site1); storage::migrate(mps[site1]); }
-                { locale l(site2); storage::migrate(mps[site2]); }
+                { locale::compact(L); locale l(site1); storage::migrate(mps[site1]); }
+                { locale::compact(L); locale l(site2); storage::migrate(mps[site2]); }
                 #endif
     	    }
     	    if (lr == -1){
@@ -246,8 +246,8 @@ public:
                     Storage::drop(left_[site1]);
                 }
                 #ifdef AMBIENT
-                { locale l(site1); storage::migrate(mps[site1]); }
-                { locale l(site2); storage::migrate(mps[site2]); }
+                { locale::compact(L); locale l(site1); storage::migrate(mps[site1]); }
+                { locale::compact(L); locale l(site2); storage::migrate(mps[site2]); }
                 #endif
     	    }
             

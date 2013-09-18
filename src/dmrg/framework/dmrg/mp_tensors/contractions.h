@@ -90,7 +90,7 @@ struct contraction {
         
         size_t loop_max = left.aux_dim();
 
-        parallel_for(locale b = 0; b < loop_max; ++b) {
+        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(left[b]), mps.data(), tmp);
             reshape_right_to_left_new<Matrix>(mps.site_dim(), left[b].right_basis(), mps.col_dim(),
@@ -109,7 +109,7 @@ struct contraction {
         mps.make_left_paired();
         loop_max = mpo.col_dim();
 
-        parallel_for(locale b2 = 0; b2 < loop_max; ++b2) {
+        parallel_for(locale::compact(loop_max), locale b2 = 0; b2 < loop_max; ++b2) {
             for (int run = 0; run < 2; ++run) {
                 if (run == 1)
                     ret[b2].allocate_blocks();
@@ -203,7 +203,7 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
         size_t loop_max = right.aux_dim();
 
-        parallel_for(locale b = 0; b < loop_max; ++b){
+        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
             gemm(mps.data(), right[b], t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
             reshape_left_to_right_new<Matrix>(mps.site_dim(), mps.row_dim(), right[b].right_basis(),
@@ -225,7 +225,7 @@ struct contraction {
         mps.make_right_paired();
         loop_max = mpo.row_dim();
 
-        parallel_for(locale b1 = 0; b1 < loop_max; ++b1) {
+        parallel_for(locale::compact(loop_max), locale b1 = 0; b1 < loop_max; ++b1) {
             for(int run = 0; run < 2; ++run) {
                 if(run == 1)
                     ret[b1].allocate_blocks();
@@ -326,7 +326,7 @@ struct contraction {
         std::size_t loop_max = mpo.col_dim();
 
         block_matrix<Matrix, SymmGroup> t = conjugate(bra_tensor.data());
-        parallel_for(locale b = 0; b < loop_max; ++b)
+        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
             gemm(transpose(lbtm[b]), t, ret[b]);
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("serial::continue");
@@ -353,7 +353,7 @@ struct contraction {
         std::size_t loop_max = mpo.row_dim();
         
         block_matrix<Matrix, SymmGroup> t = conjugate(bra_tensor.data());
-        parallel_for(locale b = 0; b < loop_max; ++b){
+        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
             gemm(rbtm[b], transpose(t), ret[b]);
         }
         #ifdef AMBIENT_TRACKING
@@ -382,11 +382,11 @@ struct contraction {
        
         std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max);
 
-        parallel_for(locale b = 0; b < loop_max; ++b)
+        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
             gemm(left_mpo_mps[b], right[b], oblocks[b]);
            
         // proc 0 downloads oblocks[b] from proc 1 : 
-        semi_parallel_for(locale b = 0; b < loop_max; ++b){
+        semi_parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
             for (size_t k = 0; k < oblocks[b].n_blocks(); ++k)
                 ret.data().match_and_add_block(oblocks[b][k],
                                                oblocks[b].left_basis()[k].first,
