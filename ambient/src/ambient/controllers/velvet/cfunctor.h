@@ -27,12 +27,6 @@
 #ifndef AMBIENT_CONTROLLERS_VELVET_CFUNCTOR
 #define AMBIENT_CONTROLLERS_VELVET_CFUNCTOR
 
-#ifdef AMBIENT_PERSISTENT_TRANSFERS
-#define TRANSFER_AREA fixed
-#else
-#define TRANSFER_AREA bulk
-#endif
-
 namespace ambient { namespace controllers { namespace velvet {
     
     using ambient::models::velvet::revision;
@@ -62,7 +56,7 @@ namespace ambient { namespace controllers { namespace velvet {
     public:
         template<class T, int NE> friend class set;
         void* operator new (size_t size, void* placement){ return placement; }
-        void* operator new (size_t size){ return ambient::pool::malloc<TRANSFER_AREA,set>(); }
+        void* operator new (size_t size){ return ambient::pool::malloc<bulk,set>(); }
         void operator delete (void*, void*){ }
         void operator delete (void* ptr){ }
         static set<revision>& spawn(revision& r);
@@ -73,10 +67,6 @@ namespace ambient { namespace controllers { namespace velvet {
         virtual void invoke();
         #if defined(AMBIENT_COMPUTATIONAL_DATAFLOW) || defined(AMBIENT_TRACKING)
         virtual const char* name(){ return "set"; }
-        #endif
-        #ifdef AMBIENT_PERSISTENT_TRANSFERS
-        std::vector<bool>* states;
-        std::vector<request*>* handles;
         #endif
     private:
         revision* target;
@@ -104,7 +94,7 @@ namespace ambient { namespace controllers { namespace velvet {
     class get<revision> : public cfunctor {
     public:
         void* operator new (size_t size, void* placement){ return placement; }
-        void* operator new (size_t size){ return ambient::pool::malloc<TRANSFER_AREA,get>(); }
+        void* operator new (size_t size){ return ambient::pool::malloc<bulk,get>(); }
         void operator delete (void*, void*){ }
         void operator delete (void* ptr){ }
         static void spawn(revision& r);
@@ -163,5 +153,4 @@ namespace ambient { namespace controllers { namespace velvet {
 
 } } }
 
-#undef TRANSFER_AREA
 #endif

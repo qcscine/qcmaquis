@@ -33,11 +33,7 @@ namespace ambient { namespace controllers { namespace velvet {
     template<int N>
     inline set<revision>& set<revision, N>::spawn(revision& r){
         if(r.transfer == NULL){
-#ifdef AMBIENT_PERSISTENT_TRANSFERS
-            r.transfer = new (ambient::pool::malloc<fixed,set>())
-#else
             r.transfer = new (ambient::pool::malloc<bulk,set>())
-#endif
                          set<revision>(r);
             ((set*)r.transfer)->clock = ambient::model.clock;
             ((set*)r.transfer)->sid = ambient::channel.index();
@@ -50,9 +46,6 @@ namespace ambient { namespace controllers { namespace velvet {
     
     template<int N>
     inline set<revision, N>::set(revision& r) : target(&r) {
-#ifdef AMBIENT_PERSISTENT_TRANSFERS
-        states = new std::vector<bool>(AMBIENT_MAX_NUM_PROCS, false);
-#endif
     }
     
     template<int N>
@@ -61,16 +54,11 @@ namespace ambient { namespace controllers { namespace velvet {
     : evaluated(false), target(s->target),
       handle(s->handle)
     {
-#ifdef AMBIENT_PERSISTENT_TRANSFERS
-        states = s->states;
-        if(N == AMBIENT_MAX_NUM_PROCS+1) handles = new std::vector<request*>();
-#endif
     }
     
     template<int N>
     inline void set<revision, N>::operator >> (int p){
         int dim = ambient::channel.dim();
-#ifndef AMBIENT_PERSISTENT_TRANSFERS
         if(N == AMBIENT_MAX_NUM_PROCS) return;
         new (this) set<revision, AMBIENT_MAX_NUM_PROCS>(this);
         if(p == ALL) p = ambient::rank.neighbor();
@@ -82,46 +70,6 @@ namespace ambient { namespace controllers { namespace velvet {
             ambient::controller.queue(this);
         }
         target->use();
-#else
-        if(N == AMBIENT_MAX_NUM_PROCS){
-            if(p == ALL){
-                #pragma ivdep
-                for(int i = 0; i < dim; i++) (*states)[i] = true;
-            }else
-                (*states)[p] = true;
-            return;
-        }
-        if(N == AMBIENT_MAX_NUM_PROCS+1){
-            if(p == ALL){
-                for(int i = 0; i < dim; i++) (*this) >> i;
-                return;
-            }
-            if((*states)[p]) return;
-            (*states)[p] = true;
-            if(!evaluated){
-                ambient::controller.queue(this);
-                target->use();
-            }
-            handles->push_back(ambient::channel.set(target, (size_t)p, sid)); 
-            evaluated = true;
-        }else{
-            new (this) set<revision, AMBIENT_MAX_NUM_PROCS>(this);
-            if(p == ALL){
-                #pragma ivdep
-                for(int i = 0; i < dim; i++) (*states)[i] = true;
-                p = ambient::rank.neighbor();
-            }
-            handle = (request*)(size_t)p;
-            if(target->generator != NULL) ((cfunctor*)target->generator)->queue(this);
-            else{
-                evaluated = true; // can send right now
-                handle = ambient::channel.set(target, (size_t)handle, sid); 
-                ambient::controller.queue(this);
-            }
-            target->use();
-            (*states)[p] = true;
-        }
-#endif
     }
     
     template<int N>
@@ -131,22 +79,7 @@ namespace ambient { namespace controllers { namespace velvet {
             evaluated = true;
             handle = ambient::channel.set(target, (size_t)handle, sid); 
         }
-#ifndef AMBIENT_PERSISTENT_TRANSFERS
         return ambient::channel.test(handle);
-#else
-        if(N == AMBIENT_MAX_NUM_PROCS+1){
-            bool result = true;
-            int size = handles->size();
-            for(int i = 0; i < size; i++)
-                if(!ambient::channel.test((*handles)[i])) result = false;
-            if(!result) return false;
-            delete handles;
-            return true;
-        }else{
-                   ambient::channel.test(handle);
-            return ambient::channel.test(handle);
-        }
-#endif
     }
     
     template<int N>
@@ -155,11 +88,7 @@ namespace ambient { namespace controllers { namespace velvet {
         ambient::controller.squeeze(target);
         #endif
         target->release(); 
-#ifdef AMBIENT_PERSISTENT_TRANSFERS
-        new (this) set<revision, AMBIENT_MAX_NUM_PROCS+1>(this);
-#else
         target->transfer = NULL;
-#endif
     }
 
     // }}}
@@ -167,11 +96,7 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void get<revision>::spawn(revision& r){
         if(r.transfer == NULL){
-#ifdef AMBIENT_PERSISTENT_TRANSFERS
-            r.transfer = new (ambient::pool::malloc<fixed,get>())
-#else
             r.transfer = new (ambient::pool::malloc<bulk,get>())
-#endif
                               get<revision>(r);
             assist(r, ambient::rank());
             ((get<revision>*)r.transfer)->handle = ambient::channel.get(&r, ((assistance*)r.assist.second)->sid);
@@ -192,11 +117,7 @@ namespace ambient { namespace controllers { namespace velvet {
     : target(&r)
     {
         target->generator = this;
-#ifdef AMBIENT_PERSISTENT_TRANSFERS
-        target->embed(ambient::pool::malloc(target->spec));
-#else
         target->embed(ambient::pool::malloc<bulk>(target->spec));
-#endif
         ambient::controller.queue(this);
         target->use();
     }
@@ -221,9 +142,7 @@ namespace ambient { namespace controllers { namespace velvet {
         #endif
         target->release();
         target->complete();
-#ifndef AMBIENT_PERSISTENT_TRANSFERS
         target->transfer = NULL;
-#endif
     }
 
     // }}}

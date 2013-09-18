@@ -88,12 +88,8 @@
 #define AMBIENT_REPORT_BULK_USAGE
 #define AMBIENT_MEMORY_SQUEEZE
 
-#define AMBIENT_LARGE_BULK
-#ifdef AMBIENT_LARGE_BULK
 #define AMBIENT_BULK_CHUNK            67108864 // 64 MB
-#else
-#define AMBIENT_BULK_CHUNK            41943040 // 40 MB
-#endif
+#define AMBIENT_BULK_LIMIT            40
 
 #ifdef AMBIENT_CRAY
 #define AMBIENT_MAX_SID               4194304
@@ -112,8 +108,6 @@
 
 #define PAGE_SIZE 4096
 #define ALIGNMENT 64
-
-#define AMBIENT_PERSISTENT_TRANSFERS
 
 namespace ambient {
     inline int get_num_threads(){

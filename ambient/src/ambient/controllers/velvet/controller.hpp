@@ -54,12 +54,8 @@ namespace ambient { namespace controllers { namespace velvet {
             #else
             ambient::cout << "ambient: initialized (no threading)\n";
             #endif
-            #ifdef AMBIENT_PERSISTENT_TRANSFERS
-            ambient::cout << "ambient: persistent transfers are enabled\n";
-            #else 
-            ambient::cout << "ambient: persistent transfers are disabled\n";
-            #endif
             ambient::cout << "ambient: size of ambient bulk chunks: " << AMBIENT_BULK_CHUNK << "\n";
+            ambient::cout << "ambient: maximum number of bulk chunks: " << AMBIENT_BULK_LIMIT << "\n";
             ambient::cout << "ambient: maximum sid value: " << AMBIENT_MAX_SID << "\n";
             ambient::cout << "ambient: max number of proc: " << AMBIENT_MAX_NUM_PROCS << "\n";
             ambient::cout << "ambient: number of database proc: " << AMBIENT_DB_PROCS << "\n";
