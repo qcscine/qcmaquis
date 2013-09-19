@@ -75,13 +75,13 @@
     #define AMBIENT_SMP_DISABLE
 #endif
 
-#define AMBIENT_MAX_NUM_PROCS         12
+#define AMBIENT_MAX_NUM_PROCS         24
 #define AMBIENT_DB_PROCS              0
 
 //#define AMBIENT_EXPERIMENTAL
 //#define AMBIENT_COMPUTATIONAL_TIMINGS
 //#define AMBIENT_COMPUTATIONAL_DATAFLOW
-//#define AMBIENT_TRACE void* b[10]; backtrace_symbols_fd(b,backtrace(b,10),2);
+//#define AMBIENT_TRACE void* b[15]; backtrace_symbols_fd(b,backtrace(b,15),2);
 //#define AMBIENT_CHECK_BOUNDARIES
 //#define AMBIENT_LOOSE_FUTURE
 //#define AMBIENT_TRACKING
