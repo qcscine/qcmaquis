@@ -269,6 +269,7 @@ namespace ambient { namespace numeric {
                            matrix<T,A2>& dst, size_t di, size_t dj, 
                            size_t m, size_t n)
     {
+        if(!src.core->weak() || !dst.core->weak())
         kernels::template copy_block<A1,A2,T>::template spawn<complexity::N2>(src, si, sj, dst, di, dj, m, n); 
     }
 
