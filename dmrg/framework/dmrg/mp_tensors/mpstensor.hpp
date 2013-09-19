@@ -70,6 +70,25 @@ MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const& sd,
 , cur_storage(layout)
 , cur_normalization(Unorm)
 {
+    if (cur_storage == LeftPaired) {
+        Index<SymmGroup> new_right_i = data_.right_basis();
+        Index<SymmGroup> possible_left_i = adjoin(phys_i)*new_right_i;
+        Index<SymmGroup> old_left_i = left_i;
+        
+        common_subset(old_left_i, possible_left_i);
+        
+        swap(right_i, new_right_i);
+        swap(left_i, old_left_i);
+    } else {
+        Index<SymmGroup> new_left_i = data_.left_basis();
+        Index<SymmGroup> possible_right_i = phys_i*new_left_i;
+        Index<SymmGroup> old_right_i = right_i;
+        
+        common_subset(old_right_i, possible_right_i);
+        
+        swap(left_i, new_left_i);
+        swap(right_i, old_right_i);
+    }
 }
 
 template<class Matrix, class SymmGroup>
@@ -83,8 +102,8 @@ void MPSTensor<Matrix, SymmGroup>::replace_left_paired(block_matrix<Matrix, Symm
     
     common_subset(old_left_i, possible_left_i);
     
-    right_i = new_right_i;
-    left_i = old_left_i;
+    swap(right_i, new_right_i);
+    swap(left_i, old_left_i);
     
     data() = rhs;
     cur_normalization = normalization;
@@ -101,8 +120,8 @@ void MPSTensor<Matrix, SymmGroup>::replace_right_paired(block_matrix<Matrix, Sym
     
     common_subset(old_right_i, possible_right_i);
     
-    left_i = new_left_i;
-    right_i = old_right_i;
+    swap(left_i, new_left_i);
+    swap(right_i, old_right_i);
     
     data() = rhs;
     cur_normalization = normalization;
