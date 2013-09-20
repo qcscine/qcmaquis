@@ -92,6 +92,8 @@ int main(int argc, char ** argv)
         tim_model.end();
         maquis::cout << "Parsing model done!\n";
         
+
+        boost::filesystem::path chkpfile(parms["chkpfile"].str());
         
         /// Initialize & load MPS
         tim_load.begin();
@@ -100,7 +102,7 @@ int main(int argc, char ** argv)
         load(parms["chkpfile"].str(), mps);
         int _site;
         {
-            alps::hdf5::archive ar(parms["chkpfile"].str()+"/props.h5");
+            alps::hdf5::archive ar(chkpfile / "props.h5");
             ar["/status/site"] >> _site;
         }
         int site, lr;
@@ -118,21 +120,41 @@ int main(int argc, char ** argv)
         /// Canonize MPS
         mps.canonize(site);
         
+
+        std::string boundary_name;
+        
         /// Compute left boundary
         tim_l_boundary.begin();
-        Boundary<matrix, grp> left = mps.left_boundary();
-        for (size_t i=0; i<site; ++i)
-            left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+        Boundary<matrix, grp> left;
+        boundary_name = "left" + boost::lexical_cast<std::string>(site) + ".h5";
+        if ( exists(chkpfile / boundary_name) ) {
+            maquis::cout << "Loading existing left boundary." << std::endl;
+            storage::archive ar(chkpfile.string() +"/"+ boundary_name, "w");
+            ar["/tensor"] >> left;
+        } else {
+            left = mps.left_boundary();
+            for (size_t i=0; i<site; ++i)
+                left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+        }
         tim_l_boundary.end();
         maquis::cout << "Left boundary done!\n";
         
         /// Compute right boundary
         tim_r_boundary.begin();
-        Boundary<matrix, grp> right = mps.right_boundary();
-        for (int i=L-1; i>site+1; --i)
-            right = contraction::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
+        Boundary<matrix, grp> right;
+        boundary_name = "right" + boost::lexical_cast<std::string>(site+2) + ".h5";
+        if ( exists(chkpfile / boundary_name) ) {
+            maquis::cout << "Loading existing right boundary." << std::endl;
+            storage::archive ar(chkpfile.string() +"/"+ boundary_name, "w");
+            ar["/tensor"] >> right;
+        } else {
+            right = mps.right_boundary();
+            for (int i=L-1; i>site+1; --i)
+                right = contraction::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
+        }
         tim_r_boundary.end();
         maquis::cout << "Right boundary done!\n";
+        
         // Clearing unneeded MPS Tensors
         for (int k = 0; k < mps.length(); k++){
             if(k == site || k == site+1) continue;
