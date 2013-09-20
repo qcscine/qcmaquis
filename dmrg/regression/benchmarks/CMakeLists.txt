@@ -10,6 +10,13 @@ endif(USE_AMBIENT)
 
 
 # *** Targets
+add_executable(dump_boundaries_u1 dump_boundaries.cpp)
+target_link_libraries(dump_boundaries_u1 ${DMRG_APP_LIBRARIES})
+
+add_executable(dump_boundaries_2u1 dump_boundaries.cpp)
+target_link_libraries(dump_boundaries_2u1 ${DMRG_APP_LIBRARIES})
+set_target_properties(dump_boundaries_2u1 PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1")
+
 add_executable(ss_optim_u1 ss_optim.cpp)
 target_link_libraries(ss_optim_u1 ${DMRG_APP_LIBRARIES})
 
