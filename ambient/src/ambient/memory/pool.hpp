@@ -114,6 +114,10 @@ namespace ambient { namespace memory {
             }
             static void reset(){
                 factory& s = instance();
+                #ifdef AMBIENT_DEALLOCATE_BULK
+                for(int i = 1; i < s.buffers.size(); i++) std::free(s.buffers[i]);
+                s.buffers.resize(1); s.counts.resize(1);
+                #endif
                 s.buffer = &s.buffers[0];
                 s.r_buffers.clear();
                 for(int i = 0; i < s.counts.size(); i++)

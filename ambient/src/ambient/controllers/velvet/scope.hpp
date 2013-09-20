@@ -100,8 +100,8 @@ namespace ambient {
         }
         void shift_back(){ 
             this->sector = (--this->iterator)/this->factor; 
+            if(this->sector == -1) this->sector = this->round-1;
             this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
-            if(this->sector < 0) printf("Error: shift_back to negative in scope!\n\n\n"); 
         } 
         scope& operator++ (){
             this->shift();

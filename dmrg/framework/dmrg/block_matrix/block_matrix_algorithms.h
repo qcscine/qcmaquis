@@ -108,9 +108,83 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     V = block_matrix<Matrix, SymmGroup>(m, c);
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
     std::size_t loop_max = M.n_blocks();
-    
+
+    #ifdef AMBIENT_REBALANCED_SVD
+    ambient::synctime timer("SVD ONLY TIME\n");
+    ambient::synctime timert("SVD TRANSFER/MERGE TIME\n");
+    timert.begin();
+
+    // calculating complexities of the svd calls
+    size_t np = ambient::channel.wk_dim();
+    double total = 0;
+    std::vector< std::pair<double,size_t> > complexities(loop_max);
+    for(size_t i = 0; i < loop_max; ++i){
+        double rows = num_rows(M[i]);
+        double cols = num_cols(M[i]);
+        complexities[i] = std::make_pair(2*rows*rows*cols + 4*cols*cols*cols, i);
+        total += complexities[i].first;
+    }
+    total /= np;
+
+    std::sort(complexities.begin(), complexities.end(), [](const std::pair<double,size_t>& a, const std::pair<double,size_t>& b){ return a.first < b.first; });
+    std::vector<std::pair<double,size_t> > workloads(np, std::make_pair(0,0));
+
+    // filling the workload with smallest local matrices first
+    for(size_t p = 0; p < np; ++p){
+        workloads[p].second = p;
+        locale l(p); l.shift_back();
+        for(size_t i = 0; i < loop_max; ++i){
+            size_t k = complexities[i].second;
+            if(M[k][0].core->current->owner != p && (p != ambient::rank() || M[k][0].core->current->owner != -1)) continue;
+            if(workloads[p].first + complexities[i].first >= total) break;
+            maquis::cout << "R" << ambient::controller.which() << ": (ownage) svd on " << num_rows(M[k]) << "x" << num_cols(M[k]) << "\n";
+            merge(M[k]); 
+            workloads[p].first += complexities[i].first; 
+            complexities[i].first = 0;
+        }
+    }
+
+    // rebalancing using difference with average
+    for(size_t p = 0; p < np; ++p){
+        locale l(p); l.shift_back();
+        for(size_t i = 0; i < loop_max; ++i){
+            size_t k = complexities[i].second;
+            if(complexities[i].first == 0) continue;
+            if(workloads[p].first + complexities[i].first >= total) break;
+            maquis::cout << "R" << ambient::controller.which() << ": (" << M[k][0].core->current->owner << ") svd on " << num_rows(M[k]) << "x" << num_cols(M[k]) << "\n";
+            merge(M[k]); 
+            workloads[p].first += complexities[i].first; 
+            complexities[i].first = 0;
+        }
+    }
+
+    std::sort(workloads.begin(), workloads.end(), [](const std::pair<double,size_t>& a, const std::pair<double,size_t>& b){ return a.first < b.first; });
+
+    // placing the rest according to sorted workload
+    size_t p = 0;
+    for(int i = loop_max-1; i >= 0; --i){
+        if(complexities[i].first == 0) continue;
+        size_t k = complexities[i].second;
+        int owner = workloads[p++].second;
+        locale l(owner); l.shift_back();
+        maquis::cout << "R" << ambient::controller.which() << ": (" << M[k][0].core->current->owner << ") remaining svd on " << num_rows(M[k]) << "x" << num_cols(M[k]) << "\n";
+        merge(M[k]); 
+        p %= np;
+    }
+    timert.end();
+
+    timer.begin();
+    for(size_t k = 0; k < loop_max; ++k){
+        int owner = M[k][0].core->current->owner;
+        if(owner == -1) owner = ambient::rank();
+        locale l(owner); l.shift_back(); // shift to make it direct
+        svd_merged(M[k], U[k], V[k], S[k]);
+    }
+    timer.end();
+    #else
     parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
         svd_merged(M[k], U[k], V[k], S[k]);
+    #endif
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
