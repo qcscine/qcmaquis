@@ -5,8 +5,8 @@ nsweeps = 5
 ngrowsweeps = 0
 sweep_bond_dimensions = "10000"
 optimization = twosite
-chkpfile = "/state/partition1/spinful.3x20.10k.ckp.h5"
-resultfile = "/state/partition1/spinful.3x20.10k.res.h5"
+chkpfile = "/state/partition1/spinful.3x40.10k.ckp.h5"
+resultfile = "/state/partition1/spinful.3x40.10k.res.h5"
 storagedir = "/state/partition1/"
 symmetry = 2u1
 
