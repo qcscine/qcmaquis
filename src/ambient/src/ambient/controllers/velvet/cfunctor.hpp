@@ -24,14 +24,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#define ALL -1
-
 namespace ambient { namespace controllers { namespace velvet {
 
     // {{{ set revision
 
-    template<int N>
-    inline set<revision>& set<revision, N>::spawn(revision& r){
+    inline set<revision>& set<revision>::spawn(revision& r){
         if(r.transfer == NULL){
             r.transfer = new (ambient::pool::malloc<bulk,set>())
                          set<revision>(r);
@@ -44,24 +41,13 @@ namespace ambient { namespace controllers { namespace velvet {
         return *(set<revision>*)r.transfer;
     }
     
-    template<int N>
-    inline set<revision, N>::set(revision& r) : target(&r) {
+    inline set<revision>::set(revision& r) : evaluated(false), target(&r), active(false) {
     }
     
-    template<int N>
-    template<int NE>
-    inline set<revision, N>::set(set<revision, NE>* s) 
-    : evaluated(false), target(s->target),
-      handle(s->handle)
-    {
-    }
-    
-    template<int N>
-    inline void set<revision, N>::operator >> (int p){
-        int dim = ambient::channel.dim();
-        if(N == AMBIENT_MAX_NUM_PROCS) return;
-        new (this) set<revision, AMBIENT_MAX_NUM_PROCS>(this);
-        if(p == ALL) p = ambient::rank.neighbor();
+    inline void set<revision>::operator >> (int p){
+        if(active) return;
+        this->active = true;
+        if(p == AMBIENT_BROADCAST) p = ambient::rank.neighbor();
         handle = (request*)(size_t)p;
         if(target->generator != NULL) ((cfunctor*)target->generator)->queue(this);
         else{
@@ -72,8 +58,7 @@ namespace ambient { namespace controllers { namespace velvet {
         target->use();
     }
     
-    template<int N>
-    inline bool set<revision, N>::ready(){
+    inline bool set<revision>::ready(){
         if(target->generator != NULL) return false;
         if(!evaluated){
             evaluated = true;
@@ -82,8 +67,7 @@ namespace ambient { namespace controllers { namespace velvet {
         return ambient::channel.test(handle);
     }
     
-    template<int N>
-    inline void set<revision, N>::invoke(){
+    inline void set<revision>::invoke(){
         #ifdef AMBIENT_MEMORY_SQUEEZE
         ambient::controller.squeeze(target);
         #endif
@@ -151,7 +135,7 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void get<transformable>::spawn(transformable& v, int owner){
         ambient::controller.queue(new get(v, owner));
     }
-    inline void set<transformable, AMBIENT_MAX_NUM_PROCS>::spawn(transformable& v, int owner){
+    inline void set<transformable>::spawn(transformable& v, int owner){
         ((cfunctor*)v.generator)->queue(new set(v));
     }
 
@@ -161,7 +145,7 @@ namespace ambient { namespace controllers { namespace velvet {
         handle = ambient::channel.get(target, sid);
         if(ambient::rank.neighbor() == owner) evaluated = true;
     }
-    inline set<transformable, AMBIENT_MAX_NUM_PROCS>::set(transformable& v) 
+    inline set<transformable>::set(transformable& v) 
     : target(&v), handle(NULL) {
         sid = ambient::channel.index();
     }
@@ -176,17 +160,16 @@ namespace ambient { namespace controllers { namespace velvet {
         }
         return false;
     }
-    inline bool set<transformable, AMBIENT_MAX_NUM_PROCS>::ready(){
+    inline bool set<transformable>::ready(){
         if(target->generator != NULL) return false;
         if(!handle) handle = ambient::channel.set(target, ambient::rank.neighbor(), sid); 
         return ambient::channel.test(handle);
     }
 
     inline void get<transformable>::invoke(){}
-    inline void set<transformable, AMBIENT_MAX_NUM_PROCS>::invoke(){}
+    inline void set<transformable>::invoke(){}
 
     // }}}
 
 } } }
 
-#undef ALL

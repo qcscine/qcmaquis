@@ -41,8 +41,6 @@ namespace ambient { namespace channels { namespace mpi {
         if(level != AMBIENT_MPI_THREADING) printf("Error: Wrong threading level\n");
         this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
         this->volume = this->world->size;
-        if(this->volume > AMBIENT_MAX_NUM_PROCS) 
-            printf("Error: The proc count exceeds AMBIENT_MAX_NUM_PROCS\n");
         this->db_volume = this->volume > AMBIENT_DB_PROCS ? AMBIENT_DB_PROCS : 0;
     }
 
