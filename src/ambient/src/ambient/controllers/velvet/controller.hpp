@@ -103,6 +103,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline int controller::which(){
+        assert(this->context->sector >= 0);
         return this->context->sector;
     }
 
