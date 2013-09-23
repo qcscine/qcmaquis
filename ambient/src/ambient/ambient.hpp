@@ -75,8 +75,8 @@
     #define AMBIENT_SMP_DISABLE
 #endif
 
-#define AMBIENT_MAX_NUM_PROCS         24
-#define AMBIENT_DB_PROCS              0
+#define AMBIENT_DB_PROCS   0
+#define AMBIENT_BROADCAST -1
 
 //#define AMBIENT_EXPERIMENTAL
 //#define AMBIENT_COMPUTATIONAL_TIMINGS

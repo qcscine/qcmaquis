@@ -27,7 +27,6 @@
 #include "ambient/utils/io.hpp"
 #include "ambient/utils/timings.hpp"
 #include "ambient/utils/overseer.hpp"
-#define ALL -1
 
 namespace ambient { namespace controllers { namespace velvet {
 
@@ -57,7 +56,6 @@ namespace ambient { namespace controllers { namespace velvet {
             ambient::cout << "ambient: size of ambient bulk chunks: " << AMBIENT_BULK_CHUNK << "\n";
             ambient::cout << "ambient: maximum number of bulk chunks: " << AMBIENT_BULK_LIMIT << "\n";
             ambient::cout << "ambient: maximum sid value: " << AMBIENT_MAX_SID << "\n";
-            ambient::cout << "ambient: max number of proc: " << AMBIENT_MAX_NUM_PROCS << "\n";
             ambient::cout << "ambient: number of database proc: " << AMBIENT_DB_PROCS << "\n";
             ambient::cout << "ambient: number of work proc: " << ambient::channel.wk_dim() << "\n";
             ambient::cout << "ambient: number of threads per proc: " << ambient::get_num_threads() << "\n";
@@ -175,7 +173,7 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void controller::sync(revision* r){
         if(serial) return;
         if(ambient::model.common(r)) return;
-        if(ambient::model.feeds(r)) ambient::controllers::velvet::set<revision>::spawn(*r) >> ALL;
+        if(ambient::model.feeds(r)) ambient::controllers::velvet::set<revision>::spawn(*r) >> AMBIENT_BROADCAST;
         else{
             ambient::controllers::velvet::get<revision>::spawn(*r);
             if(r->owner != ambient::rank.neighbor()) ambient::controllers::velvet::get<revision>::assist(*r, ambient::rank.neighbor());
@@ -195,7 +193,7 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void controller::lsync(transformable* v){
         if(serial) return;
-        ambient::controllers::velvet::set<transformable, AMBIENT_MAX_NUM_PROCS>::spawn(*v, which());
+        ambient::controllers::velvet::set<transformable>::spawn(*v, which());
     }
 
     inline void controller::rsync(transformable* v){
@@ -220,4 +218,3 @@ namespace ambient { namespace controllers { namespace velvet {
 
 } } }
 
-#undef ALL

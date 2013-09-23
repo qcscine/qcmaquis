@@ -48,20 +48,18 @@ namespace ambient { namespace controllers { namespace velvet {
     };
 
     template<class T> class get {};
-    template<class T, int N = 0> class set {};
+    template<class T> class set {};
 
     // {{{ revision get/set
 
-    template<int N> class set<revision, N> : public cfunctor {
+    class set<revision> : public cfunctor {
     public:
-        template<class T, int NE> friend class set;
         void* operator new (size_t size, void* placement){ return placement; }
         void* operator new (size_t size){ return ambient::pool::malloc<bulk,set>(); }
         void operator delete (void*, void*){ }
         void operator delete (void* ptr){ }
         static set<revision>& spawn(revision& r);
         set(revision& r);
-        template<int NE> set(set<revision,NE>* s);
         virtual void operator >> (int p);
         virtual bool ready();
         virtual void invoke();
@@ -72,12 +70,16 @@ namespace ambient { namespace controllers { namespace velvet {
         revision* target;
         request* handle;
         bool evaluated;
+        bool active;
         size_t clock;
         int sid;
     };
 
     struct assistance {
-        assistance():handle(-1),valid(false){ memset(this->states, 0, sizeof(bool)*AMBIENT_MAX_NUM_PROCS); }
+        assistance():handle(-1),valid(false){ 
+            this->states = (bool*)ambient::pool::malloc<bulk>(ambient::channel.dim()*sizeof(bool));
+            memset(this->states, 0, ambient::channel.dim()*sizeof(bool));
+        }
         void operator += (int rank){
             if(!states[rank]){
                 if(valid && handle == -1) handle = rank;
@@ -85,7 +87,7 @@ namespace ambient { namespace controllers { namespace velvet {
                 states[rank] = true;
             }
         }
-        bool states[AMBIENT_MAX_NUM_PROCS];
+        bool* states;
         bool valid;
         int handle;
         int sid;
@@ -113,7 +115,6 @@ namespace ambient { namespace controllers { namespace velvet {
     // }}}
     // {{{ transformable broadcast get/set
 
-    template<>
     class get<transformable> : public cfunctor {
     public:
         void* operator new (size_t size){ return ambient::pool::malloc<bulk,get>(); }
@@ -131,8 +132,8 @@ namespace ambient { namespace controllers { namespace velvet {
         transformable* target;
         int sid;
     };
-    template<>
-    class set<transformable, AMBIENT_MAX_NUM_PROCS> : public cfunctor {
+
+    class set<transformable> : public cfunctor {
     public:
         void* operator new (size_t size){ return ambient::pool::malloc<bulk,set>(); }
         void operator delete (void* ptr){ }
