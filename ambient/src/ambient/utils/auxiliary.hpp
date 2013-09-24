@@ -70,7 +70,7 @@ namespace ambient {
         dst->current = r;
         // do not deallocate or reuse
         if(!r->valid()) r->spec.protect();
-        assert(!r->valid() || !r->spec.bulked()); // can't rely on bulk memory
+        assert(!r->valid() || !r->spec.bulked() || ambient::model.remote(r)); // can't rely on bulk memory
         r->spec.crefs++;
     }
 
