@@ -91,6 +91,8 @@ int main(int argc, char ** argv)
         maquis::cout << "Load MPS done!\n";
         maquis::cout << "Optimization at site " << site << " in " << lr << " direction." << std::endl;
         
+        mps.canonize(site);
+
         /// Compute left boundary
         tim_l_boundary.begin();
         Boundary<matrix, grp> left = mps.left_boundary();
