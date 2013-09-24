@@ -1,11 +1,10 @@
 #!/bin/bash -l
-STATE="build"
-STATE_AMBIENT="build"
-STATE_DMRG="build"
-# end of target states #
-PREFIX=default
+STATE="void"
+STATE_AMBIENT=""
+STATE_DMRG="configure"
+
 COMPILER=intel
-COMPILER_VERSION=13
+COMPILER_VERSION=13.1
 MPI_WRAPPER=open_mpi
 MPI_WRAPPER_VERSION=1.4
 ALPS_DIR=$HOME/opt/alps-intel
@@ -16,6 +15,7 @@ export PYTHONPATH=${ALPS_DIR}/lib:${PYTHONPATH}
 
 module purge
 module load goto2 python
+module load gcc/4.7.2
 module load ${COMPILER}/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load hdf5
@@ -29,6 +29,8 @@ DMRG_DEFAULT_BLAS_LAPACK=manual
 DMRG_BLAS_LAPACK_MANUAL_LIBS="-mkl"
 DMRG_ENABLE_OMP=ON
 DMRG_BUILD_MULTIGRID=ON
+DMRG_REGRESSION_PERFORMANCE_TESTS=ON
 
 source $ROOT_DIR/scripts/common/common.sh 
+
 execute $*
