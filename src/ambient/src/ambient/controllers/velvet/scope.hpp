@@ -116,7 +116,7 @@ namespace ambient {
             this->index--;
             return *this;
         }
-        operator size_t (){
+        operator size_t () const{
             return index;
         }
         bool operator < (size_t lim){
@@ -127,6 +127,10 @@ namespace ambient {
         }
         virtual bool tunable() const {
             return false; 
+        }
+        friend std::ostream& operator<< (std::ostream& os, scope const& l){
+            os << static_cast<size_t>(l);
+            return os;
         }
         size_t index;
         bool dry;
