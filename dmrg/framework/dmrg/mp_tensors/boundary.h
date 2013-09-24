@@ -40,10 +40,24 @@ public:
     Boundary& operator = (const Boundary<OtherMatrix, SymmGroup>& rhs){
         size_t loop_max = rhs.aux_dim();
         resize(loop_max);
-        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
+        parallel_for(locale::sorted(rhs), locale b = 0; b < loop_max; ++b)
             data_[b] = rhs[b];
         return *this;
     }
+
+    #ifdef AMBIENT
+    std::vector<std::pair<size_t, size_t> > sort() const {
+        std::vector<std::pair<size_t, size_t> > sizes;
+        int loop_max = this->aux_dim();
+        for(int b = 0; b < loop_max; ++b){
+            size_t size = 0;
+            for(int i = 0; i < (*this)[b].n_blocks(); ++i) size += num_rows((*this)[b][i])*num_cols((*this)[b][i]);
+            sizes.push_back(std::make_pair(size, b));
+        }
+        std::sort(sizes.begin(), sizes.end(), [](const std::pair<double,size_t>& a, const std::pair<double,size_t>& b){ return a.first < b.first; });
+        return sizes;
+    }
+    #endif
     
     Boundary& operator = (const Boundary& rhs){
         storage::disk::serializable<Boundary>::operator=(rhs);
