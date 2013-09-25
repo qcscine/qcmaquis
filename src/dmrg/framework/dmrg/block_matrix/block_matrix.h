@@ -58,6 +58,9 @@ public:
 
     std::string description() const;
     std::size_t num_elements() const;
+    #ifdef AMBIENT
+    void print_distribution() const;
+    #endif
     
     Matrix &             operator[](size_type c);
     Matrix const &       operator[](size_type c) const;
