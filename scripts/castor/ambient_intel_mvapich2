@@ -39,7 +39,8 @@ AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=ON
 ## dmrg ##
 DMRG_DEFAULT_BLAS_LAPACK=manual
 DMRG_CMAKE_CXX_FLAGS_RELEASE="$COMMON_CMAKE_CXX_FLAGS"
-DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread $AMBIENT_PLASMA_LIBRARY"
+#DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread $AMBIENT_PLASMA_LIBRARY"
+DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm $AMBIENT_PLASMA_LIBRARY"
 DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/apps/castor/intel/mkl/lib/intel64
 DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/apps/castor/intel/mkl/include
 DMRG_ALPS_ROOT_DIR=/project/h07/TEST_ALPS
