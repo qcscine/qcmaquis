@@ -60,41 +60,6 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
     }
 }
 
-template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
-void gemm_allocate(block_matrix<Matrix1, SymmGroup> const & A,
-                   block_matrix<Matrix2, SymmGroup> const & B,
-                   block_matrix<Matrix3, SymmGroup> & C)
-{
-    C.clear();
-    
-    typedef typename SymmGroup::charge charge;
-    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        if (! B.left_basis().has(A.right_basis()[k].first))
-            continue;
-        
-        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
-        C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
-                       A.left_basis()[k].first, B.right_basis()[matched_block].first);
-    }
-}
-
-template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
-void gemm_calculate(block_matrix<Matrix1, SymmGroup> const & A,
-                    block_matrix<Matrix2, SymmGroup> const & B,
-                    block_matrix<Matrix3, SymmGroup> & C)
-{
-    typedef typename SymmGroup::charge charge;
-    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        if (! B.left_basis().has(A.right_basis()[k].first))
-            continue;
-        
-        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
-        std::size_t new_block = C.left_basis().position(A.left_basis()[k].first);
-        
-        gemm(A[k], B[matched_block], C[new_block]);
-    }
-}
-
 template<class Matrix, class DiagMatrix, class SymmGroup>
 void svd(block_matrix<Matrix, SymmGroup> const & M,
          block_matrix<Matrix, SymmGroup> & U,
@@ -167,7 +132,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     // filling the workload with smallest local matrices first
     for(size_t p = 0; p < np; ++p){
         workloads[p].second = p;
-        locale l(p);
+        locale l(p); l.shift_back();
         for(size_t i = 0; i < loop_max; ++i){
             size_t k = complexities[i].second;
             if(M[k][0].core->current->owner != p && (p != ambient::rank() || M[k][0].core->current->owner != -1)) continue;
@@ -181,7 +146,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
 
     // rebalancing using difference with average
     for(size_t p = 0; p < np; ++p){
-        locale l(p);
+        locale l(p); l.shift_back();
         for(size_t i = 0; i < loop_max; ++i){
             size_t k = complexities[i].second;
             if(complexities[i].first == 0) continue;
@@ -201,7 +166,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
         if(complexities[i].first == 0) continue;
         size_t k = complexities[i].second;
         int owner = workloads[p++].second;
-        locale l(owner);
+        locale l(owner); l.shift_back();
         maquis::cout << "R" << ambient::controller.which() << ": (" << M[k][0].core->current->owner << ") remaining svd on " << num_rows(M[k]) << "x" << num_cols(M[k]) << "\n";
         merge(M[k]); 
         p %= np;
@@ -212,7 +177,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     for(size_t k = 0; k < loop_max; ++k){
         int owner = M[k][0].core->current->owner;
         if(owner == -1) owner = ambient::rank();
-        locale l(owner);
+        locale l(owner); l.shift_back(); // shift to make it direct
         svd_merged(M[k], U[k], V[k], S[k]);
     }
     timer.end();

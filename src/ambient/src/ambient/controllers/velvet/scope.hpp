@@ -82,39 +82,26 @@ namespace ambient {
     template<>
     class scope<single> : public controller::scope {
     public:
-        static int compact_factor;
-        static std::vector<std::pair<size_t, size_t> > permutation; 
+        static int compact_factor; 
         static void compact(size_t n){ 
             if(n <= ambient::channel.wk_dim()) return; 
-            compact_factor = (int)(n / ambient::channel.wk_dim()); // iterations before switch // not used
+            compact_factor = (int)(n / ambient::channel.wk_dim()); // iterations before switch 
         } 
-        template<typename T>
-        static void sorted(const T& ref){
-            permutation = ref.sort();
-        }
         scope(int value = 0) : index(value), iterator(value) {
-            this->S = permutation; permutation.clear();
-            if(!this->S.empty()) this->twoway = true;
-            else this->twoway = false;
+            this->factor = compact_factor; compact_factor = 1;
             if(ambient::controller.context != ambient::controller.context_base) dry = true;
             else{ dry = false; ambient::controller.set_context(this); }
-            round = ambient::channel.wk_dim();
-            if(twoway) round *= 2;
-            this->eval();
-        }
-        void eval(){
-            this->sector = (this->iterator %= round);
-            if(twoway && this->sector >= round/2) this->sector = round-1-this->sector;
-            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
+            this->round = ambient::channel.wk_dim();
+            this->shift();
         }
         void shift(){
-            this->iterator++;
-            this->eval();
+            this->sector = (++this->iterator %= this->round*this->factor)/this->factor;
+            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
         }
         void shift_back(){ 
-            this->iterator--;
-            if(this->iterator == -1) this->iterator = round-1;
-            this->eval();
+            this->sector = (--this->iterator)/this->factor; 
+            if(this->sector == -1) this->sector = this->round-1;
+            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
         } 
         scope& operator++ (){
             this->shift();
@@ -126,9 +113,8 @@ namespace ambient {
             this->index--;
             return *this;
         }
-        operator size_t () const{
-            if(S.empty()) return index;
-            return S[index].second;
+        operator size_t (){
+            return index;
         }
         bool operator < (size_t lim){
             return index < lim;
@@ -139,16 +125,11 @@ namespace ambient {
         virtual bool tunable() const {
             return false; 
         }
-        friend std::ostream& operator<< (std::ostream& os, scope const& l){
-            os << static_cast<size_t>(l);
-            return os;
-        }
         size_t index;
         bool dry;
         int iterator;
+        int factor;
         int round;
-        bool twoway;
-        std::vector<std::pair<size_t, size_t> > S; 
     };
 
     template<>
