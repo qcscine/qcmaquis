@@ -92,16 +92,21 @@ namespace ambient {
             if(ambient::controller.context != ambient::controller.context_base) dry = true;
             else{ dry = false; ambient::controller.set_context(this); }
             this->round = ambient::channel.wk_dim();
-            this->shift();
+            this->eval();
+        }
+        void eval(){
+            if(iterator >= this->round*this->factor) this->sector = this->iterator % this->round;
+            else                                     this->sector = this->iterator / this->factor;
+            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
         }
         void shift(){
-            this->sector = (++this->iterator %= this->round*this->factor)/this->factor;
-            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
+            this->iterator++;
+            this->eval();
         }
         void shift_back(){ 
-            this->sector = (--this->iterator)/this->factor; 
-            if(this->sector == -1) this->sector = this->round-1;
-            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
+            if(this->iterator == 0) printf("Error: Negative sector!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n");
+            this->iterator--;
+            this->eval();
         } 
         scope& operator++ (){
             this->shift();
