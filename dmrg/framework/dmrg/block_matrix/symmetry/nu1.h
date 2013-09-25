@@ -20,28 +20,28 @@
 #include <boost/serialization/array.hpp>
 
 
-template<int N>
+template<int N, class S = int>
 class NU1Charge
 {   
 public:
-    NU1Charge(int init = 0)
+    NU1Charge(S init = 0)
     {
-        for (int i = 0; i < N; ++i) (*this)[i] = init;
+        for (S i = 0; i < N; ++i) (*this)[i] = init;
     }
     
-    NU1Charge(boost::array<int, N> const & rhs)
+    NU1Charge(boost::array<S, N> const & rhs)
     {
         std::copy(rhs.begin(), rhs.end(), this->begin());
     }
     
-    int * begin() { return &data_[0]; }
-    int * end() { return &data_[N]; }
-    
-    int const * begin() const { return &data_[0]; }
-    int const * end() const { return &data_[N]; }
-    
-    int & operator[](std::size_t p) { return data_[p]; }
-    int const & operator[](std::size_t p) const { return data_[p]; }
+    S * begin() { return &data_[0]; }
+    S * end() { return &data_[N]; }
+
+    S const * begin() const { return &data_[0]; }
+    S const * end() const { return &data_[N]; }
+
+    S & operator[](std::size_t p) { return data_[p]; }
+    S const & operator[](std::size_t p) const { return data_[p]; }
    
     template<class Archive> 
     void save(Archive & ar) const
@@ -64,22 +64,22 @@ public:
     }
 
 private:
-    int data_[N];
+    S data_[N];
 };
 
 namespace boost {
-    template <int N>
-    class hash<NU1Charge<N> >{
+    template <int N, class S>
+    class hash<NU1Charge<N, S> >{
         public :
-            size_t operator()(NU1Charge<N> const &Charge ) const {
+            size_t operator()(NU1Charge<N, S> const &Charge ) const {
                 return boost::hash_range(&Charge[0],&Charge[N]);
             }
     };
 
-    template <int N>
-    class hash<std::pair<NU1Charge<N>, NU1Charge<N> > >{
+    template <int N, class S>
+    class hash<std::pair<NU1Charge<N, S>, NU1Charge<N, S> > >{
         public :
-            size_t operator()(std::pair<NU1Charge<N>,NU1Charge<N> > const &Pair_of_charge ) const {
+            size_t operator()(std::pair<NU1Charge<N, S>, NU1Charge<N, S> > const &Pair_of_charge ) const {
                 std::size_t seed = 0;
                 for(int i(0); i<N; i++){
                     boost::hash_combine(seed, (Pair_of_charge.first)[i]);
@@ -90,7 +90,7 @@ namespace boost {
     };
 
     template <>
-    class hash<std::pair<int,int>  >{
+    class hash<std::pair<int, int>  >{
         public :
             size_t operator()(std::pair<int, int> const &Pair_of_charge ) const {
                 return boost::hash_value(Pair_of_charge);
@@ -99,8 +99,8 @@ namespace boost {
 
 };
 
-template<int N>
-std::ostream& operator<<(std::ostream& os, NU1Charge<N> const & c)
+template<int N, class S>
+std::ostream& operator<<(std::ostream& os, NU1Charge<N, S> const & c)
 {
     os << "<";
     for (int i = 0; i < N; ++i) {
@@ -190,63 +190,63 @@ struct tpl_ops_<N, N>
     void operator_div(T const *, T *, int) const { }
 };
 
-template<int N>
-inline bool operator<(NU1Charge<N> const & a, NU1Charge<N> const & b)
+template<int N, class S>
+inline bool operator<(NU1Charge<N, S> const & a, NU1Charge<N, S> const & b)
 {
     return tpl_ops_<N, 0>().operator_lt(a.begin(), b.begin());
 }
 
-template<int N>
-inline bool operator>(NU1Charge<N> const & a, NU1Charge<N> const & b)
+template<int N, class S>
+inline bool operator>(NU1Charge<N, S> const & a, NU1Charge<N, S> const & b)
 {
     return tpl_ops_<N, 0>().operator_gt(a.begin(), b.begin());
 }
 
-template<int N>
-inline bool operator==(NU1Charge<N> const & a, NU1Charge<N> const & b)
+template<int N, class S>
+inline bool operator==(NU1Charge<N, S> const & a, NU1Charge<N, S> const & b)
 {
     return tpl_ops_<N, 0>().operator_eq(a.begin(), b.begin());
 }
 
-template<int N>
-inline bool operator!=(NU1Charge<N> const & a, NU1Charge<N> const & b)
+template<int N, class S>
+inline bool operator!=(NU1Charge<N, S> const & a, NU1Charge<N, S> const & b)
 {
     return !(a==b);
 }
 
-template<int N>
-NU1Charge<N> operator+(NU1Charge<N> const & a,
-                       NU1Charge<N> const & b)
+template<int N, class S>
+NU1Charge<N, S> operator+(NU1Charge<N, S> const & a,
+                       NU1Charge<N, S> const & b)
 {
-    NU1Charge<N> ret;
+    NU1Charge<N, S> ret;
     tpl_ops_<N, 0>().operator_plus(a.begin(), b.begin(), ret.begin());
     return ret;
 }
 
-template<int N>
-NU1Charge<N> operator-(NU1Charge<N> const & rhs)
+template<int N, class S>
+NU1Charge<N, S> operator-(NU1Charge<N, S> const & rhs)
 {
-    NU1Charge<N> ret;
+    NU1Charge<N, S> ret;
     tpl_ops_<N, 0>().operator_uminus(rhs.begin(), ret.begin());
     return ret;
 }
 
-template<int N>
-NU1Charge<N> operator/(NU1Charge<N> const & a, int n)
+template<int N, class S>
+NU1Charge<N, S> operator/(NU1Charge<N, S> const & a, int n)
 {
-    NU1Charge<N> ret;
+    NU1Charge<N, S> ret;
     tpl_ops_<N, 0>().operator_div(a.begin(), ret.begin(), n);
     return ret;
 }
-template<int N>
-NU1Charge<N> operator/(int n, NU1Charge<N> const & a) { return a/n; }
+template<int N, class S>
+NU1Charge<N, S> operator/(int n, NU1Charge<N, S> const & a) { return a/n; }
 
 
-template<int N>
+template<int N, class S = int>
 class NU1
 {
 public:
-    typedef NU1Charge<N> charge;
+    typedef NU1Charge<N, S> charge;
     typedef std::vector<charge> charge_v;
     
     static const charge IdentityCharge;
@@ -266,7 +266,7 @@ public:
     }
 };
 
-template<int N> const typename NU1<N>::charge NU1<N>::IdentityCharge = typename NU1<N>::charge();
+template<int N, class S> const typename NU1<N,S>::charge NU1<N,S>::IdentityCharge = typename NU1<N,S>::charge();
 
 typedef NU1<2> TwoU1;
 typedef NU1<3> ThreeU1;
