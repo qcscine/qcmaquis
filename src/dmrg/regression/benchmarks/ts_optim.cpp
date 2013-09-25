@@ -100,11 +100,11 @@ int main(int argc, char ** argv)
         int L = lattice->size();
         MPS<matrix, grp> mps;
         load(parms["chkpfile"].str(), mps);
-        int _site = 13;
-        /*{
+        int _site;
+        {
             alps::hdf5::archive ar(chkpfile / "props.h5");
             ar["/status/site"] >> _site;
-        }*/
+        }
         int site, lr;
         if (_site < L) {
             site = _site;
