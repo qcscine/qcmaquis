@@ -33,18 +33,21 @@
 #define BILLION 0x3B9ACA00
 
 namespace ambient {
+    void sync();
+}
+
+namespace ambient {
 
     class timer {
     public:
-        timer(std::string name, pthread_t thread): val(0.0), name(name), count(0), thread_(thread){}
         timer(std::string name): val(0.0), name(name), count(0), thread_(pthread_self()){}
-           ~timer(){ } // report();
+       ~timer(){ report(); }
      
         double get_time() const {
             return val;
         }
         void report(){
-            std::cout << name << " " << val << ", count : " << count << "\n";
+            std::cout << "R" << ambient::rank() << ": " << name << " " << val << ", count : " << count << "\n";
         }
         void reset(){
             this->val = 0;
@@ -67,6 +70,19 @@ namespace ambient {
         double val, t0;
         unsigned long long count;
         std::string name;
+    };
+
+    class synctime : public timer {
+    public:
+        synctime(std::string name) : timer(name){}
+        void begin(){
+            ambient::sync();
+            timer::begin();
+        }    
+        void end(){
+            ambient::sync();
+            timer::end();
+        }
     };
 }
 

@@ -48,7 +48,7 @@ namespace ambient { namespace numeric {
         void* operator new (size_t, void*);
         void operator delete (void*);
         void operator delete (void*, void*){ } // doesn't throw
-        explicit matrix(const ptr& p, size_t r);
+        explicit matrix(const ptr& p);
         explicit matrix();
         explicit matrix(size_type rows, size_type cols, value_type init_value = value_type()); 
         matrix(const matrix& a);
@@ -71,8 +71,6 @@ namespace ambient { namespace numeric {
         template<typename TT> 
         friend void swap(matrix& x, matrix& y);
         void resize(size_type m, size_type n); 
-        void remove_rows(size_type i, size_type k = 1);
-        void remove_cols(size_type j, size_type k = 1);
         matrix& locate(size_type i, size_type j);
         const matrix& locate(size_type i, size_type j) const;
         size_t addr(size_type i, size_type j) const;
@@ -83,15 +81,10 @@ namespace ambient { namespace numeric {
         value_type& operator() (size_type i, size_type j);
         const value_type& operator() (size_type i, size_type j) const;
         static const char* code();
-        template<class Archive> void load(Archive & ar);
-        template<class Archive> void save(Archive & ar) const;
-        template<class Archive>
-        void serialize(Archive & ar, const unsigned int){ 
-            ar & core->dim.y & core->dim.x & core->extent & ((T*)ambient::serial(*this));
-        }
     public:
         ptr core;
-        size_t ref;
+        mutable void* before;
+        mutable void* after;
     };
 
     template <class Matrix>
@@ -137,7 +130,6 @@ namespace ambient { namespace numeric {
         template<class M> static size_t cols(const M& a);
         static const char* code();
         typename Matrix::ptr core;
-        size_t ref;
     };
 
 } }

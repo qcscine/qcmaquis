@@ -31,8 +31,26 @@ namespace ambient {
 
     using ambient::models::velvet::revision;
 
+    template <typename T> static bool exclusive(T& obj){
+        ambient::model.touch(obj.core);
+        revision& c = *obj.core->current;
+        if(ambient::controller.remote()){
+            c.state = ambient::remote;
+            c.owner = ambient::controller.which();
+            return true;
+        }else{
+            c.state = ambient::local;
+            if(!c.valid()) c.embed(T::allocator_type::alloc(c.spec));
+            return false;
+        }
+    }
+
+    template <typename T> static revision& naked(T& obj){
+        return *obj.core->current;
+    }
+
     template <typename T> static revision& raw(T& obj){ 
-        return *obj.core->content[obj.ref];     
+        return *(revision*)obj.before;     
     }
 
     template <typename T> static revision& safe_raw(T& obj){
@@ -45,40 +63,37 @@ namespace ambient {
         ambient::sync(); 
         revision& c = *obj.core->current;
         assert(c.state == ambient::local || c.state == ambient::common);
-        if(!c.valid())
+        if(!c.valid()){
             c.embed(T::allocator_type::calloc(c.spec));
+        }
         return c;
     }
 
     template <typename T> static revision& current(T& obj){ 
-        revision& c = *obj.core->content[obj.ref];
+        revision& c = *(revision*)obj.before;
         if(!c.valid()){
-            if(!c.spec.copied && c.spec.mediator) c.spec.region = region_t::rbulked;
             c.embed(T::allocator_type::calloc(c.spec));
         }
         return c;
     }
 
     template <typename T> static revision& updated(T& obj){ 
-        revision& c = *obj.core->content[obj.ref+1]; assert(!c.valid());
-        revision& p = *obj.core->content[obj.ref];
-        if(p.valid() && !p.locked() && c.spec.conserves(p.spec)) c.reuse(p);
+        revision& c = *(revision*)obj.after; assert(!c.valid());
+        revision& p = *(revision*)obj.before;
+        if(p.valid() && p.locked_once() && !p.referenced() && c.spec.conserves(p.spec)) c.reuse(p);
         else{
-            if(!c.spec.copied && c.spec.mediator) c.spec.region = region_t::rbulked;
             c.embed(T::allocator_type::alloc(c.spec));
         }
         return c;
     }
 
     template <typename T> static revision& revised(T& obj){ 
-        revision& c = *obj.core->content[obj.ref+1]; assert(!c.valid());
-        revision& p = *obj.core->content[obj.ref];
+        revision& c = *(revision*)obj.after; assert(!c.valid());
+        revision& p = *(revision*)obj.before;
         if(!p.valid()){
-            if(!c.spec.copied && c.spec.mediator) c.spec.region = region_t::rbulked;
             c.embed(T::allocator_type::calloc(c.spec));
-        }else if(!p.locked() && c.spec.conserves(p.spec)) c.reuse(p);
+        }else if(p.locked_once() && !p.referenced() && c.spec.conserves(p.spec)) c.reuse(p);
         else{
-            if(!c.spec.copied && c.spec.mediator) c.spec.region = region_t::rbulked;
             c.embed(T::allocator_type::alloc(c.spec));
             memcpy((T*)c, (T*)p, p.spec.extent);
         }

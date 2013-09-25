@@ -47,7 +47,6 @@ namespace ambient { namespace models { namespace velvet {
 
     template<typename T>
     inline transformable_value<T>::transformable_value(T value){
-        ambient::model.index(this);
         this->v = value;
     }
 
@@ -60,7 +59,7 @@ namespace ambient { namespace models { namespace velvet {
     inline transformable& transformable_value<T>::operator += (transformable& r){ 
         return *new(this)transformable_expr<T, decltype(&op_plus<T>), op_plus>(
                    &r, 
-                   new (ambient::pool::malloc<fixed,AMBIENT_FUTURE_SIZE>()) transformable_value(*this)
+                   new (ambient::pool::calloc<fixed,AMBIENT_FUTURE_SIZE>()) transformable_value(*this)
                );
     }
 
@@ -70,7 +69,6 @@ namespace ambient { namespace models { namespace velvet {
         ambient::pool::free<fixed,AMBIENT_FUTURE_SIZE>((void*)this->l);
         ambient::pool::free<fixed,AMBIENT_FUTURE_SIZE>((void*)this->r);
         new((void*)this)transformable_value<T>(*(transformable_value<T>*)this);
-        ambient::model.index((transformable*)this);
         return this->v;
     }
 
@@ -78,7 +76,7 @@ namespace ambient { namespace models { namespace velvet {
     inline transformable& transformable_expr<T,FP,OP>::operator += (transformable& r){ 
         return *new(this)transformable_expr<T, decltype(&op_plus<T>), op_plus>(
                    &r, 
-                   new (ambient::pool::malloc<fixed,AMBIENT_FUTURE_SIZE>()) transformable_expr<T,FP,OP>(*this)
+                   new (ambient::pool::calloc<fixed,AMBIENT_FUTURE_SIZE>()) transformable_expr<T,FP,OP>(*this)
                ); 
     }
 

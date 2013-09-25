@@ -42,9 +42,6 @@ namespace ambient {
 
 namespace ambient { namespace memory { 
 
-    constexpr size_t paged(size_t size)  {  return PAGE_SIZE * (size_t)((size+PAGE_SIZE-1)/PAGE_SIZE); }
-    constexpr size_t aligned(size_t size){  return ALIGNMENT * (size_t)((size+ALIGNMENT-1)/ALIGNMENT); }
-
     struct mmap {
 
         class pool {

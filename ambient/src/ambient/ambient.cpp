@@ -28,6 +28,7 @@
 
 namespace ambient {
     int scope<single>::compact_factor = 1;
+    std::vector<std::pair<size_t, size_t> > scope<single>::permutation;
     models::velvet::model& model = models::velvet::model::instance();
     channels::mpi::channel& channel = channels::mpi::channel::instance();
     channels::mpi::multirank& rank = channels::mpi::multirank::instance();

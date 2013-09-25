@@ -38,11 +38,8 @@ namespace ambient { namespace models { namespace velvet {
         void init_state();
         template<ambient::locality L> void add_state(void* g);
         template<ambient::locality L> void add_state(int g);
-        void fuse(const history* src);
         revision* back() const;
-        size_t time() const;
         bool weak() const;
-        std::vector<revision*> content;
         revision* current;
         size_t extent;
         size_t clock;

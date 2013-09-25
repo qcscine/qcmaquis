@@ -435,15 +435,16 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T>
-    inline tiles<diagonal_matrix<T> >::tiles(size_type size, value_type init_value)
-    : size(size), nt(__a_ceil(size/AMBIENT_IB))
+    inline tiles<diagonal_matrix<T> >::tiles(size_type rows, size_type cols, value_type init_value)
+    : size(rows), nt(__a_ceil(rows/AMBIENT_IB))
     {
+        assert(rows == cols);
         int tailm = __a_mod(size, AMBIENT_IB);
         this->data.reserve(nt);
         
         for(int i = 1; i < nt; i++) 
-            this->data.push_back(new diagonal_matrix<T>(AMBIENT_IB, init_value));
-        this->data.push_back(new diagonal_matrix<T>(tailm, init_value));
+            this->data.push_back(new diagonal_matrix<T>(AMBIENT_IB, AMBIENT_IB, init_value));
+        this->data.push_back(new diagonal_matrix<T>(tailm, tailm, init_value));
     }
 
     template <typename T>
@@ -465,6 +466,21 @@ namespace ambient { namespace numeric {
     tiles<diagonal_matrix<T> >::~tiles(){
         int size = this->data.size();
         for(int i = 0; i < size; i++) delete this->data[i];
+    }
+
+    template<typename T>
+    inline std::pair<const value_type*,const value_type*> tiles<diagonal_matrix<T> >::diagonal() const {
+        return std::make_pair(this->begin(), this->end());
+    }
+        
+    template<typename T>
+    inline const value_type* tiles<diagonal_matrix<T> >::begin() const {
+        return &(*this)[0][0];
+    }
+        
+    template<typename T>
+    inline const value_type* tiles<diagonal_matrix<T> >::end() const {
+        return (&(*this)[0][0] + (*this)[0].num_rows());
     }
 
     template<typename T>

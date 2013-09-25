@@ -76,7 +76,7 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     transpose_view<Matrix>::operator Matrix () const {
-        Matrix t(Matrix(this->core,0));
+        Matrix t(Matrix(this->core));
         transpose_inplace(t); 
         return t;
     }
@@ -152,8 +152,8 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T, class A>
-    inline matrix<T,A>::matrix(const ptr& p, size_t r) 
-    : core(p), ref(r)
+    inline matrix<T,A>::matrix(const ptr& p) 
+    : core(p)
     {
     }
 
@@ -258,16 +258,6 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T, class A>
-    inline void matrix<T,A>::remove_rows(size_type i, size_type k){
-        ambient::numeric::remove_rows(*this, i, k);
-    }
-
-    template<typename T, class A>
-    inline void matrix<T,A>::remove_cols(size_type j, size_type k){
-        ambient::numeric::remove_cols(*this, j, k); 
-    }
-
-    template<typename T, class A>
     inline matrix<T,A>& matrix<T,A>::locate(size_type i, size_type j){
         return *this;
     }
@@ -321,35 +311,6 @@ namespace ambient { namespace numeric {
     template<typename T, class A>
     const char* matrix<T,A>::code(){ 
         return "N"; 
-    }
-
-    template<typename T, class A>
-    template<class Archive>
-    void matrix<T,A>::load(Archive & ar){
-        ambient::scope<ambient::shared> c;
-        ar["y"] >> core->dim.y;
-        ar["x"] >> core->dim.x;
-        core->extent = core->dim.square()*sizeof(value_type);
-
-        std::vector<value_type> tmp;
-        ar["data"] >> tmp;
-
-        value_type* naked = ((T*)ambient::serial(*this));
-        for(int i = 0; i < tmp.size(); ++i) naked[i] = tmp[i];
-    }
-
-    template<typename T, class A>
-    template<class Archive>
-    void matrix<T,A>::save(Archive & ar) const {
-        // relying on base-scope
-        ambient::numeric::touch(*this);
-        ambient::sync();
-        ar["y"] << core->dim.y;
-        ar["x"] << core->dim.x;
-        
-        value_type* naked = ((T*)ambient::serial(*this));
-        std::vector<value_type> tmp(naked, naked+core->dim.square());
-        ar["data"] << tmp;
     }
 
     #undef size_type

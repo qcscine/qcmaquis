@@ -34,7 +34,7 @@ namespace ambient { namespace numeric {
     #define value_type  typename diagonal_matrix<T>::value_type
 
     template<typename T>
-    inline diagonal_matrix<T>::diagonal_matrix(size_t rows, const value_type& init)
+    inline diagonal_matrix<T>::diagonal_matrix(size_t rows, size_t cols, value_type init)
     : data_(rows,1,init)
     {
     }
@@ -74,16 +74,6 @@ namespace ambient { namespace numeric {
     template<typename T>
     inline size_type diagonal_matrix<T>::size() const {
         return this->data_.num_rows();
-    }
-
-    template<typename T>
-    inline void diagonal_matrix<T>::remove_rows(size_t i, size_t m){
-       this->data_.remove_rows(i, m);
-    }
-
-    template<typename T>  
-    inline void diagonal_matrix<T>::remove_cols(size_t j, size_t n){
-        this->data_.remove_rows(j, n);
     }
 
     template<typename T>
@@ -162,16 +152,6 @@ namespace ambient { namespace numeric {
     inline std::ostream& operator<<(std::ostream& os, const diagonal_matrix<T>& a){
        os << a.data_ ; 
        return os;
-    }
-
-    template<typename T>
-    inline void remove_rows(diagonal_matrix<T>& a, size_t i, size_t m = 1){
-        a.remove_rows(i, m);
-    }
-
-    template<typename T>
-    inline void remove_cols(diagonal_matrix<T>& a, size_t j, size_t n = 1){
-        a.remove_cols(j, n);
     }
 
     template<typename T>

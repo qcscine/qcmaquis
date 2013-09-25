@@ -124,7 +124,7 @@ endif()
 #
 ########################################################################
 
-include_directories ("${MPI_CXX_INCLUDE_PATH}")
+include_directories (${MPI_CXX_INCLUDE_PATH})
 include_directories (src)
 add_subdirectory(src/ambient) 
 

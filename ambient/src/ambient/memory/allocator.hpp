@@ -36,7 +36,7 @@ namespace ambient {
             return ambient::pool::malloc(spec);
         }
         static void* calloc(pool::descriptor& spec){
-            void* m = ambient::pool::malloc(spec);
+            void* m = alloc(spec);
             memset(m, 0, spec.extent);
             return m;
         }
@@ -50,32 +50,6 @@ namespace ambient {
         }
         template <class U> struct rebind {
             typedef default_allocator<U> other; 
-        };
-        typedef T value_type;
-    };
-
-    template <class T>
-    class constrained_allocator {
-    public:
-        static void* alloc(pool::descriptor& spec){
-            if(spec.mmap == NULL) return ambient::pool::malloc(spec);
-            return ambient::pool::malloc<outofcore>(spec);
-        }
-        static void* calloc(pool::descriptor& spec){
-            void* m = alloc(spec);
-            memset(m, 0, spec.extent);
-            return m;
-        }
-        static void free(void* ptr, pool::descriptor& spec){
-        } // lets leek for now // do we ?
-
-        // std:: compatibility aliases //
-        static T* allocate(std::size_t n){ 
-        }
-        static void deallocate(T* ptr, std::size_t n){ 
-        }
-        template <class U> struct rebind {
-            typedef constrained_allocator<U> other; 
         };
         typedef T value_type;
     };

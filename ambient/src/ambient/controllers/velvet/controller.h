@@ -41,11 +41,10 @@ namespace ambient { namespace controllers { namespace velvet {
         class scope {
         public:
             int sector;
-            int gauge;
             ambient::locality state;
-            virtual bool tunable() = 0;
-            virtual void consider_transfer(size_t size, ambient::locality l){}
-            virtual void consider_allocation(size_t size){}
+            virtual bool tunable() const = 0;
+            virtual void score(int c, size_t v) const {}
+            virtual void select(int c) const {}
             virtual void toss(){}
         };
 
@@ -60,21 +59,22 @@ namespace ambient { namespace controllers { namespace velvet {
         void rsync (revision* r);
         void lsync (transformable* v);
         void rsync (transformable* v);
-        template<typename T> void destroy(T* o);
+        template<typename T> void collect(T* o);
+        void squeeze(revision* r) const;
 
         bool tunable();
         template<complexity O> void schedule();
-        void intend_fetch(history* o);
+        void intend_read(history* o);
         void intend_write(history* o);
 
-        void set_context(scope* s);
+        void set_context(const scope* s);
         void pop_context();
         bool remote();
         bool local();
         int which();
 
-        scope* context;
-        scope* context_base;
+        const scope* context;
+        const scope* context_base;
     private:
         std::vector< cfunctor* > stack_m;
         std::vector< cfunctor* > stack_s;

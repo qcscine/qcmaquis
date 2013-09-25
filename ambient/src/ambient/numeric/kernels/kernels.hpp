@@ -257,6 +257,10 @@ namespace ambient { namespace numeric { namespace kernels {
                                 (T*)revised(a), a.num_rows(),
                                 (T*)updated(t), t.num_rows(),
                                 tau, work);
+        #ifdef AMBIENT_MEMORY_SQUEEZE
+        ambient::memory::bulk::reuse(tau); 
+        ambient::memory::bulk::reuse(work); 
+        #endif
     }
 
     template<typename T, PLASMA_enum TR>
@@ -267,6 +271,9 @@ namespace ambient { namespace numeric { namespace kernels {
                                 (T*)current(t), t.num_rows(),
                                 (T*)revised(c), c.num_rows(),
                                  work, AMBIENT_IB);
+        #ifdef AMBIENT_MEMORY_SQUEEZE
+        ambient::memory::bulk::reuse(work);
+        #endif 
     }
 
     template<typename T>
@@ -278,6 +285,10 @@ namespace ambient { namespace numeric { namespace kernels {
                                 (T*)revised(a2), a2.num_rows(),
                                 (T*)updated(t), t.num_rows(),
                                 tau, work);
+        #ifdef AMBIENT_MEMORY_SQUEEZE
+        ambient::memory::bulk::reuse(tau); 
+        ambient::memory::bulk::reuse(work); 
+        #endif
     }
 
     template<typename T, PLASMA_enum TR>
@@ -290,6 +301,9 @@ namespace ambient { namespace numeric { namespace kernels {
                                 (T*)current(v), v.num_rows(),
                                 (T*)current(t), t.num_rows(),
                                 work, PLASMA_IB);
+        #ifdef AMBIENT_MEMORY_SQUEEZE
+        ambient::memory::bulk::reuse(work); 
+        #endif
     }
 
     template<typename T>
@@ -300,6 +314,10 @@ namespace ambient { namespace numeric { namespace kernels {
                                 (T*)revised(a), a.num_rows(), 
                                 (T*)updated(t),   t.num_rows(),
                                 tau, work);
+        #ifdef AMBIENT_MEMORY_SQUEEZE
+        ambient::memory::bulk::reuse(tau); 
+        ambient::memory::bulk::reuse(work); 
+        #endif
     }
 
     template<typename T, PLASMA_enum TR>
@@ -311,6 +329,9 @@ namespace ambient { namespace numeric { namespace kernels {
                                 (T*)current(t), t.num_rows(),
                                 (T*)revised(c), c.num_rows(),
                                 work, AMBIENT_IB);
+        #ifdef AMBIENT_MEMORY_SQUEEZE
+        ambient::memory::bulk::reuse(work); 
+        #endif
     }
 
     template<typename T>
@@ -322,6 +343,10 @@ namespace ambient { namespace numeric { namespace kernels {
                                 (T*)revised(a2), a2.num_rows(),
                                 (T*)updated(t),     t.num_rows(),
                                 tau, work);
+        #ifdef AMBIENT_MEMORY_SQUEEZE
+        ambient::memory::bulk::reuse(tau); 
+        ambient::memory::bulk::reuse(work); 
+        #endif
     }
 
     template<typename T, PLASMA_enum TR>
@@ -334,6 +359,9 @@ namespace ambient { namespace numeric { namespace kernels {
                                 (T*)current(v), v.num_rows(),
                                 (T*)current(t), t.num_rows(),
                                 work, AMBIENT_IB);
+        #ifdef AMBIENT_MEMORY_SQUEEZE
+        ambient::memory::bulk::reuse(work); 
+        #endif
     }
 
     template<class ViewA, class ViewB, class ViewC, typename T>
@@ -440,6 +468,9 @@ namespace ambient { namespace numeric { namespace kernels {
                                 matrix<T,A2>& dst, const size_t& di, const size_t& dj, 
                                 const size_t& m, const size_t& n)
     {
+        if(dst.after == dst.core->current && dst.core->current->users == 1 && dst.core->current->spec.region == ambient::rbulked){
+            return; // the resulting dst is not used by anyone
+        }
         T* sd = current(src);
         T* dd = m*n < ambient::square_dim(dst) ? revised(dst) : updated(dst);
         ambient::memptf<T, ambient::memcpy>(dd, dst.num_rows(), dim2(dj, di), 
@@ -467,6 +498,9 @@ namespace ambient { namespace numeric { namespace kernels {
                                       const matrix<T,A3>& alfa, const size_t& ai, const size_t& aj,
                                       const size_t& m, const size_t& n)
     {
+        if(dst.after == dst.core->current && dst.core->current->users == 1 && dst.core->current->spec.region == ambient::rbulked){
+            return; // the resulting dst is not used by anyone
+        }
         T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
         ambient::memptf<T, ambient::memscala>(revised(dst), dst.num_rows(), dim2(dj, di), 
                                               current(src), src.num_rows(), dim2(sj, si), 
@@ -504,7 +538,8 @@ namespace ambient { namespace numeric { namespace kernels {
         T* ar = updated(a);
 
         int size = ambient::square_dim(a);
-        for(int k = 0; k < size; k++) 
+        #pragma vector always
+        for(int k = 0; k < size; k++)
             ar[k] = ad[k] + bd[k];
     }
 
@@ -516,7 +551,8 @@ namespace ambient { namespace numeric { namespace kernels {
         T* ar = updated(a);
 
         int size = ambient::square_dim(a);
-        for(int k = 0; k < size; k++) 
+        #pragma vector always
+        for(int k = 0; k < size; k++)
             ar[k] = ad[k] - bd[k];
     }
         
@@ -526,7 +562,8 @@ namespace ambient { namespace numeric { namespace kernels {
         T* ar = updated(a);
         T factor = t.get_naked();
         int size = ambient::square_dim(a);
-        for(int k=0; k < size; k++) 
+        #pragma vector always
+        for(int k = 0; k < size; k++)
             ar[k] = ad[k] * factor;
     }
         
@@ -544,7 +581,8 @@ namespace ambient { namespace numeric { namespace kernels {
         T* ar = updated(a);
         T factor = t.get_naked();
         int size = ambient::square_dim(a);
-        for(int k=0; k < size; k++) 
+        #pragma vector always
+        for(int k = 0; k < size; k++)
             ar[k] = ad[k] / factor;
     }
         
@@ -616,6 +654,9 @@ namespace ambient { namespace numeric { namespace kernels {
 
     template<typename T>
     void init_random<T>::c(unbound< matrix<T> >& a){
+        if(a.after == a.core->current && a.core->current->users == 1 && a.core->current->spec.region == ambient::rbulked){
+            return; // the resulting a is not used by anyone
+        }
         size_t size = ambient::square_dim(a);
         T* ad = updated(a);
         for(size_t i = 0; i < size; ++i) randomize(ad[i]);
@@ -772,7 +813,7 @@ namespace ambient { namespace numeric { namespace kernels {
         helper_lapack<T>::syev("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
 
         typename real_type<T>::type s;
-        for(int i=0; i < (int)(m/2); i++){ 
+        for(int i=0; i < (int)(m/2); i++){
             s = wd[i];
             wd[i] = wd[m-i-1];
             wd[m-i-1] = s;
@@ -780,7 +821,7 @@ namespace ambient { namespace numeric { namespace kernels {
         // reversing eigenvectors
         size_t len = m*sizeof(T);
         work = (T*)std::malloc(len);
-        for (int i=0; i < (int)(m/2); i++){ 
+        for (int i=0; i < (int)(m/2); i++){
             std::memcpy(work, &ad[i*m], len);
             std::memcpy(&ad[i*m], &ad[(m-1-i)*m], len);
             std::memcpy(&ad[(m-1-i)*m], work, len);

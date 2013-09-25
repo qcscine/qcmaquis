@@ -56,7 +56,7 @@
     #define AMBIENT_THREAD_ID __cilkrts_get_worker_number()
     #define AMBIENT_THREAD cilk_spawn
     #define AMBIENT_SMP_ENABLE
-    #define AMBIENT_SMP_DISABLE
+    #define AMBIENT_SMP_DISABLE cilk_sync;
 #elif defined(AMBIENT_OMP)
     #include <omp.h>
     #define AMBIENT_THREAD_ID omp_get_thread_num()
@@ -75,23 +75,23 @@
     #define AMBIENT_SMP_DISABLE
 #endif
 
-#define AMBIENT_MAX_NUM_PROCS         12
-#define AMBIENT_DB_PROCS              0
+#define AMBIENT_DB_PROCS   0
+#define AMBIENT_BROADCAST -1
 
 //#define AMBIENT_EXPERIMENTAL
 //#define AMBIENT_COMPUTATIONAL_TIMINGS
 //#define AMBIENT_COMPUTATIONAL_DATAFLOW
-#define AMBIENT_TRACE void* b[10]; backtrace_symbols_fd(b,backtrace(b,10),2);
+//#define AMBIENT_TRACE void* b[15]; backtrace_symbols_fd(b,backtrace(b,15),2);
 //#define AMBIENT_CHECK_BOUNDARIES
 //#define AMBIENT_LOOSE_FUTURE
 //#define AMBIENT_TRACKING
+#define AMBIENT_REPORT_BULK_USAGE
+#define AMBIENT_MEMORY_SQUEEZE
+#define AMBIENT_DEALLOCATE_BULK
+#define AMBIENT_REBALANCED_SVD
 
-#define AMBIENT_LARGE_BULK
-#ifdef AMBIENT_LARGE_BULK
-#define AMBIENT_BULK_CHUNK            4194304000
-#else
-#define AMBIENT_BULK_CHUNK            41943040
-#endif
+#define AMBIENT_BULK_CHUNK            67108864 // 64 MB
+#define AMBIENT_BULK_LIMIT            40
 
 #ifdef AMBIENT_CRAY
 #define AMBIENT_MAX_SID               4194304
@@ -101,6 +101,7 @@
 
 #define AMBIENT_STACK_RESERVE         65536
 #define AMBIENT_COLLECTOR_STR_RESERVE 65536
+#define AMBIENT_COLLECTOR_REV_RESERVE 65536
 #define AMBIENT_COLLECTOR_RAW_RESERVE 1024
 #define AMBIENT_SCOPE_SWITCH_FACTOR   20480
 #define AMBIENT_FUTURE_SIZE           64
@@ -108,9 +109,7 @@
 #define AMBIENT_IB_EXTENT             512*512*16
 
 #define PAGE_SIZE 4096
-#define ALIGNMENT 16
-
-#define AMBIENT_PERSISTENT_TRANSFERS
+#define ALIGNMENT 64
 
 namespace ambient {
     inline int get_num_threads(){
@@ -123,7 +122,6 @@ namespace ambient {
 }
 
 #include "ambient/channels/mpi/groups/multirank.h"
-#include "ambient/memory/mmap.hpp"
 #include "ambient/memory/pool.hpp"
 #include "ambient/memory/allocator.hpp"
 #include "ambient/models/velvet/model.h"

@@ -59,7 +59,7 @@ namespace ambient {
 
         #if defined(AMBIENT_COMPUTATIONAL_DATAFLOW) || defined(AMBIENT_TRACKING)
         kernel(){ 
-            this->id = ambient::model.op_sid++;
+            this->id = ambient::model.index();
         }
         #endif
 

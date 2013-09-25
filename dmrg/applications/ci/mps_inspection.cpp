@@ -39,6 +39,7 @@ using std::endl;
 #include "dmrg/mp_tensors/mps_initializers.h"
 
 #include "ci_encode.hpp"
+#include "ci_deas.hpp"
 
 typedef TwoU1 grp; 
 
@@ -135,12 +136,12 @@ int main(int argc, char ** argv)
     
     MPS<Matrix, grp> mps1(L), mps2(L);
     default_mps_init<Matrix, grp> di;
-    di(mps1, 256, phys, right_end); 
+    di(mps1, parms["max_bond_dimension"], phys, right_end); 
     for (pos_t p = 0; p < L; ++p)
         mps1[p].multiply_by_scalar(0.);
 
-    // ****************** //
-    //grp::charge tmp[] = {A,A,D,D,D,D,A,A,D};
+    // *** Construct MPS from CI coefficients *** //
+    /*
     std::vector< std::vector<grp::charge> > configs;
     std::vector< typename Matrix::value_type> coeffs;
 
@@ -155,9 +156,18 @@ int main(int argc, char ** argv)
         maquis::cout << "CI coefficient: " << extract_coefficient(mps1, *it) << std::endl;
 
     maquis::cout << std::endl;
+    
 
     for (pos_t p = 0; p < L; ++p)
         maquis::cout << mps1[p] << std::endl; 
+    */
+
+    std::vector<std::string> environment = parse_config_strings("config");
+
+    std::vector< std::map<grp::charge, std::set<std::string> > > data;
+    data = arrange_configs(environment);
+
+    display_environment(data);
         
     return 0;
 }

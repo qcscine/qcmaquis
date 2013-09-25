@@ -28,8 +28,12 @@
 #define AMBIENT_MEMORY_POOL
 
 #include <sys/mman.h>
+#include <boost/pool/singleton_pool.hpp>
 
 namespace ambient { namespace memory {
+
+    constexpr size_t paged(size_t size)  {  return PAGE_SIZE * (size_t)((size+PAGE_SIZE-1)/PAGE_SIZE); }
+    constexpr size_t aligned(size_t size){  return ALIGNMENT * (size_t)((size+ALIGNMENT-1)/ALIGNMENT); }
 
     struct standard {
         static void* malloc(size_t sz){ return std::malloc(sz); }
@@ -41,55 +45,148 @@ namespace ambient { namespace memory {
 
     struct fixed {
         // note: singleton_pool contains implicit mutex (critical for gcc)
-        template<size_t S> static void* malloc(){ return std::malloc(S); } // boost::singleton_pool<fixed,S>::malloc(); 
-        template<size_t S> static void free(void* ptr){ std::free(ptr);  } // boost::singleton_pool<fixed,S>::free(ptr);
-    };
-
-    struct outofcore {
-        static void* malloc(size_t sz, void* pool){ return ((ambient::memory::mmap::descriptor*)pool)->malloc(sz);  }
-        static region_t signature(){
-            return region_t::rdelegated;
-        }
+        template<size_t S> static void* malloc(){ return std::malloc(S);   } // boost::singleton_pool<fixed,S>::malloc(); 
+        template<size_t S> static void* calloc(){ return std::calloc(1,S); } // boost::singleton_pool<fixed,S>::malloc(); 
+        template<size_t S> static void free(void* ptr){ std::free(ptr);    } // boost::singleton_pool<fixed,S>::free(ptr);
     };
 
     struct bulk {
+
+        template<size_t S>
+        class factory {
+        public:
+            typedef boost::details::pool::default_mutex mutex;
+
+            static factory& instance(){
+                static factory singleton;
+                return singleton;
+            }
+            factory(){
+                this->buffers.push_back(std::malloc(S));
+                this->counts.push_back(0);
+                this->buffer = &this->buffers[0];
+                this->reuse_count = 0;
+            }
+            static void* provide(){
+                factory& s = instance();
+                boost::details::pool::guard<mutex> g(s.mtx);
+                void* chunk;
+
+                if(s.r_buffers.empty()){
+                    chunk = *s.buffer;
+                    if(*s.buffer == s.buffers.back()){
+                        s.buffers.push_back(std::malloc(S));
+                        s.counts.push_back(0);
+                        s.buffer = &s.buffers.back();
+                    }else
+                        s.buffer++;
+                }else{
+                    chunk = s.r_buffers.back();
+                    s.r_buffers.pop_back();
+                    s.reuse_count++;
+                }
+
+                return chunk;
+            }
+            static void collect(void* chunk, long int usage){
+                factory& s = instance();
+                boost::details::pool::guard<mutex> g(s.mtx);
+
+                for(int i = 0; i < s.buffers.size(); i++){
+                    if(s.buffers[i] == chunk){
+                        s.counts[i] += usage;
+                        if(s.counts[i] == 0) s.r_buffers.push_back(chunk);
+                        break;
+                    }
+                }
+            }
+            static void reuse(void* ptr){
+                factory& s = instance();
+                boost::details::pool::guard<mutex> g(s.mtx);
+
+                for(int i = 0; i < s.buffers.size(); i++){
+                    if((size_t)ptr < ((size_t)s.buffers[i] + S) && (size_t)ptr >= (size_t)s.buffers[i]){
+                        s.counts[i]--;
+                        if(s.counts[i] == 0) s.r_buffers.push_back(s.buffers[i]);
+                        break;
+                    }
+                }
+            }
+            static void reset(){
+                factory& s = instance();
+                #ifdef AMBIENT_DEALLOCATE_BULK
+                for(int i = 1; i < s.buffers.size(); i++) std::free(s.buffers[i]);
+                s.buffers.resize(1); s.counts.resize(1);
+                #endif
+                s.buffer = &s.buffers[0];
+                s.r_buffers.clear();
+                for(int i = 0; i < s.counts.size(); i++)
+                    s.counts[i] = 0;
+                s.reuse_count = 0;
+            }
+            static size_t size(){
+                factory& s = instance();
+                return (s.buffer - &s.buffers[0]);
+            }
+            static size_t reused(){
+                factory& s = instance();
+                return s.reuse_count;
+            }
+            static size_t reserved(){
+                factory& s = instance();
+                return (s.counts.size());
+            }
+            mutex mtx;
+            std::vector<long int> counts;
+            std::vector<void*> buffers;
+            std::vector<void*> r_buffers;
+            size_t reuse_count;
+            void** buffer;
+        };
+
         template<size_t S>
         class region {
         public:
+            typedef boost::details::pool::default_mutex mutex;
+
             region(){
-                this->buffers.push_back(std::malloc(S));
-                this->buffer = &this->buffers[0];
-                this->iterator = (char*)*this->buffer;
+                this->buffer = NULL;
+                this->iterator = (char*)this->buffer+S;
+                this->count = 0;
+                this->block_count = 0;
             }
             void realloc(){
-                if(*this->buffer == this->buffers.back()){
-                    this->buffers.push_back(std::malloc(S));
-                    this->buffer = &this->buffers.back();
-                }else
-                    this->buffer++;
-                this->iterator = (char*)*this->buffer;
+                if(this->count){
+                     factory<S>::collect(this->buffer, this->count);
+                     this->count = 0;
+                }
+                this->buffer = factory<S>::provide();
+                this->iterator = (char*)this->buffer;
+                this->block_count++;
             }
             void* malloc(size_t sz){
-                if(((size_t)iterator + sz - (size_t)*this->buffer) >= S) realloc();
+                boost::details::pool::guard<mutex> g(this->mtx);
+                if(((size_t)iterator + sz - (size_t)this->buffer) >= S) realloc();
                 void* m = (void*)iterator;
                 iterator += aligned(sz);
+                this->count++;
                 return m;
             }
             void reset(){
-                this->buffer = &this->buffers[0];
-                this->iterator = (char*)*this->buffer;
+                this->iterator = (char*)this->buffer+S;
+                this->count = 0; 
+                this->block_count = 0;
             }
+            int block_count;
         private:
-            std::vector<void*> buffers;
-            void** buffer;
+            void* buffer;
             char* iterator;
+            long int count;
+            mutex mtx;
         };
 
-        // for shared heap: (slightly improves consumption)
-        // typedef boost::details::pool::default_mutex mutex;
-        // boost::details::pool::guard<mutex> g(mtx);
        ~bulk(){ 
-            delete[] this->set; 
+            delete this->master; 
         }
         static bulk& instance(){
             static bulk singleton;
@@ -97,29 +194,55 @@ namespace ambient { namespace memory {
         }
         bulk(){
             this->arity = ambient::get_num_threads();
-            this->set = new region<AMBIENT_BULK_CHUNK>[arity];
+            this->master = new region<AMBIENT_BULK_CHUNK>();
+            this->slave  = new region<AMBIENT_BULK_CHUNK>();
         }
-        template<size_t S> static void* malloc()         { return instance().set[AMBIENT_THREAD_ID].malloc(S);  }
-                           static void* malloc(size_t sz){ return instance().set[AMBIENT_THREAD_ID].malloc(sz); }
+        template<size_t S> static void* malloc()         { return instance().master->malloc(S);  }
+                           static void* malloc(size_t sz){ return instance().master->malloc(sz); }
+                           static void reuse(void* ptr)  { factory<AMBIENT_BULK_CHUNK>::reuse(ptr); }
         template<size_t S> static void free(void* ptr)   { }
                            static void free(void* ptr)   { }
+        static void* reserve(size_t sz){
+            if(instance().slave->block_count < factory<AMBIENT_BULK_CHUNK>::reserved()/2)
+                return instance().slave->malloc(sz);
+            else 
+                return instance().master->malloc(sz); 
+        }
+
+        static void report(){
+            bulk& pool = instance();
+            size_t pools = factory<AMBIENT_BULK_CHUNK>::size();
+            if(pools > 2*pool.arity){
+                std::cout << "R" << ambient::rank() << ": reused chunks: " << factory<AMBIENT_BULK_CHUNK>::reused() << "!\n";
+                std::cout << "R" << ambient::rank() << ": reserved chunks: " << instance().slave->block_count << "!\n";
+                std::cout << "R" << ambient::rank() << ": bulk memory: " << pools << " full chunks used\n";
+                #ifdef AMBIENT_TRACE
+                AMBIENT_TRACE
+                #endif
+            }
+        }
 
         static void drop(){
+            #ifdef AMBIENT_REPORT_BULK_USAGE
+            report();
+            #endif
             bulk& pool = instance();
-            for(int i = 0; i < pool.arity; i++) pool.set[i].reset();
+            pool.master->reset();
+            pool.slave->reset();
+            factory<AMBIENT_BULK_CHUNK>::reset();
         }
         static region_t signature(){
             return region_t::rbulked;
         }
     private:
-        region<AMBIENT_BULK_CHUNK>* set;
+        region<AMBIENT_BULK_CHUNK>* master;
+        region<AMBIENT_BULK_CHUNK>* slave;
         int arity;
     };
 
 } }
 
 namespace ambient {
-    using memory::outofcore;
     using memory::standard;
     using memory::fixed;
     using memory::bulk;
@@ -127,9 +250,7 @@ namespace ambient {
     namespace pool {
         struct descriptor {
 
-            descriptor(size_t e, region_t r = region_t::rstandard) : extent(e), region(r), mmap(NULL), persistency(1), mediator(false), copied(false) {}
-            void* mmap;
-            size_t extent;
+            descriptor(size_t e, region_t r = region_t::rstandard) : extent(e), region(r), persistency(1), crefs(1), reusable(false) {}
 
             void zombie(){
                 //region = region_t::rpersist;
@@ -137,7 +258,6 @@ namespace ambient {
             void protect(){
                 assert(region != region_t::rdelegated);
                 if(!(persistency++)) region = region_t::rstandard;
-                copied = true;
             }
             void weaken(){
                 assert(region != region_t::rbulked);
@@ -155,15 +275,23 @@ namespace ambient {
             bool bulked(){
                 return (region == region_t::rbulked);
             }
+            void reserve(){
+                reusable = true;
+            }
+
+            size_t extent;
             region_t region;
             int persistency;
-            bool mediator;
-            bool copied;
+            int crefs;
+            bool reusable;
         };
 
         template<class Memory>           static void* malloc(size_t sz){ return Memory::malloc(sz);            }
         template<class Memory, size_t S> static void* malloc()         { return Memory::template malloc<S>();  }
         template<class Memory, class  T> static void* malloc()         { return malloc<Memory, sizeof(T)>();   }
+        template<class Memory>           static void* calloc(size_t sz){ return Memory::calloc(sz);            }
+        template<class Memory, size_t S> static void* calloc()         { return Memory::template calloc<S>();  }
+        template<class Memory, class  T> static void* calloc()         { return calloc<Memory, sizeof(T)>();   }
         template<class Memory>           static void free(void* ptr)   { return Memory::free(ptr);             }
         template<class Memory, size_t S> static void free(void* ptr)   { return Memory::template free<S>(ptr); }
         template<class Memory, class  T> static void free(void* ptr)   { return free<Memory, sizeof(T)>(ptr);  }
@@ -173,21 +301,23 @@ namespace ambient {
             d.region = Memory::signature();
             return Memory::malloc(d.extent);
         }
-        template<>
-        static void* malloc<outofcore>(descriptor& d){
-            d.region = outofcore::signature();
-            return outofcore::malloc(d.extent, d.mmap);
-        }
 
         static void* malloc(descriptor& d){
             assert(d.region != region_t::rdelegated);
-            if(d.region == region_t::rbulked && d.extent <= AMBIENT_IB_EXTENT){ 
-                return malloc<bulk>(d.extent); 
+            if(d.region == region_t::rbulked){
+                //if(d.extent > AMBIENT_IB_EXTENT || bulk::factory<AMBIENT_BULK_CHUNK>::size() > AMBIENT_BULK_LIMIT){
+                    d.region = region_t::rstandard;
+                    return malloc<standard>(d.extent);
+                //}
+                //if(d.reusable){
+                //    return ambient::memory::bulk::reserve(d.extent);
+                //}
+                //return malloc<bulk>(d.extent); 
             } else return malloc<standard>(d.extent);
         }
         static void free(void* ptr, descriptor& d){ 
             if(ptr == NULL || d.region == region_t::rdelegated) return;
-            if(d.region == region_t::rbulked && d.extent <= AMBIENT_IB_EXTENT) free<bulk>(ptr);
+            if(d.region == region_t::rbulked) free<bulk>(ptr);
             else free<standard>(ptr);
         }
     }

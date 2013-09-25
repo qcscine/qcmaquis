@@ -30,18 +30,23 @@
 namespace ambient {
 
     using ambient::models::velvet::history;
+    using ambient::models::velvet::revision;
 
     inline bool master(){
         return (ambient::rank() == 0);
     }
 
+    inline bool parallel(){
+        return (ambient::controller.context != ambient::controller.context_base);
+    }
+    
     inline void make_persistent(history* o){ 
         o->back()->spec.zombie();
     }
 
     template<typename T>
     inline void destroy(T* o){ 
-        controller.destroy(o); 
+        controller.collect(o); 
     }
 
     inline bool verbose(){ 
@@ -59,7 +64,14 @@ namespace ambient {
     }
 
     inline void fuse(const history* src, history* dst){ 
-        dst->fuse(src);
+        assert(dst->current == NULL);
+        if(src->weak()) return;
+        revision* r = src->back();
+        dst->current = r;
+        // do not deallocate or reuse
+        if(!r->valid()) r->spec.protect();
+        assert(!r->valid() || !r->spec.bulked() || ambient::model.remote(r)); // can't rely on bulk memory
+        r->spec.crefs++;
     }
 
 }

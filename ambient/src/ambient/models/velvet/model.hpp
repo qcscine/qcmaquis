@@ -27,21 +27,12 @@
 namespace ambient { namespace models { namespace velvet {
 
     #ifdef AMBIENT_TRACKING
-    inline void model::index(history* h){
-        h->id = this->sid++;
+    inline int model::index(){
+        int s = this->sid++;
         this->sid %= AMBIENT_MAX_SID;
+        return s;
     }
     #endif
-
-    inline void model::index(revision* r){
-        r->sid = this->sid++;
-        this->sid %= AMBIENT_MAX_SID;
-    }
-
-    inline void model::index(const transformable* v){
-        v->sid = this->sid++;
-        this->sid %= AMBIENT_MAX_SID;
-    }
 
     template<ambient::locality L, typename G>
     inline void model::add_revision(history* o, G g){
@@ -55,11 +46,6 @@ namespace ambient { namespace models { namespace velvet {
     inline void model::touch(const history* o){
         if(o->back() == NULL)
             const_cast<history*>(o)->init_state();
-    }
-
-    inline size_t model::time(const history* o){
-        this->touch(o);
-        return o->time();
     }
 
     inline bool model::feeds(const revision* r){

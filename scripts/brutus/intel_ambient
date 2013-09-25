@@ -6,9 +6,11 @@ STATE_DMRG="build"
 PREFIX=ambient
 COMPILER=intel
 COMPILER_VERSION=13.1
-MPI_WRAPPER=open_mpi
-MPI_WRAPPER_VERSION=1.4
-ALPS_DIR=$HOME/opt/alps-intel
+#MPI_WRAPPER=open_mpi
+MPI_WRAPPER=mvapich2
+#MPI_WRAPPER_VERSION=1.6.2
+MPI_WRAPPER_VERSION=1.8.1
+ALPS_DIR=$HOME/opt/alps-ambient-mvapich
 
 export CC=mpicc
 export CXX=mpicxx
@@ -35,6 +37,8 @@ DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl
 DMRG_ENABLE_OMP=OFF
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
+DMRG_REGRESSION_PERFORMANCE_TESTS=ON
+DMRG_BUILD_CUSTOMAPP=OFF
 
 source $ROOT_DIR/scripts/common/common.sh 
 execute $*

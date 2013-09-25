@@ -12,7 +12,10 @@ target_link_libraries(mps_overlap ${DMRG_APP_LIBRARIES})
 
 add_executable(mps_stats mps_stats.cpp)
 target_link_libraries(mps_stats ${DMRG_APP_LIBRARIES})
-#set_target_properties(mps_stats PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1")
+
+add_executable(mps_stats_2u1 mps_stats.cpp)
+target_link_libraries(mps_stats_2u1 ${DMRG_APP_LIBRARIES})
+set_target_properties(mps_stats_2u1 PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1")
 
 add_executable(mps_upgrade_none mps_upgrade.cpp)
 target_link_libraries(mps_upgrade_none ${DMRG_APP_LIBRARIES})

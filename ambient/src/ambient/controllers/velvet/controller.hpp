@@ -27,11 +27,11 @@
 #include "ambient/utils/io.hpp"
 #include "ambient/utils/timings.hpp"
 #include "ambient/utils/overseer.hpp"
-#define ALL -1
 
 namespace ambient { namespace controllers { namespace velvet {
 
     inline controller::~controller(){ 
+        if(!chains->empty()) printf("Ambient:: exiting with operations still in queue!\n");
         this->clear();
     }
 
@@ -53,39 +53,38 @@ namespace ambient { namespace controllers { namespace velvet {
             #else
             ambient::cout << "ambient: initialized (no threading)\n";
             #endif
-            #ifdef AMBIENT_PERSISTENT_TRANSFERS
-            ambient::cout << "ambient: persistent transfers are enabled\n";
-            #else 
-            ambient::cout << "ambient: persistent transfers are disabled\n";
-            #endif
             ambient::cout << "ambient: size of ambient bulk chunks: " << AMBIENT_BULK_CHUNK << "\n";
+            ambient::cout << "ambient: maximum number of bulk chunks: " << AMBIENT_BULK_LIMIT << "\n";
             ambient::cout << "ambient: maximum sid value: " << AMBIENT_MAX_SID << "\n";
-            ambient::cout << "ambient: max number of proc: " << AMBIENT_MAX_NUM_PROCS << "\n";
             ambient::cout << "ambient: number of database proc: " << AMBIENT_DB_PROCS << "\n";
             ambient::cout << "ambient: number of work proc: " << ambient::channel.wk_dim() << "\n";
+            ambient::cout << "ambient: number of threads per proc: " << ambient::get_num_threads() << "\n";
         #endif
     }
 
     inline bool controller::tunable(){
+        if(serial) return false;
         return context->tunable();
     }
 
     template<complexity O>
     inline void controller::schedule(){
-        context->toss();
+        const_cast<scope*>(context)->toss();
     }
 
-    inline void controller::intend_fetch(history* o){
-        revision* r = o->back();
-        if(r == NULL) return context->consider_allocation(o->extent); // do we have to?
-        context->consider_transfer(r->spec.extent, r->state);
+    inline void controller::intend_read(history* o){
+        revision* r = o->back(); if(r == NULL || ambient::model.common(r)) return;
+        int candidate = ambient::model.remote(r) ? r->owner : (int)ambient::rank();
+        context->score(candidate, r->spec.extent);
     }
 
     inline void controller::intend_write(history* o){
-        context->consider_allocation(o->extent);
+        revision* r = o->back(); if(r == NULL || ambient::model.common(r)) return;
+        int candidate = ambient::model.remote(r) ? r->owner : (int)ambient::rank();
+        context->select(candidate);
     }
 
-    inline void controller::set_context(scope* s){
+    inline void controller::set_context(const scope* s){
         this->context = s; // no nesting
     }
 
@@ -102,11 +101,11 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline int controller::which(){
+        assert(this->context->sector >= 0);
         return this->context->sector;
     }
 
     inline void controller::flush(){
-        ambient::timer timeout("timeout");
         typedef typename std::vector<cfunctor*>::const_iterator veci;
         #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
         printf("ambient::parallel graph dim: %d\n", chains->size());
@@ -133,7 +132,6 @@ namespace ambient { namespace controllers { namespace velvet {
         }*/
         AMBIENT_SMP_ENABLE
         while(!chains->empty()){
-            timeout.begin();
             for(veci i = chains->begin(); i != chains->end(); ++i){
                 if((*i)->ready()){
                     cfunctor* task = *i;
@@ -143,26 +141,20 @@ namespace ambient { namespace controllers { namespace velvet {
                         printf("op%d[label=\"%s\"]\nop%d -> op%d\n", task->deps[n]->id(), task->deps[n]->name(), 
                                                                      task->id(), task->deps[n]->id());
                     #endif
-                    for(int n = 0; n < task->deps.size(); ++n) task->deps[n]->ready();
+                    int size = task->deps.size();
+                    for(int n = 0; n < size; n++) task->deps[n]->ready();
                     mirror->insert(mirror->end(), task->deps.begin(), task->deps.end());
                 }else mirror->push_back(*i);
             }
             chains->clear();
             std::swap(chains,mirror);
-            timeout.end();
-            if(timeout.get_time() > 300){
-                 std::cout << ambient::rank() << ": playout took " << timeout.get_time() << "\n";
-                 #ifdef AMBIENT_TRACE
-                     AMBIENT_TRACE
-                 #endif
-                 timeout.reset();
-            }
         }
         AMBIENT_SMP_DISABLE
         ambient::model.clock++;
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::stop();
         #endif
+        ambient::channel.barrier();
     }
 
     inline bool controller::empty(){
@@ -181,7 +173,7 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void controller::sync(revision* r){
         if(serial) return;
         if(ambient::model.common(r)) return;
-        if(ambient::model.feeds(r)) ambient::controllers::velvet::set<revision>::spawn(*r) >> ALL;
+        if(ambient::model.feeds(r)) ambient::controllers::velvet::set<revision>::spawn(*r) >> AMBIENT_BROADCAST;
         else{
             ambient::controllers::velvet::get<revision>::spawn(*r);
             if(r->owner != ambient::rank.neighbor()) ambient::controllers::velvet::get<revision>::assist(*r, ambient::rank.neighbor());
@@ -201,17 +193,28 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void controller::lsync(transformable* v){
         if(serial) return;
-        ambient::controllers::velvet::set<transformable, AMBIENT_MAX_NUM_PROCS>::spawn(*v, which());
+        ambient::controllers::velvet::set<transformable>::spawn(*v, which());
     }
 
     inline void controller::rsync(transformable* v){
         ambient::controllers::velvet::get<transformable>::spawn(*v, which());
     }
 
-    template<typename T> void controller::destroy(T* o){
+    template<typename T> void controller::collect(T* o){
         this->garbage.push_back(o);
+    }
+
+    inline void controller::squeeze(revision* r) const {
+        if(r->valid() && !r->referenced() && r->locked_once()){
+            if(r->spec.region == ambient::rstandard){
+                ambient::pool::free(r->data, r->spec);
+                r->spec.region = ambient::rdelegated;
+            }else if(r->spec.region == ambient::rbulked){
+                ambient::memory::bulk::reuse(r->data);
+                r->spec.region = ambient::rdelegated;
+            }
+        }
     }
 
 } } }
 
-#undef ALL

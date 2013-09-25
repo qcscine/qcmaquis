@@ -41,37 +41,41 @@ namespace ambient {
             this->round = ambient::channel.wk_dim();
             this->state = ambient::rank() ? ambient::remote : ambient::local;
             this->sector = 0;
-            this->factor = AMBIENT_SCOPE_SWITCH_FACTOR;
-            this->op_alloc = 0;
-            this->op_transfer = 0;
+            this->scores.resize(round, 0);
         }
-        virtual bool tunable(){ 
-            return false; // can be enabled but the algorithm should be finalized
+        virtual bool tunable() const { 
+            return true;
         }
-        virtual void consider_allocation(size_t size){
-            this->op_alloc += size;
+        virtual void score(int c, size_t v) const {
+            this->scores[c] += v;
         }
-        virtual void consider_transfer(size_t size, ambient::locality l){
-            if(l == ambient::common) return;
-            this->op_transfer += size;
+        virtual void select(int c) const {
+            this->stakeholders.push_back(c);
         }
         virtual void toss(){
-            if(this->op_transfer < this->op_alloc){
-                if(this->factor < this->op_alloc){
-                    this->factor = AMBIENT_SCOPE_SWITCH_FACTOR;
-                    ++this->sector %= this->round;
-                    this->state = (this->sector == ambient::rank()) ? 
-                                  ambient::local : ambient::remote;
-                }else{
-                    this->factor -= this->op_alloc;
+            int max = 0;
+            if(stakeholders.empty()){
+                for(int i = 0; i < round; i++)
+                if(scores[i] >= max){
+                    max = scores[i];
+                    this->sector = i;
                 }
+            }else{
+                for(int i = 0; i < stakeholders.size(); i++){
+                    int k = stakeholders[i];
+                    if(scores[k] >= max){
+                        max = scores[k];
+                        this->sector = k;
+                    }
+                }
+                stakeholders.clear();
             }
-            this->op_alloc = 0;
-            this->op_transfer = 0;
+            std::fill(scores.begin(), scores.end(), 0);
+            this->state = (this->sector == ambient::rank()) ? 
+                          ambient::local : ambient::remote;
         }
-        size_t factor;
-        size_t op_alloc;
-        size_t op_transfer;
+        mutable std::vector<int> stakeholders;
+        mutable std::vector<int> scores;
         int round;
     };
 
@@ -79,34 +83,39 @@ namespace ambient {
     class scope<single> : public controller::scope {
     public:
         static int compact_factor;
-        static void compact(size_t n){
-            if(n <= ambient::channel.wk_dim()) return;
-            compact_factor = (int)(n / ambient::channel.wk_dim()); // iterations before switch
+        static std::vector<std::pair<size_t, size_t> > permutation; 
+        static void compact(size_t n){ 
+            if(n <= ambient::channel.wk_dim()) return; 
+            compact_factor = (int)(n / ambient::channel.wk_dim()); // iterations before switch // not used
+        } 
+        template<typename T>
+        static void sorted(const T& ref){
+            permutation = ref.sort();
         }
-        scope() : index(0), iterator(0) {
-            this->factor = compact_factor; compact_factor = 1;
-
+        scope(int value = 0) : index(value), iterator(value) {
+            this->S = permutation; permutation.clear();
+            if(!this->S.empty()) this->twoway = true;
+            else this->twoway = false;
             if(ambient::controller.context != ambient::controller.context_base) dry = true;
             else{ dry = false; ambient::controller.set_context(this); }
-            this->round = ambient::channel.wk_dim();
-            this->shift();
+            round = ambient::channel.wk_dim();
+            if(twoway) round *= 2;
+            this->eval();
         }
-        scope(int start, int start_i = 0) : index(start), iterator(start_i) {
-            this->factor = compact_factor; compact_factor = 1;
-
-            if(ambient::controller.context != ambient::controller.context_base) dry = true;
-            else{ dry = false; ambient::controller.set_context(this); }
-            this->round = ambient::channel.wk_dim();
-            this->shift();
+        void eval(){
+            this->sector = (this->iterator %= round);
+            if(twoway && this->sector >= round/2) this->sector = round-1-this->sector;
+            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
         }
         void shift(){
-            this->sector = (++this->iterator %= this->round*this->factor)/this->factor;
-            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
+            this->iterator++;
+            this->eval();
         }
-        void shift_back(){
-            this->sector = (--this->iterator %= this->round*this->factor)/this->factor;
-            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
-        }
+        void shift_back(){ 
+            this->iterator--;
+            if(this->iterator == -1) this->iterator = round-1;
+            this->eval();
+        } 
         scope& operator++ (){
             this->shift();
             this->index++;
@@ -117,8 +126,9 @@ namespace ambient {
             this->index--;
             return *this;
         }
-        operator size_t (){
-            return index;
+        operator size_t () const{
+            if(S.empty()) return index;
+            return S[index].second;
         }
         bool operator < (size_t lim){
             return index < lim;
@@ -126,14 +136,19 @@ namespace ambient {
        ~scope(){
             if(!dry) ambient::controller.pop_context();
         }
-        virtual bool tunable(){ 
+        virtual bool tunable() const {
             return false; 
+        }
+        friend std::ostream& operator<< (std::ostream& os, scope const& l){
+            os << static_cast<size_t>(l);
+            return os;
         }
         size_t index;
         bool dry;
-        int factor;
         int iterator;
         int round;
+        bool twoway;
+        std::vector<std::pair<size_t, size_t> > S; 
     };
 
     template<>
@@ -147,7 +162,7 @@ namespace ambient {
        ~scope(){
             ambient::controller.pop_context();
         }
-        virtual bool tunable(){ 
+        virtual bool tunable() const {
             return false; 
         }
     };
@@ -162,7 +177,7 @@ namespace ambient {
        ~scope(){
             ambient::controller.pop_context();
         }
-        virtual bool tunable(){ 
+        virtual bool tunable() const { 
             return false; 
         }
     };

@@ -36,24 +36,19 @@ namespace ambient { namespace models { namespace velvet {
 
     class model : public singleton< model > {
     public:
-        model() : clock(1), sid(0), op_sid(0) {}
+        model() : clock(1), sid(0) {}
         template<ambient::locality L, typename G> 
         void add_revision(history* o, G g);
         void use_revision(history* o);
         bool feeds(const revision* r);
         bool remote(const revision* r);
         bool common(const revision* r);
-        size_t time(const history* o);
         void touch(const history* o);
-        #ifdef AMBIENT_TRACKING
-        void index(history* h);
-        #endif
-        void index(revision* r);
-        void index(const transformable* v);
         size_t clock;
-        size_t op_sid;
-    private:
         int sid;
+        #ifdef AMBIENT_TRACKING
+        int index();
+        #endif
     };
 
 } } }

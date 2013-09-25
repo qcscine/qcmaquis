@@ -24,53 +24,67 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#define AMBIENT_RESERVE_LIMIT (size_t)AMBIENT_BULK_CHUNK*80
+
 namespace ambient { namespace memory {
 
     using ambient::models::velvet::history;
     using ambient::models::velvet::revision;
 
     inline collector::collector(){
+        this->rev.reserve(AMBIENT_COLLECTOR_REV_RESERVE);
         this->str.reserve(AMBIENT_COLLECTOR_STR_RESERVE);
         this->raw.reserve(AMBIENT_COLLECTOR_RAW_RESERVE);
+        this->reserve_limit = AMBIENT_RESERVE_LIMIT;
     }
 
     inline void collector::push_back(void* o){
         this->raw.push_back(o);
     }
 
-    inline void collector::push_back(history* o){
-        this->str.push_back(o);
-        if(ambient::model.clock == o->clock){
-            int size = o->content.size(); 
-            for(int i = 0; i < size; i++) 
-            if(!o->content[i]->valid()) 
-                o->content[i]->spec.weaken();
+    inline void collector::push_back(revision* o){
+        if(!o->valid()) o->spec.weaken();
+        o->spec.crefs--;
+        #ifdef AMBIENT_MEMORY_SQUEEZE
+        if(!o->referenced()){
+            if(o->valid() && !o->locked() && o->spec.region == ambient::rstandard){
+                ambient::pool::free(o->data, o->spec); // artifacts or last one
+                o->spec.region = ambient::rdelegated;
+            }
+            this->rev.push_back(o);
         }
+        #endif
+    }
+
+    inline void collector::push_back(history* o){
+        this->push_back(o->current);
+        this->str.push_back(o);
+        #ifdef AMBIENT_MEMORY_SQUEEZE
+        // let's try to reuse based upon death-order
+        /*if(this->reserve_limit > AMBIENT_IB_EXTENT)
+        if(!o->current->referenced() && 
+            o->clock == ambient::model.clock &&
+            o->time() == 1 &&
+           !o->content[1]->valid() && 
+            o->content[1]->spec.region == ambient::rbulked &&
+            o->content[1]->state != ambient::remote &&
+            o->content[1]->spec.extent <= AMBIENT_IB_EXTENT
+          ){
+            o->content[1]->spec.reserve();
+            this->reserve_limit -= o->content[1]->spec.extent;
+           }*/
+        #endif
+    }
+
+    inline void collector::delete_ptr::operator()( revision* r ) const {
+        if(r->valid() && r->spec.region == ambient::rstandard){
+            ambient::pool::free(r->data, r->spec); // artifacts
+            r->spec = ambient::rdelegated;
+        }
+        delete r; 
     }
 
     inline void collector::delete_ptr::operator()( history* e ) const {
-        using ambient::controllers::velvet::set;
-        using ambient::controllers::velvet::get;
-        int size = e->content.size();
-        for(int i = 0; i < size; i++){
-            revision* r = e->content[i];
-            if(r->locked()){
-                r->release();
-            }else{
-                ambient::pool::free(r->data, r->spec);
-#ifdef AMBIENT_PERSISTENT_TRANSFERS
-                if(r->transfer != NULL){
-                    if(r->state == ambient::local){
-                        delete ((set<revision,AMBIENT_MAX_NUM_PROCS+1>*)r->transfer)->states;
-                        ambient::pool::free<fixed,set<revision,AMBIENT_MAX_NUM_PROCS+1> >(r->transfer); 
-                    }else if(r->state == ambient::remote){
-                        ambient::pool::free<fixed,get<revision> >(r->transfer);
-                    }
-                }
-#endif
-                delete r; 
-            }
-        }
         delete e;
     }
 
@@ -79,8 +93,11 @@ namespace ambient { namespace memory {
     } 
 
     inline void collector::clear(){
+        this->reserve_limit = AMBIENT_RESERVE_LIMIT;
+        std::for_each( rev.begin(), rev.end(), delete_ptr());
         std::for_each( str.begin(), str.end(), delete_ptr());
         std::for_each( raw.begin(), raw.end(), delete_ptr());
+        rev.clear();
         str.clear();
         raw.clear();
     }

@@ -41,9 +41,11 @@ namespace ambient { namespace channels { namespace mpi {
         if(level != AMBIENT_MPI_THREADING) printf("Error: Wrong threading level\n");
         this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
         this->volume = this->world->size;
-        if(this->volume > AMBIENT_MAX_NUM_PROCS) 
-            printf("Error: The proc count exceeds AMBIENT_MAX_NUM_PROCS\n");
         this->db_volume = this->volume > AMBIENT_DB_PROCS ? AMBIENT_DB_PROCS : 0;
+    }
+
+    inline void channel::barrier(){
+        MPI_Barrier(MPI_COMM_WORLD);
     }
 
     inline size_t channel::dim(){
@@ -58,44 +60,50 @@ namespace ambient { namespace channels { namespace mpi {
         return this->db_volume;
     }
 
-    inline request* channel::get(transformable* v){
+    inline int channel::index(){
+        int s = this->sid++;
+        this->sid %= AMBIENT_MAX_SID;
+        return s;
+    }
+
+    inline request* channel::get(transformable* v, int tag){
         request* q = new request();
         MPI_Irecv(&v->v, 
                   (int)sizeof(transformable::numeric_union)/sizeof(double), // should be multiple of 8
                   MPI_DOUBLE, 
                   MPI_ANY_SOURCE, 
-                  v->sid, 
+                  tag, 
                   MPI_COMM_WORLD, 
                   &(q->mpi_request));
         return q;
     }
 
-    inline request* channel::set(transformable* v, int rank){
+    inline request* channel::set(transformable* v, int rank, int tag){
         if(rank == ambient::rank()) return NULL;
         request* q = new request();
         MPI_Isend(&v->v, 
                   (int)sizeof(transformable::numeric_union)/sizeof(double), // should be multiple of 8
                   MPI_DOUBLE, 
                   rank, 
-                  v->sid, 
+                  tag, 
                   MPI_COMM_WORLD, 
                   &(q->mpi_request));
         return q;
     }
 
-    inline request* channel::get(revision* r){
+    inline request* channel::get(revision* r, int tag){
         request* q = new request();
         MPI_Irecv(r->data, 
                   (int)r->spec.extent/sizeof(double), 
                   MPI_DOUBLE, 
                   MPI_ANY_SOURCE, 
-                  r->sid, 
+                  tag, 
                   MPI_COMM_WORLD, 
                   &(q->mpi_request));
         return q;
     }
 
-    inline request* channel::set(revision* r, int rank){
+    inline request* channel::set(revision* r, int rank, int tag){
         if(rank == ambient::rank()) return NULL;
         request* q = new request();
         // can be ready-send
@@ -103,7 +111,7 @@ namespace ambient { namespace channels { namespace mpi {
                   (int)r->spec.extent/sizeof(double), 
                   MPI_DOUBLE, 
                   rank, 
-                  r->sid, 
+                  tag, 
                   MPI_COMM_WORLD, 
                   &(q->mpi_request));
         return q;
@@ -113,14 +121,12 @@ namespace ambient { namespace channels { namespace mpi {
         if(q == NULL) return true; // for transformable
         int flag = 0;
         MPI_Test(&(q->mpi_request), &flag, MPI_STATUS_IGNORE);
-        if(flag) return true;
-        return false;
+        return flag;
     }
 
-    inline bool channel::wait(request* q){
-        if(q == NULL) return true; // for transformable
+    inline void channel::wait(request* q){
+        if(q == NULL) return; // for transformable
         MPI_Wait(&(q->mpi_request), MPI_STATUS_IGNORE);
-        return true;
     }
 
 } } }

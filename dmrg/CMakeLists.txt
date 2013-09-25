@@ -301,7 +301,7 @@ set(DMRG_FRAMEWORK_DIR ${PROJECT_SOURCE_DIR}/framework)
 # Configure files
 ######################################################################
 
-configure_file(framework/dmrg_version.h.in ${CMAKE_BINARY_DIR}/framework/dmrg_version.h)
+configure_file(framework/dmrg/version.h.in ${CMAKE_BINARY_DIR}/framework/dmrg/version.h)
 
 
 ######################################################################
@@ -349,8 +349,8 @@ endif(REGRESSION_APPLICATION_TESTS)
 if(REGRESSION_PERFORMANCE_TESTS)
 # *** benchmark applications
   add_subdirectory(regression/benchmarks)
-  enable_testing()
-  add_subdirectory(${BENCHMARKS_DIR} benchmarks_refs)
+  #enable_testing()
+  #add_subdirectory(${BENCHMARKS_DIR} benchmarks_refs)
 endif(REGRESSION_PERFORMANCE_TESTS)
 
 
@@ -374,7 +374,7 @@ install(EXPORT DMRGTargets DESTINATION share/cmake COMPONENT dev)
 # Install
 ######################################################################
 
-install(FILES ${CMAKE_BINARY_DIR}/framework/dmrg_version.h
+install(FILES ${CMAKE_BINARY_DIR}/framework/dmrg/version.h
         DESTINATION include COMPONENT headers)
 
 #TODO: improve using GLOB

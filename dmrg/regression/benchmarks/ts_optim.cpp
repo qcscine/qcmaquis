@@ -70,10 +70,15 @@ int main(int argc, char ** argv)
         ModelParameters model_parms(model_file);
         
         /// Timers
-        Timer tim_model      ("Parsing model"),  tim_load       ("Load MPS");
-        Timer tim_l_boundary ("Left boundary"),  tim_r_boundary ("Right boundary");
-        Timer tim_optim_jcd  ("Optim. JCD"   ),  tim_truncation ("Truncation");
-        Timer tim_ts_obj     ("Two site obj.");
+        #ifdef AMBIENT
+        ambient::synctime 
+        #else
+        Timer
+        #endif
+        tim_model      ("Parsing model"),  tim_load       ("Load MPS"),
+        tim_l_boundary ("Left boundary"),  tim_r_boundary ("Right boundary"),
+        tim_optim_jcd  ("Optim. JCD"   ),  tim_truncation ("Truncation"),
+        tim_ts_obj     ("Two site obj.");
         
         /// Parsing model
         tim_model.begin();
@@ -85,7 +90,10 @@ int main(int argc, char ** argv)
         Hamiltonian<matrix, grp> H = model->H();
         MPO<matrix, grp> mpo = make_mpo(lattice->size(), H);
         tim_model.end();
+        maquis::cout << "Parsing model done!\n";
         
+
+        boost::filesystem::path chkpfile(parms["chkpfile"].str());
         
         /// Initialize & load MPS
         tim_load.begin();
@@ -94,7 +102,7 @@ int main(int argc, char ** argv)
         load(parms["chkpfile"].str(), mps);
         int _site;
         {
-            alps::hdf5::archive ar(parms["chkpfile"].str()+"/props.h5");
+            alps::hdf5::archive ar(chkpfile / "props.h5");
             ar["/status/site"] >> _site;
         }
         int site, lr;
@@ -105,25 +113,55 @@ int main(int argc, char ** argv)
             site = 2*L-_site-1;
             lr = -1;
         }
-        maquis::cout << "Optimization at site " << site << " in " << lr << " direction." << std::endl;
         tim_load.end();
+        maquis::cout << "Load MPS done!\n";
+        maquis::cout << "Optimization at site " << site << " in " << lr << " direction." << std::endl;
         
         /// Canonize MPS
         mps.canonize(site);
         
+
+        std::string boundary_name;
+        
         /// Compute left boundary
         tim_l_boundary.begin();
-        Boundary<matrix, grp> left = mps.left_boundary();
-        for (size_t i=0; i<site; ++i)
-            left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+        Boundary<matrix, grp> left;
+        boundary_name = "left" + boost::lexical_cast<std::string>(site) + ".h5";
+        if ( exists(chkpfile / boundary_name) ) {
+            maquis::cout << "Loading existing left boundary." << std::endl;
+            storage::archive ar(chkpfile.string() +"/"+ boundary_name, "w");
+            ar["/tensor"] >> left;
+        } else {
+            left = mps.left_boundary();
+            for (size_t i=0; i<site; ++i)
+                left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+        }
         tim_l_boundary.end();
+        maquis::cout << "Left boundary done!\n";
         
         /// Compute right boundary
         tim_r_boundary.begin();
-        Boundary<matrix, grp> right = mps.right_boundary();
-        for (int i=L-1; i>site+1; --i)
-            right = contraction::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
+        Boundary<matrix, grp> right;
+        boundary_name = "right" + boost::lexical_cast<std::string>(site+2) + ".h5";
+        if ( exists(chkpfile / boundary_name) ) {
+            maquis::cout << "Loading existing right boundary." << std::endl;
+            storage::archive ar(chkpfile.string() +"/"+ boundary_name, "w");
+            ar["/tensor"] >> right;
+        } else {
+            right = mps.right_boundary();
+            for (int i=L-1; i>site+1; --i)
+                right = contraction::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
+        }
         tim_r_boundary.end();
+        maquis::cout << "Right boundary done!\n";
+        
+        // Clearing unneeded MPS Tensors
+        for (int k = 0; k < mps.length(); k++){
+            if(k == site || k == site+1) continue;
+            if(lr == -1 && site > 0   && k == site-1) continue; 
+            if(lr == +1 && site < L-2 && k == site+2) continue; 
+            mps[k].data().clear();
+        }
         
         /// Create TwoSite objects
         tim_ts_obj.begin();
@@ -131,6 +169,7 @@ int main(int argc, char ** argv)
         MPSTensor<matrix, grp> ts_mps = tst.make_mps();
         MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim());
         tim_ts_obj.end();
+        maquis::cout << "Two site obj done!\n";
         
         
         std::vector<MPSTensor<matrix, grp> > ortho_vecs;
@@ -144,6 +183,7 @@ int main(int argc, char ** argv)
         maquis::cout.precision(10);
         maquis::cout << "Energy " << lr << " " << res.first << std::endl;
         tim_optim_jcd.end();
+        maquis::cout << "Optim. JCD done!\n";
         
         double alpha = parms["alpha_main"];
         double cutoff = parms["truncation_final"];
@@ -168,10 +208,10 @@ int main(int argc, char ** argv)
             if (site > 0) mps[site-1].multiply_from_right(t);
         }
         tim_truncation.end();
+        maquis::cout << "Truncation done!\n";
 
         /// Compute new boundary
         // TODO: optional here...
-        
         
     } catch (std::exception & e) {
         maquis::cerr << "Exception caught:" << std::endl << e.what() << std::endl;

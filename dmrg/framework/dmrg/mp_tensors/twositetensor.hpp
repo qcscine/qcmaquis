@@ -122,11 +122,8 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired() const
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps() const
 {
-    MPSTensor<Matrix, SymmGroup> tmp(phys_i, left_i, right_i, false, 0);
     make_left_paired();
-    tmp.data() = data_;
-    
-    return tmp;
+    return MPSTensor<Matrix, SymmGroup>(phys_i, left_i, right_i, data_, LeftPaired);
 }
 
 template<class Matrix, class SymmGroup>
@@ -141,17 +138,11 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff)
     
     truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true);
     
-    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_orig, left_i, u.right_basis(), false, 0),
-                                 mps_tensor2(phys_i_orig, v.left_basis(), right_i, false, 0);
-    // mps_tensor1.make_left_paired();
-    // mps_tensor2.make_right_paired();
-
-    // mps_tensor1.data() = u;
-     mps_tensor1.replace_left_paired(u);
-
+    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_orig, left_i, u.right_basis(), u, LeftPaired);
+    assert( mps_tensor1.reasonable() );
     gemm(s, v, u);
-    mps_tensor2.replace_right_paired(u);
-    // mps_tensor2.data() = u;
+    MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_orig, u.left_basis(), right_i, u, RightPaired);
+    assert( mps_tensor2.reasonable() );
     
     return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
@@ -168,13 +159,10 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff)
     
     truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true);
     
-    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_orig, left_i, /*right_i*/ u.right_basis(), false, 0),
-                                 mps_tensor2(phys_i_orig, /*left_i*/ v.left_basis(), right_i, false, 0);
-
-    mps_tensor2.replace_right_paired(v);
-
+    MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_orig, v.left_basis(), right_i, v, RightPaired);
+    
     gemm(u, s, v);
-    mps_tensor1.replace_left_paired(v);
+    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_orig, left_i, u.right_basis(), v, LeftPaired);
     
     return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }

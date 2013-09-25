@@ -36,7 +36,6 @@ namespace ambient { namespace models { namespace velvet {
 
     inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(dim.square()*ts) {
         this->clock = ambient::model.clock;
-        this->content.reserve(2); 
         #ifdef AMBIENT_TRACKING
         ambient::model.index(this);
         #endif
@@ -44,41 +43,20 @@ namespace ambient { namespace models { namespace velvet {
 
     inline void history::init_state(){
         revision* r = new revision(extent, NULL, ambient::common); 
-        this->content.push_back(r);
         this->current = r;
-        ambient::model.index(r);
     }
 
     template<ambient::locality L>
     inline void history::add_state(void* g){
         revision* r = new revision(extent, g, L); 
-        this->content.push_back(r);
         this->current = r;
-        ambient::model.index(r);
     }
 
     template<ambient::locality L>
     inline void history::add_state(int g){
         revision* r = new revision(extent, NULL, L, g); 
-        this->content.push_back(r);
         this->current = r;
-        ambient::model.index(r);
     }
-
-    inline void history::fuse(const history* src){
-        if(src->weak()) return;
-        revision* r = src->back();
-        this->content.push_back(r);
-        this->current = r;
-        // do not deallocate or reuse
-        if(!r->valid()) r->spec.protect();
-        assert(!r->valid() || !r->spec.bulked()); // can't rely on bulk memory
-        r->use();
-    }
-        
-    inline size_t history::time() const {
-        return this->content.size()-1;
-    } 
 
     inline revision* history::back() const {
         return this->current;

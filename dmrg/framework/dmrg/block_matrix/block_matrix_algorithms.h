@@ -22,20 +22,7 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/function.hpp>
 
-#ifdef AMBIENT
-    typedef ambient::scope<ambient::single> locale;
-    #define parallel_for(constraint, ...) constraint; for(__VA_ARGS__)
-    #define semi_parallel_for(constraint, ...) constraint; for(__VA_ARGS__)
-#elif defined(MAQUIS_OPENMP)
-    typedef std::size_t locale;
-    #define parallel_pragma(a) _Pragma( #a )
-    #define parallel_for(constraint, ...) parallel_pragma(omp parallel for schedule(dynamic, 1)) for(__VA_ARGS__)
-    #define semi_parallel_for(constraint, ...) for(__VA_ARGS__)
-#else
-    typedef std::size_t locale;
-    #define parallel_for(constraint, ...) for(__VA_ARGS__)
-    #define semi_parallel_for(constraint, ...) for(__VA_ARGS__)
-#endif
+#include "dmrg/utils/parallel_for.hpp"
 
 struct truncation_results {
     std::size_t bond_dimension;     // new bond dimension
@@ -69,6 +56,41 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
         
         std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
                                                A.left_basis()[k].first, B.right_basis()[matched_block].first);
+        gemm(A[k], B[matched_block], C[new_block]);
+    }
+}
+
+template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
+void gemm_allocate(block_matrix<Matrix1, SymmGroup> const & A,
+                   block_matrix<Matrix2, SymmGroup> const & B,
+                   block_matrix<Matrix3, SymmGroup> & C)
+{
+    C.clear();
+    
+    typedef typename SymmGroup::charge charge;
+    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
+        if (! B.left_basis().has(A.right_basis()[k].first))
+            continue;
+        
+        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
+        C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
+                       A.left_basis()[k].first, B.right_basis()[matched_block].first);
+    }
+}
+
+template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
+void gemm_calculate(block_matrix<Matrix1, SymmGroup> const & A,
+                    block_matrix<Matrix2, SymmGroup> const & B,
+                    block_matrix<Matrix3, SymmGroup> & C)
+{
+    typedef typename SymmGroup::charge charge;
+    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
+        if (! B.left_basis().has(A.right_basis()[k].first))
+            continue;
+        
+        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
+        std::size_t new_block = C.left_basis().position(A.left_basis()[k].first);
+        
         gemm(A[k], B[matched_block], C[new_block]);
     }
 }
@@ -121,9 +143,83 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     V = block_matrix<Matrix, SymmGroup>(m, c);
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
     std::size_t loop_max = M.n_blocks();
-    
+
+    #ifdef AMBIENT_REBALANCED_SVD
+    ambient::synctime timer("SVD ONLY TIME\n");
+    ambient::synctime timert("SVD TRANSFER/MERGE TIME\n");
+    timert.begin();
+
+    // calculating complexities of the svd calls
+    size_t np = ambient::channel.wk_dim();
+    double total = 0;
+    std::vector< std::pair<double,size_t> > complexities(loop_max);
+    for(size_t i = 0; i < loop_max; ++i){
+        double rows = num_rows(M[i]);
+        double cols = num_cols(M[i]);
+        complexities[i] = std::make_pair(2*rows*rows*cols + 4*cols*cols*cols, i);
+        total += complexities[i].first;
+    }
+    total /= np;
+
+    std::sort(complexities.begin(), complexities.end(), [](const std::pair<double,size_t>& a, const std::pair<double,size_t>& b){ return a.first < b.first; });
+    std::vector<std::pair<double,size_t> > workloads(np, std::make_pair(0,0));
+
+    // filling the workload with smallest local matrices first
+    for(size_t p = 0; p < np; ++p){
+        workloads[p].second = p;
+        locale l(p);
+        for(size_t i = 0; i < loop_max; ++i){
+            size_t k = complexities[i].second;
+            if(M[k][0].core->current->owner != p && (p != ambient::rank() || M[k][0].core->current->owner != -1)) continue;
+            if(workloads[p].first + complexities[i].first >= total) break;
+            maquis::cout << "R" << ambient::controller.which() << ": (ownage) svd on " << num_rows(M[k]) << "x" << num_cols(M[k]) << "\n";
+            merge(M[k]); 
+            workloads[p].first += complexities[i].first; 
+            complexities[i].first = 0;
+        }
+    }
+
+    // rebalancing using difference with average
+    for(size_t p = 0; p < np; ++p){
+        locale l(p);
+        for(size_t i = 0; i < loop_max; ++i){
+            size_t k = complexities[i].second;
+            if(complexities[i].first == 0) continue;
+            if(workloads[p].first + complexities[i].first >= total) break;
+            maquis::cout << "R" << ambient::controller.which() << ": (" << M[k][0].core->current->owner << ") svd on " << num_rows(M[k]) << "x" << num_cols(M[k]) << "\n";
+            merge(M[k]); 
+            workloads[p].first += complexities[i].first; 
+            complexities[i].first = 0;
+        }
+    }
+
+    std::sort(workloads.begin(), workloads.end(), [](const std::pair<double,size_t>& a, const std::pair<double,size_t>& b){ return a.first < b.first; });
+
+    // placing the rest according to sorted workload
+    size_t p = 0;
+    for(int i = loop_max-1; i >= 0; --i){
+        if(complexities[i].first == 0) continue;
+        size_t k = complexities[i].second;
+        int owner = workloads[p++].second;
+        locale l(owner);
+        maquis::cout << "R" << ambient::controller.which() << ": (" << M[k][0].core->current->owner << ") remaining svd on " << num_rows(M[k]) << "x" << num_cols(M[k]) << "\n";
+        merge(M[k]); 
+        p %= np;
+    }
+    timert.end();
+
+    timer.begin();
+    for(size_t k = 0; k < loop_max; ++k){
+        int owner = M[k][0].core->current->owner;
+        if(owner == -1) owner = ambient::rank();
+        locale l(owner);
+        svd_merged(M[k], U[k], V[k], S[k]);
+    }
+    timer.end();
+    #else
     parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
         svd_merged(M[k], U[k], V[k], S[k]);
+    #endif
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
@@ -166,7 +262,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
 #ifdef AMBIENT
     ambient::scope<ambient::shared> i;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
-        ambient::numeric::touch(evals[k][0]);
+        ambient::numeric::migrate(const_cast<DiagMatrix&>(evals[k])[0]);
     }
     ambient::sync();
 #endif
@@ -275,6 +371,58 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
     return truncation_results(bond_dimension, truncated_weight, truncated_fraction, smallest_ev);
 }
 
+// TODO: not yet working properly.
+template<class Matrix, class DiagMatrix, class SymmGroup>
+truncation_results alt_svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
+                                    block_matrix<Matrix, SymmGroup> & U,
+                                    block_matrix<Matrix, SymmGroup> & V,
+                                    block_matrix<DiagMatrix, SymmGroup> & S,
+                                    double rel_tol, std::size_t Mmax,
+                                    bool verbose = true)
+{
+    assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
+
+    block_matrix<Matrix, SymmGroup> t;
+    block_matrix<Matrix, SymmGroup> R;
+    block_matrix<DiagMatrix, SymmGroup> D;
+    
+//    maquis::cout << "M:" << std::endl << M;
+
+    
+    block_matrix<Matrix, SymmGroup> Mconj = conjugate(M);
+    
+    gemm(M, transpose(Mconj), t);    
+    truncation_results res = heev_truncate(t, U, D, rel_tol, Mmax, verbose);
+    
+    gemm(transpose(Mconj), U, t);
+    qr(t, V, R);
+    
+    maquis::cout << "S.n_blocks: " << D.n_blocks() << std::endl;
+    maquis::cout << "S.trace: " << trace(D) << std::endl;
+    maquis::cout << "R.n_blocks: " << R.n_blocks() << std::endl;
+    maquis::cout << "R.trace: " << trace(R) << std::endl;
+    
+//    maquis::cout << "S:" << std::endl << S;
+//    maquis::cout << "R:" << std::endl << R;
+    
+    using std::abs;
+    for (int n=0; n<D.n_blocks(); ++n)
+        for (int i=0; i<num_rows(D[n]); ++i)
+            if ( abs(D[n](i,i) - R[n](i,i)*R[n](i,i)) > 1e-6 )
+                maquis::cout << "n=" << n << ", i=" << i << " broken. D=" << D[n](i,i) << ", td=" << R[n](i,i)*R[n](i,i) << std::endl;
+    
+    S = sqrt(D);
+    S /= trace(S);
+    V.adjoint_inplace();
+    
+    maquis::cout << "U:\n" << U.left_basis() << "\n" << U.right_basis() << std::endl;
+    maquis::cout << "S:\n" << S.left_basis() << "\n" << S.right_basis() << std::endl;
+    maquis::cout << "V:\n" << V.left_basis() << "\n" << V.right_basis() << std::endl;
+    
+//    assert( td == S );
+    return res;
+}
+
 template<class Matrix, class DiagMatrix, class SymmGroup>
 truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                  block_matrix<Matrix, SymmGroup> & evecs,
@@ -334,7 +482,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 }
 
 template<class Matrix, class SymmGroup>
-void qr(block_matrix<Matrix, SymmGroup> & M,
+void qr(block_matrix<Matrix, SymmGroup> const& M,
         block_matrix<Matrix, SymmGroup> & Q,
         block_matrix<Matrix, SymmGroup> & R)
 {
@@ -345,8 +493,9 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
     
     Q = block_matrix<Matrix, SymmGroup>(m,k);
     R = block_matrix<Matrix, SymmGroup>(k,n);
+    std::size_t loop_max = M.n_blocks();
     
-    parallel_for(locale::compact(M.n_blocks()), locale k = 0; k < M.n_blocks(); ++k)
+    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
         qr(M[k], Q[k], R[k]);
     
     assert(Q.right_basis() == R.left_basis());
@@ -355,7 +504,7 @@ void qr(block_matrix<Matrix, SymmGroup> & M,
 }
 
 template<class Matrix, class SymmGroup>
-void lq(block_matrix<Matrix, SymmGroup> & M,
+void lq(block_matrix<Matrix, SymmGroup> const& M,
         block_matrix<Matrix, SymmGroup> & L,
         block_matrix<Matrix, SymmGroup> & Q)
 {
@@ -366,8 +515,9 @@ void lq(block_matrix<Matrix, SymmGroup> & M,
     
     L = block_matrix<Matrix, SymmGroup>(m,k);
     Q = block_matrix<Matrix, SymmGroup>(k,n);
+    std::size_t loop_max = M.n_blocks();
     
-    parallel_for(locale::compact(M.n_blocks()), locale k = 0; k < M.n_blocks(); ++k)
+    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
         lq(M[k], L[k], Q[k]);
     
     assert(Q.left_basis() == L.right_basis());

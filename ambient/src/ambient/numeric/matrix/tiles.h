@@ -27,6 +27,11 @@
 #ifndef AMBIENT_NUMERIC_TILES_H
 #define AMBIENT_NUMERIC_TILES_H
 
+#include "ambient/numeric/traits.hpp"
+
+#include <alps/hdf5.hpp>
+#include <alps/hdf5/complex.hpp>
+
 namespace ambient { namespace numeric {
 
     template <class Matrix>
@@ -74,35 +79,81 @@ namespace ambient { namespace numeric {
         value_type& operator() (size_type i, size_type j);
         const value_type& operator() (size_type i, size_type j) const;
 
-        template<class Archive>
-        void load(Archive & ar){
-            ar["rows"] >> rows;
-            ar["cols"] >> cols;
-            ar["mt"] >> mt;
-            ar["nt"] >> nt;
+        friend void load(alps::hdf5::archive& ar
+                         , std::string const& path
+                         , tiles<Matrix>& m
+                         , std::vector<std::size_t> chunk  = std::vector<std::size_t>()
+                         , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                         )
+        {
+            std::vector<std::size_t> size(ar.extent(path));
+            tiles<Matrix> r(size[chunk.size()+1], size[chunk.size()]);
+            m.swap(r);
 
-            std::vector<Matrix> tmp;
-            ar["data"] >> tmp;
-            data.reserve(tmp.size());
-            for(int i = 0; i < tmp.size(); ++i)
-                data.push_back(new Matrix(tmp[i]));
-        }
-
-        template<class Archive>
-        void save(Archive & ar) const {
-            ar["rows"] << rows;
-            ar["cols"] << cols;
-            ar["mt"] << mt;
-            ar["nt"] << nt;
+            std::vector<std::size_t> first(alps::hdf5::get_extent(value_type()));
             
-            std::vector<Matrix> tmp; tmp.reserve(data.size());
-            for(int i = 0; i < data.size(); ++i) tmp.push_back(*data[i]);
-            ar["data"] << tmp;
+            std::size_t const chunk_cols_index = chunk.size();
+            chunk.push_back(0); // to be filled later
+            std::size_t const chunk_row_index = chunk.size();
+            chunk.push_back(0); // to be filled later
+            copy(first.begin(),first.end(), std::back_inserter(chunk));
+            
+            std::size_t const offset_col_index = offset.size();
+            offset.push_back(0); // to be filled later
+            std::size_t const offset_row_index = offset.size();
+            offset.push_back(0); // to be filled later
+            fill_n(std::back_inserter(offset), first.size(), 0);
+            
+            for(int j = 0; j < m.nt; ++j){
+                for(int i = 0; i < m.mt; ++i){
+                    chunk[chunk_cols_index] = m.tile(i,j).num_cols();
+                    chunk[chunk_row_index] = m.tile(i,j).num_rows();
+                    offset[offset_row_index] = i*AMBIENT_IB;
+                    offset[offset_col_index] = j*AMBIENT_IB;
+
+                    if(!ambient::exclusive(m.tile(i,j)))
+                    ar.read(path, (typename traits::real_type<value_type>::type *)ambient::naked(m.tile(i,j)), chunk, offset);
+                }
+            }
         }
 
-        template<class Archive>
-        void serialize(Archive & ar, const unsigned int){
-            ar & data;
+        friend void save(alps::hdf5::archive& ar
+                         , std::string const& path
+                         , tiles<Matrix> const& m
+                         , std::vector<std::size_t> size   = std::vector<std::size_t>()
+                         , std::vector<std::size_t> chunk  = std::vector<std::size_t>()
+                         , std::vector<std::size_t> offset = std::vector<std::size_t>()
+                         )
+        {
+            size.push_back(m.cols);
+            size.push_back(m.rows);
+            std::vector<std::size_t> first(alps::hdf5::get_extent(value_type()));
+            std::copy(first.begin(), first.end(), std::back_inserter(size));
+            
+            std::size_t const chunk_cols_index = chunk.size();
+            chunk.push_back(0); // to be filled later
+            std::size_t const chunk_row_index = chunk.size();
+            chunk.push_back(0); // to be filled later
+            copy(first.begin(),first.end(), std::back_inserter(chunk));
+            
+            std::size_t const offset_col_index = offset.size();
+            offset.push_back(0); // to be filled later
+            std::size_t const offset_row_index = offset.size();
+            offset.push_back(0); // to be filled later
+            fill_n(std::back_inserter(offset), first.size(), 0);
+            
+            for(int j = 0; j < m.nt; ++j){
+                for(int i = 0; i < m.mt; ++i){
+                    chunk[chunk_cols_index] = m.tile(i,j).num_cols();
+                    chunk[chunk_row_index] = m.tile(i,j).num_rows();
+                    offset[offset_row_index] = i*AMBIENT_IB;
+                    offset[offset_col_index] = j*AMBIENT_IB;
+                    
+                    using alps::hdf5::detail::get_pointer;
+                    assert(ambient::naked(m.tile(i,j)).state == ambient::local);
+                    ar.write(path, (typename traits::real_type<value_type>::type *)ambient::naked(m.tile(i,j)), size, chunk, offset);
+                }
+            }
         }
     public:
         std::vector<Matrix*> data;
@@ -154,11 +205,14 @@ namespace ambient { namespace numeric {
         void operator delete (void* ptr);
 
         explicit tiles();
-        explicit tiles(size_type size, value_type init_value = value_type()); 
+        explicit tiles(size_type rows, size_type cols, value_type init_value = value_type()); 
         tiles(const tiles& a);
         tiles& operator = (const tiles& rhs); 
        ~tiles();
     public:
+        std::pair<const value_type*,const value_type*> diagonal() const;
+        const value_type* begin() const;
+        const value_type* end() const; // actual only for merged case
         size_type num_rows() const;
         size_type num_cols() const;
         void swap(tiles& r);
@@ -173,6 +227,13 @@ namespace ambient { namespace numeric {
         size_type nt;
     };
 
+} }
+
+namespace alps { namespace hdf5 {
+    template<class Matrix>
+    struct has_complex_elements<ambient::numeric::tiles<Matrix> >
+    : public has_complex_elements<typename alps::detail::remove_cvr<typename Matrix::value_type>::type>
+    {};
 } }
 
 #endif
