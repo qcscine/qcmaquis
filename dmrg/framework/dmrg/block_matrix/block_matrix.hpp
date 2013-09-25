@@ -326,7 +326,7 @@ std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const
     os << "Left HS: " << m.left_basis() << std::endl;
     os << "Right HS: " << m.right_basis() << std::endl;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
-        os << "Block (" << m.left_basis()[k].first << "," << m.right_basis()[k].first << "): " << m[k] << std::endl;
+        os << "Block (" << m.left_basis()[k].first << "," << m.right_basis()[k].first << "):\n" << m[k] << std::endl;
     os << std::endl;
     return os;
 }
