@@ -132,7 +132,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     // filling the workload with smallest local matrices first
     for(size_t p = 0; p < np; ++p){
         workloads[p].second = p;
-        locale l(p); l.shift_back();
+        locale l(p);
         for(size_t i = 0; i < loop_max; ++i){
             size_t k = complexities[i].second;
             if(M[k][0].core->current->owner != p && (p != ambient::rank() || M[k][0].core->current->owner != -1)) continue;
@@ -146,7 +146,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
 
     // rebalancing using difference with average
     for(size_t p = 0; p < np; ++p){
-        locale l(p); l.shift_back();
+        locale l(p);
         for(size_t i = 0; i < loop_max; ++i){
             size_t k = complexities[i].second;
             if(complexities[i].first == 0) continue;
@@ -166,7 +166,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
         if(complexities[i].first == 0) continue;
         size_t k = complexities[i].second;
         int owner = workloads[p++].second;
-        locale l(owner); l.shift_back();
+        locale l(owner);
         maquis::cout << "R" << ambient::controller.which() << ": (" << M[k][0].core->current->owner << ") remaining svd on " << num_rows(M[k]) << "x" << num_cols(M[k]) << "\n";
         merge(M[k]); 
         p %= np;
@@ -177,7 +177,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     for(size_t k = 0; k < loop_max; ++k){
         int owner = M[k][0].core->current->owner;
         if(owner == -1) owner = ambient::rank();
-        locale l(owner); l.shift_back(); // shift to make it direct
+        locale l(owner);
         svd_merged(M[k], U[k], V[k], S[k]);
     }
     timer.end();
