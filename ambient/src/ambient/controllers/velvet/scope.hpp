@@ -104,7 +104,6 @@ namespace ambient {
             this->eval();
         }
         void shift_back(){ 
-            if(this->iterator == 0) printf("Error: Negative sector!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n\n");
             this->iterator--;
             this->eval();
         } 
