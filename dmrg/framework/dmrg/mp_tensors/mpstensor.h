@@ -54,6 +54,9 @@ public:
     Index<SymmGroup> const & col_dim() const;
     bool isobccompatible(Indicator) const;
     std::size_t num_elements() const;
+    #ifdef AMBIENT
+    void print_distribution() const;
+    #endif
     
     void replace_right_paired(block_matrix<Matrix, SymmGroup> const &, Indicator =Unorm);
     void replace_left_paired(block_matrix<Matrix, SymmGroup> const &, Indicator =Unorm);

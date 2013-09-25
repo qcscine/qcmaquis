@@ -623,3 +623,9 @@ std::size_t MPSTensor<Matrix, SymmGroup>::num_elements() const
     return data().num_elements();
 }
 
+#ifdef AMBIENT
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::print_distribution() const {
+    data().print_distribution();
+}
+#endif

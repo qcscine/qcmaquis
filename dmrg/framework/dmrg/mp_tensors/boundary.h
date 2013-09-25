@@ -57,6 +57,26 @@ public:
         std::sort(sizes.begin(), sizes.end(), [](const std::pair<double,size_t>& a, const std::pair<double,size_t>& b){ return a.first < b.first; });
         return sizes;
     }
+
+    void print_distribution() const {
+        if(ambient::rank() != 0) return;
+
+        int loop_max = this->aux_dim();
+        double total = 0;
+        for(int b = 0; b < loop_max; ++b){
+            for(int i = 0; i < (*this)[b].n_blocks(); ++i) total += num_rows((*this)[b][i])*num_cols((*this)[b][i]);
+        }
+        for(int p = 0; p < ambient::channel.dim(); ++p){
+            double part = 0;
+            for(int b = 0; b < loop_max; ++b){
+                for(int i = 0; i < (*this)[b].n_blocks(); ++i){
+                    if((*this)[b][i][0].core->current->owner == p)
+                        part += num_rows((*this)[b][i])*num_cols((*this)[b][i]);
+                }
+            }
+            printf("R%d: %d%\n", p, (int)(100*part/total));
+        }
+    }
     #endif
     
     Boundary& operator = (const Boundary& rhs){
