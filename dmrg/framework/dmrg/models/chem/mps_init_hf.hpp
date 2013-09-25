@@ -45,9 +45,10 @@ struct hf_mps_init : public mps_initializer<Matrix, TwoU1>
         TwoU1::charge max_charge = TwoU1::IdentityCharge;
         for (pos_t i = 0; i < mps.length(); ++i)
         {
-            mps[i].multiply_by_scalar(0.);
+            mps[i].multiply_by_scalar(0.0);
 
             size_t site_charge_up, site_charge_down, sc_input = hf_init[order[i]];
+
             if (sc_input > 4)
                 throw std::runtime_error(
                     "The hf_occ format has been changed to: 1=empty, 2=down, 3=up, 4=updown\n (not cumulative anymore)\n"
@@ -79,7 +80,7 @@ struct hf_mps_init : public mps_initializer<Matrix, TwoU1>
             max_charge[1] += site_charge_down;
             // Set largest charge sector = all 1
             size_t max_pos = mps[i].data().left_basis().position(max_charge);
-            Matrix mfirst = mps[i].data()[max_pos];
+            Matrix & mfirst = mps[i].data()[max_pos];
             size_t nrow = mfirst.num_rows();
             size_t ncol = mfirst.num_cols();
             mps[i].data()[max_pos] = Matrix(nrow, ncol, 1.);
@@ -99,8 +100,8 @@ struct hf_mps_init : public mps_initializer<Matrix, TwoU1>
         //}
     }
 
-    BaseParameters parms;
-    BaseParameters model;
+    BaseParameters & parms;
+    BaseParameters & model;
 };
 
 #endif
