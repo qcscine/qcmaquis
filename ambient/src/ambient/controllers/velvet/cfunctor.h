@@ -52,6 +52,7 @@ namespace ambient { namespace controllers { namespace velvet {
 
     // {{{ revision get/set
 
+    template<>
     class set<revision> : public cfunctor {
     public:
         void* operator new (size_t size, void* placement){ return placement; }
@@ -93,6 +94,7 @@ namespace ambient { namespace controllers { namespace velvet {
         int sid;
     };
 
+    template<>
     class get<revision> : public cfunctor {
     public:
         void* operator new (size_t size, void* placement){ return placement; }
@@ -115,6 +117,7 @@ namespace ambient { namespace controllers { namespace velvet {
     // }}}
     // {{{ transformable broadcast get/set
 
+    template<>
     class get<transformable> : public cfunctor {
     public:
         void* operator new (size_t size){ return ambient::pool::malloc<bulk,get>(); }
@@ -133,6 +136,7 @@ namespace ambient { namespace controllers { namespace velvet {
         int sid;
     };
 
+    template<>
     class set<transformable> : public cfunctor {
     public:
         void* operator new (size_t size){ return ambient::pool::malloc<bulk,set>(); }
