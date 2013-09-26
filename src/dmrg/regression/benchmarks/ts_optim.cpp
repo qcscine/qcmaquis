@@ -129,7 +129,7 @@ int main(int argc, char ** argv)
         boundary_name = "left" + boost::lexical_cast<std::string>(site) + ".h5";
         if ( exists(chkpfile / boundary_name) ) {
             maquis::cout << "Loading existing left boundary." << std::endl;
-            storage::archive ar(chkpfile.string() +"/"+ boundary_name, "w");
+            storage::archive ar(chkpfile.string() +"/"+ boundary_name);
             ar["/tensor"] >> left;
         } else {
             left = mps.left_boundary();
@@ -145,7 +145,7 @@ int main(int argc, char ** argv)
         boundary_name = "right" + boost::lexical_cast<std::string>(site+2) + ".h5";
         if ( exists(chkpfile / boundary_name) ) {
             maquis::cout << "Loading existing right boundary." << std::endl;
-            storage::archive ar(chkpfile.string() +"/"+ boundary_name, "w");
+            storage::archive ar(chkpfile.string() +"/"+ boundary_name);
             ar["/tensor"] >> right;
         } else {
             right = mps.right_boundary();

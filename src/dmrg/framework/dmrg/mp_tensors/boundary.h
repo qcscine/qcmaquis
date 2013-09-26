@@ -13,6 +13,7 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "utils/function_objects.h"
+#include "dmrg/utils/parallel_for.hpp"
 
 #include <iostream>
 #include <set>
@@ -119,7 +120,11 @@ public:
    
     template<class Archive> 
     void load(Archive & ar){
-        ar["data"] >> data_;
+        std::vector<std::string> children = ar.list_children("data");
+        data_.resize(children.size());
+        semi_parallel_for(locale::compact(children.size()),locale i=0; i<children.size(); ++i){
+             ar["data/"+children[i]] >> data_[alps::cast<std::size_t>(children[i])];
+        }
     }
     
     template<class Archive> 
