@@ -1,0 +1,46 @@
+#!/bin/bash -l
+STATE="void"
+STATE_AMBIENT="void"
+STATE_DMRG="configure"
+# end of target states #
+PREFIX=ambient_thread
+COMPILER=intel
+COMPILER_VERSION=13.1
+MPI_WRAPPER=cray # md: I think it's mvapich2
+MPI_WRAPPER_VERSION=""
+MYAPPS=/project/h07/dolfim/apps/daint/intel_13_1_0
+ALPS_DIR=$MYAPPS/alps
+
+export ALPS_ROOT=${ALPS_DIR}
+export PATH=${ALPS_DIR}/bin:${PATH}
+#export PYTHONPATH=${ALPS_DIR}/lib:${PYTHONPATH} # md: ALPS is installed without python, therefore not needed
+
+export XTPE_LINK_TYPE=dynamic
+
+module load gcc/4.7.3
+module load PrgEnv-intel
+module load cray-hdf5
+module load cmake
+#module load perftools
+
+## common ##
+COMMON_CMAKE_SYSTEM_NAME="Generic"
+COMMON_CMAKE_C_COMPILER="cc"
+COMMON_CMAKE_CXX_COMPILER="CC"
+COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -L$MYAPPS/plasma/lib"
+COMMON_CMAKE_CXX_FLAGS_RELEASE=${MAQUIS_COMMON_CMAKE_CXX_FLAGS}
+COMMON_BLAS_FOUND=ON
+COMMON_LAPACK_FOUND=ON
+## dmrg ##
+DMRG_ALPS_ROOT_DIR=$ALPS_ROOT
+DMRG_DEFAULT_BLAS_LAPACK=manual
+#DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread -lplasma -lcoreblas -llapacke -lquark"
+#DMRG_BLAS_LAPACK_MANUAL_LIBS="-Wl,--start-group  ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_sequential.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lpthread -lplasma -lcoreblas -llapacke -lquark"
+DMRG_BLAS_LAPACK_MANUAL_LIBS="-mkl=parallel -lpthread -lplasma -lcoreblas -llapacke -lquark"
+DMRG_ENABLE_OMP=OFF
+DMRG_BUILD_AMBIENT=ON
+DMRG_USE_AMBIENT=ON
+DMRG_REGRESSION_PERFORMANCE_TESTS=ON
+
+source $ROOT_DIR/scripts/common/common.sh 
+execute $*
