@@ -173,6 +173,9 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     }
     timert.end();
 
+    #ifdef AMBIENT_PARALLEL_MKL
+    ambient::mkl_set_num_threads(AMBIENT_MKL_NUM_THREADS);
+    #endif
     timer.begin();
     for(size_t k = 0; k < loop_max; ++k){
         int owner = M[k][0].core->current->owner;
@@ -181,6 +184,9 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
         svd_merged(M[k], U[k], V[k], S[k]);
     }
     timer.end();
+    #ifdef AMBIENT_PARALLEL_MKL
+    ambient::mkl_set_num_threads(1);
+    #endif
     #else
     parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
         svd_merged(M[k], U[k], V[k], S[k]);
