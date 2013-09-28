@@ -72,6 +72,32 @@ struct contraction {
         return t1;
     }
 
+    template<class Matrix>
+    struct latch{
+        latch(Matrix& a, const Matrix& b, const Matrix& c, size_t k1, size_t k2, size_t k3, size_t k4, size_t k5, size_t k6)
+        : a(&a), b(&b), c(&c), k1(k1), k2(k2), k3(k3), k4(k4), k5(k5), k6(k6)
+        {
+        }
+
+        void execute_l(){
+            maquis::dmrg::detail::lb_tensor_mpo(*a, *b, *c, k1, k2, k3, k4, k5, k6);
+        }
+
+        void execute_r(){
+            maquis::dmrg::detail::rb_tensor_mpo(*a, *b, *c, k1, k2, k3, k4, k5, k6);
+        }
+
+        Matrix* a;
+        const Matrix* b;
+        const Matrix* c;
+        size_t k1; 
+        size_t k2; 
+        size_t k3; 
+        size_t k4; 
+        size_t k5; 
+        size_t k6;
+    };
+
     // note: this function changes the internal structure of Boundary,
     //       each block is transposed
     template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -84,18 +110,29 @@ struct contraction {
         if (in_low == NULL)
             in_low = &mps.row_dim();
         
-        mps.make_right_paired();
+        {
+            #ifdef AMBIENT
+            ambient::scope<ambient::shared> s;
+            #endif
+            mps.make_right_paired();
+        }
         
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         size_t loop_max = left.aux_dim();
 
+        #ifdef AMBIENT
+        ambient::synctime timer("lbtm gemm..."); timer.begin();
+        #endif
         parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(left[b]), mps.data(), tmp);
             reshape_right_to_left_new<Matrix>(mps.site_dim(), left[b].right_basis(), mps.col_dim(),
                                               tmp, t[b]);
         }
-        
+        #ifdef AMBIENT
+        timer.end();
+        #endif
+
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim();
         ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
         
@@ -108,12 +145,13 @@ struct contraction {
         mps.make_left_paired();
         loop_max = mpo.col_dim();
 
+        std::vector<latch<Matrix>*> tail;
         parallel_for(locale::compact(loop_max), locale b2 = 0; b2 < loop_max; ++b2) {
             for (int run = 0; run < 2; ++run) {
                 if (run == 1)
                     ret[b2].allocate_blocks();
                 bool pretend = (run == 0);
-                
+
                 for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
                     if (!mpo.has(b1, b2))
                         continue;
@@ -168,9 +206,9 @@ struct contraction {
                                     Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
                                     Matrix const & iblock = T(T_l_charge, T_r_charge);
                                     Matrix & oblock = ret[b2](out_l_charge, out_r_charge);
-                                    
-                                    maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
-                                                                        physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
+
+                                    tail.push_back(new latch<Matrix>(oblock, iblock, wblock, out_left_offset, in_left_offset,
+                                                                     physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second));
                                 }
                                 
                                 if (pretend)
@@ -183,6 +221,17 @@ struct contraction {
                 }
             }
         }
+
+        #ifdef AMBIENT
+        ambient::synctime timer_tail("lbtm tail..."); timer_tail.begin();
+        #endif
+        semi_parallel_for(locale::compact(tail.size()), locale k = 0; k < tail.size(); ++k) {
+            tail[k]->execute_l();
+            delete tail[k];
+        }
+        #ifdef AMBIENT
+        timer_tail.end();
+        #endif
         
         return ret;
     }
@@ -197,11 +246,23 @@ struct contraction {
         if (in_low == NULL)
             in_low = &mps.col_dim();
         
-        mps.make_left_paired();
+        {
+            #ifdef AMBIENT
+            ambient::scope<ambient::shared> s;
+            #endif
+            mps.make_left_paired();
+            #ifdef AMBIENT
+            for(int i = 0; i < mps.data().n_blocks(); ++i)  // if make_left_paired is dry
+            ambient::migrate(const_cast<block_matrix<Matrix, SymmGroup>& >(mps.data())[i]);
+            #endif
+        }
         
         std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
         size_t loop_max = right.aux_dim();
 
+        #ifdef AMBIENT
+        ambient::synctime timer("rbtm gemm..."); timer.begin();
+        #endif
         parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
             gemm(mps.data(), right[b], t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
@@ -209,6 +270,9 @@ struct contraction {
                                               t[b], tmp);
             swap(t[b], tmp);
         }
+        #ifdef AMBIENT
+        timer.end();
+        #endif
 
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
@@ -224,6 +288,7 @@ struct contraction {
         mps.make_right_paired();
         loop_max = mpo.row_dim();
 
+        std::vector<latch<Matrix>*> tail;
         parallel_for(locale::compact(loop_max), locale b1 = 0; b1 < loop_max; ++b1) {
             for(int run = 0; run < 2; ++run) {
                 if(run == 1)
@@ -287,8 +352,8 @@ struct contraction {
                                     const Matrix & iblock = T(T_l_charge, T_r_charge);
                                     Matrix & oblock = ret[b1](out_l_charge, out_r_charge);
 
-                                    maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock, out_right_offset, in_right_offset, 
-                                                                        physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
+                                    tail.push_back(new latch<Matrix>(oblock, iblock, wblock, out_right_offset, in_right_offset, 
+                                                                     physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second));
                                 }
                                 
                                 if (pretend)
@@ -301,6 +366,17 @@ struct contraction {
                 }
             }
         }
+
+        #ifdef AMBIENT
+        ambient::synctime timer_tail("rbtm tail..."); timer_tail.begin();
+        #endif
+        semi_parallel_for(locale::compact(tail.size()), locale k = 0; k < tail.size(); ++k) {
+            tail[k]->execute_r();
+            delete tail[k];
+        }
+        #ifdef AMBIENT
+        timer_tail.end();
+        #endif
 
         return ret;
     }
@@ -377,7 +453,11 @@ struct contraction {
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        #ifdef AMBIENT
+        ambient::synctime timer("sh2..."); timer.begin();
+        #endif
         Boundary<Matrix, SymmGroup> left_mpo_mps = left_boundary_tensor_mpo(ket_tensor, left, mpo);
+
         MPSTensor<Matrix, SymmGroup> ret = ket_tensor;
         ret.multiply_by_scalar(0);
         ret.make_left_paired();
@@ -392,14 +472,15 @@ struct contraction {
         parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
             gemm(left_mpo_mps[b], right[b], oblocks[b]);
            
-        // proc 0 downloads oblocks[b] from proc 1 : 
         semi_parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
             for (size_t k = 0; k < oblocks[b].n_blocks(); ++k)
                 ret.data().match_and_add_block(oblocks[b][k],
                                                oblocks[b].left_basis()[k].first,
                                                oblocks[b].right_basis()[k].first);
         }
-        
+        #ifdef AMBIENT
+        timer.end();
+        #endif
         return ret;
     }
     
