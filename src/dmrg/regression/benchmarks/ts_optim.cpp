@@ -167,7 +167,13 @@ int main(int argc, char ** argv)
         tim_ts_obj.begin();
         TwoSiteTensor<matrix, grp> tst(mps[site], mps[site+1]);
         MPSTensor<matrix, grp> ts_mps = tst.make_mps();
+        #ifdef AMBIENT
+        ambient::scope<ambient::shared>* s = new ambient::scope<ambient::shared>();
+        #endif
         MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim());
+        #ifdef AMBIENT
+        delete s;
+        #endif
         tim_ts_obj.end();
         maquis::cout << "Two site obj done!\n";
         
