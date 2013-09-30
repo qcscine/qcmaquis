@@ -212,17 +212,22 @@ namespace chem_detail {
 
             std::vector<double>::iterator it = raw.begin();
             while (it != raw.end()) {
-                matrix_elements.push_back(*it++);
-                std::vector<int> tmp;
-                std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
+                
+                if (std::abs(*it) > parms["integral_cutoff"]){
+                    matrix_elements.push_back(*it++);
+                    std::vector<int> tmp;
+                    std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
 
-                IndexTuple aligned = align(reorder(tmp[0]), reorder(tmp[1]), reorder(tmp[2]), reorder(tmp[3]));
-                tmp[0] = aligned[0];
-                tmp[1] = aligned[1];
-                tmp[2] = aligned[2];
-                tmp[3] = aligned[3];
+                    IndexTuple aligned = align(reorder(tmp[0]), reorder(tmp[1]), reorder(tmp[2]), reorder(tmp[3]));
+                    tmp[0] = aligned[0];
+                    tmp[1] = aligned[1];
+                    tmp[2] = aligned[2];
+                    tmp[3] = aligned[3];
 
-                idx_.push_back(tmp);
+                    idx_.push_back(tmp);
+                }
+                else { it++; }
+
                 it += 4;
             }
 

@@ -103,6 +103,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
 
         // Core electrons energy
         if ( i==-1 && j==-1 && k==-1 && l==-1) {
+
             typename hamtagterm_t<M>::type term;
             term.fill_operator = ident;
             term.scale = matrix_elements[m];
@@ -135,10 +136,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
 
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
-            if (std::abs(matrix_elements[m]) < 1.e-20) {
-                used_elements[m] += 1;
-                continue;
-            }
+
             tagterms.push_back(TermMaker<M>::positional_two_term(
                 true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler)
             );
@@ -157,6 +155,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
 
         // On site Coulomb repulsion V_iiii
         else if ( i==j && j==k && k==l) {
+
             typename hamtagterm_t<M>::type term;
             term.fill_operator = ident;
             term.scale = matrix_elements[m];
@@ -168,10 +167,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
 
         // V_ijjj = V_jijj = V_jjij = V_jjji
         else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
-            if (std::abs(matrix_elements[m]) < 1.e-20) {
-                used_elements[m] += 1;
-                continue;
-            }
+
             int same_idx, pos1;
             typename op_t<M>::type tmp;
 
@@ -210,38 +206,18 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
 
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
-            if (std::abs(matrix_elements[m]) < 1.e-20) {
-                used_elements[m] += 1;
-                maquis::cout << "matrix element underflow:\t" << std::abs(matrix_elements[m]) << std::endl;
-                continue;
-            }
 
             term_assistant.add_term(tagterms, matrix_elements[m], i, k, count_up, count_up);
             term_assistant.add_term(tagterms, matrix_elements[m], i, k, count_up, count_down);
             term_assistant.add_term(tagterms, matrix_elements[m], i, k, count_down, count_up);
             term_assistant.add_term(tagterms, matrix_elements[m], i, k, count_down, count_down);
 
-            /*
-            tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, k,
-                                            count_up, count_up, tag_handler) );
-            tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, k,
-                                            count_up, count_down, tag_handler) );
-            tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, k,
-                                            count_down, count_up, tag_handler) );
-            tagterms.push_back( TermMaker<M>::two_term(false, ident, matrix_elements[m], i, k,
-                                            count_down, count_down, tag_handler) );
-            */
-
             used_elements[m] += 1;
         }
 
         // V_ijij == V_jiji = V_ijji = V_jiij
         else if ( i==k && j==l && i!=j) {
-            if (std::abs(matrix_elements[m]) < 1.e-20) {
-                maquis::cout << "matrix element underflow:\t" << std::abs(matrix_elements[m]) << std::endl;
-                used_elements[m] += 1;
-                continue;
-            }
+
             typename op_t<M>::type tmp1, tmp2;
 
             term_assistant.add_term(tagterms,  matrix_elements[m], i, j, e2d, d2e);
@@ -274,10 +250,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
         // 8 (4x2)-fold degenerate V_iilk == V_iikl = V_lkii = V_klii  <--- coded
         //                         V_ijkk == V_jikk = V_kkij = V_kkji  <--- contained above
         else if ( (i==j && j!=k && k!=l) || (k==l && i!=j && j!=k)) {
-            if (std::abs(matrix_elements[m]) < 1.e-20) {
-                used_elements[m] += 1;
-                continue;
-            }
+
             int same_idx;
             if (i==j) { same_idx = i; }
             if (k==l) { same_idx = k; k = i; l = j; }
@@ -308,11 +281,6 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
         // 4-fold degenerate (+spin) V_ijil = V_ijli = V_jiil = V_jili  <--- coded
         //                           V_ilij = V_ilji = V_liij = V_liji
         else if ( ((i==k && j!=l) || j==k || (j==l && i!=k)) && (i!=j && k!=l)) {
-        //else if ( i==2 && (((i==k && j!=l) || j==k || (j==l && i!=k)) && (i!=j && k!=l)) ) {
-            if (std::abs(matrix_elements[m]) < 1.e-20) {
-                used_elements[m] += 1;
-                continue;
-            }
             int same_idx, pos1, pos2;
             if (i==k) { same_idx = i; pos1 = l; pos2 = j; }
             if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
@@ -370,11 +338,6 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
         // V_ijkl -> 24 permutations which fall into 3 equivalence classes of 8 elements (with identical V_ matrix element)
         // coded: 4 index permutations x 4 spin combinations 
         else if (i!=j && j!=k && k!=l && i!=k && j!=l) {
-        //else if ( i==4 && i!=j && j!=k && k!=l && i!=k && j!=l) {
-            if (std::abs(matrix_elements[m]) < 1.e-20) {
-                used_elements[m] += 1;
-                continue;
-            }
             
             // 1
             term_assistant.add_term(tagterms, i,k,l,j, create_up, create_up, destroy_up, destroy_up);

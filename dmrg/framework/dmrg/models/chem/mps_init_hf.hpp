@@ -53,9 +53,6 @@ struct hf_mps_init : public mps_initializer<Matrix, TwoU1>
                 throw std::runtime_error(
                     "The hf_occ format has been changed to: 1=empty, 2=down, 3=up, 4=updown\n (not cumulative anymore)\n"
                 );
-            if (sc_input == 1 && i == 0)
-                maquis::cout 
-                    << "WARNING: The hf_occ format has been changed to: 1=empty, 2=down, 3=up, 4=updown\n (not cumulative anymore)\n";
 
             switch(sc_input) {
                 case 4:

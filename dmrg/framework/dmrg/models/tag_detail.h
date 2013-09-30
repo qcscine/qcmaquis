@@ -9,6 +9,9 @@
 #ifndef MAQUIS_DMRG_MODELS_TAG_DETAIL_H
 #define MAQUIS_DMRG_MODELS_TAG_DETAIL_H
 
+#include <alps/numeric/isnan.hpp>
+#include <alps/numeric/isinf.hpp>
+
 namespace tag_detail {
 
     typedef unsigned tag_type;
@@ -58,6 +61,15 @@ namespace tag_detail {
         return true;
     }
 
+    template <class T>
+    bool num_check(T x) {
+        if (alps::numeric::isnan(x) || alps::numeric::isinf(x))
+            throw std::runtime_error("NaN / INF numeric Error occured while comparing operator scales\n");
+        return true;
+    }
+
+    inline bool num_check(std::complex<double> x) { return true; }
+
     template <class Matrix, class SymmGroup>
     std::pair<bool, typename Matrix::value_type>
     equal(block_matrix<Matrix, SymmGroup> & reference,
@@ -69,18 +81,21 @@ namespace tag_detail {
         typename Matrix::value_type invscale1, invscale2;
      
         // determine scale of matrices
-        for (typename Matrix::const_element_iterator it = reference[0].elements().first;
-                it != reference[0].elements().second; ++it)
-            if (std::abs(*it) > 1.e-15) {
-                invscale1 = 1./(*it);
+        typename Matrix::const_element_iterator it1 = reference[0].elements().first;
+        for ( ; it1 != reference[0].elements().second; ++it1)
+            if (std::abs(*it1) > 1.e-50) {
+                invscale1 = 1./(*it1);
                 break;
             }
-        for (typename Matrix::const_element_iterator it = sample[0].elements().first;
-                it != sample[0].elements().second; ++it)
-            if (std::abs(*it) > 1.e-15) {
-                invscale2 = 1./(*it);
+        if (it1 == reference[0].elements().second) { throw std::runtime_error("Null-block encountered\n"); }
+
+        typename Matrix::const_element_iterator it2 = sample[0].elements().first;
+        for ( ; it2 != sample[0].elements().second; ++it2)
+            if (std::abs(*it2) > 1.e-50) {
+                invscale2 = 1./(*it2);
                 break;
             }
+        if (it2 == sample[0].elements().second) { throw std::runtime_error("Null-block encountered\n"); }
 
         // Check all blocks for equality modulo scale factor
         for (typename Matrix::size_type b=0; b < reference.n_blocks(); ++b)
@@ -90,12 +105,23 @@ namespace tag_detail {
             for ( ; it1 != reference[b].elements().second; ++it1, ++it2)
             {
                 typename Matrix::value_type t1 = *it1 * invscale1, t2 = *it2 * invscale2;
-                if (std::abs(t1 - t2) > 1e-15)
+                if (std::abs(t1 - t2) > 1e-12)
                     return std::make_pair(false, 0.);
             }
         }
 
-        return std::make_pair(true, invscale1/invscale2);
+        typename Matrix::value_type scale = invscale1 / invscale2;
+
+#ifndef NDEBUG
+        try { num_check(invscale1); }
+        catch (std::exception e) { maquis::cout << "invscale1 numcheck failed\n"; exit(1);}
+        try { num_check(invscale2); }
+        catch (std::exception e) { maquis::cout << "invscale2 numcheck failed\n"; exit(1);}
+        try { num_check(scale); }
+        catch (std::exception e) { maquis::cout << "scale numcheck failed\n"; exit(1);}
+#endif
+
+        return std::make_pair(true, scale);
     }
 }
 

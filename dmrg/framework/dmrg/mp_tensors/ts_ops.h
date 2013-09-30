@@ -34,17 +34,17 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
     typedef typename OPTable<MPSMatrix, SymmGroup>::op_t op_t;
     typedef typename MPSMatrix::value_type value_type;
     typedef std::map<index_type, op_t> op_map;
+    typedef std::map<index_type, std::pair<tag_type, value_type> > op_scale_map;
     typedef std::vector<boost::tuple<index_type, index_type, tag_type, value_type> > prempo_t;
 
 
     if (global_table) {
+        // Use a separate operator table for every twosite MPO Tensor - too much overhead to globally synchronize
+        // a single table
         KronHandler<MPOMatrix, SymmGroup> kron_handler(mpo1.get_operator_table());
-
-        typedef std::map<index_type, std::pair<tag_type, value_type> > op_scale_map;
+        typename MPOTensor<MPOMatrix, SymmGroup>::op_table_ptr op_table = kron_handler.get_operator_table();
 
         prempo_t prempo;
-
-        typename MPOTensor<MPOMatrix, SymmGroup>::op_table_ptr op_table = kron_handler.get_operator_table();
 
         index_type b1, b2, b3;
         for (b1=0; b1 < mpo1.row_dim(); ++b1) {
@@ -95,6 +95,8 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                     std::pair<tag_type, value_type> scaled_tag;
                     scaled_tag = kron_handler.get_kronecker_table()->checked_register(out_row[b3]);
                     prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
+                    //tag_type new_tag = kron_handler.get_kronecker_table()->register_op(out_row[b3]);
+                    //prempo.push_back(boost::make_tuple(b1, b3, new_tag, 1.0));
                 }
                 else {
                     prempo.push_back(boost::make_tuple(b1, b3, uniform_ops[b3].first, uniform_ops[b3].second));
