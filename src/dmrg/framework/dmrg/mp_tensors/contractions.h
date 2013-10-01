@@ -78,7 +78,11 @@ struct contraction {
         : a(&a), b(&b), c(&c), k1(k1), k2(k2), k3(k3), k4(k4), k5(k5), k6(k6)
         {
         }
-
+        int owner(){
+            int o = (*b)[0].core->current->owner;
+            if(o == -1) o = ambient::rank();
+            return o;
+        }
         void execute_l(){
             maquis::dmrg::detail::lb_tensor_mpo(*a, *b, *c, k1, k2, k3, k4, k5, k6);
         }
@@ -120,18 +124,21 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         size_t loop_max = left.aux_dim();
 
-        #ifdef AMBIENT
-        ambient::synctime timer("lbtm gemm..."); timer.begin();
-        #endif
-        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b) {
+        {
+            #ifdef DMRG_KEEP_L0
+            ambient::scope<ambient::shared> s;
+            #else
+            locale l(0);
+            #endif
+            block_matrix<Matrix, SymmGroup> tmp;
+            gemm(transpose(left[0]), mps.data(), tmp);
+            reshape_right_to_left_new<Matrix>(mps.site_dim(), left[0].right_basis(), mps.col_dim(), tmp, t[0]);
+        }
+        parallel_for(locale::compact(loop_max), locale b = 1; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(left[b]), mps.data(), tmp);
-            reshape_right_to_left_new<Matrix>(mps.site_dim(), left[b].right_basis(), mps.col_dim(),
-                                              tmp, t[b]);
+            reshape_right_to_left_new<Matrix>(mps.site_dim(), left[b].right_basis(), mps.col_dim(), tmp, t[b]);
         }
-        #ifdef AMBIENT
-        timer.end();
-        #endif
 
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim();
         ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
@@ -145,8 +152,10 @@ struct contraction {
         mps.make_left_paired();
         loop_max = mpo.col_dim();
 
-        std::vector<latch<Matrix>*> tail;
-        parallel_for(locale::compact(loop_max), locale b2 = 0; b2 < loop_max; ++b2) {
+        maquis::cout << "b1/b2 loop\n";
+        std::vector<int> p(loop_max, -1);
+        std::vector<std::vector<latch<Matrix>*> > tail(std::max(loop_max,left.aux_dim()));
+        for(size_t b2 = 0; b2 < loop_max; ++b2) {
             for (int run = 0; run < 2; ++run) {
                 if (run == 1)
                     ret[b2].allocate_blocks();
@@ -155,6 +164,18 @@ struct contraction {
                 for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
                     if (!mpo.has(b1, b2))
                         continue;
+                    bool execute;
+                    if(!pretend){
+                        if(p[b2] == -1 && p[b1] == -1){
+                            p[b2] = b1;
+                            p[b1] = b2;
+                            execute = true;
+                        }
+                        #ifdef DMRG_KEEP_L0
+                        else if(b1 == 0) execute = true;
+                        #endif
+                        else execute = false;
+                    }
                     
                     block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                     if (W.n_blocks() == 0)
@@ -207,31 +228,92 @@ struct contraction {
                                     Matrix const & iblock = T(T_l_charge, T_r_charge);
                                     Matrix & oblock = ret[b2](out_l_charge, out_r_charge);
 
-                                    tail.push_back(new latch<Matrix>(oblock, iblock, wblock, out_left_offset, in_left_offset,
-                                                                     physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second));
+                                    latch<Matrix>* op = new latch<Matrix>(oblock, iblock, wblock, out_left_offset, in_left_offset,
+                                                                          physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
+                                    if(execute){
+                                        locale::compact(left.aux_dim()); 
+                                        locale l(locale::p[b2]);
+                                        op->execute_l();
+                                        delete op;
+                                    }else
+                                        tail[ locale::p[b2] ].push_back(op);
                                 }
                                 
                                 if (pretend)
                                     ret[b2].reserve(out_l_charge, out_r_charge,
-                                                          out_left_i.size_of_block(out_l_charge),
-                                                          right_i[r].second);
+                                                    out_left_i.size_of_block(out_l_charge),
+                                                    right_i[r].second);
                             }
                         }
                     }
                 }
             }
         }
-
-        #ifdef AMBIENT
-        ambient::synctime timer_tail("lbtm tail..."); timer_tail.begin();
-        #endif
-        semi_parallel_for(locale::compact(tail.size()), locale k = 0; k < tail.size(); ++k) {
-            tail[k]->execute_l();
-            delete tail[k];
+        maquis::cout << "end of b1/b2 loop\n";
+        maquis::cout << "looking at tail now -- " << locale::p[1] << "\n";
+        for(size_t k = 0; k < tail.size(); ++k) {
+            if(k == locale::p[1])
+            {
+                std::vector<latch<Matrix>*>& ops = tail[k];
+                std::vector<std::vector<latch<Matrix>*> > chunks;
+                for(int i = 0; i < ops.size(); i++){
+                    bool found = false;
+                    for(int j = 0; j < chunks.size(); j++){
+                        if(chunks[j][0]->a == ops[i]->a){
+                            chunks[j].push_back(ops[i]);
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(!found){
+                        chunks.push_back(std::vector<latch<Matrix>*>());
+                        chunks.back().push_back(ops[i]);
+                    }
+                }
+                for(int i = 0; i < chunks.size(); i++){
+                    std::vector<latch<Matrix>*>& part = chunks[i];
+                    {
+                        locale l(part[0]->owner());
+                        part[0]->execute_l();
+                    }
+                    if(part.size() == 1) continue; 
+                    Matrix* master = part[0]->a;
+                    std::vector<std::vector<Matrix*> > reduce(ambient::channel.wk_dim());
+                    for(int j = 1; j < part.size(); j++){
+                        locale l(part[j]->owner());
+                        part[j]->a = new Matrix(num_rows(*master), num_cols(*master));
+                        part[j]->execute_l();
+                        reduce[part[j]->owner()].push_back(part[j]->a);
+                    }
+                    for(int p = 0; p < reduce.size(); p++){
+                        if(reduce[p].size() > 1){
+                        for(int stride = 1; stride < reduce[p].size(); stride *= 2)
+                            for(int kk = stride; kk < reduce[p].size(); kk += stride*2){
+                                locale l(p);
+                                *reduce[p][kk-stride] += *reduce[p][kk];
+                            }
+                        }
+                    }
+                    locale::compact(left.aux_dim()); locale l(k);
+                    for(int p = 0; p < reduce.size(); p++){
+                        if(reduce[p].empty()) continue;
+                        *master += *reduce[p][0];
+                    }
+                    for(int j = 1; j < part.size(); j++) delete part[j]->a;
+                    for(int j = 0; j < chunks[i].size(); j++) delete chunks[i][j];
+                }
+            }else{
+                for(int i = 0; i < tail[k].size(); i++){
+                    locale l(tail[k][i]->owner());
+                    tail[k][i]->execute_l();
+                }
+                locale::compact(left.aux_dim()); locale l(k);
+                for(int i = 0; i < tail[k].size(); i++){
+                    ambient::migrate(*tail[k][i]->a);
+                    delete tail[k][i];
+                }
+            }
         }
-        #ifdef AMBIENT
-        timer_tail.end();
-        #endif
         
         return ret;
     }
@@ -260,9 +342,6 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
         size_t loop_max = right.aux_dim();
 
-        #ifdef AMBIENT
-        ambient::synctime timer("rbtm gemm..."); timer.begin();
-        #endif
         parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
             gemm(mps.data(), right[b], t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
@@ -270,9 +349,6 @@ struct contraction {
                                               t[b], tmp);
             swap(t[b], tmp);
         }
-        #ifdef AMBIENT
-        timer.end();
-        #endif
 
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
@@ -367,16 +443,10 @@ struct contraction {
             }
         }
 
-        #ifdef AMBIENT
-        ambient::synctime timer_tail("rbtm tail..."); timer_tail.begin();
-        #endif
         semi_parallel_for(locale::compact(tail.size()), locale k = 0; k < tail.size(); ++k) {
             tail[k]->execute_r();
             delete tail[k];
         }
-        #ifdef AMBIENT
-        timer_tail.end();
-        #endif
 
         return ret;
     }
@@ -453,35 +523,39 @@ struct contraction {
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        #ifdef AMBIENT
-        ambient::synctime timer("sh2..."); timer.begin();
-        #endif
         Boundary<Matrix, SymmGroup> left_mpo_mps = left_boundary_tensor_mpo(ket_tensor, left, mpo);
-
-        MPSTensor<Matrix, SymmGroup> ret = ket_tensor;
-        ret.multiply_by_scalar(0);
-        ret.make_left_paired();
-        
-        typedef typename SymmGroup::charge charge;
-        typedef std::size_t size_t;
-        
-        size_t loop_max = mpo.col_dim();
+        ket_tensor.make_left_paired();
        
+        size_t loop_max = mpo.col_dim();
         std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max);
 
-        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
+        for(size_t b = 0; b < loop_max; ++b){
+            locale::compact(left.aux_dim()); locale l(locale::p[b]);
             gemm(left_mpo_mps[b], right[b], oblocks[b]);
-           
-        semi_parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
-            for (size_t k = 0; k < oblocks[b].n_blocks(); ++k)
-                ret.data().match_and_add_block(oblocks[b][k],
-                                               oblocks[b].left_basis()[k].first,
-                                               oblocks[b].right_basis()[k].first);
         }
-        #ifdef AMBIENT
-        timer.end();
-        #endif
-        return ret;
+
+        std::vector<block_matrix<Matrix, SymmGroup> > reduce(ambient::channel.wk_dim(), block_matrix<Matrix, SymmGroup>(ket_tensor.data().left_basis(), ket_tensor.data().right_basis()));
+        for(size_t b = 0; b < loop_max; ++b){
+            locale::compact(left.aux_dim()); locale l(locale::p[b]);
+            block_matrix<Matrix, SymmGroup>& ret = reduce[l.sector];
+            for (size_t k = 0; k < oblocks[b].n_blocks(); ++k)
+                ret.match_and_add_block(oblocks[b][k],
+                                        oblocks[b].left_basis()[k].first,
+                                        oblocks[b].right_basis()[k].first);
+        }
+        if(reduce.size() > 1){
+            for(int stride = 1; stride < reduce.size(); stride *= 2){
+                for(int kk = stride; kk < reduce.size(); kk += stride*2){
+                    locale l(kk-stride);
+                    for(size_t k = 0; k < reduce[kk].n_blocks(); ++k){
+                        reduce[kk-stride].match_and_add_block(reduce[kk][k],
+                                                              reduce[kk].left_basis()[k].first,
+                                                              reduce[kk].right_basis()[k].first);
+                    }
+                }
+            }
+        }
+        return MPSTensor<Matrix, SymmGroup>(ket_tensor.phys_i, ket_tensor.left_i, ket_tensor.right_i, reduce[0], LeftPaired);
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
