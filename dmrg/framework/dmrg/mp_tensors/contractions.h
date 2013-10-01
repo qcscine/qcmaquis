@@ -532,8 +532,12 @@ struct contraction {
         size_t loop_max = mpo.col_dim();
         std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max);
 
+        #ifdef AMBIENT
         for(size_t b = 0; b < loop_max; ++b){
             locale::compact(left.aux_dim()); locale l(locale::p[b]);
+        #else
+        parallel_for(size_t b = 0; b < loop_max; ++b){
+        #endif
             gemm(left_mpo_mps[b], right[b], oblocks[b]);
         }
 
