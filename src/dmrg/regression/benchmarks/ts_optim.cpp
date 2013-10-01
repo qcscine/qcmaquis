@@ -184,12 +184,20 @@ int main(int argc, char ** argv)
         #ifdef AMBIENT
         size_t loop_max = ts_mpo.col_dim();
         std::vector<int> p(loop_max, -1);
+        std::vector<bool> f(loop_max, false);
         for(size_t b2 = 0; b2 < loop_max; ++b2){
             for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
                 if (!ts_mpo.has(b1, b2)) continue;
                 if(p[b2] == -1 && p[b1] == -1){
                     p[b2] = b1;
                     p[b1] = b2;
+                    f[b2] = true;
+                }else if(p[b2] != -1 && p[b1] == -1){
+                    if(!f[b2]){
+                        p[b1] = p[b2];
+                        p[b2] = b1;
+                        f[b2] = true;
+                    }
                 }else
                     maquis::cout << "Couldn't do (" << b2 << "," << b1 << ") as already " << p[b2] << " and " << p[b1] << "\n";
             }
