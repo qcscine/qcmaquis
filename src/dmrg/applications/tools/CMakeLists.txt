@@ -17,6 +17,18 @@ add_executable(mps_stats_2u1 mps_stats.cpp)
 target_link_libraries(mps_stats_2u1 ${DMRG_APP_LIBRARIES})
 set_target_properties(mps_stats_2u1 PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1")
 
+#add_executable(mpo_stats_none mpo_stats.cpp)
+#target_link_libraries(mpo_stats_none dmrg_utils dmrg_models ${DMRG_LIBRARIES})
+#set_target_properties(mpo_stats_none PROPERTIES COMPILE_DEFINITIONS "USE_NONE")
+
+#add_executable(mpo_stats_u1 mpo_stats.cpp)
+#target_link_libraries(mpo_stats_u1 dmrg_utils dmrg_models ${DMRG_LIBRARIES})
+#set_target_properties(mpo_stats_u1 PROPERTIES COMPILE_DEFINITIONS "USE_U1")
+
+add_executable(mpo_stats_2u1 mpo_stats.cpp)
+target_link_libraries(mpo_stats_2u1 dmrg_utils dmrg_models ${DMRG_LIBRARIES})
+set_target_properties(mpo_stats_2u1 PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1")
+
 add_executable(mps_upgrade_none mps_upgrade.cpp)
 target_link_libraries(mps_upgrade_none ${DMRG_APP_LIBRARIES})
 set_target_properties(mps_upgrade_none PROPERTIES COMPILE_DEFINITIONS "USE_NONE")
