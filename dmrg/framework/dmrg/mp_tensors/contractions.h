@@ -158,6 +158,7 @@ struct contraction {
         mps.make_left_paired();
         loop_max = mpo.col_dim();
 
+        maquis::cout << "b1/b2 loop...\n";
         std::vector<int> p(loop_max, -1);
         #ifdef AMBIENT
         std::vector<std::vector<latch<Matrix>*> > tail(std::max(loop_max,left.aux_dim()));
@@ -172,15 +173,8 @@ struct contraction {
                         continue;
                     bool execute;
                     if(!pretend){
-                        if(p[b2] == -1 && p[b1] == -1){
-                            p[b2] = b1;
-                            p[b1] = b2;
-                            execute = true;
-                        }
-                        #ifdef DMRG_KEEP_L0
-                        else if(b1 == 0) execute = true;
-                        #endif
-                        else execute = false;
+                        if(b2 == 1 && b1 != 0) execute = false;
+                        else execute = true;
                     }
                     
                     block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
@@ -260,9 +254,11 @@ struct contraction {
                 }
             }
         }
+        maquis::cout << "end of b1/b2 loop...\n";
 
         #ifdef AMBIENT
         for(size_t k = 0; k < tail.size(); ++k) {
+            if(tail[k].size()) maquis::cout << "tail " << k << ": " << tail[k].size() << "\n";
             if(k == locale::p[1])
             {
                 std::vector<latch<Matrix>*>& ops = tail[k];
@@ -540,7 +536,7 @@ struct contraction {
         for(size_t b = 0; b < loop_max; ++b){
             locale::compact(left.aux_dim()); locale l(locale::p[b]);
         #else
-        parallel_for(locale(loop_max), size_t b = 0; b < loop_max; ++b){
+        parallel_for(locale::compact(loop_max), size_t b = 0; b < loop_max; ++b){
         #endif
             gemm(left_mpo_mps[b], right[b], oblocks[b]);
         }
