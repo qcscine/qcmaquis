@@ -15,6 +15,8 @@
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/indexing.h"
 
+#include "dmrg/utils/parallel_for.hpp"
+
 struct contraction {
 
     // output/input: left_i for bra_tensor, right_i for ket_tensor
@@ -72,7 +74,6 @@ struct contraction {
         return t1;
     }
 
-    #ifdef AMBIENT
     template<class Matrix>
     struct latch{
         latch(Matrix& a, const Matrix& b, const Matrix& c, size_t k1, size_t k2, size_t k3, size_t k4, size_t k5, size_t k6)
@@ -80,9 +81,13 @@ struct contraction {
         {
         }
         int owner(){
+#ifdef AMBIENT
             int o = (*b)[0].core->current->owner;
             if(o == -1) o = ambient::rank();
             return o;
+#else
+            return 0;
+#endif
         }
         void execute_l(){
             maquis::dmrg::detail::lb_tensor_mpo(*a, *b, *c, k1, k2, k3, k4, k5, k6);
@@ -102,7 +107,6 @@ struct contraction {
         size_t k5; 
         size_t k6;
     };
-    #endif
 
     // note: this function changes the internal structure of Boundary,
     //       each block is transposed
@@ -536,7 +540,7 @@ struct contraction {
         for(size_t b = 0; b < loop_max; ++b){
             locale::compact(left.aux_dim()); locale l(locale::p[b]);
         #else
-        parallel_for(size_t b = 0; b < loop_max; ++b){
+        parallel_for(locale(loop_max), size_t b = 0; b < loop_max; ++b){
         #endif
             gemm(left_mpo_mps[b], right[b], oblocks[b]);
         }
