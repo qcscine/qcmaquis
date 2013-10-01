@@ -114,6 +114,10 @@ int main(int argc, char ** argv)
             lr = -1;
         }
         tim_load.end();
+        locale::p.resize(10*L);
+        for(size_t b = 0; b < 10*L; ++b){
+            locale::p[b] = b;
+        }
         maquis::cout << "Load MPS done!\n";
         maquis::cout << "Optimization at site " << site << " in " << lr << " direction." << std::endl;
         
@@ -174,6 +178,35 @@ int main(int argc, char ** argv)
         #ifdef AMBIENT
         delete s;
         #endif
+
+        size_t loop_max = ts_mpo.col_dim();
+
+        std::vector<int> p(loop_max, -1);
+        for(size_t b2 = 0; b2 < loop_max; ++b2){
+            for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
+                if (!ts_mpo.has(b1, b2)) continue;
+                if(p[b2] == -1 && p[b1] == -1){
+                    p[b2] = b1;
+                    p[b1] = b2;
+                }else
+                    maquis::cout << "Couldn't do (" << b2 << "," << b1 << ") as already " << p[b2] << " and " << p[b1] << "\n";
+            }
+        }
+        for(size_t b2 = 0; b2 < loop_max; ++b2){
+            if(p[b2] == -1) p[b2] = b2;
+            maquis::cout << b2 << " -> " << p[b2] << "\n";
+        }
+        for(size_t b = 0; b < loop_max; ++b){
+            locale::compact(left.aux_dim()); locale l(p[b]);
+            storage::migrate(right[b]);
+        }
+        #ifdef DMRG_KEEP_L0
+        {
+            ambient::scope<ambient::shared> l;
+            storage::migrate(left[0]);
+        }
+        #endif
+        locale::p = p;
         tim_ts_obj.end();
         maquis::cout << "Two site obj done!\n";
         
