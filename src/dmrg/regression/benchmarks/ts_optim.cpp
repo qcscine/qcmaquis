@@ -114,10 +114,12 @@ int main(int argc, char ** argv)
             lr = -1;
         }
         tim_load.end();
+        #ifdef AMBIENT
         locale::p.resize(10*L);
         for(size_t b = 0; b < 10*L; ++b){
             locale::p[b] = b;
         }
+        #endif
         maquis::cout << "Load MPS done!\n";
         maquis::cout << "Optimization at site " << site << " in " << lr << " direction." << std::endl;
         
@@ -179,8 +181,8 @@ int main(int argc, char ** argv)
         delete s;
         #endif
 
+        #ifdef AMBIENT
         size_t loop_max = ts_mpo.col_dim();
-
         std::vector<int> p(loop_max, -1);
         for(size_t b2 = 0; b2 < loop_max; ++b2){
             for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
@@ -207,6 +209,7 @@ int main(int argc, char ** argv)
         }
         #endif
         locale::p = p;
+        #endif
         tim_ts_obj.end();
         maquis::cout << "Two site obj done!\n";
         

@@ -72,6 +72,7 @@ struct contraction {
         return t1;
     }
 
+    #ifdef AMBIENT
     template<class Matrix>
     struct latch{
         latch(Matrix& a, const Matrix& b, const Matrix& c, size_t k1, size_t k2, size_t k3, size_t k4, size_t k5, size_t k6)
@@ -101,6 +102,7 @@ struct contraction {
         size_t k5; 
         size_t k6;
     };
+    #endif
 
     // note: this function changes the internal structure of Boundary,
     //       each block is transposed
@@ -152,14 +154,14 @@ struct contraction {
         mps.make_left_paired();
         loop_max = mpo.col_dim();
 
-        maquis::cout << "b1/b2 loop\n";
         std::vector<int> p(loop_max, -1);
+        #ifdef AMBIENT
         std::vector<std::vector<latch<Matrix>*> > tail(std::max(loop_max,left.aux_dim()));
+        #endif
         for(size_t b2 = 0; b2 < loop_max; ++b2) {
             for (int run = 0; run < 2; ++run) {
-                if (run == 1)
-                    ret[b2].allocate_blocks();
                 bool pretend = (run == 0);
+                if(!pretend) ret[b2].allocate_blocks();
 
                 for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
                     if (!mpo.has(b1, b2))
@@ -228,6 +230,7 @@ struct contraction {
                                     Matrix const & iblock = T(T_l_charge, T_r_charge);
                                     Matrix & oblock = ret[b2](out_l_charge, out_r_charge);
 
+                                    #ifdef AMBIENT
                                     latch<Matrix>* op = new latch<Matrix>(oblock, iblock, wblock, out_left_offset, in_left_offset,
                                                                           physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
                                     if(execute){
@@ -237,6 +240,10 @@ struct contraction {
                                         delete op;
                                     }else
                                         tail[ locale::p[b2] ].push_back(op);
+                                    #else
+                                    maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
+                                                                        physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
+                                    #endif
                                 }
                                 
                                 if (pretend)
@@ -249,8 +256,8 @@ struct contraction {
                 }
             }
         }
-        maquis::cout << "end of b1/b2 loop\n";
-        maquis::cout << "looking at tail now -- " << locale::p[1] << "\n";
+
+        #ifdef AMBIENT
         for(size_t k = 0; k < tail.size(); ++k) {
             if(k == locale::p[1])
             {
@@ -314,6 +321,7 @@ struct contraction {
                 }
             }
         }
+        #endif
         
         return ret;
     }
@@ -428,8 +436,8 @@ struct contraction {
                                     const Matrix & iblock = T(T_l_charge, T_r_charge);
                                     Matrix & oblock = ret[b1](out_l_charge, out_r_charge);
 
-                                    tail.push_back(new latch<Matrix>(oblock, iblock, wblock, out_right_offset, in_right_offset, 
-                                                                     physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second));
+                                    maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock, out_right_offset, in_right_offset, 
+                                                                        physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
                                 }
                                 
                                 if (pretend)
@@ -441,11 +449,6 @@ struct contraction {
                     }
                 }
             }
-        }
-
-        semi_parallel_for(locale::compact(tail.size()), locale k = 0; k < tail.size(); ++k) {
-            tail[k]->execute_r();
-            delete tail[k];
         }
 
         return ret;
@@ -534,6 +537,7 @@ struct contraction {
             gemm(left_mpo_mps[b], right[b], oblocks[b]);
         }
 
+        #ifdef AMBIENT
         std::vector<block_matrix<Matrix, SymmGroup> > reduce(ambient::channel.wk_dim(), block_matrix<Matrix, SymmGroup>(ket_tensor.data().left_basis(), ket_tensor.data().right_basis()));
         for(size_t b = 0; b < loop_max; ++b){
             locale::compact(left.aux_dim()); locale l(locale::p[b]);
@@ -556,6 +560,18 @@ struct contraction {
             }
         }
         return MPSTensor<Matrix, SymmGroup>(ket_tensor.phys_i, ket_tensor.left_i, ket_tensor.right_i, reduce[0], LeftPaired);
+        #else
+        MPSTensor<Matrix, SymmGroup> ret = ket_tensor; 
+        ret.multiply_by_scalar(0); 
+        ret.make_left_paired(); 
+        for(size_t b = 0; b < loop_max; ++b){
+            for (size_t k = 0; k < oblocks[b].n_blocks(); ++k)
+                ret.data().match_and_add_block(oblocks[b][k],
+                                               oblocks[b].left_basis()[k].first,
+                                               oblocks[b].right_basis()[k].first);
+        }
+        return ret;
+        #endif
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
