@@ -103,11 +103,13 @@
 #define AMBIENT_COLLECTOR_RAW_RESERVE 1024
 #define AMBIENT_SCOPE_SWITCH_FACTOR   20480
 #define AMBIENT_FUTURE_SIZE           64
-#define AMBIENT_IB                    512
-#define AMBIENT_IB_EXTENT             512*512*16
+#define AMBIENT_IB                    2048
+#define AMBIENT_IB_EXTENT             2048*2048*16
 
 #define PAGE_SIZE 4096
 #define ALIGNMENT 64
+
+#define DMRG_KEEP_L0
 
 namespace ambient {
     inline int get_num_threads(){

@@ -47,7 +47,7 @@ namespace ambient {
             return val;
         }
         void report(){
-            std::cout << "R" << ambient::rank() << ": " << name << " " << val << ", count : " << count << "\n";
+            if(ambient::rank() == 0) std::cout << "R" << ambient::rank() << ": " << name << " " << val << ", count : " << count << "\n";
         }
         void reset(){
             this->val = 0;

@@ -83,6 +83,7 @@ namespace ambient {
     class scope<single> : public controller::scope {
     public:
         static int compact_factor; 
+        static std::vector<int> p; 
         static void compact(size_t n){ 
             if(n <= ambient::channel.wk_dim()) return; 
             compact_factor = (int)(n / ambient::channel.wk_dim()); // iterations before switch 
