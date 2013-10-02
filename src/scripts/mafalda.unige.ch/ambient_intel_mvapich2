@@ -20,7 +20,7 @@ export PATH=/share/apps/cmake/cmake-2.8.9/gcc-4.4.6/bin:/share/apps/hwloc/1.7.1-
 export LD_LIBRARY_PATH=/share/apps/hwloc/1.7.1-intel.13.1.1/lib:/share/apps/mvapich2/1.9//lib:/share/apps/gnu/gmp/5.1.2/gcc/4.4.6/lib:/share/apps/gnu/mpfr/3.1.2/gcc/4.4.6/lib:/share/apps/gnu/mpc/1.0.1/gcc/4.4.6/lib:/share/apps/gnu/gcc/4.7.3/lib64:/opt/gridengine/lib/linux-x64:/opt/gridengine/lib/linux-x64:/share/apps/boost/1.53/gcc/4.4.6/lib:/share/apps/Intel/compiler/13.1.1/lib/intel64:/share/apps/Intel/compiler/13.1.1/mkl/lib/intel64:/share/apps/Intel/compiler/13.1.1/ipp/lib/intel64:/share/apps/Intel/compiler/13.1.1/tbb/lib/intel64
 
 ## common ##
-THREADING_FLAGS="-DAMBIENT_CILK"
+THREADING_FLAGS="-DAMBIENT_CILK -DAMBIENT_PARALLEL_MKL"
 COMMON_CMAKE_CXX_FLAGS="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors $THREADING_FLAGS -L/share/apps/plasma/2.5.0/icc/13.1.1/lib"
 COMMON_CMAKE_C_COMPILER=mpicc
 COMMON_CMAKE_CXX_COMPILER=mpicxx
