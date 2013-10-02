@@ -93,7 +93,7 @@
 #define AMBIENT_BULK_CHUNK            67108864 // 64 MB
 #define AMBIENT_BULK_LIMIT            40
 
-#define AMBIENT_PARALLEL_MKL
+//#define AMBIENT_PARALLEL_MKL // please define in compiler
 #define AMBIENT_MKL_NUM_THREADS       16
 #define AMBIENT_MAX_SID               2147483647 // or 4194304 
 
