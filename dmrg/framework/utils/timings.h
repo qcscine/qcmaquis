@@ -7,7 +7,7 @@
 #include <boost/chrono.hpp>
 #include "utils/io.hpp"
 
-#ifdef _OPENMP
+#ifdef MAQUIS_OPENMP
 #include "omp.h"
 #endif
 
