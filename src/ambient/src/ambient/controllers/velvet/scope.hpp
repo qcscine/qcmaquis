@@ -84,36 +84,41 @@ struct pairing {
     pairing() : active(false) {} 
 
     template<class M>
-    pairing(const M& ruleset, size_t loop_max) : active(true), left(loop_max), right(loop_max){
+    pairing(const M& ruleset, int loop_max) : active(true), left(loop_max), right(loop_max), dedicated_b2(-1){
     
         int np = ambient::channel.wk_dim();
     
-        std::vector<size_t> singular;
-        std::vector<size_t> dedicated;
+        std::vector<int> singular;
+        std::vector<int> dedicated;
     
-        std::vector<std::vector<size_t> > output;
-        for(size_t b2 = 0; b2 < loop_max; b2++){
-            output.push_back(std::vector<size_t>());
-            for(size_t b1 = 0; b1 < loop_max; b1++){
+        std::vector<std::vector<int> > output;
+        for(int b2 = 0; b2 < loop_max; b2++){
+            output.push_back(std::vector<int>());
+            for(int b1 = 0; b1 < loop_max; b1++){
                 if(ruleset.has(b1,b2)) output.back().push_back(b1);
             }
         }
-        for(size_t i = 0; i < output.size(); i++){
-            if(output[i].empty()) printf("Error: b2 = %d was never matched\n", (int)i);
+        for(int i = 0; i < output.size(); i++){
+            if(output[i].empty()){
+                singular.push_back(-1); 
+                if(ambient::rank() == 0) printf("Error: b2 = %d was never matched\n", (int)i);
+                continue;
+            }
             if(output[i].size() > 1){
-                if(!dedicated.empty()) printf("Error: multiple tails\n");
+                if(!dedicated.empty() && ambient::rank() == 0) printf("Error: multiple tails\n");
                 dedicated = output[i];
                 dedicated_b2 = i;
             }
             singular.push_back(output[i][0]);
         }
     
-        std::vector<size_t> common;
-        for(size_t i = 0; i < singular.size(); i++){
-            for(size_t ii = 0; ii < singular.size(); ii++){
+        std::vector<int> common;
+        for(int i = 0; i < singular.size(); i++){
+            if(singular[i] == -1) continue;
+            for(int ii = 0; ii < singular.size(); ii++){
                 if(singular[i] == singular[ii] && i != ii){
                     bool exists = false;
-                    for(size_t j = 0; j < common.size(); j++){
+                    for(int j = 0; j < common.size(); j++){
                        if(common[j] == singular[i]){
                            exists = true; break;
                        }
@@ -124,34 +129,38 @@ struct pairing {
             }
         }
     
-        printf("Common set: "); for(size_t i = 0; i < common.size(); i++) printf("%d ", (int)common[i]); printf("\n");
-        printf("Dedicated set: "); for(size_t i = 0; i < dedicated.size(); i++) printf("%d ", (int)dedicated[i]); printf("\n");
-    
+        if(ambient::rank() == 0){ 
+            printf("Common set: "); for(int i = 0; i < common.size(); i++) printf("%d ", (int)common[i]); printf("\n");
+            printf("Dedicated set (%d): ", dedicated_b2); for(int i = 0; i < dedicated.size(); i++) printf("%d ", (int)dedicated[i]); printf("\n");
+        }
     
         dp = std::floor((float)dedicated.size()*np/loop_max + 0.5);
+        if(!dedicated.empty() && dp == 0) dp = 1;
+        if(dp == np) dp = np - 1;
         int wp = np - dp;
     
-        printf("Dedicated proc number: %d\n", dp);
+        if(ambient::rank() == 0) printf("Dedicated proc number: %d\n", dp);
     
         // distributing left
-        if(dedicated.empty()) printf("Error: no tail exists\n");
-    
-        size_t factor = dedicated.size() / dp;
-        size_t id = 0;
-        for(size_t p = 0; p < dp; p++){
-            for(size_t d = id; d < id+factor; d++){ left[dedicated[d]] = p; }
-            id += factor;
-        }
-        while(id < dedicated.size()){
-            left[dedicated[id]] = id % dp;
-            id++;
+        int factor;
+        int id = 0;
+        if(!dedicated.empty()){
+            factor = dedicated.size() / dp;
+            for(int p = 0; p < dp; p++){
+                for(int d = id; d < id+factor; d++){ left[dedicated[d]] = p; }
+                id += factor;
+            }
+            while(id < dedicated.size()){
+                left[dedicated[id]] = id % dp;
+                id++;
+            }
         }
         factor = (singular.size()-dedicated.size()) / wp;
         id = 0;
-        for(size_t p = dp; p < np; p++){
-            for(size_t d = id; d < std::min(id+factor, singular.size()); d++){
+        for(int p = dp; p < np; p++){
+            for(int d = id; d < std::min(id+factor, (int)singular.size()); d++){
                 bool exclude = false;
-                for(size_t k = 0; k < dedicated.size(); k++){
+                for(int k = 0; k < dedicated.size(); k++){
                     if(d == dedicated[k]){
                         exclude = true;
                         break;
@@ -162,10 +171,10 @@ struct pairing {
             }
             id += factor;
         }
-        size_t p = dp;
+        int p = dp;
         while(id < singular.size()){
             bool exclude = false;
-            for(size_t k = 0; k < dedicated.size(); k++){
+            for(int k = 0; k < dedicated.size(); k++){
                 if(id == dedicated[k]){
                     exclude = true;
                     break;
@@ -177,22 +186,27 @@ struct pairing {
         }
     
         // distributing right according to left
-        std::vector<size_t> workload(np, 0);
-        for(size_t i = 0; i < loop_max; i++){
+        std::vector<int> workload(np, 0);
+        for(int i = 0; i < loop_max; i++){
            if(i == dedicated_b2){
                right[i] = left[dedicated[0]];
-           }else if(singular[i] == common[0])
-               continue;
-           else
+           }else{
+               bool found = false;
+               for(int k = 0; k < common.size(); k++) if(singular[i] == common[k]){ found = true; break; }
+               if(found || singular[i] == -1) continue;
+             
                right[i] = left[singular[i]];
-           workload[right[i]]++;
+               workload[right[i]]++;
+           }
         }
     
-        for(size_t i = 0; i < loop_max; i++){
-           if(singular[i] == common[0] && i != dedicated_b2){
+        for(int i = 0; i < loop_max; i++){
+           bool found = false;
+           for(int k = 0; k < common.size(); k++) if(singular[i] == common[k]){ found = true; break; }
+           if((found && i != dedicated_b2) || singular[i] == -1){
                int min = -1;
                int rank = -1;
-               for(size_t p = dp; p < np; p++){
+               for(int p = dp; p < np; p++){
                    if(workload[p] < min || min == -1){ min = workload[p]; rank = p; }
                }
                if(rank == -1) printf("Error: couldn't find rank for right of common left\n");
@@ -202,11 +216,11 @@ struct pairing {
         }
     }
 
-    int get_left(size_t b1) const {
+    int get_left(int b1) const {
         return left[b1];
     }
 
-    int get_right(size_t b2) const {
+    int get_right(int b2) const {
         return right[b2];
     }
 
@@ -214,15 +228,19 @@ struct pairing {
         return dp;
     }
 
-    int pair(size_t b1, size_t b2) const {
+    int get_dedicated_b2() const {
+        return dedicated_b2;
+    }
+
+    int pair(int b1, int b2) const {
         if(left[b1] == right[b2] || b2 == dedicated_b2) return left[b1];  
         else return right[b2];  
     }
 
     int dp;
-    std::vector<size_t> left;
-    std::vector<size_t> right;
-    size_t dedicated_b2;
+    std::vector<int> left;
+    std::vector<int> right;
+    int dedicated_b2;
     bool active;
 };
 
