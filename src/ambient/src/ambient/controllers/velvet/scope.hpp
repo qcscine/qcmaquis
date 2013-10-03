@@ -79,11 +79,158 @@ namespace ambient {
         int round;
     };
 
+struct pairing {
+
+    pairing() : active(false) {} 
+
+    template<class M>
+    pairing(const M& ruleset, size_t loop_max) : active(true), left(loop_max), right(loop_max){
+    
+        int np = ambient::channel.wk_dim();
+    
+        std::vector<size_t> singular;
+        std::vector<size_t> dedicated;
+    
+        std::vector<std::vector<size_t> > output;
+        for(size_t b2 = 0; b2 < loop_max; b2++){
+            output.push_back(std::vector<size_t>());
+            for(size_t b1 = 0; b1 < loop_max; b1++){
+                if(ruleset.has(b1,b2)) output.back().push_back(b1);
+            }
+        }
+        for(size_t i = 0; i < output.size(); i++){
+            if(output[i].empty()) printf("Error: b2 = %d was never matched\n", (int)i);
+            if(output[i].size() > 1){
+                if(!dedicated.empty()) printf("Error: multiple tails\n");
+                dedicated = output[i];
+                dedicated_b2 = i;
+            }
+            singular.push_back(output[i][0]);
+        }
+    
+        std::vector<size_t> common;
+        for(size_t i = 0; i < singular.size(); i++){
+            for(size_t ii = 0; ii < singular.size(); ii++){
+                if(singular[i] == singular[ii] && i != ii){
+                    bool exists = false;
+                    for(size_t j = 0; j < common.size(); j++){
+                       if(common[j] == singular[i]){
+                           exists = true; break;
+                       }
+                    }
+                    if(!exists) common.push_back(singular[i]);
+                    break;
+                }
+            }
+        }
+    
+        printf("Common set: "); for(size_t i = 0; i < common.size(); i++) printf("%d ", (int)common[i]); printf("\n");
+        printf("Dedicated set: "); for(size_t i = 0; i < dedicated.size(); i++) printf("%d ", (int)dedicated[i]); printf("\n");
+    
+    
+        dp = std::floor((float)dedicated.size()*np/loop_max + 0.5);
+        int wp = np - dp;
+    
+        printf("Dedicated proc number: %d\n", dp);
+    
+        // distributing left
+        if(dedicated.empty()) printf("Error: no tail exists\n");
+    
+        size_t factor = dedicated.size() / dp;
+        size_t id = 0;
+        for(size_t p = 0; p < dp; p++){
+            for(size_t d = id; d < id+factor; d++){ left[dedicated[d]] = p; }
+            id += factor;
+        }
+        while(id < dedicated.size()){
+            left[dedicated[id]] = id % dp;
+            id++;
+        }
+        factor = (singular.size()-dedicated.size()) / wp;
+        id = 0;
+        for(size_t p = dp; p < np; p++){
+            for(size_t d = id; d < std::min(id+factor, singular.size()); d++){
+                bool exclude = false;
+                for(size_t k = 0; k < dedicated.size(); k++){
+                    if(d == dedicated[k]){
+                        exclude = true;
+                        break;
+                    }
+                }
+                if(exclude){ id++; continue; }
+                left[d] = p;
+            }
+            id += factor;
+        }
+        size_t p = dp;
+        while(id < singular.size()){
+            bool exclude = false;
+            for(size_t k = 0; k < dedicated.size(); k++){
+                if(id == dedicated[k]){
+                    exclude = true;
+                    break;
+                }
+            }
+            if(exclude){ id++; continue; }
+            left[id] = p;
+            id++; p++;
+        }
+    
+        // distributing right according to left
+        std::vector<size_t> workload(np, 0);
+        for(size_t i = 0; i < loop_max; i++){
+           if(i == dedicated_b2){
+               right[i] = left[dedicated[0]];
+           }else if(singular[i] == common[0])
+               continue;
+           else
+               right[i] = left[singular[i]];
+           workload[right[i]]++;
+        }
+    
+        for(size_t i = 0; i < loop_max; i++){
+           if(singular[i] == common[0] && i != dedicated_b2){
+               int min = -1;
+               int rank = -1;
+               for(size_t p = dp; p < np; p++){
+                   if(workload[p] < min || min == -1){ min = workload[p]; rank = p; }
+               }
+               if(rank == -1) printf("Error: couldn't find rank for right of common left\n");
+               workload[rank]++;
+               right[i] = rank;
+           }
+        }
+    }
+
+    int get_left(size_t b1) const {
+        return left[b1];
+    }
+
+    int get_right(size_t b2) const {
+        return right[b2];
+    }
+
+    int get_dedicated() const {
+        return dp;
+    }
+
+    int pair(size_t b1, size_t b2) const {
+        if(left[b1] == right[b2] || b2 == dedicated_b2) return left[b1];  
+        else return right[b2];  
+    }
+
+    int dp;
+    std::vector<size_t> left;
+    std::vector<size_t> right;
+    size_t dedicated_b2;
+    bool active;
+};
+
     template<>
     class scope<single> : public controller::scope {
     public:
         static int compact_factor; 
-        static std::vector<int> p; 
+        static pairing p; 
         static void compact(size_t n){ 
             if(n <= ambient::channel.wk_dim()) return; 
             compact_factor = (int)(n / ambient::channel.wk_dim()); // iterations before switch 
