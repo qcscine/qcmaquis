@@ -131,7 +131,8 @@ struct contraction {
                 bool pretend = (run == 0);
                 if(!pretend) ret[b2].allocate_blocks();
                 #ifdef AMBIENT
-                if(!pretend && b2 == 1) red = std::vector<block_matrix<Matrix, SymmGroup> >(locale::p.get_dedicated(), ret[b2]);
+                if(!pretend && locale::p.get_dedicated() && b2 == locale::p.get_dedicated_b2() && red.empty()) red
+                    = std::vector<block_matrix<Matrix, SymmGroup> >(locale::p.get_dedicated(), ret[b2]);
                 #endif
 
                 for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
@@ -139,8 +140,10 @@ struct contraction {
                         continue;
                     bool execute = true;
                     #ifdef AMBIENT
-                    if(!pretend && b2 == 1 && b1 != 0) execute = false;
                     locale place(locale::p.pair(b1,b2));
+                    if(!pretend && locale::p.get_dedicated() && b2 == locale::p.get_dedicated_b2() && b1 != 0){
+                        if(place.sector < (int)red.size()) execute = false; // happens sometimes
+                    }
                     #endif
                     
                     block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
@@ -210,23 +213,17 @@ struct contraction {
         }
 
         #ifdef AMBIENT
-        if(red.size() > 1){
-            for(int stride = 1; stride < red.size(); stride *= 2){
-                for(int kk = stride; kk < red.size(); kk += stride*2){
-                    locale l(kk-stride);
-                    for(size_t k = 0; k < red[kk].n_blocks(); ++k){
-                        red[kk-stride].match_and_add_block(red[kk][k],
-                                                           red[kk].left_basis()[k].first,
-                                                           red[kk].right_basis()[k].first);
+        if(!red.empty()){
+            if(red.size() > 1){
+                for(int stride = 1; stride < red.size(); stride *= 2){
+                    for(int kk = stride; kk < red.size(); kk += stride*2){
+                        locale l(kk-stride);
+                        red[kk-stride] += red[kk];
                     }
                 }
             }
-        }
-        locale l(0);
-        for (size_t k = 0; k < red[0].n_blocks(); ++k){
-            ret[1].match_and_add_block(red[0][k],
-                                       red[0].left_basis()[k].first,
-                                       red[0].right_basis()[k].first);
+            locale l(0);
+            ret[locale::p.get_dedicated_b2()] += red[0];
         }
         #endif
         return ret;
