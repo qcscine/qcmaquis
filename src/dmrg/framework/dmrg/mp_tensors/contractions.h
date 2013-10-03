@@ -74,40 +74,6 @@ struct contraction {
         return t1;
     }
 
-    template<class Matrix>
-    struct latch{
-        latch(Matrix& a, const Matrix& b, const Matrix& c, size_t k1, size_t k2, size_t k3, size_t k4, size_t k5, size_t k6)
-        : a(&a), b(&b), c(&c), k1(k1), k2(k2), k3(k3), k4(k4), k5(k5), k6(k6)
-        {
-        }
-        int owner(){
-#ifdef AMBIENT
-            int o = (*b)[0].core->current->owner;
-            if(o == -1) o = ambient::rank();
-            return o;
-#else
-            return 0;
-#endif
-        }
-        void execute_l(){
-            maquis::dmrg::detail::lb_tensor_mpo(*a, *b, *c, k1, k2, k3, k4, k5, k6);
-        }
-
-        void execute_r(){
-            maquis::dmrg::detail::rb_tensor_mpo(*a, *b, *c, k1, k2, k3, k4, k5, k6);
-        }
-
-        Matrix* a;
-        const Matrix* b;
-        const Matrix* c;
-        size_t k1; 
-        size_t k2; 
-        size_t k3; 
-        size_t k4; 
-        size_t k5; 
-        size_t k6;
-    };
-
     // note: this function changes the internal structure of Boundary,
     //       each block is transposed
     template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -130,17 +96,18 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         size_t loop_max = left.aux_dim();
 
+        #ifdef AMBIENT
         {
-            #ifdef DMRG_KEEP_L0
             ambient::scope<ambient::shared> s;
-            #else
-            locale l(0);
-            #endif
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(left[0]), mps.data(), tmp);
             reshape_right_to_left_new<Matrix>(mps.site_dim(), left[0].right_basis(), mps.col_dim(), tmp, t[0]);
         }
-        parallel_for(locale::compact(loop_max), locale b = 1; b < loop_max; ++b) {
+        for(size_t b = 1; b < loop_max; ++b) {
+            locale l(locale::p.get_left(b));
+        #else
+        for(size_t b = 0; b < loop_max; ++b) {
+        #endif
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(left[b]), mps.data(), tmp);
             reshape_right_to_left_new<Matrix>(mps.site_dim(), left[b].right_basis(), mps.col_dim(), tmp, t[b]);
@@ -151,31 +118,30 @@ struct contraction {
         
         Boundary<Matrix, SymmGroup> ret;
         ret.resize(mpo.col_dim());
-        
+
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
         
         mps.make_left_paired();
         loop_max = mpo.col_dim();
 
-        maquis::cout << "b1/b2 loop...\n";
-        std::vector<int> p(loop_max, -1);
-        #ifdef AMBIENT
-        std::vector<std::vector<latch<Matrix>*> > tail(std::max(loop_max,left.aux_dim()));
-        #endif
+        std::vector<block_matrix<Matrix, SymmGroup> > red;
         for(size_t b2 = 0; b2 < loop_max; ++b2) {
             for (int run = 0; run < 2; ++run) {
                 bool pretend = (run == 0);
                 if(!pretend) ret[b2].allocate_blocks();
+                #ifdef AMBIENT
+                if(!pretend && b2 == 1) red = std::vector<block_matrix<Matrix, SymmGroup> >(locale::p.get_dedicated(), ret[b2]);
+                #endif
 
                 for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
                     if (!mpo.has(b1, b2))
                         continue;
-                    bool execute;
-                    if(!pretend){
-                        if(b2 == 1 && b1 != 0) execute = false;
-                        else execute = true;
-                    }
+                    bool execute = true;
+                    #ifdef AMBIENT
+                    if(!pretend && b2 == 1 && b1 != 0) execute = false;
+                    locale place(locale::p.pair(b1,b2));
+                    #endif
                     
                     block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                     if (W.n_blocks() == 0)
@@ -226,22 +192,10 @@ struct contraction {
                                 if (!pretend) {
                                     Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
                                     Matrix const & iblock = T(T_l_charge, T_r_charge);
-                                    Matrix & oblock = ret[b2](out_l_charge, out_r_charge);
+                                    Matrix & oblock = execute ? ret[b2](out_l_charge, out_r_charge) : red[place.sector](out_l_charge, out_r_charge) ;
 
-                                    #ifdef AMBIENT
-                                    latch<Matrix>* op = new latch<Matrix>(oblock, iblock, wblock, out_left_offset, in_left_offset,
-                                                                          physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
-                                    if(execute){
-                                        locale::compact(left.aux_dim()); 
-                                        locale l(locale::p[b2]);
-                                        op->execute_l();
-                                        delete op;
-                                    }else
-                                        tail[ locale::p[b2] ].push_back(op);
-                                    #else
                                     maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
                                                                         physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
-                                    #endif
                                 }
                                 
                                 if (pretend)
@@ -254,75 +208,27 @@ struct contraction {
                 }
             }
         }
-        maquis::cout << "end of b1/b2 loop...\n";
 
         #ifdef AMBIENT
-        for(size_t k = 0; k < tail.size(); ++k) {
-            if(tail[k].size()) maquis::cout << "tail " << k << ": " << tail[k].size() << "\n";
-            if(k == locale::p[1])
-            {
-                std::vector<latch<Matrix>*>& ops = tail[k];
-                std::vector<std::vector<latch<Matrix>*> > chunks;
-                for(int i = 0; i < ops.size(); i++){
-                    bool found = false;
-                    for(int j = 0; j < chunks.size(); j++){
-                        if(chunks[j][0]->a == ops[i]->a){
-                            chunks[j].push_back(ops[i]);
-                            found = true;
-                            break;
-                        }
+        if(red.size() > 1){
+            for(int stride = 1; stride < red.size(); stride *= 2){
+                for(int kk = stride; kk < red.size(); kk += stride*2){
+                    locale l(kk-stride);
+                    for(size_t k = 0; k < red[kk].n_blocks(); ++k){
+                        red[kk-stride].match_and_add_block(red[kk][k],
+                                                           red[kk].left_basis()[k].first,
+                                                           red[kk].right_basis()[k].first);
                     }
-                    if(!found){
-                        chunks.push_back(std::vector<latch<Matrix>*>());
-                        chunks.back().push_back(ops[i]);
-                    }
-                }
-                for(int i = 0; i < chunks.size(); i++){
-                    std::vector<latch<Matrix>*>& part = chunks[i];
-                    {
-                        locale l(part[0]->owner());
-                        part[0]->execute_l();
-                    }
-                    if(part.size() == 1) continue; 
-                    Matrix* master = part[0]->a;
-                    std::vector<std::vector<Matrix*> > reduce(ambient::channel.wk_dim());
-                    for(int j = 1; j < part.size(); j++){
-                        locale l(part[j]->owner());
-                        part[j]->a = new Matrix(num_rows(*master), num_cols(*master));
-                        part[j]->execute_l();
-                        reduce[part[j]->owner()].push_back(part[j]->a);
-                    }
-                    for(int p = 0; p < reduce.size(); p++){
-                        if(reduce[p].size() > 1){
-                        for(int stride = 1; stride < reduce[p].size(); stride *= 2)
-                            for(int kk = stride; kk < reduce[p].size(); kk += stride*2){
-                                locale l(p);
-                                *reduce[p][kk-stride] += *reduce[p][kk];
-                            }
-                        }
-                    }
-                    locale::compact(left.aux_dim()); locale l(k);
-                    for(int p = 0; p < reduce.size(); p++){
-                        if(reduce[p].empty()) continue;
-                        *master += *reduce[p][0];
-                    }
-                    for(int j = 1; j < part.size(); j++) delete part[j]->a;
-                    for(int j = 0; j < chunks[i].size(); j++) delete chunks[i][j];
-                }
-            }else{
-                for(int i = 0; i < tail[k].size(); i++){
-                    locale l(tail[k][i]->owner());
-                    tail[k][i]->execute_l();
-                }
-                locale::compact(left.aux_dim()); locale l(k);
-                for(int i = 0; i < tail[k].size(); i++){
-                    ambient::migrate(*tail[k][i]->a);
-                    delete tail[k][i];
                 }
             }
         }
+        locale l(0);
+        for (size_t k = 0; k < red[0].n_blocks(); ++k){
+            ret[1].match_and_add_block(red[0][k],
+                                       red[0].left_basis()[k].first,
+                                       red[0].right_basis()[k].first);
+        }
         #endif
-        
         return ret;
     }
     
@@ -372,7 +278,6 @@ struct contraction {
         mps.make_right_paired();
         loop_max = mpo.row_dim();
 
-        std::vector<latch<Matrix>*> tail;
         parallel_for(locale::compact(loop_max), locale b1 = 0; b1 < loop_max; ++b1) {
             for(int run = 0; run < 2; ++run) {
                 if(run == 1)
@@ -532,19 +437,17 @@ struct contraction {
         size_t loop_max = mpo.col_dim();
         std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max);
 
-        #ifdef AMBIENT
         for(size_t b = 0; b < loop_max; ++b){
-            locale::compact(left.aux_dim()); locale l(locale::p[b]);
-        #else
-        parallel_for(locale::compact(loop_max), size_t b = 0; b < loop_max; ++b){
-        #endif
+            #ifdef AMBIENT
+            locale l(locale::p.get_right(b));
+            #endif
             gemm(left_mpo_mps[b], right[b], oblocks[b]);
         }
 
         #ifdef AMBIENT
         std::vector<block_matrix<Matrix, SymmGroup> > reduce(ambient::channel.wk_dim(), block_matrix<Matrix, SymmGroup>(ket_tensor.data().left_basis(), ket_tensor.data().right_basis()));
         for(size_t b = 0; b < loop_max; ++b){
-            locale::compact(left.aux_dim()); locale l(locale::p[b]);
+            locale l(locale::p.get_right(b));
             block_matrix<Matrix, SymmGroup>& ret = reduce[l.sector];
             for (size_t k = 0; k < oblocks[b].n_blocks(); ++k)
                 ret.match_and_add_block(oblocks[b][k],
