@@ -130,6 +130,7 @@ namespace ambient { namespace controllers { namespace velvet {
         virtual const char* name(){ return "get"; }
         #endif
     private:
+        bool evaluated;
         request* handle;
         transformable* target;
         int sid;
@@ -138,7 +139,6 @@ namespace ambient { namespace controllers { namespace velvet {
     template<>
     class set<transformable> : public cfunctor {
     public:
-        typedef ambient::bulk_allocator<cfunctor*> allocator;
         void* operator new (size_t size){ return ambient::pool::malloc<bulk,set>(); }
         void operator delete (void* ptr){ }
         static void spawn(transformable& v, int owner);
@@ -149,7 +149,7 @@ namespace ambient { namespace controllers { namespace velvet {
         virtual const char* name(){ return "set"; }
         #endif
     private:
-        std::vector<request*, allocator> handles;
+        request* handle;
         transformable* target;
         int sid;
     };
