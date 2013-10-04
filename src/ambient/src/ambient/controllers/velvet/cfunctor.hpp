@@ -80,7 +80,6 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void get<revision>::spawn(revision& r){
         if(r.transfer == NULL){
-            if(ambient::rank() == 0) printf("T");
             r.transfer = new (ambient::pool::malloc<bulk,get>())
                               get<revision>(r);
             assist(r, ambient::rank());
@@ -136,37 +135,38 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void get<transformable>::spawn(transformable& v, int owner){
         ambient::controller.queue(new get(v, owner));
     }
-    inline get<transformable>::get(transformable& v, int owner)
-    : target(&v) {
-        sid = ambient::channel.index();
-        handle = ambient::channel.get(target, sid);
-    }
-    inline bool get<transformable>::ready(){
-        return ambient::channel.test(handle);
-    }
-    inline void get<transformable>::invoke(){}
-
     inline void set<transformable>::spawn(transformable& v, int owner){
         ((cfunctor*)v.generator)->queue(new set(v));
     }
-    inline set<transformable>::set(transformable& v) 
-    : target(&v) {
+
+    inline get<transformable>::get(transformable& v, int owner)
+    : target(&v), evaluated(false) {
         sid = ambient::channel.index();
+        handle = ambient::channel.get(target, sid);
+        if(ambient::rank.neighbor() == owner) evaluated = true;
+    }
+    inline set<transformable>::set(transformable& v) 
+    : target(&v), handle(NULL) {
+        sid = ambient::channel.index();
+    }
+
+    inline bool get<transformable>::ready(){
+        if(ambient::channel.test(handle)){
+            if(!evaluated){
+                handle = ambient::channel.set(target, ambient::rank.neighbor(), sid);
+                evaluated = true;
+            }
+            return ambient::channel.test(handle);
+        }
+        return false;
     }
     inline bool set<transformable>::ready(){
         if(target->generator != NULL) return false;
-        if(handles.empty()){
-            for(int i = 0; i < ambient::channel.wk_dim(); i++){
-                if(i == ambient::rank()) continue;
-                handles.push_back(ambient::channel.set(target, i, sid)); 
-            }
-        }
-        bool r = true;
-        for(int i = 0; i < handles.size(); i++){
-            if(!ambient::channel.test(handles[i])) r = false;
-        }
-        return r;
+        if(!handle) handle = ambient::channel.set(target, ambient::rank.neighbor(), sid); 
+        return ambient::channel.test(handle);
     }
+
+    inline void get<transformable>::invoke(){}
     inline void set<transformable>::invoke(){}
 
     // }}}
