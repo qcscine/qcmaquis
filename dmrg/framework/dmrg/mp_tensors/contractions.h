@@ -454,8 +454,7 @@ struct contraction {
         if(reduce.size() > 1){
             for(int stride = 1; stride < reduce.size(); stride *= 2){
                 for(int kk = stride; kk < reduce.size(); kk += stride*2){
-                    locale l(kk-stride);
-                    for(size_t k = 0; k < reduce[kk].n_blocks(); ++k){
+                    parallel_for(locale::compact(reduce[kk].n_blocks()), locale k = 0; k < reduce[kk].n_blocks(); ++k){
                         reduce[kk-stride].match_and_add_block(reduce[kk][k],
                                                               reduce[kk].left_basis()[k].first,
                                                               reduce[kk].right_basis()[k].first);
