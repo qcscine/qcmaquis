@@ -274,7 +274,9 @@ template<class Matrix, class SymmGroup>
 typename block_matrix<Matrix, SymmGroup>::real_type block_matrix<Matrix, SymmGroup>::norm() const
 {
     std::vector<real_type> vt; vt.reserve(data_.size());
-    std::transform(data_.begin(), data_.end(), back_inserter(vt), utils::functor_norm_square());
+    parallel_for(locale::compact(n_blocks()), locale k = 0; k < n_blocks(); ++k){
+        vt.push_back(norm_square(data_[k]));
+    }
     return maquis::sqrt(maquis::accumulate(vt.begin(), vt.end(), real_type(0.)));
 }
 
