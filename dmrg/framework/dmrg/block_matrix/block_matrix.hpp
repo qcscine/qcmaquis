@@ -250,14 +250,14 @@ typename Matrix::value_type const & block_matrix<Matrix, SymmGroup>::operator()(
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operator*=(const scalar_type& v)
 {
-    for(size_type k = 0; k < n_blocks(); ++k) data_[k] *= v;
+    parallel_for(locale::compact(n_blocks()), locale k = 0; k < n_blocks(); ++k) data_[k] *= v;
     return *this;
 }
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operator/=(const scalar_type& v)
 {
-    for(size_type k = 0; k < n_blocks(); ++k) data_[k] /= v;
+    parallel_for(locale::compact(n_blocks()), locale k = 0; k < n_blocks(); ++k) data_[k] /= v;
     return *this;
 }
 
