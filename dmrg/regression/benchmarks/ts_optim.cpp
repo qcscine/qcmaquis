@@ -133,10 +133,6 @@ int main(int argc, char ** argv)
         #endif
         tim_ts_obj.end();
         maquis::cout << "Two site obj done!\n";
-        #ifdef AMBIENT
-        size_t loop_max = ts_mpo.col_dim();
-        locale::p = ambient::pairing(ts_mpo, loop_max);
-        #endif
 
         std::string boundary_name;
         
@@ -150,8 +146,10 @@ int main(int argc, char ** argv)
             ar["/tensor"] >> left;
         } else {
             left = mps.left_boundary();
-            for (size_t i=0; i<site; ++i)
+            for (size_t i=0; i<site; ++i){
+                locale::p = ambient::pairing(mpo[i], mpo[i].col_dim());
                 left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+            }
         }
         tim_l_boundary.end();
         maquis::cout << "Left boundary done!\n";
@@ -181,6 +179,8 @@ int main(int argc, char ** argv)
         }
         
         #ifdef AMBIENT
+        size_t loop_max = ts_mpo.col_dim();
+        locale::p = ambient::pairing(ts_mpo, loop_max);
         for(size_t b = 0; b < loop_max; ++b){
             locale l(locale::p.get_left(b));
             storage::migrate(left[b]);
