@@ -181,12 +181,12 @@ int main(int argc, char ** argv)
         #ifdef AMBIENT
         size_t loop_max = ts_mpo.col_dim();
         locale::p = ambient::pairing(ts_mpo, loop_max);
-        for(size_t b = 0; b < loop_max; ++b){
+        for(size_t b = 0; b < left.aux_dim(); ++b){
             locale l(locale::p.get_left(b));
             storage::migrate(left[b]);
         }
         ambient::sync();
-        for(size_t b = 0; b < loop_max; ++b){
+        for(size_t b = 0; b < right.aux_dim(); ++b){
             locale l(locale::p.get_right(b));
             storage::migrate(right[b]);
         }
