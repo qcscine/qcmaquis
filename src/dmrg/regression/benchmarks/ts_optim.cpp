@@ -154,7 +154,7 @@ std::string boundary_name;
             }
         }
         tim_l_boundary.end();
-        maquis::cout << "Left boundary done!\n";
+        maquis::cout << "Left boundary done! -- " << left.aux_dim() << "\n";
         
         /// Compute right boundary
         tim_r_boundary.begin();
@@ -170,7 +170,7 @@ std::string boundary_name;
                 right = contraction::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
         }
         tim_r_boundary.end();
-        maquis::cout << "Right boundary done!\n";
+        maquis::cout << "Right boundary done! -- " << right.aux_dim() << "\n";
         
         // Clearing unneeded MPS Tensors
         for (int k = 0; k < mps.length(); k++){
@@ -182,7 +182,29 @@ std::string boundary_name;
         
         #ifdef AMBIENT
         size_t loop_max = ts_mpo.col_dim();
-        locale::p = ambient::pairing(ts_mpo, loop_max);
+        locale::p = ambient::pairing(ts_mpo, std::max(left.aux_dim(), right.aux_dim()));
+        if(ambient::rank() == 0){
+            printf("Left sizes:\n");
+            for(int p = 0; p < ambient::channel.wk_dim(); p++){
+                printf("R%d: ", p);
+                for(size_t b = 0; b < left.aux_dim(); ++b) if(locale::p.get_left(b) == p){
+                    int total = 0;
+                    for(int i = 0; i < left[b].n_blocks(); ++i) total += num_rows(left[b][i])*num_cols(left[b][i]);
+                    printf("%d ", total);
+                }
+                printf("\n");
+            }
+            printf("Right sizes:\n");
+            for(int p = 0; p < ambient::channel.wk_dim(); p++){
+                printf("R%d: ", p);
+                for(size_t b = 0; b < right.aux_dim(); ++b) if(locale::p.get_right(b) == p){
+                    int total = 0;
+                    for(int i = 0; i < right[b].n_blocks(); ++i) total += num_rows(right[b][i])*num_cols(right[b][i]);
+                    printf("%d ", total);
+                }
+                printf("\n");
+            }
+        }
         for(size_t b = 0; b < left.aux_dim(); ++b){
             locale l(locale::p.get_left(b));
             storage::migrate(left[b]);
