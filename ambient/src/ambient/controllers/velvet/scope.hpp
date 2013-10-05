@@ -138,9 +138,14 @@ struct pairing {
         if(!dedicated.empty() && dp == 0) dp = 1;
         if(dp == np) dp = np - 1;
         int wp = np - dp;
-    
+        if(np==1){
+            dp=1;
+            wp=1;
+        }
+        
         if(ambient::rank() == 0) printf("Dedicated proc number: %d\n", dp);
-    
+        std::cout << std::flush;
+        
         // distributing left
         int factor;
         int id = 0;
