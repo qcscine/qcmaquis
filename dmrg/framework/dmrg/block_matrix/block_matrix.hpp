@@ -250,6 +250,7 @@ typename Matrix::value_type const & block_matrix<Matrix, SymmGroup>::operator()(
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operator*=(const scalar_type& v)
 {
+    // todo: check if "omp for" used in nested regions
     parallel_for(locale::compact(n_blocks()), locale k = 0; k < n_blocks(); ++k) data_[k] *= v;
     return *this;
 }
@@ -257,6 +258,7 @@ block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operato
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operator/=(const scalar_type& v)
 {
+    // todo: check if "omp for" used in nested regions
     parallel_for(locale::compact(n_blocks()), locale k = 0; k < n_blocks(); ++k) data_[k] /= v;
     return *this;
 }
@@ -274,7 +276,7 @@ template<class Matrix, class SymmGroup>
 typename block_matrix<Matrix, SymmGroup>::real_type block_matrix<Matrix, SymmGroup>::norm() const
 {
     std::vector<real_type> vt; vt.reserve(data_.size());
-    parallel_for(locale::compact(n_blocks()), locale k = 0; k < n_blocks(); ++k){
+    semi_parallel_for(locale::compact(n_blocks()), locale k = 0; k < n_blocks(); ++k){
         vt.push_back(norm_square(data_[k]));
     }
     return maquis::sqrt(maquis::accumulate(vt.begin(), vt.end(), real_type(0.)));

@@ -126,7 +126,11 @@ struct contraction {
         loop_max = mpo.col_dim();
 
         std::vector<block_matrix<Matrix, SymmGroup> > red;
+        #ifdef AMBIENT
         for(size_t b2 = 0; b2 < loop_max; ++b2) {
+        #else
+        parallel_for(size_t(),size_t b2 = 0; b2 < loop_max; ++b2) {
+        #endif
             for (int run = 0; run < 2; ++run) {
                 bool pretend = (run == 0);
                 if(!pretend) ret[b2].allocate_blocks();
@@ -195,7 +199,11 @@ struct contraction {
                                 if (!pretend) {
                                     Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
                                     Matrix const & iblock = T(T_l_charge, T_r_charge);
+                                    #ifdef AMBIENT
                                     Matrix & oblock = execute ? ret[b2](out_l_charge, out_r_charge) : red[place.sector](out_l_charge, out_r_charge) ;
+                                    #else
+                                    Matrix & oblock = ret[b2](out_l_charge, out_r_charge);
+                                    #endif
 
                                     maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
                                                                         physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);

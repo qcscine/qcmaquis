@@ -134,7 +134,7 @@ int main(int argc, char ** argv)
         tim_ts_obj.end();
         maquis::cout << "Two site obj done!\n";
 
-        std::string boundary_name;
+std::string boundary_name;
         
         /// Compute left boundary
         tim_l_boundary.begin();
@@ -147,7 +147,9 @@ int main(int argc, char ** argv)
         } else {
             left = mps.left_boundary();
             for (size_t i=0; i<site; ++i){
+                #ifdef AMBIENT
                 locale::p = ambient::pairing(mpo[i], mpo[i].col_dim());
+                #endif
                 left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
             }
         }
