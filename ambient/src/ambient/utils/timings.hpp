@@ -80,7 +80,7 @@ namespace ambient {
 #endif
         }
     private:
-#if !defined(__APPLE__) && !defined(AMBIENT_OMP)
+#if !defined(__APPLE__) || !defined(AMBIENT_OMP)
         pthread_t thread_; 
         clockid_t cid_;
 #endif
