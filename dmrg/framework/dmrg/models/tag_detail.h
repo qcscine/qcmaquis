@@ -87,7 +87,10 @@ namespace tag_detail {
                 invscale1 = 1./(*it1);
                 break;
             }
-        if (it1 == reference[0].elements().second) { throw std::runtime_error("Null-block encountered\n"); }
+        if (it1 == reference[0].elements().second) {
+            maquis::cout << "Null-block encountered\n";
+            return std::make_pair(false, 0.);
+        }
 
         typename Matrix::const_element_iterator it2 = sample[0].elements().first;
         for ( ; it2 != sample[0].elements().second; ++it2)
@@ -95,7 +98,10 @@ namespace tag_detail {
                 invscale2 = 1./(*it2);
                 break;
             }
-        if (it2 == sample[0].elements().second) { throw std::runtime_error("Null-block encountered\n"); }
+        if (it2 == sample[0].elements().second) {
+            maquis::cout << "Null-block encountered\n";
+            return std::make_pair(false, 0.);
+        }
 
         // Check all blocks for equality modulo scale factor
         for (typename Matrix::size_type b=0; b < reference.n_blocks(); ++b)

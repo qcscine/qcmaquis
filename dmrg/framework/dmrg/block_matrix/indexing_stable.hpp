@@ -296,6 +296,8 @@ class ProductBasis
 public:
     typedef typename SymmGroup::charge charge;
     typedef std::size_t size_t;
+
+    ProductBasis() {}
     
     ProductBasis(Index<SymmGroup> const & a,
                  Index<SymmGroup> const & b)

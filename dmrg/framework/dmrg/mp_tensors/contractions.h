@@ -103,58 +103,54 @@ struct contraction {
                 
                 MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
                 block_matrix<Matrix, SymmGroup> const & W = access.op;
-                
                 block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
                 
-                ProductBasis<SymmGroup> in_left_pb(physical_i, left[b1].right_basis());
+                ProductBasis<SymmGroup> in_left_pb;
+                if (!pretend)
+                    in_left_pb = ProductBasis<SymmGroup>(physical_i, left[b1].right_basis());
                 
                 for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
                 {
                     assert( physical_i.has(W.left_basis()[w_block].first) );
                     assert( physical_i.has(W.right_basis()[w_block].first) );
                     
-                    size_t s1 = physical_i.position(W.left_basis()[w_block].first);
-                    size_t s2 = physical_i.position(W.right_basis()[w_block].first);
+                    charge phys_c1 = W.left_basis()[w_block].first;
+                    charge phys_c2 = W.right_basis()[w_block].first;
+                    size_t phys_s1 = physical_i.size_of_block(phys_c1);
+                    size_t phys_s2 = physical_i.size_of_block(phys_c2);
                    
                     for (size_t t_block = 0; t_block < T.n_blocks(); ++t_block)
                     {
-                        size_t r = right_i.position(T.right_basis()[t_block].first);
-                        if(r == right_i.size()) continue;
                         size_t l = left_i.position(SymmGroup::fuse(T.left_basis()[t_block].first,
-                                                                   -physical_i[s1].first));
+                                                                   -phys_c1));
                         if(l == left_i.size() || ! left[b1].right_basis().has(left_i[l].first) )
                             continue;
+
+                        charge left_charge = left_i[l].first;
+                        charge T_r_charge = T.right_basis()[t_block].first;
+                        size_t r_size = T.right_basis()[t_block].second;
+
+                        charge out_l_charge = SymmGroup::fuse(phys_c2, left_charge);
                         
-                        {
-                            charge T_l_charge = SymmGroup::fuse(physical_i[s1].first, left_i[l].first);
-                            charge T_r_charge = right_i[r].first;
+                        assert( out_left_i.has(out_l_charge) );
+                        //if (! out_left_i.has(out_l_charge) )
+                        //    continue;
+                        
+                        if (!pretend) {
+                            size_t in_left_offset = in_left_pb(phys_c1, left_charge);
+                            size_t out_left_offset = out_left_pb(phys_c2, left_charge);
+                            Matrix const & wblock = W[w_block];
+                            Matrix const & iblock = T[t_block];
+                            Matrix & oblock = ret(out_l_charge, T_r_charge);
                             
-                            if (! T.has_block(T_l_charge, T_r_charge) )
-                                continue;
-                            
-                            charge out_l_charge = SymmGroup::fuse(physical_i[s2].first, left_i[l].first);
-                            charge out_r_charge = right_i[r].first;
-                            
-                            if (! out_left_i.has(out_l_charge) )
-                                continue;
-                            
-                            size_t in_left_offset = in_left_pb(physical_i[s1].first, left_i[l].first);
-                            size_t out_left_offset = out_left_pb(physical_i[s2].first, left_i[l].first);
-                            
-                            if (!pretend) {
-                                Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
-                                Matrix const & iblock = T(T_l_charge, T_r_charge);
-                                Matrix & oblock = ret(out_l_charge, out_r_charge);
-                                
-                                maquis::dmrg::detail::lb_tensor_mpo_tag(oblock, iblock, wblock, out_left_offset, in_left_offset,
-                                            physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second, access.scale);
-                            }
-                            
-                            if (pretend)
-                                ret.reserve(out_l_charge, out_r_charge,
-                                            out_left_i.size_of_block(out_l_charge),
-                                            right_i[r].second);
+                            maquis::dmrg::detail::lb_tensor_mpo_tag(oblock, iblock, wblock, out_left_offset, in_left_offset,
+                                        phys_s1, phys_s2, left_i[l].second, r_size, access.scale);
                         }
+                        
+                        if (pretend)
+                            ret.reserve(out_l_charge, T_r_charge,
+                                        out_left_i.size_of_block(out_l_charge),
+                                        r_size);
                     } // T block
                 } // operator block
             } // b1
