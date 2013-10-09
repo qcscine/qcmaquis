@@ -14,9 +14,9 @@ template <class Matrix>
 template <class M>
 Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
 {
-    typedef typename tag_type<M>::type tag_type;
+    typedef typename tag_type<M, TwoU1>::type tag_type;
 
-    typename op_t<M>::type create_up_op, create_down_op, destroy_up_op, destroy_down_op,
+    typename op_t<M, TwoU1>::type create_up_op, create_down_op, destroy_up_op, destroy_down_op,
                            count_up_op, count_down_op, docc_op, e2d_op, d2e_op,
                            ident_op, fill_op;
 
@@ -53,7 +53,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
     fill_op.insert_block(M(1, 1, -1), C, C);
     fill_op.insert_block(M(1, 1, 1), D, D);
 
-    typename op_t<M>::type tmp;
+    typename op_t<M, TwoU1>::type tmp;
 
     gemm(fill_op, create_down_op, tmp);
     create_down_op = tmp;
@@ -86,7 +86,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
     #undef REGISTER
     /**********************************************************************/
 
-    chem_detail::ChemHelper<M> term_assistant(parms, lat, ident, fill, tag_handler);
+    chem_detail::ChemHelper<M, TwoU1> term_assistant(parms, lat, ident, fill, tag_handler);
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
@@ -94,7 +94,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
     /**********************************************************************/
     /*** Tagged terms *****************************************************/
     /**********************************************************************/
-    std::vector<typename hamtagterm_t<M>::type > tagterms;
+    std::vector<typename hamtagterm_t<M, TwoU1>::type > tagterms;
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         int i = term_assistant.idx(m, 0);
         int j = term_assistant.idx(m, 1);
@@ -104,7 +104,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
         // Core electrons energy
         if ( i==-1 && j==-1 && k==-1 && l==-1) {
 
-            typename hamtagterm_t<M>::type term;
+            typename hamtagterm_t<M, TwoU1>::type term;
             term.fill_operator = ident;
             term.scale = matrix_elements[m];
             term.operators.push_back(std::make_pair(0, ident));
@@ -116,14 +116,14 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
         // On site energy t_ii
         else if ( i==j && k == -1 && l == -1) {
             {
-                typename hamtagterm_t<M>::type term;
+                typename hamtagterm_t<M, TwoU1>::type term;
                 term.fill_operator = ident;
                 term.scale = matrix_elements[m];
                 term.operators.push_back(std::make_pair(i, count_up));
                 tagterms.push_back(term);
             }
             {
-                typename hamtagterm_t<M>::type term;
+                typename hamtagterm_t<M, TwoU1>::type term;
                 term.fill_operator = ident;
                 term.scale = matrix_elements[m];
                 term.operators.push_back(std::make_pair(i, count_down));
@@ -137,16 +137,16 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
 
-            tagterms.push_back(TermMaker<M>::positional_two_term(
+            tagterms.push_back(TermMaker<M, TwoU1>::positional_two_term(
                 true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler)
             );
-            tagterms.push_back(TermMaker<M>::positional_two_term(
+            tagterms.push_back(TermMaker<M, TwoU1>::positional_two_term(
                 true, fill, matrix_elements[m], i, j, create_down, destroy_down, tag_handler)
             );
-            tagterms.push_back(TermMaker<M>::positional_two_term(
+            tagterms.push_back(TermMaker<M, TwoU1>::positional_two_term(
                 true, fill, matrix_elements[m], j, i, create_up, destroy_up, tag_handler)
             );
-            tagterms.push_back(TermMaker<M>::positional_two_term(
+            tagterms.push_back(TermMaker<M, TwoU1>::positional_two_term(
                 true, fill, matrix_elements[m], j, i, create_down, destroy_down, tag_handler)
             );
 
@@ -156,7 +156,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
         // On site Coulomb repulsion V_iiii
         else if ( i==j && j==k && k==l) {
 
-            typename hamtagterm_t<M>::type term;
+            typename hamtagterm_t<M, TwoU1>::type term;
             term.fill_operator = ident;
             term.scale = matrix_elements[m];
             term.operators.push_back(std::make_pair(i, docc));
@@ -169,7 +169,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
         else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
 
             int same_idx, pos1;
-            typename op_t<M>::type tmp;
+            typename op_t<M, TwoU1>::type tmp;
 
             if      (i==j) { same_idx = i; pos1 = l; }
             else if (k==l) { same_idx = l; pos1 = i; }
@@ -180,25 +180,25 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
             // 1a
             // --> c_l_up * n_i_down * cdag_i_up
             ptag = tag_handler->get_product_tag(count_down, create_up);
-            tagterms.push_back( TermMaker<M>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
+            tagterms.push_back( TermMaker<M, TwoU1>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
                                            ptag.first, destroy_up, tag_handler) );
 
             // 1a_dagger
             // --> c_i_up * n_i_down * cdag_l_up
             ptag = tag_handler->get_product_tag(destroy_up, count_down);
-            tagterms.push_back( TermMaker<M>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
+            tagterms.push_back( TermMaker<M, TwoU1>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
                                            ptag.first, create_up, tag_handler) );
 
             // 1b
             // --> c_l_down * n_i_up * cdag_i_down (1b)
             ptag = tag_handler->get_product_tag(count_up, create_down);
-            tagterms.push_back( TermMaker<M>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
+            tagterms.push_back( TermMaker<M, TwoU1>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
                                            ptag.first, destroy_down, tag_handler) );
 
             // (1b)_dagger
             // --> c_i_down * n_i_up * cdag_l_down
             ptag = tag_handler->get_product_tag(destroy_down, count_up);
-            tagterms.push_back( TermMaker<M>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
+            tagterms.push_back( TermMaker<M, TwoU1>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
                                            ptag.first, create_down, tag_handler) );
 
             used_elements[m] += 1;
@@ -218,7 +218,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
         // V_ijij == V_jiji = V_ijji = V_jiij
         else if ( i==k && j==l && i!=j) {
 
-            typename op_t<M>::type tmp1, tmp2;
+            typename op_t<M, TwoU1>::type tmp1, tmp2;
 
             term_assistant.add_term(tagterms,  matrix_elements[m], i, j, e2d, d2e);
             term_assistant.add_term(tagterms,  matrix_elements[m], i, j, d2e, e2d);
@@ -375,7 +375,7 @@ Hamiltonian<M, TwoU1> qc_model<Matrix>::H_impl() const
     term_assistant.commit_terms(tagterms);
     maquis::cout << "The hamiltonian will contain " << tagterms.size() << " terms\n";
 
-    std::vector<typename hamterm_t<M>::type > terms;
+    std::vector<typename hamterm_t<M, TwoU1>::type > terms;
     return Hamiltonian<M, TwoU1>(phys, ident_op, terms, ident, tagterms, tag_handler);
 
 }

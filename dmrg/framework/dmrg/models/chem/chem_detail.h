@@ -12,23 +12,23 @@
 
 struct HamiltonianTraits {
 
-    template <class M>
-    struct hamterm_t { typedef typename Hamiltonian<M, TwoU1>::hamterm_t type; };
+    template <class M, class S>
+    struct hamterm_t { typedef typename Hamiltonian<M, S>::hamterm_t type; };
 
-    template <class M>
-    struct hamtagterm_t { typedef typename Hamiltonian<M, TwoU1>::hamtagterm_t type; };
+    template <class M, class S>
+    struct hamtagterm_t { typedef typename Hamiltonian<M, S>::hamtagterm_t type; };
 
-    template <class M>
-    struct op_t { typedef typename Hamiltonian<M, TwoU1>::op_t type; };
+    template <class M, class S>
+    struct op_t { typedef typename Hamiltonian<M, S>::op_t type; };
 
-    template <class M>
-    struct tag_type { typedef typename OPTable<M, TwoU1>::tag_type type; };
+    template <class M, class S>
+    struct tag_type { typedef typename OPTable<M, S>::tag_type type; };
 
-    template <class M>
-    struct op_pair_t { typedef typename generate_mpo::Operator_Term<M, TwoU1>::op_pair_t type; };
+    template <class M, class S>
+    struct op_pair_t { typedef typename generate_mpo::Operator_Term<M, S>::op_pair_t type; };
 
-    template <class M>
-    struct op_tag_pair_t { typedef typename generate_mpo::Operator_Tag_Term<M, TwoU1>::op_pair_t type; };
+    template <class M, class S>
+    struct op_tag_pair_t { typedef typename generate_mpo::Operator_Tag_Term<M, S>::op_pair_t type; };
 };
 
 namespace chem_detail {
@@ -84,15 +84,15 @@ namespace chem_detail {
         }
     };
 
-    template <typename M>
+    template <typename M, class S>
     class ChemHelper : public HamiltonianTraits
     {
     public:
         typedef typename M::value_type value_type;
-        typedef typename tag_type<M>::type tag_type;
+        typedef typename tag_type<M, S>::type tag_type;
 
         ChemHelper(BaseParameters & parms, Lattice const & lat,
-                   tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, TwoU1> > tag_handler_) 
+                   tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
             : ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
             this->parse_integrals(parms, lat);
@@ -112,21 +112,21 @@ namespace chem_detail {
             return idx_[m][pos];
         }
 
-        void commit_terms(std::vector<typename hamtagterm_t<M>::type> & tagterms) {
-            for (typename std::map<IndexTuple, typename hamtagterm_t<M>::type>::const_iterator it = two_terms.begin();
+        void commit_terms(std::vector<typename hamtagterm_t<M, S>::type> & tagterms) {
+            for (typename std::map<IndexTuple, typename hamtagterm_t<M, S>::type>::const_iterator it = two_terms.begin();
                     it != two_terms.end(); ++it)
                 tagterms.push_back(it->second);
 
-            for (typename std::map<TermTuple, typename hamtagterm_t<M>::type>::const_iterator it = three_terms.begin();
+            for (typename std::map<TermTuple, typename hamtagterm_t<M, S>::type>::const_iterator it = three_terms.begin();
                     it != three_terms.end(); ++it)
                 tagterms.push_back(it->second);
         }
 
-        void add_term(std::vector<typename hamtagterm_t<M>::type> & tagterms,
+        void add_term(std::vector<typename hamtagterm_t<M, S>::type> & tagterms,
                       value_type scale, int p1, int p2, tag_type op_1, tag_type op_2) {
 
-            typename hamtagterm_t<M>::type
-            term = TermMaker<M>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler);
+            typename hamtagterm_t<M, S>::type
+            term = TermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler);
             IndexTuple id(p1, p2, op_1, op_2);
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
@@ -135,11 +135,11 @@ namespace chem_detail {
                 two_terms[id].scale += term.scale;
         }
 
-        void add_term(std::vector<typename hamtagterm_t<M>::type> & tagterms,
+        void add_term(std::vector<typename hamtagterm_t<M, S>::type> & tagterms,
                       value_type scale, int s, int p1, int p2, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j) {
 
-            typename hamtagterm_t<M>::type
-            term = TermMaker<M>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler);
+            typename hamtagterm_t<M, S>::type
+            term = TermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler);
             TermTuple id(IndexTuple(s,s,p1,p2),IndexTuple(op_i,op_k,op_l,op_j));
             if (three_terms.count(id) == 0) {
                 three_terms[id] = term;
@@ -149,7 +149,7 @@ namespace chem_detail {
     
         }
 
-        void add_term(std::vector<typename hamtagterm_t<M>::type> & tagterms,
+        void add_term(std::vector<typename hamtagterm_t<M, S>::type> & tagterms,
                       int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
         {
             // Collapse terms with identical operators and different scales into one term
@@ -162,8 +162,8 @@ namespace chem_detail {
 
                 if (self > twin) {
                 
-                    typename hamtagterm_t<M>::type
-                    term = TermMaker<M>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
+                    typename hamtagterm_t<M, S>::type
+                    term = TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
                                                    op_i, op_k, op_l, op_j, tag_handler);
 
                     term.scale += value_type(sign(twin)) * coefficients[align(twin)];
@@ -173,7 +173,7 @@ namespace chem_detail {
                 //else: we already have the term
             }
             else {
-                tagterms.push_back( TermMaker<M>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
+                tagterms.push_back( TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
                                    op_i, op_k, op_l, op_j, tag_handler) );
             }
         }
@@ -245,7 +245,7 @@ namespace chem_detail {
         }
 
         tag_type ident, fill;
-        boost::shared_ptr<TagHandler<M, TwoU1> > tag_handler;
+        boost::shared_ptr<TagHandler<M, S> > tag_handler;
 
         std::vector<value_type> matrix_elements;
         std::vector<std::vector<int> > idx_;
@@ -254,8 +254,8 @@ namespace chem_detail {
 
         std::map<IndexTuple, value_type> coefficients;
 
-        std::map<TermTuple, typename hamtagterm_t<M>::type> three_terms;
-        std::map<IndexTuple, typename hamtagterm_t<M>::type> two_terms;
+        std::map<TermTuple, typename hamtagterm_t<M, S>::type> three_terms;
+        std::map<IndexTuple, typename hamtagterm_t<M, S>::type> two_terms;
 
     };
 }
