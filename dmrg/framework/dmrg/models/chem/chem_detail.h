@@ -42,7 +42,7 @@ namespace chem_detail {
         }
     };
 
-    IndexTuple align(int i, int j, int k, int l) {
+    inline IndexTuple align(int i, int j, int k, int l) {
         if (i<j) std::swap(i,j);
         if (k<l) std::swap(k,l);
         if (i<k) { std::swap(i,k); std::swap(j,l); }
@@ -50,11 +50,11 @@ namespace chem_detail {
         return IndexTuple(i,j,k,l);
     }
     
-    IndexTuple align(IndexTuple const & rhs) {
+    inline IndexTuple align(IndexTuple const & rhs) {
         return align(rhs[0], rhs[1], rhs[2], rhs[3]);
     }
 
-    int sign(IndexTuple const & idx)
+    inline int sign(IndexTuple const & idx)
     {
         int inv_count=0, n=4;
         for(int c1 = 0; c1 < n - 1; c1++)
@@ -64,7 +64,7 @@ namespace chem_detail {
         return 1 - 2 * (inv_count % 2);
     }
 
-    std::ostream& operator<<(std::ostream & os, IndexTuple const & c) {
+    inline std::ostream& operator<<(std::ostream & os, IndexTuple const & c) {
         os << "<";
         for (int i = 0; i < 4; ++i) {
             os << c[i];

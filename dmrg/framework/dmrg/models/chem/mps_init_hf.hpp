@@ -2,7 +2,7 @@
  *
  * MAQUIS DMRG Project
  *
- * Copyright (C) 2012-2012 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  *
  *****************************************************************************/
@@ -12,20 +12,20 @@
 
 #include "dmrg/mp_tensors/compression.h"
 
-template<class Matrix>
-struct hf_mps_init : public mps_initializer<Matrix, TwoU1>
+template<class Matrix, class SymmGroup>
+struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
     hf_mps_init(BaseParameters& parms_, BaseParameters& model_) : parms(parms_), model(model_) {}
 
     typedef Lattice::pos_t pos_t;
     typedef std::size_t size_t;
 
-    void operator()(MPS<Matrix, TwoU1> & mps,
+    void operator()(MPS<Matrix, SymmGroup> & mps,
                     std::size_t Mmax,
-                    Index<TwoU1> const & phys,
-                    TwoU1::charge right_end)
+                    Index<SymmGroup> const & phys,
+                    typename SymmGroup::charge right_end)
     {
-        default_mps_init<Matrix, TwoU1> di;
+        default_mps_init<Matrix, SymmGroup> di;
         di.init_sectors(mps, 5, phys, right_end, true);
 
         std::vector<std::size_t> hf_init = model["hf_occ"];
@@ -42,7 +42,7 @@ struct hf_mps_init : public mps_initializer<Matrix, TwoU1>
         if (hf_init.size() != mps.length())
             throw std::runtime_error("HF occupation vector length != MPS length\n");
 
-        TwoU1::charge max_charge = TwoU1::IdentityCharge;
+        typename SymmGroup::charge max_charge = SymmGroup::IdentityCharge;
         for (pos_t i = 0; i < mps.length(); ++i)
         {
             mps[i].multiply_by_scalar(0.0);

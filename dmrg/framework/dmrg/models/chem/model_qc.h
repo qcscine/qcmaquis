@@ -25,8 +25,8 @@
 #include "dmrg/models/chem/chem_detail.h"
 
 
-template<class Matrix>
-class qc_model : public Model<Matrix, TwoU1>, HamiltonianTraits
+template<class Matrix, class SymmGroup>
+class qc_model : public Model<Matrix, SymmGroup>, HamiltonianTraits
 {
     typedef typename Lattice::pos_t pos_t;
     typedef typename Matrix::value_type value_type;
@@ -36,7 +36,7 @@ public:
     
     qc_model(Lattice const & lat_, BaseParameters & parms_) : lat(lat_), parms(parms_)
     {
-        TwoU1::charge A(0), B(0), C(0), D(1);
+        typename SymmGroup::charge A(0), B(0), C(0), D(1);
         B[0]=1; C[1]=1;
         phys.insert(std::make_pair(A, 1));
         phys.insert(std::make_pair(B, 1));
@@ -45,34 +45,34 @@ public:
         
     }
 
-    Index<TwoU1> get_phys() const
+    Index<SymmGroup> get_phys() const
     {
         return phys;
     }
                             
-    Hamiltonian<Matrix, TwoU1> H () const
+    Hamiltonian<Matrix, SymmGroup> H () const
     {
         return H_impl<Matrix>();
     }
 
     /* Disabled - need to implement iterators for one_matrix */
     /*
-    Hamiltonian<one_matrix, TwoU1> H_chem () const
+    Hamiltonian<one_matrix, SymmGroup> H_chem () const
     {
         return H_impl<one_matrix>();
     }
     */
     
-    Measurements<Matrix, TwoU1> measurements () const
+    Measurements<Matrix, SymmGroup> measurements () const
     {
-        typedef typename Hamiltonian<Matrix, TwoU1>::op_t op_t;
+        typedef typename Hamiltonian<Matrix, SymmGroup>::op_t op_t;
         op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
              count_up_op, count_down_op, docc_op, e2d_op, d2e_op,
              swap_d2u_op, swap_u2d_op,
              create_up_count_down_op, create_down_count_up_op, destroy_up_count_down_op, destroy_down_count_up_op,
              ident_op, fill_op;
 
-        TwoU1::charge A(0), B(0), C(0), D(1);
+        typename SymmGroup::charge A(0), B(0), C(0), D(1);
         B[0]=1; C[1]=1;
         ident_op.insert_block(Matrix(1, 1, 1), A, A);
         ident_op.insert_block(Matrix(1, 1, 1), B, B);
@@ -118,8 +118,8 @@ public:
         gemm(count_down_op, destroy_up_op, destroy_up_count_down_op);
         gemm(count_up_op, destroy_down_op, destroy_down_count_up_op);
 
-        typedef Measurement_Term<Matrix, TwoU1> mterm_t;
-        Measurements<Matrix, TwoU1> meas;
+        typedef Measurement_Term<Matrix, SymmGroup> mterm_t;
+        Measurements<Matrix, SymmGroup> meas;
         meas.set_identity(ident_op);
 
         {
@@ -291,10 +291,10 @@ public:
     }
 
     template <class M>
-    Hamiltonian<M, TwoU1> H_impl () const;
+    Hamiltonian<M, SymmGroup> H_impl () const;
 
 private:
-    Index<TwoU1> phys;
+    Index<SymmGroup> phys;
 
     Lattice const & lat;
     BaseParameters & parms;
