@@ -15,7 +15,7 @@
 template<class Matrix, class SymmGroup>
 struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
-    hf_mps_init(BaseParameters& parms_, BaseParameters& model_) : parms(parms_), model(model_) {}
+    hf_mps_init(BaseParameters parms_, BaseParameters model_) : parms(parms_), model(model_) {}
 
     typedef Lattice::pos_t pos_t;
     typedef std::size_t size_t;
@@ -26,7 +26,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
                     typename SymmGroup::charge right_end)
     {
         default_mps_init<Matrix, SymmGroup> di;
-        di.init_sectors(mps, 5, phys, right_end, true);
+        di.init_sectors(mps, 5, phys, right_end, true, 0, model);
 
         std::vector<std::size_t> hf_init = model["hf_occ"];
 
@@ -97,8 +97,8 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
         //}
     }
 
-    BaseParameters & parms;
-    BaseParameters & model;
+    BaseParameters parms;
+    BaseParameters model;
 };
 
 #endif

@@ -10,6 +10,7 @@
 #ifndef MPS_SECTORS_H
 #define MPS_SECTORS_H
 
+
 #include "dmrg/block_matrix/indexing.h"
 
 template<class T>
@@ -20,12 +21,47 @@ T tri_min(T a, T b, T c)
 }
 
 template <class SymmGroup>
-std::vector<Index<SymmGroup> > allowed_sectors(std::size_t L,
+class PGDecorator
+{
+public:
+    typedef int irrep_t;
+    Index<SymmGroup> operator()(Index<SymmGroup> const & rhs, irrep_t irr)
+    {
+       return rhs; 
+    }
+};
+
+template < >
+class  PGDecorator<TwoU1PG>
+{
+public:
+    typedef int irrep_t;
+    Index<TwoU1PG> operator()(Index<TwoU1PG> rhs, irrep_t irr)
+    {
+        for(typename Index<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+            if ( (it->first[0] + it->first[1]) % 2 == 0)
+                it->first[2] = 0;
+            else
+                it->first[2] = irr;
+
+        return rhs;
+    }
+};
+
+template <class SymmGroup>
+inline std::vector<Index<SymmGroup> > allowed_sectors(std::size_t L,
                                                Index<SymmGroup> const& phys,
                                                typename SymmGroup::charge right_end,
-                                               std::size_t Mmax)
+                                               std::size_t Mmax,
+                                               std::vector<int> symmetry = std::vector<int>())
 {
     bool finitegroup = SymmGroup::finite;
+
+    typedef typename PGDecorator<SymmGroup>::irrep_t irrep_t;
+    PGDecorator<SymmGroup> set_symm;
+    if (symmetry.size() != L) {
+        symmetry = std::vector<irrep_t>(L, 0);
+    }
     
     Index<SymmGroup> physc = phys;
     physc.sort();
@@ -49,7 +85,7 @@ std::vector<Index<SymmGroup> > allowed_sectors(std::size_t L,
     
     typename SymmGroup::charge cmaxi=cmaxL, cmini=cminL;
     for (int i = 1; i < L+1; ++i) {
-        left_allowed[i] = phys * left_allowed[i-1];
+        left_allowed[i] = set_symm(phys, symmetry[i-1]) * left_allowed[i-1];
         typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
         while ( it != left_allowed[i].end() )
         {
@@ -67,7 +103,7 @@ std::vector<Index<SymmGroup> > allowed_sectors(std::size_t L,
     }
     cmaxi=cmaxL; cmini=cminL;
     for (int i = L-1; i >= 0; --i) {
-        right_allowed[i] = adjoin(phys) * right_allowed[i+1];
+        right_allowed[i] = adjoin(set_symm(phys, symmetry[i])) * right_allowed[i+1];
         
         typename Index<SymmGroup>::iterator it = right_allowed[i].begin();
         while ( it != right_allowed[i].end() )
@@ -97,6 +133,5 @@ std::vector<Index<SymmGroup> > allowed_sectors(std::size_t L,
     
     return allowed;
 }
-
 
 #endif

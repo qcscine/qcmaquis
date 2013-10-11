@@ -32,5 +32,6 @@ TwoU1PG::charge init_qn<TwoU1PG> (BaseParameters & model)
     TwoU1PG::charge initc;
     initc[0] = model["u1_total_charge1"];
     initc[1] = model["u1_total_charge2"];
+    initc[2] = model["irrep_charge"];
     return initc;
 }
