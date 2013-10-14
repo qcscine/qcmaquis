@@ -27,7 +27,6 @@
 #include "ambient/ambient.hpp"
 
 namespace ambient {
-    pairing scope<single>::p;
     int scope<single>::compact_factor = 1;
     models::velvet::model& model = models::velvet::model::instance();
     channels::mpi::channel& channel = channels::mpi::channel::instance();

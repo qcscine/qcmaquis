@@ -241,9 +241,7 @@ namespace ambient { namespace numeric {
 
     template <typename T, class A>
     inline void add_inplace(matrix<T,A>& lhs, const matrix<T,A>& rhs){ 
-        if(rhs.core->weak()) return;
-        else if(lhs.core->weak()) ambient::fuse(rhs.core, lhs.core);
-        else kernels::template add<T,A>::template spawn<complexity::N2>(lhs, rhs); 
+        kernels::template add<T,A>::template spawn<complexity::N2>(lhs, rhs); 
     }
 
     template <typename T, class A>
