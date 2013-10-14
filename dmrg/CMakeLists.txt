@@ -56,7 +56,7 @@ set(BLAS_LAPACK_MANUAL_INCLUDES ${BLAS_LAPACK_MANUAL_INCLUDES} CACHE STRINGS "")
 # How to build
 ######################################################################
 if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-  include("config/clang_quite.cmake")
+  include("config/clang_fixes.cmake")
 endif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Type of build" FORCE)
