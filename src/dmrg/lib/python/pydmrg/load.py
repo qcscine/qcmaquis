@@ -8,7 +8,10 @@
 
 import pyalps
 from pyalps.load import *
-from pyalps.ngs import archive
+try:
+    from pyalps.ngs import archive
+except:
+    from pyalps.hdf5 import archive
 
 from copy import deepcopy
 
