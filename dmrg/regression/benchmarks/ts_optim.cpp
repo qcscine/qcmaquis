@@ -120,21 +120,8 @@ int main(int argc, char ** argv)
         /// Canonize MPS
         mps.canonize(site);
         
-        /// Create TwoSite objects
-        tim_ts_obj.begin();
-        TwoSiteTensor<matrix, grp> tst(mps[site], mps[site+1]);
-        MPSTensor<matrix, grp> ts_mps = tst.make_mps();
-        #ifdef AMBIENT
-        ambient::scope<ambient::shared>* s = new ambient::scope<ambient::shared>();
-        #endif
-        MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim());
-        #ifdef AMBIENT
-        delete s;
-        #endif
-        tim_ts_obj.end();
-        maquis::cout << "Two site obj done!\n";
 
-std::string boundary_name;
+        std::string boundary_name;
         
         /// Compute left boundary
         tim_l_boundary.begin();
@@ -146,15 +133,11 @@ std::string boundary_name;
             ar["/tensor"] >> left;
         } else {
             left = mps.left_boundary();
-            for (size_t i=0; i<site; ++i){
-                #ifdef AMBIENT
-                locale::p = ambient::pairing(mpo[i], mpo[i].col_dim());
-                #endif
+            for (size_t i=0; i<site; ++i)
                 left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
-            }
         }
         tim_l_boundary.end();
-        maquis::cout << "Left boundary done! -- " << left.aux_dim() << "\n";
+        maquis::cout << "Left boundary done!\n";
         
         /// Compute right boundary
         tim_r_boundary.begin();
@@ -170,7 +153,7 @@ std::string boundary_name;
                 right = contraction::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
         }
         tim_r_boundary.end();
-        maquis::cout << "Right boundary done! -- " << right.aux_dim() << "\n";
+        maquis::cout << "Right boundary done!\n";
         
         // Clearing unneeded MPS Tensors
         for (int k = 0; k < mps.length(); k++){
@@ -180,48 +163,13 @@ std::string boundary_name;
             mps[k].data().clear();
         }
         
-        #ifdef AMBIENT
-        size_t loop_max = ts_mpo.col_dim();
-        locale::p = ambient::pairing(ts_mpo, std::max(left.aux_dim(), right.aux_dim()));
-        if(ambient::rank() == 0){
-            printf("Left sizes:\n");
-            for(int p = 0; p < ambient::channel.wk_dim(); p++){
-                printf("R%d: ", p);
-                for(size_t b = 0; b < left.aux_dim(); ++b) if(locale::p.get_left(b) == p){
-                    int total = 0;
-                    for(int i = 0; i < left[b].n_blocks(); ++i) total += num_rows(left[b][i])*num_cols(left[b][i]);
-                    printf("%d ", total);
-                }
-                printf("\n");
-            }
-            printf("Right sizes:\n");
-            for(int p = 0; p < ambient::channel.wk_dim(); p++){
-                printf("R%d: ", p);
-                for(size_t b = 0; b < right.aux_dim(); ++b) if(locale::p.get_right(b) == p){
-                    int total = 0;
-                    for(int i = 0; i < right[b].n_blocks(); ++i) total += num_rows(right[b][i])*num_cols(right[b][i]);
-                    printf("%d ", total);
-                }
-                printf("\n");
-            }
-        }
-        for(size_t b = 0; b < left.aux_dim(); ++b){
-            locale l(locale::p.get_left(b));
-            storage::migrate(left[b]);
-        }
-        ambient::sync();
-        for(size_t b = 0; b < right.aux_dim(); ++b){
-            locale l(locale::p.get_right(b));
-            storage::migrate(right[b]);
-        }
-        ambient::sync();
-        {
-            ambient::scope<ambient::shared> l;
-            storage::migrate(left[0]);
-        }
-        ambient::sync();
-        maquis::cout << "Moving of boundaries has finished\n";
-        #endif
+        /// Create TwoSite objects
+        tim_ts_obj.begin();
+        TwoSiteTensor<matrix, grp> tst(mps[site], mps[site+1]);
+        MPSTensor<matrix, grp> ts_mps = tst.make_mps();
+        MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim());
+        tim_ts_obj.end();
+        maquis::cout << "Two site obj done!\n";
         
         
         std::vector<MPSTensor<matrix, grp> > ortho_vecs;

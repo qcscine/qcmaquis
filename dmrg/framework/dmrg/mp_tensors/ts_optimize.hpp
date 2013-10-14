@@ -135,9 +135,6 @@ public:
             #ifdef AMBIENT_TRACKING
             ambient_track_as(twin_mps, "twin_mps");
             #endif
-            #ifdef AMBIENT
-            locale::p = ambient::pairing(ts_cache_mpo[site1], ts_cache_mpo[site1].col_dim());
-            #endif
             SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);
             
             /// Compute orthogonal vectors
@@ -210,9 +207,6 @@ public:
                 maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site2 < L-1) mps[site2+1].multiply_from_left(t);
 
-                #ifdef AMBIENT
-                locale::p = ambient::pairing(mpo[site1], mpo[site1].col_dim());
-                #endif
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
 
                 if (site1 != L-2){ 
@@ -244,9 +238,6 @@ public:
                 maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site1 > 0) mps[site1-1].multiply_from_right(t);
 
-                #ifdef AMBIENT
-                locale::p = ambient::pairing(mpo[site2], mpo[site2].col_dim());
-                #endif
                 this->boundary_right_step(mpo, site2); // creating right_[site2]
 
                 if(site1 != 0){
