@@ -19,6 +19,10 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/array.hpp>
 
+#include <alps/numeric/matrix.hpp>
+
+template<int N, class S >
+class NU1PG;
 
 template<int N, class S = int>
 class NU1ChargePG
@@ -193,10 +197,21 @@ template<int N>
 struct tpl_arith_<N, N>
 {
     template<typename T>
-    void operator_plus(T const *, T const *, T *) const { }
+    void operator_plus(T const * a, T const * b, T * ret) const
+    {
+#ifndef NDEBUG
+        if (a[N] > 7 || b[N] > 7 || a[N] < 0 || b[N] < 0)
+        {
+            std::cout << "a , b are: " << a[N] << ", " << b[N] << std::endl;
+            std::cout.flush();
+        }
+#endif
+        ret[N] = NU1PG<N, int>::mult_table(a[N], b[N]);
+    }
+
     
     template<typename T>
-    void operator_uminus(T const *, T *) const { }
+    void operator_uminus(T const * a, T * b) const { b[N] = a[N]; }
 
     template<typename T>
     void operator_div(T const *, T *, int) const { }
@@ -263,6 +278,7 @@ public:
     
     static const charge IdentityCharge;
     static const bool finite = false;
+    static const alps::numeric::matrix<S> mult_table;
 
     static charge fuse(charge a, charge b)
     {
@@ -278,7 +294,24 @@ public:
     }
 };
 
+template<class S>
+alps::numeric::matrix<S> generate_mult_table()
+{
+    alps::numeric::matrix<S> r(8,8);
+    r(0,0) = 0; r(0,1) = 1; r(0,2) = 2; r(0,3) = 3;   r(0,4) = 4; r(0,5) = 5; r(0,6) = 6; r(0,7) = 7;
+    r(1,0) = 1; r(1,1) = 0; r(1,2) = 3; r(1,3) = 2;   r(1,4) = 5; r(1,5) = 4; r(1,6) = 7; r(1,7) = 6;
+    r(2,0) = 2; r(2,1) = 3; r(2,2) = 0; r(2,3) = 1;   r(2,4) = 6; r(2,5) = 7; r(2,6) = 4; r(2,7) = 5;
+    r(3,0) = 3; r(3,1) = 2; r(3,2) = 1; r(3,3) = 0;   r(3,4) = 7; r(3,5) = 6; r(3,6) = 5; r(3,7) = 4;
+
+    r(4,0) = 4; r(4,1) = 5; r(4,2) = 6; r(4,3) = 7;   r(4,4) = 0; r(4,5) = 1; r(4,6) = 2; r(4,7) = 3;
+    r(5,0) = 5; r(5,1) = 4; r(5,2) = 7; r(5,3) = 6;   r(5,4) = 1; r(5,5) = 0; r(5,6) = 3; r(5,7) = 2;
+    r(6,0) = 6; r(6,1) = 7; r(6,2) = 4; r(6,3) = 5;   r(6,4) = 2; r(6,5) = 3; r(6,6) = 0; r(6,7) = 1;
+    r(7,0) = 7; r(7,1) = 6; r(7,2) = 5; r(7,3) = 4;   r(7,4) = 3; r(7,5) = 2; r(7,6) = 1; r(7,7) = 0;
+    return r;
+}
+
 template<int N, class S> const typename NU1PG<N,S>::charge NU1PG<N,S>::IdentityCharge = typename NU1PG<N,S>::charge();
+template<int N, class S> const alps::numeric::matrix<S> NU1PG<N,S>::mult_table = generate_mult_table<S>();
 
 typedef NU1PG<2> TwoU1PG;
 

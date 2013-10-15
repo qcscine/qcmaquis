@@ -11,11 +11,16 @@
 #define MPS_INITIALIZER_H
 
 #include <fstream>
+#include <sstream>
+#include <algorithm>
+
+#include <boost/tokenizer.hpp>
 
 #include "dmrg/utils/DmrgParameters2.h"
 #include "dmrg/mp_tensors/mps_sectors.h"
 #include "dmrg/mp_tensors/compression.h"
 #include "dmrg/mp_tensors/state_mps.h"
+#include "dmrg/models/chem/pg_util.h"
 
 template<class Matrix, class SymmGroup>
 struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
@@ -79,30 +84,24 @@ struct default_mps_init<Matrix, TwoU1PG> : public mps_initializer<Matrix, TwoU1P
                       typename Matrix::value_type val = 0,
                       BaseParameters model = BaseParameters())
     {
+        typedef typename PGDecorator<TwoU1PG>::irrep_t irrep_t;
+
         std::size_t L = mps.length();
         
         maquis::cout << "Phys: " << phys << std::endl;
         maquis::cout << "Right end: " << right_end << std::endl;
 
-        // TODO: type consistency
-        std::vector<int> order(mps.length());
-        if (!model.is_set("orbital_order"))
-            for (int p = 0; p < mps.length(); ++p)
-                order[p] = p;
-        else
-            order = model["orbital_order"];
-
-        std::vector<typename PGDecorator<TwoU1PG>::irrep_t> symmetry(L, 0);
-        if (model.is_set("integral_file")) {
-            std::ifstream orb_file;
-            orb_file.open(model["integral_file"].c_str());         
-            orb_file.close();
+        std::vector<irrep_t> irreps = parse_symm<TwoU1PG>(model);
+        
+        std::vector<Index<TwoU1PG> > allowed = allowed_sectors(L, phys, right_end, Mmax, irreps);
+        for (int p = 0; p < L; ++p) {
+            maquis::cout << "allowed[" << p << "]:\n"; 
+            maquis::cout << allowed[p] << std::endl;
         }
         
-        std::vector<Index<TwoU1PG> > allowed = allowed_sectors(L, phys, right_end, Mmax);
-        
         parallel_for(locale::compact(L), locale i = 0; i < L; ++i) {
-            mps[i] = MPSTensor<Matrix, TwoU1PG>(phys, allowed[i], allowed[i+1], fillrand, val);
+            maquis::cout << "MPS site dim: " << PGDecorator<TwoU1PG>()(phys, irreps[i]) << std::endl;
+            mps[i] = MPSTensor<Matrix, TwoU1PG>(PGDecorator<TwoU1PG>()(phys, irreps[i]) , allowed[i], allowed[i+1], fillrand, val);
             mps[i].divide_by_scalar(mps[i].scalar_norm());
             #ifdef AMBIENT_TRACKING
             ambient_track_array(mps, i);

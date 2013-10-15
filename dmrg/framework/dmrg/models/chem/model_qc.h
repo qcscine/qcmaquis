@@ -23,6 +23,7 @@
 
 #include "dmrg/models/chem/term_maker.h"
 #include "dmrg/models/chem/chem_detail.h"
+#include "dmrg/models/chem/irrep_manager.h"
 
 
 template<class Matrix, class SymmGroup>
@@ -128,7 +129,6 @@ public:
             for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
                 std::string lhs = it->key();
                 if (boost::regex_match(lhs, what, expression)) {
-                    //alps::SiteBasisDescriptor<I> b = model.site_basis(type);
 
                     mterm_t term;
                     term.type = mterm_t::Local;

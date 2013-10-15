@@ -15,6 +15,7 @@ template <class M>
 Hamiltonian<M, SymmGroup> qc_model<Matrix, SymmGroup>::H_impl() const
 {
     typedef typename tag_type<M, SymmGroup>::type tag_type;
+    typedef typename PGDecorator<SymmGroup>::irrep_t irrep_t;
 
     typename op_t<M, SymmGroup>::type create_up_op, create_down_op, destroy_up_op, destroy_down_op,
                            count_up_op, count_down_op, docc_op, e2d_op, d2e_op,
@@ -59,6 +60,14 @@ Hamiltonian<M, SymmGroup> qc_model<Matrix, SymmGroup>::H_impl() const
     create_down_op = tmp;
     gemm(destroy_down_op, fill_op, tmp);
     destroy_down_op = tmp;
+
+    /**********************************************************************/
+    /*** Point Group Information ******************************************/
+    /**********************************************************************/
+
+    boost::shared_ptr<TagHandler<M, SymmGroup> > tag_handler2(new TagHandler<M, SymmGroup>());
+    std::vector<irrep_t> irreps = parse_symm<SymmGroup>(parms); 
+    IrrepManager<M, SymmGroup> irrep_vers(irreps, tag_handler2);
 
     /**********************************************************************/
     /*** Create operator tag table ****************************************/

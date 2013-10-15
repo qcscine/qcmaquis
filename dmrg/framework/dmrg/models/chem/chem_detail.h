@@ -202,9 +202,8 @@ namespace chem_detail {
 
             std::ifstream orb_file;
             orb_file.open(parms["integral_file"].c_str());
-            for (int i = 0; i < 4; ++i){
+            for (int i = 0; i < 4; ++i)
                 orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-            }
 
             std::vector<double> raw;
             std::copy(std::istream_iterator<double>(orb_file), std::istream_iterator<double>(),
