@@ -34,7 +34,7 @@ namespace detail {
     struct call_hf_init {
         static typename Model<Matrix,SymmGroup>::initializer_ptr call(BaseParameters & params, BaseParameters & model)
         {
-            throw std::runtime_error("HF MPS init is available only for TwoU1 or TwoU1PG symmetry group.");
+            throw std::runtime_error("HF MPS init is available only for TwoU1 symmetry group.");
             return typename Model<Matrix,SymmGroup>::initializer_ptr(new default_mps_init<Matrix, SymmGroup>());
         }
     };
@@ -42,14 +42,7 @@ namespace detail {
     struct call_hf_init<Matrix, TwoU1> {
         static typename Model<Matrix,TwoU1>::initializer_ptr call(BaseParameters & params, BaseParameters & model)
         {
-            return typename Model<Matrix,TwoU1>::initializer_ptr(new hf_mps_init<Matrix, TwoU1>(params, model));
-        }
-    };
-    template <class Matrix>
-    struct call_hf_init<Matrix, TwoU1PG> {
-        static typename Model<Matrix,TwoU1PG>::initializer_ptr call(BaseParameters & params, BaseParameters & model)
-        {
-            return typename Model<Matrix,TwoU1PG>::initializer_ptr(new hf_mps_init<Matrix, TwoU1PG>(params, model));
+            return typename Model<Matrix,TwoU1>::initializer_ptr(new hf_mps_init<Matrix>(params, model));
         }
     };
 }

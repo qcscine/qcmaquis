@@ -49,10 +49,10 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
     
     typedef typename SymmGroup::charge charge;
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
-
-        if ( matched_block == B.left_basis().size() )
+        if (! B.left_basis().has(A.right_basis()[k].first))
             continue;
+        
+        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
         
         std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
                                                A.left_basis()[k].first, B.right_basis()[matched_block].first);

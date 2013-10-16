@@ -36,10 +36,6 @@ namespace maquis { namespace dmrg {
         factory_map["2u1"] = run_sim<TwoU1>;
         maquis::cout << "2u1 ";
 #endif
-#ifdef HAVE_TwoU1PG
-        factory_map["2u1pg"] = run_sim<TwoU1PG>;
-        maquis::cout << "2u1pg ";
-#endif
 #ifdef HAVE_Ztwo
         factory_map["Z2"] = run_sim<Ztwo>;
         maquis::cout << "Z2 ";
