@@ -62,14 +62,6 @@ Hamiltonian<M, SymmGroup> qc_model<Matrix, SymmGroup>::H_impl() const
     destroy_down_op = tmp;
 
     /**********************************************************************/
-    /*** Point Group Information ******************************************/
-    /**********************************************************************/
-
-    boost::shared_ptr<TagHandler<M, SymmGroup> > tag_handler2(new TagHandler<M, SymmGroup>());
-    std::vector<irrep_t> irreps = parse_symm<SymmGroup>(parms); 
-    IrrepManager<M, SymmGroup> irrep_vers(irreps, tag_handler2);
-
-    /**********************************************************************/
     /*** Create operator tag table ****************************************/
     /**********************************************************************/
 
@@ -383,6 +375,14 @@ Hamiltonian<M, SymmGroup> qc_model<Matrix, SymmGroup>::H_impl() const
 
     term_assistant.commit_terms(tagterms);
     maquis::cout << "The hamiltonian will contain " << tagterms.size() << " terms\n";
+
+    /**********************************************************************/
+    /*** Point Group Information ******************************************/
+    /**********************************************************************/
+
+    boost::shared_ptr<TagHandler<M, SymmGroup> > tag_handler2(new TagHandler<M, SymmGroup>());
+    std::vector<irrep_t> irreps = parse_symm<SymmGroup>(parms); 
+    
 
     std::vector<typename hamterm_t<M, SymmGroup>::type > terms;
     return Hamiltonian<M, SymmGroup>(phys, ident_op, terms, ident, tagterms, tag_handler);

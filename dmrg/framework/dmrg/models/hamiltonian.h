@@ -79,7 +79,7 @@ public:
     iterator begin () { return terms.begin(); }
     iterator end () { return terms.end(); }
 
-    table_ptr get_operator_table() const { return tag_handler; }
+    table_ptr get_tag_handler() const { return tag_handler; }
 
 protected:
     std::vector<hamterm_t> terms;
@@ -96,7 +96,7 @@ MPO<Matrix, SymmGroup> make_mpo(typename Lattice::pos_t L, Hamiltonian<Matrix, S
 {
     // Use tags if available
     if (H.n_tagterms(what) > 0) {
-        generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity_tag(), H.get_operator_table());
+        generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity_tag(), H.get_tag_handler());
         for (std::size_t i = 0; i < H.n_tagterms(what); ++i)
             mpom.add_term(H.tag(i));
 

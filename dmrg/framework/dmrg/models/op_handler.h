@@ -104,7 +104,7 @@ public:
     tag_type prod_duplicates() const { return duplicates_(product_tags); }
 
     tag_type get_num_products() const;
-    tag_type total_size() const { return operator_table->size(); }
+    tag_type size() const { return operator_table->size(); }
     /***************************************************/
 
     boost::shared_ptr<OPTable<Matrix, SymmGroup> > get_operator_table() { return operator_table; }

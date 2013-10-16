@@ -13,6 +13,8 @@
 #include <set>
 #include <map>
 
+#include <boost/shared_ptr.hpp>
+
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/models/op_handler.h"
 #include "dmrg/models/chem/chem_detail.h"
@@ -20,24 +22,52 @@
 
 
 template <class Matrix, class SymmGroup>
-class IrrepManager : public HamiltonianTraits
+class PGSymmetryConverter : public HamiltonianTraits
 {
     typedef typename PGDecorator<SymmGroup>::irrep_t irrep_t;
 
     typedef typename tag_type<Matrix, SymmGroup>::type tag_type;
+    typedef typename op_t<Matrix, SymmGroup>::type op_t;
 
 public:
-    IrrepManager(std::vector<irrep_t> const & irreps, boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_)
-        : tag_handler(tag_handler_)
+    PGSymmetryConverter(std::vector<irrep_t> const & site_irreps_,
+                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_base,
+                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_symm)
+        : site_irreps(site_irreps_)
     {
         // collect all irreducible representations in a set
-        for(typename std::vector<irrep_t>::const_iterator it=irreps.begin(); it != irreps.end(); ++it)
+        std::set<irrep_t> irrep_set;
+        for(typename std::vector<irrep_t>::const_iterator it=site_irreps.begin(); it != site_irreps.end(); ++it)
             irrep_set.insert(*it); 
+
+        // convert set to vector (faster)
+        for(typename std::set<irrep_t>::const_iterator it=irrep_set.begin(); it != irrep_set.end(); ++it)
+            irrep_vector.push_back(*it);
+
+        translation_table.resize(tag_handler_base->size(), irrep_vector.size()); 
+
+        PGDecorator<SymmGroup> set_symm;
+        for (std::size_t i=0; i < tag_handler_base->size(); ++i)
+        {
+            op_t base_op = tag_handler_base->get_op(i);
+            for(typename std::vector<irrep_t>::const_iterator it=irrep_vector.begin(); it != irrep_vector.end(); ++it)
+            {
+                op_t modified = base_op;
+                set_symm(modified.left_basis(), *it);
+                set_symm(modified.right_basis(), *it);
+
+                std::pair<tag_type, typename Matrix::value_type> symm_tag = tag_handler_symm->checked_register(modified);
+                translation_table(i, *it) = symm_tag.first;
+
+            }
+        }
+
     }
 
-    tag_type operator()(tag_type base_op, irrep_t irrep)
+    /*
+    tag_type operator()(tag_type base_op, std::size_t site)
     {
-        return modified_ops[base_op][irrep];
+        return modified_ops[base_op][irreps[site]];
     }
 
     tag_type register_op(typename op_t<Matrix, SymmGroup>::type op, tag_detail::operator_kind kind)
@@ -59,12 +89,13 @@ public:
         }
         return ret;
     }
+    */
 
 private:
-    std::vector<typename op_t<Matrix, SymmGroup>::type> base_ops;
-    std::vector< std::map<irrep_t, tag_type> > modified_ops;
-    std::set<irrep_t> irrep_set;
-    boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+    alps::numeric::matrix<irrep_t> translation_table;
+
+    std::set<irrep_t> irrep_vector;
+    std::vector<irrep_t> site_irreps;
 };
 
 #endif
