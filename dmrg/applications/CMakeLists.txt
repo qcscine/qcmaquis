@@ -2,7 +2,6 @@
 option(BUILD_DMRG "Build DMRG Apps" ON)
 option(BUILD_TIME_EVOLUTION "Build DMRG-Time evolution Apps" ON)
 option(BUILD_TOOLS "Build tools" ON)
-option(BUILD_CI "Build Configuration Interaction Apps" OFF)
 option(BUILD_MULTIGRID "Build DMRG-Multigrid Apps" OFF)
 option(BUILD_CUSTOMAPP "Build custom applications" OFF)
 option(BUILD_EXAMPLES "Build example applications" OFF)
@@ -26,10 +25,6 @@ endif(BUILD_TIME_EVOLUTION)
 if(BUILD_TOOLS)
   add_subdirectory(tools)
 endif(BUILD_TOOLS)
-
-if(BUILD_CI)
-  add_subdirectory(ci)
-endif(BUILD_CI)
 
 if(BUILD_MULTIGRID)
   add_subdirectory(multigrid)
