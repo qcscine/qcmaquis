@@ -23,11 +23,15 @@ public:
     typedef Hamiltonian<Matrix, TwoU1> ham;        
     typedef typename ham::hamterm_t hamterm_t;        
     typedef typename ham::hamtagterm_t hamtagterm_t;        
+    typedef Measurement_Term<Matrix, TwoU1> mterm_t;
     typedef typename ham::op_t op_t;
     typedef typename OPTable<Matrix, TwoU1>::tag_type tag_type;
     typedef typename Matrix::value_type value_type;
     
-    FermiHubbardTwoU1(const Lattice& lat_, BaseParameters & parms_) : lat(lat_), parms(parms_)
+    FermiHubbardTwoU1(const Lattice& lat_, BaseParameters & parms_)
+    : lat(lat_)
+    , parms(parms_)
+    , tag_handler(new TagHandler<Matrix, TwoU1>())
     {
         TwoU1::charge A(0), B(0), C(0), D(1);
         B[0]=1; C[1]=1;
@@ -35,23 +39,11 @@ public:
         phys.insert(std::make_pair(B, 1));
         phys.insert(std::make_pair(C, 1));
         phys.insert(std::make_pair(D, 1));
-    }
-    
-    Index<TwoU1> get_phys() const
-    {
-        return phys;
-    }
-    
-    Hamiltonian<Matrix, TwoU1> H () const
-    {
-        std::vector<hamtagterm_t> terms;
-
+        
+        
         op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
-             count_up_op, count_down_op, doubly_occ_op,
-             sign_up_op, sign_down_op, ident_op;
-
-        TwoU1::charge A(0), B(0), C(0), D(1);
-        B[0]=1; C[1]=1;
+        count_up_op, count_down_op, doubly_occ_op,
+        sign_up_op, sign_down_op, ident_op;
         
         ident_op.insert_block(Matrix(1, 1, 1), A, A);
         ident_op.insert_block(Matrix(1, 1, 1), B, B);
@@ -84,18 +76,13 @@ public:
         sign_down_op.insert_block(Matrix(1, 1, 1), B, B);
         sign_down_op.insert_block(Matrix(1, 1, -1), C, C);
         sign_down_op.insert_block(Matrix(1, 1, -1), D, D);
-
+        
         /**********************************************************************/
         /*** Create operator tag table ****************************************/
         /**********************************************************************/
-
-        boost::shared_ptr<TagHandler<Matrix, TwoU1> > tag_handler(new TagHandler<Matrix, TwoU1>());
-        tag_type create_up, create_down, destroy_up, destroy_down,
-              count_up, count_down, doubly_occ,
-              ident, sign_up, sign_down;
-
-        #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
-
+        
+#define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
+        
         REGISTER(ident,        tag_detail::bosonic)
         REGISTER(sign_up,      tag_detail::bosonic)
         REGISTER(sign_down,    tag_detail::bosonic)
@@ -106,9 +93,19 @@ public:
         REGISTER(count_up,     tag_detail::bosonic)
         REGISTER(count_down,   tag_detail::bosonic)
         REGISTER(doubly_occ,   tag_detail::bosonic)
-
-        #undef REGISTER
+        
+#undef REGISTER
         /**********************************************************************/
+    }
+    
+    Index<TwoU1> get_phys() const
+    {
+        return phys;
+    }
+    
+    Hamiltonian<Matrix, TwoU1> H () const
+    {
+        std::vector<hamtagterm_t> terms;
         
         value_type U = parms["U"];
         std::pair<tag_type, value_type> ptag;
@@ -148,8 +145,8 @@ public:
                     term.scale = -ti;
 
                     //gemm(destroy_up, sign_up, tmp);
-                    ptag = tag_handler->get_product_tag(destroy_up, sign_up); // Note inverse notation because of notation in operator.
-                    term.scale *= ptag.second;
+                    ptag = tag_handler->get_product_tag(sign_up, destroy_up); // Note inverse notation because of notation in operator.
+                    term.scale *= -ptag.second; // Note minus because of anti-commutation
 
                     term.operators.push_back( std::make_pair(p, ptag.first) );
                     term.operators.push_back( std::make_pair(*hopto, create_up) );
@@ -176,8 +173,8 @@ public:
                     term.scale = -ti;
 
                     //gemm(destroy_down, sign_down, tmp);
-                    ptag = tag_handler->get_product_tag(destroy_down, sign_down); // Note inverse notation because of notation in operator.
-                    term.scale *= ptag.second;
+                    ptag = tag_handler->get_product_tag(sign_down, destroy_down); // Note inverse notation because of notation in operator.
+                    term.scale *= -ptag.second; // Note minus because of anti-commutation
 
                     term.operators.push_back( std::make_pair(p, ptag.first) );
                     term.operators.push_back( std::make_pair(*hopto, create_down) );
@@ -187,12 +184,74 @@ public:
         }
 
         std::vector<hamterm_t> terms_ops;
-        return ham(phys, ident_op, terms_ops, ident, terms, tag_handler);
+        return ham(phys, tag_handler->get_op(ident), terms_ops, ident, terms, tag_handler);
     }
     
     Measurements<Matrix, TwoU1> measurements () const
     {
-        return Measurements<Matrix, TwoU1>();
+        Measurements<Matrix, TwoU1> meas;
+        meas.set_identity(tag_handler->get_op(ident));
+        
+        if (parms["ENABLE_MEASURE[Density]"]) {
+            mterm_t term;
+            term.fill_operator = tag_handler->get_op(ident);
+            term.name = "Density up";
+            term.type = mterm_t::Average;
+            term.operators.push_back( std::make_pair(tag_handler->get_op(count_up), false) );
+            
+            meas.add_term(term);
+        }
+        if (parms["ENABLE_MEASURE[Density]"]) {
+            mterm_t term;
+            term.fill_operator = tag_handler->get_op(ident);
+            term.name = "Density down";
+            term.type = mterm_t::Average;
+            term.operators.push_back( std::make_pair(tag_handler->get_op(count_down), false) );
+            
+            meas.add_term(term);
+        }
+        
+        if (parms["ENABLE_MEASURE[Local density]"]) {
+            mterm_t term;
+            term.fill_operator = tag_handler->get_op(ident);
+            term.name = "Local density up";
+            term.type = mterm_t::Local;
+            term.operators.push_back( std::make_pair(tag_handler->get_op(count_up), false) );
+            
+            meas.add_term(term);
+        }
+        if (parms["ENABLE_MEASURE[Local density]"]) {
+            mterm_t term;
+            term.fill_operator = tag_handler->get_op(ident);
+            term.name = "Local density down";
+            term.type = mterm_t::Local;
+            term.operators.push_back( std::make_pair(tag_handler->get_op(count_down), false) );
+            
+            meas.add_term(term);
+        }
+        
+        if (parms["ENABLE_MEASURE[Onebody density matrix]"]) {
+            mterm_t term;
+            term.fill_operator = tag_handler->get_op(sign_up);
+            term.name = "Onebody density matrix up";
+            term.type = mterm_t::Correlation;
+            term.operators.push_back( std::make_pair(tag_handler->get_op(create_up), true) );
+            term.operators.push_back( std::make_pair(tag_handler->get_op(destroy_up), true) );
+            
+            meas.add_term(term);
+        }
+        if (parms["ENABLE_MEASURE[Onebody density matrix]"]) {
+            mterm_t term;
+            term.fill_operator = tag_handler->get_op(sign_down);
+            term.name = "Onebody density matrix down";
+            term.type = mterm_t::Correlation;
+            term.operators.push_back( std::make_pair(tag_handler->get_op(create_down), true) );
+            term.operators.push_back( std::make_pair(tag_handler->get_op(destroy_down), true) );
+            
+            meas.add_term(term);
+        }
+        
+        return meas;
     }
     
 private:
@@ -200,7 +259,13 @@ private:
 
     Lattice const & lat;
     BaseParameters & parms;
+
+    boost::shared_ptr<TagHandler<Matrix, TwoU1> > tag_handler;
+    tag_type create_up, create_down, destroy_up, destroy_down,
+             count_up, count_down, doubly_occ,
+             ident, sign_up, sign_down;
     
+
     double get_t (BaseParameters & parms, int i) const
     {
         std::ostringstream key;

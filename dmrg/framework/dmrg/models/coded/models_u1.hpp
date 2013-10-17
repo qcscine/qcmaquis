@@ -193,11 +193,19 @@ class BoseHubbard : public Model<Matrix, U1>
 {
     typedef Hamiltonian<Matrix, U1> ham;
     typedef typename ham::hamterm_t hamterm_t;
+    typedef Measurement_Term<Matrix, U1> mterm_t;
     typedef typename ham::op_t op_t;
     
 public:
-    BoseHubbard (const Lattice& lat, int Nmax=2, double t=1., double U=1., double V=1.)
+    BoseHubbard (const Lattice& lat_, BaseParameters & model_)
+    : lat(lat_)
+    , model(model_)
     {
+        int Nmax = model["Nmax"];
+        double t = model["t"];
+        double U = model["U"];
+        double V = model["V"];
+        
         phys.insert(std::make_pair(0, 1));
         ident.insert_block(Matrix(1, 1, 1), 0, 0);
         
@@ -222,7 +230,7 @@ public:
                 hamterm_t term;
                 term.with_sign = false;
                 term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, interaction) );
+                term.operators.push_back( std::make_pair(p, U/2.*interaction) );
                 terms.push_back(term);
             }
             
@@ -269,7 +277,41 @@ public:
     
     Measurements<Matrix, U1> measurements () const
     {
-        return Measurements<Matrix, U1>();
+        Measurements<Matrix, U1> meas;
+        meas.set_identity(ident);
+        
+        if (model["ENABLE_MEASURE[Density]"]) {
+            mterm_t term;
+            term.fill_operator = ident;
+            term.name = "Density";
+            term.type = mterm_t::Average;
+            term.operators.push_back( std::make_pair(count, false) );
+            
+            meas.add_term(term);
+        }
+        
+        if (model["ENABLE_MEASURE[Local density]"]) {
+            mterm_t term;
+            term.fill_operator = ident;
+            term.name = "Local density";
+            term.type = mterm_t::Local;
+            term.operators.push_back( std::make_pair(count, false) );
+            
+            meas.add_term(term);
+        }
+        
+        if (model["ENABLE_MEASURE[Onebody density matrix]"]) {
+            mterm_t term;
+            term.fill_operator = ident;
+            term.name = "Onebody density matrix";
+            term.type = mterm_t::HalfCorrelation;
+            term.operators.push_back( std::make_pair(create, false) );
+            term.operators.push_back( std::make_pair(destroy, false) );
+            
+            meas.add_term(term);
+        }
+        
+        return meas;
     }
     
     op_t get_op(std::string const & op) const
@@ -291,6 +333,8 @@ public:
     
     
 private:
+    const Lattice & lat;
+    BaseParameters & model;
     op_t ident;
     op_t create, destroy, count, interaction;
     Index<U1> phys;
