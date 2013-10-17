@@ -24,14 +24,19 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "ambient/ambient.hpp"
+#ifndef AMBIENT_UTILS_SERVICE
+#define AMBIENT_UTILS_SERVICE
+
+extern "C" {
+    void MKL_Set_Num_Threads(int nth);
+}
 
 namespace ambient {
-    int scope<single>::compact_factor = 1;
-    models::velvet::model& model = models::velvet::model::instance();
-    channels::mpi::channel& channel = channels::mpi::channel::instance();
-    channels::mpi::multirank& rank = channels::mpi::multirank::instance();
-    controllers::velvet::controller& controller = controllers::velvet::controller::instance();
-    utils::mpostream cout;
-    utils::mpostream cerr;
+
+    inline void mkl_set_num_threads(int n){
+        MKL_Set_Num_Threads(n);
+    }
+
 }
+
+#endif

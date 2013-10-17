@@ -60,41 +60,6 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
     }
 }
 
-template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
-void gemm_allocate(block_matrix<Matrix1, SymmGroup> const & A,
-                   block_matrix<Matrix2, SymmGroup> const & B,
-                   block_matrix<Matrix3, SymmGroup> & C)
-{
-    C.clear();
-    
-    typedef typename SymmGroup::charge charge;
-    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        if (! B.left_basis().has(A.right_basis()[k].first))
-            continue;
-        
-        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
-        C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
-                       A.left_basis()[k].first, B.right_basis()[matched_block].first);
-    }
-}
-
-template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
-void gemm_calculate(block_matrix<Matrix1, SymmGroup> const & A,
-                    block_matrix<Matrix2, SymmGroup> const & B,
-                    block_matrix<Matrix3, SymmGroup> & C)
-{
-    typedef typename SymmGroup::charge charge;
-    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        if (! B.left_basis().has(A.right_basis()[k].first))
-            continue;
-        
-        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
-        std::size_t new_block = C.left_basis().position(A.left_basis()[k].first);
-        
-        gemm(A[k], B[matched_block], C[new_block]);
-    }
-}
-
 template<class Matrix, class DiagMatrix, class SymmGroup>
 void svd(block_matrix<Matrix, SymmGroup> const & M,
          block_matrix<Matrix, SymmGroup> & U,
@@ -208,6 +173,9 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     }
     timert.end();
 
+    #ifdef AMBIENT_PARALLEL_MKL
+    ambient::mkl_set_num_threads(AMBIENT_MKL_NUM_THREADS);
+    #endif
     timer.begin();
     for(size_t k = 0; k < loop_max; ++k){
         int owner = M[k][0].core->current->owner;
@@ -216,6 +184,9 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
         svd_merged(M[k], U[k], V[k], S[k]);
     }
     timer.end();
+    #ifdef AMBIENT_PARALLEL_MKL
+    ambient::mkl_set_num_threads(1);
+    #endif
     #else
     parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
         svd_merged(M[k], U[k], V[k], S[k]);

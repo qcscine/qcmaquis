@@ -27,6 +27,7 @@
 #include "ambient/utils/io.hpp"
 #include "ambient/utils/timings.hpp"
 #include "ambient/utils/overseer.hpp"
+#include "ambient/utils/service.hpp"
 
 namespace ambient { namespace controllers { namespace velvet {
 
@@ -45,6 +46,9 @@ namespace ambient { namespace controllers { namespace velvet {
         this->context_base = new ambient::scope<base>();
         this->context = this->context_base;
         this->serial = (ambient::channel.dim() == 1) ? true : false;
+        #ifdef AMBIENT_PARALLEL_MKL
+        ambient::mkl_set_num_threads(1);
+        #endif
         #ifdef AMBIENT_VERBOSE
             #ifdef AMBIENT_CILK
             ambient::cout << "ambient: initialized (using cilk)\n";
@@ -59,6 +63,9 @@ namespace ambient { namespace controllers { namespace velvet {
             ambient::cout << "ambient: number of database proc: " << AMBIENT_DB_PROCS << "\n";
             ambient::cout << "ambient: number of work proc: " << ambient::channel.wk_dim() << "\n";
             ambient::cout << "ambient: number of threads per proc: " << ambient::get_num_threads() << "\n";
+            #ifdef AMBIENT_PARALLEL_MKL
+            ambient::cout << "ambient: using MKL: threaded\n";
+            #endif 
         #endif
     }
 

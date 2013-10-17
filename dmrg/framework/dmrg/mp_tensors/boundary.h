@@ -13,6 +13,7 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "utils/function_objects.h"
+#include "dmrg/utils/parallel_for.hpp"
 
 #include <iostream>
 #include <set>
@@ -40,7 +41,7 @@ public:
     Boundary& operator = (const Boundary<OtherMatrix, SymmGroup>& rhs){
         size_t loop_max = rhs.aux_dim();
         resize(loop_max);
-        parallel_for(locale::sorted(rhs), locale b = 0; b < loop_max; ++b)
+        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
             data_[b] = rhs[b];
         return *this;
     }
@@ -56,6 +57,26 @@ public:
         }
         std::sort(sizes.begin(), sizes.end(), [](const std::pair<double,size_t>& a, const std::pair<double,size_t>& b){ return a.first < b.first; });
         return sizes;
+    }
+
+    void print_distribution() const {
+        if(ambient::rank() != 0) return;
+
+        int loop_max = this->aux_dim();
+        double total = 0;
+        for(int b = 0; b < loop_max; ++b){
+            for(int i = 0; i < (*this)[b].n_blocks(); ++i) total += num_rows((*this)[b][i])*num_cols((*this)[b][i]);
+        }
+        for(int p = 0; p < ambient::channel.dim(); ++p){
+            double part = 0;
+            for(int b = 0; b < loop_max; ++b){
+                for(int i = 0; i < (*this)[b].n_blocks(); ++i){
+                    if((*this)[b][i][0].core->current->owner == p || (p == 0 && (*this)[b][i][0].core->current->owner == -1))
+                        part += num_rows((*this)[b][i])*num_cols((*this)[b][i]);
+                }
+            }
+            printf("R%d: %d%\n", p, (int)(100*part/total));
+        }
     }
     #endif
     
@@ -99,7 +120,11 @@ public:
    
     template<class Archive> 
     void load(Archive & ar){
-        ar["data"] >> data_;
+        std::vector<std::string> children = ar.list_children("data");
+        data_.resize(children.size());
+        semi_parallel_for(locale::compact(children.size()),locale i=0; i<children.size(); ++i){
+             ar["data/"+children[i]] >> data_[alps::cast<std::size_t>(children[i])];
+        }
     }
     
     template<class Archive> 

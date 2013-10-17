@@ -362,6 +362,10 @@ struct contraction {
         ambient::overseer::log::region("serial::continue");
         #endif
 
+        #ifdef AMBIENT
+        lbtm.print_distribution();
+        #endif
+
         return lbtm;
     }
     
@@ -389,7 +393,11 @@ struct contraction {
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("serial::continue");
         #endif
-        
+
+        #ifdef AMBIENT
+        rbtm.print_distribution();
+        #endif
+       
         return rbtm;
     }
     

@@ -288,12 +288,14 @@ namespace storage {
         template<class T> static void pin(serializable<T>& t)     { }
 
 #ifdef AMBIENT
+        //template<class Matrix, class SymmGroup> 
+        //static void evict(MPSTensor<Matrix, SymmGroup>& t){
+        //    if(!ambient::channel.db_dim()) return;
+        //    ambient::scope<ambient::dedicated> i;
+        //    migrate(t);
+        //}
         template<class Matrix, class SymmGroup> 
-        static void evict(MPSTensor<Matrix, SymmGroup>& t){
-            if(!ambient::channel.db_dim()) return;
-            ambient::scope<ambient::dedicated> i;
-            migrate(t);
-        }
+        static void evict(MPSTensor<Matrix, SymmGroup>& t){ }
 #else
         template<class Matrix, class SymmGroup> 
         static void evict(MPSTensor<Matrix, SymmGroup>& t){ }
