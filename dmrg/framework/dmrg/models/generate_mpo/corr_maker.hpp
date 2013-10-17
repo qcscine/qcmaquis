@@ -117,6 +117,7 @@ namespace generate_mpo
             typename Matrix::value_type scale;
             if (trivial) {
             	op = (with_sign[p][u1]) ? fill_tag : identity_tag;
+                scale = 1.;
             	lab = (with_sign[p][u1]) ? "filling" : "ident";
             } else {
 				lab = "nontriv";
@@ -130,12 +131,13 @@ namespace generate_mpo
 					lab += "*fill";
 				} else {
 					op = op_p.first;
+                    scale = 1.;
 				}
             }
             
         	size_t u2 = 0;
             while (used[p].count(u2) > 0) ++u2;
-            prempo[p].push_back( boost::make_tuple(u1, u2, op, 1.0) );
+            prempo[p].push_back( boost::make_tuple(u1, u2, op, scale) );
             used[p].insert(u2);
            	with_sign[p+1][u2] = (op_p.second) ? !with_sign[p][u1] : with_sign[p][u1];
             //            maquis::cout << "Adding a " << lab << " term at " << p << ", " << u1 << " -> " << u2 << std::endl;
