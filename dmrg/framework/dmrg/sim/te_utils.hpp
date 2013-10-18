@@ -12,6 +12,7 @@
 #include "dmrg/mp_tensors/mpo_manip.h"
 #include "dmrg/mp_tensors/compression.h"
 
+#include "dmrg/models/generate_mpo/utils.hpp"
 
 #include <vector>
 #include <set>
@@ -199,17 +200,27 @@ std::vector<block_matrix<Matrix, SymmGroup> > hamil_to_blocks(Hamiltonian<Matrix
 template <class Matrix, class SymmGroup>
 class exp_mpo_maker {
     typedef block_matrix<Matrix, SymmGroup> op_t;
-
+    
+    typedef typename Hamiltonian<Matrix, SymmGroup>::hamtagterm_t hamtagterm_t;
+    typedef OPTable<Matrix, SymmGroup> op_table_t;
+    typedef boost::shared_ptr<op_table_t> op_table_ptr;
+    typedef typename op_table_t::tag_type tag_type;
+    
+    typedef boost::tuple<std::size_t, std::size_t, tag_type, typename Matrix::value_type> pretensor_value;
+    typedef std::vector<pretensor_value> pretensor_t;
+    typedef std::vector<pretensor_t> prempo_t;
+    
 public:
     exp_mpo_maker(Index<SymmGroup> const& phys_, op_t const& ident_,
                  std::size_t pos1_, std::size_t pos2_)
-    : ident(ident_)
+    : ident_op(ident_)
+    , fill_op(ident_)
     , phys(phys_)
     , pos1(pos1_), pos2(pos2_), L(pos2-pos1+1)
     , n_boso(0), n_ferm(0)
     { }
     
-    void add_term(Hamiltonian_Term<Matrix, SymmGroup> const & term, typename Matrix::value_type const & alpha = 1.)
+    void add_term(hamtagterm_t const & term, op_table_ptr op_table)
     {
         if (term.operators.size() > 2)
             throw std::runtime_error("time evolution requires at max bond term.");
@@ -217,34 +228,42 @@ public:
         /// kron product of operators
         op_t bond_op;
         if (term.operators.size() == 2)
-            op_kron(phys, term.operators[0].second, term.operators[1].second, bond_op);
+            op_kron(phys, (*op_table)[term.operators[0].second], (*op_table)[term.operators[1].second], bond_op);
         else if (term.operators[0].first == pos1)
-            op_kron(phys, term.operators[0].second, ident, bond_op);
+            op_kron(phys, (*op_table)[term.operators[0].second], ident_op, bond_op);
         else if (term.operators[0].first == pos2)
-            op_kron(phys, ident, term.operators[0].second, bond_op);
+            op_kron(phys, ident_op, (*op_table)[term.operators[0].second], bond_op);
         else
             throw std::runtime_error("Operator k not matching any valid position.");
         
         if (term.with_sign) {
-            fermionic_bond += bond_op;
+            fermionic_bond += term.scale * bond_op;
             n_ferm += 1;
-            fill = term.fill_operator;
+            fill_op = (*op_table)[term.fill_operator];
         } else {
-            bosonic_bond += bond_op;
+            bosonic_bond += term.scale * bond_op;
             n_boso += 1;
         }
     }
     
-    MPO<Matrix, SymmGroup> exp_mpo(typename Matrix::value_type const & alpha = 1.) const
+    MPO<Matrix, SymmGroup> exp_mpo(typename Matrix::value_type const & alpha, op_table_ptr op_table) const
     {
         std::size_t maximum_b = 0;
-        MPO<Matrix, SymmGroup> mpo(L);
+        prempo_t prempo(L);
+        
+        tag_type ident = op_table->register_op(ident_op);
+        tag_type fill;
+        {
+            typename Matrix::value_type coeff;
+            boost::tie(fill, coeff) = op_table->checked_register(fill_op);
+            if (coeff != 1.) throw std::runtime_error("multiple of fill operator already in op_table.");
+        }
         
         if (n_boso > 0) {
             std::vector<op_t> left_ops, right_ops;
             exp_and_split(bosonic_bond, alpha, left_ops, right_ops);
             
-            maximum_b = add_to_mpo(mpo, maximum_b, left_ops, right_ops, 1., ident);
+            maximum_b = add_to_mpo(prempo, maximum_b, left_ops, right_ops, 1., ident, op_table);
         }
         
         if (n_ferm > 0) {
@@ -253,8 +272,8 @@ public:
                 std::vector<op_t> left_ops, right_ops;
                 exp_and_split(fermionic_bond, alpha, left_ops, right_ops);
                 
-                maximum_b = add_to_mpo(mpo, maximum_b, left_ops, right_ops, .5, ident);
-                maximum_b = add_to_mpo(mpo, maximum_b, left_ops, right_ops, .5, fill);
+                maximum_b = add_to_mpo(prempo, maximum_b, left_ops, right_ops, .5, ident, op_table);
+                maximum_b = add_to_mpo(prempo, maximum_b, left_ops, right_ops, .5, fill, op_table);
             }
             
             /// exp(-alpha * op1 \otimes op2)
@@ -262,10 +281,21 @@ public:
                 std::vector<op_t> left_ops, right_ops;
                 exp_and_split(fermionic_bond, -alpha, left_ops, right_ops);
                 
-                maximum_b = add_to_mpo(mpo, maximum_b, left_ops, right_ops, .5, ident);
-                maximum_b = add_to_mpo(mpo, maximum_b, left_ops, right_ops, -.5, fill);
+                maximum_b = add_to_mpo(prempo, maximum_b, left_ops, right_ops, .5, ident, op_table);
+                maximum_b = add_to_mpo(prempo, maximum_b, left_ops, right_ops, -.5, fill, op_table);
             }
         }
+        
+        
+        MPO<Matrix, SymmGroup> mpo(L);
+        for (size_t p=0; p<L; ++p) {
+            size_t nrows, ncols;
+            using generate_mpo::rcdim;
+            boost::tie(nrows, ncols) = rcdim(prempo[p]);
+            MPOTensor<Matrix, SymmGroup> tmp(nrows, ncols, prempo[p], op_table);
+            swap(mpo[p], tmp);
+        }
+        
         return mpo;
     }
     
@@ -307,22 +337,29 @@ private:
         assert(left_ops.size() == right_ops.size());
     }
     
-    std::size_t add_to_mpo(MPO<Matrix, SymmGroup> & mpo, std::size_t maximum_b, 
+    std::size_t add_to_mpo(prempo_t & prempo, std::size_t maximum_b,
                            std::vector<op_t> const& left_ops, std::vector<op_t> const& right_ops,
-                           double s, op_t const& fill) const
+                           typename Matrix::value_type s, tag_type fill,  op_table_ptr op_table) const
     {
         for (std::size_t i=0; i<left_ops.size(); ++i)
         {
             std::size_t b = (maximum_b++);
-            mpo[0](0, b) = s*left_ops[i];
-            mpo[L-1](b, 0) = right_ops[i];
+            
+            std::pair<tag_type, typename Matrix::value_type> left_tag, right_tag;
+            left_tag = op_table->checked_register(left_ops[i]);
+            right_tag = op_table->checked_register(right_ops[i]);
+            
+            s *= left_tag.second * right_tag.second;
+            
+            prempo[0].push_back  ( pretensor_value(0, b, left_tag.first,  s ) );
+            prempo[L-1].push_back( pretensor_value(b, 0, right_tag.first, 1.) );
             for (std::size_t p=1; p<L-1; ++p)
-                mpo[p](b, b) = fill;
+                prempo[p].push_back( pretensor_value(b, b, fill, 1.) );
         }
         return maximum_b;
     }
     
-    op_t ident, fill;
+    op_t ident_op, fill_op;
     Index<SymmGroup> phys;
     std::size_t pos1, pos2, L;
     std::size_t n_boso, n_ferm;
@@ -336,41 +373,53 @@ MPO<Matrix, SymmGroup> make_exp_mpo(std::size_t length,
                                     typename Matrix::value_type const & alpha = 1)
 {
     typedef Hamiltonian<Matrix, SymmGroup> ham;
+    typedef OPTable<Matrix, SymmGroup> op_table_t;
+    typedef boost::shared_ptr<op_table_t> op_table_ptr;
+    typedef typename op_table_t::tag_type tag_type;
+    typedef boost::tuple<std::size_t, std::size_t, tag_type, typename Matrix::value_type> pretensor_value;
+    typedef std::vector<pretensor_value> pretensor_t;
+
+    op_table_ptr op_table( new op_table_t() );
     
     MPO<Matrix, SymmGroup> mpo(length);
     std::vector<bool> used_p(length, false);
     
-    for (int n=0; n<H.n_terms(); )
+    for (int n=0; n<H.n_tagterms(); )
     {
-        assert(H[n].operators.size() == 2);
-        int pos1 = H[n].operators[0].first;
-        int pos2 = H[n].operators[1].first;
+        assert(H.tag(n).operators.size() == 2);
+        int pos1 = H.tag(n).operators[0].first;
+        int pos2 = H.tag(n).operators[1].first;
         
         exp_mpo_maker<Matrix, SymmGroup> maker(H.get_phys(), H.get_identity(), pos1, pos2);
         
-        maker.add_term(H[n]);
+        maker.add_term(H.tag(n), H.get_operator_table()->get_operator_table());
         
         int k = n+1;
-        for (; k<H.n_terms() && H[n].site_match(H[k]); ++k)
-            maker.add_term(H[k]);
+        for (; k<H.n_tagterms() && H.tag(n).site_match(H.tag(k)); ++k)
+            maker.add_term(H.tag(k), H.get_operator_table()->get_operator_table());
         
-        MPO<Matrix, SymmGroup> const& block_mpo = maker.exp_mpo(alpha);
+        MPO<Matrix, SymmGroup> block_mpo = maker.exp_mpo(alpha, op_table);
         for (size_t p=0; p<pos2-pos1+1; ++p) {
-            mpo[pos1+p] = block_mpo[p];
+            swap(mpo[pos1+p], block_mpo[p]);
             used_p[pos1+p] = true;
         }
         
         n = k;
     }
     
+    tag_type ident; typename Matrix::value_type scale;
+    boost::tie(ident, scale) = op_table->checked_register(H.get_identity());
+    pretensor_t preident;
+    preident.push_back( pretensor_value(0, 0, ident, scale) );
+    
     // Filling missing identities
-    for (std::size_t p=0; p<length; ++p)
+    for (std::size_t p=0; p<length; ++p) {
         if (!used_p[p]) {
-            MPOTensor<Matrix, SymmGroup> r(1, 1);
-            r(0, 0) = H.get_identity();
-            mpo[p] = r;
+            MPOTensor<Matrix, SymmGroup> r(1, 1, preident, op_table);
+            swap(mpo[p], r);
             used_p[p] = true;
         }
+    }
     
     return mpo;
 }

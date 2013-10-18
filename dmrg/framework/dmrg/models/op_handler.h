@@ -33,7 +33,7 @@ private:
 
 public:
     tag_type register_op(op_t const & op_);
-    std::pair<tag_type, mvalue_type> checked_register(op_t & sample);
+    std::pair<tag_type, mvalue_type> checked_register(op_t const& sample);
 };
 
 template <class Matrix, class SymmGroup>
@@ -59,7 +59,7 @@ public:
     
     tag_type register_op(const op_t & op_, tag_detail::operator_kind kind);
 
-    std::pair<tag_type, value_type> checked_register(op_t & sample, tag_detail::operator_kind kind) {
+    std::pair<tag_type, value_type> checked_register(op_t const& sample, tag_detail::operator_kind kind) {
         std::pair<tag_type, value_type> ret = operator_table->checked_register(sample);
         if (sign_table.size() < operator_table->size())
             sign_table.push_back(kind);

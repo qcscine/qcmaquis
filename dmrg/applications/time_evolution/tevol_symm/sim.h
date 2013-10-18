@@ -19,8 +19,8 @@ void run_tevol<matrix, grp>(DmrgParameters & parms, ModelParameters & model)
         tevol_sim<matrix, grp, nearest_neighbors_evolver<matrix, grp> > sim(parms, model);
         sim.run();
     } else if (parms["te_type"] == "mpo") {
-//        tevol_sim<matrix, grp, mpo_evolver<matrix, grp> > sim(parms, model);
-//        sim.run();
+        tevol_sim<matrix, grp, mpo_evolver<matrix, grp> > sim(parms, model);
+        sim.run();
     } else {
         throw std::runtime_error("Don't know this time evolution. ("+parms["te_type"].str()+")");
     }
@@ -34,8 +34,8 @@ void run_tevol<cmatrix, grp>(DmrgParameters & parms, ModelParameters & model)
         tevol_sim<cmatrix, grp, nearest_neighbors_evolver<cmatrix, grp> > sim(parms, model);
         sim.run();
     } else if (parms["te_type"] == "mpo") {
-//        tevol_sim<cmatrix, grp, mpo_evolver<cmatrix, grp> > sim(parms, model);
-//        sim.run();
+        tevol_sim<cmatrix, grp, mpo_evolver<cmatrix, grp> > sim(parms, model);
+        sim.run();
     } else {
         throw std::runtime_error("Don't know this time evolution. ("+parms["te_type"].str()+")");
     }

@@ -21,7 +21,7 @@ OPTable<Matrix, SymmGroup>::register_op(op_t const & op_)
 
 template <class Matrix, class SymmGroup>
 std::pair<typename OPTable<Matrix, SymmGroup>::tag_type, typename OPTable<Matrix, SymmGroup>::mvalue_type>
-OPTable<Matrix, SymmGroup>::checked_register(op_t & sample)
+OPTable<Matrix, SymmGroup>::checked_register(op_t const& sample)
 {
     std::pair<bool, mvalue_type> cmp_result;
     typename std::vector<op_t>::iterator it_pt = this->begin();

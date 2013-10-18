@@ -33,7 +33,7 @@ namespace tag_detail {
     };
 
     template <class Matrix, class SymmGroup>
-    bool is_uniform(block_matrix<Matrix, SymmGroup> & op)
+    bool is_uniform(block_matrix<Matrix, SymmGroup> const& op)
     {
         typename Matrix::value_type invscale;
 
@@ -72,8 +72,8 @@ namespace tag_detail {
 
     template <class Matrix, class SymmGroup>
     std::pair<bool, typename Matrix::value_type>
-    equal(block_matrix<Matrix, SymmGroup> & reference,
-          block_matrix<Matrix, SymmGroup> & sample)
+    equal(block_matrix<Matrix, SymmGroup> const& reference,
+          block_matrix<Matrix, SymmGroup> const& sample)
     {
         if (reference.left_basis() != sample.left_basis() || reference.right_basis() != sample.right_basis())
             return std::make_pair(false, 0.);
