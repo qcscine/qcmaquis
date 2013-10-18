@@ -100,10 +100,10 @@ void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
     else
     {  
         // Hamiltonian only needed here, runs out of scope and gets destroyed
-        Hamiltonian<Matrix, SymmGroup> Hloc = phys_model->H();
-        phys = Hloc.get_phys();
+        Hamiltonian<Matrix, SymmGroup> H = phys_model->H();
+        phys = H.get_phys();
 
-        mpo = make_mpo(lat->size(), Hloc); 
+        mpo = make_mpo(lat->size(), H);
         mpoc = mpo;
 
         if (parms["use_compressed"] > 0)

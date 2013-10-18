@@ -66,6 +66,7 @@ public:
     virtual hamtagterm_t const & tag(int i) const { return tagterms[i]; }
 
     virtual void add_term (hamterm_t const & term) { terms.push_back(term); }
+    virtual void add_tagterm (hamtagterm_t const & term) { tagterms.push_back(term); }
     
     virtual Index<SymmGroup> get_phys () const { return phys; }
     virtual void set_phys (Index<SymmGroup> const & phys_) { phys = phys_; }

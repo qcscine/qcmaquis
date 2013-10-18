@@ -23,33 +23,34 @@ template <class Matrix, class SymmGroup>
 std::vector<Hamiltonian<Matrix, SymmGroup> > separate_overlaps (Hamiltonian<Matrix, SymmGroup> const & H)
 {
     typedef std::map<std::size_t, std::set<std::size_t> > pos_where_t;
-    typedef std::map<std::size_t, std::vector<typename Hamiltonian<Matrix, SymmGroup>::hamterm_t> > pos_terms_t;
+    typedef typename Hamiltonian<Matrix, SymmGroup>::hamtagterm_t term_t;
+    typedef std::map<std::size_t, std::vector<term_t> > pos_terms_t;
     
     std::vector<Hamiltonian<Matrix, SymmGroup> > ret;
     pos_where_t pos_where;
     pos_terms_t pos_terms;
     
-    for (int i=0; i<H.n_terms(); ++i)
+    for (int i=0; i<H.n_tagterms(); ++i)
     {            
-        if (H[i].operators.size() == 1) {
-            pos_terms[H[i].operators[0].first].push_back(H[i]);
+        if (H.tag(i).operators.size() == 1) {
+            pos_terms[H.tag(i).operators[0].first].push_back(H.tag(i));
             continue;
         }
         
-        Hamiltonian_Term<Matrix, SymmGroup> term = H[i];
+        term_t term = H.tag(i);
         term.canonical_order(); // TODO: check and fix for fermions!!
         bool used = false;
         for (int n=0; n<ret.size() && !used; ++n)
         {
             bool overlap = false;
-            for (int j=0; j<ret[n].n_terms() && !overlap; ++j)
+            for (int j=0; j<ret[n].n_tagterms() && !overlap; ++j)
             {
-                if ( ret[n][j].site_match(term) ) break;
-                overlap = ret[n][j].overlap(term);
+                if ( ret[n].tag(j).site_match(term) ) break;
+                overlap = ret[n].tag(j).overlap(term);
             }
             
             if (!overlap) {
-            	ret[n].add_term(term);
+            	ret[n].add_tagterm(term);
             	for (int p=0; p<term.operators.size(); ++p)
             		pos_where[term.operators[p].first].insert(n);
                 used = true;
@@ -57,10 +58,8 @@ std::vector<Hamiltonian<Matrix, SymmGroup> > separate_overlaps (Hamiltonian<Matr
         }
         
         if (!used) {
-            Hamiltonian<Matrix, SymmGroup> tmp;
-            tmp.set_identity( H.get_identity() );
-            tmp.set_phys( H.get_phys() );
-            tmp.add_term(term);
+            Hamiltonian<Matrix, SymmGroup> tmp(H.get_phys(), H.get_identity(), std::vector<typename Hamiltonian<Matrix, SymmGroup>::hamterm_t>(),
+                                               H.get_identity_tag(), std::vector<term_t>(1, term), H.get_operator_table());
             ret.push_back(tmp);
             
         	for (int p=0; p<term.operators.size(); ++p)
@@ -80,9 +79,9 @@ std::vector<Hamiltonian<Matrix, SymmGroup> > separate_overlaps (Hamiltonian<Matr
              ++it2)
             for (int k=0; k<it->second.size(); ++k)
             {
-            	typename Hamiltonian<Matrix, SymmGroup>::hamterm_t tmp_term = it->second[k];
-            	tmp_term.operators[0].second *= coeff;
-                ret[*it2].add_term(tmp_term);
+            	term_t tmp_term = it->second[k];
+            	tmp_term.scale *= coeff;
+                ret[*it2].add_tagterm(tmp_term);
             }
     }
     
@@ -148,8 +147,9 @@ std::map<std::size_t, block_matrix<Matrix, SymmGroup> > make_exp_nn (Hamiltonian
 
 
 template <class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> term2block(typename Hamiltonian<Matrix, SymmGroup>::hamterm_t const & term, std::size_t pos1,
-                                           Index<SymmGroup> const & phys_i, block_matrix<Matrix, SymmGroup> const & ident)
+block_matrix<Matrix, SymmGroup> term2block(typename Hamiltonian<Matrix, SymmGroup>::hamtagterm_t const & term, std::size_t pos1,
+                                           Index<SymmGroup> const & phys_i, block_matrix<Matrix, SymmGroup> const & ident,
+                                           typename Hamiltonian<Matrix, SymmGroup>::table_ptr tag_handler)
 {
 #ifndef NDEBUG
     if (term.operators.size() == 2)
@@ -158,13 +158,16 @@ block_matrix<Matrix, SymmGroup> term2block(typename Hamiltonian<Matrix, SymmGrou
     
     block_matrix<Matrix, SymmGroup> bond_op;
     if (term.operators.size() == 2)
-        op_kron(phys_i, term.operators[0].second, term.operators[1].second, bond_op);
+        op_kron(phys_i, tag_handler->get_op(term.operators[0].second), tag_handler->get_op(term.operators[1].second), bond_op);
     else if (term.operators[0].first == pos1)
-        op_kron(phys_i, term.operators[0].second, ident, bond_op);
+        op_kron(phys_i, tag_handler->get_op(term.operators[0].second), ident, bond_op);
     else
-        op_kron(phys_i, ident, term.operators[0].second, bond_op);
+        op_kron(phys_i, ident, tag_handler->get_op(term.operators[0].second), bond_op);
 //    else
 //        throw std::runtime_error("Operator k not matching any valid position.");
+    
+    bond_op *= term.scale;
+    
     return bond_op;
 }
 
@@ -173,20 +176,20 @@ std::vector<block_matrix<Matrix, SymmGroup> > hamil_to_blocks(Hamiltonian<Matrix
 {
     std::vector<block_matrix<Matrix, SymmGroup> > ret_blocks(L-1);
     
-    for (int i=0; i<H.n_terms(); ++i)
+    for (int i=0; i<H.n_tagterms(); ++i)
     {
-        Hamiltonian_Term<Matrix, SymmGroup> term = H[i];
+        typename Hamiltonian<Matrix, SymmGroup>::hamtagterm_t term = H.tag(i);
         term.canonical_order(); // TODO: check and fix for fermions!!
         std::size_t pos1 = term.operators[0].first;
         if (term.operators.size() == 1) {
             if (pos1 != 0 && pos1 != L-1)
-                term.operators[0].second /= 2.;
+                term.scale /= 2.;
             if (pos1 < L-1)
-                ret_blocks[pos1] += term2block(term, pos1, H.get_phys(), H.get_identity());
+                ret_blocks[pos1] += term2block(term, pos1, H.get_phys(), H.get_identity(), H.get_operator_table());
             if (pos1 > 0)
-                ret_blocks[pos1-1] += term2block(term, pos1-1, H.get_phys(), H.get_identity());
+                ret_blocks[pos1-1] += term2block(term, pos1-1, H.get_phys(), H.get_identity(), H.get_operator_table());
         } else if (term.operators.size() == 2) {
-            ret_blocks[pos1] += term2block(term, pos1, H.get_phys(), H.get_identity());
+            ret_blocks[pos1] += term2block(term, pos1, H.get_phys(), H.get_identity(), H.get_operator_table());
         }
     }
     

@@ -35,6 +35,45 @@ namespace generate_mpo
         bool with_sign;
         
         Operator_Tag_Term() : scale(1.), with_sign(false) {}
+        
+        void canonical_order() // TODO: check and fix for fermions
+        {
+            std::sort(operators.begin(), operators.end(),
+                      boost::bind(&op_pair_t::first, _1) <
+                      boost::bind(&op_pair_t::first, _2));
+        }
+        
+        bool operator< (Operator_Tag_Term const & rhs) const
+        {
+            if (operators[0].first == rhs.operators[0].first)
+                return operators.size() >= rhs.operators.size();
+            return operators[0].first < rhs.operators[0].first;
+        }
+        
+        bool site_match (Operator_Tag_Term const & rhs) const
+        {
+            if (operators.size() == rhs.operators.size())
+            {
+                bool ret = true;
+                for (std::size_t p=0; p<operators.size() && ret; ++p)
+                    ret = (operators[p].first == rhs.operators[p].first);
+                return ret;
+            } else if (operators.size() == 2 && rhs.operators.size() == 1)
+                return (operators[0].first == rhs.operators[0].first || operators[1].first == rhs.operators[0].first);
+            else if (operators.size() == 1 && rhs.operators.size() == 2)
+                return (operators[0].first == rhs.operators[0].first || operators[0].first == rhs.operators[1].first);
+            else
+            {
+                throw std::runtime_error("site_match not implemented for this type of operator." );
+                return false;
+            }
+            
+        }
+        
+        bool overlap (Operator_Tag_Term const & rhs) const
+        {
+        	return !( (operators.rbegin()->first < rhs.operators.begin()->first) || (rhs.operators.rbegin()->first < operators.begin()->first) );
+        }
 	};
     
     template<class Matrix, class SymmGroup>
