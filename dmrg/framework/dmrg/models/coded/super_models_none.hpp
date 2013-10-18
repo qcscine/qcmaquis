@@ -277,13 +277,19 @@ class SuperBoseHubbardNone : public Model<Matrix, TrivialGroup>
 {
     typedef Hamiltonian<Matrix, TrivialGroup> ham;
     typedef typename ham::hamterm_t hamterm_t;
-    typedef typename ham::op_t op_t;
+    typedef typename ham::hamtagterm_t hamtagterm_t;
     typedef Measurement_Term<Matrix, TrivialGroup> mterm_t;
+    typedef typename ham::op_t op_t;
+    typedef typename ham::table_type table_type;
+    typedef typename ham::table_ptr table_ptr;
+    typedef typename table_type::tag_type tag_type;
+    typedef typename Matrix::value_type value_type;
     
 public:
     // Dissipation needs complex types, that's why we forward to do_init with a tag
     SuperBoseHubbardNone(const Lattice& lat, BaseParameters & model_)
     : model(model_)
+    , tag_handler(new table_type())
     {
         do_init(lat,model,typename Matrix::value_type());
     }
@@ -363,15 +369,43 @@ public:
         std::vector< std::pair<op_t,op_t> > hopops = decompose_bond_super<op_t>(adjoint_hamiltonian(kron(mcreate, mdestroy)),phys);
         std::vector< std::pair<op_t,op_t> > Vops = decompose_bond_super<op_t>(adjoint_hamiltonian(kron(mcount, mcount)),phys);
         
+        
+#define REGISTER(op, kind) op ## _tag = tag_handler->register_op(op, kind);
+        REGISTER(ident,       tag_detail::bosonic)
+        REGISTER(create,      tag_detail::bosonic)
+        REGISTER(destroy,     tag_detail::bosonic)
+        REGISTER(drive,       tag_detail::bosonic)
+        REGISTER(pump,        tag_detail::bosonic)
+        REGISTER(count,       tag_detail::bosonic)
+        REGISTER(interaction, tag_detail::bosonic)
+        REGISTER(lindDestroy, tag_detail::bosonic)
+        REGISTER(lindCreate,  tag_detail::bosonic)
+        REGISTER(lindDestroy2,tag_detail::bosonic)
+        REGISTER(leftDestroy, tag_detail::bosonic)
+        REGISTER(rightCreate, tag_detail::bosonic)
+        
+        std::vector< std::pair<tag_type,tag_type> > hopops_tag(hopops.size());
+        for (size_t i=0; i<hopops.size(); ++i)
+            hopops_tag[i] = std::make_pair( tag_handler->register_op(hopops[i].first,  tag_detail::bosonic),
+                                            tag_handler->register_op(hopops[i].second, tag_detail::bosonic) );
+        std::vector< std::pair<tag_type,tag_type> > Vops_tag(Vops.size());
+        for (size_t i=0; i<Vops.size(); ++i)
+            Vops_tag[i] = std::make_pair( tag_handler->register_op(Vops[i].first,  tag_detail::bosonic),
+                                          tag_handler->register_op(Vops[i].second, tag_detail::bosonic) );
+        
+        
+#undef REGISTER
+
         // insert superoperators for each site
         for( int p=0; p < lat.size(); ++p ) 
         {
             // interaction H_U = U/2 n_i (n_i - 1)
             if( U != 0 )
             {
-                hamterm_t term;
-                term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, 0.5*U*interaction) );
+                hamtagterm_t term;
+                term.fill_operator = ident_tag;
+                term.scale = 0.5*U;
+                term.operators.push_back( std::make_pair(p, interaction_tag) );
                 terms.push_back(term);
             }
             
@@ -381,27 +415,30 @@ public:
             double mup = -mu + 0.5*omega*omega*x*x;
             if( mup != 0 )
             {
-                hamterm_t term;
-                term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, mup*count) );
+                hamtagterm_t term;
+                term.fill_operator = ident_tag;
+                term.scale = mup;
+                term.operators.push_back( std::make_pair(p, count_tag) );
                 terms.push_back(term);
             }
             
             // drive H_Lambda = Lambda (b_i^\dag + b_i)
             if( Lambda != 0 )
             {
-                hamterm_t term;
-                term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, Lambda*drive) );
+                hamtagterm_t term;
+                term.fill_operator = ident_tag;
+                term.scale = Lambda;
+                term.operators.push_back( std::make_pair(p, drive_tag) );
                 terms.push_back(term);
             }
 
             // pump H_Delta = Delta (b_i^\dag^2 + b_i^2)
             if( Delta != 0 )
             {
-                hamterm_t term;
-                term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, Delta*pump) );
+                hamtagterm_t term;
+                term.fill_operator = ident_tag;
+                term.scale = Delta;
+                term.operators.push_back( std::make_pair(p, pump_tag) );
                 terms.push_back(term);
             }
 
@@ -409,9 +446,10 @@ public:
             //   = Gamma_{1a} (1+\bar{n}) (2 b_i rho b_i^\dag - b_i^\dag b_i rho - rho b_i^\dag b_i)
             if( Gamma1a != 0 )
             {
-                hamterm_t term;
-                term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, I*Gamma1a*(1+nbar)*lindDestroy) );
+                hamtagterm_t term;
+                term.fill_operator = ident_tag;
+                term.scale = I*Gamma1a*(1+nbar);
+                term.operators.push_back( std::make_pair(p, lindDestroy_tag) );
                 terms.push_back(term);
             }
             
@@ -420,9 +458,10 @@ public:
             //   = Gamma_{1a} \bar{n} (2 b_i^\dag rho b_i - b_i b_i^\dag rho - rho b_i b_i^\dag)
             if( Gamma1a*nbar != 0 )
             {
-                hamterm_t term;
-                term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, I*Gamma1a*nbar*lindCreate) );
+                hamtagterm_t term;
+                term.fill_operator = ident_tag;
+                term.scale = I*Gamma1a*nbar;
+                term.operators.push_back( std::make_pair(p, lindCreate_tag) );
                 terms.push_back(term);
             }
             
@@ -430,9 +469,10 @@ public:
             //   = Gamma_2/2 (2 b_i^2 rho b_i^\dag^2 - b_i^\dag^2 b_i^2 rho - rho b_i^\dag^2 b_i^2)
             if( Gamma2 != 0 )
             {
-                hamterm_t term;
-                term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, I*0.5*Gamma2*lindDestroy2) );
+                hamtagterm_t term;
+                term.fill_operator = ident_tag;
+                term.scale = I*0.5*Gamma2;
+                term.operators.push_back( std::make_pair(p, lindDestroy2_tag) );
                 terms.push_back(term);
             }
             
@@ -441,20 +481,22 @@ public:
             for( int n = 0; n < neighs.size(); ++n ) 
             {
                 // hopping H_J = -J (b_i^\dag b_{i+1} + b_i b_{i+1}^\dag)
-                for( unsigned i = 0; i < hopops.size(); ++i )
+                for( unsigned i = 0; i < hopops_tag.size(); ++i )
                 {
                     {
-                        hamterm_t term;
-                        term.fill_operator = ident;
-                        term.operators.push_back( std::make_pair(p,      -t*hopops[i].first) );
-                        term.operators.push_back( std::make_pair(neighs[n], hopops[i].second) );
+                        hamtagterm_t term;
+                        term.fill_operator = ident_tag;
+                        term.scale = -t;
+                        term.operators.push_back( std::make_pair(p,         hopops_tag[i].first) );
+                        term.operators.push_back( std::make_pair(neighs[n], hopops_tag[i].second) );
                         terms.push_back(term);
                     }
                     {
-                        hamterm_t term;
-                        term.fill_operator = ident;
-                        term.operators.push_back( std::make_pair(p,      -t*hopops[i].second) );
-                        term.operators.push_back( std::make_pair(neighs[n], hopops[i].first) );
+                        hamtagterm_t term;
+                        term.fill_operator = ident_tag;
+                        term.scale = -t;
+                        term.operators.push_back( std::make_pair(p,         hopops_tag[i].second) );
+                        term.operators.push_back( std::make_pair(neighs[n], hopops_tag[i].first) );
                         terms.push_back(term);
                     }
                 }
@@ -462,20 +504,22 @@ public:
                 // nearest-neighbor interaction H_V = V n_i n_{i+1}
                 if( V != 0 )
                 {
-                    for( unsigned i = 0; i < Vops.size(); ++i )
+                    for( unsigned i = 0; i < Vops_tag.size(); ++i )
                     {
                         {
-                            hamterm_t term;
-                            term.fill_operator = ident;
-                            term.operators.push_back( std::make_pair(p,        V*Vops[i].first) );
-                            term.operators.push_back( std::make_pair(neighs[n],  Vops[i].second) );
+                            hamtagterm_t term;
+                            term.fill_operator = ident_tag;
+                            term.scale = V;
+                            term.operators.push_back( std::make_pair(p,        Vops_tag[i].first) );
+                            term.operators.push_back( std::make_pair(neighs[n],Vops_tag[i].second) );
                             terms.push_back(term);
                         }
                         {
-                            hamterm_t term;
-                            term.fill_operator = ident;
-                            term.operators.push_back( std::make_pair(p,        V*Vops[i].second) );
-                            term.operators.push_back( std::make_pair(neighs[n],  Vops[i].first) );
+                            hamtagterm_t term;
+                            term.fill_operator = ident_tag;
+                            term.scale = V;
+                            term.operators.push_back( std::make_pair(p,        Vops_tag[i].second) );
+                            term.operators.push_back( std::make_pair(neighs[n],Vops_tag[i].first) );
                             terms.push_back(term);
                         }
                     }
@@ -489,34 +533,38 @@ public:
                 //        - (ad b)_i (rho b^\dag)_{i+1} - (rho b^\dag)_i (ad b)_{i+1} )
                 if( Gamma1b != 0 )
                 {
-                    hamterm_t term;
-                    term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, I*Gamma1b/2.*create) );
-                    term.operators.push_back( std::make_pair(neighs[n], leftDestroy) );
+                    hamtagterm_t term;
+                    term.fill_operator = ident_tag;
+                    term.scale = I*Gamma1b/2.;
+                    term.operators.push_back( std::make_pair(p,         create_tag) );
+                    term.operators.push_back( std::make_pair(neighs[n], leftDestroy_tag) );
                     terms.push_back(term);
                 }
                 if( Gamma1b != 0 )
                 {
-                    hamterm_t term;
-                    term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, I*Gamma1b/2.*leftDestroy) );
-                    term.operators.push_back( std::make_pair(neighs[n], create) );
+                    hamtagterm_t term;
+                    term.fill_operator = ident_tag;
+                    term.scale = I*Gamma1b/2.;
+                    term.operators.push_back( std::make_pair(p,         leftDestroy_tag) );
+                    term.operators.push_back( std::make_pair(neighs[n], create_tag) );
                     terms.push_back(term);
                 }
                 if( Gamma1b != 0 )
                 {
-                    hamterm_t term;
-                    term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, -I*Gamma1b/2.*destroy) );
-                    term.operators.push_back( std::make_pair(neighs[n], rightCreate) );
+                    hamtagterm_t term;
+                    term.fill_operator = ident_tag;
+                    term.scale = -I*Gamma1b/2.;
+                    term.operators.push_back( std::make_pair(p,         destroy_tag) );
+                    term.operators.push_back( std::make_pair(neighs[n], rightCreate_tag) );
                     terms.push_back(term);
                 }
                 if( Gamma1b != 0 )
                 {
-                    hamterm_t term;
-                    term.fill_operator = ident;
-                    term.operators.push_back( std::make_pair(p, -I*Gamma1b/2.*rightCreate) );
-                    term.operators.push_back( std::make_pair(neighs[n], destroy) );
+                    hamtagterm_t term;
+                    term.fill_operator = ident_tag;
+                    term.scale = -I*Gamma1b/2.;
+                    term.operators.push_back( std::make_pair(p,         rightCreate_tag) );
+                    term.operators.push_back( std::make_pair(neighs[n], destroy_tag) );
                     terms.push_back(term);
                 }
             }
@@ -531,7 +579,8 @@ public:
     
     Hamiltonian<Matrix, TrivialGroup> H () const
     {
-        return ham(phys, ident, terms);
+        std::vector<hamterm_t> terms_ops;
+        return ham(phys, tag_handler->get_op(ident_tag), terms_ops, ident_tag, terms, tag_handler);
     }
     
     Measurements<Matrix, TrivialGroup> measurements () const
@@ -618,8 +667,13 @@ private:
     op_t create, destroy, drive, pump, count, interaction;
     op_t lindDestroy, lindCreate, lindDestroy2, leftDestroy, rightCreate;
     Index<TrivialGroup> phys, phys_psi;
-    
-    std::vector<hamterm_t> terms;
+
+    boost::shared_ptr<TagHandler<Matrix, TrivialGroup> > tag_handler;
+    tag_type ident_tag;
+    tag_type create_tag, destroy_tag, drive_tag, pump_tag, count_tag, interaction_tag;
+    tag_type lindDestroy_tag, lindCreate_tag, lindDestroy2_tag, leftDestroy_tag, rightCreate_tag;
+
+    std::vector<hamtagterm_t> terms;
 };
 
 
