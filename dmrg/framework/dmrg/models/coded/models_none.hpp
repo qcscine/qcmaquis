@@ -81,7 +81,7 @@ public:
         
         for (int p=0; p<lat.size(); ++p) {
             /* interaction */
-            {
+            if (U != 0.) {
                 hamtagterm_t term;
                 term.with_sign = false;
                 term.fill_operator = ident;
@@ -110,7 +110,7 @@ public:
                     terms.push_back(term);
                 }
                 /* nearest-neighborn interaction */
-                {
+                if (V != 0.){
                     hamtagterm_t term;
                     term.fill_operator = ident;
                     term.scale = V;
