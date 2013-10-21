@@ -16,6 +16,7 @@ CMAKE=cmake
 export CXX=icpc
 export CC=icc
 export BOOST_ROOT=/apps/eiger/boost_1_46_1
+export MKLROOT=/apps/eiger/Intel-Composer-XE-2011/mkl
 
 module load ${COMPILER}/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
@@ -34,6 +35,11 @@ COMMON_MPIEXEC=/apps/eiger/Intel-MPI-4.0/intel64/bin/mpirun
 COMMON_MPIEXEC_NUMPROC_FLAG="-np"
 COMMON_MPIEXEC_MAX_NUMPROCS="1"
 COMMON_MPIEXEC_POSTFLAGS=""
+
+COMMON_AMBIENT_THREADING="cilk"
+COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
+COMMON_PLASMA_LIBS_DIR="TODO"
+
 ## ambient ##
 AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=ON
 AMBIENT_ENABLE_REGRESSION_PERFORMANCE=ON
@@ -41,10 +47,6 @@ AMBIENT_BOOST_BINDINGS_INCLUDE=/project/h07/ALPS_INTEL12_O0/include
 AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64"
 ## dmrg ##
 DMRG_CMAKE_CXX_FLAGS="-w"
-DMRG_DEFAULT_BLAS_LAPACK=manual
-DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread"
-DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/apps/eiger/Intel-Composer-XE-2011/mkl/lib/intel64
-DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/apps/eiger/Intel-Composer-XE-2011/mkl/include
 DMRG_ALPS_ROOT_DIR=/project/h07/ALPS_INTEL12_O0
 DMRG_BUILD_REGRESSION=OFF
 DMRG_BUILD_AMBIENT=OFF
