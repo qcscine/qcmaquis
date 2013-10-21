@@ -47,7 +47,7 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void set<revision>::operator >> (int p){
         if(active) return;
         this->active = true;
-        if(p == AMBIENT_BROADCAST) p = ambient::rank.neighbor();
+        if(p == AMBIENT_BROADCAST) p = ambient::rank.right_neighbor();
         handle = (request*)(size_t)p;
         if(target->generator != NULL) ((cfunctor*)target->generator)->queue(this);
         else{
@@ -143,7 +143,7 @@ namespace ambient { namespace controllers { namespace velvet {
     : target(&v), evaluated(false) {
         sid = ambient::channel.index();
         handle = ambient::channel.get(target, sid);
-        if(ambient::rank.neighbor() == owner) evaluated = true;
+        if(ambient::rank.right_neighbor() == owner) evaluated = true;
     }
     inline set<transformable>::set(transformable& v) 
     : target(&v), handle(NULL) {
@@ -153,7 +153,7 @@ namespace ambient { namespace controllers { namespace velvet {
     inline bool get<transformable>::ready(){
         if(ambient::channel.test(handle)){
             if(!evaluated){
-                handle = ambient::channel.set(target, ambient::rank.neighbor(), sid);
+                handle = ambient::channel.set(target, ambient::rank.right_neighbor(), sid);
                 evaluated = true;
             }
             return ambient::channel.test(handle);
@@ -162,7 +162,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
     inline bool set<transformable>::ready(){
         if(target->generator != NULL) return false;
-        if(!handle) handle = ambient::channel.set(target, ambient::rank.neighbor(), sid); 
+        if(!handle) handle = ambient::channel.set(target, ambient::rank.right_neighbor(), sid); 
         return ambient::channel.test(handle);
     }
 

@@ -89,6 +89,7 @@ namespace ambient { namespace numeric {
 
     template<class MatrixViewA, class MatrixViewB, typename T, class A>
     inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T,A>& c){
+        if(a.core->weak() || b.core->weak()) return;
         kernels::template gemm<MatrixViewA,MatrixViewB,matrix<T,A>,T>::template spawn<complexity::N3>(a, b, c); 
     }
 
@@ -241,7 +242,9 @@ namespace ambient { namespace numeric {
 
     template <typename T, class A>
     inline void add_inplace(matrix<T,A>& lhs, const matrix<T,A>& rhs){ 
-        kernels::template add<T,A>::template spawn<complexity::N2>(lhs, rhs); 
+        if(rhs.core->weak()) return;
+        else if(lhs.core->weak()) ambient::fuse(rhs.core, lhs.core);
+        else kernels::template add<T,A>::template spawn<complexity::N2>(lhs, rhs); 
     }
 
     template <typename T, class A>
