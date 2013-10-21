@@ -27,6 +27,8 @@
 #ifndef AMBIENT_UTILS_AUXILIARY
 #define AMBIENT_UTILS_AUXILIARY
 
+#include "ambient/utils/mem.h"
+
 namespace ambient {
 
     using ambient::models::velvet::history;
@@ -55,6 +57,18 @@ namespace ambient {
 
     inline void log(const char* msg){
         if(ambient::rank()) printf("%s\n", msg);
+    }
+
+    inline void meminfo(){ 
+        size_t currentSize = getCurrentRSS( );
+        size_t peakSize    = getPeakRSS( );
+        for(int i = 0; i < ambient::channel.wk_dim(); i++){
+            if(ambient::rank() == i){
+                std::cout << "R" << i << ": currentSize: " << currentSize << " " << currentSize/1024/1024/1024 << "G.\n";
+                std::cout << "R" << i << ": peakSize: " << peakSize << " " << peakSize/1024/1024/1024 << "G.\n";
+            }
+            ambient::channel.barrier();
+        }
     }
 
     inline void sync(){ 

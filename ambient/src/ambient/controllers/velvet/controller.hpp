@@ -183,7 +183,7 @@ namespace ambient { namespace controllers { namespace velvet {
         if(ambient::model.feeds(r)) ambient::controllers::velvet::set<revision>::spawn(*r) >> AMBIENT_BROADCAST;
         else{
             ambient::controllers::velvet::get<revision>::spawn(*r);
-            if(r->owner != ambient::rank.neighbor()) ambient::controllers::velvet::get<revision>::assist(*r, ambient::rank.neighbor());
+            if(r->owner != ambient::rank.right_neighbor()) ambient::controllers::velvet::get<revision>::assist(*r, ambient::rank.right_neighbor());
         }
     }
 

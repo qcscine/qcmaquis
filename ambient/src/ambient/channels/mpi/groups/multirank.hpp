@@ -72,7 +72,13 @@ namespace ambient { namespace channels { namespace mpi {
         return (target->rank == target->master);
     }
 
-    inline int multirank::neighbor(){
+    inline int multirank::left_neighbor(){
+        int n = ((*this)()-1);
+        if(n == -1) n = ambient::channel.dim()-1;
+        return n;
+    }
+
+    inline int multirank::right_neighbor(){
         return ((*this)()+1) % ambient::channel.dim();
     }
 

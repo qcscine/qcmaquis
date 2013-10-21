@@ -95,7 +95,7 @@
 
 //#define AMBIENT_PARALLEL_MKL // please define in compiler
 #define AMBIENT_MKL_NUM_THREADS       16
-#define AMBIENT_MAX_SID               2147483647 // or 4194304 
+#define AMBIENT_MAX_SID               2097152 // Cray MPI
 
 #define AMBIENT_STACK_RESERVE         65536
 #define AMBIENT_COLLECTOR_STR_RESERVE 65536
@@ -103,8 +103,8 @@
 #define AMBIENT_COLLECTOR_RAW_RESERVE 1024
 #define AMBIENT_SCOPE_SWITCH_FACTOR   20480
 #define AMBIENT_FUTURE_SIZE           64
-#define AMBIENT_IB                    512
-#define AMBIENT_IB_EXTENT             512*512*16
+#define AMBIENT_IB                    2048
+#define AMBIENT_IB_EXTENT             2048*2048*16
 
 #define PAGE_SIZE 4096
 #define ALIGNMENT 64
