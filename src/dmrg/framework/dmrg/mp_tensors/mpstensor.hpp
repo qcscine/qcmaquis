@@ -354,7 +354,7 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     common_subset(i1, i2);
     std::vector<scalar_type> vt; vt.reserve(i1.size());
 
-    for (std::size_t b = 0; b < i1.size(); ++b) {
+    semi_parallel_for (locale::compact(i1.size()), locale b = 0; b < i1.size(); ++b) {
         typename SymmGroup::charge c = i1[b].first;
         assert( data().has_block(c,c) && rhs.data().has_block(c,c) );
         vt.push_back(overlap(data()(c,c), rhs.data()(c,c)));
