@@ -43,6 +43,7 @@ set(BLAS_LAPACK_SELECTOR "auto" CACHE STRINGS "auto, manual, mkl_sequential, mkl
 set(PLASMA_LIBS_DIR "/usr/local/lib" CACHE PATH "Location of PLASMA libraries.")
 set(PLASMA_LIBRARIES "-lplasma -lcoreblas -llapacke -lquark" CACHE STRINGS "PLASMA libraries")
 set(AMBIENT_CPP11 "-std=c++11" CACHE STRINGS "Flags needed for C++11, e.g. -std=c++11 and -gcc-name=XX. Leave empty to disable C++11.")
+option(AMBIENT_PARALLEL_MKL "Enable nested parallelism in some parts." OFF)
 
 set (BOOST_ROOT $ENV{BOOST_ROOT} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option(ENABLE_REGRESSION_FUNCTIONAL "Build regression functional tests" OFF)
@@ -127,7 +128,7 @@ list(APPEND AMBIENT_LIBRARY_DIRS ${MAQUIS_Boost_LIBRARY_DIRS})
 ###############
 find_package(MAQUISLapack)
 if(${BLAS_LAPACK_SELECTOR} MATCHES "mkl_parallel")
-  set(AMBIENT_CXX_FLAGS "${AMBIENT_CXX_FLAGS} -DAMBIENT_PARALLEL_MKL")
+  set(AMBIENT_PARALLEL_MKL ON)
 endif(${BLAS_LAPACK_SELECTOR} MATCHES "mkl_parallel")
 message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
 message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIBS_DIR} ${PLASMA_LIBS_DIR}")
@@ -135,7 +136,9 @@ message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES} ${PLASMA_LIBRARIES}")
 list(APPEND AMBIENT_INCLUDE_DIRS ${MAQUISLapack_INCLUDE_DIRS})
 list(APPEND AMBIENT_LIBRARY_DIRS ${MAQUISLapack_LIBS_DIR} ${PLASMA_LIBS_DIR})
 list(APPEND AMBIENT_LIBRARIES ${MAQUISLapack_LIBRARIES} ${PLASMA_LIBRARIES})
-
+if(AMBIENT_PARALLEL_MKL)
+  set(AMBIENT_CXX_FLAGS "${AMBIENT_CXX_FLAGS} -DAMBIENT_PARALLEL_MKL")
+endif(AMBIENT_PARALLEL_MKL)
 
 ########################################################################
 #
