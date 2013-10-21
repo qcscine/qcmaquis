@@ -586,51 +586,82 @@ public:
     typedef Hamiltonian<Matrix, U1> ham;
     typedef typename ham::hamterm_t hamterm_t;
     typedef typename ham::op_t op_t;
+    typedef typename ham::hamtagterm_t hamtagterm_t;
+    typedef Measurement_Term<Matrix, U1> mterm_t;
+    typedef typename ham::table_type table_type;
+    typedef typename ham::table_ptr table_ptr;
+    typedef typename table_type::tag_type tag_type;
+    typedef typename Matrix::value_type value_type;
     
     FermiHubbardU1(const Lattice& lat, BaseParameters & parms)
     {
         phys.insert(std::make_pair(0, 1));
         phys.insert(std::make_pair(1, 2));
         phys.insert(std::make_pair(2, 1));
+        op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
+            count_up_op, count_down_op, doubly_occ_op,
+            sign_up_op, sign_down_op, fill_op, ident_op;
         
-        ident.insert_block(Matrix(1, 1, 1), 0, 0);
-        ident.insert_block(Matrix::identity_matrix(2), 1, 1);
-        ident.insert_block(Matrix(1, 1, 1), 2, 2);
+        ident_op.insert_block(Matrix(1, 1, 1), 0, 0);
+        ident_op.insert_block(Matrix::identity_matrix(2), 1, 1);
+        ident_op.insert_block(Matrix(1, 1, 1), 2, 2);
         
-        {Matrix tmp(1,2,0); tmp(0,0)=1; create_up.insert_block(tmp, 0, 1);}
-        {Matrix tmp(2,1,0); tmp(1,0)=1; create_up.insert_block(tmp, 1, 2);}
-        {Matrix tmp(1,2,0); tmp(0,1)=1; create_down.insert_block(tmp, 0, 1);}
-        {Matrix tmp(2,1,0); tmp(0,0)=1; create_down.insert_block(tmp, 1, 2);}
+        {Matrix tmp(1,2,0); tmp(0,0)=1; create_up_op.insert_block(tmp, 0, 1);}
+        {Matrix tmp(2,1,0); tmp(1,0)=1; create_up_op.insert_block(tmp, 1, 2);}
+        {Matrix tmp(1,2,0); tmp(0,1)=1; create_down_op.insert_block(tmp, 0, 1);}
+        {Matrix tmp(2,1,0); tmp(0,0)=1; create_down_op.insert_block(tmp, 1, 2);}
         
-        {Matrix tmp(2,1,0); tmp(0,0)=1; destroy_up.insert_block(tmp, 1, 0);}
-        {Matrix tmp(1,2,0); tmp(0,1)=1; destroy_up.insert_block(tmp, 2, 1);}
-        {Matrix tmp(2,1,0); tmp(1,0)=1; destroy_down.insert_block(tmp, 1, 0);}
-        {Matrix tmp(1,2,0); tmp(0,0)=1; destroy_down.insert_block(tmp, 2, 1);}
+        {Matrix tmp(2,1,0); tmp(0,0)=1; destroy_up_op.insert_block(tmp, 1, 0);}
+        {Matrix tmp(1,2,0); tmp(0,1)=1; destroy_up_op.insert_block(tmp, 2, 1);}
+        {Matrix tmp(2,1,0); tmp(1,0)=1; destroy_down_op.insert_block(tmp, 1, 0);}
+        {Matrix tmp(1,2,0); tmp(0,0)=1; destroy_down_op.insert_block(tmp, 2, 1);}
         
-        {Matrix tmp(2,2,0); tmp(0,0)=1; count_up.insert_block(tmp, 1, 1);}
-        count_up.insert_block(Matrix(1, 1, 1), 2, 2);
-        {Matrix tmp(2,2,0); tmp(1,1)=1; count_down.insert_block(tmp, 1, 1);}
-        count_down.insert_block(Matrix(1, 1, 1), 2, 2);
+        {Matrix tmp(2,2,0); tmp(0,0)=1; count_up_op.insert_block(tmp, 1, 1);}
+        count_up_op.insert_block(Matrix(1, 1, 1), 2, 2);
+        {Matrix tmp(2,2,0); tmp(1,1)=1; count_down_op.insert_block(tmp, 1, 1);}
+        count_down_op.insert_block(Matrix(1, 1, 1), 2, 2);
         
-        doubly_occ.insert_block(Matrix(1, 1, 1), 2, 2);
+        doubly_occ_op.insert_block(Matrix(1, 1, 1), 2, 2);
         
-        sign_up.insert_block(Matrix(1, 1, 1), 0, 0);
-        {Matrix tmp=Matrix::identity_matrix(2); tmp(0,0)=-1; sign_up.insert_block(tmp, 1, 1);}
-        sign_up.insert_block(Matrix(1, 1, -1), 2, 2);
+        sign_up_op.insert_block(Matrix(1, 1, 1), 0, 0);
+        {Matrix tmp=Matrix::identity_matrix(2); tmp(0,0)=-1; sign_up_op.insert_block(tmp, 1, 1);}
+        sign_up_op.insert_block(Matrix(1, 1, -1), 2, 2);
         
-        sign_down.insert_block(Matrix(1, 1, 1), 0, 0);
-        {Matrix tmp=Matrix::identity_matrix(2); tmp(1,1)=-1; sign_down.insert_block(tmp, 1, 1);}
-        sign_down.insert_block(Matrix(1, 1, -1), 2, 2);
+        sign_down_op.insert_block(Matrix(1, 1, 1), 0, 0);
+        {Matrix tmp=Matrix::identity_matrix(2); tmp(1,1)=-1; sign_down_op.insert_block(tmp, 1, 1);}
+        sign_down_op.insert_block(Matrix(1, 1, -1), 2, 2);
         
-        gemm(sign_up, sign_down, fill);
+        gemm(sign_up_op, sign_down_op, fill_op);
+
+        /**********************************************************************/
+        /*** Create operator tag table ****************************************/
+        /**********************************************************************/
+        
+#define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
+        
+        REGISTER(ident,         tag_detail::bosonic)
+        REGISTER(fill,          tag_detail::bosonic)
+        REGISTER(create_up,     tag_detail::fermionic)
+        REGISTER(create_down,   tag_detail::fermionic)
+        REGISTER(destroy_up,    tag_detail::fermionic)
+        REGISTER(destroy_down,  tag_detail::fermionic)
+        REGISTER(count_up,      tag_detail::bosonic)
+        REGISTER(count_down,    tag_detail::bosonic)
+        REGISTER(doubly_occ,    tag_detail::bosonic)
+        REGISTER(sign_up,       tag_detail::bosonic)
+        REGISTER(sign_down,     tag_detail::bosonic)
+        
+#undef REGISTER
+        /**********************************************************************/
         
         double U = parms["U"];
         op_t tmp;
         for (int p=0; p<lat.size(); ++p) {
             { // U term
-                hamterm_t term;
+                hamtagterm_t term;
                 term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, U*doubly_occ) );
+                term.scale = U;
+                term.operators.push_back( std::make_pair(p, doubly_occ) );
                 terms.push_back(term);
             }
             
@@ -641,38 +672,50 @@ public:
                 double ti = get_t(parms,
                                   lat.get_prop<int>("type", p, *hopto));
                 { // t*cdag_up*c_up
-                    hamterm_t term;
+                    hamtagterm_t term;
                     term.with_sign = true;
                     term.fill_operator = sign_up;
-                    gemm(sign_up, create_up, tmp); // Note inverse notation because of notation in operator.
-                    term.operators.push_back( std::make_pair(p, -ti*tmp) );
+
+                    // Note inverse notation because of notation in operator.
+                    std::pair<tag_type, value_type> prod = tag_handler->get_product_tag(sign_up, create_up);
+                    term.scale = -ti * prod.second;
+                    term.operators.push_back( std::make_pair(p, prod.first) );
                     term.operators.push_back( std::make_pair(*hopto, destroy_up) );
                     terms.push_back(term);
                 }
                 { // t*c_up*cdag_up
-                    hamterm_t term;
+                    hamtagterm_t term;
                     term.with_sign = true;
                     term.fill_operator = sign_up;
-                    gemm(destroy_up, sign_up, tmp); // Note inverse notation because of notation in operator.
-                    term.operators.push_back( std::make_pair(p, -ti*tmp) );
+
+                    // Note inverse notation because of notation in operator.
+                    std::pair<tag_type, value_type> prod = tag_handler->get_product_tag(destroy_up, sign_up);
+                    term.scale = -ti * prod.second;
+                    term.operators.push_back( std::make_pair(p, prod.first) );
                     term.operators.push_back( std::make_pair(*hopto, create_up) );
                     terms.push_back(term);
                 }
                 { // t*cdag_down*c_down
-                    hamterm_t term;
+                    hamtagterm_t term;
                     term.with_sign = true;
                     term.fill_operator = sign_down;
-                    gemm(sign_down, create_down, tmp); // Note inverse notation because of notation in operator.
-                    term.operators.push_back( std::make_pair(p, -ti*tmp) );
+
+                    // Note inverse notation because of notation in operator.
+                    std::pair<tag_type, value_type> prod = tag_handler->get_product_tag(sign_down, create_down);
+                    term.scale = -ti * prod.second;
+                    term.operators.push_back( std::make_pair(p, prod.first) );
                     term.operators.push_back( std::make_pair(*hopto, destroy_down) );
                     terms.push_back(term);
                 }
                 { // t*c_down*cdag_down
-                    hamterm_t term;
+                    hamtagterm_t term;
                     term.with_sign = true;
                     term.fill_operator = sign_down;
-                    gemm(destroy_down, sign_down, tmp); // Note inverse notation because of notation in operator.
-                    term.operators.push_back( std::make_pair(p, -ti*tmp) );
+
+                    // Note inverse notation because of notation in operator.
+                    std::pair<tag_type, value_type> prod = tag_handler->get_product_tag(destroy_down, sign_down);
+                    term.scale = -ti * prod.second;
+                    term.operators.push_back( std::make_pair(p, prod.first) );
                     term.operators.push_back( std::make_pair(*hopto, create_down) );
                     terms.push_back(term);
                 }
@@ -687,7 +730,8 @@ public:
     
     Hamiltonian<Matrix, U1> H () const
     {
-        return ham(phys, ident, terms);
+        std::vector<hamterm_t> terms_ops;
+        return ham(phys, tag_handler->get_op(ident), terms_ops, ident, terms, tag_handler);
     }
     
     Measurements<Matrix, U1> measurements () const
@@ -698,21 +742,21 @@ public:
     op_t get_op(std::string const & op) const
     {
         if (op == "n_up")
-            return count_up;
+            return tag_handler->get_op(count_up);
         else if (op == "n_down")
-            return count_down;
+            return tag_handler->get_op(count_down);
         else if (op == "cdag_up")
-            return create_up;
+            return tag_handler->get_op(create_up);
         else if (op == "cdag_down")
-            return create_down;
+            return tag_handler->get_op(create_down);
         else if (op == "c_up")
-            return destroy_up;
+            return tag_handler->get_op(destroy_up);
         else if (op == "c_down")
-            return destroy_down;
+            return tag_handler->get_op(destroy_down);
         else if (op == "id")
-            return ident;
+            return tag_handler->get_op(ident);
         else if (op == "fill")
-            return fill;
+            return tag_handler->get_op(fill);
         else
             throw std::runtime_error("Operator not valid for this model.");
         return op_t();
@@ -721,11 +765,12 @@ public:
     
 private:
     Index<U1> phys;
-    op_t create_up, create_down, destroy_up, destroy_down;
-    op_t count_up, count_down, doubly_occ;
-    op_t sign_up, sign_down, fill;
-    op_t ident;
-    std::vector<hamterm_t> terms;
+    tag_type create_up, create_down, destroy_up, destroy_down, count_up, count_down, doubly_occ,
+             sign_up, sign_down, fill, ident;
+
+    std::vector<hamtagterm_t> terms;
+
+    boost::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
     
     double get_t (BaseParameters & parms, int i)
     {
