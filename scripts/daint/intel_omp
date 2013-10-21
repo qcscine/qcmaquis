@@ -28,14 +28,9 @@ COMMON_CMAKE_C_COMPILER="cc"
 COMMON_CMAKE_CXX_COMPILER="CC"
 COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DNDEBUG"
 COMMON_CMAKE_CXX_FLAGS_RELEASE=${MAQUIS_COMMON_CMAKE_CXX_FLAGS}
-COMMON_BLAS_FOUND=ON
-COMMON_LAPACK_FOUND=ON
+COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
 ## dmrg ##
 DMRG_ALPS_ROOT_DIR=$ALPS_ROOT
-DMRG_DEFAULT_BLAS_LAPACK=manual
-#DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread -lplasma -lcoreblas -llapacke -lquark"
-#DMRG_BLAS_LAPACK_MANUAL_LIBS="-Wl,--start-group  ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_sequential.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lpthread -lplasma -lcoreblas -llapacke -lquark"
-DMRG_BLAS_LAPACK_MANUAL_LIBS="-mkl=sequential"
 DMRG_ENABLE_OMP=ON
 DMRG_BUILD_AMBIENT=OFF
 DMRG_USE_AMBIENT=OFF
