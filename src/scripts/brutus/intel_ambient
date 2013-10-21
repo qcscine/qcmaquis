@@ -1,7 +1,7 @@
 #!/bin/bash -l
 STATE="void"
-STATE_AMBIENT="void"
-STATE_DMRG="build"
+STATE_AMBIENT="configure"
+STATE_DMRG="configure"
 # end of target states #
 PREFIX=ambient
 COMPILER=intel
@@ -28,12 +28,20 @@ module load hdf5
 module load cmake
 
 ## common ##
-COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DAMBIENT_CILK -DAMBIENT_CPP11 -DNDEBUG -std=c++11 -gcc-name=g++-gcc-4.7.2 -L$HOME/opt/plasma-intel/lib"
+COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DNDEBUG"
 COMMON_CMAKE_CXX_FLAGS_RELEASE=${MAQUIS_COMMON_CMAKE_CXX_FLAGS}
+COMMON_AMBIENT_THREADING="cilk"
+COMMON_AMBIENT_CPP11="-std=c++11 -gcc-name=g++-gcc-4.7.2"
+COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
+COMMON_PLASMA_LIBS_DIR="-L$HOME/opt/plasma-intel/lib"
+## ambient ##
+AMBIENT_ALPS_ROOT_DIR=$ALPS_ROOT
+AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64"
+AMBIENT_PLASMA_LIBRARIES="-lplasma -lcoreblas -llapacke -lquark"
+AMBIENT_ENABLE_REGRESSION_PERFORMANCE=OFF
+AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=ON
 ## dmrg ##
 DMRG_ALPS_ROOT_DIR=$ALPS_ROOT
-DMRG_DEFAULT_BLAS_LAPACK=manual
-DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread -lplasma -lcoreblas -llapacke -lquark"
 DMRG_ENABLE_OMP=OFF
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON

@@ -22,11 +22,12 @@ endif(NOT DEFAULT_BLAS_LAPACK)
 ######################################################################
 project (MAQUIS_DMRG) 
 
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/config)
+
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX "/opt/maquis" CACHE PATH "MAQUIS install prefix" FORCE)
 endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
-set(MATRICES_DIR "../types/src" CACHE STRINGS "Location of the matrices sources")
 set(AMBIENT_SOURCES_DIR "../ambient" CACHE STRINGS "Location of the ambient source tree")
 
 set(BUILD_SYMMETRIES "U1;TwoU1;NONE" CACHE STRINGS "List of symmetry to include in the build objects. U1, TwoU1, NONE and Z2 are currently available.")
@@ -45,11 +46,7 @@ option(REGRESSION_PERFORMANCE_TESTS "Run application benchmarks"            OFF)
 
 mark_as_advanced(ENABLE_COLLECTOR)
 
-set(BLAS_LAPACK_SELECTOR ${DEFAULT_BLAS_LAPACK} CACHE STRING "Choose the Blas/Lapack version to use, possible values 'alps', 'veclib', 'manual'")
-set(BLAS_LAPACK_MANUAL_LIBS ${BLAS_LAPACK_MANUAL_LIBS} CACHE STRINGS "")
-set(BLAS_LAPACK_MANUAL_LIBS_DIR ${BLAS_LAPACK_MANUAL_LIBS_DIR} CACHE STRINGS "")
-set(BLAS_LAPACK_MANUAL_DEFINITIONS ${BLAS_LAPACK_MANUAL_DEFINITIONS} CACHE STRINGS "")
-set(BLAS_LAPACK_MANUAL_INCLUDES ${BLAS_LAPACK_MANUAL_INCLUDES} CACHE STRINGS "")
+set(BLAS_LAPACK_SELECTOR "auto" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, alps")
 
 
 ######################################################################
@@ -96,15 +93,6 @@ if(ALPS_HDF5_LIBRARIES) # support for old ALPS revisions
   set(HDF5_LIBRARIES ${ALPS_HDF5_LIBRARIES} CACHE STRINGS "")
 endif(ALPS_HDF5_LIBRARIES)
 
-if (LAPACK_FOUND) # support for old ALPS revisions
-  set(ALPS_LAPACK_DEFINITIONS ${LAPACK_DEFINITIONS} CACHE STRINGS "")
-  set(ALPS_LAPACK_LINKER_FLAGS "${LAPACK_LINKER_FLAGS}" CACHE STRINGS "")
-  set(ALPS_LAPACK_LIBRARIES ${LAPACK_LIBRARIES} CACHE STRINGS "")
-  set(ALPS_LAPACK_LIBRARY ${LAPACK_LIBRARY} CACHE STRINGS "")
-  set(ALPS_BLAS_LIBRARIES ${BLAS_LIBRARIES} CACHE STRINGS "")
-  set(ALPS_BLAS_LIBRARY ${BLAS_LIBRARY} CACHE STRINGS "")
-endif(LAPACK_FOUND)
-
 mark_as_advanced(ALPS_LIBRARY_DIRS ALPS_INCLUDE_DIRS HDF5_INCLUDE_DIR HDF5_LIBRARIES)
 
 if (ALPS_PYTHON_INTERPRETER)
@@ -123,6 +111,16 @@ message(STATUS "Boost include: ${MAQUIS_Boost_INCLUDE_DIRS}")
 message(STATUS "Boost libs: ${MAQUIS_Boost_LIBRARIES}")
 message(STATUS "Boost unit_test: ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")
 
+
+# BLAS/LAPACK selector
+if(NOT USE_AMBIENT)
+  find_package(MAQUISLapack)
+  message(STATUS "Lapack include:  ${MAQUISLapack_INCLUDE_DIRS}")
+  message(STATUS "Lapack lib dirs: ${MAQUISLapack_LIBS_DIR}")
+  message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
+endif(NOT USE_AMBIENT)
+
+
 # Ambient
 if(USE_AMBIENT)
   add_definitions(-DUSE_AMBIENT)
@@ -138,11 +136,10 @@ if(USE_AMBIENT)
     include_directories(${AMBIENT_INCLUDE_DIRS})
     link_directories(${AMBIENT_LIBRARY_DIRS})
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AMBIENT_COMPILE_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${AMBIENT_EXE_FLAGS}")
   endmacro(compile_with_ambient)
 else(USE_AMBIENT)
   macro(compile_with_ambient)
-    message(ERROR Ambient not enabled!)
+    message(FATAL_ERROR Ambient not enabled!)
   endmacro(compile_with_ambient)
 endif(USE_AMBIENT)
 
@@ -176,41 +173,13 @@ MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
 # Parsing user options
 ######################################################################
 
-set(DMRG_INCLUDE_DIRS ${MAQUIS_Boost_INCLUDE_DIRS} ${HDF5_LIBRARIES})
+set(DMRG_INCLUDE_DIRS ${MAQUIS_Boost_INCLUDE_DIRS})
 set(DMRG_LIBRARY_DIRS ${MAQUIS_Boost_LIBRARY_DIRS})
 set(DMRG_DEFINITIONS)
 set(DMRG_LIBRARIES alps ${MAQUIS_Boost_LIBRARIES} ${HDF5_LIBRARIES})
-
-
-# BLAS/LAPACK selector
-if(${BLAS_LAPACK_SELECTOR} MATCHES "alps")
-  if(CMAKE_EXE_LINKER_FLAGS MATCHES "^ $")
-    set(CMAKE_EXE_LINKER_FLAGS ${ALPS_LAPACK_LINKER_FLAGS})
-  else(CMAKE_EXE_LINKER_FLAGS MATCHES "^ $")
-    list(APPEND CMAKE_EXE_LINKER_FLAGS ${ALPS_LAPACK_LINKER_FLAGS})
-  endif(CMAKE_EXE_LINKER_FLAGS MATCHES "^ $")
-  set(BLAS_LAPACK_LIBRARIES ${ALPS_LAPACK_LIBRARIES} ${ALPS_LAPACK_LIBRARY}
-      ${ALPS_BLAS_LIBRARIES} ${ALPS_BLAS_LIBRARY})
-  list(APPEND DMRG_LIBRARIES ${BLAS_LAPACK_LIBRARIES})
-  list(APPEND DMRG_DEFINITIONS ${ALPS_LAPACK_DEFINITIONS})
-endif(${BLAS_LAPACK_SELECTOR} MATCHES "alps")
-if(${BLAS_LAPACK_SELECTOR} MATCHES "veclib")
-  if(APPLE)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework vecLib")
-    set(BLAS_LAPACK_LIBRARIES /usr/lib/libpthread.dylib)
-    list(APPEND DMRG_LIBRARIES ${BLAS_LAPACK_LIBRARIES})
-  else(APPLE)
-    meassage("Error: VecLib available only on Mac.")
-  endif(APPLE)
-endif(${BLAS_LAPACK_SELECTOR} MATCHES "veclib")
-if(${BLAS_LAPACK_SELECTOR} MATCHES "manual")
-  set(BLAS_LAPACK_LIBRARIES ${BLAS_LAPACK_MANUAL_LIBS})
-  list(APPEND DMRG_LIBRARIES ${BLAS_LAPACK_LIBRARIES})
-  list(APPEND DMRG_DEFINITIONS ${BLAS_LAPACK_MANUAL_DEFINITIONS})
-  list(APPEND DMRG_INCLUDE_DIRS ${BLAS_LAPACK_MANUAL_INCLUDES})
-  list(APPEND DMRG_LIBRARY_DIRS ${BLAS_LAPACK_MANUAL_LIBS_DIR})
-endif(${BLAS_LAPACK_SELECTOR} MATCHES "manual")
-
+if(NOT USE_AMBIENT)
+  list(APPEND DMRG_LIBRARIES ${MAQUISLapack_LIBRARIES})
+endif(NOT USE_AMBIENT)
 
 # OpenMP
 if(ENABLE_OMP)
@@ -282,13 +251,15 @@ endforeach(SYMM)
 
 
 
-
 ######################################################################
 # Include / link directories
 ######################################################################
 
 list(APPEND DMRG_INCLUDE_DIRS ${MATRICES_DIR} ${HDF5_INCLUDE_DIR} ${ALPS_INCLUDE_DIRS})
 list(APPEND DMRG_LIBRARY_DIRS ${ALPS_LIBRARY_DIRS})
+if(NOT USE_AMBIENT)
+  list(APPEND DMRG_LIBRARY_DIRS ${MAQUISLapack_LIBS_DIR})
+endif(NOT USE_AMBIENT)
 
 include_directories(${PROJECT_SOURCE_DIR}/framework ${PROJECT_BINARY_DIR}/framework ${DMRG_INCLUDE_DIRS})
 link_directories(${DMRG_LIBRARY_DIRS})
