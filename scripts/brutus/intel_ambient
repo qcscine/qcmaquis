@@ -1,6 +1,6 @@
 #!/bin/bash -l
 STATE="void"
-STATE_AMBIENT="configure"
+STATE_AMBIENT="void"
 STATE_DMRG="configure"
 # end of target states #
 PREFIX=ambient
@@ -32,8 +32,8 @@ COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DNDEBUG"
 COMMON_CMAKE_CXX_FLAGS_RELEASE=${MAQUIS_COMMON_CMAKE_CXX_FLAGS}
 COMMON_AMBIENT_THREADING="cilk"
 COMMON_AMBIENT_CPP11="-std=c++11 -gcc-name=g++-gcc-4.7.2"
-COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
-COMMON_PLASMA_LIBS_DIR="-L$HOME/opt/plasma-intel/lib"
+COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
+COMMON_PLASMA_LIBS_DIR="$HOME/opt/plasma-intel/lib"
 ## ambient ##
 AMBIENT_ALPS_ROOT_DIR=$ALPS_ROOT
 AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64"

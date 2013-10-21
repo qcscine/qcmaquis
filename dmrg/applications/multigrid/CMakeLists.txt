@@ -8,7 +8,6 @@ set(DMRG_APP_LIBRARIES dmrg_utils dmrg_models ${DMRG_LIBRARIES})
 
 if(USE_AMBIENT)
   compile_with_ambient()
-  list(INSERT DMRG_APP_LIBRARIES 0 ambient ${MPI_CXX_LIBRARIES})
 endif(USE_AMBIENT)  
 
 # *** Configure symmetries
