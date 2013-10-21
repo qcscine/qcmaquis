@@ -9,9 +9,9 @@ add_definitions(-DBOOST_TEST_DYN_LINK -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
 
 if(BLAS_mkl_core_LIBRARY) # intel
     include_directories("${MPI_CXX_INCLUDE_PATH}") # cluster path
-    set(BLAS_LAPACK_multi     ${BLAS_mkl_intel_lp64_LIBRARY} ${BLAS_mkl_core_LIBRARY} ${BLAS_mkl_intel_thread_LIBRARY} iomp5 ${CMAKE_THREAD_LIBS_INIT} pthread) 
-    set(BLAS_LAPACK_serial    ${BLAS_mkl_intel_lp64_LIBRARY} ${BLAS_mkl_core_LIBRARY} ${BLAS_mkl_sequential_LIBRARY} ${PLASMA_LIBRARY} ) 
-    set(BLAS_SCALAPACK_serial ${BLAS_mkl_intel_lp64_LIBRARY} ${BLAS_mkl_core_LIBRARY} ${BLAS_mkl_sequential_LIBRARY} ${SCALAPACK_LIBRARY} )
+    set(BLAS_LAPACK_multi     "-lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -lpthread -lm" iomp5 ${CMAKE_THREAD_LIBS_INIT} pthread) 
+    set(BLAS_LAPACK_serial    "-lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lpthread -lm" ${PLASMA_LIBRARY} ) 
+    set(BLAS_SCALAPACK_serial "-lmkl_intel_lp64 -lmkl_core -lmkl_sequential -lpthread -lm" ${SCALAPACK_LIBRARY} )
 endif()
 
 if(BLAS_Accelerate_LIBRARY) # apple
@@ -30,14 +30,14 @@ add_executable( lq.lapack.out          lq.lapack.cpp          )
 add_executable( qr.ambient.out         qr.ambient.cpp         )
 add_executable( qr.lapack.out          qr.lapack.cpp          )
 
-target_link_libraries( gemm.pblas.out          ${MPI_CXX_LIBRARIES} ${AMBIENT_TESTS_LIBRARIES} ${BLAS_SCALAPACK_serial} ambient )
-target_link_libraries( gemm.blas.out           ${MPI_CXX_LIBRARIES} ${AMBIENT_TESTS_LIBRARIES} ${BLAS_LAPACK_multi}     ambient )
-target_link_libraries( qr.lapack.out           ${MPI_CXX_LIBRARIES} ${AMBIENT_TESTS_LIBRARIES} ${BLAS_LAPACK_multi}     ambient )
-target_link_libraries( lq.lapack.out           ${MPI_CXX_LIBRARIES} ${AMBIENT_TESTS_LIBRARIES} ${BLAS_LAPACK_multi}     ambient )
-target_link_libraries( gemm.ambient.out        ${MPI_CXX_LIBRARIES} ${AMBIENT_TESTS_LIBRARIES} ${BLAS_LAPACK_serial}    ambient )
-target_link_libraries( gemm.tiled.ambient.out  ${MPI_CXX_LIBRARIES} ${AMBIENT_TESTS_LIBRARIES} ${BLAS_LAPACK_serial}    ambient )
-target_link_libraries( lq.ambient.out          ${MPI_CXX_LIBRARIES} ${AMBIENT_TESTS_LIBRARIES} ${BLAS_LAPACK_serial}    ambient )
-target_link_libraries( qr.ambient.out          ${MPI_CXX_LIBRARIES} ${AMBIENT_TESTS_LIBRARIES} ${BLAS_LAPACK_serial}    ambient )
+target_link_libraries( gemm.pblas.out          ${MPI_CXX_LIBRARIES} ${BLAS_SCALAPACK_serial} ambient )
+target_link_libraries( gemm.blas.out           ${MPI_CXX_LIBRARIES} ${BLAS_LAPACK_multi}     ambient )
+target_link_libraries( qr.lapack.out           ${MPI_CXX_LIBRARIES} ${BLAS_LAPACK_multi}     ambient )
+target_link_libraries( lq.lapack.out           ${MPI_CXX_LIBRARIES} ${BLAS_LAPACK_multi}     ambient )
+target_link_libraries( gemm.ambient.out        ${MPI_CXX_LIBRARIES} ${BLAS_LAPACK_serial}    ambient )
+target_link_libraries( gemm.tiled.ambient.out  ${MPI_CXX_LIBRARIES} ${BLAS_LAPACK_serial}    ambient )
+target_link_libraries( lq.ambient.out          ${MPI_CXX_LIBRARIES} ${BLAS_LAPACK_serial}    ambient )
+target_link_libraries( qr.ambient.out          ${MPI_CXX_LIBRARIES} ${BLAS_LAPACK_serial}    ambient )
 
 add_test( gemm.blas.out          gemm.blas.out          )
 add_test( gemm.ambient.out       gemm.ambient.out       )
