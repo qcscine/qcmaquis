@@ -41,7 +41,7 @@ AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64"
 ## dmrg ##
 DMRG_DEFAULT_BLAS_LAPACK=manual
 DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread"
-DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/apps/todi/intel/composerxe-2011.3.174/mkl/lib/intel64
+DMRG_BLAS_LAPACK_MANUAL_LIB_DIRS=/apps/todi/intel/composerxe-2011.3.174/mkl/lib/intel64
 DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/apps/todi/intel/composerxe-2011.3.174/mkl/include
 DMRG_ALPS_ROOT_DIR=/project/h07/ALPS_INTEL_EIGER
 DMRG_BUILD_REGRESSION=ON 

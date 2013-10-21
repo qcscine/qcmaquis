@@ -25,7 +25,7 @@ COMMON_CMAKE_CXX_COMPILER=icpc
 COMMON_AMBIENT_THREADING="cilk"
 COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
 COMMON_PLASMA_LIBRARIES="-lplasma -lcoreblas -lcblas -llapacke -lquark"
-COMMON_PLASMA_LIBS_DIR="/share/apps/plasma/2.5.0/icc/13.1.1/lib"
+COMMON_PLASMA_LIB_DIR="/share/apps/plasma/2.5.0/icc/13.1.1/lib"
 
 ## ambient ##
 AMBIENT_BOOST_BINDINGS_INCLUDE=/share/apps/alps/r6979/icc/13.1.1-nompi/include/boost
