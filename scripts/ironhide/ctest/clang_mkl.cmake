@@ -50,7 +50,7 @@ SET (dashboard_cache "
     REGRESSION_PERFORMANCE_TESTS=OFF
     ENABLE_OMP=OFF
     BLAS_LAPACK_SELECTOR=manual
-    BLAS_LAPACK_MANUAL_LIBS_DIR=/opt/intel/mkl/lib;/opt/intel/lib
+    BLAS_LAPACK_MANUAL_LIB_DIRS=/opt/intel/mkl/lib;/opt/intel/lib
     BLAS_LAPACK_MANUAL_LIBS:STRING=-lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm
     CMAKE_INSTALL_PREFIX=/dev/null
 ")

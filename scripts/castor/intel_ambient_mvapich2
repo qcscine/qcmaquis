@@ -1,7 +1,7 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_DMRG="build"
+STATE_DMRG="configure"
 # end of target states #
 SHARED_FS=true
 PREFIX=ambient
@@ -28,15 +28,14 @@ module load cmake
 COMMON_CMAKE_CXX_FLAGS="-O3 -DNDEBUG -w -Wfatal-errors"
 COMMON_CMAKE_C_COMPILER=mpicc
 COMMON_CMAKE_CXX_COMPILER=mpicxx
-COMMON_MPI_CXX_FOUND=FALSE
 COMMON_AMBIENT_THREADING="cilk"
 COMMON_AMBIENT_PARALLEL_MKL=ON
 COMMON_BLAS_LAPACK_SELECTOR="manual" # TODO: mkl_sequential should work as well
 COMMON_MAQUISLapack_LIBRARIES="-lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm"
-COMMON_MAQUISLapack_LIBS_DIRS=/apps/castor/intel/mkl/lib/intel64
-COMMON_MAQUISLapack_INCLUDE_DIRS=/apps/castor/intel/mkl/include
+COMMON_MAQUISLapack_LIB_DIRS=/apps/castor/intel-2013/mkl/lib/intel64
+COMMON_MAQUISLapack_INCLUDE_DIRS=/apps/castor/intel-2013/mkl/include
 COMMON_PLASMA_LIBRARIES="-lplasma -lcoreblas -lcblas -llapacke -lquark"
-COMMON_PLASMA_LIBS_DIR="/apps/castor/plasma-2.4.6/lib"
+COMMON_PLASMA_LIB_DIR="/apps/castor/plasma-2.4.6/lib"
 ## ambient ##
 AMBIENT_BOOST_BINDINGS_INCLUDE=/project/h07/TEST_ALPS/include
 AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64"
