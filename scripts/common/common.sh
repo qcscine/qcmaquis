@@ -84,7 +84,7 @@ build_target(){
     echo " ------------------------------------------------------------------------------------------ "
     pushd . &> /dev/null
     cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
-    make dmrg -j6
+    make -j6
     popd &> /dev/null
     set_state ${1} build
 }
