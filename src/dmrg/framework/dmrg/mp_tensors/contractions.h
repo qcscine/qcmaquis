@@ -89,35 +89,33 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         size_t loop_max = left.aux_dim();
 
-        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b) {
+        parallel_for(locale::scatter(mpo.placement_l), locale b = 0; b < loop_max; ++b){
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(left[b]), mps.data(), tmp);
-            reshape_right_to_left_new<Matrix>(mps.site_dim(), left[b].right_basis(), mps.col_dim(),
-                                              tmp, t[b]);
+            reshape_right_to_left_new<Matrix>(mps.site_dim(), left[b].right_basis(), mps.col_dim(), tmp, t[b]);
         }
-        
+
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim();
         ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
         
         Boundary<Matrix, SymmGroup> ret;
         ret.resize(mpo.col_dim());
-        
+
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
         
         mps.make_left_paired();
         loop_max = mpo.col_dim();
 
-        parallel_for(locale::compact(loop_max), locale b2 = 0; b2 < loop_max; ++b2) {
+        parallel_for(locale::scatter(mpo.placement_r), locale b2 = 0; b2 < loop_max; ++b2) {
             for (int run = 0; run < 2; ++run) {
-                if (run == 1)
-                    ret[b2].allocate_blocks();
                 bool pretend = (run == 0);
-                
+                if(!pretend) ret[b2].allocate_blocks();
+
                 for (size_t b1 = 0; b1 < left.aux_dim(); ++b1) {
                     if (!mpo.has(b1, b2))
                         continue;
-                    
+
                     block_matrix<Matrix, SymmGroup> const & W = mpo(b1, b2);
                     if (W.n_blocks() == 0)
                         continue;
@@ -168,22 +166,22 @@ struct contraction {
                                     Matrix const & wblock = W(physical_i[s1].first, physical_i[s2].first);
                                     Matrix const & iblock = T(T_l_charge, T_r_charge);
                                     Matrix & oblock = ret[b2](out_l_charge, out_r_charge);
-                                    
+
                                     maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
                                                                         physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second);
                                 }
                                 
                                 if (pretend)
                                     ret[b2].reserve(out_l_charge, out_r_charge,
-                                                          out_left_i.size_of_block(out_l_charge),
-                                                          right_i[r].second);
+                                                    out_left_i.size_of_block(out_l_charge),
+                                                    right_i[r].second);
                             }
                         }
                     }
                 }
             }
         }
-        
+
         return ret;
     }
     
@@ -202,11 +200,10 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
         size_t loop_max = right.aux_dim();
 
-        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
+        parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b){
             gemm(mps.data(), right[b], t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
-            reshape_left_to_right_new<Matrix>(mps.site_dim(), mps.row_dim(), right[b].right_basis(),
-                                              t[b], tmp);
+            reshape_left_to_right_new<Matrix>(mps.site_dim(), mps.row_dim(), right[b].right_basis(), t[b], tmp);
             swap(t[b], tmp);
         }
 
@@ -224,7 +221,7 @@ struct contraction {
         mps.make_right_paired();
         loop_max = mpo.row_dim();
 
-        parallel_for(locale::compact(loop_max), locale b1 = 0; b1 < loop_max; ++b1) {
+        parallel_for(locale::scatter(mpo.placement_l), locale b1 = 0; b1 < loop_max; ++b1) {
             for(int run = 0; run < 2; ++run) {
                 if(run == 1)
                     ret[b1].allocate_blocks();
@@ -325,14 +322,10 @@ struct contraction {
         std::size_t loop_max = mpo.col_dim();
 
         block_matrix<Matrix, SymmGroup> t = conjugate(bra_tensor.data());
-        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
+        parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b)
             gemm(transpose(lbtm[b]), t, ret[b]);
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("serial::continue");
-        #endif
-
-        #ifdef AMBIENT
-        ret.print_distribution();
         #endif
 
         return ret;
@@ -356,17 +349,13 @@ struct contraction {
         std::size_t loop_max = mpo.row_dim();
         
         block_matrix<Matrix, SymmGroup> t = conjugate(bra_tensor.data());
-        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
+        parallel_for(locale::scatter(mpo.placement_l), locale b = 0; b < loop_max; ++b){
             gemm(rbtm[b], transpose(t), ret[b]);
         }
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("serial::continue");
         #endif
 
-        #ifdef AMBIENT
-        ret.print_distribution();
-        #endif
-       
         return ret;
     }
     
@@ -389,17 +378,16 @@ struct contraction {
        
         std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max);
 
-        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
+        parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b)
             gemm(left_mpo_mps[b], right[b], oblocks[b]);
            
-        // proc 0 downloads oblocks[b] from proc 1 : 
-        semi_parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b){
+        semi_parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b){
             for (size_t k = 0; k < oblocks[b].n_blocks(); ++k)
                 ret.data().match_and_add_block(oblocks[b][k],
                                                oblocks[b].left_basis()[k].first,
                                                oblocks[b].right_basis()[k].first);
         }
-        
+
         return ret;
     }
     
