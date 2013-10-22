@@ -3,15 +3,18 @@
 
 #ifdef AMBIENT
     typedef ambient::scope<ambient::single> locale;
+    typedef ambient::scope<ambient::shared> locale_shared;
     #define parallel_for(constraint, ...) constraint; for(__VA_ARGS__)
     #define semi_parallel_for(constraint, ...) constraint; for(__VA_ARGS__)
 #elif defined(MAQUIS_OPENMP)
     typedef std::size_t locale;
+    typedef std::size_t locale_shared;
     #define parallel_pragma(a) _Pragma( #a )
     #define parallel_for(constraint, ...) parallel_pragma(omp parallel for schedule(dynamic, 1)) for(__VA_ARGS__)
     #define semi_parallel_for(constraint, ...) for(__VA_ARGS__)
 #else
     typedef std::size_t locale;
+    typedef std::size_t locale_shared;
     #define parallel_for(constraint, ...) for(__VA_ARGS__)
     #define semi_parallel_for(constraint, ...) for(__VA_ARGS__)
 #endif
