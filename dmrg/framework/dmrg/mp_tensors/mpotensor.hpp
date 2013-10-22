@@ -52,8 +52,8 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & MPOTensor<Matrix, SymmGroup>::operator()(std::size_t left_index,
                                                                            std::size_t right_index)
 {
-    if (left_index > left_i)   left_i  = left_index+1;
-    if (right_index > right_i) right_i = right_index+1;
+    if (left_index >= left_i)   left_i  = left_index+1;
+    if (right_index >= right_i) right_i = right_index+1;
     block_matrix<Matrix, SymmGroup> * ret;
     ret = &data_[std::make_pair(left_index, right_index)];
     return *ret;
