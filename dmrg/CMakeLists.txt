@@ -46,7 +46,7 @@ option(REGRESSION_PERFORMANCE_TESTS "Run application benchmarks"            OFF)
 
 mark_as_advanced(ENABLE_COLLECTOR)
 
-set(BLAS_LAPACK_SELECTOR "auto" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, alps")
+set(BLAS_LAPACK_SELECTOR "mkl_sequential" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, alps")
 
 
 ######################################################################
