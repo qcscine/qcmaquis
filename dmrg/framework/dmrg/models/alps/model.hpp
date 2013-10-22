@@ -112,9 +112,7 @@ public:
     , lattice(lattice_)
     , model(lattice, parms)
     {
-        #ifdef AMBIENT
-        ambient::scope<ambient::shared> i;
-        #endif        
+        locale_shared i;
         // Parsing conserved quantum numbers
         std::vector<std::string> tmp_qn;
         if (parms.defined("CONSERVED_QUANTUMNUMBERS")) {

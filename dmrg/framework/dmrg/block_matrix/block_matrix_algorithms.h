@@ -231,7 +231,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     typedef std::vector<typename maquis::traits::real_type<value_type>::type > real_vector_t;
     real_vector_t allevals(length);
 #ifdef AMBIENT
-    ambient::scope<ambient::shared> i;
+    locale_shared i;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         ambient::numeric::migrate(const_cast<DiagMatrix&>(evals[k])[0]);
     }

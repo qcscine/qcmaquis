@@ -82,21 +82,28 @@ namespace ambient {
     template<>
     class scope<single> : public controller::scope {
     public:
-        static int compact_factor; 
+        static int grain; 
+        static std::vector<int> permutation;
+
         static void compact(size_t n){ 
             if(n <= ambient::channel.wk_dim()) return; 
-            compact_factor = (int)(n / ambient::channel.wk_dim()); // iterations before switch 
+            grain = (int)(n / ambient::channel.wk_dim()); // iterations before switch 
+        } 
+        static void scatter(const std::vector<int>& p){
+            permutation = p;
         } 
         scope(int value = 0) : index(value), iterator(value) {
-            this->factor = compact_factor; compact_factor = 1;
+            this->factor = grain; grain = 1;
+            this->map = permutation; permutation.clear();
             if(ambient::controller.context != ambient::controller.context_base) dry = true;
             else{ dry = false; ambient::controller.set_context(this); }
             this->round = ambient::channel.wk_dim();
             this->eval();
         }
         void eval(){
-            if(iterator >= this->round*this->factor) this->sector = this->iterator % this->round;
-            else                                     this->sector = this->iterator / this->factor;
+            int i = iterator >= map.size() ? iterator : map[iterator];
+            if(i >= this->round*this->factor) this->sector = i % this->round;
+            else                              this->sector = i / this->factor;
             this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
         }
         void shift(){
@@ -133,6 +140,7 @@ namespace ambient {
             os << static_cast<size_t>(l);
             return os;
         }
+        std::vector<int> map;
         size_t index;
         bool dry;
         int iterator;
