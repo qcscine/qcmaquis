@@ -37,15 +37,6 @@ public:
     : data_(ad, block_matrix<Matrix, SymmGroup>(ud, ld))
     { }
     
-    template <class OtherMatrix>
-    Boundary& operator = (const Boundary<OtherMatrix, SymmGroup>& rhs){
-        size_t loop_max = rhs.aux_dim();
-        resize(loop_max);
-        parallel_for(locale::compact(loop_max), locale b = 0; b < loop_max; ++b)
-            data_[b] = rhs[b];
-        return *this;
-    }
-
     #ifdef AMBIENT
     std::vector<std::pair<size_t, size_t> > sort() const {
         std::vector<std::pair<size_t, size_t> > sizes;
