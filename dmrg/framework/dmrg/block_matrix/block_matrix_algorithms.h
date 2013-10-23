@@ -110,8 +110,8 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     std::size_t loop_max = M.n_blocks();
 
     #ifdef AMBIENT_REBALANCED_SVD
-    ambient::synctime timer("SVD ONLY TIME\n");
-    ambient::synctime timert("SVD TRANSFER/MERGE TIME\n");
+    static ambient::synctime timer("SVD ONLY TIME\n");
+    static ambient::synctime timert("SVD TRANSFER/MERGE TIME\n");
     timert.begin();
 
     // calculating complexities of the svd calls
@@ -137,7 +137,6 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
             size_t k = complexities[i].second;
             if(M[k][0].core->current->owner != p && (p != ambient::rank() || M[k][0].core->current->owner != -1)) continue;
             if(workloads[p].first + complexities[i].first >= total) break;
-            maquis::cout << "R" << ambient::controller.which() << ": (ownage) svd on " << num_rows(M[k]) << "x" << num_cols(M[k]) << "\n";
             merge(M[k]); 
             workloads[p].first += complexities[i].first; 
             complexities[i].first = 0;
@@ -151,7 +150,6 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
             size_t k = complexities[i].second;
             if(complexities[i].first == 0) continue;
             if(workloads[p].first + complexities[i].first >= total) break;
-            maquis::cout << "R" << ambient::controller.which() << ": (" << M[k][0].core->current->owner << ") svd on " << num_rows(M[k]) << "x" << num_cols(M[k]) << "\n";
             merge(M[k]); 
             workloads[p].first += complexities[i].first; 
             complexities[i].first = 0;
@@ -167,7 +165,6 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
         size_t k = complexities[i].second;
         int owner = workloads[p++].second;
         locale l(owner);
-        maquis::cout << "R" << ambient::controller.which() << ": (" << M[k][0].core->current->owner << ") remaining svd on " << num_rows(M[k]) << "x" << num_cols(M[k]) << "\n";
         merge(M[k]); 
         p %= np;
     }
