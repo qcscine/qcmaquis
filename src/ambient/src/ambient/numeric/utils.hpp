@@ -55,10 +55,11 @@ namespace ambient {
     }
 
     template<class Matrix>
-    inline void migrate(numeric::tiles<Matrix>& a){
-        int size = a.data.size();
+    inline void migrate(const numeric::tiles<Matrix>& a){
+        numeric::tiles<Matrix>& m = const_cast<numeric::tiles<Matrix>&>(a);
+        int size = m.data.size();
         for(int i = 0; i < size; i++){
-            migrate(a[i]);
+            migrate(m[i]);
         }
     }
 

@@ -314,6 +314,11 @@ namespace storage {
         for(int i = 0; i < t.data().n_blocks(); ++i) 
         ambient::migrate(t.data()[i]);
     }
+    template<class Matrix, class SymmGroup> 
+    static void migrate(block_matrix<Matrix, SymmGroup>& t){
+        for(int i = 0; i < t.n_blocks(); ++i)
+        ambient::migrate(t[i]);
+    }
 #endif
 
     inline static void setup(BaseParameters& parms){
