@@ -35,7 +35,7 @@ DMRG_REGRESSION_APPLICATION_TESTS=ON
 DMRG_REGRESSION_PERFORMANCE_TESTS=OFF
 DMRG_ENABLE_OMP=OFF
 DMRG_BLAS_LAPACK_SELECTOR=manual
-DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR="/opt/intel/mkl/lib;/opt/intel/lib"
+DMRG_BLAS_LAPACK_MANUAL_LIB_DIRS="/opt/intel/mkl/lib;/opt/intel/lib"
 DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm"
 DMRG_CMAKE_INSTALL_PREFIX=/dev/null
 

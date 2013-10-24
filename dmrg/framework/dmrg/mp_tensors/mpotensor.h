@@ -89,7 +89,9 @@ public:
     friend class column_iterator<Matrix, SymmGroup>;
     friend class compressor<Matrix, SymmGroup>;
     friend class MPOIndexer<Matrix, SymmGroup>;
-    
+
+    mutable std::vector<int> placement_l;
+    mutable std::vector<int> placement_r;
 private:
     CSCMatrix col_tags;
     RowIndex row_index;

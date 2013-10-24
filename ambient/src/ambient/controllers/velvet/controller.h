@@ -47,6 +47,10 @@ namespace ambient { namespace controllers { namespace velvet {
             virtual void select(int c) const {}
             virtual void toss(){}
         };
+        struct verbose_modes {
+            bool transfers;
+            verbose_modes() : transfers(false) {}
+        } verbose;
 
         controller();
        ~controller();

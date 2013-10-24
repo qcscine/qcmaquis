@@ -23,9 +23,8 @@ module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load ${CMAKE}
 
 ## common ##
-COMMON_ENABLE_OMP=ON
-COMMON_CMAKE_CXX_FLAGS="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors"
-COMMON_CMAKE_CXX_FLAGS_RELEASE="-std=c++11 -O3 -DNDEBUG -w -Wfatal-errors"
+COMMON_CMAKE_CXX_FLAGS="-O3 -DNDEBUG -w -Wfatal-errors"
+COMMON_CMAKE_CXX_FLAGS_RELEASE=$COMMON_CMAKE_CXX_FLAGS
 COMMON_CMAKE_C_COMPILER=icc
 COMMON_CMAKE_CXX_COMPILER=icpc
 ## ambient ##
@@ -34,12 +33,10 @@ AMBIENT_ENABLE_REGRESSION_PERFORMANCE=OFF
 AMBIENT_BOOST_BINDINGS_INCLUDE=/project/h07/TEST_ALPS/include
 AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64"
 ## dmrg ##
-DMRG_DEFAULT_BLAS_LAPACK=manual
-DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread"
-DMRG_BLAS_LAPACK_MANUAL_LIBS_DIR=/apps/castor/intel/mkl/lib/intel64
-DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/apps/castor/intel/mkl/include
+DMRG_BLAS_LAPACK_SELECTOR="mkl_sequential"
 DMRG_ALPS_ROOT_DIR=/project/h07/TEST_ALPS
 DMRG_USE_AMBIENT=OFF
+DMRG_ENABLE_OMP=ON
 
 source $ROOT_DIR/scripts/common/common.sh 
 execute $*

@@ -7,7 +7,7 @@
 #include <boost/chrono.hpp>
 #include "utils/io.hpp"
 
-#ifdef _OPENMP
+#ifdef MAQUIS_OPENMP
 #include "omp.h"
 #endif
 
@@ -50,7 +50,7 @@ protected:
     std::string name;
 };
         
-#ifdef _OPENMP
+#ifdef MAQUIS_OPENMP
 class TimerOMP : public Timer {
 public:
     TimerOMP(std::string name_) : Timer(name_), timer_start(0.0), timer_end(0.0){}
