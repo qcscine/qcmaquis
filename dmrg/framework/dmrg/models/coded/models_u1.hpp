@@ -594,6 +594,7 @@ public:
     typedef typename Matrix::value_type value_type;
     
     FermiHubbardU1(const Lattice& lat, BaseParameters & parms)
+    : tag_handler(new table_type())
     {
         phys.insert(std::make_pair(0, 1));
         phys.insert(std::make_pair(1, 2));
