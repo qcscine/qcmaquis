@@ -13,7 +13,7 @@ class mytest(apptest.DMRGTestBase):
     
     inputs   = {
                 'parms': {
-                            'nsweeps'                    : 2,
+                            'nsweeps'                    : 3,
                             'nmainsweeps'                : 1,
                             'ngrowsweeps'                : 1,
                             
@@ -21,6 +21,8 @@ class mytest(apptest.DMRGTestBase):
                             
                             'truncation_initial'         : 1e-10,
                             'truncation_final'           : 1e-10,
+                            
+                            'ietl_jcd_maxiter'           : 6,
                             
                             'alpha_initial'              : 0.001,
                             'alpha_main'                 : 1e-6,

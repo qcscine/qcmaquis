@@ -16,12 +16,14 @@ class mytest(apptest.DMRGTestBase):
                             'nsweeps'                    : 3,
                             'nmainsweeps'                : 1,
                             'ngrowsweeps'                : 1,
-            
+                            
                             'max_bond_dimension'         : 200,
-            
+                            
                             'truncation_initial'         : 0.0001,
                             'truncation_final'           : 1e-12,
-            
+                            
+                            'ietl_jcd_maxiter'           : 6,
+                            
                             'alpha_initial'              : 0.001,
                             'alpha_main'                 : 1e-6,
                             'alpha_final'                : 0,
