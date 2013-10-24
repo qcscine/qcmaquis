@@ -447,6 +447,7 @@ class FreeFermions : public Model<Matrix, U1>
     
 public:
     FreeFermions (const Lattice& lat, double t=1)
+    : tag_handler(new table_type())
     {
         op_t ident_op;
         op_t create_op, destroy_op, sign_op, dens_op;
