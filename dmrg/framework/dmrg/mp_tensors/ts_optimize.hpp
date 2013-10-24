@@ -41,15 +41,8 @@ public:
                 int initial_site_ = 0)
     : base(mps_, mpo_, parms_, stop_callback_, initial_sweep_, initial_site_)
     {
-        /// cache twosite mpo
+        locale_shared l; // cache twosite mpo
         make_ts_cache_mpo(mpo, ts_cache_mpo, mps[0].site_dim());
-        
-        #ifdef AMBIENT
-            for(int i = 0; i < ts_cache_mpo.length(); ++i)
-                for(typename MPOTensor<Matrix, SymmGroup>::data_t::const_iterator it = ts_cache_mpo[i].data().begin(); it != ts_cache_mpo[i].data().end(); ++it)
-                    for(size_t k = 0; k < (it->second).n_blocks(); k++)
-                        ambient::make_persistent((it->second)[k]);
-        #endif
     }
 
     void sweep(int sweep, OptimizeDirection d = Both)
@@ -89,11 +82,15 @@ public:
                 lr = 1;
         		site1 = site;
         		site2 = site+1;
+                ts_cache_mpo[site1].placement_l = mpo.placements[site1];
+                ts_cache_mpo[site1].placement_r = get_right_placement(ts_cache_mpo[site1], mpo.placements[site1], mpo.placements[site2+1]);
             } else {
                 site = 2*L-_site-2;
                 lr = -1;
         		site1 = site-1;
         		site2 = site;
+                ts_cache_mpo[site1].placement_l = get_left_placement(ts_cache_mpo[site1], mpo.placements[site1], mpo.placements[site2+1]);
+                ts_cache_mpo[site1].placement_r = mpo.placements[site2+1];
             }
             
     	    maquis::cout << std::endl;
@@ -210,6 +207,13 @@ public:
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
 
                 if (site1 != L-2){ 
+                    if(site1 != 0){
+                        #ifdef AMBIENT
+                        std::vector<int> placement_l = get_left_placement(ts_cache_mpo[site1], mpo.placements[site1], mpo.placements[site2+1]);
+                        parallel_for(locale::scatter(placement_l), locale b = 0; b < left_[site1].aux_dim(); ++b) storage::migrate(left_[site1][b]);
+                        ambient::sync();
+                        #endif
+                    }
                     Storage::evict(mps[site1]);
                     Storage::evict(left_[site1]);
                     Storage::drop(right_[site2+1]);
@@ -241,6 +245,13 @@ public:
                 this->boundary_right_step(mpo, site2); // creating right_[site2]
 
                 if(site1 != 0){
+                    if(site1 != L-2){
+                        #ifdef AMBIENT
+                        std::vector<int> placement_r = get_right_placement(ts_cache_mpo[site1], mpo.placements[site1], mpo.placements[site2+1]);
+                        parallel_for(locale::scatter(placement_r), locale b = 0; b < right_[site2+1].aux_dim(); ++b) storage::migrate(right_[site2+1][b]);
+                        ambient::sync();
+                        #endif
+                    }
                     Storage::evict(mps[site2]);
                     Storage::evict(right_[site2+1]); 
                     Storage::drop(left_[site1]);

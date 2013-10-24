@@ -53,6 +53,7 @@ public:
         }
     }
     
+    mutable std::vector<std::vector<int> > placements;
 private:
     std::vector<std::map<std::size_t, typename SymmGroup::charge> > bond_index_charges;
     std::vector<Index<SymmGroup> > bond_indices;
