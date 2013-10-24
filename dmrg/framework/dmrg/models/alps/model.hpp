@@ -100,17 +100,30 @@ class ALPSModel : public Model<Matrix, SymmGroup>
     
     typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
     
+    
 public:
-    typedef Hamiltonian<Matrix, SymmGroup> ham;        
-    typedef typename ham::hamterm_t hamterm_t;        
+    typedef Hamiltonian<Matrix, SymmGroup> ham;
+    typedef typename ham::table_type table_type;
+    typedef typename ham::table_ptr table_ptr;
+    typedef typename table_type::tag_type tag_type;
+    typedef typename std::pair<value_type, tag_type> term_descriptor;
+    
     typedef typename ham::op_t op_t;
+    typedef typename ham::hamtagterm_t hamtagterm_t;
+    typedef Measurement_Term<Matrix, SymmGroup> mterm_t;
+
+    typedef std::pair<std::string, int> opkey_type;
+    typedef std::map<opkey_type, tag_type> opmap_type;
+    typedef typename opmap_type::const_iterator opmap_const_iterator;
     
     typedef typename SymmGroup::charge charge;
+    
     
     ALPSModel (const graph_type& lattice_, const alps::Parameters& parms_)
     : parms(parms_)
     , lattice(lattice_)
     , model(lattice, parms)
+    , tag_handler(new table_type())
     {
         #ifdef AMBIENT
         ambient::scope<ambient::shared> i;
@@ -143,17 +156,23 @@ public:
             
             converter.push_back(basis_converter<SymmGroup>(conserved_qn, b));
             
+            op_t ident, fill;
             for (int i=0; i<states.size(); ++i) {
                 charge c = converter[type].charge(i);
                 size_t bsize = converter[type].block_size(i);
                 // maquis::cout << "Inserting " << c << " for " << states[i] << std::endl;
-                if (!tident[type].has_block(c, c))
-                    tident[type].insert_block(Matrix::identity_matrix(bsize), c, c);
+                
+                if (!ident.has_block(c, c))
+                    ident.insert_block(Matrix::identity_matrix(bsize), c, c);
+                
                 int sign = (alps::is_fermionic(b, states[i])) ? -1 : 1;
-                if (!tfill[type].has_block(c, c))
-                    tfill[type].insert_block(Matrix::identity_matrix(bsize), c, c);
-                tfill[type](converter[type].coords(i), converter[type].coords(i)) = sign;
+                if (!fill.has_block(c, c))
+                    fill.insert_block(Matrix::identity_matrix(bsize), c, c);
+                fill(converter[type].coords(i), converter[type].coords(i)) = sign;
             }
+            operators[opkey_type("ident", type)] = tag_handler->register_op(ident, tag_detail::bosonic);
+            operators[opkey_type("fill",  type)] = tag_handler->register_op(fill,  tag_detail::bosonic);
+            
         }
         
         
@@ -189,36 +208,33 @@ public:
                 V  ops = model.site_term(type).template templated_split<value_type>();
                                                         
                 for (int n=0; n<ops.size(); ++n) {
-                    if (ops[n].template get<0>().value() != 0.) {
-                        SiteOperator op = ops[n].template get<1>();
-                        alps_matrix m = alps::get_matrix(value_type(), op, model.site_basis(type), parms, true);
-                        
-                        site_terms[type].push_back( ops[n].template get<0>().value()*convert_matrix(m, type) );
+                    if (boost::get<0>(ops[n]).value() != 0.) {
+                        SiteOperator op = boost::get<1>(ops[n]);
+                        opmap_const_iterator match = operators.find(opkey_type(simplify_name(op), type));
+                        if (match == operators.end())
+                            match = register_operator(op, type, parms);
+                        site_terms[type].push_back( std::make_pair(boost::get<0>(ops[n]).value(), match->second)  );
                     }
-                    
                 }
                 
             }
 
-            // Many site terms
-            /*
-             for (int n=0; n<site_terms[type].size(); ++n) {
-             hamterm_t term;
-             term.fill_operator = tident[type];
-             term.operators.push_back( std::make_pair(p, site_terms[type][n]) );
-             terms.push_back(term);
-             }
-             */
-            
             // All site terms summed into one
             if (site_terms[type].size() > 0) {
-                op_t op_matrix;
-                for (int n=0; n<site_terms[type].size(); ++n)
-                    op_matrix += site_terms[type][n];
-                hamterm_t term;
+                opmap_const_iterator match = operators.find(opkey_type("site_terms", type));
+                if (match == operators.end()) {
+                    op_t op_matrix;
+                    for (int n=0; n<site_terms[type].size(); ++n)
+                        op_matrix += site_terms[type][n].first * tag_handler->get_op(site_terms[type][n].second);
+                    tag_type mytag = tag_handler->register_op(op_matrix, tag_detail::bosonic);
+                    boost::tie(match, boost::tuples::ignore) = operators.insert( std::make_pair(opkey_type("site_terms", type), mytag) );
+                }
+
+                hamtagterm_t term;
+                term.scale = 1.;
                 term.with_sign = false;
-                term.fill_operator = tident[type];
-                term.operators.push_back( std::make_pair(p, op_matrix) );
+                term.fill_operator = operators[opkey_type("ident", type)];
+                term.operators.push_back( std::make_pair(p, match->second) );
                 terms.push_back(term);
             }
             
@@ -232,9 +248,7 @@ public:
             int type_s = lattice.site_type(lattice.source(*it));
             int type_t = lattice.site_type(lattice.target(*it));
             
-            bool wrap_pbc = boost::get(alps::boundary_crossing_t(),
-                                       lattice.graph(),
-                                       *it);
+            bool wrap_pbc = boost::get(alps::boundary_crossing_t(), lattice.graph(), *it);
             
             BondOperator bondop = model.bond_term(type);
             
@@ -245,48 +259,71 @@ public:
             
             V  ops = bondop.template templated_split<value_type>(b1,b2);
             for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
-                SiteOperator op1 = tit->template get<1>();
-                SiteOperator op2 = tit->template get<2>();
+                SiteOperator op1 = boost::get<1>(*tit);
+                SiteOperator op2 = boost::get<2>(*tit);
                 
+//                std::cout << "working with ops " << op1 << " and " << op2 << std::endl;
+                std::cout << "working with ops.names " << simplify_name(op1) << " and " << simplify_name(op2) << std::endl;
+                
+                opmap_const_iterator match1 = operators.find(opkey_type(simplify_name(op1), type_s));
+                if (match1 == operators.end())
+                    match1 = register_operator(op1, type_s, parms);
+                opmap_const_iterator match2 = operators.find(opkey_type(simplify_name(op2), type_t));
+                if (match2 == operators.end())
+                    match2 = register_operator(op2, type_t, parms);
+
                 bool with_sign = fermionic(b1, op1, b2, op2);
                 
-                hamterm_t term;
+                hamtagterm_t term;
+                term.scale = boost::get<0>(*tit).value();
                 term.with_sign = with_sign;
                 if (with_sign)
-                    term.fill_operator = tfill[type_s];
+                    term.fill_operator = operators[opkey_type("fill", type_s)];
                 else
-                    term.fill_operator = tident[type_s];
+                    term.fill_operator = operators[opkey_type("ident", type_s)];
+                
+                
+                
                 {
-                    alps_matrix m = alps::get_matrix(value_type(), op1, b1, parms, true);
-                    value_type coeff = tit->template get<0>().value();
-                    op_t tmp;
-                    if (with_sign && !wrap_pbc) {                            
-                        gemm(tfill[type_s], convert_matrix(m, type_s), tmp); // Note inverse notation because of notation in operator.
-                    } else
-                        tmp = convert_matrix(m, type_s);
+                    tag_type mytag = match1->second;
+                    if (with_sign && !wrap_pbc) {
+                        // Note inverse notation because of notation in operator.
+                        std::pair<tag_type, value_type> ptag = tag_handler->get_product_tag(operators[opkey_type("fill",type_s)],
+                                                                                            mytag);
+                        mytag = ptag.first;
+                        term.scale *= ptag.second;
+                    }
                     if (with_sign && wrap_pbc)
-                        coeff *= -1.;
-                    term.operators.push_back( std::make_pair(p_s, coeff*tmp) );
+                        term.scale *= -1.;
+                    term.operators.push_back( std::make_pair(p_s, mytag) );
                 }
                 {
-                    alps_matrix m = alps::get_matrix(value_type(), op2, b2, parms, true);
-                    op_t tmp;
-                    if (with_sign && wrap_pbc)
-                        gemm(tfill[type_t], convert_matrix(m, type_t), tmp); // Note inverse notation because of notation in operator.
-                    else
-                        tmp = convert_matrix(m, type_t);
-                    term.operators.push_back( std::make_pair(p_t, tmp) );
+                    tag_type mytag = match2->second;
+                    if (with_sign && wrap_pbc) {
+                        // Note inverse notation because of notation in operator.
+                        std::pair<tag_type, value_type> ptag = tag_handler->get_product_tag(operators[opkey_type("fill",type_t)],
+                                                                                            mytag);
+                        mytag = ptag.first;
+                        term.scale *= ptag.second;
+                    }
+                    term.operators.push_back( std::make_pair(p_t, mytag) );
                 }
                 
                 terms.push_back(term);
             }
             
         }
+        
+        std::cout  << "Operators:" << std::endl;
+        for (opmap_const_iterator it = operators.begin(); it!=operators.end(); ++it) {
+            std::cout << " - " << it->first.first << ", type " << it->first.second << std::endl;
+            std::cout << tag_handler->get_op(it->second);
+        }
     }
             
     op_t const & get_identity() const
     {
-        return tident[0];
+        return tag_handler->get_op( operators[opkey_type("ident", 0)] );
     }
     
     Index<SymmGroup> get_phys() const
@@ -296,7 +333,8 @@ public:
     
     Hamiltonian<Matrix, SymmGroup> H () const
     {
-        return ham(get_phys(), get_identity(), terms);
+        std::vector<typename ham::hamterm_t> terms_ops;
+        return ham(get_phys(), get_identity(), terms_ops, operators[opkey_type("ident", 0)], terms, tag_handler);
     }
     
     typename SymmGroup::charge initc (BaseParameters& parms_) const
@@ -317,15 +355,15 @@ public:
         // TODO: hard coding site type = 0 !!
         int type = 0;
 
-        if (name == "id") {
-            return tident[type];
-        } else if (name == "fill") {
-            return tfill[type];
+        if (name == "id" || name == "ident" || name == "identity") {
+            return tag_handler->get_op( operators[opkey_type("ident", type)] );
         } else {
-            alps::SiteBasisDescriptor<I> b = model.site_basis(type);
-            SiteOperator op = make_site_term(name, parms);
-            alps_matrix m = alps::get_matrix(value_type(), op, b, parms, true);
-            return convert_matrix(m, type);
+            opmap_const_iterator match = operators.find(opkey_type(name, type));
+            if (match == operators.end()) {
+                SiteOperator op = make_site_term(name, parms);
+                match = register_operator(op, type, parms);
+            }
+            return tag_handler->get_op(match->second);
         }
     }
 
@@ -378,19 +416,31 @@ private:
         return op;
     }
     
+    opmap_const_iterator register_operator(SiteOperator const& op, int type, alps::Parameters const& p) const
+    {
+        alps::SiteBasisDescriptor<I> b = model.site_basis(type);
+        alps_matrix m = alps::get_matrix(value_type(), op, b, p, true);
+        tag_detail::operator_kind kind = b.is_fermionic(simplify_name(op)) ? tag_detail::fermionic : tag_detail::bosonic;
+        tag_type mytag = tag_handler->register_op(convert_matrix(m, type), kind);
+        
+        opmap_const_iterator match;
+        boost::tie(match, boost::tuples::ignore) = operators.insert( std::make_pair(opkey_type(simplify_name(op), type), mytag) );
+        return match;
+    }
+    
     alps::Parameters const & parms;
     const graph_type& lattice;
     alps::model_helper<I> model;
-    
+    mutable table_ptr tag_handler;
+
     std::vector<basis_converter<SymmGroup> > converter;
     
-    std::map<int, std::vector<op_t> > site_terms;
-    mutable std::map<int, op_t> tident;
-    mutable std::map<int, op_t> tfill;
+    mutable opmap_type operators; // key=<name,type>
+
+    std::map<int, std::vector<term_descriptor> > site_terms;
     mutable std::map<int, std::vector<typename SymmGroup::charge> > tphys;
-    std::vector<hamterm_t> terms;
+    std::vector<hamtagterm_t> terms;
     std::vector<std::pair<std::size_t, std::string> > conserved_qn;
-    
 };
 
 // Loading Measurements
@@ -403,14 +453,27 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
     // TODO: hard coding site type = 0 !!
     int type = 0;
     
-    meas.set_identity(tident[type]);
+    meas.set_identity(get_op("ident"));
     
     {
-        boost::regex expression("^MEASURE_AVERAGE\\[(.*)]$");
+        boost::regex average_expr("^MEASURE_AVERAGE\\[(.*)]$");
+        boost::regex locale_expr("^MEASURE_LOCAL\\[(.*)]$");
         boost::smatch what;
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
             std::string lhs = it->key();
-            if (boost::regex_match(lhs, what, expression)) {
+            mterm_t term;
+            
+            bool found = false;
+            if (boost::regex_match(lhs, what, average_expr)) {
+                term.type = mterm_t::Average;
+                found = true;
+            }
+            if (boost::regex_match(lhs, what, locale_expr)) {
+                term.type = mterm_t::Local;
+                found = true;
+            }
+            
+            if (found) {
 				alps::SiteBasisDescriptor<I> b = model.site_basis(type);
 
                 if (model.has_bond_operator(it->value())) {
@@ -424,32 +487,26 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
 
                         bool with_sign = fermionic(b, op1, b, op2);
 
-                        mterm_t term;
-                        term.type = mterm_t::Average;
                         std::ostringstream ss;
                         ss << what.str(1);
                         if (ops.size() > 1) ss << " (" << int(tit-ops.begin())+1 << ")";
                         term.name = ss.str();
 
-                        term.fill_operator = (with_sign) ? tfill[type] : tident[type];
+                        term.fill_operator = (with_sign) ? get_op("fill") : get_op("ident");
                         {
-                        	alps_matrix m = alps::get_matrix(value_type(), op1, b, parms, true);
                         	op_t tmp;
                         	if (with_sign)
-                        		gemm(tfill[type], convert_matrix(m, type), tmp); // Note inverse notation because of notation in operator.
+                        		gemm(term.fill_operator, get_op(simplify_name(op1)), tmp); // Note inverse notation because of notation in operator.
                             else
-                                tmp = convert_matrix(m, type);
+                                tmp = get_op(simplify_name(op1));
                         	term.operators.push_back( std::make_pair(tit->template get<0>().value()*tmp, b.is_fermionic(simplify_name(op1))) );
                         }
                         {
-                            alps_matrix m = alps::get_matrix(value_type(), op2, b, parms, true);
-                            term.operators.push_back( std::make_pair(convert_matrix(m, type), b.is_fermionic(simplify_name(op2))) );
+                            term.operators.push_back( std::make_pair(get_op(simplify_name(op2)), b.is_fermionic(simplify_name(op2))) );
                         }
 	                    meas.add_term(term);
                     }
                 } else {
-                    mterm_t term;
-                    term.type = mterm_t::Average;
                     term.name = what.str(1);
 
 					SiteOperator op = make_site_term(it->value(), parms);
@@ -457,77 +514,13 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
 					if (b.is_fermionic(simplify_name(op)))
 						throw std::runtime_error("Cannot measure local fermionic operators.");
 
-					alps_matrix m = alps::get_matrix(value_type(), op, b, parms, true);
-
-					term.operators.push_back( std::make_pair(convert_matrix(m, type), false) );
+					term.operators.push_back( std::make_pair(get_op(it->value()), false) );
                     meas.add_term(term);
                 }
             }
         }
     }
     
-    {
-        boost::regex expression("^MEASURE_LOCAL\\[(.*)]$");
-        boost::smatch what;
-        for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
-            std::string lhs = it->key();
-            if (boost::regex_match(lhs, what, expression)) {
-				alps::SiteBasisDescriptor<I> b = model.site_basis(type);
-
-                if (model.has_bond_operator(it->value())) {
-                	BondOperator bondop = model.get_bond_operator(it->value());
-
-                    typedef std::vector<boost::tuple<alps::expression::Term<value_type>,alps::SiteOperator,alps::SiteOperator > > V;
-                    V  ops = bondop.template templated_split<value_type>(b,b);
-                    for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
-                        SiteOperator op1 = tit->template get<1>();
-                        SiteOperator op2 = tit->template get<2>();
-
-                        bool with_sign = fermionic(b, op1, b, op2);
-
-                        mterm_t term;
-                        term.type = mterm_t::Local;
-                        std::ostringstream ss;
-                        ss << what.str(1);
-                        if (ops.size() > 1) ss << " (" << int(tit-ops.begin())+1 << ")";
-                        term.name = ss.str();
-
-                        term.fill_operator = (with_sign) ? tfill[type] : tident[type];
-                        {
-                        	alps_matrix m = alps::get_matrix(value_type(), op1, b, parms, true);
-                        	op_t tmp;
-                        	if (with_sign)
-                        		gemm(tfill[type], convert_matrix(m, type), tmp); // Note inverse notation because of notation in operator.
-                            else
-                                tmp = convert_matrix(m, type);
-                        	term.operators.push_back( std::make_pair(tit->template get<0>().value()*tmp, b.is_fermionic(simplify_name(op1))) );
-                        }
-                        {
-                            alps_matrix m = alps::get_matrix(value_type(), op2, b, parms, true);
-                            term.operators.push_back( std::make_pair(convert_matrix(m, type), b.is_fermionic(simplify_name(op2))) );
-                        }
-	                    meas.add_term(term);
-                    }
-                } else {
-                    mterm_t term;
-                    term.type = mterm_t::Local;
-                    term.name = what.str(1);
-
-					SiteOperator op = make_site_term(it->value(), parms);
-
-					if (b.is_fermionic(simplify_name(op)))
-						throw std::runtime_error("Cannot measure local fermionic operators.");
-
-                    
-					alps_matrix m = alps::get_matrix(value_type(), op, b, parms, true);
-
-					term.operators.push_back( std::make_pair(convert_matrix(m, type), false) );
-                    meas.add_term(term);
-                }
-            }
-        }
-    }
-
     { // Example: MEASURE_LOCAL_AT[Custom correlation] = "bdag:b|(1,2),(3,4),(5,6)"
         boost::regex expression("^MEASURE_LOCAL_AT\\[(.*)]$");
         boost::smatch what;
@@ -557,9 +550,8 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                      it_op != ops_tokens.end(); it_op++)
                 {
                     SiteOperator op = make_site_term(*it_op, parms);
-                    alps_matrix m = alps::get_matrix(value_type(), op, b, parms, true);
                     bool f = b.is_fermionic(simplify_name(op));
-                    term.operators.push_back( std::make_pair(convert_matrix(m, type), f) );
+                    term.operators.push_back( std::make_pair(get_op(simplify_name(op)), f) );
                     if (f) ++f_ops;
                 }
 
@@ -578,11 +570,7 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                     term.positions.push_back(pos);
                 }
                                 
-                if (f_ops > 0)
-                    term.fill_operator = tfill[type];
-                else
-                    term.fill_operator = tident[type];
-                
+                term.fill_operator = (f_ops > 0) ? get_op("fill") : get_op("ident");
                 if (f_ops % 2 != 0)
                     throw std::runtime_error("Number of fermionic operators has to be even.");
                 
@@ -599,7 +587,7 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
             std::string value;
             
             mterm_t term;
-            term.fill_operator = tident[type];
+            term.fill_operator = get_op("ident");
             
             if (boost::regex_match(lhs, what, expression)) {
                 value = it->value();
@@ -616,9 +604,8 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                      it2++)
                 {
                     SiteOperator op = make_site_term(*it2, parms);
-                    alps_matrix m = alps::get_matrix(value_type(), op, b, parms, true);
                     bool f = b.is_fermionic(simplify_name(op));
-                    term.operators.push_back( std::make_pair(convert_matrix(m, type), f) );
+                    term.operators.push_back( std::make_pair(get_op(simplify_name(op)), f) );
                     if (f) ++f_ops;
                 }
                 if (term.operators.size() == 1) {
@@ -627,7 +614,7 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                 }
                 
                 if (f_ops > 0) {
-                    term.fill_operator = tfill[type];
+                    term.fill_operator = get_op("fill");
                 }
                 
 
@@ -650,7 +637,7 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
             std::string value;
             
             mterm_t term;
-            term.fill_operator = tident[type];
+            term.fill_operator = get_op("ident");
             
             bool found = false;
             if (boost::regex_match(lhs, what, expression)) {
@@ -694,9 +681,8 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                      it2++)
                 {
                     SiteOperator op = make_site_term(*it2, parms);
-                    alps_matrix m = alps::get_matrix(value_type(), op, b, parms, true);
                     bool f = b.is_fermionic(simplify_name(op));
-                    term.operators.push_back( std::make_pair(convert_matrix(m, type), f) );
+                    term.operators.push_back( std::make_pair(get_op(simplify_name(op)), f) );
                     if (f) ++f_ops;
                 }
                 if (term.operators.size() == 1) {
@@ -706,7 +692,7 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                 
                 
                 if (f_ops > 0) {
-                    term.fill_operator = tfill[type];
+                    term.fill_operator = get_op("fill");
                 }
 
                 if (f_ops % 2 != 0)
