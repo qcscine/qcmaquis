@@ -52,6 +52,7 @@
 
 #ifdef AMBIENT_CILK
     #include <cilk/cilk.h>
+    #include <cilk/cilk_api.h>
     #define AMBIENT_NUM_THREADS __cilkrts_get_total_workers()
     #define AMBIENT_THREAD_ID __cilkrts_get_worker_number()
     #define AMBIENT_THREAD cilk_spawn
