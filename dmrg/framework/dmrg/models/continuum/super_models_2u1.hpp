@@ -54,43 +54,87 @@ class DMOpticalLatticeTwoU1 : public Model<Matrix, TwoU1> {
     
     typedef Hamiltonian<Matrix, TwoU1> ham;
     typedef typename ham::hamterm_t hamterm_t;
-    typedef Hamiltonian<Matrix, U1> psi_ham;
-    typedef typename psi_ham::hamterm_t psi_hamterm_t;
+    typedef typename ham::hamtagterm_t hamtagterm_t;
     typedef Measurement_Term<Matrix, TwoU1> mterm_t;
     typedef typename ham::op_t op_t;
-    typedef block_matrix<Matrix, U1> psi_op;
+    typedef typename ham::table_type table_type;
+    typedef typename ham::table_ptr table_ptr;
+
+    typedef Hamiltonian<Matrix, U1> psi_ham;
+    typedef typename psi_ham::hamterm_t psi_hamterm_t;
+    typedef typename psi_ham::hamtagterm_t psi_hamtagterm_t;
+    typedef typename psi_ham::op_t psi_op;
+    typedef typename psi_ham::table_type psi_table_type;
+    typedef typename psi_ham::table_ptr psi_table_ptr;
+    
+    typedef typename table_type::tag_type tag_type;
+    typedef typename Matrix::value_type value_type;
+
 public:
     DMOpticalLatticeTwoU1 (const Lattice& lat_, BaseParameters & model_)
     : lat(lat_)
     , model(model_)
+    , tag_handler( new table_type() )
+    , psi_tag_handler( new psi_table_type() )
     {
+        psi_op psi_ident_op, psi_count_op, psi_interaction_op, psi_create_op, psi_destroy_op;
+        op_t ident_op, count_op, interaction_op;
+
         psi_phys.insert(std::make_pair(0, 1));
-        psi_ident.insert_block(Matrix(1, 1, 1), 0, 0);
+        psi_ident_op.insert_block(Matrix(1, 1, 1), 0, 0);
         
         int Nmax = model["Nmax"];
         for (int n=1; n<=Nmax; ++n)
         {
             psi_phys.insert(std::make_pair(n, 1));
             
-            psi_ident.insert_block(Matrix(1, 1, 1), n, n);
+            psi_ident_op.insert_block(Matrix(1, 1, 1), n, n);
             
-            psi_count.insert_block(Matrix(1, 1, n), n, n);
+            psi_count_op.insert_block(Matrix(1, 1, n), n, n);
             if ((n*n-n) != 0)
-                psi_interaction.insert_block(Matrix(1, 1, n*n-n), n, n);
+                psi_interaction_op.insert_block(Matrix(1, 1, n*n-n), n, n);
             
             
-            psi_create.insert_block(Matrix(1, 1, std::sqrt(n)), n-1, n);
-            psi_destroy.insert_block(Matrix(1, 1, std::sqrt(n)), n, n-1);
+            psi_create_op.insert_block(Matrix(1, 1, std::sqrt(n)), n-1, n);
+            psi_destroy_op.insert_block(Matrix(1, 1, std::sqrt(n)), n, n-1);
         }
         
-        phys        = group(psi_phys, adjoin(psi_phys));
-        ident       = identity_matrix<Matrix>(phys);
-        count       = adjoint_site_term(psi_count);
-        interaction = adjoint_site_term(psi_interaction);
+        /**********************************************************************/
+        /*** Create operator tag table ****************************************/
+        /**********************************************************************/
+#define REGISTER(op, kind) op = psi_tag_handler->register_op(op ## _op, kind);
+        REGISTER(psi_ident,       tag_detail::bosonic)
+        REGISTER(psi_create,      tag_detail::bosonic)
+        REGISTER(psi_destroy,     tag_detail::bosonic)
+        REGISTER(psi_count,       tag_detail::bosonic)
+        REGISTER(psi_interaction, tag_detail::bosonic)
+#undef REGISTER
+        /**********************************************************************/
+
+        
+        phys          = group(psi_phys, adjoin(psi_phys));
+        ident_op       = identity_matrix<Matrix>(phys);
+        count_op       = adjoint_site_term(psi_count_op);
+        interaction_op = adjoint_site_term(psi_interaction_op);
         
         std::cout << "phys: " << phys << std::endl;
-        std::vector< std::pair<op_t,op_t> > hopops = adjoint_bond_term(psi_create, psi_destroy);
-        
+        std::vector< std::pair<op_t,op_t> > hopops_op = adjoint_bond_term(psi_create_op, psi_destroy_op);
+        std::vector< std::pair<tag_type,tag_type> > hopops(hopops_op.size());
+
+        /**********************************************************************/
+        /*** Create operator tag table ****************************************/
+        /**********************************************************************/
+#define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
+        REGISTER(ident,       tag_detail::bosonic)
+        REGISTER(count,       tag_detail::bosonic)
+        REGISTER(interaction, tag_detail::bosonic)
+        for (size_t i=0; i<hopops.size(); ++i)
+            hopops[i] = std::make_pair( tag_handler->register_op(hopops_op[i].first,  tag_detail::bosonic),
+                                        tag_handler->register_op(hopops_op[i].second, tag_detail::bosonic) );
+#undef REGISTER
+        /**********************************************************************/
+
+
         for (int p=0; p<lat.size(); ++p)
         {
             std::vector<int> neighs = lat.all(p);
@@ -123,36 +167,40 @@ public:
             
             if (U != 0.)
             { // U * n * (n-1)
-                hamterm_t term;
+                hamtagterm_t term;
                 term.with_sign = false;
+                term.scale = U;
                 term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, U*interaction) );
+                term.operators.push_back( std::make_pair(p, interaction) );
                 terms.push_back(term);
             }
             if (U != 0.)
             { // U * n * (n-1)
-                psi_hamterm_t term;
+                psi_hamtagterm_t term;
                 term.with_sign = false;
+                term.scale = U;
                 term.fill_operator = psi_ident;
-                term.operators.push_back( std::make_pair(p, U*psi_interaction) );
+                term.operators.push_back( std::make_pair(p, psi_interaction) );
                 psi_terms.push_back(term);
             }
             
             if (mu != 0.)
             { // mu * n
-                psi_hamterm_t term;
+                hamtagterm_t term;
                 term.with_sign = false;
-                term.fill_operator = psi_ident;
-                term.operators.push_back( std::make_pair(p, mu*psi_count) );
-                psi_terms.push_back(term);
+                term.scale = mu;
+                term.fill_operator = ident;
+                term.operators.push_back( std::make_pair(p, count) );
+                terms.push_back(term);
             }
             if (mu != 0.)
             { // mu * n
-                hamterm_t term;
+                psi_hamtagterm_t term;
                 term.with_sign = false;
-                term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, mu*count) );
-                terms.push_back(term);
+                term.scale = mu;
+                term.fill_operator = psi_ident;
+                term.operators.push_back( std::make_pair(p, psi_count) );
+                psi_terms.push_back(term);
             }
             
             for (int n=0; n<neighs.size(); ++n) { // hopping
@@ -166,19 +214,21 @@ public:
                 if (t != 0.) {
                     for( unsigned i = 0; i < hopops.size(); ++i )
                     {
-                        hamterm_t term;
+                        hamtagterm_t term;
                         term.with_sign = false;
+                        term.scale = -t;
                         term.fill_operator = ident;
-                        term.operators.push_back( std::make_pair(p, -t*hopops[i].first) );
+                        term.operators.push_back( std::make_pair(p, hopops[i].first) );
                         term.operators.push_back( std::make_pair(neighs[n], hopops[i].second) );
                         terms.push_back(term);
                     }
                 }
                 if (t != 0.) {
-                    psi_hamterm_t term;
+                    psi_hamtagterm_t term;
                     term.with_sign = false;
+                    term.scale = -t;
                     term.fill_operator = psi_ident;
-                    term.operators.push_back( std::make_pair(p, -t*psi_create) );
+                    term.operators.push_back( std::make_pair(p, psi_create) );
                     term.operators.push_back( std::make_pair(neighs[n], psi_destroy) );
                     psi_terms.push_back(term);
                 }
@@ -193,14 +243,16 @@ public:
     
     Hamiltonian<Matrix, TwoU1> H () const
     {
-        return ham(phys, ident, terms);
+        std::vector<hamterm_t> terms_ops;
+        return ham(phys, tag_handler->get_op(ident), terms_ops, ident, terms, tag_handler);
     }
     
     Measurements<Matrix, TwoU1> measurements () const
     {
         Measurements<Matrix, TwoU1> meas(Measurements<Matrix, TwoU1>::Densitymatrix);
         typedef DMOverlapMeasurement<Matrix, TwoU1> rho_mterm_t;
-        meas.set_identity(ident);
+        meas.set_identity(tag_handler->get_op(ident));
+        psi_op const& psi_ident_op = psi_tag_handler->get_op(psi_ident);
         
         std::vector<Index<TwoU1> > allowed_blocks = allowed_sectors(lat.size(), phys, this->initc(model), 1);
         
@@ -211,9 +263,9 @@ public:
             term.name = "Density";
             term.type = mterm_t::DMOverlap;
             term.mps_ident = mps_ident;
-            std::vector<std::pair<block_matrix<Matrix, U1>, bool> > ops(1, std::make_pair(psi_count, false));
+            std::vector<std::pair<block_matrix<Matrix, U1>, bool> > ops(1, std::make_pair(psi_tag_handler->get_op(psi_count), false));
             
-            MPO<Matrix, U1> mpo = meas_prepare::average(lat, psi_ident, psi_ident, ops);
+            MPO<Matrix, U1> mpo = meas_prepare::average(lat, psi_ident_op, psi_ident_op, ops);
             term.overlaps_mps.push_back( mpo_to_smps_group(mpo, psi_phys, allowed_blocks) );
             
             meas.add_term(term);
@@ -224,10 +276,10 @@ public:
             term.name = "Local density";
             term.type = mterm_t::DMOverlap;
             term.mps_ident = mps_ident;
-            std::vector<std::pair<block_matrix<Matrix, U1>, bool> > ops(1, std::make_pair(psi_count, false));
+            std::vector<std::pair<block_matrix<Matrix, U1>, bool> > ops(1, std::make_pair(psi_tag_handler->get_op(psi_count), false));
             
             std::pair<std::vector<MPO<Matrix, U1> >, std::vector<std::string> > tmeas;
-            tmeas = meas_prepare::local(lat, psi_ident, psi_ident, ops);
+            tmeas = meas_prepare::local(lat, psi_ident_op, psi_ident_op, ops);
             std::swap(tmeas.second, term.labels);
             
             term.overlaps_mps.reserve(tmeas.first.size());
@@ -243,7 +295,8 @@ public:
             term.type = mterm_t::DMOverlap;
             term.mps_ident = mps_ident;
 
-            psi_ham PsiH(psi_phys, psi_ident, psi_terms);
+            std::vector<psi_hamterm_t> terms_ops;
+            psi_ham PsiH(psi_phys, psi_ident_op, terms_ops, psi_ident, psi_terms, psi_tag_handler);
             MPO<Matrix, U1> mpo = make_mpo(lat.size(), PsiH);
             term.overlaps_mps.push_back( mpo_to_smps_group(mpo, psi_phys, allowed_blocks) );
             
@@ -280,12 +333,13 @@ private:
     
     op_t adjoint_site_term(psi_op h) const
     {
+        psi_op const& psi_ident_op = psi_tag_handler->get_op(psi_ident);
         /// h*rho*1 - 1*rho*h = (1 \otimes h) - (h^T \otimes 1) * rho
         ///                   = rho * (1 \otimes h^T) - (h \otimes 1)
         op_t idh, hid;
-        dm_group_kron(psi_phys, h,         psi_ident, hid);
+        dm_group_kron(psi_phys, h,            psi_ident_op, hid);
         h.transpose_inplace();
-        dm_group_kron(psi_phys, psi_ident, h,         idh);
+        dm_group_kron(psi_phys, psi_ident_op, h,            idh);
         if ( model["RUN_FINITE_T"] )
             return idh;
         else
@@ -294,19 +348,20 @@ private:
         
     std::vector<std::pair<op_t,op_t> > adjoint_bond_term(psi_op h1, psi_op h2) const
     {
+        psi_op const& psi_ident_op = psi_tag_handler->get_op(psi_ident);
         /// 1*rho*h = (h^T \otimes 1) * rho
         ///         = rho * (h \otimes 1)
         op_t h1id, h2id;
-        dm_group_kron(psi_phys, h1, psi_ident, h1id);
-        dm_group_kron(psi_phys, h2, psi_ident, h2id);
+        dm_group_kron(psi_phys, h1, psi_ident_op, h1id);
+        dm_group_kron(psi_phys, h2, psi_ident_op, h2id);
         
         /// h*rho*1 = (1 \otimes h) * rho
         ///         = rho * (1 \otimes h^T)
         op_t idh1, idh2;
         h1.transpose_inplace();
         h2.transpose_inplace();
-        dm_group_kron(psi_phys, psi_ident, h1, idh1);
-        dm_group_kron(psi_phys, psi_ident, h2, idh2);
+        dm_group_kron(psi_phys, psi_ident_op, h1, idh1);
+        dm_group_kron(psi_phys, psi_ident_op, h2, idh2);
         
         std::vector<std::pair<op_t,op_t> > ret; ret.reserve(2);
         ret.push_back( std::make_pair(idh1, idh2) );
@@ -321,13 +376,16 @@ private:
     BaseParameters & model;
     
     Index<U1> psi_phys;
-    psi_op psi_ident, psi_count, psi_interaction, psi_create, psi_destroy;
+    tag_type psi_ident, psi_count, psi_interaction, psi_create, psi_destroy;
     
     Index<TwoU1> phys;
-    op_t ident, count, interaction;
+    tag_type ident, count, interaction;
     
-    std::vector<hamterm_t> terms;
-    std::vector<psi_hamterm_t> psi_terms;
+    table_ptr tag_handler;
+    psi_table_ptr psi_tag_handler;
+    
+    std::vector<hamtagterm_t> terms;
+    std::vector<psi_hamtagterm_t> psi_terms;
 };
 
 
