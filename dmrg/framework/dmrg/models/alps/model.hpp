@@ -262,9 +262,6 @@ public:
                 SiteOperator op1 = boost::get<1>(*tit);
                 SiteOperator op2 = boost::get<2>(*tit);
                 
-//                std::cout << "working with ops " << op1 << " and " << op2 << std::endl;
-                std::cout << "working with ops.names " << simplify_name(op1) << " and " << simplify_name(op2) << std::endl;
-                
                 opmap_const_iterator match1 = operators.find(opkey_type(simplify_name(op1), type_s));
                 if (match1 == operators.end())
                     match1 = register_operator(op1, type_s, parms);
@@ -312,12 +309,6 @@ public:
                 terms.push_back(term);
             }
             
-        }
-        
-        std::cout  << "Operators:" << std::endl;
-        for (opmap_const_iterator it = operators.begin(); it!=operators.end(); ++it) {
-            std::cout << " - " << it->first.first << ", type " << it->first.second << std::endl;
-            std::cout << tag_handler->get_op(it->second);
         }
     }
             
