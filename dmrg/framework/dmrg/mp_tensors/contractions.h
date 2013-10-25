@@ -76,7 +76,7 @@ struct contraction {
     //       each block is transposed
     template<class Matrix, class OtherMatrix, class SymmGroup>
     static Boundary<Matrix, SymmGroup>
-    left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> const & mps,
+    left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                              Boundary<OtherMatrix, SymmGroup> const & left,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
                              Index<SymmGroup> const * in_low = NULL)
@@ -104,7 +104,6 @@ struct contraction {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
         
-        mps.make_left_paired();
         loop_max = mpo.col_dim();
 
         parallel_for(locale::scatter(mpo.placement_r), locale b2 = 0; b2 < loop_max; ++b2) {
@@ -187,7 +186,7 @@ struct contraction {
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
     static Boundary<Matrix, SymmGroup>
-    right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> const & mps,
+    right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                               Boundary<OtherMatrix, SymmGroup> const & right,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
                               Index<SymmGroup> const * in_low = NULL)
@@ -218,7 +217,6 @@ struct contraction {
         Boundary<Matrix, SymmGroup> ret;
         ret.resize(mpo.row_dim());
         
-        mps.make_right_paired();
         loop_max = mpo.row_dim();
 
         parallel_for(locale::scatter(mpo.placement_l), locale b1 = 0; b1 < loop_max; ++b1) {

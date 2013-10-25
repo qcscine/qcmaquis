@@ -72,31 +72,31 @@ std::vector<int> get_right_placement(const MPOTensor<Matrix, SymmGroup>& mpo, co
 }
 
 template<class Matrix, class SymmGroup>
-void construct_placements(const MPO<Matrix, SymmGroup>& mpo){
-    mpo.placements.clear();
-    mpo.placements.resize(mpo.length()+1);
+std::vector<std::vector<int> > construct_placements(const MPO<Matrix, SymmGroup>& mpo){
+    std::vector<std::vector<int> > placements(mpo.length()+1);
     std::vector<std::pair<std::vector<int>, std::vector<int> > > exceptions(mpo.length()+1);
-    mpo.placements[0].push_back(0); // left_[0] has only 1 element
+    placements[0].push_back(0); // left_[0] has only 1 element
     for(int s = 0; s < mpo.length(); s++){
-        mpo.placements[s+1].resize(mpo[s].col_dim(), -1);
+        placements[s+1].resize(mpo[s].col_dim(), -1);
 
-        for(int b1 = 0; b1 < mpo.placements[s].size(); b1++)
-        for(int b2 = 0; b2 < mpo.placements[s+1].size(); b2++){
+        for(int b1 = 0; b1 < placements[s].size(); b1++)
+        for(int b2 = 0; b2 < placements[s+1].size(); b2++){
             if(mpo[s].has(b1,b2)){
-                make_consistent(mpo.placements[s+1], b2, exceptions[s+1].second, mpo.placements[s], b1, exceptions[s].first);
+                make_consistent(placements[s+1], b2, exceptions[s+1].second, placements[s], b1, exceptions[s].first);
             }
         }
-        make_complete(mpo.placements[s+1]);
-        mpo[s].placement_l = mpo.placements[s];
-        mpo[s].placement_r = mpo.placements[s+1];
+        make_complete(placements[s+1]);
+        mpo[s].placement_l = placements[s];
+        mpo[s].placement_r = placements[s+1];
     }
     for(int s = 0; s < mpo.length()+1; s++){
         maquis::cout << "Left " << s << ": ";
         maquis::cout << "E1: "; for(int k = 0; k < exceptions[s].first.size(); k++) maquis::cout << exceptions[s].first[k] << " "; 
         maquis::cout << "; E2: "; for(int k = 0; k < exceptions[s].second.size(); k++) maquis::cout << exceptions[s].second[k] << " ";
-        maquis::cout << "; PL: "; for(int k = 0; k < mpo.placements[s].size(); k++) maquis::cout << mpo.placements[s][k] << " ";
+        maquis::cout << "; PL: "; for(int k = 0; k < placements[s].size(); k++) maquis::cout << placements[s][k] << " ";
         maquis::cout << "\n";
     }
+    return placements;
 }
 
 #endif
