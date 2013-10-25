@@ -125,6 +125,21 @@ int main(int argc, char ** argv)
         std::string boundary_name;
         construct_placements(mpo);
         
+        /// Create TwoSite objects
+        tim_ts_obj.begin();
+        TwoSiteTensor<matrix, grp> tst(mps[site], mps[site+1]);
+        MPSTensor<matrix, grp> ts_mps = tst.make_mps();
+        MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim());
+        if(lr == +1){
+            ts_mpo.placement_l = mpo[site].placement_l;
+            ts_mpo.placement_r = get_right_placement(ts_mpo, mpo[site].placement_l, mpo[site+1].placement_r);
+        }else{
+            ts_mpo.placement_l = get_left_placement(ts_mpo, mpo[site].placement_l, mpo[site+1].placement_r);
+            ts_mpo.placement_r = mpo[site+1].placement_r;
+        }
+        tim_ts_obj.end();
+        maquis::cout << "Two site obj done!\n";
+        
         /// Compute left boundary
         tim_l_boundary.begin();
         Boundary<matrix, grp> left;
@@ -138,6 +153,11 @@ int main(int argc, char ** argv)
             for (size_t i=0; i<site; ++i)
                 left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
         }
+        #ifdef AMBIENT
+        if(exists(chkpfile / boundary_name) || lr == -1)
+            parallel_for(locale::scatter(ts_mpo.placement_l), locale b = 0; b < left.aux_dim(); ++b) 
+                storage::migrate(left[b]);
+        #endif
         tim_l_boundary.end();
         maquis::cout << "Left boundary done!\n";
         
@@ -154,6 +174,11 @@ int main(int argc, char ** argv)
             for (int i=L-1; i>site+1; --i)
                 right = contraction::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
         }
+        #ifdef AMBIENT
+        if(exists(chkpfile / boundary_name) || lr == +1) 
+            parallel_for(locale::scatter(ts_mpo.placement_r), locale b = 0; b < right.aux_dim(); ++b) 
+                storage::migrate(right[b]);
+        #endif
         tim_r_boundary.end();
         maquis::cout << "Right boundary done!\n";
         
@@ -164,25 +189,6 @@ int main(int argc, char ** argv)
             if(lr == +1 && site < L-2 && k == site+2) continue; 
             mps[k].data().clear();
         }
-        
-        /// Create TwoSite objects
-        tim_ts_obj.begin();
-        TwoSiteTensor<matrix, grp> tst(mps[site], mps[site+1]);
-        MPSTensor<matrix, grp> ts_mps = tst.make_mps();
-        MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim());
-        #ifdef AMBIENT
-        if(lr == +1){
-            ts_mpo.placement_l = mpo[site].placement_l;
-            ts_mpo.placement_r = get_right_placement(ts_mpo, mpo[site].placement_l, mpo[site+1].placement_r);
-            parallel_for(locale::scatter(ts_mpo.placement_r), locale b = 0; b < right.aux_dim(); ++b) storage::migrate(right[b]);
-        }else{
-            ts_mpo.placement_l = get_left_placement(ts_mpo, mpo[site].placement_l, mpo[site+1].placement_r);
-            ts_mpo.placement_r = mpo[site+1].placement_r;
-            parallel_for(locale::scatter(ts_mpo.placement_l), locale b = 0; b < left.aux_dim(); ++b) storage::migrate(left[b]);
-        }
-        #endif
-        tim_ts_obj.end();
-        maquis::cout << "Two site obj done!\n";
         
         
         std::vector<MPSTensor<matrix, grp> > ortho_vecs;
