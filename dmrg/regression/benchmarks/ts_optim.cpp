@@ -28,6 +28,7 @@
 #include "dmrg/mp_tensors/ietl_jacobi_davidson.h"
 
 #include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/placement.h"
 
 #include "utils/timings.h"
 
@@ -122,6 +123,7 @@ int main(int argc, char ** argv)
         
 
         std::string boundary_name;
+        construct_placements(mpo);
         
         /// Compute left boundary
         tim_l_boundary.begin();
@@ -168,6 +170,17 @@ int main(int argc, char ** argv)
         TwoSiteTensor<matrix, grp> tst(mps[site], mps[site+1]);
         MPSTensor<matrix, grp> ts_mps = tst.make_mps();
         MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim());
+        #ifdef AMBIENT
+        if(lr == +1){
+            ts_mpo.placement_l = mpo[site].placement_l;
+            ts_mpo.placement_r = get_right_placement(ts_mpo, mpo[site].placement_l, mpo[site+1].placement_r);
+            parallel_for(locale::scatter(ts_mpo.placement_r), locale b = 0; b < right.aux_dim(); ++b) storage::migrate(right[b]);
+        }else{
+            ts_mpo.placement_l = get_left_placement(ts_mpo, mpo[site].placement_l, mpo[site+1].placement_r);
+            ts_mpo.placement_r = mpo[site+1].placement_r;
+            parallel_for(locale::scatter(ts_mpo.placement_l), locale b = 0; b < left.aux_dim(); ++b) storage::migrate(left[b]);
+        }
+        #endif
         tim_ts_obj.end();
         maquis::cout << "Two site obj done!\n";
         
