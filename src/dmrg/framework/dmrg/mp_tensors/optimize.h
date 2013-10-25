@@ -139,7 +139,7 @@ protected:
 
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        construct_placements(mpo);
+        mpo.placements = construct_placements(mpo);
         std::size_t L = mps.length();
         
         left_.resize(mpo.length()+1);
