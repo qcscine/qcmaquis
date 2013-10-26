@@ -20,70 +20,8 @@
 #include <boost/tokenizer.hpp>
 #include <boost/regex.hpp>
 
-#include "model_symm.hpp"
+#include "symm_handler.hpp"
 
-template <class SymmGroup>
-class basis_converter {
-public:
-    typedef short I;
-    typedef typename SymmGroup::charge charge_t;
-    typedef std::size_t size_t;
-    typedef std::pair<charge_t, size_t> coord_t;
-            
-    basis_converter (std::vector<std::pair<std::size_t, std::string> > const & conserved_qn,
-                     alps::SiteBasisDescriptor<I> const & b)
-    : states(alps::site_basis<I>(b))
-    , charges(init_qn_charges<SymmGroup>(conserved_qn, states))
-    , coords_(init_coords<SymmGroup>(conserved_qn, states))
-    { }
-    
-    
-    coord_t coords (alps::site_state<I> const & state) const
-    {
-        if (coords_.find(state) != coords_.end())
-            return coords_.find(state)->second;
-        else
-            throw std::runtime_error("state not found!");
-    }
-    coord_t coords (size_t i) const { return coords(states[i]); }
-
-    charge_t charge (alps::site_state<I> const & state) const
-    {
-        if (coords_.find(state) != coords_.end())
-            return (coords_.find(state)->second).first;
-        else
-            throw std::runtime_error("state not found!");
-    }
-    charge_t charge (size_t i) const { return charge(states[i]); }
-
-    size_t block_size (alps::site_state<I> const & state) const
-    {
-        charge_t c = charge(state);
-        if (charges.find(c) != charges.end())
-            return charges.find(c)->second;
-        else
-            throw std::runtime_error("state not found!");
-    }
-    size_t block_size (size_t i) const { return block_size(states[i]); }
-
-
-    Index<SymmGroup> phys_dim () const
-    {
-        Index<SymmGroup> phys_i;
-        
-        for (typename std::map<charge_t,size_t>::const_iterator it = charges.begin();
-             it != charges.end(); ++it)
-            phys_i.insert( std::make_pair(it->first, it->second) );
-        
-        phys_i.sort();
-        return phys_i;
-    }
-    
-private:
-    alps::site_basis<I> states;
-    std::map<charge_t,size_t> charges;
-    std::map<alps::site_state<I>, coord_t> coords_;
-};
 
 template <class Matrix, class SymmGroup>
 class ALPSModel : public Model<Matrix, SymmGroup>
@@ -94,8 +32,9 @@ class ALPSModel : public Model<Matrix, SymmGroup>
     typedef typename Matrix::value_type value_type;
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
     typedef boost::multi_array<value_type,2> alps_matrix;
+    typedef std::map<std::string, int> qn_map_type;
     
-    typedef typename basis_converter<SymmGroup>::I I;
+    typedef short I;
     typedef alps::graph_helper<> graph_type;
     
     typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
@@ -126,38 +65,41 @@ public:
     , tag_handler(new table_type())
     {
         locale_shared i;
-        // Parsing conserved quantum numbers
-        std::vector<std::string> tmp_qn;
+        
+        symm_basis.resize( alps::maximum_vertex_type(lattice.graph())+1 );
+        
+        /// Parsing conserved quantum numbers
+        std::set<std::string> all_qn;
+        for (int type=0; type<=alps::maximum_vertex_type(lattice.graph()); ++type) {
+            std::set<std::string> type_qn = model.quantum_numbers(type);
+            all_qn.insert(type_qn.begin(), type_qn.end());
+        }
+
         if (parms.defined("CONSERVED_QUANTUMNUMBERS")) {
             boost::char_separator<char> sep(" ,");
             std::string qn_string = parms["CONSERVED_QUANTUMNUMBERS"];
             tokenizer qn_tokens(qn_string, sep);
-            for (tokenizer::iterator it=qn_tokens.begin();
-                 it != qn_tokens.end();
-                 it++)
-            {
-                tmp_qn.push_back(*it);
+            int n=0;
+            for (tokenizer::iterator it=qn_tokens.begin(); it != qn_tokens.end(); it++) {
+                if (parms.defined(*it + "_total")) {
+                    if (all_qn.find(*it) != all_qn.end())
+                        all_conserved_qn.insert( std::make_pair(*it, n++) );
+                    else
+                        throw std::runtime_error("quantumnumber "+(*it)+" not defined in the model.");
+                }
             }
         }
         
-        // Load all possible basis
+        /// Load all possible basis
         for (int type=0; type<=alps::maximum_vertex_type(lattice.graph()); ++type) {
             alps::SiteBasisDescriptor<I> b = model.site_basis(type);
             alps::site_basis<I> states(b);
-            // loop over states
-            
-            // TODO: QN only from type=0 vertex, what if there are more?
-            if (type == 0)
-                for (std::size_t i=0; i<b.size(); ++i)
-                    if (std::find(tmp_qn.begin(), tmp_qn.end(), b[i].name()) != tmp_qn.end())
-                        conserved_qn.push_back( std::make_pair(i, b[i].name()) );
-            
-            converter.push_back(basis_converter<SymmGroup>(conserved_qn, b));
+            symm_basis[type] = symmetric_basis_descriptor<SymmGroup>(b, all_conserved_qn);
             
             op_t ident, fill;
-            for (int i=0; i<states.size(); ++i) {
-                charge c = converter[type].charge(i);
-                size_t bsize = converter[type].block_size(i);
+            for (int i=0; i<symm_basis[type].size(); ++i) {
+                charge c = symm_basis[type].charge(i);
+                size_t bsize = symm_basis[type].block_size(i);
                 // maquis::cout << "Inserting " << c << " for " << states[i] << std::endl;
                 
                 if (!ident.has_block(c, c))
@@ -166,42 +108,20 @@ public:
                 int sign = (alps::is_fermionic(b, states[i])) ? -1 : 1;
                 if (!fill.has_block(c, c))
                     fill.insert_block(Matrix::identity_matrix(bsize), c, c);
-                fill(converter[type].coords(i), converter[type].coords(i)) = sign;
+                fill(symm_basis[type].coords(i), symm_basis[type].coords(i)) = sign;
             }
             operators[opkey_type("ident", type)] = tag_handler->register_op(ident, tag_detail::bosonic);
             operators[opkey_type("fill",  type)] = tag_handler->register_op(fill,  tag_detail::bosonic);
-            
         }
         
         
-        /*
-         {
-         maquis::cout << "BASIS:" << std::endl;
-         alps::SiteBasisDescriptor<I> b = model.site_basis(0);
-         alps::site_basis<I> states(b);
-         for (typename std::map<int, std::vector<typename SymmGroup::charge> >::iterator it=tphys.begin();
-         it != tphys.end();
-         it++) {
-         
-         maquis::cout << "type " << it->first << ":" << std::endl;
-         alps::SiteBasisDescriptor<I> b = model.site_basis(it->first);
-         alps::site_basis<I> states(b);
-         for (int i=0; i<it->second.size(); ++i) {
-         maquis::cout << " " << i << ":" <<  " " << it->second[i] << " " << states[i] << std::endl;
-         }
-         
-         }
-         }
-         */
-        
-        
-        // site_term loop with cache to avoid recomputing matrices
+        /// site_term loop with cache to avoid recomputing matrices
+        std::vector<std::vector<term_descriptor> > site_terms( alps::maximum_vertex_type(lattice.graph())+1 );
         for (graph_type::site_iterator it=lattice.sites().first; it!=lattice.sites().second; ++it) {
             int p = lattice.vertex_index(*it);
             int type = lattice.site_type(*it);
             
-            
-            if (site_terms.find(type) == site_terms.end()) {
+            if (site_terms[type].size() == 0) {
                 typedef std::vector<boost::tuple<alps::expression::Term<value_type>,alps::SiteOperator> > V;
                 V  ops = model.site_term(type).template templated_split<value_type>();
                                                         
@@ -214,7 +134,6 @@ public:
                         site_terms[type].push_back( std::make_pair(boost::get<0>(ops[n]).value(), match->second)  );
                     }
                 }
-                
             }
 
             // All site terms summed into one
@@ -235,10 +154,9 @@ public:
                 term.operators.push_back( std::make_pair(p, match->second) );
                 terms.push_back(term);
             }
-            
         }
         
-        // bond_term loop
+        /// bond terms loop
         for (graph_type::bond_iterator it=lattice.bonds().first; it!=lattice.bonds().second; ++it) {
             int p_s = lattice.source(*it);
             int p_t = lattice.target(*it);
@@ -272,12 +190,7 @@ public:
                 hamtagterm_t term;
                 term.scale = boost::get<0>(*tit).value();
                 term.with_sign = with_sign;
-                if (with_sign)
-                    term.fill_operator = operators[opkey_type("fill", type_s)];
-                else
-                    term.fill_operator = operators[opkey_type("ident", type_s)];
-                
-                
+                term.fill_operator = operators[opkey_type( (with_sign) ? "fill" : "ident", type_s)];
                 
                 {
                     tag_type mytag = match1->second;
@@ -306,7 +219,6 @@ public:
                 
                 terms.push_back(term);
             }
-            
         }
     }
             
@@ -317,10 +229,10 @@ public:
     
     Index<SymmGroup> get_phys() const
     {
-        return converter[0].phys_dim();
+        return symm_basis[0].phys();
     }
     
-    Hamiltonian<Matrix, SymmGroup> H () const
+    Hamiltonian<Matrix, SymmGroup> H() const
     {
         std::vector<typename ham::hamterm_t> terms_ops;
         return ham(get_phys(), get_identity(), terms_ops, operators[opkey_type("ident", 0)], terms, tag_handler);
@@ -328,15 +240,7 @@ public:
     
     typename SymmGroup::charge initc (BaseParameters& parms_) const
     {
-        return init_charge<SymmGroup>(parms_, conserved_qn);
-        /*        	typename SymmGroup::charge c = SymmGroup::IdentityCharge;
-         for (int i=0; i<conserved_qn.size(); ++i) {
-         if (conserved_qn.size() == 1)
-         c = alps::evaluate<double>(static_cast<std::string>(parms[conserved_qn[0].second+"_total"]),parms)*2;
-         else
-         c[i] = alps::evaluate<double>(static_cast<std::string>(parms[conserved_qn[i].second+"_total"]),parms)*2;
-         }
-         return c;*/
+        return init_charge<SymmGroup>(parms_, all_conserved_qn);
     }
     
     block_matrix<Matrix, SymmGroup> get_op(std::string const & name) const
@@ -381,15 +285,15 @@ private:
         for (int i=0; i<m.shape()[0]; ++i) {
             for (int j=0; j<m.shape()[1]; ++j) {
                 if (m[i][j] != 0.) {
-                    charge c_i = converter[type].charge(i);
-                    size_t bsize_i = converter[type].block_size(i);
-                    charge c_j = converter[type].charge(j);
-                    size_t bsize_j = converter[type].block_size(j);
+                    charge c_i = symm_basis[type].charge(i);
+                    size_t bsize_i = symm_basis[type].block_size(i);
+                    charge c_j = symm_basis[type].charge(j);
+                    size_t bsize_j = symm_basis[type].block_size(j);
                     
                     if (!newm.has_block(c_i, c_j))
                         newm.insert_block(Matrix(bsize_i, bsize_j, 0), c_i, c_j);
                     // Notation: going from state i to state j
-                    newm(converter[type].coords(i), converter[type].coords(j)) = m[i][j];
+                    newm(symm_basis[type].coords(i), symm_basis[type].coords(j)) = m[i][j];
                 }
             }
         }
@@ -422,14 +326,12 @@ private:
     alps::model_helper<I> model;
     mutable table_ptr tag_handler;
 
-    std::vector<basis_converter<SymmGroup> > converter;
+    std::vector<symmetric_basis_descriptor<SymmGroup> > symm_basis;
     
     mutable opmap_type operators; // key=<name,type>
 
-    std::map<int, std::vector<term_descriptor> > site_terms;
-    mutable std::map<int, std::vector<typename SymmGroup::charge> > tphys;
     std::vector<hamtagterm_t> terms;
-    std::vector<std::pair<std::size_t, std::string> > conserved_qn;
+    qn_map_type all_conserved_qn;
 };
 
 // Loading Measurements
