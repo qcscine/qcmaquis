@@ -17,23 +17,11 @@
 #include "dmrg/models/ll/ll_models.h"
 #endif
 
-// Definition of init function
-template <class Matrix, class SymmGroup>
-void init_model_parser();
-
 // init MACROS
-#define impl_init_model(MATRIX, SYMMGROUP)														\
-template <>																						\
-void init_model_parser<MATRIX, SYMMGROUP> ()													\
-{																								\
-    Lattice_ptr lat;																			\
-    model_traits<MATRIX, SYMMGROUP>::model_ptr phys_model;                                      \
-	SYMMGROUP::charge initc;																	\
-	BaseParameters parms;																		\
-	model_parser<MATRIX,SYMMGROUP>("", "", parms, lat, phys_model);                             \
-}
-
-
+#define impl_init_model(MATRIX, SYMMGROUP)                                                  \
+template void model_parser<MATRIX,SYMMGROUP>(std::string, std::string,                      \
+                                             BaseParameters &, Lattice_ptr &,               \
+                                             model_traits<MATRIX, SYMMGROUP>::model_ptr &);
 
 // Implementations
 
