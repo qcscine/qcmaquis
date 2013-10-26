@@ -32,7 +32,6 @@ class mytest(apptest.DMRGTestBase):
                             'chkpfile'                   : testname+'.out.ckp.h5',
                             
                             'optimization'               : 'singlesite',
-                            'symmetry'                   : 'u1',
                           },
                 'model': {
                             'LATTICE'                   : 'open square lattice',

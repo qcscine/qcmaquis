@@ -13,7 +13,7 @@ class mytest(apptest.DMRGTestBase):
     
     inputs   = {
                 'parms': {
-                            'nsweeps'                    : 3,
+                            'nsweeps'                    : 2,
                             'nmainsweeps'                : 1,
                             'ngrowsweeps'                : 1,
                             
@@ -22,8 +22,6 @@ class mytest(apptest.DMRGTestBase):
                             'truncation_initial'         : 1e-10,
                             'truncation_final'           : 1e-10,
                             
-                            'ietl_jcd_maxiter'           : 6,
-                            
                             'alpha_initial'              : 0.001,
                             'alpha_main'                 : 1e-6,
                             'alpha_final'                : 0,
@@ -31,20 +29,19 @@ class mytest(apptest.DMRGTestBase):
                             'resultfile'                 : testname+'.out.h5',
                             'chkpfile'                   : testname+'.out.ckp.h5',
                             
-                            'optimization'               : 'singlesite',
+                            'optimization'               : 'twosite',
                           },
                 'model': {
                             'LATTICE'                   : 'open ladder',
                             'L'                         : 6,
 
-                            'MODEL'                     : 'fermion Hubbard',
+                            'MODEL'                     : 'alternative fermion Hubbard',
                             't'                         : 1,
                             "t'"                        : 1,
                             'U'                         : 8,
 
-                            'CONSERVED_QUANTUMNUMBERS'  : 'Nup,Ndown',
-                            'Nup_total'                 : 10,
-                            'Ndown_total'               : 10,
+                            'CONSERVED_QUANTUMNUMBERS'  : 'N',
+                            'N_total'                   : 20,
                             
                             'MEASURE_LOCAL[Local density up]'                   : 'n_up',
                             'MEASURE_LOCAL[Local density down]'                 : 'n_down',
