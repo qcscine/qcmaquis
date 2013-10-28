@@ -59,10 +59,10 @@ add_target(){
     echo " ------------------------------------------------------------------------------------------ "
     echo " $self: configuring"
     echo " ------------------------------------------------------------------------------------------ "
-    [[ $SHARED_FS ]] && mkdir ${ROOT_DIR}/${!target}/${HOST} &> /dev/null
+    [[ $SHARED_FS ]] && mkdir -p ${ROOT_DIR}/_builds/${!target}/${HOST} &> /dev/null
     pushd . &> /dev/null; 
-    mkdir ${ROOT_DIR}/${!target}/${BUILD_NAME} &> /dev/null
-    cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
+    mkdir -p ${ROOT_DIR}/_builds/${!target}/${BUILD_NAME} &> /dev/null
+    cd ${ROOT_DIR}/_builds/${!target}/${BUILD_NAME}
     eval add_${1}
     popd &> /dev/null
     set_state ${1} configure
@@ -73,7 +73,7 @@ remove_target(){
     local target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
     echo " $self: cleaning "
     set_state ${1} void
-    rm -rf ${ROOT_DIR}/${!target}/${BUILD_NAME}
+    rm -rf ${ROOT_DIR}/_builds/${!target}/${BUILD_NAME}
 }
 
 build_target(){
@@ -83,7 +83,7 @@ build_target(){
     echo " $self: building"
     echo " ------------------------------------------------------------------------------------------ "
     pushd . &> /dev/null
-    cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
+    cd ${ROOT_DIR}/_builds/${!target}/${BUILD_NAME}
     make -j6
     popd &> /dev/null
     set_state ${1} build
@@ -96,7 +96,7 @@ install_target(){
     echo " $self: installing"
     echo " ------------------------------------------------------------------------------------------ "
     pushd . &> /dev/null
-    cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
+    cd ${ROOT_DIR}/_builds/${!target}/${BUILD_NAME}
     make install
     popd &> /dev/null
 }
@@ -108,7 +108,7 @@ test_target(){
     echo " $self: testing"
     echo " ------------------------------------------------------------------------------------------ "
     pushd . &> /dev/null
-    cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
+    cd ${ROOT_DIR}/_builds/${!target}/${BUILD_NAME}
     make test
     popd &> /dev/null
 }
@@ -120,7 +120,7 @@ run_target(){
     echo " $self: testing"
     echo " ------------------------------------------------------------------------------------------ "
     pushd . &> /dev/null
-    cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
+    cd ${ROOT_DIR}/_builds/${!target}/${BUILD_NAME}
     make test
     popd &> /dev/null
 }
@@ -132,7 +132,7 @@ dash_target(){
     echo " $self: testing (dashboard)"
     echo " ------------------------------------------------------------------------------------------ "
     pushd . &> /dev/null
-    cd ${ROOT_DIR}/${!target}/${BUILD_NAME}
+    cd ${ROOT_DIR}/_builds/${!target}/${BUILD_NAME}
     ctest -S Dashboards/site.cmake
     popd &> /dev/null
 }
@@ -142,8 +142,8 @@ use_dashboards(){
     local target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
     echo "set(PREDEFINED_CTEST_SITE \"${HOST}\")"                                          >  ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_BUILD_NAME \"${BUILD_NAME}\")"                              >> ./Dashboards/site.cmake
-    echo "set(PREDEFINED_CTEST_SOURCE_DIRECTORY \"${ROOT_DIR}/${!target}\")"               >> ./Dashboards/site.cmake
-    echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${ROOT_DIR}/${!target}/${BUILD_NAME}\")" >> ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_SOURCE_DIRECTORY \"${ROOT_DIR}/_builds/${!target}\")"               >> ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${ROOT_DIR}/_builds/${!target}/${BUILD_NAME}\")" >> ./Dashboards/site.cmake
     cat ${ROOT_DIR}/scripts/common/ctest/site.cmake                                        >> ./Dashboards/site.cmake
     cp  ${ROOT_DIR}/scripts/common/ctest/cmake_common.cmake                                   ./Dashboards/
 }
