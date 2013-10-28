@@ -84,7 +84,7 @@ build_target(){
     echo " ------------------------------------------------------------------------------------------ "
     pushd . &> /dev/null
     cd ${ROOT_DIR}/_builds/${!target}/${BUILD_NAME}
-    make -j6
+    make ts_optim_u1 -j6
     popd &> /dev/null
     set_state ${1} build
 }
