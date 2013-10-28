@@ -314,14 +314,14 @@ namespace ambient { namespace numeric {
                      factor, ai, aj, row.step, col.step);
     }
 
-    template<class M1, class Matrix, class M3>
-    inline void copy_block_sa(const tiles<M1>& in, size_t ii, size_t ij,
-                              tiles<Matrix>& out, size_t oi, size_t oj, 
-                              const tiles<M3>& alfa, size_t ai, size_t aj,
+    template<class Matrix, class MatrixB, class MatrixC>
+    inline void copy_block_sa(const tiles<Matrix>& in, size_t ii, size_t ij,
+                              tiles<MatrixB>& out, size_t oi, size_t oj, 
+                              const tiles<MatrixC>& alfa, size_t ai, size_t aj,
                               size_t m, size_t n, 
                               value_type alfa_scale)
     {
-        const M3& factor = alfa.locate(ai, aj); 
+        const MatrixC& factor = alfa.locate(ai, aj); 
         ai %= AMBIENT_IB; aj %= AMBIENT_IB;
         for(cross_iterator row(oi,ii,m); !row.end(); ++row)
         for(cross_iterator col(oj,ij,n); !col.end(); ++col)
