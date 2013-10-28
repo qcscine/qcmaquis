@@ -84,7 +84,8 @@ build_target(){
     echo " ------------------------------------------------------------------------------------------ "
     pushd . &> /dev/null
     cd ${ROOT_DIR}/_builds/${!target}/${BUILD_NAME}
-    make -j6
+    echo make ${2} -j6
+    make ${2} -j6
     popd &> /dev/null
     set_state ${1} build
 }
@@ -140,12 +141,12 @@ dash_target(){
 use_dashboards(){
     mkdir Dashboards &> /dev/null
     local target="`echo ${1} | tr '[:lower:]' '[:upper:]'`"
-    echo "set(PREDEFINED_CTEST_SITE \"${HOST}\")"                                          >  ./Dashboards/site.cmake
-    echo "set(PREDEFINED_CTEST_BUILD_NAME \"${BUILD_NAME}\")"                              >> ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_SITE \"${HOST}\")"                                                  >  ./Dashboards/site.cmake
+    echo "set(PREDEFINED_CTEST_BUILD_NAME \"${BUILD_NAME}\")"                                      >> ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_SOURCE_DIRECTORY \"${ROOT_DIR}/_builds/${!target}\")"               >> ./Dashboards/site.cmake
     echo "set(PREDEFINED_CTEST_BINARY_DIRECTORY \"${ROOT_DIR}/_builds/${!target}/${BUILD_NAME}\")" >> ./Dashboards/site.cmake
-    cat ${ROOT_DIR}/scripts/common/ctest/site.cmake                                        >> ./Dashboards/site.cmake
-    cp  ${ROOT_DIR}/scripts/common/ctest/cmake_common.cmake                                   ./Dashboards/
+    cat ${ROOT_DIR}/scripts/common/ctest/site.cmake                                                >> ./Dashboards/site.cmake
+    cp  ${ROOT_DIR}/scripts/common/ctest/cmake_common.cmake                                           ./Dashboards/
 }
 
 ## auxiliary functions ##
@@ -170,8 +171,8 @@ lookup(){
     then
         target=`basename $target`
         local i; for i in $TARGETS; do
-            if [ -d ${ROOT_DIR}/${i}/${BUILD_NAME} ]; then
-                local result=`find ${ROOT_DIR}/${i}/${BUILD_NAME} -name $target -type f -executable -print`
+            if [ -d ${ROOT_DIR}/_builds/${i}/${BUILD_NAME} ]; then
+                local result=`find ${ROOT_DIR}/_builds/${i}/${BUILD_NAME} -name $target -type f -executable -print`
                 [[ -n $result ]] && value=$result
             fi
         done
@@ -265,7 +266,7 @@ function build(){
     [[ "$state" == "void" ]] && configure ${1}
     if [ -n "${1}" ]
     then
-        build_target ${1}
+        build_target ${1} ${2}
     else
         echo " $SELF ($state): building source tree          "
         build_target ambient
@@ -413,6 +414,8 @@ function execute(){
 
         if [ "$action" == "run" ]; then
             run ${*:2}
+        elif [ "$action" == "build" ]; then
+            build ${*:2}
         else
             local i; for i in ${*:2}""; do
                 check_state ${i} # safe check
