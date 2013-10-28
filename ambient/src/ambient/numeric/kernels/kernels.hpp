@@ -221,7 +221,7 @@ namespace ambient { namespace numeric { namespace kernels {
         static void c(const matrix<T,A1>& src, const size_t& si, const size_t& sj,
                       matrix<T,A2>& dst, const size_t& di, const size_t& dj, 
                       const matrix<T,A3>& alfa, const size_t& ai, const size_t& aj,
-                      const size_t& m, const size_t& n);
+                      const size_t& m, const size_t& n, const T& alfa_scale);
     };
        
     template<typename T>
@@ -493,9 +493,9 @@ namespace ambient { namespace numeric { namespace kernels {
     void copy_block_sa<A1,A2,A3,T>::c(const matrix<T,A1>& src, const size_t& si, const size_t& sj,
                                       matrix<T,A2>& dst, const size_t& di, const size_t& dj, 
                                       const matrix<T,A3>& alfa, const size_t& ai, const size_t& aj,
-                                      const size_t& m, const size_t& n)
+                                      const size_t& m, const size_t& n, const T& alfa_scale)
     {
-        T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
+        T factor = alfa_scale * ((T*)current(alfa))[ai + aj*alfa.num_rows()];
         ambient::memptf<T, ambient::memscala>(revised(dst), dst.num_rows(), dim2(dj, di), 
                                               current(src), src.num_rows(), dim2(sj, si), 
                                               dim2( n, m ), factor);

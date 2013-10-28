@@ -30,12 +30,10 @@ struct hf_mps_init : public mps_initializer<Matrix, TwoU1>
 
         std::vector<std::size_t> hf_init = model["hf_occ"];
 
-        std::vector<pos_t> order(mps.length());
+        std::vector<pos_t> order = !model.is_set("orbital_order") ? std::vector<pos_t>(mps.length()) : model["orbital_order"];
         if (!model.is_set("orbital_order"))
             for (pos_t p = 0; p < mps.length(); ++p)
                 order[p] = p;
-        else
-            order = model["orbital_order"];
 
         std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
 

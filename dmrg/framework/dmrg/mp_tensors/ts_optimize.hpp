@@ -41,15 +41,8 @@ public:
                 int initial_site_ = 0)
     : base(mps_, mpo_, parms_, stop_callback_, initial_sweep_, initial_site_)
     {
-        /// cache twosite mpo
+        locale_shared l; // cache twosite mpo
         make_ts_cache_mpo(mpo, ts_cache_mpo, mps[0].site_dim());
-        
-        #ifdef AMBIENT
-            for(int i = 0; i < ts_cache_mpo.length(); ++i)
-                for(typename MPOTensor<Matrix, SymmGroup>::data_t::const_iterator it = ts_cache_mpo[i].data().begin(); it != ts_cache_mpo[i].data().end(); ++it)
-                    for(size_t k = 0; k < (it->second).n_blocks(); k++)
-                        ambient::make_persistent((it->second)[k]);
-        #endif
     }
 
     void sweep(int sweep, OptimizeDirection d = Both)

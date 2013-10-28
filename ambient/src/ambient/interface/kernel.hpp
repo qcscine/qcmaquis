@@ -125,6 +125,10 @@ namespace ambient {
         static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 , T8 &arg8 , T9 &arg9, T10 &arg10 ){
             inliner::template latch<O>(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0) , info<T1>::template unfold<typename inliner::t1>(arg1) , info<T2>::template unfold<typename inliner::t2>(arg2) , info<T3>::template unfold<typename inliner::t3>(arg3) , info<T4>::template unfold<typename inliner::t4>(arg4) , info<T5>::template unfold<typename inliner::t5>(arg5) , info<T6>::template unfold<typename inliner::t6>(arg6) , info<T7>::template unfold<typename inliner::t7>(arg7) , info<T8>::template unfold<typename inliner::t8>(arg8) , info<T9>::template unfold<typename inliner::t9>(arg9), info<T10>::template unfold<typename inliner::t10>(arg10) );
         }
+        template <complexity O, class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 , class T7 , class T8 , class T9, class T10, class T11 >
+        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 , T8 &arg8 , T9 &arg9, T10 &arg10, T11 &arg11 ){
+            inliner::template latch<O>(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0) , info<T1>::template unfold<typename inliner::t1>(arg1) , info<T2>::template unfold<typename inliner::t2>(arg2) , info<T3>::template unfold<typename inliner::t3>(arg3) , info<T4>::template unfold<typename inliner::t4>(arg4) , info<T5>::template unfold<typename inliner::t5>(arg5) , info<T6>::template unfold<typename inliner::t6>(arg6) , info<T7>::template unfold<typename inliner::t7>(arg7) , info<T8>::template unfold<typename inliner::t8>(arg8) , info<T9>::template unfold<typename inliner::t9>(arg9), info<T10>::template unfold<typename inliner::t10>(arg10), info<T11>::template unfold<typename inliner::t11>(arg11) );
+        }
         #undef inliner
     };
 }

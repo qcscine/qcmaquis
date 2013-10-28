@@ -36,22 +36,28 @@ namespace tag_detail {
     bool is_uniform(block_matrix<Matrix, SymmGroup> const& op)
     {
         typename Matrix::value_type invscale;
+        {
+            locale_shared l;
+            for(int i = 0; i < op.n_blocks(); ++i) ambient::migrate(op[i]);
+            ambient::sync();
+        }
 
         // determine scale of matrices
-        typename Matrix::const_element_iterator it = op[0].elements().first;
-        for ( ; it != op[0].elements().second; ++it)
-            if (std::abs(*it) > 1.e-20) {
-                invscale = 1./(*it);
+        const Matrix& m = op[0];
+        for (int i = 0; i < num_rows(m); i++)
+           for(int j = 0; j < num_cols(m); j++)
+            if (std::abs(m(i,j)) > 1.e-20) {
+                invscale = 1./m(i,j);
                 break;
             }
 
-        assert( it != op[0].elements().second );
-
         for (typename Matrix::size_type b=0; b < op.n_blocks(); ++b)
         {
-            typename Matrix::const_element_iterator it = op[b].elements().first;
-            for ( ; it != op[b].elements().second; ++it) {
-                typename Matrix::value_type normalized = std::abs(*it * invscale);
+            const Matrix& m = op[b];
+            for (int i = 0; i < num_rows(m); i++)
+               for(int j = 0; j < num_cols(m); j++)
+            {
+                typename Matrix::value_type normalized = std::abs(m(i,j) * invscale);
                 // if not 1 and not 0
                 if (std::abs(normalized-1.0) > 1e-15 && normalized > 1e-15)
                     return false;
@@ -75,36 +81,49 @@ namespace tag_detail {
     equal(block_matrix<Matrix, SymmGroup> const& reference,
           block_matrix<Matrix, SymmGroup> const& sample)
     {
+        {
+            locale_shared l;
+            for(int i = 0; i < reference.n_blocks(); ++i) ambient::migrate(reference[i]);
+            for(int i = 0; i < sample.n_blocks(); ++i) ambient::migrate(sample[i]);
+            ambient::sync();
+        }
         if (reference.left_basis() != sample.left_basis() || reference.right_basis() != sample.right_basis())
             return std::make_pair(false, 0.);
 
         typename Matrix::value_type invscale1, invscale2;
      
         // determine scale of matrices
-        typename Matrix::const_element_iterator it1 = reference[0].elements().first;
-        for ( ; it1 != reference[0].elements().second; ++it1)
-            if (std::abs(*it1) > 1.e-50) {
-                invscale1 = 1./(*it1);
+        const Matrix& m1 = reference[0];
+        for (int i = 0; i < num_rows(m1); i++)
+           for(int j = 0; j < num_cols(m1); j++)
+        {
+            if (std::abs(m1(i,j)) > 1.e-50) {
+                invscale1 = 1./m1(i,j);
                 break;
             }
-        if (it1 == reference[0].elements().second) { return std::make_pair(false, 0.); }
+            if(i == (num_rows(m1)-1) && j == (num_cols(m1)-1)){ return std::make_pair(false, 0.); }
+        }
 
-        typename Matrix::const_element_iterator it2 = sample[0].elements().first;
-        for ( ; it2 != sample[0].elements().second; ++it2)
-            if (std::abs(*it2) > 1.e-50) {
-                invscale2 = 1./(*it2);
+        const Matrix& m2 = sample[0];
+        for (int i = 0; i < num_rows(m2); i++)
+           for(int j = 0; j < num_cols(m2); j++)
+        {
+            if (std::abs(m2(i,j)) > 1.e-50) {
+                invscale2 = 1./m2(i,j);
                 break;
             }
-        if (it2 == sample[0].elements().second) { return std::make_pair(false, 0.); }
+            if(i == (num_rows(m2)-1) && j == (num_cols(m2)-1)){ return std::make_pair(false, 0.); }
+        }
 
         // Check all blocks for equality modulo scale factor
         for (typename Matrix::size_type b=0; b < reference.n_blocks(); ++b)
         {
-            typename Matrix::const_element_iterator it1 = reference[b].elements().first,
-                                                    it2 = sample[b].elements().first;
-            for ( ; it1 != reference[b].elements().second; ++it1, ++it2)
+            const Matrix& mb1 = reference[b];
+            const Matrix& mb2 = sample[b];
+            for (int i = 0; i < num_rows(mb1); i++)
+               for(int j = 0; j < num_cols(mb1); j++)
             {
-                typename Matrix::value_type t1 = *it1 * invscale1, t2 = *it2 * invscale2;
+                typename Matrix::value_type t1 = mb1(i,j) * invscale1, t2 = mb2(i,j) * invscale2;
                 if (std::abs(t1 - t2) > 1e-12)
                     return std::make_pair(false, 0.);
             }

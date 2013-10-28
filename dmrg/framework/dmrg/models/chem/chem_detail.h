@@ -182,7 +182,9 @@ namespace chem_detail {
         void parse_integrals(BaseParameters & parms, Lattice const & lat) {
 
             // load ordering and determine inverse ordering
-            order = parms["orbital_order"];
+            std::vector<int> otmp = parms["orbital_order"];
+            order = otmp;
+
             if (order.size() != lat.size())
                 throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
 
@@ -191,9 +193,9 @@ namespace chem_detail {
             for (int p = 0; p < order.size(); ++p)
                 inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
 
-            std::copy(order.begin(), order.end(), std::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
+            std::copy(order.begin(), order.end(), std::ostream_iterator<Lattice::pos_t>(std::cout, " "));
             maquis::cout << std::endl;
-            std::copy(inv_order.begin(), inv_order.end(), std::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
+            std::copy(inv_order.begin(), inv_order.end(), std::ostream_iterator<Lattice::pos_t>(std::cout, " "));
             maquis::cout << std::endl;
 
             // ********************************************************************

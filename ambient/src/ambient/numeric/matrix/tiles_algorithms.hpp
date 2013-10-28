@@ -314,11 +314,12 @@ namespace ambient { namespace numeric {
                      factor, ai, aj, row.step, col.step);
     }
 
-    template<class M1, class M2, class M3>
+    template<class M1, class Matrix, class M3>
     inline void copy_block_sa(const tiles<M1>& in, size_t ii, size_t ij,
-                              tiles<M2>& out, size_t oi, size_t oj, 
+                              tiles<Matrix>& out, size_t oi, size_t oj, 
                               const tiles<M3>& alfa, size_t ai, size_t aj,
-                              size_t m, size_t n)
+                              size_t m, size_t n, 
+                              value_type alfa_scale)
     {
         const M3& factor = alfa.locate(ai, aj); 
         ai %= AMBIENT_IB; aj %= AMBIENT_IB;
@@ -326,7 +327,7 @@ namespace ambient { namespace numeric {
         for(cross_iterator col(oj,ij,n); !col.end(); ++col)
         copy_block_sa(in.locate(row.second, col.second), row.second%AMBIENT_IB, col.second%AMBIENT_IB,
                       out.locate(row.first, col.first), row.first%AMBIENT_IB, col.first%AMBIENT_IB, 
-                      factor, ai, aj, row.step, col.step);
+                      factor, ai, aj, row.step, col.step, alfa_scale);
     }
 
     template<class MatrixA, class MatrixB, class MatrixC>

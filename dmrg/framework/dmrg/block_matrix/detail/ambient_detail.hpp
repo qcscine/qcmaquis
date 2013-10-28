@@ -94,26 +94,26 @@ namespace maquis { namespace dmrg { namespace detail {
                    ldim, rdim);
     }
     
-    template <class M1, class M2, class M3>
-    inline void lb_tensor_mpo(ambient::numeric::tiles<M1>& out, const ambient::numeric::tiles<M2>& in, const ambient::numeric::tiles<M3>& alfa,
-                              size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    template <class M1, class M, class M3>
+    inline void lb_tensor_mpo_tag(ambient::numeric::tiles<M1>& out, const ambient::numeric::tiles<M>& in, const ambient::numeric::tiles<M3>& alfa,
+                                  size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim, value_type alfa_scale)
     {
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
         copy_block_sa(in, in_offset + ss1*ldim, 0,
                       out, out_offset + ss2*ldim, 0,
-                      alfa, ss1, ss2, ldim, rdim);
+                      alfa, ss1, ss2, ldim, rdim, alfa_scale);
     }
     
-    template <class M1, class M2, class M3>
-    inline void rb_tensor_mpo(ambient::numeric::tiles<M1>& out, const ambient::numeric::tiles<M2>& in, const ambient::numeric::tiles<M3>& alfa,
-                              size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    template <class M1, class M, class M3>
+    inline void rb_tensor_mpo_tag(ambient::numeric::tiles<M1>& out, const ambient::numeric::tiles<M>& in, const ambient::numeric::tiles<M3>& alfa,
+                              size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim, value_type alfa_scale)
     {
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
         copy_block_sa(in, 0, in_offset + ss1*rdim,
                       out, 0, out_offset + ss2*rdim,
-                      alfa, ss1, ss2, ldim, rdim);
+                      alfa, ss1, ss2, ldim, rdim, alfa_scale);
     }
     
     template <class M1, class M2, class M3>
@@ -132,7 +132,7 @@ namespace maquis { namespace dmrg { namespace detail {
         copy_block_sa(in,   in_y_offset + ilp*ldim,           in_x_offset + irp*rdim,
                       out,  out_y_offset + lp*ldim,           out_x_offset + rp*rdim,
                       alfa, alfa_y_offset + ilp*irpdim + irp, alfa_x_offset + lp*rpdim + rp, 
-                      ldim, rdim);
+                      ldim, rdim, 1.0);
     }
    
     template<class M, class SymmGroup>
