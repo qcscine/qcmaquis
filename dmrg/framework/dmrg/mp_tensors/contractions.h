@@ -74,7 +74,7 @@ struct contraction {
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
-    lbtm_kernel(locale b2,
+    lbtm_kernel(size_t b2,
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
                 MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -165,7 +165,7 @@ struct contraction {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
-    rbtm_kernel(locale b1,
+    rbtm_kernel(size_t b1,
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
                 MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -409,7 +409,7 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         size_t loop_max = left.aux_dim();
 
-        parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b) {
+        parallel_for(locale::scatter(mpo.placement_l), locale b = 0; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(left[b]), ket_tensor.data(), tmp);
             reshape_right_to_left_new<Matrix>(ket_tensor.site_dim(), left[b].right_basis(), ket_tensor.col_dim(),
@@ -425,10 +425,6 @@ struct contraction {
         ket_tensor.make_left_paired();
         loop_max = mpo.col_dim();
                     
-#ifndef AMBIENT 
-
-        // Merge the blocks immediately into the return tensor. Requires synchronized access to ret,
-        // which could be made less expensive by locking only the respective block of ret instead of the whole tensor
         parallel_for(locale::scatter(mpo.placement_r), locale b2 = 0; b2 < loop_max; ++b2) {
 
             block_matrix<Matrix, SymmGroup> contr_column = lbtm_kernel(b2, left, t, mpo, physical_i,
@@ -441,23 +437,6 @@ struct contraction {
             for (size_t k = 0; k < tmp.n_blocks(); ++k)
                 ret.data().match_and_add_block(tmp[k], tmp.left_basis()[k].first, tmp.right_basis()[k].first);
         }
-#else
-        // Use an additional temporary boundary. Uses about 1.5 - 2.0 times more memory for long/large boundaries
-        std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max);
-
-        parallel_for(locale::scatter(mpo.placement_r), locale b2 = 0; b2 < loop_max; ++b2) {
-            block_matrix<Matrix, SymmGroup> contr_column = lbtm_kernel(b2, left, t, mpo, physical_i,
-                                                                       left_i, right_i, out_left_i, out_left_pb);
-            gemm(contr_column, right[b2], oblocks[b2]);
-        }
-
-        semi_parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b){
-            for (size_t k = 0; k < oblocks[b].n_blocks(); ++k)
-                ret.data().match_and_add_block(oblocks[b][k],
-                                               oblocks[b].left_basis()[k].first,
-                                               oblocks[b].right_basis()[k].first);
-        }
-#endif
 
         ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
         return ret;
