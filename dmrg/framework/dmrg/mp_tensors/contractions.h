@@ -425,6 +425,10 @@ struct contraction {
         ket_tensor.make_left_paired();
         loop_max = mpo.col_dim();
                     
+#ifndef AMBIENT 
+
+        // Merge the blocks immediately into the return tensor. Requires synchronized access to ret,
+        // which could be made less expensive by locking only the respective block of ret instead of the whole tensor
         parallel_for(locale::scatter(mpo.placement_r), locale b2 = 0; b2 < loop_max; ++b2) {
 
             block_matrix<Matrix, SymmGroup> contr_column = lbtm_kernel(b2, left, t, mpo, physical_i,
@@ -437,8 +441,24 @@ struct contraction {
             for (size_t k = 0; k < tmp.n_blocks(); ++k)
                 ret.data().match_and_add_block(tmp[k], tmp.left_basis()[k].first, tmp.right_basis()[k].first);
         }
+#else
+        // Use an additional temporary boundary. Uses about 1.5 - 2.0 times more memory for long/large boundaries
+        std::vector<block_matrix<Matrix, SymmGroup> > oblocks(loop_max);
 
-        //MPSTensor<Matrix, SymmGroup> ret(ket_tensor.site_dim(), ket_tensor.row_dim(), ket_tensor.col_dim(), collector);
+        parallel_for(locale::scatter(mpo.placement_r), locale b2 = 0; b2 < loop_max; ++b2) {
+            block_matrix<Matrix, SymmGroup> contr_column = lbtm_kernel(b2, left, t, mpo, physical_i,
+                                                                       left_i, right_i, out_left_i, out_left_pb);
+            gemm(contr_column, right[b2], oblocks[b2]);
+        }
+
+        semi_parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b){
+            for (size_t k = 0; k < oblocks[b].n_blocks(); ++k)
+                ret.data().match_and_add_block(oblocks[b][k],
+                                               oblocks[b].left_basis()[k].first,
+                                               oblocks[b].right_basis()[k].first);
+        }
+#endif
+
         ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
         return ret;
     }
