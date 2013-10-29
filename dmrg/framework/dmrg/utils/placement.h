@@ -101,4 +101,3 @@ std::vector<std::vector<int> > construct_placements(const MPO<Matrix, SymmGroup>
 
 #endif
 
-
