@@ -95,8 +95,8 @@ namespace maquis { namespace dmrg { namespace detail {
     }
     
     template <class M, class M2, class M3>
-    inline void lb_tensor_mpo_tag(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M2>& in, const ambient::numeric::tiles<M3>& alfa,
-                                  size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim, value_type alfa_scale)
+    inline void lb_tensor_mpo(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M2>& in, const ambient::numeric::tiles<M3>& alfa,
+                              size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim, value_type alfa_scale)
     {
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
@@ -106,7 +106,7 @@ namespace maquis { namespace dmrg { namespace detail {
     }
     
     template <class M, class M2, class M3>
-    inline void rb_tensor_mpo_tag(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M2>& in, const ambient::numeric::tiles<M3>& alfa,
+    inline void rb_tensor_mpo(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M2>& in, const ambient::numeric::tiles<M3>& alfa,
                               size_t out_offset, size_t in_offset, size_t sdim1, size_t sdim2, size_t ldim, size_t rdim, value_type alfa_scale)
     {
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2)

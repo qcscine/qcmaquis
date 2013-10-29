@@ -46,7 +46,6 @@ public:
             Sqrt = sqrt(S);
             gemm(U, Sqrt, left);
             gemm(Sqrt, V, right);
-            //maquis::cout << "Sqrt: " << Sqrt[0] << ", " << Sqrt[1] << ", " << Sqrt[2] << std::endl;
             
             maquis::cout << "MPO bond truncation: " << bond_indices[p+1].sum_of_sizes() << " -> ";
             replace_pair(left, right, p);
@@ -309,10 +308,6 @@ private:
                                                                std::make_pair(rc, visited_c_basis[rc]));
                         
                         if (std::abs(val) > 1e-40) {
-                            //block_matrix<Matrix, SymmGroup> & block = (*this)[p](r,c);
-                            //charge blc = phys_i[ls].first, brc = phys_i[rs].first;
-                            //block.insert_block(Matrix(1, 1, val), blc, brc);
-
                             block_matrix<Matrix, SymmGroup> block;
                             charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             if ( (*this)[p].has(r,c) )
@@ -353,10 +348,6 @@ private:
                                                                 std::make_pair(rc, outc));
                         
                         if (std::abs(val) > 1e-40) {
-                            //block_matrix<Matrix, SymmGroup> & block = (*this)[p+1](r,c);
-                            //charge blc = phys_i[ls].first, brc = phys_i[rs].first;
-                            //block.insert_block(Matrix(1, 1, val), blc, brc);
-
                             block_matrix<Matrix, SymmGroup> block;
                             charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             if ( (*this)[p+1].has(r,c) )

@@ -27,6 +27,7 @@
 #include "dmrg/utils/results_collector.h"
 #include "dmrg/utils/storage.h"
 #include "dmrg/utils/time_limit_exception.h"
+#include "dmrg/utils/placement.h"
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem
@@ -138,6 +139,7 @@ protected:
 
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
+        construct_placements(mpo);
         std::size_t L = mps.length();
         
         left_.resize(mpo.length()+1);

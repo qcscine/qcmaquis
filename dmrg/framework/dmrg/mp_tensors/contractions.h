@@ -146,8 +146,9 @@ struct contraction {
                                 Matrix const & iblock = T(T_l_charge, T_r_charge);
                                 Matrix & oblock = ret(out_l_charge, out_r_charge);
                                 
-                                maquis::dmrg::detail::lb_tensor_mpo_tag(oblock, iblock, wblock, out_left_offset, in_left_offset,
-                                            physical_i[s1].second, physical_i[s2].second, left_i[l].second, right_i[r].second, access.scale);
+                                maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock, out_left_offset, in_left_offset,
+                                                                    physical_i[s1].second, physical_i[s2].second, left_i[l].second, 
+                                                                    right_i[r].second, access.scale);
                             }
                             
                             if (pretend)
@@ -235,7 +236,7 @@ struct contraction {
                                 const Matrix & iblock = T(T_l_charge, T_r_charge);
                                 Matrix & oblock = ret(out_l_charge, out_r_charge);
 
-                                maquis::dmrg::detail::rb_tensor_mpo_tag (oblock, iblock, wblock, out_right_offset, in_right_offset, 
+                                maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock, out_right_offset, in_right_offset, 
                                                                     physical_i[s1].second, physical_i[s2].second,
                                                                     left_i[l].second, right_i[r].second, access.scale);
                             }
@@ -360,10 +361,6 @@ struct contraction {
         ambient::overseer::log::region("serial::continue");
         #endif
 
-        #ifdef AMBIENT
-        lbtm.print_distribution();
-        #endif
-
         return lbtm;
     }
     
@@ -392,10 +389,6 @@ struct contraction {
         ambient::overseer::log::region("serial::continue");
         #endif
 
-        #ifdef AMBIENT
-        rbtm.print_distribution();
-        #endif
-       
         return rbtm;
     }
     
@@ -449,7 +442,6 @@ struct contraction {
         ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
         return ret;
     }
-        
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
     static MPSTensor<Matrix, SymmGroup>
