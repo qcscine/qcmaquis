@@ -8,7 +8,7 @@
  *****************************************************************************/
 
 #ifndef MPS_INIT_HF_HPP
-#define MPD_INIT_HF_HPP
+#define MPS_INIT_HF_HPP
 
 #include "dmrg/mp_tensors/compression.h"
 

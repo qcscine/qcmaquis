@@ -81,11 +81,13 @@ struct contraction {
                              MPOTensor<Matrix, SymmGroup> const & mpo,
                              Index<SymmGroup> const * in_low = NULL)
     {
+        typedef typename SymmGroup::charge charge;
+        typedef std::size_t size_t;
+
         if (in_low == NULL)
             in_low = &mps.row_dim();
         
         mps.make_right_paired();
-        
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         size_t loop_max = left.aux_dim();
 
@@ -101,9 +103,6 @@ struct contraction {
         Boundary<Matrix, SymmGroup> ret;
         ret.resize(mpo.col_dim());
 
-        typedef typename SymmGroup::charge charge;
-        typedef std::size_t size_t;
-        
         loop_max = mpo.col_dim();
 
         parallel_for(locale::scatter(mpo.placement_r), locale b2 = 0; b2 < loop_max; ++b2) {
@@ -191,29 +190,27 @@ struct contraction {
                               MPOTensor<Matrix, SymmGroup> const & mpo,
                               Index<SymmGroup> const * in_low = NULL)
     {
+        typedef typename SymmGroup::charge charge;
+        typedef std::size_t size_t;
+
         if (in_low == NULL)
             in_low = &mps.col_dim();
         
         mps.make_left_paired();
-        
         std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
         size_t loop_max = right.aux_dim();
 
         parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b){
-            gemm(mps.data(), right[b], t[b]);
             block_matrix<Matrix, SymmGroup> tmp;
+            gemm(mps.data(), right[b], t[b]);
             reshape_left_to_right_new<Matrix>(mps.site_dim(), mps.row_dim(), right[b].right_basis(), t[b], tmp);
             swap(t[b], tmp);
         }
-
-        typedef typename SymmGroup::charge charge;
-        typedef std::size_t size_t;
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low;
         ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
                                              boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                                  -boost::lambda::_1, boost::lambda::_2));
-        
         Boundary<Matrix, SymmGroup> ret;
         ret.resize(mpo.row_dim());
         
@@ -343,10 +340,10 @@ struct contraction {
         Boundary<OtherMatrix, SymmGroup> ret;
         ret.resize(mpo.row_dim());
         std::size_t loop_max = mpo.row_dim();
-        
-        block_matrix<Matrix, SymmGroup> t = conjugate(bra_tensor.data());
+
+        block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
         parallel_for(locale::scatter(mpo.placement_l), locale b = 0; b < loop_max; ++b){
-            gemm(rbtm[b], transpose(t), ret[b]);
+            gemm(rbtm[b], transpose(bra_conj), ret[b]);
         }
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("serial::continue");
@@ -362,13 +359,14 @@ struct contraction {
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        typedef typename SymmGroup::charge charge;
+        typedef std::size_t size_t;
+
         Boundary<Matrix, SymmGroup> left_mpo_mps = left_boundary_tensor_mpo(ket_tensor, left, mpo);
         MPSTensor<Matrix, SymmGroup> ret = ket_tensor;
         ret.multiply_by_scalar(0);
         ret.make_left_paired();
         
-        typedef typename SymmGroup::charge charge;
-        typedef std::size_t size_t;
         
         size_t loop_max = mpo.col_dim();
        
