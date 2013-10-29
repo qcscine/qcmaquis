@@ -2,8 +2,8 @@
  *
  * MAQUIS DMRG Project
  *
- * Copyright (C) 2011-2011 by Bela Bauer <bauerb@phys.ethz.ch> 
- *			      Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2013-2013 by Bela Bauer <bauerb@phys.ethz.ch> 
+ *	                          Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  *****************************************************************************/
 
@@ -72,7 +72,7 @@ public:
         for (; _site < 2*L-2; ++_site) {
 	/* (0,1), (1,2), ... , (L-1,L), (L-1,L), (L-2, L-1), ... , (0,1)
 	    | |                        |
-       site 1 |                        |
+       site 1                      |
 	      |         left to right  | right to left, lr = -1
 	      site 2                   |                               */
 
@@ -204,6 +204,9 @@ public:
                 maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site2 < L-1) mps[site2+1].multiply_from_left(t);
 
+                if (site1 != L-2)
+                    Storage::drop(right_[site2+1]);
+
                 this->boundary_left_step(mpo, site1); // creating left_[site2]
 
                 if (site1 != L-2){ 
@@ -216,7 +219,6 @@ public:
                     }
                     Storage::evict(mps[site1]);
                     Storage::evict(left_[site1]);
-                    Storage::drop(right_[site2+1]);
                 }
                 #ifdef AMBIENT
                 { locale::compact(L); locale l(site1); storage::migrate(mps[site1]); }
@@ -242,6 +244,9 @@ public:
                 maquis::cout << "Propagating t with norm " << t.norm() << std::endl;
         		if (site1 > 0) mps[site1-1].multiply_from_right(t);
 
+                if(site1 != 0)
+                    Storage::drop(left_[site1]);
+
                 this->boundary_right_step(mpo, site2); // creating right_[site2]
 
                 if(site1 != 0){
@@ -254,7 +259,6 @@ public:
                     }
                     Storage::evict(mps[site2]);
                     Storage::evict(right_[site2+1]); 
-                    Storage::drop(left_[site1]);
                 }
                 #ifdef AMBIENT
                 { locale::compact(L); locale l(site1); storage::migrate(mps[site1]); }

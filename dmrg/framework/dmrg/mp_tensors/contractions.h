@@ -300,8 +300,6 @@ struct contraction {
         return ret;
     }
     
-    
-    
     template<class Matrix, class OtherMatrix, class SymmGroup>
     static Boundary<OtherMatrix, SymmGroup>
     overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
