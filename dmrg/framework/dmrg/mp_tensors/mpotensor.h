@@ -100,6 +100,8 @@ private:
     index_type left_i, right_i;
 };
 
+// TODO: add swap
+
 #include "dmrg/mp_tensors/mpotensor.hpp"
 
 

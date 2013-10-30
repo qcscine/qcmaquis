@@ -293,7 +293,8 @@ public:
             using generate_mpo::rcdim;
             boost::tie(nrows, ncols) = rcdim(prempo[p]);
             MPOTensor<Matrix, SymmGroup> tmp(nrows, ncols, prempo[p], op_table);
-            std::swap(mpo[p], tmp);
+            using std::swap;
+            swap(mpo[p], tmp);
         }
         
         return mpo;
@@ -400,7 +401,8 @@ MPO<Matrix, SymmGroup> make_exp_mpo(std::size_t length,
         
         MPO<Matrix, SymmGroup> block_mpo = maker.exp_mpo(alpha, op_table);
         for (size_t p=0; p<pos2-pos1+1; ++p) {
-            std::swap(mpo[pos1+p], block_mpo[p]);
+            using std::swap;
+            swap(mpo[pos1+p], block_mpo[p]);
             used_p[pos1+p] = true;
         }
         
@@ -416,7 +418,8 @@ MPO<Matrix, SymmGroup> make_exp_mpo(std::size_t length,
     for (std::size_t p=0; p<length; ++p) {
         if (!used_p[p]) {
             MPOTensor<Matrix, SymmGroup> r(1, 1, preident, op_table);
-            std::swap(mpo[p], r);
+            using std::swap;
+            swap(mpo[p], r);
             used_p[p] = true;
         }
     }
