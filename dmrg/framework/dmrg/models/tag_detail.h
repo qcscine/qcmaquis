@@ -36,12 +36,14 @@ namespace tag_detail {
     bool is_uniform(block_matrix<Matrix, SymmGroup> const& op)
     {
         typename Matrix::value_type invscale;
+        #ifdef AMBIENT
         {
             locale_shared l;
             for(int i = 0; i < op.n_blocks(); ++i) ambient::migrate(op[i]);
             ambient::sync();
         }
-
+        #endif
+        
         // determine scale of matrices
         const Matrix& m = op[0];
         for (int i = 0; i < num_rows(m); i++)
@@ -81,12 +83,14 @@ namespace tag_detail {
     equal(block_matrix<Matrix, SymmGroup> const& reference,
           block_matrix<Matrix, SymmGroup> const& sample)
     {
+        #ifdef AMBIENT
         {
             locale_shared l;
             for(int i = 0; i < reference.n_blocks(); ++i) ambient::migrate(reference[i]);
             for(int i = 0; i < sample.n_blocks(); ++i) ambient::migrate(sample[i]);
             ambient::sync();
         }
+        #endif
         if (reference.left_basis() != sample.left_basis() || reference.right_basis() != sample.right_basis())
             return std::make_pair(false, 0.);
 
