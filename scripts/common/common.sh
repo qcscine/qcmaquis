@@ -323,6 +323,7 @@ function run(){
     local proclist="0,1,2,3,4,5,6,7,8,9,10,11"
     local rank_var="";
 
+    [[ "$MPI_WRAPPER" == "intel"  ]]   && MPIEXEC="mpiexec " && rank_var="PMI_RANK"
     [[ "$MPI_WRAPPER" == "openmpi"  ]] && MPIEXEC="mpirun --mca btl self,openib"    && rank_var="OMPI_COMM_WORLD_NODE_RANK"
     [[ "$MPI_WRAPPER" == "mvapich2" ]] && MPIEXEC="mpiexec.hydra " && rank_var="MV2_COMM_WORLD_LOCAL_RANK" #-rmk slurm -ppn 1
 
@@ -335,7 +336,7 @@ function run(){
         [[ $MPI_NUM_PROCS -eq 3  ]] && corelist="0-3 8-11 4-7"
         [[ $MPI_NUM_PROCS -eq 2  ]] && corelist="0-5 6-11"
         [[ $MPI_NUM_PROCS -eq 1  ]] && corelist="0-11"
-        HWLOC="hwloc-bind core:\${corelist[\$$rank_var]}"
+        HWLOC="numactl --physcpubind=\${corelist[\$$rank_var]}"
     fi # --mempolicy firsttouch 
     if [ ! -z $OMP_NUM_THREADS  ]; then
         [[ $OMP_NUM_THREADS -eq 1  ]] && proclist="0 6 1 7 2 8 3 9 4 10 5 11"
