@@ -7,12 +7,13 @@
  *
  *****************************************************************************/
 
+#ifdef USE_AMBIENT
+#include <mpi.h>
+#endif
 #include <iostream>
 #include <sstream>
 #include <fstream>
-
 #include <boost/shared_ptr.hpp>
-
 #include <alps/hdf5.hpp>
 
 #include "matrix_selector.hpp" /// define matrix
