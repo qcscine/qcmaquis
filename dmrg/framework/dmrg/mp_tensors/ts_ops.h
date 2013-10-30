@@ -186,7 +186,7 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
         global_table = (mpo_orig[p].get_operator_table() == mpo_orig[0].get_operator_table());
 
     // For now until above function is parallel
-    parallel_for(locale::compact(L_ts), locale p = 0; p < L_ts; ++p)
+    for(size_t p = 0; p < L_ts; ++p)
         mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1], site_dim, global_table);
         
     std::size_t ntags=0;
