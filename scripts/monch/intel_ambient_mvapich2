@@ -6,20 +6,16 @@ STATE_DMRG="configure"
 SHARED_FS=true
 PREFIX=ambient
 COMPILER=intel
-COMPILER_VERSION=13.1
-MPI_WRAPPER=mvapich
-MPI_WRAPPER_VERSION=1.9
-#MPI_WRAPPER=impi
-#MPI_WRAPPER_VERSION=4.1.1
+COMPILER_VERSION=13.1.0
+MPI_WRAPPER=mvapich2
+MPI_WRAPPER_VERSION=1.9-intel13
 ALPS_DIR=$HOME/apps/monch/alps-intel13
-
-export CC=icc
-export CXX=icpc
 
 export ALPS_ROOT=${ALPS_DIR}
 export PATH=${ALPS_DIR}/bin:${PATH}
 export PYTHONPATH=${ALPS_DIR}/lib:${PYTHONPATH}
-
+export CC=icc
+export CXX=icpc
 
 module load gcc/4.7.3 hdf5/1.8.11-intel13 intel/13.1.0 mvapich2/1.9-intel13 python cmake
 
@@ -28,7 +24,6 @@ COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DNDEBUG"
 COMMON_CMAKE_CXX_FLAGS_RELEASE=${MAQUIS_COMMON_CMAKE_CXX_FLAGS}
 COMMON_AMBIENT_THREADING="cilk"
 COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
-#COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
 COMMON_PLASMA_LIB_DIR="$HOME/apps/monch/plasma-intel/lib"
 ## dmrg ##
 DMRG_ALPS_ROOT_DIR=$ALPS_ROOT
