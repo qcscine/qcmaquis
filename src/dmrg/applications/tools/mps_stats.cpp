@@ -1,3 +1,6 @@
+#ifdef USE_AMBIENT
+#include <mpi.h>
+#endif
 #include <cmath>
 #include <iterator>
 #include <iostream>

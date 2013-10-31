@@ -7,6 +7,9 @@
  *
  *****************************************************************************/
 
+#ifdef USE_AMBIENT
+#include <mpi.h>
+#endif
 #include <iostream>
 #include <sstream>
 #include <fstream>
