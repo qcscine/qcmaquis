@@ -5,6 +5,9 @@
  * Copyright (C) 2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *
  *****************************************************************************/
+#ifdef USE_AMBIENT
+#include <mpi.h>
+#endif
 #include <cmath>
 #include <iterator>
 #include <iostream>
