@@ -22,14 +22,13 @@ template <class Matrix, class SymmGroup>
 class mpo_evolver {
 public:
     mpo_evolver(DmrgParameters * parms_, MPS<Matrix, SymmGroup> * mps_,
-                Lattice_ptr lat_, Hamiltonian<Matrix, SymmGroup> const* H_,
+                Lattice_ptr lat_, Hamiltonian<Matrix, SymmGroup> const& H,
                 int init_sweep=0)
     : parms(parms_)
     , mps(mps_)
     , lat(lat_)
-    , H(H_)
     , sweep_(init_sweep)
-    , hamils(separate_overlaps(*H))
+    , hamils(separate_overlaps(H))
     {
         maquis::cout << "Using MPO time evolution." << std::endl;
         
@@ -100,7 +99,6 @@ private:
     DmrgParameters * parms;
     MPS<Matrix, SymmGroup> * mps;
     Lattice_ptr lat;
-    Hamiltonian<Matrix, SymmGroup> const * H;
     int sweep_;
     
     results_collector iteration_results_;

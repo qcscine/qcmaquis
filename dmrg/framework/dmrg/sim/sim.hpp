@@ -81,8 +81,10 @@ void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
     else
         parse_overlaps(model, init_sweep, measurements);
 
-    if (model["MODEL"] == std::string("quantum_chemistry"))
+    if (model["MODEL"] == std::string("quantum_chemistry") && (parms.get<int>("use_compressed") > 0))
     {  
+        throw std::runtime_error("chem compression has been disabled");
+        /*
         typedef typename alps::numeric::associated_one_matrix<Matrix>::type MPOMatrix;
         MPO<MPOMatrix, SymmGroup> scratch_mpo;
 
@@ -93,21 +95,15 @@ void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
         Timer t("DENSE_MPO conversion"); t.begin();
         compressor<MPOMatrix, SymmGroup>::convert_to_dense_matrix(scratch_mpo, mpoc);
         t.end();
-        
-        // TODO: move to ts_optim init
-        if (parms["optimization"] == "twosite") {
-            Timer t("TS_MPO"); t.begin();
-            throw std::runtime_error("compression should be moved inside ts_optim constructor.");
-//            make_ts_cache_mpo(scratch_mpo, ts_cache_mpo, phys);
-            t.end();
-        }
+        */
     }
     else
     {  
-        H = phys_model->H();
+        // Hamiltonian only needed here, runs out of scope and gets destroyed
+        Hamiltonian<Matrix, SymmGroup> H = phys_model->H();
         phys = H.get_phys();
 
-        mpo = make_mpo(lat->size(), H); 
+        mpo = make_mpo(lat->size(), H);
         mpoc = mpo;
 
         if (parms["use_compressed"] > 0)
@@ -132,7 +128,7 @@ void sim<Matrix, SymmGroup>::mps_init()
         mps = MPS<Matrix, SymmGroup>(lat->size(),
                                      parms["init_bond_dimension"],
                                      phys, initc,
-                                     *(phys_model->initializer(parms)));
+                                     *(phys_model->initializer(parms, model)));
         #ifdef AMBIENT_TRACKING
         for(int i = 0; i < mps.length(); ++i) ambient_track_array(mps, i);
         #endif

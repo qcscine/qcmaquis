@@ -32,7 +32,7 @@ namespace detail {
     
     template <class Matrix, class SymmGroup>
     struct call_hf_init {
-        static typename Model<Matrix,SymmGroup>::initializer_ptr call(BaseParameters & params)
+        static typename Model<Matrix,SymmGroup>::initializer_ptr call(BaseParameters & params, BaseParameters & model)
         {
             throw std::runtime_error("HF MPS init is available only for TwoU1 symmetry group.");
             return typename Model<Matrix,SymmGroup>::initializer_ptr(new default_mps_init<Matrix, SymmGroup>());
@@ -40,15 +40,15 @@ namespace detail {
     };
     template <class Matrix>
     struct call_hf_init<Matrix, TwoU1> {
-        static typename Model<Matrix,TwoU1>::initializer_ptr call(BaseParameters & params)
+        static typename Model<Matrix,TwoU1>::initializer_ptr call(BaseParameters & params, BaseParameters & model)
         {
-            return typename Model<Matrix,TwoU1>::initializer_ptr(new hf_mps_init<Matrix>(params));
+            return typename Model<Matrix,TwoU1>::initializer_ptr(new hf_mps_init<Matrix>(params, model));
         }
     };
 }
 
 template <class Matrix, class SymmGroup>
-typename Model<Matrix,SymmGroup>::initializer_ptr Model<Matrix,SymmGroup>::initializer(BaseParameters & params) const
+typename Model<Matrix,SymmGroup>::initializer_ptr Model<Matrix,SymmGroup>::initializer(BaseParameters & params, BaseParameters & model) const
 {
     if (params["init_state"] == "default")
         return initializer_ptr(new default_mps_init<Matrix, SymmGroup>());
@@ -81,7 +81,7 @@ typename Model<Matrix,SymmGroup>::initializer_ptr Model<Matrix,SymmGroup>::initi
         return initializer_ptr(new coherent_dm_mps_init<Matrix, SymmGroup>(params));
     
     else if (params["init_state"] == "hf")
-        return detail::call_hf_init<Matrix, SymmGroup>::call(params);
+        return detail::call_hf_init<Matrix, SymmGroup>::call(params, model);
     
     else {
         throw std::runtime_error("Don't know this initial state.");

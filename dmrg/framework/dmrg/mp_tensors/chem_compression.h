@@ -927,24 +927,27 @@ void compressor<Matrix, SymmGroup>::convert_to_dense_matrix(MPO<Matrix, SymmGrou
     }
 }
 
-template <class Matrix, class SymmGroup> void
+// Relabel the MPO-indices such that the 13 possible bond charges are grouped together
+template <class Tuple, class Matrix, class SymmGroup> void
 charge_sort(std::vector< std::vector<
-                boost::tuple<std::size_t, std::size_t, block_matrix<Matrix, SymmGroup> > > > & prempo,
+                //boost::tuple<std::size_t, std::size_t, block_matrix<Matrix, SymmGroup> > > > & prempo,
+                Tuple > > & prempo,
             MPO<Matrix, SymmGroup> const & mpo_in)
 {
-    typedef boost::tuple<std::size_t, std::size_t, block_matrix<Matrix, SymmGroup> > block;
+    //typedef boost::tuple<std::size_t, std::size_t, block_matrix<Matrix, SymmGroup> > block;
     typedef typename SymmGroup::charge charge;
 
     Timer csort("MPO_charge_sort"); csort.begin();
     MPOIndexer<Matrix, SymmGroup> mpo_in_index(mpo_in);
     for (std::size_t p = 0; p < prempo.size()-1; ++p)
     {
+        // TODO: Check types
         std::map<std::size_t, std::size_t> reorder_map;
         std::map<charge, std::size_t> visited_delta_basis;
         std::map<charge, std::size_t> bond_index_offsets;
 
         // determine reordering
-        for (typename std::vector<block>::iterator it = prempo[p].begin();
+        for (typename std::vector<Tuple>::iterator it = prempo[p].begin();
                 it != prempo[p].end(); ++it)
         {
             std::size_t c = boost::tuples::get<1>(*it);
@@ -964,7 +967,7 @@ charge_sort(std::vector< std::vector<
         }
 
         // add accumulated offsets to the reordering
-        for (typename std::vector<block>::iterator it = prempo[p].begin();
+        for (typename std::vector<Tuple>::iterator it = prempo[p].begin();
                 it != prempo[p].end(); ++it)
         {
             std::size_t c = boost::tuples::get<1>(*it);
@@ -974,10 +977,10 @@ charge_sort(std::vector< std::vector<
         }
 
         // carry out reordering
-        for (typename std::vector<block>::iterator it = prempo[p].begin(); it != prempo[p].end(); ++it)
+        for (typename std::vector<Tuple>::iterator it = prempo[p].begin(); it != prempo[p].end(); ++it)
             if (reorder_map.count(boost::tuples::get<1>(*it)) > 0)
                 boost::tuples::get<1>(*it) = reorder_map[boost::tuples::get<1>(*it)];
-        for (typename std::vector<block>::iterator it = prempo[p+1].begin(); it != prempo[p+1].end(); ++it)
+        for (typename std::vector<Tuple>::iterator it = prempo[p+1].begin(); it != prempo[p+1].end(); ++it)
             if (reorder_map.count(boost::tuples::get<0>(*it)) > 0)
                 boost::tuples::get<0>(*it) = reorder_map[boost::tuples::get<0>(*it)];
 

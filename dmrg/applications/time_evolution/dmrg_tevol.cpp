@@ -10,6 +10,30 @@
 #include "utils/timings.h"
 
 #include <boost/function.hpp>
+#undef tolower
+#undef toupper
+#include <boost/tokenizer.hpp>
+
+std::string guess_alps_symmetry(ModelParameters& model)
+{
+    std::map<int, std::string> symm_names;
+    symm_names[0] = "none";
+    symm_names[1] = "u1";
+    symm_names[2] = "2u1";
+    
+    int n=0;
+    typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+    if (model.defined("CONSERVED_QUANTUMNUMBERS")) {
+        boost::char_separator<char> sep(" ,");
+        std::string qn_string = model["CONSERVED_QUANTUMNUMBERS"];
+        tokenizer qn_tokens(qn_string, sep);
+        for (tokenizer::iterator it=qn_tokens.begin(); it != qn_tokens.end(); it++) {
+            if (model.defined(*it + "_total"))
+                n += 1;
+        }
+    }
+    return symm_names[n];
+}
 
 // factory
 void dmrg_tevol(DmrgParameters & parms, ModelParameters & model)
@@ -37,7 +61,11 @@ void dmrg_tevol(DmrgParameters & parms, ModelParameters & model)
         factory_map["2u1"] = run_tevol<cmatrix, TwoU1>;
 #endif
     
-    std::string symm_name = parms["symmetry"];
+    std::string symm_name;
+    if (parms["model_library"] == "alps")
+        symm_name = guess_alps_symmetry(model);
+    else
+        symm_name = parms["symmetry"].str();
     
     if (factory_map.find(symm_name) != factory_map.end())
         factory_map[symm_name](parms, model);

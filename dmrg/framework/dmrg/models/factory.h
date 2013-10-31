@@ -6,8 +6,8 @@
  *
  *****************************************************************************/
 
-#ifndef APP_MODELS_H
-#define APP_MODELS_H
+#ifndef APP_MODELS_FACTORY_H
+#define APP_MODELS_FACTORY_H
 
 #include "dmrg/utils/BaseParameters.h"
 

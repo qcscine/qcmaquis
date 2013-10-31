@@ -10,7 +10,7 @@ get_symm_files(APPEND DMRG_MODELS_SOURCES "models/factory/factory_{SYMM}.cpp")
 
 if(ENABLE_ALPS_MODELS)
   add_definitions(-DENABLE_ALPS_MODELS)
-  get_symm_files(APPEND DMRG_MODELS_SOURCES "models/alps/symm_impl/model_{SYMM}.cpp")
+  get_symm_files(APPEND DMRG_MODELS_SOURCES "models/alps/symm_handler_impl/model_{SYMM}.cpp")
 endif(ENABLE_ALPS_MODELS)
 
 if(ENABLE_LL_MODELS)

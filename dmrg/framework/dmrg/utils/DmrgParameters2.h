@@ -85,7 +85,7 @@ private:
         add_option("init_coeff", "coefficients for coherent init", value(""));
         add_option("init_basis_state", "local indexes for basis state init", value(""));
         
-        add_option("symmetry", "null, u1 or 2u1", value("u1"));
+        add_option("symmetry", "none, u1 or 2u1", value("u1"));
         add_option("lattice_library", "", value("alps"));
         add_option("model_library", "", value("alps"));
         
@@ -178,6 +178,11 @@ private:
         add_option("u1_total_charge", "");
         add_option("u1_total_charge1", "");
         add_option("u1_total_charge2", "");
+
+        add_option("orbital_order", "comma separated list of orbital numbers");
+        add_option("hf_occ", "comma separated list of orbital occupancies for Hartree Fock initial state");
+
+        add_option("integral_cutoff", "Ignore electron integrals below a certain magnitude", value(1.e-20));
         
         add_option("MEASURE_CONTINUUM[Psi energy]", "", value(false));
         add_option("MEASURE_CONTINUUM[Density]", "", value(true));

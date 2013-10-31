@@ -42,7 +42,7 @@ public:
         return init_qn<SymmGroup>(parms);
     }
     
-    virtual initializer_ptr initializer(BaseParameters &) const;
+    virtual initializer_ptr initializer(BaseParameters &, BaseParameters &) const;
 };
 
 template <class Matrix, class SymmGroup>

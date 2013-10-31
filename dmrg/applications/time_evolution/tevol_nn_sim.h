@@ -69,15 +69,15 @@ template <class Matrix, class SymmGroup>
 class nearest_neighbors_evolver {
 public:
     nearest_neighbors_evolver(DmrgParameters * parms_, MPS<Matrix, SymmGroup> * mps_,
-                              Lattice_ptr lat_, Hamiltonian<Matrix, SymmGroup> const* H_,
+                              Lattice_ptr lat_, Hamiltonian<Matrix, SymmGroup> const& H,
                               int init_sweep=0)
     : parms(parms_)
     , mps(mps_)
     , lat(lat_)
-    , H(H_)
+    , phys(H.get_phys())
     , sweep_(init_sweep)
     , trotter_order(parse_trotter_order((*parms)["te_order"]))
-    , block_terms(hamil_to_blocks(*H, lat->size()))
+    , block_terms(hamil_to_blocks(H, lat->size()))
     {
         maquis::cout << "Using nearest-neighbors time evolution." << std::endl;
         maquis::cout << "Using " << trotter_order << std::endl;
@@ -213,9 +213,9 @@ public:
             Uterms[i].pfirst = gates_coeff[i].first;
             for (size_t p=gates_coeff[i].first; p<L-1; p+=2){
                 if ((*parms)["expm_method"] == "heev")
-                    Uterms[i].add_term(p, op_exp_hermitian(H->get_phys()*H->get_phys(), block_terms[p], gates_coeff[i].second*alpha));
+                    Uterms[i].add_term(p, op_exp_hermitian(phys*phys, block_terms[p], gates_coeff[i].second*alpha));
                 else
-                    Uterms[i].add_term(p, op_exp(H->get_phys()*H->get_phys(), block_terms[p], gates_coeff[i].second*alpha));
+                    Uterms[i].add_term(p, op_exp(phys*phys, block_terms[p], gates_coeff[i].second*alpha));
             }
         }
     }
@@ -379,7 +379,7 @@ private:
     DmrgParameters * parms;
     MPS<Matrix, SymmGroup> * mps;
     Lattice_ptr lat;
-    Hamiltonian<Matrix, SymmGroup> const * H;
+    Index<SymmGroup> phys;
     int sweep_;
     
     results_collector iteration_results_;

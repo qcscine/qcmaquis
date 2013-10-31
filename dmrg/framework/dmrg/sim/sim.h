@@ -74,7 +74,6 @@ protected:
     
     Lattice_ptr lat;
     typename model_traits<Matrix, SymmGroup>::model_ptr phys_model;
-    Hamiltonian<Matrix, SymmGroup> H;
     Index<SymmGroup> phys;
     typename SymmGroup::charge initc;
     MPS<Matrix, SymmGroup> mps;
