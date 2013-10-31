@@ -9,7 +9,7 @@ self="maquis"
 if [ ! -z "${CONFIG_NAME}" ]; then
    [[ ! -z "${CONFIG_GUARD}" ]] && echo "mixing environment is forbidden (exit and switch)" && exit 1;
    . ~/.bashrc
-   source /etc/profile.d/modules.sh
+   [[ -f /etc/profile.d/modules.sh ]] && source /etc/profile.d/modules.sh
    export CONFIG_GUARD="true"
    alias clean='$CONFIG_DIR/$CONFIG_NAME clean'
    alias configure='$CONFIG_DIR/$CONFIG_NAME configure'
