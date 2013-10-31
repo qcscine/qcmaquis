@@ -299,9 +299,9 @@ namespace ambient { namespace numeric {
     inline void copy_block_sa(const matrix<T,A1>& src, size_t si, size_t sj, 
                               matrix<T,A2>& dst, size_t di, size_t dj, 
                               const matrix<T,A3>& alfa, size_t ai, size_t aj,
-                              size_t m, size_t n)
+                              size_t m, size_t n, T alfa_scale)
     { 
-        kernels::template copy_block_sa<A1,A2,A3,T>::template spawn<complexity::N2>(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
+        kernels::template copy_block_sa<A1,A2,A3,T>::template spawn<complexity::N2>(src, si, sj, dst, di, dj, alfa, ai, aj, m, n, alfa_scale);
     }
 
     template<typename T, class A>

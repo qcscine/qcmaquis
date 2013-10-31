@@ -22,6 +22,9 @@ namespace maquis {
         typedef T const&                const_reference;
         typedef std::size_t             size_type;
         typedef std::ptrdiff_t          difference_type;  
+        // TODO: Introduce iterator classes that support *, !=, ++, ...
+        typedef reference               element_iterator;
+        typedef const_reference         const_element_iterator;
 
         explicit one_matrix(size_type rows = 1, size_type cols = 1, T init_value = T()) {
             assert(cols==1 && rows==1);
@@ -59,6 +62,9 @@ namespace maquis {
 
         inline size_type num_rows() const { return 1; }
         inline size_type num_cols() const { return 1; }
+
+        std::pair<element_iterator, element_iterator> elements() { return std::make_pair(val_, NULL); }
+        std::pair<const_element_iterator, const_element_iterator> elements() const { return std::make_pair(val_, NULL); }
 
         //MemoryBlock const& get_values() const;
         //MemoryBlock & get_values();

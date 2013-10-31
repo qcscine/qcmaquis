@@ -99,7 +99,7 @@ int main(int argc, char ** argv)
             MPO<Matrix, grp> mpo;
             
             MPOTensor<Matrix, grp> mpot;
-            mpot(0,0) = ident;
+            mpot.set(0,0, ident);
             mpo = MPO<Matrix, grp>(mps1.length());
             for (int p=0; p<mps1.length(); ++p)
                 mpo[p] = mpot;

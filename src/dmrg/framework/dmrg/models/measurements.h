@@ -370,7 +370,8 @@ std::ostream& operator<<(std::ostream& os, Measurement_Term<Matrix, SymmGroup> c
 {
 	os << "** MEASUREMENT: " << term.name << " **" << std::endl;
 	os << " - type: " << term.type << std::endl;
-	os << " - Fill operator:" << std::endl << term.operators;
+	os << " - Fill operator:" << std::endl << term.fill_operator << std::endl;
+	os << " - Operators:" << std::endl << term.operators;
 	return os;
 }
 

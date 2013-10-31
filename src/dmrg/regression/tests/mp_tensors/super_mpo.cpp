@@ -18,11 +18,16 @@ typedef alps::numeric::matrix<double> matrix;
 
 template <class SymmGroup>
 void mpo1_test(Index<SymmGroup> const& phys,
-               block_matrix<matrix, SymmGroup> const& op1,
-               block_matrix<matrix, SymmGroup> const& op2,
-               block_matrix<matrix, SymmGroup> const& op3)
+               typename OPTable<matrix, SymmGroup>::tag_type op1,
+               typename OPTable<matrix, SymmGroup>::tag_type op2,
+               typename OPTable<matrix, SymmGroup>::tag_type op3,
+               boost::shared_ptr<OPTable<matrix, SymmGroup> > op_table)
 {
     maquis::cout << "TEST MPO 1" << std::endl;
+
+    typedef typename OPTable<matrix, SymmGroup>::tag_type tag_type;
+    typedef boost::tuple<std::size_t, std::size_t, tag_type, matrix::value_type> prempo_element;
+    typedef std::vector<prempo_element> prempo_type;
     
     /// MPO with three sites.
     ///   - op1 - op1 - op2 - op3 -
@@ -31,37 +36,37 @@ void mpo1_test(Index<SymmGroup> const& phys,
     MPO<matrix,SymmGroup> mpo(4);
     int site = 0;
     {
-        MPOTensor<matrix, SymmGroup> mpot(1, 2);
-        mpot(0,0) = op1;
-        mpot(0,1) = op2;
+        prempo_type mpo_description;
+        mpo_description.push_back( prempo_element(0, 0, op1, 1.) );
+        mpo_description.push_back( prempo_element(0, 1, op2, 1.) );
         
-        mpo[site++] = mpot;
+        mpo[site++] = MPOTensor<matrix, SymmGroup>(1, 2, mpo_description, op_table);
     }
     
     {
-        MPOTensor<matrix, SymmGroup> mpot(2, 3);
-        mpot(0,0) = op1;
-        mpot(1,1) = op3;
-        mpot(0,2) = op2;
-        
-        mpo[site++] = mpot;
+        prempo_type mpo_description;
+        mpo_description.push_back( prempo_element(0, 0, op1, 1.) );
+        mpo_description.push_back( prempo_element(1, 1, op3, 1.) );
+        mpo_description.push_back( prempo_element(0, 2, op2, 1.) );
+
+        mpo[site++] = MPOTensor<matrix, SymmGroup>(2, 3, mpo_description, op_table);
     }
     
     {
-        MPOTensor<matrix, SymmGroup> mpot(3, 3);
-        mpot(1,1) = op1;
-        mpot(2,1) = op3;
-        mpot(0,2) = op2;
-        
-        mpo[site++] = mpot;
+        prempo_type mpo_description;
+        mpo_description.push_back( prempo_element(1, 1, op1, 1.) );
+        mpo_description.push_back( prempo_element(2, 1, op3, 1.) );
+        mpo_description.push_back( prempo_element(0, 2, op2, 1.) );
+
+        mpo[site++] = MPOTensor<matrix, SymmGroup>(3, 3, mpo_description, op_table);
     }
     
     {
-        MPOTensor<matrix, SymmGroup> mpot(3, 2);
-        mpot(1,1) = op1;
-        mpot(2,1) = op3;
+        prempo_type mpo_description;
+        mpo_description.push_back( prempo_element(1, 1, op1, 1.) );
+        mpo_description.push_back( prempo_element(2, 1, op3, 1.) );
         
-        mpo[site++] = mpot;
+        mpo[site++] = MPOTensor<matrix, SymmGroup>(3, 2, mpo_description, op_table);
     }
     
     
@@ -71,11 +76,16 @@ void mpo1_test(Index<SymmGroup> const& phys,
 
 template <class SymmGroup>
 void mpo2_test(Index<SymmGroup> const& phys,
-               block_matrix<matrix, SymmGroup> const& op1,
-               block_matrix<matrix, SymmGroup> const& op2,
-               block_matrix<matrix, SymmGroup> const& op3)
+               typename OPTable<matrix, SymmGroup>::tag_type op1,
+               typename OPTable<matrix, SymmGroup>::tag_type op2,
+               typename OPTable<matrix, SymmGroup>::tag_type op3,
+               boost::shared_ptr<OPTable<matrix, SymmGroup> > op_table)
 {
     maquis::cout << "TEST MPO 2" << std::endl;
+    
+    typedef typename OPTable<matrix, SymmGroup>::tag_type tag_type;
+    typedef boost::tuple<std::size_t, std::size_t, tag_type, matrix::value_type> prempo_element;
+    typedef std::vector<prempo_element> prempo_type;
     
     /// MPO with three sites.
     ///   - op1 - op1 - op2 -
@@ -84,29 +94,29 @@ void mpo2_test(Index<SymmGroup> const& phys,
     MPO<matrix,SymmGroup> mpo(3);
     int site = 0;
     {
-        MPOTensor<matrix, SymmGroup> mpot(1, 2);
-        mpot(0,0) = op1;
-        mpot(0,1) = op2;
+        prempo_type mpo_description;
+        mpo_description.push_back( prempo_element(0, 0, op1, 1.) );
+        mpo_description.push_back( prempo_element(0, 1, op2, 1.) );
         
-        mpo[site++] = mpot;
+        mpo[site++] = MPOTensor<matrix, SymmGroup>(1, 2, mpo_description, op_table);
     }
     
     {
-        MPOTensor<matrix, SymmGroup> mpot(2, 3);
-        mpot(0,0) = op1;
-        mpot(1,1) = op3;
-        mpot(0,2) = op2;
-        
-        mpo[site++] = mpot;
+        prempo_type mpo_description;
+        mpo_description.push_back( prempo_element(0, 0, op1, 1.) );
+        mpo_description.push_back( prempo_element(1, 1, op3, 1.) );
+        mpo_description.push_back( prempo_element(0, 2, op2, 1.) );
+
+        mpo[site++] = MPOTensor<matrix, SymmGroup>(2, 3, mpo_description, op_table);
     }
     
     {
-        MPOTensor<matrix, SymmGroup> mpot(3, 3);
-        mpot(1,1) = op1;
-        mpot(2,1) = op3;
-        mpot(0,2) = op2;
-        
-        mpo[site++] = mpot;
+        prempo_type mpo_description;
+        mpo_description.push_back( prempo_element(1, 1, op1, 1.) );
+        mpo_description.push_back( prempo_element(2, 1, op3, 1.) );
+        mpo_description.push_back( prempo_element(0, 2, op2, 1.) );
+
+        mpo[site++] = MPOTensor<matrix, SymmGroup>(3, 3, mpo_description, op_table);
     }
     
     
@@ -116,11 +126,16 @@ void mpo2_test(Index<SymmGroup> const& phys,
 
 template <class SymmGroup>
 void mpo3_test(Index<SymmGroup> const& phys,
-               block_matrix<matrix, SymmGroup> const& op1,
-               block_matrix<matrix, SymmGroup> const& op2,
-               block_matrix<matrix, SymmGroup> const& op3)
+               typename OPTable<matrix, SymmGroup>::tag_type op1,
+               typename OPTable<matrix, SymmGroup>::tag_type op2,
+               typename OPTable<matrix, SymmGroup>::tag_type op3,
+               boost::shared_ptr<OPTable<matrix, SymmGroup> > op_table)
 {
     maquis::cout << "TEST MPO 3" << std::endl;
+    
+    typedef typename OPTable<matrix, SymmGroup>::tag_type tag_type;
+    typedef boost::tuple<std::size_t, std::size_t, tag_type, matrix::value_type> prempo_element;
+    typedef std::vector<prempo_element> prempo_type;
     
     /// MPO with four sites.
     ///  - op1 - op3 - op1 - op1
@@ -132,38 +147,38 @@ void mpo3_test(Index<SymmGroup> const& phys,
     MPO<matrix,SymmGroup> mpo(4);
     int site = 0;
     {
-        MPOTensor<matrix, SymmGroup> mpot(1, 2);
-        mpot(0,0) = op1;
-        mpot(0,1) = op3;
+        prempo_type mpo_description;
+        mpo_description.push_back( prempo_element(0, 0, op1, 1.) );
+        mpo_description.push_back( prempo_element(0, 1, op3, 1.) );
         
-        mpo[site++] = mpot;
+        mpo[site++] = MPOTensor<matrix, SymmGroup>(1, 2, mpo_description, op_table);
     }
     
     {
-        MPOTensor<matrix, SymmGroup> mpot(2, 2);
-        mpot(0,0) = op3;
-        mpot(1,1) = op1;
+        prempo_type mpo_description;
+        mpo_description.push_back( prempo_element(0, 0, op3, 1.) );
+        mpo_description.push_back( prempo_element(1, 1, op1, 1.) );
         
-        mpo[site++] = mpot;
+        mpo[site++] = MPOTensor<matrix, SymmGroup>(2, 2, mpo_description, op_table);
     }
     
     {
-        MPOTensor<matrix, SymmGroup> mpot(2, 3);
+        prempo_type mpo_description;
         // this mpo seems impossible...
-        mpot(0,0) = op1;
-        mpot(0,1) = op2;
-        mpot(0,2) = op3;
+        mpo_description.push_back( prempo_element(0, 0, op1, 1.) );
+        mpo_description.push_back( prempo_element(0, 1, op2, 1.) );
+        mpo_description.push_back( prempo_element(0, 2, op3, 1.) );
         
-        mpo[site++] = mpot;
+        mpo[site++] = MPOTensor<matrix, SymmGroup>(2, 3, mpo_description, op_table);
     }
 
     {
-        MPOTensor<matrix, SymmGroup> mpot(3, 3);
-        mpot(0,1) = op1;
-        mpot(1,1) = op3;
-        mpot(2,1) = op2;
+        prempo_type mpo_description;
+        mpo_description.push_back( prempo_element(0, 1, op1, 1.) );
+        mpo_description.push_back( prempo_element(1, 1, op3, 1.) );
+        mpo_description.push_back( prempo_element(2, 1, op2, 1.) );
         
-        mpo[site++] = mpot;
+        mpo[site++] = MPOTensor<matrix, SymmGroup>(3, 3, mpo_description, op_table);
     }
 
     MPS<matrix, SymmGroup> super_mps = mpo_to_smps(mpo, phys);
@@ -173,18 +188,20 @@ void mpo3_test(Index<SymmGroup> const& phys,
 
 template <class SymmGroup>
 void all_tests(Index<SymmGroup> const& phys,
-               block_matrix<matrix, SymmGroup> const& op1,
-               block_matrix<matrix, SymmGroup> const& op2,
-               block_matrix<matrix, SymmGroup> const& op3)
+               typename OPTable<matrix, SymmGroup>::tag_type op1,
+               typename OPTable<matrix, SymmGroup>::tag_type op2,
+               typename OPTable<matrix, SymmGroup>::tag_type op3,
+               boost::shared_ptr<OPTable<matrix, SymmGroup> > op_table)
 {
     
-    mpo1_test(phys, op1, op2, op3);
-    mpo2_test(phys, op1, op2, op3);
+    mpo1_test(phys, op1, op2, op3, op_table);
+    mpo2_test(phys, op1, op2, op3, op_table);
 }
 
 void test_none()
 {
     typedef TrivialGroup SymmGroup;
+    typedef OPTable<matrix, SymmGroup>::tag_type tag_type;
     maquis::cout << "TESTING NONE SYMMETRY" << std::endl;
     
     SymmGroup::charge C = SymmGroup::IdentityCharge;
@@ -210,12 +227,18 @@ void test_none()
     }
     std::cout << "Operator 3:" << std::endl << op3;
 
-    all_tests(phys, op1, op2, op3);
+    boost::shared_ptr<OPTable<matrix, SymmGroup> > op_table(new OPTable<matrix, SymmGroup>());
+    tag_type op1_tag = op_table->register_op(op1);
+    tag_type op2_tag = op_table->register_op(op2);
+    tag_type op3_tag = op_table->register_op(op3);
+
+    all_tests(phys, op1_tag, op2_tag, op3_tag, op_table);
 }
 
 void test_u1()
 {
     typedef U1 SymmGroup;
+    typedef OPTable<matrix, SymmGroup>::tag_type tag_type;
     maquis::cout << "TESTING U1 SYMMETRY" << std::endl;
     
     Index<SymmGroup> phys;
@@ -239,7 +262,12 @@ void test_u1()
     }
     std::cout << "Operator 3:" << std::endl << op3;
     
-    all_tests(phys, op1, op2, op3);
+    boost::shared_ptr<OPTable<matrix, SymmGroup> > op_table(new OPTable<matrix, SymmGroup>());
+    tag_type op1_tag = op_table->register_op(op1);
+    tag_type op2_tag = op_table->register_op(op2);
+    tag_type op3_tag = op_table->register_op(op3);
+
+    all_tests(phys, op1_tag, op2_tag, op3_tag, op_table);
 }
 
 

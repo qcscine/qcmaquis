@@ -87,41 +87,6 @@ private:
 
 #include "twositetensor.hpp"
 
-#include "dmrg/mp_tensors/mpotensor.h"
-template<class MPOMatrix, class MPSMatrix, class SymmGroup>
-MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup> const & mpo1,
-                                                 MPOTensor<MPOMatrix, SymmGroup> const & mpo2, Index<SymmGroup> const & phys_i)
-{
-    assert(mpo1.col_dim() == mpo2.row_dim());
-    MPOTensor<MPSMatrix, SymmGroup> mpo_big(mpo1.row_dim(), mpo2.col_dim());
-    // TODO: use OpenMP, thread-safe reduction needed!
-    std::size_t b1, b2, b3;
-    for( b1=0; b1 < mpo1.row_dim(); ++b1)
-        for( b2=0; b2 < mpo1.col_dim(); ++b2)
-            for( b3=0; b3 < mpo2.col_dim(); ++b3)
-            {
-                if (! (mpo1.has(b1, b2) && mpo2.has(b2, b3)) )
-                    continue;
-                block_matrix<MPSMatrix, SymmGroup> tmp;
-                op_kron(phys_i, mpo1(b1,b2), mpo2(b2,b3), tmp);
-                if (mpo_big.has(b1,b3))
-                    mpo_big(b1,b3) += tmp;
-                else
-                    mpo_big(b1,b3) = tmp;
-            }
-    
-    return mpo_big;
-}
+#include "ts_ops.h"
 
-template<class MPOMatrix, class MPSMatrix, class SymmGroup>
-void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
-                       MPO<MPSMatrix, SymmGroup> & mpo_out, Index<SymmGroup> const & site_dim)
-{
-    std::size_t L_ts = mpo_orig.length() - 1;
-    mpo_out.resize(L_ts);
-    // For now until above function is parallel
-    for(size_t p = 0; p < L_ts; ++p)
-        mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1], site_dim);
-}       
-        
 #endif

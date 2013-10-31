@@ -79,7 +79,7 @@ int main(int argc, char ** argv)
             std::ofstream ofs(std::string("mpo_stats."+boost::lexical_cast<std::string>(p)+".dat").c_str());
             for (int b1 = 0; b1 < mpo[p].row_dim(); ++b1) {
                 for (int b2 = 0; b2 < mpo[p].col_dim(); ++b2) {
-                    if (mpo[p].has(b1, b2)) ofs << "1 ";
+                    if (mpo[p].has(b1, b2)) ofs << mpo[p].tag_number(b1,b2)+1 << " ";
                     else ofs << "0 ";
                 }
                 ofs << std::endl;
