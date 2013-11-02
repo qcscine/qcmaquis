@@ -76,7 +76,7 @@ int main(int argc, char ** argv)
                                    lattice, model);
         
         Hamiltonian<matrix, symm> H = model->H();
-        MPO<matrix, symm> mpo = make_mpo(lattice->size(), H);
+        MPO<matrix, symm> mpo = make_mpo(lattice->size(), H, model_parms);
         
         for (int p = 0; p < lattice->size(); ++p) {
             std::ofstream ofs(std::string("mpo_stats."+boost::lexical_cast<std::string>(p)+".dat").c_str());

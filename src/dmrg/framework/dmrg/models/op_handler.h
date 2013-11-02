@@ -94,7 +94,7 @@ public:
     typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i) { return (*operator_table)[i]; }
     typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const { return (*operator_table)[i]; }
 
-    bool is_fermionic(tag_type query_tag) { return sign_table[query_tag]; }
+    bool is_fermionic (tag_type query_tag) const { return sign_table[query_tag]; }
 
     /* WARNING: not thread safe! */
     std::pair<tag_type, value_type> get_product_tag(const tag_type t1, const tag_type t2);
@@ -137,7 +137,8 @@ public:
             uniform.push_back(tag_detail::is_uniform(*it));
     }
 
-    tag_type get_kron_tag(Index<SymmGroup> const & phys_i, tag_type t1, tag_type t2);
+    tag_type get_kron_tag(Index<SymmGroup> const & phys_i1, Index<SymmGroup> const & phys_i2, tag_type t1, tag_type t2);
+     
 
     typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i) { return (*kronecker_table)[i]; }
     typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const { return (*kronecker_table)[i]; }

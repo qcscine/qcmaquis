@@ -23,6 +23,8 @@
 #include "dmrg/models/op_handler.h"
 #include "dmrg/models/generate_mpo.hpp"
 
+#include "dmrg/models/chem/pg_symm_converter.h"
+
 enum TermType {all_term, site_term, bond_term};
 
 template<class Matrix, class SymmGroup>
@@ -93,7 +95,8 @@ protected:
 };
 
 template<class Matrix, class SymmGroup>
-MPO<Matrix, SymmGroup> make_mpo(typename Lattice::pos_t L, Hamiltonian<Matrix, SymmGroup> const & H, TermType what=all_term)
+MPO<Matrix, SymmGroup> make_mpo(typename Lattice::pos_t L, Hamiltonian<Matrix, SymmGroup> const & H,
+                                BaseParameters & model, TermType what=all_term)
 {
     // Use tags if available
     if (H.n_tagterms(what) > 0) {
@@ -101,7 +104,14 @@ MPO<Matrix, SymmGroup> make_mpo(typename Lattice::pos_t L, Hamiltonian<Matrix, S
         for (std::size_t i = 0; i < H.n_tagterms(what); ++i)
             mpom.add_term(H.tag(i));
 
-        return mpom.create_mpo();
+        std::vector<typename PGDecorator<SymmGroup>::irrep_t> irreps = parse_symm<SymmGroup>(model);
+
+        MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
+
+        PGSymmetryConverter<Matrix, SymmGroup> symm_conv(irreps);
+        symm_conv.convert_tags_to_symm_tags(mpo);
+
+        return mpo;
 
     } else  {
         generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity());

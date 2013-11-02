@@ -19,7 +19,8 @@ namespace detail {
         static typename Model<Matrix,SymmGroup>::initializer_ptr call()
         {
             throw std::runtime_error("Linear MPS init is available only for U1 symmetry group.");
-            return typename Model<Matrix,SymmGroup>::initializer_ptr(new default_mps_init<Matrix, SymmGroup>());
+            BaseParameters bp;
+            return typename Model<Matrix,SymmGroup>::initializer_ptr(new default_mps_init<Matrix, SymmGroup>(bp));
         }
     };
     template <class Matrix>
@@ -34,15 +35,22 @@ namespace detail {
     struct call_hf_init {
         static typename Model<Matrix,SymmGroup>::initializer_ptr call(BaseParameters & params, BaseParameters & model)
         {
-            throw std::runtime_error("HF MPS init is available only for TwoU1 symmetry group.");
-            return typename Model<Matrix,SymmGroup>::initializer_ptr(new default_mps_init<Matrix, SymmGroup>());
+            throw std::runtime_error("HF MPS init is available only for TwoU1 or TwoU1PG symmetry group.");
+            return typename Model<Matrix,SymmGroup>::initializer_ptr(new default_mps_init<Matrix, SymmGroup>(params));
         }
     };
     template <class Matrix>
     struct call_hf_init<Matrix, TwoU1> {
         static typename Model<Matrix,TwoU1>::initializer_ptr call(BaseParameters & params, BaseParameters & model)
         {
-            return typename Model<Matrix,TwoU1>::initializer_ptr(new hf_mps_init<Matrix>(params, model));
+            return typename Model<Matrix,TwoU1>::initializer_ptr(new hf_mps_init<Matrix, TwoU1>(params, model));
+        }
+    };
+    template <class Matrix>
+    struct call_hf_init<Matrix, TwoU1PG> {
+        static typename Model<Matrix,TwoU1PG>::initializer_ptr call(BaseParameters & params, BaseParameters & model)
+        {
+            return typename Model<Matrix,TwoU1PG>::initializer_ptr(new hf_mps_init<Matrix, TwoU1PG>(params, model));
         }
     };
 }
@@ -51,19 +59,19 @@ template <class Matrix, class SymmGroup>
 typename Model<Matrix,SymmGroup>::initializer_ptr Model<Matrix,SymmGroup>::initializer(BaseParameters & params, BaseParameters & model) const
 {
     if (params["init_state"] == "default")
-        return initializer_ptr(new default_mps_init<Matrix, SymmGroup>());
+        return initializer_ptr(new default_mps_init<Matrix, SymmGroup>(model));
     
     else if (params["init_state"] == "linear")
         return detail::call_linear_init<Matrix, SymmGroup>::call();
     
     else if (params["init_state"] == "const")
-        return initializer_ptr(new const_mps_init<Matrix, SymmGroup>());
+        return initializer_ptr(new const_mps_init<Matrix, SymmGroup>(model));
     
     else if (params["init_state"] == "thin")
-        return initializer_ptr(new thin_mps_init<Matrix, SymmGroup>());
+        return initializer_ptr(new thin_mps_init<Matrix, SymmGroup>(model));
     
     else if (params["init_state"] == "thin_const")
-        return initializer_ptr(new thin_const_mps_init<Matrix, SymmGroup>());
+        return initializer_ptr(new thin_const_mps_init<Matrix, SymmGroup>(model));
     
     else if (params["init_state"] == "basis_state")
         return initializer_ptr(new basis_mps_init<Matrix, SymmGroup>(params));

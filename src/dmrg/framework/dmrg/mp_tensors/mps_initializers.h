@@ -10,15 +10,23 @@
 #ifndef MPS_INITIALIZER_H
 #define MPS_INITIALIZER_H
 
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+
+#include <boost/tokenizer.hpp>
+
 #include "dmrg/utils/DmrgParameters2.h"
 #include "dmrg/mp_tensors/mps_sectors.h"
 #include "dmrg/mp_tensors/compression.h"
 #include "dmrg/mp_tensors/state_mps.h"
+#include "dmrg/models/chem/pg_util.h"
 
 template<class Matrix, class SymmGroup>
 struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
-    
+    default_mps_init(BaseParameters & model_) : model(model_) {}
+
     void operator()(MPS<Matrix, SymmGroup> & mps,
                     std::size_t Mmax,
                     Index<SymmGroup> const & phys,
@@ -54,47 +62,110 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
         maquis::cout << mps.description() << std::endl;
 #endif
     }
+
+    BaseParameters & model;
+};
+
+template<class Matrix>
+struct default_mps_init<Matrix, TwoU1PG> : public mps_initializer<Matrix, TwoU1PG>
+{
+    default_mps_init(BaseParameters & model_) : model(model_) {}
+    
+    void operator()(MPS<Matrix, TwoU1PG> & mps,
+                    std::size_t Mmax,
+                    Index<TwoU1PG> const & phys,
+                    typename TwoU1PG::charge right_end)
+    {
+        init_sectors(mps, Mmax, phys, right_end, true);
+    }
+    
+    void init_sectors(MPS<Matrix, TwoU1PG> & mps,
+                      std::size_t Mmax,
+                      Index<TwoU1PG> const & phys,
+                      typename TwoU1PG::charge right_end,
+                      bool fillrand = true,
+                      typename Matrix::value_type val = 0)
+    {
+        typedef typename PGDecorator<TwoU1PG>::irrep_t irrep_t;
+
+        std::size_t L = mps.length();
+        
+        maquis::cout << "Phys: " << phys << std::endl;
+        maquis::cout << "Right end: " << right_end << std::endl;
+
+        std::vector<irrep_t> irreps = parse_symm<TwoU1PG>(model);
+        
+        std::vector<Index<TwoU1PG> > allowed = allowed_sectors(L, phys, right_end, Mmax, irreps);
+        
+        parallel_for(locale::compact(L), locale i = 0; i < L; ++i) {
+            mps[i] = MPSTensor<Matrix, TwoU1PG>(PGDecorator<TwoU1PG>()(phys, irreps[i]) , allowed[i], allowed[i+1], fillrand, val);
+            mps[i].divide_by_scalar(mps[i].scalar_norm());
+            #ifdef AMBIENT_TRACKING
+            ambient_track_array(mps, i);
+            #endif
+        }
+        
+#ifndef NDEBUG
+        maquis::cout << "init norm: " << norm(mps) << std::endl;
+        maquis::cout << mps.description() << std::endl;
+#endif
+    }
+
+    BaseParameters & model;
+
 };
 
 template<class Matrix, class SymmGroup>
 struct const_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
+    const_mps_init(BaseParameters & parms_) : parms(parms_) {}
+
     void operator()(MPS<Matrix, SymmGroup> & mps,
                     std::size_t Mmax,
                     Index<SymmGroup> const & phys,
                     typename SymmGroup::charge right_end)
     {
-        default_mps_init<Matrix, SymmGroup> di;
+        default_mps_init<Matrix, SymmGroup> di(parms);
         di.init_sectors(mps, Mmax, phys, right_end, false, 1.);
     }
+
+    BaseParameters & parms;
 };
 
 template<class Matrix, class SymmGroup>
 struct thin_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
+    thin_mps_init(BaseParameters & parms_) : parms(parms_) {}
+
     void operator()(MPS<Matrix, SymmGroup> & mps,
                     std::size_t Mmax,
                     Index<SymmGroup> const & phys,
                     typename SymmGroup::charge right_end)
     {
-        default_mps_init<Matrix, SymmGroup> di;
+        default_mps_init<Matrix, SymmGroup> di(parms);
         di(mps, 5, phys, right_end);
         mps = compression::l2r_compress(mps, Mmax, 1e-6); 
     }
+
+    BaseParameters & parms;
 };
 
 template<class Matrix, class SymmGroup>
 struct thin_const_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
+    thin_const_mps_init(BaseParameters & parms_) : parms(parms_) {}
+
     void operator()(MPS<Matrix, SymmGroup> & mps,
                     std::size_t Mmax,
                     Index<SymmGroup> const & phys,
                     typename SymmGroup::charge right_end)
     {
-        const_mps_init<Matrix, SymmGroup> di;
+        const_mps_init<Matrix, SymmGroup> di(parms);
         di(mps, 5, phys, right_end);
         mps = compression::l2r_compress(mps, Mmax, 1e-6); 
     }
+
+    BaseParameters & parms;
 };
 
 

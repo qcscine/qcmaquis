@@ -26,6 +26,7 @@
 template <class Matrix, class SymmGroup> class column_iterator;
 template <class Matrix, class SymmGroup> class compressor;
 template <class Matrix, class SymmGroup> class MPOIndexer;
+template <class Matrix, class SymmGroup> class PGSymmetryConverter;
 
 template<class Matrix, class SymmGroup>
 class MPOTensor
@@ -62,11 +63,6 @@ public:
     index_type row_dim() const;
     index_type col_dim() const;
     
-    //block_matrix<Matrix, SymmGroup> const & operator()(index_type left_index,
-    //                                                   index_type right_index) const;
-    //block_matrix<Matrix, SymmGroup> & operator()(index_type left_index,
-    //                                             index_type right_index);
-
     // tagged operator ()
     void set(index_type li, index_type ri, op_t const & op, value_type scale_ = 1.0);
 
@@ -89,6 +85,8 @@ public:
     friend class column_iterator<Matrix, SymmGroup>;
     friend class compressor<Matrix, SymmGroup>;
     friend class MPOIndexer<Matrix, SymmGroup>;
+
+    friend class PGSymmetryConverter<Matrix, SymmGroup>;
 
     mutable std::vector<int> placement_l;
     mutable std::vector<int> placement_r;

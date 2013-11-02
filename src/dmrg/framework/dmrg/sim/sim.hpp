@@ -103,7 +103,7 @@ void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
         Hamiltonian<Matrix, SymmGroup> H = phys_model->H();
         phys = H.get_phys();
 
-        mpo = make_mpo(lat->size(), H);
+        mpo = make_mpo(lat->size(), H, model);
         mpoc = mpo;
 
         if (parms["use_compressed"] > 0)

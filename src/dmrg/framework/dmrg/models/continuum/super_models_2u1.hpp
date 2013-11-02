@@ -297,7 +297,7 @@ public:
 
             std::vector<psi_hamterm_t> terms_ops;
             psi_ham PsiH(psi_phys, psi_ident_op, terms_ops, psi_ident, psi_terms, psi_tag_handler);
-            MPO<Matrix, U1> mpo = make_mpo(lat.size(), PsiH);
+            MPO<Matrix, U1> mpo = make_mpo(lat.size(), PsiH, model);
             term.overlaps_mps.push_back( mpo_to_smps_group(mpo, psi_phys, allowed_blocks) );
             
             meas.add_term(term);

@@ -20,7 +20,8 @@
 template<class MPOMatrix, class MPSMatrix, class SymmGroup>
 MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup> const & mpo1,
                                                  MPOTensor<MPOMatrix, SymmGroup> const & mpo2,
-                                                 Index<SymmGroup> const & phys_i,
+                                                 Index<SymmGroup> const & phys_i1,
+                                                 Index<SymmGroup> const & phys_i2,
                                                  bool global_table)
 {
     using MPOTensor_detail::const_term_descriptor;
@@ -67,7 +68,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                     const_term_descriptor<MPSMatrix, SymmGroup> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
                     // Compute the Kronecker product
-                    kron_tag = kron_handler.get_kron_tag(phys_i, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3));
+                    kron_tag = kron_handler.get_kron_tag(phys_i1, phys_i2, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3));
 
                     if (!kron_handler.is_uniform(mpo1.tag_number(b1,b2)) ||
                         !kron_handler.is_uniform(mpo2.tag_number(b2,b3)) ||
@@ -154,7 +155,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
 
                     const_term_descriptor<MPSMatrix, SymmGroup> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
-                    op_kron(phys_i, p1.op, p2.op, product);
+                    op_kron(phys_i1, phys_i2, p1.op, p2.op, product);
                     product *= (p1.scale * p2.scale);
                     out_row[b3] += product;
                 }
@@ -176,7 +177,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
 
 template<class MPOMatrix, class MPSMatrix, class SymmGroup>
 void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
-                       MPO<MPSMatrix, SymmGroup> & mpo_out, Index<SymmGroup> const & site_dim)
+                       MPO<MPSMatrix, SymmGroup> & mpo_out, MPS<MPSMatrix, SymmGroup> const & mps)
 {
     std::size_t L_ts = mpo_orig.length() - 1;
     mpo_out.resize(L_ts);
@@ -185,9 +186,13 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     for (int p=0; p<L_ts && global_table; ++p)
         global_table = (mpo_orig[p].get_operator_table() == mpo_orig[0].get_operator_table());
 
-    // For now until above function is parallel
+#ifdef AMBIENT
     for(size_t p = 0; p < L_ts; ++p)
-        mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1], site_dim, global_table);
+#else
+    parallel_for(locale::compact(L_ts), locale p = 0; p < L_ts; ++p)
+#endif
+        mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1],
+                                                            mps[p].site_dim(), mps[p+1].site_dim(), global_table);
         
     std::size_t ntags=0;
     for (int p=0; p<mpo_out.length(); ++p) {

@@ -25,15 +25,14 @@
 template<class Matrix, class SymmGroup>
 TwoSiteTensor<Matrix, SymmGroup>::TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & mps1,
                                                 MPSTensor<Matrix, SymmGroup> const & mps2)
-: phys_i( mps1.site_dim()*mps1.site_dim() )
-, phys_i_orig( mps1.site_dim() )
+: phys_i( mps1.site_dim()*mps2.site_dim() )
+, phys_i_left( mps1.site_dim() )
+, phys_i_right( mps2.site_dim() )
 , left_i( mps1.row_dim() )
 , right_i( mps2.col_dim() )
 , cur_storage(TSBothPaired)
 , cur_normalization(Unorm)
 {
-    assert(mps1.site_dim() == mps2.site_dim());
-    
     mps1.make_left_paired();
     mps2.make_right_paired();
     gemm(mps1.data(), mps2.data(), data_);
@@ -67,11 +66,11 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_left_paired() const
     
     block_matrix<Matrix, SymmGroup> tmp;
     if (cur_storage == TSBothPaired) {
-        ts_reshape::reshape_both_to_left<Matrix, SymmGroup>(phys_i_orig, left_i, right_i, data_, tmp);
+        ts_reshape::reshape_both_to_left<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
     } else {
 	    // direct left to right reshape should not be needed
 	    make_both_paired();
-        ts_reshape::reshape_both_to_left<Matrix, SymmGroup>(phys_i_orig, left_i, right_i, data_, tmp);
+        ts_reshape::reshape_both_to_left<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
     }
     
     swap(data_, tmp);
@@ -88,10 +87,10 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_both_paired() const
     
     block_matrix<Matrix, SymmGroup> tmp;
     if (cur_storage == TSRightPaired) {
-        ts_reshape::reshape_right_to_both<Matrix, SymmGroup>(phys_i_orig, left_i, right_i, data_, tmp);
+        ts_reshape::reshape_right_to_both<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
     }
     else {
-        ts_reshape::reshape_left_to_both<Matrix, SymmGroup>(phys_i_orig, left_i, right_i, data_, tmp);
+        ts_reshape::reshape_left_to_both<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
     }
     
     swap(data_, tmp);
@@ -106,11 +105,11 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired() const
     
     block_matrix<Matrix, SymmGroup> tmp;
     if (cur_storage == TSBothPaired)
-        ts_reshape::reshape_both_to_right<Matrix, SymmGroup>(phys_i_orig, left_i, right_i, data_, tmp);
+        ts_reshape::reshape_both_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
     else {
-	// direct left to right reshape should not be needed
-	make_both_paired();
-        ts_reshape::reshape_both_to_right<Matrix, SymmGroup>(phys_i_orig, left_i, right_i, data_, tmp);
+        // direct left to right reshape should not be needed
+	    make_both_paired();
+        ts_reshape::reshape_both_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
     }
     
     swap(data_, tmp);
@@ -138,10 +137,10 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_l2r(std::size_t Mmax, double cutoff)
     
     truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true);
     
-    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_orig, left_i, u.right_basis(), u, LeftPaired);
+    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, u.right_basis(), u, LeftPaired);
     assert( mps_tensor1.reasonable() );
     gemm(s, v, u);
-    MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_orig, u.left_basis(), right_i, u, RightPaired);
+    MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, u.left_basis(), right_i, u, RightPaired);
     assert( mps_tensor2.reasonable() );
     
     return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
@@ -159,10 +158,10 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff)
     
     truncation_results trunc = svd_truncate(data_, u, v, s, cutoff, Mmax, true);
     
-    MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_orig, v.left_basis(), right_i, v, RightPaired);
+    MPSTensor<Matrix, SymmGroup> mps_tensor2(phys_i_right, v.left_basis(), right_i, v, RightPaired);
     
     gemm(u, s, v);
-    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_orig, left_i, u.right_basis(), v, LeftPaired);
+    MPSTensor<Matrix, SymmGroup> mps_tensor1(phys_i_left, left_i, u.right_basis(), v, LeftPaired);
     
     return boost::make_tuple(mps_tensor1, mps_tensor2, trunc);
 }
@@ -195,7 +194,8 @@ template<class Matrix, class SymmGroup>
 void TwoSiteTensor<Matrix, SymmGroup>::swap_with(TwoSiteTensor<Matrix, SymmGroup> & b)
 {
     swap(this->phys_i, b.phys_i);
-    swap(this->phys_i_orig, b.phys_i_orig);
+    swap(this->phys_i_left, b.phys_i_left);
+    swap(this->phys_i_right, b.phys_i_right);
     swap(this->left_i, b.left_i);
     swap(this->right_i, b.right_i);
     swap(this->data_, b.data_);

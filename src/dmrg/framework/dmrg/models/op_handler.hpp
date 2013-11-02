@@ -132,8 +132,9 @@ typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::get
 // ***************************************************
 
 template <class Matrix, class SymmGroup>
-typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::get_kron_tag
-            (Index<SymmGroup> const & phys_i,
+typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::get_kron_tag(
+            Index<SymmGroup> const & phys_i1,
+            Index<SymmGroup> const & phys_i2,
             typename OPTable<Matrix, SymmGroup>::tag_type t1,
             typename OPTable<Matrix, SymmGroup>::tag_type t2)
 {
@@ -150,7 +151,7 @@ typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::ge
         op_t& op1 = (*base::get_operator_table())[t1];
         op_t& op2 = (*base::get_operator_table())[t2];
 
-        op_kron(phys_i, op1, op2, product);
+        op_kron(phys_i1, phys_i2, op1, op2, product);
         
         tag_type ret = kronecker_table->register_op(product);
         kron_tags[std::make_pair(t1, t2)] = std::make_pair(ret, 1.0);
