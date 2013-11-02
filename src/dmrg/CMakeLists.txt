@@ -30,7 +30,7 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 set(AMBIENT_SOURCES_DIR "../ambient" CACHE STRINGS "Location of the ambient source tree")
 
-set(BUILD_SYMMETRIES "U1;TwoU1;TwoU1PGNONE" CACHE STRINGS "List of symmetry to include in the build objects. U1, TwoU1, TwoU1PG, NONE and Z2 are currently available.")
+set(BUILD_SYMMETRIES "U1;TwoU1;TwoU1PG;NONE" CACHE STRINGS "List of symmetry to include in the build objects. U1, TwoU1, TwoU1PG, NONE and Z2 are currently available.")
 
 option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" ON)
 option(ENABLE_OMP "Enable OpenMP" OFF)
