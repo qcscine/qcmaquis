@@ -640,33 +640,31 @@ block_matrix<Matrix, SymmGroup> op_exp(Index<SymmGroup> const & phys,
 }
 
 template<class Matrix1, class Matrix2, class SymmGroup>
-void op_kron(Index<SymmGroup> const & phys,
+void op_kron(Index<SymmGroup> const & phys_A,
+             Index<SymmGroup> const & phys_B,
              block_matrix<Matrix1, SymmGroup> const & A,
              block_matrix<Matrix1, SymmGroup> const & B,
              block_matrix<Matrix2, SymmGroup> & C)
 {
     C = block_matrix<Matrix2, SymmGroup>();
-    
-    Index<SymmGroup> const & left_basis = phys;
-    Index<SymmGroup> const & right_basis = phys;
-    
-    ProductBasis<SymmGroup> pb_left(left_basis, left_basis);
+
+    ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
     ProductBasis<SymmGroup> const& pb_right = pb_left;
-    
+
     for (int i = 0; i < A.n_blocks(); ++i) {
         for (int j = 0; j < B.n_blocks(); ++j) {
             typename SymmGroup::charge new_right = SymmGroup::fuse(A.right_basis()[i].first, B.right_basis()[j].first);
             typename SymmGroup::charge new_left = SymmGroup::fuse(A.left_basis()[i].first, B.left_basis()[j].first);
-            
-            
+
+
             Matrix2 tmp(pb_left.size(A.left_basis()[i].first, B.left_basis()[j].first),
                        pb_right.size(A.right_basis()[i].first, B.right_basis()[j].first),
                        0);
 
-            maquis::dmrg::detail::op_kron(tmp, B[j], A[i], 
-                                          pb_left(A.left_basis()[i].first, B.left_basis()[j].first), 
-                                          pb_right(A.right_basis()[i].first, B.right_basis()[j].first), 
-                                          A.left_basis()[i].second, B.left_basis()[j].second, 
+            maquis::dmrg::detail::op_kron(tmp, B[j], A[i],
+                                          pb_left(A.left_basis()[i].first, B.left_basis()[j].first),
+                                          pb_right(A.right_basis()[i].first, B.right_basis()[j].first),
+                                          A.left_basis()[i].second, B.left_basis()[j].second,
                                           A.right_basis()[i].second, B.right_basis()[j].second);
 
             C.match_and_add_block(tmp, new_left, new_right);

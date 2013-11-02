@@ -20,7 +20,7 @@ struct model_factory<Matrix, TwoU1> {
                    );
         else if (model["MODEL"] == std::string("quantum_chemistry"))
             return typename model_traits<Matrix, TwoU1>::model_ptr(
-                    new qc_model<Matrix>(lattice, model)
+                    new qc_model<Matrix, TwoU1>(lattice, model)
                    );
 
         else {

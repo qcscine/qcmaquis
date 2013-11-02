@@ -42,7 +42,7 @@ public:
     : base(mps_, mpo_, parms_, stop_callback_, initial_sweep_, initial_site_)
     {
         locale_shared l; // cache twosite mpo
-        make_ts_cache_mpo(mpo, ts_cache_mpo, mps[0].site_dim());
+        make_ts_cache_mpo(mpo, ts_cache_mpo, mps);
     }
 
     void sweep(int sweep, OptimizeDirection d = Both)

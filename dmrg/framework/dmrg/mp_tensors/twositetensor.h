@@ -79,7 +79,7 @@ private:
     set_id right_paired;
     set_id both_paired;
 
-    Index<SymmGroup> phys_i, phys_i_orig, left_i, right_i;
+    Index<SymmGroup> phys_i, phys_i_left, phys_i_right, left_i, right_i;
     mutable block_matrix<Matrix, SymmGroup> data_;
     mutable TwoSiteStorageLayout cur_storage;
     Indicator cur_normalization;
