@@ -116,7 +116,7 @@ std::map<std::size_t, block_matrix<Matrix, SymmGroup> > make_exp_nn (Hamiltonian
         assert(std::abs(pos1-pos2) == 1);
         
         typename ham::op_t bond_op;
-        op_kron(H.get_phys(), H[n].operators[0].second, H[n].operators[1].second, bond_op);
+        op_kron(H.get_phys(), H.get_phys(), H[n].operators[0].second, H[n].operators[1].second, bond_op);
         
         int k = n+1;
         for (; k<H.n_terms(); ++k)
@@ -126,11 +126,11 @@ std::map<std::size_t, block_matrix<Matrix, SymmGroup> > make_exp_nn (Hamiltonian
                 break;
             typename ham::op_t tmp;
             if (term.operators.size() == 2)
-                op_kron(H.get_phys(), term.operators[0].second, term.operators[1].second, tmp);
+                op_kron(H.get_phys(), H.get_phys(), term.operators[0].second, term.operators[1].second, tmp);
             else if (term.operators[0].first == pos1)
-                op_kron(H.get_phys(), term.operators[0].second, H.get_identity(), tmp);
+                op_kron(H.get_phys(), H.get_phys(), term.operators[0].second, H.get_identity(), tmp);
             else if (term.operators[0].first == pos2)
-                op_kron(H.get_phys(), H.get_identity(), term.operators[0].second, tmp);
+                op_kron(H.get_phys(), H.get_phys(), H.get_identity(), term.operators[0].second, tmp);
             else
                 throw std::runtime_error("Operator k not matching any valid position.");
             bond_op += tmp;
@@ -159,11 +159,11 @@ block_matrix<Matrix, SymmGroup> term2block(typename Hamiltonian<Matrix, SymmGrou
     
     block_matrix<Matrix, SymmGroup> bond_op;
     if (term.operators.size() == 2)
-        op_kron(phys_i, tag_handler->get_op(term.operators[0].second), tag_handler->get_op(term.operators[1].second), bond_op);
+        op_kron(phys_i, phys_i, tag_handler->get_op(term.operators[0].second), tag_handler->get_op(term.operators[1].second), bond_op);
     else if (term.operators[0].first == pos1)
-        op_kron(phys_i, tag_handler->get_op(term.operators[0].second), ident, bond_op);
+        op_kron(phys_i, phys_i, tag_handler->get_op(term.operators[0].second), ident, bond_op);
     else
-        op_kron(phys_i, ident, tag_handler->get_op(term.operators[0].second), bond_op);
+        op_kron(phys_i, phys_i, ident, tag_handler->get_op(term.operators[0].second), bond_op);
 //    else
 //        throw std::runtime_error("Operator k not matching any valid position.");
     
@@ -228,11 +228,11 @@ public:
         /// kron product of operators
         op_t bond_op;
         if (term.operators.size() == 2)
-            op_kron(phys, (*op_table)[term.operators[0].second], (*op_table)[term.operators[1].second], bond_op);
+            op_kron(phys, phys, (*op_table)[term.operators[0].second], (*op_table)[term.operators[1].second], bond_op);
         else if (term.operators[0].first == pos1)
-            op_kron(phys, (*op_table)[term.operators[0].second], ident_op, bond_op);
+            op_kron(phys, phys, (*op_table)[term.operators[0].second], ident_op, bond_op);
         else if (term.operators[0].first == pos2)
-            op_kron(phys, ident_op, (*op_table)[term.operators[0].second], bond_op);
+            op_kron(phys, phys, ident_op, (*op_table)[term.operators[0].second], bond_op);
         else
             throw std::runtime_error("Operator k not matching any valid position.");
         
