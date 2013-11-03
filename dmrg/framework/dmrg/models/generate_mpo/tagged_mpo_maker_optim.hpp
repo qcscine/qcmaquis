@@ -352,11 +352,25 @@ namespace generate_mpo
 			/// merge_behavior == detach: a new branch will be created, in case op already exist, an offset is used
 			/// merge_behavior == attach: if operator tags match, keep the same branch
             std::pair<typename prempo_map_type::iterator,bool> match = prempo[p].insert( make_pair(kk, val) );
-			while (!match.second && (merge_behavior==detach || match.first->second != val)) {
-				kk.second.offset += 1;
-				match = prempo[p].insert( make_pair(kk, val) );
-			}
-			return kk.second;
+            if (merge_behavior == detach) {
+                if (!match.second) {
+                    std::pair<prempo_key_type, prempo_key_type> kk_max = kk;
+                    kk_max.second.offset = std::numeric_limits<index_type>::max();
+
+                    typename prempo_map_type::iterator highest_offset = prempo[p].upper_bound(kk_max);
+                    highest_offset--;
+                    kk.second.offset = highest_offset->first.second.offset + 1;
+                    prempo[p].insert(highest_offset, make_pair(kk, val));
+                }
+            }
+            else {
+                // still slow, but seems never to be used
+                while (!match.second && match.first->second != val) {
+                    kk.second.offset += 1;
+                    match = prempo[p].insert( make_pair(kk, val) );
+                }
+            }
+            return kk.second;
 		}
 		
         void finalize()
