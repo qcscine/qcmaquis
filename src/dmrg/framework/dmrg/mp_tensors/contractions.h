@@ -344,22 +344,45 @@ struct contraction {
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("parallel::overlap_mpo_left_step");
         #endif
-        Boundary<Matrix, SymmGroup> lbtm = left_boundary_tensor_mpo(ket_tensor, left, mpo, &bra_tensor.row_dim());
-        
-        bra_tensor.make_left_paired();
+
+        std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
+        {
+            // Make a copy of ket_tensor to avoid reshaping back to left
+            MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
+            ket_cpy.make_right_paired();
+            std::size_t loop_max = left.aux_dim();
+
+            parallel_for(locale::scatter(mpo.placement_l), locale b = 0; b < loop_max; ++b) {
+                block_matrix<Matrix, SymmGroup> tmp;
+                gemm(transpose(left[b]), ket_cpy.data(), tmp);
+                reshape_right_to_left_new<Matrix>(ket_cpy.site_dim(), left[b].right_basis(), ket_cpy.col_dim(),
+                                                  tmp, t[b]);
+            }
+        }
+
+        Index<SymmGroup> const & left_i = bra_tensor.row_dim();
+        Index<SymmGroup> const & right_i = ket_tensor.col_dim();
+        Index<SymmGroup> out_left_i = ket_tensor.site_dim() * left_i;
+        ProductBasis<SymmGroup> out_left_pb(ket_tensor.site_dim(), left_i);
+
+        Boundary<Matrix, SymmGroup> ret;
+        ret.resize(mpo.col_dim());
+
+        //ket_tensor.make_left_paired();
         std::size_t loop_max = mpo.col_dim();
 
+        bra_tensor.make_left_paired();
         block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
-        parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b) {
+        parallel_for(locale::scatter(mpo.placement_r), locale b2 = 0; b2 < loop_max; ++b2) {
             block_matrix<Matrix, SymmGroup> tmp;
-            gemm(transpose(lbtm[b]), bra_conj, tmp);
-            swap(tmp, lbtm[b]);
+            tmp = lbtm_kernel(b2, left, t, mpo, ket_tensor.site_dim(), left_i, right_i, out_left_i, out_left_pb);
+            gemm(transpose(tmp), bra_conj, ret[b2]);
         }
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("serial::continue");
         #endif
 
-        return lbtm;
+        return ret;
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -369,25 +392,51 @@ struct contraction {
                            Boundary<OtherMatrix, SymmGroup> const & right,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        typedef typename SymmGroup::charge charge;
+
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("parallel::overlap_mpo_right_step");
         #endif
-        Boundary<Matrix, SymmGroup> rbtm = right_boundary_tensor_mpo(ket_tensor, right, mpo, &bra_tensor.col_dim());
-        
-        bra_tensor.make_right_paired();
+
+        std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
+        {
+            // Make a copy of ket_tensor to avoid reshaping back to right
+            MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
+            ket_cpy.make_left_paired();
+            std::size_t loop_max = right.aux_dim();
+
+            parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b){
+                block_matrix<Matrix, SymmGroup> tmp;
+                gemm(ket_cpy.data(), right[b], tmp);
+                reshape_left_to_right_new<Matrix>(ket_cpy.site_dim(), ket_cpy.row_dim(), right[b].right_basis(),
+                                                  tmp, t[b]);
+            }
+        }
+
+        Index<SymmGroup> const & left_i = ket_tensor.row_dim();
+        Index<SymmGroup> const & right_i = bra_tensor.col_dim();
+        Index<SymmGroup> out_right_i = adjoin(ket_tensor.site_dim()) * right_i;
+        ProductBasis<SymmGroup> out_right_pb(ket_tensor.site_dim(), right_i,
+                                             boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                                 -boost::lambda::_1, boost::lambda::_2));
+        Boundary<Matrix, SymmGroup> ret;
+        ret.resize(mpo.row_dim());
+
+        //ket_tensor.make_right_paired();
         std::size_t loop_max = mpo.row_dim();
 
+        bra_tensor.make_right_paired();
         block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
-        parallel_for(locale::scatter(mpo.placement_l), locale b = 0; b < loop_max; ++b) {
+        parallel_for(locale::scatter(mpo.placement_l), locale b1 = 0; b1 < loop_max; ++b1) {
             block_matrix<Matrix, SymmGroup> tmp;
-            gemm(rbtm[b], transpose(bra_conj), tmp);
-            swap(tmp, rbtm[b]);
+            tmp = rbtm_kernel(b1, right, t, mpo, ket_tensor.site_dim(), left_i, right_i, out_right_i, out_right_pb);
+            gemm(tmp, transpose(bra_conj), ret[b1]);
         }
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("serial::continue");
         #endif
 
-        return rbtm;
+        return ret;
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -398,14 +447,13 @@ struct contraction {
                 MPOTensor<Matrix, SymmGroup> const & mpo)
     {
         typedef typename SymmGroup::charge charge;
-        typedef std::size_t size_t;
 
         MPSTensor<Matrix, SymmGroup> ret;
 
         ket_tensor.make_right_paired();
         
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
-        size_t loop_max = left.aux_dim();
+        std::size_t loop_max = left.aux_dim();
 
         parallel_for(locale::scatter(mpo.placement_l), locale b = 0; b < loop_max; ++b) {
             block_matrix<Matrix, SymmGroup> tmp;
@@ -431,7 +479,7 @@ struct contraction {
             #ifdef MAQUIS_OPENMP
             #pragma omp critical
             #endif
-            for (size_t k = 0; k < tmp.n_blocks(); ++k)
+            for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
                 ret.data().match_and_add_block(tmp[k], tmp.left_basis()[k].first, tmp.right_basis()[k].first);
         }
 
