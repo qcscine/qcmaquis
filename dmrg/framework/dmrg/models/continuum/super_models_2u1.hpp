@@ -365,7 +365,7 @@ private:
         
         std::vector<std::pair<op_t,op_t> > ret; ret.reserve(2);
         ret.push_back( std::make_pair(idh1, idh2) );
-        if ( ! model["RUN_FINITE_T"] )
+        if ( ! static_cast<bool>(model["RUN_FINITE_T"]) )
             ret.push_back( std::make_pair(-1.*h1id, h2id) );
         
         return ret;
