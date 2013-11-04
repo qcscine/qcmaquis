@@ -116,20 +116,18 @@ public:
 
 template <class SymmGroup> inline 
 std::vector<typename PGDecorator<SymmGroup>::irrep_t>
-parse_symm(BaseParameters& model)
+parse_symm(int L, BaseParameters& model)
 {
-    int L = model["L"];
     return std::vector<typename PGDecorator<SymmGroup>::irrep_t>(L, 0);
 }
 
 template < > inline
 std::vector<typename PGDecorator<TwoU1PG>::irrep_t>
-parse_symm<TwoU1PG>(BaseParameters& model)
+parse_symm<TwoU1PG>(int L, BaseParameters& model)
 {
     typedef typename PGDecorator<TwoU1PG>::irrep_t irrep_t;
 
     // TODO: pos_t type consistency
-    int L = model["L"];
     std::vector<int> order(L);
     if (!model.is_set("orbital_order"))
         for (int p = 0; p < L; ++p)

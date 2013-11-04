@@ -104,7 +104,7 @@ MPO<Matrix, SymmGroup> make_mpo(typename Lattice::pos_t L, Hamiltonian<Matrix, S
         for (std::size_t i = 0; i < H.n_tagterms(what); ++i)
             mpom.add_term(H.tag(i));
 
-        std::vector<typename PGDecorator<SymmGroup>::irrep_t> irreps = parse_symm<SymmGroup>(model);
+        std::vector<typename PGDecorator<SymmGroup>::irrep_t> irreps = parse_symm<SymmGroup>(L, model);
 
         MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
 
