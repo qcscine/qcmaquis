@@ -43,7 +43,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
         if (hf_init.size() != mps.length())
             throw std::runtime_error("HF occupation vector length != MPS length\n");
 
-        std::vector<typename PGDecorator<SymmGroup>::irrep_t> irreps = parse_symm<SymmGroup>(model);
+        std::vector<typename PGDecorator<SymmGroup>::irrep_t> irreps = parse_symm<SymmGroup>(mps.length(), model);
 
         typename SymmGroup::charge max_charge = SymmGroup::IdentityCharge;
         for (pos_t i = 0; i < mps.length(); ++i)

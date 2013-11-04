@@ -93,7 +93,7 @@ struct default_mps_init<Matrix, TwoU1PG> : public mps_initializer<Matrix, TwoU1P
         maquis::cout << "Phys: " << phys << std::endl;
         maquis::cout << "Right end: " << right_end << std::endl;
 
-        std::vector<irrep_t> irreps = parse_symm<TwoU1PG>(model);
+        std::vector<irrep_t> irreps = parse_symm<TwoU1PG>(L, model);
         
         std::vector<Index<TwoU1PG> > allowed = allowed_sectors(L, phys, right_end, Mmax, irreps);
         
