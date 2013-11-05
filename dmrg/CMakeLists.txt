@@ -120,7 +120,6 @@ if(NOT USE_AMBIENT)
   message(STATUS "Lapack libs:     ${MAQUISLapack_LIBRARIES}")
 endif(NOT USE_AMBIENT)
 
-
 # Ambient
 if(USE_AMBIENT)
   add_definitions(-DUSE_AMBIENT)
@@ -272,6 +271,11 @@ link_directories(${DMRG_LIBRARY_DIRS})
 add_definitions(${DMRG_DEFINITIONS})
 
 set(DMRG_FRAMEWORK_DIR ${PROJECT_SOURCE_DIR}/framework)
+if(CMAKE_EXE_LINKER_FLAGS MATCHES "^ $")
+    set(CMAKE_EXE_LINKER_FLAGS ${MAQUISLapack_LINKER_FLAGS})
+else(CMAKE_EXE_LINKER_FLAGS MATCHES "^ $")
+    list(APPEND CMAKE_EXE_LINKER_FLAGS ${MAQUISLapack_LINKER_FLAGS})
+endif(CMAKE_EXE_LINKER_FLAGS MATCHES "^ $")
 
 
 ######################################################################
