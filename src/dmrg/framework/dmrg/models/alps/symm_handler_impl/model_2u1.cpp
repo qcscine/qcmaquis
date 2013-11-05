@@ -18,7 +18,7 @@ TwoU1::charge state_to_charge<TwoU1>(alps::site_state<short> const & state, alps
 {
     typedef std::map<std::string, int> qn_map_type;
     TwoU1::charge c = TwoU1::IdentityCharge;
-    for (typename alps::SiteBasisDescriptor<short>::const_iterator it = b.begin(); it != b.end(); ++it) {
+    for (alps::SiteBasisDescriptor<short>::const_iterator it = b.begin(); it != b.end(); ++it) {
         qn_map_type::const_iterator match = all_conserved_qn.find(it->name());
         if (match != all_conserved_qn.end())
             c[match->second] = detail::to_integer( get_quantumnumber(state, it->name(), b) );
