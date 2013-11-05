@@ -226,7 +226,7 @@ public:
         
         int ns = sweep_ + nsteps;
         
-        if (nsteps < 2 || !(*parms)["te_optim"]) {
+        if (nsteps < 2 || !static_cast<bool>((*parms)["te_optim"])) {
             // nsteps sweeps
             for (int i=sweep_; i < ns; ++i)
             {

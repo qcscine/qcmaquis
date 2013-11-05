@@ -11,6 +11,9 @@ endif()
 if(NOT DEFINED MAQUISLapack_CXX_COMPILER_FLAGS)
   set(MAQUISLapack_CXX_COMPILER_FLAGS)
 endif()
+if(NOT DEFINED MAQUISLapack_LINKER_FLAGS)
+  set(MAQUISLapack_LINKER_FLAGS)
+endif()
 
 
 if(${BLAS_LAPACK_SELECTOR} MATCHES "mkl_sequential")
@@ -46,15 +49,15 @@ elseif(${BLAS_LAPACK_SELECTOR} MATCHES "mkl_parallel")
   
   
 elseif(${BLAS_LAPACK_SELECTOR} MATCHES "alps")
-  set(MAQUISLapack_LIBRARIES ${ALPS_LAPACK_LIBRARIES} ${ALPS_LAPACK_LIBRARY}
-                             ${ALPS_BLAS_LIBRARIES} ${ALPS_BLAS_LIBRARY})
-  set(MAQUISLapack_CXX_COMPILER_FLAGS ${ALPS_LAPACK_LINKER_FLAGS} ${ALPS_LAPACK_DEFINITIONS})
-  
-  
+  set(MAQUISLapack_LIBRARIES "${ALPS_LAPACK_LIBRARIES} ${ALPS_LAPACK_LIBRARY} ${ALPS_BLAS_LIBRARIES} ${ALPS_BLAS_LIBRARY}")
+  set(MAQUISLapack_CXX_COMPILER_FLAGS ${ALPS_LAPACK_DEFINITIONS})
+  set(MAQUISLapack_LINKER_FLAGS "${ALPS_LAPACK_LINKER_FLAGS}")
+ 
 elseif(${BLAS_LAPACK_SELECTOR} MATCHES "veclib")
   if(APPLE)
     set(MAQUISLapack_CXX_COMPILER_FLAGS "-framework vecLib")
-    set(MAQUISLapack_LIBRARIES /usr/lib/libpthread.dylib)
+    set(MAQUISLapack_LIBRARIES "/usr/lib/libpthread.dylib")
+    set(MAQUISLapack_LINKER_FLAGS "-framework veclib")
   else(APPLE)
     meassage(FATAL_ERROR "VecLib available only on Mac.")
   endif(APPLE)
