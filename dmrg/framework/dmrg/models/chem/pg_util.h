@@ -37,7 +37,7 @@ public:
     typedef int irrep_t;
     Index<TwoU1PG> operator()(Index<TwoU1PG> rhs, irrep_t irr)
     {
-        for(typename Index<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+        for(Index<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
             if ( (it->first[0] + it->first[1]) % 2 == 0)
                 it->first[2] = 0;
             else
@@ -60,8 +60,8 @@ template < >
 class  PGCharge<TwoU1PG>
 {
 public:
-    typedef typename PGDecorator<TwoU1PG>::irrep_t irrep_t;
-    void operator()(typename TwoU1PG::charge & rhs, irrep_t irr)
+    typedef PGDecorator<TwoU1PG>::irrep_t irrep_t;
+    void operator()(TwoU1PG::charge & rhs, irrep_t irr)
     {
         rhs[2] = irr;
     }
@@ -80,8 +80,8 @@ template < >
 class  PGChargeTransfer<TwoU1PG>
 {
 public:
-    typedef typename PGDecorator<TwoU1PG>::irrep_t irrep_t;
-    void operator()(typename TwoU1PG::charge const & ref, typename TwoU1PG::charge & target)
+    typedef PGDecorator<TwoU1PG>::irrep_t irrep_t;
+    void operator()(TwoU1PG::charge const & ref, TwoU1PG::charge & target)
     {
         if ( (target[0] + target[1]) % 2 )
             target[2] = ref[2];
@@ -103,8 +103,8 @@ template < >
 class  PGSensible<TwoU1PG>
 {
 public:
-    typedef typename PGDecorator<TwoU1PG>::irrep_t irrep_t;
-    bool operator()(typename TwoU1PG::charge & rhs)
+    typedef PGDecorator<TwoU1PG>::irrep_t irrep_t;
+    bool operator()(TwoU1PG::charge & rhs)
     {
         irrep_t irr = rhs[2];
         if (irr > 7 || irr < 0)
@@ -122,10 +122,10 @@ parse_symm(int L, BaseParameters& model)
 }
 
 template < > inline
-std::vector<typename PGDecorator<TwoU1PG>::irrep_t>
+std::vector<PGDecorator<TwoU1PG>::irrep_t>
 parse_symm<TwoU1PG>(int L, BaseParameters& model)
 {
-    typedef typename PGDecorator<TwoU1PG>::irrep_t irrep_t;
+    typedef PGDecorator<TwoU1PG>::irrep_t irrep_t;
 
     // TODO: pos_t type consistency
     std::vector<int> order(L);
