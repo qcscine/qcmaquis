@@ -103,7 +103,7 @@ endif (ALPS_PYTHON_INTERPRETER)
 
 # Boost
 set(Boost_requirements bindings date_time filesystem regex system
-serialization unit_test)
+serialization)
 
 include(${PROJECT_SOURCE_DIR}/config/find_boost.cmake)
 find_maquis_boost(COMPONENTS ${Boost_requirements})
