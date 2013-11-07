@@ -152,6 +152,8 @@ typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::ge
         op_t& op2 = (*base::get_operator_table())[t2];
 
         op_kron(phys_i1, phys_i2, op1, op2, product);
+
+        tag_detail::remove_empty_blocks(product);
         
         tag_type ret = kronecker_table->register_op(product);
         kron_tags[std::make_pair(t1, t2)] = std::make_pair(ret, 1.0);
