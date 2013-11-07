@@ -11,6 +11,7 @@
 
 #include <alps/numeric/isnan.hpp>
 #include <alps/numeric/isinf.hpp>
+#include <alps/numeric/is_nonzero.hpp>
 
 namespace tag_detail {
 
@@ -33,8 +34,41 @@ namespace tag_detail {
     };
 
     template <class Matrix, class SymmGroup>
+    void remove_empty_blocks(block_matrix<Matrix, SymmGroup> & op)
+    {
+        #ifdef AMBIENT
+        {
+            locale_shared l;
+            for(int i = 0; i < op.n_blocks(); ++i) ambient::migrate(op[i]);
+            ambient::sync();
+        }
+        #endif
+
+        for (typename Matrix::size_type b=0; b < op.n_blocks(); ++b)
+        {
+            bool only_zero = true;
+            const Matrix& m = op[b];
+            for (int i = 0; i < num_rows(m); i++)
+               for(int j = 0; j < num_cols(m); j++)
+            {
+                if (alps::numeric::is_nonzero(m(i,j))) {
+                    only_zero = false;
+                    break;
+                }
+            }
+            if (only_zero) {
+                op.remove_block(b);
+                --b;
+            }
+        }
+    }
+
+    template <class Matrix, class SymmGroup>
     bool is_uniform(block_matrix<Matrix, SymmGroup> const& op)
     {
+        if (op.n_blocks() == 0)
+            return true;
+
         typename Matrix::value_type invscale;
         #ifdef AMBIENT
         {
@@ -93,6 +127,9 @@ namespace tag_detail {
         #endif
         if (reference.left_basis() != sample.left_basis() || reference.right_basis() != sample.right_basis())
             return std::make_pair(false, 0.);
+
+        if (sample.n_blocks() == 0)
+            return std::make_pair(true, 1.0);
 
         typename Matrix::value_type invscale1, invscale2;
      

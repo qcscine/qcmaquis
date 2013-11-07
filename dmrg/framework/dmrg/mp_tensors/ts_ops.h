@@ -94,6 +94,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
 
                 if (non_uniform.count(b3) > 0) {
                     std::pair<tag_type, value_type> scaled_tag;
+                    tag_detail::remove_empty_blocks(out_row[b3]);
                     scaled_tag = kron_handler.get_kronecker_table()->checked_register(out_row[b3]);
                     prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
                     //tag_type new_tag = kron_handler.get_kronecker_table()->register_op(out_row[b3]);
