@@ -279,6 +279,8 @@ BOOST_AUTO_TEST_CASE( join_semirnd_mps_cmp_dens )
     std::cout << std::endl << std::endl << "*** join_semirnd_mps_cmp_dens ***" << std::endl;
     int M = 10;
     int L = 4;
+
+    ModelParameters parms;
     
     std::vector<std::pair<SymmGroup::charge, size_t> > b(L, std::pair<SymmGroup::charge, size_t>(0,0));
     b[0].first = 1;
@@ -297,7 +299,7 @@ BOOST_AUTO_TEST_CASE( join_semirnd_mps_cmp_dens )
     
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
     
-    default_mps_init<matrix, SymmGroup> initializer;
+    default_mps_init<matrix, SymmGroup> initializer(parms);
 
     MPS<matrix,SymmGroup> mps1;
     mps1.resize(L); initializer(mps1, M, phys, initc);
@@ -313,6 +315,8 @@ BOOST_AUTO_TEST_CASE( join_rnd_mps_cmp_dens )
     int Nmps = 4;
     int M = 10;
     int L = 4;
+
+    ModelParameters parms;
     
     // Bosons with Nmax=2
     Index<SymmGroup> phys;
@@ -327,7 +331,7 @@ BOOST_AUTO_TEST_CASE( join_rnd_mps_cmp_dens )
     
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
     
-    default_mps_init<matrix, SymmGroup> initializer;
+    default_mps_init<matrix, SymmGroup> initializer(parms);
     
     MPS<matrix,SymmGroup> mps;
     mps.resize(L); initializer(mps, M, phys, initc);
