@@ -246,7 +246,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dens_meas, ML, test_systems )
     
     Index<grp> phys = model->get_phys();
     charge initc = model->initc( parms );
-    default_mps_init<matrix, grp> initializer;
+    default_mps_init<matrix, grp> initializer(parms);
     MPS<matrix, grp> mps(lat->size(), ML::max_bond_dim(), phys, initc, initializer);
     
     block_matrix<matrix, grp> ident = model->get_op("id");
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( obdm_meas, ML, test_systems )
     
     Index<grp> phys = model->get_phys();
     charge initc = model->initc( parms );
-    default_mps_init<matrix, grp> initializer;
+    default_mps_init<matrix, grp> initializer(parms);
     MPS<matrix, grp> mps(lat->size(), ML::max_bond_dim(), phys, initc, initializer);
     
     block_matrix<matrix, grp> ident = model->get_op("id");

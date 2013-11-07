@@ -31,6 +31,8 @@ BOOST_AUTO_TEST_CASE( test )
     int Nrep = 6;
     int M = 50;
     int L = 16;
+
+    ModelParameters parms;
     
     // Bosons with Nmax=2
     Index<SymmGroup> phys;
@@ -41,7 +43,7 @@ BOOST_AUTO_TEST_CASE( test )
     
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
     
-    default_mps_init<matrix, SymmGroup> initializer;
+    default_mps_init<matrix, SymmGroup> initializer(parms);
     
     MPS<matrix,SymmGroup> mps;
     mps.resize(L); initializer(mps, M, phys, initc);
