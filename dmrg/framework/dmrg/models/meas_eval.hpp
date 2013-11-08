@@ -122,11 +122,14 @@ namespace meas_eval {
     class LocalMPSMeasurement
     {
     public:
-        LocalMPSMeasurement(const MPS<Matrix, SymmGroup> & mps_, const Lattice & lat_)
+        LocalMPSMeasurement(const MPS<Matrix, SymmGroup> & mps_, const Lattice & lat_,
+                            std::vector<typename PGDecorator<SymmGroup>::irrep_t> const & si_)
         : mps(mps_)
         , lat(lat_)
         , L(mps.size())
         , phys_i(mps[0].site_dim())
+        , site_irreps(si_)
+        , ident(L)
         , left_(L)
         , right_(L)
         , initialized(false)
@@ -134,17 +137,19 @@ namespace meas_eval {
         
         void init() const
         {
-            ident.set(0, 0, identity_matrix<Matrix>(phys_i));
+            PGDecorator<SymmGroup> set_symm;
+            for (int i = 0; i < L; ++i)
+                ident[i].set(0, 0, identity_matrix<Matrix>(set_symm(phys_i, site_irreps[i])));
             
             // init right_ & left_
             Boundary<Matrix, SymmGroup> right = mps.right_boundary(), left = mps.left_boundary();
             right_[L-1] = right;
             left_[0] = left;
             for (int i = 1; i < L; ++i) {
-                right = contraction::overlap_mpo_right_step(mps[L-i], mps[L-i], right, ident);
+                right = contraction::overlap_mpo_right_step(mps[L-i], mps[L-i], right, ident[L-i]);
                 right_[L-1-i] = right;
                 
-                left = contraction::overlap_mpo_left_step(mps[i-1], mps[i-1], left, ident);
+                left = contraction::overlap_mpo_left_step(mps[i-1], mps[i-1], left, ident[i-1]);
                 left_[i] = left;
             }
         }
@@ -158,10 +163,14 @@ namespace meas_eval {
             
             std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> vals; vals.reserve(L);
             std::vector<std::string> labels;
-            MPOTensor<Matrix, SymmGroup> temp;
-            temp.set(0, 0, op.first);
 
+            OPIrrep<Matrix, SymmGroup> op_symm;
             for (int p = 0; p < L; ++p) {
+                // modify pg-symmetry of op.first 
+                MPOTensor<Matrix, SymmGroup> temp;
+                block_matrix<Matrix, SymmGroup> op_with_symm = op_symm(op.first, site_irreps[p]);
+                temp.set(0, 0, op_with_symm);
+
                 MPSTensor<Matrix, SymmGroup> vec2 =
                 contraction::site_hamil2(mps[p], left_[p], right_[p], temp);
                 vals.push_back( maquis::real(mps[p].scalar_overlap(vec2)) ); // MD todo: allow complex numbers
@@ -213,7 +222,8 @@ namespace meas_eval {
         const Lattice & lat;
         int L;
         Index<SymmGroup> phys_i;
-        mutable MPOTensor<Matrix, SymmGroup> ident;
+        std::vector<typename PGDecorator<SymmGroup>::irrep_t> site_irreps;
+        mutable std::vector<MPOTensor<Matrix, SymmGroup> > ident;
         mutable std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
         bool initialized;
 
@@ -228,7 +238,7 @@ namespace meas_eval {
                        std::string const & h5name,
                        std::string base_path,
                        bool super_meas = false)
-	{
+    {
         std::vector<std::string> labels;
         std::vector<MPO<Matrix, SymmGroup> > mpos;
         
@@ -348,7 +358,7 @@ namespace meas_eval {
                          const Lattice & lat,
                          block_matrix<Matrix, SymmGroup> const & identity,
                          block_matrix<Matrix, SymmGroup> const & fill,
-    		         std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
+                         std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
                          std::string const & h5name,
                          std::string base_path,
                          bool super_meas = false)
@@ -495,7 +505,8 @@ namespace meas_eval {
 							  bool is_nn,
 							  std::vector<typename MPS<Matrix, SymmGroup>::scalar_type>& dc,
 							  std::vector<std::string>& labels,
-                              bool super_meas)
+                              bool super_meas,
+                              PGSymmetryConverter<Matrix, SymmGroup> const & symm_conv)
 	{
         typedef boost::shared_ptr<generate_mpo::CorrMakerBase<Matrix, SymmGroup> > maker_ptr;
 
@@ -514,6 +525,7 @@ namespace meas_eval {
                 dcorr.reset(new generate_mpo::CorrMaker<Matrix, SymmGroup>(mps.length(), identity, fill, ops, *it) );
             
             MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
+            symm_conv.convert_tags_to_symm_tags(mpo);
             
 //            maquis::cout << "site " << p << ":" << std::endl << dcorr->description() << std::endl;
 
@@ -549,6 +561,7 @@ namespace meas_eval {
 							 std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
 							 std::string const & h5name,
 							 std::string base_path,
+                             PGSymmetryConverter<Matrix, SymmGroup> const & symm_conv,
 							 bool half=false,
 							 bool is_nn=false,
                              bool super_meas=false)
@@ -566,11 +579,11 @@ namespace meas_eval {
         }
         
 	    if (half) {
-	    	measure_correlation_(mps, lat, identity, fill, positions_first, ops, std::vector<std::size_t>(), is_nn, dc, labels, super_meas);
+	    	measure_correlation_(mps, lat, identity, fill, positions_first, ops, std::vector<std::size_t>(), is_nn, dc, labels, super_meas, symm_conv);
 	    } else {
 	    	CorrPermutator<Matrix, SymmGroup> perm(ops, is_nn);
 	    	for (int i=0; i<perm.size(); ++i) {
-		    	measure_correlation_(mps, lat, identity, fill, positions_first, perm[i], perm.order(i), is_nn, dc, labels, super_meas);
+		    	measure_correlation_(mps, lat, identity, fill, positions_first, perm[i], perm.order(i), is_nn, dc, labels, super_meas, symm_conv);
 	    	}
 	    }
         

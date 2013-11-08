@@ -20,6 +20,7 @@
 
 #include "dmrg/models/lattice.h"
 #include "dmrg/models/generate_mpo.hpp"
+#include "dmrg/models/chem/pg_symm_converter.h"
 
 #include "dmrg/mp_tensors/mps.h"
 
@@ -206,15 +207,21 @@ protected:
 template<class Matrix, class SymmGroup>
 void measure_on_mps(MPS<Matrix, SymmGroup> const& mps, Lattice const & lat,
                     Measurements<Matrix, SymmGroup> const & meas,
-                    std::string const & h5name, std::string basepath = std::string("/spectrum/results/"))
+                    std::string const & h5name,
+                    BaseParameters & model,
+                    std::string basepath = std::string("/spectrum/results/"))
 {
-	
+
+    // Temporary workaround for measurements with point group symmetry
+    std::vector<typename PGDecorator<SymmGroup>::irrep_t> irreps = parse_symm<SymmGroup>(lat.size(), model);	
+    PGSymmetryConverter<Matrix, SymmGroup> symm_conv(irreps);
+
     if (meas.n_terms() > 0) {
         bool super_meas=meas.is_super_meas();
         
         boost::scoped_ptr<meas_eval::LocalMPSMeasurement<Matrix, SymmGroup> > local_measurement;
         if (!super_meas)
-            local_measurement.reset( new meas_eval::LocalMPSMeasurement<Matrix, SymmGroup>(mps, lat) );
+            local_measurement.reset( new meas_eval::LocalMPSMeasurement<Matrix, SymmGroup>(mps, lat, irreps) );
         
         for (int i = 0; i < meas.n_terms(); ++i)
         {
@@ -251,26 +258,26 @@ void measure_on_mps(MPS<Matrix, SymmGroup> const& mps, Lattice const & lat,
                 case Measurement_Term<Matrix, SymmGroup>::Correlation:
                     meas_eval::measure_correlation(mps, lat, meas.get_identity(),
                                                      meas[i].fill_operator, meas[i].positions, meas[i].operators,
-                                                     h5name, basepath + storage::encode(meas[i].name), false, false, super_meas);
+                                                     h5name, basepath + storage::encode(meas[i].name), symm_conv, false, false, super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::HalfCorrelation:
                     meas_eval::measure_correlation(mps, lat, meas.get_identity(),
                                                      meas[i].fill_operator, meas[i].positions, meas[i].operators,
-                                                     h5name, basepath + storage::encode(meas[i].name), true, false, super_meas);
+                                                     h5name, basepath + storage::encode(meas[i].name), symm_conv, true, false, super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::CorrelationNN:
                     if (meas[i].operators.size() % 2 != 0)
                         throw std::runtime_error("Next neighbors correlators have to have even number of operators");
                     meas_eval::measure_correlation(mps, lat, meas.get_identity(),
                                                      meas[i].fill_operator, meas[i].positions, meas[i].operators,
-                                                     h5name, basepath + storage::encode(meas[i].name), false, true, super_meas);
+                                                     h5name, basepath + storage::encode(meas[i].name), symm_conv, false, true, super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::HalfCorrelationNN:
                     if (meas[i].operators.size() % 2 != 0)
                         throw std::runtime_error("Next neighbors correlators have to have even number of operators");
                     meas_eval::measure_correlation(mps, lat, meas.get_identity(),
                                                      meas[i].fill_operator, meas[i].positions, meas[i].operators,
-                                                     h5name, basepath + storage::encode(meas[i].name), true, true, super_meas);
+                                                     h5name, basepath + storage::encode(meas[i].name), symm_conv, true, true, super_meas);
                     break;
                 case Measurement_Term<Matrix, SymmGroup>::Custom:
                     meas_eval::measure_custom(mps, lat, meas.get_identity(),

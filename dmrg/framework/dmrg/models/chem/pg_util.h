@@ -67,50 +67,29 @@ public:
     }
 };
 
-template <class SymmGroup>
-class PGChargeTransfer
-{
-public:
-    typedef typename PGDecorator<SymmGroup>::irrep_t irrep_t;
-    void operator()(typename SymmGroup::charge const & ref, typename SymmGroup::charge & target)
-    { }
-};
 
-template < >
-class  PGChargeTransfer<TwoU1PG>
+template <class Matrix, class SymmGroup>
+struct OPIrrep
 {
-public:
-    typedef PGDecorator<TwoU1PG>::irrep_t irrep_t;
-    void operator()(TwoU1PG::charge const & ref, TwoU1PG::charge & target)
+    typedef typename PGDecorator<SymmGroup>::irrep_t irrep_t;
+    block_matrix<Matrix, SymmGroup> operator()(block_matrix<Matrix, SymmGroup> const & rhs, irrep_t irrep)
     {
-        if ( (target[0] + target[1]) % 2 )
-            target[2] = ref[2];
+        return rhs;
     }
 };
 
-template <class SymmGroup>
-class PGSensible
+template <class Matrix>
+struct OPIrrep<Matrix, TwoU1PG>
 {
-public:
-    typedef typename PGDecorator<SymmGroup>::irrep_t irrep_t;
-    bool operator()(typename SymmGroup::charge & rhs)
+    typedef typename PGDecorator<TwoU1PG>::irrep_t irrep_t;
+    block_matrix<Matrix, TwoU1PG> operator()(block_matrix<Matrix, TwoU1PG> const & rhs, irrep_t irrep)
     {
-        return true;
-    }
-};
+        PGDecorator<TwoU1PG> set_symm;
+        block_matrix<Matrix, TwoU1PG> ret(set_symm(rhs.left_basis(), irrep), set_symm(rhs.right_basis(), irrep));
+        for (std::size_t p = 0; p < ret.n_blocks(); ++p)
+            ret[p] = rhs[p];
 
-template < >
-class  PGSensible<TwoU1PG>
-{
-public:
-    typedef PGDecorator<TwoU1PG>::irrep_t irrep_t;
-    bool operator()(TwoU1PG::charge & rhs)
-    {
-        irrep_t irr = rhs[2];
-        if (irr > 7 || irr < 0)
-            return false;
-        else
-            return true;
+        return ret;
     }
 };
 

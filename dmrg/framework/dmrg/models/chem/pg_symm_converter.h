@@ -19,13 +19,14 @@
 #include "dmrg/models/op_handler.h"
 #include "dmrg/models/chem/pg_util.h"
 
+
 template <class Matrix, class SymmGroup>
 class PGSymmetryConverter
 {
     typedef typename PGDecorator<SymmGroup>::irrep_t irrep_t;
 public:
     PGSymmetryConverter(std::vector<irrep_t> const & site_irreps_) {}
-    void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in) {} 
+    void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in) const {} 
 };
 
 template <class Matrix>
@@ -50,41 +51,37 @@ public:
             irrep_vector.push_back(*it);
     }
 
-    void convert_tags_to_symm_tags(MPO<Matrix, TwoU1PG> & mpo_in)
+    std::vector<irrep_t> get_site_irreps() { return site_irreps; }
+
+    void convert_tags_to_symm_tags(MPO<Matrix, TwoU1PG> & mpo_in) const
     {
 
-        alps::numeric::matrix<irrep_t> translation_table;
+        typedef typename MPOTensor<Matrix, TwoU1PG>::row_proxy row_proxy;
 
-        /*** Set up a new OPTable for the symmetry-enabled operators via TagHandler ****/
         // TODO: assert that op_table is valid for all tensors in the MPO!
         boost::shared_ptr<OPTable<Matrix, TwoU1PG> > op_table = mpo_in[0].get_operator_table();
 
-        TagHandler<Matrix, TwoU1PG> symm_handler;
-
+        /*** Set up a new OPTable for the symmetry-enabled operators via TagHandler ****/
         irrep_t highest_irrep = *std::max_element(irrep_vector.begin(), irrep_vector.end());
         translation_table.resize(op_table->size(), highest_irrep+1); 
 
         /*** Create the tag translation table ****/
-        PGDecorator<TwoU1PG> set_symm;
+        OPIrrep<Matrix, TwoU1PG> op_symm;
         for (std::size_t i = 0; i < op_table->size(); ++i)
         {
             op_t base_op = (*op_table)[i];
             for(typename std::vector<irrep_t>::const_iterator it=irrep_vector.begin(); it != irrep_vector.end(); ++it)
             {
-                op_t modified(set_symm(base_op.left_basis(), *it), set_symm(base_op.right_basis(), *it));
-                for (std::size_t p = 0; p < modified.n_blocks(); ++p)
-                    modified[p] = base_op[p];
+                op_t modified =  op_symm(base_op, *it);
 
+                // sign information is not available and used at this point anymore
                 std::pair<tag_type, typename Matrix::value_type> symm_tag = symm_handler.checked_register(modified, tag_detail::bosonic);
                 translation_table(i, *it) = symm_tag.first;
             }
         }
-
-        typedef typename MPOTensor<Matrix, TwoU1PG>::row_proxy row_proxy;
-
         
-        // TODO: traverse by columns instead of rows
         /*** Perform tag translation to symmetry tags ****/
+        // TODO: traverse by columns instead of rows
         for (std::size_t i = 0; i < mpo_in.length(); ++i)
         {
             mpo_in[i].operator_table = symm_handler.get_operator_table();
@@ -111,6 +108,8 @@ public:
 private:
     std::vector<irrep_t> irrep_vector; // a list of all irreps present
     std::vector<irrep_t> site_irreps;  // irreps of the sites
+    mutable TagHandler<Matrix, TwoU1PG> symm_handler;
+    mutable alps::numeric::matrix<irrep_t> translation_table;
 };
 
 #endif
