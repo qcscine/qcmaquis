@@ -179,7 +179,7 @@ template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure(std::string archive_path, Measurements<Matrix, SymmGroup> const& meas)
 {
     maquis::cout << "Measurements." << std::endl;
-    measure_on_mps(mps, *lat, meas, rfile, archive_path);
+    measure_on_mps(mps, *lat, meas, rfile, model, archive_path);
     
     // TODO: move into special measurement
     std::vector<double> entropies, renyi2;
