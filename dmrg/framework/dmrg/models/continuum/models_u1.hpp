@@ -24,6 +24,7 @@ class OpticalLattice : public Model<Matrix, U1> {
     typedef typename ham::hamterm_t hamterm_t;        
     typedef Measurement_Term<Matrix, U1> mterm_t;
     typedef typename ham::op_t op_t;
+    typedef typename Matrix::value_type value_type;
 public:
     OpticalLattice (const Lattice& lat_, BaseParameters & model_)
     : lat(lat_)
@@ -44,8 +45,8 @@ public:
                 interaction.insert_block(Matrix(1, 1, n*n-n), n, n);
             
             
-            create.insert_block(Matrix(1, 1, std::sqrt(n)), n-1, n);
-            destroy.insert_block(Matrix(1, 1, std::sqrt(n)), n, n-1);
+            create.insert_block(Matrix(1, 1, std::sqrt(value_type(n))), n-1, n);
+            destroy.insert_block(Matrix(1, 1, std::sqrt(value_type(n))), n, n-1);
         }
     }
     

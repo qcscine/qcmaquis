@@ -95,8 +95,8 @@ public:
                 psi_interaction_op.insert_block(Matrix(1, 1, n*n-n), n, n);
             
             
-            psi_create_op.insert_block(Matrix(1, 1, std::sqrt(n)), n-1, n);
-            psi_destroy_op.insert_block(Matrix(1, 1, std::sqrt(n)), n, n-1);
+            psi_create_op.insert_block(Matrix(1, 1, std::sqrt(value_type(n))), n-1, n);
+            psi_destroy_op.insert_block(Matrix(1, 1, std::sqrt(value_type(n))), n, n-1);
         }
         
         /**********************************************************************/

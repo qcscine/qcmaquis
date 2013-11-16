@@ -55,8 +55,8 @@ public:
             if ((n*n-n) != 0)
                 minteraction(n,n) = n*n-n;
             
-            mcreate(n-1,n) = std::sqrt(n);   // input n-1, output n
-            mdestroy(n,n-1) = std::sqrt(n);  // input n,   output n-1
+            mcreate(n-1,n) = std::sqrt(value_type(n));   // input n-1, output n
+            mdestroy(n,n-1) = std::sqrt(value_type(n));  // input n,   output n-1
         }
         count_op.insert_block(mcount, C,C);
         interaction_op.insert_block(minteraction, C,C);

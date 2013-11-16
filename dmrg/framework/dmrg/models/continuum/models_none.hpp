@@ -22,6 +22,7 @@ class OpticalLatticeNull : public Model<Matrix, TrivialGroup> {
     typedef typename ham::hamterm_t hamterm_t;        
     typedef Measurement_Term<Matrix, TrivialGroup> mterm_t;
     typedef typename ham::op_t op_t;
+    typedef typename Matrix::value_type value_type;
 public:
     OpticalLatticeNull (const Lattice& lat_, BaseParameters & model_)
     : lat(lat_)
@@ -46,8 +47,8 @@ public:
             
             interaction[0](n, n) = n*n-n;
             
-            create[0](n-1, n) = std::sqrt(n);
-            destroy[0](n, n-1) = std::sqrt(n);
+            create[0](n-1, n) = std::sqrt(value_type(n));
+            destroy[0](n, n-1) = std::sqrt(value_type(n));
         }
     }
     
