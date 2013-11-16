@@ -716,11 +716,23 @@ inline void axpy(const int*, const Value_Type*, const Value_Type*, const int*, V
 
 template < >
 inline void axpy(const int* nr, const double* val, const double* x, const int* ix, double* y, const int* iy)
-{ daxpy_(nr, val, x, ix, y, iy); }
+{
+#if defined(BIND_FORTRAN_LOWERCASE) || defined(__xlC__)
+    daxpy(nr, val, x, ix, y, iy);
+#else
+    daxpy_(nr, val, x, ix, y, iy);
+#endif
+}
 
 template < >
 inline void axpy(const int* nr, const std::complex<double>* val, const std::complex<double>* x, const int* ix, std::complex<double>* y, const int* iy)
-{ zaxpy_(nr, val, x, ix, y, iy); }
+{
+#if defined(BIND_FORTRAN_LOWERCASE) || defined(__xlC__)
+    zaxpy(nr, val, x, ix, y, iy);
+#else
+    zaxpy_(nr, val, x, ix, y, iy);
+#endif
+}
 
 template <class Matrix, class SymmGroup> block_matrix<typename compressor<Matrix, SymmGroup>::dense_matrix, SymmGroup>
 compressor<Matrix, SymmGroup>::make_M_matrix(MPO<Matrix, SymmGroup> const & mpo_in, MPO<Matrix, SymmGroup> & mpo_out, std::size_t p)
