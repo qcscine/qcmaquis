@@ -286,8 +286,8 @@ public:
                 interaction_op.insert_block(Matrix(1, 1, n*n-n), n, n);
             
             
-            create_op.insert_block(Matrix(1, 1, std::sqrt(n)), n-1, n);
-            destroy_op.insert_block(Matrix(1, 1, std::sqrt(n)), n, n-1);
+            create_op.insert_block(Matrix(1, 1, std::sqrt(value_type(n))), n-1, n);
+            destroy_op.insert_block(Matrix(1, 1, std::sqrt(value_type(n))), n, n-1);
         }
         
         

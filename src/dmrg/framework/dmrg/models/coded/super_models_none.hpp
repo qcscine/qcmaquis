@@ -211,7 +211,7 @@ Matrix reshape_bond2site(const Matrix& a)
 {
     typedef typename Matrix::size_type size_type;
     size_type d4 = num_rows(a);
-    size_type d = sqrt(sqrt(d4));
+    size_type d = sqrt(sqrt(double(d4)));
     assert( d4 == num_cols(a) );
     assert( d4 == d*d*d*d );
     
@@ -333,8 +333,8 @@ public:
             if ((n*n-n) != 0)
                 minteraction(n,n) = n*n-n;
             
-            mcreate(n,n-1) = std::sqrt(n);   // input n-1, output n
-            mdestroy(n-1,n) = std::sqrt(n);  // input n,   output n-1
+            mcreate(n,n-1) = std::sqrt(value_type(n));   // input n-1, output n
+            mdestroy(n-1,n) = std::sqrt(value_type(n));  // input n,   output n-1
         }
         Matrix mcreate2 (N,N);   gemm(mcreate ,mcreate ,mcreate2 );
         Matrix mdestroy2(N,N);   gemm(mdestroy,mdestroy,mdestroy2);

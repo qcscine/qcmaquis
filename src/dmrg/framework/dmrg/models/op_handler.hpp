@@ -76,7 +76,14 @@ TagHandler<Matrix, SymmGroup>::get_product_tag(const typename
 
     // return tag of product, if already there
     try {
+#if defined(__xlC__)
+        if (product_tags.count(std::make_pair(t1, t2)) == 0)
+            throw std::out_of_range("");
+
+        return product_tags[std::make_pair(t1, t2)];
+#else
         return product_tags.at(std::make_pair(t1, t2));
+#endif
     }
 
     // compute and register the product, then return the new tag
@@ -142,7 +149,14 @@ typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::ge
 
     // return tag of kronecker product, if already there
     try {
+#if defined(__xlC__)
+        if (kron_tags.count(std::make_pair(t1, t2)) == 0)
+            throw std::out_of_range("");
+
+        return kron_tags[std::make_pair(t1, t2)].first;
+#else
         return kron_tags.at(std::make_pair(t1, t2)).first;
+#endif
     }
     // compute and register the product, then return the new tag
     catch(const std::out_of_range& e) {

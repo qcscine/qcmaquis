@@ -27,6 +27,7 @@ class DMOpticalLattice : public Model<Matrix, U1> {
     typedef typename ham::hamterm_t hamterm_t;
     typedef Measurement_Term<Matrix, U1> mterm_t;
     typedef typename ham::op_t op_t;
+    typedef typename Matrix::value_type value_type;
 public:
     DMOpticalLattice (const Lattice& lat_, BaseParameters & model_)
     : lat(lat_)
@@ -47,8 +48,8 @@ public:
                 psi_interaction.insert_block(Matrix(1, 1, n*n-n), n, n);
             
             
-            psi_create.insert_block(Matrix(1, 1, std::sqrt(n)), n-1, n);
-            psi_destroy.insert_block(Matrix(1, 1, std::sqrt(n)), n, n-1);
+            psi_create.insert_block(Matrix(1, 1, std::sqrt(value_type(n))), n-1, n);
+            psi_destroy.insert_block(Matrix(1, 1, std::sqrt(value_type(n))), n, n-1);
         }
         
         phys        = psi_phys * adjoin(psi_phys);
