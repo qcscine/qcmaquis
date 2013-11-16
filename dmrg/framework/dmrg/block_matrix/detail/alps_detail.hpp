@@ -28,7 +28,11 @@ namespace maquis { namespace dmrg { namespace detail {
                               double * out1, double val)
     {
         fortran_int_t one = 1, diff = in2-in1;
+#if defined(BIND_FORTRAN_LOWERCASE) || defined(__xlC__)
+        daxpy(&diff, &val, in1, &one, out1, &one);
+#else
         daxpy_(&diff, &val, in1, &one, out1, &one);
+#endif
     }
     
     inline void iterator_axpy(std::complex<double> const * in1, std::complex<double> const * in2,

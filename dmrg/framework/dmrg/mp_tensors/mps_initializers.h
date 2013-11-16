@@ -356,7 +356,7 @@ public:
         assert(phys_rho.size() == 1); // only for TrivialGroup
         
         Index<SymmGroup> phys_psi;
-        phys_psi.insert( std::make_pair( SymmGroup::IdentityCharge, static_cast<size_t>(sqrt(phys_rho[0].second)) ) );
+        phys_psi.insert( std::make_pair( SymmGroup::IdentityCharge, static_cast<size_t>(sqrt(double(phys_rho[0].second))) ) );
         
         typedef typename SymmGroup::charge charge;
         
@@ -436,7 +436,7 @@ public:
         charge C = SymmGroup::IdentityCharge;
         
         using std::sqrt;
-        size_t N = sqrt(phys_rho[0].second);
+        size_t N = sqrt(double(phys_rho[0].second));
         
         std::vector<boost::tuple<charge, size_t> > state(mps.length());
         for (int i=0; i<mps.length(); ++i)
