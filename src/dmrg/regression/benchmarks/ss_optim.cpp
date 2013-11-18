@@ -84,7 +84,7 @@ int main(int argc, char ** argv)
                                   lattice, model);
         
         Hamiltonian<matrix, grp> H = model->H();
-        MPO<matrix, grp> mpo = make_mpo(lattice->size(), H);
+        MPO<matrix, grp> mpo = make_mpo(lattice->size(), H, model_parms);
         tim_model.end();
         
         

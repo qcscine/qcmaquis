@@ -90,7 +90,7 @@ int main(int argc, char ** argv)
                                   lattice, model);
         
         Hamiltonian<matrix, grp> H = model->H();
-        MPO<matrix, grp> mpo = make_mpo(lattice->size(), H);
+        MPO<matrix, grp> mpo = make_mpo(lattice->size(), H, model_parms);
         tim_model.end();
         maquis::cout << "Parsing model done!\n";
         
@@ -130,7 +130,7 @@ int main(int argc, char ** argv)
         tim_ts_obj.begin();
         TwoSiteTensor<matrix, grp> tst(mps[site], mps[site+1]);
         MPSTensor<matrix, grp> ts_mps = tst.make_mps();
-        MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim(), true);
+        MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim(), mps[site+1].site_dim(), true);
         if(lr == +1){
             ts_mpo.placement_l = mpo[site].placement_l;
             ts_mpo.placement_r = get_right_placement(ts_mpo, mpo[site].placement_l, mpo[site+1].placement_r);
