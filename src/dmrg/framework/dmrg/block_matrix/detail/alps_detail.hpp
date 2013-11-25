@@ -124,16 +124,17 @@ namespace maquis { namespace dmrg { namespace detail {
                        size_t out_offset, size_t in_offset, 
                        size_t sdim1, size_t sdim2, size_t ldim, size_t rdim, T2 alfa_scale)
     {
-        for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-            for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
-                T3 alfa_t = alfa(ss1, ss2) * alfa_scale;
-                for(size_t rr = 0; rr < rdim; ++rr) {
+        for(size_t rr = 0; rr < rdim; ++rr) {
+            for(size_t ss1 = 0; ss1 < sdim1; ++ss1) {
+                for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
+                    T3 alfa_t = alfa(ss1, ss2) * alfa_scale;
                     iterator_axpy(&in(in_offset + ss1*ldim, rr),
                                   &in(in_offset + ss1*ldim, rr) + ldim, // bugbug
                                   &out(out_offset + ss2*ldim, rr),
                                   alfa_t);
                 }
             }
+        }
     }
     
     template <typename T1, class A1,
