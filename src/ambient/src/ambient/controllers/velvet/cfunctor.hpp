@@ -49,7 +49,7 @@ namespace ambient { namespace controllers { namespace velvet {
         this->active = true;
         if(p == AMBIENT_BROADCAST) p = ambient::rank.right_neighbor();
         handle = (request*)(size_t)p;
-        if(target->generator != NULL) ((cfunctor*)target->generator)->queue(this);
+        if(target->generator != NULL) ((functor*)target->generator)->queue(this);
         else{
             evaluated = true; // can send right now
             handle = ambient::channel.set(target, (size_t)handle, sid); 
@@ -136,7 +136,7 @@ namespace ambient { namespace controllers { namespace velvet {
         ambient::controller.queue(new get(v, owner));
     }
     inline void set<transformable>::spawn(transformable& v, int owner){
-        ((cfunctor*)v.generator)->queue(new set(v));
+        ((functor*)v.generator)->queue(new set(v));
     }
 
     inline get<transformable>::get(transformable& v, int owner)

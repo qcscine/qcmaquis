@@ -37,50 +37,50 @@ namespace ambient { namespace numeric {
 
 namespace ambient {
     template<typename T> class default_allocator;
-    using ambient::controllers::velvet::cfunctor;
+    using ambient::controllers::velvet::functor;
     using ambient::models::velvet::history;
     using ambient::models::velvet::revision;
     // {{{ compile-time type info: singular types + inplace and future specializations
     template <typename T> struct singular_info {
-        template<size_t arg> static void deallocate     (cfunctor* m){                        }
-        template<size_t arg> static bool pin            (cfunctor* m){ return false;          }
+        template<size_t arg> static void deallocate     (functor* m){                        }
+        template<size_t arg> static bool pin            (functor* m){ return false;          }
         template<size_t arg> static void score          (T& obj)     {                        }
-        template<size_t arg> static bool ready          (cfunctor* m){ return true;           }
-        template<size_t arg> static T&   revised        (cfunctor* m){ EXTRACT(o); return *o; }
-        template<size_t arg> static void modify (T& obj, cfunctor* m){
+        template<size_t arg> static bool ready          (functor* m){ return true;           }
+        template<size_t arg> static T&   revised        (functor* m){ EXTRACT(o); return *o; }
+        template<size_t arg> static void modify (T& obj, functor* m){
             m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(obj); 
         }
         template<size_t arg> static void modify_remote(T& obj)       {                        }
-        template<size_t arg> static void modify_local(T& obj, cfunctor* m){
+        template<size_t arg> static void modify_local(T& obj, functor* m){
             m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(obj);
         }
     };
     template <typename T> struct singular_inplace_info : public singular_info<T> {
-        template<size_t arg> static T& revised(cfunctor* m){ return *(T*)&m->arguments[arg]; }
+        template<size_t arg> static T& revised(functor* m){ return *(T*)&m->arguments[arg]; }
         template<size_t arg> static void modify_remote(T& obj){ }
-        template<size_t arg> static void modify_local(T& obj, cfunctor* m){ *(T*)&m->arguments[arg] = obj; }
-        template<size_t arg> static void modify(T& obj, cfunctor* m){ *(T*)&m->arguments[arg] = obj; }
+        template<size_t arg> static void modify_local(T& obj, functor* m){ *(T*)&m->arguments[arg] = obj; }
+        template<size_t arg> static void modify(T& obj, functor* m){ *(T*)&m->arguments[arg] = obj; }
     };
     template <typename T> struct future_info : public singular_info<T> {
-        template<size_t arg> static void deallocate(cfunctor* m){       
+        template<size_t arg> static void deallocate(functor* m){       
             EXTRACT(o); o->core->generator = NULL;
         }
         template<size_t arg> static void modify_remote(T& obj){ 
             ambient::controller.rsync(obj.core);
         }
-        template<size_t arg> static void modify_local(const T& obj, cfunctor* m){ 
+        template<size_t arg> static void modify_local(const T& obj, functor* m){ 
             obj.core->generator = m;
             ambient::controller.lsync(obj.core);
             m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(obj.core);
         }
-        template<size_t arg> static void modify(const T& obj, cfunctor* m){ 
+        template<size_t arg> static void modify(const T& obj, functor* m){ 
             m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(obj.core);
         }
     };
     template <typename T> struct read_future_info : public future_info<T> {
-        template<size_t arg> static void deallocate(cfunctor* m){ }
+        template<size_t arg> static void deallocate(functor* m){ }
         template<size_t arg> static void modify_remote(T& obj){ }
-        template<size_t arg> static void modify_local(const T& obj, cfunctor* m){
+        template<size_t arg> static void modify_local(const T& obj, functor* m){
             m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(obj.core);
         }
     };
@@ -88,7 +88,7 @@ namespace ambient {
     // {{{ compile-time type info: iteratable derived types
     template <typename T> struct iteratable_info : public singular_info<T> {
         template<size_t arg> 
-        static void deallocate(cfunctor* m){
+        static void deallocate(functor* m){
             EXTRACT(o);
             revision& parent  = *(revision*)o->before;
             revision& current = *(revision*)o->after;
@@ -108,7 +108,7 @@ namespace ambient {
             ambient::model.add_revision<ambient::remote>(o, ambient::controller.which()); 
         }
         template<size_t arg>
-        static void modify_local(T& obj, cfunctor* m){
+        static void modify_local(T& obj, functor* m){
             history* o = obj.core;
             ambient::model.touch(o);
             T* var = new(ambient::pool::malloc<bulk,T>()) T(o); m->arguments[arg] = (void*)var;
@@ -129,7 +129,7 @@ namespace ambient {
             #endif
         }
         template<size_t arg>
-        static void modify(T& obj, cfunctor* m){
+        static void modify(T& obj, functor* m){
             history* o = obj.core;
             ambient::model.touch(o);
             T* var = new(ambient::pool::malloc<bulk,T>()) T(o); m->arguments[arg] = (void*)var;
@@ -150,12 +150,12 @@ namespace ambient {
             #endif
         }
         template<size_t arg> 
-        static bool pin(cfunctor* m){ 
+        static bool pin(functor* m){ 
             EXTRACT(o);
             revision& r = *(revision*)o->before;
             void* generator = r.generator;
             if(generator != NULL){
-                ((cfunctor*)generator)->queue(m);
+                ((functor*)generator)->queue(m);
                 return true;
             }
             return false;
@@ -166,7 +166,7 @@ namespace ambient {
             ambient::controller.intend_write(obj.core);
         }
         template<size_t arg> 
-        static bool ready(cfunctor* m){
+        static bool ready(functor* m){
             EXTRACT(o);
             revision& r = *(revision*)o->before;
             void* generator = r.generator;
@@ -177,7 +177,7 @@ namespace ambient {
     // }}}
     // {{{ compile-time type info: only read/write iteratable derived types
     template <typename T> struct read_iteratable_info : public iteratable_info<T> {
-        template<size_t arg> static void deallocate(cfunctor* m){
+        template<size_t arg> static void deallocate(functor* m){
             EXTRACT(o);
             revision& r = *(revision*)o->before;
             #ifdef AMBIENT_MEMORY_SQUEEZE
@@ -190,7 +190,7 @@ namespace ambient {
             ambient::model.touch(o);
             ambient::controller.rsync(o->back());
         }
-        template<size_t arg> static void modify_local(T& obj, cfunctor* m){
+        template<size_t arg> static void modify_local(T& obj, functor* m){
             history* o = obj.core;
             ambient::model.touch(o);
             T* var = new(ambient::pool::malloc<bulk,T>()) T(o); m->arguments[arg] = (void*)var;
@@ -201,7 +201,7 @@ namespace ambient {
             ambient::controller.lsync(o->back());
             ambient::model.use_revision(o);
         }
-        template<size_t arg> static void modify(T& obj, cfunctor* m){
+        template<size_t arg> static void modify(T& obj, functor* m){
             history* o = obj.core;
             ambient::model.touch(o);
             T* var = new(ambient::pool::malloc<bulk,T>()) T(o); m->arguments[arg] = (void*)var;
@@ -224,7 +224,7 @@ namespace ambient {
             ambient::controller.collect(o->back());
             ambient::model.add_revision<ambient::remote>(o, ambient::controller.which()); 
         }
-        template<size_t arg> static void modify_local(T& obj, cfunctor* m){
+        template<size_t arg> static void modify_local(T& obj, functor* m){
             history* o = obj.core;
             ambient::model.touch(o);
             T* var = new(ambient::pool::malloc<bulk,T>()) T(o); m->arguments[arg] = (void*)var;
@@ -241,7 +241,7 @@ namespace ambient {
             ambient::overseer::log::modify(o, m);
             #endif
         }
-        template<size_t arg> static void modify(T& obj, cfunctor* m){
+        template<size_t arg> static void modify(T& obj, functor* m){
             history* o = obj.core;
             ambient::model.touch(o);
             T* var = new(ambient::pool::malloc<bulk,T>()) T(o); m->arguments[arg] = (void*)var;
@@ -257,11 +257,11 @@ namespace ambient {
             ambient::overseer::log::modify(o, m);
             #endif
         }
-        template<size_t arg> static bool pin(cfunctor* m){ return false; }
+        template<size_t arg> static bool pin(functor* m){ return false; }
         template<size_t arg> static void score(T& obj) {               
             ambient::controller.intend_write(obj.core);
         }
-        template<size_t arg> static bool ready (cfunctor* m){ return true;  }
+        template<size_t arg> static bool ready (functor* m){ return true;  }
     };
     // }}}
 

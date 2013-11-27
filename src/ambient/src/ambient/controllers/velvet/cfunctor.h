@@ -24,8 +24,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_VELVET_CFUNCTOR
-#define AMBIENT_CONTROLLERS_VELVET_CFUNCTOR
+#ifndef AMBIENT_CONTROLLERS_VELVET_FUNCTOR
+#define AMBIENT_CONTROLLERS_VELVET_FUNCTOR
 
 namespace ambient { namespace controllers { namespace velvet {
     
@@ -33,8 +33,8 @@ namespace ambient { namespace controllers { namespace velvet {
     using ambient::models::velvet::transformable;
     using ambient::channels::mpi::request;
 
-    class cfunctor {
-        typedef ambient::bulk_allocator<cfunctor*> allocator;
+    class functor {
+        typedef ambient::bulk_allocator<functor*> allocator;
     public:
         virtual void invoke() = 0;
         virtual bool ready() = 0;
@@ -42,8 +42,8 @@ namespace ambient { namespace controllers { namespace velvet {
         virtual const char* name() = 0;
         size_t id;
         #endif
-        void queue(cfunctor* d){ deps.push_back(d); }
-        std::vector<cfunctor*, allocator> deps;
+        void queue(functor* d){ deps.push_back(d); }
+        std::vector<functor*, allocator> deps;
         void* arguments[1]; // note: trashing the vtptr of derived object
     };
 
@@ -53,7 +53,7 @@ namespace ambient { namespace controllers { namespace velvet {
     // {{{ revision get/set
 
     template<>
-    class set<revision> : public cfunctor {
+    class set<revision> : public functor {
     public:
         void* operator new (size_t size, void* placement){ return placement; }
         void* operator new (size_t size){ return ambient::pool::malloc<bulk,set>(); }
@@ -95,7 +95,7 @@ namespace ambient { namespace controllers { namespace velvet {
     };
 
     template<>
-    class get<revision> : public cfunctor {
+    class get<revision> : public functor {
     public:
         void* operator new (size_t size, void* placement){ return placement; }
         void* operator new (size_t size){ return ambient::pool::malloc<bulk,get>(); }
@@ -118,7 +118,7 @@ namespace ambient { namespace controllers { namespace velvet {
     // {{{ transformable broadcast get/set
 
     template<>
-    class get<transformable> : public cfunctor {
+    class get<transformable> : public functor {
     public:
         void* operator new (size_t size){ return ambient::pool::malloc<bulk,get>(); }
         void operator delete (void* ptr){ }
@@ -137,7 +137,7 @@ namespace ambient { namespace controllers { namespace velvet {
     };
 
     template<>
-    class set<transformable> : public cfunctor {
+    class set<transformable> : public functor {
     public:
         void* operator new (size_t size){ return ambient::pool::malloc<bulk,set>(); }
         void operator delete (void* ptr){ }

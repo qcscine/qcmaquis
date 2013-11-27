@@ -31,7 +31,7 @@
 namespace ambient {
     
     using ambient::models::velvet::history;
-    using ambient::controllers::velvet::cfunctor;
+    using ambient::controllers::velvet::functor;
 
     class overseer {
     public:
@@ -40,17 +40,17 @@ namespace ambient {
                 static std::ofstream ofs(std::string("log.")+std::to_string(ambient::rank()), std::ofstream::binary);
                 return ofs;
             }
-            static void begin(cfunctor* op){
+            static void begin(functor* op){
                 stream() << "<div class=\"kernel " << op->name() << "\">" << op->name() << "\n";
             }
-            static void end(cfunctor* op){
+            static void end(functor* op){
                 stream() << "</div>\n";
             }
-            static void modify(history* o, cfunctor* op){
+            static void modify(history* o, functor* op){
                 std::string title = o->label.empty() ? std::to_string(o->id) : o->label;
                 stream() << "<div class=\"output\">" << o->label << "[" << o->id << "]</div>\n";
             }
-            static void get(history* o, cfunctor* op){
+            static void get(history* o, functor* op){
                 std::string title = o->label.empty() ? std::to_string(o->id) : o->label;
                 stream() << "<div class=\"import\">" << o->label << "[" << o->id << "]</div>\n";
             }

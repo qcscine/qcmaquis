@@ -113,7 +113,7 @@ namespace ambient { namespace controllers { namespace velvet {
     }
 
     inline void controller::flush(){
-        typedef typename std::vector<cfunctor*>::const_iterator veci;
+        typedef typename std::vector<functor*>::const_iterator veci;
         #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
         printf("ambient::parallel graph dim: %d\n", chains->size());
         for(veci i = chains->begin(); i != chains->end(); ++i)
@@ -122,10 +122,10 @@ namespace ambient { namespace controllers { namespace velvet {
         /*while(!chains->empty()){
             int i;
             const int N = chains->size();
-            std::vector<cfunctor*> prod[N];
+            std::vector<functor*> prod[N];
             #pragma omp parallel for
             for(i = 0; i < N; i++){
-                cfunctor* task = (*chains)[i];
+                functor* task = (*chains)[i];
                 if(task->ready()){
                     task->invoke();
                     prod[i].insert(prod[i].end(), task->deps.begin(), task->deps.end());
@@ -141,7 +141,7 @@ namespace ambient { namespace controllers { namespace velvet {
         while(!chains->empty()){
             for(veci i = chains->begin(); i != chains->end(); ++i){
                 if((*i)->ready()){
-                    cfunctor* task = *i;
+                    functor* task = *i;
                     AMBIENT_THREAD task->invoke();
                     #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
                     for(int n = 0; n < task->deps.size(); ++n)
@@ -172,7 +172,7 @@ namespace ambient { namespace controllers { namespace velvet {
         this->garbage.clear();
     }
 
-    inline bool controller::queue(cfunctor* f){
+    inline bool controller::queue(functor* f){
         this->chains->push_back(f);
         return true;
     }
