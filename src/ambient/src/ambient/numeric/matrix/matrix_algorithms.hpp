@@ -142,7 +142,7 @@ namespace ambient { namespace numeric {
 
     template<PLASMA_enum TR, typename T, class A>
     inline void ormqr(size_t k, const matrix<T,A>& a, const matrix<T,A>& t, matrix<T,A>& c){
-        kernels::template ormqr<T,TR>::template spawn<complexity::N3>(k, a, t, c);
+        kernels::template ormqr<T,trans_type<TR> >::template spawn<complexity::N3>(k, a, t, c);
     }
 
     template<typename T, class A>
@@ -152,7 +152,7 @@ namespace ambient { namespace numeric {
 
     template<PLASMA_enum TR, typename T, class A>
     inline void tsmqr(size_t k, matrix<T,A>& a1, matrix<T,A>& a2, const matrix<T,A>& v, const matrix<T,A>& t){
-        kernels::template tsmqr<T,TR>::template spawn<complexity::N3>(k, a1, a2, v, t);
+        kernels::template tsmqr<T,trans_type<TR> >::template spawn<complexity::N3>(k, a1, a2, v, t);
     }
 
     template<typename T, class A>
@@ -162,7 +162,7 @@ namespace ambient { namespace numeric {
 
     template<PLASMA_enum TR, typename T, class A>
     inline void ormlq(size_t k, const matrix<T,A>& a, const matrix<T,A>& t, matrix<T,A>& c){
-        kernels::template ormlq<T,TR>::template spawn<complexity::N3>(k, a, t, c);
+        kernels::template ormlq<T,trans_type<TR> >::template spawn<complexity::N3>(k, a, t, c);
     }
 
     template<typename T, class A>
@@ -172,7 +172,7 @@ namespace ambient { namespace numeric {
 
     template<PLASMA_enum TR, typename T, class A>
     inline void tsmlq(size_t k, matrix<T,A>& a1, matrix<T,A>& a2, const matrix<T,A>& v, const matrix<T,A>& t){
-        kernels::template tsmlq<T,TR>::template spawn<complexity::N3>(k, a1, a2, v, t);
+        kernels::template tsmlq<T,trans_type<TR> >::template spawn<complexity::N3>(k, a1, a2, v, t);
     }
 
     template<typename T, class A> 
