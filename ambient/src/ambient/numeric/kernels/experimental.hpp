@@ -32,477 +32,407 @@
 
 namespace ambient { namespace numeric { namespace kernels {
 
+    namespace detail {
 
-    template<typename T, PLASMA_enum UL, size_t OFF>
-    struct laset2 : public kernel< laset2<T,UL,OFF> > 
-    { static void c(matrix<T>& a, const T& alfa); };
-
-    template<int alfa, typename T>
-    struct add_vectors : public kernel< add_vectors<alfa, T> > 
-    { static void c(matrix<T>& a, const size_t& aoffset, const matrix<T>& b, const size_t& boffset, const size_t& size); };
-
-    template<typename T>
-    struct labrd_update_col : public kernel< labrd_update_col<T> > 
-    { static void c(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, matrix<T>& tq, matrix<T>& d, const int& i); };
-
-    template<typename T>
-    struct labrd_reduce_col : public kernel< labrd_reduce_col<T> > 
-    { static void c(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, const int& i); };
-
-    template<typename T>
-    struct labrd_update_row : public kernel< labrd_update_row<T> > 
-    { static void c(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, matrix<T>& tp, matrix<T>& e, const int& i); };
-
-    template<typename T>
-    struct labrd_reduce_row : public kernel< labrd_reduce_row<T> > 
-    { static void c(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, const int& i); };
-
-    template<typename T, PLASMA_enum TR>
-    struct larfg : public kernel< larfg<T,TR> > 
-    { static void c(matrix<T>& a, matrix<T>& t, matrix<T>& d, const size_t& k); };
-
-    template<typename T>
-    struct gebd2 : public kernel< gebd2<T> > 
-    { static void c(matrix<T>& a, matrix<T>& d, matrix<T>& e, matrix<T>& tq, matrix<T>& tp); };
-
-    template<typename T>
-    struct gebrd : public kernel< gebrd<T> > 
-    { static void c(matrix<T>& a, unbound< matrix<T> >& d, unbound< matrix<T> >& e, unbound< matrix<T> >& q, unbound< matrix<T> >& p); };
-
-    template<typename T>
-    struct gbbrd : public kernel< gbbrd<T> > 
-    { static void c(matrix<T>& a, unbound< matrix<T> >& d, unbound< matrix<T> >& e, unbound< matrix<T> >& q, unbound< matrix<T> >& p); };
-
-    template<typename T>
-    struct bdsqr : public kernel< bdsqr<T> > 
-    { static void c(matrix<T>& d, matrix<T>& e, matrix<T>& u, matrix<T>& v); };
-
-    template<typename T, PLASMA_enum UL>
-    struct copy_band : public kernel< copy_band<T,UL> > 
-    { static void c(const matrix<T>& src, matrix<T>& dst, const size_t& dj); };
-
-    template<int ADD, class VA, class VB, class VC, class VF>
-    struct gemv_scale : public kernel< gemv_scale<ADD, VA, VB, VC, VF> > {
-        typedef typename VC::value_type T;
-        static void c(const matrix<T>& a, const size_t& aoffset, 
-                      const matrix<T>& b, const size_t& boffset,
-                            matrix<T>& c, const size_t& coffset,
-                      const matrix<T>& f, const size_t& foffset,
-                      const size_t& rows, const size_t& cols);
-    };
-
-    template<int alfa, int beta, class ViewA, class ViewB, class ViewC>
-    struct gemv : public kernel< gemv<alfa, beta, ViewA, ViewB, ViewC> > {
-        typedef typename ViewC::value_type T;
-        static void c(const matrix<T>& a, const size_t& aoffset, 
-                      const matrix<T>& b, const size_t& boffset,
-                            matrix<T>& c, const size_t& coffset,
-                      const size_t& rows, const size_t& cols);
-    };
-
-    template<typename T>
-    struct norm_vector : public kernel< norm_vector<T> > 
-    { static void c(const matrix<T>& a, matrix<typename real_type<T>::type>& b); };
-
-    template<typename T>
-    struct max_vector : public kernel< max_vector<T> > 
-    { static void c(const matrix<typename real_type<T>::type>& a, future<typename real_type<T>::type>& ret); };
-
-    template<typename T>
-    struct sqrt_inplace : public kernel< sqrt_inplace<typename real_type<T>::type> > 
-    { static void c(matrix<typename real_type<T>::type>& a); };
-
-    template<typename T>
-    struct init_gaussian : public kernel< init_gaussian<T> > 
-    { static void c(unbound< matrix<T> >& a); };
-
-
-
-/////////////////////////////////////////
-// Experimental kernels implementation //
-/////////////////////////////////////////
-
-
-
-    template<typename T, PLASMA_enum UL, size_t OFF>
-    void laset2<T,UL,OFF>::c(matrix<T>& a, const T& alfa){
-        T* ad = revised(a);
-        helper_plasma<T>::laset2(UL, a.num_rows()-OFF, a.num_cols()-OFF, alfa, ad + OFF*a.num_rows(), a.num_rows());
-    }
-
-    template<int alfa, typename T>
-    void add_vectors<alfa, T>::c(matrix<T>& a, const size_t& aoffset, const matrix<T>& b, const size_t& boffset, const size_t& size){
-        T* ad = &((T*)current(a))[aoffset];
-        T* bd = &((T*)current(b))[boffset];
-        T* ar = &((T*)updated(a))[aoffset];
-
-        for(int k = 0; k < size; k++) 
-            ar[k] = alfa*ad[k] + bd[k];
-    }
-        
-    template<typename T>
-    void labrd_update_col<T>::c(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, matrix<T>& tq, matrix<T>& d, const int& i){
-        static const double mone = -1.;
-        static const double one = 1.;
-        static const double zero = 0.;
-        static const int lone = 1;
-
-        int m  = num_rows(say);
-        int n  = num_cols(sax);
-        int ri = m-i;
-        int rj = n-i-1;
-
-        T* sayd = revised(say); int ldsay = say.num_rows();
-        T* saxd = current(sax); int ldsax = sax.num_rows();
-        T* syd  = revised(sy);  int ldsy = sy.num_rows();
-        T* sxd  = current(sx);  int ldsx = sx.num_rows();
-        T* tqd  = revised(tq);
-        T* dd   = revised(d);
-        
-        if(i == 0){
-            helper_lapack<T>::larfg(&ri, sayd, &sayd[1], &lone, tqd);
-            *dd = *sayd;
-            *sayd = 1.0;
-            return;
+        template<typename T, typename UL, typename OFF>
+        void laset2(matrix<T>& a, const T& alfa){
+            T* ad = revised(a);
+            helper_plasma<T>::laset2(UL::value, a.num_rows()-OFF::value, a.num_cols()-OFF::value, alfa, ad + OFF::value*a.num_rows(), a.num_rows());
         }
-
-        ambient::memptf<T, ambient::memcpy>(sayd, ldsay, dim2(i, i-1), 
-                                            saxd, ldsax, dim2(i, i-1), 
-                                            dim2( num_cols(say)-i, 1));
-
-        helper_blas<T>::gemv("N", &ri, &i, &mone, &sayd[ i ], &ldsay, &syd[ i ], &ldsy, &one, &sayd[i + i*ldsay], &lone);
-        helper_blas<T>::gemv("N", &ri, &i, &mone, &sxd[ i ], &ldsx, &sayd[ i*ldsay ], &lone, &one, &sayd[i + i*ldsay], &lone);
         
-        helper_lapack<T>::larfg( &ri, &sayd[i+i*ldsay], &sayd[std::min(i+1, m-1)+i*ldsay], &lone, &tqd[i] );
-        dd[i] = sayd[i+i*ldsay];
-        sayd[i+i*ldsay] = 1.000;
-    }
-
-    template<typename T>
-    void labrd_reduce_col<T>::c(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, const int& i){
-        static const double mone = -1.;
-        static const double one = 1.;
-        static const double zero = 0.;
-        static const int lone = 1;
-
-        int m  = num_rows(say);
-        int n  = num_cols(sax);
-        int ri = m-i;
-        int rj = n-i-1;
-        int ari = AMBIENT_IB-i-1;
-
-        T* sayd = revised(say); int ldsay = say.num_rows();
-        T* saxd = current(sax); int ldsax = sax.num_rows();
-        T* syd  = revised(sy);  int ldsy = sy.num_rows();
-        T* sxd  = current(sx);  int ldsx = sx.num_rows();
+        template<typename ALFA, typename T>
+        void add_vectors(matrix<T>& a, const size_t& aoffset, const matrix<T>& b, const size_t& boffset, const size_t& size){
+            T* ad = &((T*)current(a))[aoffset];
+            T* bd = &((T*)current(b))[boffset];
+            T* ar = &((T*)updated(a))[aoffset];
         
-        helper_blas<T>::gemv("T", &ri, &ari, &one, &sayd[i + (i+1)*ldsay], &ldsay, &sayd[i+i*ldsay], &lone, &zero, &syd[i+1 + i*ldsy], &lone); // part of big gemv
-
-        helper_blas<T>::gemv("T", &ri, &i, &one, &sayd[i], &ldsay, &sayd[i+i*ldsay], &lone, &zero, &syd[i*ldsy], &lone);
-        helper_blas<T>::gemv("N", &rj, &i, &mone, &syd[ i+1 ], &ldsy, &syd[i*ldsy], &lone, &one, &syd[i+1 + i*ldsy], &lone);
-
-        helper_blas<T>::gemv("T", &ri, &i, &one, &sxd[i], &ldsx, &sayd[i + i*ldsay], &lone, &zero, &syd[ i*ldsy ], &lone);
-        helper_blas<T>::gemv("T", &i, &rj, &mone, &saxd[ (i+1)*ldsax ], &ldsax, &syd[i*ldsy], &lone, &one, &syd[ i+1 + i*ldsy], &lone);
-    }
-
-    template<typename T>
-    void labrd_update_row<T>::c(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, matrix<T>& tp, matrix<T>& e, const int& i){
-        static const double mone = -1.;
-        static const double one = 1.;
-        static const double zero = 0.;
-        static const int lone = 1;
-
-        int m   = num_rows(say);
-        int n   = num_cols(sax);
-        int ri  = m-i;
-        int rj  = n-i-1;
-        int rij = m-i-1;
-        int r3  = i+1;
-
-        T* sayd = current(say); int ldsay = say.num_rows();
-        T* saxd = revised(sax); int ldsax = sax.num_rows();
-        T* syd  = current(sy);  int ldsy = sy.num_rows();
-        T* sxd  = revised(sx);  int ldsx = sx.num_rows();
-        T* tpd  = revised(tp);
-        T* ed   = revised(e);
-        
-        ambient::memptf<T, ambient::memcpy>(saxd, ldsax, dim2(i, i), 
-                                            sayd, ldsay, dim2(i, i), 
-                                            dim2( 1, ldsax-i ));
-        
-        helper_blas<T>::gemv("T", &i, &rj, &mone, &saxd[(i+1)*ldsax], &ldsax, &sxd[i], &ldsx, &one, &saxd[ i + (i+1)*ldsax], &ldsax);
-        helper_blas<T>::gemv("N", &rj, &r3, &mone, &syd[ i+1 ], &ldsy, &saxd[i], &ldsax, &one, &saxd[i + (i+1)*ldsax], &ldsax);
-
-        helper_lapack<T>::larfg(&rj, &saxd[i + (i+1)*ldsax], &saxd[i + std::min(i+2, n-1)*ldsax], &ldsax, &tpd[i] );
-        ed[i] = saxd[i + (i+1)*ldsax];
-        saxd[i + (i+1)*ldsax] = 1.000;
-    }
-
-    template<typename T>
-    void labrd_reduce_row<T>::c(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, const int& i){
-        static const double mone = -1.;
-        static const double one = 1.;
-        static const double zero = 0.;
-        static const int lone = 1;
-
-        int m   = num_rows(say);
-        int n   = num_cols(sax);
-        int ri  = m-i;
-        int rj  = n-i-1;
-        int rij = m-i-1;
-        int r3  = i+1;
-        int ari = AMBIENT_IB-i-1;
-
-        T* sayd = current(say); int ldsay = say.num_rows();
-        T* saxd = revised(sax); int ldsax = sax.num_rows();
-        T* syd  = current(sy);  int ldsy = sy.num_rows();
-        T* sxd  = revised(sx);  int ldsx = sx.num_rows();
-        
-        helper_blas<T>::gemv("T", &rj, &r3, &one, &syd[i+1], &ldsy, &saxd[i+(i+1)*ldsax], &ldsax, &zero, &sxd[i*ldsx], &lone);
-        helper_blas<T>::gemv("N", &rij, &r3, &mone, &sayd[i+1], &ldsay, &sxd[i*ldsx], &lone, &zero, &sxd[i+1+i*ldsx], &lone);
-
-        helper_blas<T>::gemv("N", &i, &rj, &one, &saxd[(i+1)*ldsax], &ldsax, &saxd[ i +(i+1)*ldsax], &ldsax, &zero, &sxd[i*ldsx], &lone);
-        helper_blas<T>::gemv("N", &rij, &i, &mone, &sxd[i+1], &ldsx, &sxd[i*ldsx], &lone, &one, &sxd[i+1+i*ldsx], &lone);
-
-        helper_blas<T>::gemv("N", &ari, &rj, &one, &saxd[i+1 + (i+1)*ldsax], &ldsax, &saxd[ i +(i+1)*ldsax], &ldsax, &one, &sxd[i+1 + i*ldsx], &lone); // part of big gemv
-    }
-
-    template<typename T, PLASMA_enum TR>
-    void larfg<T,TR>::c(matrix<T>& a, matrix<T>& t, matrix<T>& d, const size_t& k){
-        int lda;
-        int n;
-        T* alfa;
-        T* x;
-        
-        T* ad = revised(a);
-        T* td = revised(t);
-        T* dd = revised(d);
-
-        if(TR == PlasmaNoTrans){
-            alfa = &ad[k + k*a.num_rows()];
-            x = &ad[std::min(k+1, a.num_rows()-1)+k*a.num_rows()];
-            n = a.num_rows()-k;
-            lda = 1;
-        }else{
-            alfa = &ad[k + (k+1)*a.num_rows()];
-            x = &ad[k + std::min(k+2, a.num_cols()-1)*a.num_rows()];
-            n = a.num_cols()-k-1;
-            lda = a.num_rows();
+            for(int k = 0; k < size; k++) 
+                ar[k] = ALFA::value*ad[k] + bd[k];
         }
-
-        helper_lapack<T>::larfg(&n, alfa, x, &lda, &td[k]);
+            
+        template<typename T>
+        void labrd_update_col(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, matrix<T>& tq, matrix<T>& d, const int& i){
+            static const double mone = -1.;
+            static const double one = 1.;
+            static const double zero = 0.;
+            static const int lone = 1;
         
-        dd[k] = *alfa;
-        *alfa = 1.00;
-    }
-
-    template<typename T>
-    void gebd2<T>::c(matrix<T>& a, matrix<T>& d, matrix<T>& e, matrix<T>& tq, matrix<T>& tp){
-        int m = a.num_rows();
-        int n = a.num_cols();
-        int lda = a.num_rows();
-        int info;
-
-        T* work = (T*)std::malloc(std::max(m,n)*sizeof(T));
-        helper_lapack<T>::gebd2(&m, &n, (T*)revised(a), &lda, (T*)updated(d), (T*)updated(e), (T*)updated(tq), (T*)updated(tp), work, &info);
-        std::free(work);
-    }
-
-    template<typename T>
-    void gebrd<T>::c(matrix<T>& a, unbound< matrix<T> >& d, unbound< matrix<T> >& e, unbound< matrix<T> >& q, unbound< matrix<T> >& p){
-        static int zero = 0;
-        static int one  = 1;
-        int m = q.num_rows();
-        int n = p.num_rows();
-        int lda = a.num_rows();
-        int k = std::min(m,n);
-        int lwork = -1;
-        int info;
+            int m  = num_rows(say);
+            int n  = num_cols(sax);
+            int ri = m-i;
+            int rj = n-i-1;
         
-        T* ad = (T*)current(a);
-        T* dd = (T*)updated(d);
-        T* ed = (T*)updated(e);
-        T* qd = (T*)updated(q);
-        T* pd = (T*)updated(p);
-
-        T* work = (T*)std::malloc(sizeof(T));
-        T* tauq = (T*)std::malloc(sizeof(T)*k); // leak
-        T* taup = (T*)std::malloc(sizeof(T)*k); // leak
-
-        helper_lapack<T>::gebrd(&m, &n, ad, &lda, dd, ed, tauq, taup, work, &lwork, &info);
-        lwork = (int)work[0];
-        work = (T*)realloc(work, sizeof(T)*lwork);
-        helper_lapack<T>::gebrd(&m, &n, ad, &lda, dd, ed, tauq, taup, work, &lwork, &info);
-
-        T* ac = (T*)std::malloc(m*n*sizeof(T));
-        std::memcpy(ac, ad, m*n*sizeof(T));
-
-        lwork = -1;
-        helper_lapack<T>::orgbr("Q",&m,&k,&n, ad, &lda, tauq, work, &lwork, &info);
-        lwork = (int)work[0];
-        work = (T*)realloc(work, sizeof(T)*lwork);
-        helper_lapack<T>::orgbr("Q",&m,&k,&n, ad, &lda, tauq, work, &lwork, &info);
-
-
-        lwork = -1;
-        helper_lapack<T>::orgbr("P",&k,&n,&m, ac, &lda, taup, work, &lwork, &info);
-        lwork = (int)work[0];
-        work = (T*)realloc(work, sizeof(T)*lwork);
-        helper_lapack<T>::orgbr("P",&k,&n,&m, ac, &lda, taup, work, &lwork, &info);
-
-        for(int j = 0; j < n; ++j){
-            std::memcpy(&pd[n*j], &ac[lda*j], sizeof(T)*k);
+            T* sayd = revised(say); int ldsay = say.num_rows();
+            T* saxd = current(sax); int ldsax = sax.num_rows();
+            T* syd  = revised(sy);  int ldsy = sy.num_rows();
+            T* sxd  = current(sx);  int ldsx = sx.num_rows();
+            T* tqd  = revised(tq);
+            T* dd   = revised(d);
+            
+            if(i == 0){
+                helper_lapack<T>::larfg(&ri, sayd, &sayd[1], &lone, tqd);
+                *dd = *sayd;
+                *sayd = 1.0;
+                return;
+            }
+        
+            ambient::memptf<T, ambient::memcpy>(sayd, ldsay, dim2(i, i-1), 
+                                                saxd, ldsax, dim2(i, i-1), 
+                                                dim2( num_cols(say)-i, 1));
+        
+            helper_blas<T>::gemv("N", &ri, &i, &mone, &sayd[ i ], &ldsay, &syd[ i ], &ldsy, &one, &sayd[i + i*ldsay], &lone);
+            helper_blas<T>::gemv("N", &ri, &i, &mone, &sxd[ i ], &ldsx, &sayd[ i*ldsay ], &lone, &one, &sayd[i + i*ldsay], &lone);
+            
+            helper_lapack<T>::larfg( &ri, &sayd[i+i*ldsay], &sayd[std::min(i+1, m-1)+i*ldsay], &lone, &tqd[i] );
+            dd[i] = sayd[i+i*ldsay];
+            sayd[i+i*ldsay] = 1.000;
         }
-
-        std::free(work); std::free(ac);
-    }
-
-    template<typename T>
-    void gbbrd<T>::c(matrix<T>& a, unbound< matrix<T> >& d, unbound< matrix<T> >& e, unbound< matrix<T> >& q, unbound< matrix<T> >& p){
-        static int zero = 0;
-        static int one  = 1;
-        int m = q.num_rows();
-        int n = p.num_rows();
-        int k = a.num_rows();
-        int kl = (m <  n) ? k-1 : 0;
-        int ku = (m >= n) ? k-1 : 0;
-        int info;
         
-        T* work = (T*)std::malloc(std::max(m,n)*2*sizeof(T));
-        T* ad = (T*)current(a);
-        T* dd = (T*)updated(d);
-        T* ed = (T*)updated(e);
-        T* qd = (T*)updated(q);
-        T* pd = (T*)updated(p);
-
-        helper_lapack<T>::gbbrd("B", &m, &n, &zero, &kl, &ku, ad, &k, dd, ed, 
-                qd, &m, pd, &n, NULL, &one, work, &info);
-
-        std::free(work);
-    }
-
-    template<typename T>
-    void bdsqr<T>::c(matrix<T>& d, matrix<T>& e, matrix<T>& u, matrix<T>& v){
-        static int zero = 0;
-        static int one  = 1;
-        int n = d.num_rows();
-        int nv = v.num_cols();
-        int mv = v.num_rows();
-        int mu = u.num_rows();
-        int info;
+        template<typename T>
+        void labrd_reduce_col(matrix<T>& say, const matrix<T>& sax, matrix<T>& sy, const matrix<T>& sx, const int& i){
+            static const double mone = -1.;
+            static const double one = 1.;
+            static const double zero = 0.;
+            static const int lone = 1;
         
-        T* work = (T*)std::malloc(n*4*sizeof(T));
-        helper_lapack<T>::bdsqr("U", &n, &nv, &mu, &zero, (T*)revised(d), (T*)revised(e), 
-                (T*)revised(v), &mv, (T*)revised(u), &mu, NULL, &one, work, &info); std::free(work);
-        // Uncomment for dc numerically loose algorithm:
-        // LAPACKE_dbdsdc(102, 'U', 'N', n, (T*)revised(d), (T*)revised(e),  (T*)revised(u), one, (T*)revised(v), one, NULL, NULL);
-    }
-
-    template<typename T, PLASMA_enum UL>
-    void copy_band<T,UL>::c(const matrix<T>& src, matrix<T>& dst, const size_t& dj){
-        T* sd = current(src);
-        T* dd = revised(dst);
-        size_t ldd = dst.num_rows();
-        size_t m = src.num_rows();
-        size_t n = src.num_cols();
-        size_t offset = std::min(ldd-1,(size_t)AMBIENT_IB);
-
-        dd += dj*ldd;
-        if(UL == PlasmaUpper){
-            for(int j = 0; j < n; ++j)
-            for(int i = 0; i <= j && i < m; ++i)
-            dd[j*ldd+i-j+offset] = sd[i+m*j]; 
-        }else{
-            for(int j = 0; j < n; ++j)
-            for(int i = j; i < m; ++i)
-            dd[j*ldd+i-j] = sd[i+m*j]; 
+            int m  = num_rows(say);
+            int n  = num_cols(sax);
+            int ri = m-i;
+            int rj = n-i-1;
+            int ari = AMBIENT_IB-i-1;
+        
+            T* sayd = revised(say); int ldsay = say.num_rows();
+            T* saxd = current(sax); int ldsax = sax.num_rows();
+            T* syd  = revised(sy);  int ldsy = sy.num_rows();
+            T* sxd  = current(sx);  int ldsx = sx.num_rows();
+            
+            helper_blas<T>::gemv("T", &ri, &ari, &one, &sayd[i + (i+1)*ldsay], &ldsay, &sayd[i+i*ldsay], &lone, &zero, &syd[i+1 + i*ldsy], &lone); // part of big gemv
+        
+            helper_blas<T>::gemv("T", &ri, &i, &one, &sayd[i], &ldsay, &sayd[i+i*ldsay], &lone, &zero, &syd[i*ldsy], &lone);
+            helper_blas<T>::gemv("N", &rj, &i, &mone, &syd[ i+1 ], &ldsy, &syd[i*ldsy], &lone, &one, &syd[i+1 + i*ldsy], &lone);
+        
+            helper_blas<T>::gemv("T", &ri, &i, &one, &sxd[i], &ldsx, &sayd[i + i*ldsay], &lone, &zero, &syd[ i*ldsy ], &lone);
+            helper_blas<T>::gemv("T", &i, &rj, &mone, &saxd[ (i+1)*ldsax ], &ldsax, &syd[i*ldsy], &lone, &one, &syd[ i+1 + i*ldsy], &lone);
         }
-    }
-
-    template<int ADD, class VA, class VB, class VC, class VF>
-    void gemv_scale<ADD, VA, VB, VC, VF>::c(const matrix<T>& a, const size_t& aoffset, 
-                                            const matrix<T>& b, const size_t& boffset,
-                                                  matrix<T>& c, const size_t& coffset,
-                                            const matrix<T>& f, const size_t& foffset,
-                                            const size_t& rows, const size_t& cols)
-    {
-        T* ad = current(a);
-        T* bd = current(b);
-        T* fd = current(f);
-        T* cd = revised(c);
-        int lda = num_rows(a);
-        int ldb = VB::inc(b);
-        int ldc = VC::inc(c);
-        int m = rows;
-        int n = cols;
-        static const double one = 1.;
-        const double* alfa = &fd[foffset];
-        const double* beta = (ADD == 1) ? &one : alfa;
-
-        if(*VA::code() == 'T') std::swap(m,n);
-        helper_blas<T>::gemv(VA::code(), &m, &n, alfa, &ad[aoffset], &lda, &bd[boffset], &ldb, beta, &cd[coffset], &ldc);
-    }
-
-    template<int alfa, int beta, class ViewA, class ViewB, class ViewC>
-    void gemv<alfa, beta, ViewA, ViewB, ViewC>::c(const matrix<T>& a, const size_t& aoffset, 
+        
+        template<typename T>
+        void labrd_update_row(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, matrix<T>& tp, matrix<T>& e, const int& i){
+            static const double mone = -1.;
+            static const double one = 1.;
+            static const double zero = 0.;
+            static const int lone = 1;
+        
+            int m   = num_rows(say);
+            int n   = num_cols(sax);
+            int ri  = m-i;
+            int rj  = n-i-1;
+            int rij = m-i-1;
+            int r3  = i+1;
+        
+            T* sayd = current(say); int ldsay = say.num_rows();
+            T* saxd = revised(sax); int ldsax = sax.num_rows();
+            T* syd  = current(sy);  int ldsy = sy.num_rows();
+            T* sxd  = revised(sx);  int ldsx = sx.num_rows();
+            T* tpd  = revised(tp);
+            T* ed   = revised(e);
+            
+            ambient::memptf<T, ambient::memcpy>(saxd, ldsax, dim2(i, i), 
+                                                sayd, ldsay, dim2(i, i), 
+                                                dim2( 1, ldsax-i ));
+            
+            helper_blas<T>::gemv("T", &i, &rj, &mone, &saxd[(i+1)*ldsax], &ldsax, &sxd[i], &ldsx, &one, &saxd[ i + (i+1)*ldsax], &ldsax);
+            helper_blas<T>::gemv("N", &rj, &r3, &mone, &syd[ i+1 ], &ldsy, &saxd[i], &ldsax, &one, &saxd[i + (i+1)*ldsax], &ldsax);
+        
+            helper_lapack<T>::larfg(&rj, &saxd[i + (i+1)*ldsax], &saxd[i + std::min(i+2, n-1)*ldsax], &ldsax, &tpd[i] );
+            ed[i] = saxd[i + (i+1)*ldsax];
+            saxd[i + (i+1)*ldsax] = 1.000;
+        }
+        
+        template<typename T>
+        void labrd_reduce_row(const matrix<T>& say, matrix<T>& sax, const matrix<T>& sy, matrix<T>& sx, const int& i){
+            static const double mone = -1.;
+            static const double one = 1.;
+            static const double zero = 0.;
+            static const int lone = 1;
+        
+            int m   = num_rows(say);
+            int n   = num_cols(sax);
+            int ri  = m-i;
+            int rj  = n-i-1;
+            int rij = m-i-1;
+            int r3  = i+1;
+            int ari = AMBIENT_IB-i-1;
+        
+            T* sayd = current(say); int ldsay = say.num_rows();
+            T* saxd = revised(sax); int ldsax = sax.num_rows();
+            T* syd  = current(sy);  int ldsy = sy.num_rows();
+            T* sxd  = revised(sx);  int ldsx = sx.num_rows();
+            
+            helper_blas<T>::gemv("T", &rj, &r3, &one, &syd[i+1], &ldsy, &saxd[i+(i+1)*ldsax], &ldsax, &zero, &sxd[i*ldsx], &lone);
+            helper_blas<T>::gemv("N", &rij, &r3, &mone, &sayd[i+1], &ldsay, &sxd[i*ldsx], &lone, &zero, &sxd[i+1+i*ldsx], &lone);
+        
+            helper_blas<T>::gemv("N", &i, &rj, &one, &saxd[(i+1)*ldsax], &ldsax, &saxd[ i +(i+1)*ldsax], &ldsax, &zero, &sxd[i*ldsx], &lone);
+            helper_blas<T>::gemv("N", &rij, &i, &mone, &sxd[i+1], &ldsx, &sxd[i*ldsx], &lone, &one, &sxd[i+1+i*ldsx], &lone);
+        
+            helper_blas<T>::gemv("N", &ari, &rj, &one, &saxd[i+1 + (i+1)*ldsax], &ldsax, &saxd[ i +(i+1)*ldsax], &ldsax, &one, &sxd[i+1 + i*ldsx], &lone); // part of big gemv
+        }
+        
+        template<typename T, typename TR>
+        void larfg(matrix<T>& a, matrix<T>& t, matrix<T>& d, const size_t& k){
+            int lda;
+            int n;
+            T* alfa;
+            T* x;
+            
+            T* ad = revised(a);
+            T* td = revised(t);
+            T* dd = revised(d);
+        
+            if(TR::value == PlasmaNoTrans){
+                alfa = &ad[k + k*a.num_rows()];
+                x = &ad[std::min(k+1, a.num_rows()-1)+k*a.num_rows()];
+                n = a.num_rows()-k;
+                lda = 1;
+            }else{
+                alfa = &ad[k + (k+1)*a.num_rows()];
+                x = &ad[k + std::min(k+2, a.num_cols()-1)*a.num_rows()];
+                n = a.num_cols()-k-1;
+                lda = a.num_rows();
+            }
+        
+            helper_lapack<T>::larfg(&n, alfa, x, &lda, &td[k]);
+            
+            dd[k] = *alfa;
+            *alfa = 1.00;
+        }
+        
+        template<typename T>
+        void gebd2(matrix<T>& a, matrix<T>& d, matrix<T>& e, matrix<T>& tq, matrix<T>& tp){
+            int m = a.num_rows();
+            int n = a.num_cols();
+            int lda = a.num_rows();
+            int info;
+        
+            T* work = (T*)std::malloc(std::max(m,n)*sizeof(T));
+            helper_lapack<T>::gebd2(&m, &n, (T*)revised(a), &lda, (T*)updated(d), (T*)updated(e), (T*)updated(tq), (T*)updated(tp), work, &info);
+            std::free(work);
+        }
+        
+        template<typename T>
+        void gebrd(matrix<T>& a, unbound< matrix<T> >& d, unbound< matrix<T> >& e, unbound< matrix<T> >& q, unbound< matrix<T> >& p){
+            static int zero = 0;
+            static int one  = 1;
+            int m = q.num_rows();
+            int n = p.num_rows();
+            int lda = a.num_rows();
+            int k = std::min(m,n);
+            int lwork = -1;
+            int info;
+            
+            T* ad = (T*)current(a);
+            T* dd = (T*)updated(d);
+            T* ed = (T*)updated(e);
+            T* qd = (T*)updated(q);
+            T* pd = (T*)updated(p);
+        
+            T* work = (T*)std::malloc(sizeof(T));
+            T* tauq = (T*)std::malloc(sizeof(T)*k); // leak
+            T* taup = (T*)std::malloc(sizeof(T)*k); // leak
+        
+            helper_lapack<T>::gebrd(&m, &n, ad, &lda, dd, ed, tauq, taup, work, &lwork, &info);
+            lwork = (int)work[0];
+            work = (T*)realloc(work, sizeof(T)*lwork);
+            helper_lapack<T>::gebrd(&m, &n, ad, &lda, dd, ed, tauq, taup, work, &lwork, &info);
+        
+            T* ac = (T*)std::malloc(m*n*sizeof(T));
+            std::memcpy(ac, ad, m*n*sizeof(T));
+        
+            lwork = -1;
+            helper_lapack<T>::orgbr("Q",&m,&k,&n, ad, &lda, tauq, work, &lwork, &info);
+            lwork = (int)work[0];
+            work = (T*)realloc(work, sizeof(T)*lwork);
+            helper_lapack<T>::orgbr("Q",&m,&k,&n, ad, &lda, tauq, work, &lwork, &info);
+        
+        
+            lwork = -1;
+            helper_lapack<T>::orgbr("P",&k,&n,&m, ac, &lda, taup, work, &lwork, &info);
+            lwork = (int)work[0];
+            work = (T*)realloc(work, sizeof(T)*lwork);
+            helper_lapack<T>::orgbr("P",&k,&n,&m, ac, &lda, taup, work, &lwork, &info);
+        
+            for(int j = 0; j < n; ++j){
+                std::memcpy(&pd[n*j], &ac[lda*j], sizeof(T)*k);
+            }
+        
+            std::free(work); std::free(ac);
+        }
+        
+        template<typename T>
+        void gbbrd(matrix<T>& a, unbound< matrix<T> >& d, unbound< matrix<T> >& e, unbound< matrix<T> >& q, unbound< matrix<T> >& p){
+            static int zero = 0;
+            static int one  = 1;
+            int m = q.num_rows();
+            int n = p.num_rows();
+            int k = a.num_rows();
+            int kl = (m <  n) ? k-1 : 0;
+            int ku = (m >= n) ? k-1 : 0;
+            int info;
+            
+            T* work = (T*)std::malloc(std::max(m,n)*2*sizeof(T));
+            T* ad = (T*)current(a);
+            T* dd = (T*)updated(d);
+            T* ed = (T*)updated(e);
+            T* qd = (T*)updated(q);
+            T* pd = (T*)updated(p);
+        
+            helper_lapack<T>::gbbrd("B", &m, &n, &zero, &kl, &ku, ad, &k, dd, ed, 
+                    qd, &m, pd, &n, NULL, &one, work, &info);
+        
+            std::free(work);
+        }
+        
+        template<typename T>
+        void bdsqr(matrix<T>& d, matrix<T>& e, matrix<T>& u, matrix<T>& v){
+            static int zero = 0;
+            static int one  = 1;
+            int n = d.num_rows();
+            int nv = v.num_cols();
+            int mv = v.num_rows();
+            int mu = u.num_rows();
+            int info;
+            
+            T* work = (T*)std::malloc(n*4*sizeof(T));
+            helper_lapack<T>::bdsqr("U", &n, &nv, &mu, &zero, (T*)revised(d), (T*)revised(e), 
+                    (T*)revised(v), &mv, (T*)revised(u), &mu, NULL, &one, work, &info); std::free(work);
+            // Uncomment for dc numerically loose algorithm:
+            // LAPACKE_dbdsdc(102, 'U', 'N', n, (T*)revised(d), (T*)revised(e),  (T*)revised(u), one, (T*)revised(v), one, NULL, NULL);
+        }
+        
+        template<typename T, typename UL>
+        void copy_band(const matrix<T>& src, matrix<T>& dst, const size_t& dj){
+            T* sd = current(src);
+            T* dd = revised(dst);
+            size_t ldd = dst.num_rows();
+            size_t m = src.num_rows();
+            size_t n = src.num_cols();
+            size_t offset = std::min(ldd-1,(size_t)AMBIENT_IB);
+        
+            dd += dj*ldd;
+            if(UL::value == PlasmaUpper){
+                for(int j = 0; j < n; ++j)
+                for(int i = 0; i <= j && i < m; ++i)
+                dd[j*ldd+i-j+offset] = sd[i+m*j]; 
+            }else{
+                for(int j = 0; j < n; ++j)
+                for(int i = j; i < m; ++i)
+                dd[j*ldd+i-j] = sd[i+m*j]; 
+            }
+        }
+        
+        template<typename ADD, class VA, class VB, class VC, class VF>
+        void gemv_scale(const matrix<T>& a, const size_t& aoffset, 
+                        const matrix<T>& b, const size_t& boffset,
+                              matrix<T>& c, const size_t& coffset,
+                        const matrix<T>& f, const size_t& foffset,
+                        const size_t& rows, const size_t& cols)
+        {
+            T* ad = current(a);
+            T* bd = current(b);
+            T* fd = current(f);
+            T* cd = revised(c);
+            int lda = num_rows(a);
+            int ldb = VB::inc(b);
+            int ldc = VC::inc(c);
+            int m = rows;
+            int n = cols;
+            static const double one = 1.;
+            const double* alfa = &fd[foffset];
+            const double* beta = (ADD::value == 1) ? &one : alfa;
+        
+            if(*VA::code() == 'T') std::swap(m,n);
+            helper_blas<T>::gemv(VA::code(), &m, &n, alfa, &ad[aoffset], &lda, &bd[boffset], &ldb, beta, &cd[coffset], &ldc);
+        }
+        
+        template<typename ALFA, typename BETA, class ViewA, class ViewB, class ViewC>
+        void gemv(const matrix<T>& a, const size_t& aoffset, 
                   const matrix<T>& b, const size_t& boffset,
                         matrix<T>& c, const size_t& coffset,
                   const size_t& rows, const size_t& cols)
-    {
-        T* ad = current(a);
-        T* bd = current(b);
-        T* cd = revised(c);
-        int lda = num_rows(a);
-        int ldb = ViewB::inc(b);
-        int ldc = ViewC::inc(c);
-        static const double salfa(alfa); 
-        static const double sbeta(beta);
-        int m = rows;
-        int n = cols;
-
-        if(*ViewA::code() == 'T') std::swap(m,n);
-        helper_blas<T>::gemv(ViewA::code(), &m, &n, &salfa, &ad[aoffset], &lda, &bd[boffset], &ldb, &sbeta, &cd[coffset], &ldc);
-    }
-
-    template<typename T>
-    void norm_vector<T>::c(const matrix<T>& a, matrix<typename real_type<T>::type>& b){
-        int m = num_rows(a);
-        int n = num_cols(a);
-        T* ad = current(a);
-        typename real_type<T>::type* bd = updated(b);
-        std::cout << " (m,n) " << m << " " << n << std::endl;
-        for(int i(0); i<n; ++i)
-            for(int j(0); j<m; ++j)
-                bd[i] += helper_complex<T>::real(ad[i*m+j]*helper_complex<T>::conj(ad[i*m+j])); 
-    }   
+        {
+            T* ad = current(a);
+            T* bd = current(b);
+            T* cd = revised(c);
+            int lda = num_rows(a);
+            int ldb = ViewB::inc(b);
+            int ldc = ViewC::inc(c);
+            static const double salfa(ALFA::value); 
+            static const double sbeta(BETA::value);
+            int m = rows;
+            int n = cols;
         
-    template<typename T>
-    void max_vector<T>::c(const matrix<typename real_type<T>::type>& a, future<typename real_type<T>::type>& ret){
-        typename real_type<T>::type* ad = current(a);
-        typename real_type<T>::type tmp = ad[0];
-        int n = num_cols(a);
+            if(*ViewA::code() == 'T') std::swap(m,n);
+            helper_blas<T>::gemv(ViewA::code(), &m, &n, &salfa, &ad[aoffset], &lda, &bd[boffset], &ldb, &sbeta, &cd[coffset], &ldc);
+        }
+        
+        template<typename T>
+        void norm_vector(const matrix<T>& a, matrix<typename real_type<T>::type>& b){
+            int m = num_rows(a);
+            int n = num_cols(a);
+            T* ad = current(a);
+            typename real_type<T>::type* bd = updated(b);
+            std::cout << " (m,n) " << m << " " << n << std::endl;
+            for(int i(0); i<n; ++i)
+                for(int j(0); j<m; ++j)
+                    bd[i] += helper_complex<T>::real(ad[i*m+j]*helper_complex<T>::conj(ad[i*m+j])); 
+        }   
             
-        for(int i(0); i<n; ++i)
-            tmp = std::max(tmp,ad[i]);
-        ret.get_naked() = tmp;
+        template<typename T>
+        void max_vector(const matrix<typename real_type<T>::type>& a, future<typename real_type<T>::type>& ret){
+            typename real_type<T>::type* ad = current(a);
+            typename real_type<T>::type tmp = ad[0];
+            int n = num_cols(a);
+                
+            for(int i(0); i<n; ++i)
+                tmp = std::max(tmp,ad[i]);
+            ret.get_naked() = tmp;
+        }
+        
+        template<typename T>
+        void sqrt_inplace(matrix<typename real_type<T>::type>& a){
+            size_t size = a.num_rows()*a.num_cols();
+            typename real_type<T>::type* ad = current(a);
+            typename real_type<T>::type* ar = updated(a);
+            for(int i=0; i < size; ++i)
+                ar[i] =sqrt(ad[i]);   
+        }
+        
+        template<typename T>
+        void init_gaussian(unbound< matrix<T> >& a){
+            size_t size = ambient::square_dim(a);
+            T* ad = updated(a);
+            // for(size_t i = 0; i < size; ++i) ad[i] = gaussian_generator(rng);
+        }
+
     }
 
-    template<typename T>
-    void sqrt_inplace<T>::c(matrix<typename real_type<T>::type>& a){
-        size_t size = a.num_rows()*a.num_cols();
-        typename real_type<T>::type* ad = current(a);
-        typename real_type<T>::type* ar = updated(a);
-        for(int i=0; i < size; ++i)
-            ar[i] =sqrt(ad[i]);   
-    }
-
-    template<typename T>
-    void init_gaussian<T>::c(unbound< matrix<T> >& a){
-        size_t size = ambient::square_dim(a);
-        T* ad = updated(a);
-        // for(size_t i = 0; i < size; ++i) ad[i] = gaussian_generator(rng);
-    }
-
+    ambient_reg(detail::laset2, laset2)
+    ambient_reg(detail::add_vectors, add_vectors)
+    ambient_reg(detail::labrd_update_col, labrd_update_col)
+    ambient_reg(detail::labrd_reduce_col, labrd_reduce_col)
+    ambient_reg(detail::labrd_update_row, labrd_update_row)
+    ambient_reg(detail::labrd_reduce_row, labrd_reduce_row)
+    ambient_reg(detail::larfg, larfg)
+    ambient_reg(detail::gebd2, gebd2)
+    ambient_reg(detail::gebrd, gebrd)
+    ambient_reg(detail::gbbrd, gbbrd)
+    ambient_reg(detail::bdsqr, bdsqr)
+    ambient_reg(detail::copy_band, copy_band)
+    ambient_reg(detail::gemv_scale, gemv_scale)
+    ambient_reg(detail::gemv, gemv)
+    ambient_reg(detail::norm_vector, norm_vector)
+    ambient_reg(detail::max_vector, max_vector)
+    ambient_reg(detail::sqrt_inplace, sqrt_inplace)
+    ambient_reg(detail::init_gaussian, init_gaussian)
 
 } } }
 

@@ -45,10 +45,10 @@ namespace ambient { namespace numeric {
                            MatrixViewC& c, size_t coffset, 
                            size_t m, size_t n)
     {
-        kernels::gemv<alfa,beta,MatrixViewA,MatrixViewB,MatrixViewC>::spawn<complexity::N2>(a, aoffset, 
-                                                                                            b, boffset, 
-                                                                                            c, coffset, 
-                                                                                            m, n); 
+        kernels::gemv<int_type<alfa>,int_type<beta>,MatrixViewA,MatrixViewB,MatrixViewC>::spawn<complexity::N2>(a, aoffset, 
+                                                                                                                b, boffset, 
+                                                                                                                c, coffset, 
+                                                                                                                m, n); 
     }
 
     template<int ADD, class MA, class MB, class MC, class MF>
@@ -58,11 +58,11 @@ namespace ambient { namespace numeric {
                            const MF& f, size_t foffset, 
                            size_t m, size_t n)
     {
-        kernels::gemv_scale<ADD,MA,MB,MC,MF>::spawn<complexity::N2>(a, aoffset, 
-                                                                    b, boffset, 
-                                                                    c, coffset, 
-                                                                    f, foffset, 
-                                                                    m, n); 
+        kernels::gemv_scale<int_type<ADD>,MA,MB,MC,MF>::spawn<complexity::N2>(a, aoffset, 
+                                                                              b, boffset, 
+                                                                              c, coffset, 
+                                                                              f, foffset, 
+                                                                              m, n); 
     }
 
     template<typename T, class A>
@@ -87,7 +87,7 @@ namespace ambient { namespace numeric {
 
     template<PLASMA_enum TR, typename T, class A>
     inline void larfg(matrix<T,A>& a, diagonal_matrix<T>& t, diagonal_matrix<T>& d, size_t k){
-        kernels::larfg<T,TR>::spawn<complexity::N3>(a, t, d, k);
+        kernels::larfg<T,trans_type<TR> >::spawn<complexity::N3>(a, t, d, k);
     }
 
     template<typename T, class A>
@@ -128,17 +128,17 @@ namespace ambient { namespace numeric {
 
     template<PLASMA_enum UL, size_t OFF, typename T, class A>
     inline void laset2(matrix<T,A>& a, const T& alfa = 0.0){
-        kernels::laset2<T,UL,OFF>::spawn<complexity::N2>(a, alfa);
+        kernels::laset2<T,ul_type<UL>,int_type<OFF> >::spawn<complexity::N2>(a, alfa);
     }
 
     template<PLASMA_enum UL, typename T, class A>
     inline void copy_band(const matrix<T,A>& src, matrix<T,A>& dst, size_t dj){
-        kernels::copy_band<T,UL>::spawn<complexity::N2>(src, dst, dj);
+        kernels::copy_band<T,ul_type<UL> >::spawn<complexity::N2>(src, dst, dj);
     }
 
     template <int alfa, typename T, class A>
     inline void add_vectors(matrix<T,A>& lhs, size_t loffset, const matrix<T,A>& rhs, size_t roffset, size_t size){ 
-        kernels::add_vectors<alfa, T>::spawn<complexity::N2>(lhs, loffset, rhs, roffset, size); 
+        kernels::add_vectors<int_type<alfa>, T>::spawn<complexity::N2>(lhs, loffset, rhs, roffset, size); 
     }
 
     template<typename T, class A>

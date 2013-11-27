@@ -51,7 +51,7 @@ namespace ambient {
     template<class K>
     class kernel : public cfunctor {
     public:
-        #define inliner kernel_inliner<decltype(&K::c),&K::c>
+        #define inliner kernel_inliner<typename K::ftype,&K::c>
         inline void operator delete (void* ptr){ }
         inline void* operator new (size_t size){
             return ambient::pool::malloc<bulk,sizeof(K)+sizeof(void*)*inliner::arity>();
@@ -131,6 +131,15 @@ namespace ambient {
         }
         #undef inliner
     };
+
+    #define ambient_reg(fn, name)  template<typename... TF> \
+                                   struct name : public kernel< name<TF...> > { \
+                                       typedef decltype(&fn<TF...>) ftype; \
+                                       template<typename... Args> \
+                                       static void c(Args&&... args){ \
+                                           fn<TF...>(std::forward<Args>(args)...); \
+                                       } \
+                                   };
 }
 
 #endif
