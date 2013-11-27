@@ -57,7 +57,7 @@ namespace ambient { namespace controllers { namespace velvet {
         bool empty();
         void flush();
         void clear();
-        bool queue (cfunctor* f);
+        bool queue (functor* f);
         void sync  (revision* r);
         void lsync (revision* r);
         void rsync (revision* r);
@@ -80,10 +80,10 @@ namespace ambient { namespace controllers { namespace velvet {
         const scope* context;
         const scope* context_base;
     private:
-        std::vector< cfunctor* > stack_m;
-        std::vector< cfunctor* > stack_s;
-        std::vector< cfunctor* >* chains;
-        std::vector< cfunctor* >* mirror;
+        std::vector< functor* > stack_m;
+        std::vector< functor* > stack_s;
+        std::vector< functor* >* chains;
+        std::vector< functor* >* mirror;
         ambient::memory::collector garbage;
         bool serial;
     };

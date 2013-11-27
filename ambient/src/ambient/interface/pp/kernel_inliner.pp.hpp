@@ -29,7 +29,7 @@ struct kernel_inliner<void(*)( T0& ), fp> {
     typedef T0 t0;
     static const int arity = 1;
     template<complexity O>
-    static inline void latch(cfunctor* o, T0& arg0 ){
+    static inline void latch(functor* o, T0& arg0 ){
         if(ambient::controller.tunable()){
             info<T0>::typed::template score<0>(arg0);
             ambient::controller.schedule<O>();
@@ -47,13 +47,13 @@ struct kernel_inliner<void(*)( T0& ), fp> {
         info<T0>::typed::template pin<0>(o) ||
         ambient::controller.queue(o);
     }
-    static inline void invoke(cfunctor* o){
+    static inline void invoke(functor* o){
         (*fp)( info<T0>::typed::template revised<0>(o) );
     }
-    static inline void cleanup(cfunctor* o){
+    static inline void cleanup(functor* o){
         info<T0>::typed::template deallocate<0>(o);
     }
-    static inline bool ready(cfunctor* o){
+    static inline bool ready(functor* o){
         return (info<T0>::typed::template ready<0>(o) && true);
     }
 };
@@ -62,7 +62,7 @@ struct kernel_inliner<void(*)( T0& , T1& ), fp> {
     typedef T0 t0; typedef T1 t1;
     static const int arity = 2;
     template<complexity O>
-    static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 ){
+    static inline void latch(functor* o, T0& arg0 , T1& arg1 ){
         if(ambient::controller.tunable()){
             info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1);
             ambient::controller.schedule<O>();
@@ -80,13 +80,13 @@ struct kernel_inliner<void(*)( T0& , T1& ), fp> {
         info<T0>::typed::template pin<0>(o) || info<T1>::typed::template pin<1>(o) ||
         ambient::controller.queue(o);
     }
-    static inline void invoke(cfunctor* o){
+    static inline void invoke(functor* o){
         (*fp)( info<T0>::typed::template revised<0>(o) , info<T1>::typed::template revised<1>(o) );
     }
-    static inline void cleanup(cfunctor* o){
+    static inline void cleanup(functor* o){
         info<T0>::typed::template deallocate<0>(o); info<T1>::typed::template deallocate<1>(o);
     }
-    static inline bool ready(cfunctor* o){
+    static inline bool ready(functor* o){
         return (info<T0>::typed::template ready<0>(o) && info<T1>::typed::template ready<1>(o) && true);
     }
 };
@@ -95,7 +95,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& ), fp> {
     typedef T0 t0; typedef T1 t1; typedef T2 t2;
     static const int arity = 3;
     template<complexity O>
-    static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 ){
+    static inline void latch(functor* o, T0& arg0 , T1& arg1 , T2& arg2 ){
         if(ambient::controller.tunable()){
             info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2);
             ambient::controller.schedule<O>();
@@ -113,13 +113,13 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& ), fp> {
         info<T0>::typed::template pin<0>(o) || info<T1>::typed::template pin<1>(o) || info<T2>::typed::template pin<2>(o) ||
         ambient::controller.queue(o);
     }
-    static inline void invoke(cfunctor* o){
+    static inline void invoke(functor* o){
         (*fp)( info<T0>::typed::template revised<0>(o) , info<T1>::typed::template revised<1>(o) , info<T2>::typed::template revised<2>(o) );
     }
-    static inline void cleanup(cfunctor* o){
+    static inline void cleanup(functor* o){
         info<T0>::typed::template deallocate<0>(o); info<T1>::typed::template deallocate<1>(o); info<T2>::typed::template deallocate<2>(o);
     }
-    static inline bool ready(cfunctor* o){
+    static inline bool ready(functor* o){
         return (info<T0>::typed::template ready<0>(o) && info<T1>::typed::template ready<1>(o) && info<T2>::typed::template ready<2>(o) && true);
     }
 };
@@ -128,7 +128,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& ), fp> {
     typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3;
     static const int arity = 4;
     template<complexity O>
-    static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 ){
+    static inline void latch(functor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 ){
         if(ambient::controller.tunable()){
             info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3);
             ambient::controller.schedule<O>();
@@ -146,13 +146,13 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& ), fp> {
         info<T0>::typed::template pin<0>(o) || info<T1>::typed::template pin<1>(o) || info<T2>::typed::template pin<2>(o) || info<T3>::typed::template pin<3>(o) ||
         ambient::controller.queue(o);
     }
-    static inline void invoke(cfunctor* o){
+    static inline void invoke(functor* o){
         (*fp)( info<T0>::typed::template revised<0>(o) , info<T1>::typed::template revised<1>(o) , info<T2>::typed::template revised<2>(o) , info<T3>::typed::template revised<3>(o) );
     }
-    static inline void cleanup(cfunctor* o){
+    static inline void cleanup(functor* o){
         info<T0>::typed::template deallocate<0>(o); info<T1>::typed::template deallocate<1>(o); info<T2>::typed::template deallocate<2>(o); info<T3>::typed::template deallocate<3>(o);
     }
-    static inline bool ready(cfunctor* o){
+    static inline bool ready(functor* o){
         return (info<T0>::typed::template ready<0>(o) && info<T1>::typed::template ready<1>(o) && info<T2>::typed::template ready<2>(o) && info<T3>::typed::template ready<3>(o) && true);
     }
 };
@@ -161,7 +161,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& ), fp> {
     typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4;
     static const int arity = 5;
     template<complexity O>
-    static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 ){
+    static inline void latch(functor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 ){
         if(ambient::controller.tunable()){
             info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4);
             ambient::controller.schedule<O>();
@@ -179,13 +179,13 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& ), fp> {
         info<T0>::typed::template pin<0>(o) || info<T1>::typed::template pin<1>(o) || info<T2>::typed::template pin<2>(o) || info<T3>::typed::template pin<3>(o) || info<T4>::typed::template pin<4>(o) ||
         ambient::controller.queue(o);
     }
-    static inline void invoke(cfunctor* o){
+    static inline void invoke(functor* o){
         (*fp)( info<T0>::typed::template revised<0>(o) , info<T1>::typed::template revised<1>(o) , info<T2>::typed::template revised<2>(o) , info<T3>::typed::template revised<3>(o) , info<T4>::typed::template revised<4>(o) );
     }
-    static inline void cleanup(cfunctor* o){
+    static inline void cleanup(functor* o){
         info<T0>::typed::template deallocate<0>(o); info<T1>::typed::template deallocate<1>(o); info<T2>::typed::template deallocate<2>(o); info<T3>::typed::template deallocate<3>(o); info<T4>::typed::template deallocate<4>(o);
     }
-    static inline bool ready(cfunctor* o){
+    static inline bool ready(functor* o){
         return (info<T0>::typed::template ready<0>(o) && info<T1>::typed::template ready<1>(o) && info<T2>::typed::template ready<2>(o) && info<T3>::typed::template ready<3>(o) && info<T4>::typed::template ready<4>(o) && true);
     }
 };
@@ -194,7 +194,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& ), fp> {
     typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4; typedef T5 t5;
     static const int arity = 6;
     template<complexity O>
-    static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 ){
+    static inline void latch(functor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 ){
         if(ambient::controller.tunable()){
             info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5);
             ambient::controller.schedule<O>();
@@ -212,13 +212,13 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& ), fp> {
         info<T0>::typed::template pin<0>(o) || info<T1>::typed::template pin<1>(o) || info<T2>::typed::template pin<2>(o) || info<T3>::typed::template pin<3>(o) || info<T4>::typed::template pin<4>(o) || info<T5>::typed::template pin<5>(o) ||
         ambient::controller.queue(o);
     }
-    static inline void invoke(cfunctor* o){
+    static inline void invoke(functor* o){
         (*fp)( info<T0>::typed::template revised<0>(o) , info<T1>::typed::template revised<1>(o) , info<T2>::typed::template revised<2>(o) , info<T3>::typed::template revised<3>(o) , info<T4>::typed::template revised<4>(o) , info<T5>::typed::template revised<5>(o) );
     }
-    static inline void cleanup(cfunctor* o){
+    static inline void cleanup(functor* o){
         info<T0>::typed::template deallocate<0>(o); info<T1>::typed::template deallocate<1>(o); info<T2>::typed::template deallocate<2>(o); info<T3>::typed::template deallocate<3>(o); info<T4>::typed::template deallocate<4>(o); info<T5>::typed::template deallocate<5>(o);
     }
-    static inline bool ready(cfunctor* o){
+    static inline bool ready(functor* o){
         return (info<T0>::typed::template ready<0>(o) && info<T1>::typed::template ready<1>(o) && info<T2>::typed::template ready<2>(o) && info<T3>::typed::template ready<3>(o) && info<T4>::typed::template ready<4>(o) && info<T5>::typed::template ready<5>(o) && true);
     }
 };
@@ -227,7 +227,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& ), fp> {
     typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4; typedef T5 t5; typedef T6 t6;
     static const int arity = 7;
     template<complexity O>
-    static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 ){
+    static inline void latch(functor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 ){
         if(ambient::controller.tunable()){
             info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6);
             ambient::controller.schedule<O>();
@@ -245,13 +245,13 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& ), fp> {
         info<T0>::typed::template pin<0>(o) || info<T1>::typed::template pin<1>(o) || info<T2>::typed::template pin<2>(o) || info<T3>::typed::template pin<3>(o) || info<T4>::typed::template pin<4>(o) || info<T5>::typed::template pin<5>(o) || info<T6>::typed::template pin<6>(o) ||
         ambient::controller.queue(o);
     }
-    static inline void invoke(cfunctor* o){
+    static inline void invoke(functor* o){
         (*fp)( info<T0>::typed::template revised<0>(o) , info<T1>::typed::template revised<1>(o) , info<T2>::typed::template revised<2>(o) , info<T3>::typed::template revised<3>(o) , info<T4>::typed::template revised<4>(o) , info<T5>::typed::template revised<5>(o) , info<T6>::typed::template revised<6>(o) );
     }
-    static inline void cleanup(cfunctor* o){
+    static inline void cleanup(functor* o){
         info<T0>::typed::template deallocate<0>(o); info<T1>::typed::template deallocate<1>(o); info<T2>::typed::template deallocate<2>(o); info<T3>::typed::template deallocate<3>(o); info<T4>::typed::template deallocate<4>(o); info<T5>::typed::template deallocate<5>(o); info<T6>::typed::template deallocate<6>(o);
     }
-    static inline bool ready(cfunctor* o){
+    static inline bool ready(functor* o){
         return (info<T0>::typed::template ready<0>(o) && info<T1>::typed::template ready<1>(o) && info<T2>::typed::template ready<2>(o) && info<T3>::typed::template ready<3>(o) && info<T4>::typed::template ready<4>(o) && info<T5>::typed::template ready<5>(o) && info<T6>::typed::template ready<6>(o) && true);
     }
 };
@@ -260,7 +260,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& ), 
     typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4; typedef T5 t5; typedef T6 t6; typedef T7 t7;
     static const int arity = 8;
     template<complexity O>
-    static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 ){
+    static inline void latch(functor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 ){
         if(ambient::controller.tunable()){
             info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6); info<T7>::typed::template score<7>(arg7);
             ambient::controller.schedule<O>();
@@ -278,13 +278,13 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& ), 
         info<T0>::typed::template pin<0>(o) || info<T1>::typed::template pin<1>(o) || info<T2>::typed::template pin<2>(o) || info<T3>::typed::template pin<3>(o) || info<T4>::typed::template pin<4>(o) || info<T5>::typed::template pin<5>(o) || info<T6>::typed::template pin<6>(o) || info<T7>::typed::template pin<7>(o) ||
         ambient::controller.queue(o);
     }
-    static inline void invoke(cfunctor* o){
+    static inline void invoke(functor* o){
         (*fp)( info<T0>::typed::template revised<0>(o) , info<T1>::typed::template revised<1>(o) , info<T2>::typed::template revised<2>(o) , info<T3>::typed::template revised<3>(o) , info<T4>::typed::template revised<4>(o) , info<T5>::typed::template revised<5>(o) , info<T6>::typed::template revised<6>(o) , info<T7>::typed::template revised<7>(o) );
     }
-    static inline void cleanup(cfunctor* o){
+    static inline void cleanup(functor* o){
         info<T0>::typed::template deallocate<0>(o); info<T1>::typed::template deallocate<1>(o); info<T2>::typed::template deallocate<2>(o); info<T3>::typed::template deallocate<3>(o); info<T4>::typed::template deallocate<4>(o); info<T5>::typed::template deallocate<5>(o); info<T6>::typed::template deallocate<6>(o); info<T7>::typed::template deallocate<7>(o);
     }
-    static inline bool ready(cfunctor* o){
+    static inline bool ready(functor* o){
         return (info<T0>::typed::template ready<0>(o) && info<T1>::typed::template ready<1>(o) && info<T2>::typed::template ready<2>(o) && info<T3>::typed::template ready<3>(o) && info<T4>::typed::template ready<4>(o) && info<T5>::typed::template ready<5>(o) && info<T6>::typed::template ready<6>(o) && info<T7>::typed::template ready<7>(o) && true);
     }
 };
@@ -293,7 +293,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
     typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4; typedef T5 t5; typedef T6 t6; typedef T7 t7; typedef T8 t8;
     static const int arity = 9;
     template<complexity O>
-    static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 ){
+    static inline void latch(functor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 ){
         if(ambient::controller.tunable()){
             info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6); info<T7>::typed::template score<7>(arg7); info<T8>::typed::template score<8>(arg8);
             ambient::controller.schedule<O>();
@@ -311,13 +311,13 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
         info<T0>::typed::template pin<0>(o) || info<T1>::typed::template pin<1>(o) || info<T2>::typed::template pin<2>(o) || info<T3>::typed::template pin<3>(o) || info<T4>::typed::template pin<4>(o) || info<T5>::typed::template pin<5>(o) || info<T6>::typed::template pin<6>(o) || info<T7>::typed::template pin<7>(o) || info<T8>::typed::template pin<8>(o) ||
         ambient::controller.queue(o);
     }
-    static inline void invoke(cfunctor* o){
+    static inline void invoke(functor* o){
         (*fp)( info<T0>::typed::template revised<0>(o) , info<T1>::typed::template revised<1>(o) , info<T2>::typed::template revised<2>(o) , info<T3>::typed::template revised<3>(o) , info<T4>::typed::template revised<4>(o) , info<T5>::typed::template revised<5>(o) , info<T6>::typed::template revised<6>(o) , info<T7>::typed::template revised<7>(o) , info<T8>::typed::template revised<8>(o) );
     }
-    static inline void cleanup(cfunctor* o){
+    static inline void cleanup(functor* o){
         info<T0>::typed::template deallocate<0>(o); info<T1>::typed::template deallocate<1>(o); info<T2>::typed::template deallocate<2>(o); info<T3>::typed::template deallocate<3>(o); info<T4>::typed::template deallocate<4>(o); info<T5>::typed::template deallocate<5>(o); info<T6>::typed::template deallocate<6>(o); info<T7>::typed::template deallocate<7>(o); info<T8>::typed::template deallocate<8>(o);
     }
-    static inline bool ready(cfunctor* o){
+    static inline bool ready(functor* o){
         return (info<T0>::typed::template ready<0>(o) && info<T1>::typed::template ready<1>(o) && info<T2>::typed::template ready<2>(o) && info<T3>::typed::template ready<3>(o) && info<T4>::typed::template ready<4>(o) && info<T5>::typed::template ready<5>(o) && info<T6>::typed::template ready<6>(o) && info<T7>::typed::template ready<7>(o) && info<T8>::typed::template ready<8>(o) && true);
     }
 };
@@ -326,7 +326,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
     typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4; typedef T5 t5; typedef T6 t6; typedef T7 t7; typedef T8 t8; typedef T9 t9;
     static const int arity = 10;
     template<complexity O>
-    static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 , T9& arg9 ){
+    static inline void latch(functor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 , T9& arg9 ){
         if(ambient::controller.tunable()){
             info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6); info<T7>::typed::template score<7>(arg7); info<T8>::typed::template score<8>(arg8); info<T9>::typed::template score<9>(arg9);
             ambient::controller.schedule<O>();
@@ -344,13 +344,13 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
         info<T0>::typed::template pin<0>(o) || info<T1>::typed::template pin<1>(o) || info<T2>::typed::template pin<2>(o) || info<T3>::typed::template pin<3>(o) || info<T4>::typed::template pin<4>(o) || info<T5>::typed::template pin<5>(o) || info<T6>::typed::template pin<6>(o) || info<T7>::typed::template pin<7>(o) || info<T8>::typed::template pin<8>(o) || info<T9>::typed::template pin<9>(o) ||
         ambient::controller.queue(o);
     }
-    static inline void invoke(cfunctor* o){
+    static inline void invoke(functor* o){
         (*fp)( info<T0>::typed::template revised<0>(o) , info<T1>::typed::template revised<1>(o) , info<T2>::typed::template revised<2>(o) , info<T3>::typed::template revised<3>(o) , info<T4>::typed::template revised<4>(o) , info<T5>::typed::template revised<5>(o) , info<T6>::typed::template revised<6>(o) , info<T7>::typed::template revised<7>(o) , info<T8>::typed::template revised<8>(o) , info<T9>::typed::template revised<9>(o) );
     }
-    static inline void cleanup(cfunctor* o){
+    static inline void cleanup(functor* o){
         info<T0>::typed::template deallocate<0>(o); info<T1>::typed::template deallocate<1>(o); info<T2>::typed::template deallocate<2>(o); info<T3>::typed::template deallocate<3>(o); info<T4>::typed::template deallocate<4>(o); info<T5>::typed::template deallocate<5>(o); info<T6>::typed::template deallocate<6>(o); info<T7>::typed::template deallocate<7>(o); info<T8>::typed::template deallocate<8>(o); info<T9>::typed::template deallocate<9>(o);
     }
-    static inline bool ready(cfunctor* o){
+    static inline bool ready(functor* o){
         return (info<T0>::typed::template ready<0>(o) && info<T1>::typed::template ready<1>(o) && info<T2>::typed::template ready<2>(o) && info<T3>::typed::template ready<3>(o) && info<T4>::typed::template ready<4>(o) && info<T5>::typed::template ready<5>(o) && info<T6>::typed::template ready<6>(o) && info<T7>::typed::template ready<7>(o) && info<T8>::typed::template ready<8>(o) && info<T9>::typed::template ready<9>(o) && true);
     }
 };
@@ -359,7 +359,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
     typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4; typedef T5 t5; typedef T6 t6; typedef T7 t7; typedef T8 t8; typedef T9 t9; typedef T10 t10;
     static const int arity = 11;
     template<complexity O>
-    static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 , T9& arg9 , T10& arg10 ){
+    static inline void latch(functor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 , T9& arg9 , T10& arg10 ){
         if(ambient::controller.tunable()){
             info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6); info<T7>::typed::template score<7>(arg7); info<T8>::typed::template score<8>(arg8); info<T9>::typed::template score<9>(arg9); info<T10>::typed::template score<10>(arg10);
             ambient::controller.schedule<O>();
@@ -377,13 +377,13 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
         info<T0>::typed::template pin<0>(o) || info<T1>::typed::template pin<1>(o) || info<T2>::typed::template pin<2>(o) || info<T3>::typed::template pin<3>(o) || info<T4>::typed::template pin<4>(o) || info<T5>::typed::template pin<5>(o) || info<T6>::typed::template pin<6>(o) || info<T7>::typed::template pin<7>(o) || info<T8>::typed::template pin<8>(o) || info<T9>::typed::template pin<9>(o) || info<T10>::typed::template pin<10>(o) ||
         ambient::controller.queue(o);
     }
-    static inline void invoke(cfunctor* o){
+    static inline void invoke(functor* o){
         (*fp)( info<T0>::typed::template revised<0>(o) , info<T1>::typed::template revised<1>(o) , info<T2>::typed::template revised<2>(o) , info<T3>::typed::template revised<3>(o) , info<T4>::typed::template revised<4>(o) , info<T5>::typed::template revised<5>(o) , info<T6>::typed::template revised<6>(o) , info<T7>::typed::template revised<7>(o) , info<T8>::typed::template revised<8>(o) , info<T9>::typed::template revised<9>(o) , info<T10>::typed::template revised<10>(o) );
     }
-    static inline void cleanup(cfunctor* o){
+    static inline void cleanup(functor* o){
         info<T0>::typed::template deallocate<0>(o); info<T1>::typed::template deallocate<1>(o); info<T2>::typed::template deallocate<2>(o); info<T3>::typed::template deallocate<3>(o); info<T4>::typed::template deallocate<4>(o); info<T5>::typed::template deallocate<5>(o); info<T6>::typed::template deallocate<6>(o); info<T7>::typed::template deallocate<7>(o); info<T8>::typed::template deallocate<8>(o); info<T9>::typed::template deallocate<9>(o); info<T10>::typed::template deallocate<10>(o);
     }
-    static inline bool ready(cfunctor* o){
+    static inline bool ready(functor* o){
         return (info<T0>::typed::template ready<0>(o) && info<T1>::typed::template ready<1>(o) && info<T2>::typed::template ready<2>(o) && info<T3>::typed::template ready<3>(o) && info<T4>::typed::template ready<4>(o) && info<T5>::typed::template ready<5>(o) && info<T6>::typed::template ready<6>(o) && info<T7>::typed::template ready<7>(o) && info<T8>::typed::template ready<8>(o) && info<T9>::typed::template ready<9>(o) && info<T10>::typed::template ready<10>(o) && true);
     }
 };
@@ -392,7 +392,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
     typedef T0 t0; typedef T1 t1; typedef T2 t2; typedef T3 t3; typedef T4 t4; typedef T5 t5; typedef T6 t6; typedef T7 t7; typedef T8 t8; typedef T9 t9; typedef T10 t10; typedef T11 t11;
     static const int arity = 12;
     template<complexity O>
-    static inline void latch(cfunctor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 , T9& arg9 , T10& arg10 , T11& arg11 ){
+    static inline void latch(functor* o, T0& arg0 , T1& arg1 , T2& arg2 , T3& arg3 , T4& arg4 , T5& arg5 , T6& arg6 , T7& arg7 , T8& arg8 , T9& arg9 , T10& arg10 , T11& arg11 ){
         if(ambient::controller.tunable()){
             info<T0>::typed::template score<0>(arg0); info<T1>::typed::template score<1>(arg1); info<T2>::typed::template score<2>(arg2); info<T3>::typed::template score<3>(arg3); info<T4>::typed::template score<4>(arg4); info<T5>::typed::template score<5>(arg5); info<T6>::typed::template score<6>(arg6); info<T7>::typed::template score<7>(arg7); info<T8>::typed::template score<8>(arg8); info<T9>::typed::template score<9>(arg9); info<T10>::typed::template score<10>(arg10); info<T11>::typed::template score<11>(arg11);
             ambient::controller.schedule<O>();
@@ -410,13 +410,13 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
         info<T0>::typed::template pin<0>(o) || info<T1>::typed::template pin<1>(o) || info<T2>::typed::template pin<2>(o) || info<T3>::typed::template pin<3>(o) || info<T4>::typed::template pin<4>(o) || info<T5>::typed::template pin<5>(o) || info<T6>::typed::template pin<6>(o) || info<T7>::typed::template pin<7>(o) || info<T8>::typed::template pin<8>(o) || info<T9>::typed::template pin<9>(o) || info<T10>::typed::template pin<10>(o) || info<T11>::typed::template pin<11>(o) ||
         ambient::controller.queue(o);
     }
-    static inline void invoke(cfunctor* o){
+    static inline void invoke(functor* o){
         (*fp)( info<T0>::typed::template revised<0>(o) , info<T1>::typed::template revised<1>(o) , info<T2>::typed::template revised<2>(o) , info<T3>::typed::template revised<3>(o) , info<T4>::typed::template revised<4>(o) , info<T5>::typed::template revised<5>(o) , info<T6>::typed::template revised<6>(o) , info<T7>::typed::template revised<7>(o) , info<T8>::typed::template revised<8>(o) , info<T9>::typed::template revised<9>(o) , info<T10>::typed::template revised<10>(o) , info<T11>::typed::template revised<11>(o) );
     }
-    static inline void cleanup(cfunctor* o){
+    static inline void cleanup(functor* o){
         info<T0>::typed::template deallocate<0>(o); info<T1>::typed::template deallocate<1>(o); info<T2>::typed::template deallocate<2>(o); info<T3>::typed::template deallocate<3>(o); info<T4>::typed::template deallocate<4>(o); info<T5>::typed::template deallocate<5>(o); info<T6>::typed::template deallocate<6>(o); info<T7>::typed::template deallocate<7>(o); info<T8>::typed::template deallocate<8>(o); info<T9>::typed::template deallocate<9>(o); info<T10>::typed::template deallocate<10>(o); info<T11>::typed::template deallocate<11>(o);
     }
-    static inline bool ready(cfunctor* o){
+    static inline bool ready(functor* o){
         return (info<T0>::typed::template ready<0>(o) && info<T1>::typed::template ready<1>(o) && info<T2>::typed::template ready<2>(o) && info<T3>::typed::template ready<3>(o) && info<T4>::typed::template ready<4>(o) && info<T5>::typed::template ready<5>(o) && info<T6>::typed::template ready<6>(o) && info<T7>::typed::template ready<7>(o) && info<T8>::typed::template ready<8>(o) && info<T9>::typed::template ready<9>(o) && info<T10>::typed::template ready<10>(o) && info<T11>::typed::template ready<11>(o) && true);
     }
 };

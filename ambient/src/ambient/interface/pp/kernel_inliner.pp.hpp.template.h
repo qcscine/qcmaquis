@@ -81,7 +81,7 @@ struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP
     BOOST_PP_REPEAT(TYPES_NUMBER, typedef_arguments, ~)
     static const int arity = n; 
     template<complexity O>
-    static inline void latch(cfunctor* o, BOOST_PP_REPEAT(TYPES_NUMBER, type_arg_list, n) ){
+    static inline void latch(functor* o, BOOST_PP_REPEAT(TYPES_NUMBER, type_arg_list, n) ){
         if(ambient::controller.tunable()){
             BOOST_PP_REPEAT(TYPES_NUMBER, score_arguments, ~)
             ambient::controller.schedule<O>();
@@ -99,13 +99,13 @@ struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP
         BOOST_PP_REPEAT(TYPES_NUMBER, traverse_arguments, ~)
         ambient::controller.queue(o);
     }
-    static inline void invoke(cfunctor* o){
+    static inline void invoke(functor* o){
         (*fp)( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, BOOST_PP_ADD(n,1)) );
     }
-    static inline void cleanup(cfunctor* o){
+    static inline void cleanup(functor* o){
         BOOST_PP_REPEAT(TYPES_NUMBER, cleanup_object, ~) 
     }
-    static inline bool ready(cfunctor* o){
+    static inline bool ready(functor* o){
         return (BOOST_PP_REPEAT(TYPES_NUMBER, ready_revision, ~) true);
     }
 };

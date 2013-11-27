@@ -34,7 +34,7 @@
 
 namespace ambient {
 
-    using ambient::controllers::velvet::cfunctor;
+    using ambient::controllers::velvet::functor;
 
     template<typename FP, FP fp> struct kernel_inliner{};
     #ifdef AMBIENT_TRACKING
@@ -49,7 +49,7 @@ namespace ambient {
     #undef AMBIENT_TRACKING_END
 
     template<class K>
-    class kernel : public cfunctor {
+    class kernel : public functor {
     public:
         #define inliner kernel_inliner<typename K::ftype,&K::c>
         inline void operator delete (void* ptr){ }
