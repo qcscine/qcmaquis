@@ -12,6 +12,7 @@ TARGETS="ambient dmrg"
 
 RUN_PRESETS="1n.micro:             ~/maquis2014/benchmarks/dmrg_gs/1n/micro.L4/parms.50                 ~/maquis2014/benchmarks/dmrg_gs/1n/micro.L4/model
              leakcheck:            ~/maquis2014/benchmarks/dmrg_gs/1n/leakcheck/parms                   ~/maquis2014/benchmarks/dmrg_gs/1n/leakcheck/model
+             anthracene:           ~/maquis2014/benchmarks/dmrg_gs/anthracene/parms                     ~/maquis2014/benchmarks/dmrg_gs/anthracene/model
              1n.short:             ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L6/parms.6000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L6/model
              1n.spinless.L8.6000:  ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/parms.6000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/model
              1n.spinless.L8.8000:  ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/parms.8000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/model
