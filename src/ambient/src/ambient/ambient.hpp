@@ -122,7 +122,6 @@ namespace ambient {
     inline int get_num_threads(){
         static int n = AMBIENT_NUM_THREADS; return n;
     }
-    enum complexity { N, N2, N3 };
     enum locality   { remote, local, common };
     enum scope_t    { base, single, shared, dedicated };
     enum region_t   { rbulked, rstandard, rpersist, rdelegated };

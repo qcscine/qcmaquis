@@ -74,7 +74,6 @@ namespace ambient { namespace controllers { namespace velvet {
         return context->tunable();
     }
 
-    template<complexity O>
     inline void controller::schedule(){
         const_cast<scope*>(context)->toss();
     }
