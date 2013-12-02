@@ -18,10 +18,6 @@ export CXX=icpc
 
 module load gcc/4.7.3 hdf5/1.8.11-intel13 intel/13.1.0 mvapich2/1.9-intel13 python cmake
 
-## common ##
-# COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib"
-# COMMON_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -openmp -w -O3 -DAMBIENT_OMP -DNDEBUG -std=c++11 -L/apps/castor/plasma-2.4.6/lib"
-## dmrg ##
 DMRG_BLAS_LAPACK_SELECTOR="mkl_parallel"
 DMRG_ENABLE_OMP=ON
 DMRG_BUILD_MULTIGRID=ON
