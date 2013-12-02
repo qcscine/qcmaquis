@@ -38,7 +38,7 @@ endif(NOT APPLE)
 #
 ########################################################################
 
-set(AMBIENT_THREADING "cilk" CACHE STRINGS "Ambient threading backend: cilk or openmp.")
+set(AMBIENT_THREADING "auto" CACHE STRINGS "Ambient threading backend: cilk, openmp, serial or auto.")
 set(BLAS_LAPACK_SELECTOR "auto" CACHE STRINGS "auto, manual, mkl_sequential, mkl_parallel, veclib, alps")
 set(PLASMA_LIB_DIR "/usr/local/lib" CACHE PATH "Location of PLASMA libraries.")
 set(PLASMA_LIBRARIES "-lplasma -lcoreblas -llapacke -lquark" CACHE STRINGS "PLASMA libraries")
@@ -89,8 +89,10 @@ if(${AMBIENT_THREADING} MATCHES "cilk")
 elseif(${AMBIENT_THREADING} MATCHES "openmp")
   find_package(OpenMP REQUIRED)
   set(AMBIENT_CXX_FLAGS "${AMBIENT_CXX_FLAGS} -DAMBIENT_OMP ${OpenMP_CXX_FLAGS}")
-else()
-  message(FATAL_ERROR "Variable AMBIENT_THREADING has to be one of 'cilk' and 'openmp'.")
+elseif(${AMBIENT_THREADING} MATCHES "serial")
+  set(AMBIENT_CXX_FLAGS "${AMBIENT_CXX_FLAGS} -DAMBIENT_SERIAL")
+elseif(NOT ${AMBIENT_THREADING} MATCHES "auto")
+  message(FATAL_ERROR "Variable AMBIENT_THREADING has to be one of 'cilk', 'openmp', 'serial' or 'auto'.")
 endif()
 message(STATUS "Ambient threading: ${AMBIENT_THREADING}")
 

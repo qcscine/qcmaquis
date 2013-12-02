@@ -54,7 +54,7 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void fill_random_hermitian(Matrix& a){
-        kernels::init_random_hermitian<typename Matrix::value_type>::spawn<complexity::N2>(a);
+        kernels::init_random_hermitian<typename Matrix::value_type>::spawn(a);
     }   
         
 }} //end namespace

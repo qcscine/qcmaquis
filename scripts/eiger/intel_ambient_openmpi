@@ -35,7 +35,6 @@ COMMON_MPI_CXX_INCLUDE_PATH=/apps/eiger/openmpi/1.5.3/intel/include
 COMMON_MPI_CXX_LINK_FLAGS=""
 COMMON_MPI_CXX_LIBRARIES="-L/apps/eiger/openmpi/1.5.3/intel/lib -lmpi"
 
-COMMON_AMBIENT_THREADING="cilk"
 COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
 COMMON_PLASMA_LIB_DIR="TODO"
 
