@@ -80,11 +80,10 @@ template<BOOST_PP_ENUM_PARAMS(TYPES_NUMBER, typename T) , void(*fp)( BOOST_PP_RE
 struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP_ADD(n,1)) ), fp> {
     BOOST_PP_REPEAT(TYPES_NUMBER, typedef_arguments, ~)
     static const int arity = n; 
-    template<complexity O>
     static inline void latch(functor* o, BOOST_PP_REPEAT(TYPES_NUMBER, type_arg_list, n) ){
         if(ambient::controller.tunable()){
             BOOST_PP_REPEAT(TYPES_NUMBER, score_arguments, ~)
-            ambient::controller.schedule<O>();
+            ambient::controller.schedule();
         }
         if(ambient::controller.remote()){
             BOOST_PP_REPEAT(TYPES_NUMBER, extract_remote_arguments, ~)

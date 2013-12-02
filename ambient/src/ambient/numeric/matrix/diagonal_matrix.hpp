@@ -134,7 +134,7 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void exp_inplace(diagonal_matrix<T>& a, const T& alfa = 1.){
-        kernels::template exp_diagonal<T>::template spawn<complexity::N>(a, alfa);
+        kernels::template exp_diagonal<T>::template spawn(a, alfa);
     }
 
     template<typename T>
@@ -145,7 +145,7 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void sqrt_inplace(diagonal_matrix<T>& a){
-        kernels::template sqrt_diagonal<T>::template spawn<complexity::N>(a);
+        kernels::template sqrt_diagonal<T>::template spawn(a);
     }
 
     template<typename T>

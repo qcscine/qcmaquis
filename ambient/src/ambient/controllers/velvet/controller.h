@@ -67,7 +67,7 @@ namespace ambient { namespace controllers { namespace velvet {
         void squeeze(revision* r) const;
 
         bool tunable();
-        template<complexity O> void schedule();
+        void schedule();
         void intend_read(history* o);
         void intend_write(history* o);
 

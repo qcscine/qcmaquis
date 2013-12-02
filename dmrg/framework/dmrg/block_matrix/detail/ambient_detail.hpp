@@ -18,7 +18,6 @@ class block_matrix;
 namespace maquis { namespace dmrg { namespace detail {
 
     using ambient::numeric::tiles;
-    using ambient::complexity;
 
     template <typename M>
     inline void op_kron(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in, const ambient::numeric::tiles<M>& alfa,
@@ -147,7 +146,7 @@ namespace maquis { namespace dmrg { namespace detail {
         for(size_t k = 0; k < k_max; ++k){
             for(size_t kk = 0; kk < set[k].data.size(); kk++){
                 std::vector<value_type>* v_ptr = &r[vi++];
-                ambient::numeric::kernels::template round_square<value_type>::template spawn<complexity::N>(set[k][kk], v_ptr);
+                ambient::numeric::kernels::template round_square<value_type>::template spawn(set[k][kk], v_ptr);
             }
         }
         ambient::sync();
