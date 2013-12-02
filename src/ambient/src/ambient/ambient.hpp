@@ -50,6 +50,14 @@
 
 #define AMBIENT_VERBOSE
 
+#if !defined(AMBIENT_CILK) && !defined(AMBIENT_OMP) && !defined(AMBIENT_SERIAL)
+#if defined __INTEL_COMPILER
+#define AMBIENT_CILK
+#elif defined __GNUC__
+#define AMBIENT_OMP
+#endif
+#endif
+
 #ifdef AMBIENT_CILK
     #include <cilk/cilk.h>
     #include <cilk/cilk_api.h>
@@ -68,7 +76,7 @@
     #define AMBIENT_NUM_THREADS [&]()->int{ int n; AMBIENT_SMP_ENABLE \
                                 { n = omp_get_num_threads(); } \
                                 AMBIENT_SMP_DISABLE return n; }()
-#else // Note: use for Cray machines
+#else // serial
     #define AMBIENT_NUM_THREADS 1
     #define AMBIENT_THREAD_ID   0
     #define AMBIENT_THREAD
