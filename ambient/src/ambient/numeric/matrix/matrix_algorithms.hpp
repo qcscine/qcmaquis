@@ -30,7 +30,6 @@
 #include "ambient/numeric/matrix/matrix.h"
 #include "ambient/numeric/kernels/kernels.hpp"
 #include "ambient/numeric/matrix/diagonal_matrix.hpp"
-#include "ambient/utils/numeric.h"
 
 #define size_type       typename matrix<T,A>::size_type
 #define real_type       typename matrix<T,A>::real_type

@@ -30,7 +30,7 @@
 #include "ambient/numeric/kernels/math.hpp"
 #include "ambient/numeric/kernels/utils.hpp"
 #include "ambient/numeric/traits.hpp"
-#include "ambient/utils/numeric.h"
+#include "ambient/numeric/boost_bindings.hpp"
 
 namespace ambient { namespace numeric { namespace kernels {
     namespace detail {

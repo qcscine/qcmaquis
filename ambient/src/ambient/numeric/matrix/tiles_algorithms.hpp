@@ -717,19 +717,13 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix>
-    inline const tiles<Matrix> adjoint(const tiles<Matrix>& a){
+    inline const tiles<Matrix> adjoint(const tiles<Matrix>& a){ // change to adjoint_view<Matrix>
         tiles<Matrix> b(a); 
         transpose_inplace(b);
         conj_inplace(b);
         return b;
     }
-/*  // TIM: I think, this function is useless, it is not defined for alps::matrix, to remove ?
-    // Alex: we might need adjoint_view<Matrix> in future though..
-    template<class Matrix>
-    inline tiles<transpose_view<Matrix> > adjoint(const tiles<Matrix>& a){
-        assert(false); 
-    }
-*/
+
     template<class Matrix, class G>
     inline void generate(tiles<Matrix>& a, G g){
         generate(a);
