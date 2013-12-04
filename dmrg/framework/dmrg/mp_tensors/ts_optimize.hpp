@@ -30,21 +30,26 @@ public:
     using base::right_;
     using base::parms;
     using base::iteration_results_;
-    using base::initial_site;
     using base::stop_callback;
     
     ts_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
                 boost::function<bool ()> stop_callback_,
-                int initial_sweep_ = 0,
                 int initial_site_ = 0)
-    : base(mps_, mpo_, parms_, stop_callback_, initial_sweep_, initial_site_)
+    : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_))
+    , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
         locale_shared l; // cache twosite mpo
         make_ts_cache_mpo(mpo, ts_cache_mpo, mps);
     }
 
+    inline int to_site(const int L, const int i) const
+    {
+        if (i < 0) return 0;
+        /// i, or (L-1) - (i - (L-1))
+        return (i < L-1) ? i : 2*L - 2 - i;
+    }
     void sweep(int sweep, OptimizeDirection d = Both)
     {
         #ifdef AMBIENT_TRACKING
@@ -60,7 +65,7 @@ public:
         int _site = 0, site = 0;
         if (initial_site != -1) {
             _site = initial_site;
-            site = (_site < L) ? _site : 2*L-_site-1;
+            site = to_site(L, _site);
         }
         
         Storage::prefetch(left_[site]);
@@ -78,20 +83,23 @@ public:
 
             int lr, site1, site2;
             if (_site < L-1) {
-                site = _site;
+                site = to_site(L, _site);
                 lr = 1;
         		site1 = site;
         		site2 = site+1;
                 ts_cache_mpo[site1].placement_l = mpo[site1].placement_l;
                 ts_cache_mpo[site1].placement_r = get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
             } else {
-                site = 2*L-_site-2;
+                site = to_site(L, _site);
                 lr = -1;
         		site1 = site-1;
         		site2 = site;
                 ts_cache_mpo[site1].placement_l = get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
                 ts_cache_mpo[site1].placement_r = mpo[site2].placement_r;
             }
+
+            //if (lr == +1) mps.canonize(site1);
+            //else          mps.canonize(site2);
             
     	    maquis::cout << std::endl;
             maquis::cout << "Sweep " << sweep << ", optimizing sites " << site1 << " and " << site2 << std::endl;
@@ -280,9 +288,11 @@ public:
                 throw dmrg::time_limit(sweep, _site+1);
 
     	} // for sites
+        initial_site = -1;
     } // sweep
 
 private:
+    int initial_site;
     MPO<Matrix, SymmGroup> ts_cache_mpo;
 };
 

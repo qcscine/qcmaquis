@@ -78,20 +78,17 @@ public:
                    MPO<Matrix, SymmGroup> const & mpo_,
                    BaseParameters & parms_,
                    boost::function<bool ()> stop_callback_,
-                   int initial_sweep_,
-                   int initial_site_)
+                   int site=0)
     : mps(mps_)
     , mpo(mpo_)
     , parms(parms_)
     , stop_callback(stop_callback_)
-    , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
         std::size_t L = mps.length();
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("optimizer_base::optimizer_base");
         for(int i = 0; i < L; ++i) ambient_track_array(mps, i);
         #endif
-        int site = (initial_site < L) ? initial_site : 2*L-initial_site-1;
         
         mps.canonize(site);
         for(int i = 0; i < mps.length(); ++i)
@@ -112,7 +109,7 @@ public:
         init_left_right(mpo, site);
         maquis::cout << "Done init_left_right" << std::endl;
     }
-    
+        
     virtual void sweep(int sweep, OptimizeDirection d = Both) = 0;
     
     results_collector const& iteration_results() const { return iteration_results_; }
@@ -224,7 +221,6 @@ protected:
     
     BaseParameters & parms;
     boost::function<bool ()> stop_callback;
-    int initial_site;
 
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
     

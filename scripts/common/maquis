@@ -4,7 +4,8 @@
 export HOST=`hostname | tr -d [:digit:] | sed  -e "s/\.ethz\.ch//g"`
 path=`pwd`
 entry=$path
-self="maquis"
+self=$0
+#self="maquis"
 
 if [ ! -z "${CONFIG_NAME}" ]; then
    [[ ! -z "${CONFIG_GUARD}" ]] && echo "mixing environment is forbidden (exit and switch)" && exit 1;

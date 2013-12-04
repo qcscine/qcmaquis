@@ -25,17 +25,23 @@ public:
     using base::right_;
     using base::parms;
     using base::iteration_results_;
-    using base::initial_site;
     using base::stop_callback;
 
     ss_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
                 boost::function<bool ()> stop_callback_,
-                int initial_sweep_ = 0,
                 int initial_site_ = 0)
-    : base(mps_, mpo_, parms_, stop_callback_, initial_sweep_, initial_site_)
+    : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_))
+    , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     { }
+    
+    inline int to_site(const int L, const int i) const
+    {
+        if (i < 0) return 0;
+        /// i, or (L-1) - (i - L)
+        return (i < L) ? i : 2*L - 1 - i;
+    }
     
     void sweep(int sweep, OptimizeDirection d = Both)
     {
@@ -49,7 +55,7 @@ public:
         int _site = 0, site = 0;
         if (initial_site != -1) {
             _site = initial_site;
-            site = (_site < L) ? _site : 2*L-_site-1;
+            site = to_site(L, _site);
         }
         
 //        if (parms["beta_mode"] && sweep == 0 && resume_at < L) {
@@ -67,15 +73,9 @@ public:
 #endif
         for (; _site < 2*L; ++_site) {
             
-            int lr;
-            if (_site < L) {
-                site = _site;
-                lr = 1;
-            } else {
-                site = 2*L-_site-1;
-                lr = -1;
-            }
-            
+            int lr = (_site < L) ? +1 : -1;
+            site = to_site(L, _site);
+
             if (lr == -1 && site == L-1) {
                 maquis::cout << "Syncing storage" << std::endl;
                 Storage::sync();
@@ -216,8 +216,11 @@ public:
             if (stop_callback())
                 throw dmrg::time_limit(sweep, _site+1);
         }
+        initial_site = -1;
     }
     
+private:
+    int initial_site;
 };
 
 #endif
