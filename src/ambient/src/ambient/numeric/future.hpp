@@ -27,7 +27,6 @@
 #ifndef AMBIENT_NUMERIC_FUTURE
 #define AMBIENT_NUMERIC_FUTURE
 
-#include <alps/numeric/real.hpp> 
 #include <boost/serialization/split_member.hpp>
 
 namespace ambient { namespace numeric {
