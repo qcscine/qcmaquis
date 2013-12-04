@@ -138,6 +138,5 @@ namespace ambient {
 #include "ambient/utils/overseer.hpp"
 #include "ambient/interface/typed.hpp"
 #include "ambient/interface/kernel.hpp"
-#include "ambient/memory/archive.hpp"
 #include "ambient/interface/access.hpp"
 #endif
