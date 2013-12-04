@@ -57,14 +57,17 @@ namespace ambient {
     template <class T>
     class bulk_allocator {
     public:
+        typedef T value_type;
+        template <class U> struct rebind { typedef bulk_allocator<U> other; };
+        bulk_allocator() throw() { }
+        bulk_allocator(const bulk_allocator&) throw() { }
+        template<typename U> bulk_allocator(const bulk_allocator<U>&) throw() { }
+       ~bulk_allocator() throw() { }
+
         static T* allocate(std::size_t n){
             return (T*)ambient::pool::malloc<bulk>(n*sizeof(T));
         }
         static void deallocate(T* p, std::size_t n){}
-        template <class U> struct rebind { 
-            typedef bulk_allocator<U> other; 
-        };
-        typedef T value_type;
     };
 
 }
