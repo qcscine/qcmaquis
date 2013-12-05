@@ -27,8 +27,6 @@
 #ifndef AMBIENT_NUMERIC_FUTURE
 #define AMBIENT_NUMERIC_FUTURE
 
-#include <boost/serialization/split_member.hpp>
-
 namespace ambient { namespace numeric {
 
     using ambient::models::velvet::transformable;
@@ -77,7 +75,6 @@ namespace ambient { namespace numeric {
 
         template <class Archive> void load(Archive & ar, const unsigned int version = 0){ }
         template <class Archive> void save(Archive & ar, const unsigned int version = 0) const { }
-        BOOST_SERIALIZATION_SPLIT_MEMBER()
     public:
         mutable bool valid;
         mutable transformable* core;
