@@ -57,7 +57,7 @@ namespace ambient { namespace memory {
         class factory {
         public:
             typedef ambient::mutex mutex;
-            typedef ambient::guard guard;
+            typedef ambient::guard<mutex> guard;
 
             static factory& instance(){
                 static factory singleton;
@@ -71,7 +71,7 @@ namespace ambient { namespace memory {
             }
             static void* provide(){
                 factory& s = instance();
-                guard<mutex> g(s.mtx);
+                guard g(s.mtx);
                 void* chunk;
 
                 if(s.r_buffers.empty()){
@@ -92,7 +92,7 @@ namespace ambient { namespace memory {
             }
             static void collect(void* chunk, long int usage){
                 factory& s = instance();
-                guard<mutex> g(s.mtx);
+                guard g(s.mtx);
 
                 for(int i = 0; i < s.buffers.size(); i++){
                     if(s.buffers[i] == chunk){
@@ -104,7 +104,7 @@ namespace ambient { namespace memory {
             }
             static void reuse(void* ptr){
                 factory& s = instance();
-                guard<mutex> g(s.mtx);
+                guard g(s.mtx);
 
                 for(int i = 0; i < s.buffers.size(); i++){
                     if((size_t)ptr < ((size_t)s.buffers[i] + S) && (size_t)ptr >= (size_t)s.buffers[i]){
@@ -150,7 +150,7 @@ namespace ambient { namespace memory {
         class region {
         public:
             typedef ambient::mutex mutex;
-            typedef ambient::guard guard;
+            typedef ambient::guard<mutex> guard;
 
             region(){
                 this->buffer = NULL;
@@ -168,7 +168,7 @@ namespace ambient { namespace memory {
                 this->block_count++;
             }
             void* malloc(size_t sz){
-                guard<mutex> g(this->mtx);
+                guard g(this->mtx);
                 if(((size_t)iterator + sz - (size_t)this->buffer) >= S) realloc();
                 void* m = (void*)iterator;
                 iterator += aligned(sz);
