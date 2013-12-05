@@ -27,6 +27,8 @@
 #ifndef AMBIENT_NUMERIC_MATRIX_KERNELS_UTILS
 #define AMBIENT_NUMERIC_MATRIX_KERNELS_UTILS
 
+#include <cstring>
+
 namespace ambient {
 
     template<typename T> inline dim2 dim(T& ref){ 

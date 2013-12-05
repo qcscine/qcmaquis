@@ -28,7 +28,8 @@
 #define AMBIENT_MEMORY_POOL
 
 #include <sys/mman.h>
-#include <boost/pool/singleton_pool.hpp>
+#include "ambient/utils/mutex.hpp"
+
 
 namespace ambient { namespace memory {
 
@@ -55,7 +56,8 @@ namespace ambient { namespace memory {
         template<size_t S>
         class factory {
         public:
-            typedef boost::details::pool::default_mutex mutex;
+            typedef ambient::mutex mutex;
+            typedef ambient::guard guard;
 
             static factory& instance(){
                 static factory singleton;
@@ -69,7 +71,7 @@ namespace ambient { namespace memory {
             }
             static void* provide(){
                 factory& s = instance();
-                boost::details::pool::guard<mutex> g(s.mtx);
+                guard<mutex> g(s.mtx);
                 void* chunk;
 
                 if(s.r_buffers.empty()){
@@ -90,7 +92,7 @@ namespace ambient { namespace memory {
             }
             static void collect(void* chunk, long int usage){
                 factory& s = instance();
-                boost::details::pool::guard<mutex> g(s.mtx);
+                guard<mutex> g(s.mtx);
 
                 for(int i = 0; i < s.buffers.size(); i++){
                     if(s.buffers[i] == chunk){
@@ -102,7 +104,7 @@ namespace ambient { namespace memory {
             }
             static void reuse(void* ptr){
                 factory& s = instance();
-                boost::details::pool::guard<mutex> g(s.mtx);
+                guard<mutex> g(s.mtx);
 
                 for(int i = 0; i < s.buffers.size(); i++){
                     if((size_t)ptr < ((size_t)s.buffers[i] + S) && (size_t)ptr >= (size_t)s.buffers[i]){
@@ -147,7 +149,8 @@ namespace ambient { namespace memory {
         template<size_t S>
         class region {
         public:
-            typedef boost::details::pool::default_mutex mutex;
+            typedef ambient::mutex mutex;
+            typedef ambient::guard guard;
 
             region(){
                 this->buffer = NULL;
@@ -165,7 +168,7 @@ namespace ambient { namespace memory {
                 this->block_count++;
             }
             void* malloc(size_t sz){
-                boost::details::pool::guard<mutex> g(this->mtx);
+                guard<mutex> g(this->mtx);
                 if(((size_t)iterator + sz - (size_t)this->buffer) >= S) realloc();
                 void* m = (void*)iterator;
                 iterator += aligned(sz);
