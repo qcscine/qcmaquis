@@ -36,7 +36,7 @@ namespace ambient { namespace models { namespace velvet {
 
     inline revision::revision(size_t extent, void* g, ambient::locality l, int owner)
     : spec(extent), generator(g), state(l), 
-      data(NULL), users(0), owner(owner), transfer(NULL),
+      data(NULL), users(0), owner(owner), transfer(NULL)
     {
     }
 
