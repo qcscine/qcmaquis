@@ -29,8 +29,10 @@
 
 #include "ambient/numeric/traits.hpp"
 
+#ifdef AMBIENT_ALPS_HDF5
 #include <alps/hdf5.hpp>
 #include <alps/hdf5/complex.hpp>
+#endif
 
 namespace ambient { namespace numeric {
 
@@ -79,6 +81,7 @@ namespace ambient { namespace numeric {
         value_type& operator() (size_type i, size_type j);
         const value_type& operator() (size_type i, size_type j) const;
 
+        #ifdef AMBIENT_ALPS_HDF5
         friend void load(alps::hdf5::archive& ar
                          , std::string const& path
                          , tiles<Matrix>& m
@@ -155,6 +158,7 @@ namespace ambient { namespace numeric {
                 }
             }
         }
+        #endif
     public:
         std::vector<Matrix*> data;
         size_type rows;
@@ -229,11 +233,12 @@ namespace ambient { namespace numeric {
 
 } }
 
+#ifdef AMBIENT_ALPS_HDF5
 namespace alps { namespace hdf5 {
     template<class Matrix>
     struct has_complex_elements<ambient::numeric::tiles<Matrix> >
     : public has_complex_elements<typename alps::detail::remove_cvr<typename Matrix::value_type>::type>
     {};
 } }
-
+#endif
 #endif
