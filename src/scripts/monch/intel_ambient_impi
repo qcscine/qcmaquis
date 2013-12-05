@@ -19,6 +19,9 @@ export CXX=myCC
 
 module load gcc/4.7.3 intel/2013 intel/13.1.0 hdf5/1.8.11-intel13 python cmake
 
+source /apps/monch/intel/impi/4.1.1.036/intel64/bin/mpivars.sh
+#source $ROOT_DIR/scripts/monch/itac.sh
+
 ## common ##
 COMMON_MPI_CXX_FOUND=TRUE
 COMMON_CMAKE_C_COMPILER=mycc
