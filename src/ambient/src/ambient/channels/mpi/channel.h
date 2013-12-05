@@ -54,6 +54,8 @@ namespace ambient { namespace channels { namespace mpi {
         bool test(request* r);
         void wait(request* r);
         int index();
+        int get_sid() const;
+        int generate_sid();
         group* world;
     private:
         size_t volume;

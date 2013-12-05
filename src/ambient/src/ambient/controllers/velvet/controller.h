@@ -58,6 +58,7 @@ namespace ambient { namespace controllers { namespace velvet {
         void flush();
         void clear();
         bool queue (functor* f);
+        bool update(revision& r);
         void sync  (revision* r);
         void lsync (revision* r);
         void rsync (revision* r);
@@ -75,6 +76,7 @@ namespace ambient { namespace controllers { namespace velvet {
         void pop_context();
         bool remote();
         bool local();
+        bool common();
         int which();
 
         const scope* context;

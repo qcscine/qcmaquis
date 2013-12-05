@@ -66,6 +66,7 @@ namespace ambient { namespace controllers { namespace velvet {
             #ifdef AMBIENT_PARALLEL_MKL
             ambient::cout << "ambient: using MKL: threaded\n";
             #endif 
+            ambient::cout << "\n";
         #endif
     }
 
@@ -106,8 +107,11 @@ namespace ambient { namespace controllers { namespace velvet {
         return (this->context->state == ambient::local);
     }
 
+    inline bool controller::common(){
+        return (this->context->state == ambient::common);
+    }
+
     inline int controller::which(){
-        assert(this->context->sector >= 0);
         return this->context->sector;
     }
 
@@ -174,6 +178,14 @@ namespace ambient { namespace controllers { namespace velvet {
     inline bool controller::queue(functor* f){
         this->chains->push_back(f);
         return true;
+    }
+
+    inline bool controller::update(revision& r){
+        if(r.assist.first != ambient::model.clock){
+            r.assist.first = ambient::model.clock;
+            return true;
+        }
+        return false;
     }
 
     inline void controller::sync(revision* r){

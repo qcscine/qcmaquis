@@ -25,7 +25,6 @@
  */
 
 #define AMBIENT_MASTER_RANK 0
-//#define AMBIENT_MPI_THREADING MPI_THREAD_MULTIPLE
 #define AMBIENT_MPI_THREADING MPI_THREAD_FUNNELED
 
 namespace ambient { namespace channels { namespace mpi {
@@ -36,7 +35,6 @@ namespace ambient { namespace channels { namespace mpi {
 
     inline void channel::init(){
         int level, zero = 0;
-        //MPI_Init(&zero, NULL);
         MPI_Init_thread(&zero, NULL, AMBIENT_MPI_THREADING, &level);
         if(level != AMBIENT_MPI_THREADING) printf("Error: Wrong threading level\n");
         this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
@@ -64,6 +62,15 @@ namespace ambient { namespace channels { namespace mpi {
         int s = this->sid++;
         this->sid %= AMBIENT_MAX_SID;
         return s;
+    }
+
+    inline int channel::generate_sid(){
+        index();
+        return get_sid();
+    }
+
+    inline int channel::get_sid() const {
+        return this->sid;
     }
 
     inline request* channel::get(transformable* v, int tag){
