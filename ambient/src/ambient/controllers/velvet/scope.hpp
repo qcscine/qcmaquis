@@ -170,6 +170,7 @@ namespace ambient {
         scope(){
             ambient::controller.set_context(this);
             this->state = ambient::common;
+            this->sector = ambient::channel.dim();
         }
        ~scope(){
             ambient::controller.pop_context();

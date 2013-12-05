@@ -197,8 +197,10 @@ namespace ambient { namespace memory {
             this->master = new region<AMBIENT_BULK_CHUNK>();
             this->slave  = new region<AMBIENT_BULK_CHUNK>();
         }
-        template<size_t S> static void* malloc()         { return instance().master->malloc(S);  }
-                           static void* malloc(size_t sz){ return instance().master->malloc(sz); }
+        template<size_t S> static void* malloc()         { return instance().master->malloc(S);     }
+                           static void* malloc(size_t s) { return instance().master->malloc(s);     }
+        template<size_t S> static void* calloc()         { void* m = malloc<S>(); memset(m, 0, S); return m; }
+                           static void* calloc(size_t s) { void* m = malloc(s);   memset(m, 0, s); return m; }
                            static void reuse(void* ptr)  { factory<AMBIENT_BULK_CHUNK>::reuse(ptr); }
         template<size_t S> static void free(void* ptr)   { }
                            static void free(void* ptr)   { }

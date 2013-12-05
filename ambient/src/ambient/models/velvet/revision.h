@@ -37,6 +37,7 @@ namespace ambient { namespace models { namespace velvet {
         void* operator new (size_t size);
         void  operator delete (void* ptr);
         template<typename T> operator T* (){ return (T*)data; }
+        operator revision* (){ return NULL; }
         revision(size_t extent, void* g, ambient::locality l, int owner = -1);
 
         void embed(void* ptr);
@@ -45,6 +46,7 @@ namespace ambient { namespace models { namespace velvet {
         void use();
         void release();
         void complete();
+        void invalidate();
 
         bool locked() const;
         bool locked_once() const;
