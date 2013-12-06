@@ -68,9 +68,14 @@ public:
             site = to_site(L, _site);
         }
         
-        Storage::prefetch(left_[site]);
-        Storage::prefetch(right_[site+2]);
-
+        if (_site < L-1) {
+            Storage::prefetch(left_[site]);
+            Storage::prefetch(right_[site+2]);
+        } else {
+            Storage::prefetch(left_[site-1]);
+            Storage::prefetch(right_[site+1]);
+        }
+        
 #ifndef NDEBUG
     	maquis::cout << mps.description() << std::endl;
 #endif
