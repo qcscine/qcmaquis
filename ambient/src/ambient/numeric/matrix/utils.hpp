@@ -35,7 +35,7 @@ namespace ambient {
 
     template<class Matrix>
     inline void make_persistent(const Matrix& a){
-        ambient::make_persistent(a.core);
+        ambient::make_persistent(a);
     }
 
     template<class Matrix>
@@ -66,12 +66,12 @@ namespace ambient {
 #ifdef AMBIENT_TRACKING
     template<class Matrix>
     inline void track(const Matrix& a, const std::string& label){
-        ambient::overseer::track(a.core, label);
+        ambient::overseer::track(a, label);
     }
 
     template<typename T>
     inline void track(const diagonal_matrix<T>& a, const std::string& label){
-        ambient::overseer::track(a.get_data().core, label);
+        ambient::overseer::track(a.get_data(), label);
     }
 
     template<class Matrix>

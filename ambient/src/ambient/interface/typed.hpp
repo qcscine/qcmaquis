@@ -101,7 +101,7 @@ namespace ambient {
         }
         template<size_t arg>
         static void modify_remote(T& obj){
-            history* o = obj.core;
+            decltype(obj.versioned.core) o = obj.versioned.core;
             ambient::model.touch(o);
             ambient::controller.rsync(o->back());
             ambient::controller.collect(o->back());
@@ -109,9 +109,10 @@ namespace ambient {
         }
         template<size_t arg>
         static void modify_local(T& obj, functor* m){
-            history* o = obj.core;
+            decltype(obj.versioned.core) o = obj.versioned.core;
             ambient::model.touch(o);
-            T* var = new(ambient::pool::malloc<bulk,T>()) T(o); m->arguments[arg] = (void*)var;
+            T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); 
+            m->arguments[arg] = (void*)var;
             #ifdef AMBIENT_TRACKING
             if(ambient::model.remote(o->back()) && o->back()->transfer == NULL) ambient::overseer::log::get(o, m);
             #endif
@@ -130,9 +131,9 @@ namespace ambient {
         }
         template<size_t arg>
         static void modify(T& obj, functor* m){
-            history* o = obj.core;
+            decltype(obj.versioned.core) o = obj.versioned.core;
             ambient::model.touch(o);
-            T* var = new(ambient::pool::malloc<bulk,T>()) T(o); m->arguments[arg] = (void*)var;
+            T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             #ifdef AMBIENT_TRACKING
             if(ambient::model.remote(o->back()) && o->back()->transfer == NULL) ambient::overseer::log::get(o, m);
             #endif
@@ -162,8 +163,8 @@ namespace ambient {
         }
         template<size_t arg> 
         static void score(T& obj){
-            ambient::controller.intend_read(obj.core);
-            ambient::controller.intend_write(obj.core);
+            ambient::controller.intend_read(obj.versioned.core);
+            ambient::controller.intend_write(obj.versioned.core);
         }
         template<size_t arg> 
         static bool ready(functor* m){
@@ -186,14 +187,14 @@ namespace ambient {
             r.release();
         }
         template<size_t arg> static void modify_remote(T& obj){
-            history* o = obj.core;
+            decltype(obj.versioned.core) o = obj.versioned.core;
             ambient::model.touch(o);
             ambient::controller.rsync(o->back());
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
-            history* o = obj.core;
+            decltype(obj.versioned.core) o = obj.versioned.core;
             ambient::model.touch(o);
-            T* var = new(ambient::pool::malloc<bulk,T>()) T(o); m->arguments[arg] = (void*)var;
+            T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             var->before = o->current;
             #ifdef AMBIENT_TRACKING
             if(ambient::model.remote(o->back()) && o->back()->transfer == NULL) ambient::overseer::log::get(o, m);
@@ -202,9 +203,9 @@ namespace ambient {
             ambient::model.use_revision(o);
         }
         template<size_t arg> static void modify(T& obj, functor* m){
-            history* o = obj.core;
+            decltype(obj.versioned.core) o = obj.versioned.core;
             ambient::model.touch(o);
-            T* var = new(ambient::pool::malloc<bulk,T>()) T(o); m->arguments[arg] = (void*)var;
+            T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             var->before = o->current;
             #ifdef AMBIENT_TRACKING
             if(ambient::model.remote(o->back()) && o->back()->transfer == NULL) ambient::overseer::log::get(o, m);
@@ -214,20 +215,20 @@ namespace ambient {
         }
         template<size_t arg> 
         static void score(T& obj){
-            ambient::controller.intend_read(obj.core);
+            ambient::controller.intend_read(obj.versioned.core);
         }
     };
     template <typename T> struct write_iteratable_info : public iteratable_info<T> {
         template<size_t arg> static void modify_remote(T& obj){
-            history* o = obj.core;
+            decltype(obj.versioned.core) o = obj.versioned.core;
             ambient::model.touch(o);
             ambient::controller.collect(o->back());
             ambient::model.add_revision<ambient::remote>(o, ambient::controller.which()); 
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
-            history* o = obj.core;
+            decltype(obj.versioned.core) o = obj.versioned.core;
             ambient::model.touch(o);
-            T* var = new(ambient::pool::malloc<bulk,T>()) T(o); m->arguments[arg] = (void*)var;
+            T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
 
             ambient::model.use_revision(o);
             ambient::controller.collect(o->back());
@@ -242,9 +243,9 @@ namespace ambient {
             #endif
         }
         template<size_t arg> static void modify(T& obj, functor* m){
-            history* o = obj.core;
+            decltype(obj.versioned.core) o = obj.versioned.core;
             ambient::model.touch(o);
-            T* var = new(ambient::pool::malloc<bulk,T>()) T(o); m->arguments[arg] = (void*)var;
+            T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             ambient::model.use_revision(o);
             ambient::controller.collect(o->back());
 
@@ -259,7 +260,7 @@ namespace ambient {
         }
         template<size_t arg> static bool pin(functor* m){ return false; }
         template<size_t arg> static void score(T& obj) {               
-            ambient::controller.intend_write(obj.core);
+            ambient::controller.intend_write(obj.versioned.core);
         }
         template<size_t arg> static bool ready (functor* m){ return true;  }
     };
@@ -271,14 +272,46 @@ namespace ambient {
     using ambient::numeric::diagonal_matrix;
     using ambient::numeric::transpose_view;
 
+    template <typename T>
+    struct has_allocator {
+        template <typename T1> static typename T1::allocator_type test(int);
+        template <typename>    static void test(...);
+        enum { value = !std::is_void<decltype(test<T>(0))>::value };
+    };
+    template <bool HAS, typename T> struct checked_get_allocator {};
+    template <typename T> struct checked_get_allocator<true, T> { typedef typename T::allocator_type type; };
+    template <typename T> struct checked_get_allocator<false, T> { typedef typename ambient::default_allocator<T> type; }; // or T::value_type
+    template <typename T> struct get_allocator { typedef typename checked_get_allocator<has_allocator<T>::value, T>::type type; };
+
     template <class T> struct unbound : public T {
-        unbound(const typename T::ptr& p) : T(p) {}
+        typedef typename get_allocator<T>::type allocator_type;
     };
 
-    template <typename T> 
-    struct info { 
-        typedef singular_info<T> typed;
-        template <typename U> static U& unfold(T& naked){ return naked; }
+    template<typename T> struct has_versioning {
+        template<std::size_t V> struct valuekeeper {};
+        template<typename R, typename C> static char helper(R(C::*)());
+        template<typename C> static char check(valuekeeper<sizeof(helper(&C::enable_versioning))>*);
+        template<typename C> static double check(...);
+        enum { value = (sizeof(char) == sizeof(check<T>(0))) };
+    };
+
+    template <bool V, typename T> struct versioned_info { };
+    template<typename T> struct versioned_info<true, T> { typedef iteratable_info< T > type; };
+    template<typename T> struct versioned_info<false, T> { typedef singular_info< T > type; };
+
+    template <bool V, typename T> struct const_versioned_info { };
+    template<typename T> struct const_versioned_info<true, T> { typedef read_iteratable_info< const T > type; };
+    template<typename T> struct const_versioned_info<false, T> { typedef singular_info< const T > type; };
+
+    template <typename T>
+    struct info {
+        typedef typename       versioned_info<has_versioning<T>::value,T>::type typed;
+        template <typename U> static U& unfold(T& naked){ return *static_cast<U*>(&naked); }
+    };
+    template <typename T>
+    struct info <const T> {
+        typedef typename const_versioned_info<has_versioning<T>::value,T>::type typed;
+        template <typename U> static const T& unfold(const T& naked){ return naked; }
     };
 
     template <>
@@ -300,22 +333,6 @@ namespace ambient {
         typedef const future<S> type;
         typedef read_future_info<type> typed; 
         template <typename U> static type& unfold(type& folded){ return folded.unfold(); }
-    };
-
-    template <typename S, class A>
-    struct info < matrix<S,A> > {
-        typedef matrix<S,A> type;
-        typedef iteratable_info< type > typed; 
-        template <typename U> static U& unfold(type& naked){ return *static_cast<U*>(&naked); }
-        typedef S value_type;
-    };
-
-    template <typename S, class A>
-    struct info < const matrix<S,A> > {
-        typedef const matrix<S,A> type;
-        typedef read_iteratable_info< type > typed; 
-        template <typename U> static type& unfold(type& naked){ return naked; }
-        typedef S value_type;
     };
 
     template <typename S>
@@ -347,10 +364,29 @@ namespace ambient {
         typedef unbound<T> type;
         typedef write_iteratable_info< type > typed; 
         template <typename U> static type& unfold(type& naked){ return naked; }
-        typedef typename T::value_type value_type;
     };
 
     // }}}
+
+    #define ambient_version(...)     mutable void* before; \
+                                     mutable void* after; \
+                                     void enable_versioning(); \
+                                     void unversion(){ if(ambient::weak(*this)) delete versioned.core; else ambient::destroy(versioned.core); } \
+                                     struct unnamed { \
+                                           struct mapping {\
+                                               __VA_ARGS__; \
+                                           };\
+                                           unnamed(){ core = new ambient::history(ambient::dim2(1,1),sizeof(unnamed)); } \
+                                           unnamed(size_t length){ core = new ambient::history(ambient::dim2(1,length/sizeof(double)),sizeof(double)); } \
+                                           unnamed(size_t length, size_t sz){ core = new ambient::history(ambient::dim2(1,length),sz); } \
+                                           unnamed(size_t rows, size_t cols, size_t sz){ core = new ambient::history(ambient::dim2(cols, rows), sz); } \
+                                           unnamed(ambient::dim2 dim, size_t sz){ core = new ambient::history(dim, sz); } \
+                                           template<typename U> unnamed(const U& other):core(other.core){ } \
+                                           unnamed(ambient::history* core):core(core){ } \
+                                           ambient::history* core; \
+                                     } versioned;
+
+    #define AMBIENT_VAR_LENGTH 1
 }
 
 #undef EXTRACT

@@ -408,7 +408,7 @@ namespace ambient { namespace numeric { namespace kernels {
         
         template<typename T>
         void init_gaussian(unbound< matrix<T> >& a){
-            size_t size = ambient::square_dim(a);
+            size_t size = ambient::get_square_dim(a);
             T* ad = updated(a);
             // for(size_t i = 0; i < size; ++i) ad[i] = gaussian_generator(rng);
         }

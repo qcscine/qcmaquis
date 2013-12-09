@@ -41,10 +41,6 @@ namespace ambient {
     inline bool parallel(){
         return (ambient::controller.context != ambient::controller.context_base);
     }
-    
-    inline void make_persistent(history* o){ 
-        o->back()->spec.zombie();
-    }
 
     template<typename T>
     inline void destroy(T* o){ 
@@ -77,17 +73,52 @@ namespace ambient {
         bulk::drop();
     }
 
-    inline void fuse(const history* src, history* dst){ 
-        assert(dst->current == NULL);
-        if(src->weak()) return;
-        revision* r = src->back();
-        dst->current = r;
+    template<typename V>
+    inline bool weak(const V& obj){
+        return obj.versioned.core->weak();
+    }
+
+    template<typename V>
+    inline void merge(const V& src, V& dst){
+        assert(dst.versioned.core->current == NULL);
+        if(weak(src)) return;
+        revision* r = src.versioned.core->back();
+        dst.versioned.core->current = r;
         // do not deallocate or reuse
         if(!r->valid()) r->spec.protect();
         assert(!r->valid() || !r->spec.bulked() || ambient::model.remote(r)); // can't rely on bulk memory
         r->spec.crefs++;
     }
 
+    template<typename V>
+    inline void swap_with(V& left, V& right){
+        std::swap(left.versioned.core, right.versioned.core);
+    }
+
+    template<typename V>
+    inline dim2 get_dim(const V& obj){
+        return obj.versioned.core->dim;
+    }
+
+    template<typename V> 
+    inline size_t get_square_dim(V& obj){ 
+        return get_dim(obj).square();
+    }
+
+    template<typename V>
+    inline size_t get_length(V& obj){
+        return get_dim(obj).y;
+    }
+    
+    template<typename V> 
+    inline size_t size(V& obj){ 
+        return obj.versioned.core->extent;
+    }
+
+    template<typename V>
+    inline void make_persistent(V& o){ 
+        o.versioned.core->back()->spec.zombie();
+    }
 }
 
 #endif

@@ -67,8 +67,9 @@ namespace ambient {
                 stream() << "<div class=\"region\" data-title=\"" << label << "\"></div>\n";
             }
         };
-        static void track(history* o, const std::string& label){
-            log::renaming(o, label);
+        template<typename V>
+        static void track(V& o, const std::string& label){
+            log::renaming(o.versioned.core, label);
             o->label = label;
         }
     };

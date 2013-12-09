@@ -202,7 +202,7 @@ namespace ambient { namespace numeric {
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
                 const Matrix* src = &a.tile(i,j);
-                if(!src->core->weak())
+                if(!ambient::weak(*src))
                 copy_block(*src, 0, 0, *m[0], i*AMBIENT_IB, j*AMBIENT_IB, src->num_rows(), src->num_cols());
                 delete src;
             }
@@ -230,7 +230,7 @@ namespace ambient { namespace numeric {
 
         const Matrix* src = a.data[0];
 
-        if(!a[0].core->weak())
+        if(!ambient::weak(a[0]))
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
                 Matrix& dst = *s[i+j*a.mt];
@@ -254,7 +254,7 @@ namespace ambient { namespace numeric {
 
         for(int i = 0; i < a.nt; i++){
             const diagonal_matrix<T>* src = a.data[i];
-            if(!src->get_data().core->weak())
+            if(!ambient::weak(src->get_data()))
             copy_block(src->get_data(), 0, 0, m[0]->get_data(), i*AMBIENT_IB, 0, src->num_rows(), 1);
             delete src;
         }
@@ -275,7 +275,7 @@ namespace ambient { namespace numeric {
 
         const diagonal_matrix<T>* src = a.data[0];
 
-        if(!a[0].get_data().core->weak())
+        if(!ambient::weak(a[0].get_data()))
         for(int i = 0; i < a.nt; i++){
             diagonal_matrix<T>& dst = *s[i];
             copy_block(src->get_data(), i*AMBIENT_IB, 0, dst.get_data(), 0, 0, dst.num_rows(), 1);

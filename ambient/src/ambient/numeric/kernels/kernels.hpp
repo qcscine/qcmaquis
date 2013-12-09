@@ -44,8 +44,8 @@ namespace ambient { namespace numeric { namespace kernels {
             T* tau  = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB>(); 
             T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::geqrt(a.num_rows(), a.num_cols(), PLASMA_IB,
-                                    (T*)revised(a), a.num_rows(),
-                                    (T*)updated(t), t.num_rows(),
+                                    revised(a).data, a.num_rows(),
+                                    updated(t).data, t.num_rows(),
                                     tau, work);
             #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(tau); 
@@ -57,9 +57,9 @@ namespace ambient { namespace numeric { namespace kernels {
         void ormqr(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
             T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::ormqr(PlasmaLeft, TR::value, c.num_rows(), c.num_cols(), k, PLASMA_IB,
-                                    (T*)current(a), a.num_rows(),
-                                    (T*)current(t), t.num_rows(),
-                                    (T*)revised(c), c.num_rows(),
+                                    current(a).data, a.num_rows(),
+                                    current(t).data, t.num_rows(),
+                                    revised(c).data, c.num_rows(),
                                      work, AMBIENT_IB);
             #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(work);
@@ -71,9 +71,9 @@ namespace ambient { namespace numeric { namespace kernels {
             T* tau  = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB>();
             T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::tsqrt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
-                                    (T*)revised(a1), a1.num_rows(),
-                                    (T*)revised(a2), a2.num_rows(),
-                                    (T*)updated(t), t.num_rows(),
+                                    revised(a1).data, a1.num_rows(),
+                                    revised(a2).data, a2.num_rows(),
+                                    updated(t).data, t.num_rows(),
                                     tau, work);
             #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(tau); 
@@ -86,10 +86,10 @@ namespace ambient { namespace numeric { namespace kernels {
             T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::tsmqr(PlasmaLeft, TR::value,
                                     AMBIENT_IB, a1.num_cols(), a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
-                                    (T*)revised(a1), a1.num_rows(),
-                                    (T*)revised(a2), a2.num_rows(),
-                                    (T*)current(v), v.num_rows(),
-                                    (T*)current(t), t.num_rows(),
+                                    revised(a1).data, a1.num_rows(),
+                                    revised(a2).data, a2.num_rows(),
+                                    current(v).data, v.num_rows(),
+                                    current(t).data, t.num_rows(),
                                     work, PLASMA_IB);
             #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(work); 
@@ -101,8 +101,8 @@ namespace ambient { namespace numeric { namespace kernels {
             T* tau  = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB>();
             T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::gelqt(a.num_rows(), a.num_cols(), PLASMA_IB,
-                                    (T*)revised(a), a.num_rows(), 
-                                    (T*)updated(t),   t.num_rows(),
+                                    revised(a).data, a.num_rows(), 
+                                    updated(t).data,   t.num_rows(),
                                     tau, work);
             #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(tau); 
@@ -115,9 +115,9 @@ namespace ambient { namespace numeric { namespace kernels {
             T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::ormlq(PlasmaRight, TR::value,
                                     c.num_rows(), c.num_cols(), k, PLASMA_IB,
-                                    (T*)current(a), a.num_rows(),
-                                    (T*)current(t), t.num_rows(),
-                                    (T*)revised(c), c.num_rows(),
+                                    current(a).data, a.num_rows(),
+                                    current(t).data, t.num_rows(),
+                                    revised(c).data, c.num_rows(),
                                     work, AMBIENT_IB);
             #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(work); 
@@ -129,9 +129,9 @@ namespace ambient { namespace numeric { namespace kernels {
             T* tau  = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB>();
             T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::tslqt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
-                                    (T*)revised(a1), a1.num_rows(),
-                                    (T*)revised(a2), a2.num_rows(),
-                                    (T*)updated(t),     t.num_rows(),
+                                    revised(a1).data, a1.num_rows(),
+                                    revised(a2).data, a2.num_rows(),
+                                    updated(t).data,  t.num_rows(),
                                     tau, work);
             #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(tau); 
@@ -144,10 +144,10 @@ namespace ambient { namespace numeric { namespace kernels {
             T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::tsmlq(PlasmaRight, TR::value,
                                     a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
-                                    (T*)revised(a1), a1.num_rows(),
-                                    (T*)revised(a2), a2.num_rows(),
-                                    (T*)current(v), v.num_rows(),
-                                    (T*)current(t), t.num_rows(),
+                                    revised(a1).data, a1.num_rows(),
+                                    revised(a2).data, a2.num_rows(),
+                                    current(v).data, v.num_rows(),
+                                    current(t).data, t.num_rows(),
                                     work, AMBIENT_IB);
             #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(work); 
@@ -162,9 +162,9 @@ namespace ambient { namespace numeric { namespace kernels {
                 emptied(c);
                 return;
             }
-            T* ad = current(a);
-            T* bd = current(b);
-            T* cd = updated(c);
+            T* ad = current(a).data;
+            T* bd = current(b).data;
+            T* cd = updated(c).data;
             int m = ViewA::rows(a);
             int k = ViewA::cols(a);
             int n = ViewB::cols(b);
@@ -182,18 +182,18 @@ namespace ambient { namespace numeric { namespace kernels {
                 size_t sizex = b.num_cols();
                 int size  = a_diag.num_rows();
                 static const int ONE = 1;
-                T* bd = current(b);
-                T* cd = emptied(c);
-                D* alfa = current(a_diag);
+                T* bd = current(b).data;
+                T* cd = emptied(c).data;
+                D* alfa = current(a_diag).data;
                 
                 for(int k = 0 ; k < sizex; k++)
                     helper_blas<T>::axpy(&size, &alfa[k], &bd[k*size], &ONE, &cd[k], &size);// C - check carefully for TE a_diag double, b complex
             }else{
                 int sizey = a_diag.num_rows();
                 int size = b.num_cols();
-                T* bd = current(b);
-                T* cd = emptied(c);
-                D* alfa = current(a_diag);
+                T* bd = current(b).data;
+                T* cd = emptied(c).data;
+                D* alfa = current(a_diag).data;
                
                 for(int k = 0 ; k < sizey; k++)
                     helper_blas<T>::axpy(&size, &alfa[k], &bd[k], &sizey, &cd[k], &sizey);
@@ -206,9 +206,9 @@ namespace ambient { namespace numeric { namespace kernels {
                 int sizey = b_diag.num_rows();
                 int size = a.num_cols();
                 static const int ONE = 1;
-                T* ad = current(a);
-                T* cd = emptied(c);
-                D* alfa = current(b_diag);
+                T* ad = current(a).data;
+                T* cd = emptied(c).data;
+                D* alfa = current(b_diag).data;
                 
                 for(int k = 0 ; k < sizey; k++)
                     helper_blas<T>::axpy(&size, &alfa[k], &ad[k], &sizey, &cd[k*size], &ONE);// C - check carefully for TE b_diag double, b complex
@@ -216,9 +216,9 @@ namespace ambient { namespace numeric { namespace kernels {
                 size_t sizex = b_diag.num_rows();
                 int size = a.num_rows(); // for the case of complex
                 static const int ONE = 1;
-                T* ad = current(a);
-                T* cd = emptied(c);
-                D* alfa = current(b_diag);
+                T* ad = current(a).data;
+                T* cd = emptied(c).data;
+                D* alfa = current(b_diag).data;
          
                 for(int k = 0 ; k < sizex; k++)
                     helper_blas<T>::axpy(&size, &alfa[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
@@ -227,8 +227,8 @@ namespace ambient { namespace numeric { namespace kernels {
        
         template<typename T>
         void copy_rt(const matrix<T>& a, unbound< matrix<T> >& t){
-            T* ad  = current(a);
-            T* td  = emptied(t);
+            T* ad  = current(a).data;
+            T* td  = emptied(t).data;
             size_t sda = a.num_cols();
             size_t lda = a.num_rows();
             size_t ldt = t.num_rows();
@@ -240,8 +240,8 @@ namespace ambient { namespace numeric { namespace kernels {
        
         template<typename T>
         void copy_lt(const matrix<T>& a, unbound< matrix<T> >& t){
-            T* ad  = current(a);
-            T* td  = emptied(t);
+            T* ad  = current(a).data;
+            T* td  = emptied(t).data;
             size_t sdt = t.num_cols();
             size_t lda = a.num_rows();
             size_t ldt = t.num_rows();
@@ -256,8 +256,8 @@ namespace ambient { namespace numeric { namespace kernels {
                         matrix<T,A2>& dst, const size_t& di, const size_t& dj, 
                         const size_t& m, const size_t& n)
         {
-            T* sd = current(src);
-            T* dd = m*n < ambient::square_dim(dst) ? revised(dst) : updated(dst);
+            T* sd = current(src).data;
+            T* dd = m*n < ambient::get_square_dim(dst) ? revised(dst).data : updated(dst).data;
             ambient::memptf<T, ambient::memcpy>(dd, dst.num_rows(), dim2(dj, di), 
                                                 sd, src.num_rows(), dim2(sj, si), 
                                                 dim2( n, m ));
@@ -269,9 +269,9 @@ namespace ambient { namespace numeric { namespace kernels {
                           const matrix<T>& alfa, const size_t& ai, const size_t& aj,
                           const size_t& m, const size_t& n)
         {
-            T* sd = current(src);
-            T* dd = m*n < ambient::square_dim(dst) ? revised(dst) : updated(dst);
-            T factor = ((T*)current(alfa))[ai + aj*alfa.num_rows()];
+            T* sd = current(src).data;
+            T* dd = m*n < ambient::get_square_dim(dst) ? revised(dst).data : updated(dst).data;
+            T factor = current(alfa).data[ai + aj*alfa.num_rows()];
             ambient::memptf<T, ambient::memscal>(dd, dst.num_rows(), dim2(dj, di), 
                                                  sd, src.num_rows(), dim2(sj, si), 
                                                  dim2( n, m ), factor);
@@ -283,9 +283,9 @@ namespace ambient { namespace numeric { namespace kernels {
                            const matrix<T,A3>& alfa, const size_t& ai, const size_t& aj,
                            const size_t& m, const size_t& n, const T& alfa_scale)
         {
-            T factor = alfa_scale * ((T*)current(alfa))[ai + aj*alfa.num_rows()];
-            ambient::memptf<T, ambient::memscala>(revised(dst), dst.num_rows(), dim2(dj, di), 
-                                                  current(src), src.num_rows(), dim2(sj, si), 
+            T factor = alfa_scale * current(alfa).data[ai + aj*alfa.num_rows()];
+            ambient::memptf<T, ambient::memscala>(revised(dst).data, dst.num_rows(), dim2(dj, di), 
+                                                  current(src).data, src.num_rows(), dim2(sj, si), 
                                                   dim2( n, m ), factor);
         }
             
@@ -293,7 +293,7 @@ namespace ambient { namespace numeric { namespace kernels {
         void trace(const matrix<T,A>& a, future<T>& trace){
             size_t m = a.num_rows();
             size_t n = a.num_cols();
-            T* ad = current(a);
+            T* ad = current(a).data;
         
             size_t sizex = std::min(n,m);
             for(size_t jj = 0; jj < sizex; jj++)
@@ -302,24 +302,24 @@ namespace ambient { namespace numeric { namespace kernels {
             
         template<typename T, class A>
         void scalar_norm(const matrix<T,A>& a, future<double>& norm){
-            T* ad = current(a);
-            norm.get_naked() = ambient::dot(ad, ad, ambient::square_dim(a));
+            T* ad = current(a).data;
+            norm.get_naked() = ambient::dot(ad, ad, ambient::get_square_dim(a));
         }
             
         template<typename T>
         void overlap(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
-            T* ad = current(a);
-            T* bd = current(b);
-            overlap.get_naked() = ambient::dot(ad, bd, ambient::square_dim(a));
+            T* ad = current(a).data;
+            T* bd = current(b).data;
+            overlap.get_naked() = ambient::dot(ad, bd, ambient::get_square_dim(a));
         }
        
         template<typename T, class A>
         void add(matrix<T,A>& a, const matrix<T,A>& b){
-            T* ad = current(a);
-            T* bd = current(b);
-            T* ar = updated(a);
+            T* ad = current(a).data;
+            T* bd = current(b).data;
+            T* ar = updated(a).data;
        
-            int size = ambient::square_dim(a);
+            int size = ambient::get_square_dim(a);
             #pragma vector always
             for(int k = 0; k < size; k++)
                 ar[k] = ad[k] + bd[k];
@@ -328,11 +328,11 @@ namespace ambient { namespace numeric { namespace kernels {
             
         template<typename T>
         void sub(matrix<T>& a, const matrix<T>& b){
-            T* ad = current(a);
-            T* bd = current(b);
-            T* ar = updated(a);
+            T* ad = current(a).data;
+            T* bd = current(b).data;
+            T* ar = updated(a).data;
        
-            int size = ambient::square_dim(a);
+            int size = ambient::get_square_dim(a);
             #pragma vector always
             for(int k = 0; k < size; k++)
                 ar[k] = ad[k] - bd[k];
@@ -340,10 +340,10 @@ namespace ambient { namespace numeric { namespace kernels {
             
         template<typename T>
         void scale(matrix<T>& a, const future<T>& t){
-            T* ad = current(a);
-            T* ar = updated(a);
+            T* ad = current(a).data;
+            T* ar = updated(a).data;
             T factor = t.get_naked();
-            int size = ambient::square_dim(a);
+            int size = ambient::get_square_dim(a);
             #pragma vector always
             for(int k = 0; k < size; k++)
                 ar[k] = ad[k] * factor;
@@ -352,17 +352,17 @@ namespace ambient { namespace numeric { namespace kernels {
         template<typename T>
         void scale_offset(matrix<T>& a, const size_t& ai, const size_t& aj, const matrix<T>& alfa, const size_t& alfai){
             int m = num_rows(a);
-            T* ad = &((T*)revised(a))[aj*m];
-            T factor = ((T*)current(alfa))[alfai];
+            T* ad = &revised(a).data[aj*m];
+            T factor = current(alfa).data[alfai];
             for(int k = ai; k < m; k++) ad[k] *= factor;
         }
             
         template<typename T>
         void scale_inverse(matrix<T>& a, const future<T>& t){
-            T* ad = current(a);
-            T* ar = updated(a);
+            T* ad = current(a).data;
+            T* ar = updated(a).data;
             T factor = t.get_naked();
-            int size = ambient::square_dim(a);
+            int size = ambient::get_square_dim(a);
             #pragma vector always
             for(int k = 0; k < size; k++)
                 ar[k] = ad[k] / factor;
@@ -371,23 +371,23 @@ namespace ambient { namespace numeric { namespace kernels {
         template<typename T>
         void sqrt_diagonal(matrix<T>& a){
             size_t size = a.num_rows();
-            T* ad = current(a);
-            T* ar = updated(a);
+            T* ad = current(a).data;
+            T* ar = updated(a).data;
             for(size_t i = 0; i < size; ++i) ar[i] = std::sqrt(ad[i]);
         }
             
         template<typename T>
         void exp_diagonal(matrix<T>& a, const T& alfa){
             size_t size = a.num_rows();
-            T* ad = current(a);
-            T* ar = updated(a);
+            T* ad = current(a).data;
+            T* ar = updated(a).data;
             for(size_t i = 0; i < size; ++i) ar[i] = std::exp(alfa*ad[i]);
         }
        
         template<typename T, class A>
         void transpose_out(const matrix<T,A>& a, unbound< matrix<T,A> >& t){
-            T* od = current(a);
-            T* td = updated(t);
+            T* od = current(a).data;
+            T* td = updated(t).data;
             int m = a.num_rows();
             int n = a.num_cols();
        
@@ -400,24 +400,24 @@ namespace ambient { namespace numeric { namespace kernels {
         template<typename T, class A>
         void conj_inplace(matrix<T,A>& a){
             size_t size = a.num_rows()*a.num_cols();
-            T* ad = current(a);
-            T* ar = updated(a);
+            T* ad = current(a).data;
+            T* ar = updated(a).data;
             for(int i=0; i < size; ++i)
                 ar[i] = helper_complex<T>::conj(ad[i]);   
         }
        
         template<typename T, class A>
         void resize(unbound< matrix<T,A> >& r, const matrix<T,A>& a, const size_t& m, const size_t& n){
-            T* dd = m*n == ambient::square_dim(r) ? updated(r) : emptied(r);
+            T* dd = m*n == ambient::get_square_dim(r) ? updated(r).data : emptied(r).data;
             ambient::memptf<T, ambient::memcpy>(dd, r.num_rows(), dim2(0,0),
-                                                current(a), a.num_rows(), dim2(0,0), dim2(n, m)); 
+                                                current(a).data, a.num_rows(), dim2(0,0), dim2(n, m)); 
         }
             
         template<typename T>
         void init_identity(unbound< matrix<T> >& a){
             size_t n = a.num_cols();
             size_t m = a.num_rows();
-            T* ad = emptied(a);
+            T* ad = emptied(a).data;
        
             size_t sizex = std::min(m,n); // respecting borders
             for(size_t jj = 0; jj < sizex; ++jj) ad[jj + m*jj] = 1.;
@@ -434,21 +434,21 @@ namespace ambient { namespace numeric { namespace kernels {
        
         template<typename T>
         void init_random(unbound< matrix<T> >& a){
-            size_t size = ambient::square_dim(a);
-            T* ad = updated(a);
+            size_t size = ambient::get_square_dim(a);
+            T* ad = updated(a).data;
             for(size_t i = 0; i < size; ++i) randomize(ad[i]);
         }
             
         template<typename T, class A>
         void init_value(unbound< matrix<T,A> >& a, const T& value){
-            size_t size = ambient::square_dim(a);
-            T* ad = updated(a);
+            size_t size = ambient::get_square_dim(a);
+            T* ad = updated(a).data;
             for(size_t i = 0; i < size; ++i) ad[i] = value; // not a memset due to complex
         }
             
         template<typename T>
         void round_square(const matrix<T>& a, std::vector<T>*& ac){
-            T* ad = current(a);
+            T* ad = current(a).data;
             size_t sizey = a.num_rows();
             for(int i=0; i < sizey; i++){
                 double v = std::abs(ad[i]);
@@ -458,19 +458,19 @@ namespace ambient { namespace numeric { namespace kernels {
        
         template<typename T>
         void cast_to_vector(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
-            T* ad = current(a);
+            T* ad = current(a).data;
             for(int j=0; j < n; ++j) std::memcpy((void*)&(*ac)[j*lda + offset],(void*)&ad[j*m], m*sizeof(T));  
         }
             
         template<typename T>
         void cast_from_vector(const std::vector<T>*& ac, matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
-            T* ad = updated(a);
+            T* ad = updated(a).data;
             for(int j=0; j < n; ++j) std::memcpy((void*)&ad[j*m],(void*)&(*ac)[offset + j*lda], m*sizeof(T));
         }
        
         template<typename T1, typename T2>
         void cast_from_vector_t(const std::vector<T1>*& ac, matrix<T2>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
-            T2* ad = updated(a);
+            T2* ad = updated(a).data;
             const T1* sd = &(*ac)[offset];
             for(int j=0; j < n; ++j) 
                 for(int i=0; i < m; ++i)
@@ -479,8 +479,8 @@ namespace ambient { namespace numeric { namespace kernels {
        
         template<typename T, typename D>
         void cast_double_complex(matrix<T>& a, const matrix<D>& b){
-            T* ad = updated(a);
-            D* bd = current(b);
+            T* ad = updated(a).data;
+            D* bd = current(b).data;
             size_t size = a.num_rows();
             for(size_t i = 0; i < size; ++i)
                 ad[i] = helper_cast<T,D>::cast(bd[i]);
@@ -506,8 +506,8 @@ namespace ambient { namespace numeric { namespace kernels {
         }
         template<typename T>
         void validation(const matrix<T>& a, const matrix<T>& b, future<bool>& ret){ // see paper for Reference Dongara 
-            T* ad = current(a); 
-            T* bd = current(b); 
+            T* ad = current(a).data; 
+            T* bd = current(b).data; 
             double epsilon = std::numeric_limits<double>::epsilon();
             int count = 0;
             size_t sizey = std::min(a.num_rows(), b.num_rows());
@@ -540,10 +540,10 @@ namespace ambient { namespace numeric { namespace kernels {
             int info;
             int lwork = -1;
             T wkopt;
-            T* ad  = current(a);
-            T* ud  = updated(u);
-            T* vtd = updated(vt);
-            typename real_type<T>::type* sd  = updated(s);
+            T* ad  = current(a).data;
+            T* ud  = updated(u).data;
+            T* vtd = updated(vt).data;
+            typename real_type<T>::type* sd  = updated(s).data;
             helper_lapack<T>::gesvd( "S", "S", &m, &n, ad, &m, sd, ud, &m, vtd, &k, &wkopt, &lwork, &info );
         }
        
@@ -553,10 +553,10 @@ namespace ambient { namespace numeric { namespace kernels {
             int info;
             int lwork = -1;
             T wkopt;
-            T* ad  = current(a);
-            T* lvd = updated(lv);
-            T* rvd = updated(rv);
-            T* sd  = updated(s);
+            T* ad  = current(a).data;
+            T* lvd = updated(lv).data;
+            T* rvd = updated(rv).data;
+            T* sd  = updated(s).data;
             helper_lapack<T>::geev("N", "V", &n, ad, &n, sd, lvd, &n, rvd, &n, &wkopt, &lwork, &info); 
         }
        
@@ -565,7 +565,7 @@ namespace ambient { namespace numeric { namespace kernels {
             int info;
             int m = a.num_rows();
             int n = a.num_cols();
-            T* ad = (T*)revised(a);    
+            T* ad = revised(a).data; 
             int* ipivd = new int[n];
             helper_lapack<T>::getrf(&m, &n, ad, &m, ipivd, &info);
             helper_lapack<T>::getri(&n, ad, &n, ipivd, &info);
@@ -580,8 +580,8 @@ namespace ambient { namespace numeric { namespace kernels {
             T* work;
             T* ad = (T*)std::malloc(ambient::size(a));
             typename real_type<T>::type* wd = (typename real_type<T>::type*)std::malloc(ambient::size(w));
-            std::memcpy(ad, (T*)current(a), ambient::size(a));
-            std::memcpy(wd, (typename real_type<T>::type*)current(w), ambient::size(w));
+            std::memcpy(ad, current(a).data, ambient::size(a));
+            std::memcpy(wd, current(w).data, ambient::size(w));
        
             helper_lapack<T>::syev("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
        
@@ -600,8 +600,8 @@ namespace ambient { namespace numeric { namespace kernels {
                 std::memcpy(&ad[(m-1-i)*m], work, len);
             }
             std::free(work);
-            std::memcpy((T*)updated(a), ad, ambient::size(a)); std::free(ad);
-            std::memcpy((typename real_type<T>::type*)updated(w), wd, ambient::size(w));
+            std::memcpy(updated(a).data, ad, ambient::size(a)); std::free(ad);
+            std::memcpy(updated(w).data, wd, ambient::size(w));
             std::free(wd);
         }
     
