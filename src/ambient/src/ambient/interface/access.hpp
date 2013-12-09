@@ -32,78 +32,73 @@ namespace ambient {
     using ambient::models::velvet::revision;
 
     template <typename T> static bool exclusive(T& obj){
-        ambient::model.touch(obj.core);
-        revision& c = *obj.core->current;
+        ambient::model.touch(obj.versioned.core);
+        revision& c = *obj.versioned.core->current;
         if(ambient::controller.remote()){
             c.state = ambient::remote;
             c.owner = ambient::controller.which();
             return true;
         }else{
             c.state = ambient::local;
-            if(!c.valid()) c.embed(T::allocator_type::alloc(c.spec));
+            if(!c.valid()) c.embed(get_allocator<T>::type::alloc(c.spec));
             return false;
         }
     }
 
     template <typename T> static revision& naked(T& obj){
-        return *obj.core->current;
+        return *obj.versioned.core->current;
     }
 
     template <typename T> static revision& raw(T& obj){ 
         return *(revision*)obj.before;     
     }
 
-    template <typename T> static revision& safe_raw(T& obj){
-        ambient::model.touch(obj.core);
-        return *obj.core->current;
-    }
-
-    template <typename T> static revision& serial(T& obj){ 
-        ambient::model.touch(obj.core);
+    template <typename T> static typename T::unnamed::mapping& get(T& obj){ 
+        ambient::model.touch(obj.versioned.core);
         ambient::sync(); 
-        revision& c = *obj.core->current;
+        revision& c = *obj.versioned.core->current;
         assert(c.state == ambient::local || c.state == ambient::common);
         if(!c.valid()){
-            c.embed(T::allocator_type::calloc(c.spec));
+            c.embed(get_allocator<T>::type::calloc(c.spec));
         }
-        return c;
+        return *(typename T::unnamed::mapping*)c;
     }
 
-    template <typename T> static revision& current(T& obj){ 
+    template <typename T> static typename T::unnamed::mapping& current(T& obj){
         revision& c = *(revision*)obj.before;
         if(!c.valid()){
-            c.embed(T::allocator_type::calloc(c.spec));
+            c.embed(get_allocator<T>::type::calloc(c.spec));
         }
-        return c;
+        return *(typename T::unnamed::mapping*)c;
     }
 
-    template <typename T> static revision& updated(T& obj){ 
+    template <typename T> static typename T::unnamed::mapping& updated(T& obj){ 
         revision& c = *(revision*)obj.after; assert(!c.valid());
         revision& p = *(revision*)obj.before;
         if(p.valid() && p.locked_once() && !p.referenced() && c.spec.conserves(p.spec)) c.reuse(p);
         else{
-            c.embed(T::allocator_type::alloc(c.spec));
+            c.embed(get_allocator<T>::type::alloc(c.spec));
         }
-        return c;
+        return *(typename T::unnamed::mapping*)c;
     }
 
-    template <typename T> static revision& revised(T& obj){ 
+    template <typename T> static typename T::unnamed::mapping& revised(T& obj){ 
         revision& c = *(revision*)obj.after; assert(!c.valid());
         revision& p = *(revision*)obj.before;
         if(!p.valid()){
-            c.embed(T::allocator_type::calloc(c.spec));
+            c.embed(get_allocator<T>::type::calloc(c.spec));
         }else if(p.locked_once() && !p.referenced() && c.spec.conserves(p.spec)) c.reuse(p);
         else{
-            c.embed(T::allocator_type::alloc(c.spec));
+            c.embed(get_allocator<T>::type::alloc(c.spec));
             memcpy((T*)c, (T*)p, p.spec.extent);
         }
-        return c;
+        return *(typename T::unnamed::mapping*)c;
     }
 
-    template <typename T> static revision& emptied(T& obj){
-        revision& r = updated(obj);
-        memset((T*)r, 0, r.spec.extent); 
-        return r;
+    template <typename T> static typename T::unnamed::mapping& emptied(T& obj){
+        typename T::unnamed::mapping& c = updated(obj);
+        memset(&c, 0, ((revision*)obj.after)->spec.extent); 
+        return c;
     }
 }
 

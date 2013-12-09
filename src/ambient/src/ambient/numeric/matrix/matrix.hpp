@@ -49,12 +49,6 @@ namespace ambient { namespace numeric {
     }
 
     template <class Matrix>
-    transpose_view<Matrix>::transpose_view(const Matrix& a)
-    : core(a.core) 
-    { 
-    }
-
-    template <class Matrix>
     inline transpose_view<Matrix>& transpose_view<Matrix>::locate(size_type i, size_type j){
         return *this;
     }
@@ -66,7 +60,7 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline size_t transpose_view<Matrix>::lda() const { 
-        return this->core->dim.y; 
+        return ambient::get_dim(*this).y; 
     }
 
     template <class Matrix>
@@ -76,7 +70,7 @@ namespace ambient { namespace numeric {
 
     template <class Matrix>
     transpose_view<Matrix>::operator Matrix () const {
-        Matrix t(Matrix(this->core));
+        Matrix t(*(Matrix*)this);
         transpose_inplace(t); 
         return t;
     }
@@ -147,39 +141,27 @@ namespace ambient { namespace numeric {
 
     template <typename T, class A>
     inline matrix<T,A>::~matrix(){
-        if(this->core->weak()) delete this->core;
-        else ambient::destroy(this->core);
-    }
-
-    template <typename T, class A>
-    inline matrix<T,A>::matrix(const ptr& p) 
-    : core(p)
-    {
+        unversion();
     }
 
     template <typename T, class A>
     inline matrix<T,A>::matrix(){ 
-        this->core = new I(ambient::dim2(0,0), sizeof(T)); 
     }
 
     template <typename T, class A>
-    inline matrix<T,A>::matrix(size_type rows, size_type cols, value_type init_value){
-        this->core = new I(ambient::dim2(cols, rows), sizeof(T));
+    inline matrix<T,A>::matrix(size_type rows, size_type cols, value_type init_value)
+    : versioned(rows, cols, sizeof(T)) {
         fill_value(*this, init_value);
     }
 
     template <typename T, class A>
-    inline matrix<T,A>::matrix(const matrix& a){
-        this->core = new I(a.core->dim, sizeof(T));
-        ambient::fuse(a.core, this->core);
+    inline matrix<T,A>::matrix(const matrix& a)
+    : versioned(ambient::get_dim(a), sizeof(T)){
+        ambient::merge(a, *this);
     }
     
     template <typename T, class A>
     matrix<T,A>& matrix<T,A>::operator = (const matrix& rhs){
-        //if(rhs.core->weak() && this->core->weak()){
-        //    this->core->dim = rhs.core->dim;
-        //    return *this;
-        //}   // commented due to insignificance
         matrix c(rhs);
         this->swap(c);
         return *this;
@@ -214,17 +196,17 @@ namespace ambient { namespace numeric {
 
     template<typename T, class A>
     inline size_type matrix<T,A>::lda() const { 
-        return this->core->dim.y; 
+        return ambient::get_dim(*this).y; 
     }
 
     template<typename T, class A>
     inline size_type matrix<T,A>::num_rows() const { 
-        return this->core->dim.y; 
+        return ambient::get_dim(*this).y; 
     }
 
     template<typename T, class A>
     inline size_type matrix<T,A>::num_cols() const {
-        return this->core->dim.x; 
+        return ambient::get_dim(*this).x; 
     }
 
     template<typename T, class A>
@@ -243,13 +225,8 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T, class A>
-    inline bool matrix<T,A>::empty() const { 
-        return (this->core->dim == 0);    
-    }
-
-    template<typename T, class A>
     inline void matrix<T,A>::swap(matrix& r){ 
-        std::swap(this->core, r.core);
+        ambient::swap_with(*this, r);
     }
 
     template<typename T, class A>
@@ -300,12 +277,12 @@ namespace ambient { namespace numeric {
 
     template<typename T, class A>
     inline value_type& matrix<T,A>::operator() (size_type i, size_type j){
-        return ((T*)ambient::serial(*this))[ j*lda() + i ];
+        return ambient::get(*this).data[ j*lda() + i ];
     }
 
     template<typename T, class A>
     inline const value_type& matrix<T,A>::operator() (size_type i, size_type j) const {
-        return ((T*)ambient::serial(*this))[ j*lda() + i ];
+        return ambient::get(*this).data[ j*lda() + i ];
     }
 
     template<typename T, class A>

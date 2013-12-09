@@ -31,18 +31,6 @@
 
 namespace ambient {
 
-    template<typename T> inline dim2 dim(T& ref){ 
-        return ref.core->dim;
-    }
-
-    template<typename T> inline size_t square_dim(T& ref){ 
-        return ref.core->dim.square();
-    }
-
-    template<typename T> inline size_t size(T& ref){ 
-        return ref.core->extent;  
-    }
-
     template <typename T>
     inline void memcpy(T* dd, T *sd, size_t w, T alfa){
         std::memcpy(dd, sd, w);

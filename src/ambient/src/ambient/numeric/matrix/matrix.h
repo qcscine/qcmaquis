@@ -35,12 +35,10 @@ namespace ambient { namespace numeric {
     template <typename T, class Allocator = ambient::default_allocator<T> >
     class matrix {
     public:
-        typedef ambient::history I;
         typedef T value_type;
         typedef size_t size_type;
         typedef Allocator allocator_type;
         typedef ptrdiff_t difference_type;
-        typedef typename ambient::history* ptr;
         typedef typename ambient::numeric::future<double> real_type;
         typedef typename ambient::numeric::future<T> scalar_type;
 
@@ -48,7 +46,6 @@ namespace ambient { namespace numeric {
         void* operator new (size_t, void*);
         void operator delete (void*);
         void operator delete (void*, void*){ } // doesn't throw
-        explicit matrix(const ptr& p);
         explicit matrix();
         explicit matrix(size_type rows, size_type cols, value_type init_value = value_type()); 
         matrix(const matrix& a);
@@ -66,7 +63,6 @@ namespace ambient { namespace numeric {
         scalar_type trace() const;
         void transpose();
         void conj();
-        bool empty() const;          
         void swap(matrix& r);
         template<typename TT> 
         friend void swap(matrix& x, matrix& y);
@@ -82,9 +78,7 @@ namespace ambient { namespace numeric {
         const value_type& operator() (size_type i, size_type j) const;
         static const char* code();
     public:
-        ptr core;
-        mutable void* before;
-        mutable void* after;
+        ambient_version( T data[ AMBIENT_VAR_LENGTH ]; );
     };
 
     template <class Matrix>
@@ -96,15 +90,14 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::scalar_type scalar_type;
         typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::allocator_type allocator_type;
-        typedef typename Matrix::ptr ptr;
-        subset_view(const Matrix& a) : core(a.core), m(&a) {}
+        subset_view(const Matrix& a) : versioned(a.versioned), m(&a) {}
         size_t num_rows(){ return m->num_rows(); };
         size_t num_cols(){ return m->num_cols(); };
         template<class M> static size_t rows(const M& a); 
         template<class M> static size_t cols(const M& a);
         static const char* code();
         operator Matrix& () const { return *(Matrix*)m; }
-        ptr core;
+        ambient_version( value_type data[ AMBIENT_VAR_LENGTH ]; );
         const Matrix* m;
     };
 
@@ -119,7 +112,7 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::allocator_type allocator_type;
         void* operator new (size_t);
         void operator delete (void*);
-        explicit transpose_view(const Matrix& a);
+        explicit transpose_view(const Matrix& a) : versioned(a.versioned) {}
         transpose_view& locate(size_type i, size_type j);
         const transpose_view& locate(size_type i, size_type j) const;
         size_t addr(size_type i, size_type j) const;
@@ -129,7 +122,7 @@ namespace ambient { namespace numeric {
         template<class M> static size_t rows(const M& a); 
         template<class M> static size_t cols(const M& a);
         static const char* code();
-        typename Matrix::ptr core;
+        ambient_version( value_type data[ AMBIENT_VAR_LENGTH ]; );
     };
 
 } }

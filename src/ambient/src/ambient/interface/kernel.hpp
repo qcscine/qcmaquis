@@ -133,7 +133,7 @@ namespace ambient {
     };
 
     #define ambient_reg(fn, name)  template<typename... TF> \
-                                   struct name : public kernel< name<TF...> > { \
+                                   struct name : public ambient::kernel< name<TF...> > { \
                                        typedef decltype(&fn<TF...>) ftype; \
                                        template<typename... Args> \
                                        static void c(Args&&... args){ \

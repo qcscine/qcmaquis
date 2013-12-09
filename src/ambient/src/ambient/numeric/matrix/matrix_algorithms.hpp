@@ -88,7 +88,7 @@ namespace ambient { namespace numeric {
 
     template<class MatrixViewA, class MatrixViewB, typename T, class A>
     inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T,A>& c){
-        if(a.core->weak() || b.core->weak()) return;
+        if(ambient::weak(a) || ambient::weak(b)) return;
         kernels::template gemm<MatrixViewA,MatrixViewB,matrix<T,A>,T>::template spawn(a, b, c); 
     }
 
@@ -179,7 +179,7 @@ namespace ambient { namespace numeric {
         assert(a.num_rows() != 0 && a.num_cols() != 0);
         if(a.num_rows() == m && a.num_cols() == n) return;
         matrix<T,A> resized(m, n);
-        if(!a.core->weak())
+        if(!ambient::weak(a))
             kernels::template resize<T,A>::template spawn(resized, a, std::min(m, a.num_rows()), std::min(n, a.num_cols()));
         a.swap(resized);
     }
@@ -241,8 +241,8 @@ namespace ambient { namespace numeric {
 
     template <typename T, class A>
     inline void add_inplace(matrix<T,A>& lhs, const matrix<T,A>& rhs){ 
-        if(rhs.core->weak()) return;
-        else if(lhs.core->weak()) ambient::fuse(rhs.core, lhs.core);
+        if(ambient::weak(rhs)) return;
+        else if(ambient::weak(lhs)) ambient::merge(rhs, lhs);
         else kernels::template add<T,A>::template spawn(lhs, rhs); 
     }
 
@@ -263,7 +263,7 @@ namespace ambient { namespace numeric {
 
     template<typename T, class A>
     inline void copy(const matrix<T,A>& src, matrix<T,A>& dst){
-        ambient::fuse(src.core, dst.core);
+        ambient::merge(src, dst);
     }
 
     template<class A1, class A2, typename T>
@@ -271,7 +271,7 @@ namespace ambient { namespace numeric {
                            matrix<T,A2>& dst, size_t di, size_t dj, 
                            size_t m, size_t n)
     {
-        if(!src.core->weak() || !dst.core->weak())
+        if(!ambient::weak(src) || !ambient::weak(dst))
         kernels::template copy_block<A1,A2,T>::template spawn(src, si, sj, dst, di, dj, m, n); 
     }
 
@@ -387,11 +387,11 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T, class A> inline size_type num_rows(const transpose_view< matrix<T,A> >& a){
-        return a.core->dim.x;
+        return ambient::get_dim(a).x;
     }
 
     template<typename T, class A> inline size_type num_cols(const transpose_view< matrix<T,A> >& a){
-        return a.core->dim.y;
+        return ambient::get_dim(a).y;
     }
 
 } }
