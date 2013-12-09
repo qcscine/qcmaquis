@@ -31,7 +31,7 @@ namespace ambient {
 
     using ambient::controllers::velvet::controller;
 
-    template<scope_t T>
+    template<scope_t T = single>
     class scope {};
 
     template<>
