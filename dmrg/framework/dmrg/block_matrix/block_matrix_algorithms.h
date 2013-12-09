@@ -135,7 +135,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
         locale l(p);
         for(size_t i = 0; i < loop_max; ++i){
             size_t k = complexities[i].second;
-            if(M[k][0].core->current->owner != p && (p != ambient::rank() || M[k][0].core->current->owner != -1)) continue;
+            if(ambient::get_owner(M[k][0]) != p && (p != ambient::rank() || ambient::get_owner(M[k][0]) != -1)) continue;
             if(workloads[p].first + complexities[i].first >= total) break;
             merge(M[k]); 
             workloads[p].first += complexities[i].first; 
@@ -175,7 +175,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     #endif
     timer.begin();
     for(size_t k = 0; k < loop_max; ++k){
-        int owner = M[k][0].core->current->owner;
+        int owner = ambient::get_owner(M[k][0]);
         if(owner == -1) owner = ambient::rank();
         locale l(owner);
         svd_merged(M[k], U[k], V[k], S[k]);
