@@ -368,10 +368,12 @@ namespace ambient {
 
     // }}}
 
+    #define ambient_non_destroyable  static int disable_destructor(int);
     #define ambient_version(...)     mutable void* before; \
                                      mutable void* after; \
                                      void enable_versioning(); \
-                                     void unversion(){ if(ambient::weak(*this)) delete versioned.core; else ambient::destroy(versioned.core); } \
+                                     static void disable_destructor(...); \
+                                     enum { destructor_disabled = !std::is_void<decltype(disable_destructor(0))>::value }; \
                                      struct unnamed { \
                                            struct mapping {\
                                                __VA_ARGS__; \
@@ -383,6 +385,7 @@ namespace ambient {
                                            unnamed(ambient::dim2 dim, size_t sz){ core = new ambient::history(dim, sz); } \
                                            template<typename U> unnamed(const U& other):core(other.core){ } \
                                            unnamed(ambient::history* core):core(core){ } \
+                                          ~unnamed(){ if(!destructor_disabled){ if(core->weak()) delete core; else ambient::destroy(core); } } \
                                            ambient::history* core; \
                                      } versioned;
 

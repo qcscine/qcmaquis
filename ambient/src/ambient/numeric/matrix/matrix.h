@@ -52,7 +52,6 @@ namespace ambient { namespace numeric {
         matrix& operator = (const matrix& rhs);
         template<class OtherAllocator>
         matrix& operator = (const matrix<T,OtherAllocator>& rhs); 
-       ~matrix();
     public:
         template<class M> static size_t inc (const M& a); 
         template<class M> static size_t rows(const M& a); 
@@ -97,7 +96,7 @@ namespace ambient { namespace numeric {
         template<class M> static size_t cols(const M& a);
         static const char* code();
         operator Matrix& () const { return *(Matrix*)m; }
-        ambient_version( value_type data[ AMBIENT_VAR_LENGTH ]; );
+        ambient_non_destroyable ambient_version( value_type data[ AMBIENT_VAR_LENGTH ]; );
         const Matrix* m;
     };
 
@@ -122,7 +121,7 @@ namespace ambient { namespace numeric {
         template<class M> static size_t rows(const M& a); 
         template<class M> static size_t cols(const M& a);
         static const char* code();
-        ambient_version( value_type data[ AMBIENT_VAR_LENGTH ]; );
+        ambient_non_destroyable ambient_version( value_type data[ AMBIENT_VAR_LENGTH ]; );
     };
 
 } }

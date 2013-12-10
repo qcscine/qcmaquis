@@ -140,11 +140,6 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T, class A>
-    inline matrix<T,A>::~matrix(){
-        unversion();
-    }
-
-    template <typename T, class A>
     inline matrix<T,A>::matrix(){ 
     }
 

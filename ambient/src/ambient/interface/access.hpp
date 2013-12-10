@@ -75,7 +75,8 @@ namespace ambient {
     template <typename T> static typename T::unnamed::mapping& updated(T& obj){ 
         revision& c = *(revision*)obj.after; assert(!c.valid());
         revision& p = *(revision*)obj.before;
-        if(p.valid() && p.locked_once() && !p.referenced() && c.spec.conserves(p.spec)) c.reuse(p);
+        if(c.valid()){ } // safety perk
+        else if(p.valid() && p.locked_once() && !p.referenced() && c.spec.conserves(p.spec)) c.reuse(p);
         else{
             c.embed(get_allocator<T>::type::alloc(c.spec));
         }
