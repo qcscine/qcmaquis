@@ -19,7 +19,7 @@ using std::endl;
 #include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/models/generate_mpo.hpp"
-
+#include "dmrg/models/coded/lattice.hpp"
 
 typedef U1 SymmGroup;
 typedef alps::numeric::matrix<double> matrix;
@@ -82,10 +82,13 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> const& bra, MPS<matrix,
                                   block_matrix<matrix, SymmGroup> const & op, block_matrix<matrix, SymmGroup> const & ident)
 {
     assert(bra.length() == ket.length());
+    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
+    boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(bra.length()));
+    Lattice lattice(lat_ptr);
     
     std::vector<double> meas(bra.length());
     for (size_t p=0; p<bra.length(); ++p) {
-        generate_mpo::MPOMaker<matrix, SymmGroup> mpom(bra.length(), ident);
+        generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, op_vec(1,ident),op_vec(1,ident));
         generate_mpo::Operator_Term<matrix, SymmGroup> term;
         term.operators.push_back( std::make_pair(p, op) );
         term.fill_operator = ident;
@@ -280,7 +283,8 @@ BOOST_AUTO_TEST_CASE( join_semirnd_mps_cmp_dens )
     int M = 10;
     int L = 4;
 
-    ModelParameters parms;
+    DmrgParameters parms;
+    ModelParameters model_parms;
     
     std::vector<std::pair<SymmGroup::charge, size_t> > b(L, std::pair<SymmGroup::charge, size_t>(0,0));
     b[0].first = 1;
@@ -299,10 +303,11 @@ BOOST_AUTO_TEST_CASE( join_semirnd_mps_cmp_dens )
     
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
     
-    default_mps_init<matrix, SymmGroup> initializer(parms);
+    parms.set("max_bond_dimension", M);
+    default_mps_init<matrix, SymmGroup> initializer(parms, model_parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
 
     MPS<matrix,SymmGroup> mps1;
-    mps1.resize(L); initializer(mps1, M, phys, initc);
+    mps1.resize(L); initializer(mps1);
     MPS<matrix,SymmGroup> mps2 = state_mps(b, phys);
     
     run_test_bosons(L, phys, ident, densop, mps1, mps2, false);
@@ -316,7 +321,8 @@ BOOST_AUTO_TEST_CASE( join_rnd_mps_cmp_dens )
     int M = 10;
     int L = 4;
 
-    ModelParameters parms;
+    DmrgParameters parms;
+    ModelParameters model_parms;
     
     // Bosons with Nmax=2
     Index<SymmGroup> phys;
@@ -331,10 +337,11 @@ BOOST_AUTO_TEST_CASE( join_rnd_mps_cmp_dens )
     
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
     
-    default_mps_init<matrix, SymmGroup> initializer(parms);
+    parms.set("max_bond_dimension", M);
+    default_mps_init<matrix, SymmGroup> initializer(parms, model_parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
     
     MPS<matrix,SymmGroup> mps;
-    mps.resize(L); initializer(mps, M, phys, initc);
+    mps.resize(L); initializer(mps);
     std::cout << "norm(mps): " << norm(mps) << std::endl;
     mps.normalize_left();
     double n = norm(mps);
@@ -347,7 +354,7 @@ BOOST_AUTO_TEST_CASE( join_rnd_mps_cmp_dens )
     for (int i=0; i<Nmps; ++i) {
         
         MPS<matrix,SymmGroup> mps2;
-        mps2.resize(L); initializer(mps2, M, phys, initc);
+        mps2.resize(L); initializer(mps2);
         std::cout << "norm(mps2): " << norm(mps2) << std::endl;
         mps2.normalize_left();
         double n2 = norm(mps2);

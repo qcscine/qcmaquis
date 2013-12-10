@@ -12,8 +12,7 @@
 
 template<class Matrix>
 struct model_factory<Matrix, Ztwo> {
-    static typename model_traits<Matrix, Ztwo>::model_ptr parse
+    static boost::shared_ptr<model_impl<Matrix, SymmGroup> > parse
     (Lattice const & lattice, BaseParameters & model)
-    {
-    }
+    { }
 };

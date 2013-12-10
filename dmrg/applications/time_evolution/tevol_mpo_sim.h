@@ -20,15 +20,17 @@
 // ******   SIMULATION CLASS   ******
 template <class Matrix, class SymmGroup>
 class mpo_evolver {
+    typedef term_descriptor<typename Matrix::value_type> term_t;
 public:
     mpo_evolver(DmrgParameters * parms_, MPS<Matrix, SymmGroup> * mps_,
-                Lattice_ptr lat_, Hamiltonian<Matrix, SymmGroup> const& H,
+                Lattice const& lattice_, Model<Matrix, SymmGroup> const& model_,
                 int init_sweep=0)
     : parms(parms_)
     , mps(mps_)
-    , lat(lat_)
+    , lattice(lattice_) // shallow copy
+    , model(model_) // shallow copy
     , sweep_(init_sweep)
-    , hamils(separate_overlaps(H))
+    , hamils(separate_hamil_terms(model.hamiltonian_terms()))
     {
         maquis::cout << "Using MPO time evolution." << std::endl;
         
@@ -50,7 +52,7 @@ public:
         
         Uterms.resize(hamils.size());
         for (int i=0; i<hamils.size(); ++i)
-            Uterms[i] = make_exp_mpo(lat->size(), hamils[i], alpha);
+            Uterms[i] = make_exp_mpo(lattice, model, hamils[i], alpha);
     }
     
     void operator()(int nsteps)
@@ -98,12 +100,13 @@ private:
 private:        
     DmrgParameters * parms;
     MPS<Matrix, SymmGroup> * mps;
-    Lattice_ptr lat;
+    Lattice lattice;
+    Model<Matrix,SymmGroup> model;
     int sweep_;
     
     results_collector iteration_results_;
     
-    std::vector<Hamiltonian<Matrix, SymmGroup> > hamils;
+    std::vector<std::vector<term_t> > hamils;
     std::vector<MPO<Matrix, SymmGroup> > Uterms;
 };
 

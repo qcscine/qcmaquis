@@ -1,12 +1,29 @@
+/*****************************************************************************
+ *
+ * MAQUIS DMRG Project
+ *
+ * Copyright (C) 2012-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *                            Sebastian Keller <sebkelle@phys.ethz.ch>
+ *
+ *
+ *****************************************************************************/
+
 #ifndef MAQUIS_DMRG_lattice_hpp
 #define MAQUIS_DMRG_lattice_hpp
 
 #include "dmrg/models/lattice.h"
 
-class ChainLattice : public Lattice
+#include <sstream>
+#include <vector>
+#include <set>
+#include <boost/lexical_cast.hpp>
+
+#include "dmrg/utils/BaseParameters.h"
+
+class ChainLattice : public lattice_impl
 {
 public:
-    typedef Lattice::pos_t pos_t;
+    typedef lattice_impl::pos_t pos_t;
     
     ChainLattice (BaseParameters & parms, bool pbc_=false)
     : L(parms["L"])
@@ -76,6 +93,11 @@ public:
         return L;
     }
     
+    int maximum_vertex_type() const
+    {
+        return 0;
+    }
+
 private:
     
     std::string site_label (int i) const
@@ -97,8 +119,124 @@ private:
     
 };
 
+class Orbitals : public lattice_impl
+{
+    typedef int subcharge;
 
-class SquareLattice : public Lattice
+public:
+    typedef lattice_impl::pos_t pos_t;
+    
+    Orbitals (BaseParameters & model)
+    : L(model["L"])
+    , irreps(L, 0)
+    {
+        std::vector<pos_t> order(L);
+        if (!model.is_set("orbital_order"))
+            for (pos_t p = 0; p < L; ++p)
+                order[p] = p;
+        else
+            order = model["orbital_order"].as<std::vector<pos_t> >();
+
+        if (model.is_set("integral_file")) {
+            std::ifstream orb_file;
+            orb_file.open(model["integral_file"].c_str());
+            orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+
+            std::string line;
+            std::getline(orb_file, line);
+
+            std::vector<std::string> split_line;
+            boost::split(split_line, line, boost::is_any_of("="));
+            std::vector<subcharge> symm_vec;
+
+            std::replace(split_line[1].begin(), split_line[1].end(), ',', ' ');
+            std::istringstream iss(split_line[1]);
+            subcharge number;
+            while( iss >> number )
+                symm_vec.push_back(number-1);
+
+            assert( L == symm_vec.size() );
+            for (int p = 0; p < L; ++p)
+                irreps[p] = symm_vec[order[p]-1];
+
+            maquis::cout << "Symmetry string (reordered): ";
+            std::copy(irreps.begin(), irreps.end(), std::ostream_iterator<subcharge>(maquis::cout, ","));
+            maquis::cout << std::endl;
+
+            orb_file.close();
+        }
+        else
+            throw std::runtime_error("\"integral_file\" in model input file is not set\n");
+    }
+
+    std::vector<pos_t> forward(pos_t i) const
+    {
+        std::vector<pos_t> ret;
+        if (i < L-1)
+            ret.push_back(i+1);
+
+        return ret;
+    }
+
+    std::vector<pos_t> all(pos_t i) const
+    {
+        std::vector<pos_t> ret;
+        if (i < L-1)
+            ret.push_back(i+1);
+        if (i > 0)
+            ret.push_back(i-1);
+        return ret;
+    }
+    
+    boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
+    {
+        if (property == "label" && pos.size() == 1)
+            return boost::any( site_label(pos[0]) );
+        else if (property == "label" && pos.size() == 2)
+            return boost::any( bond_label(pos[0], pos[1]) );
+        else if (property == "type" && pos.size() == 1)
+            return boost::any( irreps[pos[0]] );
+        else if (property == "type" && pos.size() == 2)
+            return boost::any( 0 );
+        else {
+            std::ostringstream ss;
+            ss << "No property '" << property << "' with " << pos.size() << " points implemented."; 
+            throw std::runtime_error(ss.str());
+            return boost::any();
+        }
+    }
+    
+    pos_t size() const
+    {
+        return L;
+    }
+    
+    int maximum_vertex_type() const
+    {
+        return 0;
+    }
+
+private:
+    
+    std::string site_label (int i) const
+    {
+        return "( " + boost::lexical_cast<std::string>(i) + " )";
+    }
+    
+    std::string bond_label (int i, int j) const
+    {
+        return (  "( " + boost::lexical_cast<std::string>(i) + " )"
+                + " -- "
+                + "( " + boost::lexical_cast<std::string>(j) + " )");
+    }
+    
+private:
+    int L;
+    std::vector<subcharge> irreps;
+};
+
+
+class SquareLattice : public lattice_impl
 {
 public:
     SquareLattice(BaseParameters & parms)
@@ -141,6 +279,11 @@ public:
     
     int size() const { return L_*W_; }
     
+    int maximum_vertex_type() const
+    {
+        return 0;
+    }
+
     
     boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const
     {

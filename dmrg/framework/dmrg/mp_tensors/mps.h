@@ -34,9 +34,7 @@ public:
     
     MPS();
     MPS(size_t L);  
-    MPS(size_t L, size_t Mmax, Index<SymmGroup> phys,
-        typename SymmGroup::charge right_end,
-        mps_initializer<Matrix, SymmGroup> & init);
+    MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init);
     
     size_t size() const { return data_.size(); }
     size_t length() const { return size(); }
@@ -107,10 +105,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps);
 template<class Matrix, class SymmGroup>
 struct mps_initializer
 {
-    virtual void operator()(MPS<Matrix, SymmGroup> & mps,
-                            std::size_t Mmax,
-                            Index<SymmGroup> const & phys,
-                            typename SymmGroup::charge right_end) = 0;
+    virtual void operator()(MPS<Matrix, SymmGroup> & mps) = 0;
 };
 
 template<class Matrix, class SymmGroup>

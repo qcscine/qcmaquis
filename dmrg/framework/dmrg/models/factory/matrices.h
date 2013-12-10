@@ -11,11 +11,6 @@
 // serial matrix
 #include "dmrg/block_matrix/detail/alps.hpp"
 
-#ifdef ENABLE_ALPS_MODELS
-#include "dmrg/models/alps/lattice.hpp"
-#include "dmrg/models/alps/model.hpp"
-#endif
-
 #include <fstream>
 #include <boost/tokenizer.hpp>
 

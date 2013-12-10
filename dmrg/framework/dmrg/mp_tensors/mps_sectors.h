@@ -22,31 +22,36 @@ T tri_min(T a, T b, T c)
 }
 
 template <class SymmGroup>
-inline std::vector<Index<SymmGroup> > allowed_sectors(std::size_t L,
-                                               Index<SymmGroup> const& phys,
-                                               typename SymmGroup::charge right_end,
-                                               std::size_t Mmax,
-                                               std::vector<typename PGDecorator<SymmGroup>::irrep_t> irreps
-                                                = std::vector<typename PGDecorator<SymmGroup>::irrep_t>())
+inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& site_type,
+                                                      std::vector<Index<SymmGroup> > const& phys_dims,
+                                                      typename SymmGroup::charge right_end,
+                                                      std::size_t Mmax,
+                                                      std::vector<typename SymmGroup::subcharge> irreps
+                                                       = std::vector<typename SymmGroup::subcharge>())
 {
     bool finitegroup = SymmGroup::finite;
 
-    typedef typename PGDecorator<SymmGroup>::irrep_t irrep_t;
+    std::size_t L = site_type.size();
+    
+    typedef typename SymmGroup::subcharge subcharge;
     PGDecorator<SymmGroup> set_irrep;
     if (irreps.size() != L) {
-        irreps = std::vector<irrep_t>(L, 0);
+        irreps = std::vector<subcharge>(L, 0);
     }
     
-    Index<SymmGroup> physc = phys;
-    physc.sort();
-    typename SymmGroup::charge cmax = physc.begin()->first;
-    typename SymmGroup::charge cmin = physc.rbegin()->first;
-    if (cmin > cmax) std::swap(cmin, cmax);
+    std::vector<typename SymmGroup::charge> maximum_charges(phys_dims.size()), minimum_charges(phys_dims.size());
+    for (int type=0; type<phys_dims.size(); ++type) {
+        Index<SymmGroup> physc = phys_dims[type];
+        physc.sort();
+        maximum_charges[type] = physc.begin()->first;
+        minimum_charges[type] = physc.rbegin()->first;
+        if (minimum_charges[type] > maximum_charges[type]) std::swap(maximum_charges[type], minimum_charges[type]);
+    }
     
-    typename SymmGroup::charge cmaxL=SymmGroup::IdentityCharge, cminL=SymmGroup::IdentityCharge;
+    typename SymmGroup::charge maximum_total_charge=SymmGroup::IdentityCharge, minimum_total_charge=SymmGroup::IdentityCharge;
     for (int i = 1; i < L; ++i) {
-        cmaxL = SymmGroup::fuse(cmaxL, cmax);
-        cminL = SymmGroup::fuse(cminL, cmin);
+        maximum_total_charge = SymmGroup::fuse(maximum_total_charge, maximum_charges[site_type[i-1]]);
+        minimum_total_charge = SymmGroup::fuse(minimum_total_charge, minimum_charges[site_type[i-1]]);
     }
     
     Index<SymmGroup> l_triv, r_triv;
@@ -57,9 +62,9 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::size_t L,
     left_allowed[0] = l_triv;
     right_allowed[L] = r_triv;
     
-    typename SymmGroup::charge cmaxi=cmaxL, cmini=cminL;
+    typename SymmGroup::charge cmaxi=maximum_total_charge, cmini=minimum_total_charge;
     for (int i = 1; i < L+1; ++i) {
-        left_allowed[i] = set_irrep(phys, irreps[i-1]) * left_allowed[i-1];
+        left_allowed[i] = set_irrep(phys_dims[site_type[i-1]], irreps[i-1]) * left_allowed[i-1];
         typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
         while ( it != left_allowed[i].end() )
         {
@@ -72,12 +77,13 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::size_t L,
                 ++it;
             }
         }
-        cmaxi = SymmGroup::fuse(cmaxi, -cmax);
-        cmini = SymmGroup::fuse(cmini, -cmin);
+        cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i-1]]);
+        cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i-1]]);
     }
-    cmaxi=cmaxL; cmini=cminL;
+    
+    cmaxi=maximum_total_charge; cmini=minimum_total_charge;
     for (int i = L-1; i >= 0; --i) {
-        right_allowed[i] = adjoin(set_irrep(phys, irreps[i])) * right_allowed[i+1];
+        right_allowed[i] = adjoin(set_irrep(phys_dims[site_type[i]], irreps[i])) * right_allowed[i+1];
         
         typename Index<SymmGroup>::iterator it = right_allowed[i].begin();
         while ( it != right_allowed[i].end() )
@@ -91,8 +97,8 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::size_t L,
                 ++it;
             }
         }
-        cmaxi = SymmGroup::fuse(cmaxi, -cmax);
-        cmini = SymmGroup::fuse(cmini, -cmin);
+        cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i]]);
+        cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i]]);
         
     }
     

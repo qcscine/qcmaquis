@@ -18,12 +18,6 @@
 #include <string>
 #include <iostream>
 
-#include "dmrg/models/lattice.h"
-#include "dmrg/models/generate_mpo.hpp"
-#include "dmrg/models/chem/pg_symm_converter.h"
-
-#include "dmrg/mp_tensors/mps.h"
-
 #include <stdexcept>
 
 #include <boost/regex.hpp>
@@ -41,8 +35,7 @@ public:
 
     std::string name;
     type_t type;
-    std::vector<std::pair<op_t, bool> > operators;
-    op_t fill_operator;
+    std::vector<std::pair<std::vector<op_t>, bool> > operators;
     
     // this is somewhat unlucky interface-wise, to say the least
     // Custom: all inner vector are summed together
@@ -50,6 +43,9 @@ public:
     
     // used by LocalAt for the positions where ops are evaluated
     std::vector< std::vector<std::size_t> > positions;
+    
+    // physical_i for wavefunction in case of density matrix measurements
+    Index<SymmGroup> phys_psi;
     
     Measurement_Term<Matrix, SymmGroup> * clone() const
     {
@@ -65,9 +61,9 @@ protected:
     : name(m.name)
     , type(m.type)
     , operators(m.operators)
-    , fill_operator(m.fill_operator)
     , custom_ops(m.custom_ops)
     , positions(m.positions)
+    , phys_psi(m.phys_psi)
     { }
 };
 template<class Matrix, class SymmGroup>
@@ -141,7 +137,14 @@ public:
     
     enum system_type_t {Wavefunction, Densitymatrix};
     
-    Measurements(system_type_t system_type=Wavefunction) : super_meas( system_type == Densitymatrix ) { }
+    Measurements() : super_meas(false) { }
+    
+    Measurements(std::vector<op_t> const& ident, std::vector<op_t> const& fill,
+                 system_type_t system_type=Wavefunction)
+    : super_meas( system_type == Densitymatrix )
+    , identities_(ident)
+    , fillings_(fill)
+    { }
     
     int n_terms() const
     {
@@ -169,14 +172,22 @@ public:
         return sublist;
     }
     
-    const op_t& get_identity() const
+    const std::vector<op_t>& identity_matrices() const
     {
-    	return ident;
+    	return identities_;
+    }
+    const op_t& identity_matrix(int type) const
+    {
+    	return identity_matrices()[type];
     }
     
-    void set_identity(const op_t& ident_)
+    const std::vector<op_t>& filling_matrices() const
     {
-    	ident = ident_;
+    	return fillings_;
+    }
+    const op_t& filling_matrix(int type) const
+    {
+    	return filling_matrices()[type];
     }
     
     void add_term (mterm_t const & term)
@@ -187,7 +198,8 @@ public:
     void clear ()
     {
     	terms.clear();
-        ident = op_t();
+        identities_.clear();
+        fillings_.clear();
     }
     
     bool is_super_meas() const
@@ -196,110 +208,11 @@ public:
     }
     
 protected:
-    boost::ptr_vector<mterm_t> terms;
-    op_t ident;
     bool super_meas;
+    std::vector<op_t> identities_, fillings_;
+    boost::ptr_vector<mterm_t> terms;
 };
 
-
-#include "meas_eval.hpp"
-
-template<class Matrix, class SymmGroup>
-void measure_on_mps(MPS<Matrix, SymmGroup> const& mps, Lattice const & lat,
-                    Measurements<Matrix, SymmGroup> const & meas,
-                    std::string const & h5name,
-                    BaseParameters & model,
-                    std::string basepath = std::string("/spectrum/results/"))
-{
-
-    // Temporary workaround for measurements with point group symmetry
-    std::vector<typename PGDecorator<SymmGroup>::irrep_t> irreps = parse_symm<SymmGroup>(lat.size(), model);	
-    PGSymmetryConverter<Matrix, SymmGroup> symm_conv(irreps);
-
-    if (meas.n_terms() > 0) {
-        bool super_meas=meas.is_super_meas();
-        
-        boost::scoped_ptr<meas_eval::LocalMPSMeasurement<Matrix, SymmGroup> > local_measurement;
-        if (!super_meas)
-            local_measurement.reset( new meas_eval::LocalMPSMeasurement<Matrix, SymmGroup>(mps, lat, irreps) );
-        
-        for (int i = 0; i < meas.n_terms(); ++i)
-        {
-            maquis::cout << "Calculating " << meas[i].name << std::endl;
-            switch (meas[i].type)
-            {
-                case Measurement_Term<Matrix, SymmGroup>::Local:
-                    assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
-                    if (!super_meas && meas[i].operators.size() == 1) // Local measurements are fast and efficient!
-                        local_measurement->site_term(meas[i].operators[0],
-                                                    h5name, basepath + storage::encode(meas[i].name));
-                    else
-                        meas_eval::measure_local(mps, lat,
-                                                   meas.get_identity(), meas[i].fill_operator,
-                                                   meas[i].operators,
-                                                   h5name, basepath + storage::encode(meas[i].name), super_meas);
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::MPSBonds:
-                    assert(meas[i].operators.size() == 2);
-                    local_measurement->bond_term(meas[i].operators,
-                                                h5name, basepath + storage::encode(meas[i].name));
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::Average:
-                    assert(meas[i].operators.size() == 1  || meas[i].operators.size() == 2);
-                    meas_eval::measure_average(mps, lat,
-                                                 meas.get_identity(), meas[i].fill_operator,
-                                                 meas[i].operators,
-                                                 h5name, basepath + storage::encode(meas[i].name), super_meas);
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::Overlap:
-                    meas_eval::measure_overlap(mps, dynamic_cast<OverlapMeasurement<Matrix, SymmGroup> const & >(meas[i]).bra_ckp,
-                                                 h5name, basepath + storage::encode(meas[i].name));
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::Correlation:
-                    meas_eval::measure_correlation(mps, lat, meas.get_identity(),
-                                                     meas[i].fill_operator, meas[i].positions, meas[i].operators,
-                                                     h5name, basepath + storage::encode(meas[i].name), symm_conv, false, false, super_meas);
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::HalfCorrelation:
-                    meas_eval::measure_correlation(mps, lat, meas.get_identity(),
-                                                     meas[i].fill_operator, meas[i].positions, meas[i].operators,
-                                                     h5name, basepath + storage::encode(meas[i].name), symm_conv, true, false, super_meas);
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::CorrelationNN:
-                    if (meas[i].operators.size() % 2 != 0)
-                        throw std::runtime_error("Next neighbors correlators have to have even number of operators");
-                    meas_eval::measure_correlation(mps, lat, meas.get_identity(),
-                                                     meas[i].fill_operator, meas[i].positions, meas[i].operators,
-                                                     h5name, basepath + storage::encode(meas[i].name), symm_conv, false, true, super_meas);
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::HalfCorrelationNN:
-                    if (meas[i].operators.size() % 2 != 0)
-                        throw std::runtime_error("Next neighbors correlators have to have even number of operators");
-                    meas_eval::measure_correlation(mps, lat, meas.get_identity(),
-                                                     meas[i].fill_operator, meas[i].positions, meas[i].operators,
-                                                     h5name, basepath + storage::encode(meas[i].name), symm_conv, true, true, super_meas);
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::Custom:
-                    meas_eval::measure_custom(mps, lat, meas.get_identity(),
-                                                meas[i].fill_operator, meas[i].custom_ops,
-                                                h5name, basepath + storage::encode(meas[i].name));
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::LocalAt:
-                    meas_eval::measure_local_at(mps, lat, meas.get_identity(),
-                                                  meas[i].fill_operator, meas[i].operators, meas[i].positions,
-                                                  h5name, basepath + storage::encode(meas[i].name));
-                    break;
-                case Measurement_Term<Matrix, SymmGroup>::DMOverlap:
-                case Measurement_Term<Matrix, SymmGroup>::DMMultioverlap:
-                    DMOverlapMeasurement<Matrix, SymmGroup> const & cast_meas = dynamic_cast<DMOverlapMeasurement<Matrix, SymmGroup> const & >(meas[i]);
-                    bool is_multi_overlap = (meas[i].type == Measurement_Term<Matrix, SymmGroup>::DMMultioverlap);
-                    meas_eval::dm_overlap(mps, cast_meas.mps_ident, cast_meas.overlaps_mps, cast_meas.labels, is_multi_overlap,
-                                            h5name, basepath + storage::encode(meas[i].name));
-                    break;
-            }
-        }
-    }
-}
 
 template <class Matrix, class SymmGroup>
 void parse_overlaps(BaseParameters const & parms, size_t sweep, Measurements<Matrix, SymmGroup> & meas)

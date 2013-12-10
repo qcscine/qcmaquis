@@ -13,21 +13,24 @@
 #include <sstream>
 
 #include "dmrg/models/model.h"
+#include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
 /* ****************** HEISENBERG */
 template<class Matrix>
-class Heisenberg : public Model<Matrix, U1>
+class Heisenberg : public model_impl<Matrix, U1>
 {
-    typedef Hamiltonian<Matrix, U1> ham;        
-    typedef typename ham::hamterm_t hamterm_t;
-    typedef typename ham::hamtagterm_t hamtagterm_t;
-    typedef Measurement_Term<Matrix, U1> mterm_t;
-    typedef typename ham::op_t op_t;
-    typedef typename ham::table_type table_type;
-    typedef typename ham::table_ptr table_ptr;
-    typedef typename table_type::tag_type tag_type;
-    typedef typename Matrix::value_type value_type;
+    typedef model_impl<Matrix, U1> base;
+    
+    typedef typename base::table_type table_type;
+    typedef typename base::table_ptr table_ptr;
+    typedef typename base::tag_type tag_type;
+    
+    typedef typename base::term_descriptor term_descriptor;
+    typedef typename base::terms_type terms_type;
+    typedef typename base::op_t op_t;
+    typedef typename base::measurements_type measurements_type;
+    typedef typename measurements_type::mterm_t mterm_t;
 
 public:   
     Heisenberg (const Lattice& lat, double Jxy, double Jz)
@@ -67,61 +70,69 @@ public:
             std::vector<int> neighs = lat.forward(p);
             for (int n=0; n<neighs.size(); ++n) {
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident;
-                    term.scale = Jz;
-                    term.operators.push_back( std::make_pair(p, sz) );
-                    term.operators.push_back( std::make_pair(neighs[n], sz) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = Jz;
+                    term.push_back( boost::make_tuple(p, sz) );
+                    term.push_back( boost::make_tuple(neighs[n], sz) );
+                    this->terms_.push_back(term);
                 }
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident;
-                    term.scale = Jxy/2;
-                    term.operators.push_back( std::make_pair(p, splus) );
-                    term.operators.push_back( std::make_pair(neighs[n], sminus) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = Jxy/2;
+                    term.push_back( boost::make_tuple(p, splus) );
+                    term.push_back( boost::make_tuple(neighs[n], sminus) );
+                    this->terms_.push_back(term);
                 }
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident;
-                    term.scale = Jxy/2;
-                    term.operators.push_back( std::make_pair(p, sminus) );
-                    term.operators.push_back( std::make_pair(neighs[n], splus) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = Jxy/2;
+                    term.push_back( boost::make_tuple(p, sminus) );
+                    term.push_back( boost::make_tuple(neighs[n], splus) );
+                    this->terms_.push_back(term);
                 }
             }
         }
         
     }
     
-    Index<U1> get_phys() const
+    Index<U1> const& phys_dim(size_t type) const
     {
         return phys;
     }
-
-    Hamiltonian<Matrix, U1> H () const
-    {        
-        std::vector<hamterm_t> terms_ops;
-        return ham(phys, tag_handler->get_op(ident), terms_ops, ident, terms, tag_handler);
+    tag_type identity_matrix_tag(size_t type) const
+    {
+        return ident;
     }
-    
+    tag_type filling_matrix_tag(size_t type) const
+    {
+        return identity_matrix_tag(type);
+    }
+    typename U1::charge total_quantum_numbers(BaseParameters & parms) const
+    {
+        return static_cast<int>(parms["u1_total_charge"]);
+    }
+
     Measurements<Matrix, U1> measurements () const
     {
         return Measurements<Matrix, U1>();
     }
 
-    op_t get_op(std::string const & op) const
+    tag_type get_operator_tag(std::string const & name, size_t type) const
     {
-        if (op == "splus")
-            return tag_handler->get_op(splus);
-        else if (op == "sminus")
-            return tag_handler->get_op(sminus);
-        else if (op == "sz")
-            return tag_handler->get_op(sz);
+        if (name == "splus")
+            return splus;
+        else if (name == "sminus")
+            return sminus;
+        else if (name == "sz")
+            return sz;
         else
             throw std::runtime_error("Operator not valid for this model.");
-        return op_t();
+        return 0;
+    }
+    
+    table_ptr operators_table() const
+    {
+        return tag_handler;
     }
 
 private:
@@ -129,23 +140,23 @@ private:
 
     boost::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
     tag_type ident, splus, sminus, sz;
-
-    std::vector<hamtagterm_t> terms;
 };
 
 /* ****************** HARD CORE BOSONS */
 template<class Matrix>
-class HCB : public Model<Matrix, U1>
+class HCB : public model_impl<Matrix, U1>
 {
-    typedef Hamiltonian<Matrix, U1> ham;
-    typedef typename ham::hamterm_t hamterm_t;
-    typedef typename ham::hamtagterm_t hamtagterm_t;
-    typedef Measurement_Term<Matrix, U1> mterm_t;
-    typedef typename ham::op_t op_t;
-    typedef typename ham::table_type table_type;
-    typedef typename ham::table_ptr table_ptr;
-    typedef typename table_type::tag_type tag_type;
-    typedef typename Matrix::value_type value_type;
+    typedef model_impl<Matrix, U1> base;
+    
+    typedef typename base::table_type table_type;
+    typedef typename base::table_ptr table_ptr;
+    typedef typename base::tag_type tag_type;
+    
+    typedef typename base::term_descriptor term_descriptor;
+    typedef typename base::terms_type terms_type;
+    typedef typename base::op_t op_t;
+    typedef typename base::measurements_type measurements_type;
+    typedef typename measurements_type::mterm_t mterm_t;
     
 public:   
     HCB (const Lattice& lat, double t=1)
@@ -184,20 +195,18 @@ public:
             std::vector<int> neighs = lat.forward(p);
             for (int n=0; n<neighs.size(); ++n) {
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident;
-                    term.scale = -t;
-                    term.operators.push_back( std::make_pair(p, create) );
-                    term.operators.push_back( std::make_pair(neighs[n], destroy) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = -t;
+                    term.push_back( boost::make_tuple(p, create) );
+                    term.push_back( boost::make_tuple(neighs[n], destroy) );
+                    this->terms_.push_back(term);
                 }
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident;
-                    term.scale = -t;
-                    term.operators.push_back( std::make_pair(p, destroy) );
-                    term.operators.push_back( std::make_pair(neighs[n], create) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = -t;
+                    term.push_back( boost::make_tuple(p, destroy) );
+                    term.push_back( boost::make_tuple(neighs[n], create) );
+                    this->terms_.push_back(term);
                 }
             }
         }
@@ -205,15 +214,21 @@ public:
     }
     
     
-    Index<U1> get_phys() const
+    Index<U1> const& phys_dim(size_t type) const
     {
         return phys;
     }
-
-    Hamiltonian<Matrix, U1> H () const
-    {        
-        std::vector<hamterm_t> terms_ops;
-        return ham(phys, tag_handler->get_op(ident), terms_ops, ident, terms, tag_handler);
+    tag_type identity_matrix_tag(size_t type) const
+    {
+        return ident;
+    }
+    tag_type filling_matrix_tag(size_t type) const
+    {
+        return identity_matrix_tag(type);
+    }
+    typename U1::charge total_quantum_numbers(BaseParameters & parms) const
+    {
+        return static_cast<int>(parms["u1_total_charge"]);
     }
     
     Measurements<Matrix, U1> measurements () const
@@ -221,43 +236,49 @@ public:
         return Measurements<Matrix, U1>();
     }
     
-    op_t get_op(std::string const & op) const
+    tag_type get_operator_tag(std::string const & name, size_t type) const
     {
-        if (op == "n")
-            return tag_handler->get_op(count);
-        else if (op == "bdag")
-            return tag_handler->get_op(create);
-        else if (op == "b")
-            return tag_handler->get_op(destroy);
+        if (name == "n")
+            return count;
+        else if (name == "bdag")
+            return create;
+        else if (name == "b")
+            return destroy;
         else
             throw std::runtime_error("Operator not valid for this model.");
-        return op_t();
+        return 0;
     }
     
+    table_ptr operators_table() const
+    {
+        return tag_handler;
+    }
+
     
 private:
     Index<U1> phys;
     
     boost::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
     tag_type ident, create, destroy, count;
-
-    std::vector<hamtagterm_t> terms;
 };
 
 /* ****************** BOSE-HUBBARD */
 template<class Matrix>
-class BoseHubbard : public Model<Matrix, U1>
+class BoseHubbard : public model_impl<Matrix, U1>
 {
-    typedef Hamiltonian<Matrix, U1> ham;
-    typedef typename ham::hamterm_t hamterm_t;
-    typedef typename ham::hamtagterm_t hamtagterm_t;
-    typedef Measurement_Term<Matrix, U1> mterm_t;
-    typedef typename ham::op_t op_t;
-    typedef typename ham::table_type table_type;
-    typedef typename ham::table_ptr table_ptr;
-    typedef typename table_type::tag_type tag_type;
-    typedef typename Matrix::value_type value_type;
+    typedef model_impl<Matrix, U1> base;
     
+    typedef typename base::table_type table_type;
+    typedef typename base::table_ptr table_ptr;
+    typedef typename base::tag_type tag_type;
+    
+    typedef typename base::term_descriptor term_descriptor;
+    typedef typename base::terms_type terms_type;
+    typedef typename base::op_t op_t;
+    typedef typename base::measurements_type measurements_type;
+    typedef typename measurements_type::mterm_t mterm_t;
+    
+    typedef typename Matrix::value_type value_type;
 public:
     BoseHubbard (const Lattice& lat_, BaseParameters & model_)
     : lat(lat_)
@@ -310,41 +331,36 @@ public:
         for (int p=0; p<lat.size(); ++p) {
             /* interaction */
             {
-                hamtagterm_t term;
-                term.with_sign = false;
-                term.fill_operator = ident;
-                term.scale = U/2.;
-                term.operators.push_back( std::make_pair(p, interaction) );
-                terms.push_back(term);
+                term_descriptor term;
+                term.coeff = U/2.;
+                term.push_back( boost::make_tuple(p, interaction) );
+                this->terms_.push_back(term);
             }
             
             std::vector<int> neighs = lat.forward(p);
             for (int n=0; n<neighs.size(); ++n) {
                 /* hopping */
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident;
-                    term.scale = -t;
-                    term.operators.push_back( std::make_pair(p, create) );
-                    term.operators.push_back( std::make_pair(neighs[n], destroy) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = -t;
+                    term.push_back( boost::make_tuple(p, create) );
+                    term.push_back( boost::make_tuple(neighs[n], destroy) );
+                    this->terms_.push_back(term);
                 }
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident;
-                    term.scale = -t;
-                    term.operators.push_back( std::make_pair(p, destroy) );
-                    term.operators.push_back( std::make_pair(neighs[n], create) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = -t;
+                    term.push_back( boost::make_tuple(p, destroy) );
+                    term.push_back( boost::make_tuple(neighs[n], create) );
+                    this->terms_.push_back(term);
                 }
                 /* nearest-neighborn interaction */
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident;
-                    term.scale = V;
-                    term.operators.push_back( std::make_pair(p, count) );
-                    term.operators.push_back( std::make_pair(neighs[n], count) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = V;
+                    term.push_back( boost::make_tuple(p, count) );
+                    term.push_back( boost::make_tuple(neighs[n], count) );
+                    this->terms_.push_back(term);
                 }
             }
         }
@@ -352,73 +368,80 @@ public:
     }
     
     
-    Index<U1> get_phys() const
+    Index<U1> const& phys_dim(size_t type) const
     {
         return phys;
     }
-    
-    Hamiltonian<Matrix, U1> H () const
+    tag_type identity_matrix_tag(size_t type) const
     {
-        std::vector<hamterm_t> terms_ops;
-        return ham(phys, tag_handler->get_op(ident), terms_ops, ident, terms, tag_handler);
+        return ident;
+    }
+    tag_type filling_matrix_tag(size_t type) const
+    {
+        return identity_matrix_tag(type);
+    }
+    typename U1::charge total_quantum_numbers(BaseParameters & parms) const
+    {
+        return static_cast<int>(parms["u1_total_charge"]);
+    }
+    
+    tag_type get_operator_tag(std::string const & name, size_t type) const
+    {
+        if (name == "n")
+            return count;
+        else if (name == "bdag")
+            return create;
+        else if (name == "b")
+            return destroy;
+        else if (name == "id")
+            return ident;
+        else if (name == "fill")
+            return ident;
+        else
+            throw std::runtime_error("Operator not valid for this model.");
+        return 0;
+    }
+    
+    table_ptr operators_table() const
+    {
+        return tag_handler;
     }
     
     Measurements<Matrix, U1> measurements () const
     {
-        Measurements<Matrix, U1> meas;
-        meas.set_identity(tag_handler->get_op(ident));
+        Measurements<Matrix, U1> meas(std::vector<op_t>(1,this->identity_matrix(0)),
+                                      std::vector<op_t>(1,this->filling_matrix(0)));
         
         if (model["ENABLE_MEASURE[Density]"]) {
             mterm_t term;
-            term.fill_operator = tag_handler->get_op(ident);
             term.name = "Density";
             term.type = mterm_t::Average;
-            term.operators.push_back( std::make_pair(tag_handler->get_op(count), false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(count)), false) );
             
             meas.add_term(term);
         }
         
         if (model["ENABLE_MEASURE[Local density]"]) {
             mterm_t term;
-            term.fill_operator = tag_handler->get_op(ident);
             term.name = "Local density";
             term.type = mterm_t::Local;
-            term.operators.push_back( std::make_pair(tag_handler->get_op(count), false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(count)), false) );
             
             meas.add_term(term);
         }
         
         if (model["ENABLE_MEASURE[Onebody density matrix]"]) {
             mterm_t term;
-            term.fill_operator = tag_handler->get_op(ident);
             term.name = "Onebody density matrix";
             term.type = mterm_t::HalfCorrelation;
-            term.operators.push_back( std::make_pair(tag_handler->get_op(create), false) );
-            term.operators.push_back( std::make_pair(tag_handler->get_op(destroy), false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(create)), false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(destroy)), false) );
             
             meas.add_term(term);
         }
         
         return meas;
     }
-    
-    op_t get_op(std::string const & op) const
-    {
-        if (op == "n")
-            return tag_handler->get_op(count);
-        else if (op == "bdag")
-            return tag_handler->get_op(create);
-        else if (op == "b")
-            return tag_handler->get_op(destroy);
-        else if (op == "id")
-            return tag_handler->get_op(ident);
-        else if (op == "fill")
-            return tag_handler->get_op(ident);
-        else
-            throw std::runtime_error("Operator not valid for this model.");
-        return op_t();
-    }
-    
     
 private:
     const Lattice & lat;
@@ -427,23 +450,23 @@ private:
     
     boost::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
     tag_type ident, create, destroy, count, interaction;
-    
-    std::vector<hamtagterm_t> terms;
 };
 
 /* ****************** FREE FERMIONS */
 template<class Matrix>
-class FreeFermions : public Model<Matrix, U1>
+class FreeFermions : public model_impl<Matrix, U1>
 {
-    typedef Hamiltonian<Matrix, U1> ham;
-    typedef typename ham::hamterm_t hamterm_t;
-    typedef typename ham::hamtagterm_t hamtagterm_t;
-    typedef Measurement_Term<Matrix, U1> mterm_t;
-    typedef typename ham::op_t op_t;
-    typedef typename ham::table_type table_type;
-    typedef typename ham::table_ptr table_ptr;
-    typedef typename table_type::tag_type tag_type;
-    typedef typename Matrix::value_type value_type;
+    typedef model_impl<Matrix, U1> base;
+    
+    typedef typename base::table_type table_type;
+    typedef typename base::table_ptr table_ptr;
+    typedef typename base::tag_type tag_type;
+    
+    typedef typename base::term_descriptor term_descriptor;
+    typedef typename base::terms_type terms_type;
+    typedef typename base::op_t op_t;
+    typedef typename base::measurements_type measurements_type;
+    typedef typename measurements_type::mterm_t mterm_t;
     
 public:
     FreeFermions (const Lattice& lat, double t=1)
@@ -465,10 +488,6 @@ public:
         phys.insert(std::make_pair(0, 1));
         phys.insert(std::make_pair(1, 1));
         
-        /**********************************************************************/
-        /*** Create operator tag table ****************************************/
-        /**********************************************************************/
-        
 #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
         
         REGISTER(ident,     tag_detail::bosonic)
@@ -478,56 +497,77 @@ public:
         REGISTER(sign,      tag_detail::bosonic)
         
 #undef REGISTER
-        /**********************************************************************/
 
         
         for (int p=0; p<lat.size(); ++p) {
             std::vector<int> neighs = lat.forward(p);
             for (int n=0; n<neighs.size(); ++n) {
                 {
-                    hamtagterm_t term;
-                    term.with_sign = true;
-                    term.fill_operator = sign;
-                    term.scale = -t;
-                    term.operators.push_back( std::make_pair(p, create) );
-                    term.operators.push_back( std::make_pair(neighs[n], destroy) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.is_fermionic = true;
+                    term.coeff = -t;
+                    term.push_back( boost::make_tuple(p, create) );
+                    term.push_back( boost::make_tuple(neighs[n], destroy) );
+                    this->terms_.push_back(term);
                 }
                 {
-                    hamtagterm_t term;
-                    term.with_sign = true;
-                    term.fill_operator = sign;
-                    term.scale = -t;
-                    term.operators.push_back( std::make_pair(p, destroy) );
-                    term.operators.push_back( std::make_pair(neighs[n], create) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.is_fermionic = true;
+                    term.coeff = -t;
+                    term.push_back( boost::make_tuple(p, destroy) );
+                    term.push_back( boost::make_tuple(neighs[n], create) );
+                    this->terms_.push_back(term);
                 }
             }
         }
         
     }
     
-    Index<U1> get_phys() const
+    Index<U1> const& phys_dim(size_t type) const
     {
         return phys;
     }
-
-    Hamiltonian<Matrix, U1> H () const
-    {        
-        std::vector<hamterm_t> terms_ops;
-        return ham(phys, tag_handler->get_op(ident), terms_ops, ident, terms, tag_handler);
+    tag_type identity_matrix_tag(size_t type) const
+    {
+        return ident;
+    }
+    tag_type filling_matrix_tag(size_t type) const
+    {
+        return sign;
+    }
+    typename U1::charge total_quantum_numbers(BaseParameters & parms) const
+    {
+        return static_cast<int>(parms["u1_total_charge"]);
+    }
+    
+    tag_type get_operator_tag(std::string const & name, size_t type) const
+    {
+        if (name == "n")
+            return dens;
+        else if (name == "cdag")
+            return create;
+        else if (name == "c")
+            return destroy;
+        else
+            throw std::runtime_error("Operator not valid for this model.");
+        return 0;
+    }
+    
+    table_ptr operators_table() const
+    {
+        return tag_handler;
     }
     
     Measurements<Matrix, U1> measurements () const
     {
-        Measurements<Matrix, U1> meas;
-        meas.set_identity(tag_handler->get_op(ident));
+        Measurements<Matrix, U1> meas(std::vector<op_t>(1,this->identity_matrix(0)),
+                                      std::vector<op_t>(1,this->filling_matrix(0)));
         
         {
             mterm_t term;
             term.name = "Density";
             term.type = mterm_t::Local;
-            term.operators.push_back( std::make_pair(tag_handler->get_op(dens), false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(dens)), false) );
             
             meas.add_term(term);
         }
@@ -535,9 +575,8 @@ public:
             mterm_t term;
             term.name = "DensityCorrelation";
             term.type = mterm_t::HalfCorrelation;
-            term.fill_operator = tag_handler->get_op(ident);
-            term.operators.push_back( std::make_pair(tag_handler->get_op(dens), false) );
-            term.operators.push_back( std::make_pair(tag_handler->get_op(dens), false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(dens)), false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(dens)), false) );
             
             meas.add_term(term);
         }
@@ -545,27 +584,13 @@ public:
             mterm_t term;
             term.name = "OneBodyDM";
             term.type = mterm_t::HalfCorrelation;
-            term.fill_operator = tag_handler->get_op(sign);
-            term.operators.push_back( std::make_pair(tag_handler->get_op(create), true) );
-            term.operators.push_back( std::make_pair(tag_handler->get_op(destroy), true) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(create)), true) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(destroy)), true) );
             
             meas.add_term(term);
         }
         
         return meas;
-    }
-    
-    op_t get_op(std::string const & op) const
-    {
-        if (op == "n")
-            return tag_handler->get_op(dens);
-        else if (op == "cdag")
-            return tag_handler->get_op(create);
-        else if (op == "c")
-            return tag_handler->get_op(destroy);
-        else
-            throw std::runtime_error("Operator not valid for this model.");
-        return op_t();
     }
     
 private:
@@ -574,25 +599,32 @@ private:
     boost::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
     tag_type ident;
     tag_type create, destroy, sign, dens;
-
-    std::vector<hamtagterm_t> terms;
 };
 
-
 /* ****************** FERMI HUBBARD */
+// MD: this model is disabled, because the new Model interface only works for
+// Hamiltonians with a single filling_matrix between bond terms.
+// For moment the user should jsut use the ALPS Model, which provides the same.
+// TODO: Two possibilities
+// 1) rewrite the Hamiltonian to have different Jordan-Wiger trasform with only
+//    one filling matrix
+// 2) unroll the filling matrices explicitly in the bond terms
+/*
 template<class Matrix>
-class FermiHubbardU1 : public Model<Matrix, U1>
+class FermiHubbardU1 : public model_impl<Matrix, U1> base
 {
 public:
-    typedef Hamiltonian<Matrix, U1> ham;
-    typedef typename ham::hamterm_t hamterm_t;
-    typedef typename ham::op_t op_t;
-    typedef typename ham::hamtagterm_t hamtagterm_t;
-    typedef Measurement_Term<Matrix, U1> mterm_t;
-    typedef typename ham::table_type table_type;
-    typedef typename ham::table_ptr table_ptr;
-    typedef typename table_type::tag_type tag_type;
-    typedef typename Matrix::value_type value_type;
+    typedef model_impl<Matrix, U1> base;
+    
+    typedef typename base::table_type table_type;
+    typedef typename base::table_ptr table_ptr;
+    typedef typename base::tag_type tag_type;
+    
+    typedef typename base::term_descriptor term_descriptor;
+    typedef typename base::terms_type terms_type;
+    typedef typename base::op_t op_t;
+    typedef typename base::measurements_type measurements_type;
+    typedef typename measurements_type::mterm_t mterm_t;
     
     FermiHubbardU1(const Lattice& lat, BaseParameters & parms)
     : tag_handler(new table_type())
@@ -635,10 +667,6 @@ public:
         
         gemm(sign_up_op, sign_down_op, fill_op);
 
-        /**********************************************************************/
-        /*** Create operator tag table ****************************************/
-        /**********************************************************************/
-        
 #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
         
         REGISTER(ident,         tag_detail::bosonic)
@@ -654,17 +682,16 @@ public:
         REGISTER(sign_down,     tag_detail::bosonic)
         
 #undef REGISTER
-        /**********************************************************************/
         
         double U = parms["U"];
         op_t tmp;
         for (int p=0; p<lat.size(); ++p) {
             { // U term
-                hamtagterm_t term;
-                term.fill_operator = ident;
-                term.scale = U;
-                term.operators.push_back( std::make_pair(p, doubly_occ) );
-                terms.push_back(term);
+                term_descriptor term;
+                term.is_fermionic = false;
+                term.coeff = U;
+                term.push_back( boost::make_tuple(p, doubly_occ) );
+                this->terms_.push_back(term);
             }
             
             std::vector<int> neighs = lat.forward(p);
@@ -674,103 +701,111 @@ public:
                 double ti = get_t(parms,
                                   lat.get_prop<int>("type", p, *hopto));
                 { // t*cdag_up*c_up
-                    hamtagterm_t term;
-                    term.with_sign = true;
+                    term_descriptor term;
+                    term.is_fermionic = true;
                     term.fill_operator = sign_up;
 
                     // Note inverse notation because of notation in operator.
                     std::pair<tag_type, value_type> prod = tag_handler->get_product_tag(sign_up, create_up);
-                    term.scale = -ti * prod.second;
-                    term.operators.push_back( std::make_pair(p, prod.first) );
-                    term.operators.push_back( std::make_pair(*hopto, destroy_up) );
-                    terms.push_back(term);
+                    term.coeff = -ti * prod.second;
+                    term.push_back( boost::make_tuple(p, prod.first) );
+                    term.push_back( boost::make_tuple(*hopto, destroy_up) );
+                    this->terms_.push_back(term);
                 }
                 { // t*c_up*cdag_up
-                    hamtagterm_t term;
-                    term.with_sign = true;
+                    term_descriptor term;
+                    term.is_fermionic = true;
                     term.fill_operator = sign_up;
 
                     // Note inverse notation because of notation in operator.
                     std::pair<tag_type, value_type> prod = tag_handler->get_product_tag(destroy_up, sign_up);
-                    term.scale = -ti * prod.second;
-                    term.operators.push_back( std::make_pair(p, prod.first) );
-                    term.operators.push_back( std::make_pair(*hopto, create_up) );
-                    terms.push_back(term);
+                    term.coeff = -ti * prod.second;
+                    term.push_back( boost::make_tuple(p, prod.first) );
+                    term.push_back( boost::make_tuple(*hopto, create_up) );
+                    this->terms_.push_back(term);
                 }
                 { // t*cdag_down*c_down
-                    hamtagterm_t term;
-                    term.with_sign = true;
+                    term_descriptor term;
+                    term.is_fermionic = true;
                     term.fill_operator = sign_down;
 
                     // Note inverse notation because of notation in operator.
                     std::pair<tag_type, value_type> prod = tag_handler->get_product_tag(sign_down, create_down);
-                    term.scale = -ti * prod.second;
-                    term.operators.push_back( std::make_pair(p, prod.first) );
-                    term.operators.push_back( std::make_pair(*hopto, destroy_down) );
-                    terms.push_back(term);
+                    term.coeff = -ti * prod.second;
+                    term.push_back( boost::make_tuple(p, prod.first) );
+                    term.push_back( boost::make_tuple(*hopto, destroy_down) );
+                    this->terms_.push_back(term);
                 }
                 { // t*c_down*cdag_down
-                    hamtagterm_t term;
-                    term.with_sign = true;
+                    term_descriptor term;
+                    term.is_fermionic = true;
                     term.fill_operator = sign_down;
 
                     // Note inverse notation because of notation in operator.
                     std::pair<tag_type, value_type> prod = tag_handler->get_product_tag(destroy_down, sign_down);
-                    term.scale = -ti * prod.second;
-                    term.operators.push_back( std::make_pair(p, prod.first) );
-                    term.operators.push_back( std::make_pair(*hopto, create_down) );
-                    terms.push_back(term);
+                    term.coeff = -ti * prod.second;
+                    term.push_back( boost::make_tuple(p, prod.first) );
+                    term.push_back( boost::make_tuple(*hopto, create_down) );
+                    this->terms_.push_back(term);
                 }
             }
         }
     }
     
-    Index<U1> get_phys() const
+    Index<U1> const& phys_dim(size_t type) const
     {
         return phys;
     }
-    
-    Hamiltonian<Matrix, U1> H () const
+    tag_type identity_matrix_tag(size_t type) const
     {
-        std::vector<hamterm_t> terms_ops;
-        return ham(phys, tag_handler->get_op(ident), terms_ops, ident, terms, tag_handler);
+        return ident;
+    }
+    tag_type filling_matrix_tag(size_t type) const
+    {
+        return fill;
+    }
+    typename U1::charge total_quantum_numbers(BaseParameters & parms) const
+    {
+        return static_cast<int>(parms["u1_total_charge"]);
+    }
+    
+    tag_type get_operator_tag(std::string const & name, size_t type) const
+    {
+        if (name == "n_up")
+            return count_up;
+        else if (name == "n_down")
+            return count_down;
+        else if (name == "cdag_up")
+            return create_up;
+        else if (name == "cdag_down")
+            return create_down;
+        else if (name == "c_up")
+            return destroy_up;
+        else if (name == "c_down")
+            return destroy_down;
+        else if (name == "id")
+            return ident;
+        else if (name == "fill")
+            return fill;
+        else
+            throw std::runtime_error("Operator not valid for this model.");
+        return 0;
+    }
+    
+    table_ptr operators_table() const
+    {
+        return tag_handler;
     }
     
     Measurements<Matrix, U1> measurements () const
     {
         return Measurements<Matrix, U1>();
     }
-
-    op_t get_op(std::string const & op) const
-    {
-        if (op == "n_up")
-            return tag_handler->get_op(count_up);
-        else if (op == "n_down")
-            return tag_handler->get_op(count_down);
-        else if (op == "cdag_up")
-            return tag_handler->get_op(create_up);
-        else if (op == "cdag_down")
-            return tag_handler->get_op(create_down);
-        else if (op == "c_up")
-            return tag_handler->get_op(destroy_up);
-        else if (op == "c_down")
-            return tag_handler->get_op(destroy_down);
-        else if (op == "id")
-            return tag_handler->get_op(ident);
-        else if (op == "fill")
-            return tag_handler->get_op(fill);
-        else
-            throw std::runtime_error("Operator not valid for this model.");
-        return op_t();
-    }
-
     
 private:
     Index<U1> phys;
     tag_type create_up, create_down, destroy_up, destroy_down, count_up, count_down, doubly_occ,
              sign_up, sign_down, fill, ident;
-
-    std::vector<hamtagterm_t> terms;
 
     boost::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
     
@@ -781,5 +816,6 @@ private:
         return (parms.is_set(key.str())) ? parms[key.str()] : parms["t"];
     }
 };
+*/
 
 #endif

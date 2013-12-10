@@ -69,15 +69,16 @@ template <class Matrix, class SymmGroup>
 class nearest_neighbors_evolver {
 public:
     nearest_neighbors_evolver(DmrgParameters * parms_, MPS<Matrix, SymmGroup> * mps_,
-                              Lattice_ptr lat_, Hamiltonian<Matrix, SymmGroup> const& H,
+                              Lattice const& lattice_, Model<Matrix, SymmGroup> const& model_,
                               int init_sweep=0)
     : parms(parms_)
     , mps(mps_)
-    , lat(lat_)
-    , phys(H.get_phys())
+    , lattice(lattice_) // shallow copy
+    , model(model_) // shallow copy
+    , L(lattice.size())
     , sweep_(init_sweep)
     , trotter_order(parse_trotter_order((*parms)["te_order"]))
-    , block_terms(hamil_to_blocks(H, lat->size()))
+    , block_terms(hamil_to_blocks(lattice, model))
     {
         maquis::cout << "Using nearest-neighbors time evolution." << std::endl;
         maquis::cout << "Using " << trotter_order << std::endl;
@@ -197,8 +198,6 @@ public:
 
     void prepare_te_terms()
     {
-        size_t L = lat->size();
-        
         double dt = (*parms)["dt"];
         typename Matrix::value_type I;
         if (sweep_ < (*parms)["nsweeps_img"])
@@ -212,10 +211,12 @@ public:
             Uterms[i].clear();
             Uterms[i].pfirst = gates_coeff[i].first;
             for (size_t p=gates_coeff[i].first; p<L-1; p+=2){
+                int type1 = lattice.get_prop<int>("type", p);
+                int type2 = lattice.get_prop<int>("type", p+1);
                 if ((*parms)["expm_method"] == "heev")
-                    Uterms[i].add_term(p, op_exp_hermitian(phys*phys, block_terms[p], gates_coeff[i].second*alpha));
+                    Uterms[i].add_term(p, op_exp_hermitian(model.phys_dim(type1)*model.phys_dim(type2), block_terms[p], gates_coeff[i].second*alpha));
                 else
-                    Uterms[i].add_term(p, op_exp(phys*phys, block_terms[p], gates_coeff[i].second*alpha));
+                    Uterms[i].add_term(p, op_exp(model.phys_dim(type1)*model.phys_dim(type2), block_terms[p], gates_coeff[i].second*alpha));
             }
         }
     }
@@ -378,8 +379,9 @@ private:
 private:
     DmrgParameters * parms;
     MPS<Matrix, SymmGroup> * mps;
-    Lattice_ptr lat;
-    Index<SymmGroup> phys;
+    Lattice lattice;
+    Model<Matrix, SymmGroup> model;
+    size_t L;
     int sweep_;
     
     results_collector iteration_results_;

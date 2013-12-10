@@ -6,23 +6,17 @@
  *
  *****************************************************************************/
 
-#include "factory_impl.h"
+#include "model_factory_symm.h"
 
 #include "dmrg/models/coded/factory_none.hpp"
-#include "dmrg/models/continuum/factory_none.hpp"
+//#include "dmrg/models/continuum/factory_none.hpp"
 
 typedef TrivialGroup grp;
 
 #if defined USE_AMBIENT
-impl_init_model(pmatrix, grp)
-impl_init_model(cpmatrix, grp)
+impl_model_factory(pmatrix, grp)
+impl_model_factory(cpmatrix, grp)
 #else
-impl_init_model(matrix, grp)
-impl_init_model(cmatrix, grp)
+impl_model_factory(matrix, grp)
+impl_model_factory(cmatrix, grp)
 #endif
-
-template <>
-TrivialGroup::charge init_qn<TrivialGroup> (BaseParameters & model)
-{
-    return TrivialGroup::IdentityCharge;
-}

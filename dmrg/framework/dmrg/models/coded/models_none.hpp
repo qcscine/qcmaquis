@@ -17,16 +17,21 @@
 
 /* ****************** BOSE-HUBBARD */
 template<class Matrix>
-class BoseHubbardNone : public Model<Matrix, TrivialGroup>
+class BoseHubbardNone : public model_impl<Matrix, TrivialGroup>
 {
-    typedef Hamiltonian<Matrix, TrivialGroup> ham;
-    typedef typename ham::hamterm_t hamterm_t;
-    typedef typename ham::hamtagterm_t hamtagterm_t;
-    typedef Measurement_Term<Matrix, TrivialGroup> mterm_t;
-    typedef typename ham::op_t op_t;
-    typedef typename ham::table_type table_type;
-    typedef typename ham::table_ptr table_ptr;
-    typedef typename table_type::tag_type tag_type;
+    typedef model_impl<Matrix, TrivialGroup> base;
+
+    typedef typename base::table_type table_type;
+    typedef typename base::table_ptr table_ptr;
+    typedef typename base::tag_type tag_type;
+    
+    typedef typename base::term_descriptor term_descriptor;
+    typedef typename base::terms_type terms_type;
+    typedef typename base::op_t op_t;
+    typedef typename base::measurements_type measurements_type;
+    typedef typename measurements_type::mterm_t mterm_t;
+    
+    typedef typename base::size_t size_t;
     typedef typename Matrix::value_type value_type;
     
 public:
@@ -82,89 +87,89 @@ public:
         for (int p=0; p<lat.size(); ++p) {
             /* interaction */
             if (U != 0.) {
-                hamtagterm_t term;
-                term.with_sign = false;
-                term.fill_operator = ident;
-                term.scale = U/2.;
-                term.operators.push_back( std::make_pair(p, interaction) );
-                terms.push_back(term);
+                term_descriptor term;
+                term.is_fermionic = false;
+                term.coeff = U/2.;
+                term.push_back( boost::make_tuple(p, interaction) );
+                this->terms_.push_back(term);
             }
             
             std::vector<int> neighs = lat.forward(p);
             for (int n=0; n<neighs.size(); ++n) {
                 /* hopping */
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident;
-                    term.scale = -t;
-                    term.operators.push_back( std::make_pair(p, create) );
-                    term.operators.push_back( std::make_pair(neighs[n], destroy) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = -t;
+                    term.push_back( boost::make_tuple(p, create) );
+                    term.push_back( boost::make_tuple(neighs[n], destroy) );
+                    this->terms_.push_back(term);
                 }
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident;
-                    term.scale = -t;
-                    term.operators.push_back( std::make_pair(p, destroy) );
-                    term.operators.push_back( std::make_pair(neighs[n], create) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = -t;
+                    term.push_back( boost::make_tuple(p, destroy) );
+                    term.push_back( boost::make_tuple(neighs[n], create) );
+                    this->terms_.push_back(term);
                 }
                 /* nearest-neighborn interaction */
                 if (V != 0.){
-                    hamtagterm_t term;
-                    term.fill_operator = ident;
-                    term.scale = V;
-                    term.operators.push_back( std::make_pair(p, count) );
-                    term.operators.push_back( std::make_pair(neighs[n], count) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = V;
+                    term.push_back( boost::make_tuple(p, count) );
+                    term.push_back( boost::make_tuple(neighs[n], count) );
+                    this->terms_.push_back(term);
                 }
             }
         }
         
     }
     
-    Index<TrivialGroup> get_phys() const
+    Index<TrivialGroup> const& phys_dim(size_t type) const
     {
         return phys;
     }
-    
-    Hamiltonian<Matrix, TrivialGroup> H () const
+    tag_type identity_matrix_tag(size_t type) const
     {
-        std::vector<hamterm_t> terms_ops;
-        return ham(phys, tag_handler->get_op(ident), terms_ops, ident, terms, tag_handler);
+        return ident;
+    }
+    tag_type filling_matrix_tag(size_t type) const
+    {
+        return identity_matrix_tag(type);
+    }
+    typename TrivialGroup::charge total_quantum_numbers(BaseParameters & parms) const
+    {
+        return TrivialGroup::IdentityCharge;
     }
     
-    Measurements<Matrix, TrivialGroup> measurements () const
+    
+   measurements_type measurements() const
     {
-        Measurements<Matrix, TrivialGroup> meas;
-        meas.set_identity(tag_handler->get_op(ident));
+        measurements_type meas(std::vector<op_t>(1, this->identity_matrix(0)),
+                               std::vector<op_t>(1, this->filling_matrix(0)));
         
         if (model["ENABLE_MEASURE[Density]"]) {
             mterm_t term;
-            term.fill_operator = tag_handler->get_op(ident);
             term.name = "Density";
             term.type = mterm_t::Average;
-            term.operators.push_back( std::make_pair(tag_handler->get_op(count), false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(count)), false) );
             
             meas.add_term(term);
         }
         if (model["ENABLE_MEASURE[Local density]"]) {
             mterm_t term;
-            term.fill_operator = tag_handler->get_op(ident);
             term.name = "Local density";
             term.type = mterm_t::Local;
-            term.operators.push_back( std::make_pair(tag_handler->get_op(count), false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(count)), false) );
             
             meas.add_term(term);
         }
         
         if (model["ENABLE_MEASURE[Onebody density matrix]"]) {
             mterm_t term;
-            term.fill_operator = tag_handler->get_op(ident);
             term.name = "Onebody density matrix";
             term.type = mterm_t::HalfCorrelation;
-            term.operators.push_back( std::make_pair(tag_handler->get_op(create), false) );
-            term.operators.push_back( std::make_pair(tag_handler->get_op(destroy), false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(create)), false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(destroy)), false) );
             
             meas.add_term(term);
         }
@@ -172,29 +177,31 @@ public:
         return meas;
     }
     
-    op_t get_op(std::string const & op) const
+    tag_type get_operator_tag(std::string const & name, size_t type) const
     {
-        if (op == "n")
-            return tag_handler->get_op(count);
-        else if (op == "bdag")
-            return tag_handler->get_op(create);
-        else if (op == "b")
-            return tag_handler->get_op(destroy);
+        if (name == "n")
+            return count;
+        else if (name == "bdag")
+            return create;
+        else if (name == "b")
+            return destroy;
         else
             throw std::runtime_error("Operator not valid for this model.");
-        return op_t();
+        return 0;
     }
     
+    table_ptr operators_table() const
+    {
+        return tag_handler;
+    }
+
     
 private:
     BaseParameters & model;
     Index<TrivialGroup> phys;
 
-    boost::shared_ptr<TagHandler<Matrix, TrivialGroup> > tag_handler;
+    table_ptr tag_handler;
     tag_type ident, create, destroy, count, interaction;
-
-    
-    std::vector<hamtagterm_t> terms;
 };
 
 

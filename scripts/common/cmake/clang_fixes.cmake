@@ -7,3 +7,6 @@ set(${COMPILER_FLAGS_VAR} "-Wno-dangling-else ${${COMPILER_FLAGS_VAR}}")
 
 ## fix compilation of Boost
 set(${COMPILER_FLAGS_VAR} "-ftemplate-depth-256 ${${COMPILER_FLAGS_VAR}}")
+
+## fix problems with libc++
+set(${COMPILER_FLAGS_VAR} "-stdlib=libstdc++ ${${COMPILER_FLAGS_VAR}}")

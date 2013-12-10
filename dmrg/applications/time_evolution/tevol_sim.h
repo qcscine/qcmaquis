@@ -72,7 +72,7 @@ public:
         CHECK_MULTIPLICITY(update_each)
         #undef CHECK_MULTIPLICITY
         
-        TimeEvolver evolver(&parms, &mps, lat, phys_model->H(), init_sweep);
+        TimeEvolver evolver(&parms, &mps, lat, phys_model, init_sweep);
         
         int n = nsweeps / nsteps;
         for (int i=0; i < n; ++i) {
@@ -86,7 +86,7 @@ public:
                 model = model.get_at_index("t", sweep, &mc);
                 if (mc > 0 || pc > 0) {
                     this->model_init(sweep);
-                    evolver = TimeEvolver(&parms, &mps, lat, phys_model->H(), sweep);
+                    evolver = TimeEvolver(&parms, &mps, lat, phys_model, sweep);
                 }
             } else if (sweep == nsweeps_img) {
                     // since this is just a change in the time step, there is

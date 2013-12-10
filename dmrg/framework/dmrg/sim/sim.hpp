@@ -7,6 +7,8 @@
  *
  *****************************************************************************/
 
+#include "dmrg/models/measure_on_mps.h"
+
 #include <boost/algorithm/string.hpp>
 
 template <class Matrix, class SymmGroup>
@@ -73,9 +75,9 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
 {
-    model_parser<Matrix, SymmGroup>(parms["lattice_library"], parms["model_library"], model, lat, phys_model);
-    initc = phys_model->initc(model);
-    measurements = phys_model->measurements();
+    lat = Lattice(parms, model);
+    phys_model = Model<Matrix, SymmGroup>(lat, parms, model);
+    measurements = phys_model.measurements();
     if (opt_sweep)
         parse_overlaps(model, opt_sweep.get(), measurements);
     else
@@ -99,11 +101,7 @@ void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
     }
     else
     {  
-        // Hamiltonian only needed here, runs out of scope and gets destroyed
-        Hamiltonian<Matrix, SymmGroup> H = phys_model->H();
-        phys = H.get_phys();
-
-        mpo = make_mpo(lat->size(), H, model);
+        mpo = make_mpo(lat, phys_model, model);
         mpoc = mpo;
 
         if (parms["use_compressed"] > 0)
@@ -117,7 +115,6 @@ void sim<Matrix, SymmGroup>::mps_init()
     #ifdef AMBIENT_TRACKING
     ambient::overseer::log::region("sim::mps_init");
     #endif
-    assert(lat.get() != NULL);
     
     if (restore) {
         load(chkpfile, mps);
@@ -125,15 +122,12 @@ void sim<Matrix, SymmGroup>::mps_init()
         maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
         load(parms["initfile"].str(), mps);
     } else {
-        mps = MPS<Matrix, SymmGroup>(lat->size(),
-                                     parms["init_bond_dimension"],
-                                     phys, initc,
-                                     *(phys_model->initializer(parms, model)));
+        mps = MPS<Matrix, SymmGroup>(lat.size(), *(phys_model.initializer(lat, parms, model)));
         #ifdef AMBIENT_TRACKING
         for(int i = 0; i < mps.length(); ++i) ambient_track_array(mps, i);
         #endif
     }
-    assert(mps.length() == lat->size());
+    assert(mps.length() == lat.size());
 }
 
 
@@ -184,7 +178,7 @@ template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure(std::string archive_path, Measurements<Matrix, SymmGroup> const& meas)
 {
     maquis::cout << "Measurements." << std::endl;
-    measure_on_mps(mps, *lat, meas, rfile, model, archive_path);
+    measure_on_mps(mps, lat, meas, rfile, archive_path);
     
     // TODO: move into special measurement
     std::vector<double> entropies, renyi2;

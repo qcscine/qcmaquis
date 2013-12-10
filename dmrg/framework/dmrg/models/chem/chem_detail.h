@@ -10,27 +10,6 @@
 #ifndef QC_CHEM_DETAIL_H
 #define QC_CHEM_DETAIL_H
 
-struct HamiltonianTraits {
-
-    template <class M, class S>
-    struct hamterm_t { typedef typename Hamiltonian<M, S>::hamterm_t type; };
-
-    template <class M, class S>
-    struct hamtagterm_t { typedef typename Hamiltonian<M, S>::hamtagterm_t type; };
-
-    template <class M, class S>
-    struct op_t { typedef typename Hamiltonian<M, S>::op_t type; };
-
-    template <class M, class S>
-    struct tag_type { typedef typename OPTable<M, S>::tag_type type; };
-
-    template <class M, class S>
-    struct op_pair_t { typedef typename generate_mpo::Operator_Term<M, S>::op_pair_t type; };
-
-    template <class M, class S>
-    struct op_tag_pair_t { typedef typename generate_mpo::Operator_Tag_Term<M, S>::op_pair_t type; };
-};
-
 namespace chem_detail {
 
     class IndexTuple : public NU1Charge<4>
@@ -85,11 +64,12 @@ namespace chem_detail {
     };
 
     template <typename M, class S>
-    class ChemHelper : public HamiltonianTraits
+    class ChemHelper
     {
     public:
         typedef typename M::value_type value_type;
-        typedef typename tag_type<M, S>::type tag_type;
+        typedef ::term_descriptor<value_type> term_descriptor;
+        typedef typename TagHandler<M, S>::tag_type tag_type;
 
         ChemHelper(BaseParameters & parms, Lattice const & lat,
                    tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
@@ -112,44 +92,44 @@ namespace chem_detail {
             return idx_[m][pos];
         }
 
-        void commit_terms(std::vector<typename hamtagterm_t<M, S>::type> & tagterms) {
-            for (typename std::map<IndexTuple, typename hamtagterm_t<M, S>::type>::const_iterator it = two_terms.begin();
+        void commit_terms(std::vector<term_descriptor> & tagterms) {
+            for (typename std::map<IndexTuple, term_descriptor>::const_iterator it = two_terms.begin();
                     it != two_terms.end(); ++it)
                 tagterms.push_back(it->second);
 
-            for (typename std::map<TermTuple, typename hamtagterm_t<M, S>::type>::const_iterator it = three_terms.begin();
+            for (typename std::map<TermTuple, term_descriptor>::const_iterator it = three_terms.begin();
                     it != three_terms.end(); ++it)
                 tagterms.push_back(it->second);
         }
 
-        void add_term(std::vector<typename hamtagterm_t<M, S>::type> & tagterms,
+        void add_term(std::vector<term_descriptor> & tagterms,
                       value_type scale, int p1, int p2, tag_type op_1, tag_type op_2) {
 
-            typename hamtagterm_t<M, S>::type
+            term_descriptor
             term = TermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler);
             IndexTuple id(p1, p2, op_1, op_2);
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
             }
             else 
-                two_terms[id].scale += term.scale;
+                two_terms[id].coeff += term.coeff;
         }
 
-        void add_term(std::vector<typename hamtagterm_t<M, S>::type> & tagterms,
+        void add_term(std::vector<term_descriptor> & tagterms,
                       value_type scale, int s, int p1, int p2, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j) {
 
-            typename hamtagterm_t<M, S>::type
+            term_descriptor
             term = TermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler);
             TermTuple id(IndexTuple(s,s,p1,p2),IndexTuple(op_i,op_k,op_l,op_j));
             if (three_terms.count(id) == 0) {
                 three_terms[id] = term;
             }
             else
-                three_terms[id].scale += term.scale;
+                three_terms[id].coeff += term.coeff;
     
         }
 
-        void add_term(std::vector<typename hamtagterm_t<M, S>::type> & tagterms,
+        void add_term(std::vector<term_descriptor> & tagterms,
                       int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
         {
             // Collapse terms with identical operators and different scales into one term
@@ -162,11 +142,11 @@ namespace chem_detail {
 
                 if (self > twin) {
                 
-                    typename hamtagterm_t<M, S>::type
+                    term_descriptor
                     term = TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
                                                    op_i, op_k, op_l, op_j, tag_handler);
 
-                    term.scale += value_type(sign(twin)) * coefficients[align(twin)];
+                    term.coeff += value_type(sign(twin)) * coefficients[align(twin)];
 
                     tagterms.push_back(term);
                 }
@@ -182,7 +162,7 @@ namespace chem_detail {
         void parse_integrals(BaseParameters & parms, Lattice const & lat) {
 
             // load ordering and determine inverse ordering
-            order = parms["orbital_order"];
+            order = parms["orbital_order"].template as<std::vector<int> >();
             if (order.size() != lat.size())
                 throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
 
@@ -191,9 +171,9 @@ namespace chem_detail {
             for (int p = 0; p < order.size(); ++p)
                 inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
 
-            std::copy(order.begin(), order.end(), std::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
+            std::copy(order.begin(), order.end(), std::ostream_iterator<Lattice::pos_t>(std::cout, " "));
             maquis::cout << std::endl;
-            std::copy(inv_order.begin(), inv_order.end(), std::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
+            std::copy(inv_order.begin(), inv_order.end(), std::ostream_iterator<Lattice::pos_t>(std::cout, " "));
             maquis::cout << std::endl;
 
             // ********************************************************************
@@ -253,8 +233,8 @@ namespace chem_detail {
 
         std::map<IndexTuple, value_type> coefficients;
 
-        std::map<TermTuple, typename hamtagterm_t<M, S>::type> three_terms;
-        std::map<IndexTuple, typename hamtagterm_t<M, S>::type> two_terms;
+        std::map<TermTuple, term_descriptor> three_terms;
+        std::map<IndexTuple, term_descriptor> two_terms;
 
     };
 }

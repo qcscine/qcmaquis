@@ -16,18 +16,20 @@
 template<class Matrix, class SymmGroup>
 struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
-    hf_mps_init(BaseParameters parms_, BaseParameters model_) : parms(parms_), model(model_) {}
+    hf_mps_init(BaseParameters parms_, BaseParameters model_,
+                std::vector<Index<SymmGroup> > const& phys_dims,
+                typename SymmGroup::charge right_end,
+                std::vector<int> const& site_type)
+    : parms(parms_), model(model_)
+    , di(parms, model, phys_dims, right_end, site_type)
+    {}
 
     typedef Lattice::pos_t pos_t;
     typedef std::size_t size_t;
 
-    void operator()(MPS<Matrix, SymmGroup> & mps,
-                    std::size_t Mmax,
-                    Index<SymmGroup> const & phys,
-                    typename SymmGroup::charge right_end)
+    void operator()(MPS<Matrix, SymmGroup> & mps)
     {
-        default_mps_init<Matrix, SymmGroup> di(model);
-        di.init_sectors(mps, 5, phys, right_end, true, 0);
+        di.init_sectors(mps, 5, true, 0);
 
         std::vector<std::size_t> hf_init = model["hf_occ"];
 
@@ -36,14 +38,14 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
             for (pos_t p = 0; p < mps.length(); ++p)
                 order[p] = p;
         else
-            order = model["orbital_order"];
+            order = model["orbital_order"].template as<std::vector<pos_t> >();
 
         std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
 
         if (hf_init.size() != mps.length())
             throw std::runtime_error("HF occupation vector length != MPS length\n");
 
-        std::vector<typename PGDecorator<SymmGroup>::irrep_t> irreps = parse_symm<SymmGroup>(mps.length(), model);
+        std::vector<typename SymmGroup::subcharge> irreps = parse_symm<SymmGroup>(mps.length(), model);
 
         typename SymmGroup::charge max_charge = SymmGroup::IdentityCharge;
         for (pos_t i = 0; i < mps.length(); ++i)
@@ -103,6 +105,8 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 
     BaseParameters parms;
     BaseParameters model;
+    
+    default_mps_init<Matrix, SymmGroup> di;
 };
 
 #endif

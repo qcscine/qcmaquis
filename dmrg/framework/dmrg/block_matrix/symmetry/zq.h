@@ -77,6 +77,7 @@ class Zq
 {
 public:
     typedef ZqCharge<Q> charge;
+    typedef int subcharge; // Used if charge is site-dependent
     
     static const charge IdentityCharge;
     static const bool finite = true;

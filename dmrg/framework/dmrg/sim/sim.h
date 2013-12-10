@@ -38,7 +38,9 @@
 #include "dmrg/utils/time_stopper.h"
 #include "utils/timings.h"
 
-#include "dmrg/models/factory.h"
+#include "dmrg/models/lattice.h"
+#include "dmrg/models/model.h"
+#include "dmrg/models/measurements.h"
 
 template <class Matrix, class SymmGroup>
 class sim {
@@ -63,7 +65,7 @@ protected:
 protected:
     DmrgParameters parms;
     ModelParameters model;
-        
+    
     int init_sweep, init_site;
     bool restore;
     bool dns;
@@ -72,10 +74,8 @@ protected:
     
     time_stopper stop_callback;
     
-    Lattice_ptr lat;
-    typename model_traits<Matrix, SymmGroup>::model_ptr phys_model;
-    Index<SymmGroup> phys;
-    typename SymmGroup::charge initc;
+    Lattice lat;
+    Model<Matrix, SymmGroup> phys_model;
     MPS<Matrix, SymmGroup> mps;
     MPO<Matrix, SymmGroup> mpo, mpoc;
     Measurements<Matrix, SymmGroup> measurements;

@@ -24,6 +24,7 @@ class TrivialGroup
 {
 public:
 	typedef enum { Plus } charge;
+    typedef int subcharge; // Used if charge is site_dependent
 	static const charge IdentityCharge = Plus;
     static const bool finite = true;
     

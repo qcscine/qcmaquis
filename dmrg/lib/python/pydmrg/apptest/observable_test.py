@@ -78,6 +78,7 @@ class reference_file(object):
         self.tolerance      = float(tolerance)
         self.reference_file = str(file)
         self.remove_equal_indexes = bool(remove_equal_indexes)
+        self.eps = np.sqrt(np.finfo(float).eps)
         if load_type == 'spectrum':
             self.loader = load_spectrum_observable
         elif load_type == 'iterations':
@@ -90,7 +91,8 @@ class reference_file(object):
         robs = self.loader(self.reference_file, self.observable, self.remove_equal_indexes)
         for ty, ry in zip(tobs.y, robs.y):
             for tval, rval in zip( np.atleast_1d(ty), np.atleast_1d(ry) ):
-                if np.any( np.array(abs(tval-rval)) / rval > self.tolerance ):
+                if np.any(np.all( (abs(np.array(tval-rval) / rval) > self.tolerance, abs(np.array(tval-rval)) > self.eps), axis=0 )):
+                    print 'diff is:', abs(np.array(tval-rval) / rval)
                     raise ObservableNotMatch(self.observable, tval, rval, self.tolerance)
     
     def __str__(self):
@@ -101,6 +103,7 @@ class reference_value(object):
         self.observable = str(observable)
         self.value      = np.atleast_1d(value)
         self.tolerance  = float(tolerance)
+        self.eps = np.sqrt(np.finfo(float).eps)
         if load_type == 'spectrum':
             self.loader = load_spectrum_observable
         elif load_type == 'iterations':
@@ -111,7 +114,7 @@ class reference_value(object):
     def __call__(self, test_file):
         obs = self.loader(test_file, self.observable)
         for tval, rval in zip(np.atleast_1d(obs.y[0]), self.value):
-            if abs(tval-rval) / rval > self.tolerance:
+            if abs((tval-rval) / rval) > self.tolerance and abs(tval-rval) > self.eps:
                 raise ObservableNotMatch(self.observable, tval, rval, self.tolerance)
     
     def __str__(self):

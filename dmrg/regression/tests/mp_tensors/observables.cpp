@@ -20,6 +20,7 @@ using std::endl;
 #include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/models/generate_mpo.hpp"
+#include "dmrg/models/coded/lattice.hpp"
 
 
 typedef U1 SymmGroup;
@@ -28,7 +29,11 @@ typedef alps::numeric::matrix<double> matrix;
 double measure_local_expval(MPS<matrix, SymmGroup> const & mps, block_matrix<matrix, SymmGroup> const & ident,
                             block_matrix<matrix, SymmGroup> const & op, size_t pos)
 {
-    generate_mpo::MPOMaker<matrix, SymmGroup> mpom(mps.length(), ident);
+    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
+    boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
+    Lattice lattice(lat_ptr);
+    
+    generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, op_vec(1,ident), op_vec(1,ident));
     generate_mpo::Operator_Term<matrix, SymmGroup> term;
     term.operators.push_back( std::make_pair(pos, op) );
     term.fill_operator = ident;
@@ -72,7 +77,9 @@ BOOST_AUTO_TEST_CASE( obs_bosons_nmax2 )
     int M = 20;
     int L = 16;
 
-    ModelParameters parms;
+    DmrgParameters parms;
+    ModelParameters model_parms;
+    parms.set("max_bond_dimension", M);
     
     // Bosons with Nmax=2
     Index<SymmGroup> phys;
@@ -87,10 +94,10 @@ BOOST_AUTO_TEST_CASE( obs_bosons_nmax2 )
     
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
     
-    default_mps_init<matrix, SymmGroup> initializer(parms);
+    default_mps_init<matrix, SymmGroup> initializer(parms, model_parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
     
     MPS<matrix,SymmGroup> mps;
-    mps.resize(L); initializer(mps, M, phys, initc);
+    mps.resize(L); initializer(mps);
     mps.normalize_left();
     
     { // measure density (at some positions)

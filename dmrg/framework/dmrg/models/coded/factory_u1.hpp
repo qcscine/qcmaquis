@@ -7,40 +7,29 @@
  *****************************************************************************/
 
 #include "dmrg/models/coded/models_u1.hpp"
-#include "dmrg/models/coded/models_bela.hpp"
+//#include "dmrg/models/coded/models_bela.hpp"
 
 template<class Matrix>
-struct model_factory<Matrix, U1> {
-    static typename model_traits<Matrix, U1>::model_ptr parse
-    (Lattice const & lattice, BaseParameters & model)
+struct coded_model_factory<Matrix, U1> {
+    static boost::shared_ptr<model_impl<Matrix, U1> > parse
+    (Lattice const& lattice, BaseParameters & model)
     {
+        typedef boost::shared_ptr<model_impl<Matrix, U1> > impl_ptr;
         if (model["MODEL"] == std::string("heisenberg"))
-            return typename model_traits<Matrix, U1>::model_ptr(
-                        new Heisenberg<Matrix>(lattice, model["Jxy"], model["Jz"])
-                   );
+            return impl_ptr( new Heisenberg<Matrix>(lattice, model["Jxy"], model["Jz"]) );
         else if (model["MODEL"] == std::string("HCB"))
-            return typename model_traits<Matrix, U1>::model_ptr(
-                        new HCB<Matrix>(lattice)
-                   );
+            return impl_ptr( new HCB<Matrix>(lattice) );
         else if (model["MODEL"] == std::string("boson Hubbard"))
-            return typename model_traits<Matrix, U1>::model_ptr(
-                        new BoseHubbard<Matrix>(lattice, model)
-                                                                );
-        else if (model["MODEL"] == std::string("fermion Hubbard"))
-            return typename model_traits<Matrix, U1>::model_ptr(
-                        new FermiHubbardU1<Matrix>(lattice, model)
-                                                                );
+            return impl_ptr( new BoseHubbard<Matrix>(lattice, model) );
+//        else if (model["MODEL"] == std::string("fermion Hubbard"))
+//            return impl_ptr( new FermiHubbardU1<Matrix>(lattice, model) );
         else if (model["MODEL"] == std::string("FreeFermions"))
-            return typename model_traits<Matrix, U1>::model_ptr(
-                        new FreeFermions<Matrix>(lattice, model["t"])
-                   );
-        else if (model["MODEL"] == std::string("bela_chiral"))
-            return typename model_traits<Matrix, U1>::model_ptr(
-                        new Chiral<Matrix>(lattice, model)
-                   );
+            return impl_ptr( new FreeFermions<Matrix>(lattice, model["t"]) );
+//        else if (model["MODEL"] == std::string("bela_chiral"))
+//            return impl_ptr( new Chiral<Matrix>(lattice, model) );
         else {
             throw std::runtime_error("Don't know this model!");
-            return typename model_traits<Matrix, U1>::model_ptr();
+            return impl_ptr();
         }
     }
 };

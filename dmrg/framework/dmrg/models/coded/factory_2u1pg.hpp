@@ -9,18 +9,21 @@
 #include "dmrg/models/chem/model_qc.h"
 
 template<class Matrix>
-struct model_factory<Matrix, TwoU1PG> {
-    static typename model_traits<Matrix, TwoU1PG>::model_ptr parse
+struct coded_model_factory<Matrix, TwoU1PG> {
+    static boost::shared_ptr<model_impl<Matrix, TwoU1PG> > parse
     (Lattice const & lattice, BaseParameters & model)
     {
-        if (model["MODEL"] == std::string("quantum_chemistry"))
-            return typename model_traits<Matrix, TwoU1PG>::model_ptr(
-                    new qc_model<Matrix, TwoU1PG>(lattice, model)
-                   );
+        typedef boost::shared_ptr<model_impl<Matrix, TwoU1PG> > impl_ptr;
+        if (model["MODEL"] == std::string("quantum_chemistry")) {
+            if (model["LATTICE"] == std::string("quantum_chemistry"))
+                throw std::runtime_error("Please use \"LATTICE = orbitals\" for quantum_chemistry\n");
+
+            return impl_ptr( new qc_model<Matrix, TwoU1PG>(lattice, model) );
+        }
 
         else {
-            throw std::runtime_error("Don't know this model!");
-            return typename model_traits<Matrix, TwoU1PG>::model_ptr();
+            throw std::runtime_error("Don't know this model!\n");
+            return impl_ptr();
         }
     }
 };

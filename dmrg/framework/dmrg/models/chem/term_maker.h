@@ -15,121 +15,115 @@ struct TermMaker {
 
     typedef typename Lattice::pos_t pos_t;
     typedef typename M::value_type value_type;
+    typedef ::term_descriptor<value_type> term_descriptor;
 
-    struct hamtagterm_t { typedef typename Hamiltonian<M, S>::hamtagterm_t type; };
+    typedef typename TagHandler<M, S>::tag_type tag_type;
+    typedef typename term_descriptor::value_type pos_op_t;
 
-    struct tag_type { typedef typename TagHandler<M, S>::tag_type type; };
-
-    struct op_tag_pair_t { typedef typename generate_mpo::Operator_Tag_Term<M, S>::op_pair_t type; };
-
-    static bool compare_tag(typename op_tag_pair_t::type const & p1,
-                            typename op_tag_pair_t::type const & p2)
+    static bool compare_tag(pos_op_t p1,
+                            pos_op_t p2)
     {
-        return p1.first < p2.first;
+        return boost::tuples::get<0>(p1) < boost::tuples::get<0>(p2);
     }
 
-    static typename hamtagterm_t::type two_term(bool sign, typename tag_type::type fill_op, value_type scale, pos_t i, pos_t j,
-                                     typename tag_type::type op1, typename tag_type::type op2,
+    static term_descriptor two_term(bool sign, tag_type fill_op, value_type scale, pos_t i, pos_t j,
+                                     tag_type op1, tag_type op2,
                                      boost::shared_ptr<TagHandler<M, S> > op_table)
     {
-        typename hamtagterm_t::type term;
-        term.with_sign = sign;
-        term.fill_operator = fill_op;
-        term.scale = scale;
-        term.operators.push_back(std::make_pair(i, op1));
-        term.operators.push_back(std::make_pair(j, op2));
+        term_descriptor term;
+        term.is_fermionic = sign;
+        term.coeff = scale;
+        term.push_back(boost::make_tuple(i, op1));
+        term.push_back(boost::make_tuple(j, op2));
         return term;
     }
 
-    static typename hamtagterm_t::type positional_two_term(bool sign, typename tag_type::type fill_op, value_type scale, pos_t i, pos_t j,
-                                     typename tag_type::type op1, typename tag_type::type op2,
+    static term_descriptor positional_two_term(bool sign, tag_type fill_op, value_type scale, pos_t i, pos_t j,
+                                     tag_type op1, tag_type op2,
                                      boost::shared_ptr<TagHandler<M, S> > op_table)
     {
-        typename hamtagterm_t::type term;
-        term.with_sign = sign;
-        term.fill_operator = fill_op;
-        term.scale = scale;
+        term_descriptor term;
+        term.is_fermionic = sign;
+        term.coeff = scale;
 
         //typename op_t::type tmp;
-        std::pair<typename tag_type::type, value_type> ptag;
+        std::pair<tag_type, value_type> ptag;
         if (i < j) {
             ptag = op_table->get_product_tag(fill_op, op1);
-            term.operators.push_back(std::make_pair(i, ptag.first));
-            term.operators.push_back(std::make_pair(j, op2));
-            term.scale *= ptag.second;
+            term.push_back(boost::make_tuple(i, ptag.first));
+            term.push_back(boost::make_tuple(j, op2));
+            term.coeff *= ptag.second;
         }
         else {
             ptag = op_table->get_product_tag(fill_op, op2);
-            term.operators.push_back(std::make_pair(i, op1));
-            term.operators.push_back(std::make_pair(j, ptag.first));
-            term.scale *= -ptag.second;
+            term.push_back(boost::make_tuple(i, op1));
+            term.push_back(boost::make_tuple(j, ptag.first));
+            term.coeff *= -ptag.second;
         }
         return term;
     }
 
-    static typename hamtagterm_t::type three_term(typename tag_type::type ident, typename tag_type::type fill_op,
+    static term_descriptor three_term(tag_type ident, tag_type fill_op,
                                      value_type scale, pos_t pb, pos_t p1, pos_t p2,
-                                     typename tag_type::type opb1, typename tag_type::type opb2,
-                                     typename tag_type::type op1,  typename tag_type::type op2,
+                                     tag_type opb1, tag_type opb2,
+                                     tag_type op1,  tag_type op2,
                                      boost::shared_ptr<TagHandler<M, S> > op_table)
     {
-        typename hamtagterm_t::type term;
-        term.with_sign = true;
-        term.fill_operator = fill_op;
-        term.scale = scale;
+        term_descriptor term;
+        term.is_fermionic = true;
+        term.coeff = scale;
 
-        typename tag_type::type tmp, boson_op;
-        std::pair<typename tag_type::type, value_type> ptag1, ptag2;
+        tag_type tmp, boson_op;
+        std::pair<tag_type, value_type> ptag1, ptag2;
 
         if ( (pb>p1 && pb<p2) || (pb>p2 && pb<p1) ) {
             // if the bosonic operator is in between
             // the fermionic operators, multiply with fill
             ptag1 = op_table->get_product_tag(fill_op, opb2);
-            term.scale *= ptag1.second;
+            term.coeff *= ptag1.second;
             ptag2 = op_table->get_product_tag(ptag1.first, opb1);
-            term.scale *= ptag2.second;
+            term.coeff *= ptag2.second;
             boson_op = ptag2.first;
         }
         else {
             ptag1 = op_table->get_product_tag(opb2, opb1);
             boson_op = ptag1.first;
-            term.scale *= ptag1.second; 
+            term.coeff *= ptag1.second; 
         }
         
         if (p1 < p2) {
             ptag1 = op_table->get_product_tag(fill_op, op1); 
             op1 = ptag1.first;
-            term.scale *= ptag1.second;
+            term.coeff *= ptag1.second;
         }
         else {
             ptag1 = op_table->get_product_tag(fill_op, op2); 
             op2 = ptag1.first;
-            term.scale *= -ptag1.second;
+            term.coeff *= -ptag1.second;
         }
 
-        std::vector<typename op_tag_pair_t::type> sterm;
-        sterm.push_back( std::make_pair(pb, boson_op) );
-        sterm.push_back( std::make_pair(p1, op1) );
-        sterm.push_back( std::make_pair(p2, op2) );
+        std::vector<pos_op_t> sterm;
+        sterm.push_back( boost::make_tuple(pb, boson_op) );
+        sterm.push_back( boost::make_tuple(p1, op1) );
+        sterm.push_back( boost::make_tuple(p2, op2) );
         std::sort(sterm.begin(), sterm.end(), compare_tag);
 
-        term.operators.push_back(sterm[0]);
-        term.operators.push_back(sterm[1]);
-        term.operators.push_back(sterm[2]);
+        term.push_back(sterm[0]);
+        term.push_back(sterm[1]);
+        term.push_back(sterm[2]);
 
         return term;
     }
 
-    static typename hamtagterm_t::type four_term(typename tag_type::type ident, typename tag_type::type fill_op,
+    static term_descriptor four_term(tag_type ident, tag_type fill_op,
                                 value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
-                                typename tag_type::type op_i, typename tag_type::type op_j,
-                                typename tag_type::type op_k, typename tag_type::type op_l,
+                                tag_type op_i, tag_type op_j,
+                                tag_type op_k, tag_type op_l,
                                 boost::shared_ptr<TagHandler<M, S> > op_table)
     {
-        typename hamtagterm_t::type term;
-        term.with_sign = true;
-        term.fill_operator = fill_op;
-        term.scale = scale;
+        term_descriptor term;
+        term.is_fermionic = true;
+        term.coeff = scale;
 
         // Simple O(n^2) algorithm to determine sign of permutation
         pos_t idx[] = { i,j,k,l };
@@ -138,28 +132,28 @@ struct TermMaker {
             for(pos_t c2 = c1+1; c2 < n; c2++)
                 if(idx[c1] > idx[c2]) inv_count++;
 
-        std::vector<typename op_tag_pair_t::type> sterm;
-        sterm.push_back(std::make_pair(i, op_i));
-        sterm.push_back(std::make_pair(j, op_j));
-        sterm.push_back(std::make_pair(k, op_k));
-        sterm.push_back(std::make_pair(l, op_l));
+        std::vector<pos_op_t> sterm;
+        sterm.push_back(boost::make_tuple(i, op_i));
+        sterm.push_back(boost::make_tuple(j, op_j));
+        sterm.push_back(boost::make_tuple(k, op_k));
+        sterm.push_back(boost::make_tuple(l, op_l));
         std::sort(sterm.begin(), sterm.end(), compare_tag);
 
-        std::pair<typename tag_type::type, value_type> ptag;
-        ptag = op_table->get_product_tag(fill_op, sterm[0].second);
-        sterm[0].second = ptag.first;
-        term.scale *= ptag.second;
-        ptag = op_table->get_product_tag(fill_op, sterm[2].second);
-        sterm[2].second = ptag.first;
-        term.scale *= ptag.second;
+        std::pair<tag_type, value_type> ptag;
+        ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[0]));
+        boost::tuples::get<1>(sterm[0]) = ptag.first;
+        term.coeff *= ptag.second;
+        ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[2]));
+        boost::tuples::get<1>(sterm[2]) = ptag.first;
+        term.coeff *= ptag.second;
         
         if (inv_count % 2)
-            term.scale = -term.scale;
+            term.coeff = -term.coeff;
 
-        term.operators.push_back(sterm[0]);
-        term.operators.push_back(sterm[1]);
-        term.operators.push_back(sterm[2]);
-        term.operators.push_back(sterm[3]);
+        term.push_back(sterm[0]);
+        term.push_back(sterm[1]);
+        term.push_back(sterm[2]);
+        term.push_back(sterm[3]);
         return term;
     }
 };

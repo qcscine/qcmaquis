@@ -28,7 +28,8 @@ typedef alps::numeric::matrix<double> matrix;
 #endif
 
 #include "dmrg/mp_tensors/mpo.h"
-#include "dmrg/models/factory.h"
+#include "dmrg/models/model.h"
+#include "dmrg/models/generate_mpo.hpp"
 
 #if defined(USE_TWOU1)
 typedef TwoU1 symm;
@@ -70,15 +71,12 @@ int main(int argc, char ** argv)
         
         
         /// Parsing model
-        boost::shared_ptr<Lattice> lattice;
-        boost::shared_ptr<Model<matrix, symm> > model;
-        model_parser<matrix, symm>(parms["lattice_library"], parms["model_library"], model_parms,
-                                   lattice, model);
+        Lattice lattice = Lattice(parms, model_parms);
+        Model<matrix, symm> model = Model<matrix, symm>(lattice, parms, model_parms);
         
-        Hamiltonian<matrix, symm> H = model->H();
-        MPO<matrix, symm> mpo = make_mpo(lattice->size(), H, model_parms);
+        MPO<matrix, symm> mpo = make_mpo(lattice, model, model_parms);
         
-        for (int p = 0; p < lattice->size(); ++p) {
+        for (int p = 0; p < lattice.size(); ++p) {
             std::ofstream ofs(std::string("mpo_stats."+boost::lexical_cast<std::string>(p)+".dat").c_str());
             for (int b1 = 0; b1 < mpo[p].row_dim(); ++b1) {
                 for (int b2 = 0; b2 < mpo[p].col_dim(); ++b2) {

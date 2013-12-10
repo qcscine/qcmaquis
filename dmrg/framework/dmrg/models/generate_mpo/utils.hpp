@@ -13,6 +13,7 @@
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 #include "dmrg/block_matrix/symmetry.h"
 
+#include "dmrg/models/op_handler.h"
 #include "dmrg/models/lattice.h"
 
 #include <string>
@@ -198,8 +199,10 @@ namespace generate_mpo
             r.push_back( get<1>(*it) );
         }
         
-        return make_pair(*max_element(l.begin(), l.end())+1,
-                         *max_element(r.begin(), r.end())+1);
+        size_t ldim=0, rdim=0;
+        if (l.size() > 0) ldim = *max_element(l.begin(), l.end())+1;
+        if (r.size() > 0) rdim = *max_element(r.begin(), r.end())+1;
+        return make_pair(ldim, rdim);
     }
     
     template<class Pair>
@@ -207,7 +210,14 @@ namespace generate_mpo
     {
         return p1.first < p2.first;
     }
-    
+
+    struct pos_tag_lt {
+        typedef boost::tuple<int, unsigned int> value_type;
+        inline bool operator() (value_type const& lhs, value_type const& rhs)
+        {
+            return (boost::get<0>(lhs) < boost::get<0>(rhs));
+        }
+    };
 }
 
 #endif

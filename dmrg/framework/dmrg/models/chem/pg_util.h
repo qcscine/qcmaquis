@@ -19,12 +19,12 @@
 #include "dmrg/models/op_handler.h"
 
 
+// TODO: rename to PGIndexConverter
 template <class SymmGroup>
 class PGDecorator
 {
 public:
-    typedef int irrep_t;
-    Index<SymmGroup> operator()(Index<SymmGroup> const & rhs, irrep_t irr)
+    Index<SymmGroup> operator()(Index<SymmGroup> const & rhs, int irr)
     {
        return rhs;
     }
@@ -34,8 +34,8 @@ template < >
 class  PGDecorator<TwoU1PG>
 {
 public:
-    typedef int irrep_t;
-    Index<TwoU1PG> operator()(Index<TwoU1PG> rhs, irrep_t irr)
+    typedef TwoU1PG::subcharge subcharge;
+    Index<TwoU1PG> operator()(Index<TwoU1PG> rhs, subcharge irr)
     {
         for(Index<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
             if ( (it->first[0] + it->first[1]) % 2 == 0)
@@ -51,8 +51,7 @@ template <class SymmGroup>
 class PGCharge
 {
 public:
-    typedef typename PGDecorator<SymmGroup>::irrep_t irrep_t;
-    void operator()(typename SymmGroup::charge & rhs, irrep_t irr)
+    void operator()(typename SymmGroup::charge & rhs, int irr)
     { }
 };
 
@@ -60,51 +59,27 @@ template < >
 class  PGCharge<TwoU1PG>
 {
 public:
-    typedef PGDecorator<TwoU1PG>::irrep_t irrep_t;
-    void operator()(TwoU1PG::charge & rhs, irrep_t irr)
+    typedef typename TwoU1PG::subcharge subcharge;
+    void operator()(typename TwoU1PG::charge & rhs, subcharge irr)
     {
         rhs[2] = irr;
     }
 };
 
 
-template <class Matrix, class SymmGroup>
-struct OPIrrep
-{
-    typedef typename PGDecorator<SymmGroup>::irrep_t irrep_t;
-    block_matrix<Matrix, SymmGroup> operator()(block_matrix<Matrix, SymmGroup> const & rhs, irrep_t irrep)
-    {
-        return rhs;
-    }
-};
-
-template <class Matrix>
-struct OPIrrep<Matrix, TwoU1PG>
-{
-    typedef typename PGDecorator<TwoU1PG>::irrep_t irrep_t;
-    block_matrix<Matrix, TwoU1PG> operator()(block_matrix<Matrix, TwoU1PG> const & rhs, irrep_t irrep)
-    {
-        PGDecorator<TwoU1PG> set_symm;
-        block_matrix<Matrix, TwoU1PG> ret(set_symm(rhs.left_basis(), irrep), set_symm(rhs.right_basis(), irrep));
-        for (std::size_t p = 0; p < ret.n_blocks(); ++p)
-            ret[p] = rhs[p];
-
-        return ret;
-    }
-};
-
-template <class SymmGroup> inline 
-std::vector<typename PGDecorator<SymmGroup>::irrep_t>
+template <class SymmGroup> inline
+std::vector<int>
 parse_symm(int L, BaseParameters& model)
 {
-    return std::vector<typename PGDecorator<SymmGroup>::irrep_t>(L, 0);
+    return std::vector<int>(L, 0);
 }
 
+// TODO: This function moved to lattice, remove as soon as possible
 template < > inline
-std::vector<PGDecorator<TwoU1PG>::irrep_t>
+std::vector<typename TwoU1PG::subcharge>
 parse_symm<TwoU1PG>(int L, BaseParameters& model)
 {
-    typedef PGDecorator<TwoU1PG>::irrep_t irrep_t;
+    typedef typename TwoU1PG::subcharge subcharge;
 
     // TODO: pos_t type consistency
     std::vector<int> order(L);
@@ -112,9 +87,9 @@ parse_symm<TwoU1PG>(int L, BaseParameters& model)
         for (int p = 0; p < L; ++p)
             order[p] = p;
     else
-        order = model["orbital_order"];
+        order = model["orbital_order"].template as<std::vector<int> >();
 
-    std::vector<irrep_t> irreps(L, 0);
+    std::vector<subcharge> irreps(L, 0);
     if (model.is_set("integral_file")) {
         std::ifstream orb_file;
         orb_file.open(model["integral_file"].c_str());
@@ -125,11 +100,11 @@ parse_symm<TwoU1PG>(int L, BaseParameters& model)
 
         std::vector<std::string> split_line;
         boost::split(split_line, line, boost::is_any_of("="));
-        std::vector<irrep_t> symm_vec;
+        std::vector<subcharge> symm_vec;
 
         std::replace(split_line[1].begin(), split_line[1].end(), ',', ' ');
         std::istringstream iss(split_line[1]);
-        irrep_t number;
+        subcharge number;
         while( iss >> number )
             symm_vec.push_back(number-1);
 
@@ -138,13 +113,13 @@ parse_symm<TwoU1PG>(int L, BaseParameters& model)
             irreps[p] = symm_vec[order[p]-1];
 
         maquis::cout << "Symmetry string (reordered): ";
-        std::copy(irreps.begin(), irreps.end(), std::ostream_iterator<irrep_t>(maquis::cout, ","));
+        std::copy(irreps.begin(), irreps.end(), std::ostream_iterator<subcharge>(std::cout, ","));
         maquis::cout << std::endl;
 
         orb_file.close();
     }
     else
-        throw std::runtime_error("need an integral (FCIDUMP) file to load orbital symmetries\n");
+        throw std::runtime_error("\"integral_file\" in model input file is not set\n");
 
     return irreps;
 }

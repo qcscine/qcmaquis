@@ -39,15 +39,11 @@ MPS<Matrix, SymmGroup>::MPS(size_t L)
 { }
 
 template<class Matrix, class SymmGroup>
-MPS<Matrix, SymmGroup>::MPS(size_t L,
-                            size_t Mmax,
-                            Index<SymmGroup> phys,
-                            typename SymmGroup::charge right_end,
-                            mps_initializer<Matrix, SymmGroup> & init)
+MPS<Matrix, SymmGroup>::MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init)
 : canonized_i(std::numeric_limits<size_t>::max())
 , data_(L)
 {
-    init(*this, Mmax, phys, right_end);
+    init(*this);
     
     // MD: this is actually important
     //     it turned out, this is also quite dangerous: if a block is 1x2,
