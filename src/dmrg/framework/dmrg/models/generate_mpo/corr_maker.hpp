@@ -42,28 +42,33 @@ namespace generate_mpo
         typedef boost::tuple<size_t, size_t, string> tag;
         
     public:
-        CorrMaker(std::size_t L,
-                  op_t const & identity_,
-                  op_t const & fill_,
-                  std::vector<std::pair<op_t, bool> > const & ops_,
+        CorrMaker(Lattice const& lat_,
+                  const std::vector<op_t> & ident_,
+                  const std::vector<op_t> & fill_,
+                  std::vector<std::pair<std::vector<op_t>, bool> > const & ops,
                   int ref = -1)
-        : prempo(L)
-        , tags(L)
-        , used(L)
-        , with_sign(L+2)
-        , identity(identity_)
-        , fill(fill_)
-        , ops(ops_)
+        : lat(lat_)
+        , prempo(lat.size())
+        , tags(lat.size())
+        , used(lat.size())
+        , with_sign(lat.size()+2)
+        , identities(ident_.size())
+        , fillings(fill_.size())
+        , op_tags(ops.size())
         {
-            // Obtain tags
-            identity_tag = tag_handler.register_op(identity, tag_detail::bosonic);
-            fill_tag     = tag_handler.register_op(fill, tag_detail::bosonic);
-
-            for (typename std::vector<std::pair<op_t, bool> >::const_iterator it = ops.begin();
-                    it != ops.end(); ++it)
-                op_tags.push_back( std::make_pair(
-                    tag_handler.register_op(it->first, it->second ? tag_detail::fermionic : tag_detail::bosonic ),
-                    it->second) );
+            /// register operators
+            for (int type=0; type<ident_.size(); ++type)
+                identities[type] = tag_handler.register_op(ident_[type], tag_detail::bosonic);
+            for (int type=0; type<fill_.size(); ++type)
+                fillings[type] = tag_handler.register_op(fill_[type], tag_detail::bosonic);
+            
+            for (size_t n=0; n<ops.size(); ++n) {
+                op_tags[n].first.resize(ops[n].first.size());
+                op_tags[n].second = ops[n].second;
+                std::vector<tag_type> & tops = op_tags[n].first;
+                for (int type=0; type<tops.size(); ++type)
+                    tops[type] = tag_handler.register_op(ops[n].first[type], ops[n].second ? tag_detail::fermionic : tag_detail::bosonic);
+            }
 
             with_sign[0][0] = false;
         	recurse(0, 0, 0, std::vector<size_t>(), ref);
@@ -95,6 +100,7 @@ namespace generate_mpo
         vector<vector<size_t> > const& numeric_labels() { return labels; }
         
     private:
+        Lattice const& lat;
         TagHandler<Matrix, SymmGroup> tag_handler;
 
         vector<vector<block> > prempo;
@@ -103,34 +109,31 @@ namespace generate_mpo
         
         vector<set<size_t> > used;
         vector<map<size_t, bool> > with_sign;
-        
-        op_t identity, fill;
-        vector<std::pair<op_t, bool> > ops;
-        tag_type identity_tag, fill_tag;
+        std::vector<tag_type> identities, fillings;
         // TODO: use just vector<tag_type>, as there is the is_fermionic() function in TagHandler
-        vector<std::pair<tag_type, bool> > op_tags;
+        vector<std::pair<std::vector<tag_type>, bool> > op_tags;
         
-        size_t term(size_t p, size_t u1, std::pair<tag_type, bool> const & op_p, bool trivial)
+        size_t term(size_t p, size_t u1, std::pair<std::vector<tag_type>, bool> const & op_p, bool trivial)
         {
             std::string lab;
             tag_type op;
             typename Matrix::value_type scale;
             if (trivial) {
-            	op = (with_sign[p][u1]) ? fill_tag : identity_tag;
+            	op = (with_sign[p][u1]) ? fillings[lat.get_prop<int>("type", p)] : identities[lat.get_prop<int>("type", p)];
                 scale = 1.;
             	lab = (with_sign[p][u1]) ? "filling" : "ident";
             } else {
 				lab = "nontriv";
             	if (!with_sign[p][u1] && op_p.second) {
 					//gemm(fill, op_p.first, op);
-					boost::tie(op, scale) = tag_handler.get_product_tag(fill_tag, op_p.first);
+					boost::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
 					lab += "*fill";
 				} else if (with_sign[p][u1] && !op_p.second) {
 					//gemm(fill, op_p.first, op);
-					boost::tie(op, scale) = tag_handler.get_product_tag(fill_tag, op_p.first);
+					boost::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
 					lab += "*fill";
 				} else {
-					op = op_p.first;
+					op = op_p.first[lat.get_prop<int>("type", p)];
                     scale = 1.;
 				}
             }
@@ -151,8 +154,8 @@ namespace generate_mpo
         
         void recurse(size_t p0, size_t which, size_t use, vector<size_t> label, int ref)
         {
-            if (p0 + ops.size() - which < prempo.size()) {
-                size_t use_next = term(p0, use, std::make_pair(identity_tag, false), true);
+            if (p0 + op_tags.size() - which < prempo.size()) {
+                size_t use_next = term(p0, use, std::make_pair(identities, false), true);
                 recurse(p0+1, which, use_next, label, ref);
             }
             
@@ -160,15 +163,18 @@ namespace generate_mpo
                 if (ref >= 0 && which == 0 && p0 != ref)
                     return;
                 
+                if (tag_handler.get_op(op_tags[which].first[lat.get_prop<int>("type", p0)]).n_blocks() == 0)
+                    return;
+                
                 size_t use_next = term(p0, use, op_tags[which], false);
                 
                 vector<size_t> label_(label);
                 label_.push_back(p0);
                 
-                if (which == ops.size()-1) {
+                if (which == op_tags.size()-1) {
                     size_t t1 = use_next, t2 = use_next;
                     for (size_t p2 = p0+1; p2 < prempo.size(); ++p2) {
-                        t2 = term(p2, t1, std::make_pair(identity_tag, false), true);
+                        t2 = term(p2, t1, std::make_pair(identities, false), true);
                         t1 = t2;
                     }
                     labels.resize(std::max(t2+1, labels.size()));
@@ -212,30 +218,35 @@ namespace generate_mpo
         typedef boost::tuple<size_t, size_t, string> tag;
 
     public:
-        CorrMakerNN(std::size_t L,
-                    op_t const & identity_,
-                    op_t const & fill_,
-                    std::vector<std::pair<op_t, bool> > const & ops_,
+        CorrMakerNN(Lattice const& lat_,
+                    const std::vector<op_t> & ident_,
+                    const std::vector<op_t> & fill_,
+                    std::vector<std::pair<std::vector<op_t>, bool> > const & ops,
                     int ref = -1)
-        : prempo(L)
-        , tags(L)
-        , used(L)
-        , with_sign(L+2)
-        , identity(identity_)
-        , fill(fill_)
-        , ops(ops_)
+        : lat(lat_)
+        , prempo(lat.size())
+        , tags(lat.size())
+        , used(lat.size())
+        , with_sign(lat.size()+2)
+        , identities(ident_.size())
+        , fillings(fill_.size())
+        , op_tags(ops.size())
         {
             assert(ops.size() % 2 == 0);
 
-            // Obtain tags
-            identity_tag = tag_handler.register_op(identity, tag_detail::bosonic);
-            fill_tag     = tag_handler.register_op(fill, tag_detail::bosonic);
+            /// register operators
+            for (int type=0; type<ident_.size(); ++type)
+                identities[type] = tag_handler.register_op(ident_[type], tag_detail::bosonic);
+            for (int type=0; type<fill_.size(); ++type)
+                fillings[type] = tag_handler.register_op(fill_[type], tag_detail::bosonic);
 
-            for (typename std::vector<std::pair<op_t, bool> >::const_iterator it = ops.begin();
-                    it != ops.end(); ++it)
-                op_tags.push_back( std::make_pair(
-                    tag_handler.register_op(it->first, it->second ? tag_detail::fermionic : tag_detail::bosonic ),
-                    it->second) );
+            for (size_t n=0; n<ops.size(); ++n) {
+                op_tags[n].first.resize(ops[n].first.size());
+                op_tags[n].second = ops[n].second;
+                std::vector<tag_type> & tops = op_tags[n].first;
+                for (int type=0; type<tops.size(); ++type)
+                    tops[type] = tag_handler.register_op(ops[n].first[type], ops[n].second ? tag_detail::fermionic : tag_detail::bosonic);
+            }
 
             with_sign[0][0] = false;
             recurse(0, 0, 0, vector<size_t>(), ref);
@@ -276,32 +287,31 @@ namespace generate_mpo
         vector<set<size_t> > used;
         vector<map<size_t, bool> > with_sign;
         
-        op_t identity, fill;
-        vector<std::pair<op_t, bool> > ops;
-        tag_type identity_tag, fill_tag;
+        Lattice const& lat;
+        std::vector<tag_type> identities, fillings;
         // TODO: use just vector<tag_type>, as there is the is_fermionic() function in TagHandler
-        vector<std::pair<tag_type, bool> > op_tags;
+        vector<std::pair<std::vector<tag_type>, bool> > op_tags;
 
-        size_t term(size_t p, size_t u1, std::pair<tag_type, bool> const & op_p, bool trivial)
+        size_t term(size_t p, size_t u1, std::pair<std::vector<tag_type>, bool> const & op_p, bool trivial)
         {
             std::string lab;
             tag_type op;
             typename Matrix::value_type scale;
             if (trivial) {
-            	op = (with_sign[p][u1]) ? fill_tag : identity_tag;
+            	op = (with_sign[p][u1]) ? fillings[lat.get_prop<int>("type", p)] : identities[lat.get_prop<int>("type", p)];
             	lab = (with_sign[p][u1]) ? "filling" : "ident";
             } else {
 				lab = "nontriv";
             	if (!with_sign[p][u1] && op_p.second) {
 					//gemm(fill, op_p.first, op);
-					boost::tie(op, scale) = tag_handler.get_product_tag(fill_tag, op_p.first);
+					boost::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
 					lab += "*fill";
 				} else if (with_sign[p][u1] && !op_p.second) {
 					//gemm(fill, op_p.first, op);
-					boost::tie(op, scale) = tag_handler.get_product_tag(fill_tag, op_p.first);
+					boost::tie(op, scale) = tag_handler.get_product_tag(fillings[lat.get_prop<int>("type", p)], op_p.first[lat.get_prop<int>("type", p)]);
 					lab += "*fill";
 				} else {
-					op = op_p.first;
+					op = op_p.first[lat.get_prop<int>("type", p)];
 				}
             }
             
@@ -321,8 +331,8 @@ namespace generate_mpo
         
         void recurse(size_t p0, size_t which, size_t use, vector<size_t> label, int ref)
         {
-            if (p0 + ops.size() - which < prempo.size()) {
-                size_t use_next = term(p0, use, std::make_pair(identity_tag, false),  true);
+            if (p0 + op_tags.size() - which < prempo.size()) {
+                size_t use_next = term(p0, use, std::make_pair(identities, false),  true);
                 recurse(p0+1, which, use_next, label, ref);
             }
             
@@ -330,17 +340,22 @@ namespace generate_mpo
                 if (ref >= 0 && which == 0 && p0 != ref)
                     return;
                 
+                if (tag_handler.get_op(op_tags[which].first[lat.get_prop<int>("type", p0)]).n_blocks() == 0)
+                    return;
                 size_t use_next = term(p0++, use, op_tags[which++], false);
+
+                if (tag_handler.get_op(op_tags[which].first[lat.get_prop<int>("type", p0)]).n_blocks() == 0)
+                    return;
                 use_next = term(p0, use_next, op_tags[which], false);
                 
                 vector<size_t> label_(label);
                 label_.push_back(p0-1);
                 label_.push_back(p0);
                 
-                if (which == ops.size()-1) {
+                if (which == op_tags.size()-1) {
                     size_t t1 = use_next, t2 = use_next;
                     for (size_t p2 = p0+1; p2 < prempo.size(); ++p2) {
-                        t2 = term(p2, t1, std::make_pair(identity_tag, false), true);
+                        t2 = term(p2, t1, std::make_pair(identities, false), true);
                         t1 = t2;
                     }
                     labels.resize(std::max(t2+1, labels.size()));

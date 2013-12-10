@@ -21,6 +21,7 @@ using std::endl;
 #include "dmrg/mp_tensors/super_mpo.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/models/generate_mpo.hpp"
+#include "dmrg/models/coded/lattice.hpp"
 
 #include <boost/math/special_functions/factorials.hpp>
 #include <boost/iterator/zip_iterator.hpp>
@@ -36,9 +37,13 @@ typedef boost::tuple<charge, size_t> local_state;
 std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
                                   block_matrix<matrix, SymmGroup> const& ident, block_matrix<matrix, SymmGroup> const& op)
 {
+    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
+    boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
+    Lattice lattice(lat_ptr);
+
     std::vector<double> vals(mps.size());
     for (int p=0; p<mps.size(); ++p) {
-        generate_mpo::MPOMaker<matrix, SymmGroup> mpom(mps.length(), ident);
+    	generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, op_vec(1,ident), op_vec(1,ident));
         generate_mpo::Operator_Term<matrix, SymmGroup> term;
         term.operators.push_back( std::make_pair(p, op) );
         term.fill_operator = ident;
@@ -54,8 +59,13 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
 std::vector<double> measure_local_multi(MPS<matrix, SymmGroup> const& mps,
                                         block_matrix<matrix, SymmGroup> const& ident, block_matrix<matrix, SymmGroup> const& op)
 {
-    std::vector<std::pair<block_matrix<matrix, SymmGroup>, bool> > ops(1, std::make_pair(op, false));
-    generate_mpo::CorrMaker<matrix, SymmGroup> dcorr(mps.length(), ident, ident, ops, -1);
+    typedef block_matrix<matrix, SymmGroup> op_t;
+    typedef std::vector<op_t> op_vec;
+    std::vector<std::pair<op_vec, bool> > ops(1, std::make_pair(op_vec(1,op), false));
+
+    boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
+    Lattice lattice(lat_ptr);
+    generate_mpo::CorrMaker<matrix, SymmGroup> dcorr(lattice, op_vec(1,ident), op_vec(1,ident), ops, -1);
     
     MPO<matrix, SymmGroup> mpo = dcorr.create_mpo();
     
@@ -112,7 +122,7 @@ BOOST_AUTO_TEST_CASE( density_trivial_init )
     dens[4] = 1.;
     dens[5] = 1.;
 
-    MPS<matrix,SymmGroup> mps = state_mps<matrix>(state, phys_rho);
+    MPS<matrix,SymmGroup> mps = state_mps<matrix>(state, std::vector<Index<SymmGroup> >(1,phys_rho), std::vector<int>(L,0));
     double nn = dm_trace(mps, phys_psi);
     std::cout << "norm = " << nn << std::endl;
     
@@ -158,7 +168,7 @@ BOOST_AUTO_TEST_CASE( density_join_init )
     state[5] = local_state(C, 4);
     state[6] = local_state(C, 4);
         
-        mps =state_mps<matrix>(state, phys_rho);
+    mps = state_mps<matrix>(state, std::vector<Index<SymmGroup> >(1,phys_rho), std::vector<int>(L,0));
     }
     
     {
@@ -171,7 +181,7 @@ BOOST_AUTO_TEST_CASE( density_join_init )
         state[5] = boost::make_tuple(C, 0);
         state[6] = boost::make_tuple(C, 0);
         
-        MPS<matrix,SymmGroup> tmp =state_mps<matrix>(state, phys_rho);
+        MPS<matrix,SymmGroup> tmp = state_mps<matrix>(state, std::vector<Index<SymmGroup> >(1,phys_rho), std::vector<int>(L,0));
         mps = join(tmp, mps);
     }
     
@@ -249,7 +259,9 @@ BOOST_AUTO_TEST_CASE( density_random_init )
     int L = 6;
     int M = 20;
 
-    ModelParameters parms;
+    DmrgParameters parms;
+    ModelParameters model_parms;
+    parms.set("max_bond_dimension", M);
     
     // Bosons with Nmax=2
     const int Nmax = 2;
@@ -259,10 +271,10 @@ BOOST_AUTO_TEST_CASE( density_random_init )
     Index<SymmGroup> phys_rho = phys_psi * adjoin(phys_psi);
         
     /// building random state
-    default_mps_init<matrix, SymmGroup> initializer(parms);
+    default_mps_init<matrix, SymmGroup> initializer(parms, model_parms, std::vector<Index<SymmGroup> >(1, phys_rho), C, std::vector<int>(L,0));
     
     MPS<matrix,SymmGroup> mps;
-    mps.resize(L); initializer(mps, M, phys_rho, C);
+    mps.resize(L); initializer(mps);
     
     double nn = dm_trace(mps, phys_psi);
     std::cout << "norm = " << nn << std::endl;

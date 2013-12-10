@@ -20,18 +20,18 @@
 #include <alps/lattice.h>
 
 
-class ALPSLattice : public Lattice
+class alps_lattice : public lattice_impl
 {
 
 public:
-    typedef Lattice::pos_t pos_t;
+    typedef lattice_impl::pos_t pos_t;
     typedef alps::graph_helper<> graph_type;
     typedef graph_type::site_descriptor site_descriptor;
     typedef graph_type::site_iterator site_iterator;
     
-    ALPSLattice (const alps::Parameters& p) : 
-    parms(p),
-    graph(parms)
+    alps_lattice (const alps::Parameters& p)
+    : parms(p)
+    , graph(parms)
     {
         // storing lattice informations
         forward_.resize(size());
@@ -64,6 +64,11 @@ public:
     pos_t size() const
     {
         return graph.num_sites();
+    }
+    
+    int maximum_vertex_type() const
+    {
+        return alps::maximum_vertex_type(graph.graph());
     }
     
     boost::any get_prop_(std::string const & property, std::vector<pos_t> const & pos) const

@@ -19,7 +19,7 @@ namespace detail {
 	template <class T>
 	int to_integer (alps::half_integer<T> const & qn_value)
 	{
-		return (qn_value.get_twice() % 2 == 0) ? alps::to_integer(qn_value) : qn_value.get_twice();
+		return qn_value.get_twice(); // always works with double QN, so that spin-1/2 and spin-1 are compatible
 	}
 }
 
@@ -71,7 +71,7 @@ public:
     coord_t coords(size_t i) const { return coord_t(phys_[state_index_[i]].first, state_offset_[i]); }
     charge_t charge(size_t i) const { return phys_[state_index_[i]].first; }
     size_t block_size(size_t i) const { return phys_[state_index_[i]].second; }
-    Index<SymmGroup> phys() const { return phys_; }
+    Index<SymmGroup> const& phys_dim() const { return phys_; }
     
 private:
     size_t numstates_;

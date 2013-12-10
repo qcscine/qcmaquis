@@ -38,19 +38,23 @@ namespace generate_mpo
         > op_pairs;
         
     public:
-        MPOMaker(std::size_t length_, const block_matrix<Matrix, SymmGroup> & ident_)
-        : length(length_)
+        MPOMaker(Lattice const& lat_,
+                 const std::vector<block_matrix<Matrix, SymmGroup> > & ident_,
+                 const std::vector<block_matrix<Matrix, SymmGroup> > & fill_)
+        : lat(lat_)
+        , length(lat.size())
         , used_dims(length)
-        , ident(ident_)
+        , identities(ident_)
+        , fillings(fill_)
         , prempo(length)
         , maximum(2)
-        , finalized(false)
         , leftmost_right(length)
-        {   
+        , finalized(false)
+        {
             for (size_t p = 0; p < length; ++p)
             {
                 if (p+1 < length)
-                    prempo[p].push_back(boost::make_tuple(std::size_t(0), std::size_t(0), ident));
+                    prempo[p].push_back(boost::make_tuple(std::size_t(0), std::size_t(0), identities[lat.get_prop<int>("type",p)]));
             }
         }
         
@@ -88,7 +92,8 @@ namespace generate_mpo
             
             for (size_t p = minp; p <= maxp; ++p)
                 if (!done[p]) {
-                    prempo[p].push_back( boost::make_tuple(use_b, use_b, term.fill_operator));
+                    op_t const& current_filling = (term.with_sign) ? fillings[lat.get_prop<int>("type",p)] : identities[lat.get_prop<int>("type",p)];
+                    prempo[p].push_back( boost::make_tuple(use_b, use_b, current_filling));
                     used_dims[p].insert(use_b);
                     done[p] = true;
                 }
@@ -133,14 +138,14 @@ namespace generate_mpo
         }
         
     private:
-        bool finalized;
+        Lattice const& lat;
         std::size_t length;
-        block_matrix<Matrix, SymmGroup> ident;
+        std::vector<block_matrix<Matrix, SymmGroup> > identities, fillings;
         vector<set<size_t> > used_dims;
         vector<vector<block> > prempo;
         std::map<std::size_t, op_t> site_terms;
-        
         size_t maximum, leftmost_right;
+        bool finalized;
 
         void finalize()
         {
@@ -149,7 +154,7 @@ namespace generate_mpo
                 prempo[it->first].push_back( boost::make_tuple(0, 1, it->second) );
 
             for (size_t p = leftmost_right + 1; p < length; ++p)
-                prempo[p].push_back( boost::make_tuple(1, 1, ident) );
+                prempo[p].push_back( boost::make_tuple(1, 1, identities[lat.get_prop<int>("type",p)]) );
 
             for (typename vector<vector<block> >::iterator it = prempo.begin();
                  it + 1 != prempo.end();

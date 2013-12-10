@@ -18,9 +18,9 @@ namespace meas_prepare {
     template<class Matrix, class SymmGroup>
     std::pair<std::vector<MPO<Matrix,SymmGroup> >, std::vector<std::string> >
     local(const Lattice & lat,
-          block_matrix<Matrix, SymmGroup> const & identity,
-          block_matrix<Matrix, SymmGroup> const & fill,
-          std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops)
+          std::vector<block_matrix<Matrix, SymmGroup> > const & identities,
+          std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
+          std::vector<std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> > const & ops)
 	{
         std::vector<std::string> labels;
         std::vector<MPO<Matrix,SymmGroup> > mpos;
@@ -28,31 +28,35 @@ namespace meas_prepare {
         for (std::size_t p = 0; p < lat.size(); ++p)
         {
             if (ops.size() == 1) {
-                generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
-                generate_mpo::Operator_Term<Matrix, SymmGroup> term;
-                term.operators.push_back( std::make_pair(p, ops[0].first) );
-                term.fill_operator = identity;
-                mpom.add_term(term);
-                
-                mpos.  push_back( mpom.create_mpo()                     );
-                labels.push_back( lat.get_prop<std::string>("label", p) );
-
+                int type = lat.get_prop<int>("type", p);
+                if (ops[0].first[type].n_blocks() > 0) {
+                    generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat, identities, fillings);
+                    generate_mpo::Operator_Term<Matrix, SymmGroup> term;
+                    term.operators.push_back( std::make_pair(p, ops[0].first[type]) );
+                    mpom.add_term(term);
+                    
+                    mpos.  push_back( mpom.create_mpo()                     );
+                    labels.push_back( lat.get_prop<std::string>("label", p) );
+                }
             } else {
                 std::vector<Lattice::pos_t> neighs = lat.forward(p);
                 for (typename std::vector<Lattice::pos_t>::const_iterator hopto = neighs.begin();
                      hopto != neighs.end();
                      ++hopto)
                 {
-                    generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
-                    generate_mpo::Operator_Term<Matrix, SymmGroup> term;
-                    term.operators.push_back( std::make_pair(p, ops[0].first) );
-                    term.operators.push_back( std::make_pair(*hopto, ops[1].first) );
-                    term.fill_operator = (ops[0].second) ? fill : identity;
-                    mpom.add_term(term);
-
-                    mpos.  push_back( mpom.create_mpo()                             );
-                    labels.push_back( lat.get_prop<std::string>("label", p, *hopto) );
-
+                    int type1 = lat.get_prop<int>("type", p);
+                    int type2 = lat.get_prop<int>("type", *hopto);
+                    if (ops[0].first[type1].n_blocks() > 0 && ops[1].first[type2].n_blocks() > 0) {
+                        generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat, identities, fillings);
+                        generate_mpo::Operator_Term<Matrix, SymmGroup> term;
+                        term.operators.push_back( std::make_pair(p, ops[0].first[type1]) );
+                        term.operators.push_back( std::make_pair(*hopto, ops[1].first[type2]) );
+                        term.with_sign = ops[0].second;
+                        mpom.add_term(term);
+                        
+                        mpos.  push_back( mpom.create_mpo()                             );
+                        labels.push_back( lat.get_prop<std::string>("label", p, *hopto) );
+                    }
                 }
             }
         }
@@ -64,27 +68,28 @@ namespace meas_prepare {
 	template<class Matrix, class SymmGroup>
 	MPO<Matrix, SymmGroup>
     average(const Lattice & lat,
-            block_matrix<Matrix, SymmGroup> const & identity,
-            block_matrix<Matrix, SymmGroup> const & fill,
-            std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops)
+            std::vector<block_matrix<Matrix, SymmGroup> > const & identities,
+            std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
+            std::vector<std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> > const & ops)
 	{
-        generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
+        generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat, identities, fillings);
         
         for (std::size_t p = 0; p < lat.size(); ++p)
         {
             generate_mpo::Operator_Term<Matrix, SymmGroup> term;
-            term.operators.push_back( std::make_pair(p, ops[0].first) );
+            term.operators.push_back( std::make_pair(p, ops[0].first[lat.get_prop<int>("type", p)]) );
             if (ops.size() == 1) {
                 mpom.add_term(term);
             } else {
-				term.fill_operator = (ops[0].second) ? fill : identity;
+                term.with_sign = ops[0].second;
             	std::vector<Lattice::pos_t> neighs = lat.forward(p);
             	for (typename std::vector<Lattice::pos_t>::const_iterator hopto = neighs.begin();
             		 hopto != neighs.end();
             		 ++hopto)
             	{
                     generate_mpo::Operator_Term<Matrix, SymmGroup> term2(term);
-                    term2.operators.push_back( std::make_pair(*hopto, ops[1].first) );
+                    term2.operators.push_back( std::make_pair(*hopto, ops[1].first[lat.get_prop<int>("type", p)]) );
+                    mpom.add_term(term2);
             	}
                 
             }

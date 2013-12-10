@@ -20,6 +20,7 @@ using std::endl;
 #include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/models/generate_mpo.hpp"
+#include "dmrg/models/coded/lattice.hpp"
 
 
 typedef U1 SymmGroup;
@@ -28,12 +29,18 @@ typedef alps::numeric::matrix<double> matrix;
 BOOST_AUTO_TEST_CASE( test )
 {
     
+    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
     int Nrep = 6;
     int M = 50;
     int L = 16;
 
-    ModelParameters parms;
+    boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(L));
+    Lattice lattice(lat_ptr);
     
+    DmrgParameters parms;
+    ModelParameters model_parms;
+    parms.set("max_bond_dimension", M);    
+
     // Bosons with Nmax=2
     Index<SymmGroup> phys;
     phys.insert(std::make_pair(0, 1));
@@ -42,11 +49,12 @@ BOOST_AUTO_TEST_CASE( test )
     SymmGroup::charge initc = L/2;
     
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
-    
-    default_mps_init<matrix, SymmGroup> initializer(parms);
+    op_vec ids_vec(1,ident);
+
+    default_mps_init<matrix, SymmGroup> initializer(parms, model_parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
     
     MPS<matrix,SymmGroup> mps;
-    mps.resize(L); initializer(mps, M, phys, initc);
+    mps.resize(L); initializer(mps);
     double onorm = norm(mps);
     
     MPS<matrix, SymmGroup> mps1(mps), mps2(mps);
@@ -74,7 +82,7 @@ BOOST_AUTO_TEST_CASE( test )
         for (int i=0; i<10; ++i) {
             int p = dmrg_random::uniform() * L;
             
-            generate_mpo::MPOMaker<matrix, SymmGroup> mpom(L, ident);
+            generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, ids_vec, ids_vec);
             generate_mpo::Operator_Term<matrix, SymmGroup> term;
             term.operators.push_back( std::make_pair(p, op) );
             term.fill_operator = ident;
@@ -97,7 +105,7 @@ BOOST_AUTO_TEST_CASE( test )
         op2.insert_block(matrix(1,1,1), 1,0);
         op2.insert_block(matrix(1,1,sqrt(2)), 2,1);
         
-        generate_mpo::MPOMaker<matrix, SymmGroup> mpom(L, ident);
+        generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, ids_vec, ids_vec);
         for (int p=0; p<L-1; ++p) {
             {
                 generate_mpo::Operator_Term<matrix, SymmGroup> term;
@@ -132,7 +140,7 @@ BOOST_AUTO_TEST_CASE( test )
         for (int i=0; i<10; ++i) {
             int p = dmrg_random::uniform() * L;
             
-            generate_mpo::MPOMaker<matrix, SymmGroup> mpom(L, ident);
+            generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, ids_vec, ids_vec);
             generate_mpo::Operator_Term<matrix, SymmGroup> term;
             term.operators.push_back( std::make_pair(p, op) );
             term.fill_operator = ident;

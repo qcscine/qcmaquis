@@ -15,7 +15,7 @@
 
 template <class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup> state_mps(std::vector<boost::tuple<typename SymmGroup::charge, size_t> > const & state,
-                                 Index<SymmGroup> const& phys)
+                                 std::vector<Index<SymmGroup> > const& phys_dims, std::vector<int> const& site_type)
 {
     typedef typename SymmGroup::charge charge;
     typedef boost::tuple<charge, size_t> local_state;
@@ -31,8 +31,8 @@ MPS<Matrix, SymmGroup> state_mps(std::vector<boost::tuple<typename SymmGroup::ch
         size_t news = 1;
         Index<SymmGroup> new_i;
         new_i.insert(std::make_pair(newc, news));
-        ProductBasis<SymmGroup> left(phys, curr_i);
-        mps[i] = MPSTensor<Matrix, SymmGroup>(phys, curr_i, new_i, false, 0);
+        ProductBasis<SymmGroup> left(phys_dims[site_type[i]], curr_i);
+        mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], curr_i, new_i, false, 0);
         size_t b_in = left(boost::get<0>(state[i]), curr_i[0].first) + boost::get<1>(state[i]) * curr_i[0].second + curr_b;
         size_t b_out = 0;
         

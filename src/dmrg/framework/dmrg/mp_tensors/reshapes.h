@@ -409,21 +409,27 @@ reshape_left_to_physleft(Index<SymmGroup> physical_i,
 
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> reshape_2site_op (Index<SymmGroup> const & phys,
+block_matrix<Matrix, SymmGroup> reshape_2site_op (Index<SymmGroup> const & phys1, Index<SymmGroup> const & phys2,
                                                   block_matrix<Matrix, SymmGroup> const & A)
 { // only for the dense matrices in MPO (30.04.2012 / scalar / value types discussion)
   // TODO: (scatter alps::numeric::matrix during building of MPO)
     typedef typename SymmGroup::charge charge;
     block_matrix<Matrix, SymmGroup> ret;
     
-    ProductBasis<SymmGroup> pb(phys, phys);
-    ProductBasis<SymmGroup> pb_new(phys, adjoin(phys));
+    ProductBasis<SymmGroup> pb(phys1, phys2);
+    ProductBasis<SymmGroup> pb_out_left(phys1, adjoin(phys1));
+    ProductBasis<SymmGroup> pb_out_right(phys2, adjoin(phys2));
+    
+    /// s1 \in phys1, input of op on site1
+    /// s2 \in phys2, input of op on site2
+    /// s3 \in phys1, output of op on site1
+    /// s4 \in phys2, output of op on site2
     
     typedef typename Index<SymmGroup>::basis_iterator bi_t;
-    for (bi_t s1 = phys.basis_begin(); !s1.end(); ++s1)
-        for (bi_t s2 = phys.basis_begin(); !s2.end(); ++s2)
-            for (bi_t s3 = phys.basis_begin(); !s3.end(); ++s3)
-                for (bi_t s4 = phys.basis_begin(); !s4.end(); ++s4)
+    for (bi_t s1 = phys1.basis_begin(); !s1.end(); ++s1)
+        for (bi_t s2 = phys2.basis_begin(); !s2.end(); ++s2)
+            for (bi_t s3 = phys1.basis_begin(); !s3.end(); ++s3)
+                for (bi_t s4 = phys2.basis_begin(); !s4.end(); ++s4)
                 {                    
                     charge in_left_c = SymmGroup::fuse(s1->first, s2->first);
                     charge in_right_c = SymmGroup::fuse(s3->first, s4->first);
@@ -435,27 +441,27 @@ block_matrix<Matrix, SymmGroup> reshape_2site_op (Index<SymmGroup> const & phys,
                     charge out_right_c = SymmGroup::fuse(s4->first, -s2->first);
                     
                     if (!ret.has_block(out_left_c, out_right_c))
-                        ret.insert_block(new Matrix(pb_new.size(s1->first, -s3->first),
-                                                    pb_new.size(s4->first, -s2->first),
+                        ret.insert_block(new Matrix(pb_out_left.size(s1->first, -s3->first),
+                                                    pb_out_right.size(s4->first, -s2->first),
                                                     0),
                                          out_left_c, out_right_c);
                     
                     std::size_t in_left_offset = pb(s1->first, s2->first);
                     std::size_t in_right_offset = pb(s3->first, s4->first);
                     
-                    std::size_t out_left_offset = pb_new(s1->first, -s3->first);
-                    std::size_t out_right_offset = pb_new(s4->first, -s2->first);
+                    std::size_t out_left_offset = pb_out_left(s1->first, -s3->first);
+                    std::size_t out_right_offset = pb_out_right(s4->first, -s2->first);
                     
-                    ret(std::make_pair(out_left_c, out_left_offset + s1->second*phys.size_of_block(s3->first)+s3->second),
-                        std::make_pair(out_right_c, out_right_offset + s2->second*phys.size_of_block(s4->first)+s4->second))
-                    = A(std::make_pair(in_left_c, in_left_offset + s1->second*phys.size_of_block(s2->first) + s2->second),
-                        std::make_pair(in_right_c, in_right_offset + s3->second*phys.size_of_block(s4->first) + s4->second));
+                    ret(std::make_pair(out_left_c, out_left_offset + s1->second*phys1.size_of_block(s3->first)+s3->second),
+                        std::make_pair(out_right_c, out_right_offset + s2->second*phys2.size_of_block(s4->first)+s4->second))
+                    = A(std::make_pair(in_left_c, in_left_offset + s1->second*phys2.size_of_block(s2->first) + s2->second),
+                        std::make_pair(in_right_c, in_right_offset + s3->second*phys2.size_of_block(s4->first) + s4->second));
                     
                 }
     
     // Removing empty blocks
-    Index<SymmGroup> out_left = phys*adjoin(phys);
-    Index<SymmGroup> out_right = phys*adjoin(phys);
+    Index<SymmGroup> out_left = phys1*adjoin(phys1);
+    Index<SymmGroup> out_right = phys2*adjoin(phys2);
     for (typename Index<SymmGroup>::const_iterator it1 = out_left.begin(); it1 != out_left.end(); it1++)
     {
         for (typename Index<SymmGroup>::const_iterator it2 = out_right.begin(); it2 != out_right.end(); it2++)

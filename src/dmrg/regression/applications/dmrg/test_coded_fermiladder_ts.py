@@ -26,6 +26,8 @@ class mytest(apptest.DMRGTestBase):
                             'alpha_main'                 : 1e-6,
                             'alpha_final'                : 0,
                             
+                            'ietl_jcd_maxiter'           : 6,
+                            
                             'resultfile'                 : testname+'.out.h5',
                             'chkpfile'                   : testname+'.out.ckp.h5',
                             

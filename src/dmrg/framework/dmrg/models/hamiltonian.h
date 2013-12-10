@@ -23,8 +23,6 @@
 #include "dmrg/models/op_handler.h"
 #include "dmrg/models/generate_mpo.hpp"
 
-#include "dmrg/models/chem/pg_symm_converter.h"
-
 enum TermType {all_term, site_term, bond_term};
 
 template<class Matrix, class SymmGroup>
@@ -93,49 +91,6 @@ protected:
     std::vector<hamtagterm_t> tagterms;
     table_ptr tag_handler;
 };
-
-template<class Matrix, class SymmGroup>
-MPO<Matrix, SymmGroup> make_mpo(typename Lattice::pos_t L, Hamiltonian<Matrix, SymmGroup> const & H,
-                                BaseParameters & model, TermType what=all_term)
-{
-    // Use tags if available
-    if (H.n_tagterms(what) > 0) {
-        generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity_tag(), H.get_operator_table());
-        for (std::size_t i = 0; i < H.n_tagterms(what); ++i)
-            mpom.add_term(H.tag(i));
-
-        std::vector<typename PGDecorator<SymmGroup>::irrep_t> irreps = parse_symm<SymmGroup>(L, model);
-
-        MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-
-        PGSymmetryConverter<Matrix, SymmGroup> symm_conv(irreps);
-        symm_conv.convert_tags_to_symm_tags(mpo);
-
-        return mpo;
-
-    } else  {
-        generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity());
-        for (std::size_t i = 0; i < H.n_terms(what); ++i)
-            mpom.add_term(H[i]);
-
-        return mpom.create_mpo();
-    }
-
-}
-
-template<class Matrix, class SymmGroup>
-void make_compressed_mpo(
-     MPO<Matrix, SymmGroup> & mpoc,
-     double cutoff,
-     typename Lattice::pos_t L, Hamiltonian<Matrix, SymmGroup> const & H,
-     TermType what=all_term)
-{
-    generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(L, H.get_identity_tag());
-    for (std::size_t i = 0; i < H.n_tagterms(what); ++i)
-        mpom.add_term(H[i]);
-
-    mpoc = mpom.create_compressed_mpo(H.get_phys(), cutoff);
-}
 
 template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, Hamiltonian_Term<Matrix, SymmGroup> const & h)

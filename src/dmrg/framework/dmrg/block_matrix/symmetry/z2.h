@@ -23,6 +23,7 @@
 class Ztwo {
 	public:
 		typedef enum { Plus = 0, Minus = 1 } charge;
+        typedef int subcharge; // used if charge is site-dependent
 		
 		static const charge IdentityCharge = Plus;
         static const bool finite = true;

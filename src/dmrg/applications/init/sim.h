@@ -13,7 +13,7 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/compression.h"
-#include "dmrg/models/factory.h"
+#include "dmrg/models/model.h"
 
 #ifdef MAQUIS_OPENMP
 #include <omp.h>
@@ -36,11 +36,11 @@ public:
         
         // TODO: insert boost::chrono timers
         
-        model_parser<Matrix, SymmGroup>(parms["lattice_library"], parms["model_library"],
-                                        model, lat, phys_model);
-        initc = phys_model->initc(model);
-        phys = phys_model->H().get_phys();
-        L = lat->size();
+        lat = Lattice(parms, model);
+        phys_model = Model<Matrix, SymmGroup>(lat, parms, model);
+        phys = phys_model.phys_dim(); // TODO: extend for multiple site bases!
+        initc = phys_model.total_quantum_numbers(model);
+        L = lat.size();
         
 #ifdef MAQUIS_OPENMP
         #pragma omp parallel
@@ -269,8 +269,8 @@ private:
     
     std::string chkpfile;
     
-    Lattice_ptr lat;
-    typename model_traits<Matrix, SymmGroup>::model_ptr phys_model;
+    Lattice lat;
+    Model<Matrix, SymmGroup> phys_model;
     Index<SymmGroup> phys;
     charge initc;
     size_t L;

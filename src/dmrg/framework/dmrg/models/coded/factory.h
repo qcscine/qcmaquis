@@ -13,13 +13,10 @@
 #include "dmrg/models/lattice.h"
 #include "dmrg/models/model.h"
 
-inline Lattice_ptr lattice_factory (BaseParameters &);
-
 template<class Matrix, class SymmGroup>
-struct model_factory {
-    static typename model_traits<Matrix, SymmGroup>::model_ptr
-    parse (Lattice const &, BaseParameters &);
+struct coded_model_factory {
+    static boost::shared_ptr<model_impl<Matrix, SymmGroup> >
+    parse(Lattice const &, BaseParameters &);
 };
-    
-#include "factory_lat.hpp"
+
 #endif

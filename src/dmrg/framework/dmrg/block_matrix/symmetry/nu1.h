@@ -246,6 +246,7 @@ template<int N, class S = int>
 class NU1
 {
 public:
+    typedef S subcharge;
     typedef NU1Charge<N, S> charge;
     typedef std::vector<charge> charge_v;
     

@@ -21,8 +21,7 @@ using std::endl;
 #include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/models/generate_mpo.hpp"
-
-#include "dmrg/models/factory.h"
+#include "dmrg/models/coded/lattice.hpp"
 
 
 typedef alps::numeric::matrix<double> matrix;
@@ -38,7 +37,15 @@ struct U1System {
     static const std::string lattice_lib() { return "alps";  }
     static const std::string model_lib()   { return "coded"; }
     
-    static ModelParameters parms()
+    static DmrgParameters parms()
+    {
+        DmrgParameters p;
+        p.set("max_bond_dimension", max_bond_dim());
+        p.set("lattice_library", lattice_lib());
+        p.set("model_library", model_lib());
+	return p;
+    }
+    static ModelParameters model_parms()
     {
         ModelParameters p;
         p.set("LATTICE", "open chain lattice");
@@ -88,7 +95,15 @@ struct TwoU1System {
     static const std::string lattice_lib() { return "alps";  }
     static const std::string model_lib()   { return "alps"; }
     
-    static ModelParameters parms()
+    static DmrgParameters parms()
+    {
+        DmrgParameters p;
+        p.set("max_bond_dimension", max_bond_dim());
+        p.set("lattice_library", lattice_lib());
+        p.set("model_library", model_lib());
+        return p;
+    }
+    static ModelParameters model_parms()
     {
         ModelParameters p;
         p.set("LATTICE", "open chain lattice");
@@ -141,18 +156,27 @@ struct U1DegSystem {
     static const int max_bond_dim() { return 20; }
     
     static const std::string lattice_lib() { return "alps";  }
-    static const std::string model_lib()   { return "coded"; }
+    static const std::string model_lib()   { return "alps"; }
     
-    static ModelParameters parms()
+    static DmrgParameters parms()
+    {
+        DmrgParameters p;
+        p.set("max_bond_dimension", max_bond_dim());
+        p.set("lattice_library", lattice_lib());
+        p.set("model_library", model_lib());
+        return p;
+    }
+    static ModelParameters model_parms()
     {
         ModelParameters p;
         p.set("LATTICE", "open chain lattice");
         p.set("L", 10);
         
-        p.set("MODEL",           "fermion Hubbard");
+        p.set("MODEL",           "alternative fermion Hubbard");
         p.set("t",               1.);
         p.set("U",               1.);
-        p.set("u1_total_charge", 6);
+        p.set("CONSERVED_QUANTUMNUMBERS", "N");
+        p.set("N_total",                  6);
         
         return p;
     }
@@ -191,9 +215,14 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
                                   block_matrix<matrix, SymmGroup> const& ident,
                                   block_matrix<matrix, SymmGroup> const& op)
 {
+    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
+    op_vec id_vec(1, ident);
     std::vector<double> vals(mps.size());
+    boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
+    Lattice lattice(lat_ptr);
+//    std::cout << "ident is:\n" << ident << std::endl;
     for (int p=0; p<mps.size(); ++p) {
-        generate_mpo::MPOMaker<matrix, SymmGroup> mpom(mps.length(), ident);
+        generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, id_vec, id_vec);
         generate_mpo::Operator_Term<matrix, SymmGroup> term;
         term.operators.push_back( std::make_pair(p, op) );
         term.fill_operator = ident;
@@ -211,7 +240,11 @@ double measure_ops(MPS<matrix, SymmGroup> const& mps,
                                 block_matrix<matrix, SymmGroup> const& op1, size_t pos1,
                                 block_matrix<matrix, SymmGroup> const& op2, size_t pos2)
 {
-    generate_mpo::MPOMaker<matrix, SymmGroup> mpom(mps.length(), ident);
+    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
+    op_vec id_vec(1, ident);
+    boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
+    Lattice lattice(lat_ptr);
+    generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, id_vec, id_vec);
     generate_mpo::Operator_Term<matrix, SymmGroup> term;
     block_matrix<matrix, SymmGroup> tmp;
     gemm(fill, op1, tmp);
@@ -238,29 +271,32 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dens_meas, ML, test_systems )
     typedef typename ML::grp grp;
     typedef typename grp::charge charge;
     
-    ModelParameters parms = ML::parms();
+    DmrgParameters parms = ML::parms();
+    ModelParameters model_parms = ML::model_parms();
     
-    Lattice_ptr lat;
-    typename model_traits<matrix, grp>::model_ptr model;
-    model_parser<matrix, grp>(ML::lattice_lib(), ML::model_lib(), parms, lat, model);
+    Lattice lat(parms, model_parms);
+    Model<matrix,grp> model(lat, parms, model_parms);
     
-    Index<grp> phys = model->get_phys();
-    charge initc = model->initc( parms );
-    default_mps_init<matrix, grp> initializer(parms);
-    MPS<matrix, grp> mps(lat->size(), ML::max_bond_dim(), phys, initc, initializer);
+    block_matrix<matrix, grp> ident = model.identity_matrix();
+    block_matrix<matrix, grp> fill  = model.filling_matrix();
+
+    Index<grp> phys = model.phys_dim();
+    std::cout << "phys: " << phys << std::endl;
+    charge initc = model.total_quantum_numbers( model_parms );
+    default_mps_init<matrix, grp> initializer(parms, model_parms, std::vector<Index<grp> >(1, phys), initc, std::vector<int>(lat.size(),0));
+
+    MPS<matrix, grp> mps(lat.size(), initializer);
     
-    block_matrix<matrix, grp> ident = model->get_op("id");
-    block_matrix<matrix, grp> fill  = model->get_op("fill");
     
     for (int i=0; i<ML::dens_ops().size(); ++i) {
-        block_matrix<matrix, grp> dens   = model->get_op( ML::dens_ops()[i] );
-        block_matrix<matrix, grp> raise  = model->get_op( ML::raising_ops()[i] );
-        block_matrix<matrix, grp> lower  = model->get_op( ML::lowering_ops()[i] );
+        block_matrix<matrix, grp> dens   = model.get_operator( ML::dens_ops()[i] );
+        block_matrix<matrix, grp> raise  = model.get_operator( ML::raising_ops()[i] );
+        block_matrix<matrix, grp> lower  = model.get_operator( ML::lowering_ops()[i] );
         
         std::vector<double> meas1 = measure_local(mps, ident, dens);
         
         for (int it=0; it<3; ++it) {
-            int n = drand48() * lat->size();
+            int n = drand48() * lat.size();
             maquis::cout << "measuring at n=" << n << std::endl;
             MPS<matrix, grp> mps2(mps);
             
@@ -280,32 +316,33 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( obdm_meas, ML, test_systems )
     typedef typename ML::grp grp;
     typedef typename grp::charge charge;
     
-    ModelParameters parms = ML::parms();
+    DmrgParameters parms = ML::parms();
+    ModelParameters model_parms = ML::model_parms();
     
-    Lattice_ptr lat;
-    typename model_traits<matrix, grp>::model_ptr model;
-    model_parser<matrix, grp>(ML::lattice_lib(), ML::model_lib(), parms, lat, model);
+    Lattice lat(parms, model_parms);
+    Model<matrix,grp> model(lat, parms, model_parms);
     
-    Index<grp> phys = model->get_phys();
-    charge initc = model->initc( parms );
-    default_mps_init<matrix, grp> initializer(parms);
-    MPS<matrix, grp> mps(lat->size(), ML::max_bond_dim(), phys, initc, initializer);
+    block_matrix<matrix, grp> ident = model.identity_matrix();
+    block_matrix<matrix, grp> fill  = model.filling_matrix();
     
-    block_matrix<matrix, grp> ident = model->get_op("id");
-    block_matrix<matrix, grp> fill  = model->get_op("fill");
+    Index<grp> phys = model.phys_dim();
+    std::cout << "phys: " << phys << std::endl;
+    charge initc = model.total_quantum_numbers( model_parms );
+    default_mps_init<matrix, grp> initializer(parms, model_parms, std::vector<Index<grp> >(1, phys), initc, std::vector<int>(lat.size(),0));
+    MPS<matrix, grp> mps(lat.size(), initializer);
     
     for (int i=0; i<ML::dens_ops().size(); ++i) {
-        block_matrix<matrix, grp> dens   = model->get_op( ML::dens_ops()[i] );
-        block_matrix<matrix, grp> raise  = model->get_op( ML::raising_ops()[i] );
-        block_matrix<matrix, grp> lower  = model->get_op( ML::lowering_ops()[i] );
+        block_matrix<matrix, grp> dens   = model.get_operator( ML::dens_ops()[i] );
+        block_matrix<matrix, grp> raise  = model.get_operator( ML::raising_ops()[i] );
+        block_matrix<matrix, grp> lower  = model.get_operator( ML::lowering_ops()[i] );
         
         std::vector<double> meas1 = measure_local(mps, ident, dens);
         
         for (int it=0; it<3; ++it) {
-            int ni = drand48() * (lat->size()-1);
+            int ni = drand48() * (lat.size()-1);
             int nj = ni;
             while (nj <= ni)
-                nj = drand48() * lat->size();
+                nj = drand48() * lat.size();
             maquis::cout << "measuring at ni=" << ni << ", nj=" << nj << std::endl;
 
             MPS<matrix, grp> mps2(mps);

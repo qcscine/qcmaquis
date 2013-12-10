@@ -20,6 +20,7 @@ using std::endl;
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/coherent_init.h"
 #include "dmrg/models/generate_mpo.hpp"
+#include "dmrg/models/coded/lattice.hpp"
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/math/special_functions/factorials.hpp>
@@ -31,9 +32,13 @@ template <class SymmGroup>
 std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
                                   block_matrix<matrix, SymmGroup> const& ident, block_matrix<matrix, SymmGroup> const& op)
 {
+    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
+    boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
+    Lattice lattice(lat_ptr);
+
     std::vector<double> vals(mps.size());
     for (int p=0; p<mps.size(); ++p) {
-        generate_mpo::MPOMaker<matrix, SymmGroup> mpom(mps.length(), ident);
+        generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, op_vec(1,ident),op_vec(1,ident));
         generate_mpo::Operator_Term<matrix, SymmGroup> term;
         term.operators.push_back( std::make_pair(p, op) );
         term.fill_operator = ident;

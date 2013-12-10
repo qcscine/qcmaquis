@@ -21,7 +21,9 @@
 #include "dmrg/mp_tensors/chem_compression.h"
 
 #include "dmrg/models/lattice.h"
+#include "dmrg/models/model.h"
 
+#include <boost/bind.hpp>
 #include <string>
 #include <sstream>
 
@@ -63,10 +65,14 @@ namespace generate_mpo
                 return (pos_op == lhs.pos_op) ? offset < lhs.offset : pos_op < lhs.pos_op;
             }
         };
-        
-        
     }
     
+    template <typename T, typename U>
+    std::pair<T,U> to_pair(boost::tuple<T,U> const& t)
+    {
+        return std::make_pair( boost::get<0>(t), boost::get<1>(t) );
+    }
+
     template<class Matrix, class SymmGroup>
     class TaggedMPOMaker
     {
@@ -79,6 +85,8 @@ namespace generate_mpo
         typedef typename Operator_Tag_Term<Matrix, SymmGroup>::op_pair_t pos_op_type;
         typedef boost::tuple<std::size_t, std::size_t, tag_type, scale_type> tag_block;
         
+        typedef ::term_descriptor<typename Matrix::value_type> term_descriptor;
+        
         typedef detail::prempo_key<pos_t, tag_type, index_type> prempo_key_type;
         typedef std::pair<tag_type, scale_type> prempo_value_type;
         // TODO: consider moving to hashmap
@@ -87,46 +95,49 @@ namespace generate_mpo
         enum merge_kind {attach, detach};
         
     public:
-        TaggedMPOMaker(pos_t length_, tag_type ident_
-                      , boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tbl_)
-        : length(length_)
-        , ident(ident_)
+        TaggedMPOMaker(Lattice const& lat_, Model<Matrix,SymmGroup> const& model_)
+        : lat(lat_)
+        , model(model_)
+        , length(lat.size())
         , prempo(length)
         , trivial_left(prempo_key_type::trivial_left)
         , trivial_right(prempo_key_type::trivial_right)
         , leftmost_right(length)
-        , tag_handler(tbl_)
+        , tag_handler(model.operators_table())
         , finalized(false)
         {
             for (size_t p = 0; p < length-1; ++p)
-                prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(ident, 1.);
+                prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(model.identity_matrix_tag(lat.get_prop<int>("type",p)), 1.);
+            
+            using boost::bind;
+            typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
+            std::for_each(terms.begin(), terms.end(), bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
         }
         
-        void add_term(Operator_Tag_Term<Matrix, SymmGroup> const & term)
+        void add_term(term_descriptor term)
         {
-            std::vector<pos_op_type> ops = term.operators;
-            std::sort(ops.begin(), ops.end(), compare<pos_op_type>);
-            index_type nops = ops.size();
+            std::sort(term.begin(), term.end(), pos_tag_lt());
+            index_type nops = term.size();
             
             switch (nops) {
                 case 1:
-                    add_1term(ops, term.scale, term.fill_operator);
+                    add_1term(term);
                     break;
                 case 2:
-                    add_2term(ops, term.scale, term.fill_operator);
+                    add_2term(term);
                     break;
                 case 3:
-                    add_3term(ops, term.scale, term.fill_operator);
+                    add_3term(term);
                     break;
                 case 4:
-                    add_4term(ops, term.scale, term.fill_operator);
+                    add_4term(term);
                     break;
                 default:
-                    add_nterm(ops, term.scale); /// here filling has to be done manually
+                    add_nterm(term); /// here filling has to be done manually
                     break;
             }
             
-            leftmost_right = std::min(leftmost_right, ops.rbegin()->first);
+            leftmost_right = std::min(leftmost_right, boost::get<0>(*term.rbegin()));
         }
                 
         MPO<Matrix, SymmGroup> create_mpo()
@@ -180,45 +191,46 @@ namespace generate_mpo
         }
         
     private:
-        void add_1term(std::vector<pos_op_type> const& ops, scale_type matrix_element, tag_type fill)
+        void add_1term(term_descriptor const& term)
         {
-            assert(ops.size() == 1);
+            assert(term.size() == 1);
             
             /// retrieve the actual operator from the tag table
             // TODO implement plus operation
-            op_t current_op = tag_handler->get_op(ops[0].second);
-            current_op *= matrix_element;
-            site_terms[ops[0].first] += current_op;
+            op_t current_op = tag_handler->get_op(term.operator_tag(0));
+            current_op *= term.coeff;
+            site_terms[term.position(0)] += current_op;
         }
         
-        void add_2term(std::vector<pos_op_type> const& ops, scale_type matrix_element, tag_type fill)
+        void add_2term(term_descriptor const& term)
         {
-            assert(ops.size() == 2);
+            assert(term.size() == 2);
             
             prempo_key_type k1 = trivial_left;
             {
                 int i = 0;
                 prempo_key_type k2;
-                k2.pos_op.push_back(ops[i+1]);
-                k1 = insert_operator(ops[i].first, make_pair(k1, k2), prempo_value_type(ops[i].second, matrix_element), detach);
+                k2.pos_op.push_back(to_pair(term[i+1]));
+                k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
             }
-            insert_filling(ops[0].first+1, ops[1].first, k1, fill);
+            bool trivial_fill = !tag_handler->is_fermionic(term.operator_tag(1));
+            insert_filling(term.position(0)+1, term.position(1), k1, trivial_fill); // todo: check with long-range n_i*n_j
             {
                 int i = 1;
                 prempo_key_type k2 = trivial_right;
-                insert_operator(ops[i].first, make_pair(k1, k2), prempo_value_type(ops[i].second, 1.), detach);
+                insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), detach);
             }
-}
+        }
         
-        void add_3term(std::vector<pos_op_type> const& ops, scale_type matrix_element, tag_type fill)
+        void add_3term(term_descriptor const& term)
         {
-            assert(ops.size() == 3);
-            int nops = ops.size();
+            assert(term.size() == 3);
+            int nops = term.size();
             
             /// number of fermionic operators
             int nferm = 0;
             for (int i = 0; i < nops; ++i) {
-                if (tag_handler->is_fermionic(ops[i].second))
+                if (tag_handler->is_fermionic(term.operator_tag(i)))
                     nferm += 1;
             }
             
@@ -229,42 +241,42 @@ namespace generate_mpo
             {
                 int i = 0;
                 prempo_key_type k2;
-                k2.pos_op.push_back(ops[i]); // k2: applied operator
-                k1 = insert_operator(ops[i].first, make_pair(k1, k2), prempo_value_type(ops[i].second, 1.), attach);
+                k2.pos_op.push_back(to_pair(term[i])); // k2: applied operator
+                k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), attach);
                 
-                if (tag_handler->is_fermionic(ops[i].second))
+                if (tag_handler->is_fermionic(term.operator_tag(i)))
                     nferm -= 1;
-                tag_type curr_fill = (nferm % 2 == 0) ? ident : fill;
-                insert_filling(ops[i].first+1, ops[i+1].first, k1, curr_fill);
+                bool trivial_fill = (nferm % 2 == 0);
+                insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill);
             }
             /// op_1
             {
                 int i = 1;
                 prempo_key_type k2;
-                k2.pos_op.push_back(ops[i+1]); // k2: future operators
-                k1 = insert_operator(ops[i].first, make_pair(k1, k2), prempo_value_type(ops[i].second, matrix_element), detach);
+                k2.pos_op.push_back(to_pair(term[i+1])); // k2: future operators
+                k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
                 
-                if (tag_handler->is_fermionic(ops[i].second))
+                if (tag_handler->is_fermionic(term.operator_tag(i)))
                     nferm -= 1;
-                tag_type curr_fill = (nferm % 2 == 0) ? ident : fill;
-                insert_filling(ops[i].first+1, ops[i+1].first, k1, curr_fill);
+                bool trivial_fill = (nferm % 2 == 0);
+                insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill);
             }
             /// op_2
             {
                 int i = 2;
-                insert_operator(ops[i].first, make_pair(k1, trivial_right), prempo_value_type(ops[i].second, 1.), detach);
+                insert_operator(term.position(i), make_pair(k1, trivial_right), prempo_value_type(term.operator_tag(i), 1.), detach);
             }
         }
         
-        void add_4term(std::vector<pos_op_type> const& ops, scale_type matrix_element, tag_type fill)
+        void add_4term(term_descriptor const& term)
         {
-            assert(ops.size() == 4);
-            int nops = ops.size();
+            assert(term.size() == 4);
+            int nops = term.size();
             
             /// number of fermionic operators
             int nferm = 0;
             for (int i = 0; i < nops; ++i) {
-                if (tag_handler->is_fermionic(ops[i].second))
+                if (tag_handler->is_fermionic(term.operator_tag(i)))
                     nferm += 1;
             }
             
@@ -273,37 +285,37 @@ namespace generate_mpo
             
             /// op_0, op_1
             for (int i = 0; i < 2; ++i) {
-                ops_left.push_back(ops[i]); prempo_key_type k2(ops_left);
-                k1 = insert_operator(ops[i].first, make_pair(k1, k2), prempo_value_type(ops[i].second, 1.), attach);
+                ops_left.push_back(to_pair(term[i])); prempo_key_type k2(ops_left);
+                k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), attach);
                 
-                if (tag_handler->is_fermionic(ops[i].second))
+                if (tag_handler->is_fermionic(term.operator_tag(i)))
                     nferm -= 1;
-                tag_type curr_fill = (nferm % 2 == 0) ? ident : fill;
-                insert_filling(ops[i].first+1, ops[i+1].first, k1, curr_fill);
+                bool trivial_fill = (nferm % 2 == 0);
+                insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill);
             }
             /// op_2
             {
                 int i = 2;
                 prempo_key_type k2;
-                k2.pos_op.push_back(ops[3]);
-                k1 = insert_operator(ops[i].first, make_pair(k1, k2), prempo_value_type(ops[i].second, matrix_element), detach);
+                k2.pos_op.push_back(to_pair(term[3]));
+                k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
                 
-                if (tag_handler->is_fermionic(ops[i].second))
+                if (tag_handler->is_fermionic(term.operator_tag(i)))
                     nferm -= 1;
-                tag_type curr_fill = (nferm % 2 == 0) ? ident : fill;
-                insert_filling(ops[i].first+1, ops[i+1].first, k1, curr_fill);
+                bool trivial_fill = (nferm % 2 == 0);
+                insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill);
             }
 
             /// op_3
             {
                 int i = 3;
-                insert_operator(ops[i].first, make_pair(k1, trivial_right), prempo_value_type(ops[i].second, 1.), detach);
+                insert_operator(term.position(i), make_pair(k1, trivial_right), prempo_value_type(term.operator_tag(i), 1.), detach);
             }
         }
 
-        void add_nterm(std::vector<pos_op_type> const& ops, scale_type matrix_element)
+        void add_nterm(term_descriptor const& term)
         {
-            int nops = ops.size();
+            int nops = term.size();
             assert( nops > 2 );
             
             static index_type next_offset = 0;
@@ -311,14 +323,14 @@ namespace generate_mpo
             
             prempo_key_type k1 = trivial_left;
             prempo_key_type k2(prempo_key_type::bulk_no_merge, current_offset);
-            k2.pos_op.push_back( ops[nops-1] );
+            k2.pos_op.push_back( to_pair(term[nops-1]) );
             
             {
                 int i = 0;
-                insert_operator(ops[i].first, make_pair(k1, k2), prempo_value_type(ops[i].second, matrix_element), detach);
+                insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
                 k1 = k2;
                 
-                if (i < nops-1 && ops[i].first+1 != ops[i+1].first)
+                if (i < nops-1 && term.position(i)+1 != term.position(i+1))
                     throw std::runtime_error("for n > 4 operators filling is assumed to be done manually. the list of operators contains empty sites.");
             }
 
@@ -327,17 +339,18 @@ namespace generate_mpo
                 if (i == nops-1)
                     k2 = trivial_right;
                 
-                insert_operator(ops[i].first, make_pair(k1, k2), prempo_value_type(ops[i].second, 1.), detach);
+                insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), detach);
                 
-                if (i < nops-1 && ops[i].first+1 != ops[i+1].first)
+                if (i < nops-1 && term.position(i)+1 != term.position(i+1))
                     throw std::runtime_error("for n > 4 operators filling is assumed to be done manually. the list of operators contains empty sites.");
             }
             
         }
 
-		void insert_filling(pos_t i, pos_t j, prempo_key_type k, tag_type op)
+		void insert_filling(pos_t i, pos_t j, prempo_key_type k, bool trivial_fill)
 		{
 			for (; i < j; ++i) {
+                tag_type op = (trivial_fill) ? model.identity_matrix_tag(lat.get_prop<int>("type",i)) : model.filling_matrix_tag(lat.get_prop<int>("type",i));
 				std::pair<typename prempo_map_type::iterator,bool> ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
 				if (!ret.second && ret.first->second.first != op)
 					throw std::runtime_error("Pre-existing term at site "+boost::lexical_cast<std::string>(i)
@@ -387,15 +400,18 @@ namespace generate_mpo
             }
 
             /// fill with ident until the end
-            insert_filling(leftmost_right+1, length, trivial_right, ident);
+            bool trivial_fill = true;
+            insert_filling(leftmost_right+1, length, trivial_right, trivial_fill);
 
             finalized = true;
         }
         
 
     private:
+        Lattice const& lat;
+        Model<Matrix,SymmGroup> const& model;
+        
         pos_t length;
-        tag_type ident;
         
         boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
         std::vector<prempo_map_type> prempo;

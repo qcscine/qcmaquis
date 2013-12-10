@@ -11,6 +11,7 @@
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/super_mpo.h"
 #include "dmrg/models/meas_prepare.hpp"
+#include "dmrg/models/generate_mpo.hpp"
 
 #include <sstream>
 #include <algorithm>
@@ -20,19 +21,6 @@
 #include "utils/traits.hpp"
 
 namespace meas_eval {
-    
-    // forward declaration
-    template<class Matrix, class SymmGroup>
-	void measure_correlation_(MPS<Matrix, SymmGroup> const & mps,
-							  const Lattice & lat,
-							  block_matrix<Matrix, SymmGroup> const & identity,
-							  block_matrix<Matrix, SymmGroup> const & fill,
-							  std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
-							  std::vector<std::size_t> const & order,
-							  bool is_nn,
-							  std::vector<typename MPS<Matrix, SymmGroup>::scalar_type>& dc,
-							  std::vector<std::string>& labels,
-                              bool super_meas);
     
 	inline std::vector<std::string> label_strings (const Lattice& lat, const std::vector<std::vector<std::size_t> >& labels)
 	{
@@ -78,42 +66,44 @@ namespace meas_eval {
 		return ret;
 	}
     
-    template<class Matrix, class SymmGroup, class T>
-	void save_helper(T const& val, std::vector<std::string> const& labels,
-    		         std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
-                     std::string const & h5name, std::string base_path)
+    template<class Matrix, class SymmGroup>
+    bool is_hermitian_meas(std::vector<std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> > const & ops)
+    {
+        bool is_herm = true;
+        for (int i=0; i<ops.size() && is_herm; ++i)
+            is_herm = all_true(ops[i].first.begin(), ops[i].first.end(),
+                               boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian), _1));
+        return is_herm;
+    }
+    
+    template<class T>
+	void save_helper(T const& val, bool cast_to_real,
+                     std::string const & h5name, std::string const& base_path, std::string const& obs_name)
     {
         storage::archive ar(h5name, "w");
         
-        if ( all_true(ops.begin(), ops.end(),
-                      boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian),
-                                  boost::bind<block_matrix<Matrix, SymmGroup> const&>(&std::pair<block_matrix<Matrix, SymmGroup>, bool>::first, _1))
-                      ) )
+        if (cast_to_real)
         {
             std::vector<double> tmp(1, maquis::real(val));
-            ar[base_path + std::string("/mean/value")] << tmp;
+            ar[base_path + storage::encode(obs_name) + std::string("/mean/value")] << tmp;
         } else {
-            ar[base_path + std::string("/mean/value")] << std::vector<T>(1, val);
+            ar[base_path + storage::encode(obs_name) + std::string("/mean/value")] << std::vector<T>(1, val);
         }
     }
 
-    template<class Matrix, class SymmGroup, class T>
-	void save_helper(std::vector<T> const& val, std::vector<std::string> const& labels,
-    		         std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
-                     std::string const & h5name, std::string base_path)
+    template<class T>
+	void save_helper(std::vector<T> const& val, std::vector<std::string> const& labels, bool cast_to_real,
+                     std::string const & h5name, std::string const& base_path, std::string const& obs_name)
     {
         storage::archive ar(h5name, "w");
         
-        ar[base_path + std::string("/labels")] << labels;
-        if ( all_true(ops.begin(), ops.end(),
-                      boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian),
-                                  boost::bind<block_matrix<Matrix, SymmGroup> const&>(&std::pair<block_matrix<Matrix, SymmGroup>, bool>::first, _1))
-                      ) )
+        ar[base_path + storage::encode(obs_name) + std::string("/labels")] << labels;
+        if (cast_to_real)
         {
             std::vector<std::vector<double> > tmp(1, maquis::real(val));
-            ar[base_path + std::string("/mean/value")] << tmp;
+            ar[base_path + storage::encode(obs_name) + std::string("/mean/value")] << tmp;
         } else {
-            ar[base_path + std::string("/mean/value")] << std::vector<std::vector<T> >(1, val);
+            ar[base_path + storage::encode(obs_name) + std::string("/mean/value")] << std::vector<std::vector<T> >(1, val);
         }
     }
 
@@ -121,15 +111,12 @@ namespace meas_eval {
     template <class Matrix, class SymmGroup>
     class LocalMPSMeasurement
     {
+        typedef typename SymmGroup::subcharge subcharge;
     public:
-        LocalMPSMeasurement(const MPS<Matrix, SymmGroup> & mps_, const Lattice & lat_,
-                            std::vector<typename PGDecorator<SymmGroup>::irrep_t> const & si_)
+        LocalMPSMeasurement(const MPS<Matrix, SymmGroup> & mps_, const Lattice & lat_)
         : mps(mps_)
         , lat(lat_)
         , L(mps.size())
-        , phys_i(mps[0].site_dim())
-        , site_irreps(si_)
-        , ident(L)
         , left_(L)
         , right_(L)
         , initialized(false)
@@ -137,26 +124,30 @@ namespace meas_eval {
         
         void init() const
         {
-            PGDecorator<SymmGroup> set_symm;
-            for (int i = 0; i < L; ++i)
-                ident[i].set(0, 0, identity_matrix<Matrix>(set_symm(phys_i, site_irreps[i])));
-            
             // init right_ & left_
             Boundary<Matrix, SymmGroup> right = mps.right_boundary(), left = mps.left_boundary();
             right_[L-1] = right;
             left_[0] = left;
             for (int i = 1; i < L; ++i) {
-                right = contraction::overlap_mpo_right_step(mps[L-i], mps[L-i], right, ident[L-i]);
-                right_[L-1-i] = right;
-                
-                left = contraction::overlap_mpo_left_step(mps[i-1], mps[i-1], left, ident[i-1]);
-                left_[i] = left;
+                {
+                    MPOTensor<Matrix, SymmGroup> ident;
+                    ident.set(0, 0, identity_matrix<Matrix>(mps[L-i].site_dim()));
+                    right = contraction::overlap_mpo_right_step(mps[L-i], mps[L-i], right, ident);
+                    right_[L-1-i] = right;
+                }
+                {
+                    MPOTensor<Matrix, SymmGroup> ident;
+                    ident.set(0, 0, identity_matrix<Matrix>(mps[i-1].site_dim()));
+                    left = contraction::overlap_mpo_left_step(mps[i-1], mps[i-1], left, ident);
+                    left_[i] = left;
+                }
             }
         }
         
-        void site_term (std::pair<block_matrix<Matrix, SymmGroup>, bool> const & op,
+        void site_term (std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> const & op,
                         std::string const & h5name,
-                        std::string const & base_path) const
+                        std::string const & base_path,
+                        std::string const & obs_name) const
         {
             if (!initialized)
                 init();
@@ -164,30 +155,31 @@ namespace meas_eval {
             std::vector<typename MPSTensor<Matrix, SymmGroup>::scalar_type> vals; vals.reserve(L);
             std::vector<std::string> labels;
 
-            OPIrrep<Matrix, SymmGroup> op_symm;
-            for (int p = 0; p < L; ++p) {
-                // modify pg-symmetry of op.first 
-                MPOTensor<Matrix, SymmGroup> temp;
-                block_matrix<Matrix, SymmGroup> op_with_symm = op_symm(op.first, site_irreps[p]);
-                temp.set(0, 0, op_with_symm);
-
-                MPSTensor<Matrix, SymmGroup> vec2 =
-                contraction::site_hamil2(mps[p], left_[p], right_[p], temp);
-                vals.push_back( maquis::real(mps[p].scalar_overlap(vec2)) ); // MD todo: allow complex numbers
-                labels.push_back( lat.get_prop<std::string>("label", p) );
+            for (typename Lattice::pos_t p = 0; p < L; ++p) {
+                subcharge type = lat.get_prop<subcharge>("type", p);
+                if (op.first[type].n_blocks() > 0) {
+                    MPOTensor<Matrix, SymmGroup> temp;
+                    temp.set(0, 0, op.first[type]);
+                    
+                    MPSTensor<Matrix, SymmGroup> vec2 =
+                    contraction::site_hamil2(mps[p], left_[p], right_[p], temp);
+                    vals.push_back( maquis::real(mps[p].scalar_overlap(vec2)) ); // MD todo: allow complex numbers
+                    labels.push_back( lat.get_prop<std::string>("label", p) );
+                }
             } // should return a vector of pairs or pair of vectors (todo: 30.04.12 / Matthias scalar/value types discussion)
             
             { // should be moved out to the main loop (todo: 30.04.12 / Matthias scalar/value types discussion)
                 storage::archive ar(h5name, "w");
                 std::vector<std::vector<double> > tmp(1, maquis::real(vals));
-                ar[base_path + std::string("/mean/value")] << tmp;
-                ar[base_path + std::string("/labels")] << labels;
+                ar[base_path + storage::encode(obs_name) + std::string("/mean/value")] << tmp;
+                ar[base_path + storage::encode(obs_name) + std::string("/labels")] << labels;
             }
         }
         
-        void bond_term (std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
+        void bond_term (std::vector<std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> > const & ops,
                         std::string const & h5name,
-                        std::string const & base_path) const
+                        std::string const & base_path,
+                        std::string const & obs_name) const
         {
             assert(ops.size() == 2);
             
@@ -199,21 +191,25 @@ namespace meas_eval {
             MPOTensor<Matrix, SymmGroup> temp;
             
             for (int p = 0; p < L-1; ++p) {
-                temp.set(0, 0, ops[0].first);
-                Boundary<Matrix, SymmGroup> tmp_b = contraction::overlap_mpo_left_step(mps[p], mps[p], left_[p], temp);
-                
-                temp.set(0, 0, ops[1].first);
-                MPSTensor<Matrix, SymmGroup> vec2 =
-                contraction::site_hamil2(mps[p+1], tmp_b, right_[p+1], temp);
-                vals.push_back( maquis::real(mps[p+1].scalar_overlap(vec2)) ); // MD todo: allow complex numbers
-                labels.push_back( lat.get_prop<std::string>("label", p, p+1) );
+                int type1 = lat.get_prop<int>("type",p);
+                int type2 = lat.get_prop<int>("type",p);
+                if (ops[0].first[type1].n_blocks() > 0 && ops[1].first[type2].n_blocks() > 0) {
+                    temp.set(0, 0, ops[0].first[type1]);
+                    Boundary<Matrix, SymmGroup> tmp_b = contraction::overlap_mpo_left_step(mps[p], mps[p], left_[p], temp);
+                    
+                    temp.set(0, 0, ops[1].first[type2]);
+                    MPSTensor<Matrix, SymmGroup> vec2 =
+                    contraction::site_hamil2(mps[p+1], tmp_b, right_[p+1], temp);
+                    vals.push_back( maquis::real(mps[p+1].scalar_overlap(vec2)) ); // MD todo: allow complex numbers
+                    labels.push_back( lat.get_prop<std::string>("label", p, p+1) );
+                }
             } // same here (todo: 30.04.12 / Matthias scalar/value types discussion)
             
             {
                 storage::archive ar(h5name, "w");
                 std::vector<std::vector<double> > tmp(1, maquis::real(vals));
-                ar[base_path + std::string("/mean/value")] << tmp;
-                ar[base_path + std::string("/labels")] << labels;
+                ar[base_path + storage::encode(obs_name) + std::string("/mean/value")] << tmp;
+                ar[base_path + storage::encode(obs_name) + std::string("/labels")] << labels;
             }
         }
         
@@ -221,9 +217,6 @@ namespace meas_eval {
         const MPS<Matrix, SymmGroup> & mps;
         const Lattice & lat;
         int L;
-        Index<SymmGroup> phys_i;
-        std::vector<typename PGDecorator<SymmGroup>::irrep_t> site_irreps;
-        mutable std::vector<MPOTensor<Matrix, SymmGroup> > ident;
         mutable std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
         bool initialized;
 
@@ -232,49 +225,52 @@ namespace meas_eval {
     template<class Matrix, class SymmGroup>
 	void measure_local(MPS<Matrix, SymmGroup> const & mps,
                        const Lattice & lat,
-                       block_matrix<Matrix, SymmGroup> const & identity,
-                       block_matrix<Matrix, SymmGroup> const & fill,
-                       std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
+                       std::vector<block_matrix<Matrix, SymmGroup> > const & identities,
+                       std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
+                       Measurement_Term<Matrix, SymmGroup> const& term,
                        std::string const & h5name,
                        std::string base_path,
                        bool super_meas = false)
     {
+        std::vector<std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> > const & ops = term.operators;
+
         std::vector<std::string> labels;
         std::vector<MPO<Matrix, SymmGroup> > mpos;
         
-        boost::tie(mpos, labels) = meas_prepare::local(lat, identity, fill, ops);
+        boost::tie(mpos, labels) = meas_prepare::local(lat, identities, fillings, ops);
         
         std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals; vals.reserve(mpos.size());
         typename MPS<Matrix, SymmGroup>::scalar_type nn;
 
-        Index<SymmGroup> const& phys_i = identity.left_basis();
         if (super_meas)
-            nn = dm_trace(mps, phys_i);
+            nn = dm_trace(mps, term.phys_psi);
             
         for (std::size_t i=0; i<mpos.size(); ++i) {
             if (!super_meas) {
                 vals.push_back( expval(mps, mpos[i]) );
             } else {
-                MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpos[i], phys_i);
+                MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpos[i], term.phys_psi);
                 typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(super_mpo, mps);
                 vals.push_back(val/nn);
             }
         }
         
-        save_helper<Matrix, SymmGroup>(vals, labels, ops, h5name, base_path);
+        save_helper(vals, labels, is_hermitian_meas(term.operators), h5name, base_path, term.name);
 	}
 
     template<class Matrix, class SymmGroup>
 	void measure_local_at(MPS<Matrix, SymmGroup> const & mps,
                           const Lattice & lat,
-                          block_matrix<Matrix, SymmGroup> const & identity,
-                          block_matrix<Matrix, SymmGroup> const & fill,
-                          std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
-                          std::vector<std::vector<std::size_t> > const & positions,
+                          std::vector<block_matrix<Matrix, SymmGroup> > const & identities,
+                          std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
+                          Measurement_Term<Matrix, SymmGroup> const& term,
                           std::string const & h5name,
                           std::string base_path,
                           bool super_meas = false)
 	{
+        std::vector<std::pair<std::vector<block_matrix<Matrix, SymmGroup> > , bool> > const & ops = term.operators;
+        std::vector<std::vector<std::size_t> > const & positions = term.positions;
+
         std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals;
         
         for (std::size_t p = 0; p < positions.size(); ++p)
@@ -284,63 +280,66 @@ namespace meas_eval {
                 if (positions[p][i-1] >= positions[p][i])
                     throw std::runtime_error("measure_local_at requires i1<i2<...<in.");
             
-            generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
-            generate_mpo::Operator_Term<Matrix, SymmGroup> term;
+            generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat, identities, fillings);
+            generate_mpo::Operator_Term<Matrix, SymmGroup> hterm;
             
             bool with_sign = false;
             for (std::size_t i=0; i<ops.size(); ++i) {
                 std::size_t pos = positions[p][i];
+                
+                block_matrix<Matrix, SymmGroup> const& fill  = fillings[lat.get_prop<int>("type", pos)];
+                block_matrix<Matrix, SymmGroup> const& op    = ops[i].first[lat.get_prop<int>("type", pos)];
+                
                 typedef block_matrix<Matrix, SymmGroup> op_t;
                 op_t tmp;
-                if (!with_sign && ops[i].second) gemm(fill, ops[i].first, tmp);
-                else                             tmp = ops[i].first;
-                term.operators.push_back( std::make_pair(pos, tmp) );
+                if (!with_sign && ops[i].second) gemm(fill, op, tmp);
+                else                             tmp = op;
+                hterm.operators.push_back( std::make_pair(pos, tmp) );
                 
                 pos++;
                 with_sign = (ops[i].second) ? !with_sign : with_sign;
                 if (i != ops.size()-1)
                     for (; pos<positions[p][i+1]; ++pos) {
-                        if (with_sign)
-                            term.operators.push_back( std::make_pair(pos, fill) );
-                        else
-                            term.operators.push_back( std::make_pair(pos, identity) );
+                        block_matrix<Matrix, SymmGroup> const& fill  = fillings[lat.get_prop<int>("type", pos)];
+                        block_matrix<Matrix, SymmGroup> const& ident = identities[lat.get_prop<int>("type", pos)];
+                        hterm.operators.push_back( std::make_pair(pos, (with_sign) ? fill : ident) );
                     }
             }
-            term.fill_operator = identity;
-            mpom.add_term(term);
+            hterm.with_sign = false; // filling already taken care above
+            mpom.add_term(hterm);
             MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
             
             if (!super_meas){
                 typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo);
                 vals.push_back(val);
             } else {
-                Index<SymmGroup> phys_i = identity.left_basis();
-                typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, phys_i);
-                MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
+                typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, term.phys_psi);
+                MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, term.phys_psi);
                 typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(super_mpo, mps);
                 vals.push_back(val/nn);
             }
             
         }
         std::vector<std::string> labels = label_strings(lat, positions);
-        save_helper<Matrix, SymmGroup>(vals, labels, ops, h5name, base_path);
+        save_helper(vals, labels, is_hermitian_meas(ops), h5name, base_path, term.name);
     }
 
     template<class Matrix, class SymmGroup>
     void measure_custom(MPS<Matrix, SymmGroup> const & mps,
-                       const Lattice & lat,
-                       block_matrix<Matrix, SymmGroup> const & identity,
-                       block_matrix<Matrix, SymmGroup> const & fill,
-                       std::vector< std::vector< std::pair<int, block_matrix<Matrix, SymmGroup> > > > const & ops,
-                       std::string const & h5name,
-                       std::string base_path)
+                        const Lattice & lat,
+                        std::vector<block_matrix<Matrix, SymmGroup> > const & identities,
+                        std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
+                        std::vector< std::vector< std::pair<int, block_matrix<Matrix, SymmGroup> > > > const & ops,
+                        std::string const & h5name,
+                        std::string base_path,
+                        std::string const & obs_name)
     {
-        generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat.size(), identity);
+        generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat, identities, fillings);
 
         for (int k = 0; k < ops.size(); ++k) {
             generate_mpo::Operator_Term<Matrix, SymmGroup> term;
             term.operators = ops[k];
-            term.fill_operator = fill;
+            term.with_sign = true;
             mpom.add_term(term);
         }
 
@@ -349,32 +348,31 @@ namespace meas_eval {
 
         {
             storage::archive ar(h5name, "w");
-            ar[base_path + std::string("/mean/value")] << std::vector<double>(1, val);
+            ar[base_path + storage::encode(obs_name) + std::string("/mean/value")] << std::vector<double>(1, val);
         }
     }
    
 	template<class Matrix, class SymmGroup>
 	void measure_average(MPS<Matrix, SymmGroup> const & mps,
                          const Lattice & lat,
-                         block_matrix<Matrix, SymmGroup> const & identity,
-                         block_matrix<Matrix, SymmGroup> const & fill,
-                         std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
+                         std::vector<block_matrix<Matrix, SymmGroup> > const & identities,
+                         std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
+                         Measurement_Term<Matrix, SymmGroup> const& term,
                          std::string const & h5name,
                          std::string base_path,
                          bool super_meas = false)
 	{
-        MPO<Matrix, SymmGroup> mpo = meas_prepare::average(lat, identity, fill, ops);
+        MPO<Matrix, SymmGroup> mpo = meas_prepare::average(lat, identities, fillings, term.operators);
        
         // C - Tim, no futur, if disagree -> Alex must fix futur 
         if (!super_meas){
             typename MPS<Matrix, SymmGroup>::scalar_type  val = expval(mps, mpo);
-            save_helper<Matrix, SymmGroup>(val, std::vector<std::string>(), ops, h5name, base_path);
+            save_helper(val, is_hermitian_meas(term.operators), h5name, base_path, term.name);
         } else {
-            Index<SymmGroup> phys_i = identity.left_basis();
-            typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, phys_i);
-            MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
+            typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, term.phys_psi);
+            MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, term.phys_psi);
             typename MPS<Matrix, SymmGroup>::scalar_type val = overlap(super_mpo, mps) / nn;
-            save_helper<Matrix, SymmGroup>(val, std::vector<std::string>(), ops, h5name, base_path);
+            save_helper(val, is_hermitian_meas(term.operators), h5name, base_path, term.name);
         }
 
 	}
@@ -384,7 +382,7 @@ namespace meas_eval {
                     std::vector<MPS<Matrix, SymmGroup> > const& super_mpos,
                     std::vector<std::string> const& labels,
                     bool is_multi_overlap,
-                    std::string const & h5name, std::string const & base_path)
+                    std::string const & h5name, std::string const & base_path, std::string const & obs_name)
 	{
         typename MPS<Matrix, SymmGroup>::scalar_type nn = overlap(mps, mps_ident);
         
@@ -393,7 +391,7 @@ namespace meas_eval {
             std::vector<double> tmp(1, maquis::real(val));
             
             storage::archive ar(h5name, "w");
-            ar[base_path + std::string("/mean/value")] << tmp;
+            ar[base_path + storage::encode(obs_name) + std::string("/mean/value")] << tmp;
         } else {
             std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals;
             for (std::size_t i=0; i<super_mpos.size(); ++i) {
@@ -408,15 +406,15 @@ namespace meas_eval {
             }
             std::vector<std::vector<double> > tmp(1, maquis::real(vals));
             storage::archive ar(h5name, "w");
-            ar[base_path + std::string("/mean/value")] << tmp;
-            ar[base_path + std::string("/labels")] << labels;
+            ar[base_path + storage::encode(obs_name) + std::string("/mean/value")] << tmp;
+            ar[base_path + storage::encode(obs_name) + std::string("/labels")] << labels;
         }
 	}
 
 	template<class Matrix, class SymmGroup>
 	void measure_overlap(MPS<Matrix, SymmGroup> const & mps,
                          const std::string & bra_ckp,
-                         std::string const & h5name, std::string const & base_path)
+                         std::string const & h5name, std::string const & base_path, std::string const & obs_name)
 	{
         maquis::cout << "Measuring overlap with " << bra_ckp << "." << std::endl;
         MPS<Matrix, SymmGroup> bra_mps;
@@ -429,13 +427,13 @@ namespace meas_eval {
             
             std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> tmp(1, val);
             storage::archive ar(h5name, "w");
-            ar[base_path + std::string("/mean/value")] << tmp;
+            ar[base_path + storage::encode(obs_name) + std::string("/mean/value")] << tmp;
         } else {
             std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals = multi_overlap(bra_mps, mps);
             
             std::vector<std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> > tmp(1, vals);
             storage::archive ar(h5name, "w");
-            ar[base_path + std::string("/mean/value")] << tmp;
+            ar[base_path + storage::encode(obs_name) + std::string("/mean/value")] << tmp;
         }
 	}
     
@@ -444,7 +442,7 @@ namespace meas_eval {
 	{
 	public:
 		typedef std::size_t size_t;
-		typedef std::pair<block_matrix<Matrix, SymmGroup>, bool> inner_t;
+		typedef std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> inner_t;
 		typedef std::vector<inner_t> value_t;
 		CorrPermutator (value_t const & ops, bool is_nn)
 		{
@@ -479,8 +477,11 @@ namespace meas_eval {
 						tmp.push_back( ops[ord[i]+1] );
 					}
 				}
-				tmp[0].first *= cmp.prefactor;
-				perm.push_back(tmp);
+				
+                for (int type=0; type<tmp[0].first.size(); ++type)
+                    tmp[0].first[type] *= cmp.prefactor;
+                
+                perm.push_back(tmp);
 				orders.push_back(ord);
 			} while (std::next_permutation(ord.begin(), ord.end()));
 		}
@@ -497,16 +498,16 @@ namespace meas_eval {
 	template<class Matrix, class SymmGroup>
 	void measure_correlation_(MPS<Matrix, SymmGroup> const & mps,
 							  const Lattice & lat,
-							  block_matrix<Matrix, SymmGroup> const & identity,
-							  block_matrix<Matrix, SymmGroup> const & fill,
+                              std::vector<block_matrix<Matrix, SymmGroup> > const & identities,
+                              std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
                               std::vector<std::size_t> const& positions_first,
-							  std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
+							  std::vector<std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> > const & ops,
 							  std::vector<std::size_t> const & order,
 							  bool is_nn,
 							  std::vector<typename MPS<Matrix, SymmGroup>::scalar_type>& dc,
 							  std::vector<std::string>& labels,
-                              bool super_meas,
-                              PGSymmetryConverter<Matrix, SymmGroup> const & symm_conv)
+                              Index<SymmGroup> const& phys_psi,
+                              bool super_meas)
 	{
         typedef boost::shared_ptr<generate_mpo::CorrMakerBase<Matrix, SymmGroup> > maker_ptr;
 
@@ -520,21 +521,19 @@ namespace meas_eval {
 			std::vector<std::vector<std::size_t> > num_labels;
             maker_ptr dcorr;
             if (is_nn)
-                dcorr.reset(new generate_mpo::CorrMakerNN<Matrix, SymmGroup>(mps.length(), identity, fill, ops, *it) );
+                dcorr.reset(new generate_mpo::CorrMakerNN<Matrix, SymmGroup>(lat, identities, fillings, ops, *it) );
             else
-                dcorr.reset(new generate_mpo::CorrMaker<Matrix, SymmGroup>(mps.length(), identity, fill, ops, *it) );
+                dcorr.reset(new generate_mpo::CorrMaker<Matrix, SymmGroup>(lat, identities, fillings, ops, *it) );
             
             MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
-            symm_conv.convert_tags_to_symm_tags(mpo);
             
 //            maquis::cout << "site " << p << ":" << std::endl << dcorr->description() << std::endl;
 
             if (!super_meas)
                 dct = multi_expval(mps, mpo);
             else {
-                Index<SymmGroup> phys_i = identity.left_basis();
-                typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, phys_i);
-                MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_i);
+                typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, phys_psi);
+                MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mpo, phys_psi);
                 dct = multi_overlap(super_mpo, mps);
                 for (int i=0; i<dct.size(); ++i)
                     dct[i] /= nn;
@@ -555,17 +554,18 @@ namespace meas_eval {
 	template<class Matrix, class SymmGroup>
 	void measure_correlation(MPS<Matrix, SymmGroup> const & mps,
 							 const Lattice & lat,
-							 block_matrix<Matrix, SymmGroup> const & identity,
-							 block_matrix<Matrix, SymmGroup> const & fill,
-							 std::vector<std::vector<std::size_t> > const & positions,
-							 std::vector<std::pair<block_matrix<Matrix, SymmGroup>, bool> > const & ops,
+                             std::vector<block_matrix<Matrix, SymmGroup> > const & identities,
+                             std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
+                             Measurement_Term<Matrix, SymmGroup> const& term,
 							 std::string const & h5name,
 							 std::string base_path,
-                             PGSymmetryConverter<Matrix, SymmGroup> const & symm_conv,
 							 bool half=false,
 							 bool is_nn=false,
                              bool super_meas=false)
 	{
+        std::vector<std::vector<std::size_t> > const & positions = term.positions;
+        std::vector<std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> > const & ops = term.operators;
+
         std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dc;
 	    std::vector<std::string> labels;
         
@@ -579,15 +579,15 @@ namespace meas_eval {
         }
         
 	    if (half) {
-	    	measure_correlation_(mps, lat, identity, fill, positions_first, ops, std::vector<std::size_t>(), is_nn, dc, labels, super_meas, symm_conv);
+	    	measure_correlation_(mps, lat, identities, fillings, positions_first, ops, std::vector<std::size_t>(), is_nn, dc, labels, term.phys_psi, super_meas);
 	    } else {
 	    	CorrPermutator<Matrix, SymmGroup> perm(ops, is_nn);
 	    	for (int i=0; i<perm.size(); ++i) {
-		    	measure_correlation_(mps, lat, identity, fill, positions_first, perm[i], perm.order(i), is_nn, dc, labels, super_meas, symm_conv);
+		    	measure_correlation_(mps, lat, identities, fillings, positions_first, perm[i], perm.order(i), is_nn, dc, labels, term.phys_psi, super_meas);
 	    	}
 	    }
         
-        save_helper<Matrix, SymmGroup>(dc, labels, ops, h5name, base_path);
+        save_helper(dc, labels, is_hermitian_meas(ops), h5name, base_path, term.name);
 	}
     
     

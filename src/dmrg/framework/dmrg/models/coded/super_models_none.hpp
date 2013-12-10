@@ -273,16 +273,21 @@ std::vector< std::pair<Op,Op> > decompose_bond_super(const Matrix& bondop, const
 
 /* ****************** BOSE-HUBBARD */
 template<class Matrix>
-class SuperBoseHubbardNone : public Model<Matrix, TrivialGroup>
+class SuperBoseHubbardNone : public model_impl<Matrix, TrivialGroup>
 {
-    typedef Hamiltonian<Matrix, TrivialGroup> ham;
-    typedef typename ham::hamterm_t hamterm_t;
-    typedef typename ham::hamtagterm_t hamtagterm_t;
-    typedef Measurement_Term<Matrix, TrivialGroup> mterm_t;
-    typedef typename ham::op_t op_t;
-    typedef typename ham::table_type table_type;
-    typedef typename ham::table_ptr table_ptr;
-    typedef typename table_type::tag_type tag_type;
+    typedef model_impl<Matrix, TrivialGroup> base;
+    
+    typedef typename base::table_type table_type;
+    typedef typename base::table_ptr table_ptr;
+    typedef typename base::tag_type tag_type;
+    
+    typedef typename base::term_descriptor term_descriptor;
+    typedef typename base::terms_type terms_type;
+    typedef typename base::op_t op_t;
+    typedef typename base::measurements_type measurements_type;
+    typedef typename measurements_type::mterm_t mterm_t;
+    
+    typedef typename base::size_t size_t;
     typedef typename Matrix::value_type value_type;
     
 public:
@@ -402,11 +407,10 @@ public:
             // interaction H_U = U/2 n_i (n_i - 1)
             if( U != 0 )
             {
-                hamtagterm_t term;
-                term.fill_operator = ident_tag;
-                term.scale = 0.5*U;
-                term.operators.push_back( std::make_pair(p, interaction_tag) );
-                terms.push_back(term);
+                term_descriptor term;
+                term.coeff = 0.5*U;
+                term.push_back( boost::make_tuple(p, interaction_tag) );
+                this->terms_.push_back(term);
             }
             
             // site-dependent chemical potential H_mu = -mu n_i
@@ -415,42 +419,38 @@ public:
             double mup = -mu + 0.5*omega*omega*x*x;
             if( mup != 0 )
             {
-                hamtagterm_t term;
-                term.fill_operator = ident_tag;
-                term.scale = mup;
-                term.operators.push_back( std::make_pair(p, count_tag) );
-                terms.push_back(term);
+                term_descriptor term;
+                term.coeff = mup;
+                term.push_back( boost::make_tuple(p, count_tag) );
+                this->terms_.push_back(term);
             }
             
             // drive H_Lambda = Lambda (b_i^\dag + b_i)
             if( Lambda != 0 )
             {
-                hamtagterm_t term;
-                term.fill_operator = ident_tag;
-                term.scale = Lambda;
-                term.operators.push_back( std::make_pair(p, drive_tag) );
-                terms.push_back(term);
+                term_descriptor term;
+                term.coeff = Lambda;
+                term.push_back( boost::make_tuple(p, drive_tag) );
+                this->terms_.push_back(term);
             }
 
             // pump H_Delta = Delta (b_i^\dag^2 + b_i^2)
             if( Delta != 0 )
             {
-                hamtagterm_t term;
-                term.fill_operator = ident_tag;
-                term.scale = Delta;
-                term.operators.push_back( std::make_pair(p, pump_tag) );
-                terms.push_back(term);
+                term_descriptor term;
+                term.coeff = Delta;
+                term.push_back( boost::make_tuple(p, pump_tag) );
+                this->terms_.push_back(term);
             }
 
             // one-boson dissipation L_{1a} = Gamma_{1a} (1+\bar{n}) lind b_i
             //   = Gamma_{1a} (1+\bar{n}) (2 b_i rho b_i^\dag - b_i^\dag b_i rho - rho b_i^\dag b_i)
             if( Gamma1a != 0 )
             {
-                hamtagterm_t term;
-                term.fill_operator = ident_tag;
-                term.scale = I*Gamma1a*(1+nbar);
-                term.operators.push_back( std::make_pair(p, lindDestroy_tag) );
-                terms.push_back(term);
+                term_descriptor term;
+                term.coeff = I*Gamma1a*(1+nbar);
+                term.push_back( boost::make_tuple(p, lindDestroy_tag) );
+                this->terms_.push_back(term);
             }
             
             // one-boson dissipation at finite temperature (thermal population \bar{n})
@@ -458,22 +458,20 @@ public:
             //   = Gamma_{1a} \bar{n} (2 b_i^\dag rho b_i - b_i b_i^\dag rho - rho b_i b_i^\dag)
             if( Gamma1a*nbar != 0 )
             {
-                hamtagterm_t term;
-                term.fill_operator = ident_tag;
-                term.scale = I*Gamma1a*nbar;
-                term.operators.push_back( std::make_pair(p, lindCreate_tag) );
-                terms.push_back(term);
+                term_descriptor term;
+                term.coeff = I*Gamma1a*nbar;
+                term.push_back( boost::make_tuple(p, lindCreate_tag) );
+                this->terms_.push_back(term);
             }
             
             // two-boson dissipation L_2 = Gamma_2/2 lind b_i^2
             //   = Gamma_2/2 (2 b_i^2 rho b_i^\dag^2 - b_i^\dag^2 b_i^2 rho - rho b_i^\dag^2 b_i^2)
             if( Gamma2 != 0 )
             {
-                hamtagterm_t term;
-                term.fill_operator = ident_tag;
-                term.scale = I*0.5*Gamma2;
-                term.operators.push_back( std::make_pair(p, lindDestroy2_tag) );
-                terms.push_back(term);
+                term_descriptor term;
+                term.coeff = I*0.5*Gamma2;
+                term.push_back( boost::make_tuple(p, lindDestroy2_tag) );
+                this->terms_.push_back(term);
             }
             
             // bond terms
@@ -484,20 +482,18 @@ public:
                 for( unsigned i = 0; i < hopops_tag.size(); ++i )
                 {
                     {
-                        hamtagterm_t term;
-                        term.fill_operator = ident_tag;
-                        term.scale = -t;
-                        term.operators.push_back( std::make_pair(p,         hopops_tag[i].first) );
-                        term.operators.push_back( std::make_pair(neighs[n], hopops_tag[i].second) );
-                        terms.push_back(term);
+                        term_descriptor term;
+                        term.coeff = -t;
+                        term.push_back( boost::make_tuple(p,         hopops_tag[i].first) );
+                        term.push_back( boost::make_tuple(neighs[n], hopops_tag[i].second) );
+                        this->terms_.push_back(term);
                     }
                     {
-                        hamtagterm_t term;
-                        term.fill_operator = ident_tag;
-                        term.scale = -t;
-                        term.operators.push_back( std::make_pair(p,         hopops_tag[i].second) );
-                        term.operators.push_back( std::make_pair(neighs[n], hopops_tag[i].first) );
-                        terms.push_back(term);
+                        term_descriptor term;
+                        term.coeff = -t;
+                        term.push_back( boost::make_tuple(p,         hopops_tag[i].second) );
+                        term.push_back( boost::make_tuple(neighs[n], hopops_tag[i].first) );
+                        this->terms_.push_back(term);
                     }
                 }
                 
@@ -507,20 +503,18 @@ public:
                     for( unsigned i = 0; i < Vops_tag.size(); ++i )
                     {
                         {
-                            hamtagterm_t term;
-                            term.fill_operator = ident_tag;
-                            term.scale = V;
-                            term.operators.push_back( std::make_pair(p,        Vops_tag[i].first) );
-                            term.operators.push_back( std::make_pair(neighs[n],Vops_tag[i].second) );
-                            terms.push_back(term);
+                            term_descriptor term;
+                            term.coeff = V;
+                            term.push_back( boost::make_tuple(p,        Vops_tag[i].first) );
+                            term.push_back( boost::make_tuple(neighs[n],Vops_tag[i].second) );
+                            this->terms_.push_back(term);
                         }
                         {
-                            hamtagterm_t term;
-                            term.fill_operator = ident_tag;
-                            term.scale = V;
-                            term.operators.push_back( std::make_pair(p,        Vops_tag[i].second) );
-                            term.operators.push_back( std::make_pair(neighs[n],Vops_tag[i].first) );
-                            terms.push_back(term);
+                            term_descriptor term;
+                            term.coeff = V;
+                            term.push_back( boost::make_tuple(p,        Vops_tag[i].second) );
+                            term.push_back( boost::make_tuple(neighs[n],Vops_tag[i].first) );
+                            this->terms_.push_back(term);
                         }
                     }
                 }
@@ -533,57 +527,59 @@ public:
                 //        - (ad b)_i (rho b^\dag)_{i+1} - (rho b^\dag)_i (ad b)_{i+1} )
                 if( Gamma1b != 0 )
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident_tag;
-                    term.scale = I*Gamma1b/2.;
-                    term.operators.push_back( std::make_pair(p,         create_tag) );
-                    term.operators.push_back( std::make_pair(neighs[n], leftDestroy_tag) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = I*Gamma1b/2.;
+                    term.push_back( boost::make_tuple(p,         create_tag) );
+                    term.push_back( boost::make_tuple(neighs[n], leftDestroy_tag) );
+                    this->terms_.push_back(term);
                 }
                 if( Gamma1b != 0 )
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident_tag;
-                    term.scale = I*Gamma1b/2.;
-                    term.operators.push_back( std::make_pair(p,         leftDestroy_tag) );
-                    term.operators.push_back( std::make_pair(neighs[n], create_tag) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = I*Gamma1b/2.;
+                    term.push_back( boost::make_tuple(p,         leftDestroy_tag) );
+                    term.push_back( boost::make_tuple(neighs[n], create_tag) );
+                    this->terms_.push_back(term);
                 }
                 if( Gamma1b != 0 )
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident_tag;
-                    term.scale = -I*Gamma1b/2.;
-                    term.operators.push_back( std::make_pair(p,         destroy_tag) );
-                    term.operators.push_back( std::make_pair(neighs[n], rightCreate_tag) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = -I*Gamma1b/2.;
+                    term.push_back( boost::make_tuple(p,         destroy_tag) );
+                    term.push_back( boost::make_tuple(neighs[n], rightCreate_tag) );
+                    this->terms_.push_back(term);
                 }
                 if( Gamma1b != 0 )
                 {
-                    hamtagterm_t term;
-                    term.fill_operator = ident_tag;
-                    term.scale = -I*Gamma1b/2.;
-                    term.operators.push_back( std::make_pair(p,         rightCreate_tag) );
-                    term.operators.push_back( std::make_pair(neighs[n], destroy_tag) );
-                    terms.push_back(term);
+                    term_descriptor term;
+                    term.coeff = -I*Gamma1b/2.;
+                    term.push_back( boost::make_tuple(p,         rightCreate_tag) );
+                    term.push_back( boost::make_tuple(neighs[n], destroy_tag) );
+                    this->terms_.push_back(term);
                 }
             }
         }
         
     }
     
-    Index<TrivialGroup> get_phys() const
+    Index<TrivialGroup> const& phys_dim(size_t type) const
     {
         return phys;
     }
-    
-    Hamiltonian<Matrix, TrivialGroup> H () const
+    tag_type identity_matrix_tag(size_t type) const
     {
-        std::vector<hamterm_t> terms_ops;
-        return ham(phys, tag_handler->get_op(ident_tag), terms_ops, ident_tag, terms, tag_handler);
+        return ident_tag;
+    }
+    tag_type filling_matrix_tag(size_t type) const
+    {
+        return identity_matrix_tag(type);
+    }
+    typename TrivialGroup::charge total_quantum_numbers(BaseParameters & parms) const
+    {
+        return TrivialGroup::IdentityCharge;
     }
     
-    Measurements<Matrix, TrivialGroup> measurements () const
+    Measurements<Matrix, TrivialGroup> measurements() const
     {
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
         
@@ -593,59 +589,61 @@ public:
         create_psi.insert_block(transpose(mcreate), C, C);
         destroy_psi.insert_block(transpose(mdestroy), C, C);
         
-        Measurements<Matrix, TrivialGroup> meas(Measurements<Matrix, TrivialGroup>::Densitymatrix);
-        meas.set_identity(ident_psi);
+        
+        Measurements<Matrix, TrivialGroup> meas(std::vector<op_t>(1, ident_psi),
+                                                std::vector<op_t>(1, ident_psi),
+                                                Measurements<Matrix, TrivialGroup>::Densitymatrix);
         
         if (model["ENABLE_MEASURE[Density]"]) {
             mterm_t term;
-            term.fill_operator = ident_psi;
+            term.phys_psi = phys_psi;
             term.name = "Density";
             term.type = mterm_t::Average;
-            term.operators.push_back( std::make_pair(count_psi, false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,count_psi), false) );
             
             meas.add_term(term);
         }
         
         if (model["ENABLE_MEASURE[Local density]"]) {
             mterm_t term;
-            term.fill_operator = ident_psi;
+            term.phys_psi = phys_psi;
             term.name = "Local density";
             term.type = mterm_t::Local;
-            term.operators.push_back( std::make_pair(count_psi, false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,count_psi), false) );
             
             meas.add_term(term);
         }
         
         if (model["ENABLE_MEASURE[Local density^2]"]) {
             mterm_t term;
-            term.fill_operator = ident_psi;
+            term.phys_psi = phys_psi;
             term.name = "Local density^2";
             term.type = mterm_t::Local;
             op_t count2_psi;
             gemm(count_psi, count_psi, count2_psi);
-            term.operators.push_back( std::make_pair(count2_psi, false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,count2_psi), false) );
             
             meas.add_term(term);
         }
 
         if (model["ENABLE_MEASURE[Onebody density matrix]"]) {
             mterm_t term;
-            term.fill_operator = ident_psi;
+            term.phys_psi = phys_psi;
             term.name = "Onebody density matrix";
             term.type = mterm_t::HalfCorrelation;
-            term.operators.push_back( std::make_pair(create_psi, false) );
-            term.operators.push_back( std::make_pair(destroy_psi, false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,create_psi), false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,destroy_psi), false) );
             
             meas.add_term(term);
         }
 
         if (model["ENABLE_MEASURE[Density correlation]"]) {
             mterm_t term;
-            term.fill_operator = ident_psi;
+            term.phys_psi = phys_psi;
             term.name = "Density correlation";
             term.type = mterm_t::HalfCorrelation;
-            term.operators.push_back( std::make_pair(count_psi, false) );
-            term.operators.push_back( std::make_pair(count_psi, false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,count_psi), false) );
+            term.operators.push_back( std::make_pair(std::vector<op_t>(1,count_psi), false) );
             
             meas.add_term(term);
         }
@@ -653,11 +651,16 @@ public:
         return meas;
     }
     
-    op_t get_op(std::string const & op) const
+    tag_type get_operator_tag(std::string const & name, size_t type) const
     {
-        return op_t();
+        throw std::runtime_error("Operator not defined for this model.");
+        return 0;
     }
     
+    table_ptr operators_table() const
+    {
+        return tag_handler;
+    }
     
 private:
     BaseParameters & model;
@@ -672,8 +675,6 @@ private:
     tag_type ident_tag;
     tag_type create_tag, destroy_tag, drive_tag, pump_tag, count_tag, interaction_tag;
     tag_type lindDestroy_tag, lindCreate_tag, lindDestroy2_tag, leftDestroy_tag, rightCreate_tag;
-
-    std::vector<hamtagterm_t> terms;
 };
 
 

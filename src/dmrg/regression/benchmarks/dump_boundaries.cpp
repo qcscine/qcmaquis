@@ -21,8 +21,9 @@
 #include "matrix_selector.hpp" /// define matrix
 #include "symm_selector.hpp"   /// define grp
 
-#include "dmrg/models/factory.h"
-#include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/models/lattice.h"
+#include "dmrg/models/model.h"
+#include "dmrg/models/generate_mpo.hpp"
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/utils/DmrgParameters2.h"
@@ -61,20 +62,17 @@ int main(int argc, char ** argv)
         
         /// Parsing model
         tim_model.begin();
-        boost::shared_ptr<Lattice> lattice;
-        boost::shared_ptr<Model<matrix, grp> > model;
-        model_parser<matrix, grp>(parms["lattice_library"], parms["model_library"], model_parms,
-                                  lattice, model);
+        Lattice lattice(parms, model_parms);
+        Model<matrix, grp> model(lattice, parms, model_parms);
         
-        Hamiltonian<matrix, grp> H = model->H();
-        MPO<matrix, grp> mpo = make_mpo(lattice->size(), H, model_parms);
+        MPO<matrix, grp> mpo = make_mpo(lattice, model, model_parms);
         tim_model.end();
         maquis::cout << "Parsing model done!\n";
         
         
         /// Initialize & load MPS
         tim_load.begin();
-        int L = lattice->size();
+        int L = lattice.size();
         MPS<matrix, grp> mps;
         load(parms["chkpfile"].str(), mps);
         int _site;

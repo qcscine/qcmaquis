@@ -16,10 +16,10 @@
 
 #include "dmrg/utils/BaseParameters.h"
 
-class ContChain : public Lattice
+class ContChain : public lattice_impl
 {
 public:
-    typedef Lattice::pos_t pos_t;
+    typedef lattice_impl::pos_t pos_t;
     
     ContChain (BaseParameters & parms, bool pbc_=false)
     : L(parms["L"])
@@ -88,6 +88,11 @@ public:
         return L*N;
     }
     
+    int maximum_vertex_type() const
+    {
+        return 0;
+    }
+
 private:
     
     std::string site_label (int i) const
@@ -109,10 +114,10 @@ private:
     
 };
 
-class MixedContChain : public Lattice
+class MixedContChain : public lattice_impl
 {
 public:
-    typedef Lattice::pos_t pos_t;
+    typedef lattice_impl::pos_t pos_t;
     
     MixedContChain (BaseParameters & parms1, int L1_, BaseParameters & parms2, int L2_, bool pbc_=false)
     : L1(L1_)
@@ -189,6 +194,11 @@ public:
         return L1+L2;
     }
     
+    int maximum_vertex_type() const
+    {
+        return 0;
+    }
+
 private:
     
     double get_x (int i) const
@@ -240,10 +250,10 @@ private:
 };
 
 
-class MixedContChain_c : public Lattice
+class MixedContChain_c : public lattice_impl
 {
 public:
-    typedef Lattice::pos_t pos_t;
+    typedef lattice_impl::pos_t pos_t;
     
     MixedContChain_c (BaseParameters & parms1, int L1_, BaseParameters & parms2, int L2_, bool pbc_=false)
     : L1(L1_)
@@ -320,6 +330,11 @@ public:
         return L1+L2;
     }
     
+    int maximum_vertex_type() const
+    {
+        return 0;
+    }
+
 private:
     
     double get_x (int i) const
