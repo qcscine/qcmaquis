@@ -87,7 +87,7 @@ parse_symm<TwoU1PG>(int L, BaseParameters& model)
         for (int p = 0; p < L; ++p)
             order[p] = p;
     else
-        order = model["orbital_order"].template as<std::vector<int> >();
+        order = model["orbital_order"].as<std::vector<int> >();
 
     std::vector<subcharge> irreps(L, 0);
     if (model.is_set("integral_file")) {
