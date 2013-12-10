@@ -111,7 +111,7 @@ namespace ambient {
     }
     
     template<typename V> 
-    inline size_t size(V& obj){ 
+    inline size_t extent(V& obj){ 
         return obj.versioned.core->extent;
     }
 
