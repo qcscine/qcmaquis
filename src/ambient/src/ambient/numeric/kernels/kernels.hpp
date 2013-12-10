@@ -578,10 +578,10 @@ namespace ambient { namespace numeric { namespace kernels {
             int info, lwork = -1;
             T wkopt;
             T* work;
-            T* ad = (T*)std::malloc(ambient::size(a));
-            typename real_type<T>::type* wd = (typename real_type<T>::type*)std::malloc(ambient::size(w));
-            std::memcpy(ad, current(a).data, ambient::size(a));
-            std::memcpy(wd, current(w).data, ambient::size(w));
+            T* ad = (T*)std::malloc(ambient::extent(a));
+            typename real_type<T>::type* wd = (typename real_type<T>::type*)std::malloc(ambient::extent(w));
+            std::memcpy(ad, current(a).data, ambient::extent(a));
+            std::memcpy(wd, current(w).data, ambient::extent(w));
        
             helper_lapack<T>::syev("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
        
@@ -600,8 +600,8 @@ namespace ambient { namespace numeric { namespace kernels {
                 std::memcpy(&ad[(m-1-i)*m], work, len);
             }
             std::free(work);
-            std::memcpy(updated(a).data, ad, ambient::size(a)); std::free(ad);
-            std::memcpy(updated(w).data, wd, ambient::size(w));
+            std::memcpy(updated(a).data, ad, ambient::extent(a)); std::free(ad);
+            std::memcpy(updated(w).data, wd, ambient::extent(w));
             std::free(wd);
         }
     

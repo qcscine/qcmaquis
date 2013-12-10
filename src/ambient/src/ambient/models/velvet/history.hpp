@@ -24,6 +24,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+constexpr size_t aligned64(size_t size){ return 8 * (size_t)((size+7)/8); }
+
 namespace ambient { namespace models { namespace velvet {
 
     inline void* history::operator new (size_t size){
@@ -34,7 +36,7 @@ namespace ambient { namespace models { namespace velvet {
         ambient::pool::free<ambient::fixed,history>(ptr);
     }
 
-    inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(dim.square()*ts) {
+    inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(aligned64(dim.square()*ts)) {
         this->clock = ambient::model.clock;
         #ifdef AMBIENT_TRACKING
         ambient::model.index(this);

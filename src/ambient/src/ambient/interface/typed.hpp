@@ -379,7 +379,7 @@ namespace ambient {
                                                __VA_ARGS__; \
                                            };\
                                            unnamed(){ core = new ambient::history(ambient::dim2(1,1),sizeof(unnamed)); } \
-                                           unnamed(size_t length){ core = new ambient::history(ambient::dim2(1,length/sizeof(double)),sizeof(double)); } \
+                                           unnamed(size_t length){ core = new ambient::history(ambient::dim2(1,1),length); } \
                                            unnamed(size_t length, size_t sz){ core = new ambient::history(ambient::dim2(1,length),sz); } \
                                            unnamed(size_t rows, size_t cols, size_t sz){ core = new ambient::history(ambient::dim2(cols, rows), sz); } \
                                            unnamed(ambient::dim2 dim, size_t sz){ core = new ambient::history(dim, sz); } \
