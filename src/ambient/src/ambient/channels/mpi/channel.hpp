@@ -29,6 +29,16 @@
 
 namespace ambient { namespace channels { namespace mpi {
 
+    inline void recv_impl(request_impl* r){
+        MPI_Irecv(r->data, r->extent, MPI_DOUBLE, r->target, r->tag, MPI_COMM_WORLD, &r->mpi_request);
+    }
+    inline void send_impl(request_impl* r){
+        MPI_Isend(r->data, r->extent, MPI_DOUBLE, r->target, r->tag, MPI_COMM_WORLD, &r->mpi_request);
+    }
+    inline bool test_impl(request_impl* r){
+        int f = 0; MPI_Test(&r->mpi_request, &f, MPI_STATUS_IGNORE); return f;
+    }
+
     inline channel::~channel(){
         MPI_Finalize();
     }
@@ -40,6 +50,10 @@ namespace ambient { namespace channels { namespace mpi {
         this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
         this->volume = this->world->size;
         this->db_volume = this->volume > AMBIENT_DB_PROCS ? AMBIENT_DB_PROCS : 0;
+        this->sid = 13;
+        this->scheme.resize(2); // N = 0,1 are empty
+        for(int i = 2; i <= volume; i++) scheme.push_back(new binary_tree(i));
+        for(int i = 0; i < 2*volume; i++) circle_ranks.push_back(i % volume);
     }
 
     inline void channel::barrier(){
@@ -58,10 +72,8 @@ namespace ambient { namespace channels { namespace mpi {
         return this->db_volume;
     }
 
-    inline int channel::index(){
-        int s = this->sid++;
-        this->sid %= AMBIENT_MAX_SID;
-        return s;
+    inline void channel::index(){
+        ++this->sid %= AMBIENT_MAX_SID;
     }
 
     inline int channel::generate_sid(){
@@ -73,67 +85,24 @@ namespace ambient { namespace channels { namespace mpi {
         return this->sid;
     }
 
-    inline request* channel::get(transformable* v, int tag){
-        request* q = new request();
-        MPI_Irecv(&v->v, 
-                  (int)sizeof(transformable::numeric_union)/sizeof(double), // should be multiple of 8
-                  MPI_DOUBLE, 
-                  MPI_ANY_SOURCE, 
-                  tag, 
-                  MPI_COMM_WORLD, 
-                  &(q->mpi_request));
-        return q;
+    inline collective<transformable>* channel::bcast(transformable& v, int root){
+        return new collective<transformable>(v, root);
     }
 
-    inline request* channel::set(transformable* v, int rank, int tag){
-        if(rank == ambient::rank()) return NULL;
-        request* q = new request();
-        MPI_Isend(&v->v, 
-                  (int)sizeof(transformable::numeric_union)/sizeof(double), // should be multiple of 8
-                  MPI_DOUBLE, 
-                  rank, 
-                  tag, 
-                  MPI_COMM_WORLD, 
-                  &(q->mpi_request));
-        return q;
+    inline collective<transformable>* channel::bcast(transformable& v){
+        return new collective<transformable>(v, ambient::rank());
     }
 
-    inline request* channel::get(revision* r, int tag){
-        request* q = new request();
-        MPI_Irecv(r->data, 
-                  (int)r->spec.extent/sizeof(double), 
-                  MPI_DOUBLE, 
-                  MPI_ANY_SOURCE, 
-                  tag, 
-                  MPI_COMM_WORLD, 
-                  &(q->mpi_request));
-        return q;
+    inline collective<revision>* channel::get(revision& r){
+        return new collective<revision>(r, r.owner);
     }
 
-    inline request* channel::set(revision* r, int rank, int tag){
-        if(rank == ambient::rank()) return NULL;
-        request* q = new request();
-        // can be ready-send
-        MPI_Isend(r->data, 
-                  (int)r->spec.extent/sizeof(double), 
-                  MPI_DOUBLE, 
-                  rank, 
-                  tag, 
-                  MPI_COMM_WORLD, 
-                  &(q->mpi_request));
-        return q;
+    inline collective<revision>* channel::set(revision& r){
+        return new collective<revision>(r, ambient::rank());
     }
 
-    inline bool channel::test(request* q){
-        if(q == NULL) return true; // for transformable
-        int flag = 0;
-        MPI_Test(&(q->mpi_request), &flag, MPI_STATUS_IGNORE);
-        return flag;
-    }
-
-    inline void channel::wait(request* q){
-        if(q == NULL) return; // for transformable
-        MPI_Wait(&(q->mpi_request), MPI_STATUS_IGNORE);
+    inline const binary_tree& channel::get_scheme(int volume){
+        return *this->scheme[volume];
     }
 
 } } }

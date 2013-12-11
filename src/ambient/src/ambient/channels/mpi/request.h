@@ -24,23 +24,40 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_VELVET_FUNCTOR
-#define AMBIENT_CONTROLLERS_VELVET_FUNCTOR
+#ifndef AMBIENT_CHANNELS_MPI_REQUEST
+#define AMBIENT_CHANNELS_MPI_REQUEST
 
-namespace ambient { namespace controllers { namespace velvet {
-    
+namespace ambient { namespace channels { namespace mpi {
+
     using ambient::models::velvet::revision;
     using ambient::models::velvet::transformable;
-    using ambient::channels::mpi::collective;
 
-    class functor {
-        typedef ambient::bulk_allocator<functor*> allocator;
+    class request_impl {
     public:
-        virtual void invoke() = 0;
-        virtual bool ready() = 0;
-        void queue(functor* d){ deps.push_back(d); }
-        std::vector<functor*, allocator> deps;
-        void* arguments[1]; // note: trashing the vtptr of derived object
+        void* operator new (size_t size){ return ambient::pool::malloc<bulk,request_impl>(); }
+        void operator delete (void* ptr){ }
+        request_impl(){}
+        request_impl(void(*impl)(request_impl*), transformable& v, int target, int tag = NULL);
+        request_impl(void(*impl)(request_impl*), revision& r, int target, int tag = NULL);
+        inline bool operator()();
+        void* data;
+        int extent;
+        int target;
+        MPI_Request mpi_request;
+        void(*impl)(request_impl*);
+        bool once;
+        int tag;
+    };
+
+    class request {
+        typedef ambient::bulk_allocator<request_impl*> allocator;
+    public:
+        bool operator()();
+        void operator &= (request_impl* r);
+        void operator += (request_impl* r);
+    private:
+        std::vector<request_impl*,allocator> primaries;
+        std::vector<request_impl*,allocator> callbacks;
     };
 
 } } }

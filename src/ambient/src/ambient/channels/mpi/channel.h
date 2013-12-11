@@ -26,18 +26,21 @@
 
 #ifndef AMBIENT_CHANNELS_MPI_CHANNEL
 #define AMBIENT_CHANNELS_MPI_CHANNEL
+#include "ambient/utils/fence.hpp"
 #include "ambient/channels/mpi/groups/group.h"
 #include "ambient/channels/mpi/groups/multirank.h"
+#include "ambient/channels/mpi/request.h"
+#include "ambient/channels/mpi/collective.h"
+#include "ambient/utils/tree.hpp"
 
 namespace ambient { namespace channels { namespace mpi {
 
     using ambient::models::velvet::revision;
     using ambient::models::velvet::transformable;
 
-    class request {
-    public:
-        MPI_Request mpi_request;
-    };
+    static void recv_impl(request_impl* r);
+    static void send_impl(request_impl* r);
+    static bool test_impl(request_impl* r);
 
     class channel : public singleton< channel > {
     public:
@@ -47,17 +50,18 @@ namespace ambient { namespace channels { namespace mpi {
         size_t dim();
         size_t wk_dim();
         size_t db_dim();
-        request* get(revision* r, int tag);
-        request* set(revision* r, int rank, int tag);
-        request* get(transformable* v, int tag);
-        request* set(transformable* v, int rank, int tag);
-        bool test(request* r);
-        void wait(request* r);
-        int index();
+        collective<revision>* get(revision& r);
+        collective<revision>* set(revision& r);
+        collective<transformable>* bcast(transformable& v, int root);
+        collective<transformable>* bcast(transformable& v);
+        void index();
         int get_sid() const;
         int generate_sid();
+        const binary_tree& get_scheme(int volume);
         group* world;
+        std::vector<int> circle_ranks;
     private:
+        std::vector<binary_tree*> scheme;
         size_t volume;
         size_t db_volume;
         int sid;
@@ -70,6 +74,8 @@ namespace ambient {
 }
 
 #include "ambient/channels/mpi/channel.hpp"
+#include "ambient/channels/mpi/collective.hpp"
+#include "ambient/channels/mpi/request.hpp"
 #include "ambient/channels/mpi/groups/multirank.hpp"
 #include "ambient/channels/mpi/groups/group.hpp"
 #endif

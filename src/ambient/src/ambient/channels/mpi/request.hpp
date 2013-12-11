@@ -24,25 +24,49 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_VELVET_FUNCTOR
-#define AMBIENT_CONTROLLERS_VELVET_FUNCTOR
+namespace ambient { namespace channels { namespace mpi {
 
-namespace ambient { namespace controllers { namespace velvet {
-    
-    using ambient::models::velvet::revision;
-    using ambient::models::velvet::transformable;
-    using ambient::channels::mpi::collective;
+    inline request_impl::request_impl(void(*impl)(request_impl*), transformable& v, int target, int tag)
+    : extent(sizeof(transformable::numeric_union)/sizeof(double)), 
+      data(&v.v),
+      target(target),
+      impl(impl),
+      tag(tag),
+      once(false)
+    {
+    }
+    inline request_impl::request_impl(void(*impl)(request_impl*), revision& r, int target, int tag)
+    : extent(r.spec.extent/sizeof(double)), 
+      data(r.data),
+      target(target),
+      impl(impl),
+      tag(tag),
+      once(false)
+    {
+    }
+    inline bool request_impl::operator()(){
+        if(!once){ impl(this); once = true; }
+        return test_impl(this);
+    }
 
-    class functor {
-        typedef ambient::bulk_allocator<functor*> allocator;
-    public:
-        virtual void invoke() = 0;
-        virtual bool ready() = 0;
-        void queue(functor* d){ deps.push_back(d); }
-        std::vector<functor*, allocator> deps;
-        void* arguments[1]; // note: trashing the vtptr of derived object
-    };
+    inline bool request::operator()(){
+        int length = primaries.size();
+        for(int i = 0; i < length; i++){
+            if(!(*primaries[i])()) return false;
+        }
+        primaries.clear();
+        length = callbacks.size();
+        for(int i = 0; i < length; i++){
+            if(!(*callbacks[i])()) return false;
+        }
+        return true;
+    }
+    inline void request::operator &= (request_impl* r){
+        primaries.push_back(r);
+    }
+    inline void request::operator += (request_impl* r){
+        callbacks.push_back(r);
+    }
 
 } } }
 
-#endif

@@ -54,7 +54,6 @@ namespace ambient { namespace models { namespace velvet {
         bool referenced() const;
 
         void* generator;
-        void* transfer;
         void* data;
         int   owner;
         std::atomic<int> users;
