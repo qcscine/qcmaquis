@@ -24,8 +24,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_VELVET_FUNCTOR
-#define AMBIENT_CONTROLLERS_VELVET_FUNCTOR
+#ifndef AMBIENT_CONTROLLERS_VELVET_GET
+#define AMBIENT_CONTROLLERS_VELVET_GET
 
 namespace ambient { namespace controllers { namespace velvet {
     
@@ -33,16 +33,37 @@ namespace ambient { namespace controllers { namespace velvet {
     using ambient::models::velvet::transformable;
     using ambient::channels::mpi::collective;
 
-    class functor {
-        typedef ambient::bulk_allocator<functor*> allocator;
+    template<class T> class get {};
+
+    template<>
+    class get<transformable> : public functor {
     public:
-        virtual void invoke() = 0;
-        virtual bool ready() = 0;
-        void queue(functor* d){ deps.push_back(d); }
-        std::vector<functor*, allocator> deps;
-        void* arguments[1]; // note: trashing the vtptr of derived object
+        void* operator new (size_t size){ return ambient::pool::malloc<bulk,get>(); }
+        void operator delete (void* ptr){ }
+        static void spawn(transformable& v);
+        get(transformable& v);
+        virtual void invoke();
+        virtual bool ready();
+    private:
+        collective<transformable>* handle;
+    };
+
+    template<>
+    class get<revision> : public functor {
+    public:
+        void* operator new (size_t size){ return ambient::pool::malloc<bulk,get>(); }
+        void operator delete (void* ptr){ }
+        static void spawn(revision& r);
+        get(revision& r);
+        virtual void invoke();
+        virtual bool ready();
+        void operator += (int rank);
+    private:
+        collective<revision>* handle;
+        revision& t;
     };
 
 } } }
 
 #endif
+

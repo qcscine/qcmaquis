@@ -28,6 +28,8 @@
 #define AMBIENT_CONTROLLERS_VELVET_CONTROLLER
 
 #include "ambient/controllers/velvet/functor.h"
+#include "ambient/controllers/velvet/get.h"
+#include "ambient/controllers/velvet/set.h"
 #include "ambient/memory/collector.h"
 
 namespace ambient { namespace controllers { namespace velvet {
@@ -98,6 +100,7 @@ namespace ambient {
 
 #include "ambient/controllers/velvet/scope.hpp"
 #include "ambient/controllers/velvet/controller.hpp"
-#include "ambient/controllers/velvet/functor.hpp"
+#include "ambient/controllers/velvet/get.hpp"
+#include "ambient/controllers/velvet/set.hpp"
 #include "ambient/memory/collector.hpp"
 #endif

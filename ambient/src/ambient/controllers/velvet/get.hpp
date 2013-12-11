@@ -24,25 +24,54 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_VELVET_FUNCTOR
-#define AMBIENT_CONTROLLERS_VELVET_FUNCTOR
-
 namespace ambient { namespace controllers { namespace velvet {
-    
-    using ambient::models::velvet::revision;
-    using ambient::models::velvet::transformable;
-    using ambient::channels::mpi::collective;
 
-    class functor {
-        typedef ambient::bulk_allocator<functor*> allocator;
-    public:
-        virtual void invoke() = 0;
-        virtual bool ready() = 0;
-        void queue(functor* d){ deps.push_back(d); }
-        std::vector<functor*, allocator> deps;
-        void* arguments[1]; // note: trashing the vtptr of derived object
-    };
+    // {{{ transformable
+
+    inline void get<transformable>::spawn(transformable& t){
+        ambient::controller.queue(new get(t));
+    }
+    inline get<transformable>::get(transformable& t){
+        handle = ambient::channel.bcast(t, ambient::controller.which());
+    }
+    inline bool get<transformable>::ready(){
+        return handle->test();
+    }
+    inline void get<transformable>::invoke(){}
+
+    // }}}
+    // {{{ revision
+
+    inline void get<revision>::spawn(revision& r){
+        get*& transfer = (get*&)r.assist.second;
+        if(ambient::controller.update(r)) transfer = new get(r);
+        *transfer += ambient::controller.which();
+        channel.index();
+    }
+    inline get<revision>::get(revision& r) : t(r) {
+        handle = ambient::channel.get(t);
+        t.invalidate();
+    }
+    inline void get<revision>::operator += (int rank){
+        *handle += rank;
+        if(handle->involved() && !t.valid()){
+            t.use();
+            t.generator = this;
+            t.embed(ambient::pool::malloc<bulk>(t.spec)); 
+            ambient::controller.queue(this);
+        }
+    }
+    inline bool get<revision>::ready(){
+        return handle->test();
+    }
+    inline void get<revision>::invoke(){
+        ambient::controller.squeeze(&t);
+        t.release();
+        t.complete();
+    }
+
+    // }}}
 
 } } }
 
-#endif
+

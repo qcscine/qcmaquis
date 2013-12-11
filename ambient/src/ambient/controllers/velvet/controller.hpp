@@ -191,11 +191,8 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void controller::sync(revision* r){
         if(serial) return;
         if(ambient::model.common(r)) return;
-        if(ambient::model.feeds(r)) ambient::controllers::velvet::set<revision>::spawn(*r) >> AMBIENT_BROADCAST;
-        else{
-            ambient::controllers::velvet::get<revision>::spawn(*r);
-            if(r->owner != ambient::rank.right_neighbor()) ambient::controllers::velvet::get<revision>::assist(*r, ambient::rank.right_neighbor());
-        }
+        if(ambient::model.feeds(r)) ambient::controllers::velvet::set<revision>::spawn(*r);
+        else ambient::controllers::velvet::get<revision>::spawn(*r);
     }
 
     inline void controller::lsync(revision* r){
@@ -205,17 +202,16 @@ namespace ambient { namespace controllers { namespace velvet {
 
     inline void controller::rsync(revision* r){
         if(ambient::model.common(r)) return;
-        if(ambient::model.feeds(r)) ambient::controllers::velvet::set<revision>::spawn(*r) >> which();
-        else if(r->owner != which()) ambient::controllers::velvet::get<revision>::assist(*r, which());
+        if(r->owner != which()) ambient::controllers::velvet::set<revision>::spawn(*r);
     }
 
     inline void controller::lsync(transformable* v){
         if(serial) return;
-        ambient::controllers::velvet::set<transformable>::spawn(*v, which());
+        ambient::controllers::velvet::set<transformable>::spawn(*v);
     }
 
     inline void controller::rsync(transformable* v){
-        ambient::controllers::velvet::get<transformable>::spawn(*v, which());
+        ambient::controllers::velvet::get<transformable>::spawn(*v);
     }
 
     template<typename T> void controller::collect(T* o){

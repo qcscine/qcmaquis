@@ -24,25 +24,50 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_VELVET_FUNCTOR
-#define AMBIENT_CONTROLLERS_VELVET_FUNCTOR
-
 namespace ambient { namespace controllers { namespace velvet {
-    
-    using ambient::models::velvet::revision;
-    using ambient::models::velvet::transformable;
-    using ambient::channels::mpi::collective;
 
-    class functor {
-        typedef ambient::bulk_allocator<functor*> allocator;
-    public:
-        virtual void invoke() = 0;
-        virtual bool ready() = 0;
-        void queue(functor* d){ deps.push_back(d); }
-        std::vector<functor*, allocator> deps;
-        void* arguments[1]; // note: trashing the vtptr of derived object
-    };
+    // {{{ transformable
+
+    inline void set<transformable>::spawn(transformable& t){
+        ((functor*)t.generator)->queue(new set(t));
+    }
+    inline set<transformable>::set(transformable& t) : t(t) {
+        handle = ambient::channel.bcast(t, ambient::controller.which());
+    }
+    inline bool set<transformable>::ready(){
+        return (t.generator != NULL ? false : handle->test());
+    }
+    inline void set<transformable>::invoke(){}
+
+    // }}}
+    // {{{ revision
+
+    inline void set<revision>::spawn(revision& r){
+        if(!ambient::model.feeds(&r)) return get<revision>::spawn(r);
+        set*& transfer = (set*&)r.assist.second;
+        if(ambient::controller.update(r)) transfer = new set(r);
+        *transfer += ambient::controller.which();
+        channel.index();
+    }
+    inline set<revision>::set(revision& r) : t(r) {
+        t.use();
+        handle = ambient::channel.set(t);
+        if(t.generator != NULL) ((functor*)t.generator)->queue(this);
+        else ambient::controller.queue(this);
+    }
+    inline void set<revision>::operator += (int rank){
+        *handle += rank;
+    }
+    inline bool set<revision>::ready(){
+        return (t.generator != NULL ? false : handle->test());
+    }
+    inline void set<revision>::invoke(){
+        ambient::controller.squeeze(&t);
+        t.release(); 
+    }
+
+    // }}}
 
 } } }
 
-#endif
+

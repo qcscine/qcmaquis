@@ -24,23 +24,54 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_VELVET_FUNCTOR
-#define AMBIENT_CONTROLLERS_VELVET_FUNCTOR
+#ifndef AMBIENT_CHANNELS_MPI_COLLECTIVE
+#define AMBIENT_CHANNELS_MPI_COLLECTIVE
 
-namespace ambient { namespace controllers { namespace velvet {
-    
+namespace ambient { namespace channels { namespace mpi {
+
     using ambient::models::velvet::revision;
     using ambient::models::velvet::transformable;
-    using ambient::channels::mpi::collective;
 
-    class functor {
-        typedef ambient::bulk_allocator<functor*> allocator;
+    template<typename T>
+    class bcast {
+        typedef ambient::bulk_allocator<int> allocator;
     public:
-        virtual void invoke() = 0;
-        virtual bool ready() = 0;
-        void queue(functor* d){ deps.push_back(d); }
-        std::vector<functor*, allocator> deps;
-        void* arguments[1]; // note: trashing the vtptr of derived object
+        void dispatch();
+        bcast(T& o, int root) : object(o), root(root), self(0) {}
+        T& object;
+        std::vector<int,allocator> tags;
+        int root;
+        int self;
+        int size;
+        int* list;
+        request impl; 
+        fence guard;
+    };
+
+    template<class T> class collective {};
+
+    template<>
+    class collective<revision> : public bcast<revision> {
+        typedef ambient::bulk_allocator<int> allocator;
+    public:
+        void* operator new (size_t size){ return ambient::pool::malloc<bulk,collective>(); }
+        void operator delete (void* ptr){ }
+        collective(revision& r, int root);
+        void operator += (int rank);
+        bool involved();
+        bool test();
+        std::vector<bool,allocator> states;
+        std::vector<int,allocator> tree;
+    };
+
+    template<>
+    class collective<transformable> : public bcast<transformable> {
+        typedef ambient::bulk_allocator<int> allocator;
+    public:
+        void* operator new (size_t size){ return ambient::pool::malloc<bulk,collective>(); }
+        void operator delete (void* ptr){ }
+        collective(transformable& v, int root);
+        bool test();
     };
 
 } } }
