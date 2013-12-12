@@ -24,7 +24,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg_tevol.h"
+#include "dmrg/sim/runsim.h"
 
 typedef @CMAKE_SYMM_GROUP@ grp;
 #include "tevol_symm/sim.h"

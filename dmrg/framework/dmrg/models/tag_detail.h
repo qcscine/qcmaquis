@@ -111,7 +111,7 @@ namespace tag_detail {
             for (int i = 0; i < num_rows(m); i++)
                for(int j = 0; j < num_cols(m); j++)
             {
-                typename Matrix::value_type normalized = std::abs(m(i,j) * invscale);
+                typename maquis::traits::real_type<typename Matrix::value_type>::type normalized = std::abs(m(i,j) * invscale);
                 // if not 1 and not 0
                 if (std::abs(normalized-1.0) > 1e-15 && normalized > 1e-15)
                     return false;

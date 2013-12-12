@@ -31,7 +31,12 @@ namespace maquis { namespace dmrg {
     template <>
     void run_sim<grp>(DmrgParameters & parms, ModelParameters & model)
     {
-        measure_sim<matrix, grp> sim(parms, model);
-        sim.run();
+        if (parms["COMPLEX"]) {
+            measure_sim<cmatrix, grp> sim(parms, model);
+            sim.run();
+        } else {
+            measure_sim<matrix, grp> sim(parms, model);
+            sim.run();
+        }
     }
 } }

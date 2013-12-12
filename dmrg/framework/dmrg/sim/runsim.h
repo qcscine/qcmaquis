@@ -27,19 +27,15 @@
 #ifndef APP_RUNSIM_H
 #define APP_RUNSIM_H
 
-#ifdef USE_COMPLEX
-    #define dmrg_value_type std::complex<double>
-#else
-    #define dmrg_value_type double
-#endif
 #if defined USE_AMBIENT
-    #include "dmrg/block_matrix/detail/ambient.hpp"
-    typedef ambient::numeric::tiles<ambient::numeric::matrix<dmrg_value_type> > matrix;
+#include "dmrg/block_matrix/detail/ambient.hpp"
+typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
+typedef ambient::numeric::tiles<ambient::numeric::matrix< std::complex<double> > > cmatrix;
 #else
-    #include "dmrg/block_matrix/detail/alps.hpp"
-    typedef alps::numeric::matrix<dmrg_value_type> matrix;
+#include "dmrg/block_matrix/detail/alps.hpp"
+typedef alps::numeric::matrix<double> matrix;
+typedef alps::numeric::matrix<std::complex<double> > cmatrix;
 #endif
-#undef dmrg_value_type
 
 #include "dmrg/utils/DmrgParameters2.h"
 #include "dmrg/block_matrix/detail/alps.hpp"

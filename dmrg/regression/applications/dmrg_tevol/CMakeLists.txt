@@ -1,9 +1,9 @@
 set(APPTEST_PREFIX tevol_)
 get_target_property(APPTEST_TEVOLAPP dmrg_tevol LOCATION)
-get_target_property(APPTEST_MEASAPP dmrg_cmeas LOCATION)
+get_target_property(APPTEST_MEASAPP dmrg_meas LOCATION)
 
 message(STATUS "Using ${APPTEST_TEVOLAPP} for dmrg_tevol exec")
-message(STATUS "Using ${APPTEST_MEASAPP} for dmrg_cmeas exec")
+message(STATUS "Using ${APPTEST_MEASAPP} for dmrg_meas exec")
 
 file(GLOB apptests "test_*py")
 foreach(tt ${apptests})

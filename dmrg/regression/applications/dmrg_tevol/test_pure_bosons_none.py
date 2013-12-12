@@ -34,6 +34,8 @@ parms = {
             
             'symmetry'                   : 'none',
             'model_library'              : 'coded',
+            
+            'COMPLEX'                    : 1,
         }
 
 model = {
