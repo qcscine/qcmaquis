@@ -66,6 +66,10 @@ namespace maquis { namespace dmrg {
         std::map<std::string, boost::function<void (DmrgParameters & p, ModelParameters & m)> > factory_map;
         
         maquis::cout << "This binary contains symmetries: ";
+#ifdef HAVE_NU1
+        factory_map["nu1"] = run_sim<NU1>;
+        maquis::cout << "nu1 ";
+#endif
 #ifdef HAVE_TrivialGroup
         factory_map["none"] = run_sim<TrivialGroup>;
         maquis::cout << "none ";
@@ -88,11 +92,18 @@ namespace maquis { namespace dmrg {
 #endif
         maquis::cout << std::endl;
         
+        
         std::string symm_name;
-        if (parms["model_library"] == "alps")
-            symm_name = guess_alps_symmetry(model);
-        else
+        if (!parms.is_set("symmetry")) {
+#ifdef HAVE_NU1
+            symm_name = "nu1";
+#else
+            if (parms["model_library"] == "alps")
+                symm_name = guess_alps_symmetry(model);
+#endif
+        } else {
             symm_name = parms["symmetry"].str();
+        }
         
         if (factory_map.find(symm_name) != factory_map.end())
             factory_map[symm_name](parms, model);
