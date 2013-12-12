@@ -7,6 +7,11 @@ if(USE_AMBIENT)
 endif(USE_AMBIENT)  
 
 
+# *** Configure ALPS SymmGroup
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/block_matrix/symmetry/nu1.h.in
+                ${CMAKE_CURRENT_BINARY_DIR}/block_matrix/symmetry/nu1.h )
+
+# *** List all needed sources
 set(DMRG_MODELS_SOURCES "models/factory/lattice_factory.cpp")
 get_symm_files(APPEND DMRG_MODELS_SOURCES "models/factory/model_factory_{SYMM}.cpp")
 

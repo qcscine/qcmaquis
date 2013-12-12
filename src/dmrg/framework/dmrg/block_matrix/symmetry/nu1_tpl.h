@@ -24,8 +24,8 @@
  *
  *****************************************************************************/
 
-#ifndef SYMMETRY_NU1_H
-#define SYMMETRY_NU1_H
+#ifndef SYMMETRY_NU1_TEMPLATE_H
+#define SYMMETRY_NU1_TEMPLATE_H
 
 #include <iostream>
 #include <vector>
@@ -42,6 +42,8 @@ template<int N, class S = int>
 class NU1Charge
 {   
 public:
+    static const int static_size = N;
+    
     NU1Charge(S init = 0)
     {
         for (S i = 0; i < N; ++i) (*this)[i] = init;
@@ -261,7 +263,7 @@ NU1Charge<N, S> operator/(int n, NU1Charge<N, S> const & a) { return a/n; }
 
 
 template<int N, class S = int>
-class NU1
+class NU1_template
 {
 public:
     typedef S subcharge;
@@ -285,9 +287,7 @@ public:
     }
 };
 
-template<int N, class S> const typename NU1<N,S>::charge NU1<N,S>::IdentityCharge = typename NU1<N,S>::charge();
 
-typedef NU1<2> TwoU1;
-typedef NU1<3> ThreeU1;
+template<int N, class S> const typename NU1_template<N,S>::charge NU1_template<N,S>::IdentityCharge = typename NU1_template<N,S>::charge();
 
 #endif
