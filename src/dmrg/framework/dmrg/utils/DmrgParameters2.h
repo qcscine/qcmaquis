@@ -50,6 +50,8 @@ private:
     {
         using parameters::value;
         
+        add_option("COMPLEX", "use complex numbers", value(false));
+
         add_option("truncation_initial", "Initial value for the truncation error", value(1e-16));
         add_option("truncation_final", "Final value for the truncation", value(1e-16));
         
