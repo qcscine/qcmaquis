@@ -42,5 +42,6 @@ if(BUILD_EXAMPLES)
   add_subdirectory(simple_main/dmrg_current)
 endif(BUILD_EXAMPLES)
 
-
-add_subdirectory(alps/mps_optim)
+if(BUILD_SYMMETRIES MATCHES "NU1")
+  add_subdirectory(alps/mps_optim)
+endif(BUILD_SYMMETRIES MATCHES "NU1")
