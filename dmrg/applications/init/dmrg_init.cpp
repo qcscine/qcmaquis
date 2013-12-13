@@ -36,33 +36,36 @@
 
 int main(int argc, char ** argv)
 {
-    if (argc != 3)
+    if (argc != 2 && argc != 3)
     {
-        maquis::cout << "Usage: <parms> <model_parms>" << std::endl;
+        maquis::cout << "Usage: <parms> [<model_parms>]" << std::endl;
         exit(1);
     }
     
     maquis::cout.precision(10);
     
+    /// Load parameters
     std::ifstream param_file(argv[1]);
-    if (!param_file) {
-        maquis::cerr << "Could not open parameter file." << std::endl;
-        exit(1);
-    }
+    if (!param_file)
+        throw std::runtime_error("Could not open parameter file.");
     DmrgParameters parms(param_file);
     
-    std::ifstream model_file(argv[2]);
-    if (!model_file) {
-        maquis::cerr << "Could not open model file." << std::endl;
-        exit(1);
+    /// Load model parameters from second input (if needed)
+    std::string model_file;
+    if (parms.is_set("model_file")) model_file = parms["model_file"].str();
+    if (argc == 3)                  model_file = std::string(argv[2]);
+    if (!model_file.empty()) {
+        std::ifstream model_ifs(model_file.c_str());
+        if (!model_ifs)
+            throw std::runtime_error("Could not open model_parms file.");
+        parms << ModelParameters(model_ifs);
     }
-    ModelParameters model(model_file);
     
     timeval now, then, snow, sthen;
     gettimeofday(&now, NULL);
     
     try {
-        maquis::dmrg::symm_factory(parms, model);
+        maquis::dmrg::symm_factory(parms);
     } catch (std::exception & e) {
         maquis::cerr << "Exception thrown!" << std::endl;
         maquis::cerr << e.what() << std::endl;

@@ -286,7 +286,6 @@ BOOST_AUTO_TEST_CASE( density_random_init )
     int M = 20;
 
     DmrgParameters parms;
-    ModelParameters model_parms;
     parms.set("max_bond_dimension", M);
     
     // Bosons with Nmax=2
@@ -297,7 +296,7 @@ BOOST_AUTO_TEST_CASE( density_random_init )
     Index<SymmGroup> phys_rho = phys_psi * adjoin(phys_psi);
         
     /// building random state
-    default_mps_init<matrix, SymmGroup> initializer(parms, model_parms, std::vector<Index<SymmGroup> >(1, phys_rho), C, std::vector<int>(L,0));
+    default_mps_init<matrix, SymmGroup> initializer(parms, std::vector<Index<SymmGroup> >(1, phys_rho), C, std::vector<int>(L,0));
     
     MPS<matrix,SymmGroup> mps;
     mps.resize(L); initializer(mps);

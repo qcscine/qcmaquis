@@ -38,23 +38,23 @@
 
 /// lattice factory
 boost::shared_ptr<lattice_impl>
-lattice_factory(BaseParameters & parms, BaseParameters & model)
+lattice_factory(BaseParameters & parms)
 {
     typedef boost::shared_ptr<lattice_impl> impl_ptr;
     
     if (parms["lattice_library"] == "coded") {
-        return coded_lattice_factory(parms, model);
+        return coded_lattice_factory(parms);
     } else if (parms["lattice_library"] == "alps") {
 #ifdef ENABLE_ALPS_MODELS
-        return impl_ptr( new alps_lattice(model) );
+        return impl_ptr( new alps_lattice(parms) );
 #else
         throw std::runtime_error("This code was compiled without alps lattice.");
 #endif
     } else if (parms["lattice_library"] == "continuum") {
-        return cont_lattice_factory(model);
+        return cont_lattice_factory(parms);
 #ifdef ENABLE_LL_MODELS
     } else if (parms["lattice_library"] == "ll") {
-        return ll_lattice_factory(model);
+        return ll_lattice_factory(parms);
 #endif
     } else {
         throw std::runtime_error("Don't know this lattice_library!");

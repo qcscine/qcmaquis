@@ -49,15 +49,14 @@ class measure_sim : public sim<Matrix, SymmGroup> {
     using base::mpo;
     using base::mpoc;
     using base::parms;
-    using base::model;
     using base::measurements;
     using base::stop_callback;
     using base::rfile;
     
 public:
     
-    measure_sim (DmrgParameters & parms_, ModelParameters & model_)
-    : base(parms_, model_)
+    measure_sim (DmrgParameters & parms_)
+    : base(parms_)
     { }
     
     void run()

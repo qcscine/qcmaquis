@@ -38,7 +38,7 @@
 
 #include "symm_factory.h"
 
-std::string guess_alps_symmetry(ModelParameters& model)
+std::string guess_alps_symmetry(BaseParameters & parms)
 {
     std::map<int, std::string> symm_names;
     symm_names[0] = "none";
@@ -47,12 +47,12 @@ std::string guess_alps_symmetry(ModelParameters& model)
     
     int n=0;
     typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-    if (model.defined("CONSERVED_QUANTUMNUMBERS")) {
+    if (parms.defined("CONSERVED_QUANTUMNUMBERS")) {
         boost::char_separator<char> sep(" ,");
-        std::string qn_string = model["CONSERVED_QUANTUMNUMBERS"];
+        std::string qn_string = parms["CONSERVED_QUANTUMNUMBERS"];
         tokenizer qn_tokens(qn_string, sep);
         for (tokenizer::iterator it=qn_tokens.begin(); it != qn_tokens.end(); it++) {
-            if (model.defined(*it + "_total"))
+            if (parms.defined(*it + "_total"))
                 n += 1;
         }
     }
@@ -61,9 +61,9 @@ std::string guess_alps_symmetry(ModelParameters& model)
 
 namespace maquis { namespace dmrg {
     
-    void symm_factory(DmrgParameters & parms, ModelParameters & model)
+    void symm_factory(DmrgParameters & parms)
     {
-        std::map<std::string, boost::function<void (DmrgParameters & p, ModelParameters & m)> > factory_map;
+        std::map<std::string, boost::function<void (DmrgParameters & p)> > factory_map;
         
         maquis::cout << "This binary contains symmetries: ";
 #ifdef HAVE_NU1
@@ -99,14 +99,14 @@ namespace maquis { namespace dmrg {
             symm_name = "nu1";
 #else
             if (parms["model_library"] == "alps")
-                symm_name = guess_alps_symmetry(model);
+                symm_name = guess_alps_symmetry(parms);
 #endif
         } else {
             symm_name = parms["symmetry"].str();
         }
         
         if (factory_map.find(symm_name) != factory_map.end())
-            factory_map[symm_name](parms, model);
+            factory_map[symm_name](parms);
         else
             throw std::runtime_error("Don't know this symmetry group. Please, check your compilation flags.");
 #ifdef AMBIENT

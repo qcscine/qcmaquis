@@ -74,7 +74,7 @@ public:
     
     virtual table_ptr operators_table() const=0;
     
-    virtual initializer_ptr initializer(Lattice const& lat, BaseParameters & parms, BaseParameters & model) const;
+    virtual initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const;
     
 protected:
     terms_type terms_;
@@ -83,7 +83,7 @@ protected:
 /// model factory
 template <class Matrix, class SymmGroup>
 boost::shared_ptr<model_impl<Matrix, SymmGroup> >
-model_factory(Lattice const& lattice, BaseParameters & parms, BaseParameters & model);
+model_factory(Lattice const& lattice, BaseParameters & parms);
 
 
 /// pimpl for Model
@@ -107,8 +107,8 @@ public:
     
     Model() { }
     
-    Model(Lattice const& lattice, BaseParameters & parms, BaseParameters & model)
-    : impl_(model_factory<Matrix, SymmGroup>(lattice, parms, model))
+    Model(Lattice const& lattice, BaseParameters & parms)
+    : impl_(model_factory<Matrix, SymmGroup>(lattice, parms))
     { }
     
     Model(impl_ptr impl) : impl_(impl) { }
@@ -130,7 +130,7 @@ public:
     
     table_ptr operators_table() const { return impl_->operators_table(); }
     
-    initializer_ptr initializer(Lattice const& lat, BaseParameters & parms, BaseParameters & model) const { return impl_->initializer(lat, parms, model); }
+    initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer(lat, parms); }
 
 private:
     impl_ptr impl_;

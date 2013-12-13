@@ -69,7 +69,8 @@ struct U1System {
         p.set("max_bond_dimension", max_bond_dim());
         p.set("lattice_library", lattice_lib());
         p.set("model_library", model_lib());
-	return p;
+        p << model_parms();
+        return p;
     }
     static ModelParameters model_parms()
     {
@@ -127,6 +128,7 @@ struct TwoU1System {
         p.set("max_bond_dimension", max_bond_dim());
         p.set("lattice_library", lattice_lib());
         p.set("model_library", model_lib());
+        p << model_parms();
         return p;
     }
     static ModelParameters model_parms()
@@ -190,6 +192,7 @@ struct U1DegSystem {
         p.set("max_bond_dimension", max_bond_dim());
         p.set("lattice_library", lattice_lib());
         p.set("model_library", model_lib());
+        p << model_parms();
         return p;
     }
     static ModelParameters model_parms()
@@ -298,18 +301,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dens_meas, ML, test_systems )
     typedef typename grp::charge charge;
     
     DmrgParameters parms = ML::parms();
-    ModelParameters model_parms = ML::model_parms();
     
-    Lattice lat(parms, model_parms);
-    Model<matrix,grp> model(lat, parms, model_parms);
+    Lattice lat(parms);
+    Model<matrix,grp> model(lat, parms);
     
     block_matrix<matrix, grp> ident = model.identity_matrix();
     block_matrix<matrix, grp> fill  = model.filling_matrix();
 
     Index<grp> phys = model.phys_dim();
     std::cout << "phys: " << phys << std::endl;
-    charge initc = model.total_quantum_numbers( model_parms );
-    default_mps_init<matrix, grp> initializer(parms, model_parms, std::vector<Index<grp> >(1, phys), initc, std::vector<int>(lat.size(),0));
+    charge initc = model.total_quantum_numbers( parms );
+    default_mps_init<matrix, grp> initializer(parms, std::vector<Index<grp> >(1, phys), initc, std::vector<int>(lat.size(),0));
 
     MPS<matrix, grp> mps(lat.size(), initializer);
     
@@ -343,18 +345,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( obdm_meas, ML, test_systems )
     typedef typename grp::charge charge;
     
     DmrgParameters parms = ML::parms();
-    ModelParameters model_parms = ML::model_parms();
     
-    Lattice lat(parms, model_parms);
-    Model<matrix,grp> model(lat, parms, model_parms);
+    Lattice lat(parms);
+    Model<matrix,grp> model(lat, parms);
     
     block_matrix<matrix, grp> ident = model.identity_matrix();
     block_matrix<matrix, grp> fill  = model.filling_matrix();
     
     Index<grp> phys = model.phys_dim();
     std::cout << "phys: " << phys << std::endl;
-    charge initc = model.total_quantum_numbers( model_parms );
-    default_mps_init<matrix, grp> initializer(parms, model_parms, std::vector<Index<grp> >(1, phys), initc, std::vector<int>(lat.size(),0));
+    charge initc = model.total_quantum_numbers( parms );
+    default_mps_init<matrix, grp> initializer(parms, std::vector<Index<grp> >(1, phys), initc, std::vector<int>(lat.size(),0));
     MPS<matrix, grp> mps(lat.size(), initializer);
     
     for (int i=0; i<ML::dens_ops().size(); ++i) {

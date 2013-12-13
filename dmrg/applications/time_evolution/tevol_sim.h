@@ -46,15 +46,14 @@ class tevol_sim : public sim<Matrix, SymmGroup> {
     using base::lat;
     using base::parms;
     using base::model;
-    using base::phys_model;
     using base::measurements;
     using base::stop_callback;
     using base::init_sweep;
     using base::rfile;
     
 public:
-    tevol_sim(DmrgParameters const & parms_, ModelParameters const  & model_)
-    : base(parms_, model_)
+    tevol_sim(DmrgParameters const & parms_)
+    : base(parms_)
     { }
     
     void run()
@@ -66,7 +65,6 @@ public:
         int nsweeps_img = parms["nsweeps_img"];
         
         parms = parms.get_at_index("t", init_sweep);
-        model = model.get_at_index("t", init_sweep);
 
         this->model_init();
         this->mps_init();
@@ -90,7 +88,7 @@ public:
         CHECK_MULTIPLICITY(update_each)
         #undef CHECK_MULTIPLICITY
         
-        TimeEvolver evolver(&parms, &mps, lat, phys_model, init_sweep);
+        TimeEvolver evolver(&parms, &mps, lat, model, init_sweep);
         
         int n = nsweeps / nsteps;
         for (int i=0; i < n; ++i) {
@@ -101,10 +99,9 @@ public:
             {
                 int pc = 0, mc = 0;
                 parms = parms.get_at_index("t", sweep, &pc);
-                model = model.get_at_index("t", sweep, &mc);
                 if (mc > 0 || pc > 0) {
                     this->model_init(sweep);
-                    evolver = TimeEvolver(&parms, &mps, lat, phys_model, sweep);
+                    evolver = TimeEvolver(&parms, &mps, lat, model, sweep);
                 }
             } else if (sweep == nsweeps_img) {
                     // since this is just a change in the time step, there is
@@ -131,7 +128,6 @@ public:
                 {
                     storage::archive ar(rfile, "w");
                     ar[this->results_archive_path(sweep) + "/parameters"] << parms;
-                    ar[this->results_archive_path(sweep) + "/parameters"] << model;
                     ar[this->results_archive_path(sweep) + "/results"] << evolver.iteration_results();
                     ar[this->results_archive_path(sweep) + "/results/Energy/mean/value"] << std::vector<double>(1, energy);
                     // ar[this->results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);

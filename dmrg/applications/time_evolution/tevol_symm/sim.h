@@ -31,14 +31,14 @@
 
 namespace maquis { namespace dmrg {
     template <class Matrix, class SymmGroup>
-    void te_factory(DmrgParameters & parms, ModelParameters & model)
+    void te_factory(DmrgParameters & parms)
     {
         if (parms["te_type"] == "nn")
         {
-            tevol_sim<Matrix, SymmGroup, nearest_neighbors_evolver<Matrix, SymmGroup> > sim(parms, model);
+            tevol_sim<Matrix, SymmGroup, nearest_neighbors_evolver<Matrix, SymmGroup> > sim(parms);
             sim.run();
         } else if (parms["te_type"] == "mpo") {
-            tevol_sim<Matrix, SymmGroup, mpo_evolver<Matrix, SymmGroup> > sim(parms, model);
+            tevol_sim<Matrix, SymmGroup, mpo_evolver<Matrix, SymmGroup> > sim(parms);
             sim.run();
         } else {
             throw std::runtime_error("Don't know this time evolution. ("+parms["te_type"].str()+")");
@@ -47,9 +47,9 @@ namespace maquis { namespace dmrg {
     
     
     template <>
-    void run_sim<grp>(DmrgParameters & parms, ModelParameters & model)
+    void run_sim<grp>(DmrgParameters & parms)
     {
-        if (parms["COMPLEX"]) te_factory<cmatrix, grp>(parms, model);
-        else                  te_factory<matrix, grp>(parms, model);
+        if (parms["COMPLEX"]) te_factory<cmatrix, grp>(parms);
+        else                  te_factory<matrix, grp>(parms);
     }
 } }

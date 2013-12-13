@@ -108,6 +108,7 @@ private:
         add_option("symmetry", "none, u1 or 2u1", value("u1"));
         add_option("lattice_library", "", value("alps"));
         add_option("model_library", "", value("alps"));
+        add_option("model_file", "path to model parameters", value(""));
         
         add_option("beta_mode", "", value(0));
 

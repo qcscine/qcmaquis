@@ -41,29 +41,29 @@
 // init MACROS
 #define impl_model_factory(MATRIX, SYMMGROUP)                                           \
 template boost::shared_ptr<model_impl<MATRIX, SYMMGROUP> >                              \
-model_factory<MATRIX,SYMMGROUP>(Lattice const&, BaseParameters &, BaseParameters &);
+model_factory<MATRIX,SYMMGROUP>(Lattice const&, BaseParameters &);
 
 // Implementation
 template <class Matrix, class SymmGroup>
 boost::shared_ptr<model_impl<Matrix, SymmGroup> >
-model_factory(Lattice const& lattice, BaseParameters & parms, BaseParameters & model)
+model_factory(Lattice const& lattice, BaseParameters & parms)
 {
     typedef boost::shared_ptr<model_impl<Matrix, SymmGroup> > impl_ptr;
     if (parms["model_library"] == "alps") {
 #ifdef ENABLE_ALPS_MODELS
         if (parms["lattice_library"] != "alps")
             throw std::runtime_error("ALPS models require ALPS lattice.");
-        return impl_ptr( new ALPSModel<Matrix, SymmGroup>(lattice, model) );
+        return impl_ptr( new ALPSModel<Matrix, SymmGroup>(lattice, parms) );
 #else
         throw std::runtime_error("This code was compiled without alps models.");
 #endif
     } else if (parms["model_library"] == "coded") {
-        return coded_model_factory<Matrix, SymmGroup>::parse(lattice, model);
+        return coded_model_factory<Matrix, SymmGroup>::parse(lattice, parms);
 //    } else if (parms["model_library"] == "continuum") {
-//        return cont_model_factory<Matrix, SymmGroup>::parse(lattice, model);
+//        return cont_model_factory<Matrix, SymmGroup>::parse(lattice, parms);
 //#ifdef ENABLE_LL_MODELS
 //    } else if (parms["model_library"] == "ll") {
-//        return ll_model_factory<Matrix, SymmGroup>::parse(lattice, model);
+//        return ll_model_factory<Matrix, SymmGroup>::parse(lattice, parms);
 //#endif
     } else {
         throw std::runtime_error("Don't know this model_library!");

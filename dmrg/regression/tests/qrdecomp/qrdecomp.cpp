@@ -64,8 +64,7 @@ BOOST_AUTO_TEST_CASE( test )
     Lattice lattice(lat_ptr);
     
     DmrgParameters parms;
-    ModelParameters model_parms;
-    parms.set("max_bond_dimension", M);    
+    parms.set("max_bond_dimension", M);
 
     // Bosons with Nmax=2
     Index<SymmGroup> phys;
@@ -77,7 +76,7 @@ BOOST_AUTO_TEST_CASE( test )
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
     op_vec ids_vec(1,ident);
 
-    default_mps_init<matrix, SymmGroup> initializer(parms, model_parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
+    default_mps_init<matrix, SymmGroup> initializer(parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
     
     MPS<matrix,SymmGroup> mps;
     mps.resize(L); initializer(mps);

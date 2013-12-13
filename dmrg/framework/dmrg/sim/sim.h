@@ -63,7 +63,7 @@
 template <class Matrix, class SymmGroup>
 class sim {
 public:
-    sim(DmrgParameters const &, ModelParameters const &);
+    sim(DmrgParameters const &);
     ~sim();
     
     virtual void run() =0;
@@ -82,7 +82,6 @@ protected:
     
 protected:
     DmrgParameters parms;
-    ModelParameters model;
     
     int init_sweep, init_site;
     bool restore;
@@ -93,7 +92,7 @@ protected:
     time_stopper stop_callback;
     
     Lattice lat;
-    Model<Matrix, SymmGroup> phys_model;
+    Model<Matrix, SymmGroup> model;
     MPS<Matrix, SymmGroup> mps;
     MPO<Matrix, SymmGroup> mpo, mpoc;
     Measurements<Matrix, SymmGroup> measurements;

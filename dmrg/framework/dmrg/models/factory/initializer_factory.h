@@ -51,42 +51,42 @@ namespace detail {
     
     template <class Matrix, class SymmGroup>
     struct call_hf_init {
-        static typename Model<Matrix,SymmGroup>::initializer_ptr call(BaseParameters parms, BaseParameters model,
+        static typename Model<Matrix,SymmGroup>::initializer_ptr call(BaseParameters parms,
                                                                       std::vector<Index<SymmGroup> > const& phys_dims,
                                                                       typename SymmGroup::charge right_end,
                                                                       std::vector<int> const& site_type)
         {
             throw std::runtime_error("HF MPS init is available only for TwoU1 or TwoU1PG symmetry group.");
-            return typename Model<Matrix,SymmGroup>::initializer_ptr(new default_mps_init<Matrix, SymmGroup>(parms, model, phys_dims, right_end, site_type));
+            return typename Model<Matrix,SymmGroup>::initializer_ptr(new default_mps_init<Matrix, SymmGroup>(parms, phys_dims, right_end, site_type));
         }
     };
     template <class Matrix>
     struct call_hf_init<Matrix, TwoU1> {
-        static typename Model<Matrix,TwoU1>::initializer_ptr call(BaseParameters parms, BaseParameters model,
+        static typename Model<Matrix,TwoU1>::initializer_ptr call(BaseParameters parms,
                                                                   std::vector<Index<TwoU1> > const& phys_dims,
                                                                   TwoU1::charge right_end,
                                                                   std::vector<int> const& site_type)
         {
-            return typename Model<Matrix,TwoU1>::initializer_ptr(new hf_mps_init<Matrix, TwoU1>(parms, model, phys_dims, right_end, site_type));
+            return typename Model<Matrix,TwoU1>::initializer_ptr(new hf_mps_init<Matrix, TwoU1>(parms, phys_dims, right_end, site_type));
         }
     };
     template <class Matrix>
     struct call_hf_init<Matrix, TwoU1PG> {
-        static typename Model<Matrix,TwoU1PG>::initializer_ptr call(BaseParameters parms, BaseParameters model,
+        static typename Model<Matrix,TwoU1PG>::initializer_ptr call(BaseParameters parms,
                                                                     std::vector<Index<TwoU1PG> > const& phys_dims,
                                                                     TwoU1PG::charge right_end,
                                                                     std::vector<int> const& site_type)
         {
-            return typename Model<Matrix,TwoU1PG>::initializer_ptr(new hf_mps_init<Matrix, TwoU1PG>(parms, model, phys_dims, right_end, site_type));
+            return typename Model<Matrix,TwoU1PG>::initializer_ptr(new hf_mps_init<Matrix, TwoU1PG>(parms, phys_dims, right_end, site_type));
         }
     };
 }
 
 template <class Matrix, class SymmGroup>
 typename model_impl<Matrix,SymmGroup>::initializer_ptr
-model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & parms, BaseParameters & model) const
+model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & parms) const
 {
-    typename SymmGroup::charge initc = this->total_quantum_numbers(model);
+    typename SymmGroup::charge initc = this->total_quantum_numbers(parms);
     
     int max_site_type = 0;
     std::vector<int> site_types(lat.size(), 0);
@@ -106,19 +106,19 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
     }
     
     if (parms["init_state"] == "default")
-        return initializer_ptr(new default_mps_init<Matrix, SymmGroup>(parms, model, site_bases, initc, site_types));
+        return initializer_ptr(new default_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
     
 //    else if (params["init_state"] == "linear")
 //        return detail::call_linear_init<Matrix, SymmGroup>::call();
     
     else if (parms["init_state"] == "const")
-        return initializer_ptr(new const_mps_init<Matrix, SymmGroup>(parms, model, site_bases, initc, site_types));
+        return initializer_ptr(new const_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
     
     else if (parms["init_state"] == "thin")
-        return initializer_ptr(new thin_mps_init<Matrix, SymmGroup>(parms, model, site_bases, initc, site_types));
+        return initializer_ptr(new thin_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
     
     else if (parms["init_state"] == "thin_const")
-        return initializer_ptr(new thin_const_mps_init<Matrix, SymmGroup>(parms, model, site_bases, initc, site_types));
+        return initializer_ptr(new thin_const_mps_init<Matrix, SymmGroup>(parms, site_bases, initc, site_types));
     
     else if (parms["init_state"] == "basis_state")
         return initializer_ptr(new basis_mps_init<Matrix, SymmGroup>(parms, site_bases, site_types));
@@ -136,7 +136,7 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
         return initializer_ptr(new coherent_dm_mps_init<Matrix, SymmGroup>(parms, site_bases, site_types));
     
     else if (parms["init_state"] == "hf")
-        return detail::call_hf_init<Matrix, SymmGroup>::call(parms, model, site_bases, initc, site_types);
+        return detail::call_hf_init<Matrix, SymmGroup>::call(parms, site_bases, initc, site_types);
     
     else {
         throw std::runtime_error("Don't know this initial state.");

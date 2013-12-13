@@ -30,21 +30,21 @@
 template<class Matrix>
 struct coded_model_factory<Matrix, U1> {
     static boost::shared_ptr<model_impl<Matrix, U1> > parse
-    (Lattice const& lattice, BaseParameters & model)
+    (Lattice const& lattice, BaseParameters & parms)
     {
         typedef boost::shared_ptr<model_impl<Matrix, U1> > impl_ptr;
-        if (model["MODEL"] == std::string("heisenberg"))
-            return impl_ptr( new Heisenberg<Matrix>(lattice, model["Jxy"], model["Jz"]) );
-        else if (model["MODEL"] == std::string("HCB"))
+        if (parms["MODEL"] == std::string("heisenberg"))
+            return impl_ptr( new Heisenberg<Matrix>(lattice, parms["Jxy"], parms["Jz"]) );
+        else if (parms["MODEL"] == std::string("HCB"))
             return impl_ptr( new HCB<Matrix>(lattice) );
-        else if (model["MODEL"] == std::string("boson Hubbard"))
-            return impl_ptr( new BoseHubbard<Matrix>(lattice, model) );
-//        else if (model["MODEL"] == std::string("fermion Hubbard"))
-//            return impl_ptr( new FermiHubbardU1<Matrix>(lattice, model) );
-        else if (model["MODEL"] == std::string("FreeFermions"))
-            return impl_ptr( new FreeFermions<Matrix>(lattice, model["t"]) );
-//        else if (model["MODEL"] == std::string("bela_chiral"))
-//            return impl_ptr( new Chiral<Matrix>(lattice, model) );
+        else if (parms["MODEL"] == std::string("boson Hubbard"))
+            return impl_ptr( new BoseHubbard<Matrix>(lattice, parms) );
+//        else if (parms["MODEL"] == std::string("fermion Hubbard"))
+//            return impl_ptr( new FermiHubbardU1<Matrix>(lattice, parms) );
+        else if (parms["MODEL"] == std::string("FreeFermions"))
+            return impl_ptr( new FreeFermions<Matrix>(lattice, parms["t"]) );
+//        else if (parms["MODEL"] == std::string("bela_chiral"))
+//            return impl_ptr( new Chiral<Matrix>(lattice, parms) );
         else {
             throw std::runtime_error("Don't know this model!");
             return impl_ptr();

@@ -31,13 +31,13 @@
 template<class Matrix>
 struct coded_model_factory<Matrix, TrivialGroup> {
     static boost::shared_ptr<model_impl<Matrix, TrivialGroup> > parse
-    (Lattice const& lattice, BaseParameters & model)
+    (Lattice const& lattice, BaseParameters & parms)
     {
         typedef boost::shared_ptr<model_impl<Matrix, TrivialGroup> > impl_ptr;
-        if (model["MODEL"] == std::string("boson Hubbard"))
-            return impl_ptr( new BoseHubbardNone<Matrix>(lattice, model) );
-        else if (model["MODEL"] == std::string("super boson Hubbard"))
-            return impl_ptr( new SuperBoseHubbardNone<Matrix>(lattice, model) );
+        if (parms["MODEL"] == std::string("boson Hubbard"))
+            return impl_ptr( new BoseHubbardNone<Matrix>(lattice, parms) );
+        else if (parms["MODEL"] == std::string("super boson Hubbard"))
+            return impl_ptr( new SuperBoseHubbardNone<Matrix>(lattice, parms) );
         else {
             throw std::runtime_error("Don't know this model with NONE symmetry group!");
             return impl_ptr();

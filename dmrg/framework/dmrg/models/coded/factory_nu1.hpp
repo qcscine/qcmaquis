@@ -29,7 +29,7 @@
 template<class Matrix>
 struct coded_model_factory<Matrix, NU1> {
     static boost::shared_ptr<model_impl<Matrix, NU1> > parse
-    (Lattice const& lattice, BaseParameters & model)
+    (Lattice const& lattice, BaseParameters & parms)
     {
         typedef boost::shared_ptr<model_impl<Matrix, NU1> > impl_ptr;
         throw std::runtime_error("No coded models using the NU1 SymmGroup");

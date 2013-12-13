@@ -49,9 +49,8 @@ class StrCorr {
 public:
     typedef block_matrix<matrix, U1> op_t;
     
-    StrCorr(DmrgParameters & parms_, ModelParameters & model_)
+    StrCorr(DmrgParameters & parms_)
     : parms(parms_)
-    , model(model_)
     {
         // Loading state
         if (! boost::filesystem::exists(parms["chkpfile"].str()))
@@ -65,9 +64,9 @@ public:
         }
         
         // Init model
-        model = model_.get_at_index("graining", graining);
+        parms = parms_.get_at_index("graining", graining);
         init_model();
-        L = model["L"]; N = model["Ndiscr"];
+        L = parms["L"]; N = parms["Ndiscr"];
         Ltot = L * N;
         
         if (Ltot != mps.length())
@@ -80,7 +79,7 @@ public:
     {
         op_t strop;
         strop.insert_block(matrix(1, 1, -1), 0, 0);
-        for (int n=1; n<=model["Nmax"]; ++n)
+        for (int n=1; n<=parms["Nmax"]; ++n)
         {
             if ((n-1) % 2 == 0)
                 strop.insert_block(matrix(1, 1, 1), n, n);
@@ -109,10 +108,10 @@ public:
     // Unite-cell string operator of length l unit cells
     void measure_uc_string(size_t l)
     {
-        int filling = model["u1_total_charge"] / L;
+        int filling = parms["u1_total_charge"] / L;
         op_t strop;
         strop.insert_block(matrix(1, 1, 1), 0, 0);
-        for (int n=1; n<=model["Nmax"]; ++n)
+        for (int n=1; n<=parms["Nmax"]; ++n)
         {
             if (n % 2 == 0)
                 strop.insert_block(matrix(1, 1, 1), n, n);
@@ -146,7 +145,7 @@ private:
         phys.insert(std::make_pair(0, 1));
         ident.insert_block(matrix(1, 1, 1), 0, 0);
         
-        for (int n=1; n<=model["Nmax"]; ++n)
+        for (int n=1; n<=parms["Nmax"]; ++n)
         {
             phys.insert(std::make_pair(n, 1));
             ident.insert_block(matrix(1, 1, 1), n, n);
@@ -156,7 +155,6 @@ private:
     
     
     DmrgParameters & parms;
-    ModelParameters & model;
     size_t L, N, Ltot;
     
     Index<U1> phys;
