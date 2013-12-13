@@ -82,7 +82,11 @@ public:
             exit(1);
         }
     }
-    
+
+    BaseParameters(alps::Parameters const& p)
+    : alps::Parameters(p)
+    { }
+
     bool is_set (std::string const & key) const
     {
         return defined(key);
