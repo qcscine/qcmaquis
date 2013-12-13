@@ -26,7 +26,6 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "contractions.h"
-#include <boost/math/special_functions/binomial.hpp>
 
 #include <limits>
 
