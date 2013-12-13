@@ -44,7 +44,7 @@
 #include "dmrg/models/generate_mpo.hpp"
 
 #include "dmrg/mp_tensors/mps.h"
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 
 #include "utils/timings.h"
 

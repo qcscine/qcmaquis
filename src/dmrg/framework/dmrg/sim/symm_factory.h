@@ -27,7 +27,7 @@
 #ifndef MAQUIS_DMRG__APP_SYMM_FACTORY_H
 #define MAQUIS_DMRG__APP_SYMM_FACTORY_H
 
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 
 namespace maquis { namespace dmrg {
 

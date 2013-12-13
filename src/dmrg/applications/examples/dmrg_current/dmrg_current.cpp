@@ -27,7 +27,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 
 #include "dmrg/sim/symm_factory.h"
 

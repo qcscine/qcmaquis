@@ -57,7 +57,7 @@ typedef TrivialGroup symm;
 typedef U1 symm;
 #endif
 
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 
 
 int main(int argc, char ** argv)

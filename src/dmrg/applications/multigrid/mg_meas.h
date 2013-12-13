@@ -27,7 +27,7 @@
 #ifndef APP_MEASURE_H
 #define APP_MEASURE_H
 
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 
 #include "dmrg/block_matrix/detail/alps.hpp"
 typedef alps::numeric::matrix<double> Matrix;

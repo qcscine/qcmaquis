@@ -40,7 +40,7 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/ss_optimize.hpp"
 
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 
 
 typedef alps::numeric::matrix<double> matrix;

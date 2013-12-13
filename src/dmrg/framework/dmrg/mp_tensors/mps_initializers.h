@@ -34,7 +34,7 @@
 
 #include <boost/tokenizer.hpp>
 
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/mp_tensors/mps_sectors.h"
 #include "dmrg/mp_tensors/compression.h"
 #include "dmrg/mp_tensors/state_mps.h"

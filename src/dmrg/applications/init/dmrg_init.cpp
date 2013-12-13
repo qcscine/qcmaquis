@@ -31,7 +31,7 @@
 #include <iostream>
 #include <sys/stat.h>
 
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 #include "utils/timings.h"
 
 int main(int argc, char ** argv)
