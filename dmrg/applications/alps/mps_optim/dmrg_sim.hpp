@@ -72,22 +72,19 @@ public:
         maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
         
         boost::shared_ptr<opt_base_t> optimizer;
-        if (parms["optimization"] == "singlesite")
-        {
-            optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mpoc, parms, stop_callback, init_site) );
-        }
-        
-        else if(parms["optimization"] == "twosite")
-        {
-            optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mpoc, parms, stop_callback, init_site) );
-        }
-        else {
-            throw std::runtime_error("Don't know this optimizer");
+        if (init_sweep < parms["nsweeps"]) {
+            if (parms["optimization"] == "singlesite")
+                optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
+                                                (mps, mpoc, parms, stop_callback, init_site) );
+            else if(parms["optimization"] == "twosite")
+                optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
+                                                (mps, mpoc, parms, stop_callback, init_site) );
+            else
+                throw std::runtime_error("Don't know this optimizer");
         }
         
         try {
+            bool stopped = false;
             for (int sweep=init_sweep; sweep < parms["nsweeps"]; ++sweep) {
                 // TODO: introduce some timings
                 
@@ -110,12 +107,41 @@ public:
                 }
                 
                 /// write checkpoint
-                bool stopped = stop_callback();
+                stopped = stop_callback();
                 if (stopped || (sweep+1) % chkp_each == 0 || (sweep+1) == parms["nsweeps"])
                     checkpoint_simulation(mps, sweep, -1);
                 
                 if (stopped) break;
             }
+            
+            /// Final measurements
+            if (!stopped) {
+                this->measure("/spectrum/results/", measurements);
+                
+                double energy = maquis::real(expval(mps, mpoc));
+                maquis::cout << "Energy: " << maquis::real(expval(mps, mpoc)) << std::endl;
+                {
+                    storage::archive ar(rfile, "w");
+                    ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
+                }
+                
+                if (parms["calc_h2"] > 0) {
+                    MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpoc);
+                    mpo2.compress(1e-12);
+                    
+                    double energy2 = maquis::real(expval(mps, mpo2, true));
+                    
+                    maquis::cout << "Energy^2: " << energy2 << std::endl;
+                    maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;
+                    
+                    {
+                        storage::archive ar(rfile, "w");
+                        ar["/spectrum/results/Energy^2/mean/value"] << std::vector<double>(1, energy2);
+                        ar["/spectrum/results/EnergyVariance/mean/value"] << std::vector<double>(1, energy2 - energy*energy);
+                    }
+                }
+            }
+            
         } catch (dmrg::time_limit const& e) {
             maquis::cout << e.what() << " checkpointing partial result." << std::endl;
             checkpoint_simulation(mps, e.sweep(), e.site());
