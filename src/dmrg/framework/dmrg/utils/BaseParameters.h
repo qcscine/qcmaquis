@@ -134,6 +134,15 @@ public:
         return p;
     }
     
+    BaseParameters & operator<<(BaseParameters const& p)
+    {
+        for (alps::Parameters::const_iterator it=p.begin(); it!=p.end(); ++it)
+            alps::Parameters::operator[](it->key()) = it->value();
+        defaults.insert(p.defaults.begin(), p.defaults.end());
+
+        return *this;
+    }
+    
 protected:
     void add_option(std::string const & name,
                     std::string const & desc,

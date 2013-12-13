@@ -101,26 +101,35 @@ void measure_correlation_parallel(MPS<Matrix, SymmGroup> const & mps,
 int main(int argc, char ** argv)
 {
     try {
-        if (argc != 3)
-            throw std::runtime_error("Usage: <parms> <model_parms>");
+        if (argc != 2 && argc != 3)
+        {
+            maquis::cout << "Usage: <parms> [<model_parms>]" << std::endl;
+            exit(1);
+        }
         
-        /// Loading parameters
+        maquis::cout.precision(10);
+        
+        /// Load parameters
         std::ifstream param_file(argv[1]);
         if (!param_file)
             throw std::runtime_error("Could not open parameter file.");
         DmrgParameters parms(param_file);
         
-        /// Loading model
-        std::ifstream model_file(argv[2]);
-        if (!model_file)
-            throw std::runtime_error("Could not open model file.");
-        ModelParameters model_parms(model_file);
+        /// Load model parameters from second input (if needed)
+        std::string model_file;
+        if (parms.is_set("model_file")) model_file = parms["model_file"].str();
+        if (argc == 3)                  model_file = std::string(argv[2]);
+        if (!model_file.empty()) {
+            std::ifstream model_ifs(model_file.c_str());
+            if (!model_ifs)
+                throw std::runtime_error("Could not open model_parms file.");
+            parms << ModelParameters(model_ifs);
+        }
         
         /// Parsing model
         boost::shared_ptr<Lattice> lattice;
         boost::shared_ptr<Model<matrix, grp> > model;
-        model_parser<matrix, grp>(parms["lattice_library"], parms["model_library"], model_parms,
-                                  lattice, model);
+        model_parser<matrix, grp>(parms["lattice_library"], parms["model_library"], lattice, model);
         
         Hamiltonian<matrix, grp> H = model->H();
         MPO<matrix, grp> mpo = make_mpo(lattice->size(), H);

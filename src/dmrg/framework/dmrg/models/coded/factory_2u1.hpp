@@ -30,14 +30,14 @@
 template<class Matrix>
 struct coded_model_factory<Matrix, TwoU1> {
     static boost::shared_ptr<model_impl<Matrix, TwoU1> > parse
-    (Lattice const & lattice, BaseParameters & model)
+    (Lattice const & lattice, BaseParameters & parms)
     {
         typedef boost::shared_ptr<model_impl<Matrix, TwoU1> > impl_ptr;
-        if (model["MODEL"] == std::string("fermion Hubbard"))
-            return impl_ptr( new FermiHubbardTwoU1<Matrix>(lattice, model) );
+        if (parms["MODEL"] == std::string("fermion Hubbard"))
+            return impl_ptr( new FermiHubbardTwoU1<Matrix>(lattice, parms) );
         else
-            if (model["MODEL"] == std::string("quantum_chemistry"))
-            return impl_ptr( new qc_model<Matrix, TwoU1>(lattice, model) );
+            if (parms["MODEL"] == std::string("quantum_chemistry"))
+            return impl_ptr( new qc_model<Matrix, TwoU1>(lattice, parms) );
 
         else {
             throw std::runtime_error("Don't know this model!");

@@ -31,7 +31,7 @@
 
 namespace maquis { namespace dmrg {
 
-    void symm_factory(DmrgParameters & parms, ModelParameters & model);
+    void symm_factory(DmrgParameters & parms);
 
 } }
 

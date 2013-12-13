@@ -75,7 +75,7 @@ public:
 
 /// lattice factory
 boost::shared_ptr<lattice_impl>
-lattice_factory(BaseParameters & parms, BaseParameters & model);
+lattice_factory(BaseParameters & parms);
 
 
 /// pimpl resolved Lattice
@@ -87,8 +87,8 @@ public:
     
     Lattice() { }
     
-    Lattice(BaseParameters & parms, BaseParameters & model)
-    : impl_(lattice_factory(parms, model))
+    Lattice(BaseParameters & parms)
+    : impl_(lattice_factory(parms))
     { }
     
     Lattice(impl_ptr impl) : impl_(impl) { }

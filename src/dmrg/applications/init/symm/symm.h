@@ -29,9 +29,9 @@
 
 namespace maquis { namespace dmrg {
     template <>
-    void run_sim<grp>(DmrgParameters & parms, ModelParameters & model)
+    void run_sim<grp>(DmrgParameters & parms)
     {
-        dmrg_init<matrix, grp> sim(parms, model);
+        dmrg_init<matrix, grp> sim(parms);
         sim.build();
     }
 } }

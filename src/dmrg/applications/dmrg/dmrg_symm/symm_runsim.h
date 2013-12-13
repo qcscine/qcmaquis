@@ -29,13 +29,13 @@
 
 namespace maquis { namespace dmrg {
     template <>
-    void run_sim<grp>(DmrgParameters & parms, ModelParameters & model)
+    void run_sim<grp>(DmrgParameters & parms)
     {
         if (parms["COMPLEX"]) {
-            dmrg_sim<cmatrix, grp> sim(parms, model);
+            dmrg_sim<cmatrix, grp> sim(parms);
             sim.run();
         } else {
-            dmrg_sim<matrix, grp> sim(parms, model);
+            dmrg_sim<matrix, grp> sim(parms);
             sim.run();
         }
     }

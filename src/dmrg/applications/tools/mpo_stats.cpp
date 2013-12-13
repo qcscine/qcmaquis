@@ -63,36 +63,37 @@ typedef U1 symm;
 int main(int argc, char ** argv)
 {
     try {
-        if (argc != 3)
+        if (argc != 2 && argc != 3)
         {
-            maquis::cout << "Usage: <parms> <model_parms>" << std::endl;
+            maquis::cout << "Usage: <parms> [<model_parms>]" << std::endl;
             exit(1);
         }
         
         maquis::cout.precision(10);
         
-        /// Loading parameters
+        /// Load parameters
         std::ifstream param_file(argv[1]);
-        if (!param_file) {
-            maquis::cerr << "Could not open parameter file." << std::endl;
-            exit(1);
-        }
+        if (!param_file)
+            throw std::runtime_error("Could not open parameter file.");
         DmrgParameters parms(param_file);
         
-        /// Loading model
-        std::ifstream model_file(argv[2]);
-        if (!model_file) {
-            maquis::cerr << "Could not open model file." << std::endl;
-            exit(1);
+        /// Load model parameters from second input (if needed)
+        std::string model_file;
+        if (parms.is_set("model_file")) model_file = parms["model_file"].str();
+        if (argc == 3)                  model_file = std::string(argv[2]);
+        if (!model_file.empty()) {
+            std::ifstream model_ifs(model_file.c_str());
+            if (!model_ifs)
+                throw std::runtime_error("Could not open model_parms file.");
+            parms << ModelParameters(model_ifs);
         }
-        ModelParameters model_parms(model_file);
         
         
         /// Parsing model
-        Lattice lattice = Lattice(parms, model_parms);
-        Model<matrix, symm> model = Model<matrix, symm>(lattice, parms, model_parms);
+        Lattice lattice = Lattice(parms);
+        Model<matrix, symm> model = Model<matrix, symm>(lattice, parms);
         
-        MPO<matrix, symm> mpo = make_mpo(lattice, model, model_parms);
+        MPO<matrix, symm> mpo = make_mpo(lattice, model, parms);
         
         for (int p = 0; p < lattice.size(); ++p) {
             std::ofstream ofs(std::string("mpo_stats."+boost::lexical_cast<std::string>(p)+".dat").c_str());

@@ -104,7 +104,6 @@ BOOST_AUTO_TEST_CASE( obs_bosons_nmax2 )
     int L = 16;
 
     DmrgParameters parms;
-    ModelParameters model_parms;
     parms.set("max_bond_dimension", M);
     
     // Bosons with Nmax=2
@@ -120,7 +119,7 @@ BOOST_AUTO_TEST_CASE( obs_bosons_nmax2 )
     
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
     
-    default_mps_init<matrix, SymmGroup> initializer(parms, model_parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
+    default_mps_init<matrix, SymmGroup> initializer(parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
     
     MPS<matrix,SymmGroup> mps;
     mps.resize(L); initializer(mps);

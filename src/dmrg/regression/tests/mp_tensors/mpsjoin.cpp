@@ -310,7 +310,6 @@ BOOST_AUTO_TEST_CASE( join_semirnd_mps_cmp_dens )
     int L = 4;
 
     DmrgParameters parms;
-    ModelParameters model_parms;
     
     std::vector<std::pair<SymmGroup::charge, size_t> > b(L, std::pair<SymmGroup::charge, size_t>(0,0));
     b[0].first = 1;
@@ -330,7 +329,7 @@ BOOST_AUTO_TEST_CASE( join_semirnd_mps_cmp_dens )
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
     
     parms.set("max_bond_dimension", M);
-    default_mps_init<matrix, SymmGroup> initializer(parms, model_parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
+    default_mps_init<matrix, SymmGroup> initializer(parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
 
     MPS<matrix,SymmGroup> mps1;
     mps1.resize(L); initializer(mps1);
@@ -348,7 +347,6 @@ BOOST_AUTO_TEST_CASE( join_rnd_mps_cmp_dens )
     int L = 4;
 
     DmrgParameters parms;
-    ModelParameters model_parms;
     
     // Bosons with Nmax=2
     Index<SymmGroup> phys;
@@ -364,7 +362,7 @@ BOOST_AUTO_TEST_CASE( join_rnd_mps_cmp_dens )
     block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
     
     parms.set("max_bond_dimension", M);
-    default_mps_init<matrix, SymmGroup> initializer(parms, model_parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
+    default_mps_init<matrix, SymmGroup> initializer(parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
     
     MPS<matrix,SymmGroup> mps;
     mps.resize(L); initializer(mps);

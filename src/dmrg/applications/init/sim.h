@@ -44,9 +44,8 @@ public:
     typedef std::pair<charge, size_t> local_state;
     typedef typename std::vector<local_state>::const_iterator states_iterator;
     
-    dmrg_init(DmrgParameters const & parms_, ModelParameters const & model_)
+    dmrg_init(DmrgParameters const & parms_)
     : parms(parms_)
-    , model(model_)
     , chkpfile(parms["chkpfile"].str())
     , nthreads(1)
     {
@@ -54,10 +53,10 @@ public:
         
         // TODO: insert boost::chrono timers
         
-        lat = Lattice(parms, model);
-        phys_model = Model<Matrix, SymmGroup>(lat, parms, model);
-        phys = phys_model.phys_dim(); // TODO: extend for multiple site bases!
-        initc = phys_model.total_quantum_numbers(model);
+        lat = Lattice(parms);
+        model = Model<Matrix, SymmGroup>(lat, parms);
+        phys = model.phys_dim(); // TODO: extend for multiple site bases!
+        initc = model.total_quantum_numbers(parms);
         L = lat.size();
         
 #ifdef MAQUIS_OPENMP
@@ -122,7 +121,6 @@ public:
         save(chkpfile, mps);
         storage::archive ar(chkpfile+"/props.h5", "w");
         ar["/parameters"] << parms;
-        ar["/parameters"] << model;
         ar["/version"] << DMRG_VERSION_STRING;
         ar["/status/sweep"] << 0;
     }
@@ -283,12 +281,11 @@ private:
     
 private:
     DmrgParameters parms;
-    ModelParameters model;
     
     std::string chkpfile;
     
     Lattice lat;
-    Model<Matrix, SymmGroup> phys_model;
+    Model<Matrix, SymmGroup> model;
     Index<SymmGroup> phys;
     charge initc;
     size_t L;

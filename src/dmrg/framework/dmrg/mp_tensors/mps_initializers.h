@@ -46,7 +46,7 @@
 template<class Matrix, class SymmGroup>
 struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
-    default_mps_init(BaseParameters & parms, BaseParameters & model,
+    default_mps_init(BaseParameters & parms,
                      std::vector<Index<SymmGroup> > const& phys_dims_,
                      typename SymmGroup::charge right_end_,
                      std::vector<int> const& site_type_)
@@ -94,11 +94,11 @@ struct default_mps_init<Matrix, TwoU1PG> : public mps_initializer<Matrix, TwoU1P
 {
     typedef TwoU1PG::subcharge subcharge;
 
-    default_mps_init(BaseParameters & parms, BaseParameters & model,
+    default_mps_init(BaseParameters & parms,
                      std::vector<Index<TwoU1PG> > const& phys_dims_,
                      TwoU1PG::charge right_end_,
                      std::vector<int> const& site_type_)
-    : irreps(parse_symm<TwoU1PG>(site_type_.size(), model))
+    : irreps(parse_symm<TwoU1PG>(site_type_.size(), parms))
     , init_bond_dimension(parms["init_bond_dimension"])
     , phys_dims(phys_dims_)
     , right_end(right_end_)
@@ -143,11 +143,11 @@ struct default_mps_init<Matrix, TwoU1PG> : public mps_initializer<Matrix, TwoU1P
 template<class Matrix, class SymmGroup>
 struct const_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
-    const_mps_init(BaseParameters & parms, BaseParameters & model,
+    const_mps_init(BaseParameters & parms,
                    std::vector<Index<SymmGroup> > const& phys_dims,
                    typename SymmGroup::charge right_end,
                    std::vector<int> const& site_type)
-    : di(parms, model, phys_dims, right_end, site_type)
+    : di(parms, phys_dims, right_end, site_type)
     { }
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
@@ -161,11 +161,11 @@ struct const_mps_init : public mps_initializer<Matrix, SymmGroup>
 template<class Matrix, class SymmGroup>
 struct thin_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
-    thin_mps_init(BaseParameters & parms, BaseParameters & model,
+    thin_mps_init(BaseParameters & parms,
                   std::vector<Index<SymmGroup> > const& phys_dims,
                   typename SymmGroup::charge right_end,
                   std::vector<int> const& site_type)
-    : di(parms, model, phys_dims, right_end, site_type)
+    : di(parms, phys_dims, right_end, site_type)
     { }
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
@@ -180,11 +180,11 @@ struct thin_mps_init : public mps_initializer<Matrix, SymmGroup>
 template<class Matrix, class SymmGroup>
 struct thin_const_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
-    thin_const_mps_init(BaseParameters & parms, BaseParameters & model,
+    thin_const_mps_init(BaseParameters & parms,
                         std::vector<Index<SymmGroup> > const& phys_dims,
                         typename SymmGroup::charge right_end,
                         std::vector<int> const& site_type)
-    : di(parms, model, phys_dims, right_end, site_type)
+    : di(parms, phys_dims, right_end, site_type)
     { }
 
     void operator()(MPS<Matrix, SymmGroup> & mps)

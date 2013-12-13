@@ -50,7 +50,6 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     using base::mpo;
     using base::mpoc;
     using base::parms;
-    using base::model;
     using base::measurements;
     using base::stop_callback;
     using base::init_sweep;
@@ -59,8 +58,8 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     
 public:
     
-    dmrg_sim (DmrgParameters & parms_, ModelParameters & model_)
-    : base(parms_, model_)
+    dmrg_sim (DmrgParameters & parms_)
+    : base(parms_)
     { }
     
     void run()
@@ -102,7 +101,6 @@ public:
                     {
                         storage::archive ar(rfile, "w");
                         ar[results_archive_path(sweep) + "/parameters"] << parms;
-                        ar[results_archive_path(sweep) + "/parameters"] << model;
                         ar[results_archive_path(sweep) + "/results"] << optimizer->iteration_results();
                         // ar[results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
                     }
@@ -126,7 +124,6 @@ public:
             {
                 storage::archive ar(rfile, "w");
                 ar[results_archive_path(e.sweep()) + "/parameters"] << parms;
-                ar[results_archive_path(e.sweep()) + "/parameters"] << model;
                 ar[results_archive_path(e.sweep()) + "/results"] << optimizer->iteration_results();
                 // ar[results_archive_path(e.sweep()) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
             }

@@ -45,7 +45,7 @@ namespace maquis { namespace dmrg {
 
     // def. of run functions
     template <class SymmGroup>
-    void run_sim(DmrgParameters & parms, ModelParameters & model);
+    void run_sim(DmrgParameters & parms);
     
 } }
 

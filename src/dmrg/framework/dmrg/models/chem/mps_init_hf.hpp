@@ -34,12 +34,12 @@
 template<class Matrix, class SymmGroup>
 struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
-    hf_mps_init(BaseParameters parms_, BaseParameters model_,
+    hf_mps_init(BaseParameters parms_,
                 std::vector<Index<SymmGroup> > const& phys_dims,
                 typename SymmGroup::charge right_end,
                 std::vector<int> const& site_type)
-    : parms(parms_), model(model_)
-    , di(parms, model, phys_dims, right_end, site_type)
+    : parms(parms_)
+    , di(parms, phys_dims, right_end, site_type)
     {}
 
     typedef Lattice::pos_t pos_t;
@@ -49,21 +49,21 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
     {
         di.init_sectors(mps, 5, true, 0);
 
-        std::vector<std::size_t> hf_init = model["hf_occ"];
+        std::vector<std::size_t> hf_init = parms["hf_occ"];
 
         std::vector<pos_t> order(mps.length());
-        if (!model.is_set("orbital_order"))
+        if (!parms.is_set("orbital_order"))
             for (pos_t p = 0; p < mps.length(); ++p)
                 order[p] = p;
         else
-            order = model["orbital_order"].template as<std::vector<pos_t> >();
+            order = parms["orbital_order"].template as<std::vector<pos_t> >();
 
         std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
 
         if (hf_init.size() != mps.length())
             throw std::runtime_error("HF occupation vector length != MPS length\n");
 
-        std::vector<typename SymmGroup::subcharge> irreps = parse_symm<SymmGroup>(mps.length(), model);
+        std::vector<typename SymmGroup::subcharge> irreps = parse_symm<SymmGroup>(mps.length(), parms);
 
         typename SymmGroup::charge max_charge = SymmGroup::IdentityCharge;
         for (pos_t i = 0; i < mps.length(); ++i)
@@ -122,8 +122,6 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
     }
 
     BaseParameters parms;
-    BaseParameters model;
-    
     default_mps_init<Matrix, SymmGroup> di;
 };
 

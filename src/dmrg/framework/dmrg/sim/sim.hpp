@@ -30,9 +30,8 @@
 #include <boost/algorithm/string.hpp>
 
 template <class Matrix, class SymmGroup>
-sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const & model_)
+sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
 : parms(parms_)
-, model(model_)
 , init_sweep(0)
 , init_site(-1)
 , restore(false)
@@ -74,7 +73,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
         storage::archive ar(rfile, "w");
         
         ar["/parameters"] << parms;
-        ar["/parameters"] << model;
         ar["/version"] << DMRG_VERSION_STRING;
     }
     if (!dns)
@@ -84,7 +82,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
         storage::archive ar(chkpfile+"/props.h5", "w");
         
         ar["/parameters"] << parms;
-        ar["/parameters"] << model;
         ar["/version"] << DMRG_VERSION_STRING;
     }
     
@@ -93,22 +90,22 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_, ModelParameters const
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
 {
-    lat = Lattice(parms, model);
-    phys_model = Model<Matrix, SymmGroup>(lat, parms, model);
-    measurements = phys_model.measurements();
+    lat = Lattice(parms);
+    model = Model<Matrix, SymmGroup>(lat, parms);
+    measurements = model.measurements();
     if (opt_sweep)
-        parse_overlaps(model, opt_sweep.get(), measurements);
+        parse_overlaps(parms, opt_sweep.get(), measurements);
     else
-        parse_overlaps(model, init_sweep, measurements);
+        parse_overlaps(parms, init_sweep, measurements);
 
-    if (model["MODEL"] == std::string("quantum_chemistry") && (parms.get<int>("use_compressed") > 0))
+    if (parms["MODEL"] == std::string("quantum_chemistry") && (parms.get<int>("use_compressed") > 0))
     {  
         throw std::runtime_error("chem compression has been disabled");
         /*
         typedef typename alps::numeric::associated_one_matrix<Matrix>::type MPOMatrix;
         MPO<MPOMatrix, SymmGroup> scratch_mpo;
 
-        Hamiltonian<MPOMatrix, SymmGroup> Hloc = phys_model->H_chem();
+        Hamiltonian<MPOMatrix, SymmGroup> Hloc = model->H_chem();
         phys = Hloc.get_phys();
 
         make_compressed_mpo(scratch_mpo, 1e-12, lat->size(), Hloc);
@@ -119,7 +116,7 @@ void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
     }
     else
     {  
-        mpo = make_mpo(lat, phys_model, model);
+        mpo = make_mpo(lat, model, parms);
         mpoc = mpo;
 
         if (parms["use_compressed"] > 0)
@@ -140,7 +137,7 @@ void sim<Matrix, SymmGroup>::mps_init()
         maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
         load(parms["initfile"].str(), mps);
     } else {
-        mps = MPS<Matrix, SymmGroup>(lat.size(), *(phys_model.initializer(lat, parms, model)));
+        mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
         #ifdef AMBIENT_TRACKING
         for(int i = 0; i < mps.length(); ++i) ambient_track_array(mps, i);
         #endif
@@ -200,11 +197,11 @@ void sim<Matrix, SymmGroup>::measure(std::string archive_path, Measurements<Matr
     
     // TODO: move into special measurement
     std::vector<double> entropies, renyi2;
-    if (model["ENABLE_MEASURE[Entropy]"]) {
+    if (parms["ENABLE_MEASURE[Entropy]"]) {
         maquis::cout << "Calculating vN entropy." << std::endl;
         entropies = calculate_bond_entropies(mps);
     }
-    if (model["ENABLE_MEASURE[Renyi2]"]) {
+    if (parms["ENABLE_MEASURE[Renyi2]"]) {
         maquis::cout << "Calculating n=2 Renyi entropy." << std::endl;
         renyi2 = calculate_bond_renyi_entropies(mps, 2);
     }

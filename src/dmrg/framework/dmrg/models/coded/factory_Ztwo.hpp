@@ -31,6 +31,6 @@
 template<class Matrix>
 struct model_factory<Matrix, Ztwo> {
     static boost::shared_ptr<model_impl<Matrix, SymmGroup> > parse
-    (Lattice const & lattice, BaseParameters & model)
+    (Lattice const & lattice, BaseParameters & parms)
     { }
 };
