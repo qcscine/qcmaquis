@@ -37,7 +37,7 @@ typedef alps::numeric::matrix<double> matrix;
 typedef alps::numeric::matrix<std::complex<double> > cmatrix;
 #endif
 
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/block_matrix/detail/alps.hpp"
 #include "dmrg/block_matrix/symmetry.h"
 

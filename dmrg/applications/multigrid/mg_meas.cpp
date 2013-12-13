@@ -30,7 +30,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 #include "mg_meas.h"
 
 

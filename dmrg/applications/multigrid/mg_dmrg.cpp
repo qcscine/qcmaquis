@@ -31,7 +31,7 @@
 
 #include "utils/data_collector.hpp"
 
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 #include "mg_dmrg.h"
 #include "utils/timings.h"
 

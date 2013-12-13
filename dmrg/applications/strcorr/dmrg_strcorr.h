@@ -39,7 +39,7 @@ typedef alps::numeric::matrix<double> matrix;
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 
 #include <alps/numeric/real.hpp>
 #include <boost/filesystem.hpp>

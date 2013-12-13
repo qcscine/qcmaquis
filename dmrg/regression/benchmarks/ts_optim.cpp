@@ -47,7 +47,7 @@
 #include "dmrg/mp_tensors/ietl_lanczos_solver.h"
 #include "dmrg/mp_tensors/ietl_jacobi_davidson.h"
 
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/utils/placement.h"
 
 #include "utils/timings.h"

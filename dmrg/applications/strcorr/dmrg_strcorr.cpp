@@ -28,7 +28,7 @@
 #include <iostream>
 #include <sys/stat.h>
 
-#include "dmrg/utils/DmrgParameters2.h"
+#include "dmrg/utils/DmrgParameters.h"
 #include "utils/timings.h"
 
 #include "dmrg_strcorr.h"
