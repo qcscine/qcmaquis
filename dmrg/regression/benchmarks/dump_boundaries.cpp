@@ -52,20 +52,30 @@
 int main(int argc, char ** argv)
 {
     try {
-        if (argc != 3)
-            throw std::runtime_error("Usage: <parms> <model_parms>");
+        if (argc != 2 && argc != 3)
+        {
+            maquis::cout << "Usage: <parms> [<model_parms>]" << std::endl;
+            exit(1);
+        }
         
-        /// Loading parameters
+        maquis::cout.precision(10);
+        
+        /// Load parameters
         std::ifstream param_file(argv[1]);
         if (!param_file)
             throw std::runtime_error("Could not open parameter file.");
         DmrgParameters parms(param_file);
         
-        /// Loading model
-        std::ifstream model_file(argv[2]);
-        if (!model_file)
-            throw std::runtime_error("Could not open model file.");
-        ModelParameters model_parms(model_file);
+        /// Load model parameters from second input (if needed)
+        std::string model_file;
+        if (parms.is_set("model_file")) model_file = parms["model_file"].str();
+        if (argc == 3)                  model_file = std::string(argv[2]);
+        if (!model_file.empty()) {
+            std::ifstream model_ifs(model_file.c_str());
+            if (!model_ifs)
+                throw std::runtime_error("Could not open model_parms file.");
+            parms << ModelParameters(model_ifs);
+        }
         
         /// Timers
 #ifdef AMBIENT
@@ -80,10 +90,10 @@ int main(int argc, char ** argv)
         
         /// Parsing model
         tim_model.begin();
-        Lattice lattice(parms, model_parms);
-        Model<matrix, grp> model(lattice, parms, model_parms);
+        Lattice lattice(parms);
+        Model<matrix, grp> model(lattice, parms);
         
-        MPO<matrix, grp> mpo = make_mpo(lattice, model, model_parms);
+        MPO<matrix, grp> mpo = make_mpo(lattice, model, parms);
         tim_model.end();
         maquis::cout << "Parsing model done!\n";
         
