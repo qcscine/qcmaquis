@@ -73,10 +73,10 @@ int main(int argc, char ** argv)
         StrCorr sim(parms);
         
         for (int l=1; l<=8; ++l) {
-            maquis::cout << "Measure single-site string operator, size " << l*model["Ndiscr"] << "." << std::endl;
-            sim.measure_ss_string_unit(l*model["Ndiscr"]);
+            maquis::cout << "Measure single-site string operator, size " << l*parms["Ndiscr"] << "." << std::endl;
+            sim.measure_ss_string_unit(l*parms["Ndiscr"]);
             maquis::cout << "Measure unit-cell string operator, size " << l << "." << std::endl;
-            sim.measure_uc_string(l*model["Ndiscr"]);
+            sim.measure_uc_string(l*parms["Ndiscr"]);
         }
         
     } catch (std::exception & e) {

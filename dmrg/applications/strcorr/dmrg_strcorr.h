@@ -92,9 +92,9 @@ public:
         size_t middle = Ltot / 2;
         for (size_t i=0; i<Ltot; ++i) {
             if (i >= middle - l/2 && i < middle + l/2)
-                mpo[i](0,0) = strop;
+                mpo[i].set(0,0, strop);
             else
-                mpo[i](0,0) = ident;
+                mpo[i].set(0,0, ident);
         }
         
         // eval & save
@@ -124,9 +124,9 @@ public:
         size_t middle = Ltot / 2;
         for (size_t i=0; i<Ltot; ++i) {
             if (i >= middle - l/2 && i < middle + l/2)
-                mpo[i](0,0) = strop;
+                mpo[i].set(0,0, strop);
             else 
-                mpo[i](0,0) = ident;
+                mpo[i].set(0,0, ident);
         }
         
         // eval & save
