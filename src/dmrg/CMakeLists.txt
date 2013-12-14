@@ -256,6 +256,7 @@ foreach(SYMM ${BUILD_SYMMETRIES})
   get_symm_group_name(SYMM_NAME ${SYMM})
   message(STATUS "Enabling ${SYMM_NAME} symmetry.")
   list(APPEND DMRG_DEFINITIONS -DHAVE_${SYMM_NAME})
+  set(DMRG_HAS_${SYMM_NAME} TRUE)
 endforeach(SYMM)
 
 
