@@ -24,13 +24,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_VELVET_FUNCTOR
-#define AMBIENT_CONTROLLERS_VELVET_FUNCTOR
+#ifndef AMBIENT_CONTROLLERS_SSM_FUNCTOR
+#define AMBIENT_CONTROLLERS_SSM_FUNCTOR
 
-namespace ambient { namespace controllers { namespace velvet {
+namespace ambient { namespace controllers { namespace ssm {
     
-    using ambient::models::velvet::revision;
-    using ambient::models::velvet::transformable;
+    using ambient::models::ssm::revision;
+    using ambient::models::ssm::transformable;
     using ambient::channels::mpi::collective;
 
     class functor {

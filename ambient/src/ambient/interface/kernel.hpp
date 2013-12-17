@@ -34,7 +34,7 @@
 
 namespace ambient {
 
-    using ambient::controllers::velvet::functor;
+    using ambient::controllers::ssm::functor;
 
     template<typename FP, FP fp> struct kernel_inliner{};
     #ifdef AMBIENT_TRACKING

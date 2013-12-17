@@ -26,7 +26,7 @@
 
 constexpr size_t aligned64(size_t size){ return 8 * (size_t)((size+7)/8); }
 
-namespace ambient { namespace models { namespace velvet {
+namespace ambient { namespace models { namespace ssm {
 
     inline void* history::operator new (size_t size){
         return ambient::pool::malloc<ambient::fixed,history>();

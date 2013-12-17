@@ -24,13 +24,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_VELVET_GET
-#define AMBIENT_CONTROLLERS_VELVET_GET
+#ifndef AMBIENT_CONTROLLERS_SSM_GET
+#define AMBIENT_CONTROLLERS_SSM_GET
 
-namespace ambient { namespace controllers { namespace velvet {
+namespace ambient { namespace controllers { namespace ssm {
     
-    using ambient::models::velvet::revision;
-    using ambient::models::velvet::transformable;
+    using ambient::models::ssm::revision;
+    using ambient::models::ssm::transformable;
     using ambient::channels::mpi::collective;
 
     template<class T> class get {};

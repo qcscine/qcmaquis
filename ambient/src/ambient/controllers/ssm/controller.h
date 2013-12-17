@@ -24,18 +24,18 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_VELVET_CONTROLLER
-#define AMBIENT_CONTROLLERS_VELVET_CONTROLLER
+#ifndef AMBIENT_CONTROLLERS_SSM_CONTROLLER
+#define AMBIENT_CONTROLLERS_SSM_CONTROLLER
 
-#include "ambient/controllers/velvet/functor.h"
-#include "ambient/controllers/velvet/get.h"
-#include "ambient/controllers/velvet/set.h"
+#include "ambient/controllers/ssm/functor.h"
+#include "ambient/controllers/ssm/get.h"
+#include "ambient/controllers/ssm/set.h"
 #include "ambient/memory/collector.h"
 
-namespace ambient { namespace controllers { namespace velvet {
+namespace ambient { namespace controllers { namespace ssm {
 
-    using ambient::models::velvet::history;
-    using ambient::models::velvet::revision;
+    using ambient::models::ssm::history;
+    using ambient::models::ssm::revision;
 
     class controller : public singleton< controller >
     {
@@ -95,12 +95,12 @@ namespace ambient { namespace controllers { namespace velvet {
 } } }
 
 namespace ambient {
-    extern controllers::velvet::controller& controller;
+    extern controllers::ssm::controller& controller;
 }
 
-#include "ambient/controllers/velvet/scope.hpp"
-#include "ambient/controllers/velvet/controller.hpp"
-#include "ambient/controllers/velvet/get.hpp"
-#include "ambient/controllers/velvet/set.hpp"
+#include "ambient/controllers/ssm/scope.hpp"
+#include "ambient/controllers/ssm/controller.hpp"
+#include "ambient/controllers/ssm/get.hpp"
+#include "ambient/controllers/ssm/set.hpp"
 #include "ambient/memory/collector.hpp"
 #endif

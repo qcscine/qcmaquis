@@ -37,9 +37,9 @@ namespace ambient { namespace numeric {
 
 namespace ambient {
     template<typename T> class default_allocator;
-    using ambient::controllers::velvet::functor;
-    using ambient::models::velvet::history;
-    using ambient::models::velvet::revision;
+    using ambient::controllers::ssm::functor;
+    using ambient::models::ssm::history;
+    using ambient::models::ssm::revision;
     // {{{ compile-time type info: singular types + inplace and future specializations
     template <typename T> struct singular_info {
         template<size_t arg> static void deallocate     (functor* m){                        }

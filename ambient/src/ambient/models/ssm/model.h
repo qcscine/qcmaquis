@@ -24,15 +24,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_MODELS_VELVET_MODEL
-#define AMBIENT_MODELS_VELVET_MODEL
+#ifndef AMBIENT_MODELS_SSM_MODEL
+#define AMBIENT_MODELS_SSM_MODEL
 #include "ambient/utils/dim2.h"
 
-#include "ambient/models/velvet/revision.h"
-#include "ambient/models/velvet/history.h"
-#include "ambient/models/velvet/transformable.h"
+#include "ambient/models/ssm/revision.h"
+#include "ambient/models/ssm/history.h"
+#include "ambient/models/ssm/transformable.h"
 
-namespace ambient { namespace models { namespace velvet {
+namespace ambient { namespace models { namespace ssm {
 
     class model : public singleton< model > {
     public:
@@ -54,11 +54,11 @@ namespace ambient { namespace models { namespace velvet {
 } } }
 
 namespace ambient {
-    extern models::velvet::model& model;
+    extern models::ssm::model& model;
 }
 
-#include "ambient/models/velvet/model.hpp"
-#include "ambient/models/velvet/transformable.hpp"
-#include "ambient/models/velvet/history.hpp"
-#include "ambient/models/velvet/revision.hpp"
+#include "ambient/models/ssm/model.hpp"
+#include "ambient/models/ssm/transformable.hpp"
+#include "ambient/models/ssm/history.hpp"
+#include "ambient/models/ssm/revision.hpp"
 #endif

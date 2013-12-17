@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-namespace ambient { namespace controllers { namespace velvet {
+namespace ambient { namespace controllers { namespace ssm {
 
     // {{{ transformable
 

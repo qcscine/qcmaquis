@@ -24,12 +24,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_MODELS_VELVET_REVISION
-#define AMBIENT_MODELS_VELVET_REVISION
+#ifndef AMBIENT_MODELS_SSM_REVISION
+#define AMBIENT_MODELS_SSM_REVISION
 
 #include <atomic>
 
-namespace ambient { namespace models { namespace velvet {
+namespace ambient { namespace models { namespace ssm {
 
     class revision
     {

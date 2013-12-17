@@ -24,10 +24,10 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_MODELS_VELVET_TRANSFORMABLE
-#define AMBIENT_MODELS_VELVET_TRANSFORMABLE
+#ifndef AMBIENT_MODELS_SSM_TRANSFORMABLE
+#define AMBIENT_MODELS_SSM_TRANSFORMABLE
 
-namespace ambient { namespace models { namespace velvet {
+namespace ambient { namespace models { namespace ssm {
 
     class transformable {
     public:

@@ -35,8 +35,8 @@
 
 namespace ambient { namespace channels { namespace mpi {
 
-    using ambient::models::velvet::revision;
-    using ambient::models::velvet::transformable;
+    using ambient::models::ssm::revision;
+    using ambient::models::ssm::transformable;
 
     static void recv_impl(request_impl* r);
     static void send_impl(request_impl* r);

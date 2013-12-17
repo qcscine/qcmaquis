@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-namespace ambient { namespace models { namespace velvet {
+namespace ambient { namespace models { namespace ssm {
 
     #ifdef AMBIENT_TRACKING
     inline int model::index(){
