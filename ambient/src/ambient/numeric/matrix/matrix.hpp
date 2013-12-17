@@ -29,7 +29,7 @@
 
 #include "ambient/numeric/matrix/matrix.h"
 #include "ambient/numeric/matrix/matrix_algorithms.hpp"
-#ifdef AMBIENT_EXPERIMENTAL
+#ifdef AMBIENT_NUMERIC_EXPERIMENTAL
 #include "ambient/numeric/matrix/matrix_algorithms_experimental.hpp"
 #endif
 

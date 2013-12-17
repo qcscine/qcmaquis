@@ -87,7 +87,7 @@
 #define AMBIENT_DB_PROCS   0
 #define AMBIENT_BROADCAST -1
 
-//#define AMBIENT_EXPERIMENTAL
+//#define AMBIENT_NUMERIC_EXPERIMENTAL
 //#define AMBIENT_COMPUTATIONAL_TIMINGS
 //#define AMBIENT_COMPUTATIONAL_DATAFLOW
 //#define AMBIENT_TRACE void* b[15]; backtrace_symbols_fd(b,backtrace(b,15),2);
