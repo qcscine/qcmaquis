@@ -23,7 +23,7 @@ COMMON_CMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG -w -Wfatal-errors"
 COMMON_CMAKE_C_COMPILER=icc
 COMMON_CMAKE_CXX_COMPILER=icpc
 COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
-COMMON_PLASMA_LIBRARIES="-lplasma -lcoreblas -lcblas -llapacke -lquark"
+COMMON_PLASMA_LIBRARIES="-lplasma -lcoreblas -llapacke -lquark"
 COMMON_PLASMA_LIB_DIR="/share/apps/plasma/2.5.0/icc/13.1.1/lib"
 
 ## ambient ##
