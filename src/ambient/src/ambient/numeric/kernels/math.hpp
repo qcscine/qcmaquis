@@ -177,15 +177,6 @@ extern "C" {
                      double *tileA, int ldtilea);
     void CORE_zlaset2(PLASMA_enum uplo, int n1, int n2, std::complex<double> alpha,
                      std::complex<double> *tileA, int ldtilea);
-/*
-    void CORE_dparfb(PLASMA_enum side, PLASMA_enum trans, PLASMA_enum direct, PLASMA_enum storev,
-                     int M1, int N1, int M2, int N2, int K, int L,
-                           double *A1, int LDA1,
-                           double *A2, int LDA2,
-                     const double *V, int LDV,
-                     const double *T, int LDT,
-                           double *WORK, int LDWORK);
-*/
 }
 
 #endif

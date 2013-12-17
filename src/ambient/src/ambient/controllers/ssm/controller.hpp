@@ -219,6 +219,7 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline void controller::squeeze(revision* r) const {
+        #ifdef AMBIENT_MEMORY_SQUEEZE
         if(r->valid() && !r->referenced() && r->locked_once()){
             if(r->spec.region == ambient::rstandard){
                 ambient::pool::free(r->data, r->spec);
@@ -228,6 +229,7 @@ namespace ambient { namespace controllers { namespace ssm {
                 r->spec.region = ambient::rdelegated;
             }
         }
+        #endif
     }
 
 } } }

@@ -47,10 +47,8 @@ namespace ambient { namespace numeric { namespace kernels {
                                     revised(a).data, a.num_rows(),
                                     updated(t).data, t.num_rows(),
                                     tau, work);
-            #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(tau); 
             ambient::memory::bulk::reuse(work); 
-            #endif
         }
        
         template<typename T, typename TR>
@@ -61,9 +59,7 @@ namespace ambient { namespace numeric { namespace kernels {
                                     current(t).data, t.num_rows(),
                                     revised(c).data, c.num_rows(),
                                      work, AMBIENT_IB);
-            #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(work);
-            #endif 
         }
        
         template<typename T>
@@ -75,10 +71,8 @@ namespace ambient { namespace numeric { namespace kernels {
                                     revised(a2).data, a2.num_rows(),
                                     updated(t).data, t.num_rows(),
                                     tau, work);
-            #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(tau); 
             ambient::memory::bulk::reuse(work); 
-            #endif
         }
        
         template<typename T, typename TR>
@@ -91,9 +85,7 @@ namespace ambient { namespace numeric { namespace kernels {
                                     current(v).data, v.num_rows(),
                                     current(t).data, t.num_rows(),
                                     work, PLASMA_IB);
-            #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(work); 
-            #endif
         }
        
         template<typename T>
@@ -104,10 +96,8 @@ namespace ambient { namespace numeric { namespace kernels {
                                     revised(a).data, a.num_rows(), 
                                     updated(t).data,   t.num_rows(),
                                     tau, work);
-            #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(tau); 
             ambient::memory::bulk::reuse(work); 
-            #endif
         }
        
         template<typename T, typename TR>
@@ -119,9 +109,7 @@ namespace ambient { namespace numeric { namespace kernels {
                                     current(t).data, t.num_rows(),
                                     revised(c).data, c.num_rows(),
                                     work, AMBIENT_IB);
-            #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(work); 
-            #endif
         }
        
         template<typename T>
@@ -133,10 +121,8 @@ namespace ambient { namespace numeric { namespace kernels {
                                     revised(a2).data, a2.num_rows(),
                                     updated(t).data,  t.num_rows(),
                                     tau, work);
-            #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(tau); 
             ambient::memory::bulk::reuse(work); 
-            #endif
         }
        
         template<typename T, typename TR>
@@ -149,9 +135,7 @@ namespace ambient { namespace numeric { namespace kernels {
                                     current(v).data, v.num_rows(),
                                     current(t).data, t.num_rows(),
                                     work, AMBIENT_IB);
-            #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::memory::bulk::reuse(work); 
-            #endif
         }
        
         template<class ViewA, class ViewB, class ViewC, typename T>

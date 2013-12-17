@@ -94,9 +94,7 @@ namespace ambient {
             revision& current = *(revision*)o->after;
             current.complete();
             current.release();
-            #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::controller.squeeze(&parent);
-            #endif
             parent.release();
         }
         template<size_t arg>
@@ -181,9 +179,7 @@ namespace ambient {
         template<size_t arg> static void deallocate(functor* m){
             EXTRACT(o);
             revision& r = *(revision*)o->before;
-            #ifdef AMBIENT_MEMORY_SQUEEZE
             ambient::controller.squeeze(&r);
-            #endif
             r.release();
         }
         template<size_t arg> static void modify_remote(T& obj){

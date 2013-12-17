@@ -103,6 +103,7 @@ namespace ambient { namespace memory {
                 }
             }
             static void reuse(void* ptr){
+                #ifdef AMBIENT_MEMORY_SQUEEZE
                 factory& s = instance();
                 guard g(s.mtx);
 
@@ -113,6 +114,7 @@ namespace ambient { namespace memory {
                         break;
                     }
                 }
+                #endif
             }
             static void reset(){
                 factory& s = instance();
