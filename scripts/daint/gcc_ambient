@@ -30,7 +30,7 @@ COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DNDEBUG"
 COMMON_CMAKE_CXX_FLAGS_RELEASE=${MAQUIS_COMMON_CMAKE_CXX_FLAGS}
 COMMON_BLAS_LAPACK_SELECTOR="manual"
 COMMON_MAQUISLapack_LIBRARIES=""
-COMMON_PLASMA_LIBRARIES="-lpthread -lplasma -lcoreblas -llapacke -lquark -lcblas"
+COMMON_PLASMA_LIBRARIES="-lpthread -lplasma -lcoreblas -llapacke -lquark"
 COMMON_PLASMA_LIB_DIR="$MYAPPS/plasma/lib"
 ## dmrg ##
 DMRG_ALPS_ROOT_DIR=$ALPS_ROOT

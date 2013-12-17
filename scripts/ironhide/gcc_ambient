@@ -23,7 +23,7 @@ COMMON_MPI_CXX_COMPILER="openmpicxx"
 COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DNDEBUG"
 COMMON_CMAKE_CXX_FLAGS_RELEASE=${MAQUIS_COMMON_CMAKE_CXX_FLAGS}
 COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
-COMMON_PLASMA_LIBRARIES="-lpthread -lplasma -lcoreblas -llapacke -lquark -lcblas"
+COMMON_PLASMA_LIBRARIES="-lpthread -lplasma -lcoreblas -llapacke -lquark"
 COMMON_PLASMA_LIB_DIR="$HOME/opt/plasma/lib"
 ## dmrg ##
 DMRG_ALPS_ROOT_DIR=$ALPS_ROOT

@@ -33,7 +33,7 @@ COMMON_BLAS_LAPACK_SELECTOR="manual" # TODO: mkl_sequential should work as well
 COMMON_MAQUISLapack_LIBRARIES="-lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm"
 COMMON_MAQUISLapack_LIB_DIRS=/apps/castor/intel-2013/mkl/lib/intel64
 COMMON_MAQUISLapack_INCLUDE_DIRS=/apps/castor/intel-2013/mkl/include
-COMMON_PLASMA_LIBRARIES="-lplasma -lcoreblas -lcblas -llapacke -lquark"
+COMMON_PLASMA_LIBRARIES="-lplasma -lcoreblas -llapacke -lquark"
 COMMON_PLASMA_LIB_DIR="/apps/castor/plasma-2.4.6/lib"
 ## ambient ##
 AMBIENT_BOOST_BINDINGS_INCLUDE=/project/h07/TEST_ALPS/include
