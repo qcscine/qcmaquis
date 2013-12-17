@@ -94,6 +94,8 @@
 //#define AMBIENT_CHECK_BOUNDARIES
 //#define AMBIENT_LOOSE_FUTURE
 //#define AMBIENT_TRACKING
+//#define AMBIENT_PARALLEL_MKL // please define in compiler
+
 #define AMBIENT_REPORT_BULK_USAGE
 #define AMBIENT_MEMORY_SQUEEZE
 #define AMBIENT_DEALLOCATE_BULK
@@ -102,7 +104,6 @@
 #define AMBIENT_BULK_CHUNK            67108864 // 64 MB
 #define AMBIENT_BULK_LIMIT            40
 
-//#define AMBIENT_PARALLEL_MKL // please define in compiler
 #define AMBIENT_MKL_NUM_THREADS       16
 #define AMBIENT_MAX_SID               2097152 // Cray MPI
 

@@ -81,6 +81,4 @@ namespace ambient { namespace models { namespace ssm {
         return (spec.crefs != 0);
     }
 
-    // }}}
-
 } } }
