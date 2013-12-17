@@ -29,7 +29,7 @@
 
 namespace ambient {
 
-    using ambient::models::velvet::revision;
+    using ambient::models::ssm::revision;
 
     template <typename T> static bool exclusive(T& obj){
         ambient::model.touch(obj.versioned.core);

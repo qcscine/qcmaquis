@@ -29,8 +29,8 @@
 
 namespace ambient{ namespace memory {
 
-    using ambient::models::velvet::history;
-    using ambient::models::velvet::revision;
+    using ambient::models::ssm::history;
+    using ambient::models::ssm::revision;
 
     class collector {
     public:

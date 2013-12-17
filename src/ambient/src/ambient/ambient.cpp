@@ -31,10 +31,10 @@ namespace ambient {
     void** fence::order = &fence::nptr;
     int scope<single>::grain = 1;
     std::vector<int> scope<single>::permutation;
-    models::velvet::model& model = models::velvet::model::instance();
+    models::ssm::model& model = models::ssm::model::instance();
     channels::mpi::channel& channel = channels::mpi::channel::instance();
     channels::mpi::multirank& rank = channels::mpi::multirank::instance();
-    controllers::velvet::controller& controller = controllers::velvet::controller::instance();
+    controllers::ssm::controller& controller = controllers::ssm::controller::instance();
     utils::mpostream cout;
     utils::mpostream cerr;
 }

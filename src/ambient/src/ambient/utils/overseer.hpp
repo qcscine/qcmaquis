@@ -30,8 +30,8 @@
 
 namespace ambient {
     
-    using ambient::models::velvet::history;
-    using ambient::controllers::velvet::functor;
+    using ambient::models::ssm::history;
+    using ambient::controllers::ssm::functor;
 
     class overseer {
     public:

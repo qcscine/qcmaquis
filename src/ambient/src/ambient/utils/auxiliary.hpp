@@ -31,8 +31,8 @@
 
 namespace ambient {
 
-    using ambient::models::velvet::history;
-    using ambient::models::velvet::revision;
+    using ambient::models::ssm::history;
+    using ambient::models::ssm::revision;
 
     inline bool master(){
         return (ambient::rank() == 0);

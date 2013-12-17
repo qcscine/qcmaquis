@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-namespace ambient { namespace models { namespace velvet {
+namespace ambient { namespace models { namespace ssm {
 
     template<typename T> constexpr T op_single (T a){ }
     template<typename T> constexpr T op_double (T a, T b){ }

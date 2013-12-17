@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-namespace ambient { namespace models { namespace velvet {
+namespace ambient { namespace models { namespace ssm {
 
     inline void* revision::operator new (size_t size){
         return ambient::pool::malloc<fixed,revision>(); 

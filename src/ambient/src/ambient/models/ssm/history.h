@@ -24,11 +24,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_MODELS_VELVET_HISTORY
-#define AMBIENT_MODELS_VELVET_HISTORY
+#ifndef AMBIENT_MODELS_SSM_HISTORY
+#define AMBIENT_MODELS_SSM_HISTORY
 
 // revision tracking mechanism (target selector)
-namespace ambient { namespace models { namespace velvet {
+namespace ambient { namespace models { namespace ssm {
 
     class history {
     public:

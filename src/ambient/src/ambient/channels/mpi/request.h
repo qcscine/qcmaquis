@@ -29,8 +29,8 @@
 
 namespace ambient { namespace channels { namespace mpi {
 
-    using ambient::models::velvet::revision;
-    using ambient::models::velvet::transformable;
+    using ambient::models::ssm::revision;
+    using ambient::models::ssm::transformable;
 
     class request_impl {
     public:

@@ -29,7 +29,7 @@
 #include "ambient/utils/overseer.hpp"
 #include "ambient/utils/service.hpp"
 
-namespace ambient { namespace controllers { namespace velvet {
+namespace ambient { namespace controllers { namespace ssm {
 
     inline controller::~controller(){ 
         if(!chains->empty()) printf("Ambient:: exiting with operations still in queue!\n");
@@ -191,27 +191,27 @@ namespace ambient { namespace controllers { namespace velvet {
     inline void controller::sync(revision* r){
         if(serial) return;
         if(ambient::model.common(r)) return;
-        if(ambient::model.feeds(r)) ambient::controllers::velvet::set<revision>::spawn(*r);
-        else ambient::controllers::velvet::get<revision>::spawn(*r);
+        if(ambient::model.feeds(r)) ambient::controllers::ssm::set<revision>::spawn(*r);
+        else ambient::controllers::ssm::get<revision>::spawn(*r);
     }
 
     inline void controller::lsync(revision* r){
         if(ambient::model.common(r)) return;
-        if(!ambient::model.feeds(r)) ambient::controllers::velvet::get<revision>::spawn(*r);
+        if(!ambient::model.feeds(r)) ambient::controllers::ssm::get<revision>::spawn(*r);
     }
 
     inline void controller::rsync(revision* r){
         if(ambient::model.common(r)) return;
-        if(r->owner != which()) ambient::controllers::velvet::set<revision>::spawn(*r);
+        if(r->owner != which()) ambient::controllers::ssm::set<revision>::spawn(*r);
     }
 
     inline void controller::lsync(transformable* v){
         if(serial) return;
-        ambient::controllers::velvet::set<transformable>::spawn(*v);
+        ambient::controllers::ssm::set<transformable>::spawn(*v);
     }
 
     inline void controller::rsync(transformable* v){
-        ambient::controllers::velvet::get<transformable>::spawn(*v);
+        ambient::controllers::ssm::get<transformable>::spawn(*v);
     }
 
     template<typename T> void controller::collect(T* o){
