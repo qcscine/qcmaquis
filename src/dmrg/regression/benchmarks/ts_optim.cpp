@@ -102,7 +102,7 @@ int main(int argc, char ** argv)
         
         /// Timers
         #ifdef AMBIENT
-        ambient::synctime 
+        ambient::timer 
         #else
         Timer
         #endif

@@ -2,7 +2,7 @@
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
 
-    ambient::timer gtime("total"); gtime.begin();
+    ambient::async_timer gtime("total"); gtime.begin();
 
     typedef ambient::dim2 dim;
     typedef alps::numeric::matrix<typename T::value_type> sMatrix;
@@ -29,13 +29,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
 
     printf("ambient::gemm strassen...\n");
     ambient::numeric::gemm_strassen(std::move(pA), std::move(pB), std::move(pC)); 
-    ambient::timer time("ambient::gemm_strassen"); time.begin();
+    ambient::async_timer time("ambient::gemm_strassen"); time.begin();
     ambient::sync();
     time.end();
 
     printf("ambient::gemm...\n");
     ambient::numeric::gemm(pA, pB, pC_orig); 
-    ambient::timer time_orig("ambient::gemm"); time_orig.begin();
+    ambient::async_timer time_orig("ambient::gemm"); time_orig.begin();
     ambient::sync();
     time_orig.end();
 
