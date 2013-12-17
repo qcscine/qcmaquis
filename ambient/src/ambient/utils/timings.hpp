@@ -41,14 +41,14 @@ namespace ambient {
 
 namespace ambient {
 
-    class timer {
+    class async_timer {
     public:
 #if defined(__APPLE__) && defined(AMBIENT_OMP)
-        timer(std::string name): val(0.0), name(name), count(0){}
+        async_timer(std::string name): val(0.0), name(name), count(0){}
 #else
-        timer(std::string name): val(0.0), name(name), count(0), thread_(pthread_self()){}
+        async_timer(std::string name): val(0.0), name(name), count(0), thread_(pthread_self()){}
 #endif
-       ~timer(){ report(); }
+       ~async_timer(){ report(); }
      
         double get_time() const {
             return val;
@@ -89,16 +89,16 @@ namespace ambient {
         std::string name;
     };
 
-    class synctime : public timer {
+    class timer : public async_timer {
     public:
-        synctime(std::string name) : timer(name){}
+        timer(std::string name) : async_timer(name){}
         void begin(){
             ambient::sync();
-            timer::begin();
+            async_timer::begin();
         }    
         void end(){
             ambient::sync();
-            timer::end();
+            async_timer::end();
         }
     };
 }

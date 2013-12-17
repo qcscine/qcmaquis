@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(gemm_blas, T, test_types){
         bd[i] = Rd();
     }
        
-    ambient::timer time("blas");
+    ambient::async_timer time("blas");
     time.begin();
     ambient::numeric::kernels::helper_blas<typename T::value_type>::gemm("N","N", &m, &n, &k, &alpha, ad, &lda, bd, &ldb, &beta, cd, &ldc);
     time.end();

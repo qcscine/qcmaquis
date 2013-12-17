@@ -128,8 +128,8 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     std::size_t loop_max = M.n_blocks();
 
     #ifdef AMBIENT_REBALANCED_SVD
-    static ambient::synctime timer("SVD ONLY TIME\n");
-    static ambient::synctime timert("SVD TRANSFER/MERGE TIME\n");
+    static ambient::timer timer("SVD ONLY TIME\n");
+    static ambient::timer timert("SVD TRANSFER/MERGE TIME\n");
     timert.begin();
 
     // calculating complexities of the svd calls

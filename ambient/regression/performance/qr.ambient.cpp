@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     qr(sA, sQ, sR);
     qr(pA, pQ, pR); 
 
-    ambient::timer time("ambient");
+    ambient::async_timer time("ambient");
     time.begin();
     ambient::sync();
     time.end();

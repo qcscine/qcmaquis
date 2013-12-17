@@ -68,7 +68,7 @@ namespace ambient {
         }
         virtual void invoke(){
             #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-            static ambient::timer time(typeid(K).name()); time.begin();
+            static ambient::async_timer time(typeid(K).name()); time.begin();
             #endif
             inliner::invoke(this);
             inliner::cleanup(this);

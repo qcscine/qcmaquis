@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( test, T, test_types){
     sA = cast<sMatrix>(pA);
 
     ambient::sync();
-    ambient::timer time("ambient");
+    ambient::async_timer time("ambient");
     time.begin();
     qr(sA, sQ, sR); 
     time.end();
