@@ -126,6 +126,7 @@ namespace detail { using namespace ambient;
         }
         for(int j = 1; j < n-1; j++){
             ind = j*m;
+            #pragma vector always
             for(int i = 1; i < m-1; i++){
                 ind++;     u_[ind] = u[ind] + fac*(u[ind+1] + u[ind-1] + u[ind+m] + u[ind-m] - 4*u[ind]);
             }
@@ -349,6 +350,25 @@ class Diffusion2D {
         D(D), rmax(rmax), rmin(rmin), N(N), null_stencil(IB, IB),
         time(0)
         {
+            // process grid - manual for now //
+            int n = ambient::channel.dim();
+            if(n == 2){
+                np = 1;
+                nq = 2;
+            }else if(n == 4){
+                np = 1;
+                nq = 4;
+            }else if(n == 6){
+                np = 1;
+                nq = 6;
+            }else if(n == 12){
+                np = 3;
+                nq = 4;
+            }else{
+                np = 1;
+                nq = n;
+            }
+
             dr = (rmax - rmin) / (N - 1); // real space grid spacing
             dt = dr * dr / (6 * D);       // dt < dx*dx / (4*D) for stability
             fac = dt * D / (dr * dr);     // stencil factor
@@ -366,12 +386,16 @@ class Diffusion2D {
                 }
                 grid.push_back(new stencil(tailm, IB)); grid_mirror.push_back(new stencil(tailm, IB));
             }
-            for(int i = 1; i < mt; i++){
-                grid.push_back(new stencil(IB, tailn)); grid_mirror.push_back(new stencil(IB, tailn));
+            {
+                for(int i = 1; i < mt; i++){
+                    grid.push_back(new stencil(IB, tailn)); grid_mirror.push_back(new stencil(IB, tailn));
+                }
+                grid.push_back(new stencil(tailm, tailn)); grid_mirror.push_back(new stencil(tailm, tailn));
             }
-            grid.push_back(new stencil(tailm, tailn)); grid_mirror.push_back(new stencil(tailm, tailn));
-
-            null_stencil.init(0.0);
+            {
+                ambient::scope<ambient::shared> select;
+                null_stencil.init(0.0);
+            }
 
             //initialize grid density(x,y,t=0)
             double bound = 1./2;
@@ -379,8 +403,18 @@ class Diffusion2D {
             double posi, posj;
 
             for(size_t i = 0; i < mt; ++i)
-            for(size_t j = 0; j < nt; ++j)
-            get(i,j).partial_init(value, i*IB*dr+rmin, j*IB*dr+rmin, dr, bound);
+            for(size_t j = 0; j < nt; ++j){
+                ambient::scope<> select(get_rank(i,j));
+                get(i,j).partial_init(value, i*IB*dr+rmin, j*IB*dr+rmin, dr, bound);
+            }
+        }
+
+        int get_rank(int i, int j){
+            int fnp = nt / np;
+            int fnq = mt / nq;
+            int pj = j >= fnp*np ? j % np : j / fnp;
+            int pi = i >= fnq*nq ? i % nq : i / fnq;
+            return (pj + pi*np);
         }
 
         void print(){
@@ -408,10 +442,10 @@ class Diffusion2D {
             return *grid[i+j*mt];
         }
 
-
         void propagate_density(){ 
             for(int i = 0; i < mt; i++){
                 for(int j = 0; j < nt; j++){
+                    ambient::scope<> select(get_rank(i,j));
                     grid_mirror[i+j*mt]->evolve_from(get(i,j), fac);
                     grid_mirror[i+j*mt]->contract(get(i,j), get(i-1,j), get(i,j+1), get(i+1,j), get(i,j-1), fac);
                 }
@@ -425,6 +459,8 @@ class Diffusion2D {
         std::vector<stencil*> grid_mirror;
         stencil null_stencil;
         size_t mt, nt;
+        int np;
+        int nq;
     private:
         const double D, rmax, rmin;
         const size_t N;
@@ -440,14 +476,16 @@ int main(int argc, char* argv[]){
     ambient::cout << "Domain: " << N << "\n";
     size_t max_steps = 40;
     Diffusion2D task(D, rmax, rmin, N);
-    ambient::sync();
 
     ambient::timer time("execution"); time.begin();
     for(size_t steps = 0; steps < max_steps; ++steps){
         task.propagate_density();
     }
     time.end();
-    std::cout << task.get_size() << '\t' << task.get_moment() << std::endl;
-
+    {
+        ambient::scope<> select(0);
+        ambient::cout << "getting results... ";
+        ambient::cout << task.get_size() << '\t' << task.get_moment() << std::endl;
+    }
     return 0;
 }
