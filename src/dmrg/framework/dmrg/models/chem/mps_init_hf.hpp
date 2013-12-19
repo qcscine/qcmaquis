@@ -103,6 +103,16 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 
             // Set largest charge sector = all 1
             size_t max_pos = mps[i].data().left_basis().position(max_charge);
+            if (max_pos >= mps[i].data().n_blocks()) {
+                maquis::cout << "ERROR: Symmetry block " << max_charge << " not found\n";
+                maquis::cout << "site " << i << ", site_charge " << site_charge << ", cumulated_charge "
+                         << max_charge << ", block_pos: "
+                         << max_pos << ", number of blocks: " << mps[i].data().n_blocks() << std::endl;
+
+                maquis::cout << "This error occurs if the specified HF determinant is not in the same symmetry sector as the target state\n";
+                //maquis::cout << mps[i].data().left_basis() << std::endl;
+                exit(1);
+            }
             Matrix & mfirst = mps[i].data()[max_pos];
             size_t nrow = mfirst.num_rows();
             size_t ncol = mfirst.num_cols();
