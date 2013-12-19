@@ -73,10 +73,10 @@ int main(int argc, char ** argv)
         
         /// Check which matrix to use
         if (parms["COMPLEX"]) {
-            dmrg_sim<matrix, grp> sim(parms);
+            dmrg_sim<cmatrix, grp> sim(parms);
             sim.run();
         } else {
-            dmrg_sim<cmatrix, grp> sim(parms);
+            dmrg_sim<matrix, grp> sim(parms);
             sim.run();
         }
         
