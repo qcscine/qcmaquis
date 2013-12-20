@@ -34,19 +34,6 @@
 namespace ambient {
 
     template<class Matrix>
-    inline void make_persistent(const Matrix& a){
-        ambient::make_persistent(a);
-    }
-
-    template<class Matrix>
-    inline void make_persistent(const numeric::tiles<Matrix>& a){
-        int size = a.data.size();
-        for(int i = 0; i < size; i++){
-            make_persistent(a[i]);
-        }
-    }
-
-    template<class Matrix>
     inline void touch(const numeric::tiles<Matrix>& a){
         int size = a.data.size();
         for(int i = 0; i < size; i++){
