@@ -26,6 +26,8 @@
 
 namespace ambient { namespace models { namespace ssm {
 
+    using ambient::memory::fixed;
+
     template<typename T> constexpr T op_single (T a){ }
     template<typename T> constexpr T op_double (T a, T b){ }
 

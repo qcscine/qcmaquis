@@ -32,6 +32,7 @@ namespace ambient { namespace numeric {
     using ambient::models::ssm::transformable;
     using ambient::models::ssm::transformable_expr;
     using ambient::models::ssm::transformable_value;
+    using ambient::memory::fixed;
 
     template <typename T>
     class future {
