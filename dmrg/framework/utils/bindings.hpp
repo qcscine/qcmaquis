@@ -107,6 +107,14 @@ namespace maquis {
         return f.real();
     }
 
+    inline std::vector<double> real(const std::vector<std::complex<double> >& f){
+        return alps::numeric::real(f);
+    }
+
+    inline std::vector<double> real(const std::vector<double>& f){
+        return f;
+    }
+
     template<typename T>
     inline const typename real_type<ambient::numeric::future<T> >::type& 
     real(const ambient::numeric::future<T>& f){

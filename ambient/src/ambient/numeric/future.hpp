@@ -106,9 +106,11 @@ namespace ambient { namespace numeric {
     inline double sqrt(const future<double>& f){ return std::sqrt(f.get()); }
     template<typename T>       T operator / (const future<T>& l, const future<T>& r)    { return (l.get() / r.get());  }
     #endif
-    template<typename T> const T operator / (double l, const future<T>& r)              { return (l / r.get());        }
-    template<typename T> const T operator / (std::complex<double> l, const future<T>& r){ return (l / r.get());        }
-    template<typename T> const future<double>& real(const future<T>& f)                 { return *(future<double>*)&f; }
+
+    template<typename T> T operator += (T& a, const future<T>& r)                 { return (a += r.get());       }
+    template<typename T> T operator / (double l, const future<T>& r)              { return (l / r.get());        }
+    template<typename T> T operator / (std::complex<double> l, const future<T>& r){ return (l / r.get());        }
+    template<typename T> const future<double>& real(const future<T>& f)           { return *(future<double>*)&f; }
     template<typename T> std::vector<double> real(const std::vector<future<T> >& f){
         ambient::sync();
         int size = f.size();
