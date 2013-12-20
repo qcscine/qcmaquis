@@ -24,52 +24,56 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_MEMORY_ALLOCATOR
-#define AMBIENT_MEMORY_ALLOCATOR
+#ifndef AMBIENT_MEMORY_REGION
+#define AMBIENT_MEMORY_REGION
 
-namespace ambient {
+namespace ambient { namespace memory {
 
-    template <class T>
-    class default_allocator {
+    constexpr size_t paged(size_t size)  {  return PAGE_SIZE * (size_t)((size+PAGE_SIZE-1)/PAGE_SIZE); }
+    constexpr size_t aligned(size_t size){  return ALIGNMENT * (size_t)((size+ALIGNMENT-1)/ALIGNMENT); }
+
+    template<size_t S, class Factory>
+    class region {
     public:
-        static void* alloc(pool::descriptor& spec){
-            return ambient::pool::malloc(spec);
+        typedef ambient::mutex mutex;
+        typedef ambient::guard<mutex> guard;
+
+        region(){
+            this->buffer = NULL;
+            this->iterator = (char*)this->buffer+S;
+            this->count = 0;
+            this->block_count = 0;
         }
-        static void* calloc(pool::descriptor& spec){
-            void* m = alloc(spec);
-            memset(m, 0, spec.extent);
+        void realloc(){
+            if(this->count){
+                 Factory::collect(this->buffer, this->count);
+                 this->count = 0;
+            }
+            this->buffer = Factory::provide();
+            this->iterator = (char*)this->buffer;
+            this->block_count++;
+        }
+        void* malloc(size_t sz){
+            guard g(this->mtx);
+            if(((size_t)iterator + sz - (size_t)this->buffer) >= S) realloc();
+            void* m = (void*)iterator;
+            iterator += aligned(sz);
+            this->count++;
             return m;
         }
-        static void free(void* ptr, pool::descriptor& spec){
-            ambient::pool::free(ptr, spec);
+        void reset(){
+            this->iterator = (char*)this->buffer+S;
+            this->count = 0; 
+            this->block_count = 0;
         }
-        // std:: compatibility aliases //
-        static T* allocate(std::size_t n){ 
-        }
-        static void deallocate(T* ptr, std::size_t n){ 
-        }
-        template <class U> struct rebind {
-            typedef default_allocator<U> other; 
-        };
-        typedef T value_type;
+        int block_count;
+    private:
+        void* buffer;
+        char* iterator;
+        long int count;
+        mutex mtx;
     };
 
-    template <class T>
-    class bulk_allocator {
-    public:
-        typedef T value_type;
-        template <class U> struct rebind { typedef bulk_allocator<U> other; };
-        bulk_allocator() throw() { }
-        bulk_allocator(const bulk_allocator&) throw() { }
-        template<typename U> bulk_allocator(const bulk_allocator<U>&) throw() { }
-       ~bulk_allocator() throw() { }
-
-        static T* allocate(std::size_t n){
-            return (T*)ambient::pool::malloc<memory::bulk>(n*sizeof(T));
-        }
-        static void deallocate(T* p, std::size_t n){}
-    };
-
-}
+} }
 
 #endif

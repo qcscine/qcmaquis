@@ -31,6 +31,7 @@ namespace ambient { namespace channels { namespace mpi {
 
     using ambient::models::ssm::revision;
     using ambient::models::ssm::transformable;
+    using ambient::memory::bulk;
 
     class request_impl {
     public:

@@ -70,7 +70,7 @@ namespace ambient {
     inline void sync(){ 
         controller.flush();
         controller.clear();  
-        bulk::drop();
+        memory::bulk::drop();
     }
 
     template<typename V>

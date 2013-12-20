@@ -27,13 +27,14 @@
 constexpr size_t aligned64(size_t size){ return 8 * (size_t)((size+7)/8); }
 
 namespace ambient { namespace models { namespace ssm {
+    using ambient::memory::fixed;
 
     inline void* history::operator new (size_t size){
-        return ambient::pool::malloc<ambient::fixed,history>();
+        return ambient::pool::malloc<fixed,history>();
     }
 
     inline void history::operator delete (void* ptr){
-        ambient::pool::free<ambient::fixed,history>(ptr);
+        ambient::pool::free<fixed,history>(ptr);
     }
 
     inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(aligned64(dim.square()*ts)) {
