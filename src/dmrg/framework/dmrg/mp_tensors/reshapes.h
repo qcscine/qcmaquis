@@ -210,44 +210,37 @@ void reshape_left_to_right_new(Index<SymmGroup> physical_i,
                                       boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                           -boost::lambda::_1, boost::lambda::_2));
     
-        for (size_t block = 0; block < m1.n_blocks(); ++block)
+    for (size_t block = 0; block < m1.n_blocks(); ++block)
+    {
+        size_t r = right_i.position(m1.right_basis()[block].first);
+        if(r == right_i.size()) continue;
+        charge in_r_charge = right_i[r].first;
+
+        for (size_t s = 0; s < physical_i.size(); ++s)
         {
-            for (size_t s = 0; s < physical_i.size(); ++s)
-            {
-                size_t r = right_i.position(m1.right_basis()[block].first);
-                if(r == right_i.size()) continue;
-                size_t l = left_i.position(SymmGroup::fuse(m1.left_basis()[block].first,
-                                                           -physical_i[s].first));
-                if(l == left_i.size()) continue;
-                
-                {
-                    charge in_l_charge = SymmGroup::fuse(physical_i[s].first, left_i[l].first);
-                    charge in_r_charge = right_i[r].first;
-                    charge out_l_charge = left_i[l].first;
-                    charge out_r_charge = SymmGroup::fuse(-physical_i[s].first, right_i[r].first);
-                    
-                    if (! m1.has_block(in_l_charge, in_r_charge) )
-                        continue;
+            size_t l = left_i.position(SymmGroup::fuse(m1.left_basis()[block].first, -physical_i[s].first));
+            if(l == left_i.size()) continue;
 
-                    if (! m2.has_block(out_l_charge, out_r_charge) )
-                        m2.insert_block(Matrix(left_i[l].second, out_right.size(out_r_charge), 0),
-                                        out_l_charge, out_r_charge);
+            charge in_l_charge = SymmGroup::fuse(physical_i[s].first, left_i[l].first);
+            if(!m1.has_block(in_l_charge, in_r_charge)) continue;
 
-                    size_t in_left_offset = in_left(physical_i[s].first, left_i[l].first);
-                    size_t out_right_offset = out_right(physical_i[s].first, right_i[r].first);
-                    
-                    OtherMatrix const & in_block = m1(in_l_charge, in_r_charge);
-                    Matrix & out_block = m2(out_l_charge, out_r_charge);
-                    
-                    maquis::dmrg::detail::reshape_l2r(in_block, out_block, in_left_offset, out_right_offset,
-                                                      physical_i[s].second, left_i[l].second, right_i[r].second);
-                    
-                }
-            }
+            charge out_l_charge = left_i[l].first;
+            charge out_r_charge = SymmGroup::fuse(-physical_i[s].first, in_r_charge);
+
+            if(!m2.has_block(out_l_charge, out_r_charge)) 
+                m2.insert_block(Matrix(left_i[l].second, out_right.size(out_r_charge), 0),
+                                out_l_charge, out_r_charge);
+
+            size_t in_left_offset = in_left(physical_i[s].first, left_i[l].first);
+            size_t out_right_offset = out_right(physical_i[s].first, in_r_charge);
+            
+            OtherMatrix const & in_block = m1(in_l_charge, in_r_charge);
+            Matrix & out_block = m2(out_l_charge, out_r_charge);
+            
+            maquis::dmrg::detail::reshape_l2r(in_block, out_block, in_left_offset, out_right_offset,
+                                              physical_i[s].second, left_i[l].second, right_i[r].second);
+        }
     }
-    
-    
-    //    assert(m2.left_basis() == left_i);
 }
 
 template<class Matrix, class SymmGroup>
