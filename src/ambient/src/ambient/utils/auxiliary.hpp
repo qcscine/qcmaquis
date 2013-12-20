@@ -116,11 +116,6 @@ namespace ambient {
     }
 
     template<typename V>
-    inline void make_persistent(V& o){ 
-        o.versioned.core->back()->spec.zombie();
-    }
-
-    template<typename V>
     inline int get_owner(const V& o){
         return o.versioned.core->current->owner;
     }
