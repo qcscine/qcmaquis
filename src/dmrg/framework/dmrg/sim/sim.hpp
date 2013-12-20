@@ -25,8 +25,6 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/measure_on_mps.h"
-
 #include <boost/algorithm/string.hpp>
 
 template <class Matrix, class SymmGroup>
@@ -92,12 +90,14 @@ void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
 {
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
-    measurements = model.measurements();
-    if (opt_sweep)
-        parse_overlaps(parms, opt_sweep.get(), measurements);
-    else
-        parse_overlaps(parms, init_sweep, measurements);
-
+    all_measurements = model.measurements();
+//    if (opt_sweep)
+//        parse_overlaps(parms, opt_sweep.get(), measurements);
+//    else
+//        parse_overlaps(parms, init_sweep, measurements);
+    if (!parms["always_measure"].empty())
+        sweep_measurements = meas_sublist(all_measurements, parms["always_measure"]);
+    
     if (parms["MODEL"] == std::string("quantum_chemistry") && (parms.get<int>("use_compressed") > 0))
     {  
         throw std::runtime_error("chem compression has been disabled");
@@ -190,10 +190,10 @@ std::string sim<Matrix, SymmGroup>::results_archive_path(status_type const& stat
 }
 
 template <class Matrix, class SymmGroup>
-void sim<Matrix, SymmGroup>::measure(std::string archive_path, Measurements<Matrix, SymmGroup> const& meas)
+void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type & meas)
 {
     maquis::cout << "Measurements." << std::endl;
-    measure_on_mps(mps, lat, meas, rfile, archive_path);
+    std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile, archive_path, mps));
     
     // TODO: move into special measurement
     std::vector<double> entropies, renyi2;

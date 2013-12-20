@@ -81,7 +81,7 @@ public:
     
     typedef typename base::size_t size_t;
     
-    typedef Measurement_Term<Matrix, SymmGroup> mterm_t;
+    typedef std::vector<std::pair<std::vector<op_t>, bool> > meas_operators_type;
 
     typedef std::pair<std::string, int> opkey_type;
     typedef std::map<opkey_type, tag_type> opmap_type;
@@ -92,6 +92,7 @@ public:
     
     ALPSModel (Lattice const& lattice_, const alps::Parameters& parms_)
     : parms(parms_)
+    , raw_lattice(lattice_)
     , lattice(detail::get_graph(lattice_))
     , model(lattice, parms)
     , tag_handler(new table_type())
@@ -294,7 +295,7 @@ public:
         return tag_handler;
     }
 
-    Measurements<Matrix, SymmGroup> measurements () const;
+    boost::ptr_vector<measurement<Matrix, SymmGroup> > measurements () const;
 
 private:
     
@@ -355,8 +356,10 @@ private:
         return match;
     }
     
-    void fill_meas_with_operators(mterm_t & term, std::string const& ops, bool repeat_one=false) const
+    meas_operators_type operators_for_meas(std::string const& ops, bool repeat_one=false) const
     {
+        meas_operators_type ret;
+        
         int ntypes = alps::maximum_vertex_type(lattice.graph())+1;
         int f_ops = 0;
         
@@ -380,18 +383,21 @@ private:
             }
             
             if (kind == fermionic) ++f_ops;
-            term.operators.push_back( std::make_pair(tops, (kind==fermionic)) );
+            ret.push_back( std::make_pair(tops, (kind==fermionic)) );
         }
-        if (repeat_one && term.operators.size() == 1) {
-            term.operators.push_back(term.operators[0]);
-            if (term.operators[1].second) ++f_ops;
+        if (repeat_one && ret.size() == 1) {
+            ret.push_back(ret[0]);
+            if (ret[1].second) ++f_ops;
         }
         
         if (f_ops % 2 != 0)
             throw std::runtime_error("Number of fermionic operators has to be even.");
+        
+        return ret;
     }
     
     alps::Parameters const& parms;
+    Lattice raw_lattice;
     graph_type const& lattice;
     alps::model_helper<I> model;
     mutable table_ptr tag_handler;
@@ -405,10 +411,11 @@ private:
 
 // Loading Measurements
 template <class Matrix, class SymmGroup>
-Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () const
+boost::ptr_vector<measurement<Matrix, SymmGroup> >
+ALPSModel<Matrix, SymmGroup>::measurements () const
 {
-    typedef Measurement_Term<Matrix, SymmGroup> mterm_t;
-    
+    boost::ptr_vector<measurement<Matrix, SymmGroup> > meas;
+
     int ntypes = alps::maximum_vertex_type(lattice.graph())+1;
     
     std::vector<op_t> identitities(ntypes), fillings(ntypes);
@@ -416,7 +423,6 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
         identitities[type] = this->identity_matrix(type);
         fillings[type]     = this->filling_matrix(type);
     }
-    Measurements<Matrix, SymmGroup> meas(identitities, fillings);
     
     {
         boost::regex average_expr("^MEASURE_AVERAGE\\[(.*)]$");
@@ -424,64 +430,76 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
         boost::smatch what;
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
             std::string lhs = it->key();
-            mterm_t term;
             std::string obsname;
             
-            bool found = false;
+            enum {not_found, is_local, is_average} meas_found = not_found;
             if (boost::regex_match(lhs, what, average_expr)) {
-                term.type = mterm_t::Average;
-                found = true;
+                meas_found = is_average;
                 obsname = what.str(1);
             }
             if (boost::regex_match(lhs, what, locale_expr)) {
-                term.type = mterm_t::Local;
-                found = true;
+                meas_found = is_local;
                 obsname = what.str(1);
             }
             
-            if (found) {
+            if (meas_found != not_found) {
 
                 if (model.has_bond_operator(it->value())) {
-                    throw std::runtime_error("not yet implemented!");
-//                	BondOperator bondop = model.get_bond_operator(it->value());
-//
-//                    typedef std::vector<boost::tuple<alps::expression::Term<value_type>,alps::SiteOperator,alps::SiteOperator > > V;
-//                    
-//                    std::vector<op_t> tops(ntypes);
-//                    for (int type=0; type<ntypes; ++type) {
-//
-//                    alps::SiteBasisDescriptor<I> b1 = model.site_basis(type1);
-//                    alps::SiteBasisDescriptor<I> b2 = model.site_basis(type2);
-//                    
-//                    V  ops = bondop.template templated_split<value_type>(b,b);
-//                    for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
-//                        SiteOperator op1 = boost::get<1>(*tit);
-//                        SiteOperator op2 = boost::get<2>(*tit);
-//
-//                        bool with_sign = fermionic(b1, op1, b2, op2);
-//
-//                        std::ostringstream ss;
-//                        ss << what.str(1);
-//                        if (ops.size() > 1) ss << " (" << int(tit-ops.begin())+1 << ")";
-//                        term.name = ss.str();
-//
-//                        term.with_sign = with_sign;
-//                        {
-//                        	op_t tmp;
-//                        	if (with_sign)
-//                        		gemm(term.fill_operator, this->get_operator(simplify_name(op1), type), tmp); // Note inverse notation because of notation in operator.
-//                            else
-//                                tmp = this->get_operator(simplify_name(op1), type);
-//                        	term.operators.push_back( std::make_pair(boost::get<0>(*tit).value()*tmp, b.is_fermionic(simplify_name(op1))) );
-//                        }
-//                        {
-//                            term.operators.push_back( std::make_pair(this->get_operator(simplify_name(op2), type), b.is_fermionic(simplify_name(op2))) );
-//                        }
-//	                    meas.add_term(term);
-//                    }
-                } else {
-                    term.name = obsname;
+                    BondOperator bondop = model.get_bond_operator(it->value());
                     
+                    typedef std::vector<op_t> op_vec;
+                    typedef std::vector<std::pair<op_vec, bool> > bond_element;
+                    typedef std::vector<boost::tuple<alps::expression::Term<value_type>,alps::SiteOperator,alps::SiteOperator > > V;
+                    
+                    std::vector<op_t> tops1(ntypes), tops2(ntypes);
+                    
+                    std::vector<bond_element> operators;
+                    std::set<int> used1, used2;
+                    for (int type1=0; type1<ntypes; ++type1)
+                        for (int type2=0; type2<ntypes; ++type2) {
+                            if (used1.find(type1) != used1.end() && used2.find(type2) != used2.end())
+                                continue;
+                            
+                            alps::SiteBasisDescriptor<I> b1 = model.site_basis(type1);
+                            alps::SiteBasisDescriptor<I> b2 = model.site_basis(type2);
+                            
+                            V  ops = bondop.template templated_split<value_type>(b1,b2);
+                            if (operators.size() < ops.size()) operators.resize(ops.size(), bond_element(2, std::make_pair(op_vec(ntypes), false)) );
+                            int num_done = 0;
+                            for (typename V::iterator tit=ops.begin(); tit!=ops.end();++tit) {
+                                SiteOperator op1 = boost::get<1>(*tit);
+                                SiteOperator op2 = boost::get<2>(*tit);
+                                
+                                if (!b1.has_operator(simplify_name(op1)) || !b2.has_operator(simplify_name(op2)))
+                                    continue;
+                                
+                                unsigned ii = std::distance(ops.begin(), tit);
+                                {
+                                    operators[ii][0].second = b1.is_fermionic(simplify_name(op1));
+                                    op_t & m = operators[ii][0].first[type1];
+                                    if (operators[ii][0].second)
+                                        gemm(fillings[type1], this->get_operator(simplify_name(op1), type1), m); // Note inverse notation because of notation in operator.
+                                    else
+                                        m = this->get_operator(simplify_name(op1), type1);
+                                    m = boost::get<0>(*tit).value() * m;
+                                }
+                                {
+                                    operators[ii][1].second = b2.is_fermionic(simplify_name(op2));
+                                    op_t & m = operators[ii][1].first[type2];
+                                    m = this->get_operator(simplify_name(op2), type2);
+                                }
+                                
+                                num_done += 1;
+                            }
+                            
+                            if (num_done == ops.size()) { used1.insert(type1); used2.insert(type2); }
+                        }
+                    
+                    if (meas_found == is_average)
+                        meas.push_back( new measurements::average<Matrix, SymmGroup>(obsname, raw_lattice, identitities, fillings, operators) );
+                    else
+                        meas.push_back( new measurements::local<Matrix, SymmGroup>(obsname, raw_lattice, identitities, fillings, operators) );
+                } else {
                     std::vector<op_t> tops(ntypes);
                     for (int type=0; type<ntypes; ++type) {
                         alps::SiteBasisDescriptor<I> b = model.site_basis(type);
@@ -493,8 +511,10 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                             tops[type] = this->get_operator(it->value(), type);
                         }
                     }
-					term.operators.push_back( std::make_pair(tops, false) );
-                    meas.add_term(term);
+                    if (meas_found == is_average)
+                        meas.push_back( new measurements::average<Matrix, SymmGroup>(obsname, raw_lattice, identitities, fillings, tops) );
+                    else
+                        meas.push_back( new measurements::local<Matrix, SymmGroup>(obsname, raw_lattice, identitities, fillings, tops) );
                 }
             }
         }
@@ -509,9 +529,7 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
             if (boost::regex_match(lhs, what, expression)) {
                 int f_ops = 0;
                 
-                mterm_t term;
-                term.type = mterm_t::LocalAt;
-                term.name = what.str(1);
+                std::string name = what.str(1);
                 
                 boost::char_separator<char> part_sep("|");
                 tokenizer part_tokens(value, part_sep);
@@ -522,9 +540,10 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                     throw std::runtime_error("MEASURE_LOCAL_AT must contain a `|` delimiter.");
                 
                 /// parse operators
-                fill_meas_with_operators(term, parts[0], false);
+                meas_operators_type operators = operators_for_meas(parts[0], false);
 
                 /// parse positions
+                std::vector<std::vector<std::size_t> > positions;
                 boost::regex pos_re("\\(([^(^)]*)\\)");
                 boost::sregex_token_iterator it_pos(parts[1].begin(), parts[1].end(), pos_re, 1);
                 boost::sregex_token_iterator it_pos_end;
@@ -537,12 +556,12 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
                     std::vector<std::size_t> pos;
                     std::transform(int_tokens.begin(), int_tokens.end(), std::back_inserter(pos),
                                    static_cast<std::size_t (*)(std::string const&)>(boost::lexical_cast<std::size_t, std::string>));
-                    term.positions.push_back(pos);
+                    positions.push_back(pos);
                 }
                 if (f_ops % 2 != 0)
                     throw std::runtime_error("Number of fermionic operators has to be even.");
                 
-                meas.add_term(term);
+                meas.push_back( new measurements::local_at<Matrix, SymmGroup>(name, raw_lattice, positions, identitities, fillings, operators) );
             }
         }
     }
@@ -555,12 +574,13 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
             std::string value;
             
             if (boost::regex_match(lhs, what, expression)) {
-                mterm_t term;
-                term.name = what.str(1);
-                term.type = mterm_t::MPSBonds;
-                
-                fill_meas_with_operators(term, it->value(), true);
-                meas.add_term(term);
+                throw std::runtime_error("MEASURE_MPS_BONDS not yet implemented in new version.");
+//                mterm_t term;
+//                term.name = what.str(1);
+//                term.type = mterm_t::MPSBonds;
+//                
+//                fill_meas_with_operators(term, it->value(), true);
+//                meas.add_term(term);
             }
         }
     }
@@ -573,52 +593,52 @@ Measurements<Matrix, SymmGroup> ALPSModel<Matrix, SymmGroup>::measurements () co
         boost::smatch what;
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
             std::string lhs = it->key();
-            std::string value;
             
-            mterm_t term;
-            
-            bool found = false;
+            std::string name, value;
+            bool half_only=true, nearest_neighbors_only=false;
             if (boost::regex_match(lhs, what, expression)) {
                 value = it->value();
-                found = true;
-                term.name = what.str(1);
-                term.type = mterm_t::Correlation;
+                name = what.str(1);
+                half_only = false;
+                nearest_neighbors_only = false;
             }
             if (boost::regex_match(lhs, what, expression_half)) {
                 value = it->value();
-                found = true;
-                term.name = what.str(1);
-                term.type = mterm_t::HalfCorrelation;
+                name = what.str(1);
+                half_only = true;
+                nearest_neighbors_only = false;
             }
             if (boost::regex_match(lhs, what, expression_nn)) {
                 value = it->value();
-                found = true;
-                term.name = what.str(1);
-                term.type = mterm_t::CorrelationNN;
+                name = what.str(1);
+                half_only = false;
+                nearest_neighbors_only = true;
             }
             if (boost::regex_match(lhs, what, expression_halfnn)) {
                 value = it->value();
-                found = true;
-                term.name = what.str(1);
-                term.type = mterm_t::HalfCorrelationNN;
+                name = what.str(1);
+                half_only = true;
+                nearest_neighbors_only = true;
             }
-            if (found) {
+            if (!name.empty()) {
                 /// split op1:op2:...@p1,p2,p3,... into {op1:op2:...}, {p1,p2,p3,...}
                 std::vector<std::string> value_split;
                 boost::split( value_split, value, boost::is_any_of("@"));
                 
-                fill_meas_with_operators(term, value_split[0], true);
+                meas_operators_type operators = operators_for_meas(value_split[0], true);
 
                 /// parse positions p1,p2,p3,... (or `space`)
+                std::vector<std::size_t> positions;
                 if (value_split.size() > 1) {
                     boost::char_separator<char> pos_sep(", ");
                     tokenizer pos_tokens(value_split[1], pos_sep);
-                    term.positions.resize(1);
-                    std::transform(pos_tokens.begin(), pos_tokens.end(), std::back_inserter(term.positions[0]),
+                    std::transform(pos_tokens.begin(), pos_tokens.end(), std::back_inserter(positions),
                                    static_cast<std::size_t (*)(std::string const&)>(boost::lexical_cast<std::size_t, std::string>));
                 }
                 
-                meas.add_term(term);
+                meas.push_back( new measurements::correlations<Matrix, SymmGroup>(name, raw_lattice, identitities, fillings, operators,
+                                                                                  half_only, nearest_neighbors_only,
+                                                                                  positions) );
             }
         }
     }

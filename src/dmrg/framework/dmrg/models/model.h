@@ -29,6 +29,7 @@
 
 #include "dmrg/utils/BaseParameters.h"
 #include "dmrg/models/term_descriptor.h"
+#include "dmrg/models/measurement.h"
 
 #include "dmrg/models/lattice.h"
 #include "dmrg/models/op_handler.h"
@@ -54,7 +55,7 @@ public:
     typedef ::term_descriptor<typename Matrix::value_type> term_descriptor;
     typedef typename std::vector<term_descriptor> terms_type;
     typedef block_matrix<Matrix, SymmGroup> op_t;
-    typedef Measurements<Matrix, SymmGroup> measurements_type;
+    typedef boost::ptr_vector<measurement<Matrix, SymmGroup> > measurements_type;
     
     typedef std::size_t size_t;
     
@@ -123,7 +124,7 @@ public:
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms) const { return impl_->total_quantum_numbers(parms); }
     
     terms_type const& hamiltonian_terms() const { return impl_->hamiltonian_terms(); }
-    measurements_type measurements() { return impl_->measurements(); }
+    measurements_type measurements() const { return impl_->measurements(); }
     
     op_t const& get_operator(std::string const & name, size_t type=0) const { return impl_->get_operator(name, type); }
     tag_type get_operator_tag(std::string const & name, size_t type=0) const { return impl_->get_operator_tag(name, type); }

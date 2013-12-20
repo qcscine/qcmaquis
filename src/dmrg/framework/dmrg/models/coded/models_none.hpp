@@ -47,7 +47,6 @@ class BoseHubbardNone : public model_impl<Matrix, TrivialGroup>
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
-    typedef typename measurements_type::mterm_t mterm_t;
     
     typedef typename base::size_t size_t;
     typedef typename Matrix::value_type value_type;
@@ -55,6 +54,7 @@ class BoseHubbardNone : public model_impl<Matrix, TrivialGroup>
 public:
     BoseHubbardNone (const Lattice& lat, BaseParameters & model_)
     : model(model_)
+    , lattice(lat)
     , tag_handler(new table_type())
     {
         int Nmax = model["Nmax"];
@@ -162,34 +162,33 @@ public:
     
    measurements_type measurements() const
     {
-        measurements_type meas(std::vector<op_t>(1, this->identity_matrix(0)),
-                               std::vector<op_t>(1, this->filling_matrix(0)));
+        typedef std::vector<block_matrix<Matrix, TrivialGroup> > op_vec;
+        typedef std::vector<std::pair<op_vec, bool> > bond_element;
+        
+        measurements_type meas;
         
         if (model["ENABLE_MEASURE[Density]"]) {
-            mterm_t term;
-            term.name = "Density";
-            term.type = mterm_t::Average;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(count)), false) );
-            
-            meas.add_term(term);
+            meas.push_back( new measurements::average<Matrix, TrivialGroup>("Density", lattice,
+                                                                  op_vec(1,this->identity_matrix(0)),
+                                                                  op_vec(1,this->filling_matrix(0)),
+                                                                  op_vec(1,tag_handler->get_op(count))) );
         }
+        
         if (model["ENABLE_MEASURE[Local density]"]) {
-            mterm_t term;
-            term.name = "Local density";
-            term.type = mterm_t::Local;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(count)), false) );
-            
-            meas.add_term(term);
+            meas.push_back( new measurements::local<Matrix, TrivialGroup>("Local density", lattice,
+                                                                op_vec(1,this->identity_matrix(0)),
+                                                                op_vec(1,this->filling_matrix(0)),
+                                                                op_vec(1,tag_handler->get_op(count))) );
         }
         
         if (model["ENABLE_MEASURE[Onebody density matrix]"]) {
-            mterm_t term;
-            term.name = "Onebody density matrix";
-            term.type = mterm_t::HalfCorrelation;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(create)), false) );
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(destroy)), false) );
-            
-            meas.add_term(term);
+            bond_element ops;
+            ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(create)), false) );
+            ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(destroy)), false) );
+            meas.push_back( new measurements::correlations<Matrix, TrivialGroup>("Onebody density matrix", lattice,
+                                                                                 op_vec(1,this->identity_matrix(0)),
+                                                                                 op_vec(1,this->filling_matrix(0)),
+                                                                                 ops, true, false) );
         }
         
         return meas;
@@ -216,6 +215,7 @@ public:
     
 private:
     BaseParameters & model;
+    Lattice lattice;
     Index<TrivialGroup> phys;
 
     table_ptr tag_handler;

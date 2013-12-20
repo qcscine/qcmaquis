@@ -34,14 +34,13 @@
 namespace meas_prepare {
     
     template<class Matrix, class SymmGroup>
-    std::pair<std::vector<MPO<Matrix,SymmGroup> >, std::vector<std::string> >
+    std::map<std::string, MPO<Matrix,SymmGroup> >
     local(const Lattice & lat,
           std::vector<block_matrix<Matrix, SymmGroup> > const & identities,
           std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
           std::vector<std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> > const & ops)
 	{
-        std::vector<std::string> labels;
-        std::vector<MPO<Matrix,SymmGroup> > mpos;
+        std::map<std::string, MPO<Matrix,SymmGroup> > mpos;
         
         for (std::size_t p = 0; p < lat.size(); ++p)
         {
@@ -53,8 +52,7 @@ namespace meas_prepare {
                     term.operators.push_back( std::make_pair(p, ops[0].first[type]) );
                     mpom.add_term(term);
                     
-                    mpos.  push_back( mpom.create_mpo()                     );
-                    labels.push_back( lat.get_prop<std::string>("label", p) );
+                    mpos[ lat.get_prop<std::string>("label", p) ] = mpom.create_mpo();
                 }
             } else {
                 std::vector<Lattice::pos_t> neighs = lat.forward(p);
@@ -72,14 +70,13 @@ namespace meas_prepare {
                         term.with_sign = ops[0].second;
                         mpom.add_term(term);
                         
-                        mpos.  push_back( mpom.create_mpo()                             );
-                        labels.push_back( lat.get_prop<std::string>("label", p, *hopto) );
+                        mpos[ lat.get_prop<std::string>("label", p, *hopto) ] = mpom.create_mpo();
                     }
                 }
             }
         }
         
-        return std::make_pair( mpos, labels );
+        return mpos;
     }
     
     

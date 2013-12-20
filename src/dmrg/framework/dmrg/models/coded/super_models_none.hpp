@@ -303,7 +303,6 @@ class SuperBoseHubbardNone : public model_impl<Matrix, TrivialGroup>
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
-    typedef typename measurements_type::mterm_t mterm_t;
     
     typedef typename base::size_t size_t;
     typedef typename Matrix::value_type value_type;
@@ -312,6 +311,7 @@ public:
     // Dissipation needs complex types, that's why we forward to do_init with a tag
     SuperBoseHubbardNone(const Lattice& lat, BaseParameters & model_)
     : model(model_)
+    , lattice(lat)
     , tag_handler(new table_type())
     {
         do_init(lat,model,typename Matrix::value_type());
@@ -597,7 +597,7 @@ public:
         return TrivialGroup::IdentityCharge;
     }
     
-    Measurements<Matrix, TrivialGroup> measurements() const
+    measurements_type measurements() const
     {
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
         
@@ -607,65 +607,54 @@ public:
         create_psi.insert_block(transpose(mcreate), C, C);
         destroy_psi.insert_block(transpose(mdestroy), C, C);
         
+        typedef std::vector<block_matrix<Matrix, TrivialGroup> > op_vec;
+        typedef std::vector<std::pair<op_vec, bool> > bond_element;
         
-        Measurements<Matrix, TrivialGroup> meas(std::vector<op_t>(1, ident_psi),
-                                                std::vector<op_t>(1, ident_psi),
-                                                Measurements<Matrix, TrivialGroup>::Densitymatrix);
-        
+        measurements_type meas;
+
         if (model["ENABLE_MEASURE[Density]"]) {
-            mterm_t term;
-            term.phys_psi = phys_psi;
-            term.name = "Density";
-            term.type = mterm_t::Average;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,count_psi), false) );
-            
-            meas.add_term(term);
+            meas.push_back( new measurements::average<Matrix, TrivialGroup>("Density", lattice,
+                                                                            op_vec(1,ident_psi), op_vec(1,ident_psi),
+                                                                            op_vec(1,count_psi)) );
+            meas[meas.size()-1].set_super_meas(phys_psi);
         }
         
         if (model["ENABLE_MEASURE[Local density]"]) {
-            mterm_t term;
-            term.phys_psi = phys_psi;
-            term.name = "Local density";
-            term.type = mterm_t::Local;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,count_psi), false) );
-            
-            meas.add_term(term);
+            meas.push_back( new measurements::local<Matrix, TrivialGroup>("Local density", lattice,
+                                                                          op_vec(1,ident_psi), op_vec(1,ident_psi),
+                                                                          op_vec(1,count_psi)) );
+            meas[meas.size()-1].set_super_meas(phys_psi);
         }
         
         if (model["ENABLE_MEASURE[Local density^2]"]) {
-            mterm_t term;
-            term.phys_psi = phys_psi;
-            term.name = "Local density^2";
-            term.type = mterm_t::Local;
             op_t count2_psi;
             gemm(count_psi, count_psi, count2_psi);
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,count2_psi), false) );
-            
-            meas.add_term(term);
+            meas.push_back( new measurements::local<Matrix, TrivialGroup>("Local density^2", lattice,
+                                                                          op_vec(1,ident_psi), op_vec(1,ident_psi),
+                                                                          op_vec(1,count2_psi)) );
+            meas[meas.size()-1].set_super_meas(phys_psi);
         }
-
+        
         if (model["ENABLE_MEASURE[Onebody density matrix]"]) {
-            mterm_t term;
-            term.phys_psi = phys_psi;
-            term.name = "Onebody density matrix";
-            term.type = mterm_t::HalfCorrelation;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,create_psi), false) );
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,destroy_psi), false) );
-            
-            meas.add_term(term);
+            bond_element ops;
+            ops.push_back( std::make_pair(op_vec(1,create_psi), false) );
+            ops.push_back( std::make_pair(op_vec(1,destroy_psi), false) );
+            meas.push_back( new measurements::correlations<Matrix, TrivialGroup>("Onebody density matrix", lattice,
+                                                                                 op_vec(1,ident_psi), op_vec(1,ident_psi),
+                                                                                 ops, true, false) );
+            meas[meas.size()-1].set_super_meas(phys_psi);
         }
-
+        
         if (model["ENABLE_MEASURE[Density correlation]"]) {
-            mterm_t term;
-            term.phys_psi = phys_psi;
-            term.name = "Density correlation";
-            term.type = mterm_t::HalfCorrelation;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,count_psi), false) );
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,count_psi), false) );
-            
-            meas.add_term(term);
+            bond_element ops;
+            ops.push_back( std::make_pair(op_vec(1,count_psi), false) );
+            ops.push_back( std::make_pair(op_vec(1,count_psi), false) );
+            meas.push_back( new measurements::correlations<Matrix, TrivialGroup>("Density correlation", lattice,
+                                                                                 op_vec(1,ident_psi), op_vec(1,ident_psi),
+                                                                                 ops, true, false) );
+            meas[meas.size()-1].set_super_meas(phys_psi);
         }
-
+        
         return meas;
     }
     
@@ -682,6 +671,7 @@ public:
     
 private:
     BaseParameters & model;
+    Lattice lattice;
     
     op_t ident;
     Matrix mcount, minteraction, mcreate, mdestroy;
