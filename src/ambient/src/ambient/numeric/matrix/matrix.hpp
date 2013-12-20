@@ -38,16 +38,6 @@ namespace ambient { namespace numeric {
 
     // {{{ transpose_view
 
-    template<class Matrix>
-    inline void* transpose_view<Matrix>::operator new (size_t size){
-        return ambient::pool::malloc<fixed,transpose_view<Matrix> >(); 
-    }
-
-    template<class Matrix>
-    inline void transpose_view<Matrix>::operator delete (void* ptr){
-        ambient::pool::free<fixed,transpose_view<Matrix> >(ptr); 
-    }
-
     template <class Matrix>
     inline transpose_view<Matrix>& transpose_view<Matrix>::locate(size_type i, size_type j){
         return *this;
@@ -123,21 +113,6 @@ namespace ambient { namespace numeric {
     #define size_type   typename matrix<T,A>::size_type
     #define value_type  typename matrix<T,A>::value_type
     #define scalar_type typename matrix<T,A>::scalar_type
-
-    template<typename T, class A>
-    inline void* matrix<T,A>::operator new (size_t size){
-        return ambient::pool::malloc<fixed,matrix<T,A> >();
-    }
-
-    template<typename T, class A>
-    inline void* matrix<T,A>::operator new (size_t size, void* placement){
-        return placement; 
-    }
-
-    template<typename T, class A>
-    inline void matrix<T,A>::operator delete (void* ptr){
-        ambient::pool::free<fixed,matrix<T,A> >(ptr);
-    }
 
     template <typename T, class A>
     inline matrix<T,A>::matrix(){ 

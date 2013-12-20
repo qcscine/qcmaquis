@@ -51,11 +51,9 @@ namespace ambient { namespace channels { namespace mpi {
     template<class T> class collective {};
 
     template<>
-    class collective<revision> : public bcast<revision> {
+    class collective<revision> : public bcast<revision>, public memory::use_bulk_new<collective<revision> > {
         typedef ambient::bulk_allocator<int> allocator;
     public:
-        void* operator new (size_t size){ return ambient::pool::malloc<bulk,collective>(); }
-        void operator delete (void* ptr){ }
         collective(revision& r, int root);
         void operator += (int rank);
         bool involved();
@@ -65,11 +63,9 @@ namespace ambient { namespace channels { namespace mpi {
     };
 
     template<>
-    class collective<transformable> : public bcast<transformable> {
+    class collective<transformable> : public bcast<transformable>, public memory::use_bulk_new<collective<transformable> > {
         typedef ambient::bulk_allocator<int> allocator;
     public:
-        void* operator new (size_t size){ return ambient::pool::malloc<bulk,collective>(); }
-        void operator delete (void* ptr){ }
         collective(transformable& v, int root);
         bool test();
     };

@@ -26,14 +26,6 @@
 
 namespace ambient { namespace models { namespace ssm {
 
-    inline void* revision::operator new (size_t size){
-        return ambient::pool::malloc<fixed,revision>(); 
-    }
-
-    inline void revision::operator delete (void* ptr){
-        ambient::pool::free<fixed,revision>(ptr);
-    }
-
     inline revision::revision(size_t extent, void* g, ambient::locality l, int owner)
     : spec(extent), generator(g), state(l), 
       data(NULL), users(0), owner(owner)

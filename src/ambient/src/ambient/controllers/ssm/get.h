@@ -37,10 +37,8 @@ namespace ambient { namespace controllers { namespace ssm {
     template<class T> class get {};
 
     template<>
-    class get<transformable> : public functor {
+    class get<transformable> : public functor, public memory::use_bulk_new<get<transformable> > {
     public:
-        void* operator new (size_t size){ return ambient::pool::malloc<bulk,get>(); }
-        void operator delete (void* ptr){ }
         static void spawn(transformable& v);
         get(transformable& v);
         virtual void invoke();
@@ -50,10 +48,8 @@ namespace ambient { namespace controllers { namespace ssm {
     };
 
     template<>
-    class get<revision> : public functor {
+    class get<revision> : public functor, public memory::use_bulk_new<get<revision> >  {
     public:
-        void* operator new (size_t size){ return ambient::pool::malloc<bulk,get>(); }
-        void operator delete (void* ptr){ }
         static void spawn(revision& r);
         get(revision& r);
         virtual void invoke();

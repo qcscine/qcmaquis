@@ -24,30 +24,30 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_MODELS_SSM_HISTORY
-#define AMBIENT_MODELS_SSM_HISTORY
+#ifndef AMBIENT_MEMORY_NEW
+#define AMBIENT_MEMORY_NEW
 
-// revision tracking mechanism (target selector)
-namespace ambient { namespace models { namespace ssm {
+namespace ambient { namespace memory {
 
-    class history : public memory::use_fixed_new<history> {
+    using ambient::memory::fixed;
+    using ambient::memory::bulk;
+
+    template<class T>
+    class use_fixed_new {
     public:
-        history(dim2,size_t);
-        void init_state();
-        template<ambient::locality L> void add_state(void* g);
-        template<ambient::locality L> void add_state(int g);
-        revision* back() const;
-        bool weak() const;
-        revision* current;
-        size_t extent;
-        size_t clock;
-        dim2 dim;
-#ifdef AMBIENT_TRACKING
-        std::string label;
-        size_t id;
-#endif
+        void* operator new (size_t sz){ assert(sz == sizeof(T)); return ambient::pool::malloc<fixed,T>(); }
+        void operator delete (void* ptr){ ambient::pool::free<fixed,sizeof(T)>(ptr); }
+        //void* operator new (size_t sz, void* placement){ assert(sz == sizeof(T)); return placement; } 
+        //void operator delete (void*, void*){ } // doesn't throw
     };
 
-} } }
+    template<class T>
+    class use_bulk_new {
+    public:
+        void* operator new (size_t sz){ assert(sz == sizeof(T)); return ambient::pool::malloc<bulk,T>(); }
+        void operator delete (void* ptr){ }
+    };
+
+} }
 
 #endif

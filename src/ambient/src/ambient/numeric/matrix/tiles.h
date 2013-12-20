@@ -37,7 +37,7 @@
 namespace ambient { namespace numeric {
 
     template <class Matrix>
-    class tiles {
+    class tiles : public ambient::memory::use_fixed_new<tiles<Matrix> > {
     public:
         typedef typename Matrix::value_type  value_type;
         typedef typename Matrix::size_type   size_type;
@@ -46,8 +46,6 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::allocator_type allocator_type;
 
-        void* operator new (size_t);
-        void operator delete (void* ptr);
         static tiles<Matrix> identity_matrix(size_type size);
 
        ~tiles();
@@ -197,16 +195,13 @@ namespace ambient { namespace numeric {
     };
 
     template <typename T>
-    class tiles<diagonal_matrix<T> > {
+    class tiles<diagonal_matrix<T> > : public ambient::memory::use_fixed_new<tiles<diagonal_matrix<T> > > {
     public:
         typedef typename diagonal_matrix<T>::value_type  value_type;
         typedef typename diagonal_matrix<T>::size_type   size_type;
         typedef typename diagonal_matrix<T>::real_type   real_type;
         typedef typename diagonal_matrix<T>::scalar_type scalar_type;
         typedef typename diagonal_matrix<T>::difference_type difference_type;
-
-        void* operator new (size_t);
-        void operator delete (void* ptr);
 
         explicit tiles();
         explicit tiles(size_type rows, size_type cols, value_type init_value = value_type()); 

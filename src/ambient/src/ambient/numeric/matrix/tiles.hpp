@@ -146,16 +146,6 @@ namespace ambient { namespace numeric {
 
 namespace ambient { namespace numeric {
 
-    template<class Matrix>
-    inline void* tiles<Matrix>::operator new (size_t size){
-        return ambient::pool::malloc<fixed,tiles<Matrix> >();
-    }
-
-    template<class Matrix>
-    inline void tiles<Matrix>::operator delete (void* ptr){
-        ambient::pool::free<fixed,tiles<Matrix> >(ptr); 
-    }
-
     template <class Matrix>
     inline tiles<Matrix> tiles<Matrix>::identity_matrix(size_type size){
         tiles t(size, size);
@@ -417,16 +407,6 @@ namespace ambient { namespace numeric {
 #define scalar_type typename tiles<diagonal_matrix<T> >::scalar_type
 
 namespace ambient { namespace numeric {
-
-    template<typename T>
-    inline void* tiles<diagonal_matrix<T> >::operator new (size_t size){
-        return ambient::pool::malloc<fixed,tiles<diagonal_matrix<T> > >();
-    }
-
-    template<typename T>
-    inline void tiles<diagonal_matrix<T> >::operator delete (void* ptr){
-        ambient::pool::free<fixed,tiles<diagonal_matrix<T> > >(ptr); 
-    }
 
     template <typename T>
     inline tiles<diagonal_matrix<T> >::tiles()

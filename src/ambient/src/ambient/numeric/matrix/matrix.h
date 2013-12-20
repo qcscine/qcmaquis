@@ -33,7 +33,7 @@
 namespace ambient { namespace numeric {
 
     template <typename T, class Allocator = ambient::default_allocator<T> >
-    class matrix {
+    class matrix : public ambient::memory::use_fixed_new<matrix<T,Allocator> > {
     public:
         typedef T value_type;
         typedef size_t size_type;
@@ -42,10 +42,6 @@ namespace ambient { namespace numeric {
         typedef typename ambient::numeric::future<double> real_type;
         typedef typename ambient::numeric::future<T> scalar_type;
 
-        void* operator new (size_t);
-        void* operator new (size_t, void*);
-        void operator delete (void*);
-        void operator delete (void*, void*){ } // doesn't throw
         explicit matrix();
         explicit matrix(size_type rows, size_type cols, value_type init_value = value_type()); 
         matrix(const matrix& a);
@@ -101,7 +97,7 @@ namespace ambient { namespace numeric {
     };
 
     template <class Matrix>
-    class transpose_view {
+    class transpose_view : public ambient::memory::use_fixed_new<transpose_view<Matrix> > {
     public:
         typedef typename Matrix::real_type real_type;
         typedef typename Matrix::size_type size_type; 
@@ -109,8 +105,6 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::scalar_type scalar_type;
         typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::allocator_type allocator_type;
-        void* operator new (size_t);
-        void operator delete (void*);
         explicit transpose_view(const Matrix& a) : versioned(a.versioned) {}
         transpose_view& locate(size_type i, size_type j);
         const transpose_view& locate(size_type i, size_type j) const;
