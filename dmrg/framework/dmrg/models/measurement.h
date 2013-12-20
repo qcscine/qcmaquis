@@ -34,6 +34,8 @@
 
 #include "dmrg/models/lattice.h"
 
+#include <alps/parser/xmlstream.h>
+
 #include <vector>
 #include <string>
 #include <sstream>
@@ -58,6 +60,7 @@ public:
     virtual void evaluate(MPS<Matrix, SymmGroup> const&, boost::optional<reduced_mps<Matrix, SymmGroup> const&> = boost::none) =0;
     template <class Archive>
     void save(Archive &) const;
+    void write_xml(alps::oxstream &) const;
     virtual void print(std::ostream& os) const;
     
     std::string const& name() const { return name_; }
@@ -107,6 +110,32 @@ void measurement<Matrix, SymmGroup>::save(Archive & ar) const
         }
     }
 }
+
+template<class Matrix, class SymmGroup>
+void measurement<Matrix, SymmGroup>::write_xml(alps::oxstream & out) const
+{
+    if (labels.size() > 0) {
+        out << alps::start_tag("VECTOR_AVERAGE") << alps::attribute("name", name());
+        for (int i=0; i<labels.size(); ++i) {
+            out << alps::start_tag("SCALAR_AVERAGE");
+            out << alps::attribute("indexvalue",labels[i]) << alps::no_linebreak;
+            
+            if (cast_to_real) {
+                out << alps::start_tag("MEAN") << alps::no_linebreak << maquis::real(vector_results[i]) << alps::end_tag("MEAN");
+            } else {
+                out << alps::start_tag("MEAN") << alps::no_linebreak << vector_results[i] << alps::end_tag("MEAN");
+            }
+            out << alps::end_tag("SCALAR_AVERAGE");
+            
+        }
+        out << alps::end_tag("VECTOR_AVERAGE");
+    } else {
+        out << alps::start_tag("SCALAR_AVERAGE") << alps::attribute("name", name()) << alps::no_linebreak;
+        out << alps::start_tag("MEAN") <<  alps::no_linebreak << ((cast_to_real) ?  maquis::real(result) : result) << alps::end_tag("MEAN");
+        out << alps::end_tag("SCALAR_AVERAGE");
+    }
+}
+
 
 template<class Matrix, class SymmGroup>
 void measurement<Matrix, SymmGroup>::set_super_meas(Index<SymmGroup> const& phys_psi_)
