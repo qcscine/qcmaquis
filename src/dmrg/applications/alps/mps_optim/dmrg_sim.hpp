@@ -36,7 +36,21 @@
 
 #include "dmrg/sim/sim.h"
 #include "dmrg/mp_tensors/optimize.h"
+#include <alps/parser/xmlstream.h>
 
+class save_to_xml {
+public:
+    save_to_xml(alps::oxstream& o) : out(o) { }
+    
+    template <class Matrix, class SymmGroup>
+    void operator()(measurement<Matrix, SymmGroup> const& m)
+    {
+        m.write_xml(out);
+    }
+    
+private:
+    alps::oxstream& out;
+};
 
 template <class Matrix, class SymmGroup>
 class dmrg_sim : public sim<Matrix, SymmGroup> {
@@ -119,13 +133,32 @@ public:
             if (!stopped) {
                 this->measure("/spectrum/results/", all_measurements);
                 
+                alps::oxstream out(boost::replace_last_copy(rfile, ".h5", ".xml"));
+                out << alps::header("UTF-8") << alps::stylesheet(alps::xslt_path("ALPS.xsl"));
+                out << alps::start_tag("SIMULATION") << alps::xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
+                    << alps::attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/ALPS.xsd");
+
+                out << parms;
+                
+                out << alps::start_tag("EIGENSTATES") << alps::attribute("number", 1);
+                out << alps::start_tag("EIGENSTATE") << alps::attribute("number", 0);
+                
+                std::for_each(all_measurements.begin(), all_measurements.end(), save_to_xml(out));
+
                 double energy = maquis::real(expval(mps, mpoc));
                 maquis::cout << "Energy: " << maquis::real(expval(mps, mpoc)) << std::endl;
                 {
                     storage::archive ar(rfile, "w");
                     ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
                 }
-                
+                out << alps::start_tag("SCALAR_AVERAGE") <<  alps::attribute("name", "Energy") << alps::no_linebreak
+                    << alps::start_tag("MEAN") <<  alps::no_linebreak << energy << alps::end_tag("MEAN")
+                    << alps::end_tag("SCALAR_AVERAGE");
+
+                out << alps::end_tag("EIGENSTATE");
+                out << alps::end_tag("EIGENSTATES");
+
+
                 if (parms["calc_h2"] > 0) {
                     MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpoc);
                     mpo2.compress(1e-12);
@@ -141,6 +174,7 @@ public:
                         ar["/spectrum/results/EnergyVariance/mean/value"] << std::vector<double>(1, energy2 - energy*energy);
                     }
                 }
+                out << alps::end_tag("SIMULATION");
             }
             
         } catch (dmrg::time_limit const& e) {
