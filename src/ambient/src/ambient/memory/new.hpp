@@ -29,9 +29,6 @@
 
 namespace ambient { namespace memory {
 
-    using ambient::memory::fixed;
-    using ambient::memory::bulk;
-
     template<class T>
     class use_fixed_new {
     public:
