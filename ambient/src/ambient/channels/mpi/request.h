@@ -33,10 +33,8 @@ namespace ambient { namespace channels { namespace mpi {
     using ambient::models::ssm::transformable;
     using ambient::memory::bulk;
 
-    class request_impl {
+    class request_impl : public memory::use_bulk_new<request_impl> {
     public:
-        void* operator new (size_t size){ return ambient::pool::malloc<bulk,request_impl>(); }
-        void operator delete (void* ptr){ }
         request_impl(){}
         request_impl(void(*impl)(request_impl*), transformable& v, int target, int tag = NULL);
         request_impl(void(*impl)(request_impl*), revision& r, int target, int tag = NULL);

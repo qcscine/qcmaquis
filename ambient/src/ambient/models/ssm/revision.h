@@ -31,11 +31,8 @@
 
 namespace ambient { namespace models { namespace ssm {
 
-    class revision
-    {
+    class revision : public memory::use_fixed_new<revision> {
     public:
-        void* operator new (size_t size);
-        void  operator delete (void* ptr);
         template<typename T> operator T* (){ return (T*)data; }
         operator revision* (){ return NULL; }
         revision(size_t extent, void* g, ambient::locality l, int owner = -1);
