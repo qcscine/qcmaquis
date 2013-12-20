@@ -50,7 +50,8 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     using base::mpo;
     using base::mpoc;
     using base::parms;
-    using base::measurements;
+    using base::all_measurements;
+    using base::sweep_measurements;
     using base::stop_callback;
     using base::init_sweep;
     using base::init_site;
@@ -106,8 +107,8 @@ public:
                     }
                     
                     /// measure observables specified in 'always_measure'
-                    if (!parms["always_measure"].empty())
-                        this->measure(this->results_archive_path(sweep) + "/results/", measurements.sublist(parms["always_measure"]));
+                    if (sweep_measurements.size() > 0)
+                        this->measure(this->results_archive_path(sweep) + "/results/", sweep_measurements);
                 }
                 
                 /// write checkpoint

@@ -69,13 +69,14 @@ public:
     virtual void run() =0;
     
 protected:
+    typedef typename Model<Matrix, SymmGroup>::measurements_type measurements_type;
     typedef std::map<std::string, int> status_type;
     
     virtual std::string results_archive_path(status_type const&) const;
     
     virtual void model_init(boost::optional<int> opt_sweep=boost::optional<int>());
     virtual void mps_init();
-    virtual void measure(std::string archive_path, Measurements<Matrix, SymmGroup> const& meas);
+    virtual void measure(std::string archive_path, measurements_type & meas);
     // TODO: can be made const, now only problem are parameters
     
     virtual void checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const&);
@@ -95,7 +96,7 @@ protected:
     Model<Matrix, SymmGroup> model;
     MPS<Matrix, SymmGroup> mps;
     MPO<Matrix, SymmGroup> mpo, mpoc;
-    Measurements<Matrix, SymmGroup> measurements;
+    measurements_type all_measurements, sweep_measurements;
 };
 
 #include "sim.hpp"

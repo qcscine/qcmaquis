@@ -49,7 +49,6 @@ public:
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
-    typedef typename measurements_type::mterm_t mterm_t;
 
     typedef typename Matrix::value_type value_type;
     
@@ -196,62 +195,56 @@ public:
         return phys;
     }
     
-    Measurements<Matrix, TwoU1> measurements () const
+    measurements_type measurements () const
     {
-        Measurements<Matrix, TwoU1> meas(std::vector<op_t>(1,this->identity_matrix(0)),
-                                         std::vector<op_t>(1,this->filling_matrix(0)));
+        typedef std::vector<block_matrix<Matrix, TwoU1> > op_vec;
+        typedef std::vector<std::pair<op_vec, bool> > bond_element;
         
+        measurements_type meas;
+
         if (parms["ENABLE_MEASURE[Density]"]) {
-            mterm_t term;
-            term.name = "Density up";
-            term.type = mterm_t::Average;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(count_up)), false) );
-            
-            meas.add_term(term);
+            meas.push_back( new measurements::average<Matrix, TwoU1>("Density up", lat,
+                                                                op_vec(1,this->identity_matrix(0)),
+                                                                op_vec(1,this->filling_matrix(0)),
+                                                                op_vec(1,tag_handler->get_op(count_up))) );
         }
         if (parms["ENABLE_MEASURE[Density]"]) {
-            mterm_t term;
-            term.name = "Density down";
-            term.type = mterm_t::Average;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(count_down)), false) );
-            
-            meas.add_term(term);
+            meas.push_back( new measurements::average<Matrix, TwoU1>("Density down", lat,
+                                                                op_vec(1,this->identity_matrix(0)),
+                                                                op_vec(1,this->filling_matrix(0)),
+                                                                op_vec(1,tag_handler->get_op(count_down))) );
         }
         
         if (parms["ENABLE_MEASURE[Local density]"]) {
-            mterm_t term;
-            term.name = "Local density up";
-            term.type = mterm_t::Local;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(count_up)), false) );
-            
-            meas.add_term(term);
+            meas.push_back( new measurements::local<Matrix, TwoU1>("Local density up", lat,
+                                                                op_vec(1,this->identity_matrix(0)),
+                                                                op_vec(1,this->filling_matrix(0)),
+                                                                op_vec(1,tag_handler->get_op(count_up))) );
         }
         if (parms["ENABLE_MEASURE[Local density]"]) {
-            mterm_t term;
-            term.name = "Local density down";
-            term.type = mterm_t::Local;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(count_down)), false) );
-            
-            meas.add_term(term);
+            meas.push_back( new measurements::local<Matrix, TwoU1>("Local density down", lat,
+                                                                op_vec(1,this->identity_matrix(0)),
+                                                                op_vec(1,this->filling_matrix(0)),
+                                                                op_vec(1,tag_handler->get_op(count_down))) );
         }
         
         if (parms["ENABLE_MEASURE[Onebody density matrix]"]) {
-            mterm_t term;
-            term.name = "Onebody density matrix up";
-            term.type = mterm_t::Correlation;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(create_up)), true) );
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(destroy_up)), true) );
-            
-            meas.add_term(term);
+            bond_element ops;
+            ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(create_up)), true) );
+            ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(destroy_up)), true) );
+            meas.push_back( new measurements::correlations<Matrix, TwoU1>("Onebody density matrix up", lat,
+                                                                       op_vec(1,this->identity_matrix(0)),
+                                                                       op_vec(1,this->filling_matrix(0)),
+                                                                       ops, false, false) );
         }
         if (parms["ENABLE_MEASURE[Onebody density matrix]"]) {
-            mterm_t term;
-            term.name = "Onebody density matrix down";
-            term.type = mterm_t::Correlation;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(create_down)), true) );
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(destroy_down)), true) );
-            
-            meas.add_term(term);
+            bond_element ops;
+            ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(create_down)), true) );
+            ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(destroy_down)), true) );
+            meas.push_back( new measurements::correlations<Matrix, TwoU1>("Onebody density matrix down", lat,
+                                                                       op_vec(1,this->identity_matrix(0)),
+                                                                       op_vec(1,this->filling_matrix(0)),
+                                                                       ops, false, false) );
         }
         
         return meas;

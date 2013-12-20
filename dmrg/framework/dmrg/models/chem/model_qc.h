@@ -85,7 +85,6 @@ class qc_model : public model_impl<Matrix, SymmGroup>
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
-    typedef typename measurements_type::mterm_t mterm_t;
 
     typedef typename Lattice::pos_t pos_t;
     typedef typename Matrix::value_type value_type;
@@ -143,7 +142,7 @@ public:
         return tag_handler;
     }
     
-    Measurements<Matrix, SymmGroup> measurements () const
+    measurements_type measurements () const
     {
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 
@@ -196,7 +195,11 @@ public:
 
         #undef GENERATE_SITE_SPECIFIC
 
-        Measurements<Matrix, SymmGroup> meas(ident_ops, fill_ops);
+        
+        measurements_type meas;
+
+        typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
+        typedef std::vector<std::pair<op_vec, bool> > bond_element;
 
         {
             boost::regex expression("^MEASURE_LOCAL\\[(.*)]$");
@@ -205,20 +208,17 @@ public:
                 std::string lhs = it->key();
                 if (boost::regex_match(lhs, what, expression)) {
 
-                    mterm_t term;
-                    term.type = mterm_t::Local;
-                    term.name = what.str(1);
-
+                    op_vec meas_op;
                     if (it->value() == "Nup")
-                        term.operators.push_back(std::make_pair(count_up_ops, false));
+                        meas_op = count_up_ops;
                     else if (it->value() == "Ndown")
-                        term.operators.push_back(std::make_pair(count_down_ops, false));
+                        meas_op = count_down_ops;
                     else if (it->value() == "Nup*Ndown" || it->value() == "docc")
-                        term.operators.push_back(std::make_pair(docc_ops, false));
+                        meas_op = docc_ops;
                     else
                         throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nup\" and \"Ndown\"\n");
 
-                    meas.add_term(term);
+                    meas.push_back( new measurements::local<Matrix, SymmGroup>(what.str(1), lat, ident_ops, fill_ops, meas_op) );
                 }
             }
         }
@@ -231,39 +231,38 @@ public:
         boost::smatch what;
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
             std::string lhs = it->key();
-            std::string value;
 
-            mterm_t term;
-
-            bool found = false;
+            std::string name, value;
+            bool half_only, nearest_neighbors_only;
             if (boost::regex_match(lhs, what, expression)) {
                 value = it->value();
-                found = true;
-                term.name = what.str(1);
-                term.type = mterm_t::Correlation;
+                name = what.str(1);
+                half_only = false;
+                nearest_neighbors_only = false;
             }
             if (boost::regex_match(lhs, what, expression_half)) {
                 value = it->value();
-                found = true;
-                term.name = what.str(1);
-                term.type = mterm_t::HalfCorrelation;
+                name = what.str(1);
+                half_only = true;
+                nearest_neighbors_only = false;
             }
             if (boost::regex_match(lhs, what, expression_nn)) {
                 value = it->value();
-                found = true;
-                term.name = what.str(1);
-                term.type = mterm_t::CorrelationNN;
+                name = what.str(1);
+                half_only = false;
+                nearest_neighbors_only = true;
             }
             if (boost::regex_match(lhs, what, expression_halfnn)) {
                 value = it->value();
-                found = true;
-                term.name = what.str(1);
-                term.type = mterm_t::HalfCorrelationNN;
+                name = what.str(1);
+                half_only = true;
+                nearest_neighbors_only = true;
             }
-            if (found) {
+            if (!name.empty()) {
 
                 int f_ops = 0;
-
+                bond_element meas_operators;
+                
                 /// split op1:op2:...@p1,p2,p3,... into {op1:op2:...}, {p1,p2,p3,...}
                 std::vector<std::string> value_split;
                 boost::split( value_split, value, boost::is_any_of("@"));
@@ -276,59 +275,59 @@ public:
                      it2++)
                 {
                     if (*it2 == "c_up") {
-                        term.operators.push_back( std::make_pair(destroy_up_ops, true) );
+                        meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
                         ++f_ops;
                     }
                     else if (*it2 == "c_down") {
-                        term.operators.push_back( std::make_pair(destroy_down_ops, true) );
+                        meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
                         ++f_ops;
                     }
                     else if (*it2 == "cdag_up") {
-                        term.operators.push_back( std::make_pair(create_up_ops, true) );
+                        meas_operators.push_back( std::make_pair(create_up_ops, true) );
                         ++f_ops;
                     }
                     else if (*it2 == "cdag_down") {
-                        term.operators.push_back( std::make_pair(create_down_ops, true) );
+                        meas_operators.push_back( std::make_pair(create_down_ops, true) );
                         ++f_ops;
                     }
 
                     else if (*it2 == "Nup") {
-                        term.operators.push_back( std::make_pair(count_up_ops, false) );
+                        meas_operators.push_back( std::make_pair(count_up_ops, false) );
                     }
                     else if (*it2 == "Ndown") {
-                        term.operators.push_back( std::make_pair(count_down_ops, false) );
+                        meas_operators.push_back( std::make_pair(count_down_ops, false) );
                     }
                     else if (*it2 == "docc" || *it2 == "Nup*Ndown") {
-                        term.operators.push_back( std::make_pair(docc_ops, false) );
+                        meas_operators.push_back( std::make_pair(docc_ops, false) );
                     }
                     else if (*it2 == "cdag_up*c_down") {
-                        term.operators.push_back( std::make_pair(swap_d2u_ops, false) );
+                        meas_operators.push_back( std::make_pair(swap_d2u_ops, false) );
                     }
                     else if (*it2 == "cdag_down*c_up") {
-                        term.operators.push_back( std::make_pair(swap_u2d_ops, false) );
+                        meas_operators.push_back( std::make_pair(swap_u2d_ops, false) );
                     }
 
                     else if (*it2 == "cdag_up*cdag_down") {
-                        term.operators.push_back( std::make_pair(e2d_ops, false) );
+                        meas_operators.push_back( std::make_pair(e2d_ops, false) );
                     }
                     else if (*it2 == "c_up*c_down") {
-                        term.operators.push_back( std::make_pair(d2e_ops, false) );
+                        meas_operators.push_back( std::make_pair(d2e_ops, false) );
                     }
 
                     else if (*it2 == "cdag_up*Ndown") {
-                        term.operators.push_back( std::make_pair(create_up_count_down_ops, true) );
+                        meas_operators.push_back( std::make_pair(create_up_count_down_ops, true) );
                         ++f_ops;
                     }
                     else if (*it2 == "cdag_down*Nup") {
-                        term.operators.push_back( std::make_pair(create_down_count_up_ops, true) );
+                        meas_operators.push_back( std::make_pair(create_down_count_up_ops, true) );
                         ++f_ops;
                     }
                     else if (*it2 == "c_up*Ndown") {
-                        term.operators.push_back( std::make_pair(destroy_up_count_down_ops, true) );
+                        meas_operators.push_back( std::make_pair(destroy_up_count_down_ops, true) );
                         ++f_ops;
                     }
                     else if (*it2 == "c_down*Nup") {
-                        term.operators.push_back( std::make_pair(destroy_down_count_up_ops, true) );
+                        meas_operators.push_back( std::make_pair(destroy_down_count_up_ops, true) );
                         ++f_ops;
                     }
                     else
@@ -341,18 +340,19 @@ public:
                 //    term.fill_operator = fill_op;
 
                 if (f_ops % 2 != 0)
-                    throw std::runtime_error("In " + term.name + ": Number of fermionic operators has to be even in correlation measurements.");
+                    throw std::runtime_error("In " + name + ": Number of fermionic operators has to be even in correlation measurements.");
 
                 /// parse positions p1,p2,p3,... (or `space`)
+                std::vector<std::size_t> positions;
                 if (value_split.size() > 1) {
                     boost::char_separator<char> pos_sep(", ");
                     tokenizer pos_tokens(value_split[1], pos_sep);
-                    term.positions.resize(1);
-                    std::transform(pos_tokens.begin(), pos_tokens.end(), std::back_inserter(term.positions[0]),
+                    std::transform(pos_tokens.begin(), pos_tokens.end(), std::back_inserter(positions),
                                    static_cast<std::size_t (*)(std::string const&)>(boost::lexical_cast<std::size_t, std::string>));
                 }
-
-                meas.add_term(term);
+                
+                meas.push_back( new measurements::correlations<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, meas_operators,
+                                                                                  half_only, nearest_neighbors_only, positions) );
             }
         }
         }

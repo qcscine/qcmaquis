@@ -49,7 +49,7 @@ class measure_sim : public sim<Matrix, SymmGroup> {
     using base::mpo;
     using base::mpoc;
     using base::parms;
-    using base::measurements;
+    using base::all_measurements;
     using base::stop_callback;
     using base::rfile;
     
@@ -64,7 +64,7 @@ public:
         this->model_init();
         this->mps_init();
         
-        this->measure("/spectrum/results/", measurements);
+        this->measure("/spectrum/results/", all_measurements);
         
         double energy = maquis::real(expval(mps, mpoc));
         // MD: removed redundant energy calculation

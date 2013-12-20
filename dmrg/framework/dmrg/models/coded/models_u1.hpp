@@ -48,7 +48,6 @@ class Heisenberg : public model_impl<Matrix, U1>
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
-    typedef typename measurements_type::mterm_t mterm_t;
 
 public:   
     Heisenberg (const Lattice& lat, double Jxy, double Jz)
@@ -130,9 +129,9 @@ public:
         return static_cast<int>(parms["u1_total_charge"]);
     }
 
-    Measurements<Matrix, U1> measurements () const
+    measurements_type measurements () const
     {
-        return Measurements<Matrix, U1>();
+        return measurements_type();
     }
 
     tag_type get_operator_tag(std::string const & name, size_t type) const
@@ -174,7 +173,6 @@ class HCB : public model_impl<Matrix, U1>
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
-    typedef typename measurements_type::mterm_t mterm_t;
     
 public:   
     HCB (const Lattice& lat, double t=1)
@@ -249,9 +247,9 @@ public:
         return static_cast<int>(parms["u1_total_charge"]);
     }
     
-    Measurements<Matrix, U1> measurements () const
+    measurements_type measurements () const
     {
-        return Measurements<Matrix, U1>();
+        return measurements_type();
     }
     
     tag_type get_operator_tag(std::string const & name, size_t type) const
@@ -294,7 +292,6 @@ class BoseHubbard : public model_impl<Matrix, U1>
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
-    typedef typename measurements_type::mterm_t mterm_t;
     
     typedef typename Matrix::value_type value_type;
 public:
@@ -425,37 +422,38 @@ public:
         return tag_handler;
     }
     
-    Measurements<Matrix, U1> measurements () const
+    measurements_type measurements () const
     {
-        Measurements<Matrix, U1> meas(std::vector<op_t>(1,this->identity_matrix(0)),
-                                      std::vector<op_t>(1,this->filling_matrix(0)));
+        typedef std::vector<block_matrix<Matrix, U1> > op_vec;
+        typedef std::vector<std::pair<op_vec, bool> > bond_element;
+        
+        measurements_type meas;
         
         if (model["ENABLE_MEASURE[Density]"]) {
-            mterm_t term;
-            term.name = "Density";
-            term.type = mterm_t::Average;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(count)), false) );
-            
-            meas.add_term(term);
+            std::string name = "Density";
+            meas.push_back( new measurements::average<Matrix, U1>(name, lat,
+                                                      op_vec(1,this->identity_matrix(0)),
+                                                      op_vec(1,this->filling_matrix(0)),
+                                                      op_vec(1,tag_handler->get_op(count))) );
         }
         
         if (model["ENABLE_MEASURE[Local density]"]) {
-            mterm_t term;
-            term.name = "Local density";
-            term.type = mterm_t::Local;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(count)), false) );
-            
-            meas.add_term(term);
+            std::string name = "Local density";
+            meas.push_back( new measurements::local<Matrix, U1>(name, lat,
+                                                    op_vec(1,this->identity_matrix(0)),
+                                                    op_vec(1,this->filling_matrix(0)),
+                                                    op_vec(1,tag_handler->get_op(count))) );
         }
         
         if (model["ENABLE_MEASURE[Onebody density matrix]"]) {
-            mterm_t term;
-            term.name = "Onebody density matrix";
-            term.type = mterm_t::HalfCorrelation;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(create)), false) );
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(destroy)), false) );
-            
-            meas.add_term(term);
+            std::string name = "Onebody density matrix";
+            bond_element ops;
+            ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(create)), false) );
+            ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(destroy)), false) );
+            meas.push_back( new measurements::correlations<Matrix, U1>(name, lat,
+                                                           op_vec(1,this->identity_matrix(0)),
+                                                           op_vec(1,this->filling_matrix(0)),
+                                                           ops, true, false) );
         }
         
         return meas;
@@ -484,11 +482,11 @@ class FreeFermions : public model_impl<Matrix, U1>
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
-    typedef typename measurements_type::mterm_t mterm_t;
     
 public:
     FreeFermions (const Lattice& lat, double t=1)
-    : tag_handler(new table_type())
+    : lattice(lat)
+    , tag_handler(new table_type())
     {
         op_t ident_op;
         op_t create_op, destroy_op, sign_op, dens_op;
@@ -576,42 +574,41 @@ public:
         return tag_handler;
     }
     
-    Measurements<Matrix, U1> measurements () const
+    measurements_type measurements () const
     {
-        Measurements<Matrix, U1> meas(std::vector<op_t>(1,this->identity_matrix(0)),
-                                      std::vector<op_t>(1,this->filling_matrix(0)));
+        typedef std::vector<block_matrix<Matrix, U1> > op_vec;
+        typedef std::vector<std::pair<op_vec, bool> > bond_element;
         
+        measurements_type meas;
         {
-            mterm_t term;
-            term.name = "Density";
-            term.type = mterm_t::Local;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(dens)), false) );
-            
-            meas.add_term(term);
+            meas.push_back( new measurements::local<Matrix, U1>("Density", lattice,
+                                                    op_vec(1,this->identity_matrix(0)),
+                                                    op_vec(1,this->filling_matrix(0)),
+                                                    op_vec(1,tag_handler->get_op(dens))) );
         }
         {
-            mterm_t term;
-            term.name = "DensityCorrelation";
-            term.type = mterm_t::HalfCorrelation;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(dens)), false) );
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(dens)), false) );
-            
-            meas.add_term(term);
+            bond_element ops;
+            ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(dens)), false) );
+            ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(dens)), false) );
+            meas.push_back( new measurements::correlations<Matrix, U1>("DensityCorrelation", lattice,
+                                                           op_vec(1,this->identity_matrix(0)),
+                                                           op_vec(1,this->filling_matrix(0)),
+                                                           ops, true, false) );
         }
         {
-            mterm_t term;
-            term.name = "OneBodyDM";
-            term.type = mterm_t::HalfCorrelation;
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(create)), true) );
-            term.operators.push_back( std::make_pair(std::vector<op_t>(1,tag_handler->get_op(destroy)), true) );
-            
-            meas.add_term(term);
+            bond_element ops;
+            ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(create)), true) );
+            ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(destroy)), true) );
+            meas.push_back( new measurements::correlations<Matrix, U1>("OneBodyDM", lattice,
+                                                           op_vec(1,this->identity_matrix(0)),
+                                                           op_vec(1,this->filling_matrix(0)),
+                                                           ops, true, false) );
         }
-        
         return meas;
     }
     
 private:
+    Lattice lattice;
     Index<U1> phys;
 
     boost::shared_ptr<TagHandler<Matrix, U1> > tag_handler;
@@ -642,8 +639,7 @@ public:
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
-    typedef typename measurements_type::mterm_t mterm_t;
-    
+ 
     FermiHubbardU1(const Lattice& lat, BaseParameters & parms)
     : tag_handler(new table_type())
     {
