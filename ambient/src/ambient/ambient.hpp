@@ -124,8 +124,8 @@ namespace ambient {
         static int n = AMBIENT_NUM_THREADS; return n;
     }
     enum locality   { remote, local, common };
-    enum scope_t    { base, single, shared, dedicated };
-    enum region_t   { rbulked, rstandard, rpersist, rdelegated };
+    enum scope_t    { base, single, shared, dedicated, threaded };
+    enum region_t   { rbulked, rstandard, rdelegated };
 }
 
 #include "ambient/channels/mpi/groups/multirank.h"
