@@ -148,7 +148,7 @@ public:
 
         op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
              count_up_op, count_down_op, docc_op, e2d_op, d2e_op,
-             swap_d2u_op, swap_u2d_op,
+             swap_d2u_op, swap_u2d_op, swap_d2u_u2d_op, swap_u2d_d2u_op,
              create_up_count_down_op, create_down_count_up_op, destroy_up_count_down_op, destroy_down_count_up_op,
              ident_op, fill_op;
 
@@ -166,6 +166,8 @@ public:
 
         gemm(create_up_op, destroy_down_op, swap_d2u_op);
         gemm(destroy_up_op, create_down_op, swap_u2d_op);
+        gemm(swap_u2d_op, swap_d2u_op, swap_d2u_u2d_op);
+        gemm(swap_d2u_op, swap_u2d_op, swap_u2d_d2u_op);
         gemm(count_down_op, create_up_op, create_up_count_down_op);
         gemm(count_up_op, create_down_op, create_down_count_up_op);
         gemm(count_down_op, destroy_up_op, destroy_up_count_down_op);
@@ -188,6 +190,8 @@ public:
 
         GENERATE_SITE_SPECIFIC(swap_d2u_op)
         GENERATE_SITE_SPECIFIC(swap_u2d_op)
+        GENERATE_SITE_SPECIFIC(swap_d2u_u2d_op)
+        GENERATE_SITE_SPECIFIC(swap_u2d_d2u_op)
         GENERATE_SITE_SPECIFIC(create_up_count_down_op)
         GENERATE_SITE_SPECIFIC(create_down_count_up_op)
         GENERATE_SITE_SPECIFIC(destroy_up_count_down_op)
@@ -200,8 +204,7 @@ public:
 
         typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
-
-        {
+{
             boost::regex expression("^MEASURE_LOCAL\\[(.*)]$");
             boost::smatch what;
             for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -215,6 +218,14 @@ public:
                         meas_op = count_down_ops;
                     else if (it->value() == "Nup*Ndown" || it->value() == "docc")
                         meas_op = docc_ops;
+                    else if (it->value() == "swap_d2u")
+                        meas_op = swap_d2u_ops;
+                    else if (it->value() == "swap_u2d")
+                        meas_op = swap_u2d_ops;
+                    else if (it->value() == "swap_u2d*swap_d2u")
+                        meas_op = swap_u2d_d2u_ops;
+                    else if (it->value() == "swap_d2u*swap_u2d")
+                        meas_op = swap_d2u_u2d_ops;
                     else
                         throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nup\" and \"Ndown\"\n");
 
@@ -312,6 +323,12 @@ public:
                     }
                     else if (*it2 == "c_up*c_down") {
                         meas_operators.push_back( std::make_pair(d2e_ops, false) );
+                    }
+                    else if (*it2 == "swap_d2u") {
+                        meas_operators.push_back( std::make_pair(swap_d2u_ops, false) );
+                    }
+                    else if (*it2 == "swap_u2d") {
+                        meas_operators.push_back( std::make_pair(swap_u2d_ops, false) );
                     }
 
                     else if (*it2 == "cdag_up*Ndown") {
