@@ -24,34 +24,12 @@
  *
  *****************************************************************************/
 
-#include "scheduler.hpp"
+#ifndef ALPS_MPS_OPTIM_RUN_DMRG_HPP
+#define ALPS_MPS_OPTIM_RUN_DMRG_HPP
 
-#include <alps/utility/copyright.hpp>
-#include <iostream>
+#include <boost/filesystem.hpp>
 
-int main(int argc, char ** argv)
-{
-    try {
-        std::cout << "ALPS/MPS version X (2013-2014)\n"
-                  << "  Density Matrix Renormalization Group algorithm\n"
-                  << "  available from http://alps.comp-phys.org/\n"
-                  << "  copyright (c) 2013 Institute for Theoretical Physics, ETH Zurich\n"
-                  << "  copyright (c) 2010-2011 by Bela Bauer\n"
-                  << "  copyright (c) 2011-2013 by Michele Dolfi\n"
-                  << "  for details see the publication: \n"
-                  << "  todo...\n"
-                  << std::endl;
-        alps::print_copyright(std::cout);
-        
-        alps::scheduler::Options opt(argc,argv);
-        if (opt.valid) {
-            Scheduler pscan(opt);
-            pscan.run();
-        }
-    } catch (std::exception & e) {
-        std::cerr << "Exception thrown:" << std::endl;
-        std::cerr << e.what() << std::endl;
-        exit(1);
-    }
-}
+void run_dmrg(const boost::filesystem::path& infile, const boost::filesystem::path& outfile,
+              double time_limit=-1.);
 
+#endif

@@ -187,6 +187,7 @@ public:
                 ar[results_archive_path(e.sweep()) + "/results"] << optimizer->iteration_results();
                 // ar[results_archive_path(e.sweep()) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
             }
+            throw e;
         }
     }
     

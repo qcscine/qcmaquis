@@ -34,7 +34,9 @@
 class time_stopper {
 public:
     time_stopper(double timelimit);
-    bool operator()();
+    bool valid() const;
+    bool operator()() const;
+    boost::chrono::duration<double> time_left() const;
 private:
     boost::chrono::duration<double> limit;
     boost::chrono::high_resolution_clock::time_point start;

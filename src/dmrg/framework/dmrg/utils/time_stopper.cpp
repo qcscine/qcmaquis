@@ -31,6 +31,14 @@ time_stopper::time_stopper(double timelimit)
 , start(boost::chrono::high_resolution_clock::now())
 { }
 
-bool time_stopper::operator()() {
+bool time_stopper::valid() const {
+    return limit.count();
+}
+
+bool time_stopper::operator()() const {
     return (limit.count() > 0 && boost::chrono::high_resolution_clock::now() > start + limit);
+}
+
+boost::chrono::duration<double> time_stopper::time_left() const {
+    return (start + limit) - boost::chrono::high_resolution_clock::now();
 }
