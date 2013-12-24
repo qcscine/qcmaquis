@@ -34,12 +34,14 @@
 namespace dmrg {
     class time_limit : public std::runtime_error {
     public:
+        time_limit() : std::runtime_error("time limit reached") {}
+        
         time_limit(int sw, int st)
-        : sweep_(sw)
-        , site_(st)
-        , std::runtime_error(  std::string("time limit reached. current status is [ ")
+        : std::runtime_error(  std::string("time limit reached. current status is [ ")
                              + std::string("sweep=") + boost::lexical_cast<std::string>(sw) + std::string(", ")
                              + std::string("site=" ) + boost::lexical_cast<std::string>(st) + std::string(" ]."))
+        , sweep_(sw)
+        , site_(st)
         { }
         
         int sweep() const throw()

@@ -6,7 +6,7 @@ include_directories(. ${CMAKE_CURRENT_BINARY_DIR})
 set(DMRG_APP_LIBRARIES dmrg_utils dmrg_models ${DMRG_LIBRARIES})
 
 # *** Targets
-add_executable(mps_optim mps_optim.cpp)
+add_executable(mps_optim run_dmrg.cpp scheduler.cpp mps_optim.cpp)
 target_link_libraries(mps_optim ${DMRG_APP_LIBRARIES})
 
 # *** Install
