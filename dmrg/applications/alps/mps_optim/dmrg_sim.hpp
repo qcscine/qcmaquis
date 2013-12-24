@@ -136,7 +136,7 @@ public:
                 alps::oxstream out(boost::replace_last_copy(rfile, ".h5", ".xml"));
                 out << alps::header("UTF-8") << alps::stylesheet(alps::xslt_path("ALPS.xsl"));
                 out << alps::start_tag("SIMULATION") << alps::xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
-                    << alps::attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2002/10/ALPS.xsd");
+                    << alps::attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/10/ALPS.xsd");
 
                 out << parms;
                 
