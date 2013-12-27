@@ -114,6 +114,11 @@ public:
 
         northo = parms_["n_ortho_states"];
         maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
+
+        //if (northo > 0 && parms_["ortho_states"]=="")
+        if (northo > 0 && !parms_.is_set("ortho_states"))
+            throw std::runtime_error("Parameter \"ortho_states\" is not set\n");
+
         ortho_mps.resize(northo);
         std::string files_ = parms_["ortho_states"];
         std::vector<std::string> files;
