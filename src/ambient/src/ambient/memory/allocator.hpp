@@ -65,7 +65,7 @@ namespace ambient {
        ~bulk_allocator() throw() { }
 
         static T* allocate(std::size_t n){
-            return (T*)ambient::pool::malloc<memory::bulk>(n*sizeof(T));
+            return (T*)ambient::pool::malloc<memory::instr_bulk>(n*sizeof(T));
         }
         static void deallocate(T* p, std::size_t n){}
     };

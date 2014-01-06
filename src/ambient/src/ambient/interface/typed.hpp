@@ -40,7 +40,7 @@ namespace ambient {
     using ambient::controllers::ssm::functor;
     using ambient::models::ssm::history;
     using ambient::models::ssm::revision;
-    using ambient::memory::bulk;
+    using ambient::memory::instr_bulk;
     using ambient::models::ssm::model;
 
     // {{{ compile-time type info: singular types + inplace and future specializations
@@ -51,11 +51,11 @@ namespace ambient {
         template<size_t arg> static bool ready          (functor* m){ return true;           }
         template<size_t arg> static T&   revised        (functor* m){ EXTRACT(o); return *o; }
         template<size_t arg> static void modify (T& obj, functor* m){
-            m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(obj); 
+            m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj); 
         }
         template<size_t arg> static void modify_remote(T& obj)       {                        }
         template<size_t arg> static void modify_local(T& obj, functor* m){
-            m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(obj);
+            m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj);
         }
     };
     template <typename T> struct singular_inplace_info : public singular_info<T> {
@@ -74,17 +74,17 @@ namespace ambient {
         template<size_t arg> static void modify_local(const T& obj, functor* m){ 
             obj.core->generator = m;
             ambient::controller.lsync(obj.core);
-            m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(obj.core);
+            m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.core);
         }
         template<size_t arg> static void modify(const T& obj, functor* m){ 
-            m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(obj.core);
+            m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.core);
         }
     };
     template <typename T> struct read_future_info : public future_info<T> {
         template<size_t arg> static void deallocate(functor* m){ }
         template<size_t arg> static void modify_remote(T& obj){ }
         template<size_t arg> static void modify_local(const T& obj, functor* m){
-            m->arguments[arg] = (void*)new(ambient::pool::malloc<bulk,T>()) T(obj.core);
+            m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.core);
         }
     };
     // }}}
@@ -112,7 +112,7 @@ namespace ambient {
         static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
             model::touch(o);
-            T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); 
+            T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); 
             m->arguments[arg] = (void*)var;
             ambient::controller.lsync(o->back());
             model::use_revision(o);
@@ -122,13 +122,12 @@ namespace ambient {
             model::add_revision<ambient::local>(o, m); 
             model::use_revision(o);
             var->after = o->current;
-
         }
         template<size_t arg>
         static void modify(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
             model::touch(o);
-            T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
+            T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             ambient::controller.sync(o->back());
             model::use_revision(o);
             ambient::controller.collect(o->back());
@@ -137,7 +136,6 @@ namespace ambient {
             model::add_revision<ambient::common>(o, m); 
             model::use_revision(o);
             var->after = o->current;
-
         }
         template<size_t arg> 
         static bool pin(functor* m){ 
@@ -181,7 +179,7 @@ namespace ambient {
         template<size_t arg> static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
             model::touch(o);
-            T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
+            T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             var->before = o->current;
             ambient::controller.lsync(o->back());
             model::use_revision(o);
@@ -189,7 +187,7 @@ namespace ambient {
         template<size_t arg> static void modify(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
             model::touch(o);
-            T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
+            T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             var->before = o->current;
             ambient::controller.sync(o->back());
             model::use_revision(o);
@@ -209,7 +207,7 @@ namespace ambient {
         template<size_t arg> static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
             model::touch(o);
-            T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
+            T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
 
             model::use_revision(o);
             ambient::controller.collect(o->back());
@@ -222,7 +220,7 @@ namespace ambient {
         template<size_t arg> static void modify(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
             model::touch(o);
-            T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
+            T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             model::use_revision(o);
             ambient::controller.collect(o->back());
 

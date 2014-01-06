@@ -57,7 +57,7 @@ namespace ambient { namespace controllers { namespace ssm {
         if(handle->involved() && !t.valid()){
             t.use();
             t.generator = this;
-            t.embed(ambient::pool::malloc<bulk>(t.spec)); 
+            t.embed(ambient::pool::malloc<data_bulk>(t.spec)); 
             ambient::controller.queue(this);
         }
     }
