@@ -30,6 +30,45 @@
 namespace ambient { namespace memory {
 
     template<size_t S>
+    class serial_factory {
+    public:
+        typedef ambient::mutex mutex;
+        typedef ambient::guard<mutex> guard;
+
+        static serial_factory& instance(){
+            static serial_factory singleton; return singleton;
+        }
+        serial_factory(){
+            this->buffers.push_back(std::malloc(S));
+            this->buffer = &this->buffers[0];
+        }
+        static void* provide(){
+            serial_factory& s = instance();
+            guard g(s.mtx);
+
+            void* chunk = *s.buffer;
+            if(*s.buffer == s.buffers.back()){
+                s.buffers.push_back(std::malloc(S));
+                s.buffer = &s.buffers.back();
+            }else
+                s.buffer++;
+
+            return chunk;
+        }
+        static void reset(){
+            serial_factory& s = instance();
+            s.buffer = &s.buffers[0];
+        }
+        static size_t size(){
+            serial_factory& s = instance();
+            return (s.buffer - &s.buffers[0]);
+        }
+        mutex mtx;
+        std::vector<void*> buffers;
+        void** buffer;
+    };
+
+    template<size_t S>
     class factory {
     public:
         typedef ambient::mutex mutex;

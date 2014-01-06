@@ -31,7 +31,7 @@
 namespace ambient {
 
     using ambient::controllers::ssm::functor;
-    using ambient::memory::bulk;
+    using ambient::memory::instr_bulk;
 
     template<typename FP, FP fp> struct kernel_inliner{};
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
@@ -42,7 +42,7 @@ namespace ambient {
         #define inliner kernel_inliner<typename K::ftype,&K::c>
         inline void operator delete (void* ptr){ }
         inline void* operator new (size_t size){
-            return ambient::pool::malloc<bulk,sizeof(K)+sizeof(void*)*inliner::arity>();
+            return ambient::pool::malloc<instr_bulk,sizeof(K)+sizeof(void*)*inliner::arity>();
         }
 
         virtual bool ready(){ 

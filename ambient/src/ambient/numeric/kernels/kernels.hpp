@@ -38,47 +38,47 @@ namespace ambient { namespace numeric { namespace kernels {
         using ambient::unbound;
         using ambient::numeric::matrix;
         using ambient::numeric::traits::real_type;
-        using ambient::memory::bulk;
+        using ambient::memory::data_bulk;
        
         template<typename T>
         void geqrt(matrix<T>& a, matrix<T>& t){
-            T* tau  = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB>(); 
-            T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB>(); 
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::geqrt(a.num_rows(), a.num_cols(), PLASMA_IB,
                                     revised(a).data, a.num_rows(),
                                     updated(t).data, t.num_rows(),
                                     tau, work);
-            ambient::memory::bulk::reuse(tau); 
-            ambient::memory::bulk::reuse(work); 
+            ambient::memory::data_bulk::reuse(tau); 
+            ambient::memory::data_bulk::reuse(work); 
         }
        
         template<typename T, typename TR>
         void ormqr(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-            T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::ormqr(PlasmaLeft, TR::value, c.num_rows(), c.num_cols(), k, PLASMA_IB,
                                     current(a).data, a.num_rows(),
                                     current(t).data, t.num_rows(),
                                     revised(c).data, c.num_rows(),
                                      work, AMBIENT_IB);
-            ambient::memory::bulk::reuse(work);
+            ambient::memory::data_bulk::reuse(work);
         }
        
         template<typename T>
         void tsqrt(matrix<T>& a1, matrix<T>& a2, matrix<T>& t){
-            T* tau  = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB>();
-            T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB>();
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::tsqrt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
                                     revised(a1).data, a1.num_rows(),
                                     revised(a2).data, a2.num_rows(),
                                     updated(t).data, t.num_rows(),
                                     tau, work);
-            ambient::memory::bulk::reuse(tau); 
-            ambient::memory::bulk::reuse(work); 
+            ambient::memory::data_bulk::reuse(tau); 
+            ambient::memory::data_bulk::reuse(work); 
         }
        
         template<typename T, typename TR>
         void tsmqr(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-            T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::tsmqr(PlasmaLeft, TR::value,
                                     AMBIENT_IB, a1.num_cols(), a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
                                     revised(a1).data, a1.num_rows(),
@@ -86,49 +86,49 @@ namespace ambient { namespace numeric { namespace kernels {
                                     current(v).data, v.num_rows(),
                                     current(t).data, t.num_rows(),
                                     work, PLASMA_IB);
-            ambient::memory::bulk::reuse(work); 
+            ambient::memory::data_bulk::reuse(work); 
         }
        
         template<typename T>
         void gelqt(matrix<T>& a, matrix<T>& t){
-            T* tau  = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB>();
-            T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB>();
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::gelqt(a.num_rows(), a.num_cols(), PLASMA_IB,
                                     revised(a).data, a.num_rows(), 
                                     updated(t).data,   t.num_rows(),
                                     tau, work);
-            ambient::memory::bulk::reuse(tau); 
-            ambient::memory::bulk::reuse(work); 
+            ambient::memory::data_bulk::reuse(tau); 
+            ambient::memory::data_bulk::reuse(work); 
         }
        
         template<typename T, typename TR>
         void ormlq(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-            T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::ormlq(PlasmaRight, TR::value,
                                     c.num_rows(), c.num_cols(), k, PLASMA_IB,
                                     current(a).data, a.num_rows(),
                                     current(t).data, t.num_rows(),
                                     revised(c).data, c.num_rows(),
                                     work, AMBIENT_IB);
-            ambient::memory::bulk::reuse(work); 
+            ambient::memory::data_bulk::reuse(work); 
         }
        
         template<typename T>
         void tslqt(matrix<T>& a1, matrix<T>& a2, matrix<T>& t){
-            T* tau  = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB>();
-            T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB>();
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::tslqt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
                                     revised(a1).data, a1.num_rows(),
                                     revised(a2).data, a2.num_rows(),
                                     updated(t).data,  t.num_rows(),
                                     tau, work);
-            ambient::memory::bulk::reuse(tau); 
-            ambient::memory::bulk::reuse(work); 
+            ambient::memory::data_bulk::reuse(tau); 
+            ambient::memory::data_bulk::reuse(work); 
         }
        
         template<typename T, typename TR>
         void tsmlq(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-            T* work = (T*)ambient::pool::malloc<bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
             helper_plasma<T>::tsmlq(PlasmaRight, TR::value,
                                     a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
                                     revised(a1).data, a1.num_rows(),
@@ -136,7 +136,7 @@ namespace ambient { namespace numeric { namespace kernels {
                                     current(v).data, v.num_rows(),
                                     current(t).data, t.num_rows(),
                                     work, AMBIENT_IB);
-            ambient::memory::bulk::reuse(work); 
+            ambient::memory::data_bulk::reuse(work); 
         }
        
         template<class ViewA, class ViewB, class ViewC, typename T>

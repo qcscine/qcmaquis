@@ -57,7 +57,8 @@ namespace ambient { namespace controllers { namespace ssm {
             #else
             ambient::cout << "ambient: initialized (no threading)\n";
             #endif
-            ambient::cout << "ambient: size of ambient bulk chunks: " << AMBIENT_BULK_CHUNK << "\n";
+            ambient::cout << "ambient: size of instr bulk chunks: " << AMBIENT_INSTR_BULK_CHUNK << "\n";
+            ambient::cout << "ambient: size of data bulk chunks: " << AMBIENT_DATA_BULK_CHUNK << "\n";
             ambient::cout << "ambient: maximum number of bulk chunks: " << AMBIENT_BULK_LIMIT << "\n";
             ambient::cout << "ambient: maximum sid value: " << AMBIENT_MAX_SID << "\n";
             ambient::cout << "ambient: number of database proc: " << AMBIENT_DB_PROCS << "\n";
@@ -194,7 +195,7 @@ namespace ambient { namespace controllers { namespace ssm {
                 ambient::pool::free(r->data, r->spec);
                 r->spec.region = ambient::rdelegated;
             }else if(r->spec.region == ambient::rbulked){
-                ambient::memory::bulk::reuse(r->data);
+                ambient::memory::data_bulk::reuse(r->data);
                 r->spec.region = ambient::rdelegated;
             }
         }

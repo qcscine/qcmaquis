@@ -33,14 +33,38 @@ namespace ambient { namespace memory {
     constexpr size_t aligned(size_t size){  return ALIGNMENT * (size_t)((size+ALIGNMENT-1)/ALIGNMENT); }
 
     template<size_t S, class Factory>
-    class region {
+    class serial_region {
+    public:
+        serial_region(){
+            this->buffer = NULL;
+            this->iterator = (char*)this->buffer+S;
+        }
+        void realloc(){
+            this->buffer = Factory::provide();
+            this->iterator = (char*)this->buffer;
+        }
+        void* malloc(size_t sz){
+            if(((size_t)iterator + sz - (size_t)this->buffer) >= S) realloc();
+            void* m = (void*)iterator;
+            iterator += aligned(sz);
+            return m;
+        }
+        void reset(){
+            this->iterator = (char*)this->buffer+S;
+        }
+    protected:
+        void* buffer;
+        char* iterator;
+    };
+
+    template<size_t S, class Factory>
+    class region : public serial_region<S,Factory> {
     public:
         typedef ambient::mutex mutex;
         typedef ambient::guard<mutex> guard;
+        typedef serial_region<S,Factory> base;
 
         region(){
-            this->buffer = NULL;
-            this->iterator = (char*)this->buffer+S;
             this->count = 0;
             this->block_count = 0;
         }
@@ -49,27 +73,22 @@ namespace ambient { namespace memory {
                  Factory::collect(this->buffer, this->count);
                  this->count = 0;
             }
-            this->buffer = Factory::provide();
-            this->iterator = (char*)this->buffer;
+            base::realloc();
             this->block_count++;
         }
         void* malloc(size_t sz){
             guard g(this->mtx);
-            if(((size_t)iterator + sz - (size_t)this->buffer) >= S) realloc();
-            void* m = (void*)iterator;
-            iterator += aligned(sz);
+            if(((size_t)this->iterator + sz - (size_t)this->buffer) >= S) realloc();
             this->count++;
-            return m;
+            return base::malloc(sz);
         }
         void reset(){
-            this->iterator = (char*)this->buffer+S;
+            base::reset();
             this->count = 0; 
             this->block_count = 0;
         }
         int block_count;
     private:
-        void* buffer;
-        char* iterator;
         long int count;
         mutex mtx;
     };

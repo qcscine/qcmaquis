@@ -41,7 +41,7 @@ namespace ambient { namespace memory {
     template<class T>
     class use_bulk_new {
     public:
-        void* operator new (size_t sz){ assert(sz == sizeof(T)); return ambient::pool::malloc<bulk,T>(); }
+        void* operator new (size_t sz){ assert(sz == sizeof(T)); return ambient::pool::malloc<instr_bulk,T>(); }
         void operator delete (void* ptr){ }
     };
 
