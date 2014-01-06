@@ -92,7 +92,7 @@ public:
         TimeEvolver evolver(&parms, &mps, lat, model, init_sweep);
         
         int n = nsweeps / nsteps;
-        for (int i=0; i < n; ++i) {
+        for (int i=init_sweep/nsteps; i < n; ++i) {
             // TODO: introduce some timings
             
             int sweep = i*nsteps;
