@@ -32,7 +32,6 @@ namespace ambient { namespace controllers { namespace ssm {
     using ambient::models::ssm::revision;
     using ambient::models::ssm::transformable;
     using ambient::channels::mpi::collective;
-    using ambient::memory::bulk;
 
     template<class T> class set {};
 

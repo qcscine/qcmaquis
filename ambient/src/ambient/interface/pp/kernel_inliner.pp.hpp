@@ -37,9 +37,7 @@ struct kernel_inliner<void(*)( T0& ), fp> {
             info<T0>::typed::template modify_remote<0>(arg0);
             return;
         }else if(ambient::controller.local()){
-            AMBIENT_TRACKING_BEGIN
             info<T0>::typed::template modify_local<0>(arg0, o);
-            AMBIENT_TRACKING_END
         }else{
             info<T0>::typed::template modify<0>(arg0, o);
         }
@@ -69,9 +67,7 @@ struct kernel_inliner<void(*)( T0& , T1& ), fp> {
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1);
             return;
         }else if(ambient::controller.local()){
-            AMBIENT_TRACKING_BEGIN
             info<T0>::typed::template modify_local<0>(arg0, o); info<T1>::typed::template modify_local<1>(arg1, o);
-            AMBIENT_TRACKING_END
         }else{
             info<T0>::typed::template modify<0>(arg0, o); info<T1>::typed::template modify<1>(arg1, o);
         }
@@ -101,9 +97,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& ), fp> {
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2);
             return;
         }else if(ambient::controller.local()){
-            AMBIENT_TRACKING_BEGIN
             info<T0>::typed::template modify_local<0>(arg0, o); info<T1>::typed::template modify_local<1>(arg1, o); info<T2>::typed::template modify_local<2>(arg2, o);
-            AMBIENT_TRACKING_END
         }else{
             info<T0>::typed::template modify<0>(arg0, o); info<T1>::typed::template modify<1>(arg1, o); info<T2>::typed::template modify<2>(arg2, o);
         }
@@ -133,9 +127,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& ), fp> {
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3);
             return;
         }else if(ambient::controller.local()){
-            AMBIENT_TRACKING_BEGIN
             info<T0>::typed::template modify_local<0>(arg0, o); info<T1>::typed::template modify_local<1>(arg1, o); info<T2>::typed::template modify_local<2>(arg2, o); info<T3>::typed::template modify_local<3>(arg3, o);
-            AMBIENT_TRACKING_END
         }else{
             info<T0>::typed::template modify<0>(arg0, o); info<T1>::typed::template modify<1>(arg1, o); info<T2>::typed::template modify<2>(arg2, o); info<T3>::typed::template modify<3>(arg3, o);
         }
@@ -165,9 +157,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& ), fp> {
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4);
             return;
         }else if(ambient::controller.local()){
-            AMBIENT_TRACKING_BEGIN
             info<T0>::typed::template modify_local<0>(arg0, o); info<T1>::typed::template modify_local<1>(arg1, o); info<T2>::typed::template modify_local<2>(arg2, o); info<T3>::typed::template modify_local<3>(arg3, o); info<T4>::typed::template modify_local<4>(arg4, o);
-            AMBIENT_TRACKING_END
         }else{
             info<T0>::typed::template modify<0>(arg0, o); info<T1>::typed::template modify<1>(arg1, o); info<T2>::typed::template modify<2>(arg2, o); info<T3>::typed::template modify<3>(arg3, o); info<T4>::typed::template modify<4>(arg4, o);
         }
@@ -197,9 +187,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& ), fp> {
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4); info<T5>::typed::template modify_remote<5>(arg5);
             return;
         }else if(ambient::controller.local()){
-            AMBIENT_TRACKING_BEGIN
             info<T0>::typed::template modify_local<0>(arg0, o); info<T1>::typed::template modify_local<1>(arg1, o); info<T2>::typed::template modify_local<2>(arg2, o); info<T3>::typed::template modify_local<3>(arg3, o); info<T4>::typed::template modify_local<4>(arg4, o); info<T5>::typed::template modify_local<5>(arg5, o);
-            AMBIENT_TRACKING_END
         }else{
             info<T0>::typed::template modify<0>(arg0, o); info<T1>::typed::template modify<1>(arg1, o); info<T2>::typed::template modify<2>(arg2, o); info<T3>::typed::template modify<3>(arg3, o); info<T4>::typed::template modify<4>(arg4, o); info<T5>::typed::template modify<5>(arg5, o);
         }
@@ -229,9 +217,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& ), fp> {
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4); info<T5>::typed::template modify_remote<5>(arg5); info<T6>::typed::template modify_remote<6>(arg6);
             return;
         }else if(ambient::controller.local()){
-            AMBIENT_TRACKING_BEGIN
             info<T0>::typed::template modify_local<0>(arg0, o); info<T1>::typed::template modify_local<1>(arg1, o); info<T2>::typed::template modify_local<2>(arg2, o); info<T3>::typed::template modify_local<3>(arg3, o); info<T4>::typed::template modify_local<4>(arg4, o); info<T5>::typed::template modify_local<5>(arg5, o); info<T6>::typed::template modify_local<6>(arg6, o);
-            AMBIENT_TRACKING_END
         }else{
             info<T0>::typed::template modify<0>(arg0, o); info<T1>::typed::template modify<1>(arg1, o); info<T2>::typed::template modify<2>(arg2, o); info<T3>::typed::template modify<3>(arg3, o); info<T4>::typed::template modify<4>(arg4, o); info<T5>::typed::template modify<5>(arg5, o); info<T6>::typed::template modify<6>(arg6, o);
         }
@@ -261,9 +247,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& ), 
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4); info<T5>::typed::template modify_remote<5>(arg5); info<T6>::typed::template modify_remote<6>(arg6); info<T7>::typed::template modify_remote<7>(arg7);
             return;
         }else if(ambient::controller.local()){
-            AMBIENT_TRACKING_BEGIN
             info<T0>::typed::template modify_local<0>(arg0, o); info<T1>::typed::template modify_local<1>(arg1, o); info<T2>::typed::template modify_local<2>(arg2, o); info<T3>::typed::template modify_local<3>(arg3, o); info<T4>::typed::template modify_local<4>(arg4, o); info<T5>::typed::template modify_local<5>(arg5, o); info<T6>::typed::template modify_local<6>(arg6, o); info<T7>::typed::template modify_local<7>(arg7, o);
-            AMBIENT_TRACKING_END
         }else{
             info<T0>::typed::template modify<0>(arg0, o); info<T1>::typed::template modify<1>(arg1, o); info<T2>::typed::template modify<2>(arg2, o); info<T3>::typed::template modify<3>(arg3, o); info<T4>::typed::template modify<4>(arg4, o); info<T5>::typed::template modify<5>(arg5, o); info<T6>::typed::template modify<6>(arg6, o); info<T7>::typed::template modify<7>(arg7, o);
         }
@@ -293,9 +277,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4); info<T5>::typed::template modify_remote<5>(arg5); info<T6>::typed::template modify_remote<6>(arg6); info<T7>::typed::template modify_remote<7>(arg7); info<T8>::typed::template modify_remote<8>(arg8);
             return;
         }else if(ambient::controller.local()){
-            AMBIENT_TRACKING_BEGIN
             info<T0>::typed::template modify_local<0>(arg0, o); info<T1>::typed::template modify_local<1>(arg1, o); info<T2>::typed::template modify_local<2>(arg2, o); info<T3>::typed::template modify_local<3>(arg3, o); info<T4>::typed::template modify_local<4>(arg4, o); info<T5>::typed::template modify_local<5>(arg5, o); info<T6>::typed::template modify_local<6>(arg6, o); info<T7>::typed::template modify_local<7>(arg7, o); info<T8>::typed::template modify_local<8>(arg8, o);
-            AMBIENT_TRACKING_END
         }else{
             info<T0>::typed::template modify<0>(arg0, o); info<T1>::typed::template modify<1>(arg1, o); info<T2>::typed::template modify<2>(arg2, o); info<T3>::typed::template modify<3>(arg3, o); info<T4>::typed::template modify<4>(arg4, o); info<T5>::typed::template modify<5>(arg5, o); info<T6>::typed::template modify<6>(arg6, o); info<T7>::typed::template modify<7>(arg7, o); info<T8>::typed::template modify<8>(arg8, o);
         }
@@ -325,9 +307,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4); info<T5>::typed::template modify_remote<5>(arg5); info<T6>::typed::template modify_remote<6>(arg6); info<T7>::typed::template modify_remote<7>(arg7); info<T8>::typed::template modify_remote<8>(arg8); info<T9>::typed::template modify_remote<9>(arg9);
             return;
         }else if(ambient::controller.local()){
-            AMBIENT_TRACKING_BEGIN
             info<T0>::typed::template modify_local<0>(arg0, o); info<T1>::typed::template modify_local<1>(arg1, o); info<T2>::typed::template modify_local<2>(arg2, o); info<T3>::typed::template modify_local<3>(arg3, o); info<T4>::typed::template modify_local<4>(arg4, o); info<T5>::typed::template modify_local<5>(arg5, o); info<T6>::typed::template modify_local<6>(arg6, o); info<T7>::typed::template modify_local<7>(arg7, o); info<T8>::typed::template modify_local<8>(arg8, o); info<T9>::typed::template modify_local<9>(arg9, o);
-            AMBIENT_TRACKING_END
         }else{
             info<T0>::typed::template modify<0>(arg0, o); info<T1>::typed::template modify<1>(arg1, o); info<T2>::typed::template modify<2>(arg2, o); info<T3>::typed::template modify<3>(arg3, o); info<T4>::typed::template modify<4>(arg4, o); info<T5>::typed::template modify<5>(arg5, o); info<T6>::typed::template modify<6>(arg6, o); info<T7>::typed::template modify<7>(arg7, o); info<T8>::typed::template modify<8>(arg8, o); info<T9>::typed::template modify<9>(arg9, o);
         }
@@ -357,9 +337,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4); info<T5>::typed::template modify_remote<5>(arg5); info<T6>::typed::template modify_remote<6>(arg6); info<T7>::typed::template modify_remote<7>(arg7); info<T8>::typed::template modify_remote<8>(arg8); info<T9>::typed::template modify_remote<9>(arg9); info<T10>::typed::template modify_remote<10>(arg10);
             return;
         }else if(ambient::controller.local()){
-            AMBIENT_TRACKING_BEGIN
             info<T0>::typed::template modify_local<0>(arg0, o); info<T1>::typed::template modify_local<1>(arg1, o); info<T2>::typed::template modify_local<2>(arg2, o); info<T3>::typed::template modify_local<3>(arg3, o); info<T4>::typed::template modify_local<4>(arg4, o); info<T5>::typed::template modify_local<5>(arg5, o); info<T6>::typed::template modify_local<6>(arg6, o); info<T7>::typed::template modify_local<7>(arg7, o); info<T8>::typed::template modify_local<8>(arg8, o); info<T9>::typed::template modify_local<9>(arg9, o); info<T10>::typed::template modify_local<10>(arg10, o);
-            AMBIENT_TRACKING_END
         }else{
             info<T0>::typed::template modify<0>(arg0, o); info<T1>::typed::template modify<1>(arg1, o); info<T2>::typed::template modify<2>(arg2, o); info<T3>::typed::template modify<3>(arg3, o); info<T4>::typed::template modify<4>(arg4, o); info<T5>::typed::template modify<5>(arg5, o); info<T6>::typed::template modify<6>(arg6, o); info<T7>::typed::template modify<7>(arg7, o); info<T8>::typed::template modify<8>(arg8, o); info<T9>::typed::template modify<9>(arg9, o); info<T10>::typed::template modify<10>(arg10, o);
         }
@@ -389,9 +367,7 @@ struct kernel_inliner<void(*)( T0& , T1& , T2& , T3& , T4& , T5& , T6& , T7& , T
             info<T0>::typed::template modify_remote<0>(arg0); info<T1>::typed::template modify_remote<1>(arg1); info<T2>::typed::template modify_remote<2>(arg2); info<T3>::typed::template modify_remote<3>(arg3); info<T4>::typed::template modify_remote<4>(arg4); info<T5>::typed::template modify_remote<5>(arg5); info<T6>::typed::template modify_remote<6>(arg6); info<T7>::typed::template modify_remote<7>(arg7); info<T8>::typed::template modify_remote<8>(arg8); info<T9>::typed::template modify_remote<9>(arg9); info<T10>::typed::template modify_remote<10>(arg10); info<T11>::typed::template modify_remote<11>(arg11);
             return;
         }else if(ambient::controller.local()){
-            AMBIENT_TRACKING_BEGIN
             info<T0>::typed::template modify_local<0>(arg0, o); info<T1>::typed::template modify_local<1>(arg1, o); info<T2>::typed::template modify_local<2>(arg2, o); info<T3>::typed::template modify_local<3>(arg3, o); info<T4>::typed::template modify_local<4>(arg4, o); info<T5>::typed::template modify_local<5>(arg5, o); info<T6>::typed::template modify_local<6>(arg6, o); info<T7>::typed::template modify_local<7>(arg7, o); info<T8>::typed::template modify_local<8>(arg8, o); info<T9>::typed::template modify_local<9>(arg9, o); info<T10>::typed::template modify_local<10>(arg10, o); info<T11>::typed::template modify_local<11>(arg11, o);
-            AMBIENT_TRACKING_END
         }else{
             info<T0>::typed::template modify<0>(arg0, o); info<T1>::typed::template modify<1>(arg1, o); info<T2>::typed::template modify<2>(arg2, o); info<T3>::typed::template modify<3>(arg3, o); info<T4>::typed::template modify<4>(arg4, o); info<T5>::typed::template modify<5>(arg5, o); info<T6>::typed::template modify<6>(arg6, o); info<T7>::typed::template modify<7>(arg7, o); info<T8>::typed::template modify<8>(arg8, o); info<T9>::typed::template modify<9>(arg9, o); info<T10>::typed::template modify<10>(arg10, o); info<T11>::typed::template modify<11>(arg11, o);
         }

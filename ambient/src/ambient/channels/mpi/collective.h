@@ -64,7 +64,6 @@ namespace ambient { namespace channels { namespace mpi {
 
     template<>
     class collective<transformable> : public bcast<transformable>, public memory::use_bulk_new<collective<transformable> > {
-        typedef ambient::bulk_allocator<int> allocator;
     public:
         collective(transformable& v, int root);
         bool test();

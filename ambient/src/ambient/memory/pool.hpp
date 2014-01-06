@@ -60,7 +60,7 @@ namespace ambient { namespace pool {
 
     struct descriptor {
 
-        descriptor(size_t e, region_t r = region_t::rstandard) : extent(e), region(r), persistency(1), crefs(1), reusable(false) {}
+        descriptor(size_t e, region_t r = region_t::rstandard) : extent(e), region(r), persistency(1), crefs(1) {}
 
         void protect(){
             assert(region != region_t::rdelegated);
@@ -82,15 +82,10 @@ namespace ambient { namespace pool {
         bool bulked(){
             return (region == region_t::rbulked);
         }
-        void reserve(){
-            reusable = true;
-        }
-
         size_t extent;
         region_t region;
         int persistency;
         int crefs;
-        bool reusable;
     };
 
     template<class Memory>           static void* malloc(size_t sz){ return Memory::malloc(sz);            }
@@ -115,9 +110,6 @@ namespace ambient { namespace pool {
             //if(d.extent > AMBIENT_IB_EXTENT || bulk::factory<AMBIENT_BULK_CHUNK>::size() > AMBIENT_BULK_LIMIT){
                 d.region = region_t::rstandard;
                 return malloc<standard>(d.extent);
-            //}
-            //if(d.reusable){
-            //    return ambient::memory::bulk::reserve(d.extent);
             //}
             //return malloc<bulk>(d.extent); 
         } else return malloc<standard>(d.extent);

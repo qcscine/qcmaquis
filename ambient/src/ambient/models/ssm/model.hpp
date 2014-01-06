@@ -26,14 +26,6 @@
 
 namespace ambient { namespace models { namespace ssm {
 
-    #ifdef AMBIENT_TRACKING
-    inline int model::index(){
-        int s = this->sid++;
-        this->sid %= AMBIENT_MAX_SID;
-        return s;
-    }
-    #endif
-
     template<ambient::locality L, typename G>
     inline void model::add_revision(history* o, G g){
         o->add_state<L>(g);

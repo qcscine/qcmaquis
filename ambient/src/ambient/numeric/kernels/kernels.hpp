@@ -38,6 +38,7 @@ namespace ambient { namespace numeric { namespace kernels {
         using ambient::unbound;
         using ambient::numeric::matrix;
         using ambient::numeric::traits::real_type;
+        using ambient::memory::bulk;
        
         template<typename T>
         void geqrt(matrix<T>& a, matrix<T>& t){

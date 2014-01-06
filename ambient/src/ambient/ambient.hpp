@@ -88,17 +88,12 @@
 #define AMBIENT_BROADCAST -1
 
 //#define AMBIENT_NUMERIC_EXPERIMENTAL
-//#define AMBIENT_COMPUTATIONAL_TIMINGS
-//#define AMBIENT_COMPUTATIONAL_DATAFLOW
 //#define AMBIENT_TRACE void* b[15]; backtrace_symbols_fd(b,backtrace(b,15),2);
 //#define AMBIENT_CHECK_BOUNDARIES
 //#define AMBIENT_LOOSE_FUTURE
-//#define AMBIENT_TRACKING
 //#define AMBIENT_PARALLEL_MKL // please define in compiler
 
-#define AMBIENT_REPORT_BULK_USAGE
 #define AMBIENT_MEMORY_SQUEEZE
-#define AMBIENT_DEALLOCATE_BULK
 #define AMBIENT_REBALANCED_SVD
 
 #define AMBIENT_BULK_CHUNK            67108864 // 64 MB
@@ -130,8 +125,8 @@ namespace ambient {
 
 #include "ambient/channels/mpi/groups/multirank.h"
 #include "ambient/memory/pool.hpp"
-#include "ambient/memory/allocator.hpp"
 #include "ambient/memory/new.hpp"
+#include "ambient/memory/allocator.hpp"
 #include "ambient/models/ssm/model.h"
 #include "ambient/channels/mpi/channel.h"
 #include "ambient/controllers/ssm/controller.h"

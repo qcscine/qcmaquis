@@ -29,10 +29,6 @@ constexpr size_t aligned64(size_t size){ return 8 * (size_t)((size+7)/8); }
 namespace ambient { namespace models { namespace ssm {
 
     inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(aligned64(dim.square()*ts)) {
-        this->clock = ambient::model.clock;
-        #ifdef AMBIENT_TRACKING
-        ambient::model.index(this);
-        #endif
     }
 
     inline void history::init_state(){

@@ -46,14 +46,14 @@ namespace ambient { namespace channels { namespace mpi {
     public:
        ~channel();
         void  init();
-        void  barrier();
+        static void  barrier();
         size_t dim();
         size_t wk_dim();
         size_t db_dim();
-        collective<revision>* get(revision& r);
-        collective<revision>* set(revision& r);
-        collective<transformable>* bcast(transformable& v, int root);
-        collective<transformable>* bcast(transformable& v);
+        static collective<revision>* get(revision& r);
+        static collective<revision>* set(revision& r);
+        static collective<transformable>* bcast(transformable& v, int root);
+        static collective<transformable>* bcast(transformable& v);
         void index();
         int get_sid() const;
         int generate_sid();
