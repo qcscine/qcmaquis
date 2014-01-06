@@ -80,14 +80,14 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline void controller::intend_read(history* o){
-        revision* r = o->back(); if(r == NULL || ambient::model.common(r)) return;
-        int candidate = ambient::model.remote(r) ? r->owner : (int)ambient::rank();
+        revision* r = o->back(); if(r == NULL || model.common(r)) return;
+        int candidate = model.remote(r) ? r->owner : (int)ambient::rank();
         context->score(candidate, r->spec.extent);
     }
 
     inline void controller::intend_write(history* o){
-        revision* r = o->back(); if(r == NULL || ambient::model.common(r)) return;
-        int candidate = ambient::model.remote(r) ? r->owner : (int)ambient::rank();
+        revision* r = o->back(); if(r == NULL || model.common(r)) return;
+        int candidate = model.remote(r) ? r->owner : (int)ambient::rank();
         context->select(candidate);
     }
 
@@ -117,40 +117,12 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline void controller::flush(){
         typedef typename std::vector<functor*>::const_iterator veci;
-        #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
-        printf("ambient::parallel graph dim: %d\n", chains->size());
-        for(veci i = chains->begin(); i != chains->end(); ++i)
-            printf("op%d[label=\"%s\"]\n", (*i)->id(), (*i)->name());
-        #endif
-        /*while(!chains->empty()){
-            int i;
-            const int N = chains->size();
-            std::vector<functor*> prod[N];
-            #pragma omp parallel for
-            for(i = 0; i < N; i++){
-                functor* task = (*chains)[i];
-                if(task->ready()){
-                    task->invoke();
-                    prod[i].insert(prod[i].end(), task->deps.begin(), task->deps.end());
-                }else prod[i].push_back(task);
-            }
-            for(i = 0; i < N; i++){
-                mirror->insert(mirror->end(), prod[i].begin(), prod[i].end());
-            }
-            chains->clear();
-            std::swap(chains,mirror);
-        }*/
         AMBIENT_SMP_ENABLE
         while(!chains->empty()){
             for(veci i = chains->begin(); i != chains->end(); ++i){
                 if((*i)->ready()){
                     functor* task = *i;
                     AMBIENT_THREAD task->invoke();
-                    #ifdef AMBIENT_COMPUTATIONAL_DATAFLOW
-                    for(int n = 0; n < task->deps.size(); ++n)
-                        printf("op%d[label=\"%s\"]\nop%d -> op%d\n", task->deps[n]->id(), task->deps[n]->name(), 
-                                                                     task->id(), task->deps[n]->id());
-                    #endif
                     int size = task->deps.size();
                     for(int n = 0; n < size; n++) task->deps[n]->ready();
                     mirror->insert(mirror->end(), task->deps.begin(), task->deps.end());
@@ -161,9 +133,6 @@ namespace ambient { namespace controllers { namespace ssm {
         }
         AMBIENT_SMP_DISABLE
         ambient::model.clock++;
-        #ifdef AMBIENT_TRACKING
-        ambient::overseer::log::stop();
-        #endif
         ambient::channel.barrier();
     }
 
@@ -190,28 +159,28 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline void controller::sync(revision* r){
         if(serial) return;
-        if(ambient::model.common(r)) return;
-        if(ambient::model.feeds(r)) ambient::controllers::ssm::set<revision>::spawn(*r);
-        else ambient::controllers::ssm::get<revision>::spawn(*r);
+        if(model.common(r)) return;
+        if(model.feeds(r)) set<revision>::spawn(*r);
+        else get<revision>::spawn(*r);
     }
 
     inline void controller::lsync(revision* r){
-        if(ambient::model.common(r)) return;
-        if(!ambient::model.feeds(r)) ambient::controllers::ssm::get<revision>::spawn(*r);
+        if(model.common(r)) return;
+        if(!model.feeds(r)) get<revision>::spawn(*r);
     }
 
     inline void controller::rsync(revision* r){
-        if(ambient::model.common(r)) return;
-        if(r->owner != which()) ambient::controllers::ssm::set<revision>::spawn(*r);
+        if(model.common(r)) return;
+        if(r->owner != which()) set<revision>::spawn(*r);
     }
 
     inline void controller::lsync(transformable* v){
         if(serial) return;
-        ambient::controllers::ssm::set<transformable>::spawn(*v);
+        set<transformable>::spawn(*v);
     }
 
     inline void controller::rsync(transformable* v){
-        ambient::controllers::ssm::get<transformable>::spawn(*v);
+        get<transformable>::spawn(*v);
     }
 
     template<typename T> void controller::collect(T* o){
@@ -233,4 +202,3 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
 } } }
-

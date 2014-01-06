@@ -27,6 +27,7 @@
 #include "ambient/ambient.hpp"
 
 namespace ambient {
+
     void* fence::nptr = NULL;
     void** fence::order = &fence::nptr;
     int scope<single>::grain = 1;

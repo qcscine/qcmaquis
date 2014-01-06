@@ -38,17 +38,14 @@ namespace ambient { namespace models { namespace ssm {
     public:
         model() : clock(1), sid(0) {}
         template<ambient::locality L, typename G> 
-        void add_revision(history* o, G g);
-        void use_revision(history* o);
-        bool feeds(const revision* r);
-        bool remote(const revision* r);
-        bool common(const revision* r);
-        void touch(const history* o);
+        static void add_revision(history* o, G g);
+        static void use_revision(history* o);
+        static bool feeds(const revision* r);
+        static bool remote(const revision* r);
+        static bool common(const revision* r);
+        static void touch(const history* o);
         size_t clock;
         int sid;
-        #ifdef AMBIENT_TRACKING
-        int index();
-        #endif
     };
 
 } } }

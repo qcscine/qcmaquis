@@ -28,26 +28,13 @@
 #define AMBIENT_INTERFACE_KERNELS
 #include "ambient/utils/timings.hpp"
 
-#ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-#include <typeinfo>
-#endif
-
 namespace ambient {
 
     using ambient::controllers::ssm::functor;
     using ambient::memory::bulk;
 
     template<typename FP, FP fp> struct kernel_inliner{};
-    #ifdef AMBIENT_TRACKING
-    #define AMBIENT_TRACKING_BEGIN ambient::overseer::log::begin(o);
-    #define AMBIENT_TRACKING_END   ambient::overseer::log::end(o);
-    #else
-    #define AMBIENT_TRACKING_BEGIN
-    #define AMBIENT_TRACKING_END
-    #endif
     #include "ambient/interface/pp/kernel_inliner.pp.hpp"
-    #undef AMBIENT_TRACKING_BEGIN
-    #undef AMBIENT_TRACKING_END
 
     template<class K>
     class kernel : public functor {
@@ -58,30 +45,13 @@ namespace ambient {
             return ambient::pool::malloc<bulk,sizeof(K)+sizeof(void*)*inliner::arity>();
         }
 
-        #if defined(AMBIENT_COMPUTATIONAL_DATAFLOW) || defined(AMBIENT_TRACKING)
-        kernel(){ 
-            this->id = ambient::model.index();
-        }
-        #endif
-
         virtual bool ready(){ 
             return inliner::ready(this);
         }
         virtual void invoke(){
-            #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-            static ambient::async_timer time(typeid(K).name()); time.begin();
-            #endif
             inliner::invoke(this);
             inliner::cleanup(this);
-            #ifdef AMBIENT_COMPUTATIONAL_TIMINGS
-            time.end();
-            #endif
         }
-        #if defined(AMBIENT_COMPUTATIONAL_DATAFLOW) || defined(AMBIENT_TRACKING)
-        virtual const char* name(){ 
-            return typeid(K).name(); 
-        }
-        #endif
         template <class T0>
         static inline void spawn(T0& arg0){
             inliner::template latch(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0));

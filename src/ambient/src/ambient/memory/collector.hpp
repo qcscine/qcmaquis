@@ -24,8 +24,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#define AMBIENT_RESERVE_LIMIT (size_t)AMBIENT_BULK_CHUNK*80
-
 namespace ambient { namespace memory {
 
     using ambient::models::ssm::history;
@@ -35,7 +33,6 @@ namespace ambient { namespace memory {
         this->rev.reserve(AMBIENT_COLLECTOR_REV_RESERVE);
         this->str.reserve(AMBIENT_COLLECTOR_STR_RESERVE);
         this->raw.reserve(AMBIENT_COLLECTOR_RAW_RESERVE);
-        this->reserve_limit = AMBIENT_RESERVE_LIMIT;
     }
 
     inline void collector::push_back(void* o){
@@ -59,21 +56,6 @@ namespace ambient { namespace memory {
     inline void collector::push_back(history* o){
         this->push_back(o->current);
         this->str.push_back(o);
-        #ifdef AMBIENT_MEMORY_SQUEEZE
-        // let's try to reuse based upon death-order
-        /*if(this->reserve_limit > AMBIENT_IB_EXTENT)
-        if(!o->current->referenced() && 
-            o->clock == ambient::model.clock &&
-            o->time() == 1 &&
-           !o->content[1]->valid() && 
-            o->content[1]->spec.region == ambient::rbulked &&
-            o->content[1]->state != ambient::remote &&
-            o->content[1]->spec.extent <= AMBIENT_IB_EXTENT
-          ){
-            o->content[1]->spec.reserve();
-            this->reserve_limit -= o->content[1]->spec.extent;
-           }*/
-        #endif
     }
 
     inline void collector::delete_ptr::operator()( revision* r ) const {
@@ -93,7 +75,6 @@ namespace ambient { namespace memory {
     } 
 
     inline void collector::clear(){
-        this->reserve_limit = AMBIENT_RESERVE_LIMIT;
         std::for_each( rev.begin(), rev.end(), delete_ptr());
         std::for_each( str.begin(), str.end(), delete_ptr());
         std::for_each( raw.begin(), raw.end(), delete_ptr());

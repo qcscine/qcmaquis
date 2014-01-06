@@ -36,8 +36,7 @@ namespace ambient { namespace memory {
         typedef ambient::guard<mutex> guard;
 
         static factory& instance(){
-            static factory singleton;
-            return singleton;
+            static factory singleton; return singleton;
         }
         factory(){
             this->buffers.push_back(std::malloc(S));
@@ -94,7 +93,7 @@ namespace ambient { namespace memory {
         }
         static void reset(){
             factory& s = instance();
-            #ifdef AMBIENT_DEALLOCATE_BULK
+            #ifdef AMBIENT_MEMORY_SQUEEZE
             for(int i = 1; i < s.buffers.size(); i++) std::free(s.buffers[i]);
             s.buffers.resize(1); s.counts.resize(1);
             #endif
@@ -109,12 +108,10 @@ namespace ambient { namespace memory {
             return (s.buffer - &s.buffers[0]);
         }
         static size_t reused(){
-            factory& s = instance();
-            return s.reuse_count;
+            return instance().reuse_count;
         }
         static size_t reserved(){
-            factory& s = instance();
-            return (s.counts.size());
+            return instance().counts.size();
         }
         mutex mtx;
         std::vector<long int> counts;

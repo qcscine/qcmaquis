@@ -41,6 +41,7 @@ namespace ambient {
     using ambient::models::ssm::history;
     using ambient::models::ssm::revision;
     using ambient::memory::bulk;
+    using ambient::models::ssm::model;
 
     // {{{ compile-time type info: singular types + inplace and future specializations
     template <typename T> struct singular_info {
@@ -102,53 +103,41 @@ namespace ambient {
         template<size_t arg>
         static void modify_remote(T& obj){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            ambient::model.touch(o);
+            model::touch(o);
             ambient::controller.rsync(o->back());
             ambient::controller.collect(o->back());
-            ambient::model.add_revision<ambient::remote>(o, ambient::controller.which()); 
+            model::add_revision<ambient::remote>(o, ambient::controller.which()); 
         }
         template<size_t arg>
         static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            ambient::model.touch(o);
+            model::touch(o);
             T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); 
             m->arguments[arg] = (void*)var;
-            #ifdef AMBIENT_TRACKING
-            if(ambient::model.remote(o->back()) && o->back()->transfer == NULL) ambient::overseer::log::get(o, m);
-            #endif
             ambient::controller.lsync(o->back());
-            ambient::model.use_revision(o);
+            model::use_revision(o);
             ambient::controller.collect(o->back());
 
             var->before = o->current;
-            ambient::model.add_revision<ambient::local>(o, m); 
-            ambient::model.use_revision(o);
+            model::add_revision<ambient::local>(o, m); 
+            model::use_revision(o);
             var->after = o->current;
 
-            #ifdef AMBIENT_TRACKING
-            ambient::overseer::log::modify(o, m);
-            #endif
         }
         template<size_t arg>
         static void modify(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            ambient::model.touch(o);
+            model::touch(o);
             T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
-            #ifdef AMBIENT_TRACKING
-            if(ambient::model.remote(o->back()) && o->back()->transfer == NULL) ambient::overseer::log::get(o, m);
-            #endif
             ambient::controller.sync(o->back());
-            ambient::model.use_revision(o);
+            model::use_revision(o);
             ambient::controller.collect(o->back());
 
             var->before = o->current;
-            ambient::model.add_revision<ambient::common>(o, m); 
-            ambient::model.use_revision(o);
+            model::add_revision<ambient::common>(o, m); 
+            model::use_revision(o);
             var->after = o->current;
 
-            #ifdef AMBIENT_TRACKING
-            ambient::overseer::log::modify(o, m);
-            #endif
         }
         template<size_t arg> 
         static bool pin(functor* m){ 
@@ -186,30 +175,24 @@ namespace ambient {
         }
         template<size_t arg> static void modify_remote(T& obj){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            ambient::model.touch(o);
+            model::touch(o);
             ambient::controller.rsync(o->back());
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            ambient::model.touch(o);
+            model::touch(o);
             T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             var->before = o->current;
-            #ifdef AMBIENT_TRACKING
-            if(ambient::model.remote(o->back()) && o->back()->transfer == NULL) ambient::overseer::log::get(o, m);
-            #endif
             ambient::controller.lsync(o->back());
-            ambient::model.use_revision(o);
+            model::use_revision(o);
         }
         template<size_t arg> static void modify(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            ambient::model.touch(o);
+            model::touch(o);
             T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             var->before = o->current;
-            #ifdef AMBIENT_TRACKING
-            if(ambient::model.remote(o->back()) && o->back()->transfer == NULL) ambient::overseer::log::get(o, m);
-            #endif
             ambient::controller.sync(o->back());
-            ambient::model.use_revision(o);
+            model::use_revision(o);
         }
         template<size_t arg> 
         static void score(T& obj){
@@ -219,42 +202,34 @@ namespace ambient {
     template <typename T> struct write_iteratable_info : public iteratable_info<T> {
         template<size_t arg> static void modify_remote(T& obj){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            ambient::model.touch(o);
+            model::touch(o);
             ambient::controller.collect(o->back());
-            ambient::model.add_revision<ambient::remote>(o, ambient::controller.which()); 
+            model::add_revision<ambient::remote>(o, ambient::controller.which()); 
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            ambient::model.touch(o);
+            model::touch(o);
             T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
 
-            ambient::model.use_revision(o);
+            model::use_revision(o);
             ambient::controller.collect(o->back());
 
             var->before = o->current;
-            ambient::model.add_revision<ambient::local>(o, m); 
-            ambient::model.use_revision(o);
+            model::add_revision<ambient::local>(o, m); 
+            model::use_revision(o);
             var->after = o->current;
-
-            #ifdef AMBIENT_TRACKING
-            ambient::overseer::log::modify(o, m);
-            #endif
         }
         template<size_t arg> static void modify(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            ambient::model.touch(o);
+            model::touch(o);
             T* var = (T*)ambient::pool::malloc<bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
-            ambient::model.use_revision(o);
+            model::use_revision(o);
             ambient::controller.collect(o->back());
 
             var->before = o->current;
-            ambient::model.add_revision<ambient::common>(o, m); 
-            ambient::model.use_revision(o);
+            model::add_revision<ambient::common>(o, m); 
+            model::use_revision(o);
             var->after = o->current;
-
-            #ifdef AMBIENT_TRACKING
-            ambient::overseer::log::modify(o, m);
-            #endif
         }
         template<size_t arg> static bool pin(functor* m){ return false; }
         template<size_t arg> static void score(T& obj) {               
