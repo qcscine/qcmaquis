@@ -60,11 +60,19 @@
 #include "dmrg/models/model.h"
 #include "dmrg/models/measurements.h"
 
+
+class abstract_sim {
+public:
+    virtual ~abstract_sim() {}
+    virtual void run() =0;
+};
+
+
 template <class Matrix, class SymmGroup>
-class sim {
+class sim : public abstract_sim {
 public:
     sim(DmrgParameters const &);
-    ~sim();
+    virtual ~sim();
     
     virtual void run() =0;
     
