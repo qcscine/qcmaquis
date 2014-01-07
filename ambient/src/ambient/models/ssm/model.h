@@ -26,11 +26,6 @@
 
 #ifndef AMBIENT_MODELS_SSM_MODEL
 #define AMBIENT_MODELS_SSM_MODEL
-#include "ambient/utils/dim2.h"
-
-#include "ambient/models/ssm/revision.h"
-#include "ambient/models/ssm/history.h"
-#include "ambient/models/ssm/transformable.h"
 
 namespace ambient { namespace models { namespace ssm {
 
@@ -54,8 +49,4 @@ namespace ambient {
     extern models::ssm::model& model;
 }
 
-#include "ambient/models/ssm/model.hpp"
-#include "ambient/models/ssm/transformable.hpp"
-#include "ambient/models/ssm/history.hpp"
-#include "ambient/models/ssm/revision.hpp"
 #endif
