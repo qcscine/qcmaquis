@@ -29,9 +29,9 @@
 
 namespace ambient { namespace models { namespace ssm {
 
-    class model : public singleton< model > {
+    class model {
     public:
-        model() : clock(1), sid(0) {}
+        model() : clock(1) {}
         template<ambient::locality L, typename G> 
         static void add_revision(history* o, G g);
         static void use_revision(history* o);
@@ -40,13 +40,8 @@ namespace ambient { namespace models { namespace ssm {
         static bool common(const revision* r);
         static void touch(const history* o);
         size_t clock;
-        int sid;
     };
 
 } } }
-
-namespace ambient {
-    extern models::ssm::model& model;
-}
 
 #endif

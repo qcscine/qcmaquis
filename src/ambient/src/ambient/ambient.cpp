@@ -31,9 +31,8 @@ namespace ambient {
     void* fence::nptr = NULL;
     int scope<single>::grain = 1;
     std::vector<int> scope<single>::permutation;
-    models::ssm::model& model = models::ssm::model::instance();
     channels::mpi::channel& channel = channels::mpi::channel::instance();
-    controllers::ssm::controller& controller = controllers::ssm::controller::instance();
+    controllers::ssm::controller controller;
     utils::mpostream cout;
     utils::mpostream cerr;
 

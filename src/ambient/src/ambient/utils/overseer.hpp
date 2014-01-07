@@ -56,7 +56,7 @@ namespace ambient {
             }
             static void renaming(history* o, const std::string& label){
                 if(label.empty()) return;
-                if(!ambient::model.remote(o->back())) return;
+                if(!ambient::models::ssm::model::remote(o->back())) return;
                 std::string title = o->label.empty() ? std::to_string(o->id) : o->label;
                 stream() << "<div class=\"rename\" data-operand=\"" << o->id << "\" data-from=\"" << title << "\" data-to=\"" << label << "\"></div>\n";
             }

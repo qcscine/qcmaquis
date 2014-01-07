@@ -32,8 +32,7 @@ namespace ambient { namespace controllers { namespace ssm {
     using ambient::models::ssm::history;
     using ambient::models::ssm::revision;
 
-    class controller : public singleton< controller >
-    {
+    class controller {
     public:
         class scope {
         public:
@@ -76,9 +75,15 @@ namespace ambient { namespace controllers { namespace ssm {
         bool common();
         int which();
 
+        void touch(const history* o);
+        void use_revision(history* o);
+        template<ambient::locality L, typename G>
+        void add_revision(history* o, G g);
+
         const scope* context;
         const scope* context_base;
     private:
+        models::ssm::model model;
         std::vector< functor* > stack_m;
         std::vector< functor* > stack_s;
         std::vector< functor* >* chains;
@@ -90,7 +95,7 @@ namespace ambient { namespace controllers { namespace ssm {
 } } }
 
 namespace ambient {
-    extern controllers::ssm::controller& controller;
+    extern controllers::ssm::controller controller;
 }
 
 #endif

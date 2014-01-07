@@ -31,7 +31,6 @@
 
 namespace ambient {
 
-    using ambient::models::ssm::history;
     using ambient::models::ssm::revision;
 
     inline int rank(){
@@ -95,7 +94,7 @@ namespace ambient {
         dst.versioned.core->current = r;
         // do not deallocate or reuse
         if(!r->valid()) r->spec.protect();
-        assert(!r->valid() || !r->spec.bulked() || ambient::model.remote(r)); // can't rely on bulk memory
+        assert(!r->valid() || !r->spec.bulked() || ambient::models::ssm::model::remote(r)); // can't rely on bulk memory
         r->spec.crefs++;
     }
 

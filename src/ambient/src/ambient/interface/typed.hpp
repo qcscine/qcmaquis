@@ -41,7 +41,6 @@ namespace ambient {
     using ambient::models::ssm::history;
     using ambient::models::ssm::revision;
     using ambient::memory::instr_bulk;
-    using ambient::models::ssm::model;
 
     // {{{ compile-time type info: singular types + inplace and future specializations
     template <typename T> struct singular_info {
@@ -69,11 +68,11 @@ namespace ambient {
             EXTRACT(o); o->core->generator = NULL;
         }
         template<size_t arg> static void modify_remote(T& obj){ 
-            ambient::controller.rsync(obj.core);
+            controller.rsync(obj.core);
         }
         template<size_t arg> static void modify_local(const T& obj, functor* m){ 
             obj.core->generator = m;
-            ambient::controller.lsync(obj.core);
+            controller.lsync(obj.core);
             m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.core);
         }
         template<size_t arg> static void modify(const T& obj, functor* m){ 
@@ -97,44 +96,44 @@ namespace ambient {
             revision& current = *(revision*)o->after;
             current.complete();
             current.release();
-            ambient::controller.squeeze(&parent);
+            controller.squeeze(&parent);
             parent.release();
         }
         template<size_t arg>
         static void modify_remote(T& obj){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            model::touch(o);
-            ambient::controller.rsync(o->back());
-            ambient::controller.collect(o->back());
-            model::add_revision<ambient::remote>(o, ambient::controller.which()); 
+            controller.touch(o);
+            controller.rsync(o->back());
+            controller.collect(o->back());
+            controller.add_revision<ambient::remote>(o, controller.which()); 
         }
         template<size_t arg>
         static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            model::touch(o);
+            controller.touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); 
             m->arguments[arg] = (void*)var;
-            ambient::controller.lsync(o->back());
-            model::use_revision(o);
-            ambient::controller.collect(o->back());
+            controller.lsync(o->back());
+            controller.use_revision(o);
+            controller.collect(o->back());
 
             var->before = o->current;
-            model::add_revision<ambient::local>(o, m); 
-            model::use_revision(o);
+            controller.add_revision<ambient::local>(o, m); 
+            controller.use_revision(o);
             var->after = o->current;
         }
         template<size_t arg>
         static void modify(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            model::touch(o);
+            controller.touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
-            ambient::controller.sync(o->back());
-            model::use_revision(o);
-            ambient::controller.collect(o->back());
+            controller.sync(o->back());
+            controller.use_revision(o);
+            controller.collect(o->back());
 
             var->before = o->current;
-            model::add_revision<ambient::common>(o, m); 
-            model::use_revision(o);
+            controller.add_revision<ambient::common>(o, m); 
+            controller.use_revision(o);
             var->after = o->current;
         }
         template<size_t arg> 
@@ -150,8 +149,8 @@ namespace ambient {
         }
         template<size_t arg> 
         static void score(T& obj){
-            ambient::controller.intend_read(obj.versioned.core);
-            ambient::controller.intend_write(obj.versioned.core);
+            controller.intend_read(obj.versioned.core);
+            controller.intend_write(obj.versioned.core);
         }
         template<size_t arg> 
         static bool ready(functor* m){
@@ -168,70 +167,70 @@ namespace ambient {
         template<size_t arg> static void deallocate(functor* m){
             EXTRACT(o);
             revision& r = *(revision*)o->before;
-            ambient::controller.squeeze(&r);
+            controller.squeeze(&r);
             r.release();
         }
         template<size_t arg> static void modify_remote(T& obj){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            model::touch(o);
-            ambient::controller.rsync(o->back());
+            controller.touch(o);
+            controller.rsync(o->back());
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            model::touch(o);
+            controller.touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             var->before = o->current;
-            ambient::controller.lsync(o->back());
-            model::use_revision(o);
+            controller.lsync(o->back());
+            controller.use_revision(o);
         }
         template<size_t arg> static void modify(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            model::touch(o);
+            controller.touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             var->before = o->current;
-            ambient::controller.sync(o->back());
-            model::use_revision(o);
+            controller.sync(o->back());
+            controller.use_revision(o);
         }
         template<size_t arg> 
         static void score(T& obj){
-            ambient::controller.intend_read(obj.versioned.core);
+            controller.intend_read(obj.versioned.core);
         }
     };
     template <typename T> struct write_iteratable_info : public iteratable_info<T> {
         template<size_t arg> static void modify_remote(T& obj){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            model::touch(o);
-            ambient::controller.collect(o->back());
-            model::add_revision<ambient::remote>(o, ambient::controller.which()); 
+            controller.touch(o);
+            controller.collect(o->back());
+            controller.add_revision<ambient::remote>(o, controller.which()); 
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            model::touch(o);
+            controller.touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
 
-            model::use_revision(o);
-            ambient::controller.collect(o->back());
+            controller.use_revision(o);
+            controller.collect(o->back());
 
             var->before = o->current;
-            model::add_revision<ambient::local>(o, m); 
-            model::use_revision(o);
+            controller.add_revision<ambient::local>(o, m); 
+            controller.use_revision(o);
             var->after = o->current;
         }
         template<size_t arg> static void modify(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            model::touch(o);
+            controller.touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
-            model::use_revision(o);
-            ambient::controller.collect(o->back());
+            controller.use_revision(o);
+            controller.collect(o->back());
 
             var->before = o->current;
-            model::add_revision<ambient::common>(o, m); 
-            model::use_revision(o);
+            controller.add_revision<ambient::common>(o, m); 
+            controller.use_revision(o);
             var->after = o->current;
         }
         template<size_t arg> static bool pin(functor* m){ return false; }
         template<size_t arg> static void score(T& obj) {               
-            ambient::controller.intend_write(obj.versioned.core);
+            controller.intend_write(obj.versioned.core);
         }
         template<size_t arg> static bool ready (functor* m){ return true;  }
     };
