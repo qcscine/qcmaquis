@@ -24,8 +24,9 @@
  *
  *****************************************************************************/
 
-#include "scheduler.hpp"
-#include "run_dmrg.hpp"
+#include "libpscan/scheduler.hpp"
+#include "libpscan/run_sim.hpp"
+
 #include "dmrg/utils/time_limit_exception.h"
 
 #include <alps/parser/parser.h>
@@ -170,7 +171,7 @@ void Scheduler::run()
                 std::cout  << "Running task " << i+1 << "." << std::endl;
                 if (!boost::filesystem::exists(tasks[i].out))
                     boost::filesystem::copy(tasks[i].in, tasks[i].out);
-                run_dmrg(tasks[i].in, tasks[i].out, time_left);
+                run_sim(tasks[i].in, tasks[i].out, time_left);
                 tasks[i].status = TaskFinished;
                 
             }

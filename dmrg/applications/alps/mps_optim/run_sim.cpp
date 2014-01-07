@@ -32,12 +32,14 @@ typedef alps::numeric::matrix<double>                matrix;
 typedef alps::numeric::matrix<std::complex<double> > cmatrix;
 
 #include "dmrg_sim.hpp"
-#include "run_dmrg.hpp"
 
 #include <boost/filesystem/fstream.hpp>
 #include <string>
 
-void run_dmrg(const boost::filesystem::path& infile, const boost::filesystem::path& outfile,
+
+#include "libpscan/run_sim.hpp"
+
+void run_sim(const boost::filesystem::path& infile, const boost::filesystem::path& outfile,
               double time_limit)
 {
     maquis::cout.precision(10);

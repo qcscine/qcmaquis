@@ -43,5 +43,5 @@ if(BUILD_EXAMPLES)
 endif(BUILD_EXAMPLES)
 
 if(DMRG_HAS_NU1)
-  add_subdirectory(alps/mps_optim)
+  add_subdirectory(alps)
 endif(DMRG_HAS_NU1)

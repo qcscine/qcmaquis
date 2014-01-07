@@ -24,12 +24,37 @@
  *
  *****************************************************************************/
 
-#ifndef ALPS_MPS_OPTIM_RUN_DMRG_HPP
-#define ALPS_MPS_OPTIM_RUN_DMRG_HPP
+#ifndef ALPS_MPSPSCAN_SCHEDULER_HPP
+#define ALPS_MPSPSCAN_SCHEDULER_HPP
 
+#include "dmrg/utils/time_stopper.h"
+#include <alps/scheduler/options.h>
 #include <boost/filesystem.hpp>
 
-void run_dmrg(const boost::filesystem::path& infile, const boost::filesystem::path& outfile,
-              double time_limit=-1.);
+enum TaskStatusFlag {
+    TaskNotStarted, TaskRunning, TaskHalted, TaskFinished
+};
+
+struct TaskDescriptor {
+    TaskStatusFlag status;
+    boost::filesystem::path in;
+    boost::filesystem::path out;
+};
+
+class Scheduler {
+public:
+    Scheduler(const alps::scheduler::Options&);
+    void run();
+    
+private:
+    void parse_job_file(const boost::filesystem::path&);
+    void checkpoint_status() const;
+    
+    boost::filesystem::path outfilepath;
+    boost::filesystem::path infilepath;
+    
+    time_stopper stop_callback;
+    std::vector<TaskDescriptor> tasks;
+};
 
 #endif

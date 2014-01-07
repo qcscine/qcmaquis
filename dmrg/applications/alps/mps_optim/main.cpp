@@ -24,37 +24,34 @@
  *
  *****************************************************************************/
 
-#ifndef ALPS_MPS_OPTIM_SCHEDULER_HPP
-#define ALPS_MPS_OPTIM_SCHEDULER_HPP
+#include "libpscan/scheduler.hpp"
 
-#include "dmrg/utils/time_stopper.h"
-#include <alps/scheduler/options.h>
-#include <boost/filesystem.hpp>
+#include <alps/utility/copyright.hpp>
+#include <iostream>
 
-enum TaskStatusFlag {
-    TaskNotStarted, TaskRunning, TaskHalted, TaskFinished
-};
+int main(int argc, char ** argv)
+{
+    try {
+        std::cout << "ALPS/MPS version X (2013-2014)\n"
+                  << "  Density Matrix Renormalization Group algorithm\n"
+                  << "  available from http://alps.comp-phys.org/\n"
+                  << "  copyright (c) 2013 Institute for Theoretical Physics, ETH Zurich\n"
+                  << "  copyright (c) 2010-2011 by Bela Bauer\n"
+                  << "  copyright (c) 2011-2013 by Michele Dolfi\n"
+                  << "  for details see the publication: \n"
+                  << "  todo...\n"
+                  << std::endl;
+        alps::print_copyright(std::cout);
+        
+        alps::scheduler::Options opt(argc,argv);
+        if (opt.valid) {
+            Scheduler pscan(opt);
+            pscan.run();
+        }
+    } catch (std::exception & e) {
+        std::cerr << "Exception thrown:" << std::endl;
+        std::cerr << e.what() << std::endl;
+        exit(1);
+    }
+}
 
-struct TaskDescriptor {
-    TaskStatusFlag status;
-    boost::filesystem::path in;
-    boost::filesystem::path out;
-};
-
-class Scheduler {
-public:
-    Scheduler(const alps::scheduler::Options&);
-    void run();
-    
-private:
-    void parse_job_file(const boost::filesystem::path&);
-    void checkpoint_status() const;
-    
-    boost::filesystem::path outfilepath;
-    boost::filesystem::path infilepath;
-    
-    time_stopper stop_callback;
-    std::vector<TaskDescriptor> tasks;
-};
-
-#endif
