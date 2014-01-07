@@ -42,7 +42,7 @@ namespace ambient { namespace controllers { namespace ssm {
         this->chains = &this->stack_m;
         this->mirror = &this->stack_s;
         ambient::channel.init();
-        if(ambient::rank()) ambient::rank.mute();
+        if(ambient::rank()) ambient::channel.rank.mute();
         this->context_base = new ambient::scope<base>();
         this->context = this->context_base;
         this->serial = (ambient::channel.dim() == 1) ? true : false;

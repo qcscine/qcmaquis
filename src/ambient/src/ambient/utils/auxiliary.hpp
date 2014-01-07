@@ -34,6 +34,14 @@ namespace ambient {
     using ambient::models::ssm::history;
     using ambient::models::ssm::revision;
 
+    inline int rank(){
+        return ambient::channel.rank();
+    }
+
+    inline int dedicated_rank(){
+        return ambient::channel.rank.dedicated();
+    }
+
     inline bool master(){
         return (ambient::rank() == 0);
     }
@@ -48,7 +56,7 @@ namespace ambient {
     }
 
     inline bool verbose(){ 
-        return rank.verbose;   
+        return ambient::channel.rank.verbose;   
     }
 
     inline void log(const char* msg){

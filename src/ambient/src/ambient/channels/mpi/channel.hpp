@@ -49,6 +49,7 @@ namespace ambient { namespace channels { namespace mpi {
         if(level != AMBIENT_MPI_THREADING) printf("Error: Wrong threading level\n");
         this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
         this->volume = this->world->size;
+        this->rank.world = this->world;
         this->db_volume = this->volume > AMBIENT_DB_PROCS ? AMBIENT_DB_PROCS : 0;
         this->sid = 13;
         this->scheme.resize(2); // N = 0,1 are empty
@@ -90,7 +91,7 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline collective<transformable>* channel::bcast(transformable& v){
-        return new collective<transformable>(v, ambient::rank());
+        return new collective<transformable>(v, rank());
     }
 
     inline collective<revision>* channel::get(revision& r){
@@ -98,7 +99,7 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline collective<revision>* channel::set(revision& r){
-        return new collective<revision>(r, ambient::rank());
+        return new collective<revision>(r, rank());
     }
 
     inline const binary_tree& channel::get_scheme(int volume){

@@ -37,8 +37,8 @@ namespace ambient {
         bool ordered_once()   { if(!*f){ f = NULL; return true;  } return false; }
         bool once()           { if(!f) { f = &nptr; return true; } return false; }
         bool empty()          { return !f; }
-        static void reset()   { order = &nptr; }
-        static void** order;
+        // static void reset()   { order = &nptr; }
+        // static void** order = &fence::nptr;  // for ordered fences
     private:
         static void* nptr;
         void** f;
