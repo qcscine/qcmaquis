@@ -27,11 +27,6 @@
 #ifndef AMBIENT_CONTROLLERS_SSM_CONTROLLER
 #define AMBIENT_CONTROLLERS_SSM_CONTROLLER
 
-#include "ambient/controllers/ssm/functor.h"
-#include "ambient/controllers/ssm/get.h"
-#include "ambient/controllers/ssm/set.h"
-#include "ambient/memory/collector.h"
-
 namespace ambient { namespace controllers { namespace ssm {
 
     using ambient::models::ssm::history;
@@ -98,9 +93,4 @@ namespace ambient {
     extern controllers::ssm::controller& controller;
 }
 
-#include "ambient/controllers/ssm/scope.hpp"
-#include "ambient/controllers/ssm/controller.hpp"
-#include "ambient/controllers/ssm/get.hpp"
-#include "ambient/controllers/ssm/set.hpp"
-#include "ambient/memory/collector.hpp"
 #endif

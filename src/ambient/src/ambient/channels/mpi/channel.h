@@ -26,12 +26,6 @@
 
 #ifndef AMBIENT_CHANNELS_MPI_CHANNEL
 #define AMBIENT_CHANNELS_MPI_CHANNEL
-#include "ambient/utils/fence.hpp"
-#include "ambient/channels/mpi/groups/group.h"
-#include "ambient/channels/mpi/groups/multirank.h"
-#include "ambient/channels/mpi/request.h"
-#include "ambient/channels/mpi/collective.h"
-#include "ambient/utils/tree.hpp"
 
 namespace ambient { namespace channels { namespace mpi {
 
@@ -73,9 +67,4 @@ namespace ambient {
     extern channels::mpi::channel& channel;
 }
 
-#include "ambient/channels/mpi/channel.hpp"
-#include "ambient/channels/mpi/collective.hpp"
-#include "ambient/channels/mpi/request.hpp"
-#include "ambient/channels/mpi/groups/multirank.hpp"
-#include "ambient/channels/mpi/groups/group.hpp"
 #endif

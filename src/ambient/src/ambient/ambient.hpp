@@ -124,16 +124,53 @@ namespace ambient {
     enum region_t   { rbulked, rstandard, rdelegated };
 }
 
-#include "ambient/channels/mpi/groups/multirank.h"
+
+#include "ambient/utils/dim2.h"
+#include "ambient/utils/tree.hpp"
+#include "ambient/utils/fence.hpp"
+#include "ambient/utils/singleton.hpp"
+
 #include "ambient/memory/pool.hpp"
 #include "ambient/memory/new.hpp"
 #include "ambient/memory/allocator.hpp"
+
+#include "ambient/models/ssm/revision.h"
+#include "ambient/models/ssm/history.h"
+#include "ambient/models/ssm/transformable.h"
 #include "ambient/models/ssm/model.h"
+
+#include "ambient/channels/mpi/groups/group.h"
+#include "ambient/channels/mpi/groups/multirank.h"
+#include "ambient/channels/mpi/request.h"
+#include "ambient/channels/mpi/collective.h"
 #include "ambient/channels/mpi/channel.h"
+
+#include "ambient/controllers/ssm/functor.h"
+#include "ambient/controllers/ssm/get.h"
+#include "ambient/controllers/ssm/set.h"
+#include "ambient/controllers/ssm/collector.h"
 #include "ambient/controllers/ssm/controller.h"
+
 #include "ambient/utils/auxiliary.hpp"
 #include "ambient/utils/io.hpp"
-#include "ambient/utils/overseer.hpp"
+
+#include "ambient/models/ssm/revision.hpp"
+#include "ambient/models/ssm/history.hpp"
+#include "ambient/models/ssm/transformable.hpp"
+#include "ambient/models/ssm/model.hpp"
+
+#include "ambient/channels/mpi/groups/group.hpp"
+#include "ambient/channels/mpi/groups/multirank.hpp"
+#include "ambient/channels/mpi/request.hpp"
+#include "ambient/channels/mpi/collective.hpp"
+#include "ambient/channels/mpi/channel.hpp"
+
+#include "ambient/controllers/ssm/get.hpp"
+#include "ambient/controllers/ssm/set.hpp"
+#include "ambient/controllers/ssm/scope.hpp"
+#include "ambient/controllers/ssm/collector.hpp"
+#include "ambient/controllers/ssm/controller.hpp"
+
 #include "ambient/interface/typed.hpp"
 #include "ambient/interface/kernel.hpp"
 #include "ambient/interface/access.hpp"
