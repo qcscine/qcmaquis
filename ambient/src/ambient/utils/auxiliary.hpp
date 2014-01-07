@@ -46,7 +46,7 @@ namespace ambient {
     }
 
     inline bool parallel(){
-        return (ambient::controller.context != ambient::controller.context_base);
+        return (controller.context != controller.context_base);
     }
 
     template<typename T>

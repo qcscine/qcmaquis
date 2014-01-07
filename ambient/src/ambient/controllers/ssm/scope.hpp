@@ -95,8 +95,8 @@ namespace ambient {
         scope(int value = 0) : index(value), iterator(value) {
             this->factor = grain; grain = 1;
             this->map = permutation; permutation.clear();
-            if(ambient::controller.context != ambient::controller.context_base) dry = true;
-            else{ dry = false; ambient::controller.set_context(this); }
+            if(controller.context != controller.context_base) dry = true;
+            else{ dry = false; controller.set_context(this); }
             this->round = ambient::channel.wk_dim();
             this->eval();
         }
@@ -131,7 +131,7 @@ namespace ambient {
             return index < lim;
         }
        ~scope(){
-            if(!dry) ambient::controller.pop_context();
+            if(!dry) controller.pop_context();
         }
         virtual bool tunable() const {
             return false; 
@@ -152,12 +152,12 @@ namespace ambient {
     class scope<dedicated> : public controller::scope {
     public:
         scope(){
-            ambient::controller.set_context(this);
+            controller.set_context(this);
             this->sector = ambient::dedicated_rank();
             this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
         }
        ~scope(){
-            ambient::controller.pop_context();
+            controller.pop_context();
         }
         virtual bool tunable() const {
             return false; 
@@ -168,12 +168,12 @@ namespace ambient {
     class scope<shared> : public controller::scope {
     public:
         scope(){
-            ambient::controller.set_context(this);
+            controller.set_context(this);
             this->state = ambient::common;
             this->sector = ambient::channel.dim();
         }
        ~scope(){
-            ambient::controller.pop_context();
+            controller.pop_context();
         }
         virtual bool tunable() const { 
             return false; 
