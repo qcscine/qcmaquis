@@ -65,10 +65,6 @@ public:
 
     TwoSiteTensor<Matrix, SymmGroup> & operator << ( MPSTensor<Matrix, SymmGroup> const & rhs);
     
-    friend struct contraction;
-    friend struct compression;
-    friend struct multigrid;
-
     void make_left_paired() const;
     void make_both_paired() const;
     void make_right_paired() const;
