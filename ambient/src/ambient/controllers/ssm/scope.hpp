@@ -153,7 +153,7 @@ namespace ambient {
     public:
         scope(){
             ambient::controller.set_context(this);
-            this->sector = ambient::rank.dedicated();
+            this->sector = ambient::dedicated_rank();
             this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
         }
        ~scope(){

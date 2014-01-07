@@ -138,7 +138,7 @@ namespace ambient { namespace channels { namespace mpi {
         this->procs = (int*)realloc(this->procs, (this->size+count)*sizeof(int));
         memcpy(&(this->ranks[this->size]), procs, count*sizeof(int));
         for(int i=0; i < count; i++)
-            this->procs[this->size+i] = ambient::rank.translate(this->ranks[this->size+i], this->parent);
+            this->procs[this->size+i] = ambient::channel.rank.translate(this->ranks[this->size+i], this->parent);
         this->size += count;
     }
 
@@ -149,7 +149,7 @@ namespace ambient { namespace channels { namespace mpi {
         this->procs = (int*)realloc(this->procs, (this->size+count)*sizeof(int));
         for(int i=0; i < count; i++){ 
             this->ranks  [this->size+i] = this->parent->get_vacant();
-            this->procs[this->size+i] = ambient::rank.translate(this->ranks[this->size+i], this->parent);
+            this->procs[this->size+i] = ambient::channel.rank.translate(this->ranks[this->size+i], this->parent);
         }
         this->size += count;
     }

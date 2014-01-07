@@ -24,8 +24,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CHANNELS_MPI_GROUPS
-#define AMBIENT_CHANNELS_MPI_GROUPS
+#ifndef AMBIENT_CHANNELS_MPI_GROUP
+#define AMBIENT_CHANNELS_MPI_GROUP
 
 namespace ambient { namespace channels { namespace mpi {
 

@@ -29,7 +29,7 @@
 namespace ambient { namespace channels { namespace mpi {
 
     inline int multirank::operator()() const {
-        return ambient::channel.world->rank;
+        return this->world->rank;
     }
 
     inline int multirank::operator()(const group* grp) const { 
@@ -38,7 +38,7 @@ namespace ambient { namespace channels { namespace mpi {
 
     inline int multirank::translate(int rank, const group* source) const {
         if(source->depth == 0) return rank;
-        return cast_to_parent(rank, source, ambient::channel.world);
+        return cast_to_parent(rank, source, this->world);
     }
 
     inline int multirank::translate(int rank, const group* source, const group* target) const {
@@ -74,16 +74,16 @@ namespace ambient { namespace channels { namespace mpi {
 
     inline int multirank::left_neighbor(){
         int n = ((*this)()-1);
-        if(n == -1) n = ambient::channel.dim()-1;
+        if(n == -1) n = this->world->size-1;
         return n;
     }
 
     inline int multirank::right_neighbor(){
-        return ((*this)()+1) % ambient::channel.dim();
+        return ((*this)()+1) % this->world->size;
     }
 
     inline int multirank::dedicated(){
-        return ambient::channel.wk_dim();
+        return this->world->size - AMBIENT_DB_PROCS;
     }
 
     inline void multirank::mute(){

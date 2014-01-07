@@ -139,8 +139,8 @@ namespace ambient {
 #include "ambient/models/ssm/transformable.h"
 #include "ambient/models/ssm/model.h"
 
-#include "ambient/channels/mpi/groups/group.h"
-#include "ambient/channels/mpi/groups/multirank.h"
+#include "ambient/channels/mpi/group.h"
+#include "ambient/channels/mpi/multirank.h"
 #include "ambient/channels/mpi/request.h"
 #include "ambient/channels/mpi/collective.h"
 #include "ambient/channels/mpi/channel.h"
@@ -159,8 +159,8 @@ namespace ambient {
 #include "ambient/models/ssm/transformable.hpp"
 #include "ambient/models/ssm/model.hpp"
 
-#include "ambient/channels/mpi/groups/group.hpp"
-#include "ambient/channels/mpi/groups/multirank.hpp"
+#include "ambient/channels/mpi/group.hpp"
+#include "ambient/channels/mpi/multirank.hpp"
 #include "ambient/channels/mpi/request.hpp"
 #include "ambient/channels/mpi/collective.hpp"
 #include "ambient/channels/mpi/channel.hpp"

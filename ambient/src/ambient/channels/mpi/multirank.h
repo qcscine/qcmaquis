@@ -24,16 +24,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CHANNELS_MPI_GROUPS_MULTIRANK
-#define AMBIENT_CHANNELS_MPI_GROUPS_MULTIRANK
-
-#include "ambient/utils/singleton.hpp"
+#ifndef AMBIENT_CHANNELS_MPI_GROUP_MULTIRANK
+#define AMBIENT_CHANNELS_MPI_GROUP_MULTIRANK
 
 namespace ambient { namespace channels { namespace mpi {
 
     class group;
-    class multirank : public singleton< multirank >
-    {
+    class multirank {
     public:
         multirank() : verbose(true) {}
         int operator()() const;
@@ -48,6 +45,7 @@ namespace ambient { namespace channels { namespace mpi {
         int right_neighbor(); // can be also object
         int dedicated();
         void mute();
+        const group* world;
         bool verbose;
     };
 
@@ -61,9 +59,5 @@ namespace ambient { namespace channels { namespace mpi {
     //
 
 } } }
-
-namespace ambient {
-    extern channels::mpi::multirank& rank;
-}
 
 #endif
