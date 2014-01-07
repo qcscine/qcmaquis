@@ -35,7 +35,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "dmrg/sim/sim.h"
-#include "dmrg/mp_tensors/optimize.h"
+#include "dmrg/optimize/optimize.h"
 #include <alps/parser/xmlstream.h>
 
 class save_to_xml {

@@ -32,7 +32,7 @@
 
 #include "dmrg/utils/storage.h"
 #include "dmrg/sim/te_utils.hpp"
-#include "dmrg/mp_tensors/te.h"
+#include "dmrg/mp_tensors/mpo_contractor_ss.h"
 #include "dmrg/utils/results_collector.h"
 
 // ******   SIMULATION CLASS   ******
@@ -102,7 +102,7 @@ private:
         for (int which = 0; which < Uterms.size(); ++which)
         {
             int maxiter = 6; double tol = 1e-6;
-            time_evolve<Matrix, SymmGroup, storage::nop> evolution(*mps, Uterms[which], (*parms));
+            mpo_contractor_ss<Matrix, SymmGroup, storage::nop> evolution(*mps, Uterms[which], (*parms));
             for (int k = 0; k < maxiter; ++k) {
                 std::pair<double,double> eps = evolution.sweep(sweep_);
                 double rel_error = std::abs( (eps.first-eps.second) / eps.second );

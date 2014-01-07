@@ -44,8 +44,8 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/twositetensor.h"
 
-#include "dmrg/mp_tensors/ietl_lanczos_solver.h"
-#include "dmrg/mp_tensors/ietl_jacobi_davidson.h"
+#include "dmrg/optimize/ietl_lanczos_solver.h"
+#include "dmrg/optimize/ietl_jacobi_davidson.h"
 
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/utils/placement.h"

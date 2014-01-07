@@ -13,7 +13,7 @@ typedef alps::numeric::matrix<double> Matrix;
 
 #include "dmrg/mp_tensors/special_mpos.h"
 
-#include "dmrg/mp_tensors/optimize.h"
+#include "dmrg/optimize/optimize.h"
 
 typedef TrivialGroup grp;
 
