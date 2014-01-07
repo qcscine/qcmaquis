@@ -29,14 +29,11 @@
 
 namespace ambient { namespace channels { namespace mpi {
 
-    using ambient::models::ssm::revision;
-    using ambient::models::ssm::transformable;
-
     class request_impl : public memory::use_bulk_new<request_impl> {
     public:
         request_impl(){}
-        request_impl(void(*impl)(request_impl*), transformable& v, int target, int tag = NULL);
-        request_impl(void(*impl)(request_impl*), revision& r, int target, int tag = NULL);
+        request_impl(void(*impl)(request_impl*), typename channel::scalar_type& v, int target, int tag = NULL);
+        request_impl(void(*impl)(request_impl*), typename channel::block_type& r, int target, int tag = NULL);
         inline bool operator()();
         void* data;
         int extent;

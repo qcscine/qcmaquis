@@ -39,13 +39,13 @@ namespace ambient { namespace channels { namespace mpi {
         }
     }
 
-    inline collective<revision>::collective(revision& r, int root) 
-    : bcast<revision>(r, root), states(ambient::channel.dim()+1) {
+    inline collective<typename channel::block_type>::collective(typename channel::block_type& r, int root) 
+    : bcast<typename channel::block_type>(r, root), states(ambient::channel.dim()+1) {
         this->tree.push_back(root);
         this->tags.push_back(-1);
     }
 
-    inline void collective<revision>::operator += (int rank){
+    inline void collective<typename channel::block_type>::operator += (int rank){
         if(!states[rank]){
             states[rank] = true;
             if(states.back()){
@@ -59,11 +59,11 @@ namespace ambient { namespace channels { namespace mpi {
         }
     }
 
-    inline bool collective<revision>::involved(){
+    inline bool collective<typename channel::block_type>::involved(){
         return states[ambient::rank()] || states.back();
     }
 
-    inline bool collective<revision>::test(){
+    inline bool collective<typename channel::block_type>::test(){
         if(this->guard.once()){
             if(states.back()){
                 this->size = ambient::channel.dim();
@@ -78,14 +78,14 @@ namespace ambient { namespace channels { namespace mpi {
         return this->impl();
     }
 
-    inline collective<transformable>::collective(transformable& v, int root)
-    : bcast<transformable>(v, root) {
+    inline collective<typename channel::scalar_type>::collective(typename channel::scalar_type& v, int root)
+    : bcast<typename channel::scalar_type>(v, root) {
         tags.reserve(ambient::channel.dim()+1);
         for(int i = 0; i <= ambient::channel.dim(); i++)
             this->tags.push_back(ambient::channel.generate_sid());
     }
 
-    inline bool collective<transformable>::test(){
+    inline bool collective<typename channel::scalar_type>::test(){
         if(guard.once()){
             this->size = ambient::channel.dim();
             this->list = &ambient::channel.circle_ranks[root];

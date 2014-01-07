@@ -141,9 +141,9 @@ namespace ambient {
 
 #include "ambient/channels/mpi/group.h"
 #include "ambient/channels/mpi/multirank.h"
+#include "ambient/channels/mpi/channel.h"
 #include "ambient/channels/mpi/request.h"
 #include "ambient/channels/mpi/collective.h"
-#include "ambient/channels/mpi/channel.h"
 
 #include "ambient/controllers/ssm/functor.h"
 #include "ambient/controllers/ssm/get.h"
@@ -161,9 +161,9 @@ namespace ambient {
 
 #include "ambient/channels/mpi/group.hpp"
 #include "ambient/channels/mpi/multirank.hpp"
+#include "ambient/channels/mpi/channel.hpp"
 #include "ambient/channels/mpi/request.hpp"
 #include "ambient/channels/mpi/collective.hpp"
-#include "ambient/channels/mpi/channel.hpp"
 
 #include "ambient/controllers/ssm/get.hpp"
 #include "ambient/controllers/ssm/set.hpp"

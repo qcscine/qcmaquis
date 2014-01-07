@@ -29,8 +29,8 @@
 
 namespace ambient { namespace channels { namespace mpi {
 
-    using ambient::models::ssm::revision;
-    using ambient::models::ssm::transformable;
+    class request_impl;
+    template<class T> class collective;
 
     static void recv_impl(request_impl* r);
     static void send_impl(request_impl* r);
@@ -38,16 +38,18 @@ namespace ambient { namespace channels { namespace mpi {
 
     class channel : public singleton< channel > {
     public:
+        typedef typename ambient::models::ssm::revision block_type;
+        typedef typename ambient::models::ssm::transformable scalar_type;
        ~channel();
         void  init();
         static void  barrier();
         size_t dim();
         size_t wk_dim();
         size_t db_dim();
-        collective<revision>* get(revision& r);
-        collective<revision>* set(revision& r);
-        collective<transformable>* bcast(transformable& v, int root);
-        collective<transformable>* bcast(transformable& v);
+        collective<block_type>* get(block_type& r);
+        collective<block_type>* set(block_type& r);
+        collective<scalar_type>* bcast(scalar_type& v, int root);
+        collective<scalar_type>* bcast(scalar_type& v);
         void index();
         int get_sid() const;
         int generate_sid();

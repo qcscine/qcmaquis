@@ -29,9 +29,6 @@
 
 namespace ambient { namespace channels { namespace mpi {
 
-    using ambient::models::ssm::revision;
-    using ambient::models::ssm::transformable;
-
     template<typename T>
     class bcast {
         typedef ambient::bulk_allocator<int> allocator;
@@ -51,10 +48,11 @@ namespace ambient { namespace channels { namespace mpi {
     template<class T> class collective {};
 
     template<>
-    class collective<revision> : public bcast<revision>, public memory::use_bulk_new<collective<revision> > {
+    class collective<typename channel::block_type> : public bcast<typename channel::block_type>, 
+                                                     public memory::use_bulk_new<collective<typename channel::block_type> > {
         typedef ambient::bulk_allocator<int> allocator;
     public:
-        collective(revision& r, int root);
+        collective(typename channel::block_type& r, int root);
         void operator += (int rank);
         bool involved();
         bool test();
@@ -63,9 +61,10 @@ namespace ambient { namespace channels { namespace mpi {
     };
 
     template<>
-    class collective<transformable> : public bcast<transformable>, public memory::use_bulk_new<collective<transformable> > {
+    class collective<typename channel::scalar_type> : public bcast<typename channel::scalar_type>, 
+                                                      public memory::use_bulk_new<collective<typename channel::scalar_type> > {
     public:
-        collective(transformable& v, int root);
+        collective(typename channel::scalar_type& v, int root);
         bool test();
     };
 
