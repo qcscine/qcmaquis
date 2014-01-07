@@ -38,7 +38,7 @@
 #include "dmrg/sim/sim.h"
 #include "dmrg/models/continuum/factory.h"
 
-#include "dmrg/mp_tensors/optimize.h"
+#include "dmrg/optimize/optimize.h"
 #include "dmrg/mp_tensors/multigrid.h"
 
 template <class Matrix, class SymmGroup>

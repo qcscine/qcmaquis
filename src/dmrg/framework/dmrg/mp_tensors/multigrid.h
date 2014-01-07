@@ -30,7 +30,7 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
-#include "dmrg/mp_tensors/optimize.h"
+#include "dmrg/optimize/optimize.h"
 #include "dmrg/utils/results_collector.h"
 
 #include <boost/optional.hpp>

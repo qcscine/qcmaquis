@@ -28,7 +28,7 @@
 #ifndef TS_OPTIMIZE_H
 #define TS_OPTIMIZE_H
 
-#include "dmrg/mp_tensors/optimize.h"
+#include "dmrg/optimize/optimize.h"
 
 #include "dmrg/mp_tensors/twositetensor.h"
 #include "dmrg/mp_tensors/mpo_ops.h"

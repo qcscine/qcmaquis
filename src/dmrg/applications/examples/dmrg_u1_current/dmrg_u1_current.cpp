@@ -38,7 +38,7 @@
 #include "dmrg/mp_tensors/mpo.h"
 
 #include "dmrg/mp_tensors/mps.h"
-#include "dmrg/mp_tensors/ss_optimize.hpp"
+#include "dmrg/optimize/ss_optimize.hpp"
 
 #include "dmrg/utils/DmrgParameters.h"
 

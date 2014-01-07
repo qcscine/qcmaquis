@@ -28,7 +28,7 @@
 #define SS_OPTIMIZE_H
 
 #include "dmrg/mp_tensors/mpo_ops.h"
-#include "dmrg/mp_tensors/optimize.h"
+#include "dmrg/optimize/optimize.h"
 
 
 template<class Matrix, class SymmGroup, class Storage>

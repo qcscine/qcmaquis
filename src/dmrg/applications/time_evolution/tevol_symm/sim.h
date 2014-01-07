@@ -26,8 +26,8 @@
 
 
 #include "tevol_sim.h"
-#include "tevol_nn_sim.h"
-#include "tevol_mpo_sim.h"
+#include "dmrg/evolve/tevol_nn_sim.h"
+#include "dmrg/evolve/tevol_mpo_sim.h"
 
 namespace maquis { namespace dmrg {
     template <class Matrix, class SymmGroup>

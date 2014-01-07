@@ -24,16 +24,16 @@
  *
  *****************************************************************************/
 
-#ifndef TIME_EVOLVE_H
-#define TIME_EVOLVE_H
+#ifndef MP_TENSORS_MPO_CONTRACTOR_SS_H
+#define MP_TENSORS_MPO_CONTRACTOR_SS_H
 
 #include <boost/random.hpp>
 #include <sys/time.h>
 
-#include "ietl_lanczos_solver.h"
-#include "ietl_jacobi_davidson.h"
+#include "dmrg/optimize/ietl_lanczos_solver.h"
+#include "dmrg/optimize/ietl_jacobi_davidson.h"
 #ifdef HAVE_ARPACK
-#include "arpackpp_solver.h"
+#include "dmrg/optimize/arpackpp_solver.h"
 #endif
 
 #include "dmrg/utils/BaseParameters.h"
@@ -66,12 +66,12 @@ maquis::cout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1
 ///       2) implement zip-up compression. E. M. Stoudenmire and S. R. White, New Journal of Physics 12, 055026 (2010).
 
 template<class Matrix, class SymmGroup, class Storage>
-class time_evolve
+class mpo_contractor_ss
 {
 public:
-    time_evolve(MPS<Matrix, SymmGroup> const & mps_,
-                MPO<Matrix, SymmGroup> const & mpo_,
-                BaseParameters & parms_)
+    mpo_contractor_ss(MPS<Matrix, SymmGroup> const & mps_,
+                      MPO<Matrix, SymmGroup> const & mpo_,
+                      BaseParameters & parms_)
     : mps(mps_)
     , mpsp(mps_)
     , mpo(mpo_)

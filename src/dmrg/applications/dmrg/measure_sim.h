@@ -36,7 +36,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "dmrg/sim/sim.h"
-#include "dmrg/mp_tensors/optimize.h"
+#include "dmrg/optimize/optimize.h"
 
 
 template <class Matrix, class SymmGroup>
