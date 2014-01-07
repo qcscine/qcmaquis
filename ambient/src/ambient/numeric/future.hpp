@@ -29,9 +29,7 @@
 
 namespace ambient { namespace numeric {
 
-    using ambient::models::ssm::transformable;
-    using ambient::models::ssm::transformable_expr;
-    using ambient::models::ssm::transformable_value;
+    using namespace ambient::models::ssm;
     using ambient::memory::fixed;
 
     template <typename T>
@@ -85,21 +83,18 @@ namespace ambient { namespace numeric {
         transformable* a = l.core; l.clear();
         transformable* b = r.core; r.clear();
         return future<T>(new (ambient::pool::calloc<fixed,AMBIENT_FUTURE_SIZE>()) 
-                         transformable_expr<T, decltype(&ambient::models::ssm::op_plus<T>), 
-                                            ambient::models::ssm::op_plus>(a, b)
+                         transformable_expr<T, decltype(&op_plus<T>), op_plus>(a, b)
                         ); 
     }
     #ifdef AMBIENT_LOOSE_FUTURE
     template<typename T> future<T> operator / (const future<T>& l, const future<T>& r){ 
         return future<T>(new (ambient::pool::calloc<fixed,AMBIENT_FUTURE_SIZE>()) 
-                         transformable_expr<T, decltype(&ambient::models::ssm::op_div<T>),
-                                            ambient::models::ssm::op_div>(l.core, r.core)
+                         transformable_expr<T, decltype(&op_div<T>), op_div>(l.core, r.core)
                         ); 
     }
     inline future<double> sqrt(const future<double>& f){
         return future<double>(new (ambient::pool::calloc<fixed,AMBIENT_FUTURE_SIZE>()) 
-                              transformable_expr<double, decltype(&ambient::models::ssm::op_sqrt<double>),
-                              ambient::models::ssm::op_sqrt>(f.core)
+                              transformable_expr<double, decltype(&op_sqrt<double>), op_sqrt>(f.core)
                              ); 
     }
     #else

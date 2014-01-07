@@ -27,7 +27,7 @@
 namespace ambient { namespace models { namespace ssm {
 
     template<ambient::locality L, typename G>
-    inline void model::add_revision(history* o, G g){
+    void model::add_revision(history* o, G g){
         o->add_state<L>(g);
     }
 

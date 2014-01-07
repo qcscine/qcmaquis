@@ -43,7 +43,6 @@ namespace ambient { namespace controllers { namespace ssm {
     // {{{ revision
 
     inline void set<revision>::spawn(revision& r){
-        if(!ambient::model.feeds(&r)) return get<revision>::spawn(r);
         set*& transfer = (set*&)r.assist.second;
         if(ambient::controller.update(r)) transfer = new set(r);
         *transfer += ambient::controller.which();

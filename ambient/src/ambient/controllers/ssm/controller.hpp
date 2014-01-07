@@ -133,7 +133,7 @@ namespace ambient { namespace controllers { namespace ssm {
             std::swap(chains,mirror);
         }
         AMBIENT_SMP_DISABLE
-        ambient::model.clock++;
+        model.clock++;
         ambient::channel.barrier();
     }
 
@@ -151,8 +151,8 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline bool controller::update(revision& r){
-        if(r.assist.first != ambient::model.clock){
-            r.assist.first = ambient::model.clock;
+        if(r.assist.first != model.clock){
+            r.assist.first = model.clock;
             return true;
         }
         return false;
@@ -172,7 +172,10 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline void controller::rsync(revision* r){
         if(model.common(r)) return;
-        if(r->owner != which()) set<revision>::spawn(*r);
+        if(r->owner != which()){
+            if(model.feeds(r)) set<revision>::spawn(*r);
+            else get<revision>::spawn(*r); // assist
+        }
     }
 
     inline void controller::lsync(transformable* v){
@@ -200,6 +203,19 @@ namespace ambient { namespace controllers { namespace ssm {
             }
         }
         #endif
+    }
+
+    inline void controller::touch(const history* o){
+        model.touch(o);
+    }
+
+    inline void controller::use_revision(history* o){
+        model.use_revision(o);
+    }
+
+    template<ambient::locality L, typename G>
+    void controller::add_revision(history* o, G g){
+        model.add_revision<L>(o, g);
     }
 
 } } }
