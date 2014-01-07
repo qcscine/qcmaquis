@@ -26,8 +26,9 @@
 
 namespace ambient { namespace channels { namespace mpi {
 
-    inline request_impl::request_impl(void(*impl)(request_impl*), transformable& v, int target, int tag)
-    : extent(sizeof(transformable::numeric_union)/sizeof(double)), 
+    // type information required //
+    inline request_impl::request_impl(void(*impl)(request_impl*), typename channel::scalar_type& v, int target, int tag)
+    : extent(sizeof(typename channel::scalar_type::numeric_union)/sizeof(double)), 
       data(&v.v),
       target(target),
       impl(impl),
@@ -35,7 +36,8 @@ namespace ambient { namespace channels { namespace mpi {
       once(false)
     {
     }
-    inline request_impl::request_impl(void(*impl)(request_impl*), revision& r, int target, int tag)
+    // type information required //
+    inline request_impl::request_impl(void(*impl)(request_impl*), typename channel::block_type& r, int target, int tag)
     : extent(r.spec.extent/sizeof(double)), 
       data(r.data),
       target(target),

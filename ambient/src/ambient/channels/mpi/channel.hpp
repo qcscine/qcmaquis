@@ -86,20 +86,20 @@ namespace ambient { namespace channels { namespace mpi {
         return this->sid;
     }
 
-    inline collective<transformable>* channel::bcast(transformable& v, int root){
-        return new collective<transformable>(v, root);
+    inline collective<typename channel::scalar_type>* channel::bcast(scalar_type& v, int root){
+        return new collective<scalar_type>(v, root);
     }
 
-    inline collective<transformable>* channel::bcast(transformable& v){
-        return new collective<transformable>(v, rank());
+    inline collective<typename channel::scalar_type>* channel::bcast(scalar_type& v){
+        return new collective<scalar_type>(v, rank());
     }
 
-    inline collective<revision>* channel::get(revision& r){
-        return new collective<revision>(r, r.owner);
+    inline collective<typename channel::block_type>* channel::get(block_type& r){
+        return new collective<block_type>(r, r.owner);
     }
 
-    inline collective<revision>* channel::set(revision& r){
-        return new collective<revision>(r, rank());
+    inline collective<typename channel::block_type>* channel::set(block_type& r){
+        return new collective<block_type>(r, rank());
     }
 
     inline const binary_tree& channel::get_scheme(int volume){
