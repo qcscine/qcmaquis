@@ -31,7 +31,7 @@
 #include <sys/stat.h>
 
 #include "dmrg/utils/storage.h"
-#include "dmrg/sim/te_utils.hpp"
+#include "dmrg/evolve/te_utils.hpp"
 #include "dmrg/mp_tensors/mpo_contractor_ss.h"
 #include "dmrg/utils/results_collector.h"
 

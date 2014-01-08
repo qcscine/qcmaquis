@@ -33,7 +33,7 @@
 #include <sys/stat.h>
 
 #include "dmrg/sim/sim.h"
-#include "dmrg/sim/te_utils.hpp"
+#include "dmrg/evolve/te_utils.hpp"
 
 template <class Matrix, class SymmGroup, class TimeEvolver>
 class tevol_sim : public sim<Matrix, SymmGroup> {
