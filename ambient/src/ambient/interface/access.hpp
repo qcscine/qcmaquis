@@ -32,11 +32,11 @@ namespace ambient {
     using ambient::models::ssm::revision;
 
     template <typename T> static bool exclusive(T& obj){
-        controller.touch(obj.versioned.core);
+        get_controller().touch(obj.versioned.core);
         revision& c = *obj.versioned.core->current;
-        if(controller.remote()){
+        if(get_controller().remote()){
             c.state = ambient::remote;
-            c.owner = controller.which();
+            c.owner = get_controller().which();
             return true;
         }else{
             c.state = ambient::local;
@@ -54,7 +54,7 @@ namespace ambient {
     }
 
     template <typename T> static typename T::unnamed::mapping& get(T& obj){ 
-        controller.touch(obj.versioned.core);
+        get_controller().touch(obj.versioned.core);
         ambient::sync(); 
         revision& c = *obj.versioned.core->current;
         assert(c.state == ambient::local || c.state == ambient::common);

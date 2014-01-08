@@ -32,7 +32,7 @@ namespace ambient { namespace controllers { namespace ssm {
         ((functor*)t.generator)->queue(new set(t));
     }
     inline set<transformable>::set(transformable& t) : t(t) {
-        handle = ambient::controller.get_channel().bcast(t, ambient::controller.which());
+        handle = ambient::get_controller().get_channel().bcast(t, ambient::get_controller().which());
     }
     inline bool set<transformable>::ready(){
         return (t.generator != NULL ? false : handle->test());
@@ -44,15 +44,15 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline void set<revision>::spawn(revision& r){
         set*& transfer = (set*&)r.assist.second;
-        if(ambient::controller.update(r)) transfer = new set(r);
-        *transfer += ambient::controller.which();
-        ambient::controller.index();
+        if(ambient::get_controller().update(r)) transfer = new set(r);
+        *transfer += ambient::get_controller().which();
+        ambient::get_controller().index();
     }
     inline set<revision>::set(revision& r) : t(r) {
         t.use();
-        handle = ambient::controller.get_channel().set(t);
+        handle = ambient::get_controller().get_channel().set(t);
         if(t.generator != NULL) ((functor*)t.generator)->queue(this);
-        else ambient::controller.queue(this);
+        else ambient::get_controller().queue(this);
     }
     inline void set<revision>::operator += (int rank){
         *handle += rank;
@@ -61,7 +61,7 @@ namespace ambient { namespace controllers { namespace ssm {
         return (t.generator != NULL ? false : handle->test());
     }
     inline void set<revision>::invoke(){
-        ambient::controller.squeeze(&t);
+        ambient::get_controller().squeeze(&t);
         t.release(); 
     }
 

@@ -32,19 +32,19 @@ namespace ambient {
     using ambient::models::ssm::revision;
     
     inline int num_workers(){
-        return controller.get_num_workers();
+        return get_controller().get_num_workers();
     }
     
     inline int num_procs(){
-        return controller.get_num_procs();
+        return get_controller().get_num_procs();
     }
 
     inline int rank(){
-        return controller.get_rank();
+        return get_controller().get_rank();
     }
 
     inline int dedicated_rank(){
-        return controller.get_dedicated_rank();
+        return get_controller().get_dedicated_rank();
     }
 
     inline bool master(){
@@ -52,27 +52,20 @@ namespace ambient {
     }
 
     inline bool parallel(){
-        return controller.scoped();
+        return get_controller().scoped();
     }
 
     inline bool verbose(){ 
-        return controller.verbose();
+        return get_controller().verbose();
     }
 
     inline void meminfo(){
-        controller.meminfo(); 
+        get_controller().meminfo(); 
     }
 
     template<typename T>
     inline void destroy(T* o){ 
-        controller.collect(o); 
-    }
-
-    inline void sync(){ 
-        controller.flush();
-        controller.clear();  
-        memory::data_bulk::drop();
-        memory::instr_bulk::drop();
+        get_controller().collect(o); 
     }
 
     template<typename V>
