@@ -71,8 +71,8 @@ private:
         add_option("ietl_jcd_maxiter", "", value(8));
         
         add_option("nsweeps", "");
-        add_option("nmainsweeps", "");
-        add_option("ngrowsweeps", "");
+        add_option("nmainsweeps", "", 0);
+        add_option("ngrowsweeps", "", 0);
         
         add_option("resultfile", "");
         add_option("chkpfile", "");
