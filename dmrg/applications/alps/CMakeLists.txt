@@ -6,7 +6,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # *** Libraries
 
-add_library(mps_pscan STATIC libpscan/scheduler.cpp)
+add_library(mps_pscan STATIC libpscan/scheduler.cpp libpscan/options.cpp)
 
 
 

@@ -72,8 +72,9 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     
 public:
     
-    dmrg_sim (DmrgParameters & parms_)
+    dmrg_sim (DmrgParameters & parms_, bool write_xml_)
     : base(parms_)
+    , write_xml(write_xml_)
     { }
     
     void run()
@@ -143,7 +144,8 @@ public:
                 out << alps::start_tag("EIGENSTATES") << alps::attribute("number", 1);
                 out << alps::start_tag("EIGENSTATE") << alps::attribute("number", 0);
                 
-                std::for_each(all_measurements.begin(), all_measurements.end(), save_to_xml(out));
+                if (write_xml)
+                    std::for_each(all_measurements.begin(), all_measurements.end(), save_to_xml(out));
 
                 double energy = maquis::real(expval(mps, mpoc));
                 maquis::cout << "Energy: " << maquis::real(expval(mps, mpoc)) << std::endl;
@@ -212,6 +214,7 @@ private:
         return base::checkpoint_simulation(state, status);
     }
     
+    bool write_xml;
 };
 
 

@@ -53,9 +53,17 @@ class tevol_sim : public sim<Matrix, SymmGroup> {
     using base::rfile;
     
 public:
-    tevol_sim(DmrgParameters const & parms_)
+    tevol_sim(DmrgParameters const & parms_, bool write_xml_)
     : base(parms_)
-    { }
+    , write_xml(write_xml_)
+    {
+        alps::oxstream out(boost::replace_last_copy(rfile, ".h5", ".xml"));
+        out << alps::header("UTF-8") << alps::stylesheet(alps::xslt_path("ALPS.xsl"));
+        out << alps::start_tag("SIMULATION") << alps::xml_namespace("xsi","http://www.w3.org/2001/XMLSchema-instance")
+            << alps::attribute("xsi:noNamespaceSchemaLocation","http://xml.comp-phys.org/2003/10/ALPS.xsd");
+        out << parms;
+        out << alps::end_tag("SIMULATION");
+    }
     
     void run()
     {
@@ -159,6 +167,8 @@ private:
         status["site"]  = -1;
         return base::checkpoint_simulation(state, status);
     }
+    
+    bool write_xml;
 };
 
 #endif

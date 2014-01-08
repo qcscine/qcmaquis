@@ -30,6 +30,6 @@
 #include <boost/filesystem.hpp>
 
 void run_sim(const boost::filesystem::path& infile, const boost::filesystem::path& outfile,
-              double time_limit=-1.);
+             bool write_xml=false, double time_limit=-1.);
 
 #endif
