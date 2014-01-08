@@ -55,12 +55,32 @@ void run_sim(const boost::filesystem::path& infile, const boost::filesystem::pat
     }
     
     /// Match parameters of ALPS DMRG
-    parms.set("ngrowsweeps", 0);
-    parms.set("nsweeps", int(parms["SWEEPS"]));
-    parms.set("max_bond_dimension", int(parms["MAXSTATES"]));
     parms.set("chkpfile",   outfile.stem().string() + ".chkp");
     parms.set("resultfile", outfile.stem().string() + ".h5");
     parms.set("run_seconds", time_limit);
+    if (parms.defined("SWEEPS"))           parms.set("nsweeps", int(parms["SWEEPS"]));
+    if (parms.defined("TRUNCATION_ERROR")) parms.set("truncation_final", parms["TRUNCATION_ERROR"]);
+    
+    if (parms.defined("NUMSTATES")) {
+        parms.set("max_bond_dimension", int(parms["NUMSTATES"]));
+    } else if (parms.defined("MAXSTATES")) {
+        std::stringstream ss;
+        
+        int init_bond = 20;
+        double step = (int(parms["MAXSTATES"]) - init_bond) / (parms["nsweeps"]-1);
+        
+        ss << init_bond;
+        for (int sweep = 1; sweep < parms["nsweeps"]; ++sweep) {
+            ss << "," << int(init_bond + step*sweep);
+        }
+        
+        parms.set("sweep_bond_dimensions", ss.str());
+    } else if (parms.defined("STATES")) {
+        parms.set("sweep_bond_dimensions", parms["NUMSTATES"].str());
+    }
+    if (!parms.defined("max_bond_dimension") && !parms.defined("sweep_bond_dimensions"))
+        throw std::runtime_error("Number of renormalized states not set.");
+    
     
     /// Check which matrix to use
     if (parms["COMPLEX"]) {
