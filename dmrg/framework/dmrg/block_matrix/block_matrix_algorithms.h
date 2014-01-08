@@ -133,7 +133,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     timert.begin();
 
     // calculating complexities of the svd calls
-    size_t np = ambient::channel.wk_dim();
+    size_t np = ambient::num_workers();
     double total = 0;
     std::vector< std::pair<double,size_t> > complexities(loop_max);
     for(size_t i = 0; i < loop_max; ++i){

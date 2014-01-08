@@ -32,7 +32,7 @@ namespace ambient { namespace controllers { namespace ssm {
         ((functor*)t.generator)->queue(new set(t));
     }
     inline set<transformable>::set(transformable& t) : t(t) {
-        handle = ambient::channel.bcast(t, ambient::controller.which());
+        handle = ambient::controller.get_channel().bcast(t, ambient::controller.which());
     }
     inline bool set<transformable>::ready(){
         return (t.generator != NULL ? false : handle->test());
@@ -46,11 +46,11 @@ namespace ambient { namespace controllers { namespace ssm {
         set*& transfer = (set*&)r.assist.second;
         if(ambient::controller.update(r)) transfer = new set(r);
         *transfer += ambient::controller.which();
-        channel.index();
+        ambient::controller.index();
     }
     inline set<revision>::set(revision& r) : t(r) {
         t.use();
-        handle = ambient::channel.set(t);
+        handle = ambient::controller.get_channel().set(t);
         if(t.generator != NULL) ((functor*)t.generator)->queue(this);
         else ambient::controller.queue(this);
     }

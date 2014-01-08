@@ -43,10 +43,6 @@ namespace ambient { namespace controllers { namespace ssm {
             virtual void select(int c) const {}
             virtual void toss(){}
         };
-        struct verbose_modes {
-            bool transfers;
-            verbose_modes() : transfers(false) {}
-        } verbose;
 
         controller();
        ~controller();
@@ -68,6 +64,7 @@ namespace ambient { namespace controllers { namespace ssm {
         void intend_read(history* o);
         void intend_write(history* o);
 
+        bool scoped() const;
         void set_context(const scope* s);
         void pop_context();
         bool remote();
@@ -80,16 +77,32 @@ namespace ambient { namespace controllers { namespace ssm {
         template<ambient::locality L, typename G>
         void add_revision(history* o, G g);
 
+        void fence() const;
+        int  get_rank() const;
+        int  get_shared_rank() const;
+        int  get_dedicated_rank() const;
+        int  get_num_workers() const;
+        int  get_num_procs() const;
+        int get_sid() const;
+        int generate_sid();
+        void index();
+        channels::mpi::channel & get_channel();
+
+        void meminfo() const;
+        bool verbose() const;
+
         const scope* context;
         const scope* context_base;
     private:
         models::ssm::model model;
+        channels::mpi::channel channel;
         std::vector< functor* > stack_m;
         std::vector< functor* > stack_s;
         std::vector< functor* >* chains;
         std::vector< functor* >* mirror;
         ambient::memory::collector garbage;
         bool serial;
+        int sid;
     };
     
 } } }

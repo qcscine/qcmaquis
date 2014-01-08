@@ -132,7 +132,7 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     // {{{ creation/changing of the group content
-    inline void group::add(const int* procs, int count){
+    /*inline void group::add(const int* procs, int count){
         if(count <= 0) return;
         this->ranks = (int*)realloc(this->ranks, (this->size+count)*sizeof(int));
         this->procs = (int*)realloc(this->procs, (this->size+count)*sizeof(int));
@@ -207,7 +207,7 @@ namespace ambient { namespace channels { namespace mpi {
             if(count != NULL && (*count)-- <= 0) return;
             this->add(&i, 1);
         }
-    }
+    }*/
 
     inline void group::reorder(int(*permutation)(int r)){
         int* ranks = (int*)malloc(this->size*sizeof(int));

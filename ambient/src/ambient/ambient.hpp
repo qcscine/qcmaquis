@@ -116,7 +116,7 @@
 #define ALIGNMENT 64
 
 namespace ambient {
-    inline int get_num_threads(){
+    inline int num_threads(){
         static int n = AMBIENT_NUM_THREADS; return n;
     }
     enum locality   { remote, local, common };

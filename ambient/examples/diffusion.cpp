@@ -126,10 +126,11 @@ namespace detail { using namespace ambient;
         }
         for(int j = 1; j < n-1; j++){
             ind = j*m;
-            #pragma vector always
-            for(int i = 1; i < m-1; i++){
+
+            for(int i = 0; i < m-2; i++){
                 ind++;     u_[ind] = u[ind] + fac*(u[ind+1] + u[ind-1] + u[ind+m] + u[ind-m] - 4*u[ind]);
             }
+
         }
     }
 
@@ -351,7 +352,7 @@ class Diffusion2D {
         time(0)
         {
             // process grid - manual for now //
-            int n = ambient::channel.dim();
+            int n = ambient::num_workers();
             if(n == 2){
                 np = 1;
                 nq = 2;

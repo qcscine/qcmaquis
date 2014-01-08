@@ -39,14 +39,14 @@ namespace ambient { namespace channels { namespace mpi {
 
         size_t get_proc(size_t k);
 
-        void add(const int* procs, int count);
+        /*void add(const int* procs, int count);
         void add(int count); // loose method
         void add_range(int first, int last);
         void add_every(int nth);
         void add_every(bool(*include)(int k));
         void add_intersection(const group* b, int* count = NULL);
         void add_every_intersection(const group* b, int nth, int* count = NULL);
-        void add_substraction(const group* b, int* count = NULL);
+        void add_substraction(const group* b, int* count = NULL);*/
         void reorder(int(*permutation)(int r));
         void reorder(int* permutation);
 
