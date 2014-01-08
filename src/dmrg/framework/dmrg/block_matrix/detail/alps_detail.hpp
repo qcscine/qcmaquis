@@ -146,8 +146,8 @@ namespace maquis { namespace dmrg { namespace detail {
             for(size_t ss1 = 0; ss1 < sdim1; ++ss1) {
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
                     T3 alfa_t = alfa(ss1, ss2) * alfa_scale;
-                    iterator_axpy(&in(0, in_offset + ss1*rdim + rr),
-                                  &in(0, in_offset + ss1*rdim + rr) + ldim, // bugbug
+                    iterator_axpy(&in(in_offset + ss1*ldim, rr),
+                                  &in(in_offset + ss1*ldim, rr) + ldim, // bugbug
                                   &out(out_offset + ss2*ldim, rr),
                                   alfa_t);
                 }
