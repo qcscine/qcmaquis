@@ -117,7 +117,7 @@ namespace maquis { namespace dmrg { namespace detail {
     {
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
-        copy_block_sa(in, 0, in_offset + ss1*rdim,
+        copy_block_sa(in, in_offset + ss1*ldim, 0,
                       out, out_offset + ss2*ldim, 0,
                       alfa, ss1, ss2, ldim, rdim, alfa_scale);
     }
