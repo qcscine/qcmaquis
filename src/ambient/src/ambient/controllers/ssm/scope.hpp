@@ -47,7 +47,7 @@ namespace ambient {
     class scope<base> : public controller::scope {
     public:
         scope(){
-            this->round = ambient::controller.get_num_workers();
+            this->round = get_controller().get_num_workers();
             this->state = ambient::rank() ? ambient::remote : ambient::local;
             this->sector = 0;
             this->scores.resize(round, 0);
@@ -95,8 +95,8 @@ namespace ambient {
         static std::vector<int> permutation;
 
         static void compact(size_t n){ 
-            if(n <= ambient::controller.get_num_workers()) return; 
-            grain = (int)(n / ambient::controller.get_num_workers()); // iterations before switch 
+            if(n <= get_controller().get_num_workers()) return; 
+            grain = (int)(n / get_controller().get_num_workers()); // iterations before switch 
         } 
         static void scatter(const std::vector<int>& p){
             permutation = p;
@@ -104,9 +104,9 @@ namespace ambient {
         scope(int value = 0) : index(value), iterator(value) {
             this->factor = grain; grain = 1;
             this->map = permutation; permutation.clear();
-            if(controller.context != controller.context_base) dry = true;
-            else{ dry = false; controller.set_context(this); }
-            this->round = ambient::controller.get_num_workers();
+            if(get_controller().scoped()) dry = true;
+            else{ dry = false; get_controller().set_context(this); }
+            this->round = get_controller().get_num_workers();
             this->eval();
         }
         void eval(){
@@ -140,7 +140,7 @@ namespace ambient {
             return index < lim;
         }
        ~scope(){
-            if(!dry) controller.pop_context();
+            if(!dry) get_controller().pop_context();
         }
         virtual bool tunable() const {
             return false; 
@@ -161,12 +161,12 @@ namespace ambient {
     class scope<dedicated> : public controller::scope {
     public:
         scope(){
-            controller.set_context(this);
+            get_controller().set_context(this);
             this->sector = ambient::dedicated_rank();
             this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
         }
        ~scope(){
-            controller.pop_context();
+            get_controller().pop_context();
         }
         virtual bool tunable() const {
             return false; 
@@ -177,12 +177,12 @@ namespace ambient {
     class scope<shared> : public controller::scope {
     public:
         scope(){
-            controller.set_context(this);
+            get_controller().set_context(this);
             this->state = ambient::common;
-            this->sector = ambient::controller.get_shared_rank();
+            this->sector = get_controller().get_shared_rank();
         }
        ~scope(){
-            controller.pop_context();
+            get_controller().pop_context();
         }
         virtual bool tunable() const { 
             return false; 

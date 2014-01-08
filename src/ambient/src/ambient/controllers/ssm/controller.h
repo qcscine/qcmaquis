@@ -46,6 +46,7 @@ namespace ambient { namespace controllers { namespace ssm {
 
         controller();
        ~controller();
+        void init();
         bool empty();
         void flush();
         void clear();
@@ -108,7 +109,7 @@ namespace ambient { namespace controllers { namespace ssm {
 } } }
 
 namespace ambient {
-    extern controllers::ssm::controller controller;
+    controllers::ssm::controller& get_controller();
 }
 
 #endif
