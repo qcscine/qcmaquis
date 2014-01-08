@@ -50,6 +50,7 @@ namespace measurements {
         , lattice(lat)
         , identities(identities_)
         , fillings(fillings_)
+        , is_bond(true)
         , mpo_terms(terms)
         {
             this->cast_to_real = all_true(mpo_terms.begin(), mpo_terms.end(), static_cast<bool (*)(bond_element const&)>(&is_hermitian_meas));
@@ -62,6 +63,7 @@ namespace measurements {
         , lattice(lat)
         , identities(identities_)
         , fillings(fillings_)
+        , is_bond(false)
         , site_term(op)
         , mpo_terms(std::vector<bond_element>(1, bond_element(1, std::make_pair(op, false)) ))
         {
@@ -74,7 +76,7 @@ namespace measurements {
             this->labels.clear();
             
             typedef typename SymmGroup::subcharge subcharge;
-            if (!rmps || this->is_super_meas || mpo_terms.size() > 0)
+            if (!rmps || this->is_super_meas || is_bond)
                 return evaluate_with_mpo(mps);
             
             int L = mps.size();
@@ -149,6 +151,7 @@ namespace measurements {
     private:
         Lattice lattice;
         op_vec identities, fillings;
+        bool is_bond;
         op_vec site_term;
         std::vector<bond_element> mpo_terms;
     };
