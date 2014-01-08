@@ -113,7 +113,7 @@ private:
         add_option("beta_mode", "", value(0));
 
         add_option("n_ortho_states", "", value(0));
-        add_option("ortho_states", "", value(""));
+        add_option("ortho_states", "comma separated list of filenames", "");
         
         add_option("ENABLE_MEASURE[Entropy]", "", value(false));
         add_option("ENABLE_MEASURE[Renyi2]", "", value(false));
