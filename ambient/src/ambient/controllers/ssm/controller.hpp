@@ -44,7 +44,6 @@ namespace ambient { namespace controllers { namespace ssm {
         this->chains = &this->stack_m;
         this->mirror = &this->stack_s;
         channel.init();
-        if(ambient::rank()) channel.rank.mute();
         this->context_base = new ambient::scope<base>();
         this->context = this->context_base;
         this->serial = (get_num_procs() == 1) ? true : false;
@@ -225,7 +224,7 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline int controller::get_rank() const {
-        return channel.get_rank();
+        return channel.rank();
     }
 
     inline int controller::get_shared_rank() const {
@@ -233,11 +232,11 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline int controller::get_dedicated_rank() const {
-        return channel.get_dedicated_rank();
+        return channel.dim() - AMBIENT_DB_PROCS;
     }
         
     inline bool controller::verbose() const {
-        return channel.rank.verbose;
+        return (get_rank() == 0);
     }
 
     inline void controller::fence() const {
@@ -261,7 +260,9 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline int controller::get_num_workers() const {
-        return channel.wk_dim();
+        int np = get_num_procs();
+        int db = np > AMBIENT_DB_PROCS ? AMBIENT_DB_PROCS : 0;
+        return np-db;
     }
 
     inline void controller::index(){

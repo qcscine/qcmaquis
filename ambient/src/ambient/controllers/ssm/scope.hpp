@@ -29,6 +29,15 @@
 
 namespace ambient { 
 
+    //    Possible misc functions:
+    //
+    //    int  get_master(){ return ambient::rank.translate(grp->master, grp); }
+    //    bool involved()  { return ambient::rank.belongs(grp);                }
+    //    bool is_master() { return ambient::rank.masters(grp);                }
+    //    int  get_rank()  { return grp->rank;                                 }
+    //    int  get_size()  { return grp->size;                                 }
+    //
+
     using ambient::controllers::ssm::controller;
 
     template<scope_t T = single>

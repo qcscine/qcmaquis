@@ -82,12 +82,4 @@ namespace ambient { namespace channels { namespace mpi {
         return ((*this)()+1) % this->world->size;
     }
 
-    inline int multirank::dedicated() const {
-        return this->world->size - AMBIENT_DB_PROCS;
-    }
-
-    inline void multirank::mute(){
-        this->verbose = false;
-    }
-
 } } }

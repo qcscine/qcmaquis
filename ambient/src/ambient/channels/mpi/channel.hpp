@@ -48,12 +48,10 @@ namespace ambient { namespace channels { namespace mpi {
         MPI_Init_thread(&zero, NULL, AMBIENT_MPI_THREADING, &level);
         if(level != AMBIENT_MPI_THREADING) printf("Error: Wrong threading level\n");
         this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
-        this->volume = this->world->size;
         this->rank.world = this->world;
-        this->db_volume = this->volume > AMBIENT_DB_PROCS ? AMBIENT_DB_PROCS : 0;
         this->scheme.resize(2); // N = 0,1 are empty
-        for(int i = 2; i <= volume; i++) scheme.push_back(new binary_tree(i));
-        for(int i = 0; i < 2*volume; i++) circle_ranks.push_back(i % volume);
+        for(int i = 2; i <= dim(); i++) scheme.push_back(new binary_tree(i));
+        for(int i = 0; i < 2*dim(); i++) circle_ranks.push_back(i % dim());
     }
 
     inline void channel::barrier(){
@@ -61,15 +59,7 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline size_t channel::dim() const {
-        return this->volume;
-    }
-
-    inline size_t channel::wk_dim() const {
-        return (this->volume-this->db_volume);
-    }
-
-    inline size_t channel::db_dim() const {
-        return this->db_volume;
+        return this->world->size;
     }
 
     inline collective<typename channel::scalar_type>* channel::bcast(scalar_type& v, int root){
@@ -90,14 +80,6 @@ namespace ambient { namespace channels { namespace mpi {
 
     inline const binary_tree& channel::get_scheme(int volume){
         return *this->scheme[volume];
-    }
-
-    inline int channel::get_rank() const {
-        return rank();
-    }
-
-    inline int channel::get_dedicated_rank() const {
-        return rank.dedicated();
     }
 
 } } }
