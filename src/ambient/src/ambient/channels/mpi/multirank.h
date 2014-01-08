@@ -32,7 +32,6 @@ namespace ambient { namespace channels { namespace mpi {
     class group;
     class multirank {
     public:
-        multirank() : verbose(true) {}
         int operator()() const;
         int operator()(const group* grp) const;
         int translate(int rank, const group* source) const; // default: world
@@ -42,21 +41,9 @@ namespace ambient { namespace channels { namespace mpi {
         bool belongs(const group* target) const;
         bool masters(const group* target) const;
         int left_neighbor() const;
-        int right_neighbor() const; // can be also object
-        int dedicated() const;
-        void mute();
+        int right_neighbor() const;
         const group* world;
-        bool verbose;
     };
-
-    //    Context misc functions:
-    //
-    //    int  get_master(){ return ambient::rank.translate(grp->master, grp); }
-    //    bool involved()  { return ambient::rank.belongs(grp);                }
-    //    bool is_master() { return ambient::rank.masters(grp);                }
-    //    int  get_rank()  { return grp->rank;                                 }
-    //    int  get_size()  { return grp->size;                                 }
-    //
 
 } } }
 
