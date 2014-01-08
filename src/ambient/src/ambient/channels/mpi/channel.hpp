@@ -51,7 +51,6 @@ namespace ambient { namespace channels { namespace mpi {
         this->volume = this->world->size;
         this->rank.world = this->world;
         this->db_volume = this->volume > AMBIENT_DB_PROCS ? AMBIENT_DB_PROCS : 0;
-        this->sid = 13;
         this->scheme.resize(2); // N = 0,1 are empty
         for(int i = 2; i <= volume; i++) scheme.push_back(new binary_tree(i));
         for(int i = 0; i < 2*volume; i++) circle_ranks.push_back(i % volume);
@@ -61,29 +60,16 @@ namespace ambient { namespace channels { namespace mpi {
         MPI_Barrier(MPI_COMM_WORLD);
     }
 
-    inline size_t channel::dim(){
+    inline size_t channel::dim() const {
         return this->volume;
     }
 
-    inline size_t channel::wk_dim(){
+    inline size_t channel::wk_dim() const {
         return (this->volume-this->db_volume);
     }
 
-    inline size_t channel::db_dim(){
+    inline size_t channel::db_dim() const {
         return this->db_volume;
-    }
-
-    inline void channel::index(){
-        ++this->sid %= AMBIENT_MAX_SID;
-    }
-
-    inline int channel::generate_sid(){
-        index();
-        return get_sid();
-    }
-
-    inline int channel::get_sid() const {
-        return this->sid;
     }
 
     inline collective<typename channel::scalar_type>* channel::bcast(scalar_type& v, int root){
@@ -104,6 +90,14 @@ namespace ambient { namespace channels { namespace mpi {
 
     inline const binary_tree& channel::get_scheme(int volume){
         return *this->scheme[volume];
+    }
+
+    inline int channel::get_rank() const {
+        return rank();
+    }
+
+    inline int channel::get_dedicated_rank() const {
+        return rank.dedicated();
     }
 
 } } }

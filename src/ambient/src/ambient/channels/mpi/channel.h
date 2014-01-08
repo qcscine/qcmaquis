@@ -36,24 +36,23 @@ namespace ambient { namespace channels { namespace mpi {
     static void send_impl(request_impl* r);
     static bool test_impl(request_impl* r);
 
-    class channel : public singleton< channel > {
+    class channel {
     public:
         typedef typename ambient::models::ssm::revision block_type;
         typedef typename ambient::models::ssm::transformable scalar_type;
        ~channel();
         void  init();
         static void  barrier();
-        size_t dim();
-        size_t wk_dim();
-        size_t db_dim();
+        size_t dim() const;
+        size_t wk_dim() const;
+        size_t db_dim() const;
         collective<block_type>* get(block_type& r);
         collective<block_type>* set(block_type& r);
         collective<scalar_type>* bcast(scalar_type& v, int root);
         collective<scalar_type>* bcast(scalar_type& v);
-        void index();
-        int get_sid() const;
-        int generate_sid();
         const binary_tree& get_scheme(int volume);
+        int get_rank() const;
+        int get_dedicated_rank() const;
         group* world;
         std::vector<int> circle_ranks;
         multirank rank;
@@ -61,13 +60,8 @@ namespace ambient { namespace channels { namespace mpi {
         std::vector<binary_tree*> scheme;
         size_t volume;
         size_t db_volume;
-        int sid;
     };
 
 } } }
-
-namespace ambient {
-    extern channels::mpi::channel& channel;
-}
 
 #endif

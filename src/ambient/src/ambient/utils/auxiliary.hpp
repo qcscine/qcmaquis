@@ -27,51 +27,45 @@
 #ifndef AMBIENT_UTILS_AUXILIARY
 #define AMBIENT_UTILS_AUXILIARY
 
-#include "ambient/utils/mem.h"
-
 namespace ambient {
 
     using ambient::models::ssm::revision;
+    
+    inline int num_workers(){
+        return controller.get_num_workers();
+    }
+    
+    inline int num_procs(){
+        return controller.get_num_procs();
+    }
 
     inline int rank(){
-        return ambient::channel.rank();
+        return controller.get_rank();
     }
 
     inline int dedicated_rank(){
-        return ambient::channel.rank.dedicated();
+        return controller.get_dedicated_rank();
     }
 
     inline bool master(){
-        return (ambient::rank() == 0);
+        return (rank() == 0);
     }
 
     inline bool parallel(){
-        return (controller.context != controller.context_base);
+        return controller.scoped();
+    }
+
+    inline bool verbose(){ 
+        return controller.verbose();
+    }
+
+    inline void meminfo(){
+        controller.meminfo(); 
     }
 
     template<typename T>
     inline void destroy(T* o){ 
         controller.collect(o); 
-    }
-
-    inline bool verbose(){ 
-        return ambient::channel.rank.verbose;   
-    }
-
-    inline void log(const char* msg){
-        if(ambient::rank()) printf("%s\n", msg);
-    }
-
-    inline void meminfo(){ 
-        size_t currentSize = getCurrentRSS( );
-        size_t peakSize    = getPeakRSS( );
-        for(int i = 0; i < ambient::channel.wk_dim(); i++){
-            if(ambient::rank() == i){
-                std::cout << "R" << i << ": currentSize: " << currentSize << " " << currentSize/1024/1024/1024 << "G.\n";
-                std::cout << "R" << i << ": peakSize: " << peakSize << " " << peakSize/1024/1024/1024 << "G.\n";
-            }
-            ambient::channel.barrier();
-        }
     }
 
     inline void sync(){ 

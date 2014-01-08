@@ -38,7 +38,7 @@ namespace ambient {
     class scope<base> : public controller::scope {
     public:
         scope(){
-            this->round = ambient::channel.wk_dim();
+            this->round = ambient::controller.get_num_workers();
             this->state = ambient::rank() ? ambient::remote : ambient::local;
             this->sector = 0;
             this->scores.resize(round, 0);
@@ -86,8 +86,8 @@ namespace ambient {
         static std::vector<int> permutation;
 
         static void compact(size_t n){ 
-            if(n <= ambient::channel.wk_dim()) return; 
-            grain = (int)(n / ambient::channel.wk_dim()); // iterations before switch 
+            if(n <= ambient::controller.get_num_workers()) return; 
+            grain = (int)(n / ambient::controller.get_num_workers()); // iterations before switch 
         } 
         static void scatter(const std::vector<int>& p){
             permutation = p;
@@ -97,7 +97,7 @@ namespace ambient {
             this->map = permutation; permutation.clear();
             if(controller.context != controller.context_base) dry = true;
             else{ dry = false; controller.set_context(this); }
-            this->round = ambient::channel.wk_dim();
+            this->round = ambient::controller.get_num_workers();
             this->eval();
         }
         void eval(){
@@ -170,7 +170,7 @@ namespace ambient {
         scope(){
             controller.set_context(this);
             this->state = ambient::common;
-            this->sector = ambient::channel.dim();
+            this->sector = ambient::controller.get_shared_rank();
         }
        ~scope(){
             controller.pop_context();

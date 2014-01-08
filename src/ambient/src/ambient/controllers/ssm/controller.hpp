@@ -28,6 +28,7 @@
 #include "ambient/utils/timings.hpp"
 #include "ambient/utils/overseer.hpp"
 #include "ambient/utils/service.hpp"
+#include "ambient/utils/mem.h"
 
 namespace ambient { namespace controllers { namespace ssm {
 
@@ -37,15 +38,16 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline controller::controller(){
+        this->sid = 13;
         this->stack_m.reserve(AMBIENT_STACK_RESERVE);
         this->stack_s.reserve(AMBIENT_STACK_RESERVE);
         this->chains = &this->stack_m;
         this->mirror = &this->stack_s;
-        ambient::channel.init();
-        if(ambient::rank()) ambient::channel.rank.mute();
+        channel.init();
+        if(ambient::rank()) channel.rank.mute();
         this->context_base = new ambient::scope<base>();
         this->context = this->context_base;
-        this->serial = (ambient::channel.dim() == 1) ? true : false;
+        this->serial = (get_num_procs() == 1) ? true : false;
         #ifdef AMBIENT_PARALLEL_MKL
         ambient::mkl_set_num_threads(1);
         #endif
@@ -62,8 +64,8 @@ namespace ambient { namespace controllers { namespace ssm {
             ambient::cout << "ambient: maximum number of bulk chunks: " << AMBIENT_BULK_LIMIT << "\n";
             ambient::cout << "ambient: maximum sid value: " << AMBIENT_MAX_SID << "\n";
             ambient::cout << "ambient: number of database proc: " << AMBIENT_DB_PROCS << "\n";
-            ambient::cout << "ambient: number of work proc: " << ambient::channel.wk_dim() << "\n";
-            ambient::cout << "ambient: number of threads per proc: " << ambient::get_num_threads() << "\n";
+            ambient::cout << "ambient: number of work proc: " << get_num_workers() << "\n";
+            ambient::cout << "ambient: number of threads per proc: " << ambient::num_threads() << "\n";
             #ifdef AMBIENT_PARALLEL_MKL
             ambient::cout << "ambient: using MKL: threaded\n";
             #endif 
@@ -90,6 +92,10 @@ namespace ambient { namespace controllers { namespace ssm {
         revision* r = o->back(); if(r == NULL || model.common(r)) return;
         int candidate = model.remote(r) ? r->owner : (int)ambient::rank();
         context->select(candidate);
+    }
+
+    inline bool controller::scoped() const {
+        return (context != context_base);
     }
 
     inline void controller::set_context(const scope* s){
@@ -134,7 +140,7 @@ namespace ambient { namespace controllers { namespace ssm {
         }
         AMBIENT_SMP_DISABLE
         model.clock++;
-        ambient::channel.barrier();
+        fence();
     }
 
     inline bool controller::empty(){
@@ -216,6 +222,63 @@ namespace ambient { namespace controllers { namespace ssm {
     template<ambient::locality L, typename G>
     void controller::add_revision(history* o, G g){
         model.add_revision<L>(o, g);
+    }
+
+    inline int controller::get_rank() const {
+        return channel.get_rank();
+    }
+
+    inline int controller::get_shared_rank() const {
+        return get_num_procs();
+    }
+
+    inline int controller::get_dedicated_rank() const {
+        return channel.get_dedicated_rank();
+    }
+        
+    inline bool controller::verbose() const {
+        return channel.rank.verbose;
+    }
+
+    inline void controller::fence() const {
+        channel.barrier();
+    }
+
+    inline void controller::meminfo() const {
+        size_t current_size = getCurrentRSS();
+        size_t peak_size = getPeakRSS();
+        for(int i = 0; i < get_num_procs(); i++){
+            if(get_rank() == i){
+                std::cout << "R" << i << ": current size: " << current_size << " " << current_size/1024/1024/1024 << "G.\n";
+                std::cout << "R" << i << ": peak size: " << peak_size << " " << peak_size/1024/1024/1024 << "G.\n";
+            }
+            fence();
+        }
+    }
+
+    inline int controller::get_num_procs() const {
+        return channel.dim();
+    }
+
+    inline int controller::get_num_workers() const {
+        return channel.wk_dim();
+    }
+
+    inline void controller::index(){
+        ++this->sid %= AMBIENT_MAX_SID;
+    }
+
+    inline int controller::generate_sid(){
+        index();
+        return get_sid();
+    }
+
+    inline int controller::get_sid() const {
+        return this->sid;
+    }
+
+    inline channels::mpi::channel & controller::get_channel(){
+        return channel;
     }
 
 } } }

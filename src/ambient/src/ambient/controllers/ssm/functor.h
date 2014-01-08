@@ -29,10 +29,6 @@
 
 namespace ambient { namespace controllers { namespace ssm {
     
-    using ambient::models::ssm::revision;
-    using ambient::models::ssm::transformable;
-    using ambient::channels::mpi::collective;
-
     class functor {
         typedef ambient::bulk_allocator<functor*> allocator;
     public:

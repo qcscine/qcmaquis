@@ -32,7 +32,7 @@ namespace ambient { namespace controllers { namespace ssm {
         ambient::controller.queue(new get(t));
     }
     inline get<transformable>::get(transformable& t){
-        handle = ambient::channel.bcast(t, ambient::controller.which());
+        handle = ambient::controller.get_channel().bcast(t, ambient::controller.which());
     }
     inline bool get<transformable>::ready(){
         return handle->test();
@@ -46,10 +46,10 @@ namespace ambient { namespace controllers { namespace ssm {
         get*& transfer = (get*&)r.assist.second;
         if(ambient::controller.update(r)) transfer = new get(r);
         *transfer += ambient::controller.which();
-        channel.index();
+        ambient::controller.index();
     }
     inline get<revision>::get(revision& r) : t(r) {
-        handle = ambient::channel.get(t);
+        handle = ambient::controller.get_channel().get(t);
         t.invalidate();
     }
     inline void get<revision>::operator += (int rank){
