@@ -42,7 +42,7 @@ typedef alps::numeric::matrix<std::complex<double> > cmatrix;
 #include "libpscan/run_sim.hpp"
 
 void run_sim(const boost::filesystem::path& infile, const boost::filesystem::path& outfile,
-             double time_limit)
+             bool write_xml, double time_limit)
 {
     maquis::cout.precision(10);
     
@@ -67,14 +67,14 @@ void run_sim(const boost::filesystem::path& infile, const boost::filesystem::pat
     boost::scoped_ptr<abstract_sim> sim;
     if (parms["COMPLEX"]) {
         if (parms["te_type"] == "nn")
-            sim.reset(new tevol_sim<cmatrix, grp, nearest_neighbors_evolver<cmatrix, grp> >(parms));
+            sim.reset(new tevol_sim<cmatrix, grp, nearest_neighbors_evolver<cmatrix, grp> >(parms, write_xml));
         else if (parms["te_type"] == "mpo")
-            sim.reset(new tevol_sim<cmatrix, grp, mpo_evolver<cmatrix, grp> >(parms));
+            sim.reset(new tevol_sim<cmatrix, grp, mpo_evolver<cmatrix, grp> >(parms, write_xml));
     } else {
         if (parms["te_type"] == "nn")
-            sim.reset(new tevol_sim<matrix, grp, nearest_neighbors_evolver<matrix, grp> >(parms));
+            sim.reset(new tevol_sim<matrix, grp, nearest_neighbors_evolver<matrix, grp> >(parms, write_xml));
         else if (parms["te_type"] == "mpo")
-            sim.reset(new tevol_sim<matrix, grp, mpo_evolver<matrix, grp> >(parms));
+            sim.reset(new tevol_sim<matrix, grp, mpo_evolver<matrix, grp> >(parms, write_xml));
     }
     
     /// Run

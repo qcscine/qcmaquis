@@ -43,7 +43,7 @@ int main(int argc, char ** argv)
                   << std::endl;
         alps::print_copyright(std::cout);
         
-        alps::scheduler::Options opt(argc,argv);
+        Options opt(argc,argv);
         if (opt.valid) {
             Scheduler pscan(opt);
             pscan.run();

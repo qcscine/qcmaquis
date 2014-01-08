@@ -40,7 +40,7 @@ typedef alps::numeric::matrix<std::complex<double> > cmatrix;
 #include "libpscan/run_sim.hpp"
 
 void run_sim(const boost::filesystem::path& infile, const boost::filesystem::path& outfile,
-              double time_limit)
+             bool write_xml, double time_limit)
 {
     maquis::cout.precision(10);
     
@@ -64,10 +64,10 @@ void run_sim(const boost::filesystem::path& infile, const boost::filesystem::pat
     
     /// Check which matrix to use
     if (parms["COMPLEX"]) {
-        dmrg_sim<cmatrix, grp> sim(parms);
+        dmrg_sim<cmatrix, grp> sim(parms, write_xml);
         sim.run();
     } else {
-        dmrg_sim<matrix, grp> sim(parms);
+        dmrg_sim<matrix, grp> sim(parms, write_xml);
         sim.run();
     }
 }

@@ -36,7 +36,7 @@
 #include <boost/filesystem/fstream.hpp>
 #include <iostream>
 
-Scheduler::Scheduler(const alps::scheduler::Options& opt)
+Scheduler::Scheduler(const Options& opt)
 : stop_callback(opt.time_limit)
 {
     outfilepath = opt.jobfilename;
@@ -171,9 +171,10 @@ void Scheduler::run()
                 std::cout  << "Running task " << i+1 << "." << std::endl;
                 if (!boost::filesystem::exists(tasks[i].out))
                     boost::filesystem::copy(tasks[i].in, tasks[i].out);
+
+                /// Start task
                 run_sim(tasks[i].in, tasks[i].out, time_left);
                 tasks[i].status = TaskFinished;
-                
             }
             else
                 boost::throw_exception( std::logic_error("illegal Task status"));

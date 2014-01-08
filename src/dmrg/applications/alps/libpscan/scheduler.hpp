@@ -28,7 +28,7 @@
 #define ALPS_MPSPSCAN_SCHEDULER_HPP
 
 #include "dmrg/utils/time_stopper.h"
-#include <alps/scheduler/options.h>
+#include "libpscan/options.hpp"
 #include <boost/filesystem.hpp>
 
 enum TaskStatusFlag {
@@ -43,7 +43,7 @@ struct TaskDescriptor {
 
 class Scheduler {
 public:
-    Scheduler(const alps::scheduler::Options&);
+    Scheduler(const Options&);
     void run();
     
 private:
