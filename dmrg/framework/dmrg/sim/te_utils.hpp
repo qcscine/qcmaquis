@@ -34,7 +34,6 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/multi_index.h"
 #include "dmrg/mp_tensors/reshapes.h"
-#include "dmrg/mp_tensors/generic_reshape.h"
 #include "dmrg/mp_tensors/mpo_manip.h"
 #include "dmrg/mp_tensors/compression.h"
 
