@@ -75,7 +75,7 @@ namespace ambient {
             ambient::cout << "Matrix src " << ambient::dim(src).x << "x" << ambient::dim(src).y << "\n";
             ambient::cout << "Src p " << src_p.x << "x" << src_p.y << "\n";
             ambient::cout << "Block size " << size.x << "x" << size.y << "\n";
-            AMBIENT_TRACE
+            ambient::trace();
         }
         #endif
         int n = size.x;
