@@ -33,7 +33,6 @@
 #include <cmath>
 #include <iterator>
 #include <iostream>
-#include <sys/stat.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>

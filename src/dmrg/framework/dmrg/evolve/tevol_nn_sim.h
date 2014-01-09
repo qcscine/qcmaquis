@@ -30,7 +30,6 @@
 #include <cmath>
 #include <iterator>
 #include <iostream>
-#include <sys/stat.h>
 
 #include "dmrg/evolve/te_utils.hpp"
 #include "dmrg/utils/results_collector.h"

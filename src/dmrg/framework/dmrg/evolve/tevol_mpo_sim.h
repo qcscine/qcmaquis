@@ -28,7 +28,6 @@
 #define APP_DMRG_TEVOL_MPO_SIM_H
 
 #include <cmath>
-#include <sys/stat.h>
 
 #include "dmrg/utils/storage.h"
 #include "dmrg/evolve/te_utils.hpp"
