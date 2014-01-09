@@ -27,6 +27,8 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "contractions.h"
 
+#include "dmrg/utils/archive.h"
+
 #include <limits>
 
 template<class Matrix, class SymmGroup>
@@ -51,14 +53,14 @@ MPS<Matrix, SymmGroup>::MPS()
 
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS(size_t L)
-: canonized_i(std::numeric_limits<size_t>::max())
-, data_(L)
+: data_(L)
+, canonized_i(std::numeric_limits<size_t>::max())
 { }
 
 template<class Matrix, class SymmGroup>
 MPS<Matrix, SymmGroup>::MPS(size_t L, mps_initializer<Matrix, SymmGroup> & init)
-: canonized_i(std::numeric_limits<size_t>::max())
-, data_(L)
+: data_(L)
+, canonized_i(std::numeric_limits<size_t>::max())
 {
     init(*this);
     

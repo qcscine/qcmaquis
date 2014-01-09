@@ -117,11 +117,11 @@ namespace generate_mpo
         : lat(lat_)
         , model(model_)
         , length(lat.size())
+        , tag_handler(model.operators_table())
         , prempo(length)
         , trivial_left(prempo_key_type::trivial_left)
         , trivial_right(prempo_key_type::trivial_right)
         , leftmost_right(length)
-        , tag_handler(model.operators_table())
         , finalized(false)
         {
             for (size_t p = 0; p < length-1; ++p)

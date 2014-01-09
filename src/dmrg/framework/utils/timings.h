@@ -45,9 +45,9 @@ public:
     
 protected:
     double val;
+    std::string name;
     boost::chrono::system_clock::time_point t0;
     unsigned long long nCounter;
-    std::string name;
 };
         
 #ifdef MAQUIS_OPENMP

@@ -84,9 +84,9 @@ namespace storage {
             return (*impl)[path];
         }
     private:
+        bool write;
         std::string fp;
         alps::hdf5::archive* impl;
-        bool write;
     };
     
     inline std::string encode(std::string const & s){

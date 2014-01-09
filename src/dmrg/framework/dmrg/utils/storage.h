@@ -212,11 +212,11 @@ namespace storage {
                     disk::untrack(this);
                 }
             }
-            boost::thread* worker;
             enum { core, storing, uncore, prefetching } state;
-            size_t record;
             bool dumped;
             size_t sid;
+            boost::thread* worker;
+            size_t record;
         };
 
         template<class T> class serializable : public descriptor {

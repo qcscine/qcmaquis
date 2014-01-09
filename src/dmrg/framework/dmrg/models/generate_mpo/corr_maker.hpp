@@ -46,6 +46,7 @@ namespace generate_mpo
     template<class Matrix, class SymmGroup>
     class CorrMakerBase {
     public:
+        virtual ~CorrMakerBase() {}
         virtual MPO<Matrix, SymmGroup> create_mpo()=0;
         virtual std::string description () const=0;
         virtual vector<vector<size_t> > const& numeric_labels()=0;
@@ -296,6 +297,7 @@ namespace generate_mpo
         }
         
     private:
+        Lattice const& lat;
         TagHandler<Matrix, SymmGroup> tag_handler;
 
         vector<vector<block> > prempo;
@@ -305,7 +307,6 @@ namespace generate_mpo
         vector<set<size_t> > used;
         vector<map<size_t, bool> > with_sign;
         
-        Lattice const& lat;
         std::vector<tag_type> identities, fillings;
         // TODO: use just vector<tag_type>, as there is the is_fermionic() function in TagHandler
         vector<std::pair<std::vector<tag_type>, bool> > op_tags;

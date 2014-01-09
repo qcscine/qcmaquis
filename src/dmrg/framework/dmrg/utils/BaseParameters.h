@@ -56,8 +56,8 @@ namespace parameters {
         std::string get() const {return val_;}
         bool empty() const {return empty_;}
     private:
-        bool empty_;
         std::string val_;
+        bool empty_;
         
     };
 }
