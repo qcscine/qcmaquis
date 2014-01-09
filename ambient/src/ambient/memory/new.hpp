@@ -24,27 +24,23 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_MEMORY_NEW
-#define AMBIENT_MEMORY_NEW
+#ifndef AMBIENT_MEMORY_NEW_HPP
+#define AMBIENT_MEMORY_NEW_HPP
 
 namespace ambient { namespace memory {
 
     template<class T>
-    class use_fixed_new {
-    public:
-        void* operator new (size_t sz){ assert(sz == sizeof(T)); return ambient::pool::malloc<fixed,T>(); }
-        void operator delete (void* ptr){ ambient::pool::free<fixed,sizeof(T)>(ptr); }
-        //void* operator new (size_t sz, void* placement){ assert(sz == sizeof(T)); return placement; } 
-        //void operator delete (void*, void*){ } // doesn't throw
-    };
+    void* use_fixed_new<T>::operator new (size_t sz){ assert(sz == sizeof(T)); return ambient::pool::malloc<fixed,T>(); }
 
     template<class T>
-    class use_bulk_new {
-    public:
-        void* operator new (size_t sz){ assert(sz == sizeof(T)); return ambient::pool::malloc<instr_bulk,T>(); }
-        void operator delete (void* ptr){ }
-    };
+    void use_fixed_new<T>::operator delete (void* ptr){ ambient::pool::free<fixed,sizeof(T)>(ptr); }
 
+    template<class T>
+    void* use_bulk_new<T>::operator new (size_t sz){ assert(sz == sizeof(T)); return ambient::pool::malloc<instr_bulk,T>(); }
+
+    template<class T>
+    void use_bulk_new<T>::operator delete(void* ptr){ }
+    
 } }
 
 #endif

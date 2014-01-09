@@ -24,51 +24,25 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_MEMORY_ALLOCATOR
-#define AMBIENT_MEMORY_ALLOCATOR
+#ifndef AMBIENT_MEMORY_ALLOCATOR_HPP
+#define AMBIENT_MEMORY_ALLOCATOR_HPP
 
 namespace ambient {
 
     template <class T>
-    class default_allocator {
-    public:
-        static void* alloc(pool::descriptor& spec){
-            return ambient::pool::malloc(spec);
-        }
-        static void* calloc(pool::descriptor& spec){
-            void* m = alloc(spec);
-            memset(m, 0, spec.extent);
-            return m;
-        }
-        static void free(void* ptr, pool::descriptor& spec){
-            ambient::pool::free(ptr, spec);
-        }
-        // std:: compatibility aliases //
-        static T* allocate(std::size_t n){ 
-        }
-        static void deallocate(T* ptr, std::size_t n){ 
-        }
-        template <class U> struct rebind {
-            typedef default_allocator<U> other; 
-        };
-        typedef T value_type;
-    };
+    void* default_allocator<T>::alloc(pool::descriptor& spec) { return ambient::pool::malloc(spec); }
 
     template <class T>
-    class bulk_allocator {
-    public:
-        typedef T value_type;
-        template <class U> struct rebind { typedef bulk_allocator<U> other; };
-        bulk_allocator() throw() { }
-        bulk_allocator(const bulk_allocator&) throw() { }
-        template<typename U> bulk_allocator(const bulk_allocator<U>&) throw() { }
-       ~bulk_allocator() throw() { }
+    void* default_allocator<T>::calloc(pool::descriptor& spec){ void* m = alloc(spec); memset(m, 0, spec.extent); return m; }
 
-        static T* allocate(std::size_t n){
-            return (T*)ambient::pool::malloc<memory::instr_bulk>(n*sizeof(T));
-        }
-        static void deallocate(T* p, std::size_t n){}
-    };
+    template <class T>
+    void default_allocator<T>::free(void* ptr, pool::descriptor& spec){ ambient::pool::free(ptr, spec); }
+
+    template <class T>
+    T* bulk_allocator<T>::allocate(std::size_t n){ return (T*)ambient::pool::malloc<memory::instr_bulk>(n*sizeof(T)); }
+
+    template <class T>
+    void bulk_allocator<T>::deallocate(T* p, std::size_t n){ }
 
 }
 

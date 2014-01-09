@@ -34,6 +34,9 @@ namespace ambient { namespace controllers { namespace ssm {
 
     class controller {
     public:
+        typedef ambient::memory::serial_region<AMBIENT_INSTR_BULK_CHUNK, 
+                                               ambient::memory::serial_factory<AMBIENT_INSTR_BULK_CHUNK> 
+                                              > memory_type;
         class scope {
         public:
             int rank;
@@ -93,6 +96,7 @@ namespace ambient { namespace controllers { namespace ssm {
 
         const scope* context;
         const scope* context_base;
+        memory_type memory;
     private:
         models::ssm::model model;
         channels::mpi::channel channel;

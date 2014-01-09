@@ -32,7 +32,7 @@
 #include "ambient/memory/factory.hpp"
 #include "ambient/memory/region.hpp"
 #include "ambient/memory/data_bulk.hpp"
-#include "ambient/memory/instr_bulk.hpp"
+#include "ambient/memory/instr_bulk.h"
 
 namespace ambient { namespace memory {
 
