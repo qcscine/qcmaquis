@@ -129,8 +129,8 @@ namespace ambient {
 #include "ambient/utils/singleton.hpp"
 
 #include "ambient/memory/pool.hpp"
-#include "ambient/memory/new.hpp"
-#include "ambient/memory/allocator.hpp"
+#include "ambient/memory/new.h"
+#include "ambient/memory/allocator.h"
 
 #include "ambient/models/ssm/revision.h"
 #include "ambient/models/ssm/history.h"
@@ -148,6 +148,10 @@ namespace ambient {
 #include "ambient/controllers/ssm/set.h"
 #include "ambient/controllers/ssm/collector.h"
 #include "ambient/controllers/ssm/controller.h"
+
+#include "ambient/memory/new.hpp"
+#include "ambient/memory/allocator.hpp"
+#include "ambient/memory/instr_bulk.hpp"
 
 #include "ambient/utils/auxiliary.hpp"
 #include "ambient/utils/io.hpp"

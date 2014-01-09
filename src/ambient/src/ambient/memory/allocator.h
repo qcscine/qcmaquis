@@ -24,20 +24,43 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_MEMORY_INSTR_BULK_HPP
-#define AMBIENT_MEMORY_INSTR_BULK_HPP
+#ifndef AMBIENT_MEMORY_ALLOCATOR_H
+#define AMBIENT_MEMORY_ALLOCATOR_H
 
-namespace ambient { namespace memory {
+namespace ambient {
 
-        template<size_t S> void* instr_bulk::malloc()         { return ambient::get_controller().memory.malloc(S); }
-                   inline  void* instr_bulk::malloc(size_t s) { return ambient::get_controller().memory.malloc(s); }
+    template <class T>
+    class default_allocator {
+    public:
+        typedef T value_type;
+        template <class U> struct rebind { typedef default_allocator<U> other; };
+        default_allocator() throw() { }
+        default_allocator(const default_allocator&) throw() { }
+        template<typename U> default_allocator(const default_allocator<U>&) throw() { }
+       ~default_allocator() throw() { }
 
-        inline void instr_bulk::drop(){ 
-            ambient::get_controller().memory.reset();
-            serial_factory<AMBIENT_INSTR_BULK_CHUNK>::reset();
-        }
+        static T* allocate(std::size_t n){ throw(); }
+        static void deallocate(T* ptr, std::size_t n){ throw(); }
 
-} }
+        static void* alloc(pool::descriptor& spec); 
+        static void* calloc(pool::descriptor& spec);
+        static void free(void* ptr, pool::descriptor& spec);
+    };
+
+    template <class T>
+    class bulk_allocator {
+    public:
+        typedef T value_type;
+        template <class U> struct rebind { typedef bulk_allocator<U> other; };
+        bulk_allocator() throw() { }
+        bulk_allocator(const bulk_allocator&) throw() { }
+        template<typename U> bulk_allocator(const bulk_allocator<U>&) throw() { }
+       ~bulk_allocator() throw() { }
+
+        static T* allocate(std::size_t n); 
+        static void deallocate(T* p, std::size_t n);
+    };
+
+}
 
 #endif
-

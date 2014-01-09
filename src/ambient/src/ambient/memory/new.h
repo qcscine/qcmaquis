@@ -24,20 +24,25 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_MEMORY_INSTR_BULK_HPP
-#define AMBIENT_MEMORY_INSTR_BULK_HPP
+#ifndef AMBIENT_MEMORY_NEW_H
+#define AMBIENT_MEMORY_NEW_H
 
 namespace ambient { namespace memory {
 
-        template<size_t S> void* instr_bulk::malloc()         { return ambient::get_controller().memory.malloc(S); }
-                   inline  void* instr_bulk::malloc(size_t s) { return ambient::get_controller().memory.malloc(s); }
+    template<class T>
+    class use_fixed_new {
+    public:
+        void* operator new (size_t sz);
+        void operator delete (void* ptr);
+    };
 
-        inline void instr_bulk::drop(){ 
-            ambient::get_controller().memory.reset();
-            serial_factory<AMBIENT_INSTR_BULK_CHUNK>::reset();
-        }
+    template<class T>
+    class use_bulk_new {
+    public:
+        void* operator new (size_t sz);
+        void operator delete (void* ptr);
+    };
 
 } }
 
 #endif
-
