@@ -244,13 +244,9 @@ namespace ambient { namespace controllers { namespace ssm {
         return np-db;
     }
 
-    inline void controller::index(){
-        ++this->sid %= AMBIENT_MAX_SID;
-    }
-
     inline int controller::generate_sid(){
-        index();
-        return get_sid();
+        ++this->sid %= AMBIENT_MAX_SID; 
+        return this->sid;
     }
 
     inline int controller::get_sid() const {

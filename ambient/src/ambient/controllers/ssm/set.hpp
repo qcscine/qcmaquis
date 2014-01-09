@@ -46,7 +46,7 @@ namespace ambient { namespace controllers { namespace ssm {
         set*& transfer = (set*&)r.assist.second;
         if(ambient::get_controller().update(r)) transfer = new set(r);
         *transfer += ambient::get_controller().which();
-        ambient::get_controller().index();
+        ambient::get_controller().generate_sid();
     }
     inline set<revision>::set(revision& r) : t(r) {
         t.use();

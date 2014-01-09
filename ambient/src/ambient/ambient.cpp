@@ -56,7 +56,7 @@ namespace ambient {
                 ambient::cout << "ambient: maximum number of bulk chunks: " << AMBIENT_BULK_LIMIT << "\n";
                 ambient::cout << "ambient: maximum sid value: " << AMBIENT_MAX_SID << "\n";
                 ambient::cout << "ambient: number of database proc: " << AMBIENT_DB_PROCS << "\n";
-                ambient::cout << "ambient: number of work proc: " << c.get_num_workers() << "\n";
+                ambient::cout << "ambient: number of work proc: " << ambient::num_workers() << "\n";
                 ambient::cout << "ambient: number of threads per proc: " << ambient::num_threads() << "\n";
                 #ifdef AMBIENT_PARALLEL_MKL
                 ambient::cout << "ambient: using MKL: threaded\n";

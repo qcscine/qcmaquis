@@ -47,7 +47,7 @@ namespace ambient {
     class scope<base> : public controller::scope {
     public:
         scope(){
-            this->round = get_controller().get_num_workers();
+            this->round = ambient::num_workers();
             this->state = ambient::rank() ? ambient::remote : ambient::local;
             this->sector = 0;
             this->scores.resize(round, 0);
@@ -95,8 +95,8 @@ namespace ambient {
         static std::vector<int> permutation;
 
         static void compact(size_t n){ 
-            if(n <= get_controller().get_num_workers()) return; 
-            grain = (int)(n / get_controller().get_num_workers()); // iterations before switch 
+            if(n <= ambient::num_workers()) return; 
+            grain = (int)(n / ambient::num_workers()); // iterations before switch 
         } 
         static void scatter(const std::vector<int>& p){
             permutation = p;
@@ -104,9 +104,9 @@ namespace ambient {
         scope(int value = 0) : index(value), iterator(value) {
             this->factor = grain; grain = 1;
             this->map = permutation; permutation.clear();
-            if(get_controller().scoped()) dry = true;
+            if(ambient::parallel()) dry = true;
             else{ dry = false; get_controller().set_context(this); }
-            this->round = get_controller().get_num_workers();
+            this->round = ambient::num_workers();
             this->eval();
         }
         void eval(){
