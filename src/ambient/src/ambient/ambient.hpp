@@ -82,34 +82,25 @@
     #define AMBIENT_SMP_DISABLE
 #endif
 
-#define AMBIENT_DB_PROCS   0
-#define AMBIENT_BROADCAST -1
-
-//#define AMBIENT_NUMERIC_EXPERIMENTAL
-//#define AMBIENT_TRACE void* b[15]; backtrace_symbols_fd(b,backtrace(b,15),2);
-//#define AMBIENT_CHECK_BOUNDARIES
-//#define AMBIENT_LOOSE_FUTURE
-//#define AMBIENT_PARALLEL_MKL // please define in compiler
-
+//#define AMBIENT_CHECK_BOUNDARIES     // check overflows in memptf
+//#define AMBIENT_LOOSE_FUTURE         // delayed evaluation
+//#define AMBIENT_NUMERIC_EXPERIMENTAL // use experimental algorithms
+//#define AMBIENT_PARALLEL_MKL         // use parallel mkl
+//#define AMBIENT_MKL_NUM_THREADS 16   //
 #define AMBIENT_MEMORY_SQUEEZE
 #define AMBIENT_REBALANCED_SVD
-
 #define AMBIENT_INSTR_BULK_CHUNK      16777216 // 16 MB
 #define AMBIENT_DATA_BULK_CHUNK       67108864 // 64 MB
 #define AMBIENT_BULK_LIMIT            40
-
-#define AMBIENT_MKL_NUM_THREADS       16
 #define AMBIENT_MAX_SID               2097152 // Cray MPI
-
 #define AMBIENT_STACK_RESERVE         65536
 #define AMBIENT_COLLECTOR_STR_RESERVE 65536
 #define AMBIENT_COLLECTOR_REV_RESERVE 65536
 #define AMBIENT_COLLECTOR_RAW_RESERVE 1024
-#define AMBIENT_SCOPE_SWITCH_FACTOR   20480
 #define AMBIENT_FUTURE_SIZE           64
 #define AMBIENT_IB                    2048
 #define AMBIENT_IB_EXTENT             2048*2048*16
-
+#define AMBIENT_DB_PROCS   0
 #define PAGE_SIZE 4096
 #define ALIGNMENT 64
 
