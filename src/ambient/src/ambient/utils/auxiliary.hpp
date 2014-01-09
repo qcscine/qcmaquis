@@ -30,7 +30,11 @@
 namespace ambient {
 
     using ambient::models::ssm::revision;
-    
+
+    inline bool isset(const char* env){
+        return (std::getenv( env ) != NULL);
+    }
+
     inline int num_workers(){
         return get_controller().get_num_workers();
     }
