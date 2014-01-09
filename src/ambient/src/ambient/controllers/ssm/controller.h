@@ -86,7 +86,6 @@ namespace ambient { namespace controllers { namespace ssm {
         int  get_num_procs() const;
         int get_sid() const;
         int generate_sid();
-        void index();
         channels::mpi::channel & get_channel();
 
         void meminfo() const;
