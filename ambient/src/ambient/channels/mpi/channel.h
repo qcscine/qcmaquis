@@ -40,7 +40,8 @@ namespace ambient { namespace channels { namespace mpi {
     public:
         typedef typename ambient::models::ssm::revision block_type;
         typedef typename ambient::models::ssm::transformable scalar_type;
-       ~channel();
+        static void mount();
+        static void unmount();
         void init();
         size_t dim() const;
         static void barrier();

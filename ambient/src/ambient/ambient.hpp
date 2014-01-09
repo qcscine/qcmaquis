@@ -188,9 +188,13 @@ namespace ambient {
     class universe {
     public:
         typedef controllers::ssm::controller controller_type;
-        controller_type c;
+        typedef channels::mpi::channel channel_type;
 
+       ~universe(){
+            channel_type::unmount();
+        }
         universe(){
+            channel_type::mount();
             c.get_channel().init();
             c.init();
             #ifdef AMBIENT_PARALLEL_MKL
@@ -226,6 +230,8 @@ namespace ambient {
             memory::data_bulk::drop();
             memory::instr_bulk::drop();
         }
+    private:
+        controller_type c;
     } u;
 
     controllers::ssm::controller& get_controller(){ return u(AMBIENT_THREAD_ID); }

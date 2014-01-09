@@ -39,14 +39,17 @@ namespace ambient { namespace channels { namespace mpi {
         int f = 0; MPI_Test(&r->mpi_request, &f, MPI_STATUS_IGNORE); return f;
     }
 
-    inline channel::~channel(){
+    inline void channel::mount(){
+        int level, zero = 0;
+        MPI_Init_thread(&zero, NULL, AMBIENT_MPI_THREADING, &level);
+        if(level != AMBIENT_MPI_THREADING) printf("Error: Wrong threading level\n");
+    }
+
+    inline void channel::unmount(){
         MPI_Finalize();
     }
 
     inline void channel::init(){
-        int level, zero = 0;
-        MPI_Init_thread(&zero, NULL, AMBIENT_MPI_THREADING, &level);
-        if(level != AMBIENT_MPI_THREADING) printf("Error: Wrong threading level\n");
         this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
         this->rank.world = this->world;
         this->scheme.resize(2); // N = 0,1 are empty
