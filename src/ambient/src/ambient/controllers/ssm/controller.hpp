@@ -97,7 +97,7 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline int controller::which(){
-        return this->context->sector;
+        return this->context->rank;
     }
 
     inline void controller::flush(){
