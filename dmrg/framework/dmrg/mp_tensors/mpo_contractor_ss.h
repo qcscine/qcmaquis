@@ -28,7 +28,6 @@
 #define MP_TENSORS_MPO_CONTRACTOR_SS_H
 
 #include <boost/random.hpp>
-#include <sys/time.h>
 
 #include "dmrg/optimize/ietl_lanczos_solver.h"
 #include "dmrg/optimize/ietl_jacobi_davidson.h"
@@ -37,6 +36,12 @@
 #endif
 
 #include "dmrg/utils/BaseParameters.h"
+
+#ifndef WIN32
+#include <sys/time.h>
+#define HAVE_GETTIMEOFDAY
+#endif
+
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem
@@ -56,11 +61,16 @@ struct SiteProblem
     MPOTensor<Matrix, SymmGroup> const & mpo;
 };
 
+#ifdef HAVE_GETTIMEOFDAY
 #define BEGIN_TIMING(name) \
 gettimeofday(&now, NULL);
 #define END_TIMING(name) \
 gettimeofday(&then, NULL); \
 maquis::cout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << std::endl;
+#else
+#define BEGIN_TIMING(name)
+#define END_TIMING(name)
+#endif
 
 /// TODO: 1) implement two-site time evolution. (single-site is stuck in initial MPS structure)
 ///       2) implement zip-up compression. E. M. Stoudenmire and S. R. White, New Journal of Physics 12, 055026 (2010).
