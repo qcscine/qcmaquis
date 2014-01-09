@@ -38,6 +38,7 @@ namespace detail {
     class collector_impl_base
     {
     public:
+        virtual ~collector_impl_base() {}
         virtual void collect(boost::any const &) = 0;
         virtual void save(alps::hdf5::archive & ar) const = 0;
         // TODO: fixed storage type because templated virtual function are not allowed

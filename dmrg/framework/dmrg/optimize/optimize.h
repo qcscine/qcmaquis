@@ -132,7 +132,9 @@ public:
         init_left_right(mpo, site);
         maquis::cout << "Done init_left_right" << std::endl;
     }
-        
+    
+    virtual ~optimizer_base() {}
+    
     virtual void sweep(int sweep, OptimizeDirection d = Both) = 0;
     
     results_collector const& iteration_results() const { return iteration_results_; }

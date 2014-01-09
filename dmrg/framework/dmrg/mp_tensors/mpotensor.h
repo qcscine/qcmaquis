@@ -109,11 +109,11 @@ public:
     mutable std::vector<int> placement_l;
     mutable std::vector<int> placement_r;
 private:
+    index_type left_i, right_i;
+
     CSCMatrix col_tags;
     RowIndex row_index;
     op_table_ptr operator_table;
-    
-    index_type left_i, right_i;
 };
 
 // TODO: add swap

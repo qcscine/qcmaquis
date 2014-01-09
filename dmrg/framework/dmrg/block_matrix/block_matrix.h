@@ -162,8 +162,8 @@ public:
     std::string label;
 #endif
 private:
-    boost::ptr_vector<Matrix> data_;
     Index<SymmGroup> rows_, cols_;
+    boost::ptr_vector<Matrix> data_;
 };    
 
 #include "dmrg/block_matrix/block_matrix.hpp"

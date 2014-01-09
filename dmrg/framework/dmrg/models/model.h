@@ -59,6 +59,8 @@ public:
     
     typedef std::size_t size_t;
     
+    virtual ~model_impl() {}
+    
     virtual Index<SymmGroup> const& phys_dim(size_t type) const=0;
     virtual op_t const& identity_matrix(size_t type) const { return operators_table()->get_op( identity_matrix_tag(type) ); }
     virtual tag_type identity_matrix_tag(size_t type) const=0;

@@ -34,8 +34,8 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
                                         op_table_ptr tbl_)
 : left_i(ld)
 , right_i(rd)
-, operator_table(tbl_)
 , col_tags(ld, rd)
+, operator_table(tbl_)
 {
     using namespace boost::tuples;
     typedef boost::tuple<index_type, index_type, tag_type, value_type> prempo_descriptor;

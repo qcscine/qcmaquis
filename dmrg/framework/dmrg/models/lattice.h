@@ -40,6 +40,8 @@ class lattice_impl {
 public:
     typedef int pos_t;
     
+    virtual ~lattice_impl() {}
+    
     virtual std::vector<pos_t> forward(pos_t) const = 0;
     virtual std::vector<pos_t> all(pos_t) const = 0;
     

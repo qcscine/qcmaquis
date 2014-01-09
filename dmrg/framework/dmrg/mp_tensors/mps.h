@@ -123,6 +123,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps);
 template<class Matrix, class SymmGroup>
 struct mps_initializer
 {
+    virtual ~mps_initializer() {}
     virtual void operator()(MPS<Matrix, SymmGroup> & mps) = 0;
 };
 
