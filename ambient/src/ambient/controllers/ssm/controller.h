@@ -36,7 +36,7 @@ namespace ambient { namespace controllers { namespace ssm {
     public:
         class scope {
         public:
-            int sector;
+            int rank;
             ambient::locality state;
             virtual bool tunable() const = 0;
             virtual void score(int c, size_t v) const {}

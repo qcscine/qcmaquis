@@ -49,7 +49,7 @@ namespace ambient {
         scope(){
             this->round = ambient::num_workers();
             this->state = ambient::rank() ? ambient::remote : ambient::local;
-            this->sector = 0;
+            this->rank  = 0;
             this->scores.resize(round, 0);
         }
         virtual bool tunable() const { 
@@ -67,20 +67,20 @@ namespace ambient {
                 for(int i = 0; i < round; i++)
                 if(scores[i] >= max){
                     max = scores[i];
-                    this->sector = i;
+                    this->rank = i;
                 }
             }else{
                 for(int i = 0; i < stakeholders.size(); i++){
                     int k = stakeholders[i];
                     if(scores[k] >= max){
                         max = scores[k];
-                        this->sector = k;
+                        this->rank = k;
                     }
                 }
                 stakeholders.clear();
             }
             std::fill(scores.begin(), scores.end(), 0);
-            this->state = (this->sector == ambient::rank()) ? 
+            this->state = (this->rank == ambient::rank()) ? 
                           ambient::local : ambient::remote;
         }
         mutable std::vector<int> stakeholders;
@@ -111,9 +111,9 @@ namespace ambient {
         }
         void eval(){
             int i = iterator >= map.size() ? iterator : map[iterator];
-            if(i >= this->round*this->factor) this->sector = i % this->round;
-            else                              this->sector = i / this->factor;
-            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
+            if(i >= this->round*this->factor) this->rank = i % this->round;
+            else                              this->rank = i / this->factor;
+            this->state = (this->rank == ambient::rank()) ? ambient::local : ambient::remote;
         }
         void shift(){
             this->iterator++;
@@ -162,8 +162,8 @@ namespace ambient {
     public:
         scope(){
             get_controller().set_context(this);
-            this->sector = ambient::dedicated_rank();
-            this->state = (this->sector == ambient::rank()) ? ambient::local : ambient::remote;
+            this->rank = ambient::dedicated_rank();
+            this->state = (this->rank == ambient::rank()) ? ambient::local : ambient::remote;
         }
        ~scope(){
             get_controller().pop_context();
@@ -179,7 +179,7 @@ namespace ambient {
         scope(){
             get_controller().set_context(this);
             this->state = ambient::common;
-            this->sector = get_controller().get_shared_rank();
+            this->rank = get_controller().get_shared_rank();
         }
        ~scope(){
             get_controller().pop_context();
