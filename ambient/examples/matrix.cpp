@@ -19,6 +19,7 @@ int main(){
 
     cout << "gemm...\n"; timer t2("gemm"); t2.begin();
     gemm(pA, pB, pC_orig); 
+    ambient::sync(mkl_parallel());
     t2.end();
 
     cout << "strassen gemm...\n"; timer t1("gemm_strassen"); t1.begin();

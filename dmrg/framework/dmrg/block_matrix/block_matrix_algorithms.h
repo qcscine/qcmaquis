@@ -127,10 +127,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
     std::size_t loop_max = M.n_blocks();
 
-    #ifdef AMBIENT_REBALANCED_SVD
-    static ambient::timer timer("SVD ONLY TIME\n");
-    static ambient::timer timert("SVD TRANSFER/MERGE TIME\n");
-    timert.begin();
+    static ambient::timer timert("svd transfer/merge time\n"); timert.begin();
 
     // calculating complexities of the svd calls
     size_t np = ambient::num_workers();
@@ -153,7 +150,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
         locale l(p);
         for(size_t i = 0; i < loop_max; ++i){
             size_t k = complexities[i].second;
-            if(ambient::get_owner(M[k][0]) != p && (p != ambient::rank() || ambient::get_owner(M[k][0]) != -1)) continue;
+            if(ambient::get_owner(M[k][0]) != p) continue;
             if(workloads[p].first + complexities[i].first >= total) break;
             merge(M[k]); 
             workloads[p].first += complexities[i].first; 
@@ -188,24 +185,14 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     }
     timert.end();
 
-    #ifdef AMBIENT_PARALLEL_MKL
-    ambient::mkl_set_num_threads(AMBIENT_MKL_NUM_THREADS);
-    #endif
-    timer.begin();
+
+    static ambient::timer timer("svd only time\n"); timer.begin();
     for(size_t k = 0; k < loop_max; ++k){
-        int owner = ambient::get_owner(M[k][0]);
-        if(owner == -1) owner = ambient::rank();
-        locale l(owner);
+        locale l(ambient::get_owner(M[k][0]));
         svd_merged(M[k], U[k], V[k], S[k]);
     }
+    ambient::sync(ambient::mkl_parallel());
     timer.end();
-    #ifdef AMBIENT_PARALLEL_MKL
-    ambient::mkl_set_num_threads(1);
-    #endif
-    #else
-    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
-        svd_merged(M[k], U[k], V[k], S[k]);
-    #endif
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>

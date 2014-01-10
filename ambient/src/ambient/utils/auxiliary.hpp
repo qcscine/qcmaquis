@@ -31,8 +31,19 @@ namespace ambient {
 
     using ambient::models::ssm::revision;
 
+    void sync();
+    
+    template<typename T> 
+    void sync(const T& t){ 
+        ambient::sync(); 
+    }
+
     inline bool isset(const char* env){
         return (std::getenv( env ) != NULL);
+    }
+
+    inline int getint(const char* env){
+        return std::atoi(std::getenv( env ));
     }
 
     inline int num_workers(){
@@ -116,8 +127,10 @@ namespace ambient {
 
     template<typename V>
     inline int get_owner(const V& o){
-        return o.versioned.core->current->owner;
+        int p = o.versioned.core->current->owner;
+        return (p == -1 ? ambient::rank() : p);
     }
+
 }
 
 #endif

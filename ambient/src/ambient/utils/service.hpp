@@ -27,15 +27,41 @@
 #ifndef AMBIENT_UTILS_SERVICE
 #define AMBIENT_UTILS_SERVICE
 
+#include <dlfcn.h>
+
 extern "C" {
     void MKL_Set_Num_Threads(int nth);
 }
 
 namespace ambient {
 
-    inline void mkl_set_num_threads(int n){
-        MKL_Set_Num_Threads(n);
-    }
+    class mkl_parallel {
+    public:
+        typedef void (*fptr_t)(int);
+        mkl_parallel(int nt = 0){
+            if(nt || ambient::isset("AMBIENT_MKL_NUM_THREADS")){
+                if(!nt) nt = ambient::getint("AMBIENT_MKL_NUM_THREADS");
+                if(fptr == NULL) import();
+                fptr(nt);
+            }
+            manual = (nt != 0);
+        }
+       ~mkl_parallel(){
+            if(manual) fptr(1);
+        }
+    private:
+        void import(){
+            void* handle = dlopen("libmkl_intel_lp64.so", RTLD_LAZY); 
+            if(!handle) printf("Error: cannot open libmkl_intel_lp64.so\n");
+            dlerror(); // reset errors
+            fptr = (fptr_t) dlsym(handle, "MKL_Set_Num_Threads");
+            if(dlerror()) printf("Error: cannot load symbol 'MKL_Set_Num_Threads'\n");
+            dlclose(handle);
+        }
+    private:
+        bool manual;
+        static fptr_t fptr;
+    };
 
 }
 
