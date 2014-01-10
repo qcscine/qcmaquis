@@ -28,7 +28,6 @@ module load cmake
 COMMON_CMAKE_CXX_FLAGS="-O3 -DNDEBUG -w -Wfatal-errors"
 COMMON_CMAKE_C_COMPILER=mpicc
 COMMON_CMAKE_CXX_COMPILER=mpicxx
-COMMON_AMBIENT_PARALLEL_MKL=ON
 COMMON_BLAS_LAPACK_SELECTOR="manual" # TODO: mkl_sequential should work as well
 COMMON_MAQUISLapack_LIBRARIES="-lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm"
 COMMON_MAQUISLapack_LIB_DIRS=/apps/castor/intel-2013/mkl/lib/intel64
