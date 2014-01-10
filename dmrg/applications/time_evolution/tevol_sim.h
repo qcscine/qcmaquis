@@ -102,6 +102,9 @@ public:
                 if (iteration_params.size() > 0) {
                     parms <<iteration_params;
                     this->model_init(sweep);
+                    meas_each    = parms["measure_each"];
+                    chkp_each    = parms["chkp_each"];
+                    update_each  = parms["update_each"];
                     evolver = TimeEvolver(&parms, &mps, lat, model, sweep);
                 }
             } else if (sweep == nsweeps_img) {
