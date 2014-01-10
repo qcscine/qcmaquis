@@ -82,8 +82,8 @@ public:
     void run()
     {
         /// Set current status in parms
-        parms = parms.get_at_index("graining", initial_graining);
-        model = model.get_at_index("graining", initial_graining);
+        parms << parms.iteration_params("graining", initial_graining);
+        model << model.iteration_params("graining", initial_graining);
         /// Build current model and load/build MPS
         this->model_init();
         this->mps_init();
@@ -103,15 +103,16 @@ public:
             if (graining < parms["ngrainings"]-1) {
                 maquis::cout << "*** Starting grainings ***" << std::endl;
                 
-                parms = parms.get_at_index("graining", graining+1);
-                model = model.get_at_index("graining", graining+1);
+                parms << parms.iteration_params("graining", graining+1);
+                model << model.iteration_params("graining", graining+1);
                 this->model_init();
                 
                 boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > initializer = boost::shared_ptr<mps_initializer<Matrix, SymmGroup> > (new empty_mps_init<Matrix, SymmGroup>());
                 MPS<Matrix, SymmGroup> new_mps = MPS<Matrix, SymmGroup>(lat->size(), 1, this->phys, this->initc, *initializer);
                 
                 int curL = mps.length();
-                BaseParameters oldmodel = model.get_at_index("graining", graining);
+                BaseParameters oldmodel(model);
+                oldmodel << model.iteration_params("graining", graining);
                 
                 std::vector<MPO<Matrix, SymmGroup> > mpo_mix(curL+1, MPO<Matrix, SymmGroup>(0));
                 double r = lat->size() / curL;

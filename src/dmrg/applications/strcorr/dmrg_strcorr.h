@@ -64,7 +64,7 @@ public:
         }
         
         // Init model
-        parms = parms_.get_at_index("graining", graining);
+        parms << parms.iteration_params("graining", graining);
         init_model();
         L = parms["L"]; N = parms["Ndiscr"];
         Ltot = L * N;

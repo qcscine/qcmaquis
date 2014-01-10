@@ -65,8 +65,8 @@ public:
         int nsweeps     = parms["nsweeps"];
         int nsweeps_img = parms["nsweeps_img"];
         
-        parms = parms.get_at_index("t", init_sweep);
-
+        parms << parms.iteration_params("t", init_sweep);
+        
         this->model_init();
         this->mps_init();
         
@@ -98,9 +98,9 @@ public:
             int sweep = i*nsteps;
             if (update_each > -1 && (sweep % update_each) == 0)
             {
-                int pc = 0, mc = 0;
-                parms = parms.get_at_index("t", sweep, &pc);
-                if (mc > 0 || pc > 0) {
+                BaseParameters iteration_params = parms.iteration_params("t", sweep);
+                if (iteration_params.size() > 0) {
+                    parms <<iteration_params;
                     this->model_init(sweep);
                     evolver = TimeEvolver(&parms, &mps, lat, model, sweep);
                 }
