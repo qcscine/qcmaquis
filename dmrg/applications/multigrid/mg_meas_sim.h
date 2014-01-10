@@ -79,8 +79,8 @@ public:
     void run()
     {
         /// Set current status in parms
-        parms = parms.get_at_index("graining", initial_graining);
-        model = model.get_at_index("graining", initial_graining);
+        parms << parms.iteration_params("graining", initial_graining);
+        model << model.iteration_params("graining", initial_graining);
         /// Build current model and load/build MPS
         this->model_init();
         this->mps_init();

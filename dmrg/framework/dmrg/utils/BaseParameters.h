@@ -114,9 +114,9 @@ public:
         alps::Parameters::operator[](key) = boost::lexical_cast<std::string>(value);
     }
     
-    BaseParameters get_at_index(std::string const & var, std::size_t val, int* counter = NULL) const
+    BaseParameters iteration_params(std::string const & var, std::size_t val) const
     {
-        BaseParameters p(*this);
+        BaseParameters p;
         
         boost::regex expression("^(.*)\\[" + var + "\\]$");
         boost::smatch what;
@@ -128,12 +128,9 @@ public:
                     p.set(what.str(1), v[val]);
                 else
                     p.set(what.str(1), *(v.rbegin()));
-                
-                if (counter)
-                    ++(*counter);
             }
         }
-        p.set("var_"+var, val);
+        p.set("iter_"+var, val);
         
         return p;
     }
