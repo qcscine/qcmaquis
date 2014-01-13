@@ -29,9 +29,13 @@
 
 namespace ambient { namespace models { namespace ssm {
 
+    template<typename T> constexpr T op_single (T a){ return T(); }
+    template<typename T> constexpr T op_double (T a, T b){ return T(); }
+
     class transformable {
     public:
-        union numeric_union { 
+        union numeric_union {
+            typedef std::complex<double> limit; 
             bool b; 
             double d; 
             std::complex<double> c; 
@@ -71,6 +75,16 @@ namespace ambient { namespace models { namespace ssm {
         virtual transformable& operator += (transformable& r); 
     };
 
+    constexpr int max(int a, int b){ return a > b ? a : b; }
+    // injecting templated T is also possible (except in collector) //
+    constexpr size_t sizeof_transformable(){ return ambient::memory::aligned_64
+                                                    < max( sizeof(transformable_value<typename transformable::numeric_union::limit>), 
+                                                           sizeof(transformable_expr <typename transformable::numeric_union::limit,
+                                                                                      decltype(&op_double<typename transformable::numeric_union::limit>),
+                                                                                      op_double>)
+                                                         )
+                                                    >();
+                                           }
 } } }
 
 #endif
