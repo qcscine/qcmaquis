@@ -95,6 +95,12 @@ void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
 //        parse_overlaps(parms, opt_sweep.get(), measurements);
 //    else
 //        parse_overlaps(parms, init_sweep, measurements);
+    
+//    if (parms["ENABLE_MEASURE[Entropy]"])
+//        all_measurements.push_back( new measurements::entropies<Matrix, SymmGroup>() );
+//    if (parms["ENABLE_MEASURE[Renyi2]"])
+//        all_measurements.push_back( new measurements::renyi_entropies<Matrix, SymmGroup>() );
+    
     if (!parms["always_measure"].empty())
         sweep_measurements = meas_sublist(all_measurements, parms["always_measure"]);
     
@@ -196,6 +202,8 @@ void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type
     std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile, archive_path, mps));
     
     // TODO: move into special measurement
+    std::vector< std::vector<double> > * spectra;
+    spectra = parms["entanglement_spectra"] ? new std::vector< std::vector<double> >() : NULL;
     std::vector<double> entropies, renyi2;
     if (parms["ENABLE_MEASURE[Entropy]"]) {
         maquis::cout << "Calculating vN entropy." << std::endl;
@@ -203,13 +211,8 @@ void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type
     }
     if (parms["ENABLE_MEASURE[Renyi2]"]) {
         maquis::cout << "Calculating n=2 Renyi entropy." << std::endl;
-        renyi2 = calculate_bond_renyi_entropies(mps, 2);
+        renyi2 = calculate_bond_renyi_entropies(mps, 2, spectra);
     }
-    std::vector< std::vector<double> > * spectra;
-    if (parms["entanglement_spectra"])
-        spectra = new std::vector< std::vector<double> >();
-    else
-        spectra = NULL;
 
     {
         storage::archive ar(rfile, "w");
