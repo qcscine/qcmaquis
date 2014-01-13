@@ -16,6 +16,10 @@ AMBIENT_DB_NUM_PROCS=[proc count]      # the number of processes to retain as de
                                        #
 (default: 0)                           #
 
+AMBIENT_BULK_LIMIT=[chunks number]     # limit the data bulk memory consumption by [chunks number]
+                                       #
+(default: not limited)                 #
+
 
 Resource overloading impact on a tiny test-case:
 

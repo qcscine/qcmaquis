@@ -27,6 +27,8 @@
 #ifndef AMBIENT_CONTROLLERS_SSM_CONTROLLER
 #define AMBIENT_CONTROLLERS_SSM_CONTROLLER
 
+#define AMBIENT_STACK_RESERVE 65536
+
 namespace ambient { namespace controllers { namespace ssm {
 
     using ambient::models::ssm::history;
