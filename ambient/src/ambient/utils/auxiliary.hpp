@@ -46,6 +46,10 @@ namespace ambient {
         return std::atoi(std::getenv( env ));
     }
 
+    inline int num_db_procs(){
+        return get_controller().get_num_db_procs();
+    }
+
     inline int num_workers(){
         return get_controller().get_num_workers();
     }

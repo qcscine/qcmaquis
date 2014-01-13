@@ -49,7 +49,7 @@ namespace ambient { namespace controllers { namespace ssm {
 
         controller();
        ~controller();
-        void init();
+        void init(int db = 0);
         bool empty();
         void flush();
         void clear();
@@ -85,6 +85,7 @@ namespace ambient { namespace controllers { namespace ssm {
         int  get_rank() const;
         int  get_shared_rank() const;
         int  get_dedicated_rank() const;
+        int  get_num_db_procs() const;
         int  get_num_workers() const;
         int  get_num_procs() const;
         int get_sid() const;
@@ -107,6 +108,7 @@ namespace ambient { namespace controllers { namespace ssm {
         ambient::memory::collector garbage;
         bool serial;
         int sid;
+        int db;
     };
     
 } } }
