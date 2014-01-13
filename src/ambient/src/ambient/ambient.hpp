@@ -56,7 +56,6 @@
 #define AMBIENT_MAX_SID               2097152  // Cray MPI
 #define AMBIENT_STACK_RESERVE         65536
 #define AMBIENT_FUTURE_SIZE           64
-#define AMBIENT_DB_PROCS   0
 
 #include "ambient/utils/dim2.h"
 #include "ambient/utils/enums.h"
@@ -132,24 +131,19 @@ namespace ambient {
             channel_type::unmount();
         }
         universe(){
+            int db = ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0;
             channel_type::mount();
             c.get_channel().init();
-            c.init();
+            c.init(db);
             if(ambient::isset("AMBIENT_VERBOSE")){
-                #ifdef AMBIENT_CILK
-                ambient::cout << "ambient: initialized (using cilk)\n";
-                #elif defined(AMBIENT_OMP)
-                ambient::cout << "ambient: initialized (using openmp)\n";
-                #else
-                ambient::cout << "ambient: initialized (no threading)\n";
-                #endif
+                ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE     << ")\n";
                 if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
                 ambient::cout << "ambient: size of instr bulk chunks: "     << AMBIENT_INSTR_BULK_CHUNK       << "\n";
                 ambient::cout << "ambient: size of data bulk chunks: "      << AMBIENT_DATA_BULK_CHUNK        << "\n";
                 ambient::cout << "ambient: maximum number of bulk chunks: " << AMBIENT_BULK_LIMIT             << "\n";
                 ambient::cout << "ambient: maximum sid value: "             << AMBIENT_MAX_SID                << "\n";
-                ambient::cout << "ambient: number of database proc: "       << AMBIENT_DB_PROCS               << "\n";
-                ambient::cout << "ambient: number of work proc: "           << ambient::num_workers()         << "\n";
+                if(db) ambient::cout << "ambient: number of db procs: "     << ambient::num_db_procs()        << "\n";
+                ambient::cout << "ambient: number of work procs: "          << ambient::num_workers()         << "\n";
                 ambient::cout << "ambient: number of threads per proc: "    << ambient::num_threads()         << "\n";
                 ambient::cout << "\n";
             }

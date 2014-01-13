@@ -1,16 +1,20 @@
 Ambient environment variables:
 
 
-                       AMBIENT_VERBOSE # print-out Ambient configuration prior to running
+AMBIENT_VERBOSE                        # print-out Ambient configuration prior to running
 
 AMBIENT_MKL_NUM_THREADS=[thread count] # enable selective threading: MKL will use only 1 thread 
                                        # unless sync is called passing mkl_parallel() - then the
                                        # [thread count] is used.
 
-        MKL_NUM_THREADS=[thread count] # MKL will use [thread count] in all of its calls.
+MKL_NUM_THREADS=[thread count]         # MKL will use [thread count] in all of its calls.
                                        # Warning: can cause performance degradation due to
-        (default: auto)                # resources overloading. Use AMBIENT_MKL_NUM_THREADS 
+(default: auto)                        # resources overloading. Use AMBIENT_MKL_NUM_THREADS 
                                        # to override it.
+
+AMBIENT_DB_NUM_PROCS=[proc count]      # the number of processes to retain as dedicated
+                                       #
+(default: 0)                           #
 
 
 Resource overloading impact on a tiny test-case:

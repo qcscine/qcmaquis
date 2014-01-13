@@ -45,7 +45,8 @@ namespace ambient { namespace controllers { namespace ssm {
         this->mirror = &this->stack_s;
     }
 
-    inline void controller::init(){
+    inline void controller::init(int db){
+        this->db = get_num_procs() > db ? db : 0;
         this->context_base = new ambient::scope<base>();
         this->context = this->context_base;
         this->serial = (get_num_procs() == 1) ? true : false;
@@ -211,7 +212,7 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline int controller::get_dedicated_rank() const {
-        return channel.dim() - AMBIENT_DB_PROCS;
+        return (get_num_procs()-db);
     }
         
     inline bool controller::verbose() const {
@@ -238,10 +239,12 @@ namespace ambient { namespace controllers { namespace ssm {
         return channel.dim();
     }
 
+    inline int controller::get_num_db_procs() const {
+        return this->db;
+    }
+
     inline int controller::get_num_workers() const {
-        int np = get_num_procs();
-        int db = np > AMBIENT_DB_PROCS ? AMBIENT_DB_PROCS : 0;
-        return np-db;
+        return (get_num_procs()-db);
     }
 
     inline int controller::generate_sid(){

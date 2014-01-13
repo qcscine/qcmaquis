@@ -28,6 +28,7 @@
 #define AMBIENT_UTILS_ENABLE_OMP
 
 #include <omp.h>
+#define AMBIENT_THREADING_TAGLINE "using openmp"
 #define AMBIENT_THREAD_ID omp_get_thread_num()
 #define AMBIENT_PRAGMA(a) _Pragma( #a )
 #define AMBIENT_THREAD AMBIENT_PRAGMA(omp task untied)
