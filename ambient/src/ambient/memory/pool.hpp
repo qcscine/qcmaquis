@@ -31,7 +31,7 @@
 #include "ambient/utils/mutex.hpp"
 #include "ambient/memory/factory.hpp"
 #include "ambient/memory/region.hpp"
-#include "ambient/memory/data_bulk.hpp"
+#include "ambient/memory/data_bulk.h"
 #include "ambient/memory/instr_bulk.h"
 
 namespace ambient { namespace memory {
@@ -108,7 +108,7 @@ namespace ambient { namespace pool {
     static void* malloc(descriptor& d){
         assert(d.region != region_t::rdelegated);
         if(d.region == region_t::rbulked){
-            //if(d.extent > AMBIENT_IB*AMBIENT_IB*16 || data_bulk::factory<AMBIENT_DATA_BULK_CHUNK>::size() > AMBIENT_BULK_LIMIT){
+            //if(d.extent > AMBIENT_IB*AMBIENT_IB*16 || !data_bulk::open()){
                 d.region = region_t::rstandard;
                 return malloc<standard>(d.extent);
             //}

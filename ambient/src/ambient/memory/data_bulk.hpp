@@ -24,33 +24,38 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_MEMORY_DATA_BULK
-#define AMBIENT_MEMORY_DATA_BULK
+#ifndef AMBIENT_MEMORY_DATA_BULK_HPP
+#define AMBIENT_MEMORY_DATA_BULK_HPP
 
 namespace ambient { namespace memory {
 
-    struct data_bulk {
-        static data_bulk& instance(){
-            static data_bulk singleton; return singleton;
-        }
-        template<size_t S> static void* malloc()         { return instance().memory.malloc(S);     }
-                           static void* malloc(size_t s) { return instance().memory.malloc(s);     }
-        template<size_t S> static void* calloc()         { void* m = malloc<S>(); memset(m, 0, S); return m; }
-                           static void* calloc(size_t s) { void* m = malloc(s);   memset(m, 0, s); return m; }
-                           static void reuse(void* ptr)  { factory<AMBIENT_DATA_BULK_CHUNK>::reuse(ptr); }
-        template<size_t S> static void free(void* ptr)   { }
-                           static void free(void* ptr)   { }
+    inline data_bulk& data_bulk::instance(){
+        static data_bulk singleton(ambient::isset("AMBIENT_BULK_LIMIT") 
+                                   ? ambient::getint("AMBIENT_BULK_LIMIT")
+                                   : AMBIENT_MAX_SID); // any big number 
+        return singleton;
+    }
 
-        static void drop(){
-            instance().memory.reset();
-            factory<AMBIENT_DATA_BULK_CHUNK>::reset();
-        }
-        static region_t signature(){
-            return region_t::rbulked;
-        }
-    private:
-        region<AMBIENT_DATA_BULK_CHUNK, factory<AMBIENT_DATA_BULK_CHUNK> > memory;
-    };
+    inline data_bulk::data_bulk(int limit) : limit(limit) {}
+
+    template<size_t S> void* data_bulk::malloc()         { return instance().memory.malloc(S);     }
+                inline void* data_bulk::malloc(size_t s) { return instance().memory.malloc(s);     }
+    template<size_t S> void* data_bulk::calloc()         { void* m = malloc<S>(); memset(m, 0, S); return m; }
+                inline void* data_bulk::calloc(size_t s) { void* m = malloc(s);   memset(m, 0, s); return m; }
+                inline void data_bulk::reuse(void* ptr)  { factory<AMBIENT_DATA_BULK_CHUNK>::reuse(ptr); }
+
+    inline void data_bulk::drop(){
+        instance().memory.reset();
+        factory<AMBIENT_DATA_BULK_CHUNK>::reset();
+    }
+
+    inline region_t data_bulk::signature(){
+        return region_t::rbulked;
+    }
+
+    inline bool data_bulk::open(){
+        return instance().limit > factory<AMBIENT_DATA_BULK_CHUNK>::size();
+    }
 
 } }
 

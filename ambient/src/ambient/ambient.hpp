@@ -50,11 +50,9 @@
 
 #define AMBIENT_MEMORY_SQUEEZE
 #define AMBIENT_IB                    2048
-#define AMBIENT_BULK_LIMIT            40
 #define AMBIENT_INSTR_BULK_CHUNK      16777216 // 16 MB
 #define AMBIENT_DATA_BULK_CHUNK       67108864 // 64 MB
 #define AMBIENT_MAX_SID               2097152  // Cray MPI
-#define AMBIENT_STACK_RESERVE         65536
 
 #include "ambient/utils/dim2.h"
 #include "ambient/utils/enums.h"
@@ -84,12 +82,13 @@
 #include "ambient/controllers/ssm/collector.h"
 #include "ambient/controllers/ssm/controller.h"
 
-#include "ambient/memory/new.hpp"
-#include "ambient/memory/allocator.hpp"
-#include "ambient/memory/instr_bulk.hpp"
-
 #include "ambient/utils/auxiliary.hpp"
 #include "ambient/utils/io.hpp"
+
+#include "ambient/memory/new.hpp"
+#include "ambient/memory/allocator.hpp"
+#include "ambient/memory/data_bulk.hpp"
+#include "ambient/memory/instr_bulk.hpp"
 
 #include "ambient/models/ssm/revision.hpp"
 #include "ambient/models/ssm/history.hpp"
@@ -139,7 +138,7 @@ namespace ambient {
                 if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
                 ambient::cout << "ambient: size of instr bulk chunks: "     << AMBIENT_INSTR_BULK_CHUNK       << "\n";
                 ambient::cout << "ambient: size of data bulk chunks: "      << AMBIENT_DATA_BULK_CHUNK        << "\n";
-                ambient::cout << "ambient: maximum number of bulk chunks: " << AMBIENT_BULK_LIMIT             << "\n";
+                if(ambient::isset("AMBIENT_BULK_LIMIT")) ambient::cout << "ambient: max chunks of data bulk: " << ambient::getint("AMBIENT_BULK_LIMIT") << "\n";
                 ambient::cout << "ambient: maximum sid value: "             << AMBIENT_MAX_SID                << "\n";
                 if(db) ambient::cout << "ambient: number of db procs: "     << ambient::num_db_procs()        << "\n";
                 ambient::cout << "ambient: number of work procs: "          << ambient::num_workers()         << "\n";
