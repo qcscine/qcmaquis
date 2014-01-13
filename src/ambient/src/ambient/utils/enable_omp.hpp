@@ -24,36 +24,17 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-//constexpr size_t aligned_8(size_t size){ return 8 * (size_t)((size+7)/8); }
+#ifndef AMBIENT_UTILS_ENABLE_OMP
+#define AMBIENT_UTILS_ENABLE_OMP
 
-namespace ambient { namespace models { namespace ssm {
+#include <omp.h>
+#define AMBIENT_THREAD_ID omp_get_thread_num()
+#define AMBIENT_PRAGMA(a) _Pragma( #a )
+#define AMBIENT_THREAD AMBIENT_PRAGMA(omp task untied)
+#define AMBIENT_SMP_ENABLE AMBIENT_PRAGMA(omp parallel) { AMBIENT_PRAGMA(omp single nowait)
+#define AMBIENT_SMP_DISABLE }
+#define AMBIENT_NUM_THREADS [&]()->int{ int n; AMBIENT_SMP_ENABLE \
+                            { n = omp_get_num_threads(); } \
+                            AMBIENT_SMP_DISABLE return n; }()
 
-    inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(ambient::memory::aligned_64(dim.square()*ts)) {
-    }
-
-    inline void history::init_state(){
-        revision* r = new revision(extent, NULL, ambient::common); 
-        this->current = r;
-    }
-
-    template<ambient::locality L>
-    inline void history::add_state(void* g){
-        revision* r = new revision(extent, g, L); 
-        this->current = r;
-    }
-
-    template<ambient::locality L>
-    inline void history::add_state(int g){
-        revision* r = new revision(extent, NULL, L, g); 
-        this->current = r;
-    }
-
-    inline revision* history::back() const {
-        return this->current;
-    }
-
-    inline bool history::weak() const {
-        return (this->back() == NULL);
-    }
-
-} } }
+#endif

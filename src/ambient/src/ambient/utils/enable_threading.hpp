@@ -24,36 +24,31 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-//constexpr size_t aligned_8(size_t size){ return 8 * (size_t)((size+7)/8); }
+#ifndef AMBIENT_UTILS_ENABLE_THREADING
+#define AMBIENT_UTILS_ENABLE_THREADING
 
-namespace ambient { namespace models { namespace ssm {
+// default: select threading if icc/gcc
+#if !defined(AMBIENT_CILK) && !defined(AMBIENT_OMP) && !defined(AMBIENT_SERIAL)
+#if defined __INTEL_COMPILER
+#define AMBIENT_CILK
+#elif defined __GNUC__
+#define AMBIENT_OMP
+#endif
+#endif
 
-    inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(ambient::memory::aligned_64(dim.square()*ts)) {
+#ifdef AMBIENT_CILK
+#include "ambient/utils/enable_cilk.hpp"
+#elif defined(AMBIENT_OMP)
+#include "ambient/utils/enable_omp.hpp"
+#else
+#include "ambient/utils/enable_serial.hpp"
+#endif
+
+namespace ambient {
+    inline int num_threads(){
+        static int n = AMBIENT_NUM_THREADS; return n;
     }
+}
 
-    inline void history::init_state(){
-        revision* r = new revision(extent, NULL, ambient::common); 
-        this->current = r;
-    }
+#endif
 
-    template<ambient::locality L>
-    inline void history::add_state(void* g){
-        revision* r = new revision(extent, g, L); 
-        this->current = r;
-    }
-
-    template<ambient::locality L>
-    inline void history::add_state(int g){
-        revision* r = new revision(extent, NULL, L, g); 
-        this->current = r;
-    }
-
-    inline revision* history::back() const {
-        return this->current;
-    }
-
-    inline bool history::weak() const {
-        return (this->back() == NULL);
-    }
-
-} } }

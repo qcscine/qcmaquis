@@ -24,36 +24,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-//constexpr size_t aligned_8(size_t size){ return 8 * (size_t)((size+7)/8); }
+#ifndef AMBIENT_UTILS_ENUMS
+#define AMBIENT_UTILS_ENUMS
 
-namespace ambient { namespace models { namespace ssm {
+namespace ambient {
+    enum locality   { remote, local, common };
+    enum scope_t    { base, single, shared, dedicated, threaded };
+    enum region_t   { rbulked, rstandard, rdelegated };
+}
 
-    inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(ambient::memory::aligned_64(dim.square()*ts)) {
-    }
-
-    inline void history::init_state(){
-        revision* r = new revision(extent, NULL, ambient::common); 
-        this->current = r;
-    }
-
-    template<ambient::locality L>
-    inline void history::add_state(void* g){
-        revision* r = new revision(extent, g, L); 
-        this->current = r;
-    }
-
-    template<ambient::locality L>
-    inline void history::add_state(int g){
-        revision* r = new revision(extent, NULL, L, g); 
-        this->current = r;
-    }
-
-    inline revision* history::back() const {
-        return this->current;
-    }
-
-    inline bool history::weak() const {
-        return (this->back() == NULL);
-    }
-
-} } }
+#endif

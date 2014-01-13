@@ -48,73 +48,22 @@
 #include <execinfo.h>
 // }}}
 
-#if !defined(AMBIENT_CILK) && !defined(AMBIENT_OMP) && !defined(AMBIENT_SERIAL)
-#if defined __INTEL_COMPILER
-#define AMBIENT_CILK
-#elif defined __GNUC__
-#define AMBIENT_OMP
-#endif
-#endif
-
-#ifdef AMBIENT_CILK
-    #include <cilk/cilk.h>
-    #include <cilk/cilk_api.h>
-    #define AMBIENT_NUM_THREADS __cilkrts_get_total_workers()
-    #define AMBIENT_THREAD_ID __cilkrts_get_worker_number()
-    #define AMBIENT_THREAD cilk_spawn
-    #define AMBIENT_SMP_ENABLE
-    #define AMBIENT_SMP_DISABLE cilk_sync;
-#elif defined(AMBIENT_OMP)
-    #include <omp.h>
-    #define AMBIENT_THREAD_ID omp_get_thread_num()
-    #define AMBIENT_PRAGMA(a) _Pragma( #a )
-    #define AMBIENT_THREAD AMBIENT_PRAGMA(omp task untied)
-    #define AMBIENT_SMP_ENABLE AMBIENT_PRAGMA(omp parallel) { AMBIENT_PRAGMA(omp single nowait)
-    #define AMBIENT_SMP_DISABLE }
-    #define AMBIENT_NUM_THREADS [&]()->int{ int n; AMBIENT_SMP_ENABLE \
-                                { n = omp_get_num_threads(); } \
-                                AMBIENT_SMP_DISABLE return n; }()
-#else // serial
-    #define AMBIENT_NUM_THREADS 1
-    #define AMBIENT_THREAD_ID   0
-    #define AMBIENT_THREAD
-    #define AMBIENT_SMP_ENABLE
-    #define AMBIENT_SMP_DISABLE
-#endif
-
-//#define AMBIENT_CHECK_BOUNDARIES     // check overflows in memptf
-//#define AMBIENT_LOOSE_FUTURE         // delayed evaluation
-//#define AMBIENT_NUMERIC_EXPERIMENTAL // use experimental algorithms
 #define AMBIENT_MEMORY_SQUEEZE
+#define AMBIENT_IB                    2048
+#define AMBIENT_BULK_LIMIT            40
 #define AMBIENT_INSTR_BULK_CHUNK      16777216 // 16 MB
 #define AMBIENT_DATA_BULK_CHUNK       67108864 // 64 MB
-#define AMBIENT_BULK_LIMIT            40
-#define AMBIENT_MAX_SID               2097152 // Cray MPI
+#define AMBIENT_MAX_SID               2097152  // Cray MPI
 #define AMBIENT_STACK_RESERVE         65536
-#define AMBIENT_COLLECTOR_STR_RESERVE 65536
-#define AMBIENT_COLLECTOR_REV_RESERVE 65536
-#define AMBIENT_COLLECTOR_RAW_RESERVE 1024
 #define AMBIENT_FUTURE_SIZE           64
-#define AMBIENT_IB                    2048
-#define AMBIENT_IB_EXTENT             2048*2048*16
 #define AMBIENT_DB_PROCS   0
-#define PAGE_SIZE 4096
-#define ALIGNMENT 64
-
-namespace ambient {
-    inline int num_threads(){
-        static int n = AMBIENT_NUM_THREADS; return n;
-    }
-    enum locality   { remote, local, common };
-    enum scope_t    { base, single, shared, dedicated, threaded };
-    enum region_t   { rbulked, rstandard, rdelegated };
-}
-
 
 #include "ambient/utils/dim2.h"
+#include "ambient/utils/enums.h"
 #include "ambient/utils/tree.hpp"
 #include "ambient/utils/fence.hpp"
 #include "ambient/utils/singleton.hpp"
+#include "ambient/utils/enable_threading.hpp"
 
 #include "ambient/memory/pool.hpp"
 #include "ambient/memory/new.h"

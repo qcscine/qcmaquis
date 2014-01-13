@@ -29,8 +29,8 @@
 
 namespace ambient { namespace memory {
 
-    constexpr size_t paged(size_t size)  {  return PAGE_SIZE * (size_t)((size+PAGE_SIZE-1)/PAGE_SIZE); }
-    constexpr size_t aligned(size_t size){  return ALIGNMENT * (size_t)((size+ALIGNMENT-1)/ALIGNMENT); }
+    constexpr size_t paged(size_t size, size_t page){  return page * (size_t)((size+page-1)/page); } // (page example: 4096)
+    constexpr size_t aligned_64(size_t size){ return 64 * (size_t)((size+63)/64); }
 
     template<size_t S, class Factory>
     class serial_region {
@@ -46,7 +46,7 @@ namespace ambient { namespace memory {
         void* malloc(size_t sz){
             if(((size_t)iterator + sz - (size_t)this->buffer) >= S) realloc();
             void* m = (void*)iterator;
-            iterator += aligned(sz);
+            iterator += aligned_64(sz);
             return m;
         }
         void reset(){
