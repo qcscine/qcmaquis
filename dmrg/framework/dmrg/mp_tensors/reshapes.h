@@ -273,8 +273,9 @@ void reshape_and_pad_left(Index<SymmGroup> physical_i,
                 charge l_charge = SymmGroup::fuse(physical_i[s].first, in_left_i[l].first);
                 charge r_charge = in_right_i[r].first;
                 
-                if (! m1.has_block(l_charge, r_charge) )
-                    continue;
+                if (! out_left_i.has(in_left_i[l].first)) continue;
+                if (! m1.has_block(l_charge, r_charge) )  continue;
+                if (! m2.has_block(l_charge, r_charge) )  continue;
                 
                 size_t in_left_offset = in_left(physical_i[s].first, in_left_i[l].first);
                 size_t out_left_offset = out_left(physical_i[s].first, in_left_i[l].first);
