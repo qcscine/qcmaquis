@@ -91,7 +91,7 @@ namespace ambient { namespace memory {
                 iterator = (char*)buffer;
             }
             void* malloc(size_t sz){
-                return iterator.fetch_add(ambient::memory::aligned(sz));
+                return iterator.fetch_add(ambient::memory::aligned_64(sz));
             }
 
             class unmapx {

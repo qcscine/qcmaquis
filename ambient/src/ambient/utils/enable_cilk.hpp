@@ -24,36 +24,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-//constexpr size_t aligned_8(size_t size){ return 8 * (size_t)((size+7)/8); }
+#ifndef AMBIENT_UTILS_ENABLE_CILK
+#define AMBIENT_UTILS_ENABLE_CILK
 
-namespace ambient { namespace models { namespace ssm {
+#include <cilk/cilk.h>
+#include <cilk/cilk_api.h>
+#define AMBIENT_NUM_THREADS __cilkrts_get_total_workers()
+#define AMBIENT_THREAD_ID __cilkrts_get_worker_number()
+#define AMBIENT_THREAD cilk_spawn
+#define AMBIENT_SMP_ENABLE
+#define AMBIENT_SMP_DISABLE cilk_sync;
 
-    inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(ambient::memory::aligned_64(dim.square()*ts)) {
-    }
-
-    inline void history::init_state(){
-        revision* r = new revision(extent, NULL, ambient::common); 
-        this->current = r;
-    }
-
-    template<ambient::locality L>
-    inline void history::add_state(void* g){
-        revision* r = new revision(extent, g, L); 
-        this->current = r;
-    }
-
-    template<ambient::locality L>
-    inline void history::add_state(int g){
-        revision* r = new revision(extent, NULL, L, g); 
-        this->current = r;
-    }
-
-    inline revision* history::back() const {
-        return this->current;
-    }
-
-    inline bool history::weak() const {
-        return (this->back() == NULL);
-    }
-
-} } }
+#endif

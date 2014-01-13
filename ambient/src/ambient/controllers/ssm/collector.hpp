@@ -30,9 +30,8 @@ namespace ambient { namespace memory {
     using ambient::models::ssm::revision;
 
     inline collector::collector(){
-        this->rev.reserve(AMBIENT_COLLECTOR_REV_RESERVE);
-        this->str.reserve(AMBIENT_COLLECTOR_STR_RESERVE);
-        this->raw.reserve(AMBIENT_COLLECTOR_RAW_RESERVE);
+        this->rev.reserve(AMBIENT_STACK_RESERVE);
+        this->str.reserve(AMBIENT_STACK_RESERVE);
     }
 
     inline void collector::push_back(void* o){
