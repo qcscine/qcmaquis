@@ -48,7 +48,6 @@
 #include <execinfo.h>
 // }}}
 
-#define AMBIENT_MEMORY_SQUEEZE
 #define AMBIENT_IB                    2048
 #define AMBIENT_INSTR_BULK_CHUNK      16777216 // 16 MB
 #define AMBIENT_DATA_BULK_CHUNK       67108864 // 64 MB
@@ -139,6 +138,8 @@ namespace ambient {
                 ambient::cout << "ambient: size of instr bulk chunks: "     << AMBIENT_INSTR_BULK_CHUNK       << "\n";
                 ambient::cout << "ambient: size of data bulk chunks: "      << AMBIENT_DATA_BULK_CHUNK        << "\n";
                 if(ambient::isset("AMBIENT_BULK_LIMIT")) ambient::cout << "ambient: max chunks of data bulk: " << ambient::getint("AMBIENT_BULK_LIMIT") << "\n";
+                if(ambient::isset("AMBIENT_BULK_REUSE")) ambient::cout << "ambient: enabled bulk garbage collection\n";
+                if(ambient::isset("AMBIENT_BULK_DEALLOCATE")) ambient::cout << "ambient: enabled bulk deallocation\n";
                 ambient::cout << "ambient: maximum sid value: "             << AMBIENT_MAX_SID                << "\n";
                 if(db) ambient::cout << "ambient: number of db procs: "     << ambient::num_db_procs()        << "\n";
                 ambient::cout << "ambient: number of work procs: "          << ambient::num_workers()         << "\n";
