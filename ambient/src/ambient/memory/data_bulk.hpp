@@ -30,22 +30,27 @@
 namespace ambient { namespace memory {
 
     inline data_bulk& data_bulk::instance(){
-        static data_bulk singleton(ambient::isset("AMBIENT_BULK_LIMIT") 
-                                   ? ambient::getint("AMBIENT_BULK_LIMIT")
-                                   : AMBIENT_MAX_SID); // any big number 
-        return singleton;
+        static data_bulk singleton; return singleton;
     }
 
-    inline data_bulk::data_bulk(int limit) : limit(limit) {}
+    inline data_bulk::data_bulk(){
+        this->limit = ambient::isset("AMBIENT_BULK_LIMIT") ? ambient::getint("AMBIENT_BULK_LIMIT") : AMBIENT_MAX_SID;
+        this->reuse_enabled = ambient::isset("AMBIENT_BULK_REUSE") ? true : false; 
+        this->reset_enabled = ambient::isset("AMBIENT_BULK_DEALLOCATE") ? true : false; 
+    }
 
     template<size_t S> void* data_bulk::malloc()         { return instance().memory.malloc(S);     }
                 inline void* data_bulk::malloc(size_t s) { return instance().memory.malloc(s);     }
     template<size_t S> void* data_bulk::calloc()         { void* m = malloc<S>(); memset(m, 0, S); return m; }
                 inline void* data_bulk::calloc(size_t s) { void* m = malloc(s);   memset(m, 0, s); return m; }
-                inline void data_bulk::reuse(void* ptr)  { factory<AMBIENT_DATA_BULK_CHUNK>::reuse(ptr); }
+
+    inline void data_bulk::reuse(void* ptr){
+        if(instance().reuse_enabled) factory<AMBIENT_DATA_BULK_CHUNK>::reuse(ptr); 
+    }
 
     inline void data_bulk::drop(){
         instance().memory.reset();
+        if(instance().reset_enabled) factory<AMBIENT_DATA_BULK_CHUNK>::deallocate();
         factory<AMBIENT_DATA_BULK_CHUNK>::reset();
     }
 

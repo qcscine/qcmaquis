@@ -30,8 +30,8 @@
 namespace ambient { namespace memory {
 
     struct data_bulk {
+        data_bulk();
         static data_bulk& instance();
-        data_bulk(int limit = 0);
         template<size_t S> static void* malloc();
                            static void* malloc(size_t s);
         template<size_t S> static void* calloc();
@@ -45,6 +45,8 @@ namespace ambient { namespace memory {
         static bool open();
     private:
         region<AMBIENT_DATA_BULK_CHUNK, factory<AMBIENT_DATA_BULK_CHUNK> > memory;
+        bool reuse_enabled;
+        bool reset_enabled;
         int limit;
     };
 

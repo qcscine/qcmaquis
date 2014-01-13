@@ -117,10 +117,8 @@ namespace ambient { namespace memory {
             }
         }
         static void reuse(void* ptr){
-            #ifdef AMBIENT_MEMORY_SQUEEZE
             factory& s = instance();
             guard g(s.mtx);
-
             for(int i = 0; i < s.buffers.size(); i++){
                 if((size_t)ptr < ((size_t)s.buffers[i] + S) && (size_t)ptr >= (size_t)s.buffers[i]){
                     s.counts[i]--;
@@ -128,14 +126,14 @@ namespace ambient { namespace memory {
                     break;
                 }
             }
-            #endif
+        }
+        static void deallocate(){
+            factory& s = instance();
+            for(int i = 1; i < s.buffers.size(); i++) std::free(s.buffers[i]);
+            s.buffers.resize(1); s.counts.resize(1);
         }
         static void reset(){
             factory& s = instance();
-            #ifdef AMBIENT_MEMORY_SQUEEZE
-            for(int i = 1; i < s.buffers.size(); i++) std::free(s.buffers[i]);
-            s.buffers.resize(1); s.counts.resize(1);
-            #endif
             s.buffer = &s.buffers[0];
             s.r_buffers.clear();
             for(int i = 0; i < s.counts.size(); i++)

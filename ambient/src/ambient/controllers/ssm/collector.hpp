@@ -43,15 +43,13 @@ namespace ambient { namespace memory {
     inline void collector::push_back(revision* o){
         if(!o->valid()) o->spec.weaken();
         o->spec.crefs--;
-        #ifdef AMBIENT_MEMORY_SQUEEZE
-        if(!o->referenced()){
+        if(!o->referenced()){ // squeeze
             if(o->valid() && !o->locked() && o->spec.region == ambient::rstandard){
                 ambient::pool::free(o->data, o->spec); // artifacts or last one
                 o->spec.region = ambient::rdelegated;
             }
             this->rev.push_back(o);
         }
-        #endif
     }
 
     inline void collector::push_back(history* o){
