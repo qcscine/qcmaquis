@@ -55,7 +55,6 @@
 #define AMBIENT_DATA_BULK_CHUNK       67108864 // 64 MB
 #define AMBIENT_MAX_SID               2097152  // Cray MPI
 #define AMBIENT_STACK_RESERVE         65536
-#define AMBIENT_FUTURE_SIZE           64
 
 #include "ambient/utils/dim2.h"
 #include "ambient/utils/enums.h"

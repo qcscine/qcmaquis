@@ -28,13 +28,15 @@ namespace ambient { namespace memory {
 
     using ambient::models::ssm::history;
     using ambient::models::ssm::revision;
+    using ambient::models::ssm::transformable;
+    using ambient::models::ssm::sizeof_transformable;
 
     inline collector::collector(){
         this->rev.reserve(AMBIENT_STACK_RESERVE);
         this->str.reserve(AMBIENT_STACK_RESERVE);
     }
 
-    inline void collector::push_back(void* o){
+    inline void collector::push_back(transformable* o){
         this->raw.push_back(o);
     }
 
@@ -69,8 +71,8 @@ namespace ambient { namespace memory {
         delete e;
     }
 
-    inline void collector::delete_ptr::operator()( void* e ) const {
-        ambient::pool::free<fixed,AMBIENT_FUTURE_SIZE>(e);
+    inline void collector::delete_ptr::operator()( transformable* e ) const {
+        ambient::pool::free<fixed,sizeof_transformable()>(e);
     } 
 
     inline void collector::clear(){

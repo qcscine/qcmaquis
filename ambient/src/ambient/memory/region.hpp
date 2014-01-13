@@ -31,6 +31,7 @@ namespace ambient { namespace memory {
 
     constexpr size_t paged(size_t size, size_t page){  return page * (size_t)((size+page-1)/page); } // (page example: 4096)
     constexpr size_t aligned_64(size_t size){ return 64 * (size_t)((size+63)/64); }
+    template<size_t S> constexpr size_t aligned_64(){ return 64 * (size_t)((S+63)/64); }
 
     template<size_t S, class Factory>
     class serial_region {

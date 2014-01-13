@@ -31,25 +31,26 @@ namespace ambient{ namespace memory {
 
     using ambient::models::ssm::history;
     using ambient::models::ssm::revision;
+    using ambient::models::ssm::transformable;
 
     class collector {
     public:
         struct delete_ptr {
             void operator()( history* element ) const;
             void operator()( revision* element ) const;
-            void operator()( void* element ) const;
+            void operator()( transformable* element ) const;
         };
 
         collector();
         void push_back(history* o);
         void push_back(revision* o);
-        void push_back(void* o);
+        void push_back(transformable* o);
         void clear();
     private:
         size_t reserve_limit;
         std::vector< history* >  str;
         std::vector< revision* > rev;
-        std::vector< void* >     raw;
+        std::vector< transformable* >     raw;
     };
 
 } }
