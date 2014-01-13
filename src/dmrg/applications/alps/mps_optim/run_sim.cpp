@@ -31,13 +31,14 @@ typedef NU1 grp;
 typedef alps::numeric::matrix<double>                matrix;
 typedef alps::numeric::matrix<std::complex<double> > cmatrix;
 
-#include "dmrg_sim.hpp"
+#include "run_eigenstate_sim.hpp"
 
 #include <boost/filesystem/fstream.hpp>
 #include <string>
 
-
 #include "libpscan/run_sim.hpp"
+
+
 
 void run_sim(const boost::filesystem::path& infile, const boost::filesystem::path& outfile,
              bool write_xml, double time_limit)
@@ -83,11 +84,6 @@ void run_sim(const boost::filesystem::path& infile, const boost::filesystem::pat
     
     
     /// Check which matrix to use
-    if (parms["COMPLEX"]) {
-        dmrg_sim<cmatrix, grp> sim(parms, write_xml);
-        sim.run();
-    } else {
-        dmrg_sim<matrix, grp> sim(parms, write_xml);
-        sim.run();
-    }
+    if (parms["COMPLEX"]) run_eigenstate_sim<cmatrix, grp>(parms, write_xml);
+    else                  run_eigenstate_sim<matrix, grp>(parms, write_xml);
 }

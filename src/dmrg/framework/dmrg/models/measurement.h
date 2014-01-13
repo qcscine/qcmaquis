@@ -54,7 +54,7 @@ class measurement {
 public:
     typedef typename Matrix::value_type value_type;
     
-    measurement(std::string const& n="") : cast_to_real(true), is_super_meas(false), name_(n) { }
+    measurement(std::string const& n="") : cast_to_real(true), is_super_meas(false), name_(n), eigenstate(0) { }
     virtual ~measurement() { }
     
     virtual void evaluate(MPS<Matrix, SymmGroup> const&, boost::optional<reduced_mps<Matrix, SymmGroup> const&> = boost::none) =0;
@@ -64,6 +64,8 @@ public:
     virtual void print(std::ostream& os) const;
     
     std::string const& name() const { return name_; }
+    int& eigenstate_index() { return eigenstate; }
+    int eigenstate_index() const { return eigenstate; }
     
     void set_super_meas(Index<SymmGroup> const& phys_psi_);
     
@@ -81,6 +83,7 @@ protected:
     
 private:
     std::string name_;
+    int eigenstate;
 };
 
 template<class Matrix, class SymmGroup>
@@ -89,24 +92,31 @@ inline measurement<Matrix, SymmGroup>* new_clone( const measurement<Matrix, Symm
     return m.clone();
 }
 
+template <class Archive, typename T>
+void save_val_at_index(Archive & ar, std::string const& archive_path, T const& val, int eig)
+{
+    std::vector<T> vals(eig+1);
+    if (ar.is_data(archive_path.c_str())) ar[archive_path] >> vals;
+    vals[eig] = val;
+    ar[archive_path] << vals;
+}
+
 template<class Matrix, class SymmGroup>
 template <class Archive>
 void measurement<Matrix, SymmGroup>::save(Archive & ar) const
 {
     if (labels.size() > 0) {
         if (cast_to_real) {
-            std::vector<std::vector<double> > tmp(1, maquis::real(vector_results));
-            ar[storage::encode(name()) + std::string("/mean/value")] << tmp;
+            save_val_at_index(ar, storage::encode(name()) + std::string("/mean/value"),  maquis::real(vector_results), eigenstate_index());
         } else {
-            ar[storage::encode(name()) + std::string("/mean/value")] << std::vector<std::vector<value_type> >(1, vector_results);
+            save_val_at_index(ar, storage::encode(name()) + std::string("/mean/value"), vector_results, eigenstate_index());
         }
         ar[storage::encode(name()) + std::string("/labels")] << labels;
     } else {
         if (cast_to_real) {
-            std::vector<double> tmp(1, maquis::real(result));
-            ar[storage::encode(name()) + std::string("/mean/value")] << tmp;
+            save_val_at_index(ar, storage::encode(name()) + std::string("/mean/value"), maquis::real(result), eigenstate_index());
         } else {
-            ar[storage::encode(name()) + std::string("/mean/value")] << std::vector<value_type>(1, result);
+            save_val_at_index(ar, storage::encode(name()) + std::string("/mean/value"), result, eigenstate_index());
         }
     }
 }

@@ -40,9 +40,10 @@ template <class Matrix, class SymmGroup>
 class measure_and_save {
 public:
     measure_and_save(std::string const& rfile_, std::string const& archive_path_,
-                     MPS<Matrix, SymmGroup> const& mps_)
+                     MPS<Matrix, SymmGroup> const& mps_, int eigenstate_=0)
     : rfile(rfile_)
     , archive_path(archive_path_)
+    , eigenstate(eigenstate_)
     , mps(mps_)
     , rmps(mps)
     { }
@@ -50,6 +51,7 @@ public:
     void operator()(measurement<Matrix, SymmGroup> & meas) const
     {
         maquis::cout << "Measuring " << meas.name() << std::endl;
+        meas.eigenstate_index() = eigenstate;
         meas.evaluate(mps, rmps);
         storage::archive ar(rfile, "w");
         ar[archive_path] << meas;
@@ -57,6 +59,7 @@ public:
     
 private:
     std::string rfile, archive_path;
+    int eigenstate;
     MPS<Matrix, SymmGroup> const& mps;
     reduced_mps<Matrix, SymmGroup> rmps;
 };
