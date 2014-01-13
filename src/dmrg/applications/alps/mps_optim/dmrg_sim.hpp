@@ -30,7 +30,6 @@
 #include <cmath>
 #include <iterator>
 #include <iostream>
-#include <sys/stat.h>
 
 #include <boost/shared_ptr.hpp>
 
