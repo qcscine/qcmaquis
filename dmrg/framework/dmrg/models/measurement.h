@@ -93,10 +93,11 @@ inline measurement<Matrix, SymmGroup>* new_clone( const measurement<Matrix, Symm
 }
 
 template <class Archive, typename T>
-void save_val_at_index(Archive & ar, std::string const& archive_path, T const& val, int eig)
+void save_val_at_index(Archive & ar, std::string const& archive_path, T const& val, std::size_t eig)
 {
-    std::vector<T> vals(eig+1);
+    std::vector<T> vals;
     if (ar.is_data(archive_path.c_str())) ar[archive_path] >> vals;
+    vals.resize( std::max(vals.size(), eig+1) );
     vals[eig] = val;
     ar[archive_path] << vals;
 }

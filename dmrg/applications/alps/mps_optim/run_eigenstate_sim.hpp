@@ -87,6 +87,10 @@ void run_eigenstate_sim(BaseParameters parms, bool write_xml)
     measurements_type measurements = model.measurements();
     
     std::string rfile = parms["resultfile"].str();
+    {
+        storage::archive ar(rfile, "w");
+        ar["/parameters"] << parms;
+    }
     
     alps::oxstream out(boost::replace_last_copy(rfile, ".h5", ".xml"));
     out << alps::header("UTF-8") << alps::stylesheet(alps::xslt_path("ALPS.xsl"));
@@ -154,6 +158,7 @@ void run_eigenstate_sim(BaseParameters parms, bool write_xml)
         out << alps::end_tag("EIGENSTATE");
     }
     
+    out << alps::end_tag("EIGENSTATES");
     out << alps::end_tag("SIMULATION");
 }
 
