@@ -10,9 +10,12 @@ COMPILER_VERSION=2013
 MPI_WRAPPER=mvapich2
 MPI_WRAPPER_VERSION=1.9-intel-wocuda
 
-export CC=mpicc
+export MKLROOT=/apps/castor/intel-2013/mkl
+export PLASMA_ROOT=/apps/castor/plasma-2.4.6
+export ALPS_ROOT=/project/h07/TEST_ALPS
 export CXX=mpicxx
-export BOOST_ROOT=/project/h07/BOOST_1_53/
+export CC=mpicc
+
 export MV2_ENABLE_AFFINITY=0
 export MV2_VBUF_POOL_SIZE=8192
 export MV2_VBUF_SECONDARY_POOL_SIZE=1024
@@ -24,31 +27,10 @@ module load ${COMPILER}/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load cmake
 
-## common ##
-COMMON_CMAKE_CXX_FLAGS="-O3 -DNDEBUG -w -Wfatal-errors"
-COMMON_CMAKE_C_COMPILER=mpicc
-COMMON_CMAKE_CXX_COMPILER=mpicxx
-COMMON_BLAS_LAPACK_SELECTOR="manual" # TODO: mkl_sequential should work as well
-COMMON_MAQUISLapack_LIBRARIES="-lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm"
-COMMON_MAQUISLapack_LIB_DIRS=/apps/castor/intel-2013/mkl/lib/intel64
-COMMON_MAQUISLapack_INCLUDE_DIRS=/apps/castor/intel-2013/mkl/include
-COMMON_PLASMA_LIBRARIES="-lplasma -lcoreblas -llapacke -lquark"
-COMMON_PLASMA_LIB_DIR="/apps/castor/plasma-2.4.6/lib"
-## ambient ##
-AMBIENT_BOOST_BINDINGS_INCLUDE=/project/h07/TEST_ALPS/include
-AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64"
-AMBIENT_ENABLE_REGRESSION_PERFORMANCE=ON
-AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=ON
-## dmrg ##
-DMRG_CMAKE_CXX_FLAGS_RELEASE="$COMMON_CMAKE_CXX_FLAGS"
-#DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lmkl_lapack95_lp64 -lpthread $AMBIENT_PLASMA_LIBRARY"
-DMRG_ALPS_ROOT_DIR=/project/h07/TEST_ALPS
+COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
+COMMON_PLASMA_LIB_DIR="$PLASMA_ROOT/lib"
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
-
-DMRG_REGRESSION_UNIT_TESTING=OFF
-DMRG_REGRESSION_APPLICATION_TESTS=OFF
-DMRG_REGRESSION_PERFORMANCE_TESTS=ON
 
 source $ROOT_DIR/scripts/common/common.sh 
 execute $*
