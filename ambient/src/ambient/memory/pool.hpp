@@ -108,7 +108,7 @@ namespace ambient { namespace pool {
     static void* malloc(descriptor& d){
         assert(d.region != region_t::rdelegated);
         if(d.region == region_t::rbulked){
-            //if(d.extent > AMBIENT_IB*AMBIENT_IB*16 || !data_bulk::open()){
+            //if(!data_bulk::open()){ // if(d.extent > AMBIENT_IB*AMBIENT_IB*16) <-- handle it separately
                 d.region = region_t::rstandard;
                 return malloc<standard>(d.extent);
             //}

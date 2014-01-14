@@ -48,9 +48,9 @@ namespace ambient{ namespace memory {
         void clear();
     private:
         size_t reserve_limit;
-        std::vector< history* >  str;
-        std::vector< revision* > rev;
-        std::vector< transformable* >     raw;
+        std::vector< history* >       str;
+        std::vector< revision* >      rev;
+        std::vector< transformable* > raw;
     };
 
 } }
