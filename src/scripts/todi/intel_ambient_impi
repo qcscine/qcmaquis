@@ -1,51 +1,30 @@
 #!/bin/bash -l
 STATE="void"
-STATE_AMBIENT="build"
-STATE_DMRG="void"
+STATE_AMBIENT="void"
+STATE_DMRG="configure"
 # end of target states #
-## WARNING: UNFINISHED CONFIGURATION ##
 PREFIX=ambient
-COMPILER=iccxe
-COMPILER_VERSION=2011
-MPI_WRAPPER=impi
-MPI_WRAPPER_VERSION=4.0
-BOOST=boost
-BOOST_VERSION=1.46.1
-CMAKE=cmake
+COMPILER=intel
+COMPILER_VERSION=13.1.0
+MYAPPS=/project/h07/dolfim/apps/daint/intel_13_1_0
 
-export CXX=icpc
-export CC=icc
-export BOOST_ROOT=/apps/eiger/boost_1_46_1
+export ALPS_ROOT=$MYAPPS/alps
+export PLASMA_PATH=$MYAPPS/plasma
+export FC=ftn
+export CXX=CC
+export CC=cc
 
-module load ${COMPILER}/${COMPILER_VERSION}
-module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
-module load ${BOOST}/${BOOST_VERSION}
-module load ${CMAKE}
+export XTPE_LINK_TYPE=dynamic
 
-## common ##
-COMMON_CMAKE_C_COMPILER=icc
-COMMON_CMAKE_CXX_COMPILER=icpc
-COMMON_MPI_CXX_FOUND=TRUE
-COMMON_MPI_CXX_INCLUDE_PATH=/apps/eiger/Intel-MPI-4.0/intel64/include
-COMMON_MPI_CXX_LINK_FLAGS=""
-COMMON_MPI_CXX_LIBRARIES="-L/apps/eiger/Intel-MPI-4.0/lib64 -lmpi_mt"
-COMMON_MPIEXEC=/apps/eiger/Intel-MPI-4.0/intel64/bin/mpirun
-COMMON_MPIEXEC_NUMPROC_FLAG="-np"
-COMMON_MPIEXEC_MAX_NUMPROCS="2"
-COMMON_MPIEXEC_POSTFLAGS=""
-## ambient ##
-AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=ON
-AMBIENT_ENABLE_REGRESSION_PERFORMANCE=ON
-AMBIENT_BOOST_BINDINGS_INCLUDE=/project/h07/ALPS_INTEL_EIGER/include
-AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_intelmpi_lp64"
-## dmrg ##
-DMRG_DEFAULT_BLAS_LAPACK=manual
-DMRG_BLAS_LAPACK_MANUAL_LIBS="-lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread"
-DMRG_BLAS_LAPACK_MANUAL_LIB_DIRS=/apps/todi/intel/composerxe-2011.3.174/mkl/lib/intel64
-DMRG_BLAS_LAPACK_MANUAL_INCLUDES=/apps/todi/intel/composerxe-2011.3.174/mkl/include
-DMRG_ALPS_ROOT_DIR=/project/h07/ALPS_INTEL_EIGER
-DMRG_BUILD_REGRESSION=ON 
-DMRG_BUILD_AMBIENT=ON 
+module load gcc/4.7.3
+module switch PrgEnv-cray PrgEnv-intel
+module load cray-hdf5
+module load cmake
+
+COMMON_CMAKE_SYSTEM_NAME="Generic"
+COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
+COMMON_PLASMA_LIB_DIR="$MYAPPS/plasma/lib"
+DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
 
 source $ROOT_DIR/scripts/common/common.sh 
