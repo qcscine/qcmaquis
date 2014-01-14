@@ -24,12 +24,9 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-//constexpr size_t aligned_8(size_t size){ return 8 * (size_t)((size+7)/8); }
-
 namespace ambient { namespace models { namespace ssm {
 
-    inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(ambient::memory::aligned_64(dim.square()*ts)) {
-    }
+    inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(ambient::memory::aligned_64(dim.square()*ts)) { }
 
     inline void history::init_state(){
         revision* r = new revision(extent, NULL, ambient::common); 

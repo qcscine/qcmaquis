@@ -31,17 +31,22 @@ namespace ambient {
 
     class fence {
     public:
-        fence(): f(NULL)      { }
-        fence(void**& o)      { this->adhere(o); }
-        void adhere(void**& o){ f = o; o = (void**)&f; }
-        bool ordered_once()   { if(!*f){ f = NULL; return true;  } return false; }
-        bool once()           { if(!f) { f = &nptr; return true; } return false; }
-        bool empty()          { return !f; }
-        // static void reset()   { order = &nptr; }
-        // static void** order = &fence::nptr;  // for ordered fences
-    private:
+        fence() : f(NULL) { }
+        bool once(){ if(!f){ f = &nptr; return true; } return false; }
+    protected:
         static void* nptr;
         void** f;
+    };
+
+    class ordered_fence : public fence {
+    public:
+        ordered_fence(){ }
+        ordered_fence(void**& o){ this->adhere(o); }
+        void adhere(void**& o){ this->f = o; o = (void**)&this->f; }
+        bool ordered_once()   { if(!*this->f){ this->f = NULL; return true; } return false; }
+        bool empty()          { return !this->f; }
+        static void reset()   { order = &fence::nptr; }
+        static void** order;  // = &fence::nptr;
     };
 
 }

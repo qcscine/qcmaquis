@@ -99,7 +99,7 @@ namespace ambient { namespace numeric {
     }
     #else
     inline double sqrt(const future<double>& f){ return std::sqrt(f.get()); }
-    template<typename T>       T operator / (const future<T>& l, const future<T>& r)    { return (l.get() / r.get());  }
+    template<typename T> T operator / (const future<T>& l, const future<T>& r)    { return (l.get() / r.get());  }
     #endif
 
     template<typename T> T operator += (T& a, const future<T>& r)                 { return (a += r.get());       }
