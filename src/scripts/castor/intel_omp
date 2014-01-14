@@ -4,11 +4,9 @@ STATE_AMBIENT="void"
 STATE_DMRG="build"
 # end of target states #
 SHARED_FS=true
-PREFIX=standard
+PREFIX=omp
 COMPILER=intel
 COMPILER_VERSION=2013
-MPI_WRAPPER=openmpi
-MPI_WRAPPER_VERSION=1.6.3-intel
 BOOST=boost
 BOOST_VERSION=1.53.0
 CMAKE=cmake
@@ -19,7 +17,6 @@ export BOOST_ROOT=/project/h07/BOOST_1_53/
 
 module load gcc/4.7.2
 module load ${COMPILER}/${COMPILER_VERSION}
-module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load ${CMAKE}
 
 ## common ##

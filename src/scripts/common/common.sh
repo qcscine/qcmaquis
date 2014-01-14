@@ -37,7 +37,8 @@ RUN_PRESETS="1n.micro:             ~/maquis2014/benchmarks/dmrg_gs/1n/micro.L4/p
 
 ## settings ##
 
-[[ -z "${BUILD_NAME}" ]] && BUILD_NAME=${COMPILER}_${PREFIX}_${MPI_WRAPPER}
+[[ -z "${BUILD_NAME}" ]] && BUILD_NAME=${COMPILER}_${PREFIX}
+[[ $MPI_WRAPPER ]] && BUILD_NAME=${BUILD_NAME}_${MPI_WRAPPER}
 [[ $SHARED_FS ]] && BUILD_NAME=${HOST}/${BUILD_NAME}
 BENCHMARK_SCRIPTS_DIR=${ROOT_DIR}/scripts/benchmarks
 SELF=$BUILD_NAME

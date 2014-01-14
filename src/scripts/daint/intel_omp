@@ -6,8 +6,6 @@ STATE_DMRG="build"
 PREFIX=omp
 COMPILER=intel
 COMPILER_VERSION=13.1
-MPI_WRAPPER=cray # md: I think it's mvapich2
-MPI_WRAPPER_VERSION=""
 MYAPPS=/project/h07/dolfim/apps/daint/intel_13_1_0
 ALPS_DIR=$MYAPPS/alps
 

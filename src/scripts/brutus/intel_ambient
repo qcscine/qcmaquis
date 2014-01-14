@@ -6,9 +6,7 @@ STATE_DMRG="configure"
 PREFIX=ambient
 COMPILER=intel
 COMPILER_VERSION=13.1
-#MPI_WRAPPER=open_mpi
 MPI_WRAPPER=mvapich2
-#MPI_WRAPPER_VERSION=1.6.2
 MPI_WRAPPER_VERSION=1.8.1
 ALPS_DIR=$HOME/opt/alps-ambient-mvapich
 

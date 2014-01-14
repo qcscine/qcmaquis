@@ -1,0 +1,35 @@
+#!/bin/bash -l
+STATE="void"
+STATE_AMBIENT="void"
+STATE_DMRG="void"
+# end of target states #
+SHARED_FS=true
+PREFIX=omp
+COMPILER=iccxe
+COMPILER_VERSION=2011
+BOOST=boost
+BOOST_VERSION=1.46.1
+CMAKE=cmake
+
+export CXX=icpc
+export CC=icc
+export BOOST_ROOT=/apps/eiger/boost_1_46_1
+export MKLROOT=/apps/eiger/Intel-Composer-XE-2011/mkl
+
+module load ${COMPILER}/${COMPILER_VERSION}
+module load ${BOOST}/${BOOST_VERSION}
+module load ${CMAKE}
+
+## common ##
+COMMON_CMAKE_C_COMPILER=icc
+COMMON_CMAKE_CXX_COMPILER=icpc
+
+COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
+
+## dmrg ##
+DMRG_ALPS_ROOT_DIR=/project/h07/ALPS_INTEL12_O0
+DMRG_BUILD_REGRESSION=OFF
+DMRG_ENABLE_OMP=ON
+
+source $ROOT_DIR/scripts/common/common.sh 
+execute $*
