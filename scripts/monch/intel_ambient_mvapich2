@@ -7,32 +7,22 @@ SHARED_FS=true
 PREFIX=ambient
 COMPILER=intel
 COMPILER_VERSION=13.1.0
-MPI_WRAPPER=mvapich2
+MPI_WRAPPER=mvapich2 # not used
 MPI_WRAPPER_VERSION=1.9-intel13
 
-ALPS_DIR=/users/akosenko/apps/alps/r7223/icc/13.1.0
-
-export ALPS_ROOT=${ALPS_DIR}
-export PATH=${ALPS_DIR}/bin:${PATH}
+export ALPS_ROOT=/users/akosenko/apps/alps/r7223/icc/13.1.0
+export PLASMA_ROOT=/apps/castor/plasma-2.4.6
+export PATH=${ALPS_ROOT}/bin:${PATH}
 export CC=mycc
 export CXX=myCC
 
 module load gcc/4.7.3 hdf5/1.8.11-intel13 intel/13.1.0 mvapich2/1.9-intel13 python cmake
 
-## common ##
 COMMON_MPI_CXX_FOUND=TRUE
-COMMON_CMAKE_C_COMPILER=mycc
-COMMON_CMAKE_CXX_COMPILER=myCC
-COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DNDEBUG"
-COMMON_CMAKE_CXX_FLAGS_RELEASE="-Wfatal-errors -w -O3 -DNDEBUG"
 COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
-COMMON_PLASMA_LIB_DIR="/apps/castor/plasma-2.4.6/lib"
-## dmrg ##
-DMRG_ALPS_ROOT_DIR=$ALPS_ROOT
-DMRG_ENABLE_OMP=OFF
+COMMON_PLASMA_LIB_DIR="$PLASMA_ROOT/lib"
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
-DMRG_REGRESSION_PERFORMANCE_TESTS=ON
 
 source $ROOT_DIR/scripts/common/common.sh 
 execute $*
