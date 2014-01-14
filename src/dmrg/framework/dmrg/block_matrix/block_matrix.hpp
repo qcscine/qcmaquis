@@ -529,7 +529,7 @@ void block_matrix<Matrix, SymmGroup>::print_distribution() const
 
     double total = 0;
     for(int i = 0; i < this->n_blocks(); ++i) total += num_rows((*this)[i])*num_cols((*this)[i]);
-    for(int p = 0; p < ambient::channel.dim(); ++p){
+    for(int p = 0; p < ambient::num_procs(); ++p){
         double part = 0;
         for(int i = 0; i < this->n_blocks(); ++i){
             if((*this)[i][0].core->current->owner == p || (p == 0 && (*this)[i][0].core->current->owner == -1))
