@@ -3,7 +3,6 @@ STATE="void"
 STATE_AMBIENT="void"
 STATE_DMRG="build"
 # end of target states #
-SHARED_FS=true
 PREFIX=omp
 COMPILER=intel
 
