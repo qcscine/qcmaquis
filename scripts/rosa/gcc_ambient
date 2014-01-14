@@ -7,8 +7,6 @@ SHARED_FS=true
 PREFIX=ambient
 COMPILER=gcc
 COMPILER_VERSION=4.7.2
-MPI_WRAPPER=cray # md: I think it's mvapich2
-MPI_WRAPPER_VERSION=""
 MYAPPS=/project/h07/dolfim/apps/rosa/gcc_472
 ALPS_DIR=$MYAPPS/alps
 
