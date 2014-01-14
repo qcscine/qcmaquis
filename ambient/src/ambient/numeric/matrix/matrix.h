@@ -38,7 +38,7 @@ namespace ambient { namespace numeric {
         typedef T value_type;
         typedef size_t size_type;
         typedef Allocator allocator_type;
-        typedef ptrdiff_t difference_type;
+        typedef size_t difference_type;
         typedef typename ambient::numeric::future<double> real_type;
         typedef typename ambient::numeric::future<T> scalar_type;
 

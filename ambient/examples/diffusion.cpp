@@ -344,7 +344,7 @@ public:
 
 class Diffusion2D {
     typedef double value_type;
-    typedef stencil<double> stencil;
+    typedef stencil<double> stencil_t;
     public:
 
         Diffusion2D(double D, double rmax, double rmin, size_t N):
@@ -383,15 +383,15 @@ class Diffusion2D {
             
             for(int j = 1; j < nt; j++){
                 for(int i = 1; i < mt; i++){
-                    grid.push_back(new stencil(IB, IB)); grid_mirror.push_back(new stencil(IB, IB));
+                    grid.push_back(new stencil_t(IB, IB)); grid_mirror.push_back(new stencil_t(IB, IB));
                 }
-                grid.push_back(new stencil(tailm, IB)); grid_mirror.push_back(new stencil(tailm, IB));
+                grid.push_back(new stencil_t(tailm, IB)); grid_mirror.push_back(new stencil_t(tailm, IB));
             }
             {
                 for(int i = 1; i < mt; i++){
-                    grid.push_back(new stencil(IB, tailn)); grid_mirror.push_back(new stencil(IB, tailn));
+                    grid.push_back(new stencil_t(IB, tailn)); grid_mirror.push_back(new stencil_t(IB, tailn));
                 }
-                grid.push_back(new stencil(tailm, tailn)); grid_mirror.push_back(new stencil(tailm, tailn));
+                grid.push_back(new stencil_t(tailm, tailn)); grid_mirror.push_back(new stencil_t(tailm, tailn));
             }
             {
                 ambient::scope<ambient::shared> select;
@@ -438,7 +438,7 @@ class Diffusion2D {
             return dr*dr*sum;
         }
 
-        stencil& get(size_t i, size_t j){
+        stencil_t& get(size_t i, size_t j){
             if(i >= mt || j >= nt || i < 0 || j < 0) return null_stencil;
             return *grid[i+j*mt];
         }
@@ -456,9 +456,9 @@ class Diffusion2D {
         }
         // out is {0-N}*dr+rmin , {0-N}*dr+rmin -> rho[{0-N}*N+{0-N}]
     private:
-        std::vector<stencil*> grid;
-        std::vector<stencil*> grid_mirror;
-        stencil null_stencil;
+        std::vector<stencil_t*> grid;
+        std::vector<stencil_t*> grid_mirror;
+        stencil_t null_stencil;
         size_t mt, nt;
         int np;
         int nq;

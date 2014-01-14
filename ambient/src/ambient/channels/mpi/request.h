@@ -32,8 +32,8 @@ namespace ambient { namespace channels { namespace mpi {
     class request_impl : public memory::use_bulk_new<request_impl> {
     public:
         request_impl(){}
-        request_impl(void(*impl)(request_impl*), typename channel::scalar_type& v, int target, int tag = NULL);
-        request_impl(void(*impl)(request_impl*), typename channel::block_type& r, int target, int tag = NULL);
+        request_impl(void(*impl)(request_impl*), typename channel::scalar_type& v, int target, int tag = 0);
+        request_impl(void(*impl)(request_impl*), typename channel::block_type& r, int target, int tag = 0);
         inline bool operator()();
         void* data;
         int extent;

@@ -39,8 +39,8 @@ namespace ambient {
         template<typename U> default_allocator(const default_allocator<U>&) throw() { }
        ~default_allocator() throw() { }
 
-        static T* allocate(std::size_t n){ throw(); }
-        static void deallocate(T* ptr, std::size_t n){ throw(); }
+        static T* allocate(std::size_t n){ throw; }
+        static void deallocate(T* ptr, std::size_t n){ throw; }
 
         static void* alloc(pool::descriptor& spec); 
         static void* calloc(pool::descriptor& spec);
