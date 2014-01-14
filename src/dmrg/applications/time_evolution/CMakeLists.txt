@@ -10,8 +10,8 @@ if(USE_AMBIENT)
 endif(USE_AMBIENT)  
 
 # *** Configure symmetries
-configure_symm_file("tevol_symm/dmrg_tevol_tpl.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/tevol_symm/dmrg_tevol_{SYMM}.cpp" CMAKE_SYMM_GROUP)
-get_symm_files(APPEND DMRG_TEVOL_SYMM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/tevol_symm/dmrg_tevol_{SYMM}.cpp")
+configure_symm_file("simulation_symm/simulation_tpl.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/simulation_symm/simulation_{SYMM}.cpp" CMAKE_SYMM_GROUP)
+get_symm_files(APPEND DMRG_TEVOL_SYMM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/simulation_symm/simulation_{SYMM}.cpp")
 
 
 # *** Targets

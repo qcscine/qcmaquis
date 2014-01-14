@@ -24,18 +24,17 @@
  *
  *****************************************************************************/
 
-#include "runsim.h"
-
-#include <cmath>
-#include <iterator>
-#include <iostream>
+#include "dmrg/utils/DmrgParameters.h"
+#include "dmrg/block_matrix/symmetry.h"
 
 #include <boost/function.hpp>
 #undef tolower
 #undef toupper
 #include <boost/tokenizer.hpp>
+#include <map>
+#include <string>
 
-#include "symm_factory.h"
+#include "utils/io.hpp"
 
 std::string guess_alps_symmetry(BaseParameters & parms)
 {
@@ -58,35 +57,37 @@ std::string guess_alps_symmetry(BaseParameters & parms)
     return symm_names[n];
 }
 
-namespace maquis { namespace dmrg {
+namespace dmrg {
     
-    void symm_factory(DmrgParameters & parms)
+    template <class TR>
+    typename TR::shared_ptr symmetry_factory(DmrgParameters & parms)
     {
-        std::map<std::string, boost::function<void (DmrgParameters & p)> > factory_map;
+        typedef typename TR::shared_ptr ptr_type;
+        std::map<std::string, ptr_type> factory_map;
         
         maquis::cout << "This binary contains symmetries: ";
 #ifdef HAVE_NU1
-        factory_map["nu1"] = run_sim<NU1>;
+        factory_map["nu1"] = ptr_type(new typename TR::template F<NU1>::type());
         maquis::cout << "nu1 ";
 #endif
 #ifdef HAVE_TrivialGroup
-        factory_map["none"] = run_sim<TrivialGroup>;
+        factory_map["none"] = ptr_type(new typename TR::template F<TrivialGroup>::type());
         maquis::cout << "none ";
 #endif
 #ifdef HAVE_U1
-        factory_map["u1"] = run_sim<U1>;
+        factory_map["u1"] = ptr_type(new typename TR::template F<U1>::type());
         maquis::cout << "u1 ";
 #endif
 #ifdef HAVE_TwoU1
-        factory_map["2u1"] = run_sim<TwoU1>;
+        factory_map["2u1"] = ptr_type(new typename TR::template F<TwoU1>::type());
         maquis::cout << "2u1 ";
 #endif
 #ifdef HAVE_TwoU1PG
-        factory_map["2u1pg"] = run_sim<TwoU1PG>;
+        factory_map["2u1pg"] = ptr_type(new typename TR::template F<TwoU1PG>::type());
         maquis::cout << "2u1pg ";
 #endif
 #ifdef HAVE_Ztwo
-        factory_map["Z2"] = run_sim<Ztwo>;
+        factory_map["Z2"] = ptr_type(new typename TR::template F<Ztwo>::type());
         maquis::cout << "Z2 ";
 #endif
         maquis::cout << std::endl;
@@ -105,12 +106,13 @@ namespace maquis { namespace dmrg {
         }
         
         if (factory_map.find(symm_name) != factory_map.end())
-            factory_map[symm_name](parms);
+            return factory_map[symm_name];
         else
             throw std::runtime_error("Don't know this symmetry group. Please, check your compilation flags.");
 #ifdef AMBIENT
         ambient::sync();
 #endif
+        return ptr_type();
     }
 
-} }
+}

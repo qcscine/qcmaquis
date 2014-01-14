@@ -24,8 +24,6 @@
  *
  *****************************************************************************/
 
-#include "dmrg/sim/symm_factory.h"
-
 #include <cmath>
 #include <iterator>
 #include <iostream>
@@ -35,10 +33,8 @@
 #include "dmrg/utils/DmrgParameters.h"
 #include "utils/timings.h"
 
-#include <boost/function.hpp>
-#undef tolower
-#undef toupper
-#include <boost/tokenizer.hpp>
+#include "simulation.h"
+#include "dmrg/sim/symmetry_factory.h"
 
 int main(int argc, char ** argv)
 {
@@ -74,7 +70,8 @@ int main(int argc, char ** argv)
     gettimeofday(&now, NULL);
     
     try {
-        maquis::dmrg::symm_factory(parms);
+        simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(parms);
+        sim->run(parms);
     } catch (std::exception & e) {
         maquis::cerr << "Exception thrown!" << std::endl;
         maquis::cerr << e.what() << std::endl;

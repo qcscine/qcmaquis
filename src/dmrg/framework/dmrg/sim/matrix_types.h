@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,19 +24,20 @@
  *
  *****************************************************************************/
 
+#ifndef SIM_MATRIX_TYPES_H
+#define SIM_MATRIX_TYPES_H
 
-#include "measure_sim.h"
+#include <complex>
 
-namespace maquis { namespace dmrg {
-    template <>
-    void run_sim<grp>(DmrgParameters & parms)
-    {
-        if (parms["COMPLEX"]) {
-            measure_sim<cmatrix, grp> sim(parms);
-            sim.run();
-        } else {
-            measure_sim<matrix, grp> sim(parms);
-            sim.run();
-        }
-    }
-} }
+#if defined USE_AMBIENT
+#include "dmrg/block_matrix/detail/ambient.hpp"
+#include "dmrg/block_matrix/detail/alps.hpp"
+typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
+typedef ambient::numeric::tiles<ambient::numeric::matrix< std::complex<double> > > cmatrix;
+#else
+#include "dmrg/block_matrix/detail/alps.hpp"
+typedef alps::numeric::matrix<double> matrix;
+typedef alps::numeric::matrix<std::complex<double> > cmatrix;
+#endif
+
+#endif

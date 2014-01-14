@@ -24,7 +24,8 @@
  *
  *****************************************************************************/
 
-#include "dmrg/sim/symm_factory.h"
+#include "simulation.h"
+#include "dmrg/sim/symmetry_factory.h"
 
 #include <iostream>
 #include <sys/time.h>
@@ -62,7 +63,8 @@ int main(int argc, char ** argv)
     
     
     try {
-        maquis::dmrg::symm_factory(parms);
+        simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(parms);
+        sim->run(parms);
     } catch (std::exception & e) {
         maquis::cerr << "Exception thrown!" << std::endl;
         maquis::cerr << e.what() << std::endl;

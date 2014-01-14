@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,32 +24,5 @@
  *
  *****************************************************************************/
 
-
-#include "tevol_sim.h"
-#include "dmrg/evolve/tevol_nn_sim.h"
-#include "dmrg/evolve/tevol_mpo_sim.h"
-
-namespace maquis { namespace dmrg {
-    template <class Matrix, class SymmGroup>
-    void te_factory(DmrgParameters & parms)
-    {
-        if (parms["te_type"] == "nn")
-        {
-            tevol_sim<Matrix, SymmGroup, nearest_neighbors_evolver<Matrix, SymmGroup> > sim(parms);
-            sim.run();
-        } else if (parms["te_type"] == "mpo") {
-            tevol_sim<Matrix, SymmGroup, mpo_evolver<Matrix, SymmGroup> > sim(parms);
-            sim.run();
-        } else {
-            throw std::runtime_error("Don't know this time evolution. ("+parms["te_type"].str()+")");
-        }
-    }
-    
-    
-    template <>
-    void run_sim<grp>(DmrgParameters & parms)
-    {
-        if (parms["COMPLEX"]) te_factory<cmatrix, grp>(parms);
-        else                  te_factory<matrix, grp>(parms);
-    }
-} }
+#include "simulation.ipp"
+template class simulation<@CMAKE_SYMM_GROUP@>;

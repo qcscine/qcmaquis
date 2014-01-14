@@ -11,12 +11,12 @@ endif(USE_AMBIENT)
 
 # *** Configure symmetries
 configure_symm_file("simulation_symm/simulation_tpl.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/simulation_symm/simulation_{SYMM}.cpp" CMAKE_SYMM_GROUP)
-get_symm_files(APPEND DMRG_SYMM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/simulation_symm/simulation_{SYMM}.cpp")
+get_symm_files(APPEND MEASURE_SYMM_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/simulation_symm/simulation_{SYMM}.cpp")
 
 
 # *** Targets
-add_executable(dmrg ${DMRG_SYMM_SOURCES} dmrg.cpp)
-target_link_libraries(dmrg ${DMRG_APP_LIBRARIES})
+add_executable(dmrg_meas ${MEASURE_SYMM_SOURCES} measure.cpp)
+target_link_libraries(dmrg_meas ${DMRG_APP_LIBRARIES})
 
 # *** Install
-install(TARGETS dmrg RUNTIME DESTINATION bin COMPONENT applications)
+install(TARGETS dmrg_meas RUNTIME DESTINATION bin COMPONENT applications)
