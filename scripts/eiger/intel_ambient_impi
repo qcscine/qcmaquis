@@ -16,12 +16,9 @@ export ALPS_ROOT=/project/h07/TEST_ALPS
 export CXX=mpiicpc
 export CC=mpiicc
 
-#export BOOST_ROOT=/apps/eiger/boost_1_46_1
-
 module load gcc/4.7.2
 module load ${COMPILER}/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
-#module load ${BOOST}/${BOOST_VERSION}
 module load cmake
 
 source /apps/eiger/Intel-MPI-4.0/intel64/bin/mpivars.sh
