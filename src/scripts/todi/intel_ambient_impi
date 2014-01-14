@@ -4,7 +4,7 @@ STATE_AMBIENT="build"
 STATE_DMRG="void"
 # end of target states #
 ## WARNING: UNFINISHED CONFIGURATION ##
-PREFIX=standard
+PREFIX=ambient
 COMPILER=iccxe
 COMPILER_VERSION=2011
 MPI_WRAPPER=impi

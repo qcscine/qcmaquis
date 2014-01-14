@@ -1,6 +1,3 @@
-Experimental branch:
-Diverged from trunk from revision 2921.
-
 Scripts usage:
 Add the bootstrap to your bin by symlinking 
 (or by adding ./common to your PATH):

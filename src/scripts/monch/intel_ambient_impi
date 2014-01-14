@@ -7,7 +7,7 @@ SHARED_FS=true
 PREFIX=ambient
 COMPILER=intel
 COMPILER_VERSION=13.1.0
-MPI_WRAPPER=intel
+MPI_WRAPPER=impi # not used
 MPI_WRAPPER_VERSION=2013
 
 ALPS_DIR=/users/akosenko/apps/alps/r7223/icc/13.1.0
