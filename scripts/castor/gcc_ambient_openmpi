@@ -13,8 +13,8 @@ BOOST=boost
 BOOST_VERSION=1.53.0
 CMAKE=cmake
 
-export CC=mpicc   # TODO: this shouldn't be needed
-export CXX=mpicxx # TODO: this shouldn't be needed
+export CC=mpicc
+export CXX=mpicxx
 export BOOST_ROOT=/project/h07/BOOST_1_53/
 
 module load ${COMPILER}/${COMPILER_VERSION}

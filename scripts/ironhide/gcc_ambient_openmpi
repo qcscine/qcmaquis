@@ -6,7 +6,7 @@ STATE_DMRG="build"
 PREFIX=ambient
 COMPILER=gcc
 COMPILER_VERSION=4.7.3
-MPI_WRAPPER=openmpi # md: I think it's mvapich2
+MPI_WRAPPER=openmpi
 MPI_WRAPPER_VERSION=""
 ALPS_DIR=$HOME/opt/alps-gcc47
 

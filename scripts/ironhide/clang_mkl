@@ -3,11 +3,9 @@ STATE="configure"
 STATE_AMBIENT="build"
 STATE_DMRG="build"
 # end of target states #
-PREFIX=standard
+PREFIX=serial
 COMPILER=clang
 COMPILER_VERSION=4.2
-MPI_WRAPPER=openmpi
-MPI_WRAPPER_VERSION=xx
 
 DASHBOARD_ROOT=$HOME/Dashboards/maquis_dmrg
 

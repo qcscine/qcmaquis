@@ -3,11 +3,9 @@ STATE="void"
 STATE_AMBIENT="void"
 STATE_DMRG="configure"
 # end of target states #
-PREFIX=ambient_thread
+PREFIX=ambient_mklp
 COMPILER=intel
 COMPILER_VERSION=13.1
-MPI_WRAPPER=cray # md: I think it's mvapich2
-MPI_WRAPPER_VERSION=""
 MYAPPS=/project/h07/dolfim/apps/daint/intel_13_1_0
 ALPS_DIR=$MYAPPS/alps
 
