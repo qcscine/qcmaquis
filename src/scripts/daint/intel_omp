@@ -7,12 +7,9 @@ PREFIX=omp
 COMPILER=intel
 COMPILER_VERSION=13.1
 MYAPPS=/project/h07/dolfim/apps/daint/intel_13_1_0
-ALPS_DIR=$MYAPPS/alps
 
-export ALPS_ROOT=${ALPS_DIR}
-export PATH=${ALPS_DIR}/bin:${PATH}
-#export PYTHONPATH=${ALPS_DIR}/lib:${PYTHONPATH} # md: ALPS is installed without python, therefore not needed
-
+export ALPS_ROOT=$MYAPPS/alps
+export PATH=${ALPS_ROOT}/bin:${PATH}
 export XTPE_LINK_TYPE=dynamic
 
 module load PrgEnv-intel
@@ -20,19 +17,11 @@ module load cray-hdf5
 module load cmake
 module load perftools
 
-## common ##
 COMMON_CMAKE_SYSTEM_NAME="Generic"
-COMMON_CMAKE_C_COMPILER="cc"
-COMMON_CMAKE_CXX_COMPILER="CC"
-COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DNDEBUG"
-COMMON_CMAKE_CXX_FLAGS_RELEASE=${MAQUIS_COMMON_CMAKE_CXX_FLAGS}
 COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
-## dmrg ##
-DMRG_ALPS_ROOT_DIR=$ALPS_ROOT
 DMRG_ENABLE_OMP=ON
 DMRG_BUILD_AMBIENT=OFF
 DMRG_USE_AMBIENT=OFF
-DMRG_REGRESSION_PERFORMANCE_TESTS=ON
 
 source $ROOT_DIR/scripts/common/common.sh 
 execute $*
