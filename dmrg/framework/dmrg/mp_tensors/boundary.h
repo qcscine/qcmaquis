@@ -76,7 +76,7 @@ public:
         for(int b = 0; b < loop_max; ++b){
             for(int i = 0; i < (*this)[b].n_blocks(); ++i) total += num_rows((*this)[b][i])*num_cols((*this)[b][i]);
         }
-        for(int p = 0; p < ambient::channel.dim(); ++p){
+        for(int p = 0; p < ambient::num_procs(); ++p){
             double part = 0;
             for(int b = 0; b < loop_max; ++b){
                 for(int i = 0; i < (*this)[b].n_blocks(); ++i){
