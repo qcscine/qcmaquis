@@ -24,20 +24,13 @@
  *
  *****************************************************************************/
 
-#include "dmrg/block_matrix/symmetry/nu1.h"
-typedef NU1 grp;
-
-#include "dmrg/block_matrix/detail/alps.hpp"
-typedef alps::numeric::matrix<double>                matrix;
-typedef alps::numeric::matrix<std::complex<double> > cmatrix;
-
-#include "run_eigenstate_sim.hpp"
-
 #include <boost/filesystem/fstream.hpp>
 #include <string>
 
 #include "libpscan/run_sim.hpp"
 
+#include "mps_optim/simulation.hpp"
+#include "dmrg/sim/symmetry_factory.h"
 
 
 void run_sim(const boost::filesystem::path& infile, const boost::filesystem::path& outfile,
@@ -82,8 +75,7 @@ void run_sim(const boost::filesystem::path& infile, const boost::filesystem::pat
     if (!parms.defined("max_bond_dimension") && !parms.defined("sweep_bond_dimensions"))
         throw std::runtime_error("Number of renormalized states not set.");
     
-    
-    /// Check which matrix to use
-    if (parms["COMPLEX"]) run_eigenstate_sim<cmatrix, grp>(parms, write_xml);
-    else                  run_eigenstate_sim<matrix, grp>(parms, write_xml);
+    /// Start simulation
+    simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(parms);
+    sim->run(parms, write_xml);
 }
