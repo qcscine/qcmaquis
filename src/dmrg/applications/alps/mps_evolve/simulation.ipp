@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,37 +24,30 @@
  *
  *****************************************************************************/
 
-#include <boost/filesystem/fstream.hpp>
-#include <string>
+#include "dmrg/sim/matrix_types.h"
 
+#include "mps_evolve/tevol_sim.hpp"
+#include "dmrg/evolve/tevol_nn_sim.h"
+#include "dmrg/evolve/tevol_mpo_sim.h"
 #include "mps_evolve/simulation.hpp"
-#include "dmrg/sim/symmetry_factory.h"
-#include "libpscan/run_sim.hpp"
 
-void run_sim(const boost::filesystem::path& infile, const boost::filesystem::path& outfile,
-             bool write_xml, double time_limit)
+template <class SymmGroup>
+void simulation<SymmGroup>::run(DmrgParameters & parms, bool write_xml)
 {
-    maquis::cout.precision(10);
-    
-    /// Load parameters
-    DmrgParameters parms;
-    {
-        boost::filesystem::ifstream param_file(infile);
-        if (!param_file)
-            throw std::runtime_error(std::string("Could not open parameter file ") + infile.string() +".");
-        alps::Parameters p; p.extract_from_xml(param_file);
-        parms = DmrgParameters(p);
+    /// Check which matrix to use and which time evolution
+    boost::scoped_ptr<abstract_sim> sim;
+    if (parms["COMPLEX"]) {
+        if (parms["te_type"] == "nn")
+            sim.reset(new tevol_sim<cmatrix, SymmGroup, nearest_neighbors_evolver<cmatrix, SymmGroup> >(parms, write_xml));
+        else if (parms["te_type"] == "mpo")
+            sim.reset(new tevol_sim<cmatrix, SymmGroup, mpo_evolver<cmatrix, SymmGroup> >(parms, write_xml));
+    } else {
+        if (parms["te_type"] == "nn")
+            sim.reset(new tevol_sim<matrix, SymmGroup, nearest_neighbors_evolver<matrix, SymmGroup> >(parms, write_xml));
+        else if (parms["te_type"] == "mpo")
+            sim.reset(new tevol_sim<matrix, SymmGroup, mpo_evolver<matrix, SymmGroup> >(parms, write_xml));
     }
     
-    /// Match parameters of ALPS DMRG
-    parms.set("nsweeps", int(parms["SWEEPS"]));
-    parms.set("max_bond_dimension", int(parms["MAXSTATES"]));
-    parms.set("chkpfile",   outfile.stem().string() + ".chkp");
-    parms.set("resultfile", outfile.stem().string() + ".h5");
-    parms.set("run_seconds", time_limit);
-    
-    
-    /// Start simulation
-    simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(parms);
-    sim->run(parms, write_xml);
+    /// Run
+    sim->run();
 }
