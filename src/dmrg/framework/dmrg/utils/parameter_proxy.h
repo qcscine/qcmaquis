@@ -87,6 +87,7 @@ namespace parameters {
     CALLBACK(bool)                                          \
     CALLBACK(float)                                         \
     CALLBACK(long)                                          \
+    CALLBACK(unsigned)                                      \
     CALLBACK(std::size_t)
 
     #define FOREACH_PROXY_STRING_TYPE(CALLBACK)            \

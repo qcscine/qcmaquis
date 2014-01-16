@@ -46,7 +46,6 @@ public:
     , mps(mps_)
     , lattice(lattice_) // shallow copy
     , model(model_) // shallow copy
-    , sweep_(init_sweep)
     , hamils(separate_hamil_terms(model.hamiltonian_terms()))
     {
         maquis::cout << "Using MPO time evolution." << std::endl;
@@ -54,14 +53,14 @@ public:
         maquis::cout << "Found " << hamils.size() << " non overlapping Hamiltonians." << std::endl;
         
         /// compute the time evolution gates
-        prepare_te_terms();
+        prepare_te_terms(init_sweep);
     }
     
-    void prepare_te_terms()
+    void prepare_te_terms(unsigned sweep)
     {
         double dt = (*parms)["dt"];
         typename Matrix::value_type I;
-        if (sweep_ < (*parms)["nsweeps_img"])
+        if (sweep < (*parms)["nsweeps_img"])
             I = maquis::traits::real_identity<typename Matrix::value_type>::value;
         else
             I = maquis::traits::imag_identity<typename Matrix::value_type>::value;
@@ -72,22 +71,10 @@ public:
             Uterms[i] = make_exp_mpo(lattice, model, hamils[i], alpha);
     }
     
-    void operator()(int nsteps)
+    void operator()(unsigned sweep, unsigned nsteps)
     {
         iteration_results_.clear();
-        
-        int ns = sweep_ + nsteps;
-        for (int i=sweep_; i < ns; ++i) {
-            sweep_ = i;
-            (*parms).set("sweep", sweep_);
-            evolve_time_step();
-        }
-        assert(sweep_ == ns-1);
-    }
-    
-    int sweep() const
-    {
-        return sweep_;
+        for (unsigned i=0; i < nsteps; ++i) evolve_time_step(sweep+i);
     }
     
     results_collector const& iteration_results() const
@@ -96,14 +83,14 @@ public:
     }
     
 private:
-    void evolve_time_step()
+    void evolve_time_step(unsigned sweep)
     {
         for (int which = 0; which < Uterms.size(); ++which)
         {
             int maxiter = 6; double tol = 1e-6;
             mpo_contractor_ss<Matrix, SymmGroup, storage::nop> evolution(*mps, Uterms[which], (*parms));
             for (int k = 0; k < maxiter; ++k) {
-                std::pair<double,double> eps = evolution.sweep(sweep_);
+                std::pair<double,double> eps = evolution.sweep(sweep);
                 double rel_error = std::abs( (eps.first-eps.second) / eps.second );
                 if (rel_error < tol)
                     break;
@@ -119,7 +106,6 @@ private:
     MPS<Matrix, SymmGroup> * mps;
     Lattice lattice;
     Model<Matrix,SymmGroup> model;
-    int sweep_;
     
     results_collector iteration_results_;
     

@@ -96,11 +96,11 @@ public:
             // TODO: introduce some timings
             
             int sweep = i*nsteps;
+            BaseParameters iteration_params = parms.iteration_params("t", sweep);
             if (update_each > -1 && (sweep % update_each) == 0)
             {
-                BaseParameters iteration_params = parms.iteration_params("t", sweep);
-                if (iteration_params.size() > 0) {
-                    parms <<iteration_params;
+                if (iteration_params.size() > 1) { // iter_t will always be set
+                    parms << iteration_params;
                     this->model_init(sweep);
                     meas_each    = parms["measure_each"];
                     chkp_each    = parms["chkp_each"];
@@ -108,14 +108,15 @@ public:
                     evolver = TimeEvolver(&parms, &mps, lat, model, sweep);
                 }
             } else if (sweep == nsweeps_img) {
-                    // since this is just a change in the time step, there is
-                    // no need to split the hamiltonian in non-overlapping terms.
-                    evolver.prepare_te_terms();
+                // since this is just a change in the time step, there is
+                // no need to split the hamiltonian in non-overlapping terms.
+                evolver.prepare_te_terms(sweep);
             }
             
             /// time evolution
-            evolver(nsteps);
-            sweep = evolver.sweep();
+            evolver(sweep, nsteps);
+            sweep = (i+1)*nsteps - 1;
+            iteration_params.set("iter_t", sweep);
             
             /// measurements
             if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
@@ -131,7 +132,7 @@ public:
                 /// write iteration results
                 {
                     storage::archive ar(rfile, "w");
-                    ar[this->results_archive_path(sweep) + "/parameters"] << parms;
+                    ar[this->results_archive_path(sweep) + "/parameters"] << iteration_params;
                     ar[this->results_archive_path(sweep) + "/results"] << evolver.iteration_results();
                     ar[this->results_archive_path(sweep) + "/results/Energy/mean/value"] << std::vector<double>(1, energy);
                     // ar[this->results_archive_path(sweep) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);

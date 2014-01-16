@@ -92,7 +92,6 @@ public:
     , lattice(lattice_) // shallow copy
     , model(model_) // shallow copy
     , L(lattice.size())
-    , sweep_(init_sweep)
     , trotter_order(parse_trotter_order((*parms)["te_order"]))
     , block_terms(hamil_to_blocks(lattice, model))
     {
@@ -208,15 +207,15 @@ public:
 		}
         
         /// compute the time evolution gates
-        prepare_te_terms();
+        prepare_te_terms(init_sweep);
     }
     
 
-    void prepare_te_terms()
+    void prepare_te_terms(unsigned sweep)
     {
         double dt = (*parms)["dt"];
         typename Matrix::value_type I;
-        if (sweep_ < (*parms)["nsweeps_img"])
+        if (sweep < (*parms)["nsweeps_img"])
             I = maquis::traits::real_identity<typename Matrix::value_type>::value;
         else
             I = maquis::traits::imag_identity<typename Matrix::value_type>::value;
@@ -237,43 +236,22 @@ public:
         }
     }
     
-    void operator()(int nsteps)
+    void operator()(unsigned sweep, unsigned nsteps)
     {
         iteration_results_.clear();
         
-        int ns = sweep_ + nsteps;
-        
         if (nsteps < 2 || !static_cast<bool>((*parms)["te_optim"])) {
             // nsteps sweeps
-            for (int i=sweep_; i < ns; ++i)
-            {
-                sweep_ = i;
-                (*parms).set("sweep", sweep_);
-                evolve_time_step(Useq);
-            }
+            for (unsigned i=0; i < nsteps; ++i) evolve_time_step(Useq);
+        
         } else {
             // one sweep
-            (*parms).set("sweep", sweep_);
             evolve_time_step(Useq_bmeas);
-            
             // nsteps - 2 sweeps
-            for (int i=sweep_+1; i<ns-1; ++i) {
-                sweep_ = i;
-                (*parms).set("sweep", sweep_);
-                evolve_time_step(Useq_double);
-            }
-            
+            for (unsigned i=1; i < nsteps-1; ++i) evolve_time_step(Useq_double);
             // one sweep
-            sweep_ += 1;
-            (*parms).set("sweep", sweep_);
             evolve_time_step(Useq_ameas);
         }
-        assert(sweep_ == ns-1);
-    }
-    
-    int sweep() const
-    {
-        return sweep_;
     }
     
     results_collector const& iteration_results() const
@@ -398,7 +376,6 @@ private:
     Lattice lattice;
     Model<Matrix, SymmGroup> model;
     size_t L;
-    int sweep_;
     
     results_collector iteration_results_;
     
