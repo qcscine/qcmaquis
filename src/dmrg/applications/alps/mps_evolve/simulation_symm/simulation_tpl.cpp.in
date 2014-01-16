@@ -25,4 +25,4 @@
  *****************************************************************************/
 
 #include "mps_evolve/simulation.ipp"
-template class simulation<@CMAKE_SYMM_GROUP@>;
+template struct simulation<@CMAKE_SYMM_GROUP@>;
