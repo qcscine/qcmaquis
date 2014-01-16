@@ -167,7 +167,7 @@ namespace maquis { namespace dmrg { namespace detail {
                 T3 alfa_t = alfa(ss1, ss2) * alfa_scale;
                 for(size_t rr = 0; rr < rdim; ++rr)
                     for(size_t ll = 0; ll < ldim; ++ll) {
-                        out(ll, out_offset + ss2*rdim+rr) += in(ll, in_offset + ss1*rdim+rr) * alfa_t;
+                        out(ll, out_offset + ss2*rdim+rr) += in(ll + in_offset + ss1*ldim, rr) * alfa_t;
                     }
             }
     }
