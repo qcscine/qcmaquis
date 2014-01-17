@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( HEEV_COMPARISON_VALUE, T, test_types)
     sMatrix sA(T::valuex,T::valuex);
     sMatrix sV(T::valuex,T::valuex);
 
-    pDiagMatrix pE(T::valuex); 
+    pDiagMatrix pE(T::valuex,T::valuex); 
     sDiagMatrix sE((std::size_t)T::valuex);
  
     generate(pA);

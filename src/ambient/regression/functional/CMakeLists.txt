@@ -4,18 +4,6 @@ include_directories("${AMBIENT_SOURCES_DIR}")
 
 add_definitions(-DBOOST_TEST_DYN_LINK -DDISABLE_MATRIX_ELEMENT_ITERATOR_WARNING)
 
-if(BLAS_mkl_core_LIBRARY) # intel
-    include_directories("${MPI_CXX_INCLUDE_PATH}") # cluster path
-    set(BLAS_LAPACK ${BLAS_mkl_intel_lp64_LIBRARY} ${BLAS_mkl_core_LIBRARY} ${BLAS_mkl_sequential_LIBRARY} ${PLASMA_LIBRARY}) 
-endif()
-
-if(BLAS_Accelerate_LIBRARY) # apple
-    include_directories("${MPI_INCLUDE_PATH}") # cluster path
-    set(MPI_CXX_LIBRARIES ${MPI_LIBRARY} ${MPI_EXTRA_LIBRARY})
-    add_definitions(-DAPPLE -framework Accelerate)
-    set(BLAS_LAPACK ${BLAS_vecLib_LIBRARY}) 
-endif()
-
 add_executable( general.transpose.out   general.transpose.cpp )
 add_executable( general.rm_rows.out     general.rm_rows.cpp   )
 add_executable( general.rm_cols.out     general.rm_cols.cpp   )
@@ -66,7 +54,7 @@ foreach( functional_test
          aux.adjoint.out
          aux.hermitian.out
          algo.exp.out
- )
-    target_link_libraries (${functional_test} ambient ${BLAS_LAPACK} ${MPI_CXX_LIBRARIES} ${AMBIENT_TESTS_LIBRARIES}) 
+       )
+    target_link_libraries (${functional_test} ${AMBIENT_TESTS_LIBRARIES}) 
     add_test(${functional_test} ${functional_test})
 endforeach(functional_test)

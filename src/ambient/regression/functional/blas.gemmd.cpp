@@ -10,7 +10,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GEMM_DIAGONAL, T, test_types)
 
     pMatrix pA(T::valuex,T::valuex);
     pMatrix pB(T::valuex,T::valuex);
-    pDiagMatrix pC(T::valuex);
+    pDiagMatrix pC(T::valuex,T::valuex);
 
     sMatrix sA(T::valuex,T::valuex);
     sMatrix sB(T::valuex,T::valuex);
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( GEMM_DIAGONAL_COMPLEX_DOUBLE, T, test_types)
 
     pMatrix pA(T::valuex,T::valuex);
     pMatrix pB(T::valuex,T::valuex);
-    pDiagMatrix pC(T::valuex);
+    pDiagMatrix pC(T::valuex,T::valuex);
 
     sMatrix sA(T::valuex,T::valuex);
     sMatrix sB(T::valuex,T::valuex);

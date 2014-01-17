@@ -5,7 +5,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EXP, T, test_types)
     typedef alps::numeric::diagonal_matrix<typename T::value_type> sDiagMatrix;
     typedef ambient::numeric::tiles<ambient::numeric::diagonal_matrix<typename T::value_type> > pDiagMatrix;
 
-    pDiagMatrix pA(T::valuex);
+    pDiagMatrix pA(T::valuex, T::valuex);
     sDiagMatrix sA((std::size_t)T::valuex);
 
     generate(pA);
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( EXP_SCAL, T, test_types)
     typename T::value_type a; 
     random_helper<typename T::value_type>::randomize(a);
 
-    pDiagMatrix pA(T::valuex);
+    pDiagMatrix pA(T::valuex, T::valuex);
     sDiagMatrix sA((std::size_t)T::valuex);
 
     generate(pA);
