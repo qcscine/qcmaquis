@@ -95,8 +95,9 @@ public:
     parameters::proxy operator[](std::string const& key)
     {
         if (!defined(key)) {
-            if (defaults.count(key) > 0)
-                alps::Parameters::operator[](key) = defaults[key];
+            std::map<std::string, std::string>::const_iterator match = defaults.find(key);
+            if (match != defaults.end())
+                alps::Parameters::operator[](key) = match->second;
             else
                 boost::throw_exception(std::runtime_error("parameter " + key + " not defined"));
         }
@@ -114,16 +115,16 @@ public:
         alps::Parameters::operator[](key) = boost::lexical_cast<std::string>(value);
     }
     
-    BaseParameters iteration_params(std::string const & var, std::size_t val) const
+    BaseParameters iteration_params(std::string const & var, std::size_t val)
     {
         BaseParameters p;
         
         boost::regex expression("^(.*)\\[" + var + "\\]$");
         boost::smatch what;
-        for (alps::Parameters::const_iterator it=p.begin();it != p.end();++it) {
+        for (alps::Parameters::const_iterator it=this->begin();it != this->end();++it) {
             std::string key = it->key();
             if (boost::regex_match(key, what, expression)) {
-                std::vector<value_type> v = p[key];
+                std::vector<value_type> v = (*this)[key];
                 if (val < v.size())
                     p.set(what.str(1), v[val]);
                 else
@@ -131,7 +132,6 @@ public:
             }
         }
         p.set("iter_"+var, val);
-        
         return p;
     }
     
