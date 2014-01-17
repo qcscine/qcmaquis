@@ -147,7 +147,7 @@ endif(USE_AMBIENT)
 ######################################################################
 # Version information
 ######################################################################
-set(DMRG_YEAR 2013)
+set(DMRG_YEAR 2014)
 set(DMRG_VERSION_MAJOR 2)
 set(DMRG_VERSION_MINOR 0)
 set(DMRG_VERSION_BUILD "")

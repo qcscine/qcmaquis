@@ -16,6 +16,7 @@ if(MACHINE_CONFIG)
 endif(MACHINE_CONFIG)
 
 project (ambient)
+set (AMBIENT_YEAR 2014)
 set (AMBIENT_VERSION_MAJOR 2)
 set (AMBIENT_VERSION_MINOR 1)
 
@@ -47,7 +48,6 @@ set(AMBIENT_CPP11 "-std=c++11" CACHE STRINGS "Flags needed for C++11, e.g. -std=
 set (BOOST_ROOT $ENV{BOOST_ROOT} CACHE PATH "Path to the Boost installation (or to the Boost source)")
 option(ENABLE_REGRESSION_FUNCTIONAL "Build regression functional tests" OFF)
 option(ENABLE_REGRESSION_PERFORMANCE "Build regression performance tests" OFF)
-option(ENABLE_REGRESSION_SANDBOX "Build regression sandbox" OFF)
 
 
 ########################################################################
@@ -98,16 +98,16 @@ message(STATUS "Ambient threading: ${AMBIENT_THREADING}")
 # CPP11
 #######
 if(NOT "${AMBIENT_CPP11}" STREQUAL "")
-  set(AMBIENT_CXX_FLAGS "${AMBIENT_CXX_FLAGS} -DAMBIENT_CPP11 ${AMBIENT_CPP11}")
+  set(AMBIENT_CXX_FLAGS "${AMBIENT_CXX_FLAGS} ${AMBIENT_CPP11}")
 endif(NOT "${AMBIENT_CPP11}" STREQUAL "")
 
 # ALPS & Boost
 ##############
-if(ALPS_ROOT_DIR) # if ALPS is present, load its environment
-  set(ALPS_DIR ${ALPS_ROOT_DIR}/share/alps)
+if(NOT ALPS_DIR AND DEFINED ENV{ALPS_ROOT})
+  set(ALPS_DIR $ENV{ALPS_ROOT}/share/alps)
   set(PREVENT_ALPS_COMPILERS ON)
   find_package(ALPS NO_SYSTEM_ENVIRONMENT_PATH)
-endif(ALPS_ROOT_DIR)
+endif(NOT ALPS_DIR AND DEFINED ENV{ALPS_ROOT})
 
 ## set Boost dependencies
 set(Boost_requirements)
@@ -146,20 +146,6 @@ include_directories(${AMBIENT_INCLUDE_DIRS} ${AMBIENT_SOURCES_DIR})
 link_directories(${AMBIENT_LIBRARY_DIRS})
 add_subdirectory(src/ambient)
 
-
-## Additional libraries / macros for tests
-if(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
-  list(APPEND AMBIENT_TESTS_LIBRARIES ${MAQUIS_Boost_LIBRARIES})
-  
-  macro(compile_with_ambient)
-    include_directories(${AMBIENT_INCLUDE_DIRS})
-    link_directories(${AMBIENT_LIBRARY_DIRS})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AMBIENT_COMPILE_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${AMBIENT_EXE_FLAGS}")
-  endmacro(compile_with_ambient)
-endif(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
-
-
 ########################################################################
 #
 # Tests
@@ -167,6 +153,15 @@ endif(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
 ########################################################################
 
 if(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
+  list(APPEND AMBIENT_TESTS_LIBRARIES ambient ${AMBIENT_LIBRARIES} ${MAQUIS_Boost_LIBRARIES})
+  
+  macro(compile_with_ambient)
+    include_directories(${AMBIENT_INCLUDE_DIRS})
+    link_directories(${AMBIENT_LIBRARY_DIRS})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AMBIENT_COMPILE_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${AMBIENT_EXE_FLAGS}")
+  endmacro(compile_with_ambient)
+
   include(CTest)
   enable_testing() 
   include_directories(${PROJECT_SOURCE_DIR}/regression)
@@ -179,10 +174,6 @@ endif(ENABLE_REGRESSION_FUNCTIONAL)
 if(ENABLE_REGRESSION_PERFORMANCE)
   add_subdirectory(regression/performance)
 endif(ENABLE_REGRESSION_PERFORMANCE)
-
-if(ENABLE_REGRESSION_SANDBOX)
-  add_subdirectory(regression/sandbox)
-endif(ENABLE_REGRESSION_SANDBOX)
 
 ########################################################################
 #
