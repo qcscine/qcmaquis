@@ -234,6 +234,11 @@ namespace ambient { namespace numeric {
     }
 
     template<class Matrix>
+    inline void fill_random_hermitian(Matrix& a){
+        kernels::template init_random_hermitian<typename Matrix::value_type>::template spawn(a);
+    }
+
+    template<class Matrix>
     inline void fill_value(Matrix& a, typename Matrix::value_type value){
         if(value == typename Matrix::value_type()) return; // matrices are 0 by default
         kernels::template init_value<typename Matrix::value_type, typename Matrix::allocator_type>::template spawn(a, value);
