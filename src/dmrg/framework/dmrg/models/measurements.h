@@ -110,31 +110,31 @@ meas_sublist(boost::ptr_vector<measurement<Matrix, SymmGroup> > const& m,
 //};
 
 
-//template <class Matrix, class SymmGroup>
-//void parse_overlaps(BaseParameters const & parms, size_t sweep, Measurements<Matrix, SymmGroup> & meas)
-//{
-//    /* Syntax for MEASURE_OVERLAP:
-//     *  (1) MEASURE_OVERLAP[obsname] = "/path/to/ckp.h5"
-//     *  (2) MEASURE_OVERLAP[obsname(sweep)] = "/path/to/ckp.h5"
-//     *
-//     * `obsname` is the name that will be given in archive output.
-//     * if `sweep` is prensent, the overlap will only be computed when the sweep number
-//     * matches the given one.
-//     */
-//    boost::regex expression("^MEASURE_OVERLAP\\[([a-zA-Z]+)(\\(([0-9]+)\\))?\\]$");
-//    boost::smatch what;
-//    for (BaseParameters::const_iterator it=parms.begin();it != parms.end();++it) {
-//        std::string lhs = it->key();
-//        if (boost::regex_match(lhs, what, expression)) {
-//            if (!what[3].matched || boost::lexical_cast<long>(what.str(3)) != sweep)
-//                continue;
-//            
-//            OverlapMeasurement<Matrix, SymmGroup> term;
-//            term.name = what.str(1);
-//            term.bra_ckp = it->value();
-//            meas.add_term(term);
-//        }
-//    }
-//}
+template <class Matrix, class SymmGroup>
+boost::ptr_vector<measurement<Matrix, SymmGroup> >
+overlap_measurements(BaseParameters const & parms, size_t sweep = 0)
+{
+    /* Syntax for MEASURE_OVERLAP:
+     *  (1) MEASURE_OVERLAP[obsname] = "/path/to/ckp.h5"
+     *  (2) MEASURE_OVERLAP[obsname(sweep)] = "/path/to/ckp.h5"
+     *
+     * `obsname` is the name that will be given in archive output.
+     * if `sweep` is prensent, the overlap will only be computed when the sweep number
+     * matches the given one.
+     */
+    boost::ptr_vector<measurement<Matrix, SymmGroup> > meas;
+    boost::regex expression("^MEASURE_OVERLAP\\[([a-zA-Z]+)(\\(([0-9]+)\\))?\\]$");
+    boost::smatch what;
+    for (BaseParameters::const_iterator it=parms.begin();it != parms.end();++it) {
+        std::string lhs = it->key();
+        if (boost::regex_match(lhs, what, expression)) {
+            if (what[3].matched && boost::lexical_cast<long>(what.str(3)) != sweep)
+                continue;
+            std::string name = what.str(1), bra_chkp = it->value();
+            meas.push_back( new measurements::overlap<Matrix, SymmGroup>(name, bra_chkp) );
+        }
+    }
+    return meas;
+}
 
 #endif

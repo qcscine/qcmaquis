@@ -91,10 +91,13 @@ void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
     all_measurements = model.measurements();
-//    if (opt_sweep)
-//        parse_overlaps(parms, opt_sweep.get(), measurements);
-//    else
-//        parse_overlaps(parms, init_sweep, measurements);
+    if (opt_sweep) {
+        measurements_type m = overlap_measurements<Matrix, SymmGroup>(parms, opt_sweep.get());
+        all_measurements.insert(all_measurements.end(), m.begin(), m.end());
+    } else {
+        measurements_type m = overlap_measurements<Matrix, SymmGroup>(parms, init_sweep);
+        all_measurements.insert(all_measurements.end(), m.begin(), m.end());
+    }
     
 //    if (parms["ENABLE_MEASURE[Entropy]"])
 //        all_measurements.push_back( new measurements::entropies<Matrix, SymmGroup>() );
