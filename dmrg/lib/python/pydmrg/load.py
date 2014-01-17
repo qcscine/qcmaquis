@@ -39,7 +39,20 @@ def ReadMeasurements(ar, measurements, path, props):
 def ReadDMRGSweeps(ar, measurements, props, path='/simulation', selector=None):
     ret = []
     for sweep_name in ar.list_children(path):
-        if 'sweep' in sweep_name:
+        if sweep_name == 'iteration':  ## new iterarion format
+            for sweep_num in ar.list_children(path+'/iteration'):
+                sweep = int(sweep_num)
+                ret_sweep = []
+                p_sweep = path+'/iteration/'+sweep_num
+                props_sweep = deepcopy(props)
+                props_sweep['sweep'] = sweep
+                if 'parameters' in ar.list_children(p_sweep):
+                    props_sweep.update( dict(ar[p_sweep+'/parameters']) )
+                if selector==None or selector(props_sweep):
+                    ret_sweep += ReadMeasurements(ar, measurements, p_sweep+'/results', props_sweep)
+                if len(ret_sweep) > 0:
+                    ret.append(ret_sweep)
+        elif 'sweep' in sweep_name:  ## old iterarion format
             sweep = eval(sweep_name.strip('sweep'))
             ret_sweep = []
             p_sweep = path+'/'+sweep_name

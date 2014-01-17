@@ -188,9 +188,9 @@ std::string sim<Matrix, SymmGroup>::results_archive_path(status_type const& stat
     oss.str("");
 #if defined(__xlC__)
     typename status_type::const_iterator match = status.find("sweep");
-    oss << "/simulation/sweep" << match->second;
+    oss << "/simulation/iteration/" << match->second;
 #else
-    oss << "/simulation/sweep" << status.at("sweep");
+    oss << "/simulation/iteration/" << status.at("sweep");
 #endif
     return oss.str();
 }
