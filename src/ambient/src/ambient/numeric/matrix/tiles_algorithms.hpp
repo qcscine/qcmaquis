@@ -737,6 +737,16 @@ namespace ambient { namespace numeric {
         }
     }
 
+    template<class Matrix>
+    inline void generate_hermitian(tiles<Matrix>& a){
+        assert(a.mt == a.nt);
+        for(size_t i = 0; i < a.mt; ++i) 
+        for(size_t j = i; j < a.nt; ++j){
+            fill_random_hermitian(a.tile(i,j));
+            a.tile(j,i) = conj(a.tile(i,j));
+        }
+    }
+
     template <class MatrixA, class MatrixB>
     inline void add_inplace(tiles<MatrixA>& lhs, const tiles<MatrixB>& rhs){
         int size = lhs.data.size();

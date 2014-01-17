@@ -416,6 +416,15 @@ namespace ambient { namespace numeric { namespace kernels {
             a.real(drand48());
             a.imag(drand48());
         }
+
+        inline void randomize_diag(double& a){
+            a = drand48();
+        }
+
+        inline void randomize_diag(std::complex<double>& a){
+            a.real(drand48());
+            a.imag(0.0);
+        }
        
         template<typename T>
         void init_random(unbound< matrix<T> >& a){
@@ -423,7 +432,20 @@ namespace ambient { namespace numeric { namespace kernels {
             T* ad = updated(a).data;
             for(size_t i = 0; i < size; ++i) randomize(ad[i]);
         }
-            
+
+        template<typename T>
+        void init_random_hermitian(unbound< matrix<T> >& a){
+            size_t lda = a.num_rows();
+            T* ad = updated(a).data;
+
+            for(size_t j = 0; j < a.num_cols(); ++j) 
+            for(size_t i = j+1; i < a.num_rows(); ++i)
+            randomize(ad[j*lda+i]);
+
+            for(size_t j = 0; j < a.num_cols(); ++j) 
+            randomize_diag(ad[j*lda+j]);
+        }
+
         template<typename T, class A>
         void init_value(unbound< matrix<T,A> >& a, const T& value){
             size_t size = ambient::get_square_dim(a);
@@ -635,6 +657,7 @@ namespace ambient { namespace numeric { namespace kernels {
     ambient_reg(detail::copy_block_s, copy_block_s)
     ambient_reg(detail::copy_block_sa, copy_block_sa)
     ambient_reg(detail::init_random, init_random)
+    ambient_reg(detail::init_random_hermitian, init_random_hermitian)
     ambient_reg(detail::validation, validation)
 
 } } }

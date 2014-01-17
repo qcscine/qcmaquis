@@ -250,7 +250,7 @@ namespace ambient { namespace numeric { namespace bindings {
     template <typename T>
     struct adaptor< ambient::numeric::diagonal_matrix<T>, alps::numeric::diagonal_matrix<T> > {
         static ambient::numeric::diagonal_matrix<T> convert(const alps::numeric::diagonal_matrix<T>& m){
-            ambient::numeric::diagonal_matrix<T> pm(num_rows(m));    
+            ambient::numeric::diagonal_matrix<T> pm(num_rows(m), num_cols(m));    
             ambient::numeric::bindings::convert(pm, m);
             return pm;
         }
@@ -311,7 +311,7 @@ namespace ambient { namespace numeric { namespace bindings {
     template <typename T>
     struct adaptor< ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >, alps::numeric::diagonal_matrix<T> > {
         static ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> > convert(const alps::numeric::diagonal_matrix<T>& m){
-            ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> > pm(num_rows(m));
+            ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> > pm(num_rows(m),num_cols(m));
             ambient::numeric::bindings::convert(pm, m);
             return pm;
         }
