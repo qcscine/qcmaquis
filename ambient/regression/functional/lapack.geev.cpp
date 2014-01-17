@@ -24,7 +24,7 @@ struct test_complex_only<std::complex <T> >{
         sMatrix sLV(size, size);
         sMatrix sRV(size, size);
         
-        pDiagMatrix pS(size); 
+        pDiagMatrix pS(size, size); 
         sDiagMatrix sS(size, 0);
         
         generate(pA);
