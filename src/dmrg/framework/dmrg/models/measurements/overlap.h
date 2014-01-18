@@ -41,7 +41,7 @@ namespace measurements {
                 std::string const& ckp_)
         : base(name_)
         , bra_ckp(ckp_)
-        { }
+        { this->cast_to_real = false; }
         
         void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
