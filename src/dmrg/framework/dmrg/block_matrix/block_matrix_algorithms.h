@@ -103,6 +103,31 @@ void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
     }
 }
 
+template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
+void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
+          block_matrix<Matrix2, SymmGroup> const & B,
+          block_matrix<Matrix3, SymmGroup> & C)
+{
+    C.clear();
+    
+    typedef typename SymmGroup::charge charge;
+    for (std::size_t k = 0; k < B.n_blocks(); ++k) {
+        std::size_t matched_block = A.right_basis().position(B.left_basis()[k].first);
+
+        // Match A.right_basis() with B.left_basis()
+        if ( matched_block == A.right_basis().size() )
+            continue;
+
+        // Also match A.right_basis() with B.right_basis()
+        if ( !A.right_basis().has(B.right_basis()[k].first) )
+            continue;
+        
+        std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[matched_block]), num_cols(B[k])),
+                                               A.left_basis()[matched_block].first, B.right_basis()[k].first);
+        gemm(A[matched_block], B[k], C[new_block]);
+    }
+}
+
 template<class Matrix, class DiagMatrix, class SymmGroup>
 void svd(block_matrix<Matrix, SymmGroup> const & M,
          block_matrix<Matrix, SymmGroup> & U,

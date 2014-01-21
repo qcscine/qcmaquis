@@ -313,7 +313,7 @@ struct contraction {
         size_t loop_max = right.aux_dim();
 
         parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b){
-            gemm(mps.data(), right[b], t[b]);
+            gemm_trim_right(mps.data(), right[b], t[b]);
         }
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
@@ -409,7 +409,7 @@ struct contraction {
             std::size_t loop_max = right.aux_dim();
 
             parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b){
-                gemm(ket_cpy.data(), right[b], t[b]);
+                gemm_trim_right(ket_cpy.data(), right[b], t[b]);
             }
         }
 
