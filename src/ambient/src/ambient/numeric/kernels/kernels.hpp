@@ -550,8 +550,8 @@ namespace ambient { namespace numeric { namespace kernels {
                     T bv = bd[i+j*b.num_rows()];
                     double d = distance(av, bv);
                     double m = magnitude(av, bv);
-                    if(d > epsilon*256 && d/m > epsilon*256){ // || av*bv < 0 // 16 is recommended, 256 because MKL isn't bitwise stable
-                        std::cout << i << " " << j << " : " << av << " " << bv << ", eps: " << d << "\n";
+                    if(d > epsilon*1024 && d/m > epsilon*1024){ // 16 is recommended, 256 because MKL isn't bitwise stable
+                        std::cout << i << " " << j << " : " << av << " " << bv << ", eps: " << std::min(d, d/m) << "\n";
                         ret.get_naked() = false;
                         if(++count > 10) return;
                     }

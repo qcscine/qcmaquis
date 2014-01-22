@@ -29,9 +29,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_C2D, T, test_types) //complex to double only
     typedef ambient::numeric::tiles<ambient::numeric::diagonal_matrix<double> > pDiagMatrixDouble;
     typedef ambient::numeric::tiles<ambient::numeric::diagonal_matrix< std::complex<double> > > pDiagMatrixComplex;
 
-    pDiagMatrixDouble pAd(T::valuex,T::valuey);
-    pDiagMatrixDouble pBd(T::valuex,T::valuey);
-    pDiagMatrixComplex pAc(T::valuex,T::valuey);
+    pDiagMatrixDouble pAd(T::valuex,T::valuex);
+    pDiagMatrixDouble pBd(T::valuex,T::valuex);
+    pDiagMatrixComplex pAc(T::valuex,T::valuex);
 
     generate(pAd,Rd); // Rd is rand generator static variable inside utilities
     pAc = cast<pDiagMatrixComplex,pDiagMatrixDouble>(pAd);
