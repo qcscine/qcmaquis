@@ -14,7 +14,7 @@ namespace detail { using namespace ambient;
     template<typename T>
     void init_value(unbound< block<T> >& a, T& value){
         size_t size = get_square_dim(a);
-        T* a_ = updated(a).val;
+        T* a_ = versioned(a).val;
         for(size_t i = 0; i < size; ++i) a_[i] = value;
     }
     template<typename T>
@@ -24,7 +24,8 @@ namespace detail { using namespace ambient;
     {
         size_t m = get_dim(a).y;
         size_t n = get_dim(a).x;
-        T* a_ = emptied(a).val;
+        T* a_ = versioned(a).val; 
+        memset(a_, 0, ambient::extent(a)); 
         for(size_t i = 0; i < m; ++i)
         for(size_t j = 0; j < n; ++j){
            if(std::fabs(posi+i*dr) < bound && 
@@ -39,11 +40,11 @@ namespace detail { using namespace ambient;
                                   const block<T>& bottom,
                                   double*& res)
     {
-        T* a_ = current(a).val;
-        T* l = current(left).val;
-        T* r = current(right).val;
-        T* t = current(top).val;
-        T* b = current(bottom).val;
+        T* a_ = versioned(a).val;
+        T* l  = versioned(left).val;
+        T* r  = versioned(right).val;
+        T* t  = versioned(top).val;
+        T* b  = versioned(bottom).val;
 
         double summ = 0.;
         size_t n = get_dim(a).x;
@@ -67,11 +68,11 @@ namespace detail { using namespace ambient;
                                           double& dr, double*& res)
     {
 
-        T* a_ = current(a).val;
-        T* l = current(left).val;
-        T* r = current(right).val;
-        T* t = current(top).val;
-        T* b = current(bottom).val;
+        T* a_ = versioned(a).val;
+        T* l  = versioned(left).val;
+        T* r  = versioned(right).val;
+        T* t  = versioned(top).val;
+        T* b  = versioned(bottom).val;
 
         double summ = 0.;
         size_t n = get_dim(a).x;
@@ -101,12 +102,12 @@ namespace detail { using namespace ambient;
         size_t ind;
         size_t m = get_dim(s).y;
         size_t n = get_dim(s).x;
-        T* u_ = updated(s_).val;
-        T* u  = current(s).val;
-        T* t  = current(top).val;
-        T* r  = current(right).val;
-        T* b  = current(bottom).val;
-        T* l  = current(left).val;
+        T* u_ = versioned(s_).val;
+        T* u  = versioned(s).val;
+        T* t  = versioned(top).val;
+        T* r  = versioned(right).val;
+        T* b  = versioned(bottom).val;
+        T* l  = versioned(left).val;
 
         ind = (n-1)*m;     u_[ind] = u[ind] + fac*(u[ind+1] + t[n]     + r[0]     + u[ind-m] - 4*u[ind]);
         ind = m-1;         u_[ind] = u[ind] + fac*(b[1]     + u[ind-1] + u[ind+m] + l[ind]   - 4*u[ind]);
@@ -146,14 +147,14 @@ namespace detail { using namespace ambient;
     {
         size_t n = get_dim(top_).x-1;
         size_t m = get_dim(s).y;
-        T* t_ = updated(top_).val;
-        T* t  = current(top).val;
-        T* l  = current(left).val;
-        T* r  = current(right).val;
-        T* x  = current(s).val;
-        T* lt = current(ln_top).val;
-        T* tb = current(tn_bottom).val;
-        T* rt = current(rn_top).val;
+        T* t_ = versioned(top_).val;
+        T* t  = versioned(top).val;
+        T* l  = versioned(left).val;
+        T* r  = versioned(right).val;
+        T* x  = versioned(s).val;
+        T* lt = versioned(ln_top).val;
+        T* tb = versioned(tn_bottom).val;
+        T* rt = versioned(rn_top).val;
                                    t_[0] = t[0] + fac*(t[1] + lt[get_dim(ln_top).x-1] + l[0] + tb[0] - 4*t[0]);
         for(int j = 1; j < n; j++) t_[j] = t[j] + fac*(t[j+1] + t[j-1] + x[(j-1)*m] + tb[j] - 4*t[j]);
                                    t_[n] = t[n] + fac*(rt[0] + t[n-1] + r[0] + tb[n] - 4*t[n]);
@@ -171,14 +172,14 @@ namespace detail { using namespace ambient;
     {
         size_t n = get_dim(bottom_).x-1;
         size_t m = get_dim(s).y;
-        T* b_ = updated(bottom_).val;
-        T* b  = current(bottom).val;
-        T* l  = current(left).val;
-        T* r  = current(right).val;
-        T* x  = current(s).val;
-        T* lb = current(ln_bottom).val;
-        T* bt = current(bn_top).val;
-        T* rb = current(rn_bottom).val;
+        T* b_ = versioned(bottom_).val;
+        T* b  = versioned(bottom).val;
+        T* l  = versioned(left).val;
+        T* r  = versioned(right).val;
+        T* x  = versioned(s).val;
+        T* lb = versioned(ln_bottom).val;
+        T* bt = versioned(bn_top).val;
+        T* rb = versioned(rn_bottom).val;
 
                                    b_[0] = b[0] + fac*(b[1] + lb[get_dim(ln_bottom).x-1] + bt[0] + l[m-1] - 4*b[0]);
         for(int j = 1; j < n; j++) b_[j] = b[j] + fac*(b[j+1] + b[j-1] + bt[j] + x[j*m-1] - 4*b[j]);
@@ -194,12 +195,12 @@ namespace detail { using namespace ambient;
                                                            double& fac)
     {
         size_t m = get_dim(left_).y-1;
-        T* l_ = updated(left_).val;
-        T* l  = current(left).val;
-        T* t  = current(top).val;
-        T* b  = current(bottom).val;
-        T* x  = current(s).val;
-        T* lr = current(ln_right).val;
+        T* l_ = versioned(left_).val;
+        T* l  = versioned(left).val;
+        T* t  = versioned(top).val;
+        T* b  = versioned(bottom).val;
+        T* x  = versioned(s).val;
+        T* lr = versioned(ln_right).val;
 
                                    l_[0] = l[0] + fac*(lr[0] + x[0] + t[0] + l[1] - 4*l[0]);
         for(int i = 1; i < m; i++) l_[i] = l[i] + fac*(lr[i] + x[i] + l[i-1] + l[i+1] - 4*l[i]);
@@ -216,12 +217,12 @@ namespace detail { using namespace ambient;
     {
         size_t m = get_dim(right_).y-1;
         size_t n = get_dim(s).x;
-        T* r_ = updated(right_).val;
-        T* r  = current(right).val;
-        T* t  = current(top).val;
-        T* b  = current(bottom).val;
-        T* x  = current(s).val + (m+1)*(n-1);
-        T* rl = current(rn_left).val;
+        T* r_ = versioned(right_).val;
+        T* r  = versioned(right).val;
+        T* t  = versioned(top).val;
+        T* b  = versioned(bottom).val;
+        T* x  = versioned(s).val + (m+1)*(n-1);
+        T* rl = versioned(rn_left).val;
 
                                    r_[0] = r[0] + fac*(x[0] + rl[0] + t[n+1] + r[1] - 4*r[0]);
         for(int i = 1; i < m; i++) r_[i] = r[i] + fac*(x[i] + rl[i] + r[i-1] + r[i+1] - 4*r[i]);

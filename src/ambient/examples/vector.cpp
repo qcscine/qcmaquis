@@ -7,19 +7,18 @@ namespace detail { using namespace ambient;
     template<typename T>
     void init_value(unbound< vector<T> >& a, T& value){
         size_t size = get_length(a)-1;
-        T* a_ = updated(a).elements;
+        T* a_ = versioned(a).elements;
         for(size_t i = 0; i < size; ++i) a_[i] = value;
-        updated(a).count = 0;
+        versioned(a).count = 0;
     }
 
     template<typename T>
     void add(vector<T>& a, const vector<T>& b){
         size_t size = get_length(a)-1;
-        T* a_ = current(a).elements;
-        T* b_ = current(b).elements;
-        T* result = updated(a).elements;
-        for(size_t i = 0; i < size; ++i) result[i] = a_[i] + b_[i];
-        updated(a).count = current(a).count+1;
+        T* a_ = versioned(a).elements;
+        T* b_ = versioned(b).elements;
+        for(size_t i = 0; i < size; ++i) a_[i] += b_[i];
+        versioned(a).count = versioned(a).count+1;
     }
 }
 
@@ -56,7 +55,7 @@ namespace ambient {
     template<class InputIterator, class Function>
     void for_each (InputIterator first, InputIterator last, Function fn){
         ambient::lambda([fn](vector<int>& a){ 
-            int* a_ = revised(a).elements;
+            int* a_ = versioned(a).elements;
             std::for_each(a_, a_+get_length(a)-1, fn);
         })(first.base);
     }
@@ -68,9 +67,9 @@ namespace ambient {
                     BinaryOperation binary_op)
     {
         ambient::lambda([binary_op](const vector<int>& first1_, const vector<int>& first2_, unbound< vector<int> >& result_){
-            int* ifirst1 = current(first1_).elements;
-            int* ifirst2 = current(first2_).elements;
-            int* iresult = updated(result_).elements;
+            int* ifirst1 = versioned(first1_).elements;
+            int* ifirst2 = versioned(first2_).elements;
+            int* iresult = versioned(result_).elements;
             std::transform(ifirst1, ifirst1+get_length(first1_)-1, ifirst2, iresult, binary_op);
         })(first1.base, first2.base, result.base);
     }
@@ -80,8 +79,8 @@ namespace ambient {
                     OutputIterator result, UnaryOperation op)
     {
         ambient::lambda([op](const vector<int>& first1_, unbound< vector<int> >& result_){
-            int* ifirst1 = current(first1_).elements;
-            int* iresult = updated(result_).elements;
+            int* ifirst1 = versioned(first1_).elements;
+            int* iresult = versioned(result_).elements;
             std::transform(ifirst1, ifirst1+get_length(first1_)-1, iresult, op);
         })(first1.base, result.base);
     }
@@ -165,14 +164,14 @@ int main(){ using namespace ambient;
 
     ambient::lambda([&](const vector<int>& val, const vector<int>& val2){ 
             size_t size = get_length(val)-1;
-            int* val_ = current(val).elements;
-            int* val2_ = current(val2).elements;
+            int* val_ = versioned(val).elements;
+            int* val2_ = versioned(val2).elements;
             for(size_t i = 0; i < size; ++i) std::cout << val_[i] << " vs " << val2_[i] << "; num is " << num << "\n";
     })(a, b);
 
     ambient::lambda([&](const vector<int>& val){ 
             size_t size = get_length(val)-1;
-            int* val_ = current(val).elements;
+            int* val_ = versioned(val).elements;
             for(size_t i = 0; i < size; ++i) std::cout << val_[i] << "\n";
     })(a);
 

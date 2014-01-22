@@ -36,18 +36,17 @@ namespace ambient { namespace numeric { namespace kernels {
 
         template<typename T, typename UL, typename OFF>
         void laset2(matrix<T>& a, const T& alfa){
-            T* ad = revised(a);
+            T* ad = versioned(a);
             helper_plasma<T>::laset2(UL::value, a.num_rows()-OFF::value, a.num_cols()-OFF::value, alfa, ad + OFF::value*a.num_rows(), a.num_rows());
         }
         
         template<typename ALFA, typename T>
         void add_vectors(matrix<T>& a, const size_t& aoffset, const matrix<T>& b, const size_t& boffset, const size_t& size){
-            T* ad = &((T*)current(a))[aoffset];
-            T* bd = &((T*)current(b))[boffset];
-            T* ar = &((T*)updated(a))[aoffset];
+            T* bd = &((T*)versioned(b))[boffset];
+            T* ar = &((T*)versioned(a))[aoffset];
         
             for(int k = 0; k < size; k++) 
-                ar[k] = ALFA::value*ad[k] + bd[k];
+                ar[k] = ALFA::value*ar[k] + bd[k];
         }
             
         template<typename T>
@@ -62,12 +61,12 @@ namespace ambient { namespace numeric { namespace kernels {
             int ri = m-i;
             int rj = n-i-1;
         
-            T* sayd = revised(say); int ldsay = say.num_rows();
-            T* saxd = current(sax); int ldsax = sax.num_rows();
-            T* syd  = revised(sy);  int ldsy = sy.num_rows();
-            T* sxd  = current(sx);  int ldsx = sx.num_rows();
-            T* tqd  = revised(tq);
-            T* dd   = revised(d);
+            T* sayd = versioned(say); int ldsay = say.num_rows();
+            T* saxd = versioned(sax); int ldsax = sax.num_rows();
+            T* syd  = versioned(sy);  int ldsy = sy.num_rows();
+            T* sxd  = versioned(sx);  int ldsx = sx.num_rows();
+            T* tqd  = versioned(tq);
+            T* dd   = versioned(d);
             
             if(i == 0){
                 helper_lapack<T>::larfg(&ri, sayd, &sayd[1], &lone, tqd);
@@ -101,10 +100,10 @@ namespace ambient { namespace numeric { namespace kernels {
             int rj = n-i-1;
             int ari = AMBIENT_IB-i-1;
         
-            T* sayd = revised(say); int ldsay = say.num_rows();
-            T* saxd = current(sax); int ldsax = sax.num_rows();
-            T* syd  = revised(sy);  int ldsy = sy.num_rows();
-            T* sxd  = current(sx);  int ldsx = sx.num_rows();
+            T* sayd = versioned(say); int ldsay = say.num_rows();
+            T* saxd = versioned(sax); int ldsax = sax.num_rows();
+            T* syd  = versioned(sy);  int ldsy = sy.num_rows();
+            T* sxd  = versioned(sx);  int ldsx = sx.num_rows();
             
             helper_blas<T>::gemv("T", &ri, &ari, &one, &sayd[i + (i+1)*ldsay], &ldsay, &sayd[i+i*ldsay], &lone, &zero, &syd[i+1 + i*ldsy], &lone); // part of big gemv
         
@@ -129,12 +128,12 @@ namespace ambient { namespace numeric { namespace kernels {
             int rij = m-i-1;
             int r3  = i+1;
         
-            T* sayd = current(say); int ldsay = say.num_rows();
-            T* saxd = revised(sax); int ldsax = sax.num_rows();
-            T* syd  = current(sy);  int ldsy = sy.num_rows();
-            T* sxd  = revised(sx);  int ldsx = sx.num_rows();
-            T* tpd  = revised(tp);
-            T* ed   = revised(e);
+            T* sayd = versioned(say); int ldsay = say.num_rows();
+            T* saxd = versioned(sax); int ldsax = sax.num_rows();
+            T* syd  = versioned(sy);  int ldsy = sy.num_rows();
+            T* sxd  = versioned(sx);  int ldsx = sx.num_rows();
+            T* tpd  = versioned(tp);
+            T* ed   = versioned(e);
             
             ambient::memptf<T, ambient::memcpy>(saxd, ldsax, dim2(i, i), 
                                                 sayd, ldsay, dim2(i, i), 
@@ -163,10 +162,10 @@ namespace ambient { namespace numeric { namespace kernels {
             int r3  = i+1;
             int ari = AMBIENT_IB-i-1;
         
-            T* sayd = current(say); int ldsay = say.num_rows();
-            T* saxd = revised(sax); int ldsax = sax.num_rows();
-            T* syd  = current(sy);  int ldsy = sy.num_rows();
-            T* sxd  = revised(sx);  int ldsx = sx.num_rows();
+            T* sayd = versioned(say); int ldsay = say.num_rows();
+            T* saxd = versioned(sax); int ldsax = sax.num_rows();
+            T* syd  = versioned(sy);  int ldsy = sy.num_rows();
+            T* sxd  = versioned(sx);  int ldsx = sx.num_rows();
             
             helper_blas<T>::gemv("T", &rj, &r3, &one, &syd[i+1], &ldsy, &saxd[i+(i+1)*ldsax], &ldsax, &zero, &sxd[i*ldsx], &lone);
             helper_blas<T>::gemv("N", &rij, &r3, &mone, &sayd[i+1], &ldsay, &sxd[i*ldsx], &lone, &zero, &sxd[i+1+i*ldsx], &lone);
@@ -184,9 +183,9 @@ namespace ambient { namespace numeric { namespace kernels {
             T* alfa;
             T* x;
             
-            T* ad = revised(a);
-            T* td = revised(t);
-            T* dd = revised(d);
+            T* ad = versioned(a);
+            T* td = versioned(t);
+            T* dd = versioned(d);
         
             if(TR::value == PlasmaNoTrans){
                 alfa = &ad[k + k*a.num_rows()];
@@ -207,14 +206,14 @@ namespace ambient { namespace numeric { namespace kernels {
         }
         
         template<typename T>
-        void gebd2(matrix<T>& a, matrix<T>& d, matrix<T>& e, matrix<T>& tq, matrix<T>& tp){
+        void gebd2(matrix<T>& a, unbound< matrix<T> >& d, unbound< matrix<T> >& e, unbound< matrix<T> >& tq, unbound< matrix<T> >& tp){
             int m = a.num_rows();
             int n = a.num_cols();
             int lda = a.num_rows();
             int info;
         
             T* work = (T*)std::malloc(std::max(m,n)*sizeof(T));
-            helper_lapack<T>::gebd2(&m, &n, (T*)revised(a), &lda, (T*)updated(d), (T*)updated(e), (T*)updated(tq), (T*)updated(tp), work, &info);
+            helper_lapack<T>::gebd2(&m, &n, (T*)versioned(a), &lda, (T*)versioned(d), (T*)versioned(e), (T*)versioned(tq), (T*)versioned(tp), work, &info);
             std::free(work);
         }
         
@@ -229,11 +228,11 @@ namespace ambient { namespace numeric { namespace kernels {
             int lwork = -1;
             int info;
             
-            T* ad = (T*)current(a);
-            T* dd = (T*)updated(d);
-            T* ed = (T*)updated(e);
-            T* qd = (T*)updated(q);
-            T* pd = (T*)updated(p);
+            T* ad = versioned(a);
+            T* dd = versioned(d);
+            T* ed = versioned(e);
+            T* qd = versioned(q);
+            T* pd = versioned(p);
         
             T* work = (T*)std::malloc(sizeof(T));
             T* tauq = (T*)std::malloc(sizeof(T)*k); // leak
@@ -279,11 +278,11 @@ namespace ambient { namespace numeric { namespace kernels {
             int info;
             
             T* work = (T*)std::malloc(std::max(m,n)*2*sizeof(T));
-            T* ad = (T*)current(a);
-            T* dd = (T*)updated(d);
-            T* ed = (T*)updated(e);
-            T* qd = (T*)updated(q);
-            T* pd = (T*)updated(p);
+            T* ad = versioned(a);
+            T* dd = versioned(d);
+            T* ed = versioned(e);
+            T* qd = versioned(q);
+            T* pd = versioned(p);
         
             helper_lapack<T>::gbbrd("B", &m, &n, &zero, &kl, &ku, ad, &k, dd, ed, 
                     qd, &m, pd, &n, NULL, &one, work, &info);
@@ -302,16 +301,16 @@ namespace ambient { namespace numeric { namespace kernels {
             int info;
             
             T* work = (T*)std::malloc(n*4*sizeof(T));
-            helper_lapack<T>::bdsqr("U", &n, &nv, &mu, &zero, (T*)revised(d), (T*)revised(e), 
-                    (T*)revised(v), &mv, (T*)revised(u), &mu, NULL, &one, work, &info); std::free(work);
+            helper_lapack<T>::bdsqr("U", &n, &nv, &mu, &zero, (T*)versioned(d), (T*)versioned(e), 
+                    (T*)versioned(v), &mv, (T*)versioned(u), &mu, NULL, &one, work, &info); std::free(work);
             // Uncomment for dc numerically loose algorithm:
-            // LAPACKE_dbdsdc(102, 'U', 'N', n, (T*)revised(d), (T*)revised(e),  (T*)revised(u), one, (T*)revised(v), one, NULL, NULL);
+            // LAPACKE_dbdsdc(102, 'U', 'N', n, (T*)versioned(d), (T*)versioned(e),  (T*)versioned(u), one, (T*)versioned(v), one, NULL, NULL);
         }
         
         template<typename T, typename UL>
         void copy_band(const matrix<T>& src, matrix<T>& dst, const size_t& dj){
-            T* sd = current(src);
-            T* dd = revised(dst);
+            T* sd = versioned(src);
+            T* dd = versioned(dst);
             size_t ldd = dst.num_rows();
             size_t m = src.num_rows();
             size_t n = src.num_cols();
@@ -336,10 +335,10 @@ namespace ambient { namespace numeric { namespace kernels {
                         const matrix<T>& f, const size_t& foffset,
                         const size_t& rows, const size_t& cols)
         {
-            T* ad = current(a);
-            T* bd = current(b);
-            T* fd = current(f);
-            T* cd = revised(c);
+            T* ad = versioned(a);
+            T* bd = versioned(b);
+            T* fd = versioned(f);
+            T* cd = versioned(c);
             int lda = num_rows(a);
             int ldb = VB::inc(b);
             int ldc = VC::inc(c);
@@ -359,9 +358,9 @@ namespace ambient { namespace numeric { namespace kernels {
                         matrix<T>& c, const size_t& coffset,
                   const size_t& rows, const size_t& cols)
         {
-            T* ad = current(a);
-            T* bd = current(b);
-            T* cd = revised(c);
+            T* ad = versioned(a);
+            T* bd = versioned(b);
+            T* cd = versioned(c);
             int lda = num_rows(a);
             int ldb = ViewB::inc(b);
             int ldc = ViewC::inc(c);
@@ -375,20 +374,20 @@ namespace ambient { namespace numeric { namespace kernels {
         }
         
         template<typename T>
-        void norm_vector(const matrix<T>& a, matrix<typename real_type<T>::type>& b){
+        void norm_vector(const matrix<T>& a, unbound< matrix<typename real_type<T>::type> >& b){
             int m = num_rows(a);
             int n = num_cols(a);
-            T* ad = current(a);
-            typename real_type<T>::type* bd = updated(b);
+            T* ad = versioned(a);
+            typename real_type<T>::type* bd = versioned(b);
             std::cout << " (m,n) " << m << " " << n << std::endl;
             for(int i(0); i<n; ++i)
-                for(int j(0); j<m; ++j)
+                for(int j(0); j<m; ++j) // writing garbage, aren't we? :)
                     bd[i] += helper_complex<T>::real(ad[i*m+j]*helper_complex<T>::conj(ad[i*m+j])); 
         }   
             
         template<typename T>
         void max_vector(const matrix<typename real_type<T>::type>& a, future<typename real_type<T>::type>& ret){
-            typename real_type<T>::type* ad = current(a);
+            typename real_type<T>::type* ad = versioned(a);
             typename real_type<T>::type tmp = ad[0];
             int n = num_cols(a);
                 
@@ -400,16 +399,15 @@ namespace ambient { namespace numeric { namespace kernels {
         template<typename T>
         void sqrt_inplace(matrix<typename real_type<T>::type>& a){
             size_t size = a.num_rows()*a.num_cols();
-            typename real_type<T>::type* ad = current(a);
-            typename real_type<T>::type* ar = updated(a);
+            typename real_type<T>::type* ar = versioned(a);
             for(int i=0; i < size; ++i)
-                ar[i] =sqrt(ad[i]);   
+                ar[i] =sqrt(ar[i]);   
         }
         
         template<typename T>
         void init_gaussian(unbound< matrix<T> >& a){
             size_t size = ambient::get_square_dim(a);
-            T* ad = updated(a);
+            T* ad = versioned(a);
             // for(size_t i = 0; i < size; ++i) ad[i] = gaussian_generator(rng);
         }
 

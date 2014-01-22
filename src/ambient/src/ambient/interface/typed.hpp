@@ -92,8 +92,8 @@ namespace ambient {
         template<size_t arg> 
         static void deallocate(functor* m){
             EXTRACT(o);
-            revision& parent  = *(revision*)o->before;
-            revision& current = *(revision*)o->after;
+            revision& parent  = *o->before;
+            revision& current = *o->after;
             current.complete();
             current.release();
             get_controller().squeeze(&parent);
@@ -139,7 +139,7 @@ namespace ambient {
         template<size_t arg> 
         static bool pin(functor* m){ 
             EXTRACT(o);
-            revision& r = *(revision*)o->before;
+            revision& r = *o->before;
             void* generator = r.generator;
             if(generator != NULL){
                 ((functor*)generator)->queue(m);
@@ -155,7 +155,7 @@ namespace ambient {
         template<size_t arg> 
         static bool ready(functor* m){
             EXTRACT(o);
-            revision& r = *(revision*)o->before;
+            revision& r = *o->before;
             void* generator = r.generator;
             if(generator == NULL || generator == m) return true;
             return false;
@@ -166,7 +166,7 @@ namespace ambient {
     template <typename T> struct read_iteratable_info : public iteratable_info<T> {
         template<size_t arg> static void deallocate(functor* m){
             EXTRACT(o);
-            revision& r = *(revision*)o->before;
+            revision& r = *o->before;
             get_controller().squeeze(&r);
             r.release();
         }
@@ -339,8 +339,8 @@ namespace ambient {
     // }}}
 
     #define ambient_non_destroyable  static int disable_destructor(int);
-    #define ambient_version(...)     mutable void* before; \
-                                     mutable void* after; \
+    #define ambient_version(...)     mutable ambient::revision* before; \
+                                     mutable ambient::revision* after; \
                                      void enable_versioning(); \
                                      static void disable_destructor(...); \
                                      enum { destructor_disabled = !std::is_void<decltype(disable_destructor(0))>::value }; \

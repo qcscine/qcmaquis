@@ -271,15 +271,6 @@ namespace ambient { namespace numeric {
         ambient::merge(src, dst);
     }
 
-    template<class A1, class A2, typename T>
-    inline void copy_block(const matrix<T,A1>& src, size_t si, size_t sj, 
-                           matrix<T,A2>& dst, size_t di, size_t dj, 
-                           size_t m, size_t n)
-    {
-        if(!ambient::weak(src) || !ambient::weak(dst))
-        kernels::template copy_block<A1,A2,T>::template spawn(src, si, sj, dst, di, dj, m, n); 
-    }
-
     template<typename T, class A>
     inline void copy_rt(const matrix<T,A>& src, matrix<T,A>& dst){ 
         kernels::template copy_rt<T>::template spawn(src, dst);
@@ -290,13 +281,24 @@ namespace ambient { namespace numeric {
         kernels::template copy_lt<T>::template spawn(src, dst);
     }
 
+    template<class A1, class A2, typename T>
+    inline void copy_block(const matrix<T,A1>& src, size_t si, size_t sj, 
+                           matrix<T,A2>& dst, size_t di, size_t dj, 
+                           size_t m, size_t n)
+    {
+        if(!ambient::weak(src) || !ambient::weak(dst))
+        if(m*n == dst.num_rows()*dst.num_cols()) kernels::template copy_block_unbound<A1,A2,T>::template spawn(src, si, sj, dst, di, dj, m, n); 
+        else kernels::template copy_block<A1,A2,T>::template spawn(src, si, sj, dst, di, dj, m, n); 
+    }
+
     template<typename T, class A>
     inline void copy_block_s(const matrix<T,A>& src, size_t si, size_t sj, 
                              matrix<T,A>& dst, size_t di, size_t dj, 
                              const matrix<T,A>& alfa, size_t ai, size_t aj,
                              size_t m, size_t n)
     { 
-        kernels::template copy_block_s<T>::template spawn(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
+        if(m*n == dst.num_rows()*dst.num_cols()) kernels::template copy_block_s_unbound<T>::template spawn(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
+        else kernels::template copy_block_s<T>::template spawn(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
     }
 
     template<class A1, class A2, class A3, typename T>
