@@ -182,7 +182,6 @@ namespace ambient { namespace numeric { namespace kernels {
 
        static void larfg(const int *n, T* alpha, T* x, int *incx, T* tau){
            dlarfg_(n, alpha, x, incx, tau); 
-           assert( *info == 0 );
        }
 
        static void gebd2(const int* m, const int* n, T* a, const int* lda, T* d, T* e, T* tauq, T* taup, T* work, int* info){
