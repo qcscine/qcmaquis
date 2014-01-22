@@ -77,7 +77,7 @@ protected:
     bool cast_to_real, is_super_meas;
     std::vector<std::string> labels;
     value_type result;
-    std::vector<value_type> vector_results;
+    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vector_results;
     
     Index<SymmGroup> phys_psi;
     
