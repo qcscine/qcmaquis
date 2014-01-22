@@ -405,7 +405,7 @@ namespace ambient { namespace numeric { namespace kernels {
         void conj_inplace(matrix<T,A>& a){
             size_t size = a.num_rows()*a.num_cols();
             T* ar = versioned(a).data;
-            for(int i=0; i < size; ++i)
+            for(int i = 0; i < size; ++i)
                 ar[i] = helper_complex<T>::conj(ar[i]);
         }
        
@@ -458,12 +458,13 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t lda = a.num_rows();
             T* ad = versioned(a).data;
 
-            for(size_t j = 0; j < a.num_cols(); ++j) 
-            for(size_t i = j+1; i < a.num_rows(); ++i)
-            randomize(ad[j*lda+i]);
-
-            for(size_t j = 0; j < a.num_cols(); ++j) 
-            randomize_diag(ad[j*lda+j]);
+            for(size_t i = 0; i < a.num_rows(); ++i)
+            for(size_t j = i+1; j < a.num_cols(); ++j){
+                randomize(ad[i+j*lda]);
+                ad[j+i*lda] = helper_complex<T>::conj(ad[i+j*lda]);
+            }
+            for(size_t k = 0; k < a.num_cols(); ++k) 
+            randomize_diag(ad[k*lda+k]);
         }
 
         template<typename T, class A>
@@ -477,7 +478,7 @@ namespace ambient { namespace numeric { namespace kernels {
         void round_square(const matrix<T>& a, std::vector<T>*& ac){
             T* ad = versioned(a).data;
             size_t sizey = a.num_rows();
-            for(int i=0; i < sizey; i++){
+            for(int i = 0; i < sizey; i++){
                 double v = std::abs(ad[i]);
                 if(v > 1e-10) ac->push_back(v*v);
             }
@@ -486,21 +487,21 @@ namespace ambient { namespace numeric { namespace kernels {
         template<typename T>
         void cast_to_vector(std::vector<T>*& ac, const matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
             T* ad = versioned(a).data;
-            for(int j=0; j < n; ++j) std::memcpy((void*)&(*ac)[j*lda + offset],(void*)&ad[j*m], m*sizeof(T));  
+            for(int j = 0; j < n; ++j) std::memcpy((void*)&(*ac)[j*lda + offset],(void*)&ad[j*m], m*sizeof(T));  
         }
             
         template<typename T>
         void cast_from_vector(const std::vector<T>*& ac, unbound< matrix<T> >& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
             T* ad = versioned(a).data;
-            for(int j=0; j < n; ++j) std::memcpy((void*)&ad[j*m],(void*)&(*ac)[offset + j*lda], m*sizeof(T));
+            for(int j = 0; j < n; ++j) std::memcpy((void*)&ad[j*m],(void*)&(*ac)[offset + j*lda], m*sizeof(T));
         }
        
         template<typename T1, typename T2>
         void cast_from_vector_t(const std::vector<T1>*& ac, unbound< matrix<T2> >& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
             T2* ad = versioned(a).data;
             const T1* sd = &(*ac)[offset];
-            for(int j=0; j < n; ++j) 
-                for(int i=0; i < m; ++i)
+            for(int j = 0; j < n; ++j) 
+                for(int i = 0; i < m; ++i)
                     ad[j*m + i] = sd[j*lda + i];
         }
        
@@ -543,8 +544,8 @@ namespace ambient { namespace numeric { namespace kernels {
             std::cout.precision(16);
             std::cout.setf( std::ios::fixed, std:: ios::floatfield );
        
-            for(size_t i=0; i < sizey; ++i){
-                for(size_t j=0; j < sizex; ++j){
+            for(size_t i = 0; i < sizey; ++i){
+                for(size_t j = 0; j < sizex; ++j){
                     T av = ad[i+j*a.num_rows()];
                     T bv = bd[i+j*b.num_rows()];
                     double d = distance(av, bv);
@@ -611,7 +612,7 @@ namespace ambient { namespace numeric { namespace kernels {
             helper_lapack<T>::syev("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
        
             typename real_type<T>::type s;
-            for(int i=0; i < (int)(m/2); i++){
+            for(int i = 0; i < (int)(m/2); i++){
                 s = wd[i];
                 wd[i] = wd[m-i-1];
                 wd[m-i-1] = s;
@@ -619,7 +620,7 @@ namespace ambient { namespace numeric { namespace kernels {
             // reversing eigenvectors
             size_t len = m*sizeof(T);
             work = (T*)std::malloc(len);
-            for (int i=0; i < (int)(m/2); i++){
+            for (int i = 0; i < (int)(m/2); i++){
                 std::memcpy(work, &ad[i*m], len);
                 std::memcpy(&ad[i*m], &ad[(m-1-i)*m], len);
                 std::memcpy(&ad[(m-1-i)*m], work, len);
