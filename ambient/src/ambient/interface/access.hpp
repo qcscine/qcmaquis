@@ -31,6 +31,10 @@ namespace ambient {
 
     using ambient::models::ssm::revision;
 
+    template <typename T> static revision& naked(T& obj){
+        return *obj.versioned.core->current;
+    }
+
     template <typename T> static bool exclusive(T& obj){
         get_controller().touch(obj.versioned.core);
         revision& c = *obj.versioned.core->current;
@@ -45,14 +49,6 @@ namespace ambient {
         }
     }
 
-    template <typename T> static revision& naked(T& obj){
-        return *obj.versioned.core->current;
-    }
-
-    template <typename T> static revision& raw(T& obj){ 
-        return *(revision*)obj.before;     
-    }
-
     template <typename T> static typename T::unnamed::mapping& get(T& obj){ 
         get_controller().touch(obj.versioned.core);
         ambient::sync(); 
@@ -64,42 +60,30 @@ namespace ambient {
         return *(typename T::unnamed::mapping*)c;
     }
 
-    template <typename T> static typename T::unnamed::mapping& current(T& obj){
-        revision& c = *(revision*)obj.before;
-        if(!c.valid()){
-            c.embed(get_allocator<T>::type::calloc(c.spec));
-        }
+    template <typename T> static typename T::unnamed::mapping& versioned(const T& obj){
+        revision& c = *obj.before; if(c.valid()) return *(typename T::unnamed::mapping*)c;
+        c.embed(get_allocator<T>::type::calloc(c.spec));
         return *(typename T::unnamed::mapping*)c;
     }
 
-    template <typename T> static typename T::unnamed::mapping& updated(T& obj){ 
-        revision& c = *(revision*)obj.after; assert(!c.valid());
-        revision& p = *(revision*)obj.before;
-        if(c.valid()){ } // safety perk
-        else if(p.valid() && p.locked_once() && !p.referenced() && c.spec.conserves(p.spec)) c.reuse(p);
-        else{
-            c.embed(get_allocator<T>::type::alloc(c.spec));
-        }
+    template <typename T> static typename T::unnamed::mapping& versioned(unbound< T >& obj){ 
+        revision& c = *obj.after; if(c.valid()) return *(typename T::unnamed::mapping*)c;
+        revision& p = *obj.before;
+        if(p.valid() && p.locked_once() && !p.referenced() && c.spec.conserves(p.spec)) c.reuse(p);
+        else c.embed(get_allocator<T>::type::alloc(c.spec));
         return *(typename T::unnamed::mapping*)c;
     }
 
-    template <typename T> static typename T::unnamed::mapping& revised(T& obj){ 
-        revision& c = *(revision*)obj.after; assert(!c.valid());
-        revision& p = *(revision*)obj.before;
-        if(!p.valid()){
-            c.embed(get_allocator<T>::type::calloc(c.spec));
-        }else if(p.locked_once() && !p.referenced() && c.spec.conserves(p.spec)) c.reuse(p);
+    template <typename T> static typename T::unnamed::mapping& versioned(T& obj){
+        revision& c = *obj.after; if(c.valid()) return *(typename T::unnamed::mapping*)c;
+        revision& p = *obj.before;
+        if(!p.valid()) c.embed(get_allocator<T>::type::calloc(c.spec));
+        else if(p.locked_once() && !p.referenced() && c.spec.conserves(p.spec)) c.reuse(p);
         else{
             c.embed(get_allocator<T>::type::alloc(c.spec));
             memcpy((T*)c, (T*)p, p.spec.extent);
         }
         return *(typename T::unnamed::mapping*)c;
-    }
-
-    template <typename T> static typename T::unnamed::mapping& emptied(T& obj){
-        typename T::unnamed::mapping& c = updated(obj);
-        memset(&c, 0, ((revision*)obj.after)->spec.extent); 
-        return c;
     }
 }
 
