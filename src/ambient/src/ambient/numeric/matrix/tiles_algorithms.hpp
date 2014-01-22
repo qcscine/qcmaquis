@@ -65,18 +65,13 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     bool is_hermitian(const tiles<Matrix>& a){
-        if(a.num_rows() != a.num_cols())
-            return false;
-        //first check the diagonal block
-        for(int i=0; i < a.nt; ++i)
-           if(true != is_hermitian(a.tile(i,i)))
-                return false;
-        //second check the rest of the blocks
-        for(int i=1; i < a.mt; ++i) 
-            for(int j=i; j < a.nt; ++j) 
-                if(!(a.tile(i,j) == conj(a.tile(j,i))))
-                    return false; 
+        if(num_rows(a) != num_cols(a)) return false;
+        // return (a == transpose(conj(a))); // short version
 
+        for(int i = 0; i < num_rows(a); ++i)
+        for(int j = 0; j < num_cols(a); ++j)
+        if( std::abs( a(i,j) - std::conj(a(j,i)) ) > 1e-10 )
+            return false;
         return true;
     }
 
@@ -739,11 +734,14 @@ namespace ambient { namespace numeric {
 
     template<class Matrix>
     inline void generate_hermitian(tiles<Matrix>& a){
-        assert(a.mt == a.nt);
+        assert(num_rows(a) == num_cols(a));
+        for(size_t k = 0; k < a.mt; ++k) 
+            fill_random_hermitian(a.tile(k,k));
+
         for(size_t i = 0; i < a.mt; ++i) 
-        for(size_t j = i; j < a.nt; ++j){
-            fill_random_hermitian(a.tile(i,j));
-            a.tile(j,i) = conj(a.tile(i,j));
+        for(size_t j = i+1; j < a.nt; ++j){
+            fill_random(a.tile(i,j));
+            a.tile(j,i) = transpose(conj(a.tile(i,j)));
         }
     }
 

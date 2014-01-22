@@ -45,7 +45,7 @@ namespace ambient { namespace numeric {
             return false;
         for (size_t i=0; i < num_rows(a); ++i)
             for(size_t j=0; j < num_cols(a); ++j){
-               if ( a(i,j) != ambient::numeric::kernels::helper_complex<T>::conj(a(j,i)))
+               if( a(i,j) != ambient::numeric::kernels::helper_complex<T>::conj(a(j,i)) )
                    return false;
             }
         return true;
