@@ -48,7 +48,7 @@ namespace ambient {
     struct time {
         time(): thread_(pthread_self()){}
         double parse(timespec& t){
-            return ts.tv_sec+(((double)ts.tv_nsec / (double)BILLION));
+            return t.tv_sec+(((double)t.tv_nsec / (double)BILLION));
         }
         double start(){
             pthread_getcpuclockid(this->thread_,&this->cid_);
