@@ -32,11 +32,6 @@ namespace ambient { namespace memory {
         template<size_t S> void* instr_bulk::malloc()         { return ambient::get_controller().memory.malloc(S); }
                    inline  void* instr_bulk::malloc(size_t s) { return ambient::get_controller().memory.malloc(s); }
 
-        inline void instr_bulk::drop(){ 
-            ambient::get_controller().memory.reset();
-            serial_factory<AMBIENT_INSTR_BULK_CHUNK>::reset();
-        }
-
 } }
 
 #endif

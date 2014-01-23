@@ -128,6 +128,7 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline void controller::clear(){
         this->garbage.clear();
+        this->memory.reset();
     }
 
     inline bool controller::queue(functor* f){

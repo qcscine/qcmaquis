@@ -60,36 +60,55 @@ namespace ambient { namespace memory {
     };
 
     template<size_t S, class Factory>
+    class private_region : public serial_region<S,Factory> {
+    public:
+        typedef serial_region<S,Factory> base;
+        void* malloc(size_t sz){
+            if(((size_t)this->iterator + sz - (size_t)this->buffer) >= S){
+                this->buffer = pool.provide();
+                this->iterator = (char*)this->buffer;
+            }
+            void* m = (void*)this->iterator;
+            this->iterator += aligned_64(sz);
+            return m;
+        }
+        void reset(){
+            base::reset();
+            pool.reset();
+        }
+    private:
+        Factory pool;
+    };
+
+    template<size_t S, class Factory>
     class region : public serial_region<S,Factory> {
     public:
         typedef ambient::mutex mutex;
         typedef ambient::guard<mutex> guard;
         typedef serial_region<S,Factory> base;
 
-        region(){
-            this->count = 0;
-            this->block_count = 0;
-        }
+        region() : count(0) {}
+    private:
         void realloc(){
             if(this->count){
-                 Factory::collect(this->buffer, this->count);
-                 this->count = 0;
+                Factory::collect(this->buffer, this->count);
+                this->count = 0;
             }
             base::realloc();
-            this->block_count++;
         }
+    public:
         void* malloc(size_t sz){
             guard g(this->mtx);
             if(((size_t)this->iterator + sz - (size_t)this->buffer) >= S) realloc();
             this->count++;
-            return base::malloc(sz);
+            void* m = (void*)this->iterator;
+            this->iterator += aligned_64(sz);
+            return m;
         }
         void reset(){
             base::reset();
             this->count = 0; 
-            this->block_count = 0;
         }
-        int block_count;
     private:
         long int count;
         mutex mtx;

@@ -163,7 +163,6 @@ namespace ambient {
             c.flush();
             c.clear();  
             memory::data_bulk::drop();
-            memory::instr_bulk::drop();
         }
     private:
         controller_type c;

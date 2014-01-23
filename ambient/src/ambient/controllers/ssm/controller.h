@@ -38,9 +38,9 @@ namespace ambient { namespace controllers { namespace ssm {
     class controller {
     public:
         typedef channels::AMBIENT_CHANNEL_NAME::channel channel_type;
-        typedef ambient::memory::serial_region<AMBIENT_INSTR_BULK_CHUNK, 
-                                               ambient::memory::serial_factory<AMBIENT_INSTR_BULK_CHUNK> 
-                                              > memory_type;
+        typedef ambient::memory::private_region<AMBIENT_INSTR_BULK_CHUNK, 
+                                               ambient::memory::private_factory<AMBIENT_INSTR_BULK_CHUNK> 
+                                               > memory_type;
         class scope {
         public:
             int rank;
