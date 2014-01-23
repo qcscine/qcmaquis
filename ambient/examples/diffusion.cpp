@@ -1,4 +1,5 @@
 #include "ambient/ambient.hpp"
+#include "ambient/utils/reduce.hpp"
 #include "ambient/utils/timings.hpp"
 #define IB 256
 

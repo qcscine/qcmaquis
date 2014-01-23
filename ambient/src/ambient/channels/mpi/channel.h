@@ -27,6 +27,8 @@
 #ifndef AMBIENT_CHANNELS_MPI_CHANNEL
 #define AMBIENT_CHANNELS_MPI_CHANNEL
 
+#define AMBIENT_CHANNEL_NAME mpi
+
 namespace ambient { namespace channels { namespace mpi {
 
     class request_impl;
@@ -40,6 +42,7 @@ namespace ambient { namespace channels { namespace mpi {
     public:
         typedef typename ambient::models::ssm::revision block_type;
         typedef typename ambient::models::ssm::transformable scalar_type;
+        template<class T> using collective_type = collective<T>;
         static void mount();
         static void unmount();
         void init();

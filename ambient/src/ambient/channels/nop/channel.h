@@ -24,41 +24,43 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_SSM_SET
-#define AMBIENT_CONTROLLERS_SSM_SET
+#ifndef AMBIENT_CHANNELS_NOP_CHANNEL
+#define AMBIENT_CHANNELS_NOP_CHANNEL
 
-namespace ambient { namespace controllers { namespace ssm {
+#define AMBIENT_CHANNEL_NAME nop
 
-    template<class T> class set {};
+namespace ambient { namespace channels { namespace nop {
 
-    template<>
-    class set<transformable> : public functor, public memory::use_bulk_new<set<transformable> > {
+    class multirank {
     public:
-        template<class T> using collective = controller::channel_type::collective_type<T>;
-        static void spawn(transformable& v);
-        set(transformable& v);
-        virtual void invoke();
-        virtual bool ready();
-    private:
-        collective<transformable>* handle;
-        transformable& t;
+        int operator()() const { return 0; }
+        int left_neighbor() const { return 0; }
+        int right_neighbor() const { return 0; }
     };
 
-    template<>
-    class set<revision> : public functor, public memory::use_bulk_new<set<revision> > {
+    template<class T> struct collective {
+        bool test(){ return true; }
+        void operator += (int rank){}
+        bool involved(){ return true; }
+    };
+
+    class channel {
     public:
-        template<class T> using collective = controller::channel_type::collective_type<T>;
-        static void spawn(revision& r);
-        set(revision& r);
-        virtual void invoke();
-        virtual bool ready();
-        void operator += (int rank);
-    private:
-        collective<revision>* handle;
-        revision& t;
+        typedef typename ambient::models::ssm::revision block_type;
+        typedef typename ambient::models::ssm::transformable scalar_type;
+        template<class T> using collective_type = collective<T>;
+        static void mount(){}
+        static void unmount(){}
+        void init(){}
+        size_t dim() const { return 1; }
+        static void barrier(){}
+        collective<block_type>* get(block_type& r){ return NULL; }
+        collective<block_type>* set(block_type& r){ return NULL; }
+        collective<scalar_type>* bcast(scalar_type& v, int root){ return NULL; }
+        collective<scalar_type>* bcast(scalar_type& v){ return NULL; }
+        multirank rank;
     };
 
 } } }
 
 #endif
-
