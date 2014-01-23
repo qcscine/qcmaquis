@@ -27,7 +27,9 @@
 #ifndef AMBIENT
 #define AMBIENT
 // {{{ system includes
+#ifndef AMBIENT_NOP_CHANNEL
 #include <mpi.h>
+#endif
 #include <complex>
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,17 +71,21 @@
 #include "ambient/models/ssm/transformable.h"
 #include "ambient/models/ssm/model.h"
 
+#ifndef AMBIENT_NOP_CHANNEL
 #include "ambient/channels/mpi/group.h"
 #include "ambient/channels/mpi/multirank.h"
 #include "ambient/channels/mpi/channel.h"
 #include "ambient/channels/mpi/request.h"
 #include "ambient/channels/mpi/collective.h"
+#else
+#include "ambient/channels/nop/channel.h"
+#endif
 
 #include "ambient/controllers/ssm/functor.h"
-#include "ambient/controllers/ssm/get.h"
-#include "ambient/controllers/ssm/set.h"
 #include "ambient/controllers/ssm/collector.h"
 #include "ambient/controllers/ssm/controller.h"
+#include "ambient/controllers/ssm/get.h"
+#include "ambient/controllers/ssm/set.h"
 
 #include "ambient/utils/auxiliary.hpp"
 #include "ambient/utils/io.hpp"
@@ -94,11 +100,13 @@
 #include "ambient/models/ssm/transformable.hpp"
 #include "ambient/models/ssm/model.hpp"
 
+#ifndef AMBIENT_NOP_CHANNEL
 #include "ambient/channels/mpi/group.hpp"
 #include "ambient/channels/mpi/multirank.hpp"
 #include "ambient/channels/mpi/channel.hpp"
 #include "ambient/channels/mpi/request.hpp"
 #include "ambient/channels/mpi/collective.hpp"
+#endif
 
 #include "ambient/controllers/ssm/get.hpp"
 #include "ambient/controllers/ssm/set.hpp"
@@ -123,14 +131,13 @@ namespace ambient {
     class universe {
     public:
         typedef controllers::ssm::controller controller_type;
-        typedef channels::mpi::channel channel_type;
 
        ~universe(){
-            channel_type::unmount();
+            controller_type::channel_type::unmount();
         }
         universe(){
             int db = ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0;
-            channel_type::mount();
+            controller_type::channel_type::mount();
             c.get_channel().init();
             c.init(db);
             if(ambient::isset("AMBIENT_VERBOSE")){

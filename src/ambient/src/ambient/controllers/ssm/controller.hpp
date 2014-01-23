@@ -254,7 +254,7 @@ namespace ambient { namespace controllers { namespace ssm {
         return this->sid;
     }
 
-    inline channels::mpi::channel & controller::get_channel(){
+    inline typename controller::channel_type & controller::get_channel(){
         return channel;
     }
 
