@@ -89,6 +89,28 @@ namespace ambient {
     };
 
     template<>
+    class scope<threaded> : public controller::scope {
+    public:
+        scope(const std::vector<int>& map, int iterator = 0){
+            if(ambient::parallel()) dry = true;
+            else{ dry = false; get_controller().set_context(this); }
+            int round = ambient::num_workers();
+
+            int i = iterator >= map.size() ? iterator : map[iterator];
+            if(i >= round) this->rank = i % round;
+            else           this->rank = i;
+            this->state = (this->rank == ambient::rank()) ? ambient::local : ambient::remote;
+        }
+       ~scope(){
+            if(!dry) get_controller().pop_context();
+        }
+        virtual bool tunable() const {
+            return false; 
+        }
+        bool dry;
+    };
+
+    template<>
     class scope<single> : public controller::scope {
     public:
         static int grain; 
