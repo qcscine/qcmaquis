@@ -168,7 +168,7 @@ namespace ambient {
         controller_type c;
     } u;
 
-    controllers::ssm::controller& get_controller(){ return u(AMBIENT_THREAD_ID); }
+    controllers::ssm::controller& cell(){ return u(AMBIENT_THREAD_ID); }
     void sync(){ u.sync(); }
     utils::mpostream cout;
     utils::mpostream cerr;

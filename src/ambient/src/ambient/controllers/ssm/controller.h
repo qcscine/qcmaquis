@@ -118,7 +118,7 @@ namespace ambient { namespace controllers { namespace ssm {
 } } }
 
 namespace ambient {
-    controllers::ssm::controller& get_controller();
+    controllers::ssm::controller& cell();
 }
 
 #endif

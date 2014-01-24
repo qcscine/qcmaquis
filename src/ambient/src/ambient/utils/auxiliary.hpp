@@ -47,23 +47,23 @@ namespace ambient {
     }
 
     inline int num_db_procs(){
-        return get_controller().get_num_db_procs();
+        return cell().get_num_db_procs();
     }
 
     inline int num_workers(){
-        return get_controller().get_num_workers();
+        return cell().get_num_workers();
     }
     
     inline int num_procs(){
-        return get_controller().get_num_procs();
+        return cell().get_num_procs();
     }
 
     inline int rank(){
-        return get_controller().get_rank();
+        return cell().get_rank();
     }
 
     inline int dedicated_rank(){
-        return get_controller().get_dedicated_rank();
+        return cell().get_dedicated_rank();
     }
 
     inline bool master(){
@@ -71,20 +71,20 @@ namespace ambient {
     }
 
     inline bool parallel(){
-        return get_controller().scoped();
+        return cell().scoped();
     }
 
     inline bool verbose(){ 
-        return get_controller().verbose();
+        return cell().verbose();
     }
 
     inline void meminfo(){
-        get_controller().meminfo(); 
+        cell().meminfo(); 
     }
 
     template<typename T>
     inline void destroy(T* o){ 
-        get_controller().collect(o); 
+        cell().collect(o); 
     }
 
     template<typename V>

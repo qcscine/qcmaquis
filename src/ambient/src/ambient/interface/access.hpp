@@ -36,11 +36,11 @@ namespace ambient {
     }
 
     template <typename T> static bool exclusive(T& obj){
-        get_controller().touch(obj.versioned.core);
+        cell().touch(obj.versioned.core);
         revision& c = *obj.versioned.core->current;
-        if(get_controller().remote()){
+        if(cell().remote()){
             c.state = ambient::remote;
-            c.owner = get_controller().which();
+            c.owner = cell().which();
             return true;
         }else{
             c.state = ambient::local;
@@ -50,7 +50,7 @@ namespace ambient {
     }
 
     template <typename T> static typename T::unnamed::mapping& get(T& obj){ 
-        get_controller().touch(obj.versioned.core);
+        cell().touch(obj.versioned.core);
         ambient::sync(); 
         revision& c = *obj.versioned.core->current;
         assert(c.state == ambient::local || c.state == ambient::common);
