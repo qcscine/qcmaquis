@@ -164,9 +164,6 @@ public:
         d2e_op = tag_handler->get_op(d2e);
         docc_op = tag_handler->get_op(docc);
 
-        // TODO: check this!
-        //gemm(create_up_op, destroy_down_op, swap_d2u_op); // -S_plus (!)
-        //gemm(destroy_up_op, create_down_op, swap_u2d_op); // S_minus
         gemm(destroy_down_op, create_up_op, swap_d2u_op); // S_plus
         gemm(destroy_up_op, create_down_op, swap_u2d_op); // S_minus
 
@@ -338,9 +335,6 @@ public:
                                                     + boost::lexical_cast<std::string>(*it2) + "\n");
 
                 }
-
-                //if (f_ops > 0)
-                //    term.fill_operator = fill_op;
 
                 if (f_ops % 2 != 0)
                     throw std::runtime_error("In " + name + ": Number of fermionic operators has to be even in correlation measurements.");
