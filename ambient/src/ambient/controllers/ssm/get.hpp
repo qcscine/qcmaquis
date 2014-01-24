@@ -29,10 +29,10 @@ namespace ambient { namespace controllers { namespace ssm {
     // {{{ transformable
 
     inline void get<transformable>::spawn(transformable& t){
-        ambient::get_controller().queue(new get(t));
+        ambient::cell().queue(new get(t));
     }
     inline get<transformable>::get(transformable& t){
-        handle = ambient::get_controller().get_channel().bcast(t, ambient::get_controller().which());
+        handle = ambient::cell().get_channel().bcast(t, ambient::cell().which());
     }
     inline bool get<transformable>::ready(){
         return handle->test();
@@ -44,12 +44,12 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline void get<revision>::spawn(revision& r){
         get*& transfer = (get*&)r.assist.second;
-        if(ambient::get_controller().update(r)) transfer = new get(r);
-        *transfer += ambient::get_controller().which();
-        ambient::get_controller().generate_sid();
+        if(ambient::cell().update(r)) transfer = new get(r);
+        *transfer += ambient::cell().which();
+        ambient::cell().generate_sid();
     }
     inline get<revision>::get(revision& r) : t(r) {
-        handle = ambient::get_controller().get_channel().get(t);
+        handle = ambient::cell().get_channel().get(t);
         t.invalidate();
     }
     inline void get<revision>::operator += (int rank){
@@ -58,14 +58,14 @@ namespace ambient { namespace controllers { namespace ssm {
             t.use();
             t.generator = this;
             t.embed(ambient::pool::malloc<data_bulk>(t.spec)); 
-            ambient::get_controller().queue(this);
+            ambient::cell().queue(this);
         }
     }
     inline bool get<revision>::ready(){
         return handle->test();
     }
     inline void get<revision>::invoke(){
-        ambient::get_controller().squeeze(&t);
+        ambient::cell().squeeze(&t);
         t.release();
         t.complete();
     }
@@ -73,5 +73,3 @@ namespace ambient { namespace controllers { namespace ssm {
     // }}}
 
 } } }
-
-

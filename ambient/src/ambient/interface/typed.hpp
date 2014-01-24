@@ -68,11 +68,11 @@ namespace ambient {
             EXTRACT(o); o->core->generator = NULL;
         }
         template<size_t arg> static void modify_remote(T& obj){ 
-            get_controller().rsync(obj.core);
+            cell().rsync(obj.core);
         }
         template<size_t arg> static void modify_local(const T& obj, functor* m){ 
             obj.core->generator = m;
-            get_controller().lsync(obj.core);
+            cell().lsync(obj.core);
             m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.core);
         }
         template<size_t arg> static void modify(const T& obj, functor* m){ 
@@ -96,44 +96,44 @@ namespace ambient {
             revision& current = *o->after;
             current.complete();
             current.release();
-            get_controller().squeeze(&parent);
+            cell().squeeze(&parent);
             parent.release();
         }
         template<size_t arg>
         static void modify_remote(T& obj){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            get_controller().touch(o);
-            get_controller().rsync(o->back());
-            get_controller().collect(o->back());
-            get_controller().add_revision<ambient::remote>(o, get_controller().which()); 
+            cell().touch(o);
+            cell().rsync(o->back());
+            cell().collect(o->back());
+            cell().add_revision<ambient::remote>(o, cell().which()); 
         }
         template<size_t arg>
         static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            get_controller().touch(o);
+            cell().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); 
             m->arguments[arg] = (void*)var;
-            get_controller().lsync(o->back());
-            get_controller().use_revision(o);
-            get_controller().collect(o->back());
+            cell().lsync(o->back());
+            cell().use_revision(o);
+            cell().collect(o->back());
 
             var->before = o->current;
-            get_controller().add_revision<ambient::local>(o, m); 
-            get_controller().use_revision(o);
+            cell().add_revision<ambient::local>(o, m); 
+            cell().use_revision(o);
             var->after = o->current;
         }
         template<size_t arg>
         static void modify(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            get_controller().touch(o);
+            cell().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
-            get_controller().sync(o->back());
-            get_controller().use_revision(o);
-            get_controller().collect(o->back());
+            cell().sync(o->back());
+            cell().use_revision(o);
+            cell().collect(o->back());
 
             var->before = o->current;
-            get_controller().add_revision<ambient::common>(o, m); 
-            get_controller().use_revision(o);
+            cell().add_revision<ambient::common>(o, m); 
+            cell().use_revision(o);
             var->after = o->current;
         }
         template<size_t arg> 
@@ -149,8 +149,8 @@ namespace ambient {
         }
         template<size_t arg> 
         static void score(T& obj){
-            get_controller().intend_read(obj.versioned.core);
-            get_controller().intend_write(obj.versioned.core);
+            cell().intend_read(obj.versioned.core);
+            cell().intend_write(obj.versioned.core);
         }
         template<size_t arg> 
         static bool ready(functor* m){
@@ -167,70 +167,70 @@ namespace ambient {
         template<size_t arg> static void deallocate(functor* m){
             EXTRACT(o);
             revision& r = *o->before;
-            get_controller().squeeze(&r);
+            cell().squeeze(&r);
             r.release();
         }
         template<size_t arg> static void modify_remote(T& obj){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            get_controller().touch(o);
-            get_controller().rsync(o->back());
+            cell().touch(o);
+            cell().rsync(o->back());
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            get_controller().touch(o);
+            cell().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             var->before = o->current;
-            get_controller().lsync(o->back());
-            get_controller().use_revision(o);
+            cell().lsync(o->back());
+            cell().use_revision(o);
         }
         template<size_t arg> static void modify(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            get_controller().touch(o);
+            cell().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             var->before = o->current;
-            get_controller().sync(o->back());
-            get_controller().use_revision(o);
+            cell().sync(o->back());
+            cell().use_revision(o);
         }
         template<size_t arg> 
         static void score(T& obj){
-            get_controller().intend_read(obj.versioned.core);
+            cell().intend_read(obj.versioned.core);
         }
     };
     template <typename T> struct write_iteratable_info : public iteratable_info<T> {
         template<size_t arg> static void modify_remote(T& obj){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            get_controller().touch(o);
-            get_controller().collect(o->back());
-            get_controller().add_revision<ambient::remote>(o, get_controller().which()); 
+            cell().touch(o);
+            cell().collect(o->back());
+            cell().add_revision<ambient::remote>(o, cell().which()); 
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            get_controller().touch(o);
+            cell().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
 
-            get_controller().use_revision(o);
-            get_controller().collect(o->back());
+            cell().use_revision(o);
+            cell().collect(o->back());
 
             var->before = o->current;
-            get_controller().add_revision<ambient::local>(o, m); 
-            get_controller().use_revision(o);
+            cell().add_revision<ambient::local>(o, m); 
+            cell().use_revision(o);
             var->after = o->current;
         }
         template<size_t arg> static void modify(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
-            get_controller().touch(o);
+            cell().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
-            get_controller().use_revision(o);
-            get_controller().collect(o->back());
+            cell().use_revision(o);
+            cell().collect(o->back());
 
             var->before = o->current;
-            get_controller().add_revision<ambient::common>(o, m); 
-            get_controller().use_revision(o);
+            cell().add_revision<ambient::common>(o, m); 
+            cell().use_revision(o);
             var->after = o->current;
         }
         template<size_t arg> static bool pin(functor* m){ return false; }
         template<size_t arg> static void score(T& obj) {               
-            get_controller().intend_write(obj.versioned.core);
+            cell().intend_write(obj.versioned.core);
         }
         template<size_t arg> static bool ready (functor* m){ return true;  }
     };

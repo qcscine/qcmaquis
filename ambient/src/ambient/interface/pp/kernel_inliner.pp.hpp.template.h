@@ -81,20 +81,20 @@ struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP
     BOOST_PP_REPEAT(TYPES_NUMBER, typedef_arguments, ~)
     static const int arity = n; 
     static inline void latch(functor* o, BOOST_PP_REPEAT(TYPES_NUMBER, type_arg_list, n) ){
-        if(get_controller().tunable()){
+        if(cell().tunable()){
             BOOST_PP_REPEAT(TYPES_NUMBER, score_arguments, ~)
-            get_controller().schedule();
+            cell().schedule();
         }
-        if(get_controller().remote()){
+        if(cell().remote()){
             BOOST_PP_REPEAT(TYPES_NUMBER, extract_remote_arguments, ~)
             return;
-        }else if(get_controller().local()){
+        }else if(cell().local()){
             BOOST_PP_REPEAT(TYPES_NUMBER, extract_local_arguments, ~) 
         }else{
             BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 
         }
         BOOST_PP_REPEAT(TYPES_NUMBER, traverse_arguments, ~)
-        get_controller().queue(o);
+        cell().queue(o);
     }
     static inline void invoke(functor* o){
         (*fp)( BOOST_PP_REPEAT(TYPES_NUMBER, arg_list, BOOST_PP_ADD(n,1)) );

@@ -178,6 +178,26 @@ int main(){ using namespace ambient;
 
     ambient::sync();
 
+
+    std::vector<vector<int>* > list; list.reserve(100);
+    for(int i = 0; i < 100; i++) list.push_back(new vector<int>(100, 0));
+
+    int delta = 11;
+    cilk_for(int i = 0; i < 100; i++){
+        for(int k = 0; k < 1000; k++)
+        ambient::for_each( list[i]->begin(), list[i]->end(), [&] (int& val){ val += delta; } );
+    }
+    cilk_sync;
+
+    for(int i = 0; i < 100; i++){
+        ambient::lambda([&](const vector<int>& val){ 
+            std::cout << versioned(val).elements[0] << "\n";
+        })(*list[i]);
+        ambient::sync();
+    }
+
+    for(int i = 0; i < 100; i++) delete list[i];
+
     /*// possible todo:
     ambient::for_(a.begin(), b.begin(), [&](parallel_iterator& a_, parallel_iterator& b_)
     { 
