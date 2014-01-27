@@ -61,6 +61,8 @@ public:
     
     virtual ~model_impl() {}
     
+    virtual void update(BaseParameters const& p) =0;
+
     virtual Index<SymmGroup> const& phys_dim(size_t type) const=0;
     virtual op_t const& identity_matrix(size_t type) const { return operators_table()->get_op( identity_matrix_tag(type) ); }
     virtual tag_type identity_matrix_tag(size_t type) const=0;
@@ -116,6 +118,7 @@ public:
     
     Model(impl_ptr impl) : impl_(impl) { }
     
+    void update(BaseParameters const& p) { return impl_->update(p); }
     
     Index<SymmGroup> const& phys_dim(size_t type=0) const { return impl_->phys_dim(type); }
     op_t const& identity_matrix(size_t type=0) const { return impl_->identity_matrix(type); }

@@ -190,6 +190,12 @@ public:
         }
     }
     
+    void update(BaseParameters const& p)
+    {
+        // TODO: update this->terms_ with the new parameters
+        return;
+    }
+    
     Index<TwoU1> const & phys_dim(size_t type) const
     {
         return phys;

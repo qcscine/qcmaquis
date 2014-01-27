@@ -93,7 +93,13 @@ class qc_model : public model_impl<Matrix, SymmGroup>
 public:
     
     qc_model(Lattice const & lat_, BaseParameters & parms_);
-
+    
+    void update(BaseParameters const& p)
+    {
+        // TODO: update this->terms_ with the new parameters
+        return;
+    }
+    
     Index<SymmGroup> const & phys_dim(size_t type) const
     {
         return phys;

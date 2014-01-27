@@ -74,7 +74,8 @@ public:
     typedef typename base::table_ptr table_ptr;
     typedef typename base::tag_type tag_type;
     
-    typedef typename base::term_descriptor term_descriptor;
+    typedef typename base::term_descriptor value_term;
+    typedef term_descriptor<alps::expression::Term<value_type> > expression_term;
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
@@ -94,7 +95,7 @@ public:
     : parms(parms_)
     , raw_lattice(lattice_)
     , lattice(detail::get_graph(lattice_))
-    , model(lattice, parms)
+    , model(lattice, parms, true)
     , tag_handler(new table_type())
     {
         locale_shared i;
@@ -162,33 +163,39 @@ public:
                 V  ops = model.site_term(type).template templated_split<value_type>();
                                                         
                 for (int n=0; n<ops.size(); ++n) {
-                    if (boost::get<0>(ops[n]).value() != 0.) {
-                        SiteOperator op = boost::get<1>(ops[n]);
-                        opmap_const_iterator match = operators.find(opkey_type(simplify_name(op), type));
-                        if (match == operators.end())
-                            match = register_operator(op, type, parms);
-                        site_terms[type].push_back( std::make_pair(boost::get<0>(ops[n]).value(), match->second)  );
-                    }
+                    SiteOperator op = boost::get<1>(ops[n]);
+                    opmap_const_iterator match = operators.find(opkey_type(simplify_name(op), type));
+                    if (match == operators.end())
+                        match = register_operator(op, type, parms);
+                    // site_terms[type].push_back( std::make_pair(boost::get<0>(ops[n]).value(), match->second)  );
+                    
+                    expression_term term;
+                    term.coeff = boost::get<0>(ops[n]);
+                    term.is_fermionic = false;
+                    term.push_back( boost::make_tuple(p, match->second) );
+                    expression_terms.push_back(term);
                 }
             }
 
             // All site terms summed into one
-            if (site_terms[type].size() > 0) {
-                opmap_const_iterator match = operators.find(opkey_type("site_terms", type));
-                if (match == operators.end()) {
-                    op_t op_matrix;
-                    for (int n=0; n<site_terms[type].size(); ++n)
-                        op_matrix += site_terms[type][n].first * tag_handler->get_op(site_terms[type][n].second);
-                    tag_type mytag = tag_handler->register_op(op_matrix, tag_detail::bosonic);
-                    boost::tie(match, boost::tuples::ignore) = operators.insert( std::make_pair(opkey_type("site_terms", type), mytag) );
-                }
-
-                term_descriptor term;
-                term.coeff = 1.;
-                term.is_fermionic = false;
-                term.push_back( boost::make_tuple(p, match->second) );
-                this->terms_.push_back(term);
-            }
+//            if (site_terms[type].size() > 0) {
+//                opmap_const_iterator match = operators.find(opkey_type("site_terms", type));
+//                if (match == operators.end()) {
+//                    op_t op_matrix;
+//                    for (int n=0; n<site_terms[type].size(); ++n)
+//                        op_matrix += site_terms[type][n].first * tag_handler->get_op(site_terms[type][n].second);
+//                    tag_type mytag = tag_handler->register_op(op_matrix, tag_detail::bosonic);
+//                    boost::tie(match, boost::tuples::ignore) = operators.insert( std::make_pair(opkey_type("site_terms", type), mytag) );
+//                }
+//
+//                term_descriptor term;
+//                term.coeff = 1.;
+//                term.is_fermionic = false;
+//                term.push_back( boost::make_tuple(p, match->second) );
+//                this->terms_.push_back(term);
+//            }
+            
+            
         }
         
         /// bond terms loop
@@ -213,50 +220,55 @@ public:
                 SiteOperator op1 = boost::get<1>(*tit);
                 SiteOperator op2 = boost::get<2>(*tit);
                 
-                if (alps::numeric::is_nonzero(boost::get<0>(*tit).value())) {
-                    
-                    opmap_const_iterator match1 = operators.find(opkey_type(simplify_name(op1), type_s));
-                    if (match1 == operators.end())
-                        match1 = register_operator(op1, type_s, parms);
-                    opmap_const_iterator match2 = operators.find(opkey_type(simplify_name(op2), type_t));
-                    if (match2 == operators.end())
-                        match2 = register_operator(op2, type_t, parms);
-                    
-                    bool with_sign = fermionic(b1, op1, b2, op2);
-                    
-                    term_descriptor term;
-                    term.coeff = boost::get<0>(*tit).value();
-                    term.is_fermionic = with_sign;
-                    
-                    {
-                        tag_type mytag = match1->second;
-                        if (with_sign && !wrap_pbc) {
-                            // Note inverse notation because of notation in operator.
-                            std::pair<tag_type, value_type> ptag = tag_handler->get_product_tag(operators[opkey_type("fill",type_s)],
-                                                                                                mytag);
-                            mytag = ptag.first;
-                            term.coeff *= ptag.second;
-                        }
-                        if (with_sign && wrap_pbc)
-                            term.coeff *= -1.;
-                        term.push_back( boost::make_tuple(p_s, mytag) );
+                opmap_const_iterator match1 = operators.find(opkey_type(simplify_name(op1), type_s));
+                if (match1 == operators.end())
+                    match1 = register_operator(op1, type_s, parms);
+                opmap_const_iterator match2 = operators.find(opkey_type(simplify_name(op2), type_t));
+                if (match2 == operators.end())
+                    match2 = register_operator(op2, type_t, parms);
+                
+                bool with_sign = fermionic(b1, op1, b2, op2);
+                
+                expression_term term;
+                term.coeff = boost::get<0>(*tit);
+                term.is_fermionic = with_sign;
+                
+                {
+                    tag_type mytag = match1->second;
+                    if (with_sign && !wrap_pbc) {
+                        // Note inverse notation because of notation in operator.
+                        std::pair<tag_type, value_type> ptag = tag_handler->get_product_tag(operators[opkey_type("fill",type_s)],
+                                                                                            mytag);
+                        mytag = ptag.first;
+                        term.coeff *= ptag.second;
                     }
-                    {
-                        tag_type mytag = match2->second;
-                        if (with_sign && wrap_pbc) {
-                            // Note inverse notation because of notation in operator.
-                            std::pair<tag_type, value_type> ptag = tag_handler->get_product_tag(operators[opkey_type("fill",type_t)],
-                                                                                                mytag);
-                            mytag = ptag.first;
-                            term.coeff *= ptag.second;
-                        }
-                        term.push_back( boost::make_tuple(p_t, mytag) );
-                    }
-                    
-                    this->terms_.push_back(term);
+                    if (with_sign && wrap_pbc)
+                        term.coeff *= value_type(-1.);
+                    term.push_back( boost::make_tuple(p_s, mytag) );
                 }
+                {
+                    tag_type mytag = match2->second;
+                    if (with_sign && wrap_pbc) {
+                        // Note inverse notation because of notation in operator.
+                        std::pair<tag_type, value_type> ptag = tag_handler->get_product_tag(operators[opkey_type("fill",type_t)],
+                                                                                            mytag);
+                        mytag = ptag.first;
+                        term.coeff *= ptag.second;
+                    }
+                    term.push_back( boost::make_tuple(p_t, mytag) );
+                }
+                
+                expression_terms.push_back(term);
             }
         }
+        
+        generate_terms();
+    }
+    
+    void update(BaseParameters const& p)
+    {
+        parms << p;
+        generate_terms();
     }
     
     Index<SymmGroup> const& phys_dim(size_t type) const
@@ -399,19 +411,41 @@ private:
         return ret;
     }
     
-    alps::Parameters const& parms;
+    void generate_terms()
+    {
+        this->terms_.clear();
+        this->terms_.reserve(expression_terms.size());
+        
+        alps::Parameters parms_with_defaults(parms);
+        parms_with_defaults.copy_undefined(model.model().default_parameters());
+        
+        typedef typename std::vector<expression_term>::const_iterator terms_iterator;
+        for(terms_iterator it = expression_terms.begin(); it != expression_terms.end(); ++it) {
+            value_type val = alps::evaluate<value_type>(it->coeff, parms_with_defaults);
+            if ( alps::numeric::is_nonzero(val) ) {
+                value_term term;
+                term.is_fermionic = it->is_fermionic;
+                term.insert(term.end(), it->begin(), it->end());
+                term.coeff = val;
+                this->terms_.push_back(term);
+            }
+        }
+    }
+    
+    
+    alps::Parameters parms;
     Lattice raw_lattice;
     graph_type const& lattice;
     alps::model_helper<I> model;
     mutable table_ptr tag_handler;
 
+    qn_map_type all_conserved_qn;
     std::vector<symmetric_basis_descriptor<SymmGroup> > symm_basis;
     std::vector<alps::SiteBasisDescriptor<I> > basis_descriptors;
     std::vector<alps::site_basis<I> > site_bases;
-
+    
     mutable opmap_type operators; // key=<name,type>
-
-    qn_map_type all_conserved_qn;
+    std::vector<expression_term> expression_terms;
 };
 
 // Loading Measurements
