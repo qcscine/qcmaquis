@@ -99,8 +99,11 @@ public:
     {
         locale_shared i;
         
-        symm_basis.resize( alps::maximum_vertex_type(lattice.graph())+1 );
-        
+        size_t num_vertex_types = alps::maximum_vertex_type(lattice.graph())+1;
+        symm_basis.reserve(num_vertex_types);
+        basis_descriptors.reserve(num_vertex_types);
+        site_bases.reserve(num_vertex_types);
+
         /// Parsing conserved quantum numbers
         std::set<std::string> all_qn;
         for (int type=0; type<=alps::maximum_vertex_type(lattice.graph()); ++type) {
@@ -125,20 +128,20 @@ public:
         
         /// Load all possible basis
         for (int type=0; type<=alps::maximum_vertex_type(lattice.graph()); ++type) {
-            alps::SiteBasisDescriptor<I> b = model.site_basis(type);
-            alps::site_basis<I> states(b);
-            symm_basis[type] = symmetric_basis_descriptor<SymmGroup>(b, all_conserved_qn);
+            basis_descriptors.push_back(model.site_basis(type));
+            site_bases.push_back(alps::site_basis<I>(basis_descriptors[type]));
+            symm_basis.push_back(symmetric_basis_descriptor<SymmGroup>(basis_descriptors[type], all_conserved_qn));
             
             op_t ident, fill;
             for (int i=0; i<symm_basis[type].size(); ++i) {
                 charge c = symm_basis[type].charge(i);
                 size_t bsize = symm_basis[type].block_size(i);
-                // maquis::cout << "Inserting " << c << " for " << states[i] << std::endl;
+                // maquis::cout << "Inserting " << c << " for " << site_bases[type][i] << std::endl;
                 
                 if (!ident.has_block(c, c))
                     ident.insert_block(Matrix::identity_matrix(bsize), c, c);
                 
-                int sign = (alps::is_fermionic(b, states[i])) ? -1 : 1;
+                int sign = (alps::is_fermionic(basis_descriptors[type], site_bases[type][i])) ? -1 : 1;
                 if (!fill.has_block(c, c))
                     fill.insert_block(Matrix::identity_matrix(bsize), c, c);
                 fill(symm_basis[type].coords(i), symm_basis[type].coords(i)) = sign;
@@ -149,7 +152,7 @@ public:
         
         
         /// site_term loop with cache to avoid recomputing matrices
-        std::vector<std::vector<std::pair<value_type, tag_type> > > site_terms( alps::maximum_vertex_type(lattice.graph())+1 );
+        std::vector<std::vector<std::pair<value_type, tag_type> > > site_terms(num_vertex_types);
         for (graph_type::site_iterator it=lattice.sites().first; it!=lattice.sites().second; ++it) {
             int p = lattice.vertex_index(*it);
             int type = lattice.site_type(*it);
@@ -201,8 +204,8 @@ public:
             BondOperator bondop = model.bond_term(type);
             
             typedef std::vector<boost::tuple<alps::expression::Term<value_type>,alps::SiteOperator,alps::SiteOperator > > V;
-            alps::SiteBasisDescriptor<I> b1 = model.site_basis(type_s);
-            alps::SiteBasisDescriptor<I> b2 = model.site_basis(type_t);
+            alps::SiteBasisDescriptor<I> const& b1 = basis_descriptors[type_s];
+            alps::SiteBasisDescriptor<I> const& b2 = basis_descriptors[type_t];
             
             
             V  ops = bondop.template templated_split<value_type>(b1,b2);
@@ -308,8 +311,8 @@ private:
         return term;
     }
     
-    bool fermionic (alps::SiteBasisDescriptor<I> b1, SiteOperator op1,
-                    alps::SiteBasisDescriptor<I> b2, SiteOperator op2) const
+    bool fermionic (alps::SiteBasisDescriptor<I> const& b1, SiteOperator const& op1,
+                    alps::SiteBasisDescriptor<I> const& b2, SiteOperator const& op2) const
     {
         return b1.is_fermionic(simplify_name(op1)) && b2.is_fermionic(simplify_name(op2));
     }
@@ -346,7 +349,7 @@ private:
     
     opmap_const_iterator register_operator(SiteOperator const& op, int type, alps::Parameters const& p) const
     {
-        alps::SiteBasisDescriptor<I> b = model.site_basis(type);
+        alps::SiteBasisDescriptor<I> const& b = basis_descriptors[type];
         alps_matrix m = alps::get_matrix(value_type(), op, b, p, true);
         tag_detail::operator_kind kind = b.is_fermionic(simplify_name(op)) ? tag_detail::fermionic : tag_detail::bosonic;
         tag_type mytag = tag_handler->register_op(convert_matrix(m, type), kind);
@@ -370,7 +373,7 @@ private:
             enum {uknown, bosonic, fermionic} kind = uknown;
             std::vector<op_t> tops(ntypes);
             for (int type=0; type<ntypes; ++type) {
-                alps::SiteBasisDescriptor<I> b = model.site_basis(type);
+                alps::SiteBasisDescriptor<I> const& b = basis_descriptors[type];
                 if (b.has_operator(*it2)) {
                     SiteOperator op = make_site_term(*it2, parms);
                     bool is_ferm = b.is_fermionic(simplify_name(op));
@@ -403,7 +406,9 @@ private:
     mutable table_ptr tag_handler;
 
     std::vector<symmetric_basis_descriptor<SymmGroup> > symm_basis;
-    
+    std::vector<alps::SiteBasisDescriptor<I> > basis_descriptors;
+    std::vector<alps::site_basis<I> > site_bases;
+
     mutable opmap_type operators; // key=<name,type>
 
     qn_map_type all_conserved_qn;
@@ -460,8 +465,8 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
                             if (used1.find(type1) != used1.end() && used2.find(type2) != used2.end())
                                 continue;
                             
-                            alps::SiteBasisDescriptor<I> b1 = model.site_basis(type1);
-                            alps::SiteBasisDescriptor<I> b2 = model.site_basis(type2);
+                            alps::SiteBasisDescriptor<I> const& b1 = basis_descriptors[type1];
+                            alps::SiteBasisDescriptor<I> const& b2 = basis_descriptors[type2];
                             
                             V  ops = bondop.template templated_split<value_type>(b1,b2);
                             if (operators.size() < ops.size()) operators.resize(ops.size(), bond_element(2, std::make_pair(op_vec(ntypes), false)) );
@@ -502,7 +507,7 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
                 } else {
                     std::vector<op_t> tops(ntypes);
                     for (int type=0; type<ntypes; ++type) {
-                        alps::SiteBasisDescriptor<I> b = model.site_basis(type);
+                        alps::SiteBasisDescriptor<I> const& b = basis_descriptors[type];
                         if (b.has_operator(it->value())) {
                             SiteOperator op = make_site_term(it->value(), parms);
                             if (b.is_fermionic(simplify_name(op)))
