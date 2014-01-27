@@ -40,14 +40,14 @@ class tevol_sim : public sim<Matrix, SymmGroup> {
     
     typedef sim<Matrix, SymmGroup> base;
     typedef typename base::status_type status_type;
-    
+    typedef typename base::measurements_type measurements_type;
+
     using base::mps;
     using base::mpo;
     using base::lat;
     using base::parms;
     using base::model;
     using base::all_measurements;
-    using base::sweep_measurements;
     using base::stop_callback;
     using base::init_sweep;
     using base::rfile;
@@ -66,9 +66,6 @@ public:
         int nsweeps_img = parms["nsweeps_img"];
         
         parms << parms.iteration_params("t", init_sweep);
-        
-        this->model_init();
-        this->mps_init();
         
         /// compute nsteps as the min of the three above
         int nsteps = parms["nsweeps"];
@@ -101,10 +98,11 @@ public:
             {
                 if (iteration_params.size() > 1) { // iter_t will always be set
                     parms << iteration_params;
-                    this->model_init(sweep);
                     meas_each    = parms["measure_each"];
                     chkp_each    = parms["chkp_each"];
                     update_each  = parms["update_each"];
+                    model.update(parms);
+                    mpo = make_mpo(lat, model, parms);
                     evolver = TimeEvolver(&parms, &mps, lat, model, sweep);
                 }
             } else if (sweep == nsweeps_img) {
@@ -126,9 +124,10 @@ public:
                 maquis::cout << "Energy " << energy << std::endl;
                 
                 /// measure observables specified in 'always_measure'
-                if (sweep_measurements.size() > 0)
-                    this->measure(this->results_archive_path(sweep) + "/results/", sweep_measurements);
-
+                measurements_type always_measure = this->iteration_measurements(sweep); // todo: make measure() using const&
+                if (!parms["always_measure"].empty())
+                    this->measure(this->results_archive_path(sweep) + "/results/", always_measure);
+                
                 /// write iteration results
                 {
                     storage::archive ar(rfile, "w");

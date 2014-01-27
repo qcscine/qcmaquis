@@ -84,6 +84,15 @@ namespace detail {
 }
 
 template <class Matrix, class SymmGroup>
+boost::ptr_vector<measurement<Matrix, SymmGroup> > &
+operator<< (boost::ptr_vector<measurement<Matrix, SymmGroup> > & lhs,
+            boost::ptr_vector<measurement<Matrix, SymmGroup> > const& rhs)
+{
+    lhs.insert(lhs.end(), rhs.begin(), rhs.end());
+    return lhs;
+}
+
+template <class Matrix, class SymmGroup>
 boost::ptr_vector<measurement<Matrix, SymmGroup> >
 meas_sublist(boost::ptr_vector<measurement<Matrix, SymmGroup> > const& m,
              std::vector<std::string> const& meas_list)
@@ -112,7 +121,7 @@ meas_sublist(boost::ptr_vector<measurement<Matrix, SymmGroup> > const& m,
 
 template <class Matrix, class SymmGroup>
 boost::ptr_vector<measurement<Matrix, SymmGroup> >
-overlap_measurements(BaseParameters const & parms, size_t sweep = 0)
+overlap_measurements(BaseParameters const & parms, boost::optional<size_t> sweep = boost::none)
 {
     /* Syntax for MEASURE_OVERLAP:
      *  (1) MEASURE_OVERLAP[obsname] = "/path/to/ckp.h5"
@@ -128,8 +137,9 @@ overlap_measurements(BaseParameters const & parms, size_t sweep = 0)
     for (BaseParameters::const_iterator it=parms.begin();it != parms.end();++it) {
         std::string lhs = it->key();
         if (boost::regex_match(lhs, what, expression)) {
-            if (what[3].matched && boost::lexical_cast<long>(what.str(3)) != sweep)
-                continue;
+            if (sweep && !what[3].matched) continue;
+            if (sweep && what[3].matched && boost::lexical_cast<long>(what.str(3)) != sweep.get()) continue;
+            
             std::string name = what.str(1), bra_chkp = it->value();
             meas.push_back( new measurements::overlap<Matrix, SymmGroup>(name, bra_chkp) );
         }

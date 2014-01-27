@@ -47,7 +47,6 @@ class measure_sim : public sim<Matrix, SymmGroup> {
     
     using base::mps;
     using base::mpo;
-    using base::mpoc;
     using base::parms;
     using base::all_measurements;
     using base::stop_callback;
@@ -61,10 +60,12 @@ public:
     
     void run()
     {
-        this->model_init();
-        this->mps_init();
-        
         this->measure("/spectrum/results/", all_measurements);
+        
+        /// MPO creation
+        MPO<Matrix, SymmGroup> mpoc = mpo;
+        if (parms["use_compressed"])
+            mpoc.compress(1e-12);
         
         double energy = maquis::real(expval(mps, mpoc));
         // MD: removed redundant energy calculation
