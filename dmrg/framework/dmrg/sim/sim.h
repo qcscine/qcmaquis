@@ -81,8 +81,7 @@ protected:
     
     virtual std::string results_archive_path(status_type const&) const;
     
-    virtual void model_init(boost::optional<int> opt_sweep=boost::optional<int>());
-    virtual void mps_init();
+    measurements_type iteration_measurements(int sweep);
     virtual void measure(std::string archive_path, measurements_type & meas);
     // TODO: can be made const, now only problem are parameters
     

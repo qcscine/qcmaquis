@@ -40,6 +40,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
 { 
     maquis::cout << DMRG_VERSION_STRING << std::endl;
     storage::setup(parms);
+    dmrg_random::engine.seed(parms["seed"]);
     
     {
         boost::filesystem::path p(chkpfile);
@@ -65,7 +66,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         }
     }
     
-    dmrg_random::engine.seed(parms["seed"]);
     
     {
         storage::archive ar(rfile, "w");
@@ -83,63 +83,19 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         ar["/version"] << DMRG_VERSION_STRING;
     }
     
-}
-
-template <class Matrix, class SymmGroup>
-void sim<Matrix, SymmGroup>::model_init(boost::optional<int> opt_sweep)
-{
+    
+    /// Model initialization
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
+    mpo = make_mpo(lat, model, parms);
     all_measurements = model.measurements();
-    if (opt_sweep) {
-        measurements_type m = overlap_measurements<Matrix, SymmGroup>(parms, opt_sweep.get());
-        all_measurements.insert(all_measurements.end(), m.begin(), m.end());
-    } else {
-        measurements_type m = overlap_measurements<Matrix, SymmGroup>(parms, init_sweep);
-        all_measurements.insert(all_measurements.end(), m.begin(), m.end());
-    }
+    all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
     
-//    if (parms["ENABLE_MEASURE[Entropy]"])
-//        all_measurements.push_back( new measurements::entropies<Matrix, SymmGroup>() );
-//    if (parms["ENABLE_MEASURE[Renyi2]"])
-//        all_measurements.push_back( new measurements::renyi_entropies<Matrix, SymmGroup>() );
     
-    if (!parms["always_measure"].empty())
-        sweep_measurements = meas_sublist(all_measurements, parms["always_measure"]);
-    
-    if (parms["MODEL"] == std::string("quantum_chemistry") && (parms.get<int>("use_compressed") > 0))
-    {  
-        throw std::runtime_error("chem compression has been disabled");
-        /*
-        typedef typename alps::numeric::associated_one_matrix<Matrix>::type MPOMatrix;
-        MPO<MPOMatrix, SymmGroup> scratch_mpo;
-
-        Hamiltonian<MPOMatrix, SymmGroup> Hloc = model->H_chem();
-        phys = Hloc.get_phys();
-
-        make_compressed_mpo(scratch_mpo, 1e-12, lat->size(), Hloc);
-        Timer t("DENSE_MPO conversion"); t.begin();
-        compressor<MPOMatrix, SymmGroup>::convert_to_dense_matrix(scratch_mpo, mpoc);
-        t.end();
-        */
-    }
-    else
-    {  
-        mpo = make_mpo(lat, model, parms);
-        mpoc = mpo;
-
-        if (parms["use_compressed"] > 0)
-            mpoc.compress(1e-12);
-    }
-}
-
-template <class Matrix, class SymmGroup>
-void sim<Matrix, SymmGroup>::mps_init()
-{
+    /// MPS initialization
     #ifdef AMBIENT_TRACKING
     ambient::overseer::log::region("sim::mps_init");
     #endif
-    
     if (restore) {
         load(chkpfile, mps);
     } else if (!parms["initfile"].empty()) {
@@ -151,7 +107,24 @@ void sim<Matrix, SymmGroup>::mps_init()
         for(int i = 0; i < mps.length(); ++i) ambient_track_array(mps, i);
         #endif
     }
+    
     assert(mps.length() == lat.size());
+    maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
+    
+}
+
+template <class Matrix, class SymmGroup>
+typename sim<Matrix, SymmGroup>::measurements_type
+sim<Matrix, SymmGroup>::iteration_measurements(int sweep)
+{
+    measurements_type mymeas(all_measurements);
+    mymeas << overlap_measurements<Matrix, SymmGroup>(parms, sweep);
+    
+    measurements_type sweep_measurements;
+    if (!parms["always_measure"].empty())
+        sweep_measurements = meas_sublist(mymeas, parms["always_measure"]);
+    
+    return sweep_measurements;
 }
 
 

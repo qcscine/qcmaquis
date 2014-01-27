@@ -45,13 +45,12 @@ class dmrg_sim : public sim<Matrix, SymmGroup> {
     typedef sim<Matrix, SymmGroup> base;
     typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
     typedef typename base::status_type status_type;
-
+    typedef typename base::measurements_type measurements_type;
+    
     using base::mps;
     using base::mpo;
-    using base::mpoc;
     using base::parms;
     using base::all_measurements;
-    using base::sweep_measurements;
     using base::stop_callback;
     using base::init_sweep;
     using base::init_site;
@@ -68,18 +67,20 @@ public:
         int meas_each = parms["measure_each"];
         int chkp_each = parms["chkp_each"];
         
-        this->model_init();
-        this->mps_init();
-        
-        maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
+        /// MPO creation
+        if (parms["MODEL"] == std::string("quantum_chemistry") && parms["use_compressed"])
+            throw std::runtime_error("chem compression has been disabled");
+        MPO<Matrix, SymmGroup> mpoc = mpo;
+        if (parms["use_compressed"])
+            mpoc.compress(1e-12);
 
+        /// Optimizer initialization
         boost::shared_ptr<opt_base_t> optimizer;
         if (parms["optimization"] == "singlesite")
         {
             optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
                             (mps, mpoc, parms, stop_callback, init_site) );
         }
-        
         else if(parms["optimization"] == "twosite")
         {
             optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
@@ -88,6 +89,8 @@ public:
         else {
             throw std::runtime_error("Don't know this optimizer");
         }
+        
+        measurements_type always_measurements = this->iteration_measurements(init_sweep);
         
         try {
             for (int sweep=init_sweep; sweep < parms["nsweeps"]; ++sweep) {
@@ -107,8 +110,8 @@ public:
                     }
                     
                     /// measure observables specified in 'always_measure'
-                    if (sweep_measurements.size() > 0)
-                        this->measure(this->results_archive_path(sweep) + "/results/", sweep_measurements);
+                    if (always_measurements.size() > 0)
+                        this->measure(this->results_archive_path(sweep) + "/results/", always_measurements);
                 }
                 
                 /// write checkpoint
