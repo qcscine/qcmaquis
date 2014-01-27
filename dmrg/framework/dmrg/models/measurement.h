@@ -106,13 +106,14 @@ template<class Matrix, class SymmGroup>
 template <class Archive>
 void measurement<Matrix, SymmGroup>::save(Archive & ar) const
 {
-    if (labels.size() > 0) {
+    if (vector_results.size() > 0) {
         if (cast_to_real) {
             save_val_at_index(ar, storage::encode(name()) + std::string("/mean/value"),  maquis::real(vector_results), eigenstate_index());
         } else {
             save_val_at_index(ar, storage::encode(name()) + std::string("/mean/value"), vector_results, eigenstate_index());
         }
-        ar[storage::encode(name()) + std::string("/labels")] << labels;
+        if (labels.size() > 0)
+            ar[storage::encode(name()) + std::string("/labels")] << labels;
     } else {
         if (cast_to_real) {
             save_val_at_index(ar, storage::encode(name()) + std::string("/mean/value"), maquis::real(result), eigenstate_index());
