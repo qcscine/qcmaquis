@@ -81,6 +81,7 @@ public:
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
+    typedef typename base::initializer_ptr initializer_ptr;
     
     typedef typename base::size_t size_t;
     
@@ -108,7 +109,6 @@ public:
         site_bases.reserve(num_vertex_types);
 
         /// Parsing conserved quantum numbers
-        std::set<std::string> all_qn;
         for (int type=0; type<=alps::maximum_vertex_type(lattice.graph()); ++type) {
             std::set<std::string> type_qn = model.quantum_numbers(type);
             all_qn.insert(type_qn.begin(), type_qn.end());
@@ -314,6 +314,7 @@ public:
         return tag_handler;
     }
 
+    initializer_ptr initializer(Lattice const& lat, BaseParameters & p_) const;
     boost::ptr_vector<measurement<Matrix, SymmGroup> > measurements () const;
 
 private:
@@ -447,6 +448,7 @@ private:
     alps::model_helper<I> model;
     mutable table_ptr tag_handler;
 
+    std::set<std::string> all_qn;
     qn_map_type all_conserved_qn;
     std::vector<symmetric_basis_descriptor<SymmGroup> > symm_basis;
     std::vector<alps::SiteBasisDescriptor<I> > basis_descriptors;
@@ -456,6 +458,53 @@ private:
     std::vector<expression_term> expression_terms;
     boost::container::flat_map<expression_type, value_type> expression_coeff;
 };
+
+// Initial states
+template <class Matrix, class SymmGroup>
+typename ALPSModel<Matrix, SymmGroup>::initializer_ptr ALPSModel<Matrix, SymmGroup>::initializer(Lattice const& lat, BaseParameters & p_) const
+{
+    if ( p_["init_state"] == "local_quantumnumbers" ) {
+        int max_site_type = 0;
+        std::vector<int> site_types(lat.size(), 0);
+        for (int p = 0; p < lat.size(); ++p) {
+            site_types[p] = lat.get_prop<int>("type", p);
+            max_site_type = std::max(site_types[p], max_site_type);
+        }
+        
+        std::cout << "site_types: ";
+        std::copy(site_types.begin(), site_types.end(), std::ostream_iterator<int>(std::cout, " "));
+        std::cout << std::endl;
+        
+        std::vector<Index<SymmGroup> > phys_bases(symm_basis.size());
+        for (int type = 0; type < phys_bases.size(); ++type) {
+            phys_bases[type] = symm_basis[type].phys_dim();
+            maquis::cout << "phys["<< type <<"]: " << phys_bases[type] << std::endl;
+        }
+        
+        std::map<std::string, std::vector<double> > initial_local_charges;
+        for(std::set<std::string>::const_iterator it = all_qn.begin(); it != all_qn.end(); ++it) {
+            const std::string pname = "initial_local_" + *it;
+            if (!p_.defined(pname))
+                throw std::runtime_error(pname + " required for local_quantumnumbers initial state.");
+            initial_local_charges[*it] = p_[pname].as<std::vector<double> >();
+        }
+        
+        std::vector<boost::tuple<charge, size_t> > state(lat.size());
+        for (size_t p=0; p<lat.size(); ++p) {
+            const int type = site_types[p];
+            alps::SiteBasisDescriptor<I> const& b = basis_descriptors[type];
+            alps::site_state<I> local_state;
+            for (size_t i=0; i<b.size(); ++i)
+                local_state.push_back( initial_local_charges[b[i].name()][p] );
+            state[p] = symm_basis[type].coords(site_bases[type].index(local_state));
+        }
+        
+        return initializer_ptr(new basis_mps_init_generic<Matrix, SymmGroup>(state, phys_bases, this->total_quantum_numbers(p_), site_types));
+    } else {
+        return base::initializer(lat, p_);
+    }
+}
+
 
 // Loading Measurements
 template <class Matrix, class SymmGroup>
