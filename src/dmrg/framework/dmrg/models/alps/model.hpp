@@ -39,6 +39,7 @@
 #undef toupper
 #include <boost/tokenizer.hpp>
 #include <boost/regex.hpp>
+#include <boost/container/flat_map.hpp>
 
 #include "symm_handler.hpp"
 
@@ -75,7 +76,8 @@ public:
     typedef typename base::tag_type tag_type;
     
     typedef typename base::term_descriptor value_term;
-    typedef term_descriptor<alps::expression::Term<value_type> > expression_term;
+    typedef typename alps::expression::Term<value_type> expression_type;
+    typedef term_descriptor<expression_type> expression_term;
     typedef typename base::terms_type terms_type;
     typedef typename base::op_t op_t;
     typedef typename base::measurements_type measurements_type;
@@ -173,6 +175,7 @@ public:
                     term.coeff = boost::get<0>(ops[n]);
                     term.is_fermionic = false;
                     term.push_back( boost::make_tuple(p, match->second) );
+                    expression_coeff.insert( std::make_pair(term.coeff, value_type()) );
                     expression_terms.push_back(term);
                 }
             }
@@ -258,6 +261,7 @@ public:
                     term.push_back( boost::make_tuple(p_t, mytag) );
                 }
                 
+                expression_coeff.insert( std::make_pair(term.coeff, value_type()) );
                 expression_terms.push_back(term);
             }
         }
@@ -419,9 +423,13 @@ private:
         alps::Parameters parms_with_defaults(parms);
         parms_with_defaults.copy_undefined(model.model().default_parameters());
         
+        typedef typename boost::container::flat_map<expression_type, value_type>::iterator coeff_iterator;
+        for(coeff_iterator it = expression_coeff.begin(); it != expression_coeff.end(); ++it)
+            it->second = alps::evaluate<value_type>(it->first, parms_with_defaults);
+        
         typedef typename std::vector<expression_term>::const_iterator terms_iterator;
         for(terms_iterator it = expression_terms.begin(); it != expression_terms.end(); ++it) {
-            value_type val = alps::evaluate<value_type>(it->coeff, parms_with_defaults);
+            value_type const& val = expression_coeff[it->coeff];
             if ( alps::numeric::is_nonzero(val) ) {
                 value_term term;
                 term.is_fermionic = it->is_fermionic;
@@ -446,6 +454,7 @@ private:
     
     mutable opmap_type operators; // key=<name,type>
     std::vector<expression_term> expression_terms;
+    boost::container::flat_map<expression_type, value_type> expression_coeff;
 };
 
 // Loading Measurements
