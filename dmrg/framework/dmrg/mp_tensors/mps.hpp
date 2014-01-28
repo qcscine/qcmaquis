@@ -356,13 +356,20 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
         mps[k].make_left_paired();
     ambient::sync();
 #endif
-    semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
+    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
 #ifdef AMBIENT
         if(!ambient::cell().local()) continue;
 #endif
-        std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
+        const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5.new";
         storage::archive ar(fname, "w");
         ar["/tensor"] << mps[k];
+    }
+    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
+#ifdef AMBIENT
+        if(!ambient::cell().local()) continue;
+#endif
+        const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
+        boost::filesystem::rename(fname+".new", fname);
     }
 }
 
