@@ -502,6 +502,7 @@ template<class Matrix, class SymmGroup>
 class basis_mps_init_generic : public mps_initializer<Matrix, SymmGroup>
 {
 public:
+    typedef std::vector<boost::tuple<typename SymmGroup::charge, size_t> > state_type;
     basis_mps_init_generic(BaseParameters & params,
                            std::vector<Index<SymmGroup> > const& phys_dims_,
                            typename SymmGroup::charge right_end_,
@@ -511,20 +512,33 @@ public:
     , right_end(right_end_)
     , site_type(site_type_)
     { }
-
+    
+    basis_mps_init_generic(state_type const& state_,
+                           std::vector<Index<SymmGroup> > const& phys_dims_,
+                           typename SymmGroup::charge right_end_,
+                           std::vector<int> const& site_type_)
+    : phys_dims(phys_dims_)
+    , right_end(right_end_)
+    , site_type(site_type_)
+    , state(state_)
+    { }
+    
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
-        assert(basis_index.size() == mps.length());
-        
-        std::vector<boost::tuple<typename SymmGroup::charge, size_t> > state(mps.length());
-        maquis::cout << "state: ";
-        for (int i=0; i<mps.length(); ++i) {
-            state[i] = phys_dims[site_type[i]].element(basis_index[i]);
-            maquis::cout << boost::get<0>(state[i]) << ":" << boost::get<1>(state[i])<< " ";
+        if (state.size() == 0) {
+            assert(basis_index.size() == mps.length());
+            state.resize(mps.length());
+            maquis::cout << "state: ";
+            for (int i=0; i<mps.length(); ++i) {
+                state[i] = phys_dims[site_type[i]].element(basis_index[i]);
+                maquis::cout << boost::get<0>(state[i]) << ":" << boost::get<1>(state[i])<< " ";
+            }
+            maquis::cout << "\n";
         }
-        maquis::cout << "\n";
+        
         mps = state_mps<Matrix>(state, phys_dims, site_type);
-        assert( mps[mps.length()-1].col_dim()[0].first == right_end );
+        if (mps[mps.length()-1].col_dim()[0].first != right_end)
+            throw std::runtime_error("Initial state does not satisfy total quantum numbers.");
     }
     
 private:
@@ -532,6 +546,7 @@ private:
     std::vector<Index<SymmGroup> > phys_dims;
     typename SymmGroup::charge right_end;
     std::vector<int> site_type;
+    state_type state;
 };
 
 
