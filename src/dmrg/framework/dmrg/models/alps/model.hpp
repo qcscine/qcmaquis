@@ -481,6 +481,7 @@ typename ALPSModel<Matrix, SymmGroup>::initializer_ptr ALPSModel<Matrix, SymmGro
             maquis::cout << "phys["<< type <<"]: " << phys_bases[type] << std::endl;
         }
         
+        // TODO: avoid QN of size=1
         std::map<std::string, std::vector<double> > initial_local_charges;
         for(std::set<std::string>::const_iterator it = all_qn.begin(); it != all_qn.end(); ++it) {
             const std::string pname = "initial_local_" + *it;
