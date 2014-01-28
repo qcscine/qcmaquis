@@ -193,6 +193,7 @@ public:
     void update(BaseParameters const& p)
     {
         // TODO: update this->terms_ with the new parameters
+        throw std::runtime_error("update() not yet implemented for this model.");
         return;
     }
     
