@@ -356,7 +356,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
         mps[k].make_left_paired();
     ambient::sync();
 #endif
-    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
+    semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
 #ifdef AMBIENT
         if(!ambient::cell().local()) continue;
 #endif
