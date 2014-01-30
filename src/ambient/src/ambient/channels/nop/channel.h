@@ -49,9 +49,6 @@ namespace ambient { namespace channels { namespace nop {
         typedef typename ambient::models::ssm::revision block_type;
         typedef typename ambient::models::ssm::transformable scalar_type;
         template<class T> using collective_type = collective<T>;
-        static void mount(){}
-        static void unmount(){}
-        void init(){}
         size_t dim() const { return 1; }
         static void barrier(){}
         collective<block_type>* get(block_type& r){ return NULL; }
