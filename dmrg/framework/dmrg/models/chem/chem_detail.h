@@ -189,9 +189,9 @@ namespace chem_detail {
             for (int p = 0; p < order.size(); ++p)
                 inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
 
-            std::copy(order.begin(), order.end(), std::ostream_iterator<Lattice::pos_t>(std::cout, " "));
+            std::copy(order.begin(), order.end(), maquis::ostream_iterator<Lattice::pos_t>(std::cout, " "));
             maquis::cout << std::endl;
-            std::copy(inv_order.begin(), inv_order.end(), std::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
+            std::copy(inv_order.begin(), inv_order.end(), maquis::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
             maquis::cout << std::endl;
 
             // ********************************************************************
