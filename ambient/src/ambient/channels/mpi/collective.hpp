@@ -28,7 +28,7 @@ namespace ambient { namespace channels { namespace mpi {
 
     template<typename T>
     inline void bcast<T>::dispatch(){
-        std::pair<int,int> lr = ambient::cell().get_channel().get_scheme(size)[self];
+        std::pair<int,int> lr = (*channel::setup().trees[size])[self];
         if(!self){ // self == root
             if(lr.first  != -1) impl &= new request_impl(send_impl, object, list[lr.first], tags[lr.first]);
             if(lr.second != -1) impl &= new request_impl(send_impl, object, list[lr.second], tags[lr.second]);
@@ -67,7 +67,7 @@ namespace ambient { namespace channels { namespace mpi {
         if(this->guard.once()){
             if(states.back()){
                 this->size = ambient::num_procs();
-                this->list = &ambient::cell().get_channel().circle_ranks[root];
+                this->list = &channel::setup().circle[root];
                 this->self = (size + ambient::rank() - root) % size;
             }else{
                 this->size = tree.size();
@@ -88,7 +88,7 @@ namespace ambient { namespace channels { namespace mpi {
     inline bool collective<typename channel::scalar_type>::test(){
         if(guard.once()){
             this->size = ambient::num_procs();
-            this->list = &ambient::cell().get_channel().circle_ranks[root];
+            this->list = &channel::setup().circle[root];
             this->self = (size + ambient::rank() - root) % size;
             this->dispatch();
         }
