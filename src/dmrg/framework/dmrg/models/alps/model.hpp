@@ -471,9 +471,9 @@ typename ALPSModel<Matrix, SymmGroup>::initializer_ptr ALPSModel<Matrix, SymmGro
             max_site_type = std::max(site_types[p], max_site_type);
         }
         
-        std::cout << "site_types: ";
-        std::copy(site_types.begin(), site_types.end(), std::ostream_iterator<int>(std::cout, " "));
-        std::cout << std::endl;
+        maquis::cout << "site_types: ";
+        std::copy(site_types.begin(), site_types.end(), std::ostream_iterator<int>(maquis::cout, " "));
+        maquis::cout << std::endl;
         
         std::vector<Index<SymmGroup> > phys_bases(symm_basis.size());
         for (int type = 0; type < phys_bases.size(); ++type) {

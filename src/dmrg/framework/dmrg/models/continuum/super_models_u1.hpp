@@ -75,7 +75,7 @@ public:
         count       = adjoint_site_term(psi_count);
         interaction = adjoint_site_term(psi_interaction);
         
-        std::cout << "phys: " << phys << std::endl;
+        maquis::cout << "phys: " << phys << std::endl;
         std::vector< std::pair<op_t,op_t> > hopops = adjoint_bond_term_new(psi_create, psi_destroy);
         
         for (int p=0; p<lat.size(); ++p)
@@ -213,12 +213,12 @@ private:
 
     std::vector<std::pair<op_t,op_t> > adjoint_bond_term(op_t const& h1, op_t const& h2) const
     {
-        std::cout << "h1:\n" << h1;
-        std::cout << "h2:\n" << h2;
+        maquis::cout << "h1:\n" << h1;
+        maquis::cout << "h2:\n" << h2;
         
         op_t bond;
         op_kron(psi_phys, h1, h2, bond);
-        std::cout << "bond:\n" << bond;
+        maquis::cout << "bond:\n" << bond;
         
         Index<U1> phys2 = psi_phys*psi_phys;
         op_t ident_phys2 = identity_matrix<Matrix>(phys2);
@@ -229,9 +229,9 @@ private:
         dm_kron(phys2, bond,        ident_phys2, hid);
         bond.transpose_inplace();
         dm_kron(phys2, ident_phys2, bond,        idh);
-//        std::cout << "t1:\n" << t1;
-//        std::cout << "t2:\n" << t2;
-//        std::cout << "transpose(bond):\n" << bond;
+//        maquis::cout << "t1:\n" << t1;
+//        maquis::cout << "t2:\n" << t2;
+//        maquis::cout << "transpose(bond):\n" << bond;
         bond = idh - hid;
         
         bond = reshape_2site_op(phys2, bond);

@@ -28,7 +28,7 @@
 #ifndef SYMMETRY_NU1PG_H
 #define SYMMETRY_NU1PG_H
 
-#include <iostream>
+#include "utils/io.hpp"
 #include <vector>
 #include <list>
 
@@ -220,10 +220,7 @@ struct tpl_arith_<N, N>
     {
 #ifndef NDEBUG
         if (a[N] > 7 || b[N] > 7 || a[N] < 0 || b[N] < 0)
-        {
-            std::cout << "a , b are: " << a[N] << ", " << b[N] << std::endl;
-            std::cout.flush();
-        }
+            maquis::cout << "a , b are: " << a[N] << ", " << b[N] << std::endl;
 #endif
         ret[N] = NU1PG<N, int>::mult_table(a[N], b[N]);
     }

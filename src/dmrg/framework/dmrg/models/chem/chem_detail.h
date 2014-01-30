@@ -191,7 +191,7 @@ namespace chem_detail {
 
             std::copy(order.begin(), order.end(), std::ostream_iterator<Lattice::pos_t>(std::cout, " "));
             maquis::cout << std::endl;
-            std::copy(inv_order.begin(), inv_order.end(), std::ostream_iterator<Lattice::pos_t>(std::cout, " "));
+            std::copy(inv_order.begin(), inv_order.end(), std::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
             maquis::cout << std::endl;
 
             // ********************************************************************
