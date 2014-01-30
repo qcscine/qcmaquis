@@ -4,7 +4,7 @@
 export HOST=`hostname | tr -d [:digit:] | sed  -e "s/\.ethz\.ch//g"`
 path=`pwd`
 entry=$path
-self=$0
+self=`basename $0`
 #self="maquis"
 
 if [ ! -z "${CONFIG_NAME}" ]; then
