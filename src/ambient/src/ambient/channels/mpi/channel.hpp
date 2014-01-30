@@ -25,7 +25,6 @@
  */
 
 #define AMBIENT_MASTER_RANK 0
-#define AMBIENT_MPI_THREADING MPI_THREAD_FUNNELED
 
 namespace ambient { namespace channels { namespace mpi {
 
@@ -39,22 +38,24 @@ namespace ambient { namespace channels { namespace mpi {
         int f = 0; MPI_Test(&r->mpi_request, &f, MPI_STATUS_IGNORE); return f;
     }
 
-    inline void channel::mount(){
-        int level, zero = 0;
-        MPI_Init_thread(&zero, NULL, AMBIENT_MPI_THREADING, &level);
+    inline channel::mount::mount(){
+        int np, level, zero = 0;
+        MPI_Init_thread(&zero, NULL, AMBIENT_MPI_THREADING, &level); 
         if(level != AMBIENT_MPI_THREADING) printf("Error: Wrong threading level\n");
+        MPI_Comm_size(MPI_COMM_WORLD, &np);
+        
+        trees.resize(2); // 0,1 are empty
+        for(int i = 2; i <= np; i++)  trees.push_back(new binary_tree(i));
+        for(int i = 0; i < 2*np; i++) circle.push_back(i % np);
     }
 
-    inline void channel::unmount(){
+    inline channel::mount::~mount(){
         MPI_Finalize();
     }
 
-    inline void channel::init(){
-        this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
-        this->rank.world = this->world;
-        this->scheme.resize(2); // N = 0,1 are empty
-        for(int i = 2; i <= dim(); i++) scheme.push_back(new binary_tree(i));
-        for(int i = 0; i < 2*dim(); i++) circle_ranks.push_back(i % dim());
+    inline channel::channel(){
+        channel::setup(); // making sure MPI is initialised
+        this->rank.world = this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
     }
 
     inline void channel::barrier(){
@@ -79,10 +80,6 @@ namespace ambient { namespace channels { namespace mpi {
 
     inline collective<typename channel::block_type>* channel::set(block_type& r){
         return new collective<block_type>(r, rank());
-    }
-
-    inline const binary_tree& channel::get_scheme(int volume){
-        return *this->scheme[volume];
     }
 
 } } }

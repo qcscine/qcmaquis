@@ -179,6 +179,11 @@ namespace ambient {
         int round;
     };
 
+    #ifdef AMBIENT_BUILD_LIBRARY
+    int scope<single>::grain = 1;
+    std::vector<int> scope<single>::permutation;
+    #endif
+
     template<>
     class scope<dedicated> : public controller::scope {
     public:

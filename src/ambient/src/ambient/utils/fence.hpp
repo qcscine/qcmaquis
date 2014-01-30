@@ -38,6 +38,10 @@ namespace ambient {
         void** f;
     };
 
+    #ifdef AMBIENT_BUILD_LIBRARY
+    void* fence::nptr = NULL;
+    #endif
+
     class ordered_fence : public fence {
     public:
         ordered_fence(){ }

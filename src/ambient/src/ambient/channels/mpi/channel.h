@@ -28,6 +28,7 @@
 #define AMBIENT_CHANNELS_MPI_CHANNEL
 
 #define AMBIENT_CHANNEL_NAME mpi
+#define AMBIENT_MPI_THREADING MPI_THREAD_FUNNELED
 
 namespace ambient { namespace channels { namespace mpi {
 
@@ -43,21 +44,25 @@ namespace ambient { namespace channels { namespace mpi {
         typedef typename ambient::models::ssm::revision block_type;
         typedef typename ambient::models::ssm::transformable scalar_type;
         template<class T> using collective_type = collective<T>;
-        static void mount();
-        static void unmount();
-        void init();
+        struct mount {
+            mount(); 
+           ~mount();
+            std::vector<binary_tree*> trees;
+            std::vector<int> circle;
+        };
+        static mount& setup(){ 
+            static mount m; 
+            return m; 
+        }
+        channel();
         size_t dim() const;
         static void barrier();
         collective<block_type>* get(block_type& r);
         collective<block_type>* set(block_type& r);
         collective<scalar_type>* bcast(scalar_type& v, int root);
         collective<scalar_type>* bcast(scalar_type& v);
-        const binary_tree& get_scheme(int volume);
-        std::vector<int> circle_ranks;
         multirank rank;
         group* world;
-    private:
-        std::vector<binary_tree*> scheme;
     };
 
 } } }

@@ -123,22 +123,12 @@
 
 namespace ambient {
 
-    void* fence::nptr = NULL;
-    int scope<single>::grain = 1;
-    std::vector<int> scope<single>::permutation;
-    mkl_parallel::fptr_t mkl_parallel::fptr = NULL;
-
     class universe {
     public:
         typedef controllers::ssm::controller controller_type;
 
-       ~universe(){
-            controller_type::channel_type::unmount();
-        }
         universe(){
             int db = ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0;
-            controller_type::channel_type::mount();
-            c.get_channel().init();
             c.init(db);
             if(ambient::isset("AMBIENT_VERBOSE")){
                 ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE     << ")\n";
@@ -170,8 +160,6 @@ namespace ambient {
 
     controllers::ssm::controller& cell(){ return u(AMBIENT_THREAD_ID); }
     void sync(){ u.sync(); }
-    utils::mpostream cout;
-    utils::mpostream cerr;
 
 }
 
