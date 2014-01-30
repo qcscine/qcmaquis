@@ -104,11 +104,13 @@ namespace storage {
             Boundary<Matrix, SymmGroup>& o = *ptr;
             size_t loop_max = o.aux_dim();
             for(size_t b = 0; b < loop_max; ++b){
+                assert( o[b].reasonable() );
                 for (std::size_t k = 0; k < o[b].n_blocks(); ++k){
                     Matrix& m = o[b][k];
 #ifdef AMBIENT
                     for(int j = 0; j < m.nt; ++j)
                     for(int i = 0; i < m.mt; ++i){
+                        if(ambient::weak(m.tile(i,j))) continue;
                         if(ambient::naked(m.tile(i,j)).state != ambient::local) continue;
                         char* data = (char*)ambient::naked(m.tile(i,j));
                         ofs.write(data, m.tile(i,j).num_cols() * m.tile(i,j).num_rows() *
@@ -145,6 +147,7 @@ namespace storage {
                     Matrix& m = o[b][k];
                     for(int j = 0; j < m.nt; ++j)
                     for(int i = 0; i < m.mt; ++i){
+                        if(ambient::weak(m.tile(i,j))) continue;
                         if(ambient::naked(m.tile(i,j)).state != ambient::local) continue;
                         ambient::naked(m.tile(i,j)).data = std::malloc(ambient::naked(m.tile(i,j)).spec.extent);
                         ifs.read((char*)ambient::naked(m.tile(i,j)), m.tile(i,j).num_cols() * m.tile(i,j).num_rows() *
@@ -178,6 +181,7 @@ namespace storage {
                     Matrix& m = o[b][k];
                     for(int j = 0; j < m.nt; ++j)
                     for(int i = 0; i < m.mt; ++i){
+                        if(ambient::weak(m.tile(i,j))) continue;
                         if(ambient::naked(m.tile(i,j)).state != ambient::local) continue;
                         char* data = (char*)ambient::naked(m.tile(i,j)); std::free(data);
                         ambient::naked(m.tile(i,j)).data = NULL;

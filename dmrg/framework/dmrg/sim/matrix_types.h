@@ -27,15 +27,15 @@
 #ifndef SIM_MATRIX_TYPES_H
 #define SIM_MATRIX_TYPES_H
 
-#include <complex>
-
 #if defined USE_AMBIENT
 #include "dmrg/block_matrix/detail/ambient.hpp"
 #include "dmrg/block_matrix/detail/alps.hpp"
+#include <complex>
 typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
 typedef ambient::numeric::tiles<ambient::numeric::matrix< std::complex<double> > > cmatrix;
 #else
 #include "dmrg/block_matrix/detail/alps.hpp"
+#include <complex>
 typedef alps::numeric::matrix<double> matrix;
 typedef alps::numeric::matrix<std::complex<double> > cmatrix;
 #endif
