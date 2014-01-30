@@ -35,25 +35,25 @@ namespace ambient { namespace controllers { namespace ssm {
     using ambient::models::ssm::revision;
     using ambient::models::ssm::transformable;
 
+    class scope {
+    public:
+        int rank;
+        ambient::locality state;
+        virtual bool tunable() const = 0;
+        virtual void score(int c, size_t v) const {}
+        virtual void select(int c) const {}
+        virtual void toss(){}
+    };
+
     class controller {
     public:
         typedef channels::AMBIENT_CHANNEL_NAME::channel channel_type;
         typedef ambient::memory::private_region<AMBIENT_INSTR_BULK_CHUNK, 
                                                ambient::memory::private_factory<AMBIENT_INSTR_BULK_CHUNK> 
                                                > memory_type;
-        class scope {
-        public:
-            int rank;
-            ambient::locality state;
-            virtual bool tunable() const = 0;
-            virtual void score(int c, size_t v) const {}
-            virtual void select(int c) const {}
-            virtual void toss(){}
-        };
-
         controller();
        ~controller();
-        void init(int db = 0);
+        void init(scope* s, int db = 0);
         bool empty();
         void flush();
         void clear();

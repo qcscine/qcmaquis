@@ -45,10 +45,9 @@ namespace ambient { namespace controllers { namespace ssm {
         this->mirror = &this->stack_s;
     }
 
-    inline void controller::init(int db){
+    inline void controller::init(scope* s, int db){
         this->db = get_num_procs() > db ? db : 0;
-        this->context_base = new ambient::scope<base>();
-        this->context = this->context_base;
+        this->context = this->context_base = s;
         this->serial = (get_num_procs() == 1) ? true : false;
     }
 

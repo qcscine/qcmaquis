@@ -61,6 +61,7 @@
 #include "ambient/utils/fence.hpp"
 #include "ambient/utils/singleton.hpp"
 #include "ambient/utils/enable_threading.hpp"
+#include "ambient/utils/reduce.hpp"
 
 #include "ambient/memory/pool.hpp"
 #include "ambient/memory/new.h"
@@ -110,58 +111,12 @@
 
 #include "ambient/controllers/ssm/get.hpp"
 #include "ambient/controllers/ssm/set.hpp"
-#include "ambient/controllers/ssm/scope.hpp"
 #include "ambient/controllers/ssm/collector.hpp"
 #include "ambient/controllers/ssm/controller.hpp"
+#include "ambient/controllers/ssm/scope.hpp"
 
 #include "ambient/interface/typed.hpp"
 #include "ambient/interface/kernel.hpp"
 #include "ambient/interface/access.hpp"
 #include "ambient/interface/lambda.hpp"
-
-#ifdef AMBIENT_BUILD_LIBRARY
-
-namespace ambient {
-
-    class universe {
-    public:
-        typedef controllers::ssm::controller controller_type;
-
-        universe(){
-            int db = ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0;
-            c.init(db);
-            if(ambient::isset("AMBIENT_VERBOSE")){
-                ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE     << ")\n";
-                if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
-                ambient::cout << "ambient: size of instr bulk chunks: "     << AMBIENT_INSTR_BULK_CHUNK       << "\n";
-                ambient::cout << "ambient: size of data bulk chunks: "      << AMBIENT_DATA_BULK_CHUNK        << "\n";
-                if(ambient::isset("AMBIENT_BULK_LIMIT")) ambient::cout << "ambient: max chunks of data bulk: " << ambient::getint("AMBIENT_BULK_LIMIT") << "\n";
-                if(ambient::isset("AMBIENT_BULK_REUSE")) ambient::cout << "ambient: enabled bulk garbage collection\n";
-                if(ambient::isset("AMBIENT_BULK_DEALLOCATE")) ambient::cout << "ambient: enabled bulk deallocation\n";
-                ambient::cout << "ambient: maximum sid value: "             << AMBIENT_MAX_SID                << "\n";
-                if(db) ambient::cout << "ambient: number of db procs: "     << ambient::num_db_procs()        << "\n";
-                ambient::cout << "ambient: number of work procs: "          << ambient::num_workers()         << "\n";
-                ambient::cout << "ambient: number of threads per proc: "    << ambient::num_threads()         << "\n";
-                ambient::cout << "\n";
-            }
-            if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) mkl_parallel();
-        }
-        controller_type& operator()(size_t n){
-            return c;
-        }
-        void sync(){
-            c.flush();
-            c.clear();  
-            memory::data_bulk::drop();
-        }
-    private:
-        controller_type c;
-    } u;
-
-    controllers::ssm::controller& cell(){ return u(AMBIENT_THREAD_ID); }
-    void sync(){ u.sync(); }
-
-}
-
-#endif
 #endif
