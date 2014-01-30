@@ -551,7 +551,7 @@ void compressor<Matrix, SymmGroup>::compress(MPO<Matrix, SymmGroup> const & mpo_
     */
     ////////////////////////////////////////////////////////////////
 
-    std::cout << "starting MPO SVD compression\n";
+    maquis::cout << "starting MPO SVD compression\n";
     
     Timer cot("compression"), lm("left_matrix"), rm("right_matrix"), mm("m_matrix"), tsvd("SVD"), rep("replace");
     cot.begin();
