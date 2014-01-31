@@ -36,11 +36,15 @@ namespace ambient {
     class scope<base> : public ambient::controllers::ssm::scope {
     public:
         typedef controllers::ssm::controller controller_type;
+        typedef typename controllers::ssm::controller::model_type model_type;
         controller_type c;
 
         scope();
         controller_type& operator()(size_t n = AMBIENT_THREAD_ID); 
         void sync();
+        bool scoped() const;
+        virtual void intend_read(models::ssm::revision* o);
+        virtual void intend_write(models::ssm::revision* o);
         virtual bool tunable() const ; 
         virtual void score(int c, size_t v) const ;
         virtual void select(int c) const ;
@@ -51,9 +55,10 @@ namespace ambient {
     };
 
     #ifdef AMBIENT_BUILD_LIBRARY
-    scope<base> u;
-    controllers::ssm::controller& cell(){ return u(AMBIENT_THREAD_ID); }
-    void sync(){ u.sync(); }
+    scope<base> cell;
+    void sync(){ cell.sync(); }
+    #else
+    extern scope<base> cell;
     #endif
 
     template<>

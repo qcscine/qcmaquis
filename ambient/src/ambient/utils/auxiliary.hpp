@@ -71,7 +71,7 @@ namespace ambient {
     }
 
     inline bool parallel(){
-        return cell().scoped();
+        return cell.scoped();
     }
 
     inline bool verbose(){ 

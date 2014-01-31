@@ -60,22 +60,6 @@ namespace ambient { namespace controllers { namespace ssm {
         const_cast<scope*>(context)->toss();
     }
 
-    inline void controller::intend_read(history* o){
-        revision* r = o->back(); if(r == NULL || model.common(r)) return;
-        int candidate = model.remote(r) ? r->owner : (int)ambient::rank();
-        context->score(candidate, r->spec.extent);
-    }
-
-    inline void controller::intend_write(history* o){
-        revision* r = o->back(); if(r == NULL || model.common(r)) return;
-        int candidate = model.remote(r) ? r->owner : (int)ambient::rank();
-        context->select(candidate);
-    }
-
-    inline bool controller::scoped() const {
-        return (context != context_base);
-    }
-
     inline void controller::set_context(const scope* s){
         this->context = s; // no nesting
     }

@@ -47,6 +47,7 @@ namespace ambient { namespace controllers { namespace ssm {
 
     class controller {
     public:
+        typedef models::ssm::model model_type;
         typedef channels::AMBIENT_CHANNEL_NAME::channel channel_type;
         typedef ambient::memory::private_region<AMBIENT_INSTR_BULK_CHUNK, 
                                                ambient::memory::private_factory<AMBIENT_INSTR_BULK_CHUNK> 
@@ -69,10 +70,6 @@ namespace ambient { namespace controllers { namespace ssm {
 
         bool tunable();
         void schedule();
-        void intend_read(history* o);
-        void intend_write(history* o);
-
-        bool scoped() const;
         void set_context(const scope* s);
         void pop_context();
         bool remote();
@@ -103,7 +100,7 @@ namespace ambient { namespace controllers { namespace ssm {
         const scope* context_base;
         memory_type memory;
     private:
-        models::ssm::model model;
+        model_type model;
         channel_type channel;
         std::vector< functor* > stack_m;
         std::vector< functor* > stack_s;
@@ -116,9 +113,5 @@ namespace ambient { namespace controllers { namespace ssm {
     };
     
 } } }
-
-namespace ambient {
-    controllers::ssm::controller& cell();
-}
 
 #endif
