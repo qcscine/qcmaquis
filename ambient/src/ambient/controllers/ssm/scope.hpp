@@ -24,30 +24,12 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_INTERFACE_SCOPE
-#define AMBIENT_INTERFACE_SCOPE
+#ifndef AMBIENT_INTERFACE_SCOPE_HPP
+#define AMBIENT_INTERFACE_SCOPE_HPP
 
 namespace ambient { 
 
-    //    Possible misc functions:
-    //
-    //    int  get_master(){ return ambient::rank.translate(grp->master, grp); }
-    //    bool involved()  { return ambient::rank.belongs(grp);                }
-    //    bool is_master() { return ambient::rank.masters(grp);                }
-    //    int  get_rank()  { return grp->rank;                                 }
-    //    int  get_size()  { return grp->size;                                 }
-    //
-
-    template<scope_t T = single>
-    class scope {};
-
-    template<>
-    class scope<base> : public ambient::controllers::ssm::scope {
-    public:
-        typedef controllers::ssm::controller controller_type;
-        controller_type c;
-
-        scope(){
+        inline scope<base>::scope(){
             int db = ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0;
             c.init(this, db);
 
@@ -72,24 +54,33 @@ namespace ambient {
             }
             if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) mkl_parallel();
         }
-        controller_type& operator()(size_t n){
+
+        inline typename scope<base>::controller_type& scope<base>::operator()(size_t n){
             return c;
         }
-        void sync(){
+        inline void scope<base>::sync(){
             c.flush();
             c.clear();  
             memory::data_bulk::drop();
         }
-        virtual bool tunable() const { 
+
+
+
+
+
+
+
+
+        inline bool scope<base>::tunable() const { 
             return true;
         }
-        virtual void score(int c, size_t v) const {
+        inline void scope<base>::score(int c, size_t v) const {
             this->scores[c] += v;
         }
-        virtual void select(int c) const {
+        inline void scope<base>::select(int c) const {
             this->stakeholders.push_back(c);
         }
-        virtual void toss(){
+        inline void scope<base>::toss(){
             int max = 0;
             if(stakeholders.empty()){
                 for(int i = 0; i < round; i++)
@@ -111,21 +102,8 @@ namespace ambient {
             this->state = (this->rank == ambient::rank()) ? 
                           ambient::local : ambient::remote;
         }
-        mutable std::vector<int> stakeholders;
-        mutable std::vector<int> scores;
-        int round;
-    };
 
-    #ifdef AMBIENT_BUILD_LIBRARY
-    scope<base> u;
-    controllers::ssm::controller& cell(){ return u(AMBIENT_THREAD_ID); }
-    void sync(){ u.sync(); }
-    #endif
-
-    template<>
-    class scope<threaded> : public controllers::ssm::scope {
-    public:
-        scope(const std::vector<int>& map, int iterator = 0){
+        inline scope<threaded>::scope(const std::vector<int>& map, int iterator){
             if(ambient::parallel()) dry = true;
             else{ dry = false; cell().set_context(this); }
             int round = ambient::num_workers();
@@ -135,29 +113,22 @@ namespace ambient {
             else           this->rank = i;
             this->state = (this->rank == ambient::rank()) ? ambient::local : ambient::remote;
         }
-       ~scope(){
+        inline scope<threaded>::~scope(){
             if(!dry) cell().pop_context();
         }
-        virtual bool tunable() const {
+        inline bool scope<threaded>::tunable() const {
             return false; 
         }
-        bool dry;
-    };
 
-    template<>
-    class scope<single> : public controllers::ssm::scope {
-    public:
-        static int grain; 
-        static std::vector<int> permutation;
 
-        static void compact(size_t n){ 
+        inline void scope<single>::compact(size_t n){ 
             if(n <= ambient::num_workers()) return; 
             grain = (int)(n / ambient::num_workers()); // iterations before switch 
         } 
-        static void scatter(const std::vector<int>& p){
+        inline void scope<single>::scatter(const std::vector<int>& p){
             permutation = p;
         } 
-        scope(int value = 0) : index(value), iterator(value) {
+        inline scope<single>::scope(int value) : index(value), iterator(value) {
             this->factor = grain; grain = 1;
             this->map = permutation; permutation.clear();
             if(ambient::parallel()) dry = true;
@@ -165,90 +136,67 @@ namespace ambient {
             this->round = ambient::num_workers();
             this->eval();
         }
-        void eval(){
+        inline void scope<single>::eval(){
             int i = iterator >= map.size() ? iterator : map[iterator];
             if(i >= this->round*this->factor) this->rank = i % this->round;
             else                              this->rank = i / this->factor;
             this->state = (this->rank == ambient::rank()) ? ambient::local : ambient::remote;
         }
-        void shift(){
+        inline void scope<single>::shift(){
             this->iterator++;
             this->eval();
         }
-        void shift_back(){ 
+        inline void scope<single>::shift_back(){ 
             this->iterator--;
             this->eval();
         } 
-        scope& operator++ (){
+        inline scope<single>& scope<single>::operator++ (){
             this->shift();
             this->index++;
             return *this;
         }
-        scope& operator-- (){
+        inline scope<single>& scope<single>::operator-- (){
             this->shift_back();
             this->index--;
             return *this;
         }
-        operator size_t () const{
+        inline scope<single>::operator size_t () const{
             return index;
         }
-        bool operator < (size_t lim){
+        inline bool scope<single>::operator < (size_t lim){
             return index < lim;
         }
-       ~scope(){
+        inline scope<single>::~scope(){
             if(!dry) cell().pop_context();
         }
-        virtual bool tunable() const {
+        inline bool scope<single>::tunable() const {
             return false; 
         }
-        friend std::ostream& operator<< (std::ostream& os, scope const& l){
-            os << static_cast<size_t>(l);
-            return os;
-        }
-        std::vector<int> map;
-        size_t index;
-        bool dry;
-        int iterator;
-        int factor;
-        int round;
-    };
 
-    #ifdef AMBIENT_BUILD_LIBRARY
-    int scope<single>::grain = 1;
-    std::vector<int> scope<single>::permutation;
-    #endif
 
-    template<>
-    class scope<dedicated> : public controllers::ssm::scope {
-    public:
-        scope(){
+        inline scope<dedicated>::scope(){
             cell().set_context(this);
             this->rank = ambient::dedicated_rank();
             this->state = (this->rank == ambient::rank()) ? ambient::local : ambient::remote;
         }
-       ~scope(){
+        inline scope<dedicated>::~scope(){
             cell().pop_context();
         }
-        virtual bool tunable() const {
+        inline bool scope<dedicated>::tunable() const {
             return false; 
         }
-    };
 
-    template<>
-    class scope<shared> : public controllers::ssm::scope {
-    public:
-        scope(){
+        inline scope<shared>::scope(){
             cell().set_context(this);
             this->state = ambient::common;
             this->rank = cell().get_shared_rank();
         }
-       ~scope(){
+        inline scope<shared>::~scope(){
             cell().pop_context();
         }
-        virtual bool tunable() const { 
+        inline bool scope<shared>::tunable() const { 
             return false; 
         }
-    };
 }
 
 #endif
