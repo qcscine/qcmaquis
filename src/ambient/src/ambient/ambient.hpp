@@ -87,6 +87,7 @@
 #include "ambient/controllers/ssm/controller.h"
 #include "ambient/controllers/ssm/get.h"
 #include "ambient/controllers/ssm/set.h"
+#include "ambient/controllers/ssm/scope.h"
 
 #include "ambient/utils/auxiliary.hpp"
 #include "ambient/utils/io.hpp"
