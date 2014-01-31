@@ -149,8 +149,8 @@ namespace ambient {
         }
         template<size_t arg> 
         static void score(T& obj){
-            cell().intend_read(obj.versioned.core);
-            cell().intend_write(obj.versioned.core);
+            cell.intend_read(obj.versioned.core->back());
+            cell.intend_write(obj.versioned.core->back());
         }
         template<size_t arg> 
         static bool ready(functor* m){
@@ -193,7 +193,7 @@ namespace ambient {
         }
         template<size_t arg> 
         static void score(T& obj){
-            cell().intend_read(obj.versioned.core);
+            cell.intend_read(obj.versioned.core->back());
         }
     };
     template <typename T> struct write_iteratable_info : public iteratable_info<T> {
@@ -230,7 +230,7 @@ namespace ambient {
         }
         template<size_t arg> static bool pin(functor* m){ return false; }
         template<size_t arg> static void score(T& obj) {               
-            cell().intend_write(obj.versioned.core);
+            cell.intend_write(obj.versioned.core->back());
         }
         template<size_t arg> static bool ready (functor* m){ return true;  }
     };

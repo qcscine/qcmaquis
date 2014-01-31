@@ -63,14 +63,17 @@ namespace ambient {
             c.clear();  
             memory::data_bulk::drop();
         }
-
-
-
-
-
-
-
-
+        inline bool scope<base>::scoped() const {
+            return (c.context != this);
+        }
+        inline void scope<base>::intend_read(models::ssm::revision* r){
+            if(r == NULL || model_type::common(r)) return;
+            this->score(model_type::owner(r), r->spec.extent);
+        }
+        inline void scope<base>::intend_write(models::ssm::revision* r){
+            if(r == NULL || model_type::common(r)) return;
+            this->select(model_type::owner(r));
+        }
         inline bool scope<base>::tunable() const { 
             return true;
         }

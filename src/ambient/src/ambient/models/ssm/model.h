@@ -39,6 +39,7 @@ namespace ambient { namespace models { namespace ssm {
         static bool remote(const revision* r);
         static bool common(const revision* r);
         static void touch(const history* o);
+        static int owner(const revision* r);
         size_t clock;
     };
 

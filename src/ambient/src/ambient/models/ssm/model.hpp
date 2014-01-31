@@ -52,4 +52,9 @@ namespace ambient { namespace models { namespace ssm {
         return (r->state == ambient::common);
     }
 
+    inline int model::owner(const revision* r){
+        int p = r->owner;
+        return (p == -1 ? ambient::rank() : p);
+    }
+
 } } }
