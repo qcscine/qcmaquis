@@ -30,6 +30,7 @@
 #include "dmrg/models/generate_mpo/mpo_maker.hpp"
 #include "dmrg/models/generate_mpo/tagged_mpo_maker_optim.hpp"
 #include "dmrg/models/generate_mpo/corr_maker.hpp"
+#include "dmrg/models/generate_mpo/bg_corr_maker.hpp"
 
 #include "dmrg/models/chem/pg_symm_converter.h"
 
