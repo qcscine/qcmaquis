@@ -298,6 +298,9 @@ public:
                         ++f_ops;
                     }
 
+                    else if (*it2 == "id" || *it2 == "Id") {
+                        meas_operators.push_back( std::make_pair(ident_ops, false) );
+                    }
                     else if (*it2 == "Nup") {
                         meas_operators.push_back( std::make_pair(count_up_ops, false) );
                     }
@@ -340,7 +343,6 @@ public:
                     else
                         throw std::runtime_error("Unrecognized operator in correlation measurement: " 
                                                     + boost::lexical_cast<std::string>(*it2) + "\n");
-
                 }
 
                 if (f_ops % 2 != 0)
@@ -355,8 +357,8 @@ public:
                                    static_cast<std::size_t (*)(std::string const&)>(boost::lexical_cast<std::size_t, std::string>));
                 }
                 
-                meas.push_back( new measurements::correlations<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, meas_operators,
-                                                                                  half_only, nearest_neighbors_only, positions) );
+                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, meas_operators,
+                                                                              half_only, nearest_neighbors_only, positions));
             }
         }
         }
