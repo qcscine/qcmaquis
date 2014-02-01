@@ -29,11 +29,21 @@
 
 namespace ambient { 
 
+    class iscope {
+    public:
+        int rank;
+        ambient::locality state;
+        virtual bool tunable() const = 0;
+        virtual void score(int c, size_t v) const {}
+        virtual void select(int c) const {}
+        virtual void schedule(){}
+    };
+
     template<scope_t T = single>
     class scope {};
 
     template<>
-    class scope<base> : public ambient::controllers::ssm::scope {
+    class scope<base> : public iscope {
     public:
         typedef controllers::ssm::controller controller_type;
         typedef typename controllers::ssm::controller::model_type model_type;
@@ -43,15 +53,26 @@ namespace ambient {
         controller_type& operator()(size_t n = AMBIENT_THREAD_ID); 
         void sync();
         bool scoped() const;
+        
+        void set_context(const iscope* s);
+        void pop_context();
+
+        bool remote() const;
+        bool local() const;
+        bool common() const;
+        int which() const;
+
         virtual void intend_read(models::ssm::revision* o);
         virtual void intend_write(models::ssm::revision* o);
         virtual bool tunable() const ; 
         virtual void score(int c, size_t v) const ;
         virtual void select(int c) const ;
-        virtual void toss();
+        virtual void schedule();
         mutable std::vector<int> stakeholders;
         mutable std::vector<int> scores;
         int round;
+
+        const iscope* context;
     };
 
     #ifdef AMBIENT_BUILD_LIBRARY
@@ -62,7 +83,7 @@ namespace ambient {
     #endif
 
     template<>
-    class scope<threaded> : public controllers::ssm::scope {
+    class scope<threaded> : public iscope {
     public:
         scope(const std::vector<int>& map, int iterator = 0);
        ~scope();
@@ -71,7 +92,7 @@ namespace ambient {
     };
 
     template<>
-    class scope<single> : public controllers::ssm::scope {
+    class scope<single> : public iscope {
     public:
         static int grain; 
         static std::vector<int> permutation;
@@ -106,7 +127,7 @@ namespace ambient {
     #endif
 
     template<>
-    class scope<dedicated> : public controllers::ssm::scope {
+    class scope<dedicated> : public iscope {
     public:
         scope();
        ~scope();
@@ -114,7 +135,7 @@ namespace ambient {
     };
 
     template<>
-    class scope<shared> : public controllers::ssm::scope {
+    class scope<shared> : public iscope {
     public:
         scope();
        ~scope();

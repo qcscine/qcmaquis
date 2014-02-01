@@ -38,9 +38,9 @@ namespace ambient {
     template <typename T> static bool exclusive(T& obj){
         cell().touch(obj.versioned.core);
         revision& c = *obj.versioned.core->current;
-        if(cell().remote()){
+        if(cell.remote()){
             c.state = ambient::remote;
-            c.owner = cell().which();
+            c.owner = cell.which();
             return true;
         }else{
             c.state = ambient::local;

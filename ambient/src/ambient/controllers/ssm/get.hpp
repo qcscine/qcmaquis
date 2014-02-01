@@ -32,7 +32,7 @@ namespace ambient { namespace controllers { namespace ssm {
         ambient::cell().queue(new get(t));
     }
     inline get<transformable>::get(transformable& t){
-        handle = ambient::cell().get_channel().bcast(t, ambient::cell().which());
+        handle = ambient::cell().get_channel().bcast(t, ambient::cell.which());
     }
     inline bool get<transformable>::ready(){
         return handle->test();
@@ -45,7 +45,7 @@ namespace ambient { namespace controllers { namespace ssm {
     inline void get<revision>::spawn(revision& r){
         get*& transfer = (get*&)r.assist.second;
         if(ambient::cell().update(r)) transfer = new get(r);
-        *transfer += ambient::cell().which();
+        *transfer += ambient::cell.which();
         ambient::cell().generate_sid();
     }
     inline get<revision>::get(revision& r) : t(r) {
