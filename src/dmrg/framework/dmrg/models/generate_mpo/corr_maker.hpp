@@ -50,14 +50,33 @@ namespace generate_mpo
         virtual MPO<Matrix, SymmGroup> create_mpo()=0;
         virtual std::string description () const=0;
         virtual vector<vector<size_t> > const& numeric_labels()=0;
+
+    protected:
+        typedef tag_detail::tag_type tag_type;
+        typedef boost::tuple<size_t, size_t, tag_type, typename Matrix::value_type> block;
+        
+        MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops, boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl)
+        {
+            pair<size_t, size_t> rcd = rcdim(ops);
+            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second, ops, tbl);
+            return r;
+        }
+        
+        MPOTensor<Matrix, SymmGroup> as_left(vector<block> const & ops, boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl)
+        {
+            pair<size_t, size_t> rcd = rcdim(ops);
+            MPOTensor<Matrix, SymmGroup> r(1, rcd.second, ops, tbl);
+            return r;
+        }
     };
 
     template<class Matrix, class SymmGroup>
     class CorrMaker : public CorrMakerBase<Matrix, SymmGroup>
     {
+        typedef CorrMakerBase<Matrix, SymmGroup> base;
+        typedef typename base::block block; 
         typedef tag_detail::tag_type tag_type;
         typedef block_matrix<Matrix, SymmGroup> op_t;
-        typedef boost::tuple<size_t, size_t, tag_type, typename Matrix::value_type> block;
         typedef boost::tuple<size_t, size_t, string> tag;
         
     public:
@@ -95,11 +114,11 @@ namespace generate_mpo
         
         MPO<Matrix, SymmGroup> create_mpo()
         {
+            boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl = tag_handler.get_operator_table();
             MPO<Matrix, SymmGroup> r(prempo.size());
-            for (size_t p = 1; p < prempo.size()-1; ++p)
-                r[p] = as_bulk(prempo[p]);
-            r[0] = as_left(prempo[0]);
-            r[prempo.size()-1] = as_right(*prempo.rbegin());
+            for (size_t p = 1; p < prempo.size(); ++p)
+                r[p] = base::as_bulk(prempo[p], tbl);
+            r[0] = base::as_left(prempo[0], tbl);
             
             return r;
         }
@@ -203,27 +222,6 @@ namespace generate_mpo
                 }
             }
         }
-        
-        MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops)
-        {
-            pair<size_t, size_t> rcd = rcdim(ops);
-            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second, ops, tag_handler.get_operator_table());
-            return r;
-        }
-        
-        MPOTensor<Matrix, SymmGroup> as_left(vector<block> const & ops)
-        {
-            pair<size_t, size_t> rcd = rcdim(ops);
-            MPOTensor<Matrix, SymmGroup> r(1, rcd.second, ops, tag_handler.get_operator_table());
-            return r;
-        }
-        
-        MPOTensor<Matrix, SymmGroup> as_right(vector<block> const & ops)
-        {
-            pair<size_t, size_t> rcd = rcdim(ops);
-            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second, ops, tag_handler.get_operator_table());
-            return r;
-        }
     };
     
     // same as CorrMaker, but operators in ops have to be even,
@@ -231,9 +229,10 @@ namespace generate_mpo
     template<class Matrix, class SymmGroup>
     class CorrMakerNN : public CorrMakerBase<Matrix, SymmGroup>
     {
+        typedef CorrMakerBase<Matrix, SymmGroup> base; 
+        typedef typename base::block block; 
         typedef tag_detail::tag_type tag_type;
         typedef block_matrix<Matrix, SymmGroup> op_t;
-        typedef boost::tuple<size_t, size_t, tag_type, typename Matrix::value_type> block;
         typedef boost::tuple<size_t, size_t, string> tag;
 
     public:
@@ -273,11 +272,11 @@ namespace generate_mpo
         
         MPO<Matrix, SymmGroup> create_mpo()
         {
+            boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl = tag_handler.get_operator_table();
             MPO<Matrix, SymmGroup> r(prempo.size());
-            for (size_t p = 1; p < prempo.size()-1; ++p)
-                r[p] = as_bulk(prempo[p]);
-            r[0] = as_left(prempo[0]);
-            r[prempo.size()-1] = as_right(*prempo.rbegin());
+            for (size_t p = 1; p < prempo.size(); ++p)
+                r[p] = base::as_bulk(prempo[p], tbl);
+            r[0] = base::as_left(prempo[0], tbl);
             
             return r;
         }
@@ -384,29 +383,7 @@ namespace generate_mpo
                 }
             }
         }
-        
-        MPOTensor<Matrix, SymmGroup> as_bulk(vector<block> const & ops)
-        {
-            pair<size_t, size_t> rcd = rcdim(ops);
-            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second, ops, tag_handler.get_operator_table());
-            return r;
-        }
-        
-        MPOTensor<Matrix, SymmGroup> as_left(vector<block> const & ops)
-        {
-            pair<size_t, size_t> rcd = rcdim(ops);
-            MPOTensor<Matrix, SymmGroup> r(1, rcd.second, ops, tag_handler.get_operator_table());
-            return r;
-        }
-        
-        MPOTensor<Matrix, SymmGroup> as_right(vector<block> const & ops)
-        {
-            pair<size_t, size_t> rcd = rcdim(ops);
-            MPOTensor<Matrix, SymmGroup> r(rcd.first, rcd.second, ops, tag_handler.get_operator_table());
-            return r;
-        }
     };
-    
 }
 
 
