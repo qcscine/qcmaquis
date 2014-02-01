@@ -103,9 +103,10 @@ namespace ambient {
         static void modify_remote(T& obj){
             decltype(obj.versioned.core) o = obj.versioned.core;
             cell().touch(o);
-            cell().rsync(o->back());
+            if(o->back()->owner != cell.which())
+                cell().rsync(o->back());
             cell().collect(o->back());
-            cell().add_revision<ambient::remote>(o, cell().which()); 
+            cell().add_revision<ambient::remote>(o, cell.which()); 
         }
         template<size_t arg>
         static void modify_local(T& obj, functor* m){
@@ -173,7 +174,8 @@ namespace ambient {
         template<size_t arg> static void modify_remote(T& obj){
             decltype(obj.versioned.core) o = obj.versioned.core;
             cell().touch(o);
-            cell().rsync(o->back());
+            if(o->back()->owner != cell.which())
+                cell().rsync(o->back());
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
@@ -201,7 +203,7 @@ namespace ambient {
             decltype(obj.versioned.core) o = obj.versioned.core;
             cell().touch(o);
             cell().collect(o->back());
-            cell().add_revision<ambient::remote>(o, cell().which()); 
+            cell().add_revision<ambient::remote>(o, cell.which()); 
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;

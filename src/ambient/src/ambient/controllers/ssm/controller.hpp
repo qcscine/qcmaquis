@@ -45,43 +45,9 @@ namespace ambient { namespace controllers { namespace ssm {
         this->mirror = &this->stack_s;
     }
 
-    inline void controller::init(scope* s, int db){
+    inline void controller::init(int db){
         this->db = get_num_procs() > db ? db : 0;
-        this->context = this->context_base = s;
         this->serial = (get_num_procs() == 1) ? true : false;
-    }
-
-    inline bool controller::tunable(){
-        if(serial) return false;
-        return context->tunable();
-    }
-
-    inline void controller::schedule(){
-        const_cast<scope*>(context)->toss();
-    }
-
-    inline void controller::set_context(const scope* s){
-        this->context = s; // no nesting
-    }
-
-    inline void controller::pop_context(){
-        this->context = this->context_base;
-    }
-
-    inline bool controller::remote(){
-        return (this->context->state == ambient::remote);
-    }
-
-    inline bool controller::local(){
-        return (this->context->state == ambient::local);
-    }
-
-    inline bool controller::common(){
-        return (this->context->state == ambient::common);
-    }
-
-    inline int controller::which(){
-        return this->context->rank;
     }
 
     inline void controller::flush(){
@@ -141,10 +107,8 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline void controller::rsync(revision* r){
         if(model.common(r)) return;
-        if(r->owner != which()){
-            if(model.feeds(r)) set<revision>::spawn(*r);
-            else get<revision>::spawn(*r); // assist
-        }
+        if(model.feeds(r)) set<revision>::spawn(*r);
+        else get<revision>::spawn(*r); // assist
     }
 
     inline void controller::lsync(transformable* v){

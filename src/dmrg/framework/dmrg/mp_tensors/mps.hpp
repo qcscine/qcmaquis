@@ -358,7 +358,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
 #endif
     semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
 #ifdef AMBIENT
-        if(!ambient::cell().local()) continue;
+        if(!ambient::cell.local()) continue;
 #endif
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5.new";
         storage::archive ar(fname, "w");

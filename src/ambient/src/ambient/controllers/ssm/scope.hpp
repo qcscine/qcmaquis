@@ -30,8 +30,9 @@
 namespace ambient { 
 
         inline scope<base>::scope(){
+            context = this;
             int db = ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0;
-            c.init(this, db);
+            c.init(db);
 
             this->round = ambient::num_workers();
             this->state = ambient::rank() ? ambient::remote : ambient::local;
@@ -47,7 +48,7 @@ namespace ambient {
                 if(ambient::isset("AMBIENT_BULK_REUSE")) ambient::cout << "ambient: enabled bulk garbage collection\n";
                 if(ambient::isset("AMBIENT_BULK_DEALLOCATE")) ambient::cout << "ambient: enabled bulk deallocation\n";
                 ambient::cout << "ambient: maximum sid value: "             << AMBIENT_MAX_SID                << "\n";
-                if(db) ambient::cout << "ambient: number of db procs: "     << ambient::num_db_procs()        << "\n";
+                ambient::cout << "ambient: number of db procs: "            << ambient::num_db_procs()        << "\n";
                 ambient::cout << "ambient: number of work procs: "          << ambient::num_workers()         << "\n";
                 ambient::cout << "ambient: number of threads per proc: "    << ambient::num_threads()         << "\n";
                 ambient::cout << "\n";
@@ -64,7 +65,25 @@ namespace ambient {
             memory::data_bulk::drop();
         }
         inline bool scope<base>::scoped() const {
-            return (c.context != this);
+            return (context != this);
+        }
+        inline void scope<base>::set_context(const iscope* s){
+            this->context = s; // no nesting
+        }
+        inline void scope<base>::pop_context(){
+            this->context = this;
+        }
+        inline bool scope<base>::remote() const {
+            return (this->context->state == ambient::remote);
+        }
+        inline bool scope<base>::local() const {
+            return (this->context->state == ambient::local);
+        }
+        inline bool scope<base>::common() const {
+            return (this->context->state == ambient::common);
+        }
+        inline int scope<base>::which() const {
+            return this->context->rank;
         }
         inline void scope<base>::intend_read(models::ssm::revision* r){
             if(r == NULL || model_type::common(r)) return;
@@ -75,15 +94,16 @@ namespace ambient {
             this->select(model_type::owner(r));
         }
         inline bool scope<base>::tunable() const { 
-            return true;
+            if(c.serial) return false;
+            return (context == this);
         }
-        inline void scope<base>::score(int c, size_t v) const {
-            this->scores[c] += v;
+        inline void scope<base>::score(int r, size_t v) const {
+            this->scores[r] += v;
         }
-        inline void scope<base>::select(int c) const {
-            this->stakeholders.push_back(c);
+        inline void scope<base>::select(int r) const {
+            this->stakeholders.push_back(r);
         }
-        inline void scope<base>::toss(){
+        inline void scope<base>::schedule(){
             int max = 0;
             if(stakeholders.empty()){
                 for(int i = 0; i < round; i++)
@@ -108,7 +128,7 @@ namespace ambient {
 
         inline scope<threaded>::scope(const std::vector<int>& map, int iterator){
             if(ambient::parallel()) dry = true;
-            else{ dry = false; cell().set_context(this); }
+            else{ dry = false; cell.set_context(this); }
             int round = ambient::num_workers();
 
             int i = iterator >= map.size() ? iterator : map[iterator];
@@ -117,7 +137,7 @@ namespace ambient {
             this->state = (this->rank == ambient::rank()) ? ambient::local : ambient::remote;
         }
         inline scope<threaded>::~scope(){
-            if(!dry) cell().pop_context();
+            if(!dry) cell.pop_context();
         }
         inline bool scope<threaded>::tunable() const {
             return false; 
@@ -135,7 +155,7 @@ namespace ambient {
             this->factor = grain; grain = 1;
             this->map = permutation; permutation.clear();
             if(ambient::parallel()) dry = true;
-            else{ dry = false; cell().set_context(this); }
+            else{ dry = false; cell.set_context(this); }
             this->round = ambient::num_workers();
             this->eval();
         }
@@ -170,7 +190,7 @@ namespace ambient {
             return index < lim;
         }
         inline scope<single>::~scope(){
-            if(!dry) cell().pop_context();
+            if(!dry) cell.pop_context();
         }
         inline bool scope<single>::tunable() const {
             return false; 
@@ -178,24 +198,24 @@ namespace ambient {
 
 
         inline scope<dedicated>::scope(){
-            cell().set_context(this);
+            cell.set_context(this);
             this->rank = ambient::dedicated_rank();
             this->state = (this->rank == ambient::rank()) ? ambient::local : ambient::remote;
         }
         inline scope<dedicated>::~scope(){
-            cell().pop_context();
+            cell.pop_context();
         }
         inline bool scope<dedicated>::tunable() const {
             return false; 
         }
 
         inline scope<shared>::scope(){
-            cell().set_context(this);
+            cell.set_context(this);
             this->state = ambient::common;
             this->rank = cell().get_shared_rank();
         }
         inline scope<shared>::~scope(){
-            cell().pop_context();
+            cell.pop_context();
         }
         inline bool scope<shared>::tunable() const { 
             return false; 

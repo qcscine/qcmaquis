@@ -35,16 +35,6 @@ namespace ambient { namespace controllers { namespace ssm {
     using ambient::models::ssm::revision;
     using ambient::models::ssm::transformable;
 
-    class scope {
-    public:
-        int rank;
-        ambient::locality state;
-        virtual bool tunable() const = 0;
-        virtual void score(int c, size_t v) const {}
-        virtual void select(int c) const {}
-        virtual void toss(){}
-    };
-
     class controller {
     public:
         typedef models::ssm::model model_type;
@@ -54,7 +44,7 @@ namespace ambient { namespace controllers { namespace ssm {
                                                > memory_type;
         controller();
        ~controller();
-        void init(scope* s, int db = 0);
+        void init(int db = 0);
         bool empty();
         void flush();
         void clear();
@@ -67,15 +57,6 @@ namespace ambient { namespace controllers { namespace ssm {
         void rsync (transformable* v);
         template<typename T> void collect(T* o);
         void squeeze(revision* r) const;
-
-        bool tunable();
-        void schedule();
-        void set_context(const scope* s);
-        void pop_context();
-        bool remote();
-        bool local();
-        bool common();
-        int which();
 
         void touch(const history* o);
         void use_revision(history* o);
@@ -96,9 +77,8 @@ namespace ambient { namespace controllers { namespace ssm {
         void meminfo() const;
         bool verbose() const;
 
-        const scope* context;
-        const scope* context_base;
         memory_type memory;
+        bool serial;
     private:
         model_type model;
         channel_type channel;
@@ -107,7 +87,6 @@ namespace ambient { namespace controllers { namespace ssm {
         std::vector< functor* >* chains;
         std::vector< functor* >* mirror;
         ambient::memory::collector garbage;
-        bool serial;
         int sid;
         int db;
     };
