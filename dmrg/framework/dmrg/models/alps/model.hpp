@@ -472,7 +472,7 @@ typename ALPSModel<Matrix, SymmGroup>::initializer_ptr ALPSModel<Matrix, SymmGro
         }
         
         maquis::cout << "site_types: ";
-        std::copy(site_types.begin(), site_types.end(), maquis::ostream_iterator<int>(maquis::cout, " "));
+        std::copy(site_types.begin(), site_types.end(), std::ostream_iterator<int>(maquis::cout, " "));
         maquis::cout << std::endl;
         
         std::vector<Index<SymmGroup> > phys_bases(symm_basis.size());

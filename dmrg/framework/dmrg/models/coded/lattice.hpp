@@ -178,7 +178,7 @@ public:
                 irreps[p] = symm_vec[order[p]-1];
 
             maquis::cout << "Symmetry string (reordered): ";
-            std::copy(irreps.begin(), irreps.end(), maquis::ostream_iterator<subcharge>(maquis::cout, ","));
+            std::copy(irreps.begin(), irreps.end(), std::ostream_iterator<subcharge>(maquis::cout, ","));
             maquis::cout << std::endl;
 
             orb_file.close();
