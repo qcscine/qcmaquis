@@ -96,7 +96,7 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
     }
     
     maquis::cout << "site_types: ";
-    std::copy(site_types.begin(), site_types.end(), std::ostream_iterator<int>(maquis::cout, " "));
+    std::copy(site_types.begin(), site_types.end(), maquis::ostream_iterator<int>(maquis::cout, " "));
     maquis::cout << std::endl;
     
     std::vector<Index<SymmGroup> > site_bases(max_site_type+1);
