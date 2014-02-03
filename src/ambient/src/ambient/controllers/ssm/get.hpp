@@ -29,10 +29,10 @@ namespace ambient { namespace controllers { namespace ssm {
     // {{{ transformable
 
     inline void get<transformable>::spawn(transformable& t){
-        ambient::cell().queue(new get(t));
+        ambient::ctxt.get_controller().queue(new get(t));
     }
     inline get<transformable>::get(transformable& t){
-        handle = ambient::cell().get_channel().bcast(t, ambient::cell.which());
+        handle = ambient::ctxt.get_controller().get_channel().bcast(t, ambient::ctxt.which());
     }
     inline bool get<transformable>::ready(){
         return handle->test();
@@ -44,12 +44,12 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline void get<revision>::spawn(revision& r){
         get*& transfer = (get*&)r.assist.second;
-        if(ambient::cell().update(r)) transfer = new get(r);
-        *transfer += ambient::cell.which();
-        ambient::cell().generate_sid();
+        if(ambient::ctxt.get_controller().update(r)) transfer = new get(r);
+        *transfer += ambient::ctxt.which();
+        ambient::ctxt.get_controller().generate_sid();
     }
     inline get<revision>::get(revision& r) : t(r) {
-        handle = ambient::cell().get_channel().get(t);
+        handle = ambient::ctxt.get_controller().get_channel().get(t);
         t.invalidate();
     }
     inline void get<revision>::operator += (int rank){
@@ -58,14 +58,14 @@ namespace ambient { namespace controllers { namespace ssm {
             t.use();
             t.generator = this;
             t.embed(ambient::pool::malloc<data_bulk>(t.spec)); 
-            ambient::cell().queue(this);
+            ambient::ctxt.get_controller().queue(this);
         }
     }
     inline bool get<revision>::ready(){
         return handle->test();
     }
     inline void get<revision>::invoke(){
-        ambient::cell().squeeze(&t);
+        ambient::ctxt.get_controller().squeeze(&t);
         t.release();
         t.complete();
     }
