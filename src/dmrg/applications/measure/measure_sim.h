@@ -70,10 +70,12 @@ public:
         double energy = maquis::real(expval(mps, mpoc));
         // MD: removed redundant energy calculation
         // maquis::cout << "Energy before: " << maquis::real(expval(mps, mpo)) << std::endl;
-        maquis::cout << "Energy: " << maquis::real(expval(mps, mpoc)) << std::endl;
-        {
-            storage::archive ar(rfile, "w");
-            ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
+        if (parms["calc_energy"] > 0) {
+            maquis::cout << "Energy: " << maquis::real(expval(mps, mpoc)) << std::endl;
+            {
+                storage::archive ar(rfile, "w");
+                ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
+            }
         }
         
         if (parms["calc_h2"] > 0) {

@@ -82,6 +82,7 @@ private:
         add_option("run_seconds", "", value(0));
         add_option("storagedir", "", value(""));
         add_option("use_compressed", "", value(0));
+        add_option("calc_energy", "", value(1));
         add_option("calc_h2", "", value(0));
         add_option("seed", "", value(42));
         add_option("always_measure", "comma separated list of measurements", value(""));
