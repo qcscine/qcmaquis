@@ -50,7 +50,7 @@ namespace ambient {
         controller_type c;
 
         scope();
-        controller_type& operator()(size_t n = AMBIENT_THREAD_ID); 
+        controller_type& get_controller(size_t n = AMBIENT_THREAD_ID); 
         void sync();
         bool scoped() const;
         
@@ -76,10 +76,10 @@ namespace ambient {
     };
 
     #ifdef AMBIENT_BUILD_LIBRARY
-    scope<base> cell;
-    void sync(){ cell.sync(); }
+    scope<base> ctxt;
+    void sync(){ ctxt.sync(); }
     #else
-    extern scope<base> cell;
+    extern scope<base> ctxt;
     #endif
 
     template<>

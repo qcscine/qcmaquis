@@ -56,7 +56,7 @@ namespace ambient {
             if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) mkl_parallel();
         }
 
-        inline typename scope<base>::controller_type& scope<base>::operator()(size_t n){
+        inline typename scope<base>::controller_type& scope<base>::get_controller(size_t n){
             return c;
         }
         inline void scope<base>::sync(){
@@ -128,7 +128,7 @@ namespace ambient {
 
         inline scope<threaded>::scope(const std::vector<int>& map, int iterator){
             if(ambient::parallel()) dry = true;
-            else{ dry = false; cell.set_context(this); }
+            else{ dry = false; ctxt.set_context(this); }
             int round = ambient::num_workers();
 
             int i = iterator >= map.size() ? iterator : map[iterator];
@@ -137,7 +137,7 @@ namespace ambient {
             this->state = (this->rank == ambient::rank()) ? ambient::local : ambient::remote;
         }
         inline scope<threaded>::~scope(){
-            if(!dry) cell.pop_context();
+            if(!dry) ctxt.pop_context();
         }
         inline bool scope<threaded>::tunable() const {
             return false; 
@@ -155,7 +155,7 @@ namespace ambient {
             this->factor = grain; grain = 1;
             this->map = permutation; permutation.clear();
             if(ambient::parallel()) dry = true;
-            else{ dry = false; cell.set_context(this); }
+            else{ dry = false; ctxt.set_context(this); }
             this->round = ambient::num_workers();
             this->eval();
         }
@@ -190,7 +190,7 @@ namespace ambient {
             return index < lim;
         }
         inline scope<single>::~scope(){
-            if(!dry) cell.pop_context();
+            if(!dry) ctxt.pop_context();
         }
         inline bool scope<single>::tunable() const {
             return false; 
@@ -198,24 +198,24 @@ namespace ambient {
 
 
         inline scope<dedicated>::scope(){
-            cell.set_context(this);
+            ctxt.set_context(this);
             this->rank = ambient::dedicated_rank();
             this->state = (this->rank == ambient::rank()) ? ambient::local : ambient::remote;
         }
         inline scope<dedicated>::~scope(){
-            cell.pop_context();
+            ctxt.pop_context();
         }
         inline bool scope<dedicated>::tunable() const {
             return false; 
         }
 
         inline scope<shared>::scope(){
-            cell.set_context(this);
+            ctxt.set_context(this);
             this->state = ambient::common;
-            this->rank = cell().get_shared_rank();
+            this->rank = ctxt.get_controller().get_shared_rank();
         }
         inline scope<shared>::~scope(){
-            cell.pop_context();
+            ctxt.pop_context();
         }
         inline bool scope<shared>::tunable() const { 
             return false; 
