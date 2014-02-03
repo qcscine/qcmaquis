@@ -135,19 +135,17 @@ namespace generate_mpo
 
         void make_prempo(pos_t start)
         {
-            bool current_sign = false;
+            bool start_sign = false;
             for(pos_t p = 0; p < start; ++p)
-                current_sign = insert_filling(0, 0, p, current_sign);
+                start_sign = insert_filling(0, 0, p, start_sign);
 
-            current_sign = insert_operator(0, 0, start, (*(op_tags.rbegin()+1))[lat.get_prop<int>("type", start)], current_sign);
-            for(pos_t p = start+1; p < lat.size()-1; ++p)
-                current_sign = insert_filling(0, 0, p, current_sign);
+            bool current_sign = insert_operator(0, 0, start, (*(op_tags.rbegin()+1))[lat.get_prop<int>("type", start)], start_sign);
 
-            insert_operator(0, 0, lat.size()-1, (*op_tags.rbegin())[lat.get_prop<int>("type", lat.size()-1)], current_sign);
-
-            for(pos_t branch = lat.size()-2; branch > start; --branch)
+            for(pos_t branch = start+1; branch < lat.size(); ++branch)
             {
                 size_t branch_index = lat.size() - branch - 1;
+                if (branch > start+1)
+                    current_sign = insert_filling(0, 0, branch-1, current_sign);
                 bool branch_sign = insert_operator(0, branch_index, branch,
                                                    (*op_tags.rbegin())[lat.get_prop<int>("type", branch)], current_sign);
                 for(pos_t p2 = branch+1; p2 < lat.size(); ++p2)
@@ -162,8 +160,7 @@ namespace generate_mpo
 			    boost::tie(op_tag, scale) = tag_handler.get_product_tag((*op_tags.rbegin())[lat.get_prop<int>("type", start)],
                                                                         (*(op_tags.rbegin()+1))[lat.get_prop<int>("type", start)]);
 
-                bool branch_sign = insert_operator(0, branch_index, start, op_tag, current_sign, scale);
-
+                bool branch_sign = insert_operator(0, branch_index, start, op_tag, start_sign, scale);
                 for(pos_t p2 = start+1; p2 < lat.size(); ++p2)
                     branch_sign = insert_filling(branch_index, branch_index, p2, branch_sign);
             }
@@ -209,7 +206,7 @@ namespace generate_mpo
         {
             // Here, a phase factor stemming from the background operators (if present)
             // is applied. Condition below = indirect way to identify the last nontriv op per branch
-            if( b1 != b2 || p == lat.size()-1 )
+            if( b1 != b2 || (p == lat.size()-1 && b1==0 && b2==0) )
                 scale_in *= final_phase(p);
 
             bool sign_out = (sign_in != tag_handler.is_fermionic(op));
