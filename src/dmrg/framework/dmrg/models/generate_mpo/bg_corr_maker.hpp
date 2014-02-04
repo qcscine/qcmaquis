@@ -76,10 +76,9 @@ namespace generate_mpo
             if(ref.size() != ops.size()-1)
                 throw std::runtime_error("CorrMaker was called with wrong number of fixed operator positions\n");
 
-
             // Check for identical background operator positions
             // TODO: fix if bg > 2
-            if (ref[0] == ref[1]) {
+            if (ref.size() > 2 && ref[0] == ref[1]) {
                 for (int type=0; type < ops[0].first.size(); ++type){
                     op_t product;
                     gemm(ops[1].first[type], ops[0].first[type], product);
