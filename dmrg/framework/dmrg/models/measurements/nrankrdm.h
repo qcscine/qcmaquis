@@ -78,6 +78,8 @@ namespace measurements {
                 measure_correlation(mps, ops);
             else if (ops.size() == 4)
                 measure_2rdm(mps, ops);
+            else
+                throw std::runtime_error("correlation measurements at the moment supported with 2 and 4 operators");
         }
         
     protected:
@@ -99,6 +101,7 @@ namespace measurements {
                 
                 maker_ptr dcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings,
                                                                                  ops, std::vector<pos_t>(1, *it)));
+
                 /// measure
                 MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
@@ -110,7 +113,7 @@ namespace measurements {
                 
                 std::copy(dct.begin(), dct.end(), std::back_inserter(this->vector_results));
                 
-                std::vector<std::vector<std::size_t> > num_labels = dcorr->numeric_labels();
+                //std::vector<std::vector<std::size_t> > num_labels = dcorr->numeric_labels();
                 //std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
                 //        ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
                 //std::copy(lbt.begin(), lbt.end(), std::back_inserter(this->labels));
@@ -121,6 +124,10 @@ namespace measurements {
                                  std::vector<std::pair<op_vec, bool> > const & ops,
                                  std::vector<size_type> const & order = std::vector<size_type>())
         {
+            // TODO: test with ambient in due time
+            #ifdef MAQUIS_OPENMP
+            #pragma omp parallel for collapse(2)
+            #endif
             for (size_t p1 = 0; p1 < lattice.size(); ++p1)
                 for (size_t p2 = 0; p2 < lattice.size(); ++p2)
                 {
@@ -133,16 +140,16 @@ namespace measurements {
 
                         /// measure
                         MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
-                        std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
-                        dct = multi_expval(mps, mpo);
+                        std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(mps, mpo);
                         
                         /// save results and labels
+                        #ifdef MAQUIS_OPENMP
+                        #pragma omp critical
+                        #endif
+                        {
                         this->vector_results.reserve(this->vector_results.size() + dct.size());
-                        this->labels.reserve(this->labels.size() + dct.size());
-                        
                         std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
-                        
-                        //std::vector<std::vector<std::size_t> > num_labels = dcorr->numeric_labels();
+                        }
                     }
                 }
         }
