@@ -30,6 +30,7 @@
 #define MEASUREMENTS_NRANKRDM_H
 
 #include "dmrg/models/measurement.h"
+#include "dmrg/models/measurements/correlations.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/super_mpo.h"
 
@@ -72,7 +73,7 @@ namespace measurements {
         void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
             this->vector_results.clear();
-            //this->labels.clear();
+            this->labels.clear();
 
             if (ops.size() == 2)
                 measure_correlation(mps, ops);
@@ -122,13 +123,13 @@ namespace measurements {
         {
             // TODO: test with ambient in due time
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for ordered collapse(2)
+            #pragma omp parallel for collapse(2)
             #endif
-            for (size_t p1 = 0; p1 < lattice.size(); ++p1)
-                for (size_t p2 = 0; p2 < lattice.size(); ++p2)
+            for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
+                for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
                 {
-                    size_t subref = std::min(p1, p2);
-                    for (size_t p3 = subref; p3 < lattice.size(); ++p3)
+                    pos_t subref = std::min(p1, p2);
+                    for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
                     { 
                         std::vector<pos_t> ref;
                         ref.push_back(p1); ref.push_back(p2); ref.push_back(p3);
@@ -144,7 +145,14 @@ namespace measurements {
                         #endif
                         {
                         this->vector_results.reserve(this->vector_results.size() + dct.size());
+                        //this->labels.reserve(this->labels.size() + dct.size());
+
                         std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
+                        std::vector<std::vector<pos_t> > num_labels = dcorr->numeric_labels();
+                        //std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
+                        //                            ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
+                        std::vector<std::string> lbt = label_strings(lattice, num_labels);
+                        //std::copy(lbt.begin(), lbt.end(), std::back_inserter(this->labels));
                         }
                     }
                 }

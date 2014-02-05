@@ -84,6 +84,7 @@ public:
     typedef typename base::initializer_ptr initializer_ptr;
     
     typedef typename base::size_t size_t;
+    typedef Lattice::pos_t pos_t;
     
     typedef std::vector<std::pair<std::vector<op_t>, bool> > meas_operators_type;
 
@@ -641,7 +642,7 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
                 meas_operators_type operators = operators_for_meas(parts[0], false);
 
                 /// parse positions
-                std::vector<std::vector<std::size_t> > positions;
+                std::vector<std::vector<pos_t> > positions;
                 boost::regex pos_re("\\(([^(^)]*)\\)");
                 boost::sregex_token_iterator it_pos(parts[1].begin(), parts[1].end(), pos_re, 1);
                 boost::sregex_token_iterator it_pos_end;
@@ -651,9 +652,9 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
                     std::string raw = *it_pos;
                     tokenizer int_tokens(raw, int_sep);
                     
-                    std::vector<std::size_t> pos;
+                    std::vector<pos_t> pos;
                     std::transform(int_tokens.begin(), int_tokens.end(), std::back_inserter(pos),
-                                   static_cast<std::size_t (*)(std::string const&)>(boost::lexical_cast<std::size_t, std::string>));
+                                   static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<pos_t, std::string>));
                     positions.push_back(pos);
                 }
                 if (f_ops % 2 != 0)
@@ -726,12 +727,12 @@ ALPSModel<Matrix, SymmGroup>::measurements () const
                 meas_operators_type operators = operators_for_meas(value_split[0], true);
 
                 /// parse positions p1,p2,p3,... (or `space`)
-                std::vector<std::size_t> positions;
+                std::vector<pos_t> positions;
                 if (value_split.size() > 1) {
                     boost::char_separator<char> pos_sep(", ");
                     tokenizer pos_tokens(value_split[1], pos_sep);
                     std::transform(pos_tokens.begin(), pos_tokens.end(), std::back_inserter(positions),
-                                   static_cast<std::size_t (*)(std::string const&)>(boost::lexical_cast<std::size_t, std::string>));
+                                   static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<pos_t, std::string>));
                 }
                 
                 meas.push_back( new measurements::correlations<Matrix, SymmGroup>(name, raw_lattice, identitities, fillings, operators,

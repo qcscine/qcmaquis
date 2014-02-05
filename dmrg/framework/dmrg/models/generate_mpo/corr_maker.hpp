@@ -49,7 +49,7 @@ namespace generate_mpo
         virtual ~CorrMakerBase() {}
         virtual MPO<Matrix, SymmGroup> create_mpo()=0;
         virtual std::string description () const=0;
-        virtual vector<vector<size_t> > const& numeric_labels()=0;
+        virtual vector<vector<Lattice::pos_t> > const& numeric_labels()=0;
 
     protected:
         typedef tag_detail::tag_type tag_type;
@@ -75,6 +75,7 @@ namespace generate_mpo
     {
         typedef CorrMakerBase<Matrix, SymmGroup> base;
         typedef typename base::block block; 
+        typedef Lattice::pos_t pos_t;
         typedef tag_detail::tag_type tag_type;
         typedef block_matrix<Matrix, SymmGroup> op_t;
         typedef boost::tuple<size_t, size_t, string> tag;
@@ -109,14 +110,14 @@ namespace generate_mpo
             }
 
             with_sign[0][0] = false;
-        	recurse(0, 0, 0, std::vector<size_t>(), ref);
+        	recurse(0, 0, 0, std::vector<pos_t>(), ref);
         }
         
         MPO<Matrix, SymmGroup> create_mpo()
         {
             boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl = tag_handler.get_operator_table();
             MPO<Matrix, SymmGroup> r(prempo.size());
-            for (size_t p = 1; p < prempo.size(); ++p)
+            for (pos_t p = 1; p < prempo.size(); ++p)
                 r[p] = base::as_bulk(prempo[p], tbl);
             r[0] = base::as_left(prempo[0], tbl);
             
@@ -126,7 +127,7 @@ namespace generate_mpo
         std::string description () const
         {
             std::ostringstream ss;
-        	for (size_t p = 0; p < prempo.size(); ++p)
+        	for (pos_t p = 0; p < prempo.size(); ++p)
             {
                 ss << "Site: " << p << std::endl;
                 for (typename vector<tag>::const_iterator it = tags[p].begin(); it != tags[p].end(); ++it)
@@ -135,7 +136,7 @@ namespace generate_mpo
         	return ss.str();
         }
         
-        vector<vector<size_t> > const& numeric_labels() { return labels; }
+        vector<vector<pos_t> > const& numeric_labels() { return labels; }
         
     private:
         Lattice const& lat;
@@ -143,7 +144,7 @@ namespace generate_mpo
 
         vector<vector<block> > prempo;
         vector<vector<tag> > tags;
-        vector<vector<size_t> > labels;
+        vector<vector<pos_t> > labels;
         
         vector<set<size_t> > used;
         vector<map<size_t, bool> > with_sign;
@@ -151,7 +152,7 @@ namespace generate_mpo
         // TODO: use just vector<tag_type>, as there is the is_fermionic() function in TagHandler
         vector<std::pair<std::vector<tag_type>, bool> > op_tags;
         
-        size_t term(size_t p, size_t u1, std::pair<std::vector<tag_type>, bool> const & op_p, bool trivial)
+        size_t term(pos_t p, size_t u1, std::pair<std::vector<tag_type>, bool> const & op_p, bool trivial)
         {
             std::string lab;
             tag_type op;
@@ -190,7 +191,7 @@ namespace generate_mpo
             return u2;
         }
         
-        void recurse(size_t p0, size_t which, size_t use, vector<size_t> label, int ref)
+        void recurse(pos_t p0, size_t which, size_t use, vector<pos_t> label, int ref)
         {
             if (p0 + op_tags.size() - which < prempo.size()) {
                 size_t use_next = term(p0, use, std::make_pair(identities, false), true);
@@ -206,12 +207,12 @@ namespace generate_mpo
                 
                 size_t use_next = term(p0, use, op_tags[which], false);
                 
-                vector<size_t> label_(label);
+                vector<pos_t> label_(label);
                 label_.push_back(p0);
                 
                 if (which == op_tags.size()-1) {
                     size_t t1 = use_next, t2 = use_next;
-                    for (size_t p2 = p0+1; p2 < prempo.size(); ++p2) {
+                    for (pos_t p2 = p0+1; p2 < prempo.size(); ++p2) {
                         t2 = term(p2, t1, std::make_pair(identities, false), true);
                         t1 = t2;
                     }
@@ -232,6 +233,7 @@ namespace generate_mpo
         typedef CorrMakerBase<Matrix, SymmGroup> base; 
         typedef typename base::block block; 
         typedef tag_detail::tag_type tag_type;
+        typedef Lattice::pos_t pos_t;
         typedef block_matrix<Matrix, SymmGroup> op_t;
         typedef boost::tuple<size_t, size_t, string> tag;
 
@@ -267,7 +269,7 @@ namespace generate_mpo
             }
 
             with_sign[0][0] = false;
-            recurse(0, 0, 0, vector<size_t>(), ref);
+            recurse(0, 0, 0, vector<pos_t>(), ref);
         }
         
         MPO<Matrix, SymmGroup> create_mpo()
@@ -281,12 +283,12 @@ namespace generate_mpo
             return r;
         }
         
-        vector<vector<size_t> > const& numeric_labels() { return labels; }
+        vector<vector<pos_t> > const& numeric_labels() { return labels; }
         
         std::string description () const
         {
             std::ostringstream ss;
-        	for (size_t p = 0; p < prempo.size(); ++p)
+        	for (pos_t p = 0; p < prempo.size(); ++p)
             {
                 ss << "Site: " << p << std::endl;
                 for (typename vector<tag>::const_iterator it = tags[p].begin(); it != tags[p].end(); ++it)
@@ -301,7 +303,7 @@ namespace generate_mpo
 
         vector<vector<block> > prempo;
         vector<vector<tag> > tags;
-        vector<vector<size_t> > labels;
+        vector<vector<pos_t> > labels;
         
         vector<set<size_t> > used;
         vector<map<size_t, bool> > with_sign;
@@ -310,7 +312,7 @@ namespace generate_mpo
         // TODO: use just vector<tag_type>, as there is the is_fermionic() function in TagHandler
         vector<std::pair<std::vector<tag_type>, bool> > op_tags;
 
-        size_t term(size_t p, size_t u1, std::pair<std::vector<tag_type>, bool> const & op_p, bool trivial)
+        size_t term(pos_t p, size_t u1, std::pair<std::vector<tag_type>, bool> const & op_p, bool trivial)
         {
             std::string lab;
             tag_type op;
@@ -347,7 +349,7 @@ namespace generate_mpo
             return u2;
         }
         
-        void recurse(size_t p0, size_t which, size_t use, vector<size_t> label, int ref)
+        void recurse(pos_t p0, size_t which, size_t use, vector<pos_t> label, int ref)
         {
             if (p0 + op_tags.size() - which < prempo.size()) {
                 size_t use_next = term(p0, use, std::make_pair(identities, false),  true);
@@ -366,13 +368,13 @@ namespace generate_mpo
                     return;
                 use_next = term(p0, use_next, op_tags[which], false);
                 
-                vector<size_t> label_(label);
+                vector<pos_t> label_(label);
                 label_.push_back(p0-1);
                 label_.push_back(p0);
                 
                 if (which == op_tags.size()-1) {
                     size_t t1 = use_next, t2 = use_next;
-                    for (size_t p2 = p0+1; p2 < prempo.size(); ++p2) {
+                    for (pos_t p2 = p0+1; p2 < prempo.size(); ++p2) {
                         t2 = term(p2, t1, std::make_pair(identities, false), true);
                         t1 = t2;
                     }
