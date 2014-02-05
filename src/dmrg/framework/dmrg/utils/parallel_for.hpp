@@ -29,8 +29,8 @@
 #define PARALLEL_FOR_HPP
 
 #ifdef AMBIENT
-    typedef ambient::scope<ambient::single> locale;
-    typedef ambient::scope<ambient::shared> locale_shared;
+    typedef ambient::scope<ambient::scope_t::single> locale;
+    typedef ambient::scope<ambient::scope_t::shared> locale_shared;
     #define parallel_for(constraint, ...) constraint; for(__VA_ARGS__)
     #define semi_parallel_for(constraint, ...) constraint; for(__VA_ARGS__)
 #elif defined(MAQUIS_OPENMP)

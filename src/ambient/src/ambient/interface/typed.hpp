@@ -106,7 +106,7 @@ namespace ambient {
             if(o->back()->owner != ctxt.which())
                 ctxt.get_controller().rsync(o->back());
             ctxt.get_controller().collect(o->back());
-            ctxt.get_controller().add_revision<ambient::remote>(o, ctxt.which()); 
+            ctxt.get_controller().add_revision<ambient::locality::remote>(o, ctxt.which()); 
         }
         template<size_t arg>
         static void modify_local(T& obj, functor* m){
@@ -119,7 +119,7 @@ namespace ambient {
             ctxt.get_controller().collect(o->back());
 
             var->before = o->current;
-            ctxt.get_controller().add_revision<ambient::local>(o, m); 
+            ctxt.get_controller().add_revision<ambient::locality::local>(o, m); 
             ctxt.get_controller().use_revision(o);
             var->after = o->current;
         }
@@ -133,7 +133,7 @@ namespace ambient {
             ctxt.get_controller().collect(o->back());
 
             var->before = o->current;
-            ctxt.get_controller().add_revision<ambient::common>(o, m); 
+            ctxt.get_controller().add_revision<ambient::locality::common>(o, m); 
             ctxt.get_controller().use_revision(o);
             var->after = o->current;
         }
@@ -203,7 +203,7 @@ namespace ambient {
             decltype(obj.versioned.core) o = obj.versioned.core;
             ctxt.get_controller().touch(o);
             ctxt.get_controller().collect(o->back());
-            ctxt.get_controller().add_revision<ambient::remote>(o, ctxt.which()); 
+            ctxt.get_controller().add_revision<ambient::locality::remote>(o, ctxt.which()); 
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
             decltype(obj.versioned.core) o = obj.versioned.core;
@@ -214,7 +214,7 @@ namespace ambient {
             ctxt.get_controller().collect(o->back());
 
             var->before = o->current;
-            ctxt.get_controller().add_revision<ambient::local>(o, m); 
+            ctxt.get_controller().add_revision<ambient::locality::local>(o, m); 
             ctxt.get_controller().use_revision(o);
             var->after = o->current;
         }
@@ -226,7 +226,7 @@ namespace ambient {
             ctxt.get_controller().collect(o->back());
 
             var->before = o->current;
-            ctxt.get_controller().add_revision<ambient::common>(o, m); 
+            ctxt.get_controller().add_revision<ambient::locality::common>(o, m); 
             ctxt.get_controller().use_revision(o);
             var->after = o->current;
         }

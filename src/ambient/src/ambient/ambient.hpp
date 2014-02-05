@@ -59,7 +59,6 @@
 #include "ambient/utils/enums.h"
 #include "ambient/utils/tree.hpp"
 #include "ambient/utils/fence.hpp"
-#include "ambient/utils/singleton.hpp"
 #include "ambient/utils/enable_threading.hpp"
 #include "ambient/utils/reduce.hpp"
 

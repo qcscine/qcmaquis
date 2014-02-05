@@ -55,7 +55,7 @@ namespace ambient { namespace memory {
     }
 
     inline region_t data_bulk::signature(){
-        return region_t::rbulked;
+        return region_t::bulk;
     }
 
     inline bool data_bulk::open(){

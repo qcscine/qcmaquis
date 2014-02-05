@@ -40,7 +40,7 @@ namespace ambient { namespace memory {
         static void* malloc(size_t sz){ return std::malloc(sz); }
         static void free(void* ptr){ std::free(ptr);  }
         static region_t signature(){
-            return region_t::rstandard;
+            return region_t::standard;
         }
     };
 
@@ -61,27 +61,27 @@ namespace ambient { namespace pool {
 
     struct descriptor {
 
-        descriptor(size_t e, region_t r = region_t::rstandard) : extent(e), region(r), persistency(1), crefs(1) {}
+        descriptor(size_t e, region_t r = region_t::standard) : extent(e), region(r), persistency(1), crefs(1) {}
 
         void protect(){
-            assert(region != region_t::rdelegated);
-            if(!(persistency++)) region = region_t::rstandard;
+            assert(region != region_t::delegated);
+            if(!(persistency++)) region = region_t::standard;
         }
         void weaken(){
-            assert(region != region_t::rbulked);
-            assert(region != region_t::rdelegated);
-            if(!(--persistency)) region = region_t::rbulked;
+            assert(region != region_t::bulk);
+            assert(region != region_t::delegated);
+            if(!(--persistency)) region = region_t::bulk;
         }
         void reuse(descriptor& d){
             region   = d.region;
-            d.region = region_t::rdelegated;
+            d.region = region_t::delegated;
         }
         bool conserves(descriptor& p){
-            assert(p.region != region_t::rdelegated && region != region_t::rdelegated);
+            assert(p.region != region_t::delegated && region != region_t::delegated);
             return (!p.bulked() || bulked());
         }
         bool bulked(){
-            return (region == region_t::rbulked);
+            return (region == region_t::bulk);
         }
         size_t extent;
         region_t region;
@@ -106,18 +106,18 @@ namespace ambient { namespace pool {
     }
 
     static void* malloc(descriptor& d){
-        assert(d.region != region_t::rdelegated);
-        if(d.region == region_t::rbulked){
+        assert(d.region != region_t::delegated);
+        if(d.region == region_t::bulk){
             //if(!data_bulk::open()){ // if(d.extent > AMBIENT_IB*AMBIENT_IB*16) <-- handle it separately
-                d.region = region_t::rstandard;
+                d.region = region_t::standard;
                 return malloc<standard>(d.extent);
             //}
             //return malloc<data_bulk>(d.extent); 
         } else return malloc<standard>(d.extent);
     }
     static void free(void* ptr, descriptor& d){ 
-        if(ptr == NULL || d.region == region_t::rdelegated) return;
-        if(d.region == region_t::rbulked) free<data_bulk>(ptr);
+        if(ptr == NULL || d.region == region_t::delegated) return;
+        if(d.region == region_t::bulk) free<data_bulk>(ptr);
         else free<standard>(ptr);
     }
 

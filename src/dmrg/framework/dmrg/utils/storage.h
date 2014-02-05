@@ -111,7 +111,7 @@ namespace storage {
                     for(int j = 0; j < m.nt; ++j)
                     for(int i = 0; i < m.mt; ++i){
                         if(ambient::weak(m.tile(i,j))) continue;
-                        if(ambient::naked(m.tile(i,j)).state != ambient::local) continue;
+                        if(ambient::naked(m.tile(i,j)).state != ambient::locality::local) continue;
                         char* data = (char*)ambient::naked(m.tile(i,j));
                         ofs.write(data, m.tile(i,j).num_cols() * m.tile(i,j).num_rows() *
                                   sizeof(typename Matrix::value_type)/sizeof(char));
@@ -148,7 +148,7 @@ namespace storage {
                     for(int j = 0; j < m.nt; ++j)
                     for(int i = 0; i < m.mt; ++i){
                         if(ambient::weak(m.tile(i,j))) continue;
-                        if(ambient::naked(m.tile(i,j)).state != ambient::local) continue;
+                        if(ambient::naked(m.tile(i,j)).state != ambient::locality::local) continue;
                         ambient::naked(m.tile(i,j)).data = std::malloc(ambient::naked(m.tile(i,j)).spec.extent);
                         ifs.read((char*)ambient::naked(m.tile(i,j)), m.tile(i,j).num_cols() * m.tile(i,j).num_rows() *
                                  sizeof(typename Matrix::value_type)/sizeof(char));
@@ -182,7 +182,7 @@ namespace storage {
                     for(int j = 0; j < m.nt; ++j)
                     for(int i = 0; i < m.mt; ++i){
                         if(ambient::weak(m.tile(i,j))) continue;
-                        if(ambient::naked(m.tile(i,j)).state != ambient::local) continue;
+                        if(ambient::naked(m.tile(i,j)).state != ambient::locality::local) continue;
                         char* data = (char*)ambient::naked(m.tile(i,j)); std::free(data);
                         ambient::naked(m.tile(i,j)).data = NULL;
                     }
@@ -313,7 +313,7 @@ namespace storage {
         //template<class Matrix, class SymmGroup> 
         //static void evict(MPSTensor<Matrix, SymmGroup>& t){
         //    if(!ambient::channel.db_dim()) return;
-        //    ambient::scope<ambient::dedicated> i;
+        //    ambient::scope<ambient::scope_t::dedicated> i;
         //    migrate(t);
         //}
         template<class Matrix, class SymmGroup> 

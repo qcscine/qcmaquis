@@ -28,9 +28,9 @@
 #define AMBIENT_UTILS_ENUMS
 
 namespace ambient {
-    enum locality   { remote, local, common };
-    enum scope_t    { base, single, shared, dedicated, threaded };
-    enum region_t   { rbulked, rstandard, rdelegated };
+    enum class locality { remote, local, common };
+    enum class scope_t  { base, single, shared, dedicated, threaded };
+    enum class region_t { bulk, standard, delegated };
 }
 
 #endif
