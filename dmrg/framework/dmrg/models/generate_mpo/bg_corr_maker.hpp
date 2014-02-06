@@ -172,6 +172,10 @@ namespace generate_mpo
                 bool branch_sign = insert_operator(0, branch_index, start, op_tag, start_sign, scale);
                 for(pos_t p2 = start+1; p2 < lat.size(); ++p2)
                     branch_sign = insert_filling(branch_index, branch_index, p2, branch_sign);
+
+                labels.at(branch_index) = background_pos;
+                labels.at(branch_index).push_back(start);
+                labels.at(branch_index).push_back(start);
             }
         }
 

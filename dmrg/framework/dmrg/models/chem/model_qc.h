@@ -235,6 +235,7 @@ public:
         boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
         boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
+        boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
         boost::smatch what;
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
             std::string lhs = it->key();
@@ -265,7 +266,50 @@ public:
                 half_only = true;
                 nearest_neighbors_only = true;
             }
-            if (!name.empty()) {
+            if (boost::regex_match(lhs, what, expression_twoptdm)) {
+                value = it->value();
+                int enabled = boost::lexical_cast<int>(value);
+                name = "twoptdm";
+                std::vector<bond_element> synchronous_meas_operators;
+                {
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+                }
+                {
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+                }
+                {
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+                }
+                {
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+                }
+                half_only = true;
+                nearest_neighbors_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
+                                                                              half_only, nearest_neighbors_only, positions));
+            }
+            else if (!name.empty()) {
 
                 int f_ops = 0;
                 bond_element meas_operators;
@@ -349,15 +393,17 @@ public:
                     throw std::runtime_error("In " + name + ": Number of fermionic operators has to be even in correlation measurements.");
 
                 /// parse positions p1,p2,p3,... (or `space`)
-                std::vector<std::size_t> positions;
+                std::vector<pos_t> positions;
                 if (value_split.size() > 1) {
                     boost::char_separator<char> pos_sep(", ");
                     tokenizer pos_tokens(value_split[1], pos_sep);
                     std::transform(pos_tokens.begin(), pos_tokens.end(), std::back_inserter(positions),
-                                   static_cast<std::size_t (*)(std::string const&)>(boost::lexical_cast<std::size_t, std::string>));
+                                   static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<pos_t, std::string>));
                 }
                 
-                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, meas_operators,
+                std::vector<bond_element> synchronous_meas_operators;
+                synchronous_meas_operators.push_back(meas_operators);
+                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions));
             }
         }

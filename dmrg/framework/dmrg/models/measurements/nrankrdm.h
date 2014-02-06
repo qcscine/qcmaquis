@@ -35,6 +35,7 @@
 #include "dmrg/mp_tensors/super_mpo.h"
 
 #include <algorithm>
+#include <functional>
 #include <boost/iterator/counting_iterator.hpp>
 
 namespace measurements {
@@ -42,15 +43,15 @@ namespace measurements {
     template <class Matrix, class SymmGroup>
     class NRankRDM : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
-        typedef std::size_t size_type;
         typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
-        typedef std::vector<size_type> positions_type;
+        typedef std::vector<std::pair<op_vec, bool> > bond_element;
         typedef Lattice::pos_t pos_t;
+        typedef std::vector<pos_t> positions_type;
     
     public:
         NRankRDM(std::string const& name_, const Lattice & lat,
                  op_vec const & identities_, op_vec const & fillings_,
-                 std::vector<std::pair<op_vec, bool> > const& ops_,
+                 std::vector<bond_element> const& ops_,
                  bool half_only_, bool nearest_neighbors_only,
                  positions_type const& positions_ = positions_type())
         : base(name_)
@@ -64,10 +65,10 @@ namespace measurements {
         {
             pos_t extent = ops.size() > 2 ? lattice.size() : lattice.size()-1;
             if (positions_first.size() == 0)
-                std::copy(boost::counting_iterator<int>(0), boost::counting_iterator<int>(extent),
+                std::copy(boost::counting_iterator<pos_t>(0), boost::counting_iterator<pos_t>(extent),
                           back_inserter(positions_first));
             
-            this->cast_to_real = is_hermitian_meas(ops);
+            this->cast_to_real = is_hermitian_meas(ops[0]);
         }
         
         void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
@@ -75,9 +76,9 @@ namespace measurements {
             this->vector_results.clear();
             this->labels.clear();
 
-            if (ops.size() == 2)
+            if (ops[0].size() == 2)
                 measure_correlation(mps, ops);
-            else if (ops.size() == 4)
+            else if (ops[0].size() == 4)
                 measure_2rdm(mps, ops);
             else
                 throw std::runtime_error("correlation measurements at the moment supported with 2 and 4 operators");
@@ -92,16 +93,16 @@ namespace measurements {
         }
         
         void measure_correlation(MPS<Matrix, SymmGroup> const & mps,
-                                 std::vector<std::pair<op_vec, bool> > const & ops,
-                                 std::vector<size_type> const & order = std::vector<size_type>())
+                                 std::vector<bond_element> const & ops,
+                                 std::vector<pos_t> const & order = std::vector<pos_t>())
         {
-            for (std::vector<std::size_t>::const_iterator it = positions_first.begin(); it != positions_first.end(); ++it) {
+            for (std::vector<pos_t>::const_iterator it = positions_first.begin(); it != positions_first.end(); ++it) {
                 #ifndef NDEBUG
                 maquis::cout << "  site " << *it << std::endl;
                 #endif
                 
                 maker_ptr dcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings,
-                                                                                 ops, std::vector<pos_t>(1, *it)));
+                                                                                 ops[0], std::vector<pos_t>(1, *it)));
                 /// measure
                 MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(mps, mpo);
@@ -118,8 +119,8 @@ namespace measurements {
         }
 
         void measure_2rdm(MPS<Matrix, SymmGroup> const & mps,
-                                 std::vector<std::pair<op_vec, bool> > const & ops,
-                                 std::vector<size_type> const & order = std::vector<size_type>())
+                          std::vector<bond_element> const & ops,
+                          std::vector<pos_t> const & order = std::vector<pos_t>())
         {
             // TODO: test with ambient in due time
             #ifdef MAQUIS_OPENMP
@@ -133,11 +134,21 @@ namespace measurements {
                     { 
                         std::vector<pos_t> ref;
                         ref.push_back(p1); ref.push_back(p2); ref.push_back(p3);
-                        maker_ptr dcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings, ops, ref, true));
 
-                        /// measure
+                        maker_ptr dcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings, ops[0], ref, true));
                         MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
                         std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(mps, mpo);
+
+                        for (std::size_t synop = 1; synop < ops.size(); ++synop) {
+                            maker_ptr syndcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings, ops[synop], ref, true));
+
+                            /// measure
+                            MPO<Matrix, SymmGroup> synmpo = syndcorr->create_mpo();
+                            std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> syndct = multi_expval(mps, synmpo);
+
+                            std::transform(syndct.begin(), syndct.end(), dct.begin(), dct.begin(),
+                                           std::plus<typename MPS<Matrix, SymmGroup>::scalar_type>());
+                        }
                         
                         /// save results and labels
                         #ifdef MAQUIS_OPENMP
@@ -145,14 +156,14 @@ namespace measurements {
                         #endif
                         {
                         this->vector_results.reserve(this->vector_results.size() + dct.size());
-                        //this->labels.reserve(this->labels.size() + dct.size());
-
                         std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
+                        this->labels.reserve(this->labels.size() + dct.size());
+
                         std::vector<std::vector<pos_t> > num_labels = dcorr->numeric_labels();
-                        //std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                        //                            ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
-                        std::vector<std::string> lbt = label_strings(lattice, num_labels);
-                        //std::copy(lbt.begin(), lbt.end(), std::back_inserter(this->labels));
+                        std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
+                                                    ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
+
+                        std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
                         }
                     }
                 }
@@ -162,7 +173,7 @@ namespace measurements {
         Lattice lattice;
         positions_type positions_first;
         op_vec identities, fillings;
-        std::vector<std::pair<op_vec, bool> > ops;
+        std::vector<bond_element> ops;
         bool half_only, is_nn;
     };
 }
