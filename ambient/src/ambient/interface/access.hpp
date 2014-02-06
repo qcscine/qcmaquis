@@ -39,11 +39,11 @@ namespace ambient {
         ctxt.get_controller().touch(obj.versioned.core);
         revision& c = *obj.versioned.core->current;
         if(ctxt.remote()){
-            c.state = ambient::remote;
+            c.state = ambient::locality::remote;
             c.owner = ctxt.which();
             return true;
         }else{
-            c.state = ambient::local;
+            c.state = ambient::locality::local;
             if(!c.valid()) c.embed(get_allocator<T>::type::alloc(c.spec));
             return false;
         }
@@ -53,7 +53,7 @@ namespace ambient {
         ctxt.get_controller().touch(obj.versioned.core);
         ambient::sync(); 
         revision& c = *obj.versioned.core->current;
-        assert(c.state == ambient::local || c.state == ambient::common);
+        assert(c.state == ambient::locality::local || c.state == ambient::locality::common);
         if(!c.valid()){
             c.embed(get_allocator<T>::type::calloc(c.spec));
         }

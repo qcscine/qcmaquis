@@ -115,7 +115,7 @@ std::vector<std::vector<int> > construct_placements(const MPO<Matrix, SymmGroup>
         mpo[s].placement_l = placements[s];
         mpo[s].placement_r = placements[s+1];
     }
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
     for(int s = 0; s < mpo.length()+1; s++){
         maquis::cout << "Left " << s << ": ";
         maquis::cout << "E1: "; for(int k = 0; k < exceptions[s].first.size(); k++) maquis::cout << exceptions[s].first[k] << " "; 

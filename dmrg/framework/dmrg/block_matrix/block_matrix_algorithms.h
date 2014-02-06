@@ -161,7 +161,7 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
         heev(M[k], evecs[k], evals[k]);
 }
     
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
 template<class Matrix, class DiagMatrix, class SymmGroup>
 void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
                 block_matrix<Matrix, SymmGroup> & U,
@@ -282,7 +282,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     
     typedef std::vector<typename maquis::traits::real_type<value_type>::type > real_vector_t;
     real_vector_t allevals(length);
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
     locale_shared i;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         ambient::numeric::migrate(const_cast<DiagMatrix&>(evals[k])[0]);
@@ -332,7 +332,7 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                 bool verbose = true)
 { 
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
-    #ifdef AMBIENT
+    #ifdef USE_AMBIENT
     svd_merged(M, U, V, S);
     #else
     svd(M, U, V, S);
@@ -360,7 +360,7 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                            V.right_basis()[k].first);
   // C- idem heev_truncate          --k; // everything gets shifted, to we have to look into the same k again
         } else {
-            #ifdef AMBIENT
+            #ifdef USE_AMBIENT
             ambient::numeric::split(S(S.left_basis()[k].first, S.right_basis()[k].first));
             ambient::numeric::split(U(U.left_basis()[k].first, U.right_basis()[k].first));
             ambient::numeric::split(V(V.left_basis()[k].first, V.right_basis()[k].first));
@@ -454,7 +454,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                  bool verbose = true)
 {
     assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
-    #ifdef AMBIENT
+    #ifdef USE_AMBIENT
     heev_merged(M, evecs, evals);
     #else
     heev(M, evecs, evals);
@@ -477,7 +477,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
 //            --k; // everything gets shifted, to we have to look into the same k again
 // C - Tim : I reversed the loop because the new version was incompatible with the keeps array, and created a bug when keeps[k]=0.
         } else {
-            #ifdef AMBIENT
+            #ifdef USE_AMBIENT
             ambient::numeric::split(evals(evals.left_basis()[k].first, evals.right_basis()[k].first));
             ambient::numeric::split(evecs(evecs.left_basis()[k].first, evecs.right_basis()[k].first));
             #endif

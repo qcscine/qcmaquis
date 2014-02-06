@@ -1,13 +1,17 @@
 #ifndef MAQUIS_IO_HPP
 #define MAQUIS_IO_HPP
 
+#ifdef USE_AMBIENT
+#include "ambient/ambient.hpp"
+#endif
+
 #include <iostream>
 #include <string>
 #include <iterator>
 
 namespace maquis {
     
-#ifdef AMBIENT_IO
+#ifdef USE_AMBIENT
     using ambient::cout;
     using ambient::cerr;
 #else

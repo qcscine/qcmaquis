@@ -41,15 +41,15 @@ namespace ambient { namespace models { namespace ssm {
     }
 
     inline bool model::feeds(const revision* r){
-        return (r->state == ambient::local);
+        return (r->state == ambient::locality::local);
     }
 
     inline bool model::remote(const revision* r){
-        return (r->state == ambient::remote);
+        return (r->state == ambient::locality::remote);
     }
 
     inline bool model::common(const revision* r){
-        return (r->state == ambient::common);
+        return (r->state == ambient::locality::common);
     }
 
     inline int model::owner(const revision* r){

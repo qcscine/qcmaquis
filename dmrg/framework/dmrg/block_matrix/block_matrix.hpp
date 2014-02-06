@@ -521,7 +521,7 @@ std::size_t block_matrix<Matrix, SymmGroup>::num_elements() const
     return ret;
 }
 
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::print_distribution() const
 {

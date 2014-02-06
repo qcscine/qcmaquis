@@ -39,11 +39,11 @@ namespace ambient {
         virtual void schedule(){}
     };
 
-    template<scope_t T = single>
+    template<scope_t T = scope_t::single>
     class scope {};
 
     template<>
-    class scope<base> : public iscope {
+    class scope<scope_t::base> : public iscope {
     public:
         typedef controllers::ssm::controller controller_type;
         typedef typename controllers::ssm::controller::model_type model_type;
@@ -76,14 +76,14 @@ namespace ambient {
     };
 
     #ifdef AMBIENT_BUILD_LIBRARY
-    scope<base> ctxt;
+    scope<scope_t::base> ctxt;
     void sync(){ ctxt.sync(); }
     #else
-    extern scope<base> ctxt;
+    extern scope<scope_t::base> ctxt;
     #endif
 
     template<>
-    class scope<threaded> : public iscope {
+    class scope<scope_t::threaded> : public iscope {
     public:
         scope(const std::vector<int>& map, int iterator = 0);
        ~scope();
@@ -92,7 +92,7 @@ namespace ambient {
     };
 
     template<>
-    class scope<single> : public iscope {
+    class scope<scope_t::single> : public iscope {
     public:
         static int grain; 
         static std::vector<int> permutation;
@@ -122,12 +122,12 @@ namespace ambient {
     };
 
     #ifdef AMBIENT_BUILD_LIBRARY
-    int scope<single>::grain = 1;
-    std::vector<int> scope<single>::permutation;
+    int scope<scope_t::single>::grain = 1;
+    std::vector<int> scope<scope_t::single>::permutation;
     #endif
 
     template<>
-    class scope<dedicated> : public iscope {
+    class scope<scope_t::dedicated> : public iscope {
     public:
         scope();
        ~scope();
@@ -135,7 +135,7 @@ namespace ambient {
     };
 
     template<>
-    class scope<shared> : public iscope {
+    class scope<scope_t::shared> : public iscope {
     public:
         scope();
        ~scope();

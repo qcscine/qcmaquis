@@ -76,7 +76,7 @@ public:
 
     std::string description() const;
     std::size_t num_elements() const;
-    #ifdef AMBIENT
+    #ifdef USE_AMBIENT
     void print_distribution() const;
     #endif
     

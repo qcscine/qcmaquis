@@ -67,7 +67,7 @@ namespace storage {
         typedef alps::numeric::matrix<T, std::vector<T> > type;
     };
 }
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
 namespace ambient { namespace numeric {
     template <typename Matrix> class tiles;
     template <typename T, class Allocator> class matrix;
@@ -107,11 +107,11 @@ namespace storage {
                 assert( o[b].reasonable() );
                 for (std::size_t k = 0; k < o[b].n_blocks(); ++k){
                     Matrix& m = o[b][k];
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
                     for(int j = 0; j < m.nt; ++j)
                     for(int i = 0; i < m.mt; ++i){
                         if(ambient::weak(m.tile(i,j))) continue;
-                        if(ambient::naked(m.tile(i,j)).state != ambient::local) continue;
+                        if(ambient::naked(m.tile(i,j)).state != ambient::locality::local) continue;
                         char* data = (char*)ambient::naked(m.tile(i,j));
                         ofs.write(data, m.tile(i,j).num_cols() * m.tile(i,j).num_rows() *
                                   sizeof(typename Matrix::value_type)/sizeof(char));
@@ -143,12 +143,12 @@ namespace storage {
             size_t loop_max = o.aux_dim();
             for(size_t b = 0; b < loop_max; ++b){
                 for (std::size_t k = 0; k < o[b].n_blocks(); ++k){
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
                     Matrix& m = o[b][k];
                     for(int j = 0; j < m.nt; ++j)
                     for(int i = 0; i < m.mt; ++i){
                         if(ambient::weak(m.tile(i,j))) continue;
-                        if(ambient::naked(m.tile(i,j)).state != ambient::local) continue;
+                        if(ambient::naked(m.tile(i,j)).state != ambient::locality::local) continue;
                         ambient::naked(m.tile(i,j)).data = std::malloc(ambient::naked(m.tile(i,j)).spec.extent);
                         ifs.read((char*)ambient::naked(m.tile(i,j)), m.tile(i,j).num_cols() * m.tile(i,j).num_rows() *
                                  sizeof(typename Matrix::value_type)/sizeof(char));
@@ -177,12 +177,12 @@ namespace storage {
             Boundary<Matrix, SymmGroup>& o = *ptr;
             for (std::size_t b = 0; b < o.aux_dim(); ++b)
             for (std::size_t k = 0; k < o[b].n_blocks(); ++k){
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
                     Matrix& m = o[b][k];
                     for(int j = 0; j < m.nt; ++j)
                     for(int i = 0; i < m.mt; ++i){
                         if(ambient::weak(m.tile(i,j))) continue;
-                        if(ambient::naked(m.tile(i,j)).state != ambient::local) continue;
+                        if(ambient::naked(m.tile(i,j)).state != ambient::locality::local) continue;
                         char* data = (char*)ambient::naked(m.tile(i,j)); std::free(data);
                         ambient::naked(m.tile(i,j)).data = NULL;
                     }
@@ -250,13 +250,13 @@ namespace storage {
                     if(!dumped){
                         state = storing;
                         dumped = true;
-                        #ifdef AMBIENT
+                        #ifdef USE_AMBIENT
                         ambient::sync();
                         #endif
                         this->thread(new boost::thread(evict_request<T>(disk::fp(sid), (T*)this)));
                     }else{
                         state = uncore;
-                        #ifdef AMBIENT
+                        #ifdef USE_AMBIENT
                         ambient::sync();
                         #endif
                         drop_request<T>(disk::fp(sid), (T*)this)();
@@ -309,11 +309,11 @@ namespace storage {
         template<class T> static void drop(serializable<T>& t)    { if(enabled()) t.drop();     }
         template<class T> static void pin(serializable<T>& t)     { }
 
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
         //template<class Matrix, class SymmGroup> 
         //static void evict(MPSTensor<Matrix, SymmGroup>& t){
         //    if(!ambient::channel.db_dim()) return;
-        //    ambient::scope<ambient::dedicated> i;
+        //    ambient::scope<ambient::scope_t::dedicated> i;
         //    migrate(t);
         //}
         template<class Matrix, class SymmGroup> 
@@ -330,7 +330,7 @@ namespace storage {
         size_t sid;
     };
 
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
     template<class Matrix, class SymmGroup> 
     static void migrate(MPSTensor<Matrix, SymmGroup>& t){
         for(int i = 0; i < t.data().n_blocks(); ++i) 

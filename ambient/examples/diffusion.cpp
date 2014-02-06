@@ -396,7 +396,7 @@ class Diffusion2D {
                 grid.push_back(new stencil_t(tailm, tailn)); grid_mirror.push_back(new stencil_t(tailm, tailn));
             }
             {
-                ambient::scope<ambient::shared> select;
+                ambient::scope<ambient::scope_t::shared> select;
                 null_stencil.init(0.0);
             }
 

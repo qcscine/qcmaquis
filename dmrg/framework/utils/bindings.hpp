@@ -33,7 +33,7 @@ namespace maquis { namespace bindings {
 
 } }
 
-#ifndef AMBIENT
+#ifndef USE_AMBIENT
 namespace maquis {
     template <class T> 
     inline typename alps::numeric::real_type<T>::type real(T f){

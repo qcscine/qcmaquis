@@ -866,7 +866,7 @@ struct contraction {
                         size_t i_op_offset = 0;
                         size_t op_offset = 0;
                         
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
                         printf("UNOPTIMIZED FUNCTION (MULTIPLY WITH OP!)\n");
 #endif
                         for (size_t ss1 = 0; ss1 < phys_i[s1].second; ++ss1) {

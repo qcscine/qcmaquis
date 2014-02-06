@@ -29,7 +29,7 @@ namespace ambient { namespace models { namespace ssm {
     inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(ambient::memory::aligned_64(dim.square()*ts)) { }
 
     inline void history::init_state(){
-        revision* r = new revision(extent, NULL, ambient::common); 
+        revision* r = new revision(extent, NULL, ambient::locality::common); 
         this->current = r;
     }
 

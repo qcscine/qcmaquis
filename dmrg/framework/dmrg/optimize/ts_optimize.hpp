@@ -242,7 +242,7 @@ public:
 
                 if (site1 != L-2){ 
                     if(site1 != 0){
-                        #ifdef AMBIENT
+                        #ifdef USE_AMBIENT
                         std::vector<int> placement_l = get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
                         parallel_for(locale::scatter(placement_l), locale b = 0; b < left_[site1].aux_dim(); ++b) storage::migrate(left_[site1][b]);
                         ambient::sync();
@@ -251,7 +251,7 @@ public:
                     Storage::evict(mps[site1]);
                     Storage::evict(left_[site1]);
                 }
-                #ifdef AMBIENT
+                #ifdef USE_AMBIENT
                 { locale::compact(L); locale l(site1); storage::migrate(mps[site1]); }
                 { locale::compact(L); locale l(site2); storage::migrate(mps[site2]); }
                 #endif
@@ -282,7 +282,7 @@ public:
 
                 if(site1 != 0){
                     if(site1 != L-2){
-                        #ifdef AMBIENT
+                        #ifdef USE_AMBIENT
                         std::vector<int> placement_r = get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
                         parallel_for(locale::scatter(placement_r), locale b = 0; b < right_[site2+1].aux_dim(); ++b) storage::migrate(right_[site2+1][b]);
                         ambient::sync();
@@ -291,7 +291,7 @@ public:
                     Storage::evict(mps[site2]);
                     Storage::evict(right_[site2+1]); 
                 }
-                #ifdef AMBIENT
+                #ifdef USE_AMBIENT
                 { locale::compact(L); locale l(site1); storage::migrate(mps[site1]); }
                 { locale::compact(L); locale l(site2); storage::migrate(mps[site2]); }
                 #endif
