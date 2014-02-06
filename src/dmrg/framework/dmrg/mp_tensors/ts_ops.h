@@ -205,7 +205,7 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     for (int p=0; p<L_ts && global_table; ++p)
         global_table = (mpo_orig[p].get_operator_table() == mpo_orig[0].get_operator_table());
 
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
     for(size_t p = 0; p < L_ts; ++p)
 #else
     parallel_for(locale::compact(L_ts), locale p = 0; p < L_ts; ++p)

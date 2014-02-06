@@ -54,7 +54,7 @@ namespace tag_detail {
     template <class Matrix, class SymmGroup>
     void remove_empty_blocks(block_matrix<Matrix, SymmGroup> & op)
     {
-        #ifdef AMBIENT
+        #ifdef USE_AMBIENT
         {
             locale_shared l;
             for(int i = 0; i < op.n_blocks(); ++i) ambient::migrate(op[i]);
@@ -88,7 +88,7 @@ namespace tag_detail {
             return true;
 
         typename Matrix::value_type invscale;
-        #ifdef AMBIENT
+        #ifdef USE_AMBIENT
         {
             locale_shared l;
             for(int i = 0; i < op.n_blocks(); ++i) ambient::migrate(op[i]);
@@ -135,7 +135,7 @@ namespace tag_detail {
     equal(block_matrix<Matrix, SymmGroup> const& reference,
           block_matrix<Matrix, SymmGroup> const& sample)
     {
-        #ifdef AMBIENT
+        #ifdef USE_AMBIENT
         {
             locale_shared l;
             for(int i = 0; i < reference.n_blocks(); ++i) ambient::migrate(reference[i]);

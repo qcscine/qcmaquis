@@ -55,7 +55,7 @@ public:
     : data_(ad, block_matrix<Matrix, SymmGroup>(ud, ld))
     { }
     
-    #ifdef AMBIENT
+    #ifdef USE_AMBIENT
     std::vector<std::pair<size_t, size_t> > sort() const {
         std::vector<std::pair<size_t, size_t> > sizes;
         int loop_max = this->aux_dim();

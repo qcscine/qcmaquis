@@ -249,7 +249,7 @@ private:
         std::vector<std::pair<op_t,op_t> > ret;
         
         // discard terms with no weight
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
         // Tim 02/15/12 : rewrite this kernel...
         assert(false);
         printf("FIX std::abs !!! \n");

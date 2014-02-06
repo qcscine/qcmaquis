@@ -125,7 +125,7 @@ void MPS<Matrix, SymmGroup>::normalize_left()
 {
     canonize(length()-1);
     // now state is: A A A A A A M
-    #ifdef AMBIENT 
+    #ifdef USE_AMBIENT 
     locale::compact(length()); locale l(length()-1); 
     #endif 
     block_matrix<Matrix, SymmGroup> t = (*this)[length()-1].normalize_left(DefaultSolver());
@@ -138,7 +138,7 @@ void MPS<Matrix, SymmGroup>::normalize_right()
 {
     canonize(0);
     // now state is: M B B B B B B
-    #ifdef AMBIENT 
+    #ifdef USE_AMBIENT 
     locale::compact(length()); locale l(0); 
     #endif 
     block_matrix<Matrix, SymmGroup> t = (*this)[0].normalize_right(DefaultSolver());
@@ -177,12 +177,12 @@ void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2, Decomp
     {
         if ((*this)[i].isleftnormalized())
             continue;
-        #ifdef AMBIENT 
+        #ifdef USE_AMBIENT 
         locale::compact(length()); locale l(i); 
         #endif 
         block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_left(method);
         if (i < length()-1) { 
-            #ifdef AMBIENT 
+            #ifdef USE_AMBIENT 
             ++l; 
             #endif 
             (*this)[i+1].multiply_from_left(t);
@@ -206,12 +206,12 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
     {
         if ((*this)[i].isrightnormalized())
             continue;
-        #ifdef AMBIENT 
+        #ifdef USE_AMBIENT 
         locale::compact(length()); locale l(i); 
         #endif 
         block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(method);
         if (i > 0) { 
-            #ifdef AMBIENT 
+            #ifdef USE_AMBIENT 
             --l;
             #endif 
             (*this)[i-1].multiply_from_right(t);
@@ -351,13 +351,13 @@ template<class Matrix, class SymmGroup>
 void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
 {
     size_t loop_max = mps.length();
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
     semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
         mps[k].make_left_paired();
     ambient::sync();
 #endif
     semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
         if(!ambient::ctxt.local()) continue;
 #endif
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5.new";
@@ -365,7 +365,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
         ar["/tensor"] << mps[k];
     }
     parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
         if(!ambient::ctxt.local()) continue;
 #endif
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";

@@ -186,7 +186,7 @@ protected:
             Storage::drop(left_[i+1]);
             boundary_left_step(mpo, i);
             Storage::evict(left_[i]);
-            #ifdef AMBIENT
+            #ifdef USE_AMBIENT
             ambient::sync(); // to scale down memory
             #endif
         }
@@ -204,7 +204,7 @@ protected:
             Storage::drop(right_[i]);
             boundary_right_step(mpo, i);
             Storage::evict(right_[i+1]);
-            #ifdef AMBIENT
+            #ifdef USE_AMBIENT
             ambient::sync(); // to scale down memory
             #endif
         }

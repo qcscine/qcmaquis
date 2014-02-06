@@ -282,7 +282,7 @@ private:
         gemm(U, Ssqrt, left);
         gemm(Ssqrt, V, right);
         
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
         locale_shared i;
         for(std::size_t k = 0; k < S.n_blocks(); ++k){
             ambient::numeric::merge(S[k]);

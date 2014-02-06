@@ -28,7 +28,7 @@
 #ifndef PARALLEL_FOR_HPP
 #define PARALLEL_FOR_HPP
 
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
     typedef ambient::scope<ambient::scope_t::single> locale;
     typedef ambient::scope<ambient::scope_t::shared> locale_shared;
     #define parallel_for(constraint, ...) constraint; for(__VA_ARGS__)

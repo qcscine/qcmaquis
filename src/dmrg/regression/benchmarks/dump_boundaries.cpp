@@ -78,7 +78,7 @@ int main(int argc, char ** argv)
         }
         
         /// Timers
-#ifdef AMBIENT
+#ifdef USE_AMBIENT
         ambient::timer
 #else
         Timer
