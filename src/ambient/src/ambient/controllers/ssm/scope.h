@@ -37,6 +37,28 @@ namespace ambient {
         virtual void schedule(){}
     };
 
+    class scope : public iscope {
+    public:
+        static int grain; 
+        static int balance(int k, int max_k);
+        static int permute(int k, const std::vector<int>& s);
+       ~scope();
+        scope(int r);
+        scope(scope_t type);
+        void eval();
+        scope& operator++ ();
+        scope& operator-- ();
+        virtual bool tunable() const ;
+        bool dry;
+        int iterator;
+        int factor;
+        int round;
+    };
+
+    #ifdef AMBIENT_BUILD_LIBRARY
+    int scope::grain = 1;
+    #endif
+
     class workflow : public iscope {
     public:
         typedef controllers::ssm::controller controller_type;
@@ -45,8 +67,8 @@ namespace ambient {
 
         workflow();
         controller_type& get_controller(size_t n = AMBIENT_THREAD_ID); 
-        void sync();
         bool scoped() const;
+        void sync();
         
         void set_context(const iscope* s);
         void pop_context();
@@ -56,10 +78,10 @@ namespace ambient {
         bool common() const;
         int which() const;
 
+        virtual void schedule();
         virtual void intend_read(models::ssm::revision* o);
         virtual void intend_write(models::ssm::revision* o);
         virtual bool tunable() const ; 
-        virtual void schedule();
         mutable std::vector<int> stakeholders;
         mutable std::vector<int> scores;
         int round;
@@ -74,42 +96,6 @@ namespace ambient {
     extern workflow ctxt;
     #endif
 
-    class scope : public iscope {
-    public:
-        static int grain; 
-        static std::vector<int> permutation;
-
-        static int balance(int k, int max_k);
-        static int permute(int k, const std::vector<int>& s);
-        static void compact(size_t n); 
-        static void scatter(const std::vector<int>& p);
-        scope(int value = 0);
-        scope(scope_t type);
-        void eval();
-        void shift();
-        void shift_back(); 
-        scope& operator++ ();
-        scope& operator-- ();
-        operator size_t () const ;
-        bool operator < (size_t lim);
-       ~scope();
-        virtual bool tunable() const ;
-        friend std::ostream& operator<< (std::ostream& os, scope const& l){
-            os << static_cast<size_t>(l);
-            return os;
-        }
-        std::vector<int> map;
-        size_t index;
-        bool dry;
-        int iterator;
-        int factor;
-        int round;
-    };
-
-    #ifdef AMBIENT_BUILD_LIBRARY
-    int scope::grain = 1;
-    std::vector<int> scope::permutation;
-    #endif
 }
 
 #endif

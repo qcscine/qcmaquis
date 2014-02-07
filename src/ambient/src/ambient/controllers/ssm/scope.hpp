@@ -29,6 +29,58 @@
 
 namespace ambient { 
 
+        inline int scope::balance(int k, int max_k){
+            if(max_k > ambient::num_workers())
+                grain = (int)(max_k / ambient::num_workers());
+            return k;
+            /*if(max_k <= ambient::num_workers()) return k;
+            int r = k / ((int)(max_k / ambient::num_workers()));
+            if(r == ambient::num_workers()) return k % ambient::num_workers();
+            return r;*/
+        }
+        inline int scope::permute(int k, const std::vector<int>& s){
+            if(k >= s.size()){ printf("Error: permutation overflow!\n"); return k; }
+            return s[k];
+        }
+        inline scope::~scope(){
+            if(!dry) ctxt.pop_context();
+        }
+        inline scope::scope(scope_t type){
+            if(type == scope_t::common){
+                this->dry = false;
+                if(ctxt.scoped()) printf("Error: common scope inside single scope\n");
+                ctxt.set_context(this);
+                this->rank = ctxt.get_controller().get_shared_rank();
+                this->state = ambient::locality::common;
+            }else{
+                printf("Error: unknown scope type!\n");
+            }
+        }
+        inline scope::scope(int r) : iterator(r) {
+            this->factor = grain; grain = 1;
+            if(ambient::ctxt.scoped()) dry = true;
+            else{ dry = false; ctxt.set_context(this); }
+            this->round = ambient::num_workers();
+            this->eval();
+        }
+        inline void scope::eval(){
+            int i = iterator;
+            if(i >= this->round*this->factor) this->rank = i % this->round;
+            else                              this->rank = i / this->factor;
+            this->state = (this->rank == ambient::rank()) ? ambient::locality::local : ambient::locality::remote;
+        }
+        inline scope& scope::operator++ (){
+            this->iterator++; this->eval();
+            return *this;
+        }
+        inline scope& scope::operator-- (){
+            this->iterator--; this->eval();
+            return *this;
+        }
+        inline bool scope::tunable() const {
+            return false; 
+        }
+
         inline workflow::workflow(){
             context = this;
             int db = ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0;
@@ -118,81 +170,6 @@ namespace ambient {
             std::fill(scores.begin(), scores.end(), 0);
             this->state = (this->rank == ambient::rank()) ? 
                           ambient::locality::local : ambient::locality::remote;
-        }
-
-        inline int scope::balance(int k, int max_k){
-            compact(max_k);
-            return k;
-
-            /*if(max_k <= ambient::num_workers()) return k;
-            int r = k / ((int)(max_k / ambient::num_workers()));
-            if(r == ambient::num_workers()) return k % ambient::num_workers();
-            return r;*/
-        }
-        inline int scope::permute(int k, const std::vector<int>& s){
-            if(k >= s.size()) printf("Error: permutation overflow!\n");
-            return s[k];
-        }
-        inline void scope::compact(size_t n){ 
-            if(n <= ambient::num_workers()) return; 
-            grain = (int)(n / ambient::num_workers()); // iterations before switch 
-        } 
-        inline void scope::scatter(const std::vector<int>& p){
-            permutation = p;
-        } 
-        inline scope::scope(int value) : index(value), iterator(value) {
-            this->factor = grain; grain = 1;
-            this->map = permutation; permutation.clear();
-            if(ambient::ctxt.scoped()) dry = true;
-            else{ dry = false; ctxt.set_context(this); }
-            this->round = ambient::num_workers();
-            this->eval();
-        }
-        inline scope::scope(scope_t t){
-            if(t == scope_t::common){
-                dry = false;
-                ctxt.set_context(this);
-                this->state = ambient::locality::common;
-                this->rank = ctxt.get_controller().get_shared_rank();
-            }else{
-                printf("Error unknown scope type!\n");
-            }
-        }
-        inline scope::~scope(){
-            if(!dry) ctxt.pop_context();
-        }
-        inline void scope::eval(){
-            int i = iterator >= map.size() ? iterator : map[iterator];
-            if(i >= this->round*this->factor) this->rank = i % this->round;
-            else                              this->rank = i / this->factor;
-            this->state = (this->rank == ambient::rank()) ? ambient::locality::local : ambient::locality::remote;
-        }
-        inline void scope::shift(){
-            this->iterator++;
-            this->eval();
-        }
-        inline void scope::shift_back(){ 
-            this->iterator--;
-            this->eval();
-        } 
-        inline scope& scope::operator++ (){
-            this->shift();
-            this->index++;
-            return *this;
-        }
-        inline scope& scope::operator-- (){
-            this->shift_back();
-            this->index--;
-            return *this;
-        }
-        inline scope::operator size_t () const{
-            return index;
-        }
-        inline bool scope::operator < (size_t lim){
-            return index < lim;
-        }
-        inline bool scope::tunable() const {
-            return false; 
         }
 }
 
