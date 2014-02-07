@@ -96,24 +96,35 @@ namespace measurements {
                                  std::vector<bond_element> const & ops,
                                  std::vector<pos_t> const & order = std::vector<pos_t>())
         {
-            for (std::vector<pos_t>::const_iterator it = positions_first.begin(); it != positions_first.end(); ++it) {
+            // TODO: test with ambient in due time
+            #ifdef MAQUIS_OPENMP
+            #pragma omp parallel for
+            #endif
+            for (std::size_t i = 0; i < positions_first.size(); ++i) {
+                pos_t p = positions_first[i];
                 #ifndef NDEBUG
-                maquis::cout << "  site " << *it << std::endl;
+                maquis::cout << "  site " << p << std::endl;
                 #endif
                 
                 maker_ptr dcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings,
-                                                                                 ops[0], std::vector<pos_t>(1, *it)));
-                /// measure
+                                                                                 ops[0], std::vector<pos_t>(1, p)));
+                // measure
                 MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(mps, mpo);
                 
-                /// save results and labels
+                std::vector<std::vector<pos_t> > num_labels = dcorr->numeric_labels();
+                std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
+                                            ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
+                // save results and labels
                 #ifdef MAQUIS_OPENMP
                 #pragma omp critical
                 #endif
                 {
                 this->vector_results.reserve(this->vector_results.size() + dct.size());
                 std::copy(dct.begin(), dct.end(), std::back_inserter(this->vector_results));
+
+                this->labels.reserve(this->labels.size() + dct.size());
+                std::copy(lbt.begin(), lbt.end(), std::back_inserter(this->labels));
                 }
             }
         }
@@ -127,46 +138,45 @@ namespace measurements {
             #pragma omp parallel for collapse(2)
             #endif
             for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
-                for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
-                {
-                    pos_t subref = std::min(p1, p2);
-                    for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
-                    { 
-                        std::vector<pos_t> ref;
-                        ref.push_back(p1); ref.push_back(p2); ref.push_back(p3);
+            for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
+            {
+                pos_t subref = std::min(p1, p2);
+                for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
+                { 
+                    std::vector<pos_t> ref;
+                    ref.push_back(p1); ref.push_back(p2); ref.push_back(p3);
 
-                        maker_ptr dcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings, ops[0], ref, true));
-                        MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
-                        std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(mps, mpo);
+                    maker_ptr dcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings, ops[0], ref, true));
+                    MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
+                    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(mps, mpo);
 
-                        for (std::size_t synop = 1; synop < ops.size(); ++synop) {
-                            maker_ptr syndcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings, ops[synop], ref, true));
+                    for (std::size_t synop = 1; synop < ops.size(); ++synop) {
+                        maker_ptr syndcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings, ops[synop], ref, true));
 
-                            /// measure
-                            MPO<Matrix, SymmGroup> synmpo = syndcorr->create_mpo();
-                            std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> syndct = multi_expval(mps, synmpo);
+                        // measure
+                        MPO<Matrix, SymmGroup> synmpo = syndcorr->create_mpo();
+                        std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> syndct = multi_expval(mps, synmpo);
 
-                            std::transform(syndct.begin(), syndct.end(), dct.begin(), dct.begin(),
-                                           std::plus<typename MPS<Matrix, SymmGroup>::scalar_type>());
-                        }
-                        
-                        /// save results and labels
-                        #ifdef MAQUIS_OPENMP
-                        #pragma omp critical
-                        #endif
-                        {
-                        this->vector_results.reserve(this->vector_results.size() + dct.size());
-                        std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
-                        this->labels.reserve(this->labels.size() + dct.size());
+                        std::transform(syndct.begin(), syndct.end(), dct.begin(), dct.begin(),
+                                       std::plus<typename MPS<Matrix, SymmGroup>::scalar_type>());
+                    }
+                    
+                    std::vector<std::vector<pos_t> > num_labels = dcorr->numeric_labels();
+                    std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
+                                                ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
+                    // save results and labels
+                    #ifdef MAQUIS_OPENMP
+                    #pragma omp critical
+                    #endif
+                    {
+                    this->vector_results.reserve(this->vector_results.size() + dct.size());
+                    std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
 
-                        std::vector<std::vector<pos_t> > num_labels = dcorr->numeric_labels();
-                        std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                                                    ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
-
-                        std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
-                        }
+                    this->labels.reserve(this->labels.size() + dct.size());
+                    std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
                     }
                 }
+            }
         }
         
     private:

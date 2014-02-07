@@ -153,12 +153,9 @@ namespace generate_mpo
                 for(pos_t p2 = branch+1; p2 < lat.size(); ++p2)
                     branch_sign = insert_filling(branch_index, branch_index, p2, branch_sign);
 
-                //labels[branch_index] = background_pos;
-                //labels[branch_index].push_back(start);
-                //labels[branch_index].push_back(branch);
-                labels.at(branch_index) = background_pos;
-                labels.at(branch_index).push_back(start);
-                labels.at(branch_index).push_back(branch);
+                labels[branch_index] = background_pos;
+                labels[branch_index].push_back(start);
+                labels[branch_index].push_back(branch);
             }
 
             if(incl_diag)
@@ -173,9 +170,9 @@ namespace generate_mpo
                 for(pos_t p2 = start+1; p2 < lat.size(); ++p2)
                     branch_sign = insert_filling(branch_index, branch_index, p2, branch_sign);
 
-                labels.at(branch_index) = background_pos;
-                labels.at(branch_index).push_back(start);
-                labels.at(branch_index).push_back(start);
+                labels[branch_index] = background_pos;
+                labels[branch_index].push_back(start);
+                labels[branch_index].push_back(start);
             }
         }
 
