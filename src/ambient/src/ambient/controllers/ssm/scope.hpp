@@ -30,13 +30,11 @@
 namespace ambient { 
 
         inline int scope::balance(int k, int max_k){
-            if(max_k > ambient::num_workers())
-                grain = (int)(max_k / ambient::num_workers());
+            if(max_k > ambient::num_workers()){
+                int k_ = k/((int)(max_k / ambient::num_workers()));
+                if(k_ < ambient::num_workers()) return k_;
+            }
             return k;
-            /*if(max_k <= ambient::num_workers()) return k;
-            int r = k / ((int)(max_k / ambient::num_workers()));
-            if(r == ambient::num_workers()) return k % ambient::num_workers();
-            return r;*/
         }
         inline int scope::permute(int k, const std::vector<int>& s){
             if(k >= s.size()){ printf("Error: permutation overflow!\n"); return k; }
@@ -60,21 +58,15 @@ namespace ambient {
                 printf("Error: unknown scope type!\n");
             }
         }
-        inline scope::scope(int r) : iterator(r), type(scope_t::single) {
-            this->factor = grain; grain = 1;
+        inline scope::scope(int r) : type(scope_t::single) {
             if(ambient::ctxt.scoped()) dry = true;
             else{ dry = false; ctxt.push(this); }
             this->round = ambient::num_workers();
-            this->eval();
-        }
-        inline void scope::eval(){
-            int i = iterator;
-            if(i >= this->round*this->factor) this->rank = i % this->round;
-            else                              this->rank = i / this->factor;
-            this->state = (this->rank == ambient::rank()) ? ambient::locality::local : ambient::locality::remote;
+            this->set(r);
         }
         inline void scope::set(int r){
-            this->iterator = r; this->eval();
+            this->rank = r % this->round;
+            this->state = (this->rank == ambient::rank()) ? ambient::locality::local : ambient::locality::remote;
         }
 
         inline workflow::workflow(){

@@ -33,26 +33,19 @@ namespace ambient {
     protected:
         scope(){}
     public:
-        static int grain; 
         static int balance(int k, int max_k);
         static int permute(int k, const std::vector<int>& s);
        ~scope();
         scope(int r);
         scope(scope_t type);
-        void eval();
         void set(int r);
         scope_t type;
         bool dry;
-        int iterator;
         int factor;
         int round;
         int rank;
         ambient::locality state;
     };
-
-    #ifdef AMBIENT_BUILD_LIBRARY
-    int scope::grain = 1;
-    #endif
 
     class workflow : public scope {
     public:
