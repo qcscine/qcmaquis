@@ -396,7 +396,7 @@ class Diffusion2D {
                 grid.push_back(new stencil_t(tailm, tailn)); grid_mirror.push_back(new stencil_t(tailm, tailn));
             }
             {
-                ambient::scope<ambient::scope_t::shared> select;
+                ambient::scope select(ambient::scope_t::common);
                 null_stencil.init(0.0);
             }
 
@@ -407,7 +407,7 @@ class Diffusion2D {
 
             for(size_t i = 0; i < mt; ++i)
             for(size_t j = 0; j < nt; ++j){
-                ambient::scope<> select(get_rank(i,j));
+                ambient::scope select(get_rank(i,j));
                 get(i,j).partial_init(value, i*IB*dr+rmin, j*IB*dr+rmin, dr, bound);
             }
         }
@@ -448,7 +448,7 @@ class Diffusion2D {
         void propagate_density(){ 
             for(int i = 0; i < mt; i++){
                 for(int j = 0; j < nt; j++){
-                    ambient::scope<> select(get_rank(i,j));
+                    ambient::scope select(get_rank(i,j));
                     grid_mirror[i+j*mt]->evolve_from(get(i,j), fac);
                     grid_mirror[i+j*mt]->contract(get(i,j), get(i-1,j), get(i,j+1), get(i+1,j), get(i,j-1), fac);
                 }
@@ -486,7 +486,7 @@ int main(int argc, char* argv[]){
     }
     time.end();
     {
-        ambient::scope<> select(0);
+        ambient::scope select(0);
         ambient::cout << "getting results... ";
         ambient::cout << task.get_size() << '\t' << task.get_moment() << std::endl;
     }

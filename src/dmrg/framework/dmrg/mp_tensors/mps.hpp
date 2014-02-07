@@ -125,9 +125,7 @@ void MPS<Matrix, SymmGroup>::normalize_left()
 {
     canonize(length()-1);
     // now state is: A A A A A A M
-    #ifdef USE_AMBIENT 
-    locale::compact(length()); locale l(length()-1); 
-    #endif 
+    select_proc(ambient::scope::balance(length()-1,length()));
     block_matrix<Matrix, SymmGroup> t = (*this)[length()-1].normalize_left(DefaultSolver());
     // now state is: A A A A A A A
     canonized_i = length()-1;
@@ -138,9 +136,7 @@ void MPS<Matrix, SymmGroup>::normalize_right()
 {
     canonize(0);
     // now state is: M B B B B B B
-    #ifdef USE_AMBIENT 
-    locale::compact(length()); locale l(0); 
-    #endif 
+    select_proc(ambient::scope::balance(0,length()));
     block_matrix<Matrix, SymmGroup> t = (*this)[0].normalize_right(DefaultSolver());
     // now state is: B B B B B B B
     canonized_i = 0;
@@ -177,13 +173,11 @@ void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2, Decomp
     {
         if ((*this)[i].isleftnormalized())
             continue;
-        #ifdef USE_AMBIENT 
-        locale::compact(length()); locale l(i); 
-        #endif 
+        select_proc(ambient::scope::balance(i,length()));
         block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_left(method);
         if (i < length()-1) { 
             #ifdef USE_AMBIENT 
-            ++l; 
+            ++ctxt; 
             #endif 
             (*this)[i+1].multiply_from_left(t);
             (*this)[i+1].divide_by_scalar((*this)[i+1].scalar_norm());
@@ -206,13 +200,11 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
     {
         if ((*this)[i].isrightnormalized())
             continue;
-        #ifdef USE_AMBIENT 
-        locale::compact(length()); locale l(i); 
-        #endif 
+        select_proc(ambient::scope::balance(i,length()));
         block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(method);
         if (i > 0) { 
             #ifdef USE_AMBIENT 
-            --l;
+            --ctxt;
             #endif 
             (*this)[i-1].multiply_from_right(t);
             (*this)[i-1].divide_by_scalar((*this)[i-1].scalar_norm());
@@ -339,7 +331,8 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
     /// load tensors
     MPS<Matrix, SymmGroup> tmp(L);
     size_t loop_max = tmp.length();
-    semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
+    for(size_t k = 0; k < loop_max; ++k){
+        select_proc(ambient::scope::balance(k,loop_max));
         std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
         storage::archive ar(fname);
         ar["/tensor"] >> tmp[k];
@@ -352,20 +345,24 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
 {
     size_t loop_max = mps.length();
 #ifdef USE_AMBIENT
-    semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+    for(size_t k = 0; k < loop_max; ++k){
+        select_proc(ambient::scope::balance(k,loop_max));
         mps[k].make_left_paired();
+    }
     ambient::sync();
 #endif
-    semi_parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
+    for(size_t k = 0; k < loop_max; ++k){
 #ifdef USE_AMBIENT
+        select_proc(ambient::scope::balance(k,loop_max));
         if(!ambient::ctxt.local()) continue;
 #endif
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5.new";
         storage::archive ar(fname, "w");
         ar["/tensor"] << mps[k];
     }
-    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k){
+    omp_for(size_t k = 0; k < loop_max; ++k){
 #ifdef USE_AMBIENT
+        select_proc(ambient::scope::balance(k,loop_max));
         if(!ambient::ctxt.local()) continue;
 #endif
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";

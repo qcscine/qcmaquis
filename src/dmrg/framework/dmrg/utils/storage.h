@@ -309,19 +309,8 @@ namespace storage {
         template<class T> static void drop(serializable<T>& t)    { if(enabled()) t.drop();     }
         template<class T> static void pin(serializable<T>& t)     { }
 
-#ifdef USE_AMBIENT
-        //template<class Matrix, class SymmGroup> 
-        //static void evict(MPSTensor<Matrix, SymmGroup>& t){
-        //    if(!ambient::channel.db_dim()) return;
-        //    ambient::scope<ambient::scope_t::dedicated> i;
-        //    migrate(t);
-        //}
         template<class Matrix, class SymmGroup> 
         static void evict(MPSTensor<Matrix, SymmGroup>& t){ }
-#else
-        template<class Matrix, class SymmGroup> 
-        static void evict(MPSTensor<Matrix, SymmGroup>& t){ }
-#endif
 
         disk() : active(false), sid(0) {}
         std::vector<descriptor*> queue;

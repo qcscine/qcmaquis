@@ -182,8 +182,10 @@ int main(int argc, char ** argv)
         }
         #ifdef USE_AMBIENT
         if(exists(chkpfile / boundary_name) || lr == -1)
-            parallel_for(locale::scatter(ts_mpo.placement_l), locale b = 0; b < left.aux_dim(); ++b) 
+            omp_for(size_t b = 0; b < left.aux_dim(); ++b){
+                select_proc(ambient::scope::permute(b,ts_mpo.placement_l));
                 storage::migrate(left[b]);
+            }
         #endif
         tim_l_boundary.end();
         maquis::cout << "Left boundary done!\n";
@@ -203,8 +205,10 @@ int main(int argc, char ** argv)
         }
         #ifdef USE_AMBIENT
         if(exists(chkpfile / boundary_name) || lr == +1) 
-            parallel_for(locale::scatter(ts_mpo.placement_r), locale b = 0; b < right.aux_dim(); ++b) 
+            omp_for(size_t b = 0; b < right.aux_dim(); ++b){
+                select_proc(ambient::scope::permute(b,ts_mpo.placement_r));
                 storage::migrate(right[b]);
+            }
         #endif
         tim_r_boundary.end();
         maquis::cout << "Right boundary done!\n";

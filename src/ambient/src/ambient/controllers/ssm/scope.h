@@ -34,22 +34,16 @@ namespace ambient {
         int rank;
         ambient::locality state;
         virtual bool tunable() const = 0;
-        virtual void score(int c, size_t v) const {}
-        virtual void select(int c) const {}
         virtual void schedule(){}
     };
 
-    template<scope_t T = scope_t::single>
-    class scope {};
-
-    template<>
-    class scope<scope_t::base> : public iscope {
+    class workflow : public iscope {
     public:
         typedef controllers::ssm::controller controller_type;
         typedef typename controllers::ssm::controller::model_type model_type;
         controller_type c;
 
-        scope();
+        workflow();
         controller_type& get_controller(size_t n = AMBIENT_THREAD_ID); 
         void sync();
         bool scoped() const;
@@ -65,8 +59,6 @@ namespace ambient {
         virtual void intend_read(models::ssm::revision* o);
         virtual void intend_write(models::ssm::revision* o);
         virtual bool tunable() const ; 
-        virtual void score(int c, size_t v) const ;
-        virtual void select(int c) const ;
         virtual void schedule();
         mutable std::vector<int> stakeholders;
         mutable std::vector<int> scores;
@@ -76,30 +68,23 @@ namespace ambient {
     };
 
     #ifdef AMBIENT_BUILD_LIBRARY
-    scope<scope_t::base> ctxt;
+    workflow ctxt;
     void sync(){ ctxt.sync(); }
     #else
-    extern scope<scope_t::base> ctxt;
+    extern workflow ctxt;
     #endif
 
-    template<>
-    class scope<scope_t::threaded> : public iscope {
-    public:
-        scope(const std::vector<int>& map, int iterator = 0);
-       ~scope();
-        virtual bool tunable() const ;
-        bool dry;
-    };
-
-    template<>
-    class scope<scope_t::single> : public iscope {
+    class scope : public iscope {
     public:
         static int grain; 
         static std::vector<int> permutation;
 
+        static int balance(int k, int max_k);
+        static int permute(int k, const std::vector<int>& s);
         static void compact(size_t n); 
         static void scatter(const std::vector<int>& p);
         scope(int value = 0);
+        scope(scope_t type);
         void eval();
         void shift();
         void shift_back(); 
@@ -122,25 +107,9 @@ namespace ambient {
     };
 
     #ifdef AMBIENT_BUILD_LIBRARY
-    int scope<scope_t::single>::grain = 1;
-    std::vector<int> scope<scope_t::single>::permutation;
+    int scope::grain = 1;
+    std::vector<int> scope::permutation;
     #endif
-
-    template<>
-    class scope<scope_t::dedicated> : public iscope {
-    public:
-        scope();
-       ~scope();
-        virtual bool tunable() const ;
-    };
-
-    template<>
-    class scope<scope_t::shared> : public iscope {
-    public:
-        scope();
-       ~scope();
-        virtual bool tunable() const ;
-    };
 }
 
 #endif

@@ -70,10 +70,6 @@ namespace ambient {
         return (rank() == 0);
     }
 
-    inline bool parallel(){
-        return ctxt.scoped();
-    }
-
     inline bool verbose(){ 
         return ctxt.get_controller().verbose();
     }

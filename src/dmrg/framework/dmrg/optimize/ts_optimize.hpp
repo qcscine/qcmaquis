@@ -58,7 +58,7 @@ public:
     : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
-        locale_shared l; // cache twosite mpo
+        select_proc(ambient::scope_t::common);
         make_ts_cache_mpo(mpo, ts_cache_mpo, mps);
     }
 
@@ -244,7 +244,10 @@ public:
                     if(site1 != 0){
                         #ifdef USE_AMBIENT
                         std::vector<int> placement_l = get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
-                        parallel_for(locale::scatter(placement_l), locale b = 0; b < left_[site1].aux_dim(); ++b) storage::migrate(left_[site1][b]);
+                        omp_for(size_t b = 0; b < left_[site1].aux_dim(); ++b){
+                            select_proc(ambient::scope::permute(b,placement_l)); 
+                            storage::migrate(left_[site1][b]);
+                        }
                         ambient::sync();
                         #endif
                     }
@@ -252,8 +255,8 @@ public:
                     Storage::evict(left_[site1]);
                 }
                 #ifdef USE_AMBIENT
-                { locale::compact(L); locale l(site1); storage::migrate(mps[site1]); }
-                { locale::compact(L); locale l(site2); storage::migrate(mps[site2]); }
+                { select_proc(ambient::scope::balance(site1,L)); storage::migrate(mps[site1]); }
+                { select_proc(ambient::scope::balance(site2,L)); storage::migrate(mps[site2]); }
                 #endif
     	    }
     	    if (lr == -1){
@@ -284,7 +287,10 @@ public:
                     if(site1 != L-2){
                         #ifdef USE_AMBIENT
                         std::vector<int> placement_r = get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
-                        parallel_for(locale::scatter(placement_r), locale b = 0; b < right_[site2+1].aux_dim(); ++b) storage::migrate(right_[site2+1][b]);
+                        omp_for(size_t b = 0; b < right_[site2+1].aux_dim(); ++b){
+                            select_proc(ambient::scope::permute(b,placement_r));
+                            storage::migrate(right_[site2+1][b]);
+                        }
                         ambient::sync();
                         #endif
                     }
@@ -292,8 +298,8 @@ public:
                     Storage::evict(right_[site2+1]); 
                 }
                 #ifdef USE_AMBIENT
-                { locale::compact(L); locale l(site1); storage::migrate(mps[site1]); }
-                { locale::compact(L); locale l(site2); storage::migrate(mps[site2]); }
+                { select_proc(ambient::scope::balance(site1,L)); storage::migrate(mps[site1]); }
+                { select_proc(ambient::scope::balance(site2,L)); storage::migrate(mps[site2]); }
                 #endif
     	    }
             

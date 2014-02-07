@@ -145,10 +145,10 @@ int main(){ using namespace ambient;
 
     vector<int> a(10, 13);
     vector<int> b(10, 10);
-                                 { scope<> select(1);
+                                 { scope select(1);
     add<int>::spawn(a, b);
                                  }
-                                 { scope<> select(0); 
+                                 { scope select(0); 
     add<int>::spawn(a, b);
                                  }
     for(int i = 0; i < 10; i++)
