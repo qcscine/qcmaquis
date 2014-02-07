@@ -29,15 +29,9 @@
 
 namespace ambient { 
 
-    class iscope {
-    public:
-        int rank;
-        ambient::locality state;
-        virtual bool tunable() const = 0;
-        virtual void schedule(){}
-    };
-
-    class scope : public iscope {
+    class scope {
+    protected:
+        scope(){}
     public:
         static int grain; 
         static int balance(int k, int max_k);
@@ -46,20 +40,21 @@ namespace ambient {
         scope(int r);
         scope(scope_t type);
         void eval();
-        scope& operator++ ();
-        scope& operator-- ();
-        virtual bool tunable() const ;
+        void set(int r);
+        scope_t type;
         bool dry;
         int iterator;
         int factor;
         int round;
+        int rank;
+        ambient::locality state;
     };
 
     #ifdef AMBIENT_BUILD_LIBRARY
     int scope::grain = 1;
     #endif
 
-    class workflow : public iscope {
+    class workflow : public scope {
     public:
         typedef controllers::ssm::controller controller_type;
         typedef typename controllers::ssm::controller::model_type model_type;
@@ -70,23 +65,23 @@ namespace ambient {
         bool scoped() const;
         void sync();
         
-        void set_context(const iscope* s);
-        void pop_context();
+        void push(const scope* s);
+        void pop();
 
         bool remote() const;
         bool local() const;
         bool common() const;
         int which() const;
 
-        virtual void schedule();
+                bool tunable() const ; 
         virtual void intend_read(models::ssm::revision* o);
         virtual void intend_write(models::ssm::revision* o);
-        virtual bool tunable() const ; 
+                void schedule();
+
         mutable std::vector<int> stakeholders;
         mutable std::vector<int> scores;
-        int round;
 
-        const iscope* context;
+        const scope* context;
     };
 
     #ifdef AMBIENT_BUILD_LIBRARY

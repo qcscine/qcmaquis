@@ -43,23 +43,27 @@ namespace ambient {
             return s[k];
         }
         inline scope::~scope(){
-            if(!dry) ctxt.pop_context();
+            if(!dry) ctxt.pop();
         }
-        inline scope::scope(scope_t type){
-            if(type == scope_t::common){
-                this->dry = false;
-                if(ctxt.scoped()) printf("Error: common scope inside single scope\n");
-                ctxt.set_context(this);
-                this->rank = ctxt.get_controller().get_shared_rank();
-                this->state = ambient::locality::common;
+        inline scope::scope(scope_t t) : type(t){
+            if(t == scope_t::common){
+                if(ctxt.scoped()){
+                    if(ctxt.context->type == scope_t::common){ this->dry = true; return; }
+                    printf("Error: common scope inside other scope type\n");
+                }else{
+                    this->dry = false;
+                    this->rank = ctxt.get_controller().get_shared_rank();
+                    this->state = ambient::locality::common;
+                    ctxt.push(this);
+                }
             }else{
                 printf("Error: unknown scope type!\n");
             }
         }
-        inline scope::scope(int r) : iterator(r) {
+        inline scope::scope(int r) : iterator(r), type(scope_t::single) {
             this->factor = grain; grain = 1;
             if(ambient::ctxt.scoped()) dry = true;
-            else{ dry = false; ctxt.set_context(this); }
+            else{ dry = false; ctxt.push(this); }
             this->round = ambient::num_workers();
             this->eval();
         }
@@ -69,16 +73,8 @@ namespace ambient {
             else                              this->rank = i / this->factor;
             this->state = (this->rank == ambient::rank()) ? ambient::locality::local : ambient::locality::remote;
         }
-        inline scope& scope::operator++ (){
-            this->iterator++; this->eval();
-            return *this;
-        }
-        inline scope& scope::operator-- (){
-            this->iterator--; this->eval();
-            return *this;
-        }
-        inline bool scope::tunable() const {
-            return false; 
+        inline void scope::set(int r){
+            this->iterator = r; this->eval();
         }
 
         inline workflow::workflow(){
@@ -119,10 +115,10 @@ namespace ambient {
         inline bool workflow::scoped() const {
             return (context != this);
         }
-        inline void workflow::set_context(const iscope* s){
+        inline void workflow::push(const scope* s){
             this->context = s; // no nesting
         }
-        inline void workflow::pop_context(){
+        inline void workflow::pop(){
             this->context = this;
         }
         inline bool workflow::remote() const {
