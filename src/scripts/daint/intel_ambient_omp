@@ -14,7 +14,7 @@ export PATH=${ALPS_ROOT}/bin:${PATH}
 export XTPE_LINK_TYPE=dynamic
 
 module load gcc/4.7.3
-module load PrgEnv-intel
+module switch PrgEnv-cray PrgEnv-intel
 module load cray-hdf5
 module load cmake
 

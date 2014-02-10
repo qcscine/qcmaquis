@@ -12,7 +12,7 @@ export ALPS_ROOT=$MYAPPS/alps
 export PLASMA_ROOT=$MYAPPS/plasma
 export PATH=${ALPS_ROOT}/bin:${PATH}
 
-module load PrgEnv-gnu
+module switch PrgEnv-cray PrgEnv-gnu
 module load cray-hdf5
 module load cmake
 
