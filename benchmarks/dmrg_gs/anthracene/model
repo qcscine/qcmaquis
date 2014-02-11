@@ -6,7 +6,7 @@ irrep_charge = 0
 LATTICE = "open square lattice"
 CONSERVED_QUANTUMNUMBERS = "Nup,Ndown"
 MODEL = "quantum_chemistry"
-integral_file = "anthracene.orbital"
+integral_file = "orbital"
 
 hf_occ = "4,4,1,1,4,4,1,4,4,1,1,4,1,1"
 

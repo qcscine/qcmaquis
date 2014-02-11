@@ -7,11 +7,11 @@ nsweeps = 3
 ngrowsweeps = 1
 nmainsweeps = 1
 
-chkpfile = "/disks/disk-3-01/akosenko/scratch/spinless.L6.6000.ckp.h5"
-resultfile = "/disks/disk-3-01/akosenko/scratch/spinless.L6.6000.res.h5"
-storagedir = "/disks/disk-3-01/akosenko/scratch"
-//chkp_each = 1
-donotsave = 1
+chkpfile = "mps"
+resultfile = "res.h5"
+storagedir = "tmp"
+chkp_each = 1
+//donotsave = 1
 
 // possible values: singlesite, twosite
 optimization = "twosite"

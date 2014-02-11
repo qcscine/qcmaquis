@@ -10,9 +10,9 @@ ietl_jcd_gmres = 0
 ietl_jcd_tol = 1e-8
 ietl_jcd_maxiter = 10
 
-chkpfile = "/scratch/castor/akosenko/quench_gs.L51.200.ckp.h5"
-resultfile = "/scratch/castor/akosenko/quench_gs.L51.200.res.h5"
-storagedir = "/scratch/castor/akosenko"
+chkpfile = "mps.gs"
+resultfile = "res.gs.h5"
+storagedir = "tmp"
 
 nsweeps = 3
 nmainsweeps = 2

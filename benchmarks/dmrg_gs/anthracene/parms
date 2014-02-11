@@ -11,9 +11,9 @@ init_state = 'hf'
 measure_each = 80
 chkp_each = 80
 donotsave = 1
-chkpfile = 'chkp'
+chkpfile = 'mps'
 resultfile = 'res.h5'
-storagedir = '/scratch/castor/akosenko'
+storagedir = 'tmp'
 
 ietl_jcd_maxiter = 7
 ietl_jcd_tol = 1e-6

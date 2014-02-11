@@ -7,10 +7,11 @@ nsweeps = 5
 ngrowsweeps = 1
 nmainsweeps = 1
 
-chkpfile = "/scratch/castor/akosenko/hubbard.12x24.20000.ckp.h5"
-resultfile = "/scratch/castor/akosenko/hubbard.12x24.20000.res.h5"
-storagedir = "/scratch/castor/akosenko"
-donotsave = 1
+chkpfile = "mps"
+resultfile = "res.h5"
+storagedir = "tmp"
+chkp_each = 1
+//donotsave = 1
 
 // possible values: singlesite, twosite
 optimization = "twosite"

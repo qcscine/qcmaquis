@@ -7,9 +7,9 @@ nsweeps = 5
 ngrowsweeps = 1
 nmainsweeps = 1
 
-chkpfile = "/disks/disk-3-01/akosenko/scratch/spinless.L8.6000.ckp.h5"
-resultfile = "/disks/disk-3-01/akosenko/scratch/spinless.L8.6000.res.h5"
-storagedir = "/disks/disk-3-01/akosenko/scratch/"
+chkpfile = "mps"
+resultfile = "res.h5"
+storagedir = "tmp"
 donotsave = 1
 
 // possible values: singlesite, twosite

@@ -7,7 +7,9 @@ sweep_bond_dimensions = "10000"
 optimization = twosite
 symmetry = 2u1
 
-chkpfile = "/state/partition1/spinful.6x6.10k.ckp.h5"
-resultfile = "/state/partition1/spinful.6x6.10k.res.h5"
-storagedir = "/state/partition1"
+chkpfile = "mps"
+resultfile = "res.h5"
+storagedir = "tmp"
+chkp_each = 1
+//donotsave = 1
 
