@@ -8,9 +8,9 @@ COMPILER=intel
 COMPILER_VERSION=13.1
 MYAPPS=/project/h07/dolfim/apps/daint/intel_13_1_0
 
+export PLASMA_ROOT=$MYAPPS/plasma
 export ALPS_ROOT=$MYAPPS/alps
 export PATH=${ALPS_ROOT}/bin:${PATH}
-export PLASMA_ROOT=$MYAPPS/plasma
 export XTPE_LINK_TYPE=dynamic
 
 module load gcc/4.7.3
