@@ -11,8 +11,8 @@ MYAPPS=/project/h07/dolfim/apps/daint/gcc_4_7_3
 export PLASMA_ROOT=$MYAPPS/plasma
 export ALPS_ROOT=$MYAPPS/alps
 export CRAYPE_LINK_TYPE=dynamic
-export CXX=CC.dynamic
-export CC=cc.dynamic
+export CXX=CC.dynamic # CC -dynamic -lz $*
+export CC=cc.dynamic  # cc -dynamic -lz $*
 
 if [[ -z "$MAQUIS_ONCE" ]]
 then
