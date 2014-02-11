@@ -290,8 +290,9 @@ void MPSTensor<Matrix, SymmGroup>::shift_aux_charges(typename SymmGroup::charge 
 }
 
 template<class Matrix, class SymmGroup>
+template <class OtherMatrix>
 void
-MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<Matrix, SymmGroup> const & N)
+MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<OtherMatrix, SymmGroup> const & N)
 {
     cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;
@@ -301,8 +302,9 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<Matrix, SymmGroup
 }
 
 template<class Matrix, class SymmGroup>
+template <class OtherMatrix>
 void
-MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<Matrix, SymmGroup> const & N)
+MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<OtherMatrix, SymmGroup> const & N)
 {
     cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;

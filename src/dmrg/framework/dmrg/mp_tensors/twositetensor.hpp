@@ -76,6 +76,12 @@ Index<SymmGroup> const & TwoSiteTensor<Matrix, SymmGroup>::col_dim() const
 }
 
 template<class Matrix, class SymmGroup>
+Index<SymmGroup> const & TwoSiteTensor<Matrix, SymmGroup>::local_site_dim(short d) const
+{
+    return (d == 1) ? phys_i_right : phys_i_left;
+}
+
+template<class Matrix, class SymmGroup>
 void TwoSiteTensor<Matrix, SymmGroup>::make_left_paired() const
 {
     if (cur_storage == TSLeftPaired)

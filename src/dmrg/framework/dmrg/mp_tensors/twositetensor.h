@@ -56,6 +56,7 @@ public:
     Index<SymmGroup> const & site_dim() const;
     Index<SymmGroup> const & row_dim() const;
     Index<SymmGroup> const & col_dim() const;
+    Index<SymmGroup> const & local_site_dim(short) const;
     
     block_matrix<Matrix, SymmGroup> & data();
     block_matrix<Matrix, SymmGroup> const & data() const;
