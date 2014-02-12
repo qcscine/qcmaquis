@@ -38,7 +38,6 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline controller::controller(){
-        this->sid = 13;
         this->stack_m.reserve(AMBIENT_STACK_RESERVE);
         this->stack_s.reserve(AMBIENT_STACK_RESERVE);
         this->chains = &this->stack_m;
@@ -191,15 +190,6 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline int controller::get_num_workers() const {
         return (get_num_procs()-db);
-    }
-
-    inline int controller::generate_sid(){
-        ++this->sid %= AMBIENT_MAX_SID; 
-        return this->sid;
-    }
-
-    inline int controller::get_sid() const {
-        return this->sid;
     }
 
     inline typename controller::channel_type & controller::get_channel(){

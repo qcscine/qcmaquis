@@ -50,10 +50,10 @@ namespace ambient { namespace channels { namespace mpi {
             states[rank] = true;
             if(states.back()){
                 for(int i = this->tags.size(); i <= ambient::num_procs(); i++)
-                    this->tags.push_back(ambient::ctxt.get_controller().generate_sid());
+                    this->tags.push_back(ambient::ctxt.generate_sid());
             }else{
                 if(rank == ambient::rank()) this->self = tree.size();
-                this->tags.push_back(ambient::ctxt.get_controller().get_sid());
+                this->tags.push_back(ambient::ctxt.get_sid());
                 this->tree.push_back(rank);
             }
         }
@@ -82,7 +82,7 @@ namespace ambient { namespace channels { namespace mpi {
     : bcast<typename channel::scalar_type>(v, root) {
         tags.reserve(ambient::num_procs()+1);
         for(int i = 0; i <= ambient::num_procs(); i++)
-            this->tags.push_back(ambient::ctxt.get_controller().generate_sid());
+            this->tags.push_back(ambient::ctxt.generate_sid());
     }
 
     inline bool collective<typename channel::scalar_type>::test(){

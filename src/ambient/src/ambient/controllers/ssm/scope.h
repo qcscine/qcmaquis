@@ -47,6 +47,7 @@ namespace ambient {
         int rank;
         ambient::locality state;
         controller_type* c;
+        int sid;
     };
 
     class workflow {
@@ -67,6 +68,9 @@ namespace ambient {
         bool local()  const;
         bool common() const;
         int  which()  const;
+
+        int generate_sid();
+        int get_sid() const;
 
         void schedule();
         bool tunable() const; 

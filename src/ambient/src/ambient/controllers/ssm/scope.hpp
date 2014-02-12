@@ -55,6 +55,7 @@ namespace ambient {
                     ctxt.push(this);
                 }
             }else if(t == scope_t::base){
+                this->sid = 13;
                 this->c = new controller_type();
                 this->c->init(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
                 this->round = ambient::num_workers();
@@ -73,6 +74,7 @@ namespace ambient {
             this->rank = r % this->round;
             this->state = (this->rank == ambient::rank()) ? ambient::locality::local : ambient::locality::remote;
         }
+
 
         inline workflow::workflow() : context(&base), base(scope_t::base) {
             this->scores.resize(ambient::num_workers(), 0);
@@ -93,6 +95,13 @@ namespace ambient {
             if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) mkl_parallel();
         }
 
+        inline int workflow::generate_sid(){
+            ++base.sid %= AMBIENT_MAX_SID;
+            return base.sid;
+        }
+        inline int workflow::get_sid() const {
+            return base.sid;
+        }
         inline typename workflow::controller_type& workflow::get_controller(size_t n){
             return *base.c;
         }
