@@ -30,6 +30,7 @@
 namespace ambient { 
 
     class scope {
+        typedef controllers::ssm::controller controller_type;
     protected:
         scope(){}
     public:
@@ -45,13 +46,14 @@ namespace ambient {
         int round;
         int rank;
         ambient::locality state;
+        controller_type* c;
     };
 
-    class workflow : public scope {
+    class workflow {
     public:
         typedef controllers::ssm::controller controller_type;
         typedef typename controllers::ssm::controller::model_type model_type;
-        controller_type c;
+        scope base;
 
         workflow();
         controller_type& get_controller(size_t n = AMBIENT_THREAD_ID); 
@@ -62,18 +64,17 @@ namespace ambient {
         void pop();
 
         bool remote() const;
-        bool local() const;
+        bool local()  const;
         bool common() const;
-        int which() const;
+        int  which()  const;
 
-                bool tunable() const ; 
+        void schedule();
+        bool tunable() const; 
         virtual void intend_read(models::ssm::revision* o);
         virtual void intend_write(models::ssm::revision* o);
-                void schedule();
 
         mutable std::vector<int> stakeholders;
         mutable std::vector<int> scores;
-
         const scope* context;
     };
 

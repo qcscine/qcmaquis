@@ -54,6 +54,11 @@ namespace ambient {
                     this->state = ambient::locality::common;
                     ctxt.push(this);
                 }
+            }else if(t == scope_t::base){
+                this->c = new controller_type();
+                this->c->init(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
+                this->round = ambient::num_workers();
+                this->set(0);
             }else{
                 printf("Error: unknown scope type!\n");
             }
@@ -69,16 +74,8 @@ namespace ambient {
             this->state = (this->rank == ambient::rank()) ? ambient::locality::local : ambient::locality::remote;
         }
 
-        inline workflow::workflow(){
-            context = this;
-            int db = ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0;
-            c.init(db);
-
-            this->round = ambient::num_workers();
-            this->state = ambient::rank() ? ambient::locality::remote : ambient::locality::local;
-            this->rank  = 0;
-            this->scores.resize(round, 0);
-
+        inline workflow::workflow() : context(&base), base(scope_t::base) {
+            this->scores.resize(ambient::num_workers(), 0);
             if(ambient::isset("AMBIENT_VERBOSE")){
                 ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE     << ")\n";
                 if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
@@ -97,21 +94,21 @@ namespace ambient {
         }
 
         inline typename workflow::controller_type& workflow::get_controller(size_t n){
-            return c;
+            return *base.c;
         }
         inline void workflow::sync(){
-            c.flush();
-            c.clear();  
+            base.c->flush();
+            base.c->clear();  
             memory::data_bulk::drop();
         }
         inline bool workflow::scoped() const {
-            return (context != this);
+            return (context != &this->base);
         }
         inline void workflow::push(const scope* s){
             this->context = s; // no nesting
         }
         inline void workflow::pop(){
-            this->context = this;
+            this->context = &this->base;
         }
         inline bool workflow::remote() const {
             return (this->context->state == ambient::locality::remote);
@@ -134,30 +131,30 @@ namespace ambient {
             this->stakeholders.push_back(model_type::owner(r));
         }
         inline bool workflow::tunable() const { 
-            if(c.serial) return false;
-            return (context == this);
+            if(base.c->serial) return false;
+            return !scoped();
         }
         inline void workflow::schedule(){
             int max = 0;
+            int rank = base.rank;
             if(stakeholders.empty()){
-                for(int i = 0; i < round; i++)
+                for(int i = 0; i < base.round; i++)
                 if(scores[i] >= max){
                     max = scores[i];
-                    this->rank = i;
+                    rank = i;
                 }
             }else{
                 for(int i = 0; i < stakeholders.size(); i++){
                     int k = stakeholders[i];
                     if(scores[k] >= max){
                         max = scores[k];
-                        this->rank = k;
+                        rank = k;
                     }
                 }
                 stakeholders.clear();
             }
             std::fill(scores.begin(), scores.end(), 0);
-            this->state = (this->rank == ambient::rank()) ? 
-                          ambient::locality::local : ambient::locality::remote;
+            base.set(rank);
         }
 }
 
