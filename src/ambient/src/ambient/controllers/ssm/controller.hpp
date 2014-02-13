@@ -37,16 +37,15 @@ namespace ambient { namespace controllers { namespace ssm {
         this->clear();
     }
 
-    inline controller::controller(){
-        this->stack_m.reserve(AMBIENT_STACK_RESERVE);
-        this->stack_s.reserve(AMBIENT_STACK_RESERVE);
-        this->chains = &this->stack_m;
-        this->mirror = &this->stack_s;
+    inline controller::controller() : chains(&stack_m), mirror(&stack_s), db(0) {
+        this->serial = (get_num_procs() == 1) ? true : false;
     }
 
-    inline void controller::init(int db){
+    inline void controller::reserve(int db){
+        this->stack_m.reserve(AMBIENT_STACK_RESERVE);
+        this->stack_s.reserve(AMBIENT_STACK_RESERVE);
+        this->garbage.reserve(AMBIENT_STACK_RESERVE);
         this->db = get_num_procs() > db ? db : 0;
-        this->serial = (get_num_procs() == 1) ? true : false;
     }
 
     inline void controller::flush(){

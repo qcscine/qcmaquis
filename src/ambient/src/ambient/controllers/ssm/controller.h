@@ -44,7 +44,7 @@ namespace ambient { namespace controllers { namespace ssm {
                                                > memory_type;
         controller();
        ~controller();
-        void init(int db = 0);
+        void reserve(int db = 0);
         bool empty();
         void flush();
         void clear();

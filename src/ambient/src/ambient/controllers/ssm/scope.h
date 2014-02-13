@@ -57,7 +57,9 @@ namespace ambient {
         scope base;
 
         workflow();
-        controller_type& get_controller(size_t n = AMBIENT_THREAD_ID); 
+        controller_type& get_controller(size_t n = AMBIENT_THREAD_ID);
+        controller_type* provide_controller();
+        void revoke_controller(controller_type* c);
         bool scoped() const;
         void sync();
         

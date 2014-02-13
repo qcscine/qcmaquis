@@ -41,7 +41,9 @@ namespace ambient {
             return s[k];
         }
         inline scope::~scope(){
-            if(!dry) ctxt.pop();
+            if(dry) return;
+            ctxt.revoke_controller(c);
+            ctxt.pop();
         }
         inline scope::scope(scope_t t) : type(t){
             if(t == scope_t::common){
@@ -52,12 +54,13 @@ namespace ambient {
                     this->dry = false;
                     this->rank = ctxt.get_controller().get_shared_rank();
                     this->state = ambient::locality::common;
+                    c = ctxt.provide_controller();
                     ctxt.push(this);
                 }
             }else if(t == scope_t::base){
                 this->sid = 13;
                 this->c = new controller_type();
-                this->c->init(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
+                this->c->reserve(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
                 this->round = ambient::num_workers();
                 this->set(0);
             }else{
@@ -66,7 +69,11 @@ namespace ambient {
         }
         inline scope::scope(int r) : type(scope_t::single) {
             if(ambient::ctxt.scoped()) dry = true;
-            else{ dry = false; ctxt.push(this); }
+            else{ 
+                dry = false; 
+                c = ctxt.provide_controller();
+                ctxt.push(this); 
+            }
             this->round = ambient::num_workers();
             this->set(r);
         }
@@ -104,6 +111,12 @@ namespace ambient {
         }
         inline typename workflow::controller_type& workflow::get_controller(size_t n){
             return *base.c;
+        }
+        inline typename workflow::controller_type* workflow::provide_controller(){
+            return base.c;
+        }
+        inline void workflow::revoke_controller(controller_type* c){
+            // some cleanups ?
         }
         inline void workflow::sync(){
             base.c->flush();

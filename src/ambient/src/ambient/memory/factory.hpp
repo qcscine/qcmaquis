@@ -36,6 +36,10 @@ namespace ambient { namespace memory {
             this->buffers.push_back(std::malloc(S));
             this->buffer = &this->buffers[0];
         }
+       ~private_factory(){
+            for(int i = 0; i < buffers.size(); i++) 
+                std::free(this->buffers[i]);
+        }
         void* provide(){
             void* chunk = *buffer;
             if(chunk == buffers.back()){
