@@ -318,6 +318,13 @@ void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& fill, 
 }
 
 template<class Matrix, class SymmGroup>
+template <class Archive>
+void MPS<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
+{
+    ar & canonized_i & data_;
+}
+
+template<class Matrix, class SymmGroup>
 void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
 {
     /// get size of MPS

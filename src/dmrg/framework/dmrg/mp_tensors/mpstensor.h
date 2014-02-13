@@ -138,7 +138,8 @@ public:
     
     template<class Archive> void load(Archive & ar);
     template<class Archive> void save(Archive & ar) const;
-    
+    template <class Archive> void serialize(Archive & ar, const unsigned int version);
+
     void check_equal(MPSTensor<Matrix, SymmGroup> const &) const;
     bool reasonable() const;
     bool num_check() const; // checks for nan or inf

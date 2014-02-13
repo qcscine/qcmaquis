@@ -547,6 +547,13 @@ void MPSTensor<Matrix, SymmGroup>::save(Archive & ar) const
 }
 
 template<class Matrix, class SymmGroup>
+template<class Archive>
+void MPSTensor<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
+{
+    ar & phys_i & left_i & right_i & cur_storage & cur_normalization & data_;
+}
+
+template<class Matrix, class SymmGroup>
 bool MPSTensor<Matrix, SymmGroup>::reasonable() const
 {
     {
