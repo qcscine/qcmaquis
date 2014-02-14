@@ -74,9 +74,9 @@ namespace ambient { namespace controllers { namespace ssm {
 
         void meminfo() const;
         bool verbose() const;
+        bool is_serial() const;
 
         memory_type memory;
-        bool serial;
     private:
         model_type model;
         channel_type channel;

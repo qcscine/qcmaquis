@@ -184,6 +184,7 @@ int main(){ using namespace ambient;
 
     int delta = 11;
     cilk_for(int i = 0; i < 100; i++){
+        scope select(0);
         for(int k = 0; k < 1000; k++)
         ambient::for_each( list[i]->begin(), list[i]->end(), [&] (int& val){ val += delta; } );
     }

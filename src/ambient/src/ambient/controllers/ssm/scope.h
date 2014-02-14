@@ -30,8 +30,9 @@
 namespace ambient { 
 
     class scope {
-        typedef controllers::ssm::controller controller_type;
     protected:
+        typedef models::ssm::model model_type;
+        typedef controllers::ssm::controller controller_type;
         scope(){}
     public:
         static int balance(int k, int max_k);
@@ -50,38 +51,44 @@ namespace ambient {
         int sid;
     };
 
+    class base_scope : public scope {
+    public:
+        typedef typename scope::model_type model_type;
+        base_scope();
+        void schedule();
+        void intend_read(models::ssm::revision* o);
+        void intend_write(models::ssm::revision* o);
+        mutable std::vector<int> stakeholders;
+        mutable std::vector<int> scores;
+    };
+
     class workflow {
     public:
         typedef controllers::ssm::controller controller_type;
         typedef typename controllers::ssm::controller::model_type model_type;
-        scope base;
+        std::vector<controller_type> lane;
+        mutable base_scope base;
+        mutable scope* context;
 
         workflow();
-        controller_type& get_controller(size_t n = AMBIENT_THREAD_ID);
+        scope& get_scope() const;
+        controller_type& get_controller() const;
         controller_type* provide_controller();
         void revoke_controller(controller_type* c);
-        bool scoped() const;
-        void sync();
-        
-        void push(const scope* s);
+        void push(scope* s);
         void pop();
-
+        void sync();
+        bool scoped() const;
         bool remote() const;
         bool local()  const;
         bool common() const;
         int  which()  const;
-
-        int generate_sid();
-        int get_sid() const;
-
-        void schedule();
+        int  generate_sid();
+        int  get_sid() const;
         bool tunable() const; 
-        virtual void intend_read(models::ssm::revision* o);
-        virtual void intend_write(models::ssm::revision* o);
-
-        mutable std::vector<int> stakeholders;
-        mutable std::vector<int> scores;
-        const scope* context;
+        void schedule() const;
+        void intend_read(models::ssm::revision* o) const;
+        void intend_write(models::ssm::revision* o) const;
     };
 
     #ifdef AMBIENT_BUILD_LIBRARY

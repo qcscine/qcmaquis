@@ -57,12 +57,6 @@ namespace ambient {
                     c = ctxt.provide_controller();
                     ctxt.push(this);
                 }
-            }else if(t == scope_t::base){
-                this->sid = 13;
-                this->c = new controller_type();
-                this->c->reserve(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
-                this->round = ambient::num_workers();
-                this->set(0);
             }else{
                 printf("Error: unknown scope type!\n");
             }
@@ -82,9 +76,47 @@ namespace ambient {
             this->state = (this->rank == ambient::rank()) ? ambient::locality::local : ambient::locality::remote;
         }
 
+        inline base_scope::base_scope(){
+            this->sid = 13;
+            this->c = ctxt.provide_controller();
+            this->c->reserve(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
+            this->round = ambient::num_workers();
+            this->scores.resize(round, 0);
+            this->set(0);
+        }
+        inline void base_scope::intend_read(models::ssm::revision* r){
+            if(r == NULL || model_type::common(r)) return;
+            this->scores[model_type::owner(r)] += r->spec.extent;
+        }
+        inline void base_scope::intend_write(models::ssm::revision* r){
+            if(r == NULL || model_type::common(r)) return;
+            this->stakeholders.push_back(model_type::owner(r));
+        }
+        inline void base_scope::schedule(){
+            int max = 0;
+            int rank = this->rank;
+            if(stakeholders.empty()){
+                for(int i = 0; i < this->round; i++)
+                if(scores[i] >= max){
+                    max = scores[i];
+                    rank = i;
+                }
+            }else{
+                for(int i = 0; i < stakeholders.size(); i++){
+                    int k = stakeholders[i];
+                    if(scores[k] >= max){
+                        max = scores[k];
+                        rank = k;
+                    }
+                }
+                stakeholders.clear();
+            }
+            std::fill(scores.begin(), scores.end(), 0);
+            this->set(rank);
+        }
 
-        inline workflow::workflow() : context(&base), base(scope_t::base) {
-            this->scores.resize(ambient::num_workers(), 0);
+        inline workflow::workflow() : lane(ambient::num_threads()) {
+            this->push(&base);
             if(ambient::isset("AMBIENT_VERBOSE")){
                 ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE     << ")\n";
                 if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
@@ -101,36 +133,39 @@ namespace ambient {
             }
             if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) mkl_parallel();
         }
-
         inline int workflow::generate_sid(){
-            ++base.sid %= AMBIENT_MAX_SID;
-            return base.sid;
+            int& sid = get_scope().sid;
+            ++sid %= AMBIENT_MAX_SID;
+            return sid;
         }
         inline int workflow::get_sid() const {
-            return base.sid;
+            return get_scope().sid;
         }
-        inline typename workflow::controller_type& workflow::get_controller(size_t n){
-            return *base.c;
+        inline typename workflow::controller_type& workflow::get_controller() const {
+            return *get_scope().c;
         }
         inline typename workflow::controller_type* workflow::provide_controller(){
-            return base.c;
+            return &lane[AMBIENT_THREAD_ID];
         }
         inline void workflow::revoke_controller(controller_type* c){
             // some cleanups ?
         }
         inline void workflow::sync(){
-            base.c->flush();
-            base.c->clear();  
+            get_scope().c->flush();
+            get_scope().c->clear();  
             memory::data_bulk::drop();
+        }
+        inline scope& workflow::get_scope() const {
+            return base;
         }
         inline bool workflow::scoped() const {
             return (context != &this->base);
         }
-        inline void workflow::push(const scope* s){
-            this->context = s; // no nesting
-        }
         inline void workflow::pop(){
             this->context = &this->base;
+        }
+        inline void workflow::push(scope* s){
+            this->context = s; // no nesting
         }
         inline bool workflow::remote() const {
             return (this->context->state == ambient::locality::remote);
@@ -144,39 +179,17 @@ namespace ambient {
         inline int workflow::which() const {
             return this->context->rank;
         }
-        inline void workflow::intend_read(models::ssm::revision* r){
-            if(r == NULL || model_type::common(r)) return;
-            this->scores[model_type::owner(r)] += r->spec.extent;
-        }
-        inline void workflow::intend_write(models::ssm::revision* r){
-            if(r == NULL || model_type::common(r)) return;
-            this->stakeholders.push_back(model_type::owner(r));
-        }
         inline bool workflow::tunable() const { 
-            if(base.c->serial) return false;
-            return !scoped();
+            return (!get_controller().is_serial() && !scoped());
         }
-        inline void workflow::schedule(){
-            int max = 0;
-            int rank = base.rank;
-            if(stakeholders.empty()){
-                for(int i = 0; i < base.round; i++)
-                if(scores[i] >= max){
-                    max = scores[i];
-                    rank = i;
-                }
-            }else{
-                for(int i = 0; i < stakeholders.size(); i++){
-                    int k = stakeholders[i];
-                    if(scores[k] >= max){
-                        max = scores[k];
-                        rank = k;
-                    }
-                }
-                stakeholders.clear();
-            }
-            std::fill(scores.begin(), scores.end(), 0);
-            base.set(rank);
+        inline void workflow::intend_read(models::ssm::revision* r) const {
+            base.intend_read(r); 
+        }
+        inline void workflow::intend_write(models::ssm::revision* r) const {
+            base.intend_write(r); 
+        }
+        inline void workflow::schedule() const {
+            base.schedule();
         }
 }
 

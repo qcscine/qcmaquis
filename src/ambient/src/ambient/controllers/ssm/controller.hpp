@@ -37,9 +37,7 @@ namespace ambient { namespace controllers { namespace ssm {
         this->clear();
     }
 
-    inline controller::controller() : chains(&stack_m), mirror(&stack_s), db(0) {
-        this->serial = (get_num_procs() == 1) ? true : false;
-    }
+    inline controller::controller() : chains(&stack_m), mirror(&stack_s), db(0) {}
 
     inline void controller::reserve(int db){
         this->stack_m.reserve(AMBIENT_STACK_RESERVE);
@@ -92,7 +90,7 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline void controller::sync(revision* r){
-        if(serial) return;
+        if(is_serial()) return;
         if(model.common(r)) return;
         if(model.feeds(r)) set<revision>::spawn(*r);
         else get<revision>::spawn(*r);
@@ -110,7 +108,7 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline void controller::lsync(transformable* v){
-        if(serial) return;
+        if(is_serial()) return;
         set<transformable>::spawn(*v);
     }
 
@@ -157,6 +155,10 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline int controller::get_dedicated_rank() const {
         return (get_num_procs()-db);
+    }
+
+    inline bool controller::is_serial() const {
+        return (get_num_procs() == 1);
     }
         
     inline bool controller::verbose() const {
