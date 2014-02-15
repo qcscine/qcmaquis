@@ -71,6 +71,7 @@ namespace ambient {
         mutable scope* context;
 
         workflow();
+        scope& get_base_scope() const;
         scope& get_scope() const;
         controller_type& get_controller() const;
         controller_type* provide_controller();

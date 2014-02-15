@@ -48,7 +48,7 @@ namespace ambient {
         inline scope::scope(scope_t t) : type(t){
             if(t == scope_t::common){
                 if(ctxt.scoped()){
-                    if(ctxt.context->type == scope_t::common){ this->dry = true; return; }
+                    if(ctxt.get_scope().type == scope_t::common){ this->dry = true; return; }
                     printf("Error: common scope inside other scope type\n");
                 }else{
                     this->dry = false;
@@ -62,25 +62,25 @@ namespace ambient {
             }
         }
         inline scope::scope(int r) : type(scope_t::single) {
+            c = ctxt.provide_controller(); // need to change dry stuff
             if(ambient::ctxt.scoped()) dry = true;
             else{ 
                 dry = false; 
-                c = ctxt.provide_controller();
                 ctxt.push(this); 
             }
-            this->round = ambient::num_workers();
+            this->round = c->get_num_workers();
             this->set(r);
         }
         inline void scope::set(int r){
             this->rank = r % this->round;
-            this->state = (this->rank == ambient::rank()) ? ambient::locality::local : ambient::locality::remote;
+            this->state = (this->rank == c->get_rank()) ? ambient::locality::local : ambient::locality::remote;
         }
 
         inline base_scope::base_scope(){
             this->sid = 13;
             this->c = ctxt.provide_controller();
             this->c->reserve(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
-            this->round = ambient::num_workers();
+            this->round = c->get_num_workers();
             this->scores.resize(round, 0);
             this->set(0);
         }
@@ -134,15 +134,15 @@ namespace ambient {
             if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) mkl_parallel();
         }
         inline int workflow::generate_sid(){
-            int& sid = get_scope().sid;
+            int& sid = get_base_scope().sid;
             ++sid %= AMBIENT_MAX_SID;
             return sid;
         }
         inline int workflow::get_sid() const {
-            return get_scope().sid;
+            return get_base_scope().sid;
         }
         inline typename workflow::controller_type& workflow::get_controller() const {
-            return *get_scope().c;
+            return *get_base_scope().c;
         }
         inline typename workflow::controller_type* workflow::provide_controller(){
             return &lane[AMBIENT_THREAD_ID];
@@ -151,15 +151,18 @@ namespace ambient {
             // some cleanups ?
         }
         inline void workflow::sync(){
-            get_scope().c->flush();
-            get_scope().c->clear();  
+            get_base_scope().c->flush();
+            get_base_scope().c->clear();  
             memory::data_bulk::drop();
         }
-        inline scope& workflow::get_scope() const {
+        inline scope& workflow::get_base_scope() const {
             return base;
         }
+        inline scope& workflow::get_scope() const {
+            return *context;
+        }
         inline bool workflow::scoped() const {
-            return (context != &this->base);
+            return (&get_scope() != &this->base);
         }
         inline void workflow::pop(){
             this->context = &this->base;
@@ -168,16 +171,16 @@ namespace ambient {
             this->context = s; // no nesting
         }
         inline bool workflow::remote() const {
-            return (this->context->state == ambient::locality::remote);
+            return (get_scope().state == ambient::locality::remote);
         }
         inline bool workflow::local() const {
-            return (this->context->state == ambient::locality::local);
+            return (get_scope().state == ambient::locality::local);
         }
         inline bool workflow::common() const {
-            return (this->context->state == ambient::locality::common);
+            return (get_scope().state == ambient::locality::common);
         }
         inline int workflow::which() const {
-            return this->context->rank;
+            return get_scope().rank;
         }
         inline bool workflow::tunable() const { 
             return (!get_controller().is_serial() && !scoped());
