@@ -66,12 +66,11 @@ namespace ambient {
     public:
         typedef controllers::ssm::controller controller_type;
         typedef typename controllers::ssm::controller::model_type model_type;
-        std::vector<controller_type> lane;
+        std::vector<controller_type> controller_lane;
+        mutable std::vector<scope*> context_lane;
         mutable base_scope base;
-        mutable scope* context;
 
         workflow();
-        scope& get_base_scope() const;
         scope& get_scope() const;
         controller_type& get_controller() const;
         controller_type* provide_controller();

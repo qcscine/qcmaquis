@@ -115,8 +115,7 @@ namespace ambient {
             this->set(rank);
         }
 
-        inline workflow::workflow() : lane(ambient::num_threads()) {
-            this->push(&base);
+        inline workflow::workflow() : controller_lane(ambient::num_threads()), context_lane(ambient::num_threads(), &base) {
             if(ambient::isset("AMBIENT_VERBOSE")){
                 ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE     << ")\n";
                 if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
@@ -134,41 +133,38 @@ namespace ambient {
             if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) mkl_parallel();
         }
         inline int workflow::generate_sid(){
-            int& sid = get_base_scope().sid;
+            int& sid = base.sid;
             ++sid %= AMBIENT_MAX_SID;
             return sid;
         }
         inline int workflow::get_sid() const {
-            return get_base_scope().sid;
+            return base.sid;
         }
         inline typename workflow::controller_type& workflow::get_controller() const {
-            return *get_base_scope().c;
+            return *get_scope().c;
         }
         inline typename workflow::controller_type* workflow::provide_controller(){
-            return &lane[AMBIENT_THREAD_ID];
+            return &controller_lane[AMBIENT_THREAD_ID];
         }
         inline void workflow::revoke_controller(controller_type* c){
             // some cleanups ?
         }
-        inline void workflow::sync(){
-            get_base_scope().c->flush();
-            get_base_scope().c->clear();  
-            memory::data_bulk::drop();
-        }
-        inline scope& workflow::get_base_scope() const {
-            return base;
-        }
         inline scope& workflow::get_scope() const {
-            return *context;
+            return *context_lane[AMBIENT_THREAD_ID];
+        }
+        inline void workflow::sync(){
+            base.c->flush();
+            base.c->clear();  
+            memory::data_bulk::drop();
         }
         inline bool workflow::scoped() const {
             return (&get_scope() != &this->base);
         }
         inline void workflow::pop(){
-            this->context = &this->base;
+            context_lane[AMBIENT_THREAD_ID] = &this->base;
         }
         inline void workflow::push(scope* s){
-            this->context = s; // no nesting
+            context_lane[AMBIENT_THREAD_ID] = s; // no nesting
         }
         inline bool workflow::remote() const {
             return (get_scope().state == ambient::locality::remote);
