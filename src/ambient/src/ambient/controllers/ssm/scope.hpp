@@ -153,8 +153,14 @@ namespace ambient {
             return *context_lane[AMBIENT_THREAD_ID];
         }
         inline void workflow::sync(){
-            base.c->flush();
-            base.c->clear();  
+            for(int k = 1; k < controller_lane.size(); k++){
+                for(auto i : *controller_lane[k].chains) controller_lane[0].queue(i);
+                controller_lane[k].chains->clear();
+            }
+            for(controller_type& k : controller_lane){
+                k.flush();
+                k.clear();  
+            }
             memory::data_bulk::drop();
         }
         inline bool workflow::scoped() const {

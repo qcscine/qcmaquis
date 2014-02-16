@@ -47,17 +47,14 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline void controller::flush(){
-        typedef typename std::vector<functor*>::const_iterator veci;
         AMBIENT_SMP_ENABLE
         while(!chains->empty()){
-            for(veci i = chains->begin(); i != chains->end(); ++i){
-                if((*i)->ready()){
-                    functor* task = *i;
+            for(auto task : *chains){
+                if(task->ready()){
                     AMBIENT_THREAD task->invoke();
-                    int size = task->deps.size();
-                    for(int n = 0; n < size; n++) task->deps[n]->ready();
+                    for(auto d : task->deps) d->ready();
                     mirror->insert(mirror->end(), task->deps.begin(), task->deps.end());
-                }else mirror->push_back(*i);
+                }else mirror->push_back(task);
             }
             chains->clear();
             std::swap(chains,mirror);

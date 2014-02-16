@@ -77,7 +77,7 @@ namespace ambient { namespace controllers { namespace ssm {
         bool is_serial() const;
 
         memory_type memory;
-    private:
+    public:
         model_type model;
         channel_type channel;
         std::vector< functor* > stack_m;
