@@ -24,8 +24,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_INTERFACE_SCOPE_HPP
-#define AMBIENT_INTERFACE_SCOPE_HPP
+#ifndef AMBIENT_CONTROLLERS_SSM_SCOPE_HPP
+#define AMBIENT_CONTROLLERS_SSM_SCOPE_HPP
 
 namespace ambient { 
 
@@ -48,7 +48,7 @@ namespace ambient {
         inline scope::scope(scope_t t) : type(t){
             if(t == scope_t::common){
                 if(ctxt.scoped()){
-                    if(ctxt.get_scope().type == scope_t::common){ this->dry = true; return; }
+                    if(ctxt.get_domain().type == scope_t::common){ this->dry = true; return; }
                     printf("Error: common scope inside other scope type\n");
                 }else{
                     this->dry = false;
@@ -77,7 +77,6 @@ namespace ambient {
         }
 
         inline base_scope::base_scope(){
-            this->sid = 13;
             this->c = ctxt.provide_controller();
             this->c->reserve(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
             this->round = c->get_num_workers();
@@ -115,87 +114,6 @@ namespace ambient {
             this->set(rank);
         }
 
-        inline workflow::workflow() : controller_lane(ambient::num_threads()), context_lane(ambient::num_threads(), &base) {
-            if(ambient::isset("AMBIENT_VERBOSE")){
-                ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE     << ")\n";
-                if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
-                ambient::cout << "ambient: size of instr bulk chunks: "     << AMBIENT_INSTR_BULK_CHUNK       << "\n";
-                ambient::cout << "ambient: size of data bulk chunks: "      << AMBIENT_DATA_BULK_CHUNK        << "\n";
-                if(ambient::isset("AMBIENT_BULK_LIMIT")) ambient::cout << "ambient: max chunks of data bulk: " << ambient::getint("AMBIENT_BULK_LIMIT") << "\n";
-                if(ambient::isset("AMBIENT_BULK_REUSE")) ambient::cout << "ambient: enabled bulk garbage collection\n";
-                if(ambient::isset("AMBIENT_BULK_DEALLOCATE")) ambient::cout << "ambient: enabled bulk deallocation\n";
-                ambient::cout << "ambient: maximum sid value: "             << AMBIENT_MAX_SID                << "\n";
-                ambient::cout << "ambient: number of db procs: "            << ambient::num_db_procs()        << "\n";
-                ambient::cout << "ambient: number of work procs: "          << ambient::num_workers()         << "\n";
-                ambient::cout << "ambient: number of threads per proc: "    << ambient::num_threads()         << "\n";
-                ambient::cout << "\n";
-            }
-            if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) mkl_parallel();
-        }
-        inline int workflow::generate_sid(){
-            int& sid = base.sid;
-            ++sid %= AMBIENT_MAX_SID;
-            return sid;
-        }
-        inline int workflow::get_sid() const {
-            return base.sid;
-        }
-        inline typename workflow::controller_type& workflow::get_controller() const {
-            return *get_scope().c;
-        }
-        inline typename workflow::controller_type* workflow::provide_controller(){
-            return &controller_lane[AMBIENT_THREAD_ID];
-        }
-        inline void workflow::revoke_controller(controller_type* c){
-            // some cleanups ?
-        }
-        inline scope& workflow::get_scope() const {
-            return *context_lane[AMBIENT_THREAD_ID];
-        }
-        inline void workflow::sync(){
-            for(int k = 1; k < controller_lane.size(); k++){
-                for(auto i : *controller_lane[k].chains) controller_lane[0].queue(i);
-                controller_lane[k].chains->clear();
-            }
-            for(controller_type& k : controller_lane){
-                k.flush();
-                k.clear();  
-            }
-            memory::data_bulk::drop();
-        }
-        inline bool workflow::scoped() const {
-            return (&get_scope() != &this->base);
-        }
-        inline void workflow::pop(){
-            context_lane[AMBIENT_THREAD_ID] = &this->base;
-        }
-        inline void workflow::push(scope* s){
-            context_lane[AMBIENT_THREAD_ID] = s; // no nesting
-        }
-        inline bool workflow::remote() const {
-            return (get_scope().state == ambient::locality::remote);
-        }
-        inline bool workflow::local() const {
-            return (get_scope().state == ambient::locality::local);
-        }
-        inline bool workflow::common() const {
-            return (get_scope().state == ambient::locality::common);
-        }
-        inline int workflow::which() const {
-            return get_scope().rank;
-        }
-        inline bool workflow::tunable() const { 
-            return (!get_controller().is_serial() && !scoped());
-        }
-        inline void workflow::intend_read(models::ssm::revision* r) const {
-            base.intend_read(r); 
-        }
-        inline void workflow::intend_write(models::ssm::revision* r) const {
-            base.intend_write(r); 
-        }
-        inline void workflow::schedule() const {
-            base.schedule();
-        }
 }
 
 #endif

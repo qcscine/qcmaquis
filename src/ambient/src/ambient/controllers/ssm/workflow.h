@@ -24,43 +24,56 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_SSM_SCOPE
-#define AMBIENT_CONTROLLERS_SSM_SCOPE
+#ifndef AMBIENT_CONTROLLERS_SSM_WORKFLOW
+#define AMBIENT_CONTROLLERS_SSM_WORKFLOW
 
 namespace ambient { 
 
-    class scope {
-    protected:
-        typedef models::ssm::model model_type;
-        typedef controllers::ssm::controller controller_type;
-        scope(){}
+    class workflow {
     public:
-        static int balance(int k, int max_k);
-        static int permute(int k, const std::vector<int>& s);
-       ~scope();
-        scope(int r);
-        scope(scope_t type);
-        void set(int r);
-        scope_t type;
-        bool dry;
-        int factor;
-        int round;
-        int rank;
-        ambient::locality state;
-        controller_type* c;
+        typedef controllers::ssm::controller controller_type;
+        typedef typename controller_type::model_type model_type;
+
+        struct thread_context {
+            thread_context(): sid(1) {}
+            controller_type controller;
+            scope* domain;
+            int sid;
+        };
+
+        mutable std::vector<thread_context> context_lane;
+        mutable base_scope base;
+
+        workflow();
+        scope& get_domain() const;
+        thread_context& get_context() const;
+        controller_type& get_controller() const;
+        controller_type* provide_controller();
+        void revoke_controller(controller_type* c);
+        void push(scope* s);
+        void pop();
+        void sync();
+        bool scoped() const;
+        bool remote() const;
+        bool local()  const;
+        bool common() const;
+        int  which()  const;
+        int  generate_sid();
+        int  get_sid() const;
+        bool tunable() const; 
+        void schedule() const;
+        void intend_read(models::ssm::revision* o) const;
+        void intend_write(models::ssm::revision* o) const;
     };
 
-    class base_scope : public scope {
-    public:
-        typedef typename scope::model_type model_type;
-        base_scope();
-        void schedule();
-        void intend_read(models::ssm::revision* o);
-        void intend_write(models::ssm::revision* o);
-        mutable std::vector<int> stakeholders;
-        mutable std::vector<int> scores;
-    };
+    #ifdef AMBIENT_BUILD_LIBRARY
+    workflow ctxt;
+    void sync(){ ctxt.sync(); }
+    #else
+    extern workflow ctxt;
+    #endif
 
 }
 
 #endif
+
