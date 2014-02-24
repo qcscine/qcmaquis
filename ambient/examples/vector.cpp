@@ -145,10 +145,10 @@ int main(){ using namespace ambient;
 
     vector<int> a(10, 13);
     vector<int> b(10, 10);
-                                 { scope<> select(1);
+                                 { scope select(1);
     add<int>::spawn(a, b);
                                  }
-                                 { scope<> select(0); 
+                                 { scope select(0); 
     add<int>::spawn(a, b);
                                  }
     for(int i = 0; i < 10; i++)
@@ -184,6 +184,7 @@ int main(){ using namespace ambient;
 
     int delta = 11;
     cilk_for(int i = 0; i < 100; i++){
+        scope select(0);
         for(int k = 0; k < 1000; k++)
         ambient::for_each( list[i]->begin(), list[i]->end(), [&] (int& val){ val += delta; } );
     }

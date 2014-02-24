@@ -46,7 +46,7 @@ namespace ambient { namespace controllers { namespace ssm {
         get*& transfer = (get*&)r.assist.second;
         if(ambient::ctxt.get_controller().update(r)) transfer = new get(r);
         *transfer += ambient::ctxt.which();
-        ambient::ctxt.get_controller().generate_sid();
+        ambient::ctxt.generate_sid();
     }
     inline get<revision>::get(revision& r) : t(r) {
         handle = ambient::ctxt.get_controller().get_channel().get(t);

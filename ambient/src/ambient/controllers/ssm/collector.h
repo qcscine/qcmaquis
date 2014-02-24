@@ -41,7 +41,7 @@ namespace ambient{ namespace memory {
             void operator()( transformable* element ) const;
         };
 
-        collector();
+        void reserve(size_t n);
         void push_back(history* o);
         void push_back(revision* o);
         void push_back(transformable* o);

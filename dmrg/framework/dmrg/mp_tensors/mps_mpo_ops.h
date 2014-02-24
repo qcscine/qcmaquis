@@ -91,7 +91,8 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     
     Boundary<Matrix, SymmGroup> left = mps.left_boundary();
     
-    semi_parallel_for (locale::compact(L), locale i = 0; i < L; ++i) {
+    for(size_t i = 0; i < L; ++i) {
+        select_proc(ambient::scope::balance(i,L));
         if (verbose)
             maquis::cout << "expval site " << (size_t)i << std::endl;
         left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
@@ -124,7 +125,8 @@ typename MPS<Matrix, SymmGroup>::scalar_type norm(MPS<Matrix, SymmGroup> const &
     block_matrix<Matrix, SymmGroup> left;
     left.insert_block(Matrix(1, 1, 1), SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
     
-    semi_parallel_for (locale::compact(L), locale i = 0; i < L; ++i) {
+    for(size_t i = 0; i < L; ++i) {
+        select_proc(ambient::scope::balance(i,L));
         MPSTensor<Matrix, SymmGroup> cpy = mps[i];
         left = contraction::overlap_left_step(mps[i], cpy, left); // serial
     }
@@ -143,7 +145,8 @@ typename MPS<Matrix, SymmGroup>::scalar_type overlap(MPS<Matrix, SymmGroup> cons
     block_matrix<Matrix, SymmGroup> left;
     left.insert_block(Matrix(1, 1, 1), SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
     
-    semi_parallel_for (locale::compact(L), locale i = 0; i < L; ++i) {
+    for(size_t i = 0; i < L; ++i) {
+        select_proc(ambient::scope::balance(i,L));
         left = contraction::overlap_left_step(mps1[i], mps2[i], left);
     }
     

@@ -31,9 +31,9 @@ namespace ambient { namespace memory {
     using ambient::models::ssm::transformable;
     using ambient::models::ssm::sizeof_transformable;
 
-    inline collector::collector(){
-        this->rev.reserve(AMBIENT_STACK_RESERVE);
-        this->str.reserve(AMBIENT_STACK_RESERVE);
+    inline void collector::reserve(size_t n){
+        this->rev.reserve(n);
+        this->str.reserve(n);
     }
 
     inline void collector::push_back(transformable* o){

@@ -143,8 +143,10 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
     std::size_t loop_max = M.n_blocks();
     
-    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+    omp_for(size_t k = 0; k < loop_max; ++k){
+        select_proc(ambient::scope::balance(k,loop_max));
         svd(M[k], U[k], V[k], S[k]);
+    }
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
@@ -157,8 +159,10 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
     evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
     std::size_t loop_max = M.n_blocks();
 
-    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+    omp_for(size_t k = 0; k < loop_max; ++k){
+        select_proc(ambient::scope::balance(k,loop_max));
         heev(M[k], evecs[k], evals[k]);
+    }
 }
     
 #ifdef USE_AMBIENT
@@ -197,7 +201,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     // filling the workload with smallest local matrices first
     for(size_t p = 0; p < np; ++p){
         workloads[p].second = p;
-        locale l(p);
+        select_proc(p);
         for(size_t i = 0; i < loop_max; ++i){
             size_t k = complexities[i].second;
             if(ambient::get_owner(M[k][0]) != p) continue;
@@ -210,7 +214,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
 
     // rebalancing using difference with average
     for(size_t p = 0; p < np; ++p){
-        locale l(p);
+        select_proc(p);
         for(size_t i = 0; i < loop_max; ++i){
             size_t k = complexities[i].second;
             if(complexities[i].first == 0) continue;
@@ -229,7 +233,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
         if(complexities[i].first == 0) continue;
         size_t k = complexities[i].second;
         int owner = workloads[p++].second;
-        locale l(owner);
+        select_proc(owner);
         merge(M[k]); 
         p %= np;
     }
@@ -238,7 +242,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
 
     static ambient::timer timer("svd only time\n"); timer.begin();
     for(size_t k = 0; k < loop_max; ++k){
-        locale l(ambient::get_owner(M[k][0]));
+        select_proc(ambient::get_owner(M[k][0]));
         svd_merged(M[k], U[k], V[k], S[k]);
     }
     ambient::sync(ambient::mkl_parallel());
@@ -255,8 +259,10 @@ void heev_merged(block_matrix<Matrix, SymmGroup> const & M,
     evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
     std::size_t loop_max = M.n_blocks();
 
-    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+    omp_for(size_t k = 0; k < loop_max; ++k){
+        select_proc(ambient::scope::balance(k,loop_max));
         heev_merged(M[k], evecs[k], evals[k]);
+    }
 }
 #endif
 
@@ -283,7 +289,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     typedef std::vector<typename maquis::traits::real_type<value_type>::type > real_vector_t;
     real_vector_t allevals(length);
 #ifdef USE_AMBIENT
-    locale_shared i;
+    select_proc(ambient::scope_t::common);
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         ambient::numeric::migrate(const_cast<DiagMatrix&>(evals[k])[0]);
     }
@@ -518,8 +524,10 @@ void qr(block_matrix<Matrix, SymmGroup> const& M,
     R = block_matrix<Matrix, SymmGroup>(k,n);
     std::size_t loop_max = M.n_blocks();
     
-    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+    omp_for(size_t k = 0; k < loop_max; ++k){
+        select_proc(ambient::scope::balance(k,loop_max));
         qr(M[k], Q[k], R[k]);
+    }
     
     assert(Q.right_basis() == R.left_basis());
     assert(Q.reasonable());
@@ -540,8 +548,10 @@ void lq(block_matrix<Matrix, SymmGroup> const& M,
     Q = block_matrix<Matrix, SymmGroup>(k,n);
     std::size_t loop_max = M.n_blocks();
     
-    parallel_for(locale::compact(loop_max), locale k = 0; k < loop_max; ++k)
+    omp_for(size_t k = 0; k < loop_max; ++k){
+        select_proc(ambient::scope::balance(k,loop_max));
         lq(M[k], L[k], Q[k]);
+    }
     
     assert(Q.left_basis() == L.right_basis());
     assert(Q.reasonable());

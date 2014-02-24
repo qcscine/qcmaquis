@@ -37,31 +37,24 @@ namespace ambient { namespace controllers { namespace ssm {
         this->clear();
     }
 
-    inline controller::controller(){
-        this->sid = 13;
+    inline controller::controller() : chains(&stack_m), mirror(&stack_s), db(0) {}
+
+    inline void controller::reserve(int db){
         this->stack_m.reserve(AMBIENT_STACK_RESERVE);
         this->stack_s.reserve(AMBIENT_STACK_RESERVE);
-        this->chains = &this->stack_m;
-        this->mirror = &this->stack_s;
-    }
-
-    inline void controller::init(int db){
+        this->garbage.reserve(AMBIENT_STACK_RESERVE);
         this->db = get_num_procs() > db ? db : 0;
-        this->serial = (get_num_procs() == 1) ? true : false;
     }
 
     inline void controller::flush(){
-        typedef typename std::vector<functor*>::const_iterator veci;
         AMBIENT_SMP_ENABLE
         while(!chains->empty()){
-            for(veci i = chains->begin(); i != chains->end(); ++i){
-                if((*i)->ready()){
-                    functor* task = *i;
+            for(auto task : *chains){
+                if(task->ready()){
                     AMBIENT_THREAD task->invoke();
-                    int size = task->deps.size();
-                    for(int n = 0; n < size; n++) task->deps[n]->ready();
+                    for(auto d : task->deps) d->ready();
                     mirror->insert(mirror->end(), task->deps.begin(), task->deps.end());
-                }else mirror->push_back(*i);
+                }else mirror->push_back(task);
             }
             chains->clear();
             std::swap(chains,mirror);
@@ -94,7 +87,7 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline void controller::sync(revision* r){
-        if(serial) return;
+        if(is_serial()) return;
         if(model.common(r)) return;
         if(model.feeds(r)) set<revision>::spawn(*r);
         else get<revision>::spawn(*r);
@@ -112,7 +105,7 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline void controller::lsync(transformable* v){
-        if(serial) return;
+        if(is_serial()) return;
         set<transformable>::spawn(*v);
     }
 
@@ -160,6 +153,10 @@ namespace ambient { namespace controllers { namespace ssm {
     inline int controller::get_dedicated_rank() const {
         return (get_num_procs()-db);
     }
+
+    inline bool controller::is_serial() const {
+        return (get_num_procs() == 1);
+    }
         
     inline bool controller::verbose() const {
         return (get_rank() == 0);
@@ -191,15 +188,6 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline int controller::get_num_workers() const {
         return (get_num_procs()-db);
-    }
-
-    inline int controller::generate_sid(){
-        ++this->sid %= AMBIENT_MAX_SID; 
-        return this->sid;
-    }
-
-    inline int controller::get_sid() const {
-        return this->sid;
     }
 
     inline typename controller::channel_type & controller::get_channel(){

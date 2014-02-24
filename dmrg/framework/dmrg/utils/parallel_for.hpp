@@ -29,21 +29,21 @@
 #define PARALLEL_FOR_HPP
 
 #ifdef USE_AMBIENT
-    typedef ambient::scope<ambient::scope_t::single> locale;
-    typedef ambient::scope<ambient::scope_t::shared> locale_shared;
-    #define parallel_for(constraint, ...) constraint; for(__VA_ARGS__)
-    #define semi_parallel_for(constraint, ...) constraint; for(__VA_ARGS__)
+    #define select_proc(...) ambient::scope ctxt(__VA_ARGS__)
+    #define switch_proc(...) ctxt.set(__VA_ARGS__)
+    #define parallel_for(...) for(__VA_ARGS__)
+    #define omp_for(...) for(__VA_ARGS__)
 #elif defined(MAQUIS_OPENMP)
-    typedef std::size_t locale;
-    typedef std::size_t locale_shared;
+    #define select_proc(...) 
+    #define switch_proc(...) 
     #define parallel_pragma(a) _Pragma( #a )
-    #define parallel_for(constraint, ...) parallel_pragma(omp parallel for schedule(dynamic, 1)) for(__VA_ARGS__)
-    #define semi_parallel_for(constraint, ...) for(__VA_ARGS__)
+    #define parallel_for(...) parallel_pragma(omp parallel for schedule(dynamic, 1)) for(__VA_ARGS__)
+    #define omp_for(...) parallel_for(__VA_ARGS__)
 #else
-    typedef std::size_t locale;
-    typedef std::size_t locale_shared;
-    #define parallel_for(constraint, ...) for(__VA_ARGS__)
-    #define semi_parallel_for(constraint, ...) for(__VA_ARGS__)
+    #define select_proc(...) 
+    #define switch_proc(...) 
+    #define parallel_for(...) for(__VA_ARGS__)
+    #define omp_for(...) for(__VA_ARGS__)
 #endif
 
 #endif

@@ -381,7 +381,8 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         size_t loop_max = left.aux_dim();
 
-        parallel_for(locale::scatter(mpo.placement_l), locale b = 0; b < loop_max; ++b){
+        omp_for(size_t b = 0; b < loop_max; ++b){
+            select_proc(ambient::scope::permute(b,mpo.placement_l)); 
             gemm_trim_left(transpose(left[b]), mps.data(), t[b]);
         }
 
@@ -397,7 +398,8 @@ struct contraction {
 
         loop_max = mpo.col_dim();
 
-        parallel_for(locale::scatter(mpo.placement_r), locale b2 = 0; b2 < loop_max; ++b2) {
+        omp_for(size_t b2 = 0; b2 < loop_max; ++b2) {
+            select_proc(ambient::scope::permute(b2,mpo.placement_r));
             ret[b2] = lbtm_kernel(b2, left, t, mpo, physical_i, left_i, right_i, out_left_i, in_right_pb, out_left_pb);
         }
 
@@ -421,7 +423,8 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
         size_t loop_max = right.aux_dim();
 
-        parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b){
+        omp_for(size_t b = 0; b < loop_max; ++b){
+            select_proc(ambient::scope::permute(b,mpo.placement_r));
             gemm_trim_right(mps.data(), right[b], t[b]);
         }
         
@@ -437,7 +440,8 @@ struct contraction {
         
         loop_max = mpo.row_dim();
 
-        parallel_for(locale::scatter(mpo.placement_l), locale b1 = 0; b1 < loop_max; ++b1) {
+        omp_for(size_t b1 = 0; b1 < loop_max; ++b1) {
+            select_proc(ambient::scope::permute(b1,mpo.placement_l));
             ret[b1] = rbtm_kernel(b1, right, t, mpo, physical_i, left_i, right_i, out_right_i, in_left_pb, out_right_pb);
         }
 
@@ -464,7 +468,8 @@ struct contraction {
             ket_cpy.make_right_paired();
             std::size_t loop_max = left.aux_dim();
 
-            parallel_for(locale::scatter(mpo.placement_l), locale b = 0; b < loop_max; ++b) {
+            omp_for(size_t b = 0; b < loop_max; ++b) {
+                select_proc(ambient::scope::permute(b,mpo.placement_l));
                 gemm_trim_left(transpose(left[b]), ket_cpy.data(), t[b]);
             }
         }
@@ -485,7 +490,8 @@ struct contraction {
 
         bra_tensor.make_left_paired();
         block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
-        parallel_for(locale::scatter(mpo.placement_r), locale b2 = 0; b2 < loop_max; ++b2) {
+        omp_for(size_t b2 = 0; b2 < loop_max; ++b2) {
+            select_proc(ambient::scope::permute(b2,mpo.placement_r));
             block_matrix<Matrix, SymmGroup> tmp;
             tmp = lbtm_kernel(b2, left, t, mpo, ket_tensor.site_dim(), left_i, right_i, out_left_i, in_right_pb, out_left_pb);
             gemm(transpose(tmp), bra_conj, ret[b2]);
@@ -517,8 +523,8 @@ struct contraction {
             ket_cpy.make_left_paired();
             std::size_t loop_max = right.aux_dim();
 
-            assert(bra_tensor.col_dim() == ket_cpy.data().right_basis());
-            parallel_for(locale::scatter(mpo.placement_r), locale b = 0; b < loop_max; ++b){
+            omp_for(size_t b = 0; b < loop_max; ++b){
+                select_proc(ambient::scope::permute(b,mpo.placement_r));
                 gemm_trim_right(ket_cpy.data(), right[b], t[b]);
             }
         }
@@ -538,7 +544,8 @@ struct contraction {
 
         bra_tensor.make_right_paired();
         block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
-        parallel_for(locale::scatter(mpo.placement_l), locale b1 = 0; b1 < loop_max; ++b1) {
+        omp_for(size_t b1 = 0; b1 < loop_max; ++b1) {
+            select_proc(ambient::scope::permute(b1,mpo.placement_l));
             block_matrix<Matrix, SymmGroup> tmp;
             tmp = rbtm_kernel(b1, right, t, mpo, ket_tensor.site_dim(), left_i, right_i, out_right_i, in_left_pb, out_right_pb);
             gemm(tmp, transpose(bra_conj), ret[b1]);
@@ -566,7 +573,8 @@ struct contraction {
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         std::size_t loop_max = left.aux_dim();
 
-        parallel_for(locale::scatter(mpo.placement_l), locale b = 0; b < loop_max; ++b) {
+        omp_for(size_t b = 0; b < loop_max; ++b) {
+            select_proc(ambient::scope::permute(b,mpo.placement_l));
             gemm_trim_left(transpose(left[b]), ket_tensor.data(), t[b]);
         }
 
@@ -581,7 +589,8 @@ struct contraction {
         
         loop_max = mpo.col_dim();
                     
-        parallel_for(locale::scatter(mpo.placement_r), locale b2 = 0; b2 < loop_max; ++b2) {
+        omp_for(size_t b2 = 0; b2 < loop_max; ++b2) {
+            select_proc(ambient::scope::permute(b2,mpo.placement_r));
 
             block_matrix<Matrix, SymmGroup> contr_column = lbtm_kernel(b2, left, t, mpo, physical_i, left_i,
                                                                        right_i, out_left_i, in_right_pb, out_left_pb);

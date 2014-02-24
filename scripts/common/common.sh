@@ -10,30 +10,28 @@ AMBIENT=ambient
 DMRG=dmrg
 TARGETS="ambient dmrg"
 
-RUN_PRESETS="1n.micro:             ~/maquis2014/benchmarks/dmrg_gs/1n/micro.L4/parms.50                 ~/maquis2014/benchmarks/dmrg_gs/1n/micro.L4/model
-             leakcheck:            ~/maquis2014/benchmarks/dmrg_gs/1n/leakcheck/parms                   ~/maquis2014/benchmarks/dmrg_gs/1n/leakcheck/model
-             anthracene:           ~/maquis2014/benchmarks/dmrg_gs/anthracene/parms                     ~/maquis2014/benchmarks/dmrg_gs/anthracene/model
-             1n.short:             ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L6/parms.6000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L6/model
-             1n.spinless.L8.6000:  ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/parms.6000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/model
-             1n.spinless.L8.8000:  ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/parms.8000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/model
-             1n.spinless.L8.10000: ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/parms.10000           ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.L8/model
-             1n.spinless.W16.3000: ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.W16/parms.3000           ~/maquis2014/benchmarks/dmrg_gs/1n/spinless.W16/model
-             1n.spinful.L8.6000:   ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.L8/parms.6000             ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.L8/model
-             1n.spinful.L8.8000:   ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.L8/parms.8000             ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.L8/model
-             1n.spinful.L8.10000:  ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.L8/parms.10000            ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.L8/model
-             1n.spinful.6x6.10k:   ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.6x6/parms.10k             ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.6x6/model
-             1n.spinful.6x6.20k:   ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.6x6/parms.20k             ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.6x6/model
-             1n.spinful.6x6.30k:   ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.6x6/parms.30k             ~/maquis2014/benchmarks/dmrg_gs/1n/spinful.6x6/model
-             Xn.spinful.3x20.10k:  ~/maquis2014/benchmarks/dmrg_gs/many_nodes/spinful.3x20/parms.10k    ~/maquis2014/benchmarks/dmrg_gs/many_nodes/spinful.3x20/model
-             Xn.adrian.10x10.10k:  ~/maquis2014/benchmarks/dmrg_gs/many_nodes/adrian.10x10/parms.10k    ~/maquis2014/benchmarks/dmrg_gs/many_nodes/adrian.10x10/model
-             Xn.adrian.10x10.10k:  ~/maquis2014/benchmarks/dmrg_gs/many_nodes/adrian.10x10/parms.10k    ~/maquis2014/benchmarks/dmrg_gs/many_nodes/adrian.10x10/model
-             Xn.hubbard.12x24.20k: ~/maquis2014/benchmarks/dmrg_gs/many_nodes/hubbard.12x24/parms.20000 ~/maquis2014/benchmarks/dmrg_gs/many_nodes/hubbard.12x24/model
-             1n.quench.L51.gs:     ~/maquis2014/benchmarks/dmrg_gs/1n/quench.L51/parms.200              ~/maquis2014/benchmarks/dmrg_gs/1n/quench.L51/model
-             1n.quench.L51.te:     ~/maquis2014/benchmarks/dmrg_te/1n/quench.L51/parms.200              ~/maquis2014/benchmarks/dmrg_te/1n/quench.L51/model
-             1n.quench_2s.L51.gs:  ~/maquis2014/benchmarks/dmrg_gs/1n/quench_2s.L51/parms.400           ~/maquis2014/benchmarks/dmrg_gs/1n/quench_2s.L51/model
-             1n.quench_2s.L51.te:  ~/maquis2014/benchmarks/dmrg_te/1n/quench_2s.L51/parms.400           ~/maquis2014/benchmarks/dmrg_te/1n/quench_2s.L51/model
-             fermiladder.L16:      ~/maquis2014/benchmarks/dmrg_gs/fermiladder.L16/parms.600            ~/maquis2014/benchmarks/dmrg_gs/fermiladder.L16/model
-             hubbard.L10:          ~/maquis2014/benchmarks/dmrg_gs/hubbard.L10/parms.2000               ~/maquis2014/benchmarks/dmrg_gs/hubbard.L10/model"
+RUN_PRESETS="micro:             ~/maquis2014/benchmarks/dmrg_gs/micro.L4/parms.50         ~/maquis2014/benchmarks/dmrg_gs/micro.L4/model
+             anthracene:        ~/maquis2014/benchmarks/dmrg_gs/anthracene/parms          ~/maquis2014/benchmarks/dmrg_gs/anthracene/model
+             short:             ~/maquis2014/benchmarks/dmrg_gs/spinless.L6/parms.6000    ~/maquis2014/benchmarks/dmrg_gs/spinless.L6/model
+             spinless.L8.6000:  ~/maquis2014/benchmarks/dmrg_gs/spinless.L8/parms.6000    ~/maquis2014/benchmarks/dmrg_gs/spinless.L8/model
+             spinless.L8.8000:  ~/maquis2014/benchmarks/dmrg_gs/spinless.L8/parms.8000    ~/maquis2014/benchmarks/dmrg_gs/spinless.L8/model
+             spinless.L8.10000: ~/maquis2014/benchmarks/dmrg_gs/spinless.L8/parms.10000   ~/maquis2014/benchmarks/dmrg_gs/spinless.L8/model
+             spinless.W16.3000: ~/maquis2014/benchmarks/dmrg_gs/spinless.W16/parms.3000   ~/maquis2014/benchmarks/dmrg_gs/spinless.W16/model
+             spinful.L8.6000:   ~/maquis2014/benchmarks/dmrg_gs/spinful.L8/parms.6000     ~/maquis2014/benchmarks/dmrg_gs/spinful.L8/model
+             spinful.L8.8000:   ~/maquis2014/benchmarks/dmrg_gs/spinful.L8/parms.8000     ~/maquis2014/benchmarks/dmrg_gs/spinful.L8/model
+             spinful.L8.10000:  ~/maquis2014/benchmarks/dmrg_gs/spinful.L8/parms.10000    ~/maquis2014/benchmarks/dmrg_gs/spinful.L8/model
+             spinful.6x6.10k:   ~/maquis2014/benchmarks/dmrg_gs/spinful.6x6/parms.10k     ~/maquis2014/benchmarks/dmrg_gs/spinful.6x6/model
+             spinful.6x6.20k:   ~/maquis2014/benchmarks/dmrg_gs/spinful.6x6/parms.20k     ~/maquis2014/benchmarks/dmrg_gs/spinful.6x6/model
+             spinful.6x6.30k:   ~/maquis2014/benchmarks/dmrg_gs/spinful.6x6/parms.30k     ~/maquis2014/benchmarks/dmrg_gs/spinful.6x6/model
+             spinful.3x20.10k:  ~/maquis2014/benchmarks/dmrg_gs/spinful.3x20/parms.10k    ~/maquis2014/benchmarks/dmrg_gs/spinful.3x20/model
+             drian.10x10.10k:   ~/maquis2014/benchmarks/dmrg_gs/adrian.10x10/parms.10k    ~/maquis2014/benchmarks/dmrg_gs/adrian.10x10/model
+             hubbard.12x24.20k: ~/maquis2014/benchmarks/dmrg_gs/hubbard.12x24/parms.20000 ~/maquis2014/benchmarks/dmrg_gs/hubbard.12x24/model
+             quench.L51.gs:     ~/maquis2014/benchmarks/dmrg_gs/quench.L51/parms.200      ~/maquis2014/benchmarks/dmrg_gs/quench.L51/model
+             quench.L51.te:     ~/maquis2014/benchmarks/dmrg_te/quench.L51/parms.200      ~/maquis2014/benchmarks/dmrg_te/quench.L51/model
+             quench_2s.L51.gs:  ~/maquis2014/benchmarks/dmrg_gs/quench_2s.L51/parms.400   ~/maquis2014/benchmarks/dmrg_gs/quench_2s.L51/model
+             quench_2s.L51.te:  ~/maquis2014/benchmarks/dmrg_te/quench_2s.L51/parms.400   ~/maquis2014/benchmarks/dmrg_te/quench_2s.L51/model
+             fermiladder.L16:   ~/maquis2014/benchmarks/dmrg_gs/fermiladder.L16/parms.600 ~/maquis2014/benchmarks/dmrg_gs/fermiladder.L16/model
+             hubbard.L10:       ~/maquis2014/benchmarks/dmrg_gs/hubbard.L10/parms.2000    ~/maquis2014/benchmarks/dmrg_gs/hubbard.L10/model"
 
 ## settings ##
 

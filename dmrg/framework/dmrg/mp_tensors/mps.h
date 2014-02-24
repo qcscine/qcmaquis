@@ -109,6 +109,8 @@ public:
         swap(a.canonized_i, b.canonized_i);
     }
     
+    template <class Archive> void serialize(Archive & ar, const unsigned int version);
+    
 private:
     
     data_t data_;

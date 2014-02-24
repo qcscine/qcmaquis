@@ -96,8 +96,10 @@ public:
     
     void shift_aux_charges(typename SymmGroup::charge);
     
-    void multiply_from_left(block_matrix<Matrix, SymmGroup> const &);
-    void multiply_from_right(block_matrix<Matrix, SymmGroup> const &);
+    template <class OtherMatrix>
+    void multiply_from_left(block_matrix<OtherMatrix, SymmGroup> const &);
+    template <class OtherMatrix>
+    void multiply_from_right(block_matrix<OtherMatrix, SymmGroup> const &);
     void multiply_by_scalar(const scalar_type&);
     void divide_by_scalar(const scalar_type&);
     
@@ -136,7 +138,8 @@ public:
     
     template<class Archive> void load(Archive & ar);
     template<class Archive> void save(Archive & ar) const;
-    
+    template <class Archive> void serialize(Archive & ar, const unsigned int version);
+
     void check_equal(MPSTensor<Matrix, SymmGroup> const &) const;
     bool reasonable() const;
     bool num_check() const; // checks for nan or inf

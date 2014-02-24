@@ -24,123 +24,43 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_INTERFACE_SCOPE
-#define AMBIENT_INTERFACE_SCOPE
+#ifndef AMBIENT_CONTROLLERS_SSM_SCOPE
+#define AMBIENT_CONTROLLERS_SSM_SCOPE
 
 namespace ambient { 
 
-    class iscope {
-    public:
-        int rank;
-        ambient::locality state;
-        virtual bool tunable() const = 0;
-        virtual void score(int c, size_t v) const {}
-        virtual void select(int c) const {}
-        virtual void schedule(){}
-    };
-
-    template<scope_t T = scope_t::single>
-    class scope {};
-
-    template<>
-    class scope<scope_t::base> : public iscope {
-    public:
+    class scope {
+    protected:
+        typedef models::ssm::model model_type;
         typedef controllers::ssm::controller controller_type;
-        typedef typename controllers::ssm::controller::model_type model_type;
-        controller_type c;
-
-        scope();
-        controller_type& get_controller(size_t n = AMBIENT_THREAD_ID); 
-        void sync();
-        bool scoped() const;
-        
-        void set_context(const iscope* s);
-        void pop_context();
-
-        bool remote() const;
-        bool local() const;
-        bool common() const;
-        int which() const;
-
-        virtual void intend_read(models::ssm::revision* o);
-        virtual void intend_write(models::ssm::revision* o);
-        virtual bool tunable() const ; 
-        virtual void score(int c, size_t v) const ;
-        virtual void select(int c) const ;
-        virtual void schedule();
-        mutable std::vector<int> stakeholders;
-        mutable std::vector<int> scores;
-        int round;
-
-        const iscope* context;
-    };
-
-    #ifdef AMBIENT_BUILD_LIBRARY
-    scope<scope_t::base> ctxt;
-    void sync(){ ctxt.sync(); }
-    #else
-    extern scope<scope_t::base> ctxt;
-    #endif
-
-    template<>
-    class scope<scope_t::threaded> : public iscope {
+        scope(){}
     public:
-        scope(const std::vector<int>& map, int iterator = 0);
+        static int balance(int k, int max_k);
+        static int permute(int k, const std::vector<int>& s);
        ~scope();
-        virtual bool tunable() const ;
+        scope(int r);
+        scope(scope_t type);
+        void set(int r);
+        scope_t type;
         bool dry;
-    };
-
-    template<>
-    class scope<scope_t::single> : public iscope {
-    public:
-        static int grain; 
-        static std::vector<int> permutation;
-
-        static void compact(size_t n); 
-        static void scatter(const std::vector<int>& p);
-        scope(int value = 0);
-        void eval();
-        void shift();
-        void shift_back(); 
-        scope& operator++ ();
-        scope& operator-- ();
-        operator size_t () const ;
-        bool operator < (size_t lim);
-       ~scope();
-        virtual bool tunable() const ;
-        friend std::ostream& operator<< (std::ostream& os, scope const& l){
-            os << static_cast<size_t>(l);
-            return os;
-        }
-        std::vector<int> map;
-        size_t index;
-        bool dry;
-        int iterator;
         int factor;
         int round;
+        int rank;
+        ambient::locality state;
+        controller_type* c;
     };
 
-    #ifdef AMBIENT_BUILD_LIBRARY
-    int scope<scope_t::single>::grain = 1;
-    std::vector<int> scope<scope_t::single>::permutation;
-    #endif
-
-    template<>
-    class scope<scope_t::dedicated> : public iscope {
+    class base_scope : public scope {
     public:
-        scope();
-       ~scope();
-        virtual bool tunable() const ;
+        typedef typename scope::model_type model_type;
+        base_scope();
+        void schedule();
+        void intend_read(models::ssm::revision* o);
+        void intend_write(models::ssm::revision* o);
+        mutable std::vector<int> stakeholders;
+        mutable std::vector<int> scores;
     };
 
-    template<>
-    class scope<scope_t::shared> : public iscope {
-    public:
-        scope();
-       ~scope();
-        virtual bool tunable() const ;
-    };
 }
 
 #endif

@@ -87,6 +87,7 @@
 #include "ambient/controllers/ssm/get.h"
 #include "ambient/controllers/ssm/set.h"
 #include "ambient/controllers/ssm/scope.h"
+#include "ambient/controllers/ssm/workflow.h"
 
 #include "ambient/utils/auxiliary.hpp"
 #include "ambient/utils/io.hpp"
@@ -114,6 +115,7 @@
 #include "ambient/controllers/ssm/collector.hpp"
 #include "ambient/controllers/ssm/controller.hpp"
 #include "ambient/controllers/ssm/scope.hpp"
+#include "ambient/controllers/ssm/workflow.hpp"
 
 #include "ambient/interface/typed.hpp"
 #include "ambient/interface/kernel.hpp"

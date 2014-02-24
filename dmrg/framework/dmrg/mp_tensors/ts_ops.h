@@ -205,11 +205,7 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     for (int p=0; p<L_ts && global_table; ++p)
         global_table = (mpo_orig[p].get_operator_table() == mpo_orig[0].get_operator_table());
 
-#ifdef USE_AMBIENT
-    for(size_t p = 0; p < L_ts; ++p)
-#else
-    parallel_for(locale::compact(L_ts), locale p = 0; p < L_ts; ++p)
-#endif
+    omp_for(size_t p = 0; p < L_ts; ++p)
         mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1],
                                                             mps[p].site_dim(), mps[p+1].site_dim(), global_table);
         
@@ -219,6 +215,17 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     }
     maquis::cout << "Total number of tags: " << ntags << std::endl;
 
+    maquis::cout << "Single site MPO\n";
+    for (int p=0; p < mpo_orig.size(); ++p){
+        maquis::cout << "Site " << p << std::endl;
+        mpo_orig[p].print_layout();
+    }
+
+    maquis::cout << "Two site MPO\n";
+    for (int p=0; p < mpo_out.size(); ++p){
+        maquis::cout << "Site " << p << std::endl;
+        mpo_out[p].print_layout();
+    }
 }
 
 #endif

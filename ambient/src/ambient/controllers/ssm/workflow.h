@@ -24,13 +24,56 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_UTILS_ENUMS
-#define AMBIENT_UTILS_ENUMS
+#ifndef AMBIENT_CONTROLLERS_SSM_WORKFLOW
+#define AMBIENT_CONTROLLERS_SSM_WORKFLOW
 
-namespace ambient {
-    enum class locality { remote, local, common };
-    enum class scope_t  { base, common, single };
-    enum class region_t { bulk, standard, delegated };
+namespace ambient { 
+
+    class workflow {
+    public:
+        typedef controllers::ssm::controller controller_type;
+        typedef typename controller_type::model_type model_type;
+
+        struct thread_context {
+            thread_context(): sid(1) {}
+            controller_type controller;
+            scope* domain;
+            int sid;
+        };
+
+        mutable std::vector<thread_context> context_lane;
+        mutable base_scope base;
+
+        workflow();
+        scope& get_domain() const;
+        thread_context& get_context() const;
+        controller_type& get_controller() const;
+        controller_type* provide_controller();
+        void revoke_controller(controller_type* c);
+        void push(scope* s);
+        void pop();
+        void sync();
+        bool scoped() const;
+        bool remote() const;
+        bool local()  const;
+        bool common() const;
+        int  which()  const;
+        int  generate_sid();
+        int  get_sid() const;
+        bool tunable() const; 
+        void schedule() const;
+        void intend_read(models::ssm::revision* o) const;
+        void intend_write(models::ssm::revision* o) const;
+    };
+
+    #ifdef AMBIENT_BUILD_LIBRARY
+    workflow ctxt;
+    void sync(){ ctxt.sync(); }
+    #else
+    extern workflow ctxt;
+    #endif
+
 }
 
 #endif
+

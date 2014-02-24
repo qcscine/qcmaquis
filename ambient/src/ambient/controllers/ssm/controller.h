@@ -44,7 +44,7 @@ namespace ambient { namespace controllers { namespace ssm {
                                                > memory_type;
         controller();
        ~controller();
-        void init(int db = 0);
+        void reserve(int db = 0);
         bool empty();
         void flush();
         void clear();
@@ -70,16 +70,14 @@ namespace ambient { namespace controllers { namespace ssm {
         int  get_num_db_procs() const;
         int  get_num_workers() const;
         int  get_num_procs() const;
-        int get_sid() const;
-        int generate_sid();
         channel_type & get_channel();
 
         void meminfo() const;
         bool verbose() const;
+        bool is_serial() const;
 
         memory_type memory;
-        bool serial;
-    private:
+    public:
         model_type model;
         channel_type channel;
         std::vector< functor* > stack_m;
@@ -87,7 +85,6 @@ namespace ambient { namespace controllers { namespace ssm {
         std::vector< functor* >* chains;
         std::vector< functor* >* mirror;
         ambient::memory::collector garbage;
-        int sid;
         int db;
     };
     

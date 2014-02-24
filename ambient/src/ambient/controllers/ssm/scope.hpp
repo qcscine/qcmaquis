@@ -24,202 +24,96 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_INTERFACE_SCOPE_HPP
-#define AMBIENT_INTERFACE_SCOPE_HPP
+#ifndef AMBIENT_CONTROLLERS_SSM_SCOPE_HPP
+#define AMBIENT_CONTROLLERS_SSM_SCOPE_HPP
 
 namespace ambient { 
 
-        inline scope<scope_t::base>::scope(){
-            context = this;
-            int db = ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0;
-            c.init(db);
-
-            this->round = ambient::num_workers();
-            this->state = ambient::rank() ? ambient::locality::remote : ambient::locality::local;
-            this->rank  = 0;
-            this->scores.resize(round, 0);
-
-            if(ambient::isset("AMBIENT_VERBOSE")){
-                ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE     << ")\n";
-                if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
-                ambient::cout << "ambient: size of instr bulk chunks: "     << AMBIENT_INSTR_BULK_CHUNK       << "\n";
-                ambient::cout << "ambient: size of data bulk chunks: "      << AMBIENT_DATA_BULK_CHUNK        << "\n";
-                if(ambient::isset("AMBIENT_BULK_LIMIT")) ambient::cout << "ambient: max chunks of data bulk: " << ambient::getint("AMBIENT_BULK_LIMIT") << "\n";
-                if(ambient::isset("AMBIENT_BULK_REUSE")) ambient::cout << "ambient: enabled bulk garbage collection\n";
-                if(ambient::isset("AMBIENT_BULK_DEALLOCATE")) ambient::cout << "ambient: enabled bulk deallocation\n";
-                ambient::cout << "ambient: maximum sid value: "             << AMBIENT_MAX_SID                << "\n";
-                ambient::cout << "ambient: number of db procs: "            << ambient::num_db_procs()        << "\n";
-                ambient::cout << "ambient: number of work procs: "          << ambient::num_workers()         << "\n";
-                ambient::cout << "ambient: number of threads per proc: "    << ambient::num_threads()         << "\n";
-                ambient::cout << "\n";
+        inline int scope::balance(int k, int max_k){
+            if(max_k > ambient::num_workers()){
+                int k_ = k/((int)(max_k / ambient::num_workers()));
+                if(k_ < ambient::num_workers()) return k_;
             }
-            if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) mkl_parallel();
+            return k;
+        }
+        inline int scope::permute(int k, const std::vector<int>& s){
+            if(k >= s.size()){ printf("Error: permutation overflow!\n"); return k; }
+            return s[k];
+        }
+        inline scope::~scope(){
+            if(dry) return;
+            ctxt.revoke_controller(c);
+            ctxt.pop();
+        }
+        inline scope::scope(scope_t t) : type(t){
+            if(t == scope_t::common){
+                if(ctxt.scoped()){
+                    if(ctxt.get_domain().type == scope_t::common){ this->dry = true; return; }
+                    printf("Error: common scope inside other scope type\n");
+                }else{
+                    this->dry = false;
+                    this->rank = ctxt.get_controller().get_shared_rank();
+                    this->state = ambient::locality::common;
+                    c = ctxt.provide_controller();
+                    ctxt.push(this);
+                }
+            }else{
+                printf("Error: unknown scope type!\n");
+            }
+        }
+        inline scope::scope(int r) : type(scope_t::single) {
+            c = ctxt.provide_controller(); // need to change dry stuff
+            if(ambient::ctxt.scoped()) dry = true;
+            else{ 
+                dry = false; 
+                ctxt.push(this); 
+            }
+            this->round = c->get_num_workers();
+            this->set(r);
+        }
+        inline void scope::set(int r){
+            this->rank = r % this->round;
+            this->state = (this->rank == c->get_rank()) ? ambient::locality::local : ambient::locality::remote;
         }
 
-        inline typename scope<scope_t::base>::controller_type& scope<scope_t::base>::get_controller(size_t n){
-            return c;
+        inline base_scope::base_scope(){
+            this->c = ctxt.provide_controller();
+            this->c->reserve(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
+            this->round = c->get_num_workers();
+            this->scores.resize(round, 0);
+            this->set(0);
         }
-        inline void scope<scope_t::base>::sync(){
-            c.flush();
-            c.clear();  
-            memory::data_bulk::drop();
-        }
-        inline bool scope<scope_t::base>::scoped() const {
-            return (context != this);
-        }
-        inline void scope<scope_t::base>::set_context(const iscope* s){
-            this->context = s; // no nesting
-        }
-        inline void scope<scope_t::base>::pop_context(){
-            this->context = this;
-        }
-        inline bool scope<scope_t::base>::remote() const {
-            return (this->context->state == ambient::locality::remote);
-        }
-        inline bool scope<scope_t::base>::local() const {
-            return (this->context->state == ambient::locality::local);
-        }
-        inline bool scope<scope_t::base>::common() const {
-            return (this->context->state == ambient::locality::common);
-        }
-        inline int scope<scope_t::base>::which() const {
-            return this->context->rank;
-        }
-        inline void scope<scope_t::base>::intend_read(models::ssm::revision* r){
+        inline void base_scope::intend_read(models::ssm::revision* r){
             if(r == NULL || model_type::common(r)) return;
-            this->score(model_type::owner(r), r->spec.extent);
+            this->scores[model_type::owner(r)] += r->spec.extent;
         }
-        inline void scope<scope_t::base>::intend_write(models::ssm::revision* r){
+        inline void base_scope::intend_write(models::ssm::revision* r){
             if(r == NULL || model_type::common(r)) return;
-            this->select(model_type::owner(r));
+            this->stakeholders.push_back(model_type::owner(r));
         }
-        inline bool scope<scope_t::base>::tunable() const { 
-            if(c.serial) return false;
-            return (context == this);
-        }
-        inline void scope<scope_t::base>::score(int r, size_t v) const {
-            this->scores[r] += v;
-        }
-        inline void scope<scope_t::base>::select(int r) const {
-            this->stakeholders.push_back(r);
-        }
-        inline void scope<scope_t::base>::schedule(){
+        inline void base_scope::schedule(){
             int max = 0;
+            int rank = this->rank;
             if(stakeholders.empty()){
-                for(int i = 0; i < round; i++)
+                for(int i = 0; i < this->round; i++)
                 if(scores[i] >= max){
                     max = scores[i];
-                    this->rank = i;
+                    rank = i;
                 }
             }else{
                 for(int i = 0; i < stakeholders.size(); i++){
                     int k = stakeholders[i];
                     if(scores[k] >= max){
                         max = scores[k];
-                        this->rank = k;
+                        rank = k;
                     }
                 }
                 stakeholders.clear();
             }
             std::fill(scores.begin(), scores.end(), 0);
-            this->state = (this->rank == ambient::rank()) ? 
-                          ambient::locality::local : ambient::locality::remote;
+            this->set(rank);
         }
 
-        inline scope<scope_t::threaded>::scope(const std::vector<int>& map, int iterator){
-            if(ambient::parallel()) dry = true;
-            else{ dry = false; ctxt.set_context(this); }
-            int round = ambient::num_workers();
-
-            int i = iterator >= map.size() ? iterator : map[iterator];
-            if(i >= round) this->rank = i % round;
-            else           this->rank = i;
-            this->state = (this->rank == ambient::rank()) ? ambient::locality::local : ambient::locality::remote;
-        }
-        inline scope<scope_t::threaded>::~scope(){
-            if(!dry) ctxt.pop_context();
-        }
-        inline bool scope<scope_t::threaded>::tunable() const {
-            return false; 
-        }
-
-
-        inline void scope<scope_t::single>::compact(size_t n){ 
-            if(n <= ambient::num_workers()) return; 
-            grain = (int)(n / ambient::num_workers()); // iterations before switch 
-        } 
-        inline void scope<scope_t::single>::scatter(const std::vector<int>& p){
-            permutation = p;
-        } 
-        inline scope<scope_t::single>::scope(int value) : index(value), iterator(value) {
-            this->factor = grain; grain = 1;
-            this->map = permutation; permutation.clear();
-            if(ambient::parallel()) dry = true;
-            else{ dry = false; ctxt.set_context(this); }
-            this->round = ambient::num_workers();
-            this->eval();
-        }
-        inline void scope<scope_t::single>::eval(){
-            int i = iterator >= map.size() ? iterator : map[iterator];
-            if(i >= this->round*this->factor) this->rank = i % this->round;
-            else                              this->rank = i / this->factor;
-            this->state = (this->rank == ambient::rank()) ? ambient::locality::local : ambient::locality::remote;
-        }
-        inline void scope<scope_t::single>::shift(){
-            this->iterator++;
-            this->eval();
-        }
-        inline void scope<scope_t::single>::shift_back(){ 
-            this->iterator--;
-            this->eval();
-        } 
-        inline scope<scope_t::single>& scope<scope_t::single>::operator++ (){
-            this->shift();
-            this->index++;
-            return *this;
-        }
-        inline scope<scope_t::single>& scope<scope_t::single>::operator-- (){
-            this->shift_back();
-            this->index--;
-            return *this;
-        }
-        inline scope<scope_t::single>::operator size_t () const{
-            return index;
-        }
-        inline bool scope<scope_t::single>::operator < (size_t lim){
-            return index < lim;
-        }
-        inline scope<scope_t::single>::~scope(){
-            if(!dry) ctxt.pop_context();
-        }
-        inline bool scope<scope_t::single>::tunable() const {
-            return false; 
-        }
-
-
-        inline scope<scope_t::dedicated>::scope(){
-            ctxt.set_context(this);
-            this->rank = ambient::dedicated_rank();
-            this->state = (this->rank == ambient::rank()) ? ambient::locality::local : ambient::locality::remote;
-        }
-        inline scope<scope_t::dedicated>::~scope(){
-            ctxt.pop_context();
-        }
-        inline bool scope<scope_t::dedicated>::tunable() const {
-            return false; 
-        }
-
-        inline scope<scope_t::shared>::scope(){
-            ctxt.set_context(this);
-            this->state = ambient::locality::common;
-            this->rank = ctxt.get_controller().get_shared_rank();
-        }
-        inline scope<scope_t::shared>::~scope(){
-            ctxt.pop_context();
-        }
-        inline bool scope<scope_t::shared>::tunable() const { 
-            return false; 
-        }
 }
 
 #endif

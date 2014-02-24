@@ -290,8 +290,9 @@ void MPSTensor<Matrix, SymmGroup>::shift_aux_charges(typename SymmGroup::charge 
 }
 
 template<class Matrix, class SymmGroup>
+template <class OtherMatrix>
 void
-MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<Matrix, SymmGroup> const & N)
+MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<OtherMatrix, SymmGroup> const & N)
 {
     cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;
@@ -301,8 +302,9 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<Matrix, SymmGroup
 }
 
 template<class Matrix, class SymmGroup>
+template <class OtherMatrix>
 void
-MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<Matrix, SymmGroup> const & N)
+MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<OtherMatrix, SymmGroup> const & N)
 {
     cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;
@@ -372,7 +374,8 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     common_subset(i1, i2);
     std::vector<scalar_type> vt; vt.reserve(i1.size());
 
-    semi_parallel_for (locale::compact(i1.size()), locale b = 0; b < i1.size(); ++b) {
+    for (size_t b = 0; b < i1.size(); ++b) {
+        select_proc(ambient::scope::balance(b,i1.size()));
         typename SymmGroup::charge c = i1[b].first;
         assert( data().has_block(c,c) && rhs.data().has_block(c,c) );
         vt.push_back(overlap(data()(c,c), rhs.data()(c,c)));
@@ -541,6 +544,13 @@ void MPSTensor<Matrix, SymmGroup>::save(Archive & ar) const
     ar["left_i"] << left_i;
     ar["right_i"] << right_i;
     ar["data_"] << data();
+}
+
+template<class Matrix, class SymmGroup>
+template<class Archive>
+void MPSTensor<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
+{
+    ar & phys_i & left_i & right_i & cur_storage & cur_normalization & data_;
 }
 
 template<class Matrix, class SymmGroup>
