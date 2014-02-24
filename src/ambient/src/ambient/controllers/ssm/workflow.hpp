@@ -47,19 +47,43 @@ namespace ambient {
             }
             if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) mkl_parallel();
         }
+
+        inline workflow::thread_context::sid_t::divergence_guard::divergence_guard(){
+            for(auto& k : ctxt.context_lane){
+                k.sid.max = k.sid.min = ctxt.context_lane[0].sid.value;
+                k.domain = ctxt.context_lane[0].domain;
+            }
+        }
+        inline workflow::thread_context::sid_t::divergence_guard::~divergence_guard(){
+            int& max = ctxt.context_lane[0].sid.value;
+            for(auto& k : ctxt.context_lane){
+                max = std::max(max, k.sid.max);
+                k.sid.inc = 1;
+            }
+        }
+        inline void workflow::thread_context::sid_t::offset(int offset, int increment){
+            this->value = this->min + offset;
+            this->inc = increment;
+        }
+        inline void workflow::thread_context::sid_t::maximize(){
+            if(value < min) value += AMBIENT_MAX_SID;
+            if(value > max) max = value;
+        }
+        inline int workflow::thread_context::sid_t::generate(){
+            value = (value + inc) % AMBIENT_MAX_SID;
+            return value;
+        }
         inline int workflow::generate_sid(){
-            int& sid = get_context().sid;
-            ++sid %= AMBIENT_MAX_SID;
-            return sid;
+            return get_context().sid.generate();
         }
         inline int workflow::get_sid() const {
-            return get_context().sid;
+            return get_context().sid.value;
         }
         inline workflow::thread_context& workflow::get_context() const {
             return context_lane[AMBIENT_THREAD_ID];
         }
         inline typename workflow::controller_type& workflow::get_controller() const {
-            return *get_domain().c;
+            return *get_domain().controller; // caution: != get_context().controller;
         }
         inline typename workflow::controller_type* workflow::provide_controller(){
             return &get_context().controller;
@@ -75,7 +99,7 @@ namespace ambient {
                 for(auto i : *context_lane[k].controller.chains) context_lane[0].controller.queue(i);
                 context_lane[k].controller.chains->clear();
             }
-            for(thread_context& k : context_lane){
+            for(auto& k : context_lane){
                 k.controller.flush();
                 k.controller.clear();
             }

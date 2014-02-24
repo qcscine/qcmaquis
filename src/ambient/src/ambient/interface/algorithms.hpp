@@ -24,43 +24,30 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_SSM_SCOPE
-#define AMBIENT_CONTROLLERS_SSM_SCOPE
+#ifndef AMBIENT_INTERFACE_ALGORITHMS
+#define AMBIENT_INTERFACE_ALGORITHMS
 
-namespace ambient { 
+namespace ambient {
 
-    class scope {
-    protected:
-        typedef models::ssm::model model_type;
-        typedef controllers::ssm::controller controller_type;
-        scope(){}
-    public:
-        static int balance(int k, int max_k);
-        static int permute(int k, const std::vector<int>& s);
-       ~scope();
-        scope(int r);
-        scope(scope_t type);
-        void set(int r);
-        scope_t type;
-        bool dry;
-        int factor;
-        int round;
-        int rank;
-        ambient::locality state;
-        controller_type* controller;
-    };
+    #ifdef AMBIENT_CILK
+    template<class T> auto dereference(T a) -> decltype(*a){ return *a; }
+    inline int dereference(int a){ return a; }
 
-    class base_scope : public scope {
-    public:
-        typedef typename scope::model_type model_type;
-        base_scope();
-        void schedule();
-        void intend_read(models::ssm::revision* o);
-        void intend_write(models::ssm::revision* o);
-        mutable std::vector<int> stakeholders;
-        mutable std::vector<int> scores;
-    };
+    // caution: dependencies intersection isn't thread-safe
+    template<class InputIterator, class Function>
+    void cilk_for_each(InputIterator first, InputIterator last, Function fn){
+        ambient::sid_t::divergence_guard g;
+        int dist = last-first;
+        cilk_for(int i = 0; i < dist; i++){
+            ambient::ctxt.get_context().sid.offset(i, dist);
+            fn(dereference(first+i));
+            ambient::ctxt.get_context().sid.maximize();
+        }
+    }
+    #endif
 
 }
 
 #endif
+
+

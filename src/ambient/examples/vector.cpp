@@ -180,15 +180,24 @@ int main(){ using namespace ambient;
 
 
     std::vector<vector<int>* > list; list.reserve(100);
-    for(int i = 0; i < 100; i++) list.push_back(new vector<int>(100, 0));
+    for(int i = 0; i < 100; i++){
+        scope select(i % 2);
+        list.push_back(new vector<int>(100+i, 13));
+    }
 
     int delta = 11;
-    cilk_for(int i = 0; i < 100; i++){
+
+    ambient::cilk_for_each(0, (int)list.size(), [&](int i){
+        scope select(scope::balance(i, 100));
+        for(int k = 0; k < 1000; k++)
+        ambient::for_each( list[i]->begin(), list[i]->end(), [&] (int& val){ val += delta; } );
+    });
+
+    for(int i = 0; i < 100; i++){
         scope select(0);
         for(int k = 0; k < 1000; k++)
         ambient::for_each( list[i]->begin(), list[i]->end(), [&] (int& val){ val += delta; } );
     }
-    cilk_sync;
 
     for(int i = 0; i < 100; i++){
         ambient::lambda([&](const vector<int>& val){ 

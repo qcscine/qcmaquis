@@ -42,7 +42,7 @@ namespace ambient {
         }
         inline scope::~scope(){
             if(dry) return;
-            ctxt.revoke_controller(c);
+            ctxt.revoke_controller(controller);
             ctxt.pop();
         }
         inline scope::scope(scope_t t) : type(t){
@@ -54,7 +54,7 @@ namespace ambient {
                     this->dry = false;
                     this->rank = ctxt.get_controller().get_shared_rank();
                     this->state = ambient::locality::common;
-                    c = ctxt.provide_controller();
+                    controller = ctxt.provide_controller();
                     ctxt.push(this);
                 }
             }else{
@@ -62,24 +62,24 @@ namespace ambient {
             }
         }
         inline scope::scope(int r) : type(scope_t::single) {
-            c = ctxt.provide_controller(); // need to change dry stuff
+            controller = ctxt.provide_controller(); // need to change dry stuff
             if(ambient::ctxt.scoped()) dry = true;
             else{ 
                 dry = false; 
                 ctxt.push(this); 
             }
-            this->round = c->get_num_workers();
+            this->round = controller->get_num_workers();
             this->set(r);
         }
         inline void scope::set(int r){
             this->rank = r % this->round;
-            this->state = (this->rank == c->get_rank()) ? ambient::locality::local : ambient::locality::remote;
+            this->state = (this->rank == controller->get_rank()) ? ambient::locality::local : ambient::locality::remote;
         }
 
         inline base_scope::base_scope(){
-            this->c = ctxt.provide_controller();
-            this->c->reserve(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
-            this->round = c->get_num_workers();
+            this->controller = ctxt.provide_controller();
+            this->controller->reserve(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
+            this->round = controller->get_num_workers();
             this->scores.resize(round, 0);
             this->set(0);
         }
