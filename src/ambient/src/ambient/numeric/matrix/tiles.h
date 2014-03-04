@@ -203,6 +203,8 @@ namespace ambient { namespace numeric {
         typedef typename diagonal_matrix<T>::scalar_type scalar_type;
         typedef typename diagonal_matrix<T>::difference_type difference_type;
 
+        static tiles identity_matrix(size_type size);
+
         explicit tiles();
         explicit tiles(size_type rows, size_type cols, value_type init_value = value_type()); 
         tiles(const tiles& a);

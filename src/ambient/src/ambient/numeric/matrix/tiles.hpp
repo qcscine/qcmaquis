@@ -409,6 +409,11 @@ namespace ambient { namespace numeric {
 namespace ambient { namespace numeric {
 
     template <typename T>
+    inline tiles<diagonal_matrix<T> > tiles<diagonal_matrix<T> >::identity_matrix(size_type size){
+        return tiles(size, size, 1.);
+    }
+
+    template <typename T>
     inline tiles<diagonal_matrix<T> >::tiles()
     : size(0), nt(0)
     {

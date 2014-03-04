@@ -33,8 +33,15 @@
 #include <alps/hdf5.hpp>
 
 #include "dmrg/block_matrix/detail/alps.hpp"
-typedef alps::numeric::matrix<double> matrix;
-typedef alps::numeric::diagonal_matrix<double> diagmatrix;
+typedef alps::numeric::matrix<double> amatrix;
+
+#ifdef USE_AMBIENT
+#include "dmrg/block_matrix/detail/ambient.hpp"
+typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > pmatrix;
+typedef pmatrix matrix;
+#else
+typedef amatrix matrix;
+#endif
 
 #include "dmrg/block_matrix/symmetry.h"
 #if defined(USE_TWOU1)
@@ -86,22 +93,26 @@ struct SiteProblem
     double ortho_shift;
 };
 
-
-void split_ts(TwoSiteTensor<matrix, grp> const& tst, MPSTensor<matrix, grp> & mps1, MPSTensor<matrix, grp> & mps2, block_matrix<diagmatrix, grp> & inv, double cutoff, std::size_t Mmax)
+template<class Matrix, class DiagMatrix, class SymmGroup>
+void split_ts(TwoSiteTensor<Matrix, SymmGroup> const& tst, 
+              MPSTensor<Matrix, SymmGroup> & mps1, 
+              MPSTensor<Matrix, SymmGroup> & mps2, 
+              block_matrix<DiagMatrix, SymmGroup> & inv, 
+              double cutoff, std::size_t Mmax)
 {
     tst.make_both_paired();
     
-    typedef alps::numeric::associated_real_diagonal_matrix<matrix>::type dmt;
-    block_matrix<matrix, grp> u, v, m1, m2;
-    block_matrix<dmt, grp> s;
+    typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type dmt;
+    block_matrix<Matrix, SymmGroup> u, v, m1, m2;
+    block_matrix<dmt, SymmGroup> s;
     
     truncation_results trunc = svd_truncate(tst.data(), u, v, s, cutoff, Mmax, true);
     
     gemm(u, s, m1);
     gemm(s, v, m2);
     
-    mps1 = MPSTensor<matrix, grp>(tst.local_site_dim(0), tst.row_dim(), m1.right_basis(), m1, LeftPaired);
-    mps2 = MPSTensor<matrix, grp>(tst.local_site_dim(1), m2.left_basis(), tst.col_dim(), m2, RightPaired);
+    mps1 = MPSTensor<Matrix,SymmGroup>(tst.local_site_dim(0), tst.row_dim(), m1.right_basis(), m1, LeftPaired);
+    mps2 = MPSTensor<Matrix,SymmGroup>(tst.local_site_dim(1), m2.left_basis(), tst.col_dim(), m2, RightPaired);
     
     inv = s;
     dmt::diagonal_iterator it, end;
@@ -110,25 +121,26 @@ void split_ts(TwoSiteTensor<matrix, grp> const& tst, MPSTensor<matrix, grp> & mp
             *it = 1. / *it;
 }
 
-void central_optim(unsigned site, block_matrix<diagmatrix, grp> & inv,
-                   MPS<matrix, grp> & mps, MPO<matrix, grp> const& mpo,
-                   Boundary<matrix, grp> const & left, Boundary<matrix, grp> const & right,
-                   Boundary<matrix, grp> & newleft, Boundary<matrix, grp> & newright,
+template<class Matrix, class DiagMatrix, class SymmGroup>
+void central_optim(unsigned site, block_matrix<DiagMatrix, SymmGroup> & inv,
+                   MPS<Matrix, SymmGroup> & mps, MPO<Matrix, SymmGroup> const& mpo,
+                   Boundary<Matrix, SymmGroup> const & left, Boundary<Matrix, SymmGroup> const & right,
+                   Boundary<Matrix, SymmGroup> & newleft, Boundary<Matrix, SymmGroup> & newright,
                    double cutoff, std::size_t Mmax, BaseParameters & parms)
 {
     
     /// Create TwoSite objects
     mps[site].multiply_from_right(inv);
-    TwoSiteTensor<matrix, grp> tst(mps[site], mps[site+1]);
-    MPSTensor<matrix, grp> ts_mps = tst.make_mps();
-    MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim(), mps[site+1].site_dim(), true);
+    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site], mps[site+1]);
+    MPSTensor<Matrix, SymmGroup> ts_mps = tst.make_mps();
+    MPOTensor<Matrix, SymmGroup> ts_mpo = make_twosite_mpo<Matrix,Matrix>(mpo[site], mpo[site+1], mps[site].site_dim(), mps[site+1].site_dim(), true);
     maquis::cout << "Two site obj done!\n";
     
     
     /// Create site problem
-    std::vector<MPSTensor<matrix, grp> > ortho_vecs;
-    std::pair<double, MPSTensor<matrix, grp> > res;
-    SiteProblem<matrix, grp> sp(left, right, ts_mpo);
+    std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs;
+    std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
+    SiteProblem<Matrix, SymmGroup> sp(left, right, ts_mpo);
     
     /// Optimization: JCD
     res = solve_ietl_jcd(sp, ts_mps, parms, ortho_vecs);
@@ -144,35 +156,36 @@ void central_optim(unsigned site, block_matrix<diagmatrix, grp> & inv,
     
     /// Move boundaries
     {
-        MPSTensor<matrix, grp> t = mps[site];
+        MPSTensor<Matrix, SymmGroup> t = mps[site];
         t.multiply_from_right(inv);
         newleft = contraction::overlap_mpo_left_step(t, t, left, mpo[site]);
     }
     {
-        MPSTensor<matrix, grp> t = mps[site+1];
+        MPSTensor<Matrix, SymmGroup> t = mps[site+1];
         t.multiply_from_left(inv);
         newright = contraction::overlap_mpo_right_step(t, t, right, mpo[site+1]);
     }
 }
 
 
+template<class Matrix, class SymmGroup>
 void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
-                MPS<matrix, grp> & mps, MPO<matrix, grp> const& mpo,
-                std::vector<Boundary<matrix, grp> > & left, std::vector<Boundary<matrix, grp> > & right,
+                MPS<Matrix, SymmGroup> & mps, MPO<Matrix, SymmGroup> const& mpo,
+                std::vector<Boundary<Matrix, SymmGroup> > & left, std::vector<Boundary<Matrix, SymmGroup> > & right,
                 double cutoff, std::size_t Mmax, BaseParameters & parms,
                 optim_normalize_t normalize)
 {
     /// Create TwoSite objects
-    TwoSiteTensor<matrix, grp> tst(mps[site], mps[site+1]);
-    MPSTensor<matrix, grp> ts_mps = tst.make_mps();
-    MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim(), mps[site+1].site_dim(), true);
+    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site], mps[site+1]);
+    MPSTensor<Matrix, SymmGroup> ts_mps = tst.make_mps();
+    MPOTensor<Matrix, SymmGroup> ts_mpo = make_twosite_mpo<Matrix,Matrix>(mpo[site], mpo[site+1], mps[site].site_dim(), mps[site+1].site_dim(), true);
     maquis::cout << "Two site obj done!\n";
     
     
     /// Create site problem
-    std::vector<MPSTensor<matrix, grp> > ortho_vecs;
-    std::pair<double, MPSTensor<matrix, grp> > res;
-    SiteProblem<matrix, grp> sp(left[local_site], right[local_site+1], ts_mpo);
+    std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs;
+    std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
+    SiteProblem<Matrix, SymmGroup> sp(left[local_site], right[local_site+1], ts_mpo);
     
     /// Optimization: JCD
     res = solve_ietl_jcd(sp, ts_mps, parms, ortho_vecs);
@@ -187,7 +200,7 @@ void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
         boost::tie(mps[site], mps[site+1], trunc) = tst.split_mps_l2r(Mmax, cutoff);
         
         if (normalize == with_normalization) { // site != L/2-1
-            block_matrix<matrix, grp> t;
+            block_matrix<Matrix, SymmGroup> t;
             t = mps[site+1].normalize_left(DefaultSolver());
             if (site+1 < L-1) mps[site+2].multiply_from_left(t);
         }
@@ -196,7 +209,7 @@ void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
         boost::tie(mps[site], mps[site+1], trunc) = tst.split_mps_r2l(Mmax, cutoff);
 
         if (normalize == with_normalization) { //site != L/2+1
-            block_matrix<matrix, grp> t;
+            block_matrix<Matrix, SymmGroup> t;
             t = mps[site].normalize_right(DefaultSolver());
             if (site > 0) mps[site-1].multiply_from_right(t);
         }
@@ -324,7 +337,8 @@ int main(int argc, char ** argv)
         std::size_t Mmax   = parms["max_bond_dimension"];
         int nsweeps = parms["nsweeps"];
         
-        block_matrix<diagmatrix, grp> inv = identity_matrix<diagmatrix>(mps[end-1].col_dim());;
+        typedef alps::numeric::associated_real_diagonal_matrix<matrix>::type dmt;
+        block_matrix<dmt, grp> inv = identity_matrix<dmt>(mps[end-1].col_dim());
         for (int sweep = 0; sweep < nsweeps; ++sweep) {
             
             if (rank > 0 && rank < nprocs-1) {
@@ -426,7 +440,7 @@ int main(int argc, char ** argv)
         if (remainder > 0 && rank == 0       ) comm.recv(nprocs-1, 100, &full_mps[chunk_size*nprocs], remainder);
         if (remainder > 0 && rank == nprocs-1) comm.send(0, 100, &mps[chunk_size], remainder);
         
-        std::vector<block_matrix<diagmatrix, grp> > all_inv(nprocs);
+        std::vector<block_matrix<dmt, grp> > all_inv(nprocs);
         mpi::gather(comm, inv, &all_inv[0], 0);
         
         if (rank == 0) {
