@@ -215,17 +215,6 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     }
     maquis::cout << "Total number of tags: " << ntags << std::endl;
 
-    maquis::cout << "Single site MPO\n";
-    for (int p=0; p < mpo_orig.size(); ++p){
-        maquis::cout << "Site " << p << std::endl;
-        mpo_orig[p].print_layout();
-    }
-
-    maquis::cout << "Two site MPO\n";
-    for (int p=0; p < mpo_out.size(); ++p){
-        maquis::cout << "Site " << p << std::endl;
-        mpo_out[p].print_layout();
-    }
 }
 
 #endif
