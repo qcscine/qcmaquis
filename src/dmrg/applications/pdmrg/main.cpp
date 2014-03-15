@@ -115,7 +115,7 @@ void split_ts(TwoSiteTensor<Matrix, SymmGroup> const& tst,
     mps2 = MPSTensor<Matrix,SymmGroup>(tst.local_site_dim(1), m2.left_basis(), tst.col_dim(), m2, RightPaired);
     
     inv = s;
-    dmt::diagonal_iterator it, end;
+    typename dmt::diagonal_iterator it, end;
     for (size_t k=0; k<inv.n_blocks(); ++k)
         for (boost::tie(it, end) = inv[k].diagonal(); it != end; ++it)
             *it = 1. / *it;
