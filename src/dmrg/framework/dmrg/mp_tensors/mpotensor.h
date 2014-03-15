@@ -82,11 +82,20 @@ public:
     index_type col_dim() const;
     
     // tagged operator ()
+    // warning: this method allows to (indirectly) change the op in the table, all tags pointing to it will
+    //          get a modified matrix!
+    //          better design needed
     void set(index_type li, index_type ri, op_t const & op, value_type scale_ = 1.0);
 
     // tagged operator() const
     MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup>
     at(index_type left_index, index_type right_index) const;
+
+    // warning: this method allows to (indirectly) change the op in the table, all tags pointing to it will
+    //          get a modified matrix!
+    //          better design needed
+    MPOTensor_detail::term_descriptor<Matrix, SymmGroup>
+    at(index_type left_index, index_type right_index);
 
     row_proxy row(index_type row_i) const;
     col_proxy column(index_type col_i) const;

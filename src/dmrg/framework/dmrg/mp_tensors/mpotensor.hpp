@@ -99,6 +99,9 @@ bool MPOTensor<Matrix, SymmGroup>::has(index_type left_index,
     return col_tags.find_element(left_index, right_index) != NULL;
 }
 
+// warning: this method allows to (indirectly) change the op in the table, all tags pointing to it will
+//          get a modified matrix!
+//          better design needed
 template<class Matrix, class SymmGroup>
 void MPOTensor<Matrix, SymmGroup>::set(index_type li, index_type ri, op_t const & op, value_type scale_){
     if (this->has(li, ri)) {
@@ -115,8 +118,21 @@ void MPOTensor<Matrix, SymmGroup>::set(index_type li, index_type ri, op_t const 
 template<class Matrix, class SymmGroup>
 MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup>
 MPOTensor<Matrix, SymmGroup>::at(index_type left_index, index_type right_index) const {
+    assert(this->has(left_index, right_index));
     typename CSCMatrix::value_type const & p = col_tags(left_index, right_index);
     return MPOTensor_detail::make_const_term_descriptor((*operator_table)[p.first], p.second);
+}
+
+// warning: this method allows to (indirectly) change the op in the table, all tags pointing to it will
+//          get a modified matrix!
+//          better design needed
+template<class Matrix, class SymmGroup>
+MPOTensor_detail::term_descriptor<Matrix, SymmGroup>
+MPOTensor<Matrix, SymmGroup>::at(index_type left_index, index_type right_index) {
+    if (!this->has(left_index, right_index))
+        this->set(left_index, right_index, op_t(), 1.);
+    typename CSCMatrix::value_type & p = col_tags(left_index, right_index).ref();
+    return MPOTensor_detail::term_descriptor<Matrix, SymmGroup>((*operator_table)[p.first], p.second);
 }
 
 template<class Matrix, class SymmGroup>
