@@ -5,24 +5,33 @@ STATE_DMRG="build"
 # end of target states #
 PREFIX=ambient
 COMPILER=gcc
-COMPILER_VERSION=4.7.3
-MYAPPS=/project/h07/dolfim/apps/daint/gcc_4_7_3
+COMPILER_VERSION=4.8.2
+MYAPPS=$SCRATCH/apps/gcc_4_8_2
 
-export PLASMA_ROOT=$MYAPPS/plasma
-export ALPS_ROOT=$MYAPPS/alps
-export CRAYPE_LINK_TYPE=dynamic
-export CXX=CC.dynamic # CC -dynamic -lz $*
-export CC=cc.dynamic  # cc -dynamic -lz $*
+
+MAQUIS_INSTALL=$MYAPPS/maquis/$CONFIG_NAME
+
+echo $MAQUIS_INSTALL
+
 
 if [[ -z "$MAQUIS_ONCE" ]]
 then
     export MAQUIS_ONCE=true
     module switch PrgEnv-cray PrgEnv-gnu
-    module load gcc/4.7.3
-    module load cray-hdf5
     module load cmake
+
+    export PLASMA_ROOT=$MYAPPS/plasma
+    export ALPS_ROOT=$MYAPPS/alps-cxx11
+    export PATH=$ALPS_ROOT/bin:$MYAPPS/hdf5/bin:$MYAPPS/bin:$PATH
+    export LD_LIBRARY_PATH=${ALPS_ROOT}/lib:$MYAPPS/hdf5/lib:${LD_LIBRARY_PATH}
+    #export CRAYPE_LINK_TYPE=dynamic
+    export CXX=CC.dynamic # CC -dynamic -lz $*
+    export CC=cc.dynamic  # cc -dynamic -lz $*
+    
+    export PATH=${MAQUIS_INSTALL}/bin:${PATH}
 fi
 
+COMMON_CMAKE_INSTALL_PREFIX=${MAQUIS_INSTALL}
 COMMON_MPI_CXX_FOUND=TRUE
 COMMON_CMAKE_SYSTEM_NAME="Generic"
 COMMON_BLAS_LAPACK_SELECTOR="manual"
