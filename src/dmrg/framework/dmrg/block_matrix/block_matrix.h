@@ -51,6 +51,8 @@ public:
     typedef typename Matrix::value_type value_type;
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
     typedef typename maquis::traits::real_type<Matrix>::type real_type;
+    typedef typename boost::ptr_vector<Matrix>::iterator block_iterator;
+    typedef typename boost::ptr_vector<Matrix>::const_iterator const_block_iterator;
    
     block_matrix();
 
@@ -135,7 +137,7 @@ public:
         ambient_track_as(y, y.label);
 #endif
     }
-    
+
     Matrix const & operator()(charge r, charge c) const
     {
         assert( has_block(r, c) );
@@ -148,6 +150,10 @@ public:
         assert( has_block(r, c) );
         assert( rows_.position(r) == cols_.position(c) );
         return data_[rows_.position(r)];
+    }
+    
+    std::pair<const_block_iterator,const_block_iterator> blocks() const {
+        return std::make_pair(data_.begin(), data_.end());
     }
     
     template<class Archive> void load(Archive & ar);
