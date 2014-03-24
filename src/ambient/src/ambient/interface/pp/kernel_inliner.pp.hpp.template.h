@@ -25,7 +25,7 @@
  */
 
 #include <boost/preprocessor.hpp>
-#define ARGS_MAX_LEN 12
+#define ARGS_MAX_LEN 15
 
 #define typedef_arguments(z, n, unused)                                                                              \
     typedef T ## n t ## n;
