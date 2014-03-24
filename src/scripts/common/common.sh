@@ -24,7 +24,7 @@ RUN_PRESETS="micro:             ~/maquis2014/benchmarks/dmrg_gs/micro.L4/parms.5
              spinful.6x6.20k:   ~/maquis2014/benchmarks/dmrg_gs/spinful.6x6/parms.20k     ~/maquis2014/benchmarks/dmrg_gs/spinful.6x6/model
              spinful.6x6.30k:   ~/maquis2014/benchmarks/dmrg_gs/spinful.6x6/parms.30k     ~/maquis2014/benchmarks/dmrg_gs/spinful.6x6/model
              spinful.3x20.10k:  ~/maquis2014/benchmarks/dmrg_gs/spinful.3x20/parms.10k    ~/maquis2014/benchmarks/dmrg_gs/spinful.3x20/model
-             drian.10x10.10k:   ~/maquis2014/benchmarks/dmrg_gs/adrian.10x10/parms.10k    ~/maquis2014/benchmarks/dmrg_gs/adrian.10x10/model
+             adrian.10x10.10k:  ~/maquis2014/benchmarks/dmrg_gs/adrian.10x10/parms.10k    ~/maquis2014/benchmarks/dmrg_gs/adrian.10x10/model
              hubbard.12x24.20k: ~/maquis2014/benchmarks/dmrg_gs/hubbard.12x24/parms.20000 ~/maquis2014/benchmarks/dmrg_gs/hubbard.12x24/model
              quench.L51.gs:     ~/maquis2014/benchmarks/dmrg_gs/quench.L51/parms.200      ~/maquis2014/benchmarks/dmrg_gs/quench.L51/model
              quench.L51.te:     ~/maquis2014/benchmarks/dmrg_te/quench.L51/parms.200      ~/maquis2014/benchmarks/dmrg_te/quench.L51/model
@@ -290,7 +290,7 @@ function install(){
     fi
 }
 
-function test(){
+function test_(){
     local state=`get_state ${1}`
     [[ "$state" != "build" ]] && build ${1}
     if [ -n "${1}" ]
@@ -417,9 +417,14 @@ function execute(){
             run ${*:2}
         elif [ "$action" == "build" ]; then
             build ${*:2}
+        elif [ "$action" == "test" ]; then
+            local i; for i in ${*:2}""; do
+                check_state ${i}
+                test_ ${i} # underscore due to bash::test
+            done
         else
             local i; for i in ${*:2}""; do
-                check_state ${i} # safe check
+                check_state ${i}
                 eval $action ${i}
             done
         fi
