@@ -181,8 +181,6 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
     std::size_t loop_max = M.n_blocks();
 
-    static ambient::timer timert("svd transfer/merge time\n"); timert.begin();
-
     // calculating complexities of the svd calls
     size_t np = ambient::num_workers();
     double total = 0;
@@ -237,16 +235,13 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
         merge(M[k]); 
         p %= np;
     }
-    timert.end();
+    ambient::sync();
 
-
-    static ambient::timer timer("svd only time\n"); timer.begin();
     for(size_t k = 0; k < loop_max; ++k){
         select_proc(ambient::get_owner(M[k][0]));
         svd_merged(M[k], U[k], V[k], S[k]);
     }
     ambient::sync(ambient::mkl_parallel());
-    timer.end();
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
