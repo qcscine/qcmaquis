@@ -122,7 +122,7 @@ namespace ambient { namespace numeric {
     inline diagonal_matrix< std::complex<T> > exp(const diagonal_matrix<T>& a, const std::complex<T>& alfa){
         assert(false); printf("ERROR: NOT TESTED (EXP)\n");
         diagonal_matrix< std::complex<T> > e(num_rows(a), num_rows(a));
-        //kernels::exp_diagonal_rc<T>::spawn(e, a, alfa);
+        //kernels::exp_diagonal_rc<T>(e, a, alfa);
         return e;
     }
 
@@ -134,7 +134,7 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void exp_inplace(diagonal_matrix<T>& a, const T& alfa = 1.){
-        kernels::template exp_diagonal<T>::template spawn(a, alfa);
+        kernels::template exp_diagonal<T>(a, alfa);
     }
 
     template<typename T>
@@ -145,7 +145,7 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline void sqrt_inplace(diagonal_matrix<T>& a){
-        kernels::template sqrt_diagonal<T>::template spawn(a);
+        kernels::template sqrt_diagonal<T>(a);
     }
 
     template<typename T>

@@ -104,13 +104,15 @@ namespace ambient {
     };
 
     #define ambient_reg(fn, name)  template<typename... TF> \
-                                   struct name : public ambient::kernel< name<TF...> > { \
+                                   struct name ## _kernel : public ambient::kernel< name ## _kernel<TF...> > { \
                                        typedef decltype(&fn<TF...>) ftype; \
                                        template<typename... Args> \
                                        static void c(Args&&... args){ \
                                            fn<TF...>(std::forward<Args>(args)...); \
                                        } \
-                                   };
+                                   }; \
+                                   template<typename... TF, typename... Args> \
+                                   void name(Args&... args){ name ## _kernel<TF...>::spawn(args...); }
 }
 
 #endif

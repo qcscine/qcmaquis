@@ -40,7 +40,7 @@ public:
         T elements[ AMBIENT_VAR_LENGTH ];
     );
     vector(size_t length, T value) : versioned(length+1, sizeof(T)) {
-        init_value<T>::spawn(*this, value);
+        init_value<T>(*this, value);
     }
     iterator begin(){
         return iterator(*this);
@@ -146,10 +146,10 @@ int main(){ using namespace ambient;
     vector<int> a(10, 13);
     vector<int> b(10, 10);
                                  { scope select(1);
-    add<int>::spawn(a, b);
+    add<int>(a, b);
                                  }
                                  { scope select(0); 
-    add<int>::spawn(a, b);
+    add<int>(a, b);
                                  }
     for(int i = 0; i < 10; i++)
     cout << "After sync: " << get(a).elements[i] << "; count: " << get(a).count << "\n";
