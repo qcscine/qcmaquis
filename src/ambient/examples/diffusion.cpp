@@ -232,15 +232,15 @@ namespace detail { using namespace ambient;
 
 }
 
-ambient_reg(detail::init_value, init_value)
-ambient_reg(detail::partial_init_value, partial_init_value)
-ambient_reg(detail::reduce, reduce)
-ambient_reg(detail::reduce_moment, reduce_moment)
-ambient_reg(detail::evolve, evolve)
-ambient_reg(detail::contract_border_top, contract_border_top)
-ambient_reg(detail::contract_border_bottom, contract_border_bottom)
-ambient_reg(detail::contract_border_left, contract_border_left)
-ambient_reg(detail::contract_border_right, contract_border_right)
+ambient_export(detail::init_value, init_value)
+ambient_export(detail::partial_init_value, partial_init_value)
+ambient_export(detail::reduce, reduce)
+ambient_export(detail::reduce_moment, reduce_moment)
+ambient_export(detail::evolve, evolve)
+ambient_export(detail::contract_border_top, contract_border_top)
+ambient_export(detail::contract_border_bottom, contract_border_bottom)
+ambient_export(detail::contract_border_left, contract_border_left)
+ambient_export(detail::contract_border_right, contract_border_right)
 
 template <typename T>
 class block {

@@ -22,8 +22,8 @@ namespace detail { using namespace ambient;
     }
 }
 
-ambient_reg(detail::init_value, init_value)
-ambient_reg(detail::add, add)
+ambient_export(detail::init_value, init_value)
+ambient_export(detail::add, add)
 
 template <typename T>
 class vector {
