@@ -187,7 +187,7 @@ int main(){ using namespace ambient;
 
     int delta = 11;
 
-    ambient::cilk_for_each(0, (int)list.size(), [&](int i){
+    ambient::threaded_for_each(0, (int)list.size(), [&](int i){
         scope select(scope::balance(i, 100));
         for(int k = 0; k < 1000; k++)
         ambient::for_each( list[i]->begin(), list[i]->end(), [&] (int& val){ val += delta; } );

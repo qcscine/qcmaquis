@@ -35,5 +35,6 @@
 #define AMBIENT_THREAD cilk_spawn
 #define AMBIENT_SMP_ENABLE
 #define AMBIENT_SMP_DISABLE cilk_sync;
+#define AMBIENT_PARALLEL_FOR(...) cilk_for(__VA_ARGS__)
 
 #endif

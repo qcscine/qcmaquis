@@ -32,6 +32,7 @@
 #define AMBIENT_THREAD_ID omp_get_thread_num()
 #define AMBIENT_PRAGMA(a) _Pragma( #a )
 #define AMBIENT_THREAD AMBIENT_PRAGMA(omp task untied)
+#define AMBIENT_PARALLEL_FOR(...) AMBIENT_PRAGMA(omp parallel for schedule(dynamic, 1)) for(__VA_ARGS__)
 #define AMBIENT_SMP_ENABLE AMBIENT_PRAGMA(omp parallel) { AMBIENT_PRAGMA(omp single nowait)
 #define AMBIENT_SMP_DISABLE }
 #define AMBIENT_NUM_THREADS [&]()->int{ int n; AMBIENT_SMP_ENABLE \

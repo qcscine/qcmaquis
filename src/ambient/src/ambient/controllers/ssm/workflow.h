@@ -55,6 +55,7 @@ namespace ambient {
 
         mutable std::vector<thread_context> context_lane;
         mutable base_scope base;
+        mutable ambient::mutex mtx;
 
         workflow();
         scope& get_domain() const;
@@ -76,6 +77,7 @@ namespace ambient {
         void schedule() const;
         void intend_read(models::ssm::revision* o) const;
         void intend_write(models::ssm::revision* o) const;
+        ambient::mutex& get_mutex() const;
     };
 
     #ifdef AMBIENT_BUILD_LIBRARY

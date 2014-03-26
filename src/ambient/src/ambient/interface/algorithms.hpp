@@ -29,22 +29,20 @@
 
 namespace ambient {
 
-    #ifdef AMBIENT_CILK
     template<class T> auto dereference(T a) -> decltype(*a){ return *a; }
     inline int dereference(int a){ return a; }
 
     // caution: dependencies intersection isn't thread-safe
     template<class InputIterator, class Function>
-    void cilk_for_each(InputIterator first, InputIterator last, Function fn){
+    void threaded_for_each(InputIterator first, InputIterator last, Function fn){
         ambient::sid_t::divergence_guard g;
         int dist = last-first;
-        cilk_for(int i = 0; i < dist; i++){
+        AMBIENT_PARALLEL_FOR(int i = 0; i < dist; i++){
             ambient::ctxt.get_context().sid.offset(i, dist);
             fn(dereference(first+i));
             ambient::ctxt.get_context().sid.maximize();
         }
     }
-    #endif
 
 }
 

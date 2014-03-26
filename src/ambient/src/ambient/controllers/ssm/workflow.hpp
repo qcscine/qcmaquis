@@ -138,6 +138,9 @@ namespace ambient {
         inline void workflow::schedule() const {
             base.schedule();
         }
+        inline ambient::mutex& workflow::get_mutex() const {
+            return mtx;
+        }
 }
 
 #endif
