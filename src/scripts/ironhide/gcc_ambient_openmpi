@@ -1,36 +1,30 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_DMRG="build"
+STATE_DMRG="configure"
 # end of target states #
 PREFIX=ambient
 COMPILER=gcc
-COMPILER_VERSION=4.7.3
+COMPILER_VERSION=4.8.2
 MPI_WRAPPER=openmpi
 MPI_WRAPPER_VERSION=""
-ALPS_DIR=$HOME/opt/alps-gcc47
 
-export ALPS_ROOT=${ALPS_DIR}
-export PATH=${ALPS_DIR}/bin:${PATH}
-export PYTHONPATH=${ALPS_DIR}/lib:${PYTHONPATH} # md: ALPS is installed without python, therefore not needed
+export ALPS_ROOT=$HOME/opt/alps-gcc48
+export PLASMA_ROOT=$HOME/opt/plasma-2.6
+export PATH=${ALPS_ROOT}/bin:${PATH}
+export PYTHONPATH=${ALPS_ROOT}/lib:${PYTHONPATH} # md: ALPS is installed without python, therefore not needed
+
+export CC=gcc-mp-4.8
+export OMPI_CC=$CC
+export CXX=g++-mp-4.8
+export OMPI_CXX=$CXX
 
 
-## common ##
-COMMON_CMAKE_C_COMPILER="gcc-mp-4.7"
-COMMON_CMAKE_CXX_COMPILER="g++-mp-4.7"
-COMMON_MPI_C_COMPILER="openmpicc"
-COMMON_MPI_CXX_COMPILER="openmpicxx"
-COMMON_CMAKE_CXX_FLAGS="-Wfatal-errors -w -O3 -DNDEBUG"
-COMMON_CMAKE_CXX_FLAGS_RELEASE=${MAQUIS_COMMON_CMAKE_CXX_FLAGS}
+COMMON_AMBIENT_THREADING="openmp"
 COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
-COMMON_PLASMA_LIBRARIES="-lpthread -lplasma -lcoreblas -llapacke -lquark"
-COMMON_PLASMA_LIB_DIR="$HOME/opt/plasma/lib"
-## dmrg ##
-DMRG_ALPS_ROOT_DIR=$ALPS_ROOT
-DMRG_ENABLE_OMP=OFF
+COMMON_PLASMA_LIB_DIR="$PLASMA_ROOT/lib"
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
-DMRG_REGRESSION_PERFORMANCE_TESTS=OFF
 
 source $ROOT_DIR/scripts/common/common.sh 
 execute $*
