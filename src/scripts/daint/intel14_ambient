@@ -25,6 +25,7 @@ then
     export LD_LIBRARY_PATH=${ALPS_ROOT}/lib:$MYAPPS/hdf5/lib:${LD_LIBRARY_PATH}
     export CXX=CC.dynamic # CC -dynamic -lz -gxx-name=/apps/pilatus/gcc/4.8.2/bin/g++ $*
     export CC=cc.dynamic  # cc -dynamic -lz -gcc-name=/apps/pilatus/gcc/4.8.2/bin/gcc $*
+    export MPICH_MAX_THREAD_SAFETY=funneled
     
     export PATH=${MAQUIS_INSTALL}/bin:${PATH}
 fi

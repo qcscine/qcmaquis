@@ -270,12 +270,13 @@ struct contraction {
         
         mps.make_right_paired();
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
-        size_t loop_max = left.aux_dim();
+        int loop_max = left.aux_dim();
 
-        omp_for(size_t b = 0; b < loop_max; ++b){
+        storage::migrate(mps, storage::scope_t::common);
+        parallel_for(int b, range(0,loop_max), {
             select_proc(ambient::scope::permute(b,mpo.placement_l)); 
             gemm_trim_left(transpose(left[b]), mps.data(), t[b]);
-        }
+        });
 
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim(),
                                       out_left_i = physical_i * left_i;
@@ -289,7 +290,7 @@ struct contraction {
 
         loop_max = mpo.col_dim();
 
-        omp_for(size_t b2 = 0; b2 < loop_max; ++b2) {
+        omp_for(int b2 = 0; b2 < loop_max; ++b2) {
             select_proc(ambient::scope::permute(b2,mpo.placement_r));
             ret[b2] = lbtm_kernel(b2, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
         }
@@ -312,12 +313,13 @@ struct contraction {
         
         mps.make_left_paired();
         std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
-        size_t loop_max = right.aux_dim();
+        int loop_max = right.aux_dim();
 
-        omp_for(size_t b = 0; b < loop_max; ++b){
+        storage::migrate(mps, storage::scope_t::common);
+        parallel_for(int b, range(0,loop_max), {
             select_proc(ambient::scope::permute(b,mpo.placement_r));
             gemm_trim_right(mps.data(), right[b], t[b]);
-        }
+        });
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
                          out_right_i = adjoin(physical_i) * right_i;
@@ -331,7 +333,7 @@ struct contraction {
         
         loop_max = mpo.row_dim();
 
-        omp_for(size_t b1 = 0; b1 < loop_max; ++b1) {
+        omp_for(int b1 = 0; b1 < loop_max; ++b1) {
             select_proc(ambient::scope::permute(b1,mpo.placement_l));
             ret[b1] = rbtm_kernel(b1, right, t, mpo, physical_i, left_i, right_i, out_right_i, in_left_pb, out_right_pb);
         }
@@ -357,12 +359,13 @@ struct contraction {
             // Make a copy of ket_tensor to avoid reshaping back to left
             MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
             ket_cpy.make_right_paired();
-            std::size_t loop_max = left.aux_dim();
+            int loop_max = left.aux_dim();
 
-            omp_for(size_t b = 0; b < loop_max; ++b) {
+            storage::migrate(ket_cpy, storage::scope_t::common);
+            parallel_for(int b, range(0,loop_max), {
                 select_proc(ambient::scope::permute(b,mpo.placement_l));
                 gemm_trim_left(transpose(left[b]), ket_cpy.data(), t[b]);
-            }
+            });
         }
 
         Index<SymmGroup> const & left_i = bra_tensor.row_dim();
@@ -412,12 +415,13 @@ struct contraction {
             // Make a copy of ket_tensor to avoid reshaping back to right
             MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
             ket_cpy.make_left_paired();
-            std::size_t loop_max = right.aux_dim();
+            int loop_max = right.aux_dim();
 
-            omp_for(size_t b = 0; b < loop_max; ++b){
+            storage::migrate(ket_cpy, storage::scope_t::common);
+            parallel_for(int b, range(0,loop_max), {
                 select_proc(ambient::scope::permute(b,mpo.placement_r));
                 gemm_trim_right(ket_cpy.data(), right[b], t[b]);
-            }
+            });
         }
 
         Index<SymmGroup> const & left_i = ket_tensor.row_dim();
@@ -462,12 +466,13 @@ struct contraction {
         ket_tensor.make_right_paired();
         
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
-        std::size_t loop_max = left.aux_dim();
+        int loop_max = left.aux_dim();
 
-        omp_for(size_t b = 0; b < loop_max; ++b) {
+        storage::migrate(ket_tensor, storage::scope_t::common);
+        parallel_for(int b, range(0,loop_max), {
             select_proc(ambient::scope::permute(b,mpo.placement_l));
             gemm_trim_left(transpose(left[b]), ket_tensor.data(), t[b]);
-        }
+        });
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                                & left_i = ket_tensor.row_dim(),
@@ -480,16 +485,14 @@ struct contraction {
         
         loop_max = mpo.col_dim();
                     
-        omp_for(size_t b2 = 0; b2 < loop_max; ++b2) {
+        omp_for(int b2 = 0; b2 < loop_max; ++b2) {
             select_proc(ambient::scope::permute(b2,mpo.placement_r));
 
             block_matrix<Matrix, SymmGroup> contr_column = lbtm_kernel(b2, left, t, mpo, physical_i,
                                                                        right_i, out_left_i, in_right_pb, out_left_pb);
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(contr_column, right[b2], tmp);
-            #ifdef MAQUIS_OPENMP
-            #pragma omp critical
-            #endif
+            omp_critical
             for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
                 ret.data().match_and_add_block(tmp[k], tmp.left_basis()[k].first, tmp.right_basis()[k].first);
         }
