@@ -182,7 +182,7 @@ int main(int argc, char ** argv)
         }
         #ifdef USE_AMBIENT
         if(exists(chkpfile / boundary_name) || lr == -1)
-            omp_for(size_t b = 0; b < left.aux_dim(); ++b){
+            for(size_t b = 0; b < left.aux_dim(); ++b){
                 select_proc(ambient::scope::permute(b,ts_mpo.placement_l));
                 storage::migrate(left[b]);
             }
@@ -205,7 +205,7 @@ int main(int argc, char ** argv)
         }
         #ifdef USE_AMBIENT
         if(exists(chkpfile / boundary_name) || lr == +1) 
-            omp_for(size_t b = 0; b < right.aux_dim(); ++b){
+            for(size_t b = 0; b < right.aux_dim(); ++b){
                 select_proc(ambient::scope::permute(b,ts_mpo.placement_r));
                 storage::migrate(right[b]);
             }
