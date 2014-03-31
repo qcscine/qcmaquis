@@ -143,6 +143,7 @@ namespace measurements {
                 pos_t subref = std::min(p1, p2);
                 for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
                 { 
+                    // Measurement positions p1,p2,p3 are fixed, p4 is handled by the MPO (synmpo)
                     std::vector<pos_t> ref;
                     ref.push_back(p1); ref.push_back(p2); ref.push_back(p3);
 
@@ -150,6 +151,8 @@ namespace measurements {
                     MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
                     std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(mps, mpo);
 
+                    // Loop over operator terms that are measured synchronously and added together
+                    // Used e.g. for the four spin combos of the 2-RDM
                     for (std::size_t synop = 1; synop < ops.size(); ++synop) {
                         maker_ptr syndcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings, ops[synop], ref, true));
 
@@ -157,6 +160,7 @@ namespace measurements {
                         MPO<Matrix, SymmGroup> synmpo = syndcorr->create_mpo();
                         std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> syndct = multi_expval(mps, synmpo);
 
+                        // add synchronous terms
                         std::transform(syndct.begin(), syndct.end(), dct.begin(), dct.begin(),
                                        std::plus<typename MPS<Matrix, SymmGroup>::scalar_type>());
                     }
