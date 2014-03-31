@@ -33,7 +33,7 @@ namespace ambient { namespace numeric { namespace bindings {
     template <typename T, typename D>
     void convert(ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >& pm, const ambient::numeric::tiles<ambient::numeric::diagonal_matrix<D> >& m){
         for(size_t k = 0; k < m.data.size(); ++k)
-            ambient::numeric::kernels::template cast_double_complex<T,D>::template spawn(pm[k],m[k]);
+            ambient::numeric::kernels::template cast_double_complex<T,D>(pm[k],m[k]);
     } 
 
     template <typename T, typename S, template<class M, class SS> class C>
@@ -46,7 +46,7 @@ namespace ambient { namespace numeric { namespace bindings {
         for(size_t k = 0; k < m.n_blocks(); ++k){
             num_rows = m[k].num_rows();
             std::vector<T>* v_ptr = &set[k];
-            ambient::numeric::kernels::template cast_to_vector<T>::template spawn(v_ptr, m[k], num_rows, num_cols, num_rows, offset);
+            ambient::numeric::kernels::template cast_to_vector<T>(v_ptr, m[k], num_rows, num_cols, num_rows, offset);
         }
         ambient::sync();
     }
@@ -58,7 +58,7 @@ namespace ambient { namespace numeric { namespace bindings {
         size_t lda = m.stride2();
         size_t offset(0);
         const std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
-        ambient::numeric::kernels::template cast_from_vector<T>::template spawn(v_ptr, pm, num_rows, num_cols, lda, offset);
+        ambient::numeric::kernels::template cast_from_vector<T>(v_ptr, pm, num_rows, num_cols, lda, offset);
         ambient::sync();
     }
 
@@ -68,7 +68,7 @@ namespace ambient { namespace numeric { namespace bindings {
         size_t num_cols = pm.num_cols();
         size_t offset(0);
         std::vector<typename alps::numeric::matrix<T>::value_type>* v_ptr = &m.get_values();
-        ambient::numeric::kernels::template cast_to_vector<T>::template spawn(v_ptr, pm, num_rows, num_cols, num_rows, offset);
+        ambient::numeric::kernels::template cast_to_vector<T>(v_ptr, pm, num_rows, num_cols, num_rows, offset);
         ambient::sync();
     }
 
@@ -78,7 +78,7 @@ namespace ambient { namespace numeric { namespace bindings {
         size_t num_cols(1);
         size_t offset(0);
         const std::vector<typename alps::numeric::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
-        ambient::numeric::kernels::template cast_from_vector<T>::template spawn(v_ptr, pm, num_rows, num_cols, num_rows, offset);
+        ambient::numeric::kernels::template cast_from_vector<T>(v_ptr, pm, num_rows, num_cols, num_rows, offset);
         ambient::sync();
     }
 
@@ -88,7 +88,7 @@ namespace ambient { namespace numeric { namespace bindings {
         size_t num_cols(1);
         size_t num_rows = pm.num_rows();
         std::vector<typename alps::numeric::diagonal_matrix<T>::value_type>* v_ptr = &m.get_values();
-        ambient::numeric::kernels::template cast_to_vector<T>::template spawn(v_ptr, pm, num_rows, num_cols, num_rows, offset);
+        ambient::numeric::kernels::template cast_to_vector<T>(v_ptr, pm, num_rows, num_cols, num_rows, offset);
         ambient::sync();
     }
 
@@ -102,7 +102,7 @@ namespace ambient { namespace numeric { namespace bindings {
             size_t offset = 0;
             for(size_t kk = 0; kk < m[k].data.size(); kk++){
                 size_t num_rows = m[k][kk].num_rows();
-                ambient::numeric::kernels::template cast_to_vector<T>::template spawn(v_ptr, m[k][kk], num_rows, num_cols, num_rows, offset);
+                ambient::numeric::kernels::template cast_to_vector<T>(v_ptr, m[k][kk], num_rows, num_cols, num_rows, offset);
                 offset += num_rows;
             }
         }
@@ -122,7 +122,7 @@ namespace ambient { namespace numeric { namespace bindings {
                 ambient::numeric::matrix<T,A>& tile = pm.tile(i,j);
                 size_t rows = tile.num_rows();
                 size_t cols = tile.num_cols();
-                ambient::numeric::kernels::template cast_from_vector<T>::template spawn(v_ptr, tile, rows, cols, lda, offset);
+                ambient::numeric::kernels::template cast_from_vector<T>(v_ptr, tile, rows, cols, lda, offset);
                 offset += rows;
             }
         }
@@ -143,7 +143,7 @@ namespace ambient { namespace numeric { namespace bindings {
                 ambient::numeric::matrix<T2,A>& tile = pm.tile(i,j);
                 size_t rows = tile.num_rows();
                 size_t cols = tile.num_cols();
-                ambient::numeric::kernels::template cast_from_vector_t<T1,T2>::template spawn(v_ptr, tile, rows, cols, lda, offset);
+                ambient::numeric::kernels::template cast_from_vector_t<T1,T2>(v_ptr, tile, rows, cols, lda, offset);
                 offset += rows;
             }
         }
@@ -163,7 +163,7 @@ namespace ambient { namespace numeric { namespace bindings {
                 const ambient::numeric::matrix<T,A>& tile = pm.tile(i,j);
                 size_t rows = tile.num_rows();
                 size_t cols = tile.num_cols();
-                ambient::numeric::kernels::template cast_to_vector<T>::template spawn(v_ptr, tile, rows, cols, lda, offset);
+                ambient::numeric::kernels::template cast_to_vector<T>(v_ptr, tile, rows, cols, lda, offset);
                 offset += rows;
             }
         }
@@ -181,7 +181,7 @@ namespace ambient { namespace numeric { namespace bindings {
         for(size_t i = 0; i < pm.nt; ++i){
             ambient::numeric::diagonal_matrix<T>& tile = pm[i];
             size_t rows = tile.num_rows();
-            ambient::numeric::kernels::template cast_from_vector<T>::template spawn(v_ptr, tile, rows, num_cols, num_rows, offset);
+            ambient::numeric::kernels::template cast_from_vector<T>(v_ptr, tile, rows, num_cols, num_rows, offset);
             offset += rows;
         }
 
@@ -197,7 +197,7 @@ namespace ambient { namespace numeric { namespace bindings {
         for(size_t i = 0; i < pm.nt; ++i){
             const ambient::numeric::diagonal_matrix<T>& tile = pm[i];
             size_t rows = tile.num_rows();
-            ambient::numeric::kernels::template cast_to_vector<T>::template spawn(v_ptr, tile, rows, num_cols, num_rows, offset);
+            ambient::numeric::kernels::template cast_to_vector<T>(v_ptr, tile, rows, num_cols, num_rows, offset);
             offset += rows;
         }
 

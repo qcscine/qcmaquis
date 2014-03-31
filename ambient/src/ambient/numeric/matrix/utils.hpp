@@ -46,6 +46,68 @@ namespace ambient {
         }
     }
 
+    template<class Matrix>
+    inline int get_owner(const numeric::tiles<Matrix>& a){
+        int p = a[0].versioned.core->current->owner;
+        return (p == -1 ? ambient::rank() : p);
+    }
+
+    template<class InputIterator, class Function, class Weight>
+    void for_each_redist(InputIterator first, InputIterator last, Function op, Weight weight){
+        typedef std::pair<double,size_t> pair;
+        double avg = 0.;
+        size_t np = ambient::num_workers();
+        size_t range = last-first;
+        std::vector<pair> wl(np, std::make_pair(0,0));
+        std::vector<pair> cx; cx.reserve(range);
+        
+        // calculating complexities of the calls
+        for(InputIterator it = first; it != last; ++it){
+            cx.push_back(std::make_pair(weight(*it), it-first));
+            avg += cx.back().first;
+        }
+        avg /= np;
+        std::sort(cx.begin(), cx.end(), 
+                  [](const pair& a, const pair& b){ return a.first < b.first; });
+        
+        // filling the workload with smallest local parts first
+        for(size_t p = 0; p < np; ++p){
+            wl[p].second = p;
+            ambient::scope ctxt(p);
+            for(size_t i = 0; i < range; ++i){
+                size_t k = cx[i].second;
+                if(ambient::get_owner(*(first+k)) != p) continue;
+                if(wl[p].first + cx[i].first >= avg) continue;
+                op(*(first+k)); 
+                wl[p].first += cx[i].first; 
+                cx[i].first = 0;
+            }
+        }
+        // rebalancing using difference with average
+        for(size_t p = 0; p < np; ++p){
+            ambient::scope ctxt(p);
+            for(size_t i = 0; i < range; ++i){
+                if(cx[i].first == 0) continue;
+                if(wl[p].first + cx[i].first >= avg) break;
+                op(*(first+cx[i].second)); 
+                wl[p].first += cx[i].first; 
+                cx[i].first = 0;
+            }
+        }
+        std::sort(wl.begin(), wl.end(), 
+                  [](const pair& a, const pair& b){ return a.first < b.first; });
+        
+        // placing the rest according to sorted workload
+        size_t p = 0;
+        for(int i = range-1; i >= 0; --i){
+            if(cx[i].first == 0) continue;
+            int owner = wl[p++].second;
+            ambient::scope ctxt(owner);
+            merge(*(first+cx[i].second)); 
+            p %= np;
+        }
+    }
+            
 }
 
 #endif

@@ -141,9 +141,8 @@ namespace ambient {
         static bool pin(functor* m){ 
             EXTRACT(o);
             revision& r = *o->before;
-            void* generator = r.generator;
-            if(generator != NULL){
-                ((functor*)generator)->queue(m);
+            if(r.generator != NULL){
+                ((functor*)r.generator)->queue(m);
                 return true;
             }
             return false;
@@ -157,13 +156,13 @@ namespace ambient {
         static bool ready(functor* m){
             EXTRACT(o);
             revision& r = *o->before;
-            void* generator = r.generator;
-            if(generator == NULL || generator == m) return true;
+            if(r.generator == NULL || r.generator == m) return true;
             return false;
         }
     };
     // }}}
     // {{{ compile-time type info: only read/write iteratable derived types
+
     template <typename T> struct read_iteratable_info : public iteratable_info<T> {
         template<size_t arg> static void deallocate(functor* m){
             EXTRACT(o);
@@ -196,6 +195,17 @@ namespace ambient {
         template<size_t arg> 
         static void score(T& obj){
             ctxt.intend_read(obj.versioned.core->back());
+        }
+        template<size_t arg> 
+        static bool pin(functor* m){ 
+            EXTRACT(o);
+            revision& r = *o->before;
+            if(r.generator != NULL){
+                ambient::guard<ambient::mutex> g(ctxt.get_mutex());
+                ((functor*)r.generator)->queue(m);
+                return true;
+            }
+            return false;
         }
     };
     template <typename T> struct write_iteratable_info : public iteratable_info<T> {

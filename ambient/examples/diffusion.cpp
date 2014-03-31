@@ -232,15 +232,15 @@ namespace detail { using namespace ambient;
 
 }
 
-ambient_reg(detail::init_value, init_value)
-ambient_reg(detail::partial_init_value, partial_init_value)
-ambient_reg(detail::reduce, reduce)
-ambient_reg(detail::reduce_moment, reduce_moment)
-ambient_reg(detail::evolve, evolve)
-ambient_reg(detail::contract_border_top, contract_border_top)
-ambient_reg(detail::contract_border_bottom, contract_border_bottom)
-ambient_reg(detail::contract_border_left, contract_border_left)
-ambient_reg(detail::contract_border_right, contract_border_right)
+ambient_export(detail::init_value, init_value)
+ambient_export(detail::partial_init_value, partial_init_value)
+ambient_export(detail::reduce, reduce)
+ambient_export(detail::reduce_moment, reduce_moment)
+ambient_export(detail::evolve, evolve)
+ambient_export(detail::contract_border_top, contract_border_top)
+ambient_export(detail::contract_border_bottom, contract_border_bottom)
+ambient_export(detail::contract_border_left, contract_border_left)
+ambient_export(detail::contract_border_right, contract_border_right)
 
 template <typename T>
 class block {
@@ -249,10 +249,10 @@ public:
     block(size_t m, size_t n) : versioned(m, n, sizeof(T)) {}
 
     void init(T value){
-        init_value<T>::spawn(*this, value);
+        init_value<T>(*this, value);
     }
     void partial_init(T value, double posi, double posj, double dr, double bound){
-        partial_init_value<T>::spawn(*this, value, posi, posj, dr, bound);
+        partial_init_value<T>(*this, value, posi, posj, dr, bound);
     }
 };
 
@@ -317,24 +317,24 @@ public:
     size_t num_cols(){ return ambient::get_dim(*this).x+2; }
                     
     void evolve_from(const stencil& s, double fac){
-        evolve<T>::spawn(*this, s, s.top(), s.right(), s.bottom(), s.left(), fac);
+        evolve<T>(*this, s, s.top(), s.right(), s.bottom(), s.left(), fac);
     }
     void contract(const stencil& s, const stencil& top, const stencil& right, const stencil& bottom, const stencil& left, double fac){
-        contract_border_top<T>   ::spawn(this->top(),    s.left(), s.top(),    s.right(),  s, left.top(),    top.bottom(), right.top(),    fac);
-        contract_border_bottom<T>::spawn(this->bottom(), s.left(), s.bottom(), s.right(),  s, left.bottom(), bottom.top(), right.bottom(), fac);
-        contract_border_right<T> ::spawn(this->right(),  s.top(),  s.right(),  s.bottom(), s, right.left(),  fac);
-        contract_border_left<T>  ::spawn(this->left(),   s.top(),  s.left(),   s.bottom(), s, left.right(),  fac);
+        contract_border_top<T>   (this->top(),    s.left(), s.top(),    s.right(),  s, left.top(),    top.bottom(), right.top(),    fac);
+        contract_border_bottom<T>(this->bottom(), s.left(), s.bottom(), s.right(),  s, left.bottom(), bottom.top(), right.bottom(), fac);
+        contract_border_right<T> (this->right(),  s.top(),  s.right(),  s.bottom(), s, right.left(),  fac);
+        contract_border_left<T>  (this->left(),   s.top(),  s.left(),   s.bottom(), s, left.right(),  fac);
     }
     double size(){
         double* res = new double(0.);
-        reduce<T>::spawn(*this, left(), right(), top(), bottom(), res);
+        reduce<T>(*this, left(), right(), top(), bottom(), res);
         ambient::sync();
         double resv = *res; delete res;
         return resv;
     }
     double moment(double x, double y, double dr){
         double* res = new double(0.);
-        reduce_moment<T>::spawn(*this, left(), right(), top(), bottom(), x, y, dr, res);
+        reduce_moment<T>(*this, left(), right(), top(), bottom(), x, y, dr, res);
         ambient::sync();
         double resv = *res; delete res;
         return resv;

@@ -22,8 +22,8 @@ namespace detail { using namespace ambient;
     }
 }
 
-ambient_reg(detail::init_value, init_value)
-ambient_reg(detail::add, add)
+ambient_export(detail::init_value, init_value)
+ambient_export(detail::add, add)
 
 template <typename T>
 class vector {
@@ -40,7 +40,7 @@ public:
         T elements[ AMBIENT_VAR_LENGTH ];
     );
     vector(size_t length, T value) : versioned(length+1, sizeof(T)) {
-        init_value<T>::spawn(*this, value);
+        init_value<T>(*this, value);
     }
     iterator begin(){
         return iterator(*this);
@@ -146,10 +146,10 @@ int main(){ using namespace ambient;
     vector<int> a(10, 13);
     vector<int> b(10, 10);
                                  { scope select(1);
-    add<int>::spawn(a, b);
+    add<int>(a, b);
                                  }
                                  { scope select(0); 
-    add<int>::spawn(a, b);
+    add<int>(a, b);
                                  }
     for(int i = 0; i < 10; i++)
     cout << "After sync: " << get(a).elements[i] << "; count: " << get(a).count << "\n";
@@ -180,15 +180,24 @@ int main(){ using namespace ambient;
 
 
     std::vector<vector<int>* > list; list.reserve(100);
-    for(int i = 0; i < 100; i++) list.push_back(new vector<int>(100, 0));
+    for(int i = 0; i < 100; i++){
+        scope select(i % 2);
+        list.push_back(new vector<int>(100+i, 13));
+    }
 
     int delta = 11;
-    cilk_for(int i = 0; i < 100; i++){
+
+    ambient::threaded_for_each(0, (int)list.size(), [&](int i){
+        scope select(scope::balance(i, 100));
+        for(int k = 0; k < 1000; k++)
+        ambient::for_each( list[i]->begin(), list[i]->end(), [&] (int& val){ val += delta; } );
+    });
+
+    for(int i = 0; i < 100; i++){
         scope select(0);
         for(int k = 0; k < 1000; k++)
         ambient::for_each( list[i]->begin(), list[i]->end(), [&] (int& val){ val += delta; } );
     }
-    cilk_sync;
 
     for(int i = 0; i < 100; i++){
         ambient::lambda([&](const vector<int>& val){ 

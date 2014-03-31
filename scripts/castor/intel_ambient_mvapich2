@@ -10,10 +10,9 @@ COMPILER_VERSION=2013
 MPI_WRAPPER=mvapich2
 MPI_WRAPPER_VERSION=1.9-intel-wocuda
 
-export BOOST_ROOT=/project/h07/BOOST_1_53
 export MKLROOT=/apps/castor/intel-2013/mkl
 export PLASMA_ROOT=/apps/castor/plasma-2.4.6
-export ALPS_ROOT=/project/h07/TEST_ALPS
+export ALPS_ROOT=/users/akosenko/apps/alps/r7368/castor/icc/13.1.0
 export CXX=mpicxx
 export CC=mpicc
 
@@ -32,6 +31,7 @@ COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
 COMMON_PLASMA_LIB_DIR="$PLASMA_ROOT/lib"
 AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=ON
 AMBIENT_ENABLE_REGRESSION_PERFORMANCE=ON
+DMRG_BUILD_PDMRG=ON
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
 

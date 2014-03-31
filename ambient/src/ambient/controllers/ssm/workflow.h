@@ -35,14 +35,27 @@ namespace ambient {
         typedef typename controller_type::model_type model_type;
 
         struct thread_context {
-            thread_context(): sid(1) {}
             controller_type controller;
             scope* domain;
-            int sid;
+            struct sid_t {
+                struct divergence_guard {
+                    divergence_guard();
+                   ~divergence_guard();
+                };
+                sid_t() : value(1), inc(1) {}
+                void offset(int offset, int increment);
+                void maximize();
+                int generate();
+                int value;
+                int inc;
+                int max;
+                int min;
+            } sid;
         };
 
         mutable std::vector<thread_context> context_lane;
         mutable base_scope base;
+        mutable ambient::mutex mtx;
 
         workflow();
         scope& get_domain() const;
@@ -64,6 +77,7 @@ namespace ambient {
         void schedule() const;
         void intend_read(models::ssm::revision* o) const;
         void intend_write(models::ssm::revision* o) const;
+        ambient::mutex& get_mutex() const;
     };
 
     #ifdef AMBIENT_BUILD_LIBRARY
@@ -73,6 +87,7 @@ namespace ambient {
     extern workflow ctxt;
     #endif
 
+    typedef typename workflow::thread_context::sid_t sid_t;
 }
 
 #endif

@@ -45,10 +45,10 @@ namespace ambient { namespace numeric {
                            MatrixViewC& c, size_t coffset, 
                            size_t m, size_t n)
     {
-        kernels::gemv<int_type<alfa>,int_type<beta>,MatrixViewA,MatrixViewB,MatrixViewC>::spawn(a, aoffset, 
-                                                                                                b, boffset, 
-                                                                                                c, coffset, 
-                                                                                                m, n); 
+        kernels::gemv<int_type<alfa>,int_type<beta>,MatrixViewA,MatrixViewB,MatrixViewC>(a, aoffset, 
+                                                                                         b, boffset, 
+                                                                                         c, coffset, 
+                                                                                         m, n); 
     }
 
     template<int ADD, class MA, class MB, class MC, class MF>
@@ -58,36 +58,36 @@ namespace ambient { namespace numeric {
                            const MF& f, size_t foffset, 
                            size_t m, size_t n)
     {
-        kernels::gemv_scale<int_type<ADD>,MA,MB,MC,MF>::spawn(a, aoffset, 
-                                                              b, boffset, 
-                                                              c, coffset, 
-                                                              f, foffset, 
-                                                              m, n); 
+        kernels::gemv_scale<int_type<ADD>,MA,MB,MC,MF>(a, aoffset, 
+                                                       b, boffset, 
+                                                       c, coffset, 
+                                                       f, foffset, 
+                                                       m, n); 
     }
 
     template<typename T, class A>
     inline void gbbrd(matrix<T,A>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T,A>& u, matrix<T,A>& v){
-        kernels::gbbrd<T>::spawn(a, d, e, u, v);
+        kernels::gbbrd<T>(a, d, e, u, v);
     }
 
     template<typename T, class A>
     inline void gebrd(matrix<T,A>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T,A>& u, matrix<T,A>& v){
-        kernels::gebrd<T>::spawn(a, d, e, u, v);
+        kernels::gebrd<T>(a, d, e, u, v);
     }
 
     template<typename T, class A>
     inline void bdsqr(diagonal_matrix<T>& d, diagonal_matrix<T>& e, matrix<T,A>& u, matrix<T,A>& v){
-        kernels::bdsqr<T>::spawn(d, e, u, v);
+        kernels::bdsqr<T>(d, e, u, v);
     }
 
     template<typename T, class A>
     inline void gebd2(matrix<T,A>& a, diagonal_matrix<T>& d, diagonal_matrix<T>& e, diagonal_matrix<T>& tq, diagonal_matrix<T>& tp){
-        kernels::gebd2<T>::spawn(a, d, e, tq, tp);
+        kernels::gebd2<T>(a, d, e, tq, tp);
     }
 
     template<PLASMA_enum TR, typename T, class A>
     inline void larfg(matrix<T,A>& a, diagonal_matrix<T>& t, diagonal_matrix<T>& d, size_t k){
-        kernels::larfg<T,trans_type<TR> >::spawn(a, t, d, k);
+        kernels::larfg<T,trans_type<TR> >(a, t, d, k);
     }
 
     template<typename T, class A>
@@ -97,7 +97,7 @@ namespace ambient { namespace numeric {
                                  diagonal_matrix<T>& d, 
                                  int i)
     {
-        kernels::labrd_update_col<T>::spawn(say, sax, sy, sx, tq, d, i);
+        kernels::labrd_update_col<T>(say, sax, sy, sx, tq, d, i);
     }
 
     template<typename T, class A>
@@ -105,7 +105,7 @@ namespace ambient { namespace numeric {
                                  matrix<T,A>& sy, const matrix<T,A>& sx, 
                                  int i)
     {
-        kernels::labrd_reduce_col<T>::spawn(say, sax, sy, sx, i);
+        kernels::labrd_reduce_col<T>(say, sax, sy, sx, i);
     }
 
     template<typename T, class A>
@@ -115,7 +115,7 @@ namespace ambient { namespace numeric {
                                  diagonal_matrix<T>& e, 
                                  int i)
     {
-        kernels::labrd_update_row<T>::spawn(say, sax, sy, sx, tp, e, i);
+        kernels::labrd_update_row<T>(say, sax, sy, sx, tp, e, i);
     }
 
     template<typename T, class A>
@@ -123,44 +123,44 @@ namespace ambient { namespace numeric {
                                  const matrix<T,A>& sy, matrix<T,A>& sx, 
                                  int i)
     {
-        kernels::labrd_reduce_row<T>::spawn(say, sax, sy, sx, i);
+        kernels::labrd_reduce_row<T>(say, sax, sy, sx, i);
     }
 
     template<PLASMA_enum UL, size_t OFF, typename T, class A>
     inline void laset2(matrix<T,A>& a, const T& alfa = 0.0){
-        kernels::laset2<T,ul_type<UL>,int_type<OFF> >::spawn(a, alfa);
+        kernels::laset2<T,ul_type<UL>,int_type<OFF> >(a, alfa);
     }
 
     template<PLASMA_enum UL, typename T, class A>
     inline void copy_band(const matrix<T,A>& src, matrix<T,A>& dst, size_t dj){
-        kernels::copy_band<T,ul_type<UL> >::spawn(src, dst, dj);
+        kernels::copy_band<T,ul_type<UL> >(src, dst, dj);
     }
 
     template <int alfa, typename T, class A>
     inline void add_vectors(matrix<T,A>& lhs, size_t loffset, const matrix<T,A>& rhs, size_t roffset, size_t size){ 
-        kernels::add_vectors<int_type<alfa>, T>::spawn(lhs, loffset, rhs, roffset, size); 
+        kernels::add_vectors<int_type<alfa>, T>(lhs, loffset, rhs, roffset, size); 
     }
 
     template<typename T, class A>
     inline void sqrt_inplace(matrix<T,A>& a){
-        kernels::template sqrt_inplace<T>::template spawn(a);
+        kernels::template sqrt_inplace<T>(a);
     }
 
     template<typename T, class A>
     inline void norm_vector(const matrix<T,A>& a, matrix<T,A>& b){ 
-        kernels::template norm_vector<T>::template spawn(a, b);
+        kernels::template norm_vector<T>(a, b);
     }
 
     template<typename T, class A> 
     inline double max_vector(const matrix<T,A>& a){ 
         ambient::numeric::future<double> ret(0.0);
-        kernels::template max_vector<T>::template spawn(a, ret);
+        kernels::template max_vector<T>(a, ret);
         return (double)ret; 
     }
 
     template<class Matrix>
     inline void fill_gaussian(Matrix& a){
-        kernels::template init_gaussian<typename Matrix::value_type>::template spawn(a);
+        kernels::template init_gaussian<typename Matrix::value_type>(a);
     }
 
 } }

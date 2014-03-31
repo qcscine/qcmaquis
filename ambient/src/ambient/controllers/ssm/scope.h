@@ -47,7 +47,7 @@ namespace ambient {
         int round;
         int rank;
         ambient::locality state;
-        controller_type* c;
+        controller_type* controller;
     };
 
     class base_scope : public scope {
