@@ -320,6 +320,7 @@ namespace storage {
     };
 
 #ifdef USE_AMBIENT
+    using ambient::scope_t;
     template<class Matrix, class SymmGroup> 
     static void migrate(MPSTensor<Matrix, SymmGroup>& t){
         for(int i = 0; i < t.data().n_blocks(); ++i) 
@@ -330,6 +331,15 @@ namespace storage {
         for(int i = 0; i < t.n_blocks(); ++i)
         ambient::migrate(t[i]);
     }
+    template<typename T, typename L>
+    static void migrate(T& t, L where){
+        select_proc(where);
+        migrate(t);
+    }
+#else
+    struct scope_t { enum type { common }; };
+    template<typename T>
+    static void migrate(T& t, scope_t::type where){ }
 #endif
 
     inline static void setup(BaseParameters& parms){

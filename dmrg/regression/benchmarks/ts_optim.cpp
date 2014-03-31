@@ -84,21 +84,7 @@ int main(int argc, char ** argv)
         maquis::cout.precision(10);
         
         /// Load parameters
-        std::ifstream param_file(argv[1]);
-        if (!param_file)
-            throw std::runtime_error("Could not open parameter file.");
-        DmrgParameters parms(param_file);
-        
-        /// Load model parameters from second input (if needed)
-        std::string model_file;
-        if (parms.is_set("model_file")) model_file = parms["model_file"].str();
-        if (argc == 3)                  model_file = std::string(argv[2]);
-        if (!model_file.empty()) {
-            std::ifstream model_ifs(model_file.c_str());
-            if (!model_ifs)
-                throw std::runtime_error("Could not open model_parms file.");
-            parms << ModelParameters(model_ifs);
-        }
+        DmrgParameters parms = load_parms_and_model(argv[1], (argc == 3) ? argv[2] : "");
         
         /// Timers
         #ifdef USE_AMBIENT
@@ -182,7 +168,7 @@ int main(int argc, char ** argv)
         }
         #ifdef USE_AMBIENT
         if(exists(chkpfile / boundary_name) || lr == -1)
-            omp_for(size_t b = 0; b < left.aux_dim(); ++b){
+            for(size_t b = 0; b < left.aux_dim(); ++b){
                 select_proc(ambient::scope::permute(b,ts_mpo.placement_l));
                 storage::migrate(left[b]);
             }
@@ -205,7 +191,7 @@ int main(int argc, char ** argv)
         }
         #ifdef USE_AMBIENT
         if(exists(chkpfile / boundary_name) || lr == +1) 
-            omp_for(size_t b = 0; b < right.aux_dim(); ++b){
+            for(size_t b = 0; b < right.aux_dim(); ++b){
                 select_proc(ambient::scope::permute(b,ts_mpo.placement_r));
                 storage::migrate(right[b]);
             }

@@ -226,4 +226,28 @@ private:
 
 };
 
+
+inline DmrgParameters load_parms_and_model(std::string parms_fname, std::string model_fname="")
+{
+    /// Load parameters
+    std::ifstream param_file(parms_fname.c_str());
+    if (!param_file)
+        throw std::runtime_error("Could not open parameter file.");
+    DmrgParameters parms(param_file);
+    
+    /// Load model parameters from second input (if needed)
+    std::string model_file;
+    if (parms.is_set("model_file") && model_fname.empty())
+        model_fname = parms["model_file"].str();
+    if (!model_fname.empty()) {
+        std::ifstream model_ifs(model_fname.c_str());
+        if (!model_ifs)
+            throw std::runtime_error("Could not open model_parms file.");
+        parms << ModelParameters(model_ifs);
+    }
+    
+    return parms;
+}
+
+
 #endif

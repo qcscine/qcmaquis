@@ -244,7 +244,7 @@ public:
                     if(site1 != 0){
                         #ifdef USE_AMBIENT
                         std::vector<int> placement_l = get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
-                        omp_for(size_t b = 0; b < left_[site1].aux_dim(); ++b){
+                        for(size_t b = 0; b < left_[site1].aux_dim(); ++b){
                             select_proc(ambient::scope::permute(b,placement_l)); 
                             storage::migrate(left_[site1][b]);
                         }
@@ -287,7 +287,7 @@ public:
                     if(site1 != L-2){
                         #ifdef USE_AMBIENT
                         std::vector<int> placement_r = get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
-                        omp_for(size_t b = 0; b < right_[site2+1].aux_dim(); ++b){
+                        for(size_t b = 0; b < right_[site2+1].aux_dim(); ++b){
                             select_proc(ambient::scope::permute(b,placement_r));
                             storage::migrate(right_[site2+1][b]);
                         }

@@ -166,6 +166,7 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
 }
     
 #ifdef USE_AMBIENT
+
 template<class Matrix, class DiagMatrix, class SymmGroup>
 void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
                 block_matrix<Matrix, SymmGroup> & U,
@@ -179,74 +180,19 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
     U = block_matrix<Matrix, SymmGroup>(r, m);
     V = block_matrix<Matrix, SymmGroup>(m, c);
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
+
+    ambient::for_each_redist(M.blocks().first, M.blocks().second, 
+                             [](const Matrix& m){ merge(m); },
+                             [](const Matrix& m){ return (num_rows(m)*num_rows(m)*num_cols(m) +
+                                                          2*num_cols(m)*num_cols(m)*num_cols(m)); });
+    ambient::sync();
+
     std::size_t loop_max = M.n_blocks();
-
-    static ambient::timer timert("svd transfer/merge time\n"); timert.begin();
-
-    // calculating complexities of the svd calls
-    size_t np = ambient::num_workers();
-    double total = 0;
-    std::vector< std::pair<double,size_t> > complexities(loop_max);
-    for(size_t i = 0; i < loop_max; ++i){
-        double rows = num_rows(M[i]);
-        double cols = num_cols(M[i]);
-        complexities[i] = std::make_pair(2*rows*rows*cols + 4*cols*cols*cols, i);
-        total += complexities[i].first;
-    }
-    total /= np;
-
-    std::sort(complexities.begin(), complexities.end(), [](const std::pair<double,size_t>& a, const std::pair<double,size_t>& b){ return a.first < b.first; });
-    std::vector<std::pair<double,size_t> > workloads(np, std::make_pair(0,0));
-
-    // filling the workload with smallest local matrices first
-    for(size_t p = 0; p < np; ++p){
-        workloads[p].second = p;
-        select_proc(p);
-        for(size_t i = 0; i < loop_max; ++i){
-            size_t k = complexities[i].second;
-            if(ambient::get_owner(M[k][0]) != p) continue;
-            if(workloads[p].first + complexities[i].first >= total) break;
-            merge(M[k]); 
-            workloads[p].first += complexities[i].first; 
-            complexities[i].first = 0;
-        }
-    }
-
-    // rebalancing using difference with average
-    for(size_t p = 0; p < np; ++p){
-        select_proc(p);
-        for(size_t i = 0; i < loop_max; ++i){
-            size_t k = complexities[i].second;
-            if(complexities[i].first == 0) continue;
-            if(workloads[p].first + complexities[i].first >= total) break;
-            merge(M[k]); 
-            workloads[p].first += complexities[i].first; 
-            complexities[i].first = 0;
-        }
-    }
-
-    std::sort(workloads.begin(), workloads.end(), [](const std::pair<double,size_t>& a, const std::pair<double,size_t>& b){ return a.first < b.first; });
-
-    // placing the rest according to sorted workload
-    size_t p = 0;
-    for(int i = loop_max-1; i >= 0; --i){
-        if(complexities[i].first == 0) continue;
-        size_t k = complexities[i].second;
-        int owner = workloads[p++].second;
-        select_proc(owner);
-        merge(M[k]); 
-        p %= np;
-    }
-    timert.end();
-
-
-    static ambient::timer timer("svd only time\n"); timer.begin();
     for(size_t k = 0; k < loop_max; ++k){
-        select_proc(ambient::get_owner(M[k][0]));
+        select_proc(ambient::get_owner(M[k]));
         svd_merged(M[k], U[k], V[k], S[k]);
     }
     ambient::sync(ambient::mkl_parallel());
-    timer.end();
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>

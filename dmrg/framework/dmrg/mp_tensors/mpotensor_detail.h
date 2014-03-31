@@ -60,7 +60,7 @@ namespace MPOTensor_detail
         const_term_descriptor(op_t const & op_, value_type s_) : op(op_), scale(s_) {}
 
         op_t const & op;
-        value_type scale;
+        value_type const scale;
     };
 
     template <class Matrix, class SymmGroup, typename Scale>
