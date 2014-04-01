@@ -1,0 +1,122 @@
+/* general */
+
+html, body {
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    display: block;
+    background-color: #FCFAFF;
+    overflow-x: hidden;
+}
+body {
+    display: table;
+    clear: both;
+    font-family: arial;
+    font-size: 12px;
+    padding: 0px;
+}
+a {
+    cursor: pointer;
+    color: #333;
+    text-decoration: none;
+}
+a.index {
+}
+div {
+    margin: 0px;
+    padding: 0px;
+    display: block;
+    font-family: arial;
+    font-size: 13px;
+    font-family: Interstate, 'Lucida Grande', Arial, sans-serif;
+}
+div.meta-content {
+    display: none;
+}
+div.kernel {
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 5px;
+    margin: 5px;
+    font-size: 12px;
+    display: inline-block;
+}
+div.output {
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: black;
+    color: white;
+    display: inline-block;
+}
+div.import {
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: red;
+    display: inline-block;
+}
+div.rename {
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: #EEE;
+    display: none; /* inline-block */
+    margin: 5px;
+}
+div.cut {
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: black;
+    width: 10px;
+    height: 10px;
+    margin-left: 50%;
+    display: block;
+}
+div.region {
+    display: block;
+    margin-top: 0px;
+    margin-bottom: 30px;
+}
+div.gemm {
+    background-color: #9FFF9F;
+    padding: 20px;
+}
+div#selector-container {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 10%;
+    width: 100%;
+    background-color: white;
+    box-shadow: 10px 0px 24px -10px rgba(0,0,0,0.6);
+}
+div.selector {
+    display: inline-block;
+    position: fixed;
+    top: 0;
+    margin: 20px;
+    width: 20px;
+    padding: 10px;
+    font-size: 22px;
+    border: 1px solid black;
+    border-radius: 20px;
+    font-size: 10px;
+    text-align: center;
+}
+iframe#screen {
+    position: fixed;
+    left: 34%;
+    top: 12%;
+    height: 88%;
+    width: 66%;
+    border: 0;
+}
+div#region-container {
+    display: block;
+    position: absolute;
+    top: 12%;
+    height: 88%;
+    padding-left: 2%;
+    width: 32%;
+    overflow: scroll;
+}

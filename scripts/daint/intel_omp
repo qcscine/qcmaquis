@@ -1,0 +1,27 @@
+#!/bin/bash -l
+STATE="void"
+STATE_AMBIENT="void"
+STATE_DMRG="build"
+# end of target states #
+PREFIX=omp
+COMPILER=intel
+COMPILER_VERSION=13.1
+MYAPPS=/project/h07/dolfim/apps/daint/intel_13_1_0
+
+export ALPS_ROOT=$MYAPPS/alps
+export PATH=${ALPS_ROOT}/bin:${PATH}
+export XTPE_LINK_TYPE=dynamic
+
+module switch PrgEnv-cray PrgEnv-intel
+module load cray-hdf5
+module load cmake
+module load perftools
+
+COMMON_CMAKE_SYSTEM_NAME="Generic"
+COMMON_BLAS_LAPACK_SELECTOR="mkl_sequential"
+DMRG_ENABLE_OMP=ON
+DMRG_BUILD_AMBIENT=OFF
+DMRG_USE_AMBIENT=OFF
+
+source $ROOT_DIR/scripts/common/common.sh 
+execute $*
