@@ -187,15 +187,15 @@ bool is_hermitian_meas(std::vector<std::pair<std::vector<block_matrix<Matrix, Sy
     return is_herm;
 }
 
-inline std::vector<std::string> label_strings (const Lattice& lat, const std::vector<std::vector<std::size_t> >& labels)
+inline std::vector<std::string> label_strings (const Lattice& lat, const std::vector<std::vector<Lattice::pos_t> >& labels)
 {
     std::vector<std::string> ret;
     ret.reserve(labels.size());
-    for (std::vector<std::vector<std::size_t> >::const_iterator it = labels.begin();
+    for (std::vector<std::vector<Lattice::pos_t> >::const_iterator it = labels.begin();
          it != labels.end(); ++it)
     {
         std::ostringstream oss;
-        for (std::vector<std::size_t>::const_iterator it2 = it->begin(); it2 != it->end(); ++it2) {
+        for (std::vector<Lattice::pos_t>::const_iterator it2 = it->begin(); it2 != it->end(); ++it2) {
             oss << lat.get_prop<std::string>("label", *it2);
             if (it2 + 1 != it->end())
                 oss << " -- ";

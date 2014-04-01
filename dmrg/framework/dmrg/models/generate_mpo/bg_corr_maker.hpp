@@ -90,6 +90,8 @@ namespace generate_mpo
 
             std::copy(ref.begin(), ref.end()-1, std::back_inserter(background_pos));
             phase = set_base_phase(ref);
+            labels.resize(lat.size() - *ref.rbegin() - 1 + (int)incl_diag);
+
             make_prempo(*ref.rbegin());
         }
         
@@ -116,7 +118,7 @@ namespace generate_mpo
         	return ss.str();
         }
         
-        vector<vector<size_t> > const& numeric_labels() { return labels; }
+        vector<vector<pos_t> > const& numeric_labels() { return labels; }
         
     private:
         Lattice const& lat;
@@ -124,7 +126,7 @@ namespace generate_mpo
 
         vector<vector<block> > prempo;
         vector<vector<tag> > tags;
-        vector<vector<size_t> > labels;
+        vector<vector<pos_t> > labels;
         
         std::vector<tag_type> identities, fillings;
         vector<std::vector<tag_type> > op_tags;
@@ -149,6 +151,10 @@ namespace generate_mpo
                                                    (*op_tags.rbegin())[lat.get_prop<int>("type", branch)], current_sign);
                 for(pos_t p2 = branch+1; p2 < lat.size(); ++p2)
                     branch_sign = insert_filling(branch_index, branch_index, p2, branch_sign);
+
+                labels[branch_index] = background_pos;
+                labels[branch_index].push_back(start);
+                labels[branch_index].push_back(branch);
             }
 
             if(incl_diag)
@@ -162,6 +168,10 @@ namespace generate_mpo
                 bool branch_sign = insert_operator(0, branch_index, start, op_tag, start_sign, scale);
                 for(pos_t p2 = start+1; p2 < lat.size(); ++p2)
                     branch_sign = insert_filling(branch_index, branch_index, p2, branch_sign);
+
+                labels[branch_index] = background_pos;
+                labels[branch_index].push_back(start);
+                labels[branch_index].push_back(start);
             }
         }
 
