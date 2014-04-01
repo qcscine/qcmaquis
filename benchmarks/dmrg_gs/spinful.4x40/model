@@ -1,0 +1,11 @@
+
+LATTICE ="open ladder"
+L =4
+W =40
+MODEL ="fermion Hubbard"
+t0 =0.2
+t1 =1
+
+CONSERVED_QUANTUMNUMBERS ="Nup,Ndown"
+Nup_total =80
+Ndown_total =80

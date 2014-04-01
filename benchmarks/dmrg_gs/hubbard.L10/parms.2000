@@ -1,0 +1,20 @@
+max_bond_dimension = 2000
+
+truncation_final = 1e-16
+
+nsweeps = 4
+ngrowsweeps = 0
+nmainsweeps = 1
+
+optimization = twosite
+
+donotsave = 1
+chkpfile = "mps"
+resultfile = "res.h5"
+storagedir = "tmp"
+//run_seconds = [INSERT NECESSARY VALUE HERE]
+
+use_compressed = 1
+calc_h2 = 1
+
+symmetry = 2u1

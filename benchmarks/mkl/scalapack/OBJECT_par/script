@@ -1,0 +1,6 @@
+#!/bin/bash
+rm ex
+PATH_LD=/users/ewartt/SCALA/scalapack_installer_0.96/lib
+
+mpic++ *.o -o ex -L$PATH_LD -lscalapack -lblacsC -lblacs -lblacsC  -lgfortran -lmpi_f77
+

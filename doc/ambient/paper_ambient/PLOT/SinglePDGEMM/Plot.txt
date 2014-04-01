@@ -1,0 +1,26 @@
+reset
+set terminal epslatex color 
+#set grid
+#set key box
+set size 1.00,0.90 #golden ratio
+set xrange [256:8192]
+set yrange [0:25]
+set ytics 5
+set xtics 1024
+
+set key right top
+
+set ylabel "$P$ [GFlops]"
+set xlabel "$n$"
+
+set style line 1 lt 1 lw 3
+set style line 2 lt 2 lw 3 
+set style line 3 lt 3 lw 3 
+set style line 4 lt 6 lw 3 
+
+
+set out 'SinglePGEMM.tex';  plot "Peak.txt" using 2:1   title "Peak" linestyle 1 with line
+#set out 'SinglePGEMM.tex';replot "SingleGEMM.txt" using 4:(2*$4*$4*$4)/($2*10**9) title "pDGEMM ScaLAPACK" linestyle 8 lw 3 with line
+#set out 'SinglePGEMM.tex';replot "SingleGEMM.txt" using 4:(2*$4*$4*$4)/($1*10**9) title "before" linestyle 8 lw 3 with line
+set out 'SinglePGEMM.tex';replot "Single" using 3:(2*$3*$3*$3)/($1*10**9) title "pDGEMM Ambient"   linestyle 2  with line  
+set output

@@ -1,0 +1,12 @@
+LATTICE = "open square lattice"
+L = 10
+W = 10
+
+MODEL = "fermion Hubbard"
+t = 1
+
+CONSERVED_QUANTUMNUMBERS = "Nup,Ndown"
+Nup_total = 47
+Ndown_total = 47
+
+MEASURE_LOCAL[D] = "n"

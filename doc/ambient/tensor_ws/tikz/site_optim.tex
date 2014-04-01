@@ -1,0 +1,82 @@
+\documentclass{standalone}
+
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amscd}
+\usepackage{color}
+\usepackage{amsthm}
+
+
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{arrows,shapes,positioning,decorations.pathmorphing}
+
+
+\begin{document}
+
+
+\tikzset{spin/.style={circle=2pt,draw=black!100,fill=blue!20,inner sep=3pt}}
+\tikzset{hamil/.style={rectangle=2pt,draw=black!100,fill=red!40,inner sep=3pt}}
+\tikzset{coarse grain/.style={isosceles triangle,isosceles triangle stretches,draw, fill=green!15, anchor=center, inner sep=3pt, minimum width=.8cm, shape border rotate=270, thick}}
+\tikzset{arrow down/.style={single arrow, draw, fill, shape border rotate=270, anchor=center, minimum height=.4cm, single arrow head extend=.2cm, inner sep=8pt}}
+
+\begin{tikzpicture}
+
+\foreach \i in {1,...,2} {
+	\node[spin] (M1 \i) at (\i,0) {};
+%	\draw[thick] (M1 \i.south) -- +(0,-.4);
+	\node[hamil] (H \i) at (\i,-.5) {};
+	\draw[thick] (M1 \i) -- (H \i);
+	\node[spin] (M2 \i) at (\i,-1) {};
+	\draw[thick] (H \i) -- (M2 \i);
+}
+\node[hamil] (H 3) at (3,-.5) {};
+\foreach \i in {4,...,5} {
+	\node[spin] (M1 \i) at (\i,0) {};
+%	\draw[thick] (M1 \i.south) -- +(0,-.4);
+	\node[hamil] (H \i) at (\i,-.5) {};
+	\draw[thick] (M1 \i) -- (H \i);
+	\node[spin] (M2 \i) at (\i,-1) {};
+	\draw[thick] (H \i) -- (M2 \i);
+}
+
+\draw[thick] (M1 1) -- (M1 2);
+\draw[thick] (H 1) -- (H 2);
+\draw[thick] (M2 1) -- (M2 2);
+
+\draw[thick] (M1 2.east) -- +(.4,0);
+\draw[thick] (H 2) -- (H 3);
+\draw[thick] (M2 2.east) -- +(.4,0);
+
+\draw[thick] (M1 4.west) -- +(-.4,0);
+\draw[thick] (H 3.north) -- +(0,.1);
+\draw[thick] (H 3) -- (H 4);
+\draw[thick] (H 3.south) -- +(0,-.1);
+\draw[thick] (M2 4.west) -- +(-.4,0);
+
+\draw[thick] (M1 4) -- (M1 5);
+\draw[thick] (H 4) -- (H 5);
+\draw[thick] (M2 4) -- (M2 5);
+
+%\foreach \i [evaluate = \i as \j using int(\i+1)] in {1,...,4} {
+%	\draw[thick] (M1 \i) -- (M1 \j);
+%	\draw[thick] (H \i) -- (H \j);
+%	\draw[thick] (M2 \i) -- (M2 \j);
+%}
+
+%\foreach \i [evaluate = \i as \j using int(\i+1)] in {1,...,4} {
+%	\draw[thick] (M1 \i) -- (M1 \j);
+%	\draw[thick] (H \i) -- (H \j);
+%	\draw[thick] (M2 \i) -- (M2 \j);
+%}
+
+%\draw[dashed,thick] (M1 5.east) -- +(.4,0);
+%\draw[dashed,thick] (M1 1.west) -- +(-.4,0);
+
+
+
+\end{tikzpicture}
+
+\end{document}

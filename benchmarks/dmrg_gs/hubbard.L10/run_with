@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if !([ -f "bench_hubbard_large.out.ckp.h5" ]); then
+  curl -O http://archive.comp-phys.org/phys.ethz.ch/dolfim/MAQUIS/bench_init/hubbard_large/bench_hubbard_large.out.ckp.h5
+fi
+
+$1 parms model | tee out

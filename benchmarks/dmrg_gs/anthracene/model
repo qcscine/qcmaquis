@@ -1,0 +1,41 @@
+L = 14
+W = 1
+u1_total_charge1 = 7
+u1_total_charge2 = 7
+irrep_charge = 0
+LATTICE = "open square lattice"
+CONSERVED_QUANTUMNUMBERS = "Nup,Ndown"
+MODEL = "quantum_chemistry"
+integral_file = "orbital"
+
+hf_occ = "4,4,1,1,4,4,1,4,4,1,1,4,1,1"
+
+orbital_order = "1,2,3,4,5,6,7,8,9,10,11,12,13,14"
+
+MEASURE_LOCAL[Nup] = "Nup"
+MEASURE_LOCAL[Ndown] = "Ndown"
+MEASURE_LOCAL[Nupdown] = "Nup*Ndown"
+MEASURE_HALF_CORRELATIONS[dm_up] = "cdag_up:c_up"
+MEASURE_HALF_CORRELATIONS[dm_down] = "cdag_down:c_down"
+
+MEASURE_HALF_CORRELATIONS[nupnup] = "Nup:Nup"
+MEASURE_HALF_CORRELATIONS[nupndown] = "Nup:Ndown"
+MEASURE_HALF_CORRELATIONS[ndownnup] = "Ndown:Nup"
+MEASURE_HALF_CORRELATIONS[ndownndown] = "Ndown:Ndown"
+MEASURE_HALF_CORRELATIONS[doccdocc] = "Nup*Ndown:Nup*Ndown"
+
+MEASURE_HALF_CORRELATIONS[transfer_up_while_down] = "cdag_up*Ndown:c_up*Ndown"
+MEASURE_HALF_CORRELATIONS[transfer_down_while_up] = "cdag_down*Nup:c_down*Nup"
+
+MEASURE_HALF_CORRELATIONS[transfer_up_while_down_at_2] = "cdag_up:c_up*Ndown"
+MEASURE_HALF_CORRELATIONS[transfer_up_while_down_at_1] = "cdag_up*Ndown:c_up"
+MEASURE_HALF_CORRELATIONS[transfer_down_while_up_at_2] = "cdag_down:c_down*Nup"
+MEASURE_HALF_CORRELATIONS[transfer_down_while_up_at_1] = "cdag_down*Nup:c_down"
+
+MEASURE_HALF_CORRELATIONS[transfer_pair] = "cdag_up*cdag_down:c_up*c_down"
+MEASURE_HALF_CORRELATIONS[spinflip] = "cdag_up*c_down:cdag_down*c_up"
+
+MEASURE_HALF_CORRELATIONS[nupdocc] = "Nup:Nup*Ndown"
+MEASURE_HALF_CORRELATIONS[ndowndocc] = "Ndown:Nup*Ndown"
+MEASURE_HALF_CORRELATIONS[doccnup] = "Nup*Ndown:Nup"
+MEASURE_HALF_CORRELATIONS[doccndown] = "Nup*Ndown:Ndown"

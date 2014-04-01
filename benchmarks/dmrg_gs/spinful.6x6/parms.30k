@@ -1,0 +1,13 @@
+max_bond_dimension = 30000
+truncation_final = 1e-16
+
+nsweeps = 5
+ngrowsweeps = 0
+sweep_bond_dimensions = "30000"
+optimization = twosite
+symmetry = 2u1
+
+chkpfile = "mps"
+resultfile = "res.h5"
+storagedir = "tmp"
+

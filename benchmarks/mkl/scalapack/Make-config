@@ -1,0 +1,23 @@
+# Make-config
+
+par:
+	$(MAKE) targets \
+	"N = par" \
+	"MPICC = mpic++" \
+	"OPTIONSmpi =   -O2 -m64   " \
+	"LINK = -o " \
+	"PATH_LIB1 = /users/ewartt/SCALA/scalapack_installer_0.96/lib " \
+	"PG = -lscalapack -lblacsC -lblacs -lblacsC  -lgfortran -lreflapack -lrefblas -lmpi_f77 " \
+	"P = " \
+	"M = "
+
+par_ACML:
+	$(MAKE) targets \
+	"N = par_ACML" \
+	"MPICC = mpic++" \
+	"OPTIONSmpi = -O2 -m64 -fopenmp " \
+	"LINK = -o " \
+	"PATH_LIB1 = /users/ewartt/SCALA/scalapack_installer_0.96/lib " \
+	"PG = -lscalapack -lblacsC -lblacs -lblacsC /share/apps/AMD/ACML/4.3.0/gfortran64_mp/lib/libacml_mp.a -lgfortran -lmpi_f77 -fopenmp " \
+	"P = " \
+	"M = "

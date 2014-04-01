@@ -1,0 +1,28 @@
+reset
+set terminal epslatex color 
+#set grid
+#set key box
+set size 1.00,0.90 #golden ratio
+set xrange [256:8192]
+set yrange [0:30]
+set ytics 5
+set xtics 1024
+
+set key right top
+
+set ylabel "$P$ [GFlops]"
+set xlabel "$n$"
+
+set style line 1 lt 1 lw 3
+set style line 2 lt 2 lw 3 
+set style line 3 lt 3 lw 3 
+set style line 4 lt 4 lw 3 
+set style line 5 lt 5 lw 3 
+
+
+set out 'SinglePGEMMWK.tex';  plot "Peak.txt" using 2:1   title "Peak" linestyle 1 with line
+set out 'SinglePGEMMWK.tex';replot "RESULTS_SINGLE_INTEL/single_WK64.txt"  using 3:(2*$3*$3*$3)/($1*10**9) title "Work group 64 \times 64 pDGEMM Ambient"   linestyle 2 with line  
+set out 'SinglePGEMMWK.tex';replot "RESULTS_SINGLE_INTEL/single_WK128.txt" using 3:(2*$3*$3*$3)/($1*10**9) title "Work group 128 \times 128 pDGEMM Ambient" linestyle 3 with line  
+set out 'SinglePGEMMWK.tex';replot "RESULTS_SINGLE_INTEL/single_WK256.txt" using 3:(2*$3*$3*$3)/($1*10**9) title "Work group 256 \times 256 pDGEMM Ambient" linestyle 4 with line  
+set out 'SinglePGEMMWK.tex';replot "RESULTS_SINGLE_INTEL/single_WK512.txt" using 3:(2*$3*$3*$3)/($1*10**9) title "Work group 512 \times 512 pDGEMM Ambient" linestyle 5 with line  
+set output

@@ -1,0 +1,15 @@
+#!/bin/bash
+#NUM_PROCS et le nombre de processeurs physique sur le noeud, la lame, ...
+NUM_PROCS=48
+STRIDE=2
+PROC_NUM=`expr $OMPI_COMM_WORLD_RANK \* $STRIDE`
+#PROC_NUM=`expr $OMPI_COMM_WORLD_RANK % $PROC_NUM`
+#echo "proc num 2: $PROC_NUM"
+#PROC_NUM=`expr $OMPI_COMM_WORLD_RANK  % $NUM_PROCS`
+#echo "proc num 3: $PROC_NUM"
+#echo "proc num opm, $PROC_NUM_OMP"
+TASKLINE="numactl --physcpubind=$PROC_NUM $@"
+##TASKLINE="execrset -c $PROC_NUM  -e $@"
+##TASKLINE="execrset -c $PROC_NUM-$PROC_NUM_OMP  -e $@"
+echo $TASKLINE
+${TASKLINE}

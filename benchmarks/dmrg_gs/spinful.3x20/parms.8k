@@ -1,0 +1,12 @@
+max_bond_dimension = 8000
+truncation_final = 1e-16
+
+nsweeps = 5
+ngrowsweeps = 0
+sweep_bond_dimensions = "8000"
+optimization = twosite
+chkpfile = "/state/partition1/spinful.3x20.8k.ckp.h5"
+resultfile = "/state/partition1/spinful.3x20.8k.res.h5"
+storagedir = "/state/partition1/storage.spinful.3x20.8k"
+symmetry = 2u1
+
