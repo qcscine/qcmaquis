@@ -38,12 +38,13 @@
 namespace measurements {
     
     namespace detail {
-        inline std::vector<std::vector<std::size_t> >
-        resort_labels (const std::vector<std::vector<std::size_t> >& labels,
-                       std::vector<size_t> const & order,
+        typedef Lattice::pos_t pos_t;
+        inline std::vector<std::vector<pos_t> >
+        resort_labels (const std::vector<std::vector<pos_t> >& labels,
+                       std::vector<pos_t> const & order,
                        bool is_nn=false)
         {
-            std::vector<std::vector<std::size_t> > ret(labels.size());
+            std::vector<std::vector<pos_t> > ret(labels.size());
             for (int i=0; i<labels.size(); ++i) {
                 #ifndef NDEBUG
                 if (is_nn) assert(2*order.size() == labels[i].size());
@@ -68,20 +69,21 @@ namespace measurements {
         class CorrPermutator
         {
         public:
+            typedef Lattice::pos_t pos_t;
             typedef std::size_t size_t;
             typedef std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> inner_t;
             typedef std::vector<inner_t> value_t;
             CorrPermutator (value_t const & ops, bool is_nn)
             {
-                std::vector<size_t> ord;
+                std::vector<pos_t> ord;
                 if (is_nn)
-                    for (size_t i=0; i<ops.size(); i+=2) ord.push_back(i);
+                    for (pos_t i=0; i<ops.size(); i+=2) ord.push_back(i);
                 else
-                    for (size_t i=0; i<ops.size(); ++i) ord.push_back(i);
+                    for (pos_t i=0; i<ops.size(); ++i) ord.push_back(i);
                 
                 do {
-                    std::vector<size_t> check_pre;
-                    for (size_t i=0; i<ops.size(); ++i) {
+                    std::vector<pos_t> check_pre;
+                    for (pos_t i=0; i<ops.size(); ++i) {
                         if (ops[i].second) {
                             if (!is_nn)
                                 check_pre.push_back(ord[i]);
@@ -98,7 +100,7 @@ namespace measurements {
                     std::sort(check_pre.begin(), check_pre.end(), cmp);
                     
                     value_t tmp;
-                    for (size_t i=0; i<ord.size(); ++i) {
+                    for (pos_t i=0; i<ord.size(); ++i) {
                         tmp.push_back( ops[ord[i]] );
                         if (is_nn) {
                             tmp.push_back( ops[ord[i]+1] );
@@ -115,11 +117,11 @@ namespace measurements {
             
             size_t size() const {return perm.size();}
             value_t operator[](size_t i) const {return perm[i];}
-            std::vector<size_t> order(size_t i) const {return orders[i];}
+            std::vector<pos_t> order(size_t i) const {return orders[i];}
             
         private:
             std::vector<value_t> perm;
-            std::vector<std::vector<size_t> > orders;
+            std::vector<std::vector<pos_t> > orders;
         };
     } /// namespace detail
     
@@ -128,9 +130,9 @@ namespace measurements {
     template <class Matrix, class SymmGroup>
     class correlations : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
-        typedef std::size_t size_type;
+        typedef Lattice::pos_t pos_t;
         typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
-        typedef std::vector<size_type> positions_type;
+        typedef std::vector<pos_t> positions_type;
     
     public:
         correlations(std::string const& name_, const Lattice & lat,
@@ -177,11 +179,11 @@ namespace measurements {
         
         void measure_correlation(MPS<Matrix, SymmGroup> const & mps,
                                  std::vector<std::pair<op_vec, bool> > const & ops,
-                                 std::vector<size_type> const & order = std::vector<size_type>())
+                                 std::vector<pos_t> const & order = std::vector<pos_t>())
         {
             typedef boost::shared_ptr<generate_mpo::CorrMakerBase<Matrix, SymmGroup> > maker_ptr;
             
-            for (std::vector<std::size_t>::const_iterator it = positions_first.begin(); it != positions_first.end(); ++it) {
+            for (std::vector<pos_t>::const_iterator it = positions_first.begin(); it != positions_first.end(); ++it) {
                 if (*it >= lattice.size()-(ops.size()-1))
                     throw std::runtime_error("cannot measure correlation with first operator at p="+boost::lexical_cast<std::string>(*it)+".");
                 #ifndef NDEBUG
@@ -212,7 +214,7 @@ namespace measurements {
                 
                 std::copy(dct.begin(), dct.end(), std::back_inserter(this->vector_results));
                 
-                std::vector<std::vector<std::size_t> > num_labels = dcorr->numeric_labels();
+                std::vector<std::vector<pos_t> > num_labels = dcorr->numeric_labels();
                 std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0) ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
                 std::copy(lbt.begin(), lbt.end(), std::back_inserter(this->labels));
             }

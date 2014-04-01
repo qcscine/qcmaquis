@@ -36,9 +36,9 @@ namespace measurements {
     template <class Matrix, class SymmGroup>
     class local_at : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
-        typedef std::size_t size_type;
+        typedef Lattice::pos_t pos_t;
         typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
-        typedef std::vector<std::vector<size_type> > positions_type;
+        typedef std::vector<std::vector<pos_t> > positions_type;
 
     public:
         local_at(std::string const& name_, const Lattice & lat,
@@ -60,10 +60,10 @@ namespace measurements {
         {
             this->vector_results.clear();
             this->vector_results.reserve(positions.size());
-            for (std::size_t p = 0; p < positions.size(); ++p)
+            for (pos_t p = 0; p < positions.size(); ++p)
             {
                 assert( positions[p].size() == ops.size() );
-                for (std::size_t i=1; i<ops.size(); ++i)
+                for (pos_t i=1; i<ops.size(); ++i)
                     if (positions[p][i-1] >= positions[p][i])
                         throw std::runtime_error("measure_local_at requires i1<i2<...<in.");
                 
@@ -72,7 +72,7 @@ namespace measurements {
                 
                 bool with_sign = false;
                 for (std::size_t i=0; i<ops.size(); ++i) {
-                    std::size_t pos = positions[p][i];
+                    pos_t pos = positions[p][i];
                     
                     block_matrix<Matrix, SymmGroup> const& fill  = fillings[lattice.get_prop<int>("type", pos)];
                     block_matrix<Matrix, SymmGroup> const& op    = ops[i].first[lattice.get_prop<int>("type", pos)];
