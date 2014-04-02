@@ -236,6 +236,7 @@ public:
         boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
+        boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
         boost::smatch what;
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
             std::string lhs = it->key();
@@ -266,10 +267,17 @@ public:
                 half_only = true;
                 nearest_neighbors_only = true;
             }
-            if (boost::regex_match(lhs, what, expression_twoptdm)) {
-                value = it->value();
-                int enabled = boost::lexical_cast<int>(value);
-                name = "twoptdm";
+            if (boost::regex_match(lhs, what, expression_twoptdm) ||
+                    boost::regex_match(lhs, what, expression_transition_twoptdm)) {
+
+                std::string bra_ckp("");
+                if(lhs == "MEASURE_TRANSITION_TWOPTDM"){
+                    name = "transition_twoptdm";
+                    bra_ckp = it->value();
+                }
+                else
+                    name = "twoptdm";
+
                 std::vector<bond_element> synchronous_meas_operators;
                 {
                 bond_element meas_operators;
@@ -307,7 +315,7 @@ public:
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
-                                                                              half_only, nearest_neighbors_only, positions));
+                                                                              half_only, nearest_neighbors_only, positions, bra_ckp));
             }
             else if (!name.empty()) {
 
