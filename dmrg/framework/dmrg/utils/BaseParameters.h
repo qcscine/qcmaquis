@@ -27,6 +27,8 @@
 #if !defined(BASEPARAMETERS_H) && !defined(DMRGPARAMETERS_H)
 #define BASEPARAMETERS_H
 
+#include "utils/io.hpp"
+
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -37,7 +39,6 @@
 #include <boost/algorithm/string.hpp>
 
 #include <alps/parameter.h>
-#include "utils/io.hpp"
 
 #include "dmrg/utils/parameter_proxy.h"
 
