@@ -115,8 +115,6 @@ public:
 
     friend class PGSymmetryConverter<Matrix, SymmGroup>;
 
-    void print_layout() const;
-
     mutable std::vector<int> placement_l;
     mutable std::vector<int> placement_r;
 private:

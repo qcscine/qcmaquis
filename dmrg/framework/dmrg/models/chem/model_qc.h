@@ -208,7 +208,7 @@ public:
 
         typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
-{
+        {
             boost::regex expression("^MEASURE_LOCAL\\[(.*)]$");
             boost::smatch what;
             for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -310,6 +310,7 @@ public:
                                                                               half_only, nearest_neighbors_only, positions));
             }
             else if (!name.empty()) {
+>>>>>>> sebkelle
 
                 int f_ops = 0;
                 bond_element meas_operators;
