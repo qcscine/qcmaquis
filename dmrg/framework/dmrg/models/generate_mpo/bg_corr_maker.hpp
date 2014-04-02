@@ -90,7 +90,6 @@ namespace generate_mpo
 
             std::copy(ref.begin(), ref.end()-1, std::back_inserter(background_pos));
             phase = set_base_phase(ref);
-
             labels.resize(lat.size() - *ref.rbegin() - 1 + (int)incl_diag);
 
             make_prempo(*ref.rbegin());

@@ -161,6 +161,32 @@ if(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn)
   ENDIF(Subversion_FOUND) 
 endif(NOT DMRG_VERSION_BUILD AND EXISTS ${PROJECT_SOURCE_DIR}/.svn) 
 
+if(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
+    find_package(Git)
+    if(GIT_FOUND)
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} rev-list --max-count=1 HEAD
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_REVISION
+            ERROR_QUIET
+            )
+        if(NOT ${GIT_REVISION} STREQUAL "")
+            string(STRIP ${GIT_REVISION} GIT_REVISION)
+        endif()
+
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_BRANCH
+            ERROR_QUIET
+            )
+        if(NOT ${GIT_BRANCH} STREQUAL "")
+            string(STRIP ${GIT_BRANCH} GIT_BRANCH)
+        endif()
+        set(DMRG_VERSION_BUILD "${GIT_REVISION} (${GIT_BRANCH})")
+    endif() 
+endif(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
+
 if(DMRG_VERSION_BUILD)
   set(DMRG_VERSION "${DMRG_VERSION_MAJOR}.${DMRG_VERSION_MINOR}-${DMRG_VERSION_BUILD}")
 else(DMRG_VERSION_BUILD)

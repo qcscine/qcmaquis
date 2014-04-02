@@ -186,15 +186,3 @@ typename MPOTensor<Matrix, SymmGroup>::index_type MPOTensor<Matrix, SymmGroup>::
 {
     return right_i;
 }
-
-template<class Matrix, class SymmGroup>
-void MPOTensor<Matrix, SymmGroup>::print_layout() const
-{
-    for(index_type row=0; row < left_i; ++row) {
-        for(std::set<index_type>::const_iterator it = row_index[row].begin();
-            it != row_index[row].end(); ++it)
-        {
-            maquis::cout << row << " " << *it << std::endl;
-        }
-    }
-}
