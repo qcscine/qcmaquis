@@ -1,29 +1,46 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_DMRG="build"
+STATE_DMRG="void"
 # end of target states #
 SHARED_FS=true
 PREFIX=ambient
 COMPILER=intel
-COMPILER_VERSION=13.1.0
-MPI_WRAPPER=impi # not used
-MPI_WRAPPER_VERSION=2013
+COMPILER_VERSION=14.0.1
+MPI_WRAPPER=impi
+MPI_WRAPPER_VERSION=4.1.1
 
-export ALPS_ROOT=/users/akosenko/apps/alps/r7223/icc/13.1.0
-export PLASMA_ROOT=/apps/castor/plasma-2.4.6
+MAQUIS_INSTALL=$ROOT_DIR/_installs/$HOST/$CONFIG_NAME
+echo $MAQUIS_INSTALL
+
+module load gcc/4.8.1
+module load hdf5/1.8.12-intel14.0.1 
+module load python/2.7.5-intel-14.0.1
+module load intel/14.0.1
+module load cmake
+
+export ALPS_ROOT=$HOME/apps/monch/alps-intel-boost_1_54_0
 export PATH=${ALPS_ROOT}/bin:${PATH}
-export CC=mycc
-export CXX=myCC
+export LD_LIBRARY_PATH=${ALPS_ROOT}/lib:${LD_LIBRARY_PATH}
+export PYTHONPATH=${ALPS_ROOT}/lib:${PYTHONPATH}
+export I_MPI_LINK=opt_mt # optimized, multithreaded version of the Intel MPI Library
+export CC=mpiicc
+export CXX=mpiicpc
 
-module load gcc/4.7.3 intel/2013 intel/13.1.0 hdf5/1.8.11-intel13 python cmake
-
-source /apps/monch/intel/impi/4.1.1.036/intel64/bin/mpivars.sh
+## uncomment for profiling
+#source /apps/monch/intel/impi/4.1.1.036/intel64/bin/mpivars.sh
 #source $ROOT_DIR/scripts/monch/itac.sh
 
+# MAQUIS exports after ALPS
+export PATH=${MAQUIS_INSTALL}/bin:${PATH}
+
 COMMON_MPI_CXX_FOUND=TRUE
+COMMON_CMAKE_INSTALL_PREFIX=${MAQUIS_INSTALL}
 COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
-COMMON_PLASMA_LIB_DIR="$PLASMA_ROOT/lib"
+COMMON_PLASMA_LIB_DIR="$HOME/apps/monch/plasma-intel/lib"
+## dmrg ##
+DMRG_ALPS_ROOT_DIR=$ALPS_ROOT
+DMRG_ENABLE_OMP=OFF
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
 

@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <functional>
 #include <boost/iterator/counting_iterator.hpp>
+#include <boost/filesystem.hpp>
 
 namespace measurements {
     
@@ -53,7 +54,8 @@ namespace measurements {
                  op_vec const & identities_, op_vec const & fillings_,
                  std::vector<bond_element> const& ops_,
                  bool half_only_, bool nearest_neighbors_only,
-                 positions_type const& positions_ = positions_type())
+                 positions_type const& positions_ = positions_type(),
+                 std::string const& ckp_ = std::string(""))
         : base(name_)
         , lattice(lat)
         , positions_first(positions_)
@@ -62,6 +64,7 @@ namespace measurements {
         , ops(ops_)
         , half_only(half_only_)
         , is_nn(nearest_neighbors_only)
+        , bra_ckp(ckp_)
         {
             pos_t extent = ops.size() > 2 ? lattice.size() : lattice.size()-1;
             if (positions_first.size() == 0)
@@ -71,15 +74,23 @@ namespace measurements {
             this->cast_to_real = is_hermitian_meas(ops[0]);
         }
         
-        void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
+        void evaluate(MPS<Matrix, SymmGroup> const& ket_mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
             this->vector_results.clear();
             this->labels.clear();
 
+            MPS<Matrix, SymmGroup> bra_mps;
+            if (bra_ckp != "") {
+                if(boost::filesystem::exists(bra_ckp))
+                    load(bra_ckp, bra_mps);
+                else
+                    throw std::runtime_error("The bra checkpoint file " + bra_ckp + " was not found\n");
+            }
+
             if (ops[0].size() == 2)
-                measure_correlation(mps, ops);
+                measure_correlation(bra_mps, ket_mps, ops);
             else if (ops[0].size() == 4)
-                measure_2rdm(mps, ops);
+                measure_2rdm(bra_mps, ket_mps, ops);
             else
                 throw std::runtime_error("correlation measurements at the moment supported with 2 and 4 operators");
         }
@@ -92,10 +103,13 @@ namespace measurements {
             return new NRankRDM(*this);
         }
         
-        void measure_correlation(MPS<Matrix, SymmGroup> const & mps,
+        void measure_correlation(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
+                                 MPS<Matrix, SymmGroup> const & ket_mps,
                                  std::vector<bond_element> const & ops,
                                  std::vector<pos_t> const & order = std::vector<pos_t>())
         {
+            MPS<Matrix, SymmGroup> const & bra_mps = (dummy_bra_mps.length() > 0) ? dummy_bra_mps : ket_mps;
+
             // TODO: test with ambient in due time
             #ifdef MAQUIS_OPENMP
             #pragma omp parallel for
@@ -110,7 +124,7 @@ namespace measurements {
                                                                                  ops[0], std::vector<pos_t>(1, p)));
                 // measure
                 MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
-                std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(mps, mpo);
+                std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
                 
                 std::vector<std::vector<pos_t> > num_labels = dcorr->numeric_labels();
                 std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
@@ -129,10 +143,13 @@ namespace measurements {
             }
         }
 
-        void measure_2rdm(MPS<Matrix, SymmGroup> const & mps,
+        void measure_2rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
+                          MPS<Matrix, SymmGroup> const & ket_mps,
                           std::vector<bond_element> const & ops,
                           std::vector<pos_t> const & order = std::vector<pos_t>())
         {
+            MPS<Matrix, SymmGroup> const & bra_mps = (dummy_bra_mps.length() > 0) ? dummy_bra_mps : ket_mps;
+
             // TODO: test with ambient in due time
             #ifdef MAQUIS_OPENMP
             #pragma omp parallel for collapse(2)
@@ -149,7 +166,7 @@ namespace measurements {
 
                     maker_ptr dcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings, ops[0], ref, true));
                     MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
-                    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(mps, mpo);
+                    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
 
                     // Loop over operator terms that are measured synchronously and added together
                     // Used e.g. for the four spin combos of the 2-RDM
@@ -158,7 +175,7 @@ namespace measurements {
 
                         // measure
                         MPO<Matrix, SymmGroup> synmpo = syndcorr->create_mpo();
-                        std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> syndct = multi_expval(mps, synmpo);
+                        std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> syndct = multi_expval(bra_mps, ket_mps, synmpo);
 
                         // add synchronous terms
                         std::transform(syndct.begin(), syndct.end(), dct.begin(), dct.begin(),
@@ -189,6 +206,8 @@ namespace measurements {
         op_vec identities, fillings;
         std::vector<bond_element> ops;
         bool half_only, is_nn;
+
+        std::string bra_ckp;
     };
 }
 
