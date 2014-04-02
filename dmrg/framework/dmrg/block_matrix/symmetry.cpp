@@ -24,6 +24,7 @@
  *
  *****************************************************************************/
 
+#include "utils/io.hpp" // has to be first include because of impi
 #include "dmrg/block_matrix/symmetry.h"
 
 const TrivialGroup::charge  TrivialGroup::IdentityCharge;

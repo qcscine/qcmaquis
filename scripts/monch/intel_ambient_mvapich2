@@ -1,13 +1,13 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_DMRG="build"
+STATE_DMRG="void"
 # end of target states #
 SHARED_FS=true
 PREFIX=ambient
 COMPILER=intel
 COMPILER_VERSION=14.0.1
-MPI_WRAPPER=mvapich2 # not used
+MPI_WRAPPER=mvapich2
 MPI_WRAPPER_VERSION=1.9
 
 MAQUIS_INSTALL=$ROOT_DIR/_installs/monch/$CONFIG_NAME
@@ -16,6 +16,13 @@ echo $MAQUIS_INSTALL
 module load gcc/4.8.1 alps/r7398/intel-14.0.1
 export CC=icc
 export CXX=icpc
+
+## Multithreaded MPI
+export MV2_ENABLE_AFFINITY=0
+## Good values for mpi buffers
+export MV2_VBUF_POOL_SIZE=8192
+export MV2_VBUF_SECONDARY_POOL_SIZE=1024
+export MV2_VBUF_TOTAL_SIZE=24k
 
 # MAQUIS exports after ALPS
 export PATH=${MAQUIS_INSTALL}/bin:${PATH}

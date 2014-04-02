@@ -24,6 +24,7 @@
  *
  *****************************************************************************/
 
+#include "utils/io.hpp" // has to be first include because of impi
 #include "simulation.h"
 #include "dmrg/sim/symmetry_factory.h"
 

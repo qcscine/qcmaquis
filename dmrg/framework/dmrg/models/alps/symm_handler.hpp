@@ -27,6 +27,7 @@
 #ifndef APP_ALPS_MODEL_SYMM_HANDLER_H
 #define APP_ALPS_MODEL_SYMM_HANDLER_H
 
+#include "utils/io.hpp" // has to be first include because of impi
 #include <alps/parameter.h>
 #include <alps/model.h>
 
