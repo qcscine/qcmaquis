@@ -183,7 +183,19 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
         if(NOT ${GIT_BRANCH} STREQUAL "")
             string(STRIP ${GIT_BRANCH} GIT_BRANCH)
         endif()
-        set(DMRG_VERSION_BUILD "${GIT_REVISION} (${GIT_BRANCH})")
+
+        execute_process(
+            COMMAND ${GIT_EXECUTABLE} describe --abbrev=0 --tags
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            OUTPUT_VARIABLE SVN_REV
+            ERROR_QUIET
+            )
+
+        if(NOT ${SVN_REV} STREQUAL "")
+            string(STRIP ${SVN_REV} SVN_REV)
+        endif()
+
+        set(DMRG_VERSION_BUILD "${GIT_REVISION} (${GIT_BRANCH}) ${SVN_REV}")
     endif() 
 endif(EXISTS ${PROJECT_SOURCE_DIR}/../.git)
 
