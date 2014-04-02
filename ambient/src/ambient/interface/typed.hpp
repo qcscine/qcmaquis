@@ -351,16 +351,15 @@ namespace ambient {
     // }}}
 
     #define ambient_non_destroyable  static int disable_destructor(int);
-    #define ambient_version(...)     mutable ambient::revision* before; \
+    #define ambient_version(...)     struct type_structure; \
+                                     mutable ambient::revision* before; \
                                      mutable ambient::revision* after; \
                                      void enable_versioning(); \
                                      static void disable_destructor(...); \
                                      enum { destructor_disabled = !std::is_void<decltype(disable_destructor(0))>::value }; \
                                      struct unnamed { \
-                                           struct mapping {\
-                                               __VA_ARGS__; \
-                                           };\
-                                           unnamed(){ core = new ambient::history(ambient::dim2(1,1),sizeof(unnamed)); } \
+                                           typedef type_structure mapping;\
+                                           unnamed(){ core = new ambient::history(ambient::dim2(1,1),sizeof(mapping)); } \
                                            unnamed(size_t length){ core = new ambient::history(ambient::dim2(1,1),length); } \
                                            unnamed(size_t length, size_t sz){ core = new ambient::history(ambient::dim2(1,length),sz); } \
                                            unnamed(size_t rows, size_t cols, size_t sz){ core = new ambient::history(ambient::dim2(cols, rows), sz); } \
@@ -369,8 +368,9 @@ namespace ambient {
                                            unnamed(ambient::history* core):core(core){ } \
                                           ~unnamed(){ if(!destructor_disabled){ if(core->weak()) delete core; else ambient::destroy(core); } } \
                                            ambient::history* core; \
-                                     } versioned;
-
+                                     } versioned;\
+                                     struct type_structure { __VA_ARGS__ };
+    #define ambient_alloc(...)       versioned(__VA_ARGS__)
     #define AMBIENT_VAR_LENGTH 1
 }
 

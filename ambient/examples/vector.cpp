@@ -39,7 +39,9 @@ public:
         T count;
         T elements[ AMBIENT_VAR_LENGTH ];
     );
-    vector(size_t length, T value) : versioned(length+1, sizeof(T)) {
+    vector(size_t length, T value) 
+    : ambient_alloc(length+1, sizeof(T)) 
+    {
         init_value<T>(*this, value);
     }
     iterator begin(){

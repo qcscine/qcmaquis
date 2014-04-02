@@ -120,13 +120,13 @@ namespace ambient { namespace numeric {
 
     template <typename T, class A>
     inline matrix<T,A>::matrix(size_type rows, size_type cols, value_type init_value)
-    : versioned(rows, cols, sizeof(T)) {
+    : ambient_alloc(rows, cols, sizeof(T)) {
         fill_value(*this, init_value);
     }
 
     template <typename T, class A>
     inline matrix<T,A>::matrix(const matrix& a)
-    : versioned(ambient::get_dim(a), sizeof(T)){
+    : ambient_alloc(ambient::get_dim(a), sizeof(T)){
         ambient::merge(a, *this);
     }
     
