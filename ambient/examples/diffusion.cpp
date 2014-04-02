@@ -246,7 +246,7 @@ template <typename T>
 class block {
 public:
     ambient_version( T val[AMBIENT_VAR_LENGTH]; );
-    block(size_t m, size_t n) : versioned(m, n, sizeof(T)) {}
+    block(size_t m, size_t n) : ambient_alloc(m, n, sizeof(T)) {}
 
     void init(T value){
         init_value<T>(*this, value);
