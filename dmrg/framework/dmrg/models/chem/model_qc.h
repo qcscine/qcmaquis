@@ -310,7 +310,6 @@ public:
                                                                               half_only, nearest_neighbors_only, positions));
             }
             else if (!name.empty()) {
->>>>>>> sebkelle
 
                 int f_ops = 0;
                 bond_element meas_operators;
