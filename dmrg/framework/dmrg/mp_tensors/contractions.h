@@ -89,10 +89,118 @@ struct contraction {
 
         return t1;
     }
-    
+
     // SK: New version which generates same output but uses right-paired input.
     //     The charge delta optimization is indepent from the changes needed to
     //     skip the preceding reshapes.
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    static block_matrix<Matrix, SymmGroup>
+    lbtm_kernel(size_t b2,
+                Boundary<OtherMatrix, SymmGroup> const & left,
+                std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                MPOTensor<Matrix, SymmGroup> const & mpo,
+                Index<SymmGroup> const & physical_i,
+                Index<SymmGroup> const & left_i,
+                Index<SymmGroup> const & right_i,
+                Index<SymmGroup> const & out_left_i,
+                ProductBasis<SymmGroup> const & in_right_pb,
+                ProductBasis<SymmGroup> const & out_left_pb)
+    {
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
+
+        typedef typename SymmGroup::charge charge;
+        typedef std::size_t size_t;
+
+        block_matrix<Matrix, SymmGroup> ret;
+        col_proxy col_b2 = mpo.column(b2);
+
+        charge total_delta;
+        index_type op_count = 0;
+        std::set<charge> op_palette;
+        for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
+            index_type b1 = col_it.index();
+
+            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
+            if (T.n_blocks() == 0) continue;
+
+            MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
+            block_matrix<Matrix, SymmGroup> const & W = access.op;
+            if (W.n_blocks() == 0) continue;
+
+            op_count++;
+
+            // charge deltas are constant for all blocks
+            charge operator_delta = SymmGroup::fuse(W.right_basis()[0].first, -W.left_basis()[0].first);
+            charge        T_delta = SymmGroup::fuse(T.right_basis()[0].first, -T.left_basis()[0].first);
+                      total_delta = SymmGroup::fuse(T_delta, -operator_delta);
+            
+            for (size_t s=0; s < W.n_blocks(); s++)
+                op_palette.insert(W.right_basis()[s].first);
+            
+        } if (op_count == 0) return ret; 
+
+        for (size_t r = 0; r < right_i.size(); ++r)
+        {
+            charge out_r_charge = right_i[r].first;
+            size_t r_size = right_i[r].second;
+
+            charge out_l_charge = SymmGroup::fuse(out_r_charge, -total_delta);
+
+            if (!out_left_i.has(out_l_charge)) continue;
+
+            size_t o = ret.find_block(out_l_charge, out_r_charge);
+            if ( o == ret.n_blocks() ) {
+                o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
+                ret.resize_block(out_l_charge, out_r_charge, out_left_i.size_of_block(out_l_charge), r_size);
+            }
+
+            for (typename std::set<charge>::const_iterator pit = op_palette.begin();
+                          pit != op_palette.end(); ++pit)
+            {
+                charge phys_c2 = *pit;
+                charge in_l_charge = SymmGroup::fuse(out_l_charge, -phys_c2);
+
+                if (!left_i.has(in_l_charge)) continue;
+                size_t out_left_offset = out_left_pb(phys_c2, in_l_charge);
+
+                for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it)
+                {
+                    index_type b1 = col_it.index();
+
+                    block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
+                    if (T.n_blocks() == 0) continue;
+                    MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
+                    block_matrix<Matrix, SymmGroup> const & W = access.op;
+
+                    size_t w_block = W.right_basis().position(phys_c2);
+                    if (w_block == W.n_blocks()) continue;
+
+                    charge phys_c1 = W.left_basis()[w_block].first;
+
+                    charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_c1);
+                    size_t t_block = T.right_basis().position(in_r_charge);
+                    if (t_block == T.right_basis().size()) continue;
+ 
+                    size_t in_right_offset = in_right_pb(phys_c1, out_r_charge);
+
+                    size_t phys_s1 = W.left_basis()[w_block].second;
+                    size_t phys_s2 = W.right_basis()[w_block].second;
+                    Matrix const & wblock = W[w_block];
+                    Matrix const & iblock = T[t_block];
+                    Matrix & oblock = ret[o];
+
+                    maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
+                            out_left_offset, in_right_offset,
+                            phys_s1, phys_s2, T.left_basis()[t_block].second, r_size, access.scale);
+                }
+            }
+        } // right index block
+        return ret;
+    }
+    
+/*
     template<class Matrix, class OtherMatrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
     lbtm_kernel(size_t b2,
@@ -170,6 +278,7 @@ struct contraction {
         } // b1
         return ret;
     }
+*/
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     static block_matrix<Matrix, SymmGroup>
@@ -292,7 +401,7 @@ struct contraction {
 
         omp_for(int b2 = 0; b2 < loop_max; ++b2) {
             select_proc(ambient::scope::permute(b2,mpo.placement_r));
-            ret[b2] = lbtm_kernel(b2, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
+            ret[b2] = lbtm_kernel(b2, left, t, mpo, physical_i, left_i, right_i, out_left_i, in_right_pb, out_left_pb);
         }
 
         return ret;
@@ -387,7 +496,7 @@ struct contraction {
         omp_for(size_t b2 = 0; b2 < loop_max; ++b2) {
             select_proc(ambient::scope::permute(b2,mpo.placement_r));
             block_matrix<Matrix, SymmGroup> tmp;
-            tmp = lbtm_kernel(b2, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
+            tmp = lbtm_kernel(b2, left, t, mpo, ket_tensor.site_dim(), left_i, right_i, out_left_i, in_right_pb, out_left_pb);
             gemm(transpose(tmp), bra_conj, ret[b2]);
         }
         #ifdef AMBIENT_TRACKING
@@ -488,7 +597,7 @@ struct contraction {
         omp_for(int b2 = 0; b2 < loop_max; ++b2) {
             select_proc(ambient::scope::permute(b2,mpo.placement_r));
 
-            block_matrix<Matrix, SymmGroup> contr_column = lbtm_kernel(b2, left, t, mpo, physical_i,
+            block_matrix<Matrix, SymmGroup> contr_column = lbtm_kernel(b2, left, t, mpo, physical_i, left_i,
                                                                        right_i, out_left_i, in_right_pb, out_left_pb);
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(contr_column, right[b2], tmp);
