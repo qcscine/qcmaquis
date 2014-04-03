@@ -89,11 +89,11 @@ namespace chem_detail {
         typedef ::term_descriptor<value_type> term_descriptor;
         typedef typename TagHandler<M, S>::tag_type tag_type;
 
-        ChemHelper(BaseParameters & parms, Lattice const & lat,
+        ChemHelper(BaseParameters & parms, Lattice const & lat_,
                    tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
-            : ident(ident_), fill(fill_), tag_handler(tag_handler_)
+            : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
-            this->parse_integrals(parms, lat);
+            this->parse_integrals(parms);
 
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;
@@ -124,7 +124,7 @@ namespace chem_detail {
                       value_type scale, int p1, int p2, tag_type op_1, tag_type op_2) {
 
             term_descriptor
-            term = TermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler);
+            term = TermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler, lat);
             IndexTuple id(p1, p2, op_1, op_2);
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
@@ -137,7 +137,7 @@ namespace chem_detail {
                       value_type scale, int s, int p1, int p2, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j) {
 
             term_descriptor
-            term = TermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler);
+            term = TermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler, lat);
             TermTuple id(IndexTuple(s,s,p1,p2),IndexTuple(op_i,op_k,op_l,op_j));
             if (three_terms.count(id) == 0) {
                 three_terms[id] = term;
@@ -162,7 +162,7 @@ namespace chem_detail {
                 
                     term_descriptor
                     term = TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
-                                                   op_i, op_k, op_l, op_j, tag_handler);
+                                                   op_i, op_k, op_l, op_j, tag_handler, lat);
 
                     term.coeff += value_type(sign(twin)) * coefficients[align(twin)];
 
@@ -172,12 +172,12 @@ namespace chem_detail {
             }
             else {
                 tagterms.push_back( TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
-                                   op_i, op_k, op_l, op_j, tag_handler) );
+                                   op_i, op_k, op_l, op_j, tag_handler, lat) );
             }
         }
     
     private:
-        void parse_integrals(BaseParameters & parms, Lattice const & lat) {
+        void parse_integrals(BaseParameters & parms) {
 
             // load ordering and determine inverse ordering
             order = parms["orbital_order"].template as<std::vector<int> >();
@@ -243,6 +243,7 @@ namespace chem_detail {
 
         tag_type ident, fill;
         boost::shared_ptr<TagHandler<M, S> > tag_handler;
+        Lattice const & lat;
 
         std::vector<value_type> matrix_elements;
         std::vector<std::vector<int> > idx_;

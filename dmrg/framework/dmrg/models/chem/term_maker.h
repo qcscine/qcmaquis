@@ -46,7 +46,8 @@ struct TermMaker {
 
     static term_descriptor two_term(bool sign, tag_type fill_op, value_type scale, pos_t i, pos_t j,
                                      tag_type op1, tag_type op2,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table)
+                                     boost::shared_ptr<TagHandler<M, S> > op_table,
+                                     Lattice const & lat)
     {
         term_descriptor term;
         term.is_fermionic = sign;
@@ -58,7 +59,8 @@ struct TermMaker {
 
     static term_descriptor positional_two_term(bool sign, tag_type fill_op, value_type scale, pos_t i, pos_t j,
                                      tag_type op1, tag_type op2,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table)
+                                     boost::shared_ptr<TagHandler<M, S> > op_table,
+                                     Lattice const & lat)
     {
         term_descriptor term;
         term.is_fermionic = sign;
@@ -85,7 +87,8 @@ struct TermMaker {
                                      value_type scale, pos_t pb, pos_t p1, pos_t p2,
                                      tag_type opb1, tag_type opb2,
                                      tag_type op1,  tag_type op2,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table)
+                                     boost::shared_ptr<TagHandler<M, S> > op_table,
+                                     Lattice const & lat)
     {
         term_descriptor term;
         term.is_fermionic = true;
@@ -137,7 +140,8 @@ struct TermMaker {
                                 value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
                                 tag_type op_i, tag_type op_j,
                                 tag_type op_k, tag_type op_l,
-                                boost::shared_ptr<TagHandler<M, S> > op_table)
+                                boost::shared_ptr<TagHandler<M, S> > op_table,
+                                Lattice const & lat)
     {
         term_descriptor term;
         term.is_fermionic = true;

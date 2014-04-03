@@ -203,7 +203,6 @@ public:
 
         #undef GENERATE_SITE_SPECIFIC
 
-        
         measurements_type meas;
 
         typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;

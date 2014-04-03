@@ -158,16 +158,16 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
         else if (k == -1 && l == -1) {
 
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler)
+                true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler, lat)
             );
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], i, j, create_down, destroy_down, tag_handler)
+                true, fill, matrix_elements[m], i, j, create_down, destroy_down, tag_handler, lat)
             );
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], j, i, create_up, destroy_up, tag_handler)
+                true, fill, matrix_elements[m], j, i, create_up, destroy_up, tag_handler, lat)
             );
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], j, i, create_down, destroy_down, tag_handler)
+                true, fill, matrix_elements[m], j, i, create_down, destroy_down, tag_handler, lat)
             );
 
             used_elements[m] += 1;
@@ -199,25 +199,25 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
             // --> c_l_up * n_i_down * cdag_i_up
             ptag = tag_handler->get_product_tag(count_down, create_up);
             this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, destroy_up, tag_handler) );
+                                           ptag.first, destroy_up, tag_handler, lat) );
 
             // 1a_dagger
             // --> c_i_up * n_i_down * cdag_l_up
             ptag = tag_handler->get_product_tag(destroy_up, count_down);
             this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, create_up, tag_handler) );
+                                           ptag.first, create_up, tag_handler, lat) );
 
             // 1b
             // --> c_l_down * n_i_up * cdag_i_down (1b)
             ptag = tag_handler->get_product_tag(count_up, create_down);
             this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, destroy_down, tag_handler) );
+                                           ptag.first, destroy_down, tag_handler, lat) );
 
             // (1b)_dagger
             // --> c_i_down * n_i_up * cdag_l_down
             ptag = tag_handler->get_product_tag(destroy_down, count_up);
             this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, create_down, tag_handler) );
+                                           ptag.first, create_down, tag_handler, lat) );
 
             used_elements[m] += 1;
         }
