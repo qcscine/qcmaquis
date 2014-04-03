@@ -43,7 +43,7 @@ namespace ambient { namespace utils {
 
         template<class T>
         ostream& operator<<(ambient::numeric::future<T> const & obj){
-            std::cout << obj.get();
+            std::cout << obj.load();
             return *this;
         }
 
@@ -74,8 +74,8 @@ namespace ambient { namespace utils {
 
         template<class T>
         mpostream& operator<<(ambient::numeric::future<T> const & obj){
-            if(ambient::verbose()) std::cout << obj.get();
-            else nullio << obj.get();
+            if(ambient::verbose()) std::cout << obj.load();
+            else nullio << obj.load();
             return *this;
         }
 

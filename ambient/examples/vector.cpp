@@ -22,8 +22,8 @@ namespace detail { using namespace ambient;
     }
 }
 
-ambient_export(detail::init_value, init_value)
-ambient_export(detail::add, add)
+AMBIENT_EXPORT(detail::init_value, init_value)
+AMBIENT_EXPORT(detail::add, add)
 
 template <typename T>
 class vector {
@@ -34,13 +34,13 @@ public:
         iterator(vector<T>& base) : base(base) {}
         vector<T>& base;
     };
-
-    ambient_version(
-        T count;
-        T elements[ AMBIENT_VAR_LENGTH ];
-    );
+AMBIENT_DELEGATE 
+(
+    T count;
+    T elements[ AMBIENT_VAR_LENGTH ];
+)
     vector(size_t length, T value) 
-    : ambient_alloc(length+1, sizeof(T)) 
+    : AMBIENT_ALLOC(length+1, sizeof(T)) 
     {
         init_value<T>(*this, value);
     }
@@ -154,7 +154,7 @@ int main(){ using namespace ambient;
     add<int>(a, b);
                                  }
     for(int i = 0; i < 10; i++)
-    cout << "After sync: " << get(a).elements[i] << "; count: " << get(a).count << "\n";
+    cout << "After sync: " << load(a).elements[i] << "; count: " << load(a).count << "\n";
 
     cout << "Messing with lambda:\n";
     int num = 13;

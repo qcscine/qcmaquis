@@ -103,7 +103,7 @@ namespace ambient {
         #undef inliner
     };
 
-    #define ambient_export(fn, name)  template<typename... TF> \
+    #define AMBIENT_EXPORT(fn, name)  template<typename... TF> \
                                       struct name ## _kernel : public ambient::kernel< name ## _kernel<TF...> > { \
                                           typedef decltype(&fn<TF...>) ftype; \
                                           template<typename... Args> \

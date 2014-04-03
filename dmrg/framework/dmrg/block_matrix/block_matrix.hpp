@@ -541,7 +541,7 @@ void block_matrix<Matrix, SymmGroup>::print_distribution() const
     for(int p = 0; p < ambient::num_procs(); ++p){
         double part = 0;
         for(int i = 0; i < this->n_blocks(); ++i){
-            if((*this)[i][0].core->current->owner == p || (p == 0 && (*this)[i][0].core->current->owner == -1))
+            if((*this)[i][0].desc->current->owner == p || (p == 0 && (*this)[i][0].desc->current->owner == -1))
                 part += num_rows((*this)[i])*num_cols((*this)[i]);
         }
         printf("R%d: %d%\n", p, (int)(100*part/total));

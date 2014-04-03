@@ -65,25 +65,25 @@ namespace ambient {
     };
     template <typename T> struct future_info : public singular_info<T> {
         template<size_t arg> static void deallocate(functor* m){       
-            EXTRACT(o); o->core->generator = NULL;
+            EXTRACT(o); o->desc->generator = NULL;
         }
         template<size_t arg> static void modify_remote(T& obj){ 
-            ctxt.get_controller().rsync(obj.core);
+            ctxt.get_controller().rsync(obj.desc);
         }
         template<size_t arg> static void modify_local(const T& obj, functor* m){ 
-            obj.core->generator = m;
-            ctxt.get_controller().lsync(obj.core);
-            m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.core);
+            obj.desc->generator = m;
+            ctxt.get_controller().lsync(obj.desc);
+            m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.desc);
         }
         template<size_t arg> static void modify(const T& obj, functor* m){ 
-            m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.core);
+            m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.desc);
         }
     };
     template <typename T> struct read_future_info : public future_info<T> {
         template<size_t arg> static void deallocate(functor* m){ }
         template<size_t arg> static void modify_remote(T& obj){ }
         template<size_t arg> static void modify_local(const T& obj, functor* m){
-            m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.core);
+            m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.desc);
         }
     };
     // }}}
@@ -92,8 +92,8 @@ namespace ambient {
         template<size_t arg> 
         static void deallocate(functor* m){
             EXTRACT(o);
-            revision& parent  = *o->before;
-            revision& current = *o->after;
+            revision& parent  = *o->ambient_before;
+            revision& current = *o->ambient_after;
             current.complete();
             current.release();
             ctxt.get_controller().squeeze(&parent);
@@ -101,7 +101,7 @@ namespace ambient {
         }
         template<size_t arg>
         static void modify_remote(T& obj){
-            decltype(obj.versioned.core) o = obj.versioned.core;
+            decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
             ctxt.get_controller().touch(o);
             if(o->back()->owner != ctxt.which())
                 ctxt.get_controller().rsync(o->back());
@@ -110,7 +110,7 @@ namespace ambient {
         }
         template<size_t arg>
         static void modify_local(T& obj, functor* m){
-            decltype(obj.versioned.core) o = obj.versioned.core;
+            decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
             ctxt.get_controller().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); 
             m->arguments[arg] = (void*)var;
@@ -118,29 +118,29 @@ namespace ambient {
             ctxt.get_controller().use_revision(o);
             ctxt.get_controller().collect(o->back());
 
-            var->before = o->current;
+            var->ambient_before = o->current;
             ctxt.get_controller().add_revision<ambient::locality::local>(o, m); 
             ctxt.get_controller().use_revision(o);
-            var->after = o->current;
+            var->ambient_after = o->current;
         }
         template<size_t arg>
         static void modify(T& obj, functor* m){
-            decltype(obj.versioned.core) o = obj.versioned.core;
+            decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
             ctxt.get_controller().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             ctxt.get_controller().sync(o->back());
             ctxt.get_controller().use_revision(o);
             ctxt.get_controller().collect(o->back());
 
-            var->before = o->current;
+            var->ambient_before = o->current;
             ctxt.get_controller().add_revision<ambient::locality::common>(o, m); 
             ctxt.get_controller().use_revision(o);
-            var->after = o->current;
+            var->ambient_after = o->current;
         }
         template<size_t arg> 
         static bool pin(functor* m){ 
             EXTRACT(o);
-            revision& r = *o->before;
+            revision& r = *o->ambient_before;
             if(r.generator != NULL){
                 ((functor*)r.generator)->queue(m);
                 return true;
@@ -149,13 +149,13 @@ namespace ambient {
         }
         template<size_t arg> 
         static void score(T& obj){
-            ctxt.intend_read(obj.versioned.core->back());
-            ctxt.intend_write(obj.versioned.core->back());
+            ctxt.intend_read(obj.ambient_rc.desc->back());
+            ctxt.intend_write(obj.ambient_rc.desc->back());
         }
         template<size_t arg> 
         static bool ready(functor* m){
             EXTRACT(o);
-            revision& r = *o->before;
+            revision& r = *o->ambient_before;
             if(r.generator == NULL || r.generator == m) return true;
             return false;
         }
@@ -166,40 +166,40 @@ namespace ambient {
     template <typename T> struct read_iteratable_info : public iteratable_info<T> {
         template<size_t arg> static void deallocate(functor* m){
             EXTRACT(o);
-            revision& r = *o->before;
+            revision& r = *o->ambient_before;
             ctxt.get_controller().squeeze(&r);
             r.release();
         }
         template<size_t arg> static void modify_remote(T& obj){
-            decltype(obj.versioned.core) o = obj.versioned.core;
+            decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
             ctxt.get_controller().touch(o);
             if(o->back()->owner != ctxt.which())
                 ctxt.get_controller().rsync(o->back());
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
-            decltype(obj.versioned.core) o = obj.versioned.core;
+            decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
             ctxt.get_controller().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
-            var->before = o->current;
+            var->ambient_before = o->current;
             ctxt.get_controller().lsync(o->back());
             ctxt.get_controller().use_revision(o);
         }
         template<size_t arg> static void modify(T& obj, functor* m){
-            decltype(obj.versioned.core) o = obj.versioned.core;
+            decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
             ctxt.get_controller().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
-            var->before = o->current;
+            var->ambient_before = o->current;
             ctxt.get_controller().sync(o->back());
             ctxt.get_controller().use_revision(o);
         }
         template<size_t arg> 
         static void score(T& obj){
-            ctxt.intend_read(obj.versioned.core->back());
+            ctxt.intend_read(obj.ambient_rc.desc->back());
         }
         template<size_t arg> 
         static bool pin(functor* m){ 
             EXTRACT(o);
-            revision& r = *o->before;
+            revision& r = *o->ambient_before;
             if(r.generator != NULL){
                 ambient::guard<ambient::mutex> g(ctxt.get_mutex());
                 ((functor*)r.generator)->queue(m);
@@ -210,39 +210,39 @@ namespace ambient {
     };
     template <typename T> struct write_iteratable_info : public iteratable_info<T> {
         template<size_t arg> static void modify_remote(T& obj){
-            decltype(obj.versioned.core) o = obj.versioned.core;
+            decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
             ctxt.get_controller().touch(o);
             ctxt.get_controller().collect(o->back());
             ctxt.get_controller().add_revision<ambient::locality::remote>(o, ctxt.which()); 
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
-            decltype(obj.versioned.core) o = obj.versioned.core;
+            decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
             ctxt.get_controller().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
 
             ctxt.get_controller().use_revision(o);
             ctxt.get_controller().collect(o->back());
 
-            var->before = o->current;
+            var->ambient_before = o->current;
             ctxt.get_controller().add_revision<ambient::locality::local>(o, m); 
             ctxt.get_controller().use_revision(o);
-            var->after = o->current;
+            var->ambient_after = o->current;
         }
         template<size_t arg> static void modify(T& obj, functor* m){
-            decltype(obj.versioned.core) o = obj.versioned.core;
+            decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
             ctxt.get_controller().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             ctxt.get_controller().use_revision(o);
             ctxt.get_controller().collect(o->back());
 
-            var->before = o->current;
+            var->ambient_before = o->current;
             ctxt.get_controller().add_revision<ambient::locality::common>(o, m); 
             ctxt.get_controller().use_revision(o);
-            var->after = o->current;
+            var->ambient_after = o->current;
         }
         template<size_t arg> static bool pin(functor* m){ return false; }
         template<size_t arg> static void score(T& obj) {               
-            ctxt.intend_write(obj.versioned.core->back());
+            ctxt.intend_write(obj.ambient_rc.desc->back());
         }
         template<size_t arg> static bool ready (functor* m){ return true;  }
     };
@@ -272,7 +272,7 @@ namespace ambient {
     template<typename T> struct has_versioning {
         template<std::size_t V> struct valuekeeper {};
         template<typename R, typename C> static char helper(R(C::*)());
-        template<typename C> static char check(valuekeeper<sizeof(helper(&C::enable_versioning))>*);
+        template<typename C> static char check(valuekeeper<sizeof(helper(&C::ambient_enable_versioning))>*);
         template<typename C> static double check(...);
         enum { value = (sizeof(char) == sizeof(check<T>(0))) };
     };
@@ -350,27 +350,28 @@ namespace ambient {
 
     // }}}
 
-    #define ambient_non_destroyable  static int disable_destructor(int);
-    #define ambient_version(...)     struct type_structure; \
-                                     mutable ambient::revision* before; \
-                                     mutable ambient::revision* after; \
-                                     void enable_versioning(); \
-                                     static void disable_destructor(...); \
-                                     enum { destructor_disabled = !std::is_void<decltype(disable_destructor(0))>::value }; \
-                                     struct unnamed { \
-                                           typedef type_structure mapping;\
-                                           unnamed(){ core = new ambient::history(ambient::dim2(1,1),sizeof(mapping)); } \
-                                           unnamed(size_t length){ core = new ambient::history(ambient::dim2(1,1),length); } \
-                                           unnamed(size_t length, size_t sz){ core = new ambient::history(ambient::dim2(1,length),sz); } \
-                                           unnamed(size_t rows, size_t cols, size_t sz){ core = new ambient::history(ambient::dim2(cols, rows), sz); } \
-                                           unnamed(ambient::dim2 dim, size_t sz){ core = new ambient::history(dim, sz); } \
-                                           template<typename U> unnamed(const U& other):core(other.core){ } \
-                                           unnamed(ambient::history* core):core(core){ } \
-                                          ~unnamed(){ if(!destructor_disabled){ if(core->weak()) delete core; else ambient::destroy(core); } } \
-                                           ambient::history* core; \
-                                     } versioned;\
-                                     struct type_structure { __VA_ARGS__ };
-    #define ambient_alloc(...)       versioned(__VA_ARGS__)
+    #define AMBIENT_DISABLE_DESTRUCTOR  static int  ambient_disable_destructor(int);
+    #define AMBIENT_DELEGATE(...)       struct      ambient_type_structure;                                                                   \
+                                        void        ambient_enable_versioning();                                                               \
+                                        mutable     ambient::revision* ambient_before;                                                          \
+                                        mutable     ambient::revision* ambient_after;                                                            \
+                                        static void ambient_disable_destructor(...);                                                              \
+                                        enum { ambient_destructor_disabled = !std::is_void<decltype(ambient_disable_destructor(0))>::value };      \
+                                        struct ambient_desc {                                                                                       \
+                                            typedef ambient::history rc_type;                                                                        \
+                                            typedef ambient_type_structure mapping;                                                                   \
+                                            ambient_desc(size_t n = sizeof(mapping)){ desc = new rc_type(ambient::dim2(1,1), n); }                     \
+                                            ambient_desc(size_t n, size_t ts){ desc = new rc_type(ambient::dim2(1,n),ts); }                             \
+                                            ambient_desc(size_t m, size_t n, size_t ts){ desc = new rc_type(ambient::dim2(n,m),ts); }                    \
+                                            template<typename U> ambient_desc(const U& other):desc(other.desc){ }                                         \
+                                            ambient_desc(rc_type* desc):desc(desc){ }                                                                      \
+                                           ~ambient_desc(){ if(!ambient_destructor_disabled){ if(desc->weak()) delete desc; else ambient::destroy(desc); }} \
+                                            rc_type* desc;                                                                                                   \
+                                        } ambient_rc;                                                                                                         \
+                                        struct ambient_type_structure { __VA_ARGS__ };
+
+    #define AMBIENT_ALLOC(N, TYPE_SIZE)       ambient_rc(N, TYPE_SIZE)
+    #define AMBIENT_ALLOC_2D(M, N, TYPE_SIZE) ambient_rc(M, N, TYPE_SIZE)
     #define AMBIENT_VAR_LENGTH 1
 }
 

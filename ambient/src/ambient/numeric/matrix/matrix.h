@@ -72,9 +72,10 @@ namespace ambient { namespace numeric {
         value_type& operator() (size_type i, size_type j);
         const value_type& operator() (size_type i, size_type j) const;
         static const char* code();
-    public:
-        ambient_version( T data[ AMBIENT_VAR_LENGTH ]; );
-    };
+    AMBIENT_DELEGATE
+    ( 
+        T data[ AMBIENT_VAR_LENGTH ]; 
+    )};
 
     template <class Matrix>
     class subset_view {
@@ -85,14 +86,18 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::scalar_type scalar_type;
         typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::allocator_type allocator_type;
-        subset_view(const Matrix& a) : versioned(a.versioned), m(&a) {}
+        subset_view(const Matrix& a) : ambient_rc(a.ambient_rc), m(&a) {}
         size_t num_rows(){ return m->num_rows(); };
         size_t num_cols(){ return m->num_cols(); };
         template<class M> static size_t rows(const M& a); 
         template<class M> static size_t cols(const M& a);
         static const char* code();
         operator Matrix& () const { return *(Matrix*)m; }
-        ambient_non_destroyable ambient_version( value_type data[ AMBIENT_VAR_LENGTH ]; );
+    AMBIENT_DISABLE_DESTRUCTOR 
+    AMBIENT_DELEGATE
+    (
+        value_type data[ AMBIENT_VAR_LENGTH ]; 
+    )
         const Matrix* m;
     };
 
@@ -105,7 +110,7 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::scalar_type scalar_type;
         typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::allocator_type allocator_type;
-        explicit transpose_view(const Matrix& a) : versioned(a.versioned) {}
+        explicit transpose_view(const Matrix& a) : ambient_rc(a.ambient_rc) {}
         transpose_view& locate(size_type i, size_type j);
         const transpose_view& locate(size_type i, size_type j) const;
         size_t addr(size_type i, size_type j) const;
@@ -115,8 +120,11 @@ namespace ambient { namespace numeric {
         template<class M> static size_t rows(const M& a); 
         template<class M> static size_t cols(const M& a);
         static const char* code();
-        ambient_non_destroyable ambient_version( value_type data[ AMBIENT_VAR_LENGTH ]; );
-    };
+    AMBIENT_DISABLE_DESTRUCTOR
+    AMBIENT_DELEGATE
+    ( 
+        value_type data[ AMBIENT_VAR_LENGTH ]; 
+    )};
 
 } }
 
