@@ -69,7 +69,7 @@ namespace ambient {
         };
         template<typename V>
         static void track(V& o, const std::string& label){
-            log::renaming(o.versioned.core, label);
+            log::renaming(o.ambient_rc.desc, label);
             o->label = label;
         }
     };

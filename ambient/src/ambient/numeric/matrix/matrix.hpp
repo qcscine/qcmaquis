@@ -120,13 +120,13 @@ namespace ambient { namespace numeric {
 
     template <typename T, class A>
     inline matrix<T,A>::matrix(size_type rows, size_type cols, value_type init_value)
-    : ambient_alloc(rows, cols, sizeof(T)) {
+    : AMBIENT_ALLOC_2D(rows, cols, sizeof(T)){
         fill_value(*this, init_value);
     }
 
     template <typename T, class A>
     inline matrix<T,A>::matrix(const matrix& a)
-    : ambient_alloc(ambient::get_dim(a), sizeof(T)){
+    : AMBIENT_ALLOC_2D(a.num_rows(), a.num_cols(), sizeof(T)){
         ambient::merge(a, *this);
     }
     
@@ -247,12 +247,12 @@ namespace ambient { namespace numeric {
 
     template<typename T, class A>
     inline value_type& matrix<T,A>::operator() (size_type i, size_type j){
-        return ambient::get(*this).data[ j*lda() + i ];
+        return ambient::load(*this).data[ j*lda() + i ];
     }
 
     template<typename T, class A>
     inline const value_type& matrix<T,A>::operator() (size_type i, size_type j) const {
-        return ambient::get(*this).data[ j*lda() + i ];
+        return ambient::load(*this).data[ j*lda() + i ];
     }
 
     template<typename T, class A>
