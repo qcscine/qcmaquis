@@ -33,7 +33,7 @@
 namespace ambient { namespace numeric {
 
     template <typename T, class Allocator = ambient::default_allocator<T> >
-    class matrix : public ambient::memory::use_fixed_new<matrix<T,Allocator> > {
+    class matrix : public ambient::block<T>, public ambient::memory::use_fixed_new<matrix<T,Allocator> > {
     public:
         typedef T value_type;
         typedef size_t size_type;
@@ -52,7 +52,6 @@ namespace ambient { namespace numeric {
         template<class M> static size_t inc (const M& a); 
         template<class M> static size_t rows(const M& a); 
         template<class M> static size_t cols(const M& a);
-        size_type lda() const;
         size_type num_rows() const;
         size_type num_cols() const;
         scalar_type trace() const;
@@ -72,13 +71,10 @@ namespace ambient { namespace numeric {
         value_type& operator() (size_type i, size_type j);
         const value_type& operator() (size_type i, size_type j) const;
         static const char* code();
-    AMBIENT_DELEGATE
-    ( 
-        T data[ AMBIENT_VAR_LENGTH ]; 
-    )};
+    };
 
     template <class Matrix>
-    class subset_view {
+    class subset_view : public ambient::proxy<Matrix> {
     public:
         typedef typename Matrix::real_type real_type;
         typedef typename Matrix::size_type size_type; 
@@ -86,23 +82,18 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::scalar_type scalar_type;
         typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::allocator_type allocator_type;
-        subset_view(const Matrix& a) : ambient_rc(a.ambient_rc), m(&a) {}
+        subset_view(const Matrix& a) : ambient::proxy<Matrix>(a), m(&a) {}
         size_t num_rows(){ return m->num_rows(); };
         size_t num_cols(){ return m->num_cols(); };
         template<class M> static size_t rows(const M& a); 
         template<class M> static size_t cols(const M& a);
         static const char* code();
         operator Matrix& () const { return *(Matrix*)m; }
-    AMBIENT_DISABLE_DESTRUCTOR 
-    AMBIENT_DELEGATE
-    (
-        value_type data[ AMBIENT_VAR_LENGTH ]; 
-    )
         const Matrix* m;
     };
 
     template <class Matrix>
-    class transpose_view : public ambient::memory::use_fixed_new<transpose_view<Matrix> > {
+    class transpose_view : public ambient::proxy<Matrix>, public ambient::memory::use_fixed_new<transpose_view<Matrix> > {
     public:
         typedef typename Matrix::real_type real_type;
         typedef typename Matrix::size_type size_type; 
@@ -110,21 +101,16 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::scalar_type scalar_type;
         typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::allocator_type allocator_type;
-        explicit transpose_view(const Matrix& a) : ambient_rc(a.ambient_rc) {}
+        explicit transpose_view(const Matrix& a) : ambient::proxy<Matrix>(a) {}
         transpose_view& locate(size_type i, size_type j);
         const transpose_view& locate(size_type i, size_type j) const;
         size_t addr(size_type i, size_type j) const;
-        size_t lda() const;
         operator Matrix () const;
         template<class M> static size_t inc (const M& a); 
         template<class M> static size_t rows(const M& a); 
         template<class M> static size_t cols(const M& a);
         static const char* code();
-    AMBIENT_DISABLE_DESTRUCTOR
-    AMBIENT_DELEGATE
-    ( 
-        value_type data[ AMBIENT_VAR_LENGTH ]; 
-    )};
+    };
 
 } }
 

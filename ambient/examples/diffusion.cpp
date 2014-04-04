@@ -443,7 +443,7 @@ class Diffusion2D {
             return dr*dr*sum;
         }
 
-        stencil_t& get(size_t i, size_t j){
+        stencil_t& get(int i, int j){
             if(i >= mt || j >= nt || i < 0 || j < 0) return null_stencil;
             return *grid[i+j*mt];
         }

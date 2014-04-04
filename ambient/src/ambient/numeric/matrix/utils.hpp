@@ -48,8 +48,7 @@ namespace ambient {
 
     template<class Matrix>
     inline int get_owner(const numeric::tiles<Matrix>& a){
-        int p = a[0].ambient_rc.desc->current->owner;
-        return (p == -1 ? ambient::rank() : p);
+        return ambient::get_owner(a[0]);
     }
 
     template<class InputIterator, class Function, class Weight>

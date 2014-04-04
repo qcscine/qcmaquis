@@ -122,4 +122,7 @@
 #include "ambient/interface/access.hpp"
 #include "ambient/interface/lambda.hpp"
 #include "ambient/interface/algorithms.hpp"
+
+#include "ambient/container/proxy.hpp"
+#include "ambient/container/block.hpp"
 #endif
