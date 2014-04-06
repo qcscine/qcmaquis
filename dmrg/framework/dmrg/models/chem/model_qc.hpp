@@ -92,11 +92,29 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     gemm(destroy_down_op, fill_op, tmp);
     destroy_down_op = tmp;
 
+    // only effective if point group symmetry is active, need to adapt operators to different irreps
+    #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
+
+    GENERATE_SITE_SPECIFIC(ident_op)
+    GENERATE_SITE_SPECIFIC(fill_op)
+    GENERATE_SITE_SPECIFIC(create_up_op)
+    GENERATE_SITE_SPECIFIC(create_down_op)
+    GENERATE_SITE_SPECIFIC(destroy_up_op)
+    GENERATE_SITE_SPECIFIC(destroy_down_op)
+    GENERATE_SITE_SPECIFIC(count_up_op)
+    GENERATE_SITE_SPECIFIC(count_down_op)
+    GENERATE_SITE_SPECIFIC(e2d_op)
+    GENERATE_SITE_SPECIFIC(d2e_op)
+    GENERATE_SITE_SPECIFIC(docc_op)
+
+    #undef GENERATE_SITE_SPECIFIC
+
     /**********************************************************************/
     /*** Create operator tag table ****************************************/
     /**********************************************************************/
 
-    #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
+    //#define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
+    #define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
 
     REGISTER(ident,        tag_detail::bosonic)
     REGISTER(fill,         tag_detail::bosonic)
@@ -129,7 +147,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back( boost::make_tuple(0, ident) );
+            term.push_back( boost::make_tuple(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]));
             this->terms_.push_back(term);
             
             used_elements[m] += 1;
@@ -140,13 +158,13 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
             {
                 term_descriptor term;
                 term.coeff = matrix_elements[m];
-                term.push_back( boost::make_tuple(i, count_up));
+                term.push_back( boost::make_tuple(i, count_up[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
                 this->terms_.push_back(term);
             }
             {
                 term_descriptor term;
                 term.coeff = matrix_elements[m];
-                term.push_back(boost::make_tuple(i, count_down));
+                term.push_back( boost::make_tuple(i, count_down[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
                 this->terms_.push_back(term);
             }
 
@@ -193,29 +211,29 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
             else if (k==l) { same_idx = l; pos1 = i; }
             else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
 
-            std::pair<tag_type, value_type> ptag;
+            std::pair<std::vector<tag_type>, value_type> ptag;
 
             // 1a
             // --> c_l_up * n_i_down * cdag_i_up
-            ptag = tag_handler->get_product_tag(count_down, create_up);
+            ptag = tag_handler->get_product_tags(count_down, create_up);
             this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
                                            ptag.first, destroy_up, tag_handler, lat) );
 
             // 1a_dagger
             // --> c_i_up * n_i_down * cdag_l_up
-            ptag = tag_handler->get_product_tag(destroy_up, count_down);
+            ptag = tag_handler->get_product_tags(destroy_up, count_down);
             this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
                                            ptag.first, create_up, tag_handler, lat) );
 
             // 1b
             // --> c_l_down * n_i_up * cdag_i_down (1b)
-            ptag = tag_handler->get_product_tag(count_up, create_down);
+            ptag = tag_handler->get_product_tags(count_up, create_down);
             this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
                                            ptag.first, destroy_down, tag_handler, lat) );
 
             // (1b)_dagger
             // --> c_i_down * n_i_up * cdag_l_down
-            ptag = tag_handler->get_product_tag(destroy_down, count_up);
+            ptag = tag_handler->get_product_tags(destroy_down, count_up);
             this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
                                            ptag.first, create_down, tag_handler, lat) );
 
@@ -241,19 +259,19 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
             term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_up, count_up);
             term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_down, count_down);
 
-            std::pair<tag_type, value_type> ptag1, ptag2;
+            std::pair<std::vector<tag_type>, value_type> ptag1, ptag2;
 
             // Could insert fill operators without changing the result
             // --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
-            ptag1 = tag_handler->get_product_tag(destroy_down, create_up);
-            ptag2 = tag_handler->get_product_tag(destroy_up, create_down);
+            ptag1 = tag_handler->get_product_tags(destroy_down, create_up);
+            ptag2 = tag_handler->get_product_tags(destroy_up, create_down);
             term_assistant.add_term(
                 this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
             );
 
             // --> -c_i_up * cdag_i_down * c_j_down * cdag_j_up
-            ptag1 = tag_handler->get_product_tag(destroy_up, create_down);
-            ptag2 = tag_handler->get_product_tag(destroy_down, create_up);
+            ptag1 = tag_handler->get_product_tags(destroy_up, create_down);
+            ptag2 = tag_handler->get_product_tags(destroy_down, create_up);
             term_assistant.add_term(
                 this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
             );
@@ -302,21 +320,21 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
             if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
             if (j==l) { same_idx = j; pos1 = k; pos2 = i; }
 
-            std::pair<tag_type, value_type> ptag;
+            std::pair<std::vector<tag_type>, value_type> ptag;
 
-            ptag = tag_handler->get_product_tag(create_up, fill);
+            ptag = tag_handler->get_product_tags(create_up, fill);
             term_assistant.add_term(
                 this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_down , destroy_down, destroy_up
             );
-            ptag = tag_handler->get_product_tag(create_down, fill);
+            ptag = tag_handler->get_product_tags(create_down, fill);
             term_assistant.add_term(
                 this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_up   , destroy_up  , destroy_down
             );
-            ptag = tag_handler->get_product_tag(destroy_down, fill);
+            ptag = tag_handler->get_product_tags(destroy_down, fill);
             term_assistant.add_term(
                 this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_up  , create_up   , create_down
             );
-            ptag = tag_handler->get_product_tag(destroy_up, fill);
+            ptag = tag_handler->get_product_tags(destroy_up, fill);
             term_assistant.add_term(
                 this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_down, create_down , create_up
             );

@@ -116,7 +116,7 @@ public:
 
     /* WARNING: not thread safe! */
     std::pair<tag_type, value_type> get_product_tag(const tag_type t1, const tag_type t2);
-
+    std::pair<std::vector<tag_type>, value_type> get_product_tags(const std::vector<tag_type> & t1, const std::vector<tag_type> & t2);
 
     /* Diagnostics *************************************/
     tag_type prod_duplicates() const { return duplicates_(product_tags); }

@@ -122,6 +122,24 @@ TagHandler<Matrix, SymmGroup>::get_product_tag(const typename
     }
 }
 
+template <class Matrix, class SymmGroup>
+std::pair<std::vector<typename OPTable<Matrix, SymmGroup>::tag_type>,
+          typename TagHandler<Matrix,SymmGroup>::value_type>
+TagHandler<Matrix, SymmGroup>::get_product_tags(std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ops1,
+                                               std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ops2)
+{
+    assert(ops1.size() == ops2.size());
+    std::pair<std::vector<tag_type>, value_type> ret;
+    ret.second = (this->get_product_tag(ops1[0], ops2[0])).second;
+    for (typename SymmGroup::subcharge sc=0; sc < ops1.size(); ++sc) {
+        std::pair<tag_type, value_type> ptag = this->get_product_tag(ops1[sc], ops2[sc]);
+        ret.first.push_back(ptag.first);
+        assert(ret.second = ptag.second);
+    }
+
+    return ret;
+}
+
 // * Diagnostics *************************************
 template <class Matrix, class SymmGroup>
 template <class Map>

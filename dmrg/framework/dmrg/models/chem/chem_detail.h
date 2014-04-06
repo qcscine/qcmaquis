@@ -89,8 +89,9 @@ namespace chem_detail {
         typedef ::term_descriptor<value_type> term_descriptor;
         typedef typename TagHandler<M, S>::tag_type tag_type;
 
-        ChemHelper(BaseParameters & parms, Lattice const & lat_,
-                   tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
+        ChemHelper(BaseParameters & parms, Lattice const & lat_
+                   , std::vector<tag_type> const & ident_, std::vector<tag_type> const & fill_
+                   , boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
             : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
             this->parse_integrals(parms);
@@ -121,11 +122,12 @@ namespace chem_detail {
         }
 
         void add_term(std::vector<term_descriptor> & tagterms,
-                      value_type scale, int p1, int p2, tag_type op_1, tag_type op_2) {
+                      value_type scale, int p1, int p2, std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2) {
 
             term_descriptor
             term = TermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler, lat);
-            IndexTuple id(p1, p2, op_1, op_2);
+            IndexTuple id(p1, p2, op_1[lat.get_prop<typename S::subcharge>("type", p1)],
+                                  op_2[lat.get_prop<typename S::subcharge>("type", p2)]);
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
             }
@@ -134,21 +136,30 @@ namespace chem_detail {
         }
 
         void add_term(std::vector<term_descriptor> & tagterms,
-                      value_type scale, int s, int p1, int p2, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j) {
-
+                      value_type scale, int s, int p1, int p2,
+                      std::vector<tag_type> const & op_i, std::vector<tag_type> const & op_k,
+                      std::vector<tag_type> const & op_l, std::vector<tag_type> const & op_j)
+        {
             term_descriptor
             term = TermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler, lat);
-            TermTuple id(IndexTuple(s,s,p1,p2),IndexTuple(op_i,op_k,op_l,op_j));
+            TermTuple id(IndexTuple(s,s,p1,p2),
+                         IndexTuple(
+                         op_i[lat.get_prop<typename S::subcharge>("type", s)],
+                         op_k[lat.get_prop<typename S::subcharge>("type", s)],
+                         op_l[lat.get_prop<typename S::subcharge>("type", p1)],
+                         op_j[lat.get_prop<typename S::subcharge>("type", p2)]));
+
             if (three_terms.count(id) == 0) {
                 three_terms[id] = term;
             }
             else
                 three_terms[id].coeff += term.coeff;
-    
         }
 
         void add_term(std::vector<term_descriptor> & tagterms,
-                      int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
+                      int i, int k, int l, int j,
+                      std::vector<tag_type> const & op_i, std::vector<tag_type> const & op_k,
+                      std::vector<tag_type> const & op_l, std::vector<tag_type> const & op_j)
         {
             // Collapse terms with identical operators and different scales into one term
             if (op_i == op_k && op_j == op_l) {
@@ -241,7 +252,8 @@ namespace chem_detail {
             return p >= 0 ? inv_order[p] : p;
         }
 
-        tag_type ident, fill;
+        std::vector<tag_type> const & ident;
+        std::vector<tag_type> const & fill;
         boost::shared_ptr<TagHandler<M, S> > tag_handler;
         Lattice const & lat;
 
