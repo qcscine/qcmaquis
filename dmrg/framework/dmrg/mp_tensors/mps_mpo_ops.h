@@ -118,19 +118,18 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matri
 }
 
 template<class Matrix, class SymmGroup>
-std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matrix, SymmGroup> const & mps1,
-                                                                       MPS<Matrix, SymmGroup> const & mps2,
+std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matrix, SymmGroup> const & bra,
+                                                                       MPS<Matrix, SymmGroup> const & ket,
                                                                        MPO<Matrix, SymmGroup> const & mpo)
 {
-    assert(mps1.length() == mps2.length());
-    assert(mpo.length() == mps1.length());
-    std::size_t L = mps1.length();
+    assert(bra.length() == ket.length());
+    assert(mpo.length() == bra.length());
+    std::size_t L = bra.length();
     
-    Boundary<Matrix, SymmGroup> left = mps1.left_boundary();
+    Boundary<Matrix, SymmGroup> left = make_left_boundary(bra, ket);
     
-    for (int i = 0; i < L; ++i) {
-        left = contraction::overlap_mpo_left_step(mps1[i], mps2[i], left, mpo[i]);
-    }
+    for (int i = 0; i < L; ++i)
+        left = contraction::overlap_mpo_left_step(bra[i], ket[i], left, mpo[i]);
     
     return left.traces();
 }

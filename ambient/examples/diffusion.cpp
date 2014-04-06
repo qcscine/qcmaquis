@@ -232,21 +232,24 @@ namespace detail { using namespace ambient;
 
 }
 
-ambient_export(detail::init_value, init_value)
-ambient_export(detail::partial_init_value, partial_init_value)
-ambient_export(detail::reduce, reduce)
-ambient_export(detail::reduce_moment, reduce_moment)
-ambient_export(detail::evolve, evolve)
-ambient_export(detail::contract_border_top, contract_border_top)
-ambient_export(detail::contract_border_bottom, contract_border_bottom)
-ambient_export(detail::contract_border_left, contract_border_left)
-ambient_export(detail::contract_border_right, contract_border_right)
+AMBIENT_EXPORT(detail::init_value, init_value)
+AMBIENT_EXPORT(detail::partial_init_value, partial_init_value)
+AMBIENT_EXPORT(detail::reduce, reduce)
+AMBIENT_EXPORT(detail::reduce_moment, reduce_moment)
+AMBIENT_EXPORT(detail::evolve, evolve)
+AMBIENT_EXPORT(detail::contract_border_top, contract_border_top)
+AMBIENT_EXPORT(detail::contract_border_bottom, contract_border_bottom)
+AMBIENT_EXPORT(detail::contract_border_left, contract_border_left)
+AMBIENT_EXPORT(detail::contract_border_right, contract_border_right)
 
 template <typename T>
 class block {
 public:
-    ambient_version( T val[AMBIENT_VAR_LENGTH]; );
-    block(size_t m, size_t n) : ambient_alloc(m, n, sizeof(T)) {}
+AMBIENT_DELEGATE
+( 
+    T val[AMBIENT_VAR_LENGTH];
+)
+    block(size_t m, size_t n) : AMBIENT_ALLOC_2D(m, n, sizeof(T)) {}
 
     void init(T value){
         init_value<T>(*this, value);
@@ -291,17 +294,17 @@ public:
     border<T>& right()  const { return *f->right;  }
 
     void print(){
-        for(int j = 0; j < IB; j++) printf("%.2f ", ambient::get(top()).val[j]);
+        for(int j = 0; j < IB; j++) printf("%.2f ", ambient::load(top()).val[j]);
         printf("\n");
         for(int i = 0; i < IB-2; i++){
-            printf("%.2f ", ambient::get(left()).val[i]);
+            printf("%.2f ", ambient::load(left()).val[i]);
             for(int j = 0; j < IB-2; j++){
-                printf("%.2f ", ambient::get(*this).val[i+j*(IB-2)]);
+                printf("%.2f ", ambient::load(*this).val[i+j*(IB-2)]);
             }
-            printf("%.2f ", ambient::get(right()).val[i]);
+            printf("%.2f ", ambient::load(right()).val[i]);
             printf("\n");
         }
-        for(int j = 0; j < IB; j++) printf("%.2f ", ambient::get(bottom()).val[j]);
+        for(int j = 0; j < IB; j++) printf("%.2f ", ambient::load(bottom()).val[j]);
         printf("\n");
     }
 
@@ -440,7 +443,7 @@ class Diffusion2D {
             return dr*dr*sum;
         }
 
-        stencil_t& get(size_t i, size_t j){
+        stencil_t& get(int i, int j){
             if(i >= mt || j >= nt || i < 0 || j < 0) return null_stencil;
             return *grid[i+j*mt];
         }
