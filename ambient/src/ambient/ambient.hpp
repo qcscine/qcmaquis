@@ -60,7 +60,7 @@
 #include "ambient/utils/tree.hpp"
 #include "ambient/utils/fence.hpp"
 #include "ambient/utils/enable_threading.hpp"
-#include "ambient/utils/reduce.hpp"
+#include "ambient/utils/math.hpp"
 
 #include "ambient/memory/pool.hpp"
 #include "ambient/memory/new.h"

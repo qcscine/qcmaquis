@@ -47,6 +47,14 @@ namespace ambient {
     }
 
     template<class Matrix>
+    inline void hint(const numeric::tiles<Matrix>& a){
+        int size = a.data.size();
+        for(int i = 0; i < size; i++){
+            hint(a[i]);
+        }
+    }
+
+    template<class Matrix>
     inline int get_owner(const numeric::tiles<Matrix>& a){
         return ambient::get_owner(a[0]);
     }

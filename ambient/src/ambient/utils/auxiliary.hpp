@@ -47,23 +47,23 @@ namespace ambient {
     }
 
     inline int num_db_procs(){
-        return ctxt.get_controller().get_num_db_procs();
+        return selector.get_controller().get_num_db_procs();
     }
 
     inline int num_workers(){
-        return ctxt.get_controller().get_num_workers();
+        return selector.get_controller().get_num_workers();
     }
     
     inline int num_procs(){
-        return ctxt.get_controller().get_num_procs();
+        return selector.get_controller().get_num_procs();
     }
 
     inline int rank(){
-        return ctxt.get_controller().get_rank();
+        return selector.get_controller().get_rank();
     }
 
     inline int dedicated_rank(){
-        return ctxt.get_controller().get_dedicated_rank();
+        return selector.get_controller().get_dedicated_rank();
     }
 
     inline bool master(){
@@ -71,16 +71,16 @@ namespace ambient {
     }
 
     inline bool verbose(){ 
-        return ctxt.get_controller().verbose();
+        return selector.get_controller().verbose();
     }
 
     inline void meminfo(){
-        ctxt.get_controller().meminfo(); 
+        selector.get_controller().meminfo(); 
     }
 
     template<typename T>
     inline void destroy(T* o){ 
-        ctxt.get_controller().collect(o); 
+        selector.get_controller().collect(o); 
     }
 
     template<typename V>
@@ -129,6 +129,14 @@ namespace ambient {
     inline int get_owner(const V& o){
         int p = o.ambient_rc.desc->current->owner;
         return (p == -1 ? ambient::rank() : p);
+    }
+
+    inline int which(){
+        return ambient::selector.get_scope().which();
+    }
+
+    inline scope& get_scope(){
+        return ambient::selector.get_scope();
     }
 
 }

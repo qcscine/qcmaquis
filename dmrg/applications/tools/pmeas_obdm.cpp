@@ -49,6 +49,8 @@ typedef alps::numeric::matrix<std::complex<double> > Matrix;
 
 #include "dmrg/models/factory.h"
 
+#include "dmrg/utils/DmrgOptions.h"
+
 typedef U1 grp;
 
 
@@ -101,16 +103,11 @@ void measure_correlation_parallel(MPS<Matrix, SymmGroup> const & mps,
 int main(int argc, char ** argv)
 {
     try {
-        if (argc != 2 && argc != 3)
-        {
-            maquis::cout << "Usage: <parms> [<model_parms>]" << std::endl;
-            exit(1);
-        }
+        DmrgOptions opt(argc, argv);
+        if (!opt.valid) return 0;
+        DmrgParameters parms = opt.parms;
         
         maquis::cout.precision(10);
-        
-        /// Load parameters
-        DmrgParameters parms = load_parms_and_model(argv[1], (argc == 3) ? argv[2] : "");
         
         /// Parsing model
         boost::shared_ptr<Lattice> lattice;

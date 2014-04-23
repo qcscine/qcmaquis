@@ -61,6 +61,7 @@ struct dynamic_range {
     dynamic_range(T first, T second) : first(first), second(second) { }
     T begin() const { return first; }
     T end() const { return second; }
+    size_t size() const { return end()-begin(); }
     const T first;
     const T second;
 };

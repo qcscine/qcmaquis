@@ -322,12 +322,14 @@ namespace storage {
 #ifdef USE_AMBIENT
     using ambient::scope_t;
     template<class Matrix, class SymmGroup> 
-    static void migrate(MPSTensor<Matrix, SymmGroup>& t){
+    static void migrate(const MPSTensor<Matrix, SymmGroup>& tc){
+        MPSTensor<Matrix, SymmGroup>& t = const_cast<MPSTensor<Matrix, SymmGroup>&>(tc);
         for(int i = 0; i < t.data().n_blocks(); ++i) 
         ambient::migrate(t.data()[i]);
     }
     template<class Matrix, class SymmGroup> 
-    static void migrate(block_matrix<Matrix, SymmGroup>& t){
+    static void migrate(const block_matrix<Matrix, SymmGroup>& tc){
+        block_matrix<Matrix, SymmGroup>& t = const_cast<block_matrix<Matrix, SymmGroup>&>(tc);
         for(int i = 0; i < t.n_blocks(); ++i)
         ambient::migrate(t[i]);
     }
@@ -336,10 +338,28 @@ namespace storage {
         select_proc(where);
         migrate(t);
     }
+    template<class Matrix, class SymmGroup> 
+    static void hint(const MPSTensor<Matrix, SymmGroup>& t){
+        for(int i = 0; i < t.data().n_blocks(); ++i) ambient::hint(t.data()[i]);
+    }
+    template<class Matrix, class SymmGroup> 
+    static void hint(const block_matrix<Matrix, SymmGroup>& t){
+        for(int i = 0; i < t.n_blocks(); ++i) ambient::hint(t[i]);
+    }
+    template<typename T, typename L>
+    static void hint(T& t, L where){
+        select_proc(where); hint(t);
+    }
 #else
     struct scope_t { enum type { common }; };
     template<typename T>
     static void migrate(T& t, scope_t::type where){ }
+    template<typename T>
+    static void migrate(T& t){ }
+    template<typename T>
+    static void hint(T& t, scope_t::type where){ }
+    template<typename T>
+    static void hint(T& t){ }
 #endif
 
     inline static void setup(BaseParameters& parms){

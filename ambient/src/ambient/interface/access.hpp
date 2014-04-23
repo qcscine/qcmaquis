@@ -38,11 +38,11 @@ namespace ambient {
     }
 
     template <typename T> static bool exclusive(T& obj){
-        ctxt.get_controller().touch(obj.ambient_rc.desc);
+        selector.get_controller().touch(obj.ambient_rc.desc);
         revision& c = *obj.ambient_rc.desc->current;
-        if(ctxt.remote()){
+        if(selector.get_scope().remote()){
             c.state = ambient::locality::remote;
-            c.owner = ctxt.which();
+            c.owner = ambient::which();
             return true;
         }else{
             c.state = ambient::locality::local;
@@ -52,7 +52,7 @@ namespace ambient {
     }
 
     template <typename T> static mapping& load(T& obj){ 
-        ctxt.get_controller().touch(obj.ambient_rc.desc);
+        selector.get_controller().touch(obj.ambient_rc.desc);
         ambient::sync(); 
         revision& c = *obj.ambient_rc.desc->current;
         assert(c.state == ambient::locality::local || c.state == ambient::locality::common);

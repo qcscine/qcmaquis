@@ -41,6 +41,10 @@ namespace ambient {
         scope(int r);
         scope(scope_t type);
         void set(int r);
+        bool remote() const;
+        bool local()  const;
+        bool common() const;
+        int  which()  const;
         scope_t type;
         bool dry;
         int factor;

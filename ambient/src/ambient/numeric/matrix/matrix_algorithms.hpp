@@ -86,6 +86,16 @@ namespace ambient { namespace numeric {
         kernels::template migrate<T,ambient::default_allocator<T> >(a); 
     }
 
+    template <typename T, class A>
+    inline void hint(const matrix<T,A>& a){
+        kernels::template hint<T,A>(a); 
+    }
+
+    template <typename T>
+    inline void hint(const diagonal_matrix<T>& a){
+        kernels::template hint<T,ambient::default_allocator<T> >(a); 
+    }
+
     template<class MatrixViewA, class MatrixViewB, typename T, class A>
     inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T,A>& c){
         if(ambient::weak(a) || ambient::weak(b)) return;

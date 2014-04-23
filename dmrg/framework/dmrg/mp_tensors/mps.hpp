@@ -357,7 +357,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
     for(size_t k = 0; k < loop_max; ++k){
 #ifdef USE_AMBIENT
         select_proc(ambient::scope::balance(k,loop_max));
-        if(!ambient::ctxt.local()) continue;
+        if(!ambient::selector.get_scope().local()) continue;
 #endif
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5.new";
         storage::archive ar(fname, "w");
@@ -366,7 +366,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
     omp_for(size_t k = 0; k < loop_max; ++k){
 #ifdef USE_AMBIENT
         select_proc(ambient::scope::balance(k,loop_max));
-        if(!ambient::ctxt.local()) continue;
+        if(!ambient::selector.get_scope().local()) continue;
 #endif
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
         boost::filesystem::rename(fname+".new", fname);

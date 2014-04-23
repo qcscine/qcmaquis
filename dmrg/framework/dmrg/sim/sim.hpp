@@ -26,6 +26,7 @@
  *****************************************************************************/
 
 #include <boost/algorithm/string.hpp>
+#include "dmrg/version.h"
 
 template <class Matrix, class SymmGroup>
 sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)

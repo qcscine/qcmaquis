@@ -24,7 +24,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "ambient/utils/reduce.hpp"
+#include "ambient/utils/math.hpp"
 
 // goals: 
 // 1. minimize the number of transfers

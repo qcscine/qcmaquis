@@ -33,11 +33,17 @@
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/indexing.h"
 
-struct contraction {
+#ifdef USE_AMBIENT
+#include "dmrg/mp_tensors/impl/ambient.hpp"
+#else
+#include "dmrg/mp_tensors/impl/alps.hpp"
+#endif
+
+namespace contraction {
 
     // output/input: left_i for bra_tensor, right_i for ket_tensor
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static block_matrix<OtherMatrix, SymmGroup>
+    block_matrix<OtherMatrix, SymmGroup>
     overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                       MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                       block_matrix<OtherMatrix, SymmGroup> const & left,
@@ -67,7 +73,7 @@ struct contraction {
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static block_matrix<OtherMatrix, SymmGroup>
+    block_matrix<OtherMatrix, SymmGroup>
     overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                        MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                        block_matrix<OtherMatrix, SymmGroup> const & right,
@@ -94,16 +100,16 @@ struct contraction {
     //     The charge delta optimization is indepent from the changes needed to
     //     skip the preceding reshapes.
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static block_matrix<Matrix, SymmGroup>
-    lbtm_kernel(size_t b2,
-                Boundary<OtherMatrix, SymmGroup> const & left,
-                std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
-                MPOTensor<Matrix, SymmGroup> const & mpo,
-                Index<SymmGroup> const & physical_i,
-                Index<SymmGroup> const & right_i,
-                Index<SymmGroup> const & out_left_i,
-                ProductBasis<SymmGroup> const & in_right_pb,
-                ProductBasis<SymmGroup> const & out_left_pb)
+    void lbtm_kernel(size_t b2,
+                     ContractionGrid<Matrix, SymmGroup>& contr_grid,
+                     Boundary<OtherMatrix, SymmGroup> const & left,
+                     std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                     MPOTensor<Matrix, SymmGroup> const & mpo,
+                     Index<SymmGroup> const & physical_i,
+                     Index<SymmGroup> const & right_i,
+                     Index<SymmGroup> const & out_left_i,
+                     ProductBasis<SymmGroup> const & in_right_pb,
+                     ProductBasis<SymmGroup> const & out_left_pb)
     {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
@@ -112,7 +118,6 @@ struct contraction {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
 
-        block_matrix<Matrix, SymmGroup> ret;
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
@@ -127,6 +132,8 @@ struct contraction {
             charge operator_delta = SymmGroup::fuse(W.right_basis()[0].first, -W.left_basis()[0].first);
             charge        T_delta = SymmGroup::fuse(T.right_basis()[0].first, -T.left_basis()[0].first);
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+        
+            block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
             for (size_t r = 0; r < right_i.size(); ++r)
             {
@@ -168,11 +175,10 @@ struct contraction {
                 }
             } // right index block
         } // b1
-        return ret;
     }
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static block_matrix<Matrix, SymmGroup>
+    block_matrix<Matrix, SymmGroup>
     rbtm_kernel(size_t b1,
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
@@ -256,7 +262,7 @@ struct contraction {
     // note: this function changes the internal structure of Boundary,
     //       each block is transposed
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static Boundary<Matrix, SymmGroup>
+    Boundary<Matrix, SymmGroup>
     left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                              Boundary<OtherMatrix, SymmGroup> const & left,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -268,12 +274,16 @@ struct contraction {
         if (in_low == NULL)
             in_low = &mps.row_dim();
         
-        mps.make_right_paired();
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         int loop_max = left.aux_dim();
 
-        storage::migrate(mps, storage::scope_t::common);
-        parallel_for(int b, range(0,loop_max), {
+        {
+            select_proc(ambient::scope_t::common);
+            mps.make_right_paired();
+            storage::hint(mps);
+            gemm_trim_left(transpose(left[0]), mps.data(), t[0]);
+        }
+        parallel_for(int b, range(1,loop_max), {
             select_proc(ambient::scope::permute(b,mpo.placement_l)); 
             gemm_trim_left(transpose(left[b]), mps.data(), t[b]);
         });
@@ -285,21 +295,20 @@ struct contraction {
                                 boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                         -boost::lambda::_1, boost::lambda::_2));
         
-        Boundary<Matrix, SymmGroup> ret;
-        ret.resize(mpo.col_dim());
-
         loop_max = mpo.col_dim();
 
-        omp_for(int b2 = 0; b2 < loop_max; ++b2) {
-            select_proc(ambient::scope::permute(b2,mpo.placement_r));
-            ret[b2] = lbtm_kernel(b2, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
-        }
+        ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
 
-        return ret;
+        parallel_for(int b2, range(0,loop_max), {
+            select_proc(ambient::scope::permute(b2,mpo.placement_r));
+            lbtm_kernel(b2, contr_grid, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
+        });
+
+        return contr_grid.make_boundary();
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static Boundary<Matrix, SymmGroup>
+    Boundary<Matrix, SymmGroup>
     right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                               Boundary<OtherMatrix, SymmGroup> const & right,
                               MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -311,11 +320,14 @@ struct contraction {
         if (in_low == NULL)
             in_low = &mps.col_dim();
         
-        mps.make_left_paired();
         std::vector<block_matrix<Matrix, SymmGroup> > t(right.aux_dim());
         int loop_max = right.aux_dim();
-
-        storage::migrate(mps, storage::scope_t::common);
+        
+        {
+            select_proc(storage::scope_t::common);
+            mps.make_left_paired();
+            storage::hint(mps);
+        }
         parallel_for(int b, range(0,loop_max), {
             select_proc(ambient::scope::permute(b,mpo.placement_r));
             gemm_trim_right(mps.data(), right[b], t[b]);
@@ -342,7 +354,7 @@ struct contraction {
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static Boundary<OtherMatrix, SymmGroup>
+    Boundary<OtherMatrix, SymmGroup>
     overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                           Boundary<OtherMatrix, SymmGroup> const & left,
@@ -358,11 +370,14 @@ struct contraction {
         {
             // Make a copy of ket_tensor to avoid reshaping back to left
             MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-            ket_cpy.make_right_paired();
             int loop_max = left.aux_dim();
-
-            storage::migrate(ket_cpy, storage::scope_t::common);
-            parallel_for(int b, range(0,loop_max), {
+            {
+                select_proc(ambient::scope_t::common);
+                ket_cpy.make_right_paired();
+                storage::hint(ket_cpy);
+                gemm_trim_left(transpose(left[0]), ket_cpy.data(), t[0]);
+            }
+            parallel_for(int b, range(1,loop_max), {
                 select_proc(ambient::scope::permute(b,mpo.placement_l));
                 gemm_trim_left(transpose(left[b]), ket_cpy.data(), t[b]);
             });
@@ -376,29 +391,26 @@ struct contraction {
                                 boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                         -boost::lambda::_1, boost::lambda::_2));
 
-        Boundary<Matrix, SymmGroup> ret;
-        ret.resize(mpo.col_dim());
-
-        //ket_tensor.make_left_paired();
-        std::size_t loop_max = mpo.col_dim();
+        int loop_max = mpo.col_dim();
 
         bra_tensor.make_left_paired();
         block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
-        omp_for(size_t b2 = 0; b2 < loop_max; ++b2) {
+
+        ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
+        parallel_for(int b2, range(0,loop_max), {
             select_proc(ambient::scope::permute(b2,mpo.placement_r));
-            block_matrix<Matrix, SymmGroup> tmp;
-            tmp = lbtm_kernel(b2, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
-            gemm(transpose(tmp), bra_conj, ret[b2]);
-        }
+            lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
+            contr_grid.multiply_column_trans(b2, bra_conj);
+        });
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("serial::continue");
         #endif
 
-        return ret;
+        return contr_grid.make_boundary();
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static Boundary<OtherMatrix, SymmGroup>
+    Boundary<OtherMatrix, SymmGroup>
     overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                            MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                            Boundary<OtherMatrix, SymmGroup> const & right,
@@ -417,7 +429,7 @@ struct contraction {
             ket_cpy.make_left_paired();
             int loop_max = right.aux_dim();
 
-            storage::migrate(ket_cpy, storage::scope_t::common);
+            storage::hint(ket_cpy, storage::scope_t::common);
             parallel_for(int b, range(0,loop_max), {
                 select_proc(ambient::scope::permute(b,mpo.placement_r));
                 gemm_trim_right(ket_cpy.data(), right[b], t[b]);
@@ -453,7 +465,7 @@ struct contraction {
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static MPSTensor<Matrix, SymmGroup>
+    MPSTensor<Matrix, SymmGroup>
     site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,
@@ -461,17 +473,19 @@ struct contraction {
     {
         typedef typename SymmGroup::charge charge;
 
-        MPSTensor<Matrix, SymmGroup> ret;
-
         ket_tensor.make_right_paired();
         
         std::vector<block_matrix<Matrix, SymmGroup> > t(left.aux_dim());
         int loop_max = left.aux_dim();
-
-        storage::migrate(ket_tensor, storage::scope_t::common);
-        parallel_for(int b, range(0,loop_max), {
-            select_proc(ambient::scope::permute(b,mpo.placement_l));
-            gemm_trim_left(transpose(left[b]), ket_tensor.data(), t[b]);
+        {
+            select_proc(storage::scope_t::common);
+            storage::hint(ket_tensor);
+            storage::migrate(left[0]);
+            gemm_trim_left(transpose(left[0]), ket_tensor.data(), t[0]);
+        }
+        parallel_for(int b1, range(1,loop_max), {
+            select_proc(ambient::scope::permute(b1,mpo.placement_l));
+            gemm_trim_left(transpose(left[b1]), ket_tensor.data(), t[b1]);
         });
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
@@ -482,27 +496,26 @@ struct contraction {
         ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,
                                 boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                         -boost::lambda::_1, boost::lambda::_2));
-        
+
+        ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
+
         loop_max = mpo.col_dim();
-                    
-        omp_for(int b2 = 0; b2 < loop_max; ++b2) {
+        parallel_for(int b2, range(0,loop_max), {
             select_proc(ambient::scope::permute(b2,mpo.placement_r));
-
-            block_matrix<Matrix, SymmGroup> contr_column = lbtm_kernel(b2, left, t, mpo, physical_i,
-                                                                       right_i, out_left_i, in_right_pb, out_left_pb);
-            block_matrix<Matrix, SymmGroup> tmp;
-            gemm(contr_column, right[b2], tmp);
-            omp_critical
-            for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
-                ret.data().match_and_add_block(tmp[k], tmp.left_basis()[k].first, tmp.right_basis()[k].first);
-        }
-
-        ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
+            lbtm_kernel(b2, contr_grid, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
+            contr_grid.multiply_column(b2, right[b2]);
+        });
+         
+        MPSTensor<Matrix, SymmGroup> ret;
+        ret.phys_i = ket_tensor.site_dim();
+        ret.left_i = ket_tensor.row_dim();
+        ret.right_i = ket_tensor.col_dim();
+        ret.data() = contr_grid.reduce();
         return ret;
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static MPSTensor<Matrix, SymmGroup>
+    MPSTensor<Matrix, SymmGroup>
     site_ortho_boundaries(MPSTensor<Matrix, SymmGroup> const & mps,
                           MPSTensor<Matrix, SymmGroup> const & ortho_mps,
                           block_matrix<OtherMatrix, SymmGroup> const & ortho_left,
@@ -530,7 +543,7 @@ struct contraction {
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+    std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
                                 Boundary<OtherMatrix, SymmGroup> const & left,
@@ -571,7 +584,7 @@ struct contraction {
     }
     
     template<class Matrix, class SymmGroup>
-    static MPSTensor<Matrix, SymmGroup>
+    MPSTensor<Matrix, SymmGroup>
     predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A)
@@ -587,7 +600,7 @@ struct contraction {
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+    std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
                                 Boundary<OtherMatrix, SymmGroup> const & left,
@@ -628,7 +641,7 @@ struct contraction {
     }
     
     template<class Matrix, class SymmGroup>
-    static MPSTensor<Matrix, SymmGroup>
+    MPSTensor<Matrix, SymmGroup>
     predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A)
@@ -645,7 +658,7 @@ struct contraction {
     }
     
     template<class Matrix, class SymmGroup>
-    static block_matrix<Matrix, SymmGroup>
+    block_matrix<Matrix, SymmGroup>
     multiply_with_twosite(block_matrix<Matrix, SymmGroup> const & vec,
                           block_matrix<Matrix, SymmGroup> const & op,
                           Index<SymmGroup> const & left_i,
@@ -713,7 +726,7 @@ struct contraction {
     }
     
     template<class Matrix, class SymmGroup>
-    static MPSTensor<Matrix, SymmGroup>
+    MPSTensor<Matrix, SymmGroup>
     multiply_with_op(MPSTensor<Matrix, SymmGroup> const & mps, block_matrix<Matrix, SymmGroup> const & op)
     {
         typedef typename SymmGroup::charge charge;
@@ -800,7 +813,7 @@ struct contraction {
     
     // tested only for diagonal operator
     template<class Matrix, class SymmGroup>
-    static MPSTensor<Matrix, SymmGroup>
+    MPSTensor<Matrix, SymmGroup>
     local_op(MPSTensor<Matrix, SymmGroup> const & mps,
              block_matrix<Matrix, SymmGroup> const & op)
     {
@@ -877,7 +890,7 @@ struct contraction {
     }
 
     template<class Matrix, class SymmGroup>
-    static block_matrix<Matrix, SymmGroup>
+    block_matrix<Matrix, SymmGroup>
     density_matrix(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                    MPSTensor<Matrix, SymmGroup> const & ket_tensor)
     {
@@ -942,7 +955,7 @@ struct contraction {
     }
 
     template<class Matrix, class SymmGroup>
-    static block_matrix<Matrix, SymmGroup>
+    block_matrix<Matrix, SymmGroup>
     density_matrix_2(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                      MPSTensor<Matrix, SymmGroup> const & ket_tensor)
     {
@@ -968,6 +981,6 @@ struct contraction {
         return dm;
     }
 
-};
+}
 
 #endif

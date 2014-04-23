@@ -42,31 +42,31 @@ namespace ambient {
         }
         inline scope::~scope(){
             if(dry) return;
-            ctxt.revoke_controller(controller);
-            ctxt.pop();
+            selector.revoke_controller(controller);
+            selector.pop_scope();
         }
         inline scope::scope(scope_t t) : type(t){
             if(t == scope_t::common){
-                if(ctxt.scoped()){
-                    if(ctxt.get_domain().type == scope_t::common){ this->dry = true; return; }
+                if(selector.has_nested_scope()){
+                    if(selector.get_scope().type == scope_t::common){ this->dry = true; return; }
                     printf("Error: common scope inside other scope type\n");
                 }else{
                     this->dry = false;
-                    this->rank = ctxt.get_controller().get_shared_rank();
+                    this->rank = selector.get_controller().get_shared_rank();
                     this->state = ambient::locality::common;
-                    controller = ctxt.provide_controller();
-                    ctxt.push(this);
+                    controller = selector.provide_controller();
+                    selector.push_scope(this);
                 }
             }else{
                 printf("Error: unknown scope type!\n");
             }
         }
         inline scope::scope(int r) : type(scope_t::single) {
-            controller = ctxt.provide_controller(); // need to change dry stuff
-            if(ambient::ctxt.scoped()) dry = true;
+            controller = selector.provide_controller(); // need to change dry stuff
+            if(ambient::selector.has_nested_scope()) dry = true;
             else{ 
                 dry = false; 
-                ctxt.push(this); 
+                selector.push_scope(this); 
             }
             this->round = controller->get_num_workers();
             this->set(r);
@@ -75,9 +75,22 @@ namespace ambient {
             this->rank = r % this->round;
             this->state = (this->rank == controller->get_rank()) ? ambient::locality::local : ambient::locality::remote;
         }
+        inline bool scope::remote() const {
+            return (state == ambient::locality::remote);
+        }
+        inline bool scope::local() const {
+            return (state == ambient::locality::local);
+        }
+        inline bool scope::common() const {
+            return (state == ambient::locality::common);
+        }
+        inline int scope::which() const {
+            return this->rank;
+        }
+        
 
         inline base_scope::base_scope(){
-            this->controller = ctxt.provide_controller();
+            this->controller = selector.provide_controller();
             this->controller->reserve(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
             this->round = controller->get_num_workers();
             this->scores.resize(round, 0);

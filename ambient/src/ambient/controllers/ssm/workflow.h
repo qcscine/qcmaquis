@@ -36,7 +36,7 @@ namespace ambient {
 
         struct thread_context {
             controller_type controller;
-            scope* domain;
+            scope* scope_;
             struct sid_t {
                 struct divergence_guard {
                     divergence_guard();
@@ -58,19 +58,15 @@ namespace ambient {
         mutable ambient::mutex mtx;
 
         workflow();
-        scope& get_domain() const;
-        thread_context& get_context() const;
+        thread_context& get_thread_context() const;
         controller_type& get_controller() const;
         controller_type* provide_controller();
         void revoke_controller(controller_type* c);
-        void push(scope* s);
-        void pop();
-        void sync();
-        bool scoped() const;
-        bool remote() const;
-        bool local()  const;
-        bool common() const;
-        int  which()  const;
+        bool has_nested_scope() const;
+        scope& get_scope() const;
+        void push_scope(scope* s);
+        void pop_scope();
+        void sync_all();
         int  generate_sid();
         int  get_sid() const;
         bool tunable() const; 
@@ -81,10 +77,10 @@ namespace ambient {
     };
 
     #ifdef AMBIENT_BUILD_LIBRARY
-    workflow ctxt;
-    void sync(){ ctxt.sync(); }
+    workflow selector;
+    void sync(){ selector.sync_all(); }
     #else
-    extern workflow ctxt;
+    extern workflow selector;
     #endif
 
     typedef typename workflow::thread_context::sid_t sid_t;

@@ -30,7 +30,7 @@
 namespace ambient { 
 
         inline workflow::workflow() : context_lane(ambient::num_threads()) {
-            for(thread_context& k : context_lane) k.domain = &base;
+            for(thread_context& k : context_lane) k.scope_ = &base;
             if(ambient::isset("AMBIENT_VERBOSE")){
                 ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE     << ")\n";
                 if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
@@ -49,14 +49,14 @@ namespace ambient {
         }
 
         inline workflow::thread_context::sid_t::divergence_guard::divergence_guard(){
-            for(auto& k : ctxt.context_lane){
-                k.sid.max = k.sid.min = ctxt.context_lane[0].sid.value;
-                k.domain = ctxt.context_lane[0].domain;
+            for(auto& k : selector.context_lane){
+                k.sid.max = k.sid.min = selector.context_lane[0].sid.value;
+                k.scope_ = selector.context_lane[0].scope_;
             }
         }
         inline workflow::thread_context::sid_t::divergence_guard::~divergence_guard(){
-            int& max = ctxt.context_lane[0].sid.value;
-            for(auto& k : ctxt.context_lane){
+            int& max = selector.context_lane[0].sid.value;
+            for(auto& k : selector.context_lane){
                 max = std::max(max, k.sid.max);
                 k.sid.inc = 1;
             }
@@ -74,27 +74,24 @@ namespace ambient {
             return value;
         }
         inline int workflow::generate_sid(){
-            return get_context().sid.generate();
+            return get_thread_context().sid.generate();
         }
         inline int workflow::get_sid() const {
-            return get_context().sid.value;
+            return get_thread_context().sid.value;
         }
-        inline workflow::thread_context& workflow::get_context() const {
+        inline workflow::thread_context& workflow::get_thread_context() const {
             return context_lane[AMBIENT_THREAD_ID];
         }
         inline typename workflow::controller_type& workflow::get_controller() const {
-            return *get_domain().controller; // caution: != get_context().controller;
+            return *get_scope().controller; // caution: != get_thread_context().controller;
         }
         inline typename workflow::controller_type* workflow::provide_controller(){
-            return &get_context().controller;
+            return &get_thread_context().controller;
         }
         inline void workflow::revoke_controller(controller_type* c){
             // some cleanups ?
         }
-        inline scope& workflow::get_domain() const {
-            return *get_context().domain;
-        }
-        inline void workflow::sync(){
+        inline void workflow::sync_all(){
             for(int k = 1; k < context_lane.size(); k++){
                 for(auto i : *context_lane[k].controller.chains) context_lane[0].controller.queue(i);
                 context_lane[k].controller.chains->clear();
@@ -105,29 +102,20 @@ namespace ambient {
             }
             memory::data_bulk::drop();
         }
-        inline bool workflow::scoped() const {
-            return (&get_domain() != &this->base);
+        inline bool workflow::has_nested_scope() const {
+            return (&get_scope() != &this->base);
         }
-        inline void workflow::pop(){
-            get_context().domain = &this->base;
+        inline scope& workflow::get_scope() const {
+            return *get_thread_context().scope_;
         }
-        inline void workflow::push(scope* s){
-            get_context().domain = s; // no nesting
+        inline void workflow::pop_scope(){
+            get_thread_context().scope_ = &this->base;
         }
-        inline bool workflow::remote() const {
-            return (get_domain().state == ambient::locality::remote);
-        }
-        inline bool workflow::local() const {
-            return (get_domain().state == ambient::locality::local);
-        }
-        inline bool workflow::common() const {
-            return (get_domain().state == ambient::locality::common);
-        }
-        inline int workflow::which() const {
-            return get_domain().rank;
+        inline void workflow::push_scope(scope* s){
+            get_thread_context().scope_ = s; // no nesting
         }
         inline bool workflow::tunable() const { 
-            return (!get_controller().is_serial() && !scoped());
+            return (!get_controller().is_serial() && !has_nested_scope());
         }
         inline void workflow::intend_read(models::ssm::revision* r) const {
             base.intend_read(r); 

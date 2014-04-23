@@ -340,7 +340,7 @@ namespace ambient { namespace numeric {
                     const MatrixB& bb = b.tile(k, j);
                     gemm(ab, bb, *ctree[k]);
                 }
-                __a_reduce(ctree);
+                ambient::reduce(ctree);
                 for(int k = 1; k < a.nt; k++) 
                     delete ctree[k];
             }

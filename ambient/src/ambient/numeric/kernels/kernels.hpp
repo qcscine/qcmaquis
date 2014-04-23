@@ -520,6 +520,9 @@ namespace ambient { namespace numeric { namespace kernels {
         template<typename T, class A>
         void migrate(matrix<T,A>& a){ versioned(a); }
        
+        template<typename T, class A>
+        void hint(const matrix<T,A>& a){ }
+       
         inline double distance(const std::complex<double>& a, const std::complex<double>& b){ 
             return fabs(std::norm(a) - std::norm(b));
         }
@@ -663,6 +666,7 @@ namespace ambient { namespace numeric { namespace kernels {
     AMBIENT_EXPORT(detail::cast_double_complex, cast_double_complex)
     AMBIENT_EXPORT(detail::touch, touch)
     AMBIENT_EXPORT(detail::migrate, migrate)
+    AMBIENT_EXPORT(detail::hint, hint)
     AMBIENT_EXPORT(detail::svd, svd)
     AMBIENT_EXPORT(detail::geev, geev)
     AMBIENT_EXPORT(detail::inverse, inverse)
