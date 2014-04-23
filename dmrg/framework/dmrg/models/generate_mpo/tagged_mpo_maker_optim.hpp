@@ -194,7 +194,7 @@ namespace generate_mpo
                     pre_tensor.push_back( tag_block(ll->second, rr->second, val.first, val.second) );
                 }
                 
-                std::pair<std::size_t, std::size_t> rcd = rcdim(pre_tensor);
+                std::pair<index_type, index_type> rcd = rcdim(pre_tensor);
                 if (p == 0)
                     mpo.push_back( MPOTensor<Matrix, SymmGroup>(1, rcd.second, pre_tensor, tag_handler->get_operator_table()) );
                 else if (p == length - 1)
