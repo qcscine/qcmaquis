@@ -34,12 +34,6 @@
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/indexing.h"
 
-#ifdef USE_AMBIENT
-#include "dmrg/mp_tensors/impl/ambient.hpp"
-#else
-#include "dmrg/mp_tensors/impl/alps.hpp"
-#endif
-
 namespace contraction {
 
     // output/input: left_i for bra_tensor, right_i for ket_tensor

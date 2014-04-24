@@ -31,12 +31,6 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/block_matrix/indexing.h"
 
-#ifdef USE_AMBIENT
-#include "dmrg/mp_tensors/impl/ambient.hpp"
-#else
-#include "dmrg/mp_tensors/impl/alps.hpp"
-#endif
-
 namespace contraction {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>

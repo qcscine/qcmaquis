@@ -27,6 +27,12 @@
 #ifndef CONTRACTIONS_H
 #define CONTRACTIONS_H
 
+#ifdef USE_AMBIENT
+#include "dmrg/mp_tensors/impl/ambient.hpp"
+#else
+#include "dmrg/mp_tensors/impl/alps.hpp"
+#endif
+
 #include "dmrg/mp_tensors/contractions/boundary_times_mps.hpp"
 #include "dmrg/mp_tensors/contractions/apply_op.hpp"
 #include "dmrg/mp_tensors/contractions/move_boundary.hpp"
