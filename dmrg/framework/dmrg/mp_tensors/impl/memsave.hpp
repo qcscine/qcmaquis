@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,21 +24,35 @@
  *
  *****************************************************************************/
 
-#ifndef CONTRACTIONS_H
-#define CONTRACTIONS_H
+#ifndef MAQUIS_MP_TENSORS_IMPL_MEMSAVE_HPP
+#define MAQUIS_MP_TENSORS_IMPL_MEMSAVE_HPP
 
-#ifdef USE_AMBIENT
-#include "dmrg/mp_tensors/impl/ambient.hpp"
-#else
-//#include "dmrg/mp_tensors/impl/alps.hpp"
-#include "dmrg/mp_tensors/impl/memsave.hpp"
-#endif
+namespace contraction {
 
-#include "dmrg/mp_tensors/contractions/boundary_times_mps.hpp"
-#include "dmrg/mp_tensors/contractions/apply_op.hpp"
-#include "dmrg/mp_tensors/contractions/move_boundary.hpp"
-#include "dmrg/mp_tensors/contractions/site_hamil.hpp"
-#include "dmrg/mp_tensors/contractions/prediction.hpp"
-#include "dmrg/mp_tensors/contractions/special.hpp"
+    template<class Matrix, class SymmGroup>
+    class ContractionGrid {
+    public:
+        ContractionGrid(MPOTensor<Matrix, SymmGroup> const & mpo, size_t s1, size_t s2)
+        {}
+ 
+        block_matrix<Matrix, SymmGroup>& operator()(size_t b1, size_t b2){
+            return data_;
+        }
+        void multiply_column(size_t b2, const block_matrix<Matrix, SymmGroup>& rhs){
+            throw std::runtime_error("ContractionGrid::multiply_column not implemented\n");
+        }
+        void multiply_column_trans(size_t b2, const block_matrix<Matrix, SymmGroup>& rhs){
+            throw std::runtime_error("ContractionGrid::multiply_column_trans not implemented\n");
+        }
+        block_matrix<Matrix, SymmGroup> reduce(){
+            throw std::runtime_error("ContractionGrid::reduce not implemented\n");
+        }
+        Boundary<Matrix, SymmGroup> make_boundary(){
+            throw std::runtime_error("ContractionGrid::make_boundary not implemented\n");
+        }
+
+        mutable block_matrix<Matrix, SymmGroup> data_;
+    };
+}
 
 #endif

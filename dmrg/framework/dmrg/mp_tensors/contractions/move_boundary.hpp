@@ -117,6 +117,7 @@ namespace contraction {
         
         index_type loop_max = mpo.col_dim();
 
+#ifdef USE_AMBIENT
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
 
         parallel_for(index_type b2, range<index_type>(0,loop_max), {
@@ -125,6 +126,19 @@ namespace contraction {
         });
 
         return contr_grid.make_boundary();
+#else
+        Boundary<Matrix, SymmGroup> ret;
+        ret.resize(mpo.col_dim());
+
+        omp_for(int b2 = 0; b2 < loop_max; ++b2) {
+            ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
+            select_proc(ambient::scope::permute(b2,mpo.placement_r));
+            lbtm_kernel(b2, contr_grid, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
+            swap(ret[b2], contr_grid(0,0));
+        }
+
+        return ret;
+#endif
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -192,6 +206,8 @@ namespace contraction {
         bra_tensor.make_left_paired();
         block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
 
+#ifdef USE_AMBIENT
+
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
         parallel_for(index_type b2, range<index_type>(0,loop_max), {
             select_proc(ambient::scope::permute(b2,mpo.placement_r));
@@ -203,6 +219,20 @@ namespace contraction {
         #endif
 
         return contr_grid.make_boundary();
+#else
+        Boundary<Matrix, SymmGroup> ret;
+        ret.resize(loop_max);
+
+        omp_for(size_t b2 = 0; b2 < loop_max; ++b2) {
+            select_proc(ambient::scope::permute(b2,mpo.placement_r));
+            ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
+            block_matrix<Matrix, SymmGroup> tmp;
+            lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
+            gemm(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
+        }
+
+        return ret;
+#endif
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
