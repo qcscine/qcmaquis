@@ -52,7 +52,7 @@ namespace ambient { namespace controllers { namespace ssm {
         handle = ambient::selector.get_controller().get_channel().get(t);
         t.invalidate();
     }
-    inline void get<revision>::operator += (int rank){
+    inline void get<revision>::operator += (rank_t rank){
         *handle += rank;
         if(handle->involved() && !t.valid()){
             t.use();

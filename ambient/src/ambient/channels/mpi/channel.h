@@ -59,7 +59,7 @@ namespace ambient { namespace channels { namespace mpi {
         static void barrier();
         collective<block_type>* get(block_type& r);
         collective<block_type>* set(block_type& r);
-        collective<scalar_type>* bcast(scalar_type& v, int root);
+        collective<scalar_type>* bcast(scalar_type& v, rank_t root);
         collective<scalar_type>* bcast(scalar_type& v);
         multirank rank;
         group* world;

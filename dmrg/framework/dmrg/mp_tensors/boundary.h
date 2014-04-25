@@ -80,7 +80,7 @@ public:
             double part = 0;
             for(int b = 0; b < loop_max; ++b){
                 for(int i = 0; i < (*this)[b].n_blocks(); ++i){
-                    if((*this)[b][i][0].desc->current->owner == p || (p == 0 && (*this)[b][i][0].desc->current->owner == -1))
+                    if(ambient::get_owner((*this)[b][i][0]) == p)
                         part += num_rows((*this)[b][i])*num_cols((*this)[b][i]);
                 }
             }

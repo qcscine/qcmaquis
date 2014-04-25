@@ -39,13 +39,13 @@ namespace ambient { namespace channels { namespace mpi {
         }
     }
 
-    inline collective<typename channel::block_type>::collective(typename channel::block_type& r, int root) 
+    inline collective<typename channel::block_type>::collective(typename channel::block_type& r, rank_t root) 
     : bcast<typename channel::block_type>(r, root), states(ambient::num_procs()+1) {
         this->tree.push_back(root);
         this->tags.push_back(-1);
     }
 
-    inline void collective<typename channel::block_type>::operator += (int rank){
+    inline void collective<typename channel::block_type>::operator += (rank_t rank){
         if(!states[rank]){
             states[rank] = true;
             if(states.back()){
@@ -78,7 +78,7 @@ namespace ambient { namespace channels { namespace mpi {
         return this->impl();
     }
 
-    inline collective<typename channel::scalar_type>::collective(typename channel::scalar_type& v, int root)
+    inline collective<typename channel::scalar_type>::collective(typename channel::scalar_type& v, rank_t root)
     : bcast<typename channel::scalar_type>(v, root) {
         tags.reserve(ambient::num_procs()+1);
         for(int i = 0; i <= ambient::num_procs(); i++)

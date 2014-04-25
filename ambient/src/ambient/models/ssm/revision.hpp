@@ -26,7 +26,7 @@
 
 namespace ambient { namespace models { namespace ssm {
 
-    inline revision::revision(size_t extent, void* g, ambient::locality l, int owner)
+    inline revision::revision(size_t extent, void* g, ambient::locality l, rank_t owner)
     : spec(extent), generator(g), state(l), 
       data(NULL), users(0), owner(owner)
     {

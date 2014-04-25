@@ -24,45 +24,35 @@
  *
  *****************************************************************************/
 
-#ifndef MAQUIS_MP_TENSORS_IMPL_ALPS_HPP
-#define MAQUIS_MP_TENSORS_IMPL_ALPS_HPP
+#ifndef CONTRACTIONS_IMPL_MEMSAVE_HPP
+#define CONTRACTIONS_IMPL_MEMSAVE_HPP
 
 namespace contraction {
 
     template<class Matrix, class SymmGroup>
     class ContractionGrid {
     public:
-        ContractionGrid(MPOTensor<Matrix, SymmGroup> const & mpo, size_t s1, size_t s2)
-        : grid(s2), size(s2) {
+        ContractionGrid(MPOTensor<Matrix, SymmGroup> const & mpo, size_t s1, size_t s2){
         }
         block_matrix<Matrix, SymmGroup>& operator()(size_t b1, size_t b2){
-            return grid[b2];
+            return data_;
+        }
+        void hint(const std::vector<block_matrix<Matrix, SymmGroup> >& t){
+            throw std::runtime_error("ContractionGrid::hint not implemented\n");
         }
         void multiply_column(size_t b2, const block_matrix<Matrix, SymmGroup>& rhs){
-            block_matrix<Matrix, SymmGroup> tmp;
-            gemm(grid[b2], rhs, tmp);
-            grid[b2] = tmp;
+            throw std::runtime_error("ContractionGrid::multiply_column not implemented\n");
         }
         void multiply_column_trans(size_t b2, const block_matrix<Matrix, SymmGroup>& rhs){
-            block_matrix<Matrix, SymmGroup> tmp;
-            gemm(transpose(grid[b2]), rhs, tmp);
-            grid[b2] = tmp;
+            throw std::runtime_error("ContractionGrid::multiply_column_trans not implemented\n");
         }
         block_matrix<Matrix, SymmGroup> reduce(){
-            block_matrix<Matrix, SymmGroup> ret;
-            for(int b2 = 0; b2 < size; b2++)
-            for(int k = 0; k < grid[b2].n_blocks(); ++k)
-                ret.match_and_add_block(grid[b2][k], grid[b2].left_basis()[k].first, grid[b2].right_basis()[k].first);
-            return ret;
+            throw std::runtime_error("ContractionGrid::reduce not implemented\n");
         }
         Boundary<Matrix, SymmGroup> make_boundary(){
-            Boundary<Matrix, SymmGroup> ret;
-            ret.resize(size);
-            for(int b2 = 0; b2 < size; b2++) ret[b2] = grid[b2];
-            return ret;
+            throw std::runtime_error("ContractionGrid::make_boundary not implemented\n");
         }
-        mutable std::vector< block_matrix<Matrix, SymmGroup> > grid;
-        size_t size;
+        mutable block_matrix<Matrix, SymmGroup> data_;
     };
 }
 

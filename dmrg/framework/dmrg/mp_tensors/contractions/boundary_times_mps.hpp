@@ -40,21 +40,17 @@ namespace contraction {
                        Boundary<OtherMatrix, SymmGroup> const & left,
                        MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        mps.make_right_paired();
-        
         std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(left.aux_dim());
         int loop_max = left.aux_dim();
         {
             select_proc(storage::scope_t::common);
+            mps.make_right_paired();
             storage::hint(mps);
-            storage::migrate(left[0]);
-            gemm_trim_left(transpose(left[0]), mps.data(), ret[0]);
         }
-        parallel_for(int b1, range(1,loop_max), {
+        parallel_for(int b1, range(0,loop_max), {
             select_proc(ambient::scope::permute(b1, mpo.placement_l));
             gemm_trim_left(transpose(left[b1]), mps.data(), ret[b1]);
         });
-
         return ret;
     }
 
@@ -64,17 +60,17 @@ namespace contraction {
                        Boundary<OtherMatrix, SymmGroup> const & right,
                        MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        mps.make_left_paired();
-
         std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(right.aux_dim());
         int loop_max = right.aux_dim();
-
-        storage::hint(mps, storage::scope_t::common);
-        parallel_for(int b, range(0,loop_max), {
-            select_proc(ambient::scope::permute(b, mpo.placement_r));
-            gemm_trim_right(mps.data(), right[b], ret[b]);
+        {
+            select_proc(storage::scope_t::common);
+            mps.make_left_paired();
+            storage::hint(mps);
+        }
+        parallel_for(int b2, range(0,loop_max), {
+            select_proc(ambient::scope::permute(b2, mpo.placement_r));
+            gemm_trim_right(mps.data(), right[b2], ret[b2]);
         });
-
         return ret;
     }
 

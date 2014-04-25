@@ -61,6 +61,7 @@
 #include "ambient/utils/fence.hpp"
 #include "ambient/utils/enable_threading.hpp"
 #include "ambient/utils/math.hpp"
+#include "ambient/utils/rank_t.hpp"
 
 #include "ambient/memory/pool.hpp"
 #include "ambient/memory/new.h"

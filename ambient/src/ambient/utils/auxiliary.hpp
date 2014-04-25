@@ -131,7 +131,7 @@ namespace ambient {
         return (p == -1 ? ambient::rank() : p);
     }
 
-    inline int which(){
+    inline rank_t which(){
         return ambient::selector.get_scope().which();
     }
 

@@ -66,7 +66,7 @@ namespace ambient { namespace channels { namespace mpi {
         return this->world->size;
     }
 
-    inline collective<typename channel::scalar_type>* channel::bcast(scalar_type& v, int root){
+    inline collective<typename channel::scalar_type>* channel::bcast(scalar_type& v, rank_t root){
         return new collective<scalar_type>(v, root);
     }
 

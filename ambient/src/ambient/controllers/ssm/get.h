@@ -53,7 +53,7 @@ namespace ambient { namespace controllers { namespace ssm {
         get(revision& r);
         virtual void invoke();
         virtual bool ready();
-        void operator += (int rank);
+        void operator += (rank_t rank);
     private:
         collective<revision>* handle;
         revision& t;
