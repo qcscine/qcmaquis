@@ -54,7 +54,7 @@ namespace ambient { namespace controllers { namespace ssm {
         if(t.generator != NULL) ((functor*)t.generator)->queue(this);
         else ambient::selector.get_controller().queue(this);
     }
-    inline void set<revision>::operator += (int rank){
+    inline void set<revision>::operator += (rank_t rank){
         *handle += rank;
     }
     inline bool set<revision>::ready(){

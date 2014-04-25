@@ -58,7 +58,7 @@ namespace contraction {
         index_type loop_max = mpo.col_dim();
 
 #ifdef USE_AMBIENT
-        ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
+        ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim()); contr_grid.hint(t);
 
         parallel_for(index_type b2, range<index_type>(0,loop_max), {
             select_proc(ambient::scope::permute(b2,mpo.placement_r));
@@ -67,7 +67,6 @@ namespace contraction {
         });
          
         ret.data() = contr_grid.reduce();
-
 #else
         omp_for(int b2 = 0; b2 < loop_max; ++b2) {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
@@ -81,7 +80,6 @@ namespace contraction {
             for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
                 ret.data().match_and_add_block(tmp[k], tmp.left_basis()[k].first, tmp.right_basis()[k].first);
         }
-
 #endif
         ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
         return ret;

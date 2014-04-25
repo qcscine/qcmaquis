@@ -84,7 +84,7 @@ namespace ambient {
         inline bool scope::common() const {
             return (state == ambient::locality::common);
         }
-        inline int scope::which() const {
+        inline rank_t scope::which() const {
             return this->rank;
         }
         

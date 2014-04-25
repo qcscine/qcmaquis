@@ -28,10 +28,10 @@
 #define CONTRACTIONS_H
 
 #ifdef USE_AMBIENT
-#include "dmrg/mp_tensors/impl/ambient.hpp"
+#include "dmrg/mp_tensors/contractions/impl/ambient.hpp"
 #else
-//#include "dmrg/mp_tensors/impl/alps.hpp"
-#include "dmrg/mp_tensors/impl/memsave.hpp"
+//#include "dmrg/mp_tensors/contractions/impl/alps.hpp"
+#include "dmrg/mp_tensors/contractions/impl/memsave.hpp"
 #endif
 
 #include "dmrg/mp_tensors/contractions/boundary_times_mps.hpp"

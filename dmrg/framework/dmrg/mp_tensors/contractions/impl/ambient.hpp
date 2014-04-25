@@ -25,8 +25,8 @@
  *
  *****************************************************************************/
 
-#ifndef MAQUIS_MP_TENSORS_IMPL_AMBIENT_HPP
-#define MAQUIS_MP_TENSORS_IMPL_AMBIENT_HPP
+#ifndef CONTRACTIONS_IMPL_AMBIENT_HPP
+#define CONTRACTIONS_IMPL_AMBIENT_HPP
 
 namespace contraction {
 
@@ -61,6 +61,10 @@ namespace contraction {
             const std::vector<int>& except = mpo.exceptions_r;
             for(int i = 0; i < except.size(); i++) e2[except[i]] = true;
             for(int b2 = 0; b2 < size2; b2++) if(!e2[b2]) GRID(0,b2) = new block_matrix<Matrix, SymmGroup>();
+        }
+        void hint(const std::vector<block_matrix<Matrix, SymmGroup> >& t){
+            for(int b1 : mpo.exceptions_l) for(int b2 = 0; b2 < size2; b2++) if(mpo.has(b1,b2)) 
+                storage::hint(t[b1], ambient::scope::permute(b2,mpo.placement_r));
         }
         int where(size_t b1, size_t b2){
             if(e2[b2]) return ambient::scope::permute(b1,mpo.placement_l);

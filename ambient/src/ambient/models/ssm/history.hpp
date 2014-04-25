@@ -40,7 +40,7 @@ namespace ambient { namespace models { namespace ssm {
     }
 
     template<ambient::locality L>
-    inline void history::add_state(int g){
+    inline void history::add_state(rank_t g){
         revision* r = new revision(extent, NULL, L, g); 
         this->current = r;
     }

@@ -34,10 +34,10 @@ namespace ambient { namespace channels { namespace mpi {
         typedef ambient::bulk_allocator<int> allocator;
     public:
         void dispatch();
-        bcast(T& o, int root) : object(o), root(root), self(0) {}
+        bcast(T& o, rank_t root) : object(o), root(root), self(0) {}
         T& object;
         std::vector<int,allocator> tags;
-        int root;
+        rank_t root;
         int self;
         int size;
         int* list;
@@ -52,8 +52,8 @@ namespace ambient { namespace channels { namespace mpi {
                                                      public memory::use_bulk_new<collective<typename channel::block_type> > {
         typedef ambient::bulk_allocator<int> allocator;
     public:
-        collective(typename channel::block_type& r, int root);
-        void operator += (int rank);
+        collective(typename channel::block_type& r, rank_t root);
+        void operator += (rank_t rank);
         bool involved();
         bool test();
         std::vector<bool,allocator> states;
@@ -64,7 +64,7 @@ namespace ambient { namespace channels { namespace mpi {
     class collective<typename channel::scalar_type> : public bcast<typename channel::scalar_type>, 
                                                       public memory::use_bulk_new<collective<typename channel::scalar_type> > {
     public:
-        collective(typename channel::scalar_type& v, int root);
+        collective(typename channel::scalar_type& v, rank_t root);
         bool test();
     };
 

@@ -35,7 +35,7 @@ namespace ambient { namespace models { namespace ssm {
         history(dim2,size_t);
         void init_state();
         template<ambient::locality L> void add_state(void* g);
-        template<ambient::locality L> void add_state(int g);
+        template<ambient::locality L> void add_state(rank_t g);
         revision* back() const;
         bool weak() const;
         revision* current;

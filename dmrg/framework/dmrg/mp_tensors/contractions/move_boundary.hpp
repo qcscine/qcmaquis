@@ -118,7 +118,7 @@ namespace contraction {
         index_type loop_max = mpo.col_dim();
 
 #ifdef USE_AMBIENT
-        ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
+        ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim()); contr_grid.hint(t);
 
         parallel_for(index_type b2, range<index_type>(0,loop_max), {
             select_proc(ambient::scope::permute(b2,mpo.placement_r));
@@ -207,8 +207,8 @@ namespace contraction {
         block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
 
 #ifdef USE_AMBIENT
+        ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim()); contr_grid.hint(t);
 
-        ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
         parallel_for(index_type b2, range<index_type>(0,loop_max), {
             select_proc(ambient::scope::permute(b2,mpo.placement_r));
             lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
