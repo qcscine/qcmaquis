@@ -48,14 +48,9 @@ namespace ambient { namespace numeric {
         return *this;
     }
 
-    template<class Matrix>
-    inline size_t transpose_view<Matrix>::lda() const { 
-        return ambient::get_dim(*this).y; 
-    }
-
     template <class Matrix>
     inline size_t transpose_view<Matrix>::addr(size_type i, size_type j) const {
-        return (j + i*lda()); 
+        return (j + i*this->lda()); 
     }
 
     template <class Matrix>
@@ -119,14 +114,12 @@ namespace ambient { namespace numeric {
     }
 
     template <typename T, class A>
-    inline matrix<T,A>::matrix(size_type rows, size_type cols, value_type init_value)
-    : ambient_alloc(rows, cols, sizeof(T)) {
+    inline matrix<T,A>::matrix(size_type rows, size_type cols, value_type init_value) : ambient::block<T>(rows, cols) {
         fill_value(*this, init_value);
     }
 
     template <typename T, class A>
-    inline matrix<T,A>::matrix(const matrix& a)
-    : ambient_alloc(ambient::get_dim(a), sizeof(T)){
+    inline matrix<T,A>::matrix(const matrix& a) : ambient::block<T>(a.num_rows(), a.num_cols()) {
         ambient::merge(a, *this);
     }
     
@@ -162,11 +155,6 @@ namespace ambient { namespace numeric {
     template<class M> 
     size_t matrix<T,A>::cols(const M& a){ 
         return a.num_cols(); 
-    }
-
-    template<typename T, class A>
-    inline size_type matrix<T,A>::lda() const { 
-        return ambient::get_dim(*this).y; 
     }
 
     template<typename T, class A>
@@ -247,12 +235,12 @@ namespace ambient { namespace numeric {
 
     template<typename T, class A>
     inline value_type& matrix<T,A>::operator() (size_type i, size_type j){
-        return ambient::get(*this).data[ j*lda() + i ];
+        return ambient::load(*this).data[ j*this->lda() + i ];
     }
 
     template<typename T, class A>
     inline const value_type& matrix<T,A>::operator() (size_type i, size_type j) const {
-        return ambient::get(*this).data[ j*lda() + i ];
+        return ambient::load(*this).data[ j*this->lda() + i ];
     }
 
     template<typename T, class A>

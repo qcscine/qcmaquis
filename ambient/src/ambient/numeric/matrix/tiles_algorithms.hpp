@@ -764,7 +764,7 @@ namespace ambient { namespace numeric {
     template <class Matrix>
     inline void mul_inplace(tiles<Matrix>& a, const scalar_type& rhs) {
         #ifdef AMBIENT_LOOSE_FUTURE
-        if(!rhs.valid) rhs.get();
+        if(!rhs.valid) rhs.load();
         #endif
         if((value_type)rhs == 1.) return; // gcc debug knob + early out
         int size = a.data.size();
@@ -776,7 +776,7 @@ namespace ambient { namespace numeric {
     template <class Matrix>
     inline void div_inplace(tiles<Matrix>& a, const scalar_type& rhs){
         #ifdef AMBIENT_LOOSE_FUTURE
-        if(!rhs.valid) rhs.get();
+        if(!rhs.valid) rhs.load();
         #endif
         if((value_type)rhs == 1.) return; // gcc debug knob + early out
         int size = a.data.size();

@@ -4,13 +4,13 @@ BOOST_INCLUDE_PATH?=/project/h07/boost_1_53_0
 AMBIENT_PATH?=/users/akosenko/maquis2014/src/ambient/src
 AMBIENT_INCLUDE_PATH?=$(AMBIENT_PATH)
 AMBIENT_LIB_PATH?=.
-CXXFLAGS?= -std=c++11 -O3 -DNDEBUG
+COMMON?= -std=c++11 -O3 -DNDEBUG
+CXXFLAGS?= $(COMMON)
 
-# icc:      export CXX=icpc        # -std=c++11 -O3 -DNDEBUG
-# clang:    export CXX=g++         # -std=c++11 -O3 -DNDEBUG -DAMBIENT_SERIAL -Wno-array-bounds (-DAMBIENT_NOP_CHANNEL)
-# gcc:      export CXX=g++-mp-4.7  # -std=c++11 -O3 -DNDEBUG -fopenmp (-DAMBIENT_NOP_CHANNEL)
-# openmpi:  export OMPI_CXX=$CXX; export CXX=openmpicxx;
-# mvapich:  export CXX=mpicxx;
+# CHANNEL?= -DAMBIENT_NOP_CHANNEL                                    # no mpi
+# CXXFLAGS?= $(COMMON) $(CHANNEL) -Wfatal-errors -gcc-name=/opt/local/bin/gcc-mp-4.7 -gxx-name=/opt/local/bin/g++-mp-4.7 -gcc-version=473 -I/opt/local/include/gcc47/c++ -I/opt/local/include/gcc47/c++/x86_64-apple-darwin13/ -L/opt/local/lib/gcc47/        # icc
+# CXXFLAGS?= $(COMMON) $(CHANNEL) -Wno-array-bounds -DAMBIENT_SERIAL # clang
+# CXXFLAGS?= $(COMMON) $(CHANNEL) -fopenmp                           # gcc
 
 # Notes:
 # - for alps::hdf5 support include -I$ALPS_INCLUDE_PATH

@@ -108,7 +108,9 @@ namespace measurements {
                                  std::vector<bond_element> const & ops,
                                  std::vector<pos_t> const & order = std::vector<pos_t>())
         {
-            MPS<Matrix, SymmGroup> const & bra_mps = (dummy_bra_mps.length() > 0) ? dummy_bra_mps : ket_mps;
+            // Test if a separate bra state has been specified
+            bool bra_neq_ket = (dummy_bra_mps.length() > 0);
+            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
             // TODO: test with ambient in due time
             #ifdef MAQUIS_OPENMP
@@ -148,7 +150,9 @@ namespace measurements {
                           std::vector<bond_element> const & ops,
                           std::vector<pos_t> const & order = std::vector<pos_t>())
         {
-            MPS<Matrix, SymmGroup> const & bra_mps = (dummy_bra_mps.length() > 0) ? dummy_bra_mps : ket_mps;
+            // Test if a separate bra state has been specified
+            bool bra_neq_ket = (dummy_bra_mps.length() > 0);
+            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
             // TODO: test with ambient in due time
             #ifdef MAQUIS_OPENMP
@@ -157,7 +161,13 @@ namespace measurements {
             for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
             for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
             {
+                // Permutation symmetry for bra == ket: ijkl == jilk == klji == lkji
                 pos_t subref = std::min(p1, p2);
+
+                // if bra != ket, pertmutation symmetry is only ijkl == jilk
+                if (bra_neq_ket)
+                    pos_t subref = 0;
+
                 for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
                 { 
                     // Measurement positions p1,p2,p3 are fixed, p4 is handled by the MPO (synmpo)
