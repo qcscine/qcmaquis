@@ -237,6 +237,8 @@ public:
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
         boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
+        boost::regex expression_threeptdm("^MEASURE_THREEPTDM(.*)$");
+        boost::regex expression_transition_threeptdm("^MEASURE_TRANSITION_THREEPTDM(.*)$");
         boost::smatch what;
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
             std::string lhs = it->key();
@@ -307,6 +309,68 @@ public:
                 bond_element meas_operators;
                 meas_operators.push_back( std::make_pair(create_down_ops, true) );
                 meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+                }
+                half_only = true;
+                nearest_neighbors_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
+                                                                              half_only, nearest_neighbors_only, positions, bra_ckp));
+            }
+            if (boost::regex_match(lhs, what, expression_threeptdm) ||
+                    boost::regex_match(lhs, what, expression_transition_threeptdm)) {
+
+                std::string bra_ckp("");
+                if(lhs == "MEASURE_TRANSITION_THREEPTDM"){
+                    name = "transition_threeptdm";
+                    bra_ckp = it->value();
+                }
+                else
+                    name = "threeptdm";
+
+                std::vector<bond_element> synchronous_meas_operators;
+                {
+                //* c+a c+a c+a ca ca ca *//
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+                }
+                {
+                //* c+a c+a c+b ca ca cb *//
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+                }
+                {
+                //* c+b c+b c+a cb cb ca *//
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+                }
+                {
+                //* c+b c+b c+b cb cb cb *//
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
                 meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
                 meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
