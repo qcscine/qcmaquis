@@ -378,6 +378,7 @@ public:
                 half_only = true;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
+                maquis::cout << "Added 3pdm for measuring\n";
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions, bra_ckp));
             }
