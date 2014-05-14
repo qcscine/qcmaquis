@@ -272,6 +272,7 @@ public:
             if (boost::regex_match(lhs, what, expression_twoptdm) ||
                     boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
+                maquis::cout << "matched twoptdm measurement with lhs = " << lhs << std::endl;
                 std::string bra_ckp("");
                 if(lhs == "MEASURE_TRANSITION_TWOPTDM"){
                     name = "transition_twoptdm";
@@ -319,7 +320,7 @@ public:
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions, bra_ckp));
             }
-            if (boost::regex_match(lhs, what, expression_threeptdm) ||
+            else if (boost::regex_match(lhs, what, expression_threeptdm) ||
                     boost::regex_match(lhs, what, expression_transition_threeptdm)) {
 
                 std::string bra_ckp("");
@@ -476,6 +477,7 @@ public:
                 
                 std::vector<bond_element> synchronous_meas_operators;
                 synchronous_meas_operators.push_back(meas_operators);
+                maquis::cout << "adding measurement " << name << std::endl;
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions));
             }
