@@ -151,7 +151,7 @@ public:
         std::vector<pos_t> order(L);
         if (!model.is_set("orbital_order"))
             for (pos_t p = 0; p < L; ++p)
-                order[p] = p;
+                order[p] = p+1;
         else
             order = model["orbital_order"].as<std::vector<pos_t> >();
 

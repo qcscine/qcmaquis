@@ -184,7 +184,7 @@ namespace chem_detail {
             std::vector<pos_t> order(lat.size());
             if (!parms.is_set("orbital_order"))
                 for (pos_t p = 0; p < lat.size(); ++p)
-                    order[p] = p;
+                    order[p] = p+1;
             else
                 order = parms["orbital_order"].template as<std::vector<pos_t> >();
 
