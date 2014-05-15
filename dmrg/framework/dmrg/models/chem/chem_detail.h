@@ -30,6 +30,31 @@
 
 namespace chem_detail {
 
+    template <class SymmGroup>
+    struct qn_helper
+    {
+        typename SymmGroup::charge total_qn(BaseParameters & parms)
+        {
+            typename SymmGroup::charge ret(0);
+            ret[0] = parms["u1_total_charge1"];
+            ret[1] = parms["u1_total_charge2"];
+            return ret;
+        }
+    };
+
+    template <>
+    struct qn_helper<TwoU1PG>
+    {
+        typename TwoU1PG::charge total_qn(BaseParameters & parms)
+        {
+            typename TwoU1PG::charge ret(0);
+            ret[0] = parms["u1_total_charge1"];
+            ret[1] = parms["u1_total_charge2"];
+            ret[2] = parms["irrep_charge"];
+            return ret;
+        }
+    };
+
     class IndexTuple : public NU1Charge<4>
     {
     public:
