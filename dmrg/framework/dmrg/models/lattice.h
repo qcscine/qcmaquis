@@ -34,6 +34,7 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <boost/any.hpp>
+#include <boost/filesystem.hpp>
 
 /// lattice common base
 class lattice_impl {
