@@ -56,17 +56,24 @@ namespace contraction {
             for(int i = 0; i < size1*size2; i++) delete grid[i];
         }
         ContractionGrid(MPOTensor<Matrix, SymmGroup> const & mpo, size_t s1, size_t s2)
-        : mpo(mpo), grid(ambient::num_workers()*s2), e2(s2, false), size1(ambient::num_workers()), size2(s2) 
+        : mpo(mpo), grid(ambient::num_workers()*s2), e2(s2, false), size1_(s1), size1(ambient::num_workers()), size2(s2) 
         {
             const std::vector<int>& except = mpo.exceptions_r;
             for(int i = 0; i < except.size(); i++) e2[except[i]] = true;
             for(int b2 = 0; b2 < size2; b2++) if(!e2[b2]) GRID(0,b2) = new block_matrix<Matrix, SymmGroup>();
         }
-        void hint(const std::vector<block_matrix<Matrix, SymmGroup> >& t){
+        void hint_left(const std::vector<block_matrix<Matrix, SymmGroup> >& t){
             for(int b1 : mpo.exceptions_l) for(int b2 = 0; b2 < size2; b2++) if(mpo.has(b1,b2)) 
                 storage::hint(t[b1], ambient::scope::permute(b2,mpo.placement_r));
         }
-        int where(size_t b1, size_t b2){
+        void hint_right(Boundary<Matrix, SymmGroup> const & t){
+            for(int b1 = 0; b1 < size1_; b1++)
+            for(int b2 = 0; b2 < size2; b2++){
+                if(!mpo.has(b1,b2)) continue;
+                storage::hint(t[b2], where(b1,b2));
+            }
+        }
+        ambient::rank_t where(size_t b1, size_t b2){
             if(e2[b2]) return ambient::scope::permute(b1,mpo.placement_l);
             return ambient::scope::permute(b2,mpo.placement_r);
         }
@@ -95,22 +102,24 @@ namespace contraction {
             *GRID(0,b2) = tmp;
         }
         Boundary<Matrix, SymmGroup> make_boundary(){
-            select_proc(0);
             Boundary<Matrix, SymmGroup> ret; ret.resize(size2);
-            for(int b2 = 0; b2 < size2; b2++) ret[b2] = reduce_column(b2);
+            for(int b2 = 0; b2 < size2; b2++){
+                select_proc(ambient::scope::permute(b2,mpo.placement_r));
+                ret[b2] = reduce_column(b2);
+            }
             return ret;
         }
         block_matrix<Matrix, SymmGroup>& reduce_column(size_t b2){
             if(!e2[b2]) return *GRID(0,b2);
+            int r = ambient::which();
 
-            std::vector< std::pair< block_matrix<Matrix, SymmGroup>*, int > > rvector;
-            for(int b1 = 0; b1 < size1; b1++){
-                if(GRID(b1,b2) == NULL) continue;
-                rvector.push_back(std::make_pair(GRID(b1,b2), b1));
-                GRID(b1,b2) = NULL;
-            }
-            GRID(0,b2) = ambient::reduce(rvector, [](std::pair<block_matrix<Matrix, SymmGroup>*, int>& dst_pair, 
-                                                     std::pair<block_matrix<Matrix, SymmGroup>*, int>& src_pair){
+            std::vector< std::pair< block_matrix<Matrix, SymmGroup>*, ambient::rank_t > > rvector;
+            for(int b1 = r; b1 < size1; b1++) if(GRID(b1,b2) != NULL) rvector.push_back(std::make_pair(GRID(b1,b2), b1));
+            for(int b1 = 0; b1 < r; b1++)     if(GRID(b1,b2) != NULL) rvector.push_back(std::make_pair(GRID(b1,b2), b1));
+            for(int b1 = 0; b1 < size1; b1++) GRID(b1,b2) = NULL;
+
+            GRID(0,b2) = ambient::reduce(rvector, [](std::pair<block_matrix<Matrix, SymmGroup>*, ambient::rank_t>& dst_pair, 
+                                                     std::pair<block_matrix<Matrix, SymmGroup>*, ambient::rank_t>& src_pair){
                                                          block_matrix<Matrix, SymmGroup>& dst = *dst_pair.first;
                                                          block_matrix<Matrix, SymmGroup>& src = *src_pair.first;
                                                          ambient::get_scope().set(dst_pair.second);
@@ -120,27 +129,28 @@ namespace contraction {
                                                                                  src.right_basis()[k].first);
                                                      }).first;
             e2[b2] = false;
+            if(rvector[0].second != r){ ambient::get_scope().set(r); storage::migrate(*rvector[0].first); }
             for(int i = 1; i < rvector.size(); i++) delete rvector[i].first;
             return *GRID(0,b2);
         }
         block_matrix<Matrix, SymmGroup>& reduce(){
-            std::vector< std::pair< block_matrix<Matrix, SymmGroup>*, int > > rvector;
-            std::vector< std::pair< block_matrix<Matrix, SymmGroup>*, int >* > rvector_global;
+            std::vector< std::pair< block_matrix<Matrix, SymmGroup>*, ambient::rank_t > > rvector;
+            std::vector< std::pair< block_matrix<Matrix, SymmGroup>*, ambient::rank_t >* > rvector_global;
         
             for(int b2 = 0; b2 < size2; b2++)
             for(int b1 = 0; b1 < size1; b1++){
                 if(GRID(b1,b2) == NULL) continue;
-                int owner = e2[b2] ? b1 : ambient::scope::permute(b2,mpo.placement_r);
+                ambient::rank_t owner = e2[b2] ? b1 : ambient::scope::permute(b2,mpo.placement_r);
                 rvector.push_back(std::make_pair(GRID(b1,b2), owner % ambient::num_workers()));
             }
         
-            std::sort(rvector.begin(), rvector.end(), [](const std::pair<block_matrix<Matrix, SymmGroup>*, int>& a, 
-                                                         const std::pair<block_matrix<Matrix, SymmGroup>*, int>& b){ 
+            std::sort(rvector.begin(), rvector.end(), [](const std::pair<block_matrix<Matrix, SymmGroup>*, ambient::rank_t>& a, 
+                                                         const std::pair<block_matrix<Matrix, SymmGroup>*, ambient::rank_t>& b){ 
                                                              return a.second < b.second; 
                                                          });
             int i = 0;
             while(i < rvector.size()){
-                int owner = rvector[i].second;
+                ambient::rank_t owner = rvector[i].second;
                 rvector_global.push_back(&rvector[i++]);
                 select_proc(owner);
                 while(rvector[i].second == owner && i < rvector.size()){
@@ -151,8 +161,8 @@ namespace contraction {
                     i++;
                 }
             }
-            return *ambient::reduce(rvector_global, [](std::pair< block_matrix<Matrix, SymmGroup>*, int >* dst_pair, 
-                                                       std::pair< block_matrix<Matrix, SymmGroup>*, int >* src_pair){
+            return *ambient::reduce(rvector_global, [](std::pair< block_matrix<Matrix, SymmGroup>*, ambient::rank_t >* dst_pair, 
+                                                       std::pair< block_matrix<Matrix, SymmGroup>*, ambient::rank_t >* src_pair){
                                                            block_matrix<Matrix, SymmGroup>& dst = *dst_pair->first;
                                                            block_matrix<Matrix, SymmGroup>& src = *src_pair->first;
                                                            for(size_t k = 0; k < src.n_blocks(); ++k){
@@ -166,7 +176,8 @@ namespace contraction {
         MPOTensor<Matrix, SymmGroup> const & mpo;
         mutable std::vector< block_matrix<Matrix, SymmGroup>* > grid;
         std::vector<bool> e2;
-        size_t size1;
+        size_t size1_; // actual
+        size_t size1;  // optimized
         size_t size2;
         #undef GRID
     };

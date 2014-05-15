@@ -61,7 +61,7 @@ namespace ambient { namespace memory {
             boost::archive::load(*this, t);
         }
         template<class T> void load(T& t){ 
-            assert(false);
+            throw std::runtime_error("Error: failed to override boost_archive::load");
         }
         void load(int& t)          { /* ... */ }
         void load(unsigned long& t){ /* ... */ }

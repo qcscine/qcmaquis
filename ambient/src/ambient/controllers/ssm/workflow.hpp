@@ -29,8 +29,8 @@
 
 namespace ambient { 
 
-        inline workflow::workflow() : context_lane(ambient::num_threads()) {
-            for(thread_context& k : context_lane) k.scope_ = &base;
+        inline workflow::workflow() : thread_context_lane(ambient::num_threads()) {
+            for(thread_context& k : thread_context_lane) k.scope_ = &base;
             if(ambient::isset("AMBIENT_VERBOSE")){
                 ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE     << ")\n";
                 if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
@@ -49,14 +49,14 @@ namespace ambient {
         }
 
         inline workflow::thread_context::sid_t::divergence_guard::divergence_guard(){
-            for(auto& k : selector.context_lane){
-                k.sid.max = k.sid.min = selector.context_lane[0].sid.value;
-                k.scope_ = selector.context_lane[0].scope_;
+            for(auto& k : selector.thread_context_lane){
+                k.sid.max = k.sid.min = selector.thread_context_lane[0].sid.value;
+                k.scope_ = selector.thread_context_lane[0].scope_;
             }
         }
         inline workflow::thread_context::sid_t::divergence_guard::~divergence_guard(){
-            int& max = selector.context_lane[0].sid.value;
-            for(auto& k : selector.context_lane){
+            int& max = selector.thread_context_lane[0].sid.value;
+            for(auto& k : selector.thread_context_lane){
                 max = std::max(max, k.sid.max);
                 k.sid.inc = 1;
             }
@@ -73,6 +73,9 @@ namespace ambient {
             value = (value + inc) % AMBIENT_MAX_SID;
             return value;
         }
+        inline void workflow::reset_sid(){
+            selector.thread_context_lane[0].sid.value = 1;
+        }
         inline int workflow::generate_sid(){
             return get_thread_context().sid.generate();
         }
@@ -80,7 +83,7 @@ namespace ambient {
             return get_thread_context().sid.value;
         }
         inline workflow::thread_context& workflow::get_thread_context() const {
-            return context_lane[AMBIENT_THREAD_ID];
+            return thread_context_lane[AMBIENT_THREAD_ID];
         }
         inline typename workflow::controller_type& workflow::get_controller() const {
             return *get_scope().controller; // caution: != get_thread_context().controller;
@@ -92,11 +95,11 @@ namespace ambient {
             // some cleanups ?
         }
         inline void workflow::sync_all(){
-            for(int k = 1; k < context_lane.size(); k++){
-                for(auto i : *context_lane[k].controller.chains) context_lane[0].controller.queue(i);
-                context_lane[k].controller.chains->clear();
+            for(int k = 1; k < thread_context_lane.size(); k++){
+                for(auto i : *thread_context_lane[k].controller.chains) thread_context_lane[0].controller.queue(i);
+                thread_context_lane[k].controller.chains->clear();
             }
-            for(auto& k : context_lane){
+            for(auto& k : thread_context_lane){
                 k.controller.flush();
                 k.controller.clear();
             }

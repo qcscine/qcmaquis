@@ -351,6 +351,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
     for(size_t k = 0; k < loop_max; ++k){
         select_proc(ambient::scope::balance(k,loop_max));
         mps[k].make_left_paired();
+        storage::migrate(mps[k]);
     }
     ambient::sync();
 #endif
@@ -363,14 +364,19 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
         storage::archive ar(fname, "w");
         ar["/tensor"] << mps[k];
     }
-    omp_for(size_t k = 0; k < loop_max; ++k){
+    
+#ifdef USE_AMBIENT
+    ambient::sync(); // be sure that chkp is in valid state before overwriting the old one.
+#endif
+    
+    omp_for(size_t k, range<size_t>(0,loop_max), {
 #ifdef USE_AMBIENT
         select_proc(ambient::scope::balance(k,loop_max));
         if(!ambient::selector.get_scope().local()) continue;
 #endif
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
         boost::filesystem::rename(fname+".new", fname);
-    }
+    });
 }
 
 template <class Matrix, class SymmGroup>

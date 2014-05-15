@@ -24,18 +24,20 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#define BOUNDARY_OVERFLOW -1
+
 namespace ambient { namespace channels { namespace mpi {
 
     template<typename T>
     inline void bcast<T>::dispatch(){
-        std::pair<int,int> lr = (*channel::setup().trees[size])[self];
+        std::pair<rank_t,rank_t> lr = (*channel::setup().trees[size])[self];
         if(!self){ // self == root
-            if(lr.first  != -1) impl &= new request_impl(send_impl, object, list[lr.first], tags[lr.first]);
-            if(lr.second != -1) impl &= new request_impl(send_impl, object, list[lr.second], tags[lr.second]);
+            if(lr.first  != BOUNDARY_OVERFLOW) impl &= new request_impl(send_impl, object, list[lr.first],  tags[lr.first]);
+            if(lr.second != BOUNDARY_OVERFLOW) impl &= new request_impl(send_impl, object, list[lr.second], tags[lr.second]);
         }else{
             impl &= new request_impl(recv_impl, object, MPI_ANY_SOURCE, tags[self]);
-            if(lr.first  != -1) impl += new request_impl(send_impl, object, list[lr.first], tags[lr.first]);
-            if(lr.second != -1) impl += new request_impl(send_impl, object, list[lr.second], tags[lr.second]);
+            if(lr.first  != BOUNDARY_OVERFLOW) impl += new request_impl(send_impl, object, list[lr.first],  tags[lr.first]);
+            if(lr.second != BOUNDARY_OVERFLOW) impl += new request_impl(send_impl, object, list[lr.second], tags[lr.second]);
         }
     }
 
@@ -51,6 +53,8 @@ namespace ambient { namespace channels { namespace mpi {
             if(states.back()){
                 for(int i = this->tags.size(); i <= ambient::num_procs(); i++)
                     this->tags.push_back(ambient::selector.generate_sid());
+                for(int i = 0; i < ambient::num_procs(); i++)
+                    this->states[i] = true;
             }else{
                 if(rank == ambient::rank()) this->self = tree.size();
                 this->tags.push_back(ambient::selector.get_sid());

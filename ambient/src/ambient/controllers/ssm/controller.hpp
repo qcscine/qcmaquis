@@ -58,6 +58,7 @@ namespace ambient { namespace controllers { namespace ssm {
             }
             chains->clear();
             std::swap(chains,mirror);
+            check_mem();
         }
         AMBIENT_SMP_DISABLE
         model.clock++;
@@ -142,15 +143,15 @@ namespace ambient { namespace controllers { namespace ssm {
         model.add_revision<L>(o, g);
     }
 
-    inline int controller::get_rank() const {
+    inline rank_t controller::get_rank() const {
         return channel.rank();
     }
 
-    inline int controller::get_shared_rank() const {
+    inline rank_t controller::get_shared_rank() const {
         return get_num_procs();
     }
 
-    inline int controller::get_dedicated_rank() const {
+    inline rank_t controller::get_dedicated_rank() const {
         return (get_num_procs()-db);
     }
 
@@ -169,13 +170,23 @@ namespace ambient { namespace controllers { namespace ssm {
     inline void controller::meminfo() const {
         size_t current_size = getCurrentRSS();
         size_t peak_size = getPeakRSS();
+        size_t avail_size = getRSSLimit();
         for(int i = 0; i < get_num_procs(); i++){
             if(get_rank() == i){
-                std::cout << "R" << i << ": current size: " << current_size << " " << current_size/1024/1024/1024 << "G.\n";
-                std::cout << "R" << i << ": peak size: " << peak_size << " " << peak_size/1024/1024/1024 << "G.\n";
+                std::cout << "R" << i << ": current: " << current_size/1024/1024/1024 << "G.\n";
+                std::cout << "R" << i << ": peak: " << peak_size/1024/1024/1024 << "G.\n";
+                std::cout << "R" << i << ": avail: " << avail_size/1024/1024/1024 << "G.\n";
             }
             fence();
         }
+    }
+
+    inline void controller::check_mem() const {
+        double peak_size = (double)getPeakRSS();
+        double avail_size = (double)getRSSLimit();
+        if(peak_size / avail_size < 0.9) return;
+        double current_size = (double)getCurrentRSS();
+        printf("R%d: current: %.2f%%; peak: %.2f%%\n", get_rank(), (current_size/avail_size)*100, (peak_size/avail_size)*100);
     }
 
     inline int controller::get_num_procs() const {

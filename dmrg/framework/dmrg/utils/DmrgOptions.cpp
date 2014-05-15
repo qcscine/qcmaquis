@@ -96,7 +96,7 @@ DmrgOptions::DmrgOptions(int argc, char** argv)
         }
         
         
-        if (vm.count("time-limit"))
+        if (!vm["time-limit"].defaulted())
             parms["run_seconds"] = time_limit;
 
     }

@@ -393,7 +393,7 @@ namespace ambient { namespace numeric { namespace kernels {
                 
             for(int i(0); i<n; ++i)
                 tmp = std::max(tmp,ad[i]);
-            ret.get_naked() = tmp;
+            ret.set(tmp);
         }
         
         template<typename T>

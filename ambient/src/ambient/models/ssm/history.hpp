@@ -29,19 +29,19 @@ namespace ambient { namespace models { namespace ssm {
     inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(ambient::memory::aligned_64(dim.square()*ts)) { }
 
     inline void history::init_state(){
-        revision* r = new revision(extent, NULL, ambient::locality::common); 
+        revision* r = new revision(extent, NULL, ambient::locality::common, ambient::rank());
         this->current = r;
     }
 
     template<ambient::locality L>
     inline void history::add_state(void* g){
-        revision* r = new revision(extent, g, L); 
+        revision* r = new revision(extent, g, L, ambient::rank());
         this->current = r;
     }
 
     template<ambient::locality L>
     inline void history::add_state(rank_t g){
-        revision* r = new revision(extent, NULL, L, g); 
+        revision* r = new revision(extent, NULL, L, g);
         this->current = r;
     }
 

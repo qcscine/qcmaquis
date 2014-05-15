@@ -304,23 +304,24 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t m = a.num_rows();
             size_t n = a.num_cols();
             T* ad = versioned(a).data;
+            T ret = 0;
         
             size_t sizex = std::min(n,m);
-            for(size_t jj = 0; jj < sizex; jj++)
-                trace.get_naked() += ad[jj + jj*m];
+            for(size_t jj = 0; jj < sizex; jj++) ret += ad[jj + jj*m];
+            trace.set(ret);
         }
             
         template<typename T, class A>
         void scalar_norm(const matrix<T,A>& a, future<double>& norm){
             T* ad = versioned(a).data;
-            norm.get_naked() = ambient::dot(ad, ad, ambient::get_square_dim(a));
+            norm.set(ambient::dot(ad, ad, ambient::get_square_dim(a)));
         }
             
         template<typename T>
         void overlap(const matrix<T>& a, const matrix<T>& b, future<T>& overlap){
             T* ad = versioned(a).data;
             T* bd = versioned(b).data;
-            overlap.get_naked() = ambient::dot(ad, bd, ambient::get_square_dim(a));
+            overlap.set(ambient::dot(ad, bd, ambient::get_square_dim(a)));
         }
        
         template<typename T, class A>
@@ -349,7 +350,7 @@ namespace ambient { namespace numeric { namespace kernels {
         template<typename T>
         void scale(matrix<T>& a, const future<T>& t){
             T* ar = versioned(a).data;
-            T factor = t.get_naked();
+            T factor = t.get();
             int size = ambient::get_square_dim(a);
             #pragma vector always
             for(int k = 0; k < size; k++)
@@ -367,7 +368,7 @@ namespace ambient { namespace numeric { namespace kernels {
         template<typename T>
         void scale_inverse(matrix<T>& a, const future<T>& t){
             T* ar = versioned(a).data;
-            T factor = t.get_naked();
+            T factor = t.get();
             int size = ambient::get_square_dim(a);
             #pragma vector always
             for(int k = 0; k < size; k++)
@@ -555,7 +556,7 @@ namespace ambient { namespace numeric { namespace kernels {
                     double m = magnitude(av, bv);
                     if(d > epsilon*1024 && d/m > epsilon*1024){ // 16 is recommended, 256 because MKL isn't bitwise stable
                         std::cout << i << " " << j << " : " << av << " " << bv << ", eps: " << std::min(d, d/m) << "\n";
-                        ret.get_naked() = false;
+                        ret.set(false);
                         if(++count > 10) return;
                     }
        

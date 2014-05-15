@@ -28,27 +28,27 @@
 
 namespace ambient { namespace channels { namespace mpi {
 
-    inline int multirank::operator()() const {
+    inline rank_t multirank::operator()() const {
         return this->world->rank;
     }
 
-    inline int multirank::operator()(const group* grp) const { 
-        return grp->rank; 
+    inline rank_t multirank::operator()(const group* grp) const { 
+        return grp->rank;
     }
 
-    inline int multirank::translate(int rank, const group* source) const {
+    inline rank_t multirank::translate(rank_t rank, const group* source) const {
         if(source->depth == 0) return rank;
         return cast_to_parent(rank, source, this->world);
     }
 
-    inline int multirank::translate(int rank, const group* source, const group* target) const {
+    inline rank_t multirank::translate(rank_t rank, const group* source, const group* target) const {
         if(source->depth == target->depth) return rank;
         else if(target->depth < source->depth) return cast_to_parent(rank, source, target);
         else return cast_to_child(rank, source, target);
     }
 
     // query rank "i" inside a group (not ranks[i])
-    inline int multirank::cast_to_parent(int rank, const group* source, const group* target) const {
+    inline rank_t multirank::cast_to_parent(rank_t rank, const group* source, const group* target) const {
         for(const group* i = source; i != target; i = i->parent){
             assert(rank < i->size);
             rank = i->ranks[rank];
@@ -56,7 +56,7 @@ namespace ambient { namespace channels { namespace mpi {
         return rank;
     }
  
-    inline int multirank::cast_to_child(int rank, const group* source, const group* target) const {
+    inline rank_t multirank::cast_to_child(rank_t rank, const group* source, const group* target) const {
         if(target == source) return rank;
         rank = cast_to_child(rank, source, target->parent);
         for(int i = 0; i < target->size; ++i)
@@ -68,17 +68,11 @@ namespace ambient { namespace channels { namespace mpi {
         return (target->rank != UNDEFINED_RANK);
     }
 
-    inline bool multirank::masters(const group* target) const {
-        return (target->rank == target->master);
+    inline rank_t multirank::left_neighbor() const {
+        return ((*this)()-1 + this->world->size) % this->world->size;
     }
 
-    inline int multirank::left_neighbor() const {
-        int n = ((*this)()-1);
-        if(n == -1) n = this->world->size-1;
-        return n;
-    }
-
-    inline int multirank::right_neighbor() const {
+    inline rank_t multirank::right_neighbor() const {
         return ((*this)()+1) % this->world->size;
     }
 

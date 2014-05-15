@@ -158,12 +158,12 @@ namespace ambient { namespace numeric {
 
     template <class MatrixA, class MatrixB>
     inline void mul_inplace(tiles<MatrixA>& a, const tiles<MatrixB>& rhs){
-        assert(false); printf("ERROR: NOT TESTED (GEMM BLOCKED INPLACE)\n");
+        throw std::runtime_error("Error: not tested mul inplace");
     }
 
     template <class Matrix>
     inline tiles<Matrix> kron(const tiles<Matrix>& M1, const tiles<Matrix>& M2){
-        assert(false); printf("ERROR: NOT TESTED (KRON)\n");
+        throw std::runtime_error("Error: not tested kron");
     }
  
     template<class Matrix>

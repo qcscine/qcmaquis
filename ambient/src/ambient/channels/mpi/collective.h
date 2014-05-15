@@ -40,7 +40,7 @@ namespace ambient { namespace channels { namespace mpi {
         rank_t root;
         int self;
         int size;
-        int* list;
+        rank_t* list;
         request impl; 
         fence guard;
     };
@@ -57,7 +57,7 @@ namespace ambient { namespace channels { namespace mpi {
         bool involved();
         bool test();
         std::vector<bool,allocator> states;
-        std::vector<int,allocator> tree;
+        std::vector<rank_t,allocator> tree;
     };
 
     template<>

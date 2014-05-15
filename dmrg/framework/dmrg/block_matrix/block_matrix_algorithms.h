@@ -143,10 +143,10 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
     std::size_t loop_max = M.n_blocks();
     
-    omp_for(size_t k = 0; k < loop_max; ++k){
+    omp_for(size_t k, range<size_t>(0,loop_max), {
         select_proc(ambient::scope::balance(k,loop_max));
         svd(M[k], U[k], V[k], S[k]);
-    }
+    });
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
@@ -159,10 +159,10 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
     evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
     std::size_t loop_max = M.n_blocks();
 
-    omp_for(size_t k = 0; k < loop_max; ++k){
+    omp_for(size_t k, range<size_t>(0,loop_max), {
         select_proc(ambient::scope::balance(k,loop_max));
         heev(M[k], evecs[k], evals[k]);
-    }
+    });
 }
     
 #ifdef USE_AMBIENT
@@ -205,10 +205,10 @@ void heev_merged(block_matrix<Matrix, SymmGroup> const & M,
     evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
     std::size_t loop_max = M.n_blocks();
 
-    omp_for(size_t k = 0; k < loop_max; ++k){
+    omp_for(size_t k, range<size_t>(0,loop_max), {
         select_proc(ambient::scope::balance(k,loop_max));
         heev_merged(M[k], evecs[k], evals[k]);
-    }
+    });
 }
 #endif
 
@@ -470,10 +470,10 @@ void qr(block_matrix<Matrix, SymmGroup> const& M,
     R = block_matrix<Matrix, SymmGroup>(k,n);
     std::size_t loop_max = M.n_blocks();
     
-    omp_for(size_t k = 0; k < loop_max; ++k){
+    omp_for(size_t k, range<size_t>(0,loop_max), {
         select_proc(ambient::scope::balance(k,loop_max));
         qr(M[k], Q[k], R[k]);
-    }
+    });
     
     assert(Q.right_basis() == R.left_basis());
     assert(Q.reasonable());
@@ -494,10 +494,10 @@ void lq(block_matrix<Matrix, SymmGroup> const& M,
     Q = block_matrix<Matrix, SymmGroup>(k,n);
     std::size_t loop_max = M.n_blocks();
     
-    omp_for(size_t k = 0; k < loop_max; ++k){
+    omp_for(size_t k, range<size_t>(0,loop_max), {
         select_proc(ambient::scope::balance(k,loop_max));
         lq(M[k], L[k], Q[k]);
-    }
+    });
     
     assert(Q.left_basis() == L.right_basis());
     assert(Q.reasonable());

@@ -35,12 +35,12 @@ namespace ambient {
         typedef controllers::ssm::controller controller_type;
         scope(){}
     public:
-        static int balance(int k, int max_k);
-        static int permute(int k, const std::vector<int>& s);
+        static rank_t balance(int k, int max_k);
+        static rank_t permute(int k, const std::vector<int>& s);
        ~scope();
-        scope(int r);
+        scope(rank_t r);
         scope(scope_t type);
-        void set(int r);
+        void set(rank_t r);
         bool remote() const;
         bool local()  const;
         bool common() const;
@@ -49,7 +49,7 @@ namespace ambient {
         bool dry;
         int factor;
         int round;
-        int rank;
+        rank_t rank;
         ambient::locality state;
         controller_type* controller;
     };
@@ -61,7 +61,7 @@ namespace ambient {
         void schedule();
         void intend_read(models::ssm::revision* o);
         void intend_write(models::ssm::revision* o);
-        mutable std::vector<int> stakeholders;
+        mutable std::vector<rank_t> stakeholders;
         mutable std::vector<int> scores;
     };
 

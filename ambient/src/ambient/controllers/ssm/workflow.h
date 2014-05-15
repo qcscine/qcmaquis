@@ -53,7 +53,7 @@ namespace ambient {
             } sid;
         };
 
-        mutable std::vector<thread_context> context_lane;
+        mutable std::vector<thread_context> thread_context_lane;
         mutable base_scope base;
         mutable ambient::mutex mtx;
 
@@ -67,6 +67,7 @@ namespace ambient {
         void push_scope(scope* s);
         void pop_scope();
         void sync_all();
+        void reset_sid();
         int  generate_sid();
         int  get_sid() const;
         bool tunable() const; 

@@ -29,15 +29,15 @@
 
 namespace ambient { 
 
-        inline int scope::balance(int k, int max_k){
+        inline rank_t scope::balance(int k, int max_k){
             if(max_k > ambient::num_workers()){
                 int k_ = k/((int)(max_k / ambient::num_workers()));
                 if(k_ < ambient::num_workers()) return k_;
             }
             return k;
         }
-        inline int scope::permute(int k, const std::vector<int>& s){
-            if(k >= s.size()){ printf("Error: permutation overflow!\n"); return k; }
+        inline rank_t scope::permute(int k, const std::vector<int>& s){
+            if(k >= s.size()){ throw std::runtime_error("Error: permutation overflow!"); return k; }
             return s[k];
         }
         inline scope::~scope(){
@@ -49,7 +49,7 @@ namespace ambient {
             if(t == scope_t::common){
                 if(selector.has_nested_scope()){
                     if(selector.get_scope().type == scope_t::common){ this->dry = true; return; }
-                    printf("Error: common scope inside other scope type\n");
+                    throw std::runtime_error("Error: common scope inside other scope type!");
                 }else{
                     this->dry = false;
                     this->rank = selector.get_controller().get_shared_rank();
@@ -58,10 +58,10 @@ namespace ambient {
                     selector.push_scope(this);
                 }
             }else{
-                printf("Error: unknown scope type!\n");
+                throw std::runtime_error("Error: unknown scope type!");
             }
         }
-        inline scope::scope(int r) : type(scope_t::single) {
+        inline scope::scope(rank_t r) : type(scope_t::single) {
             controller = selector.provide_controller(); // need to change dry stuff
             if(ambient::selector.has_nested_scope()) dry = true;
             else{ 
@@ -71,7 +71,7 @@ namespace ambient {
             this->round = controller->get_num_workers();
             this->set(r);
         }
-        inline void scope::set(int r){
+        inline void scope::set(rank_t r){
             this->rank = r % this->round;
             this->state = (this->rank == controller->get_rank()) ? ambient::locality::local : ambient::locality::remote;
         }
@@ -106,7 +106,7 @@ namespace ambient {
         }
         inline void base_scope::schedule(){
             int max = 0;
-            int rank = this->rank;
+            rank_t rank = this->rank;
             if(stakeholders.empty()){
                 for(int i = 0; i < this->round; i++)
                 if(scores[i] >= max){
@@ -115,7 +115,7 @@ namespace ambient {
                 }
             }else{
                 for(int i = 0; i < stakeholders.size(); i++){
-                    int k = stakeholders[i];
+                    rank_t k = stakeholders[i];
                     if(scores[k] >= max){
                         max = scores[k];
                         rank = k;

@@ -35,7 +35,8 @@ namespace ambient { namespace numeric {
     template <typename T>
     class future {
     private:
-        template<typename S> future& operator = (const S& v){ }
+        template<typename S> 
+        future& operator = (const S& v){ }
     public:
         typedef T value_type;
 
@@ -49,28 +50,84 @@ namespace ambient { namespace numeric {
             valid = f.valid;
             f.clear();
         }
-       ~future(){ if(desc) ambient::destroy(desc); }
-        explicit constexpr future(transformable* c): desc(c) {} // kernel's inner usage (no desctruction)
-        template <typename FP, FP OP> explicit future(transformable_expr<T,FP,OP>* c): desc(c), valid(false){
+       ~future(){ 
+           if(desc) ambient::destroy(desc); 
+       }
+        explicit constexpr future(transformable* c): desc(c) { // kernel's inner usage (no desctruction)
         }
-        future()                                       { init();                                                            }
-        future(double v)                               { init(v);                                                           }
-        future(std::complex<double> v)                 { init(v);                                                           }
-        future(const future& f)                        { init(f.load()); /* important */                                    }
-        future(future&& f)                             { reuse(f);                                                          }
-        future& operator = (const future& f)           { desc->v = f.load(); return *this;                                  }
-        future& operator = (future&& f)                { if(desc) ambient::destroy(desc); reuse(f); return *this;           }
-        template<typename S> future(const future<S>& f){ init((T)f.load());                                                 }
-        template<typename S> future(future<S>&& f)     { reuse(f);                                                          }
-        operator T () const                            { return load();                                                     }
-        const T& get_naked() const                     { return desc->v;                                                    }
-        T& get_naked()                                 { return desc->v;                                                    }
-        const future<T>& unfold() const                { assert(valid); return *this;                                       }
-        future<T>& unfold()                            { assert(valid); valid = false; return *this;                        }
-        T load() const                                 { if(!valid){ ambient::sync(); valid = true; } return desc->eval();  }
-        future& operator += (const future& r)          { valid &= r.valid; *desc += *r.desc; r.clear(); return *this;       }
-        future& operator /= (const future& r)          { desc->v = load() / r.load(); return *this;                         }
-        void clear() const                             { desc = NULL; }
+        template <typename FP, FP OP> 
+        explicit future(transformable_expr<T,FP,OP>* c): desc(c), valid(false){
+        }
+        future(){ 
+            init();  
+        }
+        future(double v){ 
+            init(v);   
+        }
+        future(std::complex<double> v){ 
+            init(v);
+        }
+        T get() const { // kernels only
+            return desc->v;
+        }
+        void set(T desired){ // kernels only
+            desc->v = desired;
+        }
+        T load() const {
+            if(!valid){
+                ambient::sync();
+                valid = true;
+            }
+            return desc->eval();
+        }
+        operator T () const {
+            return load();
+        }
+        future(const future& f){
+            init(f.load()); /* important */
+        }
+        future(future&& f){
+            reuse(f);
+        }
+        future& operator = (const future& f){
+            desc->v = f.load();
+            return *this;
+        }
+        future& operator = (future&& f){ 
+            if(desc) ambient::destroy(desc);
+            reuse(f);
+            return *this;
+        }
+        template<typename S>
+        future(const future<S>& f){
+            init((T)f.load());
+        }
+        template<typename S> 
+        future(future<S>&& f){
+            reuse(f);
+        }
+        future& operator += (const future& r){
+            valid &= r.valid;
+            *desc += *r.desc;
+            r.clear();
+            return *this;
+        }
+        future& operator /= (const future& r){
+            desc->v = load() / r.load();
+            return *this;
+        }
+        const future<T>& unfold() const {
+            assert(valid);
+            return *this;
+        }
+        future<T>& unfold(){
+            assert(valid); 
+            valid = false;
+            return *this;
+        }
+        void clear() const {
+            desc = NULL; 
+        }
 
         template <class Archive> void load(Archive & ar, const unsigned int version = 0){ }
         template <class Archive> void save(Archive & ar, const unsigned int version = 0) const { }
@@ -79,7 +136,8 @@ namespace ambient { namespace numeric {
         mutable transformable* desc;
     };
 
-    template<typename T> future<T> operator + (const future<T>& l, const future<T>& r){
+    template<typename T>
+    future<T> operator + (const future<T>& l, const future<T>& r){
         transformable* a = l.desc; l.clear();
         transformable* b = r.desc; r.clear();
         return future<T>(new (ambient::pool::calloc<fixed,sizeof_transformable()>()) 
@@ -87,7 +145,8 @@ namespace ambient { namespace numeric {
                         ); 
     }
     #ifdef AMBIENT_LOOSE_FUTURE
-    template<typename T> future<T> operator / (const future<T>& l, const future<T>& r){ 
+    template<typename T>
+    future<T> operator / (const future<T>& l, const future<T>& r){ 
         return future<T>(new (ambient::pool::calloc<fixed,sizeof_transformable()>()) 
                          transformable_expr<T, decltype(&op_div<T>), op_div>(l.desc, r.desc)
                         ); 
@@ -98,15 +157,33 @@ namespace ambient { namespace numeric {
                              ); 
     }
     #else
-    inline double sqrt(const future<double>& f){ return std::sqrt(f.load()); }
-    template<typename T> T operator / (const future<T>& l, const future<T>& r)    { return (l.load() / r.load()); }
+    inline double sqrt(const future<double>& f){ 
+        return std::sqrt(f.load());
+    }
+    template<typename T>
+    T operator / (const future<T>& l, const future<T>& r){
+        return (l.load() / r.load());
+    }
     #endif
 
-    template<typename T> T operator += (T& a, const future<T>& r)                 { return (a += r.load());       }
-    template<typename T> T operator / (double l, const future<T>& r)              { return (l / r.load());        }
-    template<typename T> T operator / (std::complex<double> l, const future<T>& r){ return (l / r.load());        }
-    template<typename T> const future<double>& real(const future<T>& f)           { return *(future<double>*)&f;  }
-    template<typename T> std::vector<double> real(const std::vector<future<T> >& f){
+    template<typename T> 
+    T operator += (T& a, const future<T>& r){
+        return (a += r.load());
+    }
+    template<typename T>
+    T operator / (double l, const future<T>& r){
+        return (l / r.load());
+    }
+    template<typename T>
+    T operator / (std::complex<double> l, const future<T>& r){
+        return (l / r.load());
+    }
+    template<typename T>
+    const future<double>& real(const future<T>& f){
+        return *(future<double>*)&f;
+    }
+    template<typename T> 
+    std::vector<double> real(const std::vector<future<T> >& f){
         ambient::sync();
         int size = f.size();
         std::vector<double> res; res.reserve(size);
