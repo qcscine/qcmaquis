@@ -25,6 +25,7 @@
  *****************************************************************************/
 
 #include "dmrg/models/chem/model_qc.h"
+//#include "dmrg/models/chem/rel_model_qc.h"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, TwoU1LPG> {
@@ -38,6 +39,11 @@ struct coded_model_factory<Matrix, TwoU1LPG> {
 
             return impl_ptr( new qc_model<Matrix, TwoU1LPG>(lattice, parms) );
         }
+
+        // else if (parms["MODEL"] == std::string("relativistic_quantum_chemistry")
+        // { ... code me
+        //    return impl_ptr( new rel_qc_model<Matrix, TwoU1LPG>(lattice, parms) );
+        // }
 
         else {
             throw std::runtime_error("Don't know this model!\n");
