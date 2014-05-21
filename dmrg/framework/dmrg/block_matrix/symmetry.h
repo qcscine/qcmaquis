@@ -32,6 +32,7 @@
 #include "dmrg/block_matrix/symmetry/2u1.h"
 #include "dmrg/block_matrix/symmetry/nu1.h"
 #include "dmrg/block_matrix/symmetry/nu1pg.h"
+#include "dmrg/block_matrix/symmetry/nu1lpg.h"
 #include "dmrg/block_matrix/symmetry/z2.h"
 #include "dmrg/block_matrix/symmetry/zq.h"
 

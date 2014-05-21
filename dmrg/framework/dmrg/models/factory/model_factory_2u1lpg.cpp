@@ -26,9 +26,9 @@
 
 #include "model_factory_symm.h"
 
-#include "dmrg/models/coded/factory_2u1pg.hpp"
+#include "dmrg/models/coded/factory_2u1lpg.hpp"
 
-typedef TwoU1PG grp;
+typedef TwoU1LPG grp;
 
 #if defined USE_AMBIENT
 impl_model_factory(pmatrix, grp)

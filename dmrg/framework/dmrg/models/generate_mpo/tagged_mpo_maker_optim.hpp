@@ -36,7 +36,6 @@
 
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
-#include "dmrg/mp_tensors/chem_compression.h"
 
 #include "dmrg/models/lattice.h"
 #include "dmrg/models/model.h"

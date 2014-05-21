@@ -41,10 +41,7 @@
 #include "dmrg/mp_tensors/mpotensor_detail.h"
 
 
-template <class Matrix, class SymmGroup> class column_iterator;
-template <class Matrix, class SymmGroup> class compressor;
-template <class Matrix, class SymmGroup> class MPOIndexer;
-template <class Matrix, class SymmGroup> class PGSymmetryConverter;
+template <class Matrix, class SymmGroup> class PGSymmetryConverter_impl_;
 
 template<class Matrix, class SymmGroup>
 class MPOTensor
@@ -108,12 +105,7 @@ public:
     
     bool has(index_type left_index, index_type right_index) const;
 
-    // These will be removed soon
-    friend class column_iterator<Matrix, SymmGroup>;
-    friend class compressor<Matrix, SymmGroup>;
-    friend class MPOIndexer<Matrix, SymmGroup>;
-
-    friend class PGSymmetryConverter<Matrix, SymmGroup>;
+    friend class PGSymmetryConverter_impl_<Matrix, SymmGroup>;
 
     mutable std::vector<int> placement_l;
     mutable std::vector<int> placement_r;
