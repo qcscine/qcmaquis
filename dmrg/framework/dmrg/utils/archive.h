@@ -40,14 +40,14 @@ namespace storage {
 
     inline std::string once(std::string fp){
         #ifdef USE_AMBIENT
-        if(!ambient::master() && !ambient::ctxt.scoped()) return fp+"."+std::to_string(ambient::rank());
+        if(!ambient::master() && !ambient::selector.has_nested_scope()) return fp+"."+std::to_string(ambient::rank());
         #endif
         return fp;
     }
 
     inline void uniq(std::string fp){
         #ifdef USE_AMBIENT
-        if(!ambient::master() && !ambient::ctxt.scoped()) std::remove(once(fp).c_str());
+        if(!ambient::master() && !ambient::selector.has_nested_scope()) std::remove(once(fp).c_str());
         #endif
     }
 

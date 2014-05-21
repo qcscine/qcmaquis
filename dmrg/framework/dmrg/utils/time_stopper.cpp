@@ -24,6 +24,11 @@
  *
  *****************************************************************************/
 
+#ifdef USE_AMBIENT
+#include <ambient/ambient.hpp>
+#include <ambient/numeric/future.hpp>
+#endif
+
 #include "dmrg/utils/time_stopper.h"
 
 time_stopper::time_stopper(double timelimit)
@@ -36,7 +41,15 @@ bool time_stopper::valid() const {
 }
 
 bool time_stopper::operator()() const {
+#ifdef USE_AMBIENT
+    ambient::future<double> flag;
+    ambient::lambda([&](ambient::future<double> & r) {
+        r.set(limit.count() > 0 && boost::chrono::high_resolution_clock::now() > start + limit);
+    })(flag);
+    return (flag > 0.);
+#else
     return (limit.count() > 0 && boost::chrono::high_resolution_clock::now() > start + limit);
+#endif
 }
 
 boost::chrono::duration<double> time_stopper::time_left() const {

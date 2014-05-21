@@ -29,55 +29,68 @@
 
 namespace ambient { 
 
-        inline int scope::balance(int k, int max_k){
+        inline rank_t scope::balance(int k, int max_k){
             if(max_k > ambient::num_workers()){
                 int k_ = k/((int)(max_k / ambient::num_workers()));
                 if(k_ < ambient::num_workers()) return k_;
             }
             return k;
         }
-        inline int scope::permute(int k, const std::vector<int>& s){
-            if(k >= s.size()){ printf("Error: permutation overflow!\n"); return k; }
+        inline rank_t scope::permute(int k, const std::vector<int>& s){
+            if(k >= s.size()){ throw std::runtime_error("Error: permutation overflow!"); return k; }
             return s[k];
         }
         inline scope::~scope(){
             if(dry) return;
-            ctxt.revoke_controller(controller);
-            ctxt.pop();
+            selector.revoke_controller(controller);
+            selector.pop_scope();
         }
         inline scope::scope(scope_t t) : type(t){
             if(t == scope_t::common){
-                if(ctxt.scoped()){
-                    if(ctxt.get_domain().type == scope_t::common){ this->dry = true; return; }
-                    printf("Error: common scope inside other scope type\n");
+                if(selector.has_nested_scope()){
+                    if(selector.get_scope().type == scope_t::common){ this->dry = true; return; }
+                    throw std::runtime_error("Error: common scope inside other scope type!");
                 }else{
                     this->dry = false;
-                    this->rank = ctxt.get_controller().get_shared_rank();
+                    this->rank = selector.get_controller().get_shared_rank();
                     this->state = ambient::locality::common;
-                    controller = ctxt.provide_controller();
-                    ctxt.push(this);
+                    controller = selector.provide_controller();
+                    selector.push_scope(this);
                 }
             }else{
-                printf("Error: unknown scope type!\n");
+                throw std::runtime_error("Error: unknown scope type!");
             }
         }
-        inline scope::scope(int r) : type(scope_t::single) {
-            controller = ctxt.provide_controller(); // need to change dry stuff
-            if(ambient::ctxt.scoped()) dry = true;
+        inline scope::scope(rank_t r) : type(scope_t::single) {
+            controller = selector.provide_controller(); // need to change dry stuff
+            if(ambient::selector.has_nested_scope()) dry = true;
             else{ 
                 dry = false; 
-                ctxt.push(this); 
+                selector.push_scope(this); 
             }
             this->round = controller->get_num_workers();
             this->set(r);
         }
-        inline void scope::set(int r){
+        inline void scope::set(rank_t r){
             this->rank = r % this->round;
             this->state = (this->rank == controller->get_rank()) ? ambient::locality::local : ambient::locality::remote;
         }
+        inline bool scope::remote() const {
+            return (state == ambient::locality::remote);
+        }
+        inline bool scope::local() const {
+            return (state == ambient::locality::local);
+        }
+        inline bool scope::common() const {
+            return (state == ambient::locality::common);
+        }
+        inline rank_t scope::which() const {
+            return this->rank;
+        }
+        
 
         inline base_scope::base_scope(){
-            this->controller = ctxt.provide_controller();
+            this->controller = selector.provide_controller();
             this->controller->reserve(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
             this->round = controller->get_num_workers();
             this->scores.resize(round, 0);
@@ -93,7 +106,7 @@ namespace ambient {
         }
         inline void base_scope::schedule(){
             int max = 0;
-            int rank = this->rank;
+            rank_t rank = this->rank;
             if(stakeholders.empty()){
                 for(int i = 0; i < this->round; i++)
                 if(scores[i] >= max){
@@ -102,7 +115,7 @@ namespace ambient {
                 }
             }else{
                 for(int i = 0; i < stakeholders.size(); i++){
-                    int k = stakeholders[i];
+                    rank_t k = stakeholders[i];
                     if(scores[k] >= max){
                         max = scores[k];
                         rank = k;

@@ -38,10 +38,29 @@ namespace ambient {
         ambient::sid_t::divergence_guard g;
         int dist = last-first;
         AMBIENT_PARALLEL_FOR(int i = 0; i < dist; i++){
-            ambient::ctxt.get_context().sid.offset(i, dist);
+            ambient::selector.get_thread_context().sid.offset(i, dist);
             fn(dereference(first+i));
-            ambient::ctxt.get_context().sid.maximize();
+            ambient::selector.get_thread_context().sid.maximize();
         }
+    }
+
+    template<typename T>
+    inline void reduce(std::vector<T*>& seq){
+        if(seq.size() == 1) return;
+        for(int stride = 1; stride < seq.size(); stride *= 2)
+            for(int k = stride; k < seq.size(); k += stride*2){
+                *seq[k-stride] += *seq[k];
+            }
+    }
+
+    template<typename T, typename Function>
+    inline T& reduce(std::vector<T>& seq, Function fn){
+        if(seq.size() == 1) return seq[0];
+        for(int stride = 1; stride < seq.size(); stride *= 2)
+            for(int k = stride; k < seq.size(); k += stride*2){
+                fn(seq[k-stride], seq[k]);
+            }
+        return seq[0];
     }
 
 }

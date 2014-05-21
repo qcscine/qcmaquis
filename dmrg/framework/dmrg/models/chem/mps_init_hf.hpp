@@ -54,7 +54,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
         std::vector<pos_t> order(mps.length());
         if (!parms.is_set("orbital_order"))
             for (pos_t p = 0; p < mps.length(); ++p)
-                order[p] = p;
+                order[p] = p+1;
         else
             order = parms["orbital_order"].template as<std::vector<pos_t> >();
 

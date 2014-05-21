@@ -48,19 +48,23 @@
 #include <sys/time.h>
 #include <algorithm>
 #include <execinfo.h>
+#include <stdexcept>
 // }}}
 
 #define AMBIENT_IB                    2048
 #define AMBIENT_INSTR_BULK_CHUNK      16777216 // 16 MB
 #define AMBIENT_DATA_BULK_CHUNK       67108864 // 64 MB
 #define AMBIENT_MAX_SID               2097152  // Cray MPI
+#define AMBIENT_MPI_THREADING         MPI_THREAD_FUNNELED
+#define AMBIENT_MASTER_RANK           0
 
 #include "ambient/utils/dim2.h"
 #include "ambient/utils/enums.h"
 #include "ambient/utils/tree.hpp"
 #include "ambient/utils/fence.hpp"
 #include "ambient/utils/enable_threading.hpp"
-#include "ambient/utils/reduce.hpp"
+#include "ambient/utils/math.hpp"
+#include "ambient/utils/rank_t.hpp"
 
 #include "ambient/memory/pool.hpp"
 #include "ambient/memory/new.h"

@@ -27,6 +27,8 @@
 #ifndef AMBIENT_UTILS_TREE
 #define AMBIENT_UTILS_TREE
 
+#define BOUNDARY_OVERFLOW -1
+
 namespace ambient {
 
     /* 
@@ -44,7 +46,7 @@ namespace ambient {
 
     // search for rank in binary tree
     constexpr int algo(int start, int N, int L){
-        return (N <= 0 || start >= L) ? -1 : start+N/2;
+        return (N <= 0 || start >= L) ? BOUNDARY_OVERFLOW : start+N/2;
     }
     constexpr std::pair<int,int> search(int W, int N, int L, int start = 0){
         return (W == start+N/2) ? std::make_pair(algo(start, N/2, L), algo(start+N/2+1, N-N/2-1, L)) 
@@ -53,6 +55,7 @@ namespace ambient {
     }
     */
 
+    template<typename T>
     class binary_tree {
     public:
         binary_tree(size_t N) : tree(N), length(N) {
@@ -61,18 +64,18 @@ namespace ambient {
             normalize();
             check();
         }
-        int generate(std::vector<std::pair<int,int> >& tree, int N, int L, int start = 0){
-            if(N <= 0 || start >= L) return -1;
+        T generate(std::vector<std::pair<T,T> >& tree, int N, int L, int start = 0){
+            if(N <= 0 || start >= L) return BOUNDARY_OVERFLOW;
             tree[start+N/2] = std::make_pair(generate(tree, N/2, L, start), 
                                              generate(tree, N-N/2-1, L, start+N/2+1));
             return start+N/2;
         }
         void normalize(){
-            std::vector<std::pair<int,int> > normalized(length);
+            std::vector<std::pair<T,T> > normalized(length);
             for(int i = 0; i < length; i++){
                 normalized[i] = tree[(i+entry_point)%length];
-                if(normalized[i].first != -1) normalized[i].first = (normalized[i].first - entry_point + length) % length;
-                if(normalized[i].second != -1) normalized[i].second = (normalized[i].second - entry_point + length) % length;
+                if(normalized[i].first  != BOUNDARY_OVERFLOW) normalized[i].first  = (normalized[i].first  - entry_point + length) % length;
+                if(normalized[i].second != BOUNDARY_OVERFLOW) normalized[i].second = (normalized[i].second - entry_point + length) % length;
             }
             std::swap(tree, normalized);
             entry_point = 0;
@@ -80,22 +83,22 @@ namespace ambient {
         void check(){
             std::vector<bool> states(length);
             for(int i = 0; i < length; i++){
-                if(tree[i].first != -1) states[tree[i].first] = true;
-                if(tree[i].second != -1) states[tree[i].second] = true;
+                if(tree[i].first  != BOUNDARY_OVERFLOW) states[tree[i].first]  = true;
+                if(tree[i].second != BOUNDARY_OVERFLOW) states[tree[i].second] = true;
             }
             for(int i = 0; i < length; i++){
-                if(!states[i] && i != entry_point) printf("Error: no route to %d\n", i);
+                if(!states[i] && i != entry_point) throw std::runtime_error("Error: no route to host");
             }
         }
-        std::pair<int,int> operator[](int i) const {
+        std::pair<T,T> operator[](int i) const {
             return tree[i];
         }
     private:
-        std::vector<std::pair<int,int> > tree;
+        std::vector<std::pair<T,T> > tree;
         int entry_point;
         size_t length;
     };
-
 }
 
+#undef BOUNDARY_OVERFLOW
 #endif

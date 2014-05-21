@@ -29,8 +29,8 @@
 
 namespace ambient { namespace memory {
 
-        template<size_t S> void* instr_bulk::malloc()         { return ambient::ctxt.get_controller().memory.malloc(S); }
-                   inline  void* instr_bulk::malloc(size_t s) { return ambient::ctxt.get_controller().memory.malloc(s); }
+        template<size_t S> void* instr_bulk::malloc()         { return ambient::selector.get_controller().memory.malloc(S); }
+                   inline  void* instr_bulk::malloc(size_t s) { return ambient::selector.get_controller().memory.malloc(s); }
 
 } }
 

@@ -417,7 +417,7 @@ namespace ambient { namespace numeric {
                              row.step, col.step);
                 ctree.push_back(part);
             }
-            __a_reduce(ctree);
+            ambient::reduce(ctree);
             add_vectors<beta>(c.locate(row.second, cj), c.addr(row.second, cj), *ctree[0], 0, row.step);
             for(int k = 0; k < ctree.size(); k++) delete ctree[k];
         }
@@ -442,7 +442,7 @@ namespace ambient { namespace numeric {
                              row.step, col.step);
                 ctree.push_back(part);
             }
-            __a_reduce(ctree);
+            ambient::reduce(ctree);
             add_vectors<beta>(c.locate(row.second, cj), c.addr(row.second, cj), *ctree[0], 0, row.step);
             for(int k = 0; k < ctree.size(); k++) delete ctree[k];
         }

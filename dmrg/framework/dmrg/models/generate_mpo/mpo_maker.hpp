@@ -34,7 +34,6 @@
 #include "dmrg/block_matrix/symmetry.h"
 
 #include "dmrg/mp_tensors/mpo.h"
-#include "dmrg/mp_tensors/chem_compression.h"
 
 #include "dmrg/models/lattice.h"
 
@@ -129,25 +128,6 @@ namespace generate_mpo
             r[length-1] = as_right(prempo[length-1]);
             
             return r;
-        }
-
-        MPO<Matrix, SymmGroup> create_compressed_mpo(Index<SymmGroup> const & phys, double cutoff)
-        {
-            if (!finalized) finalize();
-            MPO<Matrix, SymmGroup> r(length);
-            for (size_t p = 1; p < length - 1; ++p)
-                r[p] = as_bulk(prempo[p]);
-            r[0] = as_left(prempo[0]);
-            r[length-1] = as_right(prempo[length-1]);
-
-            charge_sort(get_prempo(), r);
-            MPO<Matrix, SymmGroup> mpo_sorted = create_mpo();
-
-            compressor<Matrix, SymmGroup> cpor(phys);
-            MPO<Matrix, SymmGroup> mpo_out(length);
-            cpor.compress(mpo_sorted, mpo_out, cutoff);
-
-            return mpo_out;
         }
 
         std::vector<std::vector<block> > & get_prempo()

@@ -35,7 +35,7 @@ namespace ambient { namespace models { namespace ssm {
     public:
         template<typename T> operator T* (){ return (T*)data; }
         operator revision* (){ return NULL; }
-        revision(size_t extent, void* g, ambient::locality l, int owner = -1);
+        revision(size_t extent, void* g, ambient::locality l, rank_t owner);
 
         void embed(void* ptr);
         void reuse(revision& r);
@@ -52,7 +52,7 @@ namespace ambient { namespace models { namespace ssm {
 
         void* generator;
         void* data;
-        int   owner;
+        rank_t owner;
         std::atomic<int> users;
         ambient::locality state;
         std::pair<size_t, void*> assist;

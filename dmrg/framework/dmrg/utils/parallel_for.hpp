@@ -31,29 +31,34 @@
 #ifdef USE_AMBIENT
     #define select_proc(...) ambient::scope ctxt(__VA_ARGS__)
     #define switch_proc(...) ctxt.set(__VA_ARGS__)
+    #ifndef AMBIENT_SERIAL_FOR
     #define parallel_for(control_variable, loop_range, ...) ambient::threaded_for_each(loop_range.begin(), loop_range.end(), [&](control_variable) __VA_ARGS__);
-    #define omp_for(...) for(__VA_ARGS__)
+    #endif
+    #define threaded_for(...) for(__VA_ARGS__)
     #define omp_critical
 #elif defined(MAQUIS_OPENMP)
     #define select_proc(...) 
     #define switch_proc(...) 
     #define parallel_pragma(a) _Pragma( #a )
-    #define omp_for(...) parallel_pragma(omp parallel for schedule(dynamic, 1)) for(__VA_ARGS__)
+    #define threaded_for(...) parallel_pragma(omp parallel for schedule(dynamic, 1)) for(__VA_ARGS__)
     #define omp_critical parallel_pragma(omp critical)
 #else
     #define select_proc(...) 
     #define switch_proc(...) 
-    #define omp_for(...) for(__VA_ARGS__)
+    #define threaded_for(...) for(__VA_ARGS__)
     #define omp_critical
 #endif
-#ifndef USE_AMBIENT
-    #define parallel_for(control_variable, loop_range, ...)  {\
-        int dist = loop_range.end() - loop_range.begin(); \
-        omp_for(int loop_control = 0; loop_control < dist; loop_control++){ \
-            control_variable = loop_range.begin() + loop_control; \
-            __VA_ARGS__ \
-        } \
-    }
+
+#define omp_for(control_variable, loop_range, ...)  {\
+    int dist = loop_range.end() - loop_range.begin(); \
+    threaded_for(int loop_control = 0; loop_control < dist; loop_control++){ \
+        control_variable = loop_range.begin() + loop_control; \
+        __VA_ARGS__ \
+    } \
+}
+
+#if !defined(USE_AMBIENT) || defined(AMBIENT_SERIAL_FOR)
+    #define parallel_for omp_for
 #endif
 
 template<typename T>
@@ -61,6 +66,7 @@ struct dynamic_range {
     dynamic_range(T first, T second) : first(first), second(second) { }
     T begin() const { return first; }
     T end() const { return second; }
+    size_t size() const { return end()-begin(); }
     const T first;
     const T second;
 };

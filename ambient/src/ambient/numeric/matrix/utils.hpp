@@ -47,7 +47,15 @@ namespace ambient {
     }
 
     template<class Matrix>
-    inline int get_owner(const numeric::tiles<Matrix>& a){
+    inline void hint(const numeric::tiles<Matrix>& a){
+        int size = a.data.size();
+        for(int i = 0; i < size; i++){
+            hint(a[i]);
+        }
+    }
+
+    template<class Matrix>
+    inline rank_t get_owner(const numeric::tiles<Matrix>& a){
         return ambient::get_owner(a[0]);
     }
 
@@ -100,8 +108,7 @@ namespace ambient {
         size_t p = 0;
         for(int i = range-1; i >= 0; --i){
             if(cx[i].first == 0) continue;
-            int owner = wl[p++].second;
-            ambient::scope ctxt(owner);
+            ambient::scope ctxt(wl[p++].second);
             merge(*(first+cx[i].second)); 
             p %= np;
         }

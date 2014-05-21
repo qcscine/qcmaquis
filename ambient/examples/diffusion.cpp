@@ -1,5 +1,5 @@
 #include "ambient/ambient.hpp"
-#include "ambient/utils/reduce.hpp"
+#include "ambient/utils/math.hpp"
 #include "ambient/utils/timings.hpp"
 #define IB 256
 
@@ -7,7 +7,9 @@ template<typename T> class block;
 template<typename T> class stencil;
 template<typename T> class border;
 
-namespace detail { using namespace ambient;
+namespace detail { 
+    using namespace ambient;
+    using ::block;
 
     // Dirichlet boundaries; central differences in space, forward Euler in time:
     // u[i,j]' = u[i,j] + dt*D*(u(i,j+1) + u(i,j-1) + u(i+1,j) + u(i-1,j) - 4*u(i,j)) / (dr * dr)

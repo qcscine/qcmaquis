@@ -28,7 +28,6 @@
 #define AMBIENT_CHANNELS_MPI_CHANNEL
 
 #define AMBIENT_CHANNEL_NAME mpi
-#define AMBIENT_MPI_THREADING MPI_THREAD_FUNNELED
 
 namespace ambient { namespace channels { namespace mpi {
 
@@ -47,8 +46,8 @@ namespace ambient { namespace channels { namespace mpi {
         struct mount {
             mount(); 
            ~mount();
-            std::vector<binary_tree*> trees;
-            std::vector<int> circle;
+            std::vector<binary_tree<rank_t>*> trees;
+            std::vector<rank_t> circle;
         };
         static mount& setup(){ 
             static mount m; 
@@ -59,7 +58,7 @@ namespace ambient { namespace channels { namespace mpi {
         static void barrier();
         collective<block_type>* get(block_type& r);
         collective<block_type>* set(block_type& r);
-        collective<scalar_type>* bcast(scalar_type& v, int root);
+        collective<scalar_type>* bcast(scalar_type& v, rank_t root);
         collective<scalar_type>* bcast(scalar_type& v);
         multirank rank;
         group* world;

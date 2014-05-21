@@ -30,6 +30,31 @@
 
 namespace chem_detail {
 
+    template <class SymmGroup>
+    struct qn_helper
+    {
+        typename SymmGroup::charge total_qn(BaseParameters & parms)
+        {
+            typename SymmGroup::charge ret(0);
+            ret[0] = parms["u1_total_charge1"];
+            ret[1] = parms["u1_total_charge2"];
+            return ret;
+        }
+    };
+
+    template <>
+    struct qn_helper<TwoU1PG>
+    {
+        typename TwoU1PG::charge total_qn(BaseParameters & parms)
+        {
+            typename TwoU1PG::charge ret(0);
+            ret[0] = parms["u1_total_charge1"];
+            ret[1] = parms["u1_total_charge2"];
+            ret[2] = parms["irrep_charge"];
+            return ret;
+        }
+    };
+
     class IndexTuple : public NU1Charge<4>
     {
     public:
@@ -88,6 +113,7 @@ namespace chem_detail {
         typedef typename M::value_type value_type;
         typedef ::term_descriptor<value_type> term_descriptor;
         typedef typename TagHandler<M, S>::tag_type tag_type;
+        typedef Lattice::pos_t pos_t;
 
         ChemHelper(BaseParameters & parms, Lattice const & lat,
                    tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
@@ -180,7 +206,13 @@ namespace chem_detail {
         void parse_integrals(BaseParameters & parms, Lattice const & lat) {
 
             // load ordering and determine inverse ordering
-            order = parms["orbital_order"].template as<std::vector<int> >();
+            std::vector<pos_t> order(lat.size());
+            if (!parms.is_set("orbital_order"))
+                for (pos_t p = 0; p < lat.size(); ++p)
+                    order[p] = p+1;
+            else
+                order = parms["orbital_order"].template as<std::vector<pos_t> >();
+
             if (order.size() != lat.size())
                 throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
 
@@ -198,8 +230,12 @@ namespace chem_detail {
             // *** Parse orbital data *********************************************
             // ********************************************************************
 
+            std::string integral_file = parms["integral_file"];
+            if (!boost::filesystem::exists(integral_file))
+                throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+
             std::ifstream orb_file;
-            orb_file.open(parms["integral_file"].c_str());
+            orb_file.open(integral_file.c_str());
             for (int i = 0; i < 4; ++i)
                 orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
 
