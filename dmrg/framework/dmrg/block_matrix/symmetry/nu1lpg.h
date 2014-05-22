@@ -74,6 +74,67 @@ public:
 template<class S>
 alps::numeric::matrix<S> generate_large_mult_table()
 {
+    // ************* TO DO ***************
+    // check double group --> insert input param in the function?
+    // go in the right case for the double group
+    // initialize variables:
+    // number of irreps, mult table, inverse and adjoints elements?,
+    //
+    // ***********************************
+
+    // Cinfv double group mapped to C64
+    // inverse and adjoint elements not implemented --> sebastian didn't
+
+    int num_irreps = 128;
+    if(num_irreps/2 % 2 == 1){
+        throw std::logic_error("Number of boson and fermion irreps must be even\n");}
+    int shift = num_irreps/2;
+    int irrep = 1;
+    int mj = 0;
+    std::vector<S> mj2rep(num_irreps+1);
+    alps::numeric::matrix<S> mult_table(num_irreps,num_irreps);
+    mj2rep[shift+mj] = irrep;
+    
+    // populate mj2rep vector with boson and fermion irreps
+    for(mj = 2; mj <= num_irreps/2-2; mj+=2){
+        irrep++;
+        mj2rep[shift+mj] = irrep;
+        irrep++;
+        mj2rep[shift-mj] = irrep;
+    }
+
+    mj = num_irreps/2;
+    irrep++;
+    mj2rep[shift+mj] = irrep;
+    mj2rep[shift-mj] = irrep;
+
+    for(mj = 1; mj <= num_irreps/2-1; mj+=2){
+        irrep++;
+        mj2rep[shift+mj] = irrep;
+        irrep++;
+        mj2rep[shift-mj] = irrep;
+    }
+
+    // build multiplication table
+    int mij = 0;
+    int jrrep = 0;
+    int ijrrep = 0;
+    for(int mi = -num_irreps/2; mi <= num_irreps/2; mi++){
+        for(mj = -num_irreps/2; mj <= num_irreps/2; mj++){
+            mij = mi + mj;
+            if(mij <  -num_irreps/2){mij = mij + num_irreps;}
+            if(mij >   num_irreps/2){mij = mij - num_irreps;}
+            if(mij == -num_irreps/2){mij = num_irreps/2;}
+            irrep  = mj2rep(mi);
+            jrrep  = mj2rep(mj);
+            ijrrep = mj2rep(mij);
+            mult_table(irrep,jrrep) = ijrrep;
+        }
+    }
+
+    return mult_table;
+
+    /* old pg matrix of sebastian
     alps::numeric::matrix<S> r(8,8);
     r(0,0) = 0; r(0,1) = 1; r(0,2) = 2; r(0,3) = 3;   r(0,4) = 4; r(0,5) = 5; r(0,6) = 6; r(0,7) = 7;
     r(1,0) = 1; r(1,1) = 0; r(1,2) = 3; r(1,3) = 2;   r(1,4) = 5; r(1,5) = 4; r(1,6) = 7; r(1,7) = 6;
@@ -85,6 +146,7 @@ alps::numeric::matrix<S> generate_large_mult_table()
     r(6,0) = 6; r(6,1) = 7; r(6,2) = 4; r(6,3) = 5;   r(6,4) = 2; r(6,5) = 3; r(6,6) = 0; r(6,7) = 1;
     r(7,0) = 7; r(7,1) = 6; r(7,2) = 5; r(7,3) = 4;   r(7,4) = 3; r(7,5) = 2; r(7,6) = 1; r(7,7) = 0;
     return r;
+    */
 }
 
 template<int N, class S> const typename NU1LPG<N,S>::charge NU1LPG<N,S>::IdentityCharge = typename NU1PG<N,S>::charge();
