@@ -213,7 +213,7 @@ namespace ambient { namespace memory {
         };
 
         static inline void init(const std::string& path){
-            if(ambient::rank() == 0) printf("Temporary storage enabled in %s\n", path.c_str());
+            if(ambient::master()) printf("Temporary storage enabled in %s\n", path.c_str());
             pool::instance().init(path);
         }
 

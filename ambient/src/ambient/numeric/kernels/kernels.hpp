@@ -334,8 +334,7 @@ namespace ambient { namespace numeric { namespace kernels {
             for(int k = 0; k < size; k++)
                 ar[k] += bd[k];
         }
-       
-            
+
         template<typename T>
         void sub(matrix<T>& a, const matrix<T>& b){
             T* bd = versioned(b).data;

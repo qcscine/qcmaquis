@@ -335,8 +335,7 @@ namespace storage {
     }
     template<typename T, typename L>
     static void migrate(T& t, L where){
-        select_proc(where);
-        migrate(t);
+        select_proc(where); migrate(t);
     }
     template<class Matrix, class SymmGroup> 
     static void hint(const MPSTensor<Matrix, SymmGroup>& t){

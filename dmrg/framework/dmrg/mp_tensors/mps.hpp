@@ -173,10 +173,13 @@ void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2, Decomp
     {
         if ((*this)[i].isleftnormalized())
             continue;
-        select_proc(ambient::scope::balance(i,length()));
-        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_left(method);
-        if (i < length()-1) { 
-            switch_proc(ambient::scope::balance(i+1,length()));
+        block_matrix<Matrix, SymmGroup> t;
+        {
+            select_proc(ambient::scope::balance(i,length()));
+            t = (*this)[i].normalize_left(method);
+        }
+        if (i < length()-1) {
+            select_proc(ambient::scope::balance(i+1,length()));
             (*this)[i+1].multiply_from_left(t);
             (*this)[i+1].divide_by_scalar((*this)[i+1].scalar_norm());
         }
@@ -198,10 +201,13 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
     {
         if ((*this)[i].isrightnormalized())
             continue;
-        select_proc(ambient::scope::balance(i,length()));
-        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(method);
-        if (i > 0) { 
-            switch_proc(ambient::scope::balance(i-1,length()));
+        block_matrix<Matrix, SymmGroup> t;
+        {
+            select_proc(ambient::scope::balance(i,length()));
+            t = (*this)[i].normalize_right(method);
+        }
+        if (i > 0) {
+            select_proc(ambient::scope::balance(i-1,length()));
             (*this)[i-1].multiply_from_right(t);
             (*this)[i-1].divide_by_scalar((*this)[i-1].scalar_norm());
         }

@@ -28,6 +28,18 @@
 #define AMBIENT_CONTAINER_BLOCK
 
 namespace ambient {
+     
+    template<typename T> class block;
+    namespace detail { 
+        template<typename T>
+        void fill_value(unbound< block<T> >& a, T& value){
+            size_t size = get_square_dim(a);
+            T* a_ = versioned(a).data;
+            for(size_t i = 0; i < size; ++i) a_[i] = value;
+        }
+    }
+
+    AMBIENT_EXPORT(detail::fill_value, fill_value)
 
     template <class T>
     class block {
@@ -36,6 +48,9 @@ namespace ambient {
         block(size_t m, size_t n) : AMBIENT_ALLOC_2D(m, n, sizeof(T)) {}
         size_t lda() const {
             return ambient::get_dim(*this).y;
+        }
+        void init(T value){
+            fill_value<T>(*this, value);
         }
     AMBIENT_DELEGATE
     (

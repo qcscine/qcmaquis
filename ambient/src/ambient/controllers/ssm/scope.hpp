@@ -92,7 +92,7 @@ namespace ambient {
         inline base_scope::base_scope(){
             this->controller = selector.provide_controller();
             this->controller->reserve(ambient::isset("AMBIENT_DB_NUM_PROCS") ? ambient::getint("AMBIENT_DB_NUM_PROCS") : 0);
-            this->round = controller->get_num_workers();
+            this->round = controller->get_num_procs();
             this->scores.resize(round, 0);
             this->set(0);
         }

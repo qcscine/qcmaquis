@@ -58,7 +58,6 @@ namespace ambient { namespace controllers { namespace ssm {
             }
             chains->clear();
             std::swap(chains,mirror);
-            check_mem();
         }
         AMBIENT_SMP_DISABLE
         model.clock++;
@@ -168,15 +167,12 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline void controller::meminfo() const {
-        size_t current_size = getCurrentRSS();
-        size_t peak_size = getPeakRSS();
-        size_t avail_size = getRSSLimit();
+        double current_size = (double)getCurrentRSS();
+        double peak_size = (double)getPeakRSS();
+        double avail_size = (double)getRSSLimit();
         for(int i = 0; i < get_num_procs(); i++){
-            if(get_rank() == i){
-                std::cout << "R" << i << ": current: " << current_size/1024/1024/1024 << "G.\n";
-                std::cout << "R" << i << ": peak: " << peak_size/1024/1024/1024 << "G.\n";
-                std::cout << "R" << i << ": avail: " << avail_size/1024/1024/1024 << "G.\n";
-            }
+            if(get_rank() == i)
+                printf("R%d: current: %.2f%%; peak: %.2f%%\n", i, (current_size/avail_size)*100, (peak_size/avail_size)*100);
             fence();
         }
     }

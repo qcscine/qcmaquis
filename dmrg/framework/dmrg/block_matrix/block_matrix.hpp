@@ -534,17 +534,17 @@ std::size_t block_matrix<Matrix, SymmGroup>::num_elements() const
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::print_distribution() const
 {
-    if(ambient::rank() != 0) return;
-
-    double total = 0;
-    for(int i = 0; i < this->n_blocks(); ++i) total += num_rows((*this)[i])*num_cols((*this)[i]);
+    if(!ambient::master()) return;
+    double total = num_elements();
+    printf("%.2f GB:", total*sizeof(typename Matrix::value_type)/1024/1024/1024);
     for(int p = 0; p < ambient::num_procs(); ++p){
         double part = 0;
         for(int i = 0; i < this->n_blocks(); ++i){
-            if(ambient::get_owner((*this)[i][0]) == p)
+            if(!ambient::weak((*this)[i][0]) && ambient::get_owner((*this)[i][0]) == p)
                 part += num_rows((*this)[i])*num_cols((*this)[i]);
         }
-        printf("R%d: %d%\n", p, (int)(100*part/total));
+        printf(" %.1f%%", 100*part/total);
     }
+    printf("\n");
 }
 #endif

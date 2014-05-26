@@ -62,7 +62,6 @@ namespace ambient {
             }
         return seq[0];
     }
-
 }
 
 #endif

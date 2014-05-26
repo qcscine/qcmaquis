@@ -75,7 +75,7 @@ namespace ambient {
             return val;
         }
         void report(){
-            if(ambient::rank() == 0) std::cout << "R" << ambient::rank() << ": " << name << " " << val << ", count : " << count << "\n";
+            if(ambient::master()) std::cout << "R" << ambient::rank() << ": " << name << " " << val << ", count : " << count << "\n";
         }
         void reset(){
             this->val = 0;

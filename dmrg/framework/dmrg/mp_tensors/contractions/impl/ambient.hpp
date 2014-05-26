@@ -92,20 +92,20 @@ namespace contraction {
                 ambient::get_scope().set(e2[b2] ? b1 : where(b1,b2));
                 block_matrix<Matrix, SymmGroup> res;
                 gemm(*GRID(b1,b2), rhs, res);
-                *GRID(b1,b2) = res;
+                swap(*GRID(b1,b2), res);
                 if(!e2[b2]) return;
             }
         }
         void multiply_column_trans(size_t b2, const block_matrix<Matrix, SymmGroup>& rhs){
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(transpose(reduce_column(b2)), rhs, tmp);
-            *GRID(0,b2) = tmp;
+            swap(*GRID(0,b2), tmp);
         }
         Boundary<Matrix, SymmGroup> make_boundary(){
             Boundary<Matrix, SymmGroup> ret; ret.resize(size2);
             for(int b2 = 0; b2 < size2; b2++){
                 select_proc(ambient::scope::permute(b2,mpo.placement_r));
-                ret[b2] = reduce_column(b2);
+                swap(ret[b2], reduce_column(b2));
             }
             return ret;
         }
@@ -133,6 +133,25 @@ namespace contraction {
             for(int i = 1; i < rvector.size(); i++) delete rvector[i].first;
             return *GRID(0,b2);
         }
+        void print_distribution(){
+            if(!ambient::master()) return;
+            double total = 0;
+            for(int b2 = 0; b2 < size2; b2++)
+            for(int b1 = 0; b1 < size1; b1++) if(GRID(b1,b2) != NULL) 
+                total += GRID(b1,b2)->num_elements();
+            printf("%.2f GB:", total*sizeof(typename Matrix::value_type)/1024/1024/1024);
+            for(int p = 0; p < ambient::num_procs(); ++p){
+                double part = 0;
+                for(int b2 = 0; b2 < size2; b2++)
+                for(int b1 = 0; b1 < size1; b1++) if(GRID(b1,b2) != NULL)
+                for(int i = 0; i < (*GRID(b1,b2)).n_blocks(); ++i){
+                    if(!ambient::weak((*GRID(b1,b2))[i][0]) && ambient::get_owner((*GRID(b1,b2))[i][0]) == p)
+                        part += num_rows((*GRID(b1,b2))[i])*num_cols((*GRID(b1,b2))[i]);
+                }
+                printf(" %.1f%%", 100*part/total);
+            }
+            printf("\n");
+        }
         block_matrix<Matrix, SymmGroup>& reduce(){
             std::vector< std::pair< block_matrix<Matrix, SymmGroup>*, ambient::rank_t > > rvector;
             std::vector< std::pair< block_matrix<Matrix, SymmGroup>*, ambient::rank_t >* > rvector_global;
@@ -142,6 +161,7 @@ namespace contraction {
                 if(GRID(b1,b2) == NULL) continue;
                 ambient::rank_t owner = e2[b2] ? b1 : ambient::scope::permute(b2,mpo.placement_r);
                 rvector.push_back(std::make_pair(GRID(b1,b2), owner % ambient::num_workers()));
+                GRID(b1,b2) = NULL;
             }
         
             std::sort(rvector.begin(), rvector.end(), [](const std::pair<block_matrix<Matrix, SymmGroup>*, ambient::rank_t>& a, 
@@ -158,20 +178,84 @@ namespace contraction {
                     rvector_global.back()->first->match_and_add_block((*rvector[i].first)[k], 
                                                                       rvector[i].first->left_basis()[k].first, 
                                                                       rvector[i].first->right_basis()[k].first);
+                    delete rvector[i].first;
                     i++;
                 }
             }
-            return *ambient::reduce(rvector_global, [](std::pair< block_matrix<Matrix, SymmGroup>*, ambient::rank_t >* dst_pair, 
-                                                       std::pair< block_matrix<Matrix, SymmGroup>*, ambient::rank_t >* src_pair){
-                                                           block_matrix<Matrix, SymmGroup>& dst = *dst_pair->first;
-                                                           block_matrix<Matrix, SymmGroup>& src = *src_pair->first;
-                                                           for(size_t k = 0; k < src.n_blocks(); ++k){
-                                                               select_proc(ambient::scope::balance(k,src.n_blocks()));
-                                                               dst.match_and_add_block(src[k], 
-                                                                                       src.left_basis()[k].first, 
-                                                                                       src.right_basis()[k].first);
-                                                           }
-                                                       })->first;
+
+            std::vector<Matrix*> blocks;
+            std::vector<typename SymmGroup::charge> c1;
+            std::vector<typename SymmGroup::charge> c2;
+            std::vector<ambient::rank_t> owners;
+            block_matrix<Matrix, SymmGroup>* skeleton = new block_matrix<Matrix, SymmGroup>();
+            block_matrix<Matrix, SymmGroup>* res = new block_matrix<Matrix, SymmGroup>();
+
+            for(size_t n = 0; n < rvector_global.size(); ++n){
+                block_matrix<Matrix, SymmGroup>& src = *rvector_global[n]->first;
+                for(size_t k = 0; k < src.n_blocks(); ++k){
+                    if(!skeleton->has_block(src.left_basis()[k].first, src.right_basis()[k].first)){
+                        skeleton->insert_block(new Matrix(), src.left_basis()[k].first, src.right_basis()[k].first);
+                    }
+                    blocks.push_back(&src[k]);
+                    c1.push_back(src.left_basis()[k].first);
+                    c2.push_back(src.right_basis()[k].first);
+                    owners.push_back(rvector_global[n]->second);
+                }
+            }
+            std::vector< std::vector<std::pair<Matrix*,ambient::rank_t> > > rblocks;
+            size_t max_stride = 0;
+            for(size_t k = 0; k < skeleton->n_blocks(); ++k){
+                auto tc1 = skeleton->left_basis()[k].first; 
+                auto tc2 = skeleton->right_basis()[k].first;
+                std::vector<std::pair<Matrix*,ambient::rank_t> > rblocks_part;
+                for(size_t n = 0; n < blocks.size(); n++){
+                    if(tc1 == c1[n] && tc2 == c2[n]) rblocks_part.push_back(std::make_pair(blocks[n], owners[n]));
+                }
+                ambient::rank_t root = ambient::scope::balance(k,skeleton->n_blocks()) % ambient::num_workers();
+                std::sort(rblocks_part.begin(), rblocks_part.end(), [root](const std::pair<Matrix*, ambient::rank_t>& a,
+                                                                           const std::pair<Matrix*, ambient::rank_t>& b){
+                                                                               return (ambient::num_workers() + a.second - root) % ambient::num_workers()
+                                                                                    < (ambient::num_workers() + b.second - root) % ambient::num_workers();
+                                                                           });
+                rblocks.push_back(rblocks_part);
+                if(rblocks_part.size() > max_stride) 
+                    max_stride = rblocks_part.size();
+            }
+            for(int stride = 1; stride < max_stride; stride *= 2){
+                for(size_t n = 0; n < rblocks.size(); ++n){
+                    auto& rblocks_part = rblocks[n];
+                    if(stride < rblocks_part.size())
+                    for(int k = stride; k < rblocks_part.size(); k += stride*2){
+                        std::pair< Matrix*, ambient::rank_t >& dst_pair = rblocks_part[k-stride];
+                        std::pair< Matrix*, ambient::rank_t >& src_pair = rblocks_part[k];
+                        select_proc(dst_pair.second);
+                        Matrix& src = *src_pair.first;
+                        Matrix& dst = *dst_pair.first;
+                        
+                        if(num_rows(src) == num_rows(dst) && num_cols(src) == num_cols(dst)){
+                        }else if(num_rows(src) > num_rows(dst) && num_cols(src) > num_cols(dst))
+                            resize(dst, num_rows(src), num_cols(src));
+                        else{
+                            size_t maxrows = std::max(num_rows(src), num_rows(dst));
+                            size_t maxcols = std::max(num_cols(src), num_cols(dst));
+                            resize(dst, maxrows, maxcols);
+                            resize(src, maxrows, maxcols);
+                        }
+                        dst += src;
+                        Matrix tmp; src.swap(tmp);
+                    }
+                }
+                ambient::sync();
+            }
+            for(size_t k = 0; k < skeleton->n_blocks(); ++k){
+                auto tc1 = skeleton->left_basis()[k].first; 
+                auto tc2 = skeleton->right_basis()[k].first;
+                res->insert_block(*rblocks[k][0].first, tc1, tc2);
+            }
+            for(size_t n = 0; n < rvector_global.size(); ++n) delete rvector_global[n]->first;
+            delete skeleton;
+            GRID(0,0) = res;
+            return *res;
         }
         MPOTensor<Matrix, SymmGroup> const & mpo;
         mutable std::vector< block_matrix<Matrix, SymmGroup>* > grid;
