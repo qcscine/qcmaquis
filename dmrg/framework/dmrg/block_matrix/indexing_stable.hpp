@@ -308,6 +308,8 @@ public:
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 
+#include "dual_index.h"
+
 template<class SymmGroup>
 class ProductBasis
 {
