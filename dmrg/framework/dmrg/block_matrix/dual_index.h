@@ -127,7 +127,7 @@ public:
         else
             match = std::find_if(this->begin(), this->end(), dual_index_detail::is_first_equal<SymmGroup>(r,c));
         
-        if (match != this->end() && boost::tuples::get<0>(*match) != r && boost::tuples::get<1>(*match) != c)
+        if (match != this->end() && (boost::tuples::get<0>(*match) != r || boost::tuples::get<1>(*match) != c))
             match = this->end();
         return std::distance(this->begin(), match);
     }

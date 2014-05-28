@@ -231,13 +231,7 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
 template<class Matrix, class SymmGroup>
 bool block_matrix<Matrix, SymmGroup>::has_block(charge r, charge c) const
 {
-    std::size_t p1 = rows_.position(r);
-    if (p1 == rows_.size()) return false;
-    std::size_t p2 = cols_.position(c);
-    if (p2 == cols_.size()) return false;
-    //if (p1==p2)
-    //    assert (basis_.position(r,c) != basis_.size() );
-    return (p1 == p2);
+    return basis_.position(r,c) != basis_.size();
 }
 
 // TODO: internal

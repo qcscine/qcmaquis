@@ -141,16 +141,18 @@ public:
     Matrix const & operator()(charge r, charge c) const
     {
         assert( has_block(r, c) );
-        assert( rows_.position(r) == cols_.position(c) );
-        return data_[rows_.position(r)];
+        //assert( rows_.position(r) == cols_.position(c) );
+        //return data_[rows_.position(r)];
+        return data_[basis_.position(r,c)];
     }
     
     // internal
     Matrix & operator()(charge r, charge c)
     {
         assert( has_block(r, c) );
-        assert( rows_.position(r) == cols_.position(c) );
-        return data_[rows_.position(r)];
+        //assert( rows_.position(r) == cols_.position(c) );
+        //return data_[rows_.position(r)];
+        return data_[basis_.position(r,c)];
     }
     
     std::pair<const_block_iterator,const_block_iterator> blocks() const {
