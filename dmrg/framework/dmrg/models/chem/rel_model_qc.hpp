@@ -78,13 +78,17 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 
     count_down_op.insert_block(Matrix(1, 1, 1), C, C);
     //count_down_op.insert_block(Matrix(1, 1, 1), D, D);
-
-    //docc_op.insert_block(Matrix(1, 1, 1), D, D);
-
+ 
+    docc_op.insert_block(Matrix(1, 1, 1), B, B);
+    docc_op.insert_block(Matrix(1, 1, 1), C, C);
+    
     //e2d_op.insert_block(Matrix(1, 1, 1), A, D);
     //d2e_op.insert_block(Matrix(1, 1, 1), D, A);
 
     // need to modify the matrix elements?
+    // Don't think so, fill operator takes care of inverting sign
+    // In both bar and unbarred spinor we have one electron
+    // --> antisymmetric
     fill_op.insert_block(Matrix(1, 1, 1), A, A);
     fill_op.insert_block(Matrix(1, 1, -1), B, B);
     fill_op.insert_block(Matrix(1, 1, -1), C, C);
@@ -113,7 +117,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     REGISTER(count_down,   tag_detail::bosonic)
     //REGISTER(e2d,          tag_detail::bosonic)
     //REGISTER(d2e,          tag_detail::bosonic)
-    //REGISTER(docc,         tag_detail::bosonic)
+    REGISTER(docc,         tag_detail::bosonic)
 
     #undef REGISTER
     /**********************************************************************/
@@ -122,7 +126,10 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
- 
+    
+    // Need to get this number somewhere
+    int n_pair = 2;
+
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         int i = term_assistant.idx(m, 0);
         int j = term_assistant.idx(m, 1);
@@ -138,6 +145,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             this->terms_.push_back(term);
             
             used_elements[m] += 1;
+            std::cout << i << j << k << l << "\t # of terms in H: " << this->terms_.size() << std::endl;
         }
 
         // On site energy t_ii
@@ -148,12 +156,14 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
                 term.push_back( boost::make_tuple(i, count_up));
                 this->terms_.push_back(term);
             }
+            std::cout << i << j << "\t # of terms in H: " << this->terms_.size() << std::endl;
             {
                 term_descriptor term;
                 term.coeff = matrix_elements[m];
-                term.push_back(boost::make_tuple(i, count_down));
+                term.push_back(boost::make_tuple(i+n_pair+1, count_down));
                 this->terms_.push_back(term);
             }
+            std::cout << i+3 << j+3 << "\t # of terms in H: " << this->terms_.size() << std::endl;
 
             used_elements[m] += 1;
             continue;
@@ -161,34 +171,191 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
-
+            /*
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
                 true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler)
             );
+            std::cout << i << j << "\t # of terms in H: " << this->terms_.size() << std::endl;
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
                 true, fill, matrix_elements[m], i, j, create_down, destroy_down, tag_handler)
             );
+            std::cout << i+3 << j+3 << "\t # of terms in H: " << this->terms_.size() << std::endl;
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
                 true, fill, matrix_elements[m], j, i, create_up, destroy_up, tag_handler)
             );
+            std::cout << j << i << "\t # of terms in H: " << this->terms_.size() << std::endl;
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
                 true, fill, matrix_elements[m], j, i, create_down, destroy_down, tag_handler)
             );
-
+            std::cout << j+3 << i+3 << "\t # of terms in H: " << this->terms_.size() << std::endl;
+            */
             used_elements[m] += 1;
         }
 
-        // On site Coulomb repulsion V_iiii
-        else if ( i==j && j==k && k==l) {
+        // Two-electron terms V_ijkl
+        // All possible combinations are read in from the FCIDUMP file
+        // ijkl stands for unbarred spinors, pqrs stands for barred spinors
+        
+        // V_iiii
+        else if (i == j && j == k && k == l) {
+        //------------- 4 unbarred & 0 barred ---------------//
+        /*    
+            if (i <= n_pair) {
+                term_descriptor term;
+                term.coeff = matrix_elements[m];
+                term.push_back(boost::make_tuple(i, docc));
+                //term.push_back(boost::make_tuple(i, count_up));
+                this->terms_.push_back(term);
+                std::cout << i << j << k << l << "\t # of terms in H: " << this->terms_.size() << std::endl;
+            }
+        //------------- 0 unbarred & 4 barred ---------------//
+            else if (i > n_pair) {
+                term_descriptor term;
+                term.coeff = matrix_elements[m];
+                term.push_back(boost::make_tuple(i, docc));
+                //term.push_back(boost::make_tuple(i, count_down));
+                this->terms_.push_back(term);
+                std::cout << i << j << k << l << "\t # of terms in H: " << this->terms_.size() << std::endl;
+            }
+            */
+            used_elements[m] += 1;
+        }
+        /*
+        // V_iijj == V_jjii
+        else if ( i==j && k==l && j!=k) {
 
-            term_descriptor term;
-            term.coeff = matrix_elements[m];
-            //term.push_back(boost::make_tuple(i, docc));
-            this->terms_.push_back(term);
+            if (i <= n_pair && k <= n_pair) {
+                term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_up);
+            } else if (i <= n_pair && k > n_pair) {
+                term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_down);
+            } else if (i > n_pair && k <= n_pair) {
+                term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_up);
+            } else if (i > n_pair && k > n_pair) {
+                term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_down);
+            }
 
+            std::cout << i << j << k << l << "\t # of terms in H: " << this->terms_.size() << std::endl;
+            used_elements[m] += 1;
+        }
+        */
+        /*------------- 3 unbarred & 1 barred ---------------*/
+        // V_pjkl
+        else if (i > n_pair && j <= n_pair && k <= n_pair && l <= n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_down, create_up, destroy_up, destroy_up);
+             
             used_elements[m] += 1;
         }
 
+        // V_iqkl
+        else if (i <= n_pair && j > n_pair && k <= n_pair && l <= n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_up, create_down, destroy_up, destroy_up);
+             
+            used_elements[m] += 1;
+        }
+
+        // V_ijrl
+        else if (i <= n_pair && j <= n_pair && k > n_pair && l <= n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_up, create_up, destroy_down, destroy_up);
+             
+            used_elements[m] += 1;
+        }
+        
+        // V_ijks
+        else if (i <= n_pair && j <= n_pair && k <= n_pair && l > n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_up, create_up, destroy_up, destroy_down);
+             
+            used_elements[m] += 1;
+        }
+
+        /*------------- 2 unbarred & 2 barred ---------------*/
+        // V_pqkl
+        else if (i > n_pair && j > n_pair && k <= n_pair && l <= n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_down, create_down, destroy_up, destroy_up);
+             
+            used_elements[m] += 1;
+        }
+
+        // V_pjrl
+        else if (i > n_pair && j <= n_pair && k > n_pair && l <= n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_down, create_up, destroy_down, destroy_up);
+             
+            used_elements[m] += 1;
+        }
+
+        // V_pjks
+        else if (i > n_pair && j <= n_pair && k <= n_pair && l > n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_down, create_up, destroy_up, destroy_down);
+             
+            used_elements[m] += 1;
+        }
+
+        // V_iqrl
+        else if (i <= n_pair && j > n_pair && k > n_pair && l <= n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_up, create_down, destroy_down, destroy_up);
+             
+            used_elements[m] += 1;
+        }
+
+
+        // V_iqks
+        else if (i <= n_pair && j > n_pair && k <= n_pair && l > n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_up, create_down, destroy_up, destroy_down);
+             
+            used_elements[m] += 1;
+        }
+
+        // V_ijrs
+        else if (i <= n_pair && j <= n_pair && k > n_pair && l > n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_up, create_up, destroy_down, destroy_down);
+             
+            used_elements[m] += 1;
+        }
+
+        /*------------- 1 unbarred & 3 barred ---------------*/
+        // V_pqrl
+        else if (i > n_pair && j > n_pair && k > n_pair && l <= n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_down, create_down, destroy_down, destroy_up);
+             
+            used_elements[m] += 1;
+        }
+
+        // V_pqks
+        else if (i > n_pair && j > n_pair && k <= n_pair && l > n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_down, create_down, destroy_up, destroy_down);
+             
+            used_elements[m] += 1;
+        }
+
+        // V_pjrs
+        else if (i > n_pair && j <= n_pair && k > n_pair && l > n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_down, create_up, destroy_down, destroy_down);
+             
+            used_elements[m] += 1;
+        }
+        
+        // V_iqrs
+        else if (i <= n_pair && j > n_pair && k > n_pair && l > n_pair) {
+            
+            //term_assistant.add_term(this->terms_, i,j,k,l, create_down, create_down, destroy_down, destroy_up);
+             
+            used_elements[m] += 1;
+        }
+
+        // --------------------------SEB code------------------------------ //
+        /*
         // V_ijjj = V_jijj = V_jjij = V_jjji
         else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
 
@@ -385,13 +552,13 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             term_assistant.add_term(this->terms_, j,l,k,i, create_down, create_down, destroy_down, destroy_down);
         
             used_elements[m] += 1;
-        }
+        }*/
     } // matrix_elements for
 
     // make sure all elements have been used
     std::vector<int>::iterator it_0;
     it_0 = std::find(used_elements.begin(), used_elements.end(), 0);
-    assert( it_0 == used_elements.end() );
+    //assert( it_0 == used_elements.end() );
 
     term_assistant.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
