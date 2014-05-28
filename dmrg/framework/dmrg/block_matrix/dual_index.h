@@ -27,6 +27,8 @@
 #ifndef TENSOR_DUAL_INDEX_H
 #define TENSOR_DUAL_INDEX_H
 
+#include <boost/tuple/tuple_comparison.hpp>
+
 namespace dual_index_detail
 {
     using namespace boost::tuples;
@@ -270,7 +272,6 @@ public:
     template <class Archive>
     void load(Archive & ar)
     {
-        //typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > my_type;
         typedef std::vector<boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> > my_type;
         ar["DualIndex"] >> static_cast<my_type&>(*this);
     }
@@ -296,5 +297,24 @@ public:
     
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
+
+template<class SymmGroup>
+std::ostream& operator<<(std::ostream& os, DualIndex<SymmGroup> const & idx)
+{
+    os << "|";
+    for (typename DualIndex<SymmGroup>::const_iterator it = idx.begin();
+         it != idx.end();
+         ++it)
+    {
+        os << "( " << boost::tuples::get<0>(*it) << ","
+                   << boost::tuples::get<1>(*it) << ": "
+                   << boost::tuples::get<2>(*it) << "x"
+                   << boost::tuples::get<3>(*it)
+           << " )";
+    }
+    os << "|";
+
+    return os;
+}
 
 #endif

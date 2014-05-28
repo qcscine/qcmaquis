@@ -111,6 +111,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( save_load, SymmGroup, test_types )
     
     BOOST_CHECK_EQUAL( ba1.left_basis(),  ba2.left_basis()  );
     BOOST_CHECK_EQUAL( ba1.right_basis(), ba2.right_basis() );
+    BOOST_CHECK_EQUAL( ba1.basis(), ba2.basis() );
     for (std::size_t block=0; block<ba1.n_blocks(); ++block)
         BOOST_CHECK_EQUAL( ba1[block], ba2[block] );
     

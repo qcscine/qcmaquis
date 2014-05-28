@@ -114,6 +114,7 @@ public:
     typedef basis_iterator_<SymmGroup> basis_iterator;
     
     Index() : sorted_(true) {}
+    Index(std::size_t s_) : sorted_(true), base_t(s_) {}
     
     std::size_t size_of_block(charge c) const
     {

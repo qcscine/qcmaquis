@@ -180,10 +180,26 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
 }
 
 template<class Matrix, class SymmGroup>
-Index<SymmGroup> const & block_matrix<Matrix, SymmGroup>::left_basis() const { return rows_; }
+Index<SymmGroup> const & block_matrix<Matrix, SymmGroup>::left_basis() const
+{ 
+    //Index<SymmGroup> ret(basis_.size());
+    //for (std::size_t s = 0; s < basis_.size(); ++s)
+    //    ret[s] = std::make_pair(boost::tuples::get<0>(basis_[s]), boost::tuples::get<2>(basis_[s]));
+
+    //return ret;
+    return rows_;
+}
 
 template<class Matrix, class SymmGroup>
-Index<SymmGroup> const & block_matrix<Matrix, SymmGroup>::right_basis() const { return cols_; }
+Index<SymmGroup> const & block_matrix<Matrix, SymmGroup>::right_basis() const
+{
+    //Index<SymmGroup> ret(basis_.size());
+    //for (std::size_t s = 0; s < basis_.size(); ++s)
+    //    ret[s] = std::make_pair(boost::tuples::get<1>(basis_[s]), boost::tuples::get<3>(basis_[s]));
+
+    //return ret;
+    return cols_;
+}
 
 template<class Matrix, class SymmGroup>
 DualIndex<SymmGroup> const & block_matrix<Matrix, SymmGroup>::basis() const { return basis_; }
@@ -195,7 +211,7 @@ template<class Matrix, class SymmGroup>
 std::string block_matrix<Matrix, SymmGroup>::description() const
 {
     std::ostringstream oss;
-    oss << rows_ << cols_;
+    oss << basis_;
     return oss.str();
 }
 
@@ -359,14 +375,13 @@ void block_matrix<Matrix, SymmGroup>::clear()
     basis_ = DualIndex<SymmGroup>();
 }
 
-// final
 template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const & m)
 {
-    os << "Left HS: " << m.left_basis() << std::endl;
-    os << "Right HS: " << m.right_basis() << std::endl;
+    os << "Basis: " << m.basis() << std::endl;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
-        os << "Block (" << m.left_basis()[k].first << "," << m.right_basis()[k].first << "):\n" << m[k] << std::endl;
+        os << "Block (" << boost::tuples::get<0>(m.basis()[k]) << "," << boost::tuples::get<1>(m.basis()[k])
+           << "):\n" << m[k] << std::endl;
     os << std::endl;
     return os;
 }
@@ -450,11 +465,18 @@ template<class Matrix, class SymmGroup>
 template<class Archive>
 void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
 {
+    //Index<SymmGroup> r_, c_;
+    //ar["rows_"] >> r_;
+    //ar["cols_"] >> c_;
     ar["rows_"] >> rows_;
     ar["cols_"] >> cols_;
+
     basis_.resize(rows_.size());
     for (std::size_t s = 0; s < rows_.size(); ++s)
         basis_[s] = boost::make_tuple(rows_[s].first, cols_[s].first, rows_[s].second, cols_[s].second);
+    //basis_.resize(r_.size());
+    //for (std::size_t s = 0; s < r_.size(); ++s)
+    //    basis_[s] = boost::make_tuple(r_[s].first, c_[s].first, r_[s].second, c_[s].second);
 
     data_.clear();
     if (alps::is_complex<typename Matrix::value_type>() && !ar.is_complex("data_"))
@@ -481,6 +503,10 @@ template<class Matrix, class SymmGroup>
 template<class Archive>
 void block_matrix<Matrix, SymmGroup>::save(Archive & ar) const
 {
+    //Index<SymmGroup> r_ = left_basis();
+    //Index<SymmGroup> c_ = right_basis();
+    //ar["rows_"] << r_;
+    //ar["cols_"] << c_;
     ar["rows_"] << rows_;
     ar["cols_"] << cols_;
 
@@ -493,7 +519,14 @@ template<class Matrix, class SymmGroup>
 template <class Archive>
 void block_matrix<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
 {
+    //Index<SymmGroup> r_ = left_basis();
+    //Index<SymmGroup> c_ = right_basis();
+    //ar & r_ & c_ & data_;
     ar & rows_ & cols_ & data_;
+
+    basis_.resize(rows_.size());
+    for (std::size_t s = 0; s < rows_.size(); ++s)
+        basis_[s] = boost::make_tuple(rows_[s].first, cols_[s].first, rows_[s].second, cols_[s].second);
 }
 
 
