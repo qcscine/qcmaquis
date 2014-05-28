@@ -216,25 +216,19 @@ Matrix & block_matrix<Matrix, SymmGroup>::operator[](size_type c) { return data_
 template<class Matrix, class SymmGroup>
 Matrix const & block_matrix<Matrix, SymmGroup>::operator[](size_type c) const { return data_[c]; }
 
-// TODO: internal
 template<class Matrix, class SymmGroup>
 typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGroup>::find_block(charge r, charge c) const
 {
-    std::size_t p1 = rows_.position(r);
-    std::size_t p2 = cols_.position(c);
-    
-    if (p1 == p2 && p1 != rows_.size()) return p1;
-    else                                return n_blocks();
+    assert(basis_.size() == data_.size());
+    return basis_.position(r,c);
 }
 
-// TODO: internal
 template<class Matrix, class SymmGroup>
 bool block_matrix<Matrix, SymmGroup>::has_block(charge r, charge c) const
 {
     return basis_.position(r,c) != basis_.size();
 }
 
-// TODO: internal
 template<class Matrix, class SymmGroup>
 bool block_matrix<Matrix, SymmGroup>::has_block(std::pair<charge, size_type> const & r,
                                                 std::pair<charge, size_type> const & c) const
@@ -242,22 +236,18 @@ bool block_matrix<Matrix, SymmGroup>::has_block(std::pair<charge, size_type> con
     return has_block(r.first, c.first);
 }
 
-// TODO: internal
 template<class Matrix, class SymmGroup>
 typename Matrix::value_type & block_matrix<Matrix, SymmGroup>::operator()(std::pair<charge, size_type> const & r,
                                                                           std::pair<charge, size_type> const & c)
 {
-    assert( rows_.position(r.first) == cols_.position(c.first) );
-    return data_[rows_.position(r.first)](r.second, c.second);
+    return data_[basis_.position(r.first, c.first)](r.second, c.second);
 }
 
-// TODO: internal
 template<class Matrix, class SymmGroup>
 typename Matrix::value_type const & block_matrix<Matrix, SymmGroup>::operator()(std::pair<charge, size_type> const & r,
                                                                                 std::pair<charge, size_type> const & c) const
 {
-    assert( rows_.position(r.first) == cols_.position(c.first) );
-    return data_[rows_.position(r.first)](r.second, c.second);
+    return data_[basis_.position(r.first, c.first)](r.second, c.second);
 }
 // Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
 //template<class Matrix, class SymmGroup>
@@ -383,11 +373,9 @@ std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const
     return os;
 }
 
-// internal
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, charge c1, charge c2)
 {
-    
     if (this->has_block(c1, c2))
     {
         if (num_rows(mtx) == num_rows((*this)(c1, c2)) &&
@@ -511,17 +499,16 @@ void block_matrix<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int
 }
 
 
-// internal
+// final
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
                                               std::size_t r, std::size_t c)
 {
     if (this->has_block(c1, c2))
     {
-        assert (rows_.position(c1) == cols_.position(c2));
-        std::size_t pos = rows_.position(c1);
-        std::size_t maxrows = std::max(rows_[pos].second, r);
-        std::size_t maxcols = std::max(cols_[pos].second, c);
+        std::size_t pos = basis_.position(c1, c2);
+        std::size_t maxrows = std::max(boost::tuples::get<2>(basis_[pos]), r);
+        std::size_t maxcols = std::max(boost::tuples::get<3>(basis_[pos]), c);
     
         rows_[pos].second = maxrows;
         cols_[pos].second = maxcols;
@@ -553,20 +540,19 @@ inline void block_matrix<Matrix, SymmGroup>::reserve_pos(charge c1, charge c2,
 { reserve(c1, c2, ri+1, ci+1); }
 
 
-// internal
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::allocate_blocks()
 {
+    assert(basis_.size() == n_blocks());
     for (std::size_t k = 0; k < n_blocks(); ++k)
-        resize(data_[k], rows_[k].second, cols_[k].second);
+        resize(data_[k], boost::tuples::get<2>(basis_[k]), boost::tuples::get<3>(basis_[k]));
 }
 
-// internal
 template<class Matrix, class SymmGroup>
 bool block_matrix<Matrix, SymmGroup>::reasonable() const
 {
     for (size_t k=0; k<n_blocks(); ++k)
-        if (num_rows((*this)[k]) != rows_[k].second || num_cols((*this)[k]) != cols_[k].second)
+        if (num_rows((*this)[k]) != boost::tuples::get<2>(basis_[k]) || num_cols((*this)[k]) != boost::tuples::get<3>(basis_[k]))
             return false;
     return true;
 }
