@@ -106,14 +106,13 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(con
     return *this;
 }
 
-// TODO: final
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator+=(block_matrix const & rhs)
 {
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
     {
-        charge rhs_rc = rhs.rows_[k].first;
-        charge rhs_cc = rhs.cols_[k].first;
+        charge rhs_rc = boost::tuples::get<0>(rhs.basis_[k]);
+        charge rhs_cc = boost::tuples::get<1>(rhs.basis_[k]);
         if (this->has_block(rhs_rc, rhs_cc))
             (*this)(rhs_rc, rhs_cc) += rhs.data_[k];
         else
@@ -122,14 +121,13 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator+=(bl
     return *this;
 }
 
-// TODO: final
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator-=(block_matrix const & rhs)
 {
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
     {
-        charge rhs_rc = rhs.rows_[k].first;
-        charge rhs_cc = rhs.cols_[k].first;
+        charge rhs_rc = boost::tuples::get<0>(rhs.basis_[k]);
+        charge rhs_cc = boost::tuples::get<1>(rhs.basis_[k]);
         if (this->has_block(rhs_rc, rhs_cc))
             (*this)(rhs_rc, rhs_cc) -= rhs.data_[k];
         else
