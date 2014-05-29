@@ -447,13 +447,10 @@ void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
 {
     assert( has_block(r, c) );
     
-    std::size_t which = rows_.position(r);
-    std::size_t which2 = basis_.position(r,c);
+    std::size_t which = basis_.position(r,c);
     
-    rows_.erase(rows_.begin() + which);
-    cols_.erase(cols_.begin() + which);
-    basis_.erase(basis_.begin() + which2);
-    data_.erase(data_.begin() + which2);
+    basis_.erase(basis_.begin() + which);
+    data_.erase(data_.begin() + which);
 }
 
 // final
@@ -462,8 +459,6 @@ void block_matrix<Matrix, SymmGroup>::remove_block(std::size_t which)
 {
     assert( which < data_.size() );
 
-    rows_.erase(rows_.begin() + which);
-    cols_.erase(cols_.begin() + which);
     basis_.erase(basis_.begin() + which);
     data_.erase(data_.begin() + which);
 }
