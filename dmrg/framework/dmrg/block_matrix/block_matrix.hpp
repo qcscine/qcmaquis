@@ -46,14 +46,15 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows,
 : rows_(rows)
 , cols_(cols)
 {
-    assert(rows_.size() == cols_.size());
+    // assert(rows_.size() == cols_.size());
+    assert(rows.size() == cols.size());
 
     basis_.resize(rows_.size());
-    for (size_type k = 0; k < rows_.size(); ++k)
-        basis_[k] = boost::make_tuple(rows_[k].first, cols_[k].first, rows_[k].second, cols_[k].second);
+    for (size_type k = 0; k < rows.size(); ++k)
+        basis_[k] = boost::make_tuple(rows[k].first, cols[k].first, rows[k].second, cols[k].second);
 
     for (size_type k = 0; k < rows_.size(); ++k)
-        data_.push_back(new Matrix(rows_[k].second, cols_[k].second));
+        data_.push_back(new Matrix(boost::tuples::get<2>(basis_[k]), boost::tuples::get<3>(basis_[k])));
 }
 
 template<class Matrix, class SymmGroup>
@@ -148,7 +149,7 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
     
     size_type i1 = rows_.insert(p1);
     cols_.insert(i1, p2);
-    basis_.insert(boost::make_tuple(c1, c2, num_rows(mtx), num_cols(mtx)));
+    i1 = basis_.insert(boost::make_tuple(c1, c2, num_rows(mtx), num_cols(mtx)));
     Matrix* block = new Matrix(mtx);
     data_.insert(data_.begin() + i1, block);
 #ifdef AMBIENT_TRACKING
@@ -170,7 +171,7 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
     
     size_type i1 = rows_.insert(p1);
     cols_.insert(i1, p2);
-    basis_.insert(boost::make_tuple(c1, c2, num_rows(*mtx), num_cols(*mtx)));
+    i1 = basis_.insert(boost::make_tuple(c1, c2, num_rows(*mtx), num_cols(*mtx)));
     data_.insert(data_.begin() + i1, mtx);
 #ifdef AMBIENT_TRACKING
     ambient_track_as(*mtx, this->label);
@@ -451,7 +452,7 @@ template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
 {
     assert( has_block(r, c) );
-    assert( rows_.position(r) == cols_.position(c) );
+    //assert( rows_.position(r) == cols_.position(c) );
     
     std::size_t which = rows_.position(r);
     std::size_t which2 = basis_.position(r,c);
@@ -459,7 +460,7 @@ void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
     rows_.erase(rows_.begin() + which);
     cols_.erase(cols_.begin() + which);
     basis_.erase(basis_.begin() + which2);
-    data_.erase(data_.begin() + which);
+    data_.erase(data_.begin() + which2);
 }
 
 // final
@@ -565,8 +566,8 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         p1 = std::make_pair(c1, r),
         p2 = std::make_pair(c2, c);
         
-        assert(rows_.size() == cols_.size());
-        assert(rows_.size() == data_.size());
+        //assert(rows_.size() == cols_.size());
+        assert(basis_.size() == data_.size());
         
         size_type i1 = rows_.insert(p1);
         cols_.insert(i1, p2);
