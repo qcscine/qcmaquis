@@ -427,7 +427,6 @@ void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, ch
         insert_block(mtx, c1, c2);
 }
 
-// final
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::resize_block(charge r, charge c,
                                                    size_type new_r, size_type new_c,
@@ -441,7 +440,6 @@ void block_matrix<Matrix, SymmGroup>::resize_block(charge r, charge c,
     boost::tuples::get<3>(basis_[pos]) = new_c;
 }
 
-// final
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
 {
@@ -453,7 +451,6 @@ void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
     data_.erase(data_.begin() + which);
 }
 
-// final
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_block(std::size_t which)
 {
@@ -463,7 +460,6 @@ void block_matrix<Matrix, SymmGroup>::remove_block(std::size_t which)
     data_.erase(data_.begin() + which);
 }
 
-// final
 template<class Matrix, class SymmGroup>
 template<class Archive>
 void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
@@ -496,7 +492,6 @@ void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
     }
 }
 
-// final
 template<class Matrix, class SymmGroup>
 template<class Archive>
 void block_matrix<Matrix, SymmGroup>::save(Archive & ar) const
@@ -510,7 +505,6 @@ void block_matrix<Matrix, SymmGroup>::save(Archive & ar) const
     ar["data_"] << tmp;
 }
 
-// final
 template<class Matrix, class SymmGroup>
 template <class Archive>
 void block_matrix<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
@@ -530,8 +524,8 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         std::size_t maxrows = std::max(boost::tuples::get<2>(basis_[pos]), r);
         std::size_t maxcols = std::max(boost::tuples::get<3>(basis_[pos]), c);
     
-        rows_[pos].second = maxrows;
-        cols_[pos].second = maxcols;
+        //rows_[pos].second = maxrows;
+        //cols_[pos].second = maxcols;
         boost::tuples::get<2>(basis_[pos]) = maxrows;
         boost::tuples::get<3>(basis_[pos]) = maxcols;
     } else {
@@ -539,12 +533,11 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         p1 = std::make_pair(c1, r),
         p2 = std::make_pair(c2, c);
         
-        //assert(rows_.size() == cols_.size());
         assert(basis_.size() == data_.size());
         
-        size_type i1 = rows_.insert(p1);
-        cols_.insert(i1, p2);
-        basis_.insert(boost::make_tuple(c1, c2, r, c));
+        //size_type i1 = rows_.insert(p1);
+        //cols_.insert(i1, p2);
+        size_type i1 = basis_.insert(boost::make_tuple(c1, c2, r, c));
         Matrix* block = new Matrix(1,1);
         data_.insert(data_.begin() + i1, block); 
 #ifdef AMBIENT_TRACKING
