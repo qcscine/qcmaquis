@@ -435,8 +435,6 @@ void block_matrix<Matrix, SymmGroup>::resize_block(charge r, charge c,
 {
     if (!pretend)
         resize((*this)(r,c), new_r, new_c);
-    rows_[rows_.position(r)].second = new_r;
-    cols_[cols_.position(c)].second = new_c;
 
     std::size_t pos = basis_.position(r,c);
     boost::tuples::get<2>(basis_[pos]) = new_r;
@@ -448,7 +446,6 @@ template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::remove_block(charge r, charge c)
 {
     assert( has_block(r, c) );
-    //assert( rows_.position(r) == cols_.position(c) );
     
     std::size_t which = rows_.position(r);
     std::size_t which2 = basis_.position(r,c);
@@ -476,18 +473,13 @@ template<class Matrix, class SymmGroup>
 template<class Archive>
 void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
 {
-    //Index<SymmGroup> r_, c_;
-    //ar["rows_"] >> r_;
-    //ar["cols_"] >> c_;
-    ar["rows_"] >> rows_;
-    ar["cols_"] >> cols_;
+    Index<SymmGroup> r_, c_;
+    ar["rows_"] >> r_;
+    ar["cols_"] >> c_;
 
-    basis_.resize(rows_.size());
-    for (std::size_t s = 0; s < rows_.size(); ++s)
-        basis_[s] = boost::make_tuple(rows_[s].first, cols_[s].first, rows_[s].second, cols_[s].second);
-    //basis_.resize(r_.size());
-    //for (std::size_t s = 0; s < r_.size(); ++s)
-    //    basis_[s] = boost::make_tuple(r_[s].first, c_[s].first, r_[s].second, c_[s].second);
+    basis_.resize(r_.size());
+    for (std::size_t s = 0; s < r_.size(); ++s)
+        basis_[s] = boost::make_tuple(r_[s].first, c_[s].first, r_[s].second, c_[s].second);
 
     data_.clear();
     if (alps::is_complex<typename Matrix::value_type>() && !ar.is_complex("data_"))
@@ -514,12 +506,10 @@ template<class Matrix, class SymmGroup>
 template<class Archive>
 void block_matrix<Matrix, SymmGroup>::save(Archive & ar) const
 {
-    //Index<SymmGroup> r_ = left_basis();
-    //Index<SymmGroup> c_ = right_basis();
-    //ar["rows_"] << r_;
-    //ar["cols_"] << c_;
-    ar["rows_"] << rows_;
-    ar["cols_"] << cols_;
+    Index<SymmGroup> r_ = left_basis();
+    Index<SymmGroup> c_ = right_basis();
+    ar["rows_"] << r_;
+    ar["cols_"] << c_;
 
     std::vector<Matrix> tmp(data_.begin(), data_.end());
     ar["data_"] << tmp;
@@ -530,15 +520,7 @@ template<class Matrix, class SymmGroup>
 template <class Archive>
 void block_matrix<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
 {
-    //ar & rows_ & cols_ & basis_ & data_;
     ar & basis_ & data_;
-
-    rows_ = left_basis();
-    cols_ = right_basis();
-
-    //basis_.resize(rows_.size());
-    //for (std::size_t s = 0; s < rows_.size(); ++s)
-    //    basis_[s] = boost::make_tuple(rows_[s].first, cols_[s].first, rows_[s].second, cols_[s].second);
 }
 
 
