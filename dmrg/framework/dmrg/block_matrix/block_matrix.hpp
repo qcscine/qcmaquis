@@ -180,29 +180,43 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
 }
 
 template<class Matrix, class SymmGroup>
-Index<SymmGroup> const & block_matrix<Matrix, SymmGroup>::left_basis() const
+Index<SymmGroup> block_matrix<Matrix, SymmGroup>::left_basis() const
 { 
-    //Index<SymmGroup> ret(basis_.size());
-    //for (std::size_t s = 0; s < basis_.size(); ++s)
-    //    ret[s] = std::make_pair(boost::tuples::get<0>(basis_[s]), boost::tuples::get<2>(basis_[s]));
+    Index<SymmGroup> ret(basis_.size());
+    for (std::size_t s = 0; s < basis_.size(); ++s)
+        //rows_[s] = std::make_pair(boost::tuples::get<0>(basis_[s]), boost::tuples::get<2>(basis_[s]));
+        ret[s] = std::make_pair(boost::tuples::get<0>(basis_[s]), boost::tuples::get<2>(basis_[s]));
 
-    //return ret;
-    return rows_;
+    return ret;
+    //return rows_;
 }
 
 template<class Matrix, class SymmGroup>
-Index<SymmGroup> const & block_matrix<Matrix, SymmGroup>::right_basis() const
+Index<SymmGroup> block_matrix<Matrix, SymmGroup>::right_basis() const
 {
-    //Index<SymmGroup> ret(basis_.size());
-    //for (std::size_t s = 0; s < basis_.size(); ++s)
-    //    ret[s] = std::make_pair(boost::tuples::get<1>(basis_[s]), boost::tuples::get<3>(basis_[s]));
+    Index<SymmGroup> ret(basis_.size());
+    for (std::size_t s = 0; s < basis_.size(); ++s)
+        //cols_[s] = std::make_pair(boost::tuples::get<1>(basis_[s]), boost::tuples::get<3>(basis_[s]));
+        ret[s] = std::make_pair(boost::tuples::get<1>(basis_[s]), boost::tuples::get<3>(basis_[s]));
 
-    //return ret;
-    return cols_;
+    return ret;
+    //return cols_;
 }
 
 template<class Matrix, class SymmGroup>
 DualIndex<SymmGroup> const & block_matrix<Matrix, SymmGroup>::basis() const { return basis_; }
+
+template<class Matrix, class SymmGroup>
+typename SymmGroup::charge const & block_matrix<Matrix, SymmGroup>::left_basis_charge(std::size_t pos) const { return boost::tuples::get<0>(basis_[pos]); }
+
+template<class Matrix, class SymmGroup>
+typename SymmGroup::charge const & block_matrix<Matrix, SymmGroup>::right_basis_charge(std::size_t pos) const { return boost::tuples::get<1>(basis_[pos]); }
+
+template<class Matrix, class SymmGroup>
+std::size_t block_matrix<Matrix, SymmGroup>::left_basis_size(std::size_t pos) const { return boost::tuples::get<2>(basis_[pos]); }
+
+template<class Matrix, class SymmGroup>
+std::size_t block_matrix<Matrix, SymmGroup>::right_basis_size(std::size_t pos) const { return boost::tuples::get<3>(basis_[pos]); }
 
 template<class Matrix, class SymmGroup>
 typename Matrix::size_type block_matrix<Matrix, SymmGroup>::n_blocks() const { return data_.size(); }
@@ -519,14 +533,15 @@ template<class Matrix, class SymmGroup>
 template <class Archive>
 void block_matrix<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
 {
-    //Index<SymmGroup> r_ = left_basis();
-    //Index<SymmGroup> c_ = right_basis();
-    //ar & r_ & c_ & data_;
-    ar & rows_ & cols_ & data_;
+    //ar & rows_ & cols_ & basis_ & data_;
+    ar & basis_ & data_;
 
-    basis_.resize(rows_.size());
-    for (std::size_t s = 0; s < rows_.size(); ++s)
-        basis_[s] = boost::make_tuple(rows_[s].first, cols_[s].first, rows_[s].second, cols_[s].second);
+    rows_ = left_basis();
+    cols_ = right_basis();
+
+    //basis_.resize(rows_.size());
+    //for (std::size_t s = 0; s < rows_.size(); ++s)
+    //    basis_[s] = boost::make_tuple(rows_[s].first, cols_[s].first, rows_[s].second, cols_[s].second);
 }
 
 
