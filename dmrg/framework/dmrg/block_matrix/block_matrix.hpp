@@ -185,11 +185,9 @@ Index<SymmGroup> block_matrix<Matrix, SymmGroup>::left_basis() const
 { 
     Index<SymmGroup> ret(basis_.size());
     for (std::size_t s = 0; s < basis_.size(); ++s)
-        //rows_[s] = std::make_pair(boost::tuples::get<0>(basis_[s]), boost::tuples::get<2>(basis_[s]));
         ret[s] = std::make_pair(boost::tuples::get<0>(basis_[s]), boost::tuples::get<2>(basis_[s]));
 
     return ret;
-    //return rows_;
 }
 
 template<class Matrix, class SymmGroup>
@@ -197,11 +195,9 @@ Index<SymmGroup> block_matrix<Matrix, SymmGroup>::right_basis() const
 {
     Index<SymmGroup> ret(basis_.size());
     for (std::size_t s = 0; s < basis_.size(); ++s)
-        //cols_[s] = std::make_pair(boost::tuples::get<1>(basis_[s]), boost::tuples::get<3>(basis_[s]));
         ret[s] = std::make_pair(boost::tuples::get<1>(basis_[s]), boost::tuples::get<3>(basis_[s]));
 
     return ret;
-    //return cols_;
 }
 
 template<class Matrix, class SymmGroup>
