@@ -91,13 +91,10 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(blo
     return *this;
 }
 
-// final
 template<class Matrix, class SymmGroup>
 template<class OtherMatrix>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(const block_matrix<OtherMatrix, SymmGroup> & rhs)
 {
-    rows_ = rhs.rows_;
-    cols_ = rhs.cols_;
     basis_ = rhs.basis_;
     data_.resize(rhs.data_.size());
     for(int k = 0; k < data_.size(); k++){
