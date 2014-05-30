@@ -93,12 +93,12 @@ private:
                         continue;
                     for (size_t b = 0; b < (*this)[p-1].at(r, c).op.n_blocks(); ++b) {
                         charge_diffs.insert(SymmGroup::fuse(bond_index_charges[p-1][r],
-                                                            SymmGroup::fuse((*this)[p-1].at(r,c).op.left_basis()[b].first,
-                                                                            -(*this)[p-1].at(r,c).op.right_basis()[b].first)));
+                                                            SymmGroup::fuse((*this)[p-1].at(r,c).op.left_basis_charge(b),
+                                                                            -(*this)[p-1].at(r,c).op.right_basis_charge(b))));
 //                        maquis::cout << r << " " << c << std::endl;
 //                        maquis::cout << bond_index_charges[p-1][r] << std::endl;
-//                        maquis::cout << (*this)[p-1](r,c).left_basis()[b].first << std::endl;
-//                        maquis::cout << (*this)[p-1](r,c).right_basis()[b].first << std::endl;
+//                        maquis::cout << (*this)[p-1](r,c).left_basis_charge(b) << std::endl;
+//                        maquis::cout << (*this)[p-1](r,c).right_basis_charge(b) << std::endl;
 //                        std::copy(charge_diffs.begin(), charge_diffs.end(),
 //                                  std::ostream_iterator<typename SymmGroup::charge>(maquis::cout, " "));
 //                        maquis::cout << std::endl << std::endl;

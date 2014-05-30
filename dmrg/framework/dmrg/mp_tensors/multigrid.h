@@ -133,22 +133,22 @@ struct multigrid {
         for (size_t Mblock = 0; Mblock < MM.n_blocks(); ++Mblock)
             for (size_t Tb = 0; Tb < T.n_blocks(); ++Tb)
                 for (size_t s1=0; s1<phys_large.size(); ++s1) {
-                    size_t s2 = phys_large.position(SymmGroup::fuse(T.right_basis()[Tb].first,
+                    size_t s2 = phys_large.position(SymmGroup::fuse(T.right_basis_charge(Tb),
                                                                     -phys_large[s1].first));
                     if(s2 == phys_large.size()) continue;
-                    size_t l = left_i.position(SymmGroup::fuse(MM.left_basis()[Mblock].first,
+                    size_t l = left_i.position(SymmGroup::fuse(MM.left_basis_charge(Mblock),
                                                                -phys_large[s1].first));
                     if(l == left_i.size()) continue;
-                    size_t r = right_i.position(SymmGroup::fuse(MM.right_basis()[Mblock].first,
+                    size_t r = right_i.position(SymmGroup::fuse(MM.right_basis_charge(Mblock),
                                                                 phys_large[s2].first));
                     if(r == right_i.size()) continue;
-                    size_t s = phys_small.position(T.left_basis()[Tb].first);
+                    size_t s = phys_small.position(T.left_basis_charge(Tb));
                     
                     {
                         charge in_l_charge = SymmGroup::fuse(phys_large[s1].first, left_i[l].first);
                         charge in_r_charge = SymmGroup::fuse(-phys_large[s2].first, right_i[r].first);
                         
-                        charge T_l_charge = T.left_basis()[Tb].first;
+                        charge T_l_charge = T.left_basis_charge(Tb);
                         charge T_r_charge = SymmGroup::fuse(phys_large[s1].first, phys_large[s2].first);
                         
                         charge out_l_charge = SymmGroup::fuse(phys_small[s].first, left_i[l].first);
