@@ -54,6 +54,14 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,
 }
 
 template<class Matrix, class SymmGroup>
+block_matrix<Matrix, SymmGroup>::block_matrix(DualIndex<SymmGroup> const & basis)
+: basis_(basis)
+{
+    for (size_type k = 0; k < basis_.size(); ++k)
+        data_.push_back(new Matrix(boost::tuples::get<2>(basis_[k]), boost::tuples::get<3>(basis_[k])));
+}
+
+template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix const& rhs)
 : basis_(rhs.basis())
 , data_(rhs.data_)

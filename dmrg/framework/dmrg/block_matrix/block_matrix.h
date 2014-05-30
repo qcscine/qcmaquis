@@ -58,6 +58,8 @@ public:
 
     block_matrix(Index<SymmGroup> const & rows,
                  Index<SymmGroup> const & cols);
+
+    block_matrix(DualIndex<SymmGroup> const & basis);
     
     block_matrix(block_matrix const&);
 

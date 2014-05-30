@@ -66,10 +66,11 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
     C.clear();
     
     typedef typename SymmGroup::charge charge;
+    Index<SymmGroup> B_left_basis = B.left_basis();
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        std::size_t matched_block = B.left_basis().position(A.right_basis_charge(k));
+        std::size_t matched_block = B_left_basis.position(A.right_basis_charge(k));
 
-        if ( matched_block == B.left_basis().size() )
+        if ( matched_block == B.n_blocks() )
             continue;
         
         std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
@@ -86,15 +87,16 @@ void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
     C.clear();
     
     typedef typename SymmGroup::charge charge;
+    Index<SymmGroup> B_left_basis = B.left_basis();
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        std::size_t matched_block = B.left_basis().position(A.right_basis_charge(k));
+        std::size_t matched_block = B_left_basis.position(A.right_basis_charge(k));
 
-        // Match A.right_basis() with B.left_basis()
-        if ( matched_block == B.left_basis().size() )
+        // Match right basis of A with left basis of B
+        if ( matched_block == B.n_blocks() )
             continue;
 
-        // Also match A.left_basis() with B.left_basis()
-        if ( !B.left_basis().has(A.left_basis_charge(k)) )
+        // Also match left basis of A with left basis of B
+        if ( !B_left_basis.has(A.left_basis_charge(k)) )
             continue;
         
         std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
@@ -111,19 +113,20 @@ void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
     C.clear();
     
     typedef typename SymmGroup::charge charge;
+    Index<SymmGroup> A_right_basis = A.right_basis();
     for (std::size_t k = 0; k < B.n_blocks(); ++k) {
-        std::size_t matched_block = A.right_basis().position(B.left_basis_charge(k));
+        std::size_t matched_block = A_right_basis.position(B.left_basis_charge(k));
 
-        // Match A.right_basis() with B.left_basis()
-        if ( matched_block == A.right_basis().size() )
+        // Match right basis of A with left basis of B
+        if ( matched_block == A.n_blocks() )
             continue;
 
         // Also match A.right_basis() with B.right_basis()
-        if ( !A.right_basis().has(B.right_basis_charge(k)) )
+        if ( !A_right_basis.has(B.right_basis_charge(k)) )
             continue;
         
         std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[matched_block]), num_cols(B[k])),
-                                               A.left_basis()[matched_block].first, B.right_basis_charge(k));
+                                               A.left_basis_charge(matched_block), B.right_basis_charge(k));
         gemm(A[matched_block], B[k], C[new_block]);
     }
 }
@@ -155,8 +158,8 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
           block_matrix<DiagMatrix, SymmGroup> & evals)
 {
 
-    evecs = block_matrix<Matrix, SymmGroup>(M.left_basis(), M.right_basis());
-    evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
+    evecs = block_matrix<Matrix, SymmGroup>(M.basis());
+    evals = block_matrix<DiagMatrix, SymmGroup>(M.basis());
     std::size_t loop_max = M.n_blocks();
 
     omp_for(size_t k, range<size_t>(0,loop_max), {
@@ -201,8 +204,8 @@ void heev_merged(block_matrix<Matrix, SymmGroup> const & M,
                  block_matrix<DiagMatrix, SymmGroup> & evals)
 {
 
-    evecs = block_matrix<Matrix, SymmGroup>(M.left_basis(), M.right_basis());
-    evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
+    evecs = block_matrix<Matrix, SymmGroup>(M.basis());
+    evals = block_matrix<DiagMatrix, SymmGroup>(M.basis());
     std::size_t loop_max = M.n_blocks();
 
     omp_for(size_t k, range<size_t>(0,loop_max), {
