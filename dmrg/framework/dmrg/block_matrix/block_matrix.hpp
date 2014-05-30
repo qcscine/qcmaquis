@@ -39,21 +39,17 @@ block_matrix<Matrix, SymmGroup>::block_matrix()
 {
 }
 
-// final
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows,
-                                              Index<SymmGroup> cols)
-: rows_(rows)
-, cols_(cols)
+block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,
+                                              Index<SymmGroup> const & cols)
 {
-    // assert(rows_.size() == cols_.size());
     assert(rows.size() == cols.size());
 
-    basis_.resize(rows_.size());
+    basis_.resize(rows.size());
     for (size_type k = 0; k < rows.size(); ++k)
         basis_[k] = boost::make_tuple(rows[k].first, cols[k].first, rows[k].second, cols[k].second);
 
-    for (size_type k = 0; k < rows_.size(); ++k)
+    for (size_type k = 0; k < rows.size(); ++k)
         data_.push_back(new Matrix(boost::tuples::get<2>(basis_[k]), boost::tuples::get<3>(basis_[k])));
 }
 

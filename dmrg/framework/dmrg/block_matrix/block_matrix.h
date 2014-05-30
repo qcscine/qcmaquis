@@ -56,8 +56,8 @@ public:
    
     block_matrix();
 
-    block_matrix(Index<SymmGroup> rows,
-                 Index<SymmGroup> cols);
+    block_matrix(Index<SymmGroup> const & rows,
+                 Index<SymmGroup> const & cols);
     
     block_matrix(block_matrix const&);
 
@@ -106,10 +106,6 @@ public:
     void remove_block(charge r, charge c);
     void remove_block(std::size_t which);
 
-// Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
-//  void remove_rows_from_block(size_type block, size_type r, size_type k = 1);
-//  void remove_cols_from_block(size_type block, size_type r, size_type k = 1);
-    
     scalar_type trace() const;
     real_type norm() const;
     void transpose_inplace();
@@ -132,8 +128,6 @@ public:
     friend void swap(block_matrix & x, block_matrix & y)
     {
         swap(x.data_, y.data_);
-        swap(x.rows_, y.rows_);
-        swap(x.cols_, y.cols_);
         swap(x.basis_, y.basis_);
 #ifdef AMBIENT_TRACKING
         ambient_track_as(x, x.label);
@@ -169,7 +163,6 @@ public:
     std::string label;
 #endif
 private:
-    Index<SymmGroup> rows_, cols_;
     DualIndex<SymmGroup> basis_;
     boost::ptr_vector<Matrix> data_;
 };    
