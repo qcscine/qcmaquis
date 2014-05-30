@@ -137,19 +137,11 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator-=(bl
     return *this;
 }
 
-// TODO: final
 template<class Matrix, class SymmGroup>
 typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1, charge c2)
 {
     assert( !has_block(c1, c2) );
-    
-    std::pair<charge, size_type>
-    p1 = std::make_pair(c1, num_rows(mtx)),
-    p2 = std::make_pair(c2, num_cols(mtx));
-    
-    size_type i1 = rows_.insert(p1);
-    cols_.insert(i1, p2);
-    i1 = basis_.insert(boost::make_tuple(c1, c2, num_rows(mtx), num_cols(mtx)));
+    size_type i1 = basis_.insert(boost::make_tuple(c1, c2, num_rows(mtx), num_cols(mtx)));
     Matrix* block = new Matrix(mtx);
     data_.insert(data_.begin() + i1, block);
 #ifdef AMBIENT_TRACKING
@@ -159,19 +151,11 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
     return i1;
 }
 
-// TODO: final
 template<class Matrix, class SymmGroup>
 typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGroup>::insert_block(Matrix * mtx, charge c1, charge c2)
 {
     assert( !has_block(c1, c2) );
-    
-    std::pair<charge, size_type>
-    p1 = std::make_pair(c1, num_rows(*mtx)),
-    p2 = std::make_pair(c2, num_cols(*mtx));
-    
-    size_type i1 = rows_.insert(p1);
-    cols_.insert(i1, p2);
-    i1 = basis_.insert(boost::make_tuple(c1, c2, num_rows(*mtx), num_cols(*mtx)));
+    size_type i1 = basis_.insert(boost::make_tuple(c1, c2, num_rows(*mtx), num_cols(*mtx)));
     data_.insert(data_.begin() + i1, mtx);
 #ifdef AMBIENT_TRACKING
     ambient_track_as(*mtx, this->label);
@@ -226,12 +210,9 @@ std::string block_matrix<Matrix, SymmGroup>::description() const
     return oss.str();
 }
 
-// final
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::shift_basis(block_matrix<Matrix, SymmGroup>::charge diff)
 {
-    rows_.shift(diff);
-    cols_.shift(diff);
     basis_.shift(diff);
 }
 
@@ -332,12 +313,10 @@ typename block_matrix<Matrix, SymmGroup>::real_type block_matrix<Matrix, SymmGro
     return maquis::sqrt(maquis::accumulate(vt.begin(), vt.end(), real_type(0.)));
 }
 
-// TODO: final
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::transpose_inplace()
 {
     std::for_each(data_.begin(), data_.end(), utils::functor_transpose_inplace());
-    std::swap(rows_, cols_);
     for (std::size_t i=0; i < basis_.size(); ++i) {
         std::swap(boost::tuples::get<0>(basis_[i]), boost::tuples::get<1>(basis_[i]));
         std::swap(boost::tuples::get<2>(basis_[i]), boost::tuples::get<3>(basis_[i]));
@@ -350,12 +329,10 @@ void block_matrix<Matrix, SymmGroup>::conjugate_inplace()
     std::for_each(data_.begin(), data_.end(), utils::functor_conj_inplace());
 }
 
-// TODO: final
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::adjoint_inplace()
 {
     std::for_each(data_.begin(), data_.end(), utils::functor_adjoint_inplace());
-    std::swap(rows_, cols_);
     for (std::size_t i=0; i < basis_.size(); ++i) {
         std::swap(boost::tuples::get<0>(basis_[i]), boost::tuples::get<1>(basis_[i]));
         std::swap(boost::tuples::get<2>(basis_[i]), boost::tuples::get<3>(basis_[i]));
@@ -376,13 +353,10 @@ void block_matrix<Matrix, SymmGroup>::generate(Generator g)
     for(std::size_t k = 0; k < n_blocks(); ++k) detail::generate_impl(data_[k], g);
 }
 
-// TODO: final
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::clear()
 {
     data_.clear();
-    rows_ = Index<SymmGroup>();
-    cols_ = Index<SymmGroup>();
     basis_ = DualIndex<SymmGroup>();
 }
 
@@ -513,7 +487,6 @@ void block_matrix<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int
 }
 
 
-// final
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
                                               std::size_t r, std::size_t c)
@@ -524,19 +497,12 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         std::size_t maxrows = std::max(boost::tuples::get<2>(basis_[pos]), r);
         std::size_t maxcols = std::max(boost::tuples::get<3>(basis_[pos]), c);
     
-        //rows_[pos].second = maxrows;
-        //cols_[pos].second = maxcols;
         boost::tuples::get<2>(basis_[pos]) = maxrows;
         boost::tuples::get<3>(basis_[pos]) = maxcols;
     } else {
-        std::pair<charge, size_type>
-        p1 = std::make_pair(c1, r),
-        p2 = std::make_pair(c2, c);
         
         assert(basis_.size() == data_.size());
         
-        //size_type i1 = rows_.insert(p1);
-        //cols_.insert(i1, p2);
         size_type i1 = basis_.insert(boost::make_tuple(c1, c2, r, c));
         Matrix* block = new Matrix(1,1);
         data_.insert(data_.begin() + i1, block); 
