@@ -59,9 +59,7 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> rows,
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix const& rhs)
-: rows_(rhs.left_basis())
-, cols_(rhs.right_basis())
-, basis_(rhs.basis())
+: basis_(rhs.basis())
 , data_(rhs.data_)
 {
     #ifdef AMBIENT_TRACKING
@@ -75,9 +73,7 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix const& rhs)
 template<class Matrix, class SymmGroup>
 template <class OtherMatrix>
 block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<OtherMatrix,SymmGroup> const& rhs)
-: rows_(rhs.left_basis())
-, cols_(rhs.right_basis())
-, basis_(rhs.basis())
+: basis_(rhs.basis())
 {
     data_.reserve(rhs.n_blocks());
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
