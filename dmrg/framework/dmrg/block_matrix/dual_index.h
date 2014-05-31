@@ -37,16 +37,25 @@ namespace dual_index_detail
     using namespace boost::tuples;
 
     template<class SymmGroup>
-    struct gt{
+    struct gt {
         bool operator()(boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> const & a,
-                        boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> const & b){
-
+                        boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> const & b)
+        {
             if (get<0>(a) > get<0>(b))
                 return true;
             else if (get<0>(a) < get<0>(b))
                 return false;
             else
                 return get<1>(a) > get<1>(b);
+        }
+    };
+
+    template<class SymmGroup>
+    struct gt_row{
+        bool operator()(boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> const & a,
+                        boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> const & b)
+        {
+            return (get<0>(a) > get<0>(b));
         }
     };
 
