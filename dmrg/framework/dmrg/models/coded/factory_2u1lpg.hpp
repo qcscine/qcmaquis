@@ -41,8 +41,8 @@ struct coded_model_factory<Matrix, TwoU1LPG> {
         }
 
         else if (parms["MODEL"] == std::string("relativistic_quantum_chemistry")) {
-            if (parms["LATTICE"] != std::string("orbitals"))
-                throw std::runtime_error("Please use \"LATTICE = orbitals\" for relativistic_quantum_chemistry\n");
+            if (parms["LATTICE"] != std::string("spinors"))
+                throw std::runtime_error("Please use \"LATTICE = spinors\" for relativistic_quantum_chemistry\n");
             
             return impl_ptr( new rel_qc_model<Matrix, TwoU1LPG>(lattice, parms) );
         }

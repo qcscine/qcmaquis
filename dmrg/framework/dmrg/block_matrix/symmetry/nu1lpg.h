@@ -59,7 +59,7 @@ public:
 
     static charge fuse(charge a, charge b)
     {
-        return a+b;
+        return plus<NU1LPG, N, S>(a,b);
     }
     
     template<int R> static charge fuse(boost::array<charge, R> const & v)
