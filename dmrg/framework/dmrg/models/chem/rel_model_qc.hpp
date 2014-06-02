@@ -64,7 +64,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     // create_up_op corresponds to create unbarred
     create_up_op.insert_block(Matrix(1, 1, 1), A, B);
     //create_up_op.insert_block(Matrix(1, 1, 1), C, D);
-    // create_down_op corresponds to create unbarred
+    // create_down_op corresponds to create barred
     create_down_op.insert_block(Matrix(1, 1, 1), A, C);
     //create_down_op.insert_block(Matrix(1, 1, 1), B, D);
 
@@ -138,14 +138,14 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 
         // Core electrons energy
         if ( i==-1 && j==-1 && k==-1 && l==-1) {
-
+            
             term_descriptor term;
             term.coeff = matrix_elements[m];
             term.push_back( boost::make_tuple(0, ident) );
             this->terms_.push_back(term);
-            
-            used_elements[m] += 1;
             std::cout << i << j << k << l << "\t # of terms in H: " << this->terms_.size() << std::endl;
+
+            used_elements[m] += 1;
         }
 
         // On site energy t_ii
@@ -153,20 +153,25 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             {
                 term_descriptor term;
                 term.coeff = matrix_elements[m];
+                //term.coeff = 1;
                 term.push_back( boost::make_tuple(i, count_up));
+                //term.push_back( boost::make_tuple(i, ident));
                 this->terms_.push_back(term);
             }
             std::cout << i << j << "\t # of terms in H: " << this->terms_.size() << std::endl;
+            std::cout << matrix_elements[m] << std::endl;
             {
                 term_descriptor term;
                 term.coeff = matrix_elements[m];
-                term.push_back(boost::make_tuple(i+n_pair+1, count_down));
+                //term.coeff = 1;
+                term.push_back( boost::make_tuple(i+n_pair+1, count_down));
+                //term.push_back( boost::make_tuple(i+n_pair+1, ident));
                 this->terms_.push_back(term);
             }
             std::cout << i+3 << j+3 << "\t # of terms in H: " << this->terms_.size() << std::endl;
-
+            std::cout << matrix_elements[m] << std::endl;
+            
             used_elements[m] += 1;
-            continue;
         }
 
         // Hopping term t_ij 
