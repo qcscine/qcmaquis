@@ -266,7 +266,6 @@ public:
     
     Spinors (BaseParameters & model)
     : L(model["L"])
-    , max_point_group_table_size(128)
     , irreps(L, 0)
     {
         assert (L%2 == 0);
@@ -379,7 +378,6 @@ private:
     
 private:
     int L;
-    int max_point_group_table_size;
     std::vector<subcharge> irreps;
 };
 

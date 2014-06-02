@@ -420,9 +420,9 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     term_assistant.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
     maquis::cout << "Term coefficients:\n";
-    for (std::size_t i=0; i < terms_.size(); ++i)
+    for (std::size_t i=0; i < this->terms_.size(); ++i)
     {
-        maquis::cout << "term " << i << ", coeff: " << term_[i].coeff << std::endl;
+        maquis::cout << "term " << i << ", coeff: " << this->terms_[i].coeff << std::endl;
     }
     
 }
