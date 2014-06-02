@@ -172,6 +172,8 @@ public:
             return std::find_if(this->begin(), this->end(),
                                 dual_index_detail::is_first_equal<SymmGroup>(r,c)) != this->end();
     }
+
+    bool is_sorted() const { return sorted_; }
     
     void sort()
     {
