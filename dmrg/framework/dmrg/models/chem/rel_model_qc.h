@@ -64,7 +64,7 @@ class rel_qc_model : public model_impl<Matrix, SymmGroup>
 
 public:
     
-    rel_qc_model(Lattice const & lat_, BaseParameters & parms_);
+    rel_qc_model(Lattice const & lat_, BaseParameters & parms_) : max_point_group_table_size(128);
     
     void update(BaseParameters const& p)
     {
@@ -75,7 +75,7 @@ public:
     
     Index<SymmGroup> const & phys_dim(size_t type) const
     {
-        return phys;
+        return phys_indices[type];
     }
     tag_type identity_matrix_tag(size_t type) const
     {
@@ -399,6 +399,9 @@ private:
     Lattice const & lat;
     BaseParameters & parms;
     Index<SymmGroup> phys;
+    std::vector<Index<SymmGroup> > phys_indices;
+
+    int max_point_group_table_size;
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type ident, fill,

@@ -52,6 +52,30 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     phys.insert(std::make_pair(C, 1));
     //phys.insert(std::make_pair(D, 1));
 
+    // create physical indices
+    phys_indices.resize(lat.size());
+    for (std::size_t site = 0; site < lat.size(); ++site)
+    {
+        // Set point group
+        int pgrp = lat.get_prop<int>("irrep", site);
+
+        B[2] = pgrp;
+        C[2] = pgrp;
+
+        Index<SymmGroup> loc;
+        if (site < lat.size()/2)
+        {   // create unbarred bases in the first half
+            loc.insert(std::make_pair(A, 1));
+            loc.insert(std::make_pair(B, 1));
+        }
+        else
+        {   // barred bases in the second half
+            loc.insert(std::make_pair(A, 1));
+            loc.insert(std::make_pair(C, 1));
+        }
+        phys_indices[site] = loc;
+    }
+
     op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
          count_up_op, count_down_op, docc_op, e2d_op, d2e_op,
          ident_op, fill_op;
