@@ -152,7 +152,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     std::vector<int> used_elements(matrix_elements.size(), 0);
     
     // Need to get this number somewhere
-    int n_pair = 2;
+    int n_pair = 1;
 
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         int i = term_assistant.idx(m, 0);
@@ -167,7 +167,6 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             term.coeff = matrix_elements[m];
             term.push_back( boost::make_tuple(0, ident) );
             this->terms_.push_back(term);
-            std::cout << i << j << k << l << "\t # of terms in H: " << this->terms_.size() << std::endl;
 
             used_elements[m] += 1;
         }
@@ -177,23 +176,15 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             {
                 term_descriptor term;
                 term.coeff = matrix_elements[m];
-                //term.coeff = 1;
                 term.push_back( boost::make_tuple(i, count_up));
-                //term.push_back( boost::make_tuple(i, ident));
                 this->terms_.push_back(term);
             }
-            std::cout << i << j << "\t # of terms in H: " << this->terms_.size() << std::endl;
-            std::cout << matrix_elements[m] << std::endl;
             {
                 term_descriptor term;
                 term.coeff = matrix_elements[m];
-                //term.coeff = 1;
                 term.push_back( boost::make_tuple(i+n_pair+1, count_down));
-                //term.push_back( boost::make_tuple(i+n_pair+1, ident));
                 this->terms_.push_back(term);
             }
-            std::cout << i+3 << j+3 << "\t # of terms in H: " << this->terms_.size() << std::endl;
-            std::cout << matrix_elements[m] << std::endl;
             
             used_elements[m] += 1;
         }

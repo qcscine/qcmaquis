@@ -45,21 +45,144 @@
 template<int N, class S>
 class NU1LPG;
 
+template<int N, class S>
+class NU1ChargeLPG : public NU1ChargePG<N, S>
+{
+    typedef NU1ChargePG<N, S> base;
+
+public:
+    NU1ChargeLPG(S init = 0) : base(init) {}
+    NU1ChargeLPG(boost::array<S, N> const & rhs) : base(rhs) {}
+
+    S * begin() { return base::begin(); }
+    S * end() { return base::end(); }
+
+    S const * begin() const { return base::begin(); }
+    S const * end() const { return base::end(); }
+
+    S & operator[](std::size_t p) { return base::operator[](p); }
+    S const & operator[](std::size_t p) const { return base::operator[](p); }
+
+    template<class Archive>
+    void save(Archive & ar) const
+    {
+        base::save(ar); 
+    }
+
+    template<class Archive>
+    void load(Archive & ar)
+    {
+        base::load(ar);
+    }
+
+    template <class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        base::serialize(ar, version);
+    }
+
+};
+
+namespace boost {
+    template <int N, class S>
+    class hash<NU1ChargeLPG<N, S> >{
+        public :
+            size_t operator()(NU1ChargeLPG<N, S> const &Charge ) const {
+                return hash<NU1ChargePG<N, S> >()(Charge);
+            }
+    };
+
+    template <int N, class S>
+    class hash<std::pair<NU1ChargeLPG<N, S>, NU1ChargeLPG<N, S> > >{
+        public :
+            size_t operator()(std::pair<NU1ChargeLPG<N, S>, NU1ChargeLPG<N, S> > const &Pair_of_charge ) const {
+                return hash<std::pair<NU1ChargePG<N, S>, NU1ChargePG<N, S> > >()(Pair_of_charge);
+            }
+    };
+
+}
+
+
+template<int N, class S>
+std::ostream& operator<<(std::ostream& os, NU1ChargeLPG<N, S> const & c)
+{
+    return ;
+}
+
+
+
+template<int N, class S>
+inline bool operator<(NU1ChargeLPG<N, S> const & a, NU1ChargeLPG<N, S> const & b)
+{
+    return tpl_ops_pg_<N, 0>().operator_lt(a.begin(), b.begin());
+}
+
+template<int N, class S>
+inline bool operator>(NU1ChargeLPG<N, S> const & a, NU1ChargeLPG<N, S> const & b)
+{
+    return tpl_ops_pg_<N, 0>().operator_gt(a.begin(), b.begin());
+}
+
+template<int N, class S>
+inline bool operator==(NU1ChargeLPG<N, S> const & a, NU1ChargeLPG<N, S> const & b)
+{
+    return tpl_ops_pg_<N, 0>().operator_eq(a.begin(), b.begin());
+}
+
+template<int N, class S>
+inline bool operator!=(NU1ChargeLPG<N, S> const & a, NU1ChargeLPG<N, S> const & b)
+{
+    return !(a==b);
+}
+
+template<int N, class S>
+NU1ChargeLPG<N, S> operator+(NU1ChargeLPG<N, S> const & a,
+                       NU1ChargeLPG<N, S> const & b)
+{
+    NU1ChargeLPG<N, S> ret;
+    tpl_arith_<NU1LPG<N, S>, N, 0>().operator_plus(a.begin(), b.begin(), ret.begin());
+    return ret;
+}
+
+
+template<int N, class S>
+NU1ChargeLPG<N, S> operator-(NU1ChargeLPG<N, S> const & rhs)
+{
+    NU1ChargeLPG<N, S> ret;
+    tpl_arith_<NU1LPG<N,S>, N, 0>().operator_uminus(rhs.begin(), ret.begin());
+    return ret;
+}
+
+template<int N, class S>
+NU1ChargeLPG<N, S> operator/(NU1ChargeLPG<N, S> const & a, int n)
+{
+    NU1ChargeLPG<N, S> ret;
+    tpl_arith_<NU1LPG<N,S>, N, 0>().operator_div(a.begin(), ret.begin(), n);
+    return ret;
+}
+
 template<int N, class S = int>
 class NU1LPG
 {
 public:
     typedef S subcharge;
-    typedef NU1ChargePG<N, S> charge;
+    typedef NU1ChargeLPG<N, S> charge;
     typedef std::vector<charge> charge_v;
     
     static const charge IdentityCharge;
     static const bool finite = false;
     static const alps::numeric::matrix<S> mult_table;
+    static const std::vector<S> adjoin_table;
+
+    static subcharge adjoin(subcharge I)
+    {
+        return adjoin_table[I];
+    }
+
 
     static charge fuse(charge a, charge b)
     {
-        return plus<NU1LPG, N, S>(a,b);
+        return a+b;
     }
     
     template<int R> static charge fuse(boost::array<charge, R> const & v)
@@ -70,7 +193,29 @@ public:
         return ret;
     }
 };
+  
+template<class S>
+std::vector<S> generate_adjoin()
+{
+    int num_irreps = 128;
+    std::vector<S> adjoin_table(num_irreps);
 
+    // boson irreps
+    adjoin_table[0] = 0;
+    adjoin_table[63] = 63;
+
+    for (int i = 1; i < num_irreps/2 - 1; ++i) {
+        adjoin_table[i] = i + pow(-1,i+1);
+    }
+
+    // fermion irreps
+    for (int i = num_irreps/2; i < num_irreps; ++i) {
+        adjoin_table[i] = i + pow(-1,i);
+    }
+
+    return adjoin_table;
+}
+  
 template<class S>
 alps::numeric::matrix<S> generate_large_mult_table()
 {
@@ -128,7 +273,7 @@ alps::numeric::matrix<S> generate_large_mult_table()
             irrep  = mj2rep[shift+mi];
             jrrep  = mj2rep[shift+mj];
             ijrrep = mj2rep[shift+mij];
-            mult_table(irrep-1,jrrep-1) = ijrrep;
+            mult_table(irrep-1,jrrep-1) = ijrrep-1;
         }
     }
 
@@ -156,8 +301,9 @@ alps::numeric::matrix<S> generate_large_mult_table()
     */
 }
 
-template<int N, class S> const typename NU1LPG<N,S>::charge NU1LPG<N,S>::IdentityCharge = typename NU1PG<N,S>::charge();
+template<int N, class S> const typename NU1LPG<N,S>::charge NU1LPG<N,S>::IdentityCharge = typename NU1LPG<N,S>::charge();
 template<int N, class S> const alps::numeric::matrix<S> NU1LPG<N,S>::mult_table = generate_large_mult_table<S>();
+template<int N, class S> const std::vector<S> NU1LPG<N,S>::adjoin_table = generate_adjoin<S>();
 
 typedef NU1LPG<2> TwoU1LPG;
 
