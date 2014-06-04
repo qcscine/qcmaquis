@@ -102,13 +102,20 @@ namespace boost {
 
 }
 
-
-template<int N, class S>
+/*template<int N, class S>
 std::ostream& operator<<(std::ostream& os, NU1ChargeLPG<N, S> const & c)
 {
+    
+    os << "<";
+    for (int i = 0; i < N+1; ++i) {
+        os << c[i];
+        if (i+1 < N+1)
+            os << ",";
+    }
+    os << ">";
     return os;
-}
-
+    //return os(os,c);
+}*/
 
 
 template<int N, class S>

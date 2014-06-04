@@ -43,7 +43,7 @@ template <class Matrix, class SymmGroup>
 class PGSymmetryConverter
 {
 public:
-    PGSymmetryConverter(std::vector<int> const & site_irreps_) {}
+    PGSymmetryConverter(Lattice const & lat) {}
     void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in) {}
 private:
 };
@@ -52,7 +52,7 @@ template <class Matrix>
 class PGSymmetryConverter<Matrix, TwoU1PG>
 {
 public:
-    PGSymmetryConverter(std::vector<int> const & site_irreps_) : impl_(site_irreps_) {}
+    PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
     void convert_tags_to_symm_tags(MPO<Matrix, TwoU1PG> & mpo_in)
     {
         impl_.convert_tags_to_symm_tags(mpo_in);
@@ -65,7 +65,7 @@ template <class Matrix>
 class PGSymmetryConverter<Matrix, TwoU1LPG>
 {
 public:
-    PGSymmetryConverter(std::vector<int> const & site_irreps_) : impl_(site_irreps_) {}
+    PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
     void convert_tags_to_symm_tags(MPO<Matrix, TwoU1LPG> & mpo_in)
     {
         impl_.convert_tags_to_symm_tags(mpo_in);
@@ -83,11 +83,18 @@ class PGSymmetryConverter_impl_
 
     typedef tag_detail::tag_type tag_type;
     typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+    typedef Lattice::pos_t pos_t;
 
 public:
-    PGSymmetryConverter_impl_(std::vector<subcharge> const & site_irreps_)
-        : site_irreps(site_irreps_)
+    PGSymmetryConverter_impl_(Lattice const & lat)
+        : site_irreps(lat.size())
     {
+        for (pos_t p = 0; p < lat.size(); ++p)
+            site_irreps[p] = lat.get_prop<int>("irrep", p);
+
+        std::cout << "site irreps are: ";
+        std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<subcharge>(std::cout, " "));
+        std::cout << std::endl;
         // collect all irreducible representations in a set
         std::set<subcharge> irrep_set;
         for(typename std::vector<subcharge>::const_iterator it=site_irreps.begin(); it != site_irreps.end(); ++it)
@@ -113,7 +120,7 @@ public:
         translation_table.resize(op_table->size(), highest_irrep+1); 
 
         /*** Create the tag translation table ****/
-        PGDecorator<SymmGroup> set_symm;
+        //PGDecorator<SymmGroup> set_symm;
         for (std::size_t i = 0; i < op_table->size(); ++i)
         {
             op_t base_op = (*op_table)[i];

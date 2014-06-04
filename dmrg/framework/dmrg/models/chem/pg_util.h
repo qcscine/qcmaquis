@@ -65,6 +65,19 @@ public:
     }
 };
 
+
+template <class SymmGroup>
+Index<SymmGroup>
+set_symm(Index<SymmGroup> rhs, typename SymmGroup::subcharge irr) {
+    for(typename Index<SymmGroup>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+        if ( (it->first[0] + it->first[1]) % 2 == 0)
+            it->first[2] = 0;
+        else
+            it->first[2] = irr;
+
+    return rhs;
+}
+
 template <class SymmGroup>
 class PGCharge
 {
