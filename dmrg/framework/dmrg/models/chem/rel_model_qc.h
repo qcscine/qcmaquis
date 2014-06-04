@@ -406,9 +406,9 @@ private:
              create_up, create_down, destroy_up, destroy_down,
              count_up, count_down, docc, e2d, d2e;
 
-    typename SymmGroup::subcharge max_irrepactually ;
+    typename SymmGroup::subcharge max_irrep;
 
-    // TODO: only generate as many operators operators as irreps actually used
+    // TODO: only generate as many operators as irreps actually used
     std::vector<op_t> generate_site_specific_ops(op_t const & op) const
     {
         PGDecorator<SymmGroup> set_symm;

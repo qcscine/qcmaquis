@@ -106,7 +106,7 @@ namespace boost {
 template<int N, class S>
 std::ostream& operator<<(std::ostream& os, NU1ChargeLPG<N, S> const & c)
 {
-    return ;
+    return os;
 }
 
 
