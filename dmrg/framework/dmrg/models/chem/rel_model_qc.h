@@ -75,15 +75,22 @@ public:
     
     Index<SymmGroup> const & phys_dim(size_t type) const
     {
+        // type == site for lattice = spinors
         return phys_indices[type];
     }
     tag_type identity_matrix_tag(size_t type) const
     {
-        return ident;
+        if (type < (lat.size()-1)/2)
+            return ident_unbar;
+        else
+            return ident_bar;
     }
     tag_type filling_matrix_tag(size_t type) const
     {
-        return fill;
+        if (type < (lat.size()-1)/2)
+            return fill_unbar;
+        else
+            return fill_bar;
     }
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
@@ -129,10 +136,12 @@ public:
              count_up_op, count_down_op, docc_op, e2d_op, d2e_op,
              swap_d2u_op, swap_u2d_op,
              create_up_count_down_op, create_down_count_up_op, destroy_up_count_down_op, destroy_down_count_up_op,
-             ident_op, fill_op;
+             ident_unbar_op, ident_bar_op, fill_unbar_op, fill_bar_op;
 
-        ident_op = tag_handler->get_op(ident);
-        fill_op = tag_handler->get_op(fill);
+        ident_unbar_op = tag_handler->get_op(ident_unbar);
+        ident_bar_op = tag_handler->get_op(ident_bar);
+        fill_unbar_op = tag_handler->get_op(fill_unbar);
+        fill_bar_op = tag_handler->get_op(fill_bar);
         create_up_op = tag_handler->get_op(create_up);
         create_down_op = tag_handler->get_op(create_down);
         destroy_up_op = tag_handler->get_op(destroy_up);
@@ -153,8 +162,10 @@ public:
 
         #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
 
-        GENERATE_SITE_SPECIFIC(ident_op)
-        GENERATE_SITE_SPECIFIC(fill_op)
+        GENERATE_SITE_SPECIFIC(ident_unbar_op)
+        GENERATE_SITE_SPECIFIC(ident_bar_op)
+        GENERATE_SITE_SPECIFIC(fill_unbar_op)
+        GENERATE_SITE_SPECIFIC(fill_bar_op)
         GENERATE_SITE_SPECIFIC(create_up_op)
         GENERATE_SITE_SPECIFIC(create_down_op)
         GENERATE_SITE_SPECIFIC(destroy_up_op)
@@ -198,7 +209,7 @@ public:
                     else
                         throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nup\" and \"Ndown\"\n");
 
-                    meas.push_back( new measurements::local<Matrix, SymmGroup>(what.str(1), lat, ident_ops, fill_ops, meas_op) );
+                    //meas.push_back( new measurements::local<Matrix, SymmGroup>(what.str(1), lat, ident_ops, fill_ops, meas_op) );
                 }
             }
         }
@@ -287,8 +298,8 @@ public:
                 half_only = true;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
-                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
-                                                                              half_only, nearest_neighbors_only, positions, bra_ckp));
+                //meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
+                //                                                              half_only, nearest_neighbors_only, positions, bra_ckp));
             }
             else if (!name.empty()) {
 
@@ -324,7 +335,7 @@ public:
                     }
 
                     else if (*it2 == "id" || *it2 == "Id") {
-                        meas_operators.push_back( std::make_pair(ident_ops, false) );
+                        //meas_operators.push_back( std::make_pair(ident_ops, false) );
                     }
                     else if (*it2 == "Nup") {
                         meas_operators.push_back( std::make_pair(count_up_ops, false) );
@@ -387,8 +398,8 @@ public:
                 
                 std::vector<bond_element> synchronous_meas_operators;
                 synchronous_meas_operators.push_back(meas_operators);
-                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
-                                                                              half_only, nearest_neighbors_only, positions));
+                //meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
+                //                                                              half_only, nearest_neighbors_only, positions));
             }
         }
         }
@@ -402,7 +413,7 @@ private:
     std::vector<Index<SymmGroup> > phys_indices;
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
-    tag_type ident, fill,
+    tag_type ident_unbar, ident_bar, fill_unbar, fill_bar,
              create_up, create_down, destroy_up, destroy_down,
              count_up, count_down, docc, e2d, d2e;
 

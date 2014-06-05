@@ -78,51 +78,43 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 
     op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
          count_up_op, count_down_op, docc_op, e2d_op, d2e_op,
-         ident_op, fill_op;
+         ident_unbar_op, ident_bar_op, fill_unbar_op, fill_bar_op;
 
-    ident_op.insert_block(Matrix(1, 1, 1), A, A);
-    ident_op.insert_block(Matrix(1, 1, 1), B, B);
-    ident_op.insert_block(Matrix(1, 1, 1), C, C);
-    //ident_op.insert_block(Matrix(1, 1, 1), D, D);
+    ident_unbar_op.insert_block(Matrix(1, 1, 1), A, A);
+    ident_unbar_op.insert_block(Matrix(1, 1, 1), B, B);
+    
+    ident_bar_op.insert_block(Matrix(1, 1, 1), A, A);
+    ident_bar_op.insert_block(Matrix(1, 1, 1), C, C);
 
     // create_up_op corresponds to create unbarred
     create_up_op.insert_block(Matrix(1, 1, 1), A, B);
-    //create_up_op.insert_block(Matrix(1, 1, 1), C, D);
+    
     // create_down_op corresponds to create barred
     create_down_op.insert_block(Matrix(1, 1, 1), A, C);
-    //create_down_op.insert_block(Matrix(1, 1, 1), B, D);
 
     destroy_up_op.insert_block(Matrix(1, 1, 1), B, A);
-    //destroy_up_op.insert_block(Matrix(1, 1, 1), D, C);
     destroy_down_op.insert_block(Matrix(1, 1, 1), C, A);
-    //destroy_down_op.insert_block(Matrix(1, 1, 1), D, B);
 
     count_up_op.insert_block(Matrix(1, 1, 1), B, B);
-    //count_up_op.insert_block(Matrix(1, 1, 1), D, D);
 
     count_down_op.insert_block(Matrix(1, 1, 1), C, C);
-    //count_down_op.insert_block(Matrix(1, 1, 1), D, D);
  
     docc_op.insert_block(Matrix(1, 1, 1), B, B);
     docc_op.insert_block(Matrix(1, 1, 1), C, C);
     
-    //e2d_op.insert_block(Matrix(1, 1, 1), A, D);
-    //d2e_op.insert_block(Matrix(1, 1, 1), D, A);
-
-    // need to modify the matrix elements?
-    // Don't think so, fill operator takes care of inverting sign
-    // In both bar and unbarred spinor we have one electron
-    // --> antisymmetric
-    fill_op.insert_block(Matrix(1, 1, 1), A, A);
-    fill_op.insert_block(Matrix(1, 1, -1), B, B);
-    fill_op.insert_block(Matrix(1, 1, -1), C, C);
-    //fill_op.insert_block(Matrix(1, 1, 1), D, D);
+    fill_unbar_op.insert_block(Matrix(1, 1, 1), A, A);
+    fill_unbar_op.insert_block(Matrix(1, 1, -1), B, B);
+    
+    fill_bar_op.insert_block(Matrix(1, 1, 1), A, A);
+    fill_bar_op.insert_block(Matrix(1, 1, -1), C, C);
 
     op_t tmp;
+    tag_type dummy;
 
-    gemm(fill_op, create_down_op, tmp);
+    // Not sure if fill_bar is right
+    gemm(fill_bar_op, create_down_op, tmp);
     create_down_op = tmp;
-    gemm(destroy_down_op, fill_op, tmp);
+    gemm(destroy_down_op, fill_bar_op, tmp);
     destroy_down_op = tmp;
 
     /**********************************************************************/
@@ -131,8 +123,10 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 
     #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
 
-    REGISTER(ident,        tag_detail::bosonic)
-    REGISTER(fill,         tag_detail::bosonic)
+    REGISTER(ident_unbar,  tag_detail::bosonic)
+    REGISTER(ident_bar,    tag_detail::bosonic)
+    REGISTER(fill_unbar,   tag_detail::bosonic)
+    REGISTER(fill_bar,     tag_detail::bosonic)
     REGISTER(create_up,    tag_detail::fermionic)
     REGISTER(create_down,  tag_detail::fermionic)
     REGISTER(destroy_up,   tag_detail::fermionic)
@@ -146,13 +140,22 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     #undef REGISTER
     /**********************************************************************/
 
-    chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
+    // TODO: change term_assistant input paramters
+    // For now just pass ident_unbar (will not be used anyway)
+    // ATTENTION:  pass fill_unbar --> doesn't affect one-term,
+    // but affects 3- and 4-terms --> need to fix it when we use
+    // all terms in the hamiltonian!!!
+    // NOTE: actually also fill is taken from here and there should be
+    // no problem --> need to check again
+    chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, dummy, dummy, tag_handler);
+    
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
     
-    // Need to get this number somewhere
-    int n_pair = 1;
+    // TODO: need to get this number somewhere
+    int n_pair = (lat.size()-1)/2;
+    std::cout << "Number of Kramers pairs: " << n_pair + 1 << std::endl;
 
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         int i = term_assistant.idx(m, 0);
@@ -165,7 +168,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back( boost::make_tuple(0, ident) );
+            term.push_back( boost::make_tuple(0, ident_unbar) );
             this->terms_.push_back(term);
 
             used_elements[m] += 1;
