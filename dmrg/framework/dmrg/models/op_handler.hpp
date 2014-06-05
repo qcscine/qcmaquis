@@ -183,7 +183,7 @@ typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::ge
         op_t& op1 = (*base::get_operator_table())[t1];
         op_t& op2 = (*base::get_operator_table())[t2];
 
-        maquis::cout << "performing op_kron with indices \n" << phys_i1 << std::endl << phys_i2;
+        maquis::cout << "performing op_kron with indices \n" << phys_i1 << std::endl << phys_i2 << std::endl;
         maquis::cout << op1 << std::endl;
         maquis::cout << op2 << std::endl;
         op_kron(phys_i1, phys_i2, op1, op2, product);

@@ -80,14 +80,14 @@ public:
     }
     tag_type identity_matrix_tag(size_t type) const
     {
-        if (type < (lat.size()-1)/2)
+        if (type < lat.size()/2)
             return ident_unbar;
         else
             return ident_bar;
     }
     tag_type filling_matrix_tag(size_t type) const
     {
-        if (type < (lat.size()-1)/2)
+        if (type < lat.size()/2)
             return fill_unbar;
         else
             return fill_bar;

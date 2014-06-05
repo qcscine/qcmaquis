@@ -153,7 +153,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
     
-    // TODO: need to get this number somewhere
+    // TODO: move it up, remove print statement
     int n_pair = (lat.size()-1)/2;
     std::cout << "Number of Kramers pairs: " << n_pair + 1 << std::endl;
 

@@ -52,11 +52,10 @@ MPO<Matrix, SymmGroup> make_mpo(Lattice const& lat, Model<Matrix, SymmGroup> con
     symm_conv.convert_tags_to_symm_tags(mpo);
 
     
+    typedef typename MPOTensor<Matrix, SymmGroup>::col_proxy col_proxy;
+    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
     for (int p = 0; p < lat.size(); ++p) {
         for (int mpocol = 0; mpocol < mpo[p].col_dim(); ++mpocol) {
-
-            typedef typename MPOTensor<Matrix, SymmGroup>::col_proxy col_proxy;
-            typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
             col_proxy col_b2 = mpo[p].column(mpocol);
             for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
                 index_type b1 = col_it.index();
