@@ -84,16 +84,9 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     for (int i = 1; i < L+1; ++i) {
         left_allowed[i] = phys_dims[site_type[i-1]] * left_allowed[i-1];
         
-        std::cout << "physical index: " << phys_dims[site_type[i-1]] << "\t left allowed at i-1: " << left_allowed[i-1] << std::endl;
-        std::cout << "Left allowed terms before erase for site " << i << ":" << std::endl;
-        std::cout << left_allowed[i] << std::endl;
-
         typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
         while ( it != left_allowed[i].end() )
         {
-            // Check if "greater than" and "less than" operators work
-            //
-            //
             if (!finitegroup && SymmGroup::fuse(it->first, cmaxi) < right_end)
                 it = left_allowed[i].erase(it);
             else if (!finitegroup && SymmGroup::fuse(it->first, cmini) > right_end)
@@ -110,32 +103,19 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     }
     
     //----- Print left allowed terms -----//
-    std::cout << std::endl;
-    for (int j = 0; j < L+1; ++j) {
-        std::cout << "Left allowed terms for site " << j << ":" << std::endl;
-        std::cout << left_allowed[j] << std::endl;
-    }
+    //std::cout << std::endl;
+    //for (int j = 0; j < L+1; ++j) {
+    //    std::cout << "Left allowed terms for site " << j << ":" << std::endl;
+    //    std::cout << left_allowed[j] << std::endl;
+    //}
 
     cmaxi=maximum_total_charge; cmini=minimum_total_charge;
     for (int i = L-1; i >= 0; --i) {
         right_allowed[i] = adjoin(phys_dims[site_type[i]]) * right_allowed[i+1];
-        //std::cout << "Right allowed terms for site " << i << ":" << std::endl;
-        //std::cout << right_allowed[i] << std::endl;
-        
         
         typename Index<SymmGroup>::iterator it = right_allowed[i].begin();
         while ( it != right_allowed[i].end() )
         {
-            // Check greater than operator works
-            //
-            //std::cout << "-cmaxi"  << std::endl;
-            //std::cout << SymmGroup::fuse(it->first, -cmaxi) << "\t" << SymmGroup::IdentityCharge << std::endl;
-            //std::cout << SymmGroup::fuse(it->first, -cmaxi) > SymmGroup::IdentityCharge << std::endl;
-            //std::cout << "-cmini"  << std::endl;
-            //std::cout << SymmGroup::fuse(it->first, -cmini) << "\t" << SymmGroup::IdentityCharge << std::endl;
-            //std::cout << SymmGroup::fuse(it->first, -cmini) < SymmGroup::IdentityCharge << std::endl;
-            //std::cout << std::endl;
-            //
             if (!finitegroup && SymmGroup::fuse(it->first, -cmaxi) > SymmGroup::IdentityCharge)
                 it = right_allowed[i].erase(it);
             else if (!finitegroup && SymmGroup::fuse(it->first, -cmini) < SymmGroup::IdentityCharge)
@@ -151,19 +131,18 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     }
     
     //----- Print right allowed terms -----//
-    
-    std::cout << std::endl;
-    for (int j = 0; j < L+1; ++j) {
-        std::cout << "Right allowed terms for site " << j << ":" << std::endl;
-        std::cout << right_allowed[j] << std::endl;
-    }
-    std::cout << std::endl;
+    //std::cout << std::endl;
+    //for (int j = 0; j < L+1; ++j) {
+    //    std::cout << "Right allowed terms for site " << j << ":" << std::endl;
+    //    std::cout << right_allowed[j] << std::endl;
+    //}
+    //std::cout << std::endl;
     
 
     for (int i = 0; i < L+1; ++i) {
         allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
-        std::cout << "allowed at site " << i <<  std::endl;
-        std::cout << allowed[i] << std::endl;
+        //std::cout << "allowed at site " << i <<  std::endl;
+        //std::cout << allowed[i] << std::endl;
         for (typename Index<SymmGroup>::iterator it = allowed[i].begin();
              it != allowed[i].end(); ++it)
             it->second = tri_min(Mmax,

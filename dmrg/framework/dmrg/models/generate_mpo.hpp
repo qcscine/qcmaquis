@@ -52,19 +52,21 @@ MPO<Matrix, SymmGroup> make_mpo(Lattice const& lat, Model<Matrix, SymmGroup> con
     symm_conv.convert_tags_to_symm_tags(mpo);
 
     
-    //for (int mpocol = 0; mpocol == mpo.col_dim(); ++mpocol) {
+    for (int p = 0; p < lat.size(); ++p) {
+        for (int mpocol = 0; mpocol < mpo[p].col_dim(); ++mpocol) {
 
-    //    typedef typename MPOTensor<Matrix, SymmGroup>::col_proxy col_proxy;
-    //    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-    //    col_proxy col_b2 = mpo.column(mpocol);
-    //    for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
-    //        index_type b1 = col_it.index();
-    //        MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,mpocol);
-    //        block_matrix<Matrix, SymmGroup> const & W = access.op;
-    //        
-    //        maquis::cout << W;
-    //    }
-    //}
+            typedef typename MPOTensor<Matrix, SymmGroup>::col_proxy col_proxy;
+            typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+            col_proxy col_b2 = mpo[p].column(mpocol);
+            for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
+                index_type b1 = col_it.index();
+                MPOTensor_detail::term_descriptor<Matrix, SymmGroup> access = mpo[p].at(b1,mpocol);
+                block_matrix<Matrix, SymmGroup> const & W = access.op;
+                
+                maquis::cout << "site " << p << "(" << b1 << "," << mpocol << ")\n" << W << std::endl;
+            }
+        }
+    }
     
     return mpo;
 }

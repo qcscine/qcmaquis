@@ -109,8 +109,8 @@ public:
         //    return e2d;
         //else if (name == "d2e")
         //    return d2e;
-        //else if (name == "docc")
-        //    return docc;
+        else if (name == "docc")
+            return docc;
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
@@ -141,7 +141,7 @@ public:
         count_down_op = tag_handler->get_op(count_down);
         //e2d_op = tag_handler->get_op(e2d);
         //d2e_op = tag_handler->get_op(d2e);
-        //docc_op = tag_handler->get_op(docc);
+        docc_op = tag_handler->get_op(docc);
 
         gemm(destroy_down_op, create_up_op, swap_d2u_op); // S_plus
         gemm(destroy_up_op, create_down_op, swap_u2d_op); // S_minus
@@ -164,7 +164,7 @@ public:
 
         //GENERATE_SITE_SPECIFIC(e2d_op)
         //GENERATE_SITE_SPECIFIC(d2e_op)
-        //GENERATE_SITE_SPECIFIC(docc_op)
+        GENERATE_SITE_SPECIFIC(docc_op)
 
         GENERATE_SITE_SPECIFIC(swap_d2u_op)
         GENERATE_SITE_SPECIFIC(swap_u2d_op)
@@ -193,8 +193,8 @@ public:
                     else if (it->value() == "Ndown")
                         meas_op = count_down_ops;
                     else if (it->value() == "Nup*Ndown" || it->value() == "docc")
-                    //    meas_op = docc_ops;
-                        std::cout << "Warning! meas_op = docc_ops not set!\n";
+                        meas_op = docc_ops;
+                        //std::cout << "Warning! meas_op = docc_ops not set!\n";
                     else
                         throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nup\" and \"Ndown\"\n");
 
@@ -333,8 +333,8 @@ public:
                         meas_operators.push_back( std::make_pair(count_down_ops, false) );
                     }
                     else if (*it2 == "docc" || *it2 == "Nup*Ndown") {
-                    //    meas_operators.push_back( std::make_pair(docc_ops, false) );
-                        std::cout << "Warning! \"meas_operators.push_back( std::make_pair(docc_ops, false))\" not set!\n";
+                        meas_operators.push_back( std::make_pair(docc_ops, false) );
+                        //std::cout << "Warning! \"meas_operators.push_back( std::make_pair(docc_ops, false))\" not set!\n";
                     }
                     else if (*it2 == "cdag_up*c_down" || *it2 == "splus") {
                         meas_operators.push_back( std::make_pair(swap_d2u_ops, false) );
