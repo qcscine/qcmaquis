@@ -88,6 +88,8 @@ public:
         return ret;
     }
 
+    tag_type size() { return operator_table->size(); }
+
 /*
     std::pair<tag_type, value_type> checked_register(op_t & sample, tag_detail::operator_kind kind) {
         std::pair<bool, value_type> cmp_result;

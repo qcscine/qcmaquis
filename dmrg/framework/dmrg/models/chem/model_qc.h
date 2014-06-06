@@ -448,8 +448,11 @@ private:
     std::vector<tag_type> register_site_specific(std::vector<op_t> const & ops, tag_detail::operator_kind kind)
     {
         std::vector<tag_type> ret;
-        for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc)
-            ret.push_back(tag_handler->register_op(ops[sc], kind));
+        for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
+            tag_type newtag = tag_handler->register_op(ops[sc], kind);
+            assert( newtag < tag_handler->size() );
+            ret.push_back(newtag);
+        }
 
         return ret;
     }
