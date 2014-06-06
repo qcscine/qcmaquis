@@ -669,8 +669,6 @@ void op_kron(Index<SymmGroup> const & phys_A,
             typename SymmGroup::charge new_left = SymmGroup::fuse(A.left_basis()[i].first, B.left_basis()[j].first);
 
 
-            maquis::cout << "query product basis with " << A.left_basis()[i].first << " " << B.left_basis()[j].first
-                         << " | " << A.right_basis()[i].first << " " << B.right_basis()[j].first << std::endl;
             Matrix2 tmp(pb_left.size(A.left_basis()[i].first, B.left_basis()[j].first),
                        pb_right.size(A.right_basis()[i].first, B.right_basis()[j].first),
                        0);
