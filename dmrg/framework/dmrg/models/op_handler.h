@@ -83,6 +83,7 @@ public:
             sign_table.push_back(kind);
 
         assert(sign_table.size() == operator_table->size());
+        assert(ret.first < operator_table->size());
 
         return ret;
     }
@@ -112,11 +113,17 @@ public:
     typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i) { return (*operator_table)[i]; }
     typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const { return (*operator_table)[i]; }
 
-    bool is_fermionic (tag_type query_tag) const { return sign_table[query_tag]; }
+    bool is_fermionic (tag_type query_tag) const {
+        if (query_tag >= sign_table.size()) maquis::cout << "query_tag " << query_tag << std::endl;
+
+        assert(query_tag < sign_table.size());
+
+        return sign_table[query_tag];
+    }
 
     /* WARNING: not thread safe! */
     std::pair<tag_type, value_type> get_product_tag(const tag_type t1, const tag_type t2);
-    std::pair<std::vector<tag_type>, value_type> get_product_tags(const std::vector<tag_type> & t1, const std::vector<tag_type> & t2);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > get_product_tags(const std::vector<tag_type> & t1, const std::vector<tag_type> & t2);
 
     /* Diagnostics *************************************/
     tag_type prod_duplicates() const { return duplicates_(product_tags); }

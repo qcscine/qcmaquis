@@ -122,12 +122,38 @@ namespace chem_detail {
         }
 
         void add_term(std::vector<term_descriptor> & tagterms,
-                      value_type scale, int p1, int p2, std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2) {
-
+                      value_type scale, int p1, int p2, std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2)
+        {
             term_descriptor
             term = TermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler, lat);
             IndexTuple id(p1, p2, op_1[lat.get_prop<typename S::subcharge>("type", p1)],
                                   op_2[lat.get_prop<typename S::subcharge>("type", p2)]);
+            if (two_terms.count(id) == 0) {
+                two_terms[id] = term;
+            }
+            else 
+                two_terms[id].coeff += term.coeff;
+        }
+
+        // two positions with four operators - multiply first and second operator pairs
+        void add_term(std::vector<term_descriptor> & tagterms,
+                      value_type scale, int p1, int p2, std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2,
+                                                        std::vector<tag_type> const & op_3, std::vector<tag_type> const & op_4)
+        {
+            std::pair<tag_type, value_type> ptag1, ptag2; 
+            ptag1 = tag_handler->get_product_tag(op_1[lat.get_prop<typename S::subcharge>("type", p1)],
+                                                 op_2[lat.get_prop<typename S::subcharge>("type", p1)]);
+            ptag2 = tag_handler->get_product_tag(op_3[lat.get_prop<typename S::subcharge>("type", p2)],
+                                                 op_4[lat.get_prop<typename S::subcharge>("type", p2)]);
+
+            term_descriptor term;
+            term.is_fermionic = false;
+            term.coeff = scale * ptag1.second * ptag2.second;
+            term.push_back(boost::make_tuple(p1, ptag1.first));
+            term.push_back(boost::make_tuple(p2, ptag2.first));
+
+            IndexTuple id(p1, p2, ptag1.first, ptag2.first);
+
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
             }

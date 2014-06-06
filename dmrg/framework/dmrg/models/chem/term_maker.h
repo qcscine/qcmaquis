@@ -83,6 +83,35 @@ struct TermMaker {
         return term;
     }
 
+    // same, but multiply first two operators
+    static term_descriptor positional_two_term(bool sign, std::vector<tag_type> const & fill_op, value_type scale, pos_t i, pos_t j,
+                                     std::vector<tag_type> const & op1, std::vector<tag_type> const & op2, std::vector<tag_type> const & op3,
+                                     boost::shared_ptr<TagHandler<M, S> > op_table,
+                                     Lattice const & lat)
+    {
+        term_descriptor term;
+        term.is_fermionic = sign;
+        term.coeff = scale;
+
+        std::pair<tag_type, value_type> pre_ptag;
+        pre_ptag = op_table->get_product_tag(op1[lat.get_prop<sc_t>("type",i)], op2[lat.get_prop<sc_t>("type",i)]);
+
+        std::pair<tag_type, value_type> ptag;
+        if (i < j) {
+            ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", i)], pre_ptag.first);
+            term.push_back(boost::make_tuple(i, ptag.first));
+            term.push_back(boost::make_tuple(j, op3[lat.get_prop<sc_t>("type", j)]));
+            term.coeff *= ptag.second * pre_ptag.second;
+        }
+        else {
+            ptag = op_table->get_product_tag(fill_op[lat.get_prop<sc_t>("type", j)], op3[lat.get_prop<sc_t>("type", j)]);
+            term.push_back(boost::make_tuple(i, pre_ptag.first));
+            term.push_back(boost::make_tuple(j, ptag.first));
+            term.coeff *= -ptag.second * pre_ptag.second;
+        }
+        return term;
+    }
+
     static term_descriptor three_term(std::vector<tag_type> const & ident, std::vector<tag_type> const & fill_op,
                                      value_type scale, pos_t pb, pos_t p1, pos_t p2,
                                      std::vector<tag_type> const & opb1, std::vector<tag_type> const & opb2,
