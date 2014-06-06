@@ -73,6 +73,15 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
             select_proc(ambient::scope::balance(i,L));
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], fillrand, val);
             mps[i].divide_by_scalar(mps[i].scalar_norm());
+
+            maquis::cout << "site " << i << std::endl;
+            maquis::cout << mps[i] << std::endl;
+            mps[i].make_right_paired();
+            maquis::cout << mps[i] << std::endl;
+            mps[i].make_left_paired();
+            maquis::cout << mps[i] << std::endl;
+            maquis::cout << "***************************************\n";
+
             #ifdef AMBIENT_TRACKING
             ambient_track_array(mps, i);
             #endif
