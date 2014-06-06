@@ -50,7 +50,6 @@ MPO<Matrix, SymmGroup> make_mpo(Lattice const& lat, Model<Matrix, SymmGroup> con
     
     PGSymmetryConverter<Matrix, SymmGroup> symm_conv(lat);
     symm_conv.convert_tags_to_symm_tags(mpo);
-
     
     typedef typename MPOTensor<Matrix, SymmGroup>::col_proxy col_proxy;
     typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;

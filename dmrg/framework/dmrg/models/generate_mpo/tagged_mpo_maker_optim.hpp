@@ -190,6 +190,8 @@ namespace generate_mpo
                     else if (rr == right.end())
                         boost::tie(rr, boost::tuples::ignore) = right.insert( make_pair(k2, r++) );
                     
+                    maquis::cout << "pushing " << p << "(" << ll->second << "," << rr->second << ")\n"
+                                 << tag_handler->get_op(val.first) << std::endl;
                     pre_tensor.push_back( tag_block(ll->second, rr->second, val.first, val.second) );
                 }
                 
@@ -409,8 +411,10 @@ namespace generate_mpo
             std::pair<prempo_key_type,prempo_key_type> kk = make_pair(trivial_left,trivial_right);
             for (typename std::map<pos_t, op_t>::const_iterator it = site_terms.begin();
                  it != site_terms.end(); ++it) {
+                maquis::cout << "registering at " << it->first << "\n" << it->second << std::endl;
                 tag_type site_tag = tag_handler->register_op(it->second, tag_detail::bosonic);
 				std::pair<typename prempo_map_type::iterator,bool> ret;
+                maquis::cout << "table lookup\n" << tag_handler->get_op(site_tag) << std::endl;
                 ret = prempo[it->first].insert( make_pair( kk, prempo_value_type(site_tag,1.) ) );
                 if (!ret.second)
                     throw std::runtime_error("another site term already existing!");
@@ -418,6 +422,7 @@ namespace generate_mpo
 
             /// fill with ident until the end
             bool trivial_fill = true;
+            maquis::cout << "leftmost_right is " << leftmost_right << std::endl;
             insert_filling(leftmost_right+1, length, trivial_right, trivial_fill);
 
             finalized = true;

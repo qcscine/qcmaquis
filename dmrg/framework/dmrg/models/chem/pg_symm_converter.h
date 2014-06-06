@@ -109,6 +109,7 @@ public:
     {
 
         alps::numeric::matrix<subcharge> translation_table;
+        alps::numeric::matrix<typename Matrix::value_type> translation_table_coeff;
 
         /*** Set up a new OPTable for the symmetry-enabled operators via TagHandler ****/
         // TODO: assert that op_table is valid for all tensors in the MPO!
@@ -118,6 +119,7 @@ public:
 
         subcharge highest_irrep = *std::max_element(irrep_vector.begin(), irrep_vector.end());
         translation_table.resize(op_table->size(), highest_irrep+1); 
+        translation_table_coeff.resize(op_table->size(), highest_irrep+1); 
 
         /*** Create the tag translation table ****/
         //PGDecorator<SymmGroup> set_symm;
@@ -132,6 +134,7 @@ public:
 
                 std::pair<tag_type, typename Matrix::value_type> symm_tag = symm_handler.checked_register(modified, tag_detail::bosonic);
                 translation_table(i, *it) = symm_tag.first;
+                translation_table_coeff(i, *it) = symm_tag.second;
             }
         }
 
@@ -154,10 +157,11 @@ public:
                     typename MPOTensor<Matrix, SymmGroup>::internal_value_type access = mpo_in[i].col_tags(b1, b2);
                     tag_type base_tag = access.first;
                     tag_type symm_tag = translation_table(base_tag, site_irreps[i]);
+                    typename Matrix::value_type coeff = translation_table_coeff(base_tag, site_irreps[i]);
 
                     // replace 'base_tag' with a tag corresponding to the same operator, but with the symmetry
                     // irreducible representation of site 'i', which is site_irreps[i]
-                    mpo_in[i].col_tags(b1, b2) = typename MPOTensor<Matrix, SymmGroup>::internal_value_type(symm_tag, access.second);
+                    mpo_in[i].col_tags(b1, b2) = typename MPOTensor<Matrix, SymmGroup>::internal_value_type(symm_tag, access.second * coeff);
                 }
             }
         }
