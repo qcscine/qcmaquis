@@ -205,7 +205,6 @@ public:
                         meas_op = count_bar_ops;
                     else if (it->value() == "Nup*Ndown" || it->value() == "docc")
                         meas_op = docc_ops;
-                        //std::cout << "Warning! meas_op = docc_ops not set!\n";
                     else
                         throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nup\" and \"Ndown\"\n");
 
@@ -345,7 +344,6 @@ public:
                     }
                     else if (*it2 == "docc" || *it2 == "Nup*Ndown") {
                         meas_operators.push_back( std::make_pair(docc_ops, false) );
-                        //std::cout << "Warning! \"meas_operators.push_back( std::make_pair(docc_ops, false))\" not set!\n";
                     }
                     else if (*it2 == "cdag_up*c_down" || *it2 == "splus") {
                         meas_operators.push_back( std::make_pair(swap_d2u_ops, false) );

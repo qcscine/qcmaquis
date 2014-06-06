@@ -661,7 +661,6 @@ void op_kron(Index<SymmGroup> const & phys_A,
 
     ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
     ProductBasis<SymmGroup> const& pb_right = pb_left;
-    pb_left.print();
 
     for (int i = 0; i < A.n_blocks(); ++i) {
         for (int j = 0; j < B.n_blocks(); ++j) {

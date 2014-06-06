@@ -149,7 +149,6 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     
     // TODO: move it up, remove print statement
     int n_pair = lat.size()/2;
-    std::cout << "Number of Kramers pairs: " << n_pair << std::endl;
 
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         int i = term_assistant.idx(m, 0);
@@ -580,12 +579,6 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 
     term_assistant.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
-    maquis::cout << "Term coefficients:\n";
-    for (std::size_t i=0; i < this->terms_.size(); ++i)
-    {
-        maquis::cout << "term " << i << ", coeff: " << this->terms_[i].coeff << " @ "
-                     << this->terms_[i].position(0) << std::endl;
-    }
     
 }
     

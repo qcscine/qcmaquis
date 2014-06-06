@@ -361,13 +361,6 @@ public:
         return size_[pc];
     }
 
-    void print() const
-    {
-        for (typename boost::unordered_map<std::pair<charge, charge>, size_t>::const_iterator
-             it = keys_vals_.begin(); it != keys_vals_.end(); ++it)
-            std::cout << it->first.first << it->first.second << std::endl;
-    }
-    
     // for the moment let's avoid the default template argument (C++11)
     inline size_t size(charge a, charge b) const
     {
