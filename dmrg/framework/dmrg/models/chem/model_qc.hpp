@@ -196,7 +196,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back(boost::make_tuple(i, docc));
+            term.push_back(boost::make_tuple(i, docc[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]));
             this->terms_.push_back(term);
 
             used_elements[m] += 1;

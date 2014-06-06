@@ -107,11 +107,11 @@ public:
     }
     tag_type identity_matrix_tag(size_t type) const
     {
-        return ident;
+        return ident[type];
     }
     tag_type filling_matrix_tag(size_t type) const
     {
-        return fill;
+        return fill[type];
     }
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const

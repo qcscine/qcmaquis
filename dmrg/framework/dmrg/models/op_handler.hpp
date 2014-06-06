@@ -134,7 +134,7 @@ TagHandler<Matrix, SymmGroup>::get_product_tags(std::vector<typename OPTable<Mat
     for (typename SymmGroup::subcharge sc=0; sc < ops1.size(); ++sc) {
         std::pair<tag_type, value_type> ptag = this->get_product_tag(ops1[sc], ops2[sc]);
         ret.first.push_back(ptag.first);
-        assert(ret.second = ptag.second);
+        assert(ret.second == ptag.second);
     }
 
     return ret;
