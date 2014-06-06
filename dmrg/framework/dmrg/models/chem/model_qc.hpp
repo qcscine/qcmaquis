@@ -130,10 +130,10 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 
     #undef REGISTER
     /**********************************************************************/
-    //std::pair<std::vector<tag_type>, std::vector<value_type> > create_up_times_fill = tag_handler->get_product_tags(create_up, fill);
-    //std::pair<std::vector<tag_type>, std::vector<value_type> > create_down_times_fill = tag_handler->get_product_tags(create_down, fill);
-    //std::pair<std::vector<tag_type>, std::vector<value_type> > destroy_up_times_fill = tag_handler->get_product_tags(destroy_up, fill);
-    //std::pair<std::vector<tag_type>, std::vector<value_type> > destroy_down_times_fill = tag_handler->get_product_tags(destroy_down, fill);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > create_up_times_fill = tag_handler->get_product_tags(create_up, fill);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > create_down_times_fill = tag_handler->get_product_tags(create_down, fill);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > destroy_up_times_fill = tag_handler->get_product_tags(destroy_up, fill);
+    std::pair<std::vector<tag_type>, std::vector<value_type> > destroy_down_times_fill = tag_handler->get_product_tags(destroy_down, fill);
     /**********************************************************************/
 
     chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
@@ -328,28 +328,28 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
             if (j==l) { same_idx = j; pos1 = k; pos2 = i; }
 
             //std::pair<std::vector<tag_type>, value_type> ptag;
+            typename SymmGroup::subcharge irr = lat.get_prop<typename SymmGroup::subcharge>("type", same_idx);
 
             //ptag = tag_handler->get_product_tags(create_up, fill);
-            //typename SymmGroup::subcharge irr = lat.get_prop<typename SymmGroup::subcharge>("type", same_idx);
-            //term_assistant.add_term(
-            //    this->terms_, matrix_elements[m]*create_up_times_fill.second[irr], same_idx, pos1, pos2, create_up_times_fill.first, create_down , destroy_down, destroy_up
-            //    //this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_down , destroy_down, destroy_up
-            //);
-            ////ptag = tag_handler->get_product_tags(create_down, fill);
-            //term_assistant.add_term(
-            //    this->terms_, matrix_elements[m]*create_down_times_fill.second[irr], same_idx, pos1, pos2, create_down_times_fill.first, create_up   , destroy_up  , destroy_down
-            //    //this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_up   , destroy_up  , destroy_down
-            //);
-            ////ptag = tag_handler->get_product_tags(destroy_down, fill);
-            //term_assistant.add_term(
-            //    this->terms_, matrix_elements[m]*destroy_down_times_fill.second[irr], same_idx, pos1, pos2, destroy_down_times_fill.first, destroy_up  , create_up   , create_down
-            //    //this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_up  , create_up   , create_down
-            //);
-            ////ptag = tag_handler->get_product_tags(destroy_up, fill);
-            //term_assistant.add_term(
-            //    this->terms_, matrix_elements[m]*destroy_up_times_fill.second[irr], same_idx, pos1, pos2, destroy_up_times_fill.first, destroy_down, create_down , create_up
-            //    //this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_down, create_down , create_up
-            //);
+            term_assistant.add_term(
+                this->terms_, matrix_elements[m]*create_up_times_fill.second[irr], same_idx, pos1, pos2, create_up_times_fill.first, create_down , destroy_down, destroy_up
+                //this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_down , destroy_down, destroy_up
+            );
+            //ptag = tag_handler->get_product_tags(create_down, fill);
+            term_assistant.add_term(
+                this->terms_, matrix_elements[m]*create_down_times_fill.second[irr], same_idx, pos1, pos2, create_down_times_fill.first, create_up   , destroy_up  , destroy_down
+                //this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_up   , destroy_up  , destroy_down
+            );
+            //ptag = tag_handler->get_product_tags(destroy_down, fill);
+            term_assistant.add_term(
+                this->terms_, matrix_elements[m]*destroy_down_times_fill.second[irr], same_idx, pos1, pos2, destroy_down_times_fill.first, destroy_up  , create_up   , create_down
+                //this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_up  , create_up   , create_down
+            );
+            //ptag = tag_handler->get_product_tags(destroy_up, fill);
+            term_assistant.add_term(
+                this->terms_, matrix_elements[m]*destroy_up_times_fill.second[irr], same_idx, pos1, pos2, destroy_up_times_fill.first, destroy_down, create_down , create_up
+                //this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_down, create_down , create_up
+            );
 
             term_assistant.add_term(
                 this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_up,   create_up,   destroy_up
@@ -420,16 +420,6 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 
     term_assistant.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
-
-    for (int i=0; i < this->terms_.size(); ++i)
-    {
-        for(int j=0; j < this->terms_[i].size(); ++j)
-            maquis::cout << this->terms_[i].position(j);
-        maquis::cout << " ";
-        for(int j=0; j < this->terms_[i].size(); ++j)
-            maquis::cout << this->terms_[i].operator_tag(j);
-        maquis::cout << "  " << this->terms_[i].coeff << std::endl;
-    }
 }
     
 #endif

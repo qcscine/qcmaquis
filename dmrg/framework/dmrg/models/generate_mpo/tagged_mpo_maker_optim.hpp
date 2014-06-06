@@ -244,9 +244,6 @@ namespace generate_mpo
         {
             assert(term.size() == 3);
             int nops = term.size();
-            maquis::cout << term.operator_tag(0) << " "
-                         << term.operator_tag(1) << " "
-                         << term.operator_tag(2) << std::endl;
             
             /// number of fermionic operators
             int nferm = 0;

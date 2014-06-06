@@ -123,7 +123,9 @@ struct TermMaker {
         term.is_fermionic = true;
         term.coeff = scale;
 
-        tag_type boson_op, op1, op2;
+        tag_type boson_op;
+        tag_type op1 = ops1[lat.get_prop<sc_t>("type", p1)];
+        tag_type op2 = ops2[lat.get_prop<sc_t>("type", p2)];
         std::pair<tag_type, value_type> ptag1, ptag2;
 
         if ( (pb>p1 && pb<p2) || (pb>p2 && pb<p1) ) {

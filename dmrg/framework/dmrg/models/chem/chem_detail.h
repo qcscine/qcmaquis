@@ -188,7 +188,7 @@ namespace chem_detail {
                       std::vector<tag_type> const & op_l, std::vector<tag_type> const & op_j)
         {
             // Collapse terms with identical operators and different scales into one term
-            if (op_i == op_k && op_j == op_l) {
+            if (op_i[0] == op_k[0] && op_j[0] == op_l[0]) {
 
                 // if i>j, we switch l,j to get the related term
                 // if j<i, we have to switch i,k, otherwise we get a forbidden permutation
