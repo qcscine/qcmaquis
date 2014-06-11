@@ -64,7 +64,7 @@ channels::AMBIENT_CHANNEL_NAME::channel&nbsp;</td><td class="memItemRight" valig
 <tr><td colspan="2"><h2>Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#acb3a205d2ee031d98d628d2dfffc8c2f">controller</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a2fe9da7a781d7ef0f724f077f9edaa6b">~controller</a> ()</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a54a1112b0b019b49bb5ab70c2ea98298">reserve</a> (int <a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ad0f771ed1d05b786958cb633dbfbceaf">db</a>=0)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a6a2d5a755888a735d5ff6eab31ad7c67">reserve</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a242113c49efb0dd11fcfde06e4398e84">empty</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ad24b01517fe1821ac8c00f3b19134e43">flush</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a638c3c9d7103879f0f2b41d870f26837">clear</a> ()</td></tr>
@@ -85,9 +85,6 @@ channels::AMBIENT_CHANNEL_NAME::channel&nbsp;</td><td class="memItemRight" valig
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a61efeb9e9be3e8c965c607d1791f84d1">fence</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a2f970c0379bae61f8e751bec6edb210d">get_rank</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a2ed84c960beedc84486917f617e2c739">get_shared_rank</a> () const </td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#af174659f5cf580b1de14a5d4ac540ad5">get_dedicated_rank</a> () const </td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ac0dc4742b9e6835792395d2d743b5f85">get_num_db_procs</a> () const </td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a072ddbd144ba971fd6fa928b553e94d5">get_num_workers</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ac5cd0a9e852bffc87c96a71c07c6c32d">get_num_procs</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#aee648d2380c08034ccb01e102716b1bf">channel_type</a> &amp;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a7dc96696da6d00e0ed932432660f9fe1">get_channel</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a0da2c458507e1e092e4ef3b0a57d7a1e">meminfo</a> () const </td></tr>
@@ -103,7 +100,6 @@ channels::AMBIENT_CHANNEL_NAME::channel&nbsp;</td><td class="memItemRight" valig
 <tr><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classambient_1_1controllers_1_1ssm_1_1functor.html">functor</a> * &gt; *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a95ed669441cf4ae2df76eb0754da9d8a">chains</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classambient_1_1controllers_1_1ssm_1_1functor.html">functor</a> * &gt; *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a77d19ca1de2a454d3a0ad591fe793e96">mirror</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classambient_1_1memory_1_1collector.html">ambient::memory::collector</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#abad2f2704161218020ec0aa11cd07f21">garbage</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ad0f771ed1d05b786958cb633dbfbceaf">db</a></td></tr>
 </table>
 <hr/><h2>Member Typedef Documentation</h2>
 <a class="anchor" id="aee648d2380c08034ccb01e102716b1bf"></a><!-- doxytag: member="ambient::controllers::ssm::controller::channel_type" ref="aee648d2380c08034ccb01e102716b1bf" args="" -->
@@ -332,63 +328,12 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="af174659f5cf580b1de14a5d4ac540ad5"></a><!-- doxytag: member="ambient::controllers::ssm::controller::get_dedicated_rank" ref="af174659f5cf580b1de14a5d4ac540ad5" args="() const " -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> ambient::controllers::ssm::controller::get_dedicated_rank </td>
-          <td>(</td>
-          <td class="paramname"></td>
-          <td>&nbsp;)&nbsp;</td>
-          <td> const<code> [inline]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="ac0dc4742b9e6835792395d2d743b5f85"></a><!-- doxytag: member="ambient::controllers::ssm::controller::get_num_db_procs" ref="ac0dc4742b9e6835792395d2d743b5f85" args="() const " -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int ambient::controllers::ssm::controller::get_num_db_procs </td>
-          <td>(</td>
-          <td class="paramname"></td>
-          <td>&nbsp;)&nbsp;</td>
-          <td> const<code> [inline]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
 <a class="anchor" id="ac5cd0a9e852bffc87c96a71c07c6c32d"></a><!-- doxytag: member="ambient::controllers::ssm::controller::get_num_procs" ref="ac5cd0a9e852bffc87c96a71c07c6c32d" args="() const " -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">int ambient::controllers::ssm::controller::get_num_procs </td>
-          <td>(</td>
-          <td class="paramname"></td>
-          <td>&nbsp;)&nbsp;</td>
-          <td> const<code> [inline]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a072ddbd144ba971fd6fa928b553e94d5"></a><!-- doxytag: member="ambient::controllers::ssm::controller::get_num_workers" ref="a072ddbd144ba971fd6fa928b553e94d5" args="() const " -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int ambient::controllers::ssm::controller::get_num_workers </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -522,15 +467,14 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a54a1112b0b019b49bb5ab70c2ea98298"></a><!-- doxytag: member="ambient::controllers::ssm::controller::reserve" ref="a54a1112b0b019b49bb5ab70c2ea98298" args="(int db=0)" -->
+<a class="anchor" id="a6a2d5a755888a735d5ff6eab31ad7c67"></a><!-- doxytag: member="ambient::controllers::ssm::controller::reserve" ref="a6a2d5a755888a735d5ff6eab31ad7c67" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void ambient::controllers::ssm::controller::reserve </td>
           <td>(</td>
-          <td class="paramtype">int&nbsp;</td>
-          <td class="paramname"> <em>db</em> = <code>0</code></td>
+          <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
           <td><code> [inline]</code></td>
         </tr>
@@ -710,19 +654,6 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ad0f771ed1d05b786958cb633dbfbceaf"></a><!-- doxytag: member="ambient::controllers::ssm::controller::db" ref="ad0f771ed1d05b786958cb633dbfbceaf" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int <a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ad0f771ed1d05b786958cb633dbfbceaf">ambient::controllers::ssm::controller::db</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
 <a class="anchor" id="abad2f2704161218020ec0aa11cd07f21"></a><!-- doxytag: member="ambient::controllers::ssm::controller::garbage" ref="abad2f2704161218020ec0aa11cd07f21" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -820,7 +751,7 @@ template&lt;typename T &gt; </div>
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 26 May 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 2 Jun 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

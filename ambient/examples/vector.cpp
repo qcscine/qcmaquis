@@ -5,10 +5,10 @@ int main(){ using namespace ambient;
 
     vector<int> a(10, 13);
     vector<int> b(10, 10);
-                                 { scope select(1);
+                                 { actor select(ambient::scope::begin()+1);
     a += b;
                                  }
-                                 { scope select(0); 
+                                 { actor select(ambient::scope::begin()); 
     a += b;
                                  }
     for(int i = 0; i < 10; i++)
@@ -41,20 +41,20 @@ int main(){ using namespace ambient;
 
     std::vector<vector<int>* > list; list.reserve(100);
     for(int i = 0; i < 100; i++){
-        scope select(i % 2);
+        actor select(ambient::scope::begin()+i % 2);
         list.push_back(new vector<int>(100+i, 13));
     }
 
     int delta = 11;
 
     ambient::threaded_for_each(0, (int)list.size(), [&](int i){
-        scope select(scope::balance(i, 100));
+        actor select(ambient::scope::balance(i, 100));
         for(int k = 0; k < 1000; k++)
         ambient::for_each( list[i]->begin(), list[i]->end(), [&] (int& val){ val += delta; } );
     });
 
     for(int i = 0; i < 100; i++){
-        scope select(0);
+        actor select(ambient::scope::begin());
         for(int k = 0; k < 1000; k++)
         ambient::for_each( list[i]->begin(), list[i]->end(), [&] (int& val){ val += delta; } );
     }

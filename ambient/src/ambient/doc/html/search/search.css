@@ -3,8 +3,8 @@
 #MSearchBox {
     padding: 0px;
     margin: 0px;
+    margin-top: 8px;
     border: none;
-    border: 1px solid #84B0C7;
     white-space: nowrap;
     -moz-border-radius: 8px;
     -webkit-border-top-left-radius: 8px;
@@ -15,7 +15,7 @@
 #MSearchField {
     font: 9pt Arial, Verdana, sans-serif;
     color: #999999;
-    background-color: #FFFFFF;
+    background-color: transparent;
     font-style: normal;
     cursor: text;
     padding: 1px 1px;
@@ -25,7 +25,7 @@
     vertical-align: middle;
 }
 .MSearchBoxActive #MSearchField {
-    color: #000000;
+    color: #EFEFEF;
 }
 #MSearchSelect {
     float : none;
@@ -36,6 +36,7 @@
     margin: 0px 0px 0px 6px;
     vertical-align: middle;
     padding: 0px 0px;
+    -webkit-filter: invert(100%);
 }
 
 #MSearchClose {

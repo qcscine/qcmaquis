@@ -43,12 +43,12 @@ namespace contraction {
         std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(left.aux_dim());
         int loop_max = left.aux_dim();
         {
-            select_proc(storage::scope_t::common);
+            select_scope(storage::scope_t::common);
             mps.make_right_paired();
             storage::hint(mps);
         }
         parallel_for(int b1, range(0,loop_max), {
-            select_proc(ambient::scope::permute(b1, mpo.placement_l));
+            select_scope(ambient::scope::permute(b1, mpo.placement_l));
             gemm_trim_left(transpose(left[b1]), mps.data(), ret[b1]);
         });
         return ret;
@@ -63,12 +63,12 @@ namespace contraction {
         std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(right.aux_dim());
         int loop_max = right.aux_dim();
         {
-            select_proc(storage::scope_t::common);
+            select_scope(storage::scope_t::common);
             mps.make_left_paired();
             storage::hint(mps);
         }
         parallel_for(int b2, range(0,loop_max), {
-            select_proc(ambient::scope::permute(b2, mpo.placement_r));
+            select_scope(ambient::scope::permute(b2, mpo.placement_r));
             gemm_trim_right(mps.data(), right[b2], ret[b2]);
         });
         return ret;

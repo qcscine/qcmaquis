@@ -69,7 +69,6 @@ namespace contraction {
         contr_grid.hint_right(right);
 
         parallel_for(index_type b2, range<index_type>(0,loop_max), {
-            select_proc(ambient::scope::permute(b2,mpo.placement_r));
             lbtm_kernel(b2, contr_grid, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
             contr_grid.multiply_column(b2, right[b2]);
         });
@@ -81,7 +80,6 @@ namespace contraction {
 #else
         omp_for(index_type b2, range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-            select_proc(ambient::scope::permute(b2,mpo.placement_r));
 
             lbtm_kernel(b2, contr_grid, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
             block_matrix<Matrix, SymmGroup> tmp;

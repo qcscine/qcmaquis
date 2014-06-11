@@ -46,6 +46,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 <div class="contents">
 <h1>Class List</h1>Here are the classes, structs, unions and interfaces with brief descriptions:<table>
+  <tr><td class="indexkey"><a class="el" href="classambient_1_1actor.html">ambient::actor</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="structambient_1_1numeric_1_1bindings_1_1adaptor.html">ambient::numeric::bindings::adaptor&lt; O, I &gt;</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="structambient_1_1numeric_1_1bindings_1_1adaptor_3_01alps_1_1numeric_1_1diagonal__matrix_3_01T_01f4d4c0d5c6c64f531407bf5a1147ef06.html">ambient::numeric::bindings::adaptor&lt; alps::numeric::diagonal_matrix&lt; T &gt;, ambient::numeric::diagonal_matrix&lt; T &gt; &gt;</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="structambient_1_1numeric_1_1bindings_1_1adaptor_3_01alps_1_1numeric_1_1diagonal__matrix_3_01T_01d53ef3e9fcd578b68bf6b5302458cd11.html">ambient::numeric::bindings::adaptor&lt; alps::numeric::diagonal_matrix&lt; T &gt;, ambient::numeric::tiles&lt; ambient::numeric::diagonal_matrix&lt; T &gt; &gt; &gt;</a></td><td class="indexvalue"></td></tr>
@@ -62,7 +63,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <tr><td class="indexkey"><a class="el" href="structambient_1_1numeric_1_1bindings_1_1adaptor_3_01std_1_1vector_3_01T_01_4_00_01ambient_1_1num5c55a3fcb19b6baef1f630a5f7ac4860.html">ambient::numeric::bindings::adaptor&lt; std::vector&lt; T &gt;, ambient::numeric::diagonal_matrix&lt; T &gt; &gt;</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="classambient_1_1async__timer.html">ambient::async_timer</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="classambient_1_1backbone.html">ambient::backbone</a></td><td class="indexvalue"></td></tr>
-  <tr><td class="indexkey"><a class="el" href="classambient_1_1base__scope.html">ambient::base_scope</a></td><td class="indexvalue"></td></tr>
+  <tr><td class="indexkey"><a class="el" href="classambient_1_1base__actor.html">ambient::base_actor</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="classambient_1_1channels_1_1mpi_1_1bcast.html">ambient::channels::mpi::bcast&lt; T &gt;</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="classambient_1_1binary__tree.html">ambient::binary_tree&lt; T &gt;</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="classambient_1_1block.html">ambient::block&lt; T &gt;</a></td><td class="indexvalue"></td></tr>
@@ -182,12 +183,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <tr><td class="indexkey"><a class="el" href="structambient_1_1numeric_1_1traits_1_1real__type_3_01std_1_1complex_3_01T_01_4_01_4.html">ambient::numeric::traits::real_type&lt; std::complex&lt; T &gt; &gt;</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="structambient_1_1default__allocator_1_1rebind.html">ambient::default_allocator&lt; T &gt;::rebind&lt; U &gt;</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="structambient_1_1bulk__allocator_1_1rebind.html">ambient::bulk_allocator&lt; T &gt;::rebind&lt; U &gt;</a></td><td class="indexvalue"></td></tr>
-  <tr><td class="indexkey"><a class="el" href="classambient_1_1memory_1_1mmap_1_1region.html">ambient::memory::mmap::region</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="classambient_1_1memory_1_1region.html">ambient::memory::region&lt; S, Factory &gt;</a></td><td class="indexvalue"></td></tr>
+  <tr><td class="indexkey"><a class="el" href="classambient_1_1memory_1_1mmap_1_1region.html">ambient::memory::mmap::region</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="classambient_1_1memory_1_1mmap_1_1region_1_1remapx.html">ambient::memory::mmap::region::remapx</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="classambient_1_1channels_1_1mpi_1_1request.html">ambient::channels::mpi::request</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="classambient_1_1channels_1_1mpi_1_1request__impl.html">ambient::channels::mpi::request_impl</a></td><td class="indexvalue"></td></tr>
-  <tr><td class="indexkey"><a class="el" href="classambient_1_1resource.html">ambient::resource</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="classambient_1_1models_1_1ssm_1_1revision.html">ambient::models::ssm::revision</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="classambient_1_1scope.html">ambient::scope</a></td><td class="indexvalue"></td></tr>
   <tr><td class="indexkey"><a class="el" href="classambient_1_1memory_1_1serial__region.html">ambient::memory::serial_region&lt; S, Factory &gt;</a></td><td class="indexvalue"></td></tr>
@@ -242,7 +242,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 26 May 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 2 Jun 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

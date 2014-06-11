@@ -49,53 +49,34 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 <h1>ambient::scope Class Reference</h1><!-- doxytag: class="ambient::scope" -->
 <p><code>#include &lt;<a class="el" href="scope_8h_source.html">scope.h</a>&gt;</code></p>
-<div class="dynheader">
-Inheritance diagram for ambient::scope:</div>
-<div class="dynsection">
- <div class="center">
-  <img src="classambient_1_1scope.gif" usemap="#ambient::scope_map" alt=""/>
-  <map id="ambient::scope_map" name="ambient::scope_map">
-<area href="classambient_1_1base__scope.html" alt="ambient::base_scope" shape="rect" coords="0,56,129,80"/>
-</map>
- </div>
-</div>
 
 <p><a href="classambient_1_1scope-members.html">List of all members.</a></p>
 <table border="0" cellpadding="0" cellspacing="0">
+<tr><td colspan="2"><h2>Public Types</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">typedef std::vector&lt; int &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a1a29b68cfedcf8ca26044113721cf0b2">container</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">typedef container::const_iterator&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a></td></tr>
 <tr><td colspan="2"><h2>Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a60a72cf5bd500248efee4ce68d6b9bb6">~scope</a> ()</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#ae3ebeac0d48a98bb813b9131585e2ad6">scope</a> (<a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> r)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a4057f44f8a6887d7695e5a5a525abe2b">scope</a> (<a class="el" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3">scope_t</a> <a class="el" href="classambient_1_1scope.html#a7826d0c8785fddf7b06b86185b05e61e">type</a>)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a7ba3ceed10b3206108fee603807ddaf0">set</a> (<a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> r)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a83bcf2fea2b451e3935e847611cc6473">remote</a> () const </td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#aa7a3a59aefb9167060137396e2426f0d">local</a> () const </td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a214b8c8b2b8dfe1cf4ec4d4262b311be">common</a> () const </td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#af7d695ced4f8e6e48c463914a71d0114">which</a> () const </td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a00f614798ac432354819d51b1f5f276a">scope</a> (<a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a> first, <a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a> last)</td></tr>
 <tr><td colspan="2"><h2>Static Public Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a621e9fab1931a25a899cc905c42e78b6">balance</a> (int k, int max_k)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a3c2429a143926dcb1a258258871c1535">permute</a> (int k, const std::vector&lt; int &gt; &amp;s)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a7e8bf36378e5bda72c2dc3066f16be1b">balance</a> (int k, int max_k)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#ab712e6aca5f5bae6c1ab38636a84eed4">permute</a> (int k, const std::vector&lt; int &gt; &amp;s)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#ac63479408771a097348e70ba7ec27941">nested</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a62cf400d48ce38b003b9aee1688d6c6e">local</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classambient_1_1scope.html">scope</a> &amp;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#aea424405d8fa3952ef3b479dce377167">top</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static size_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a61b90bbf6db6362c35cd39c52d8c5f75">size</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a5e34568d266cc2e69f1905fd1ce0d86f">begin</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#acf1d11490b9547459630df49e64d9d60">end</a> ()</td></tr>
 <tr><td colspan="2"><h2>Public Attributes</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3">scope_t</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a7826d0c8785fddf7b06b86185b05e61e">type</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a57d1202203d0042f3a82d616d91beb18">dry</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#af38f324467f341cf61094efa348015f3">factor</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a2315033fef009e07d58bfcf3ef108c29">round</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a801a08e0697e12389fd70579ceb261c9">rank</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceambient.html#aa22653ea6d7c35ce56dfec3a768affde">ambient::locality</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a6b995386982e316b067d88a963e2a0f1">state</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a83e41335e4f2a37661cf90acd9578f83">controller</a></td></tr>
-<tr><td colspan="2"><h2>Protected Types</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="classambient_1_1models_1_1ssm_1_1model.html">models::ssm::model</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a77580b3c7c074fa56bd946c39f8f49e6">model_type</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">typedef <br class="typebreak"/>
-<a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controllers::ssm::controller</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#abe41051d603d7b738c1d1c7ed6f53a1d">controller_type</a></td></tr>
-<tr><td colspan="2"><h2>Protected Member Functions</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a13130d95259259401da14ece68efaa09">scope</a> ()</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classambient_1_1scope.html#a1a29b68cfedcf8ca26044113721cf0b2">container</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a1a4541b0639f4b378cda5034f94d8e6c">provision</a></td></tr>
 </table>
 <hr/><h2>Member Typedef Documentation</h2>
-<a class="anchor" id="abe41051d603d7b738c1d1c7ed6f53a1d"></a><!-- doxytag: member="ambient::scope::controller_type" ref="abe41051d603d7b738c1d1c7ed6f53a1d" args="" -->
+<a class="anchor" id="a85bd59bbe856a19959484f50ef011a48"></a><!-- doxytag: member="ambient::scope::const_iterator" ref="a85bd59bbe856a19959484f50ef011a48" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef <a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controllers::ssm::controller</a> <a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html">ambient::scope::controller_type</a><code> [protected]</code></td>
+          <td class="memname">typedef container::const_iterator <a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">ambient::scope::const_iterator</a></td>
         </tr>
       </table>
 </div>
@@ -103,39 +84,20 @@ Inheritance diagram for ambient::scope:</div>
 
 </div>
 </div>
-<a class="anchor" id="a77580b3c7c074fa56bd946c39f8f49e6"></a><!-- doxytag: member="ambient::scope::model_type" ref="a77580b3c7c074fa56bd946c39f8f49e6" args="" -->
+<a class="anchor" id="a1a29b68cfedcf8ca26044113721cf0b2"></a><!-- doxytag: member="ambient::scope::container" ref="a1a29b68cfedcf8ca26044113721cf0b2" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef <a class="el" href="classambient_1_1models_1_1ssm_1_1model.html">models::ssm::model</a> <a class="el" href="classambient_1_1models_1_1ssm_1_1model.html">ambient::scope::model_type</a><code> [protected]</code></td>
+          <td class="memname">typedef std::vector&lt;int&gt; <a class="el" href="classambient_1_1scope.html#a1a29b68cfedcf8ca26044113721cf0b2">ambient::scope::container</a></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-
-<p>Reimplemented in <a class="el" href="classambient_1_1base__scope.html#a008be6b3e07f6c9f68387d465e96f1ee">ambient::base_scope</a>.</p>
 
 </div>
 </div>
 <hr/><h2>Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="a13130d95259259401da14ece68efaa09"></a><!-- doxytag: member="ambient::scope::scope" ref="a13130d95259259401da14ece68efaa09" args="()" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">ambient::scope::scope </td>
-          <td>(</td>
-          <td class="paramname"></td>
-          <td>&nbsp;)&nbsp;</td>
-          <td><code> [inline, protected]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
 <a class="anchor" id="a60a72cf5bd500248efee4ce68d6b9bb6"></a><!-- doxytag: member="ambient::scope::~scope" ref="a60a72cf5bd500248efee4ce68d6b9bb6" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -153,35 +115,26 @@ Inheritance diagram for ambient::scope:</div>
 
 </div>
 </div>
-<a class="anchor" id="ae3ebeac0d48a98bb813b9131585e2ad6"></a><!-- doxytag: member="ambient::scope::scope" ref="ae3ebeac0d48a98bb813b9131585e2ad6" args="(rank_t r)" -->
+<a class="anchor" id="a00f614798ac432354819d51b1f5f276a"></a><!-- doxytag: member="ambient::scope::scope" ref="a00f614798ac432354819d51b1f5f276a" args="(const_iterator first, const_iterator last)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">ambient::scope::scope </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a>&nbsp;</td>
-          <td class="paramname"> <em>r</em></td>
-          <td>&nbsp;)&nbsp;</td>
-          <td><code> [inline]</code></td>
+          <td class="paramtype"><a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a>&nbsp;</td>
+          <td class="paramname"> <em>first</em>, </td>
         </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a4057f44f8a6887d7695e5a5a525abe2b"></a><!-- doxytag: member="ambient::scope::scope" ref="a4057f44f8a6887d7695e5a5a525abe2b" args="(scope_t type)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
         <tr>
-          <td class="memname">ambient::scope::scope </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3">scope_t</a>&nbsp;</td>
-          <td class="paramname"> <em>type</em></td>
-          <td>&nbsp;)&nbsp;</td>
-          <td><code> [inline]</code></td>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a>&nbsp;</td>
+          <td class="paramname"> <em>last</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [inline]</code></td>
         </tr>
       </table>
 </div>
@@ -190,12 +143,12 @@ Inheritance diagram for ambient::scope:</div>
 </div>
 </div>
 <hr/><h2>Member Function Documentation</h2>
-<a class="anchor" id="a621e9fab1931a25a899cc905c42e78b6"></a><!-- doxytag: member="ambient::scope::balance" ref="a621e9fab1931a25a899cc905c42e78b6" args="(int k, int max_k)" -->
+<a class="anchor" id="a7e8bf36378e5bda72c2dc3066f16be1b"></a><!-- doxytag: member="ambient::scope::balance" ref="a7e8bf36378e5bda72c2dc3066f16be1b" args="(int k, int max_k)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> ambient::scope::balance </td>
+          <td class="memname"><a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">scope::const_iterator</a> ambient::scope::balance </td>
           <td>(</td>
           <td class="paramtype">int&nbsp;</td>
           <td class="paramname"> <em>k</em>, </td>
@@ -217,16 +170,16 @@ Inheritance diagram for ambient::scope:</div>
 
 </div>
 </div>
-<a class="anchor" id="a214b8c8b2b8dfe1cf4ec4d4262b311be"></a><!-- doxytag: member="ambient::scope::common" ref="a214b8c8b2b8dfe1cf4ec4d4262b311be" args="() const " -->
+<a class="anchor" id="a5e34568d266cc2e69f1905fd1ce0d86f"></a><!-- doxytag: member="ambient::scope::begin" ref="a5e34568d266cc2e69f1905fd1ce0d86f" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool ambient::scope::common </td>
+          <td class="memname"><a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">scope::const_iterator</a> ambient::scope::begin </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
-          <td> const<code> [inline]</code></td>
+          <td><code> [inline, static]</code></td>
         </tr>
       </table>
 </div>
@@ -234,7 +187,24 @@ Inheritance diagram for ambient::scope:</div>
 
 </div>
 </div>
-<a class="anchor" id="aa7a3a59aefb9167060137396e2426f0d"></a><!-- doxytag: member="ambient::scope::local" ref="aa7a3a59aefb9167060137396e2426f0d" args="() const " -->
+<a class="anchor" id="acf1d11490b9547459630df49e64d9d60"></a><!-- doxytag: member="ambient::scope::end" ref="acf1d11490b9547459630df49e64d9d60" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">scope::const_iterator</a> ambient::scope::end </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [inline, static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a62cf400d48ce38b003b9aee1688d6c6e"></a><!-- doxytag: member="ambient::scope::local" ref="a62cf400d48ce38b003b9aee1688d6c6e" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -243,7 +213,7 @@ Inheritance diagram for ambient::scope:</div>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
-          <td> const<code> [inline]</code></td>
+          <td><code> [inline, static]</code></td>
         </tr>
       </table>
 </div>
@@ -251,12 +221,29 @@ Inheritance diagram for ambient::scope:</div>
 
 </div>
 </div>
-<a class="anchor" id="a3c2429a143926dcb1a258258871c1535"></a><!-- doxytag: member="ambient::scope::permute" ref="a3c2429a143926dcb1a258258871c1535" args="(int k, const std::vector&lt; int &gt; &amp;s)" -->
+<a class="anchor" id="ac63479408771a097348e70ba7ec27941"></a><!-- doxytag: member="ambient::scope::nested" ref="ac63479408771a097348e70ba7ec27941" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> ambient::scope::permute </td>
+          <td class="memname">bool ambient::scope::nested </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [inline, static]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab712e6aca5f5bae6c1ab38636a84eed4"></a><!-- doxytag: member="ambient::scope::permute" ref="ab712e6aca5f5bae6c1ab38636a84eed4" args="(int k, const std::vector&lt; int &gt; &amp;s)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">scope::const_iterator</a> ambient::scope::permute </td>
           <td>(</td>
           <td class="paramtype">int&nbsp;</td>
           <td class="paramname"> <em>k</em>, </td>
@@ -278,16 +265,16 @@ Inheritance diagram for ambient::scope:</div>
 
 </div>
 </div>
-<a class="anchor" id="a83bcf2fea2b451e3935e847611cc6473"></a><!-- doxytag: member="ambient::scope::remote" ref="a83bcf2fea2b451e3935e847611cc6473" args="() const " -->
+<a class="anchor" id="a61b90bbf6db6362c35cd39c52d8c5f75"></a><!-- doxytag: member="ambient::scope::size" ref="a61b90bbf6db6362c35cd39c52d8c5f75" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool ambient::scope::remote </td>
+          <td class="memname">size_t ambient::scope::size </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
-          <td> const<code> [inline]</code></td>
+          <td><code> [inline, static]</code></td>
         </tr>
       </table>
 </div>
@@ -295,34 +282,16 @@ Inheritance diagram for ambient::scope:</div>
 
 </div>
 </div>
-<a class="anchor" id="a7ba3ceed10b3206108fee603807ddaf0"></a><!-- doxytag: member="ambient::scope::set" ref="a7ba3ceed10b3206108fee603807ddaf0" args="(rank_t r)" -->
+<a class="anchor" id="aea424405d8fa3952ef3b479dce377167"></a><!-- doxytag: member="ambient::scope::top" ref="aea424405d8fa3952ef3b479dce377167" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void ambient::scope::set </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a>&nbsp;</td>
-          <td class="paramname"> <em>r</em></td>
-          <td>&nbsp;)&nbsp;</td>
-          <td><code> [inline]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="af7d695ced4f8e6e48c463914a71d0114"></a><!-- doxytag: member="ambient::scope::which" ref="af7d695ced4f8e6e48c463914a71d0114" args="() const " -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> ambient::scope::which </td>
+          <td class="memname"><a class="el" href="classambient_1_1scope.html">scope</a> &amp; ambient::scope::top </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
-          <td> const<code> [inline]</code></td>
+          <td><code> [inline, static]</code></td>
         </tr>
       </table>
 </div>
@@ -331,90 +300,12 @@ Inheritance diagram for ambient::scope:</div>
 </div>
 </div>
 <hr/><h2>Member Data Documentation</h2>
-<a class="anchor" id="a83e41335e4f2a37661cf90acd9578f83"></a><!-- doxytag: member="ambient::scope::controller" ref="a83e41335e4f2a37661cf90acd9578f83" args="" -->
+<a class="anchor" id="a1a4541b0639f4b378cda5034f94d8e6c"></a><!-- doxytag: member="ambient::scope::provision" ref="a1a4541b0639f4b378cda5034f94d8e6c" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a>* <a class="el" href="classambient_1_1scope.html#a83e41335e4f2a37661cf90acd9578f83">ambient::scope::controller</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a57d1202203d0042f3a82d616d91beb18"></a><!-- doxytag: member="ambient::scope::dry" ref="a57d1202203d0042f3a82d616d91beb18" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool <a class="el" href="classambient_1_1scope.html#a57d1202203d0042f3a82d616d91beb18">ambient::scope::dry</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="af38f324467f341cf61094efa348015f3"></a><!-- doxytag: member="ambient::scope::factor" ref="af38f324467f341cf61094efa348015f3" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int <a class="el" href="classambient_1_1scope.html#af38f324467f341cf61094efa348015f3">ambient::scope::factor</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a801a08e0697e12389fd70579ceb261c9"></a><!-- doxytag: member="ambient::scope::rank" ref="a801a08e0697e12389fd70579ceb261c9" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> <a class="el" href="classambient_1_1scope.html#a801a08e0697e12389fd70579ceb261c9">ambient::scope::rank</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a2315033fef009e07d58bfcf3ef108c29"></a><!-- doxytag: member="ambient::scope::round" ref="a2315033fef009e07d58bfcf3ef108c29" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int <a class="el" href="classambient_1_1scope.html#a2315033fef009e07d58bfcf3ef108c29">ambient::scope::round</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a6b995386982e316b067d88a963e2a0f1"></a><!-- doxytag: member="ambient::scope::state" ref="a6b995386982e316b067d88a963e2a0f1" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespaceambient.html#aa22653ea6d7c35ce56dfec3a768affde">ambient::locality</a> <a class="el" href="classambient_1_1scope.html#a6b995386982e316b067d88a963e2a0f1">ambient::scope::state</a></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a7826d0c8785fddf7b06b86185b05e61e"></a><!-- doxytag: member="ambient::scope::type" ref="a7826d0c8785fddf7b06b86185b05e61e" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3">scope_t</a> <a class="el" href="classambient_1_1scope.html#a7826d0c8785fddf7b06b86185b05e61e">ambient::scope::type</a></td>
+          <td class="memname"><a class="el" href="classambient_1_1scope.html#a1a29b68cfedcf8ca26044113721cf0b2">container</a> <a class="el" href="classambient_1_1scope.html#a1a4541b0639f4b378cda5034f94d8e6c">ambient::scope::provision</a></td>
         </tr>
       </table>
 </div>
@@ -441,7 +332,7 @@ Inheritance diagram for ambient::scope:</div>
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 26 May 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 2 Jun 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

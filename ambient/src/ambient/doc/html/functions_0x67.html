@@ -145,6 +145,9 @@ Here is a list of all class members with links to the classes they belong to:
 , <a class="el" href="classambient_1_1channels_1_1mpi_1_1packet.html#af0ec85e7f6d554192c2fad103b6ef0a9">ambient::channels::mpi::packet</a>
 , <a class="el" href="classambient_1_1channels_1_1mpi_1_1packet__t.html#adb6da83d6fbed16963e9d87a19c73c59">ambient::channels::mpi::packet_t</a>
 </li>
+<li>get_actor()
+: <a class="el" href="classambient_1_1backbone.html#a03bb716fac47e3ccc4b8df866e1ac2a5">ambient::backbone</a>
+</li>
 <li>get_bound()
 : <a class="el" href="classambient_1_1channels_1_1mpi_1_1packet.html#afa6cdb286cba5e72cb893f09bfd6f6b7">ambient::channels::mpi::packet</a>
 , <a class="el" href="classambient_1_1channels_1_1mpi_1_1packet__t.html#af7befd7dc99b29b395dff4f446e9d4e3">ambient::channels::mpi::packet_t</a>
@@ -158,9 +161,6 @@ Here is a list of all class members with links to the classes they belong to:
 <li>get_data()
 : <a class="el" href="classambient_1_1numeric_1_1diagonal__matrix.html#adce2067c3d135e2a6bfa0885d29989b0">ambient::numeric::diagonal_matrix&lt; T &gt;</a>
 </li>
-<li>get_dedicated_rank()
-: <a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#af174659f5cf580b1de14a5d4ac540ad5">ambient::controllers::ssm::controller</a>
-</li>
 <li>get_memory()
 : <a class="el" href="classambient_1_1channels_1_1mpi_1_1packet.html#a765ca411b14de98cad0485a893dec036">ambient::channels::mpi::packet</a>
 </li>
@@ -170,14 +170,8 @@ Here is a list of all class members with links to the classes they belong to:
 <li>get_mutex()
 : <a class="el" href="classambient_1_1backbone.html#a6fee9cb94e3bd1844725f09d7816651f">ambient::backbone</a>
 </li>
-<li>get_num_db_procs()
-: <a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ac0dc4742b9e6835792395d2d743b5f85">ambient::controllers::ssm::controller</a>
-</li>
 <li>get_num_procs()
 : <a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ac5cd0a9e852bffc87c96a71c07c6c32d">ambient::controllers::ssm::controller</a>
-</li>
-<li>get_num_workers()
-: <a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a072ddbd144ba971fd6fa928b553e94d5">ambient::controllers::ssm::controller</a>
 </li>
 <li>get_proc()
 : <a class="el" href="classambient_1_1channels_1_1mpi_1_1group.html#a64cf92b56a785b5af3de25b33639dbfe">ambient::channels::mpi::group</a>
@@ -213,20 +207,20 @@ Here is a list of all class members with links to the classes they belong to:
 : <a class="el" href="classambient_1_1channels_1_1mpi_1_1group.html#a73e6c284514fa7c8adc72239d139c622">ambient::channels::mpi::group</a>
 </li>
 <li>getrf()
-: <a class="el" href="structambient_1_1numeric_1_1kernels_1_1helper__lapack_3_01T_00_01typename_01boost_1_1enable__if_43f8db340da725563ae63c0e1ab4f118.html#abbeeda5df334eed4956ca3c5921917a9">ambient::numeric::kernels::helper_lapack&lt; T, typename boost::enable_if&lt; boost::mpl::and_&lt; boost::is_complex&lt; T &gt;, boost::is_same&lt; typename T::value_type, double &gt; &gt; &gt;::type &gt;</a>
-, <a class="el" href="structambient_1_1numeric_1_1kernels_1_1helper__lapack_3_01T_00_01typename_01boost_1_1enable__if_d7679a0a7d3236a0a96eee0cdb8c14b7.html#a05ac4939bcfe400c86e9c22118076f71">ambient::numeric::kernels::helper_lapack&lt; T, typename boost::enable_if&lt; boost::is_same&lt; T, double &gt; &gt;::type &gt;</a>
+: <a class="el" href="structambient_1_1numeric_1_1kernels_1_1helper__lapack_3_01T_00_01typename_01boost_1_1enable__if_d7679a0a7d3236a0a96eee0cdb8c14b7.html#a05ac4939bcfe400c86e9c22118076f71">ambient::numeric::kernels::helper_lapack&lt; T, typename boost::enable_if&lt; boost::is_same&lt; T, double &gt; &gt;::type &gt;</a>
+, <a class="el" href="structambient_1_1numeric_1_1kernels_1_1helper__lapack_3_01T_00_01typename_01boost_1_1enable__if_43f8db340da725563ae63c0e1ab4f118.html#abbeeda5df334eed4956ca3c5921917a9">ambient::numeric::kernels::helper_lapack&lt; T, typename boost::enable_if&lt; boost::mpl::and_&lt; boost::is_complex&lt; T &gt;, boost::is_same&lt; typename T::value_type, double &gt; &gt; &gt;::type &gt;</a>
 </li>
 <li>getri()
-: <a class="el" href="structambient_1_1numeric_1_1kernels_1_1helper__lapack_3_01T_00_01typename_01boost_1_1enable__if_43f8db340da725563ae63c0e1ab4f118.html#a3e28899ae0ca66d6e118d1bc3a824f3b">ambient::numeric::kernels::helper_lapack&lt; T, typename boost::enable_if&lt; boost::mpl::and_&lt; boost::is_complex&lt; T &gt;, boost::is_same&lt; typename T::value_type, double &gt; &gt; &gt;::type &gt;</a>
-, <a class="el" href="structambient_1_1numeric_1_1kernels_1_1helper__lapack_3_01T_00_01typename_01boost_1_1enable__if_d7679a0a7d3236a0a96eee0cdb8c14b7.html#aab65d816a9e6fc6570b3fd6d453e58db">ambient::numeric::kernels::helper_lapack&lt; T, typename boost::enable_if&lt; boost::is_same&lt; T, double &gt; &gt;::type &gt;</a>
+: <a class="el" href="structambient_1_1numeric_1_1kernels_1_1helper__lapack_3_01T_00_01typename_01boost_1_1enable__if_d7679a0a7d3236a0a96eee0cdb8c14b7.html#aab65d816a9e6fc6570b3fd6d453e58db">ambient::numeric::kernels::helper_lapack&lt; T, typename boost::enable_if&lt; boost::is_same&lt; T, double &gt; &gt;::type &gt;</a>
+, <a class="el" href="structambient_1_1numeric_1_1kernels_1_1helper__lapack_3_01T_00_01typename_01boost_1_1enable__if_43f8db340da725563ae63c0e1ab4f118.html#a3e28899ae0ca66d6e118d1bc3a824f3b">ambient::numeric::kernels::helper_lapack&lt; T, typename boost::enable_if&lt; boost::mpl::and_&lt; boost::is_complex&lt; T &gt;, boost::is_same&lt; typename T::value_type, double &gt; &gt; &gt;::type &gt;</a>
 </li>
 <li>group()
-: <a class="el" href="classambient_1_1channels_1_1mpi_1_1group.html#aa1cdbfc3084e7ab8ecaa2517e6ee7099">ambient::channels::mpi::group</a>
+: <a class="el" href="classambient_1_1channels_1_1mpi_1_1group.html#a1803c5c8b576c9a1b6c62aac40e5a418">ambient::channels::mpi::group</a>
 </li>
 <li>guard
-: <a class="el" href="classambient_1_1memory_1_1factory.html#af370a14d9724759162737e1cb39a401a">ambient::memory::factory&lt; S &gt;</a>
-, <a class="el" href="classambient_1_1memory_1_1region.html#aa2e726705f0862840adba407a2679ecb">ambient::memory::region&lt; S, Factory &gt;</a>
+: <a class="el" href="classambient_1_1memory_1_1region.html#aa2e726705f0862840adba407a2679ecb">ambient::memory::region&lt; S, Factory &gt;</a>
 , <a class="el" href="classambient_1_1channels_1_1mpi_1_1bcast.html#a6ff79bb134f425a5ab2a6a9fc42cbc2c">ambient::channels::mpi::bcast&lt; T &gt;</a>
+, <a class="el" href="classambient_1_1memory_1_1factory.html#af370a14d9724759162737e1cb39a401a">ambient::memory::factory&lt; S &gt;</a>
 , <a class="el" href="classambient_1_1guard.html#a13b71a3ae9bc4842bb5a3ab1004c1cba">ambient::guard&lt; M &gt;</a>
 </li>
 </ul>
@@ -245,7 +239,7 @@ Here is a list of all class members with links to the classes they belong to:
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 26 May 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 2 Jun 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

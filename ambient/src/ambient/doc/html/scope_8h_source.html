@@ -71,47 +71,63 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00027"></a>00027 <span class="preprocessor">#ifndef AMBIENT_CONTROLLERS_SSM_SCOPE</span>
 <a name="l00028"></a>00028 <span class="preprocessor"></span><span class="preprocessor">#define AMBIENT_CONTROLLERS_SSM_SCOPE</span>
 <a name="l00029"></a>00029 <span class="preprocessor"></span>
-<a name="l00030"></a>00030 <span class="keyword">namespace </span>ambient { 
+<a name="l00030"></a>00030 <span class="keyword">namespace </span>ambient {
 <a name="l00031"></a>00031 
 <a name="l00032"></a><a class="code" href="classambient_1_1scope.html">00032</a>     <span class="keyword">class </span><a class="code" href="classambient_1_1scope.html">scope</a> {
-<a name="l00033"></a>00033     <span class="keyword">protected</span>:
-<a name="l00034"></a><a class="code" href="classambient_1_1scope.html#a77580b3c7c074fa56bd946c39f8f49e6">00034</a>         <span class="keyword">typedef</span> <a class="code" href="classambient_1_1models_1_1ssm_1_1model.html">models::ssm::model</a> <a class="code" href="classambient_1_1models_1_1ssm_1_1model.html">model_type</a>;
-<a name="l00035"></a><a class="code" href="classambient_1_1scope.html#abe41051d603d7b738c1d1c7ed6f53a1d">00035</a>         <span class="keyword">typedef</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controllers::ssm::controller</a> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a>;
-<a name="l00036"></a><a class="code" href="classambient_1_1scope.html#a13130d95259259401da14ece68efaa09">00036</a>         <a class="code" href="classambient_1_1scope.html#a13130d95259259401da14ece68efaa09">scope</a>(){}
-<a name="l00037"></a>00037     <span class="keyword">public</span>:
-<a name="l00038"></a>00038         <span class="keyword">static</span> <a class="code" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> <a class="code" href="classambient_1_1scope.html#a621e9fab1931a25a899cc905c42e78b6">balance</a>(<span class="keywordtype">int</span> k, <span class="keywordtype">int</span> max_k);
-<a name="l00039"></a>00039         <span class="keyword">static</span> <a class="code" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> <a class="code" href="classambient_1_1scope.html#a3c2429a143926dcb1a258258871c1535">permute</a>(<span class="keywordtype">int</span> k, <span class="keyword">const</span> std::vector&lt;int&gt;&amp; s);
-<a name="l00040"></a>00040        <a class="code" href="classambient_1_1scope.html#a60a72cf5bd500248efee4ce68d6b9bb6">~scope</a>();
-<a name="l00041"></a>00041         <a class="code" href="classambient_1_1scope.html#a13130d95259259401da14ece68efaa09">scope</a>(<a class="code" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> r);
-<a name="l00042"></a>00042         <a class="code" href="classambient_1_1scope.html#a13130d95259259401da14ece68efaa09">scope</a>(<a class="code" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3">scope_t</a> <a class="code" href="classambient_1_1scope.html#a7826d0c8785fddf7b06b86185b05e61e">type</a>);
-<a name="l00043"></a>00043         <span class="keywordtype">void</span> <span class="keyword">set</span>(<a class="code" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> r);
-<a name="l00044"></a>00044         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1scope.html#a83bcf2fea2b451e3935e847611cc6473">remote</a>() <span class="keyword">const</span>;
-<a name="l00045"></a>00045         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1scope.html#aa7a3a59aefb9167060137396e2426f0d">local</a>()  <span class="keyword">const</span>;
-<a name="l00046"></a>00046         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1scope.html#a214b8c8b2b8dfe1cf4ec4d4262b311be">common</a>() <span class="keyword">const</span>;
-<a name="l00047"></a>00047         <a class="code" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> <a class="code" href="classambient_1_1scope.html#af7d695ced4f8e6e48c463914a71d0114">which</a>()  <span class="keyword">const</span>;
-<a name="l00048"></a><a class="code" href="classambient_1_1scope.html#a7826d0c8785fddf7b06b86185b05e61e">00048</a>         <a class="code" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3">scope_t</a> <a class="code" href="classambient_1_1scope.html#a7826d0c8785fddf7b06b86185b05e61e">type</a>;
-<a name="l00049"></a><a class="code" href="classambient_1_1scope.html#a57d1202203d0042f3a82d616d91beb18">00049</a>         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1scope.html#a57d1202203d0042f3a82d616d91beb18">dry</a>;
-<a name="l00050"></a><a class="code" href="classambient_1_1scope.html#af38f324467f341cf61094efa348015f3">00050</a>         <span class="keywordtype">int</span> <a class="code" href="classambient_1_1scope.html#af38f324467f341cf61094efa348015f3">factor</a>;
-<a name="l00051"></a><a class="code" href="classambient_1_1scope.html#a2315033fef009e07d58bfcf3ef108c29">00051</a>         <span class="keywordtype">int</span> <a class="code" href="classambient_1_1scope.html#a2315033fef009e07d58bfcf3ef108c29">round</a>;
-<a name="l00052"></a><a class="code" href="classambient_1_1scope.html#a801a08e0697e12389fd70579ceb261c9">00052</a>         <a class="code" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> <a class="code" href="classambient_1_1scope.html#a801a08e0697e12389fd70579ceb261c9">rank</a>;
-<a name="l00053"></a><a class="code" href="classambient_1_1scope.html#a6b995386982e316b067d88a963e2a0f1">00053</a>         <a class="code" href="namespaceambient.html#aa22653ea6d7c35ce56dfec3a768affde">ambient::locality</a> <a class="code" href="classambient_1_1scope.html#a6b995386982e316b067d88a963e2a0f1">state</a>;
-<a name="l00054"></a><a class="code" href="classambient_1_1scope.html#a83e41335e4f2a37661cf90acd9578f83">00054</a>         <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a>* <a class="code" href="classambient_1_1scope.html#a83e41335e4f2a37661cf90acd9578f83">controller</a>;
-<a name="l00055"></a>00055     };
-<a name="l00056"></a>00056 
-<a name="l00057"></a><a class="code" href="classambient_1_1base__scope.html">00057</a>     <span class="keyword">class </span><a class="code" href="classambient_1_1base__scope.html">base_scope</a> : <span class="keyword">public</span> <a class="code" href="classambient_1_1scope.html">scope</a> {
-<a name="l00058"></a>00058     <span class="keyword">public</span>:
-<a name="l00059"></a><a class="code" href="classambient_1_1base__scope.html#a008be6b3e07f6c9f68387d465e96f1ee">00059</a>         <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="classambient_1_1models_1_1ssm_1_1model.html">scope::model_type</a> <a class="code" href="classambient_1_1models_1_1ssm_1_1model.html">model_type</a>;
-<a name="l00060"></a>00060         <a class="code" href="classambient_1_1base__scope.html#aa420ffd4c94a2a9a5573887f85ba0812">base_scope</a>();
-<a name="l00061"></a>00061         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1base__scope.html#afc944ab24baae3b4b8bb56d9a66a2477">schedule</a>();
-<a name="l00062"></a>00062         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1base__scope.html#a62bfa8ecb527ff38fa2703500eda22ad">intend_read</a>(<a class="code" href="classambient_1_1models_1_1ssm_1_1revision.html">models::ssm::revision</a>* o);
-<a name="l00063"></a>00063         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1base__scope.html#a60790faf6c6e5960e5c30f6d613f502a">intend_write</a>(<a class="code" href="classambient_1_1models_1_1ssm_1_1revision.html">models::ssm::revision</a>* o);
-<a name="l00064"></a><a class="code" href="classambient_1_1base__scope.html#a68029a543da76e2cd4d4ac2ab450223d">00064</a>         <span class="keyword">mutable</span> std::vector&lt;rank_t&gt; <a class="code" href="classambient_1_1base__scope.html#a68029a543da76e2cd4d4ac2ab450223d">stakeholders</a>;
-<a name="l00065"></a><a class="code" href="classambient_1_1base__scope.html#a717ecc2dcdd551054ed5b4d6adcd6bf1">00065</a>         <span class="keyword">mutable</span> std::vector&lt;int&gt; <a class="code" href="classambient_1_1base__scope.html#a717ecc2dcdd551054ed5b4d6adcd6bf1">scores</a>;
-<a name="l00066"></a>00066     };
-<a name="l00067"></a>00067 
-<a name="l00068"></a>00068 }
-<a name="l00069"></a>00069 
-<a name="l00070"></a>00070 <span class="preprocessor">#endif</span>
+<a name="l00033"></a>00033     <span class="keyword">public</span>:
+<a name="l00034"></a><a class="code" href="classambient_1_1scope.html#a1a29b68cfedcf8ca26044113721cf0b2">00034</a>         <span class="keyword">typedef</span> std::vector&lt;int&gt; <a class="code" href="classambient_1_1scope.html#a1a29b68cfedcf8ca26044113721cf0b2">container</a>;
+<a name="l00035"></a><a class="code" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">00035</a>         <span class="keyword">typedef</span> container::const_iterator <a class="code" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a>;
+<a name="l00036"></a>00036         <span class="keyword">static</span> <a class="code" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a> <a class="code" href="classambient_1_1scope.html#a7e8bf36378e5bda72c2dc3066f16be1b">balance</a>(<span class="keywordtype">int</span> k, <span class="keywordtype">int</span> max_k);
+<a name="l00037"></a>00037         <span class="keyword">static</span> <a class="code" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a> <a class="code" href="classambient_1_1scope.html#ab712e6aca5f5bae6c1ab38636a84eed4">permute</a>(<span class="keywordtype">int</span> k, <span class="keyword">const</span> std::vector&lt;int&gt;&amp; s);
+<a name="l00038"></a>00038         <span class="keyword">static</span> <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1scope.html#ac63479408771a097348e70ba7ec27941">nested</a>();
+<a name="l00039"></a>00039         <span class="keyword">static</span> <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1scope.html#a62cf400d48ce38b003b9aee1688d6c6e">local</a>();
+<a name="l00040"></a>00040         <span class="keyword">static</span> <a class="code" href="classambient_1_1scope.html">scope</a>&amp; <a class="code" href="classambient_1_1scope.html#aea424405d8fa3952ef3b479dce377167">top</a>();
+<a name="l00041"></a>00041         <span class="keyword">static</span> <span class="keywordtype">size_t</span> <a class="code" href="classambient_1_1scope.html#a61b90bbf6db6362c35cd39c52d8c5f75">size</a>();
+<a name="l00042"></a>00042         <span class="keyword">static</span> <a class="code" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a> <a class="code" href="classambient_1_1scope.html#a5e34568d266cc2e69f1905fd1ce0d86f">begin</a>();
+<a name="l00043"></a>00043         <span class="keyword">static</span> <a class="code" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a> <a class="code" href="classambient_1_1scope.html#acf1d11490b9547459630df49e64d9d60">end</a>();
+<a name="l00044"></a>00044        <a class="code" href="classambient_1_1scope.html#a60a72cf5bd500248efee4ce68d6b9bb6">~scope</a>();
+<a name="l00045"></a>00045         <a class="code" href="classambient_1_1scope.html#a00f614798ac432354819d51b1f5f276a">scope</a>(<a class="code" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a> first, <a class="code" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a> last);
+<a name="l00046"></a><a class="code" href="classambient_1_1scope.html#a1a4541b0639f4b378cda5034f94d8e6c">00046</a>         <a class="code" href="classambient_1_1scope.html#a1a29b68cfedcf8ca26044113721cf0b2">container</a> <a class="code" href="classambient_1_1scope.html#a1a4541b0639f4b378cda5034f94d8e6c">provision</a>;
+<a name="l00047"></a>00047     };
+<a name="l00048"></a>00048 
+<a name="l00049"></a><a class="code" href="classambient_1_1actor.html">00049</a>     <span class="keyword">class </span><a class="code" href="classambient_1_1actor.html">actor</a> {
+<a name="l00050"></a>00050     <span class="keyword">protected</span>:
+<a name="l00051"></a><a class="code" href="classambient_1_1actor.html#aa33f0d31d1c4de900bff691987b5b759">00051</a>         <span class="keyword">typedef</span> <a class="code" href="classambient_1_1models_1_1ssm_1_1model.html">models::ssm::model</a> <a class="code" href="classambient_1_1models_1_1ssm_1_1model.html">model_type</a>;
+<a name="l00052"></a><a class="code" href="classambient_1_1actor.html#a53e50fd36ac9060b8d634110cff45636">00052</a>         <span class="keyword">typedef</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controllers::ssm::controller</a> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a>;
+<a name="l00053"></a><a class="code" href="classambient_1_1actor.html#a3c077e2b0fa4baa6323739f3b07196d3">00053</a>         <a class="code" href="classambient_1_1actor.html#a3c077e2b0fa4baa6323739f3b07196d3">actor</a>(){}
+<a name="l00054"></a>00054     <span class="keyword">public</span>:
+<a name="l00055"></a>00055        <a class="code" href="classambient_1_1actor.html#a7ceda12d5052bccd61ec3956d5093c55">~actor</a>();
+<a name="l00056"></a>00056         <a class="code" href="classambient_1_1actor.html#a3c077e2b0fa4baa6323739f3b07196d3">actor</a>(<a class="code" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">scope::const_iterator</a> it);
+<a name="l00057"></a>00057         <a class="code" href="classambient_1_1actor.html#a3c077e2b0fa4baa6323739f3b07196d3">actor</a>(<a class="code" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3">scope_t</a> <a class="code" href="classambient_1_1actor.html#afa2b4b41ca0e43199cd390b22dda054f">type</a>);
+<a name="l00058"></a>00058         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1actor.html#a9acb4967d1183651c4a3cb67d571013f">remote</a>() <span class="keyword">const</span>;
+<a name="l00059"></a>00059         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1actor.html#a62a6db809639763229d07f11a4369bfd">local</a>()  <span class="keyword">const</span>;
+<a name="l00060"></a>00060         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1actor.html#a5e3b705188594441be4bd46938717204">common</a>() <span class="keyword">const</span>;
+<a name="l00061"></a>00061         <a class="code" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> <a class="code" href="classambient_1_1actor.html#ae9b701336d89d05e269469664605c06a">which</a>()  <span class="keyword">const</span>;
+<a name="l00062"></a><a class="code" href="classambient_1_1actor.html#afa2b4b41ca0e43199cd390b22dda054f">00062</a>         <a class="code" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3">scope_t</a> <a class="code" href="classambient_1_1actor.html#afa2b4b41ca0e43199cd390b22dda054f">type</a>;
+<a name="l00063"></a><a class="code" href="classambient_1_1actor.html#a4b83054e435475d6c4285e00ef12e426">00063</a>         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1actor.html#a4b83054e435475d6c4285e00ef12e426">dry</a>;
+<a name="l00064"></a><a class="code" href="classambient_1_1actor.html#ab46da76e9eac638ffd53e9dea61b4b17">00064</a>         <span class="keywordtype">int</span> <a class="code" href="classambient_1_1actor.html#ab46da76e9eac638ffd53e9dea61b4b17">factor</a>;
+<a name="l00065"></a><a class="code" href="classambient_1_1actor.html#a32e0343d32cb8d93970ed0d6110c100d">00065</a>         <span class="keywordtype">int</span> <a class="code" href="classambient_1_1actor.html#a32e0343d32cb8d93970ed0d6110c100d">round</a>;
+<a name="l00066"></a><a class="code" href="classambient_1_1actor.html#a145a5455f2cf8ee272d3a064e46c2fc5">00066</a>         <a class="code" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> <a class="code" href="classambient_1_1actor.html#a145a5455f2cf8ee272d3a064e46c2fc5">rank</a>;
+<a name="l00067"></a><a class="code" href="classambient_1_1actor.html#a701e409aa3006e3e0af61ce4306a0524">00067</a>         <a class="code" href="namespaceambient.html#aa22653ea6d7c35ce56dfec3a768affde">ambient::locality</a> <a class="code" href="classambient_1_1actor.html#a701e409aa3006e3e0af61ce4306a0524">state</a>;
+<a name="l00068"></a><a class="code" href="classambient_1_1actor.html#a09beafa5b936d2344c1f6d154246c5f4">00068</a>         <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a>* <a class="code" href="classambient_1_1actor.html#a09beafa5b936d2344c1f6d154246c5f4">controller</a>;
+<a name="l00069"></a>00069     };
+<a name="l00070"></a>00070 
+<a name="l00071"></a><a class="code" href="classambient_1_1base__actor.html">00071</a>     <span class="keyword">class </span><a class="code" href="classambient_1_1base__actor.html">base_actor</a> : <span class="keyword">public</span> <a class="code" href="classambient_1_1actor.html">actor</a> {
+<a name="l00072"></a>00072     <span class="keyword">public</span>:
+<a name="l00073"></a><a class="code" href="classambient_1_1base__actor.html#adaa5d195ff1918e30dde8ad98285f2fc">00073</a>         <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="classambient_1_1models_1_1ssm_1_1model.html">actor::model_type</a> <a class="code" href="classambient_1_1models_1_1ssm_1_1model.html">model_type</a>;
+<a name="l00074"></a>00074         <a class="code" href="classambient_1_1base__actor.html#aff65e39b079a8ce19404ce6b35db606c">base_actor</a>();
+<a name="l00075"></a>00075         <span class="keywordtype">void</span> <span class="keyword">set</span>(<a class="code" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> r);
+<a name="l00076"></a>00076         <span class="keywordtype">void</span> <span class="keyword">set</span>(<a class="code" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">scope::const_iterator</a> it);
+<a name="l00077"></a>00077         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1base__actor.html#a7aa2f9942e6cb8a4e39dce7a89e1d42c">schedule</a>();
+<a name="l00078"></a>00078         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1base__actor.html#a2ee4d4c01a1669c5e877da42ca101583">intend_read</a>(<a class="code" href="classambient_1_1models_1_1ssm_1_1revision.html">models::ssm::revision</a>* o);
+<a name="l00079"></a>00079         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1base__actor.html#a01251423311b94826e7c2496ab9c69e2">intend_write</a>(<a class="code" href="classambient_1_1models_1_1ssm_1_1revision.html">models::ssm::revision</a>* o);
+<a name="l00080"></a><a class="code" href="classambient_1_1base__actor.html#a0f0a9ff8ad4ea288a3e083fa95bb7d19">00080</a>         <span class="keyword">mutable</span> std::vector&lt;rank_t&gt; <a class="code" href="classambient_1_1base__actor.html#a0f0a9ff8ad4ea288a3e083fa95bb7d19">stakeholders</a>;
+<a name="l00081"></a><a class="code" href="classambient_1_1base__actor.html#a619e745208dfd97ffe53a3ccf5a647c0">00081</a>         <span class="keyword">mutable</span> std::vector&lt;int&gt; <a class="code" href="classambient_1_1base__actor.html#a619e745208dfd97ffe53a3ccf5a647c0">scores</a>;
+<a name="l00082"></a>00082     };
+<a name="l00083"></a>00083 
+<a name="l00084"></a>00084 }
+<a name="l00085"></a>00085 
+<a name="l00086"></a>00086 <span class="preprocessor">#endif</span>
 </pre></div></div>
 <!--- window showing the filter options -->
 <div id="MSearchSelectWindow"
@@ -127,7 +143,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 26 May 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 2 Jun 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>
