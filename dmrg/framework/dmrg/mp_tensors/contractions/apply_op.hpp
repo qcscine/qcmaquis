@@ -71,6 +71,7 @@ namespace contraction {
             charge        T_delta = SymmGroup::fuse(T.right_basis()[0].first, -T.left_basis()[0].first);
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
         
+            select_scope(contr_grid.where(b1,b2));
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
             for (size_t r = 0; r < right_i.size(); ++r)

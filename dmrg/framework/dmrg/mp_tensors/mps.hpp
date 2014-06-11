@@ -125,7 +125,7 @@ void MPS<Matrix, SymmGroup>::normalize_left()
 {
     canonize(length()-1);
     // now state is: A A A A A A M
-    select_proc(ambient::scope::balance(length()-1,length()));
+    select_scope(ambient::scope::balance(length()-1,length()));
     block_matrix<Matrix, SymmGroup> t = (*this)[length()-1].normalize_left(DefaultSolver());
     // now state is: A A A A A A A
     canonized_i = length()-1;
@@ -136,7 +136,7 @@ void MPS<Matrix, SymmGroup>::normalize_right()
 {
     canonize(0);
     // now state is: M B B B B B B
-    select_proc(ambient::scope::balance(0,length()));
+    select_scope(ambient::scope::balance(0,length()));
     block_matrix<Matrix, SymmGroup> t = (*this)[0].normalize_right(DefaultSolver());
     // now state is: B B B B B B B
     canonized_i = 0;
@@ -175,11 +175,11 @@ void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2, Decomp
             continue;
         block_matrix<Matrix, SymmGroup> t;
         {
-            select_proc(ambient::scope::balance(i,length()));
+            select_scope(ambient::scope::balance(i,length()));
             t = (*this)[i].normalize_left(method);
         }
         if (i < length()-1) {
-            select_proc(ambient::scope::balance(i+1,length()));
+            select_scope(ambient::scope::balance(i+1,length()));
             (*this)[i+1].multiply_from_left(t);
             (*this)[i+1].divide_by_scalar((*this)[i+1].scalar_norm());
         }
@@ -203,11 +203,11 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
             continue;
         block_matrix<Matrix, SymmGroup> t;
         {
-            select_proc(ambient::scope::balance(i,length()));
+            select_scope(ambient::scope::balance(i,length()));
             t = (*this)[i].normalize_right(method);
         }
         if (i > 0) {
-            select_proc(ambient::scope::balance(i-1,length()));
+            select_scope(ambient::scope::balance(i-1,length()));
             (*this)[i-1].multiply_from_right(t);
             (*this)[i-1].divide_by_scalar((*this)[i-1].scalar_norm());
         }
@@ -341,7 +341,7 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
     MPS<Matrix, SymmGroup> tmp(L);
     size_t loop_max = tmp.length();
     for(size_t k = 0; k < loop_max; ++k){
-        select_proc(ambient::scope::balance(k,loop_max));
+        select_scope(ambient::scope::balance(k,loop_max));
         std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
         storage::archive ar(fname);
         ar["/tensor"] >> tmp[k];
@@ -355,7 +355,7 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
     size_t loop_max = mps.length();
 #ifdef USE_AMBIENT
     for(size_t k = 0; k < loop_max; ++k){
-        select_proc(ambient::scope::balance(k,loop_max));
+        select_scope(ambient::scope::balance(k,loop_max));
         mps[k].make_left_paired();
         storage::migrate(mps[k]);
     }
@@ -363,8 +363,8 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
 #endif
     for(size_t k = 0; k < loop_max; ++k){
 #ifdef USE_AMBIENT
-        select_proc(ambient::scope::balance(k,loop_max));
-        if(!ambient::selector.get_scope().local()) continue;
+        select_scope(ambient::scope::balance(k,loop_max));
+        if(!ambient::scope::local()) continue;
 #endif
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5.new";
         storage::archive ar(fname, "w");
@@ -377,8 +377,8 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
     
     omp_for(size_t k, range<size_t>(0,loop_max), {
 #ifdef USE_AMBIENT
-        select_proc(ambient::scope::balance(k,loop_max));
-        if(!ambient::selector.get_scope().local()) continue;
+        select_scope(ambient::scope::balance(k,loop_max));
+        if(!ambient::scope::local()) continue;
 #endif
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
         boost::filesystem::rename(fname+".new", fname);

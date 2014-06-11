@@ -80,7 +80,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00036"></a>00036 
 <a name="l00037"></a><a class="code" href="structambient_1_1backbone_1_1thread__context.html">00037</a>         <span class="keyword">struct </span><a class="code" href="structambient_1_1backbone_1_1thread__context.html">thread_context</a> {
 <a name="l00038"></a><a class="code" href="structambient_1_1backbone_1_1thread__context.html#a402a1036790407dc052d42dfbfc843e1">00038</a>             <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a> <a class="code" href="structambient_1_1backbone_1_1thread__context.html#a402a1036790407dc052d42dfbfc843e1">controller</a>;
-<a name="l00039"></a><a class="code" href="structambient_1_1backbone_1_1thread__context.html#a070f7ac5d54b59a5cd034bfb56da2fd8">00039</a>             <a class="code" href="classambient_1_1scope.html">scope</a>* <a class="code" href="structambient_1_1backbone_1_1thread__context.html#a070f7ac5d54b59a5cd034bfb56da2fd8">scope_</a>;
+<a name="l00039"></a><a class="code" href="structambient_1_1backbone_1_1thread__context.html#af56b3dec131c7dfe0f4402c563cf701b">00039</a>             std::stack&lt;actor*, std::vector&lt;actor*&gt; &gt; <a class="code" href="structambient_1_1backbone_1_1thread__context.html#af56b3dec131c7dfe0f4402c563cf701b">stack</a>;
 <a name="l00040"></a><a class="code" href="structambient_1_1backbone_1_1thread__context_1_1sid__t.html">00040</a>             <span class="keyword">struct </span><a class="code" href="structambient_1_1backbone_1_1thread__context_1_1sid__t.html">sid_t</a> {
 <a name="l00041"></a><a class="code" href="structambient_1_1backbone_1_1thread__context_1_1sid__t_1_1divergence__guard.html">00041</a>                 <span class="keyword">struct </span><a class="code" href="structambient_1_1backbone_1_1thread__context_1_1sid__t_1_1divergence__guard.html">divergence_guard</a> {
 <a name="l00042"></a>00042                     <a class="code" href="structambient_1_1backbone_1_1thread__context_1_1sid__t_1_1divergence__guard.html#aed570ff4a3aabed829430fb4610b9ec8">divergence_guard</a>();
@@ -97,42 +97,47 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00053"></a>00053             } <a class="code" href="structambient_1_1backbone_1_1thread__context.html#a89c2afe8d45a444e03bc010d52b22bf3">sid</a>;
 <a name="l00054"></a>00054         };
 <a name="l00055"></a>00055 
-<a name="l00056"></a><a class="code" href="classambient_1_1backbone.html#a0469fec586f8cf7002103070e4c3b7e5">00056</a>         <span class="keyword">mutable</span> std::vector&lt;thread_context&gt; <a class="code" href="classambient_1_1backbone.html#a0469fec586f8cf7002103070e4c3b7e5">thread_context_lane</a>;
-<a name="l00057"></a><a class="code" href="classambient_1_1backbone.html#a1f7370dd20b187084ea839d21fbea560">00057</a>         <span class="keyword">mutable</span> <a class="code" href="classambient_1_1base__scope.html">base_scope</a> <a class="code" href="classambient_1_1backbone.html#a1f7370dd20b187084ea839d21fbea560">base</a>;
-<a name="l00058"></a><a class="code" href="classambient_1_1backbone.html#a01cb73693c161b9dbde41b879d4f76cf">00058</a>         <span class="keyword">mutable</span> <a class="code" href="classambient_1_1mutex.html">ambient::mutex</a> <a class="code" href="classambient_1_1backbone.html#a01cb73693c161b9dbde41b879d4f76cf">mtx</a>;
-<a name="l00059"></a>00059 
-<a name="l00060"></a>00060         <a class="code" href="classambient_1_1backbone.html#a8db18da9ef7e0f28f3b39726e97c64dc">backbone</a>();
-<a name="l00061"></a>00061         <a class="code" href="structambient_1_1backbone_1_1thread__context.html">thread_context</a>&amp; <a class="code" href="classambient_1_1backbone.html#a594edfdcbd4f2ceae6bc3a7d16c1075d">get_thread_context</a>() <span class="keyword">const</span>;
-<a name="l00062"></a>00062         <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a>&amp; <a class="code" href="classambient_1_1backbone.html#a576456a88196f21c126f96edbe1b56fc">get_controller</a>() <span class="keyword">const</span>;
-<a name="l00063"></a>00063         <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a>* <a class="code" href="classambient_1_1backbone.html#a4b59c1a77a980da6f6f12d3f43888428">provide_controller</a>();
-<a name="l00064"></a>00064         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#a3631d61ae807379282678a551ba45bdd">revoke_controller</a>(<a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a>* c);
-<a name="l00065"></a>00065         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1backbone.html#acd1b52e33fc968a372f012b9ce042f96">has_nested_scope</a>() <span class="keyword">const</span>;
-<a name="l00066"></a>00066         <a class="code" href="classambient_1_1scope.html">scope</a>&amp; <a class="code" href="classambient_1_1backbone.html#a135507cccd889220293aab4ae85efa6d">get_scope</a>() <span class="keyword">const</span>;
-<a name="l00067"></a>00067         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#a17dbefe40407ef498b860ba119c34723">push_scope</a>(<a class="code" href="classambient_1_1scope.html">scope</a>* s);
-<a name="l00068"></a>00068         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#af62ce2df83d7d8dc7cf7e8749b88233e">pop_scope</a>();
-<a name="l00069"></a>00069         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#a5bc66703235e0650997c1ebcaced4d5d">sync_all</a>();
-<a name="l00070"></a>00070         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#af78acc384c46eeb6153f908a19cd63e7">reset_sid</a>();
-<a name="l00071"></a>00071         <span class="keywordtype">int</span>  <a class="code" href="classambient_1_1backbone.html#a1856be45e2f10c0f981314be65c8e928">generate_sid</a>();
-<a name="l00072"></a>00072         <span class="keywordtype">int</span>  <a class="code" href="classambient_1_1backbone.html#a646b4fe0a92b0c5ac7e6be9f8597f972">get_sid</a>() <span class="keyword">const</span>;
-<a name="l00073"></a>00073         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1backbone.html#a51f0e8c90ca52ef5c58f351c4fc21ff6">tunable</a>() <span class="keyword">const</span>; 
-<a name="l00074"></a>00074         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#a1dc16b4ea65eeb8ef6e26d6de66bfe98">schedule</a>() <span class="keyword">const</span>;
-<a name="l00075"></a>00075         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#a7355fdc08c99f761bd600ce88137d667">intend_read</a>(<a class="code" href="classambient_1_1models_1_1ssm_1_1revision.html">models::ssm::revision</a>* o) <span class="keyword">const</span>;
-<a name="l00076"></a>00076         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#ac476eb316d856abd59dfa6ffd68d20f8">intend_write</a>(<a class="code" href="classambient_1_1models_1_1ssm_1_1revision.html">models::ssm::revision</a>* o) <span class="keyword">const</span>;
-<a name="l00077"></a>00077         <a class="code" href="classambient_1_1mutex.html">ambient::mutex</a>&amp; <a class="code" href="classambient_1_1backbone.html#a6fee9cb94e3bd1844725f09d7816651f">get_mutex</a>() <span class="keyword">const</span>;
-<a name="l00078"></a>00078     };
-<a name="l00079"></a>00079 
-<a name="l00080"></a>00080 <span class="preprocessor">    #ifdef AMBIENT_BUILD_LIBRARY</span>
-<a name="l00081"></a><a class="code" href="namespaceambient.html#a7f676dec6be0245859804b0515e0f4db">00081</a> <span class="preprocessor"></span>    <a class="code" href="classambient_1_1backbone.html">backbone</a> <a class="code" href="namespaceambient.html#a7f676dec6be0245859804b0515e0f4db">selector</a>;
-<a name="l00082"></a>00082     <span class="keywordtype">void</span> <a class="code" href="namespaceambient.html#af2a8d5b408510959cef77dddbcf9ec44">sync</a>(){ <a class="code" href="namespaceambient.html#a7f676dec6be0245859804b0515e0f4db">selector</a>.<a class="code" href="classambient_1_1backbone.html#a5bc66703235e0650997c1ebcaced4d5d">sync_all</a>(); }
-<a name="l00083"></a>00083 <span class="preprocessor">    #else</span>
-<a name="l00084"></a>00084 <span class="preprocessor"></span>    <span class="keyword">extern</span> backbone <a class="code" href="namespaceambient.html#a7f676dec6be0245859804b0515e0f4db">selector</a>;
-<a name="l00085"></a>00085 <span class="preprocessor">    #endif</span>
-<a name="l00086"></a>00086 <span class="preprocessor"></span>
-<a name="l00087"></a><a class="code" href="namespaceambient.html#ab8dc03c84820b133cdfcc238b2d6a346">00087</a>     <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="structambient_1_1backbone_1_1thread__context_1_1sid__t.html">backbone::thread_context::sid_t</a> <a class="code" href="structambient_1_1backbone_1_1thread__context_1_1sid__t.html">sid_t</a>;
-<a name="l00088"></a>00088 }
-<a name="l00089"></a>00089 
-<a name="l00090"></a>00090 <span class="preprocessor">#endif</span>
+<a name="l00056"></a><a class="code" href="classambient_1_1backbone.html#abf4acc139b77ac8df537b29988b91437">00056</a>         <span class="keyword">mutable</span> std::stack&lt;scope*, std::vector&lt;scope*&gt; &gt; <a class="code" href="classambient_1_1backbone.html#abf4acc139b77ac8df537b29988b91437">scopes</a>;
+<a name="l00057"></a><a class="code" href="classambient_1_1backbone.html#ae34bbd9ac8f1867510c2ab02c20ce5da">00057</a>         <span class="keyword">mutable</span> std::stack&lt;rank_t, std::vector&lt;rank_t&gt; &gt; <a class="code" href="classambient_1_1backbone.html#ae34bbd9ac8f1867510c2ab02c20ce5da">resources</a>;
+<a name="l00058"></a><a class="code" href="classambient_1_1backbone.html#a0469fec586f8cf7002103070e4c3b7e5">00058</a>         <span class="keyword">mutable</span> std::vector&lt;thread_context&gt; <a class="code" href="classambient_1_1backbone.html#a0469fec586f8cf7002103070e4c3b7e5">thread_context_lane</a>;
+<a name="l00059"></a><a class="code" href="classambient_1_1backbone.html#a9407518be1f5ce050eeb2b30ab6b4ee0">00059</a>         <span class="keyword">mutable</span> <a class="code" href="classambient_1_1base__actor.html">base_actor</a> <a class="code" href="classambient_1_1backbone.html#a9407518be1f5ce050eeb2b30ab6b4ee0">base</a>;
+<a name="l00060"></a><a class="code" href="classambient_1_1backbone.html#a01cb73693c161b9dbde41b879d4f76cf">00060</a>         <span class="keyword">mutable</span> <a class="code" href="classambient_1_1mutex.html">ambient::mutex</a> <a class="code" href="classambient_1_1backbone.html#a01cb73693c161b9dbde41b879d4f76cf">mtx</a>;
+<a name="l00061"></a>00061 
+<a name="l00062"></a>00062         <a class="code" href="classambient_1_1backbone.html#a8db18da9ef7e0f28f3b39726e97c64dc">backbone</a>();
+<a name="l00063"></a>00063         <a class="code" href="structambient_1_1backbone_1_1thread__context.html">thread_context</a>&amp; <a class="code" href="classambient_1_1backbone.html#a594edfdcbd4f2ceae6bc3a7d16c1075d">get_thread_context</a>() <span class="keyword">const</span>;
+<a name="l00064"></a>00064         <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a>&amp; <a class="code" href="classambient_1_1backbone.html#a576456a88196f21c126f96edbe1b56fc">get_controller</a>() <span class="keyword">const</span>;
+<a name="l00065"></a>00065         <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a>* <a class="code" href="classambient_1_1backbone.html#a4b59c1a77a980da6f6f12d3f43888428">provide_controller</a>();
+<a name="l00066"></a>00066         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#a3631d61ae807379282678a551ba45bdd">revoke_controller</a>(<a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a>* c);
+<a name="l00067"></a>00067         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1backbone.html#af93d842c6794d980512981e1dab3a3cf">has_nested_actor</a>() <span class="keyword">const</span>;
+<a name="l00068"></a>00068         <a class="code" href="classambient_1_1actor.html">actor</a>&amp; <a class="code" href="classambient_1_1backbone.html#a03bb716fac47e3ccc4b8df866e1ac2a5">get_actor</a>() <span class="keyword">const</span>;
+<a name="l00069"></a>00069         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#ad3be0aa4abce29a9f43b32946597e7b6">push_actor</a>(<a class="code" href="classambient_1_1actor.html">actor</a>* s);
+<a name="l00070"></a>00070         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#acf6d54f31506cfe32a9ebd651d9ef3ad">pop_actor</a>();
+<a name="l00071"></a>00071         <a class="code" href="classambient_1_1scope.html">scope</a>&amp; <a class="code" href="classambient_1_1backbone.html#a135507cccd889220293aab4ae85efa6d">get_scope</a>() <span class="keyword">const</span>;
+<a name="l00072"></a>00072         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#a17dbefe40407ef498b860ba119c34723">push_scope</a>(<a class="code" href="classambient_1_1scope.html">scope</a>* s);
+<a name="l00073"></a>00073         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#af62ce2df83d7d8dc7cf7e8749b88233e">pop_scope</a>();
+<a name="l00074"></a>00074         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#a5bc66703235e0650997c1ebcaced4d5d">sync_all</a>();
+<a name="l00075"></a>00075         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#af78acc384c46eeb6153f908a19cd63e7">reset_sid</a>();
+<a name="l00076"></a>00076         <span class="keywordtype">int</span>  <a class="code" href="classambient_1_1backbone.html#a1856be45e2f10c0f981314be65c8e928">generate_sid</a>();
+<a name="l00077"></a>00077         <span class="keywordtype">int</span>  <a class="code" href="classambient_1_1backbone.html#a646b4fe0a92b0c5ac7e6be9f8597f972">get_sid</a>() <span class="keyword">const</span>;
+<a name="l00078"></a>00078         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1backbone.html#a51f0e8c90ca52ef5c58f351c4fc21ff6">tunable</a>() <span class="keyword">const</span>; 
+<a name="l00079"></a>00079         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#a1dc16b4ea65eeb8ef6e26d6de66bfe98">schedule</a>() <span class="keyword">const</span>;
+<a name="l00080"></a>00080         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#a7355fdc08c99f761bd600ce88137d667">intend_read</a>(<a class="code" href="classambient_1_1models_1_1ssm_1_1revision.html">models::ssm::revision</a>* o) <span class="keyword">const</span>;
+<a name="l00081"></a>00081         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1backbone.html#ac476eb316d856abd59dfa6ffd68d20f8">intend_write</a>(<a class="code" href="classambient_1_1models_1_1ssm_1_1revision.html">models::ssm::revision</a>* o) <span class="keyword">const</span>;
+<a name="l00082"></a>00082         <a class="code" href="classambient_1_1mutex.html">ambient::mutex</a>&amp; <a class="code" href="classambient_1_1backbone.html#a6fee9cb94e3bd1844725f09d7816651f">get_mutex</a>() <span class="keyword">const</span>;
+<a name="l00083"></a>00083     };
+<a name="l00084"></a>00084 
+<a name="l00085"></a>00085 <span class="preprocessor">    #ifdef AMBIENT_BUILD_LIBRARY</span>
+<a name="l00086"></a><a class="code" href="namespaceambient.html#a7f676dec6be0245859804b0515e0f4db">00086</a> <span class="preprocessor"></span>    <a class="code" href="classambient_1_1backbone.html">backbone</a> <a class="code" href="namespaceambient.html#a7f676dec6be0245859804b0515e0f4db">selector</a>;
+<a name="l00087"></a>00087     <span class="keywordtype">void</span> <a class="code" href="namespaceambient.html#af2a8d5b408510959cef77dddbcf9ec44">sync</a>(){ <a class="code" href="namespaceambient.html#a7f676dec6be0245859804b0515e0f4db">selector</a>.<a class="code" href="classambient_1_1backbone.html#a5bc66703235e0650997c1ebcaced4d5d">sync_all</a>(); }
+<a name="l00088"></a>00088 <span class="preprocessor">    #else</span>
+<a name="l00089"></a>00089 <span class="preprocessor"></span>    <span class="keyword">extern</span> backbone <a class="code" href="namespaceambient.html#a7f676dec6be0245859804b0515e0f4db">selector</a>;
+<a name="l00090"></a>00090 <span class="preprocessor">    #endif</span>
 <a name="l00091"></a>00091 <span class="preprocessor"></span>
+<a name="l00092"></a><a class="code" href="namespaceambient.html#ab8dc03c84820b133cdfcc238b2d6a346">00092</a>     <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="structambient_1_1backbone_1_1thread__context_1_1sid__t.html">backbone::thread_context::sid_t</a> <a class="code" href="structambient_1_1backbone_1_1thread__context_1_1sid__t.html">sid_t</a>;
+<a name="l00093"></a>00093 }
+<a name="l00094"></a>00094 
+<a name="l00095"></a>00095 <span class="preprocessor">#endif</span>
+<a name="l00096"></a>00096 <span class="preprocessor"></span>
 </pre></div></div>
 <!--- window showing the filter options -->
 <div id="MSearchSelectWindow"
@@ -148,7 +153,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 26 May 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 2 Jun 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

@@ -107,7 +107,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00063"></a><a class="code" href="namespaceambient.html#a3628274885801202d7bba90a49c3688e">00063</a>     <span class="keywordtype">void</span> <a class="code" href="namespaceambient.html#a3628274885801202d7bba90a49c3688e">for_each_redist</a>(InputIterator first, InputIterator last, Function op, Weight weight){
 <a name="l00064"></a>00064         <span class="keyword">typedef</span> std::pair&lt;double,size_t&gt; pair;
 <a name="l00065"></a>00065         <span class="keywordtype">double</span> avg = 0.;
-<a name="l00066"></a>00066         <span class="keywordtype">size_t</span> np = <a class="code" href="namespaceambient.html#a520c180de2a19ff34082a81002a37522">ambient::num_workers</a>();
+<a name="l00066"></a>00066         <span class="keywordtype">size_t</span> np = <a class="code" href="namespaceambient.html#ac21c2a3798e3a5af12a0f33e3f9c8c35">ambient::num_procs</a>();
 <a name="l00067"></a>00067         <span class="keywordtype">size_t</span> range = last-first;
 <a name="l00068"></a>00068         std::vector&lt;pair&gt; wl(np, std::make_pair(0,0));
 <a name="l00069"></a>00069         std::vector&lt;pair&gt; cx; cx.reserve(range);
@@ -124,7 +124,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00080"></a>00080         <span class="comment">// filling the workload with smallest local parts first</span>
 <a name="l00081"></a>00081         <span class="keywordflow">for</span>(<span class="keywordtype">size_t</span> p = 0; p &lt; np; ++p){
 <a name="l00082"></a>00082             wl[p].second = p;
-<a name="l00083"></a>00083             <a class="code" href="classambient_1_1scope.html">ambient::scope</a> ctxt(p);
+<a name="l00083"></a>00083             <a class="code" href="classambient_1_1actor.html">ambient::actor</a> proc(<a class="code" href="classambient_1_1scope.html#a5e34568d266cc2e69f1905fd1ce0d86f">ambient::scope::begin</a>()+p);
 <a name="l00084"></a>00084             <span class="keywordflow">for</span>(<span class="keywordtype">size_t</span> i = 0; i &lt; range; ++i){
 <a name="l00085"></a>00085                 <span class="keywordtype">size_t</span> k = cx[i].second;
 <a name="l00086"></a>00086                 <span class="keywordflow">if</span>(<a class="code" href="namespaceambient.html#aab08c7dff2ec621f68afc40218111174">ambient::get_owner</a>(*(first+k)) != p) <span class="keywordflow">continue</span>;
@@ -136,7 +136,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00092"></a>00092         }
 <a name="l00093"></a>00093         <span class="comment">// rebalancing using difference with average</span>
 <a name="l00094"></a>00094         <span class="keywordflow">for</span>(<span class="keywordtype">size_t</span> p = 0; p &lt; np; ++p){
-<a name="l00095"></a>00095             <a class="code" href="classambient_1_1scope.html">ambient::scope</a> ctxt(p);
+<a name="l00095"></a>00095             <a class="code" href="classambient_1_1actor.html">ambient::actor</a> proc(<a class="code" href="classambient_1_1scope.html#a5e34568d266cc2e69f1905fd1ce0d86f">ambient::scope::begin</a>()+p);
 <a name="l00096"></a>00096             <span class="keywordflow">for</span>(<span class="keywordtype">size_t</span> i = 0; i &lt; range; ++i){
 <a name="l00097"></a>00097                 <span class="keywordflow">if</span>(cx[i].first == 0) <span class="keywordflow">continue</span>;
 <a name="l00098"></a>00098                 <span class="keywordflow">if</span>(wl[p].first + cx[i].first &gt;= avg) <span class="keywordflow">break</span>;
@@ -152,7 +152,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00108"></a>00108         <span class="keywordtype">size_t</span> p = 0;
 <a name="l00109"></a>00109         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i = range-1; i &gt;= 0; --i){
 <a name="l00110"></a>00110             <span class="keywordflow">if</span>(cx[i].first == 0) <span class="keywordflow">continue</span>;
-<a name="l00111"></a>00111             <a class="code" href="classambient_1_1scope.html">ambient::scope</a> ctxt(wl[p++].second);
+<a name="l00111"></a>00111             <a class="code" href="classambient_1_1actor.html">ambient::actor</a> proc(<a class="code" href="classambient_1_1scope.html#a5e34568d266cc2e69f1905fd1ce0d86f">ambient::scope::begin</a>()+wl[p++].second);
 <a name="l00112"></a>00112             <a class="code" href="namespaceambient.html#a482197e1dd2bd2fe03d2b4e1f8f5b971">merge</a>(*(first+cx[i].second)); 
 <a name="l00113"></a>00113             p %= np;
 <a name="l00114"></a>00114         }
@@ -176,7 +176,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 26 May 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 2 Jun 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

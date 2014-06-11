@@ -290,7 +290,7 @@ th.dirtab {
 hr {
 	height: 0;
 	border: none;
-	border-top: 1px solid #666;
+        margin-top: 40px;
 }
 
 /* @group Member Descriptions */

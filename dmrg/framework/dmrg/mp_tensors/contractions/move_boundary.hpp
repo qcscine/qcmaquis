@@ -122,7 +122,6 @@ namespace contraction {
         contr_grid.hint_left(t);
 
         parallel_for(index_type b2, range<index_type>(0,loop_max), {
-            select_proc(ambient::scope::permute(b2,mpo.placement_r));
             lbtm_kernel(b2, contr_grid, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
         });
 
@@ -133,7 +132,6 @@ namespace contraction {
 
         omp_for(index_type b2, range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-            select_proc(ambient::scope::permute(b2,mpo.placement_r));
             lbtm_kernel(b2, contr_grid, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
             swap(ret[b2], contr_grid(0,0));
         });
@@ -170,7 +168,7 @@ namespace contraction {
         index_type loop_max = mpo.row_dim();
 
         omp_for(index_type b1, range<index_type>(0,loop_max), {
-            select_proc(ambient::scope::permute(b1,mpo.placement_l));
+            select_scope(ambient::scope::permute(b1,mpo.placement_l));
             ret[b1] = rbtm_kernel(b1, right, t, mpo, physical_i, left_i, right_i, out_right_i, in_left_pb, out_right_pb);
         });
 
@@ -212,11 +210,9 @@ namespace contraction {
         contr_grid.hint_left(t);
 
         parallel_for(index_type b2, range<index_type>(0,loop_max), {
-            select_proc(ambient::scope::permute(b2,mpo.placement_r));
             lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
         });
         for(index_type b2 = 0; b2 < loop_max; b2++){
-            select_proc(ambient::scope::permute(b2,mpo.placement_r));
             contr_grid.multiply_column_trans(b2, bra_conj);
         };
         #ifdef AMBIENT_TRACKING
@@ -229,7 +225,6 @@ namespace contraction {
         ret.resize(loop_max);
 
         omp_for(index_type b2, range<index_type>(0,loop_max), {
-            select_proc(ambient::scope::permute(b2,mpo.placement_r));
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
             block_matrix<Matrix, SymmGroup> tmp;
             lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
@@ -274,7 +269,7 @@ namespace contraction {
         bra_tensor.make_right_paired();
         block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
         omp_for(index_type b1, range<index_type>(0,loop_max), {
-            select_proc(ambient::scope::permute(b1,mpo.placement_l));
+            select_scope(ambient::scope::permute(b1,mpo.placement_l));
             block_matrix<Matrix, SymmGroup> tmp;
             tmp = rbtm_kernel(b1, right, t, mpo, ket_tensor.site_dim(), left_i, right_i, out_right_i, in_left_pb, out_right_pb);
             gemm(tmp, transpose(bra_conj), ret[b1]);

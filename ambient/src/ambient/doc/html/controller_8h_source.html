@@ -88,7 +88,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00044"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#afa93e70c971433f75fdc572e08e317c9">00044</a>                                                &gt; <a class="code" href="classambient_1_1memory_1_1private__region.html">memory_type</a>;
 <a name="l00045"></a>00045         <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#acb3a205d2ee031d98d628d2dfffc8c2f">controller</a>();
 <a name="l00046"></a>00046        <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a2fe9da7a781d7ef0f724f077f9edaa6b">~controller</a>();
-<a name="l00047"></a>00047         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a54a1112b0b019b49bb5ab70c2ea98298">reserve</a>(<span class="keywordtype">int</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ad0f771ed1d05b786958cb633dbfbceaf">db</a> = 0);
+<a name="l00047"></a>00047         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a6a2d5a755888a735d5ff6eab31ad7c67">reserve</a>();
 <a name="l00048"></a>00048         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a242113c49efb0dd11fcfde06e4398e84">empty</a>();
 <a name="l00049"></a>00049         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ad24b01517fe1821ac8c00f3b19134e43">flush</a>();
 <a name="l00050"></a>00050         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a638c3c9d7103879f0f2b41d870f26837">clear</a>();
@@ -110,32 +110,28 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00066"></a>00066         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a61efeb9e9be3e8c965c607d1791f84d1">fence</a>() <span class="keyword">const</span>;
 <a name="l00067"></a>00067         <a class="code" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a2f970c0379bae61f8e751bec6edb210d">get_rank</a>() <span class="keyword">const</span>;
 <a name="l00068"></a>00068         <a class="code" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a2ed84c960beedc84486917f617e2c739">get_shared_rank</a>() <span class="keyword">const</span>;
-<a name="l00069"></a>00069         <a class="code" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#af174659f5cf580b1de14a5d4ac540ad5">get_dedicated_rank</a>() <span class="keyword">const</span>;
-<a name="l00070"></a>00070         <span class="keywordtype">int</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ac0dc4742b9e6835792395d2d743b5f85">get_num_db_procs</a>() <span class="keyword">const</span>;
-<a name="l00071"></a>00071         <span class="keywordtype">int</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a072ddbd144ba971fd6fa928b553e94d5">get_num_workers</a>() <span class="keyword">const</span>;
-<a name="l00072"></a>00072         <span class="keywordtype">int</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ac5cd0a9e852bffc87c96a71c07c6c32d">get_num_procs</a>() <span class="keyword">const</span>;
-<a name="l00073"></a>00073         <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#aee648d2380c08034ccb01e102716b1bf">channel_type</a> &amp; <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a7dc96696da6d00e0ed932432660f9fe1">get_channel</a>();
-<a name="l00074"></a>00074 
-<a name="l00075"></a>00075         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a0da2c458507e1e092e4ef3b0a57d7a1e">meminfo</a>() <span class="keyword">const</span>;
-<a name="l00076"></a>00076         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ae7735d6c274a43b97dbfdebb2c8ff5c7">check_mem</a>() <span class="keyword">const</span>;
-<a name="l00077"></a>00077         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a07a93510e4bc175f959ddb5b4f908b1d">verbose</a>() <span class="keyword">const</span>;
-<a name="l00078"></a>00078         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a2cd7c63c3a7b30af280ca4614b876b2b">is_serial</a>() <span class="keyword">const</span>;
-<a name="l00079"></a>00079 
-<a name="l00080"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a256c8343a000146b62bca1cfc90dd409">00080</a>         <a class="code" href="classambient_1_1memory_1_1private__region.html">memory_type</a> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a256c8343a000146b62bca1cfc90dd409">memory</a>;
-<a name="l00081"></a>00081     <span class="keyword">public</span>:
-<a name="l00082"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#aa13da1ed518f9f4f0be4f850f3983f6c">00082</a>         <a class="code" href="classambient_1_1models_1_1ssm_1_1model.html">model_type</a> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#aa13da1ed518f9f4f0be4f850f3983f6c">model</a>;
-<a name="l00083"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a8a8e7536b0c6fddd16f40176d1be7a04">00083</a>         <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#aee648d2380c08034ccb01e102716b1bf">channel_type</a> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a8a8e7536b0c6fddd16f40176d1be7a04">channel</a>;
-<a name="l00084"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a44611fd7cea85445875c33fe5656fa4c">00084</a>         std::vector&lt; functor* &gt; <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a44611fd7cea85445875c33fe5656fa4c">stack_m</a>;
-<a name="l00085"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#aeebe355e16240bd864a7b04caf32dcff">00085</a>         std::vector&lt; functor* &gt; <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#aeebe355e16240bd864a7b04caf32dcff">stack_s</a>;
-<a name="l00086"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a95ed669441cf4ae2df76eb0754da9d8a">00086</a>         std::vector&lt; functor* &gt;* <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a95ed669441cf4ae2df76eb0754da9d8a">chains</a>;
-<a name="l00087"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a77d19ca1de2a454d3a0ad591fe793e96">00087</a>         std::vector&lt; functor* &gt;* <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a77d19ca1de2a454d3a0ad591fe793e96">mirror</a>;
-<a name="l00088"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#abad2f2704161218020ec0aa11cd07f21">00088</a>         <a class="code" href="classambient_1_1memory_1_1collector.html">ambient::memory::collector</a> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#abad2f2704161218020ec0aa11cd07f21">garbage</a>;
-<a name="l00089"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ad0f771ed1d05b786958cb633dbfbceaf">00089</a>         <span class="keywordtype">int</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ad0f771ed1d05b786958cb633dbfbceaf">db</a>;
-<a name="l00090"></a>00090     };
-<a name="l00091"></a>00091     
-<a name="l00092"></a>00092 } } }
-<a name="l00093"></a>00093 
-<a name="l00094"></a>00094 <span class="preprocessor">#endif</span>
+<a name="l00069"></a>00069         <span class="keywordtype">int</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ac5cd0a9e852bffc87c96a71c07c6c32d">get_num_procs</a>() <span class="keyword">const</span>;
+<a name="l00070"></a>00070         <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#aee648d2380c08034ccb01e102716b1bf">channel_type</a> &amp; <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a7dc96696da6d00e0ed932432660f9fe1">get_channel</a>();
+<a name="l00071"></a>00071 
+<a name="l00072"></a>00072         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a0da2c458507e1e092e4ef3b0a57d7a1e">meminfo</a>() <span class="keyword">const</span>;
+<a name="l00073"></a>00073         <span class="keywordtype">void</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#ae7735d6c274a43b97dbfdebb2c8ff5c7">check_mem</a>() <span class="keyword">const</span>;
+<a name="l00074"></a>00074         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a07a93510e4bc175f959ddb5b4f908b1d">verbose</a>() <span class="keyword">const</span>;
+<a name="l00075"></a>00075         <span class="keywordtype">bool</span> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a2cd7c63c3a7b30af280ca4614b876b2b">is_serial</a>() <span class="keyword">const</span>;
+<a name="l00076"></a>00076 
+<a name="l00077"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a256c8343a000146b62bca1cfc90dd409">00077</a>         <a class="code" href="classambient_1_1memory_1_1private__region.html">memory_type</a> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a256c8343a000146b62bca1cfc90dd409">memory</a>;
+<a name="l00078"></a>00078     <span class="keyword">public</span>:
+<a name="l00079"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#aa13da1ed518f9f4f0be4f850f3983f6c">00079</a>         <a class="code" href="classambient_1_1models_1_1ssm_1_1model.html">model_type</a> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#aa13da1ed518f9f4f0be4f850f3983f6c">model</a>;
+<a name="l00080"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a8a8e7536b0c6fddd16f40176d1be7a04">00080</a>         <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#aee648d2380c08034ccb01e102716b1bf">channel_type</a> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a8a8e7536b0c6fddd16f40176d1be7a04">channel</a>;
+<a name="l00081"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a44611fd7cea85445875c33fe5656fa4c">00081</a>         std::vector&lt; functor* &gt; <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a44611fd7cea85445875c33fe5656fa4c">stack_m</a>;
+<a name="l00082"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#aeebe355e16240bd864a7b04caf32dcff">00082</a>         std::vector&lt; functor* &gt; <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#aeebe355e16240bd864a7b04caf32dcff">stack_s</a>;
+<a name="l00083"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a95ed669441cf4ae2df76eb0754da9d8a">00083</a>         std::vector&lt; functor* &gt;* <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a95ed669441cf4ae2df76eb0754da9d8a">chains</a>;
+<a name="l00084"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a77d19ca1de2a454d3a0ad591fe793e96">00084</a>         std::vector&lt; functor* &gt;* <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#a77d19ca1de2a454d3a0ad591fe793e96">mirror</a>;
+<a name="l00085"></a><a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#abad2f2704161218020ec0aa11cd07f21">00085</a>         <a class="code" href="classambient_1_1memory_1_1collector.html">ambient::memory::collector</a> <a class="code" href="classambient_1_1controllers_1_1ssm_1_1controller.html#abad2f2704161218020ec0aa11cd07f21">garbage</a>;
+<a name="l00086"></a>00086     };
+<a name="l00087"></a>00087     
+<a name="l00088"></a>00088 } } }
+<a name="l00089"></a>00089 
+<a name="l00090"></a>00090 <span class="preprocessor">#endif</span>
 </pre></div></div>
 <!--- window showing the filter options -->
 <div id="MSearchSelectWindow"
@@ -151,7 +147,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 26 May 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 2 Jun 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>
