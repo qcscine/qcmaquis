@@ -102,7 +102,7 @@ public:
     , model(lattice, parms, true)
     , tag_handler(new table_type())
     {
-        select_proc(ambient::scope_t::common);
+        select_scope(ambient::scope_t::common);
         
         size_t num_vertex_types = alps::maximum_vertex_type(lattice.graph())+1;
         symm_basis.reserve(num_vertex_types);

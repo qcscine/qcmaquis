@@ -273,7 +273,7 @@ block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operato
 {
     // todo: check if "omp for" used in nested regions
     for(size_t k = 0; k < n_blocks(); ++k){
-        select_proc(ambient::scope::balance(k,n_blocks()));
+        select_scope(ambient::scope::balance(k,n_blocks()));
         data_[k] *= v;
     }
     return *this;
@@ -284,7 +284,7 @@ block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operato
 {
     // todo: check if "omp for" used in nested regions
     for(size_t k = 0; k < n_blocks(); ++k){
-        select_proc(ambient::scope::balance(k,n_blocks()));
+        select_scope(ambient::scope::balance(k,n_blocks()));
         data_[k] /= v;
     }
     return *this;
@@ -304,7 +304,7 @@ typename block_matrix<Matrix, SymmGroup>::real_type block_matrix<Matrix, SymmGro
 {
     std::vector<real_type> vt; vt.reserve(data_.size());
     for(size_t k = 0; k < n_blocks(); ++k){
-        select_proc(ambient::scope::balance(k,n_blocks()));
+        select_scope(ambient::scope::balance(k,n_blocks()));
         vt.push_back(norm_square(data_[k]));
     }
     return maquis::sqrt(maquis::accumulate(vt.begin(), vt.end(), real_type(0.)));

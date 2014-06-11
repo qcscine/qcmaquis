@@ -64,7 +64,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a> &amp;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#a576456a88196f21c126f96edbe1b56fc">get_controller</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#a4b59c1a77a980da6f6f12d3f43888428">provide_controller</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#a3631d61ae807379282678a551ba45bdd">revoke_controller</a> (<a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html">controller_type</a> *c)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#acd1b52e33fc968a372f012b9ce042f96">has_nested_scope</a> () const </td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#af93d842c6794d980512981e1dab3a3cf">has_nested_actor</a> () const </td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classambient_1_1actor.html">actor</a> &amp;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#a03bb716fac47e3ccc4b8df866e1ac2a5">get_actor</a> () const </td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#ad3be0aa4abce29a9f43b32946597e7b6">push_actor</a> (<a class="el" href="classambient_1_1actor.html">actor</a> *s)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#acf6d54f31506cfe32a9ebd651d9ef3ad">pop_actor</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classambient_1_1scope.html">scope</a> &amp;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#a135507cccd889220293aab4ae85efa6d">get_scope</a> () const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#a17dbefe40407ef498b860ba119c34723">push_scope</a> (<a class="el" href="classambient_1_1scope.html">scope</a> *s)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#af62ce2df83d7d8dc7cf7e8749b88233e">pop_scope</a> ()</td></tr>
@@ -78,8 +81,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td class="memItemLeft" align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#ac476eb316d856abd59dfa6ffd68d20f8">intend_write</a> (<a class="el" href="classambient_1_1models_1_1ssm_1_1revision.html">models::ssm::revision</a> *o) const </td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classambient_1_1mutex.html">ambient::mutex</a> &amp;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#a6fee9cb94e3bd1844725f09d7816651f">get_mutex</a> () const </td></tr>
 <tr><td colspan="2"><h2>Public Attributes</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">std::stack&lt; <a class="el" href="classambient_1_1scope.html">scope</a> <br class="typebreak"/>
+*, std::vector&lt; <a class="el" href="classambient_1_1scope.html">scope</a> * &gt; &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#abf4acc139b77ac8df537b29988b91437">scopes</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">std::stack&lt; <a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a>, <br class="typebreak"/>
+std::vector&lt; <a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a> &gt; &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#ae34bbd9ac8f1867510c2ab02c20ce5da">resources</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structambient_1_1backbone_1_1thread__context.html">thread_context</a> &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#a0469fec586f8cf7002103070e4c3b7e5">thread_context_lane</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classambient_1_1base__scope.html">base_scope</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#a1f7370dd20b187084ea839d21fbea560">base</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classambient_1_1base__actor.html">base_actor</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#a9407518be1f5ce050eeb2b30ab6b4ee0">base</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top"><a class="el" href="classambient_1_1mutex.html">ambient::mutex</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1backbone.html#a01cb73693c161b9dbde41b879d4f76cf">mtx</a></td></tr>
 </table>
 <hr/><h2>Member Typedef Documentation</h2>
@@ -138,6 +145,23 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
           <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a03bb716fac47e3ccc4b8df866e1ac2a5"></a><!-- doxytag: member="ambient::backbone::get_actor" ref="a03bb716fac47e3ccc4b8df866e1ac2a5" args="() const " -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classambient_1_1actor.html">actor</a> &amp; ambient::backbone::get_actor </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td> const<code> [inline]</code></td>
         </tr>
       </table>
 </div>
@@ -230,12 +254,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 </div>
 </div>
-<a class="anchor" id="acd1b52e33fc968a372f012b9ce042f96"></a><!-- doxytag: member="ambient::backbone::has_nested_scope" ref="acd1b52e33fc968a372f012b9ce042f96" args="() const " -->
+<a class="anchor" id="af93d842c6794d980512981e1dab3a3cf"></a><!-- doxytag: member="ambient::backbone::has_nested_actor" ref="af93d842c6794d980512981e1dab3a3cf" args="() const " -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool ambient::backbone::has_nested_scope </td>
+          <td class="memname">bool ambient::backbone::has_nested_actor </td>
           <td>(</td>
           <td class="paramname"></td>
           <td>&nbsp;)&nbsp;</td>
@@ -283,6 +307,23 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 </div>
 </div>
+<a class="anchor" id="acf6d54f31506cfe32a9ebd651d9ef3ad"></a><!-- doxytag: member="ambient::backbone::pop_actor" ref="acf6d54f31506cfe32a9ebd651d9ef3ad" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ambient::backbone::pop_actor </td>
+          <td>(</td>
+          <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="af62ce2df83d7d8dc7cf7e8749b88233e"></a><!-- doxytag: member="ambient::backbone::pop_scope" ref="af62ce2df83d7d8dc7cf7e8749b88233e" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -308,6 +349,24 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
           <td class="memname"><a class="el" href="classambient_1_1controllers_1_1ssm_1_1controller.html">backbone::controller_type</a> * ambient::backbone::provide_controller </td>
           <td>(</td>
           <td class="paramname"></td>
+          <td>&nbsp;)&nbsp;</td>
+          <td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad3be0aa4abce29a9f43b32946597e7b6"></a><!-- doxytag: member="ambient::backbone::push_actor" ref="ad3be0aa4abce29a9f43b32946597e7b6" args="(actor *s)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ambient::backbone::push_actor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classambient_1_1actor.html">actor</a> *&nbsp;</td>
+          <td class="paramname"> <em>s</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td><code> [inline]</code></td>
         </tr>
@@ -422,12 +481,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <hr/><h2>Member Data Documentation</h2>
-<a class="anchor" id="a1f7370dd20b187084ea839d21fbea560"></a><!-- doxytag: member="ambient::backbone::base" ref="a1f7370dd20b187084ea839d21fbea560" args="" -->
+<a class="anchor" id="a9407518be1f5ce050eeb2b30ab6b4ee0"></a><!-- doxytag: member="ambient::backbone::base" ref="a9407518be1f5ce050eeb2b30ab6b4ee0" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classambient_1_1base__scope.html">base_scope</a> <a class="el" href="classambient_1_1backbone.html#a1f7370dd20b187084ea839d21fbea560">ambient::backbone::base</a><code> [mutable]</code></td>
+          <td class="memname"><a class="el" href="classambient_1_1base__actor.html">base_actor</a> <a class="el" href="classambient_1_1backbone.html#a9407518be1f5ce050eeb2b30ab6b4ee0">ambient::backbone::base</a><code> [mutable]</code></td>
         </tr>
       </table>
 </div>
@@ -441,6 +500,32 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="classambient_1_1mutex.html">ambient::mutex</a> <a class="el" href="classambient_1_1backbone.html#a01cb73693c161b9dbde41b879d4f76cf">ambient::backbone::mtx</a><code> [mutable]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae34bbd9ac8f1867510c2ab02c20ce5da"></a><!-- doxytag: member="ambient::backbone::resources" ref="ae34bbd9ac8f1867510c2ab02c20ce5da" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::stack&lt;<a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a>, std::vector&lt;<a class="el" href="namespaceambient.html#ac048b587e36f1159bad79d5e726545ee">rank_t</a>&gt; &gt; <a class="el" href="classambient_1_1backbone.html#ae34bbd9ac8f1867510c2ab02c20ce5da">ambient::backbone::resources</a><code> [mutable]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="abf4acc139b77ac8df537b29988b91437"></a><!-- doxytag: member="ambient::backbone::scopes" ref="abf4acc139b77ac8df537b29988b91437" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::stack&lt;<a class="el" href="classambient_1_1scope.html">scope</a>*, std::vector&lt;<a class="el" href="classambient_1_1scope.html">scope</a>*&gt; &gt; <a class="el" href="classambient_1_1backbone.html#abf4acc139b77ac8df537b29988b91437">ambient::backbone::scopes</a><code> [mutable]</code></td>
         </tr>
       </table>
 </div>
@@ -480,7 +565,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 26 May 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 2 Jun 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

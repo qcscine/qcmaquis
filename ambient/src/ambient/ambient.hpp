@@ -37,6 +37,7 @@
 #include <string>
 #include <limits>
 #include <vector>
+#include <stack>
 #include <set>
 #include <map>
 #include <list>

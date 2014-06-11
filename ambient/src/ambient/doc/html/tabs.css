@@ -1,11 +1,50 @@
 /* tabs styles, based on http://www.alistapart.com/articles/slidingdoors */
 
+DIV.navigation
+{
+   padding-top: 132px;
+}
+
 DIV.tabs
 {
    float            : left;
    width            : 100%;
-   background       : url("tab_b.gif") repeat-x bottom;
-   margin-bottom    : 4px;
+   background-color : #333;
+   padding-top      : 10px;
+   padding-bottom   : 1px;
+   position         : fixed;
+}
+
+DIV.tabs:nth-child(1)
+{
+    padding-top      : 30px;
+    top              : 0px;
+    left             : 0px;
+}
+
+DIV.tabs:nth-child(2)
+{
+    top: 53px;
+    left             : 0px;
+    padding-bottom   : 11px;
+}
+
+DIV.tabs:nth-child(3)
+{
+    top: 96px;
+    left: 0px;
+    padding-top: 0px;
+    background-color: #444;
+}
+
+DIV.tabs:nth-child(4)
+{
+    top: 96px;
+    width: auto;
+    right: 0px;
+    padding-top: 0px;
+    background-color: #444;
+    max-width: 50%;
 }
 
 DIV.tabs UL
@@ -30,8 +69,6 @@ DIV.tabs FORM
 DIV.tabs A
 {
    float            : left;
-   background       : url("tab_r.gif") no-repeat right top;
-   border-bottom    : 1px solid #84B0C7;
    font-size        : 80%;
    font-weight      : bold;
    text-decoration  : none;
@@ -45,14 +82,13 @@ DIV.tabs A:hover
 DIV.tabs A:link, DIV.tabs A:visited,
 DIV.tabs A:active, DIV.tabs A:hover
 {
-       color: #1A419D;
+   color: #999; /*rgb(65, 176, 219);*/
 }
 
 DIV.tabs SPAN
 {
    float            : left;
    display          : block;
-   background       : url("tab_l.gif") no-repeat left top;
    padding          : 5px 9px;
    white-space      : nowrap;
 }
@@ -86,6 +122,7 @@ DIV.tabs LI.current A
 {
    background-position: 100% -150px;
    border-width     : 0px;
+   color            : white;
 }
 
 DIV.tabs LI.current SPAN

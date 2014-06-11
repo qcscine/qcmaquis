@@ -36,7 +36,7 @@ namespace ambient {
 
         struct thread_context {
             controller_type controller;
-            scope* scope_;
+            std::stack<actor*, std::vector<actor*> > stack;
             struct sid_t {
                 struct divergence_guard {
                     divergence_guard();
@@ -53,8 +53,10 @@ namespace ambient {
             } sid;
         };
 
+        mutable std::stack<scope*, std::vector<scope*> > scopes;
+        mutable std::stack<rank_t, std::vector<rank_t> > resources;
         mutable std::vector<thread_context> thread_context_lane;
-        mutable base_scope base;
+        mutable base_actor base;
         mutable ambient::mutex mtx;
 
         backbone();
@@ -62,7 +64,10 @@ namespace ambient {
         controller_type& get_controller() const;
         controller_type* provide_controller();
         void revoke_controller(controller_type* c);
-        bool has_nested_scope() const;
+        bool has_nested_actor() const;
+        actor& get_actor() const;
+        void push_actor(actor* s);
+        void pop_actor();
         scope& get_scope() const;
         void push_scope(scope* s);
         void pop_scope();

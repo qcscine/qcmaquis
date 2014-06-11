@@ -44,7 +44,7 @@ namespace ambient { namespace controllers { namespace ssm {
                                                > memory_type;
         controller();
        ~controller();
-        void reserve(int db = 0);
+        void reserve();
         bool empty();
         void flush();
         void clear();
@@ -66,9 +66,6 @@ namespace ambient { namespace controllers { namespace ssm {
         void fence() const;
         rank_t get_rank() const;
         rank_t get_shared_rank() const;
-        rank_t get_dedicated_rank() const;
-        int get_num_db_procs() const;
-        int get_num_workers() const;
         int get_num_procs() const;
         channel_type & get_channel();
 
@@ -86,7 +83,6 @@ namespace ambient { namespace controllers { namespace ssm {
         std::vector< functor* >* chains;
         std::vector< functor* >* mirror;
         ambient::memory::collector garbage;
-        int db;
     };
     
 } } }

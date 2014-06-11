@@ -46,24 +46,12 @@ namespace ambient {
         return std::atoi(std::getenv( env ));
     }
 
-    inline int num_db_procs(){
-        return selector.get_controller().get_num_db_procs();
-    }
-
-    inline int num_workers(){
-        return selector.get_controller().get_num_workers();
-    }
-    
     inline int num_procs(){
         return selector.get_controller().get_num_procs();
     }
 
     inline rank_t rank(){
         return selector.get_controller().get_rank();
-    }
-
-    inline rank_t dedicated_rank(){
-        return selector.get_controller().get_dedicated_rank();
     }
 
     inline bool master(){
@@ -131,11 +119,11 @@ namespace ambient {
     }
 
     inline rank_t which(){
-        return ambient::selector.get_scope().which();
+        return ambient::selector.get_actor().which();
     }
 
-    inline scope& get_scope(){
-        return ambient::selector.get_scope();
+    inline actor& get_actor(){
+        return ambient::selector.get_actor();
     }
 
 }

@@ -337,7 +337,7 @@ class Diffusion2D {
         time(0)
         {
             // process grid - manual for now //
-            int n = ambient::num_workers();
+            int n = ambient::num_procs();
             if(n == 2){
                 np = 1;
                 nq = 2;
@@ -379,7 +379,7 @@ class Diffusion2D {
                 grid.push_back(new stencil_t(tailm, tailn)); grid_mirror.push_back(new stencil_t(tailm, tailn));
             }
             {
-                ambient::scope select(ambient::scope_t::common);
+                ambient::actor select(ambient::scope_t::common);
                 null_stencil.fill(0.0);
             }
 
@@ -390,7 +390,7 @@ class Diffusion2D {
 
             for(size_t i = 0; i < mt; ++i)
             for(size_t j = 0; j < nt; ++j){
-                ambient::scope select(get_rank(i,j));
+                ambient::actor select(ambient::scope::begin()+get_rank(i,j));
                 get(i,j).partial_init(value, i*IB*dr+rmin, j*IB*dr+rmin, dr, bound);
             }
         }
@@ -431,7 +431,7 @@ class Diffusion2D {
         void propagate_density(){ 
             for(int i = 0; i < mt; i++){
                 for(int j = 0; j < nt; j++){
-                    ambient::scope select(get_rank(i,j));
+                    ambient::actor select(ambient::scope::begin()+get_rank(i,j));
                     grid_mirror[i+j*mt]->evolve_from(get(i,j), fac);
                     grid_mirror[i+j*mt]->contract(get(i,j), get(i-1,j), get(i,j+1), get(i+1,j), get(i,j-1), fac);
                 }
@@ -469,7 +469,7 @@ int main(int argc, char* argv[]){
     }
     time.end();
     {
-        ambient::scope select(0);
+        ambient::actor select(ambient::scope::begin());
         ambient::cout << "getting results... ";
         ambient::cout << task.get_size() << '\t' << task.get_moment() << std::endl;
     }

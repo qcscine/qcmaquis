@@ -85,10 +85,10 @@ struct kernel_inliner<void(*)( BOOST_PP_REPEAT(TYPES_NUMBER, type_list, BOOST_PP
             BOOST_PP_REPEAT(TYPES_NUMBER, score_arguments, ~)
             selector.schedule();
         }
-        if(selector.get_scope().remote()){
+        if(selector.get_actor().remote()){
             BOOST_PP_REPEAT(TYPES_NUMBER, extract_remote_arguments, ~)
             return;
-        }else if(selector.get_scope().local()){
+        }else if(selector.get_actor().local()){
             BOOST_PP_REPEAT(TYPES_NUMBER, extract_local_arguments, ~) 
         }else{
             BOOST_PP_REPEAT(TYPES_NUMBER, extract_arguments, ~) 

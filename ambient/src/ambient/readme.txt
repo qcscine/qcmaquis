@@ -13,9 +13,6 @@ MKL_NUM_THREADS=[thread count]         # MKL will use [thread count] in all of i
                                        # resources overloading. Use AMBIENT_MKL_NUM_THREADS 
                                        # to override it.
 
-AMBIENT_DB_NUM_PROCS=[proc count]      # the number of processes to retain as dedicated
-[0]                                    #
-
 AMBIENT_BULK_LIMIT=[chunks number]     # limit the data bulk memory consumption by [chunks number]
 [unlimited]                            #
 

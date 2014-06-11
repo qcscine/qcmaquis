@@ -37,13 +37,12 @@ namespace ambient { namespace controllers { namespace ssm {
         this->clear();
     }
 
-    inline controller::controller() : chains(&stack_m), mirror(&stack_s), db(0) {}
+    inline controller::controller() : chains(&stack_m), mirror(&stack_s) {}
 
-    inline void controller::reserve(int db){
+    inline void controller::reserve(){
         this->stack_m.reserve(AMBIENT_STACK_RESERVE);
         this->stack_s.reserve(AMBIENT_STACK_RESERVE);
         this->garbage.reserve(AMBIENT_STACK_RESERVE);
-        this->db = get_num_procs() > db ? db : 0;
     }
 
     inline void controller::flush(){
@@ -150,10 +149,6 @@ namespace ambient { namespace controllers { namespace ssm {
         return get_num_procs();
     }
 
-    inline rank_t controller::get_dedicated_rank() const {
-        return (get_num_procs()-db);
-    }
-
     inline bool controller::is_serial() const {
         return (get_num_procs() == 1);
     }
@@ -187,14 +182,6 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline int controller::get_num_procs() const {
         return channel.dim();
-    }
-
-    inline int controller::get_num_db_procs() const {
-        return this->db;
-    }
-
-    inline int controller::get_num_workers() const {
-        return (get_num_procs()-db);
     }
 
     inline typename controller::channel_type & controller::get_channel(){
