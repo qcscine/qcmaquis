@@ -84,6 +84,42 @@ matrix generate_reference()
     return ret;
 }
 
+matrix compute_diff(MPS<matrix, grp> const & mps, matrix const & ref, std::vector<int> const & site_irreps, std::vector<int> const & config)
+{
+    size_t L = mps.size();
+
+    matrix rdm(L,L), diff(L,L);
+    for (int i=0; i < L-1; ++i)
+        for (int j=i+1; j < L; ++j)
+        {
+            MPO<matrix, grp> mpo = SU2::make_op<matrix, grp>(i, j, site_irreps);
+            rdm(i,j) = SU2::expval(mps, mpo, i, j, config);
+            diff(i,j) = std::abs(rdm(i,j) - ref(i,j));
+        }
+
+    //cout.precision(5);
+    //for (int i=0; i < L-1; ++i)
+    //{
+    //    for (int j=0; j < i+1; ++j) cout << std::setw(10) << " ";
+    //    for (int j=i+1; j < L; ++j)
+    //    {
+    //        cout << std::setw(10) << rdm(i,j);
+    //    }
+    //    cout << endl;
+    //}
+    //for (int i=0; i < L-1; ++i)
+    //{
+    //    for (int j=0; j < i+1; ++j) cout << std::setw(10) << " ";
+    //    for (int j=i+1; j < L; ++j)
+    //    {
+    //        cout << std::setw(10) << ref(i,j) / rdm(i,j);
+    //    }
+    //    cout << endl;
+    //}
+
+    return diff;
+}
+
 
 int main(int argc, char ** argv)
 {
@@ -100,41 +136,31 @@ int main(int argc, char ** argv)
         std::vector<int> site_irreps;
         for (int i=0; i < L; ++i)
             site_irreps.push_back(mps[i].site_dim()[1].first[2]);
-
         //std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(cout, ""));        
 
         matrix ref = generate_reference();
-        matrix rdm(L,L), diff(L,L);
-        for (int i=0; i < L-1; ++i)
-            for (int j=i+1; j < L; ++j)
-            {
-                MPO<matrix, grp> mpo = SU2::make_op<matrix, grp>(i, j, site_irreps);
-                rdm(i,j) = SU2::expval(mps, mpo, i, j);
-                diff(i,j) = std::abs(rdm(i,j) - ref(i,j));
-            }
 
-        cout.precision(5);
-        for (int i=0; i < L-1; ++i)
-        {
-            for (int j=0; j < i+1; ++j) cout << std::setw(10) << " ";
-            for (int j=i+1; j < L; ++j)
-            {
-                cout << std::setw(10) << rdm(i,j);
-            }
-            cout << endl;
+        std::vector<int> config(4,0);
+
+        for (int v0=-1; v0 < 2; ++v0) {
+        config[0] = v0;
+
+        for (int v1=-1; v1 < 2; ++v1) {
+        config[1] = v1;
+
+        for (int v2=0; v2 < 2; ++v2) {
+        config[2] = v2;
+
+        for (int v3=0; v3 < 2; ++v3) {
+        config[3] = v3;
+
+            matrix diff = compute_diff(mps, ref, site_irreps, config);
+            double ss = norm_square(diff);
+            std::cout << ss << std::endl;
         }
-       for (int i=0; i < L-1; ++i)
-        {
-            for (int j=0; j < i+1; ++j) cout << std::setw(10) << " ";
-            for (int j=i+1; j < L; ++j)
-            {
-                cout << std::setw(10) << ref(i,j) / rdm(i,j);
-            }
-            cout << endl;
         }
-
-        double ss = norm_square(diff);
-
+        }
+        }
         
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;

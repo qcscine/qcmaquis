@@ -187,7 +187,7 @@ namespace SU2 {
                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                           block_matrix<OtherMatrix, SymmGroup> const & left,
                           MPOTensor<Matrix, SymmGroup> const & mpo,
-                          int boundary_spin,
+                          int boundary_spin, std::vector<int> const & config,
                           bool debug = false)
     {
         typedef typename SymmGroup::charge charge;
@@ -268,7 +268,7 @@ namespace SU2 {
                     // Coupling coefficient
                     double coupling = access.scale * W[w_block](0,0);
                     if (SymmGroup::fuse(phys_out, -phys_in)[0] == -1) { // if destructor
-                        coupling *= couple_destroy(new_rc[1], free_rc[1], phys_in[1]);
+                        coupling *= couple_destroy(new_rc[1], free_rc[1], phys_in[1]) * sqrt(2.);
                     }
                     else if (SymmGroup::fuse(phys_out, -phys_in)[0] == 1) { // if creator
                         coupling *= couple_create(free_rc[1], mc[1], phys_in[1], 0);
@@ -279,9 +279,11 @@ namespace SU2 {
                     }
                     else if (std::abs(new_rc[1]-free_rc[1]) == 1) { // if Spin 1/2 tensor
                         assert(phys_in==phys_out);
-                        //coupling *= pow(j+1., 0.5) * pow(i+1., -0.5) * pow(ip+1., 0.5) * pow(jp+1., -0.5);
-                        //coupling *= pow(j+1., 0.5) * pow(i+1., -0.5) * pow(ip+1., 0.5) * pow(jp+1., -0.5);
-                        coupling *= pow(j+2., 0.5)  * pow(i+1., -0.5);
+                        //coupling *= pow(ip+1., 0.5) * pow(jp+1., -0.5) * pow(i+1., 0.5) * pow(j+1., -0.5);
+                        coupling *= pow(ip+1., double(config[0])/2.) * pow(jp+1., double(config[1])/2.);
+                        double phase1 = pow( pow(-1., double(jp+ip)/2), config[2] );
+                        double phase2 = pow( pow(-1., double(jp+ip+1)/2), config[3] );
+                        coupling *= phase1 * phase2;
                     }
                     coupling_coeff *= sgn(coupling_coeff) * sgn(coupling);
 
@@ -379,7 +381,7 @@ namespace SU2 {
 
     template<class Matrix, class SymmGroup>
     double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
-                  int p1, int p2, bool verbose = false)
+                  int p1, int p2, std::vector<int> config)
     {
         bool debug = false;
         if (p1 == 1 && p2 == 3) debug = false;
@@ -391,13 +393,13 @@ namespace SU2 {
         for(size_t i = 0; i < L; ++i) {
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
             if (i==p1) 
-                left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], 0, debug);
+                left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], 0, config, debug);
             else if (p1 < i && i < p2)
-                left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], 1, debug);
+                left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], 1, config, debug);
             else if (i==p2) 
-                left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], 1, debug);
+                left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], 1, config, debug);
             else 
-                left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], 0, debug);
+                left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], 0, config, debug);
                 //left = contraction::SU2::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
 
             //if (i==1 && p1 == 1 && p2 == 2) maquis::cout << left[0] << std::endl;

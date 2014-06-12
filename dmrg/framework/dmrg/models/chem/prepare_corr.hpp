@@ -74,7 +74,7 @@ namespace SU2 {
             else if (p == j)
                 op.set(0,0,create);
             else if ( i < p && p < j)
-                op.set(0,0,fill, 1.0);
+                op.set(0,0,identity, 1.0);
             else 
                 op.set(0,0,identity, 1.0);
 
