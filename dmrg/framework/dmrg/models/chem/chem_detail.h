@@ -64,6 +64,7 @@ namespace chem_detail {
         }
     };
 
+    /*
     inline IndexTuple align(int i, int j, int k, int l) {
         if (i<j) std::swap(i,j);
         if (k<l) std::swap(k,l);
@@ -75,6 +76,7 @@ namespace chem_detail {
     inline IndexTuple align(IndexTuple const & rhs) {
         return align(rhs[0], rhs[1], rhs[2], rhs[3]);
     }
+    */
 
     inline int sign(IndexTuple const & idx)
     {
@@ -116,8 +118,9 @@ namespace chem_detail {
         typedef Lattice::pos_t pos_t;
 
         ChemHelper(BaseParameters & parms, Lattice const & lat,
-                   tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
-            : ident(ident_), fill(fill_), tag_handler(tag_handler_)
+                   tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_,
+                   boost::function<IndexTuple(int, int, int, int)> align_) 
+            : ident(ident_), fill(fill_), tag_handler(tag_handler_), align(align_)
         {
             this->parse_integrals(parms, lat);
 
@@ -190,7 +193,7 @@ namespace chem_detail {
                     term = TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
                                                    op_i, op_k, op_l, op_j, tag_handler);
 
-                    term.coeff += value_type(sign(twin)) * coefficients[align(twin)];
+                    term.coeff += value_type(sign(twin)) * coefficients[align(twin[0], twin[1], twin[2], twin[3])];
 
                     tagterms.push_back(term);
                 }
@@ -279,6 +282,7 @@ namespace chem_detail {
 
         tag_type ident, fill;
         boost::shared_ptr<TagHandler<M, S> > tag_handler;
+        boost::function<IndexTuple(int, int, int, int)> align;
 
         std::vector<value_type> matrix_elements;
         std::vector<std::vector<int> > idx_;

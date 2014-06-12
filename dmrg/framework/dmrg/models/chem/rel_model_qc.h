@@ -73,6 +73,16 @@ public:
         return;
     }
     
+    // align function moved in the model from chem_detail.h
+    static chem_detail::IndexTuple align(int i, int j, int k, int l) {
+        // For the time being (12.06.14) do nothing in the relativistic model
+        return chem_detail::IndexTuple(i,j,k,l);
+    }
+
+    //static chem_detail::IndexTuple align(chem_detail::IndexTuple const & rhs) {
+    //    return align(rhs[0], rhs[1], rhs[2], rhs[3]);
+    //}
+
     Index<SymmGroup> const & phys_dim(size_t type) const
     {
         // type == site for lattice = spinors

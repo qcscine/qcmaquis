@@ -141,7 +141,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     // all terms in the hamiltonian!!!
     // NOTE: actually also fill is taken from here and there should be
     // no problem --> need to check again
-    chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, dummy, dummy, tag_handler);
+    chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, dummy, dummy, tag_handler, this->align);
     
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
