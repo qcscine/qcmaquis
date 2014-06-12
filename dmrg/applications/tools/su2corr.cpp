@@ -104,12 +104,13 @@ int main(int argc, char ** argv)
         //std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(cout, ""));        
 
         matrix ref = generate_reference();
-        matrix rdm(L,L);
+        matrix rdm(L,L), diff(L,L);
         for (int i=0; i < L-1; ++i)
             for (int j=i+1; j < L; ++j)
             {
                 MPO<matrix, grp> mpo = SU2::make_op<matrix, grp>(i, j, site_irreps);
                 rdm(i,j) = SU2::expval(mps, mpo, i, j);
+                diff(i,j) = std::abs(rdm(i,j) - ref(i,j));
             }
 
         cout.precision(5);
@@ -131,6 +132,8 @@ int main(int argc, char ** argv)
             }
             cout << endl;
         }
+
+        double ss = norm_square(diff);
 
         
     } catch (std::exception& e) {

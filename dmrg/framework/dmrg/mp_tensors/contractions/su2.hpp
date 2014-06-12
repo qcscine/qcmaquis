@@ -362,7 +362,6 @@ namespace SU2 {
         ret.resize(loop_max);
 
         omp_for(index_type b2, range<index_type>(0,loop_max), {
-            select_proc(ambient::scope::permute(b2,mpo.placement_r));
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
             //maquis::cout << t[b2] << std::endl;
             contraction::SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
@@ -390,7 +389,6 @@ namespace SU2 {
         Boundary<Matrix, SymmGroup> left = mps.left_boundary();
 
         for(size_t i = 0; i < L; ++i) {
-            select_proc(ambient::scope::balance(i,L));
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
             if (i==p1) 
                 left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], 0, debug);
