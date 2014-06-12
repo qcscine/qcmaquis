@@ -187,24 +187,22 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
-            /*
+            
+            // i & j refer to unbarred spinors --> passs create_/destroy/fill_unbar
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], i, j, create_unbar, destroy_unbar, tag_handler)
+                true, fill_unbar, matrix_elements[m], i, j, create_unbar, destroy_unbar, tag_handler)
             );
-            std::cout << i << j << "\t # of terms in H: " << this->terms_.size() << std::endl;
+            // i+n_pair, j+n_pair refer to barred spinors --> bar operators
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], i, j, create_bar, destroy_bar, tag_handler)
+                true, fill_bar, matrix_elements[m], i + n_pair, j + n_pair, create_bar, destroy_bar, tag_handler)
             );
-            std::cout << i+3 << j+3 << "\t # of terms in H: " << this->terms_.size() << std::endl;
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], j, i, create_unbar, destroy_unbar, tag_handler)
+                true, fill_unbar, matrix_elements[m], j, i, create_unbar, destroy_unbar, tag_handler)
             );
-            std::cout << j << i << "\t # of terms in H: " << this->terms_.size() << std::endl;
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], j, i, create_bar, destroy_bar, tag_handler)
+                true, fill_bar, matrix_elements[m], j + n_pair, i + n_pair, create_bar, destroy_bar, tag_handler)
             );
-            std::cout << j+3 << i+3 << "\t # of terms in H: " << this->terms_.size() << std::endl;
-            */
+            
             used_elements[m] += 1;
         }
 
@@ -214,46 +212,56 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         
         // V_iiii
         else if (i == j && j == k && k == l) {
+        /*
         //------------- 4 unbarred & 0 barred ---------------//
-        /*    
             if (i < n_pair) {
                 term_descriptor term;
-                term.coeff = matrix_elements[m];
-                term.push_back(boost::make_tuple(i, docc));
-                //term.push_back(boost::make_tuple(i, count_unbar));
+                term.coeff = matrix_elements[m]*0.5;
+                //term.push_back(boost::make_tuple(i, docc));
+                term.push_back(boost::make_tuple(i, count_unbar));
                 this->terms_.push_back(term);
-                std::cout << i << j << k << l << "\t # of terms in H: " << this->terms_.size() << std::endl;
             }
         //------------- 0 unbarred & 4 barred ---------------//
             else if (i >= n_pair) {
                 term_descriptor term;
-                term.coeff = matrix_elements[m];
-                term.push_back(boost::make_tuple(i, docc));
-                //term.push_back(boost::make_tuple(i, count_bar));
+                term.coeff = matrix_elements[m]*0.5;
+                //term.push_back(boost::make_tuple(i, docc));
+                term.push_back(boost::make_tuple(i, count_bar));
                 this->terms_.push_back(term);
-                std::cout << i << j << k << l << "\t # of terms in H: " << this->terms_.size() << std::endl;
             }
-            */
+        */    
             used_elements[m] += 1;
+        
         }
-        /*
+        
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
-
+            
+            
             if (i < n_pair && k < n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_unbar, count_unbar);
+                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_unbar, count_unbar);
+                std::cout << i << j << k << l << std::endl;
+                std::cout << "unbar - unbar" << std::endl;
             } else if (i < n_pair && k >= n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_unbar, count_bar);
+                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_unbar, count_bar);
+                std::cout << i << j << k << l << std::endl;
+                std::cout << "unbar - bar" << std::endl;
             } else if (i >= n_pair && k < n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_bar, count_unbar);
+                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_bar, count_unbar);
+                std::cout << i << j << k << l << std::endl;
+                std::cout << "bar - unbar" << std::endl;
             } else if (i >= n_pair && k >= n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_bar, count_bar);
+                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_bar, count_bar);
+                std::cout << i << j << k << l << std::endl;
+                std::cout << "bar - bar" << std::endl;
+            } else {
+                std::cout << i << j << k << l << std::endl;
+                std::cout << "no case!!!" << std::endl;
             }
-
-            std::cout << i << j << k << l << "\t # of terms in H: " << this->terms_.size() << std::endl;
+            
             used_elements[m] += 1;
         }
-        */
+        
         /*------------- 3 unbarred & 1 barred ---------------*/
         // V_pjkl
         else if (i >= n_pair && j < n_pair && k < n_pair && l < n_pair) {
