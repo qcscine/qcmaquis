@@ -141,7 +141,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     // all terms in the hamiltonian!!!
     // NOTE: actually also fill is taken from here and there should be
     // no problem --> need to check again
-    chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, dummy, dummy, tag_handler, this->align);
+    chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, dummy, dummy, tag_handler, this->align, this);
     
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
@@ -212,7 +212,11 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         
         // V_iiii
         else if (i == j && j == k && k == l) {
-        /*
+        
+        // This case doesn't exist for the relativistic model!
+        // We cannot have the same spinor occupied twice!
+
+        /*    
         //------------- 4 unbarred & 0 barred ---------------//
             if (i < n_pair) {
                 term_descriptor term;
@@ -236,32 +240,129 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
-            
-            
+
             if (i < n_pair && k < n_pair) {
                 term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_unbar, count_unbar);
-                std::cout << i << j << k << l << std::endl;
-                std::cout << "unbar - unbar" << std::endl;
             } else if (i < n_pair && k >= n_pair) {
                 term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_unbar, count_bar);
-                std::cout << i << j << k << l << std::endl;
-                std::cout << "unbar - bar" << std::endl;
             } else if (i >= n_pair && k < n_pair) {
                 term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_bar, count_unbar);
-                std::cout << i << j << k << l << std::endl;
-                std::cout << "bar - unbar" << std::endl;
             } else if (i >= n_pair && k >= n_pair) {
                 term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_bar, count_bar);
-                std::cout << i << j << k << l << std::endl;
-                std::cout << "bar - bar" << std::endl;
-            } else {
-                std::cout << i << j << k << l << std::endl;
-                std::cout << "no case!!!" << std::endl;
             }
             
             used_elements[m] += 1;
         }
-        
+       
+        // V_iikl == V_ijll
+        else if ( i==j && j!=k && j!=l || k==l && i!=k && j!=k ) {
+            
+            int same_idx;
+            if (i==j) { same_idx = i; }
+            if (k==l) { same_idx = k; }
+
+            // ----------------- ii unbarred ----------------- //
+            //
+            // ii unbarred, k unbarred, l unbarred
+            if (i < n_pair && k < n_pair && l < n_pair) {
+                // do nothing for the moment
+                std::cout << "neglected: " << i << j << k << l << std::endl;
+            }
+            // ii unbarred, k unbarred, l barred
+            else if (i < n_pair && k < n_pair && l >= n_pair) {
+                // do nothing for the moment
+                std::cout << "neglected: " << i << j << k << l << std::endl;
+            }
+            // ii unbarred, k barred, l unbarred
+            else if (i < n_pair && k >= n_pair && l < n_pair) {
+                // do nothing for the moment
+                std::cout << "neglected: " << i << j << k << l << std::endl;
+            }
+            // ii unbarred, kl barred
+            else if (i < n_pair && k >= n_pair && l >= n_pair) {
+                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_unbar, destroy_unbar, create_bar, destroy_bar);
+                std::cout << "registered: " << i << j << k << l << std::endl;
+            }
+            // ----------------------------------------------- //
+            
+
+            // ------------------ ii barred ------------------ //
+            //
+            // ii barred, k barred, l barred
+            else if (i >= n_pair && k >= n_pair && l >= n_pair) {
+                // do nothing for the moment
+                std::cout << "neglected: " << i << j << k << l << std::endl;
+            }
+            // ii barred, k unbarred, l barred
+            else if (i >= n_pair && k < n_pair && l >= n_pair) {
+                // do nothing for the moment
+                std::cout << "neglected: " << i << j << k << l << std::endl;
+            }
+            // ii barred, k barred, l unbarred
+            else if (i >= n_pair && k >= n_pair && l < n_pair) {
+                // do nothing for the moment
+                std::cout << "neglected: " << i << j << k << l << std::endl;
+            }
+            // ii barred, kl unbarred
+            else if (i >= n_pair && k < n_pair && l < n_pair) {
+                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_bar, destroy_bar, create_unbar, destroy_unbar);
+                std::cout << "registered: " << i << j << k << l << std::endl;
+            }
+            // ----------------------------------------------- //
+            
+            
+            // ----------------- ll unbarred ----------------- //
+            //
+            // i unbarred, j unbarred, ll unbarred
+            else if (i < n_pair && j < n_pair && l < n_pair) {
+                // do nothing for the moment
+                std::cout << "neglected: " << i << j << k << l << std::endl;
+            }
+            // i unbarred, j barred, ll unbarred
+            else if (i < n_pair && j >= n_pair && l < n_pair) {
+                // do nothing for the moment
+                std::cout << "neglected: " << i << j << k << l << std::endl;
+            }
+            // i barred, j unbarred, ll unbarred
+            else if (i >= n_pair && j < n_pair && l < n_pair) {
+                // do nothing for the moment
+                std::cout << "neglected: " << i << j << k << l << std::endl;
+            }
+            // ij barred, ll unbarred
+            else if (i >= n_pair && j >= n_pair && l < n_pair) {
+                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_unbar, destroy_unbar, create_bar, destroy_bar);
+                std::cout << "registered: " << i << j << k << l << std::endl;
+            }
+            // ----------------------------------------------- //
+            
+            
+            // ------------------ ll barred ------------------ //
+            //
+            // i barred, j barred, ll barred
+            else if (i >= n_pair && j >= n_pair && l >= n_pair) {
+                // do nothing for the moment
+                std::cout << "neglected: " << i << j << k << l << std::endl;
+            }
+            // i barred, j unbarred, ll barred
+            else if (i >= n_pair && j < n_pair && l >= n_pair) {
+                // do nothing for the moment
+                std::cout << "neglected: " << i << j << k << l << std::endl;
+            }
+            // i unbarred, j barred, ll barred
+            else if (i < n_pair && j >= n_pair && l >= n_pair) {
+                // do nothing for the moment
+                std::cout << "neglected: " << i << j << k << l << std::endl;
+            }
+            // ij unbarred, ll barred
+            else if (i < n_pair && j < n_pair && l >= n_pair) {
+                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_bar, destroy_bar, create_unbar, destroy_unbar);
+                std::cout << "registered: " << i << j << k << l << std::endl;
+            }
+            // ----------------------------------------------- //
+            
+            used_elements[m] += 1;
+        } 
+
         /*------------- 3 unbarred & 1 barred ---------------*/
         // V_pjkl
         else if (i >= n_pair && j < n_pair && k < n_pair && l < n_pair) {

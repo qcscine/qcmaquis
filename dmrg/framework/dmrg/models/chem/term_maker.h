@@ -37,6 +37,7 @@ struct TermMaker {
 
     typedef typename TagHandler<M, S>::tag_type tag_type;
     typedef typename term_descriptor::value_type pos_op_t;
+    typedef model_impl<M, S> Model;
 
     static bool compare_tag(pos_op_t p1,
                             pos_op_t p2)
@@ -81,7 +82,7 @@ struct TermMaker {
         return term;
     }
 
-    static term_descriptor three_term(tag_type ident, tag_type fill_op,
+    static term_descriptor three_term(Model* model, tag_type ident, tag_type fill_op,
                                      value_type scale, pos_t pb, pos_t p1, pos_t p2,
                                      tag_type opb1, tag_type opb2,
                                      tag_type op1,  tag_type op2,
@@ -97,6 +98,10 @@ struct TermMaker {
         if ( (pb>p1 && pb<p2) || (pb>p2 && pb<p1) ) {
             // if the bosonic operator is in between
             // the fermionic operators, multiply with fill
+            
+            // Query the right fill operator in rel model
+            fill_op = model->filling_matrix_tag(pb);
+
             ptag1 = op_table->get_product_tag(fill_op, opb2);
             term.coeff *= ptag1.second;
             ptag2 = op_table->get_product_tag(ptag1.first, opb1);
@@ -110,11 +115,17 @@ struct TermMaker {
         }
         
         if (p1 < p2) {
+            // Query the right fill operator in rel model
+            fill_op = model->filling_matrix_tag(p1);
+            
             ptag1 = op_table->get_product_tag(fill_op, op1); 
             op1 = ptag1.first;
             term.coeff *= ptag1.second;
         }
         else {
+            // Query the right fill operator in rel model
+            fill_op = model->filling_matrix_tag(p2);
+            
             ptag1 = op_table->get_product_tag(fill_op, op2); 
             op2 = ptag1.first;
             term.coeff *= -ptag1.second;

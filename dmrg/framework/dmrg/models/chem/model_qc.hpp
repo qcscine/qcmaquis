@@ -113,7 +113,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     #undef REGISTER
     /**********************************************************************/
 
-    chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler, this->align);
+    chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler, this->align, this);
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
