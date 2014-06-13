@@ -38,7 +38,6 @@ using std::endl;
 #include "dmrg/models/chem/prepare_corr.hpp"
 
 typedef alps::numeric::matrix<double> matrix;
-
 typedef TwoU1PG grp;
 
 matrix generate_reference()
@@ -84,42 +83,53 @@ matrix generate_reference()
     return ret;
 }
 
-matrix compute_diff(MPS<matrix, grp> const & mps, matrix const & ref, std::vector<int> const & site_irreps, std::vector<int> const & config)
+template <class Matrix>
+void print_triang(Matrix const & mat)
 {
-    size_t L = mps.size();
-
-    matrix rdm(L,L), diff(L,L);
-    for (int i=0; i < L-1; ++i)
-        for (int j=i+1; j < L; ++j)
-        {
-            MPO<matrix, grp> mpo = SU2::make_op<matrix, grp>(i, j, site_irreps);
-            rdm(i,j) = SU2::expval(mps, mpo, i, j, config);
-            diff(i,j) = std::abs(rdm(i,j) - ref(i,j));
-        }
-
-    //cout.precision(5);
-    //for (int i=0; i < L-1; ++i)
-    //{
-    //    for (int j=0; j < i+1; ++j) cout << std::setw(10) << " ";
-    //    for (int j=i+1; j < L; ++j)
-    //    {
-    //        cout << std::setw(10) << rdm(i,j);
-    //    }
-    //    cout << endl;
-    //}
+    size_t L = num_cols(mat);
     for (int i=0; i < L-1; ++i)
     {
         for (int j=0; j < i+1; ++j) cout << std::setw(10) << " ";
         for (int j=i+1; j < L; ++j)
         {
-            cout << std::setw(10) << ref(i,j) / rdm(i,j);
+            cout << std::setw(10) << mat(i,j);
         }
         cout << endl;
     }
-
-    return diff;
 }
 
+template <class Matrix, class SymmGroup>
+matrix compute_ratio(MPS<Matrix, SymmGroup> const & mps, matrix const & ref, std::vector<int> const & site_irreps, std::vector<int> const & config)
+{
+    size_t L = mps.size();
+
+    Matrix rdm(L,L), ratio(L,L);
+    for (int i=0; i < L-1; ++i)
+        for (int j=i+1; j < L; ++j)
+        {
+            MPO<Matrix, SymmGroup> mpo = SU2::make_op<Matrix, SymmGroup>(i, j, site_irreps);
+            rdm(i,j) = SU2::expval(mps, mpo, i, j, config);
+            ratio(i,j) = ref(i,j) / rdm(i,j);
+        }
+
+    return ratio;
+}
+
+template <class Matrix, class SymmGroup>
+std::vector<typename Matrix::value_type>
+compute_off_diag_ratio(MPS<Matrix, SymmGroup> const & mps, int which_diag, matrix const & ref,
+                              std::vector<int> const & site_irreps, std::vector<int> const & config)
+{
+    size_t L = mps.size() - which_diag;
+    std::vector<typename Matrix::value_type> ret(L);
+    for (int i=0; i < L; ++i)
+    {
+        MPO<Matrix, SymmGroup> mpo = SU2::make_op<Matrix, SymmGroup>(i, i+which_diag, site_irreps);
+        ret[i] = SU2::expval(mps, mpo, i, i+which_diag, config);
+        ret[i] = ref(i,i+which_diag) / ret[i];
+    }
+    return ret;
+}
 
 int main(int argc, char ** argv)
 {
@@ -128,15 +138,15 @@ int main(int argc, char ** argv)
             std::cout << "Usage: " << argv[0] << " <mps.h5>" << std::endl;
             return 1;
         }
+        //cout.precision(5);
+
         MPS<matrix, grp> mps;
         load(argv[1], mps);
-        
         size_t L = mps.size();
 
         std::vector<int> site_irreps;
         for (int i=0; i < L; ++i)
             site_irreps.push_back(mps[i].site_dim()[1].first[2]);
-        //std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(cout, ""));        
 
         matrix ref = generate_reference();
         std::vector<int> config(6,0);
@@ -166,9 +176,13 @@ int main(int argc, char ** argv)
         //for (int v5=-2; v5 < 3; ++v5) {
         //config[5] = v5;
 
-          matrix diff = compute_diff(mps, ref, site_irreps, config);
-          double ss = norm_square(diff);
-        //  std::cout << ss << " " << v0 << v1 << v2 << v3 << v4 << v5 << std::endl;
+            matrix ratio = compute_ratio(mps, ref, site_irreps, config);
+            print_triang(ratio);
+
+            std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
+            std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));
+            cout << endl;
+            //std::cout << ss << " " << v0 << v1 << v2 << v3 << v4 << v5 << std::endl;
         //}
         //}
         //}

@@ -292,10 +292,10 @@ namespace SU2 {
                     coupling_coeff *= sgn(coupling_coeff) * sgn(coupling);
 
                     if (debug) {
-                        std::cout.precision(7);
                         std::cout << j << "," << two_s << "," << jp << " | " << a << "," << k << "," << ap << " | "
-                                     << i << "," << two_sp << "," << ip << " | " << phys_in << phys_out
-                        << std::right << std::setw(8) << "cc: " << std::setw(12) << coupling_coeff << " | " << std::setw(12) << coupling << std::endl;
+                                  << i << "," << two_sp << "," << ip << " | " << phys_in << phys_out
+                                  << std::right << std::setw(8) << "cc: " << std::setw(12) << coupling_coeff
+                                  << " | " << std::setw(12) << coupling << std::endl;
                     }
 
                     // T Access
