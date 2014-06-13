@@ -59,18 +59,27 @@ namespace SU2 {
             create.insert_block(Matrix(1,1,1), C, A);
             create.insert_block(Matrix(1,1,1), D, B);
             create.insert_block(Matrix(1,1,1), D, C);
+            //create.insert_block(Matrix(1,1,2), B, A);
+            //create.insert_block(Matrix(1,1,2), C, A);
+            //create.insert_block(Matrix(1,1,sqrt(2.)), D, B);
+            //create.insert_block(Matrix(1,1,sqrt(2.)), D, C);
 
             block_matrix<Matrix, SymmGroup> destroy;
             destroy.insert_block(Matrix(1,1,1), A, B);
             destroy.insert_block(Matrix(1,1,1), A, C);
             destroy.insert_block(Matrix(1,1,1), B, D);
             destroy.insert_block(Matrix(1,1,1), C, D);
+            //destroy.insert_block(Matrix(1,1,sqrt(2.)), B, D);
+            //destroy.insert_block(Matrix(1,1,sqrt(2.)), C, D);
 
             //tag_type ident = tag_handler->register_op(identity, tag_detail::bosonic);
             MPOTensor<Matrix, SymmGroup> op(1,1);
 
-            if (p == i)
-                op.set(0,0,destroy);
+            if (p == i) {
+                block_matrix<Matrix, SymmGroup> tmp;
+                SU2::gemm(fill, destroy, tmp);
+                op.set(0,0,destroy,1.0);
+            }
             else if (p == j)
                 op.set(0,0,create);
             else if ( i < p && p < j)
@@ -84,7 +93,7 @@ namespace SU2 {
     }
 
     template<class Matrix, class SymmGroup>
-    MPO<Matrix, SymmGroup> make_op_fill(std::vector<int> site_irreps)
+    MPO<Matrix, SymmGroup> make_count(int i, std::vector<int> site_irreps)
     {
         //boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
         MPO<Matrix, SymmGroup> ret(site_irreps.size());
@@ -97,14 +106,23 @@ namespace SU2 {
             C[0] = 1; C[1] = -1; C[2] = site_irreps[p]; // 1-1I
             // D = 000
 
-            block_matrix<Matrix, SymmGroup> fill;
-            fill.insert_block(Matrix(1,1,1), A, A);
-            fill.insert_block(Matrix(1,1,-1), B, B);
-            fill.insert_block(Matrix(1,1,-1), C, C);
-            fill.insert_block(Matrix(1,1,1), D, D);
-            MPOTensor<Matrix, SymmGroup> op(1,1);
+            block_matrix<Matrix, SymmGroup> ident;
+            ident.insert_block(Matrix(1,1,1), A, A);
+            ident.insert_block(Matrix(1,1,1), B, B);
+            ident.insert_block(Matrix(1,1,1), C, C);
+            ident.insert_block(Matrix(1,1,1), D, D);
 
-            op.set(0,0,fill, 1.0);
+            block_matrix<Matrix, SymmGroup> count;
+            count.insert_block(Matrix(1,1,2), A, A);
+            count.insert_block(Matrix(1,1,1), B, B);
+            count.insert_block(Matrix(1,1,1), C, C);
+
+            MPOTensor<Matrix, SymmGroup> op(1,1);
+            if (p==i)
+                op.set(0,0,count, 1.0);
+            else
+                op.set(0,0,ident, 1.0);
+
 
             ret[p] = op;
         }

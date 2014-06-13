@@ -107,15 +107,15 @@ matrix compute_diff(MPS<matrix, grp> const & mps, matrix const & ref, std::vecto
     //    }
     //    cout << endl;
     //}
-    //for (int i=0; i < L-1; ++i)
-    //{
-    //    for (int j=0; j < i+1; ++j) cout << std::setw(10) << " ";
-    //    for (int j=i+1; j < L; ++j)
-    //    {
-    //        cout << std::setw(10) << ref(i,j) / rdm(i,j);
-    //    }
-    //    cout << endl;
-    //}
+    for (int i=0; i < L-1; ++i)
+    {
+        for (int j=0; j < i+1; ++j) cout << std::setw(10) << " ";
+        for (int j=i+1; j < L; ++j)
+        {
+            cout << std::setw(10) << ref(i,j) / rdm(i,j);
+        }
+        cout << endl;
+    }
 
     return diff;
 }
@@ -139,28 +139,42 @@ int main(int argc, char ** argv)
         //std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(cout, ""));        
 
         matrix ref = generate_reference();
+        std::vector<int> config(6,0);
 
-        std::vector<int> config(4,0);
-
-        for (int v0=-1; v0 < 2; ++v0) {
-        config[0] = v0;
-
-        for (int v1=-1; v1 < 2; ++v1) {
-        config[1] = v1;
-
-        for (int v2=0; v2 < 2; ++v2) {
-        config[2] = v2;
-
-        for (int v3=0; v3 < 2; ++v3) {
-        config[3] = v3;
-
-            matrix diff = compute_diff(mps, ref, site_irreps, config);
-            double ss = norm_square(diff);
-            std::cout << ss << std::endl;
+        for (int i=0; i < L; ++i) {
+            MPO<matrix, grp> mpo = SU2::make_count<matrix, grp>(i, site_irreps);
+            double n = SU2::expval(mps, mpo, i, i, config);
+            maquis::cout <<  n << std::endl;
         }
-        }
-        }
-        }
+
+
+        //for (int v0=-2; v0 < 3; ++v0) {
+        //config[0] = v0;
+
+        //for (int v1=-2; v1 < 3; ++v1) {
+        //config[1] = v1;
+
+        //for (int v2=-2; v2 < 3; ++v2) {
+        //config[2] = v2;
+
+        //for (int v3=-2; v3 < 3; ++v3) {
+        //config[3] = v3;
+
+        //for (int v4=-2; v4 < 3; ++v4) {
+        //config[4] = v4;
+
+        //for (int v5=-2; v5 < 3; ++v5) {
+        //config[5] = v5;
+
+          matrix diff = compute_diff(mps, ref, site_irreps, config);
+          double ss = norm_square(diff);
+        //  std::cout << ss << " " << v0 << v1 << v2 << v3 << v4 << v5 << std::endl;
+        //}
+        //}
+        //}
+        //}
+        //}
+        //}
         
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;

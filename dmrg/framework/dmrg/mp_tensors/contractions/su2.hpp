@@ -262,13 +262,18 @@ namespace SU2 {
                     int a = boundary_spin, k = std::abs(phys_in[1]-phys_out[1]), ap = (a + k == 2) ? 0 : a + k;
                     double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                     coupling_coeff *= access.scale * W[w_block](0,0);
-                    //coupling_coeff *= std::sqrt((j+1.) / (i+1.) * (ip+1.)/(jp+1) * (two_s + 1.));
-                    coupling_coeff *= std::sqrt((j+1.) / (i+1.) * (ip+1.)/(jp+1.));
+
+                    //coupling_coeff *= pow(ip+1., double(config[0])/2.) * pow(jp+1., double(config[1])/2.);
+                    //coupling_coeff *= pow(i+1., double(config[2])/2.) * pow(j+1., double(config[3])/2.);
+                    //coupling_coeff *= pow(two_sp+1., double(config[4])/2.) * pow(two_s, double(config[5])/2.);
+                    //double phase1 = (config[2] == 1) ? -1 * (jp-ip+1)/2 : 1.;
+                    //double phase2 = (config[3] == 1) ? -1 * (jp+ip+1)/2 : 1.;
+                    //coupling_coeff *= phase1 * phase2;
 
                     // Coupling coefficient
                     double coupling = access.scale * W[w_block](0,0);
                     if (SymmGroup::fuse(phys_out, -phys_in)[0] == -1) { // if destructor
-                        coupling *= couple_destroy(new_rc[1], free_rc[1], phys_in[1]) * sqrt(2.);
+                        coupling *= couple_destroy(new_rc[1], free_rc[1], phys_in[1]);
                     }
                     else if (SymmGroup::fuse(phys_out, -phys_in)[0] == 1) { // if creator
                         coupling *= couple_create(free_rc[1], mc[1], phys_in[1], 0);
@@ -279,11 +284,10 @@ namespace SU2 {
                     }
                     else if (std::abs(new_rc[1]-free_rc[1]) == 1) { // if Spin 1/2 tensor
                         assert(phys_in==phys_out);
-                        //coupling *= pow(ip+1., 0.5) * pow(jp+1., -0.5) * pow(i+1., 0.5) * pow(j+1., -0.5);
-                        coupling *= pow(ip+1., double(config[0])/2.) * pow(jp+1., double(config[1])/2.);
-                        double phase1 = pow( pow(-1., double(jp+ip)/2), config[2] );
-                        double phase2 = pow( pow(-1., double(jp+ip+1)/2), config[3] );
-                        coupling *= phase1 * phase2;
+                        int TwoSLup = i, TwoSLdown = j;
+                        int fase = ((((TwoSLup - TwoSLdown + 3)/2)%2)!=0)?-1:1;
+                        double factor = 0.5 * sqrt((TwoSLdown+1)*(TwoSLup+1.0)) * fase;
+                        coupling *= factor;
                     }
                     coupling_coeff *= sgn(coupling_coeff) * sgn(coupling);
 
