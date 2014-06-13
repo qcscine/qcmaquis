@@ -30,6 +30,8 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 
+#include <boost/lambda/lambda.hpp>
+
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -149,40 +151,60 @@ int main(int argc, char ** argv)
             site_irreps.push_back(mps[i].site_dim()[1].first[2]);
 
         matrix ref = generate_reference();
-        std::vector<int> config(6,0);
+        std::vector<int> config(20,0);
 
-        for (int i=0; i < L; ++i) {
-            MPO<matrix, grp> mpo = SU2::make_count<matrix, grp>(i, site_irreps);
-            double n = SU2::expval(mps, mpo, i, i, config);
-            maquis::cout <<  n << std::endl;
-        }
+        //for (int i=0; i < L; ++i) {
+        //    MPO<matrix, grp> mpo = SU2::make_count<matrix, grp>(i, site_irreps);
+        //    double n = SU2::expval(mps, mpo, i, i, config);
+        //    maquis::cout <<  n << std::endl;
+        //}
 
+        //for (int v0=-1; v0 < 2; ++v0) {
+        //config[0]=v0;
 
-        //for (int v0=-2; v0 < 3; ++v0) {
-        //config[0] = v0;
+        //for (int v1=-1; v1 < 2; ++v1) {
+        //config[1]=v1;
 
-        //for (int v1=-2; v1 < 3; ++v1) {
-        //config[1] = v1;
+        //for (int v2=-1; v2 < 2; ++v2) {
+        //config[2]=v2;
 
-        //for (int v2=-2; v2 < 3; ++v2) {
-        //config[2] = v2;
+        //for (int v3=-1; v3 < 2; ++v3) {
+        //config[3]=v3;
 
-        //for (int v3=-2; v3 < 3; ++v3) {
-        //config[3] = v3;
+        //for (int v4= 0; v4 < 2; ++v4) {
+        //config[4]=v4;
 
-        //for (int v4=-2; v4 < 3; ++v4) {
-        //config[4] = v4;
+        //for (int v5= 0; v5 < 2; ++v5) {
+        //config[5]=v5;
 
-        //for (int v5=-2; v5 < 3; ++v5) {
-        //config[5] = v5;
+        //for (int v6= -1; v6 < 2; ++v6) {
+        //config[6]=v6;
 
-            matrix ratio = compute_ratio(mps, ref, site_irreps, config);
-            print_triang(ratio);
+        //for (int v7= -1; v7 < 2; ++v7) {
+        //config[7]=v7;
+
+        //for (int v8= -1; v8 < 2; ++v8) {
+        //config[8]=v8;
+
+        //for (int v9= -1; v9 < 2; ++v9) {
+        //config[9]=v9;
+
+        //for (int v10= -1; v10 < 2; ++v10) {
+        //config[10]=v10;
+
+        //  //matrix ratio = compute_ratio(mps, ref, site_irreps, config);
+        //  //print_triang(ratio);
 
             std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
-            std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));
+            //std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));
+            std::transform(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / od[0]);
             cout << endl;
-            //std::cout << ss << " " << v0 << v1 << v2 << v3 << v4 << v5 << std::endl;
+        //  std::cout << "    " << v0 << v1 << v2 << v3 << v4 << v5 << v6 << v7 << v8 << v9 << v10 << std::endl;
+        //}
+        //}
+        //}
+        //}
+        //}
         //}
         //}
         //}

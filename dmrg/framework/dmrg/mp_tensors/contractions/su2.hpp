@@ -202,7 +202,7 @@ namespace SU2 {
 
         MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(0,0);
         block_matrix<Matrix, SymmGroup> const & W = access.op;
-        if(debug) maquis::cout << W << std::endl;
+        //if(debug) maquis::cout << W << std::endl;
         block_matrix<OtherMatrix, SymmGroup> ret;
 
         block_matrix<OtherMatrix, SymmGroup> t1;
@@ -239,9 +239,6 @@ namespace SU2 {
                 assert (mc == mc1);
                 size_t t_pos = t1.basis().position(lc, rc);
 
-                //if(debug)
-                //maquis::cout << lc << mc << rc << std::endl;
-
                 for (size_t w_block = 0; w_block < phys_i.size(); ++w_block)
                 {
                     charge phys_in = W.left_basis_charge(w_block);
@@ -263,13 +260,6 @@ namespace SU2 {
                     double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                     coupling_coeff *= access.scale * W[w_block](0,0);
 
-                    //coupling_coeff *= pow(ip+1., double(config[0])/2.) * pow(jp+1., double(config[1])/2.);
-                    //coupling_coeff *= pow(i+1., double(config[2])/2.) * pow(j+1., double(config[3])/2.);
-                    //coupling_coeff *= pow(two_sp+1., double(config[4])/2.) * pow(two_s, double(config[5])/2.);
-                    //double phase1 = (config[2] == 1) ? -1 * (jp-ip+1)/2 : 1.;
-                    //double phase2 = (config[3] == 1) ? -1 * (jp+ip+1)/2 : 1.;
-                    //coupling_coeff *= phase1 * phase2;
-
                     // Coupling coefficient
                     double coupling = access.scale * W[w_block](0,0);
                     if (SymmGroup::fuse(phys_out, -phys_in)[0] == -1) { // if destructor
@@ -284,14 +274,24 @@ namespace SU2 {
                     }
                     else if (std::abs(new_rc[1]-free_rc[1]) == 1) { // if Spin 1/2 tensor
                         assert(phys_in==phys_out);
-                        int TwoSLup = i, TwoSLdown = j;
-                        int fase = ((((TwoSLup - TwoSLdown + 3)/2)%2)!=0)?-1:1;
-                        double factor = 0.5 * sqrt((TwoSLdown+1)*(TwoSLup+1.0)) * fase;
-                        coupling *= factor;
-                    }
-                    coupling_coeff *= sgn(coupling_coeff) * sgn(coupling);
+                        if (std::abs(free_rc[0] - mc[0] == 1))
+                        {
+                            int phase = ((((j+ip)/2)%2)!=0)?-1:1;
+                            coupling *= phase * sqrt((j+1.) * (ip+1.)) * gsl_sf_coupling_6j(ip, jp, 1, j, i, 1);
+                        }
 
-                    if (debug) {
+                        //if(config[4]) coupling *= ((((i - j + 3)/2)%2)!=0)?-1:1;
+                        //if(config[5]) coupling *= ((((ip - jp + 3)/2)%2)!=0)?-1:1;
+                        //coupling *= pow(ip+1., double(config[0])/2.) * pow(jp+1., double(config[1])/2.);
+                        //coupling *= pow(i+1., double(config[2])/2.) * pow(j+1., double(config[3])/2.);
+                        //coupling *= pow(two_s+1., double(config[6])/2.); //* pow(two_sp+1., double(config[7])/2.);
+                        //coupling *= pow(a, double(config[8])/2.) * pow(ap, double(config[9])/2.);
+                        //coupling *= pow(k, double(config[10])/2.)
+                        //coupling *= coupling_coeff;
+                    }
+                    //coupling_coeff *= sgn(coupling_coeff) * sgn(coupling);
+
+                    if (debug && std::abs(new_rc[1]-free_rc[1]) == 1) {
                         std::cout << j << "," << two_s << "," << jp << " | " << a << "," << k << "," << ap << " | "
                                   << i << "," << two_sp << "," << ip << " | " << phys_in << phys_out
                                   << std::right << std::setw(8) << "cc: " << std::setw(12) << coupling_coeff
@@ -299,9 +299,9 @@ namespace SU2 {
                     }
 
                     // T Access
-                    //if (debug)
-                    //maquis::cout << "access " << mc << " + " << phys_in<< "|" << free_rc << " -- "
-                    //             << lc << " + " << phys_out << "|" << new_rc << std::endl;
+                    if (debug && std::abs(new_rc[1]-free_rc[1]) && a==1)
+                    maquis::cout << "access " << mc << " + " << phys_in<< "|" << free_rc << " -- "
+                                 << lc << " + " << phys_out << "|" << new_rc << std::endl;
                     size_t right_offset = in_right_pb(phys_in, free_rc);
                     //size_t ldim = left_i.size_of_block(mc);
                     size_t ldim = t1.left_basis_size(t_pos);
@@ -335,6 +335,7 @@ namespace SU2 {
                 }
             }
         }
+        if(debug) maquis::cout << std::endl;
         return ret;
     }
 
@@ -388,7 +389,7 @@ namespace SU2 {
                   int p1, int p2, std::vector<int> config)
     {
         bool debug = false;
-        if (p1 == 1 && p2 == 3) debug = false;
+        if (p1 == 1 && p2 == 3) debug = true;
 
         assert(mpo.length() == mps.length());
         std::size_t L = mps.length();
