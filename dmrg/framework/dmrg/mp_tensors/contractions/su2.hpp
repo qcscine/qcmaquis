@@ -259,12 +259,14 @@ namespace SU2 {
                     int i  = lc[1], ip = new_rc[1];
                     int j  = mc[1], jp  = free_rc[1];
                     int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
-                    int a = boundary_spin, k = std::abs(phys_in[1]-phys_out[1]), ap = (a + k == 2) ? 0 : a + k;
+                    int a = boundary_spin, k = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1])), ap = (a + k == 2) ? 0 : a + k;
                     double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                     coupling_coeff *= access.scale * W[w_block](0,0);
+                    coupling_coeff *= pow(ip+1., 0.5) * pow(j+1., 0.5);
+                    coupling_coeff *= pow(i+1., -0.5) * pow(jp+1., -0.5);
 
                     // Coupling coefficient
-                    double coupling = access.scale * W[w_block](0,0);
+                    double coupling = 1.;
                     if (SymmGroup::fuse(phys_out, -phys_in)[0] == -1) { // if destructor
                         coupling *= couple_destroy(new_rc[1], free_rc[1], phys_in[1]);
                     }

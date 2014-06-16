@@ -50,9 +50,9 @@ namespace SU2 {
 
             block_matrix<Matrix, SymmGroup> fill;
             fill.insert_block(Matrix(1,1,1), A, A);
-            fill.insert_block(Matrix(1,1,1), B, B);
-            fill.insert_block(Matrix(1,1,1), C, C);
             fill.insert_block(Matrix(1,1,1), D, D);
+            fill.insert_block(Matrix(1,1,-1), B, B);
+            fill.insert_block(Matrix(1,1,-1), C, C);
             fill.insert_block(Matrix(1,1,1), B, C);
             fill.insert_block(Matrix(1,1,1), C, B);
 
