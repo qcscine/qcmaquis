@@ -57,7 +57,7 @@ struct TermMaker {
         return term;
     }
 
-    static term_descriptor positional_two_term(bool sign, tag_type fill_op, value_type scale, pos_t i, pos_t j,
+    static term_descriptor positional_two_term(Model* model, bool sign, tag_type fill_op, value_type scale, pos_t i, pos_t j,
                                      tag_type op1, tag_type op2,
                                      boost::shared_ptr<TagHandler<M, S> > op_table)
     {
@@ -65,15 +65,20 @@ struct TermMaker {
         term.is_fermionic = sign;
         term.coeff = scale;
 
+        
         //typename op_t::type tmp;
         std::pair<tag_type, value_type> ptag;
         if (i < j) {
+            // Query the right fill operator in rel model
+            fill_op = model->filling_matrix_tag(op1);
             ptag = op_table->get_product_tag(fill_op, op1);
             term.push_back(boost::make_tuple(i, ptag.first));
             term.push_back(boost::make_tuple(j, op2));
             term.coeff *= ptag.second;
         }
         else {
+            // Query the right fill operator in rel model
+            fill_op = model->filling_matrix_tag(op2);
             ptag = op_table->get_product_tag(fill_op, op2);
             term.push_back(boost::make_tuple(i, op1));
             term.push_back(boost::make_tuple(j, ptag.first));

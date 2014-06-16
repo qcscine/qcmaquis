@@ -188,18 +188,29 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
             
+            
+            if ( i>n_pair && j<=n_pair){
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
+                true, fill_unbar, matrix_elements[m], i, j, create_bar, destroy_unbar, tag_handler)
+            );
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
+                true, fill_unbar, matrix_elements[m], j, i, create_unbar, destroy_bar, tag_handler)
+            );
+            }
+
+
             // i & j refer to unbarred spinors --> passs create_/destroy/fill_unbar
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
                 true, fill_unbar, matrix_elements[m], i, j, create_unbar, destroy_unbar, tag_handler)
             );
             // i+n_pair, j+n_pair refer to barred spinors --> bar operators
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
                 true, fill_bar, matrix_elements[m], i + n_pair, j + n_pair, create_bar, destroy_bar, tag_handler)
             );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
                 true, fill_unbar, matrix_elements[m], j, i, create_unbar, destroy_unbar, tag_handler)
             );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
                 true, fill_bar, matrix_elements[m], j + n_pair, i + n_pair, create_bar, destroy_bar, tag_handler)
             );
             
@@ -266,21 +277,24 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             // ii unbarred, k unbarred, l unbarred
             if (i < n_pair && k < n_pair && l < n_pair) {
                 // do nothing for the moment
-                std::cout << "neglected: " << i << j << k << l << std::endl;
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_unbar, destroy_unbar, create_unbar, destroy_unbar);
+                //std::cout << "neglected: " << i << j << k << l << std::endl;
             }
             // ii unbarred, k unbarred, l barred
             else if (i < n_pair && k < n_pair && l >= n_pair) {
                 // do nothing for the moment
-                std::cout << "neglected: " << i << j << k << l << std::endl;
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_unbar, destroy_unbar, create_unbar, destroy_bar);
+                //std::cout << "neglected: " << i << j << k << l << std::endl;
             }
             // ii unbarred, k barred, l unbarred
             else if (i < n_pair && k >= n_pair && l < n_pair) {
                 // do nothing for the moment
-                std::cout << "neglected: " << i << j << k << l << std::endl;
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_unbar, destroy_unbar, create_bar, destroy_unbar);
+                //std::cout << "neglected: " << i << j << k << l << std::endl;
             }
             // ii unbarred, kl barred
-            else if (i < n_pair && k >= n_pair && l >= n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_unbar, destroy_unbar, create_bar, destroy_bar);
+            else if (same_idx < n_pair && k >= n_pair && l >= n_pair) {
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_unbar, destroy_unbar, create_bar, destroy_bar);
                 std::cout << "registered: " << i << j << k << l << std::endl;
             }
             // ----------------------------------------------- //
@@ -291,21 +305,24 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             // ii barred, k barred, l barred
             else if (i >= n_pair && k >= n_pair && l >= n_pair) {
                 // do nothing for the moment
-                std::cout << "neglected: " << i << j << k << l << std::endl;
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_bar, destroy_bar, create_bar, destroy_bar);
+                //std::cout << "neglected: " << i << j << k << l << std::endl;
             }
             // ii barred, k unbarred, l barred
             else if (i >= n_pair && k < n_pair && l >= n_pair) {
                 // do nothing for the moment
-                std::cout << "neglected: " << i << j << k << l << std::endl;
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_bar, destroy_bar, create_unbar, destroy_bar);
+                //std::cout << "neglected: " << i << j << k << l << std::endl;
             }
             // ii barred, k barred, l unbarred
             else if (i >= n_pair && k >= n_pair && l < n_pair) {
                 // do nothing for the moment
-                std::cout << "neglected: " << i << j << k << l << std::endl;
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_bar, destroy_bar, create_bar, destroy_unbar);
+                //std::cout << "neglected: " << i << j << k << l << std::endl;
             }
             // ii barred, kl unbarred
-            else if (i >= n_pair && k < n_pair && l < n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_bar, destroy_bar, create_unbar, destroy_unbar);
+            else if (same_idx >= n_pair && k < n_pair && l < n_pair) {
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_bar, destroy_bar, create_unbar, destroy_unbar);
                 std::cout << "registered: " << i << j << k << l << std::endl;
             }
             // ----------------------------------------------- //
@@ -316,21 +333,24 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             // i unbarred, j unbarred, ll unbarred
             else if (i < n_pair && j < n_pair && l < n_pair) {
                 // do nothing for the moment
-                std::cout << "neglected: " << i << j << k << l << std::endl;
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_unbar, destroy_unbar, create_unbar, destroy_unbar);
+                //std::cout << "neglected: " << i << j << k << l << std::endl;
             }
             // i unbarred, j barred, ll unbarred
             else if (i < n_pair && j >= n_pair && l < n_pair) {
                 // do nothing for the moment
-                std::cout << "neglected: " << i << j << k << l << std::endl;
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_unbar, destroy_unbar, create_bar, destroy_unbar);
+                //std::cout << "neglected: " << i << j << k << l << std::endl;
             }
             // i barred, j unbarred, ll unbarred
             else if (i >= n_pair && j < n_pair && l < n_pair) {
                 // do nothing for the moment
-                std::cout << "neglected: " << i << j << k << l << std::endl;
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_unbar, destroy_unbar, create_unbar, destroy_bar);
+                //std::cout << "neglected: " << i << j << k << l << std::endl;
             }
             // ij barred, ll unbarred
-            else if (i >= n_pair && j >= n_pair && l < n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_unbar, destroy_unbar, create_bar, destroy_bar);
+            else if (i >= n_pair && j >= n_pair && same_idx < n_pair) {
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_unbar, destroy_unbar, create_bar, destroy_bar);
                 std::cout << "registered: " << i << j << k << l << std::endl;
             }
             // ----------------------------------------------- //
@@ -341,21 +361,24 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             // i barred, j barred, ll barred
             else if (i >= n_pair && j >= n_pair && l >= n_pair) {
                 // do nothing for the moment
-                std::cout << "neglected: " << i << j << k << l << std::endl;
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_bar, destroy_bar, create_bar, destroy_bar);
+                //std::cout << "neglected: " << i << j << k << l << std::endl;
             }
             // i barred, j unbarred, ll barred
             else if (i >= n_pair && j < n_pair && l >= n_pair) {
                 // do nothing for the moment
-                std::cout << "neglected: " << i << j << k << l << std::endl;
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_bar, destroy_bar, create_unbar, destroy_bar);
+                //std::cout << "neglected: " << i << j << k << l << std::endl;
             }
             // i unbarred, j barred, ll barred
             else if (i < n_pair && j >= n_pair && l >= n_pair) {
                 // do nothing for the moment
-                std::cout << "neglected: " << i << j << k << l << std::endl;
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_bar, destroy_bar, create_bar, destroy_unbar);
+                //std::cout << "neglected: " << i << j << k << l << std::endl;
             }
             // ij unbarred, ll barred
-            else if (i < n_pair && j < n_pair && l >= n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_bar, destroy_bar, create_unbar, destroy_unbar);
+            else if (i < n_pair && j < n_pair && same_idx >= n_pair) {
+                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_bar, destroy_bar, create_unbar, destroy_unbar);
                 std::cout << "registered: " << i << j << k << l << std::endl;
             }
             // ----------------------------------------------- //
