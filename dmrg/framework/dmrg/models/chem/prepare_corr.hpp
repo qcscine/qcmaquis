@@ -57,20 +57,21 @@ namespace SU2 {
             fill.insert_block(Matrix(1,1,1), C, B);
 
             block_matrix<Matrix, SymmGroup> create;
-            create.insert_block(Matrix(1,1,1), B, A);
-            create.insert_block(Matrix(1,1,1), C, A);
-            create.insert_block(Matrix(1,1,1), D, B);
-            create.insert_block(Matrix(1,1,1), D, C);
-            //create.insert_block(Matrix(1,1,2), B, A);
-            //create.insert_block(Matrix(1,1,2), C, A);
-            //create.insert_block(Matrix(1,1,sqrt(2.)), D, B);
-            //create.insert_block(Matrix(1,1,sqrt(2.)), D, C);
+            create.insert_block(Matrix(1,1,-2.), B, A);
+            create.insert_block(Matrix(1,1,2.), C, A);
+            create.insert_block(Matrix(1,1,-sqrt(2.)), D, B);
+            create.insert_block(Matrix(1,1,sqrt(2.)), D, C);
+
+            //create.insert_block(Matrix(1,1,-sqrt(2.)), B, A);
+            //create.insert_block(Matrix(1,1,sqrt(2.)), C, A);
+            //create.insert_block(Matrix(1,1,-1), D, B);
+            //create.insert_block(Matrix(1,1,1), D, C);
 
             block_matrix<Matrix, SymmGroup> destroy;
             destroy.insert_block(Matrix(1,1,1), A, B);
-            destroy.insert_block(Matrix(1,1,1), A, C);
-            destroy.insert_block(Matrix(1,1,1), B, D);
-            destroy.insert_block(Matrix(1,1,1), C, D);
+            destroy.insert_block(Matrix(1,1,-1), A, C);
+            destroy.insert_block(Matrix(1,1,sqrt(2.)), B, D);
+            destroy.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
             //destroy.insert_block(Matrix(1,1,sqrt(2.)), B, D);
             //destroy.insert_block(Matrix(1,1,sqrt(2.)), C, D);
 

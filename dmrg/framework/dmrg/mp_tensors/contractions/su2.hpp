@@ -285,18 +285,10 @@ namespace SU2 {
                             coupling *= phase * sqrt((j+1.) * (ip+1.)) * gsl_sf_coupling_6j(ip, jp, 1, j, i, 1);
                         }
 
-                        //if(config[4]) coupling *= ((((i - j + 3)/2)%2)!=0)?-1:1;
-                        //if(config[5]) coupling *= ((((ip - jp + 3)/2)%2)!=0)?-1:1;
-                        //coupling *= pow(ip+1., double(config[0])/2.) * pow(jp+1., double(config[1])/2.);
-                        //coupling *= pow(i+1., double(config[2])/2.) * pow(j+1., double(config[3])/2.);
-                        //coupling *= pow(two_s+1., double(config[6])/2.); //* pow(two_sp+1., double(config[7])/2.);
-                        //coupling *= pow(a, double(config[8])/2.) * pow(ap, double(config[9])/2.);
-                        //coupling *= pow(k, double(config[10])/2.)
-                        //coupling *= coupling_coeff;
                     }
-                    //coupling_coeff *= sgn(coupling_coeff) * sgn(coupling);
 
-                    if (debug && std::abs(new_rc[1]-free_rc[1]) == 1) {
+                    //if (debug && std::abs(new_rc[1]-free_rc[1]) == 1) {
+                    if (debug) {
                         std::cout << j << "," << two_s << "," << jp << " | " << a << "," << k << "," << ap << " | "
                                   << i << "," << two_sp << "," << ip << " | " << phys_in << phys_out
                                   << std::right << std::setw(8) << "cc: " << std::setw(12) << coupling_coeff
@@ -315,7 +307,7 @@ namespace SU2 {
                     Matrix T_cp(ldim, rdim, 0);
                     for (size_t c=0; c<rdim; ++c)
                         std::transform(t1[t_pos].col(right_offset+c).first,
-                                       t1[t_pos].col(right_offset+c).second, T_cp.col(c).first, boost::lambda::_1*coupling);
+                                       t1[t_pos].col(right_offset+c).second, T_cp.col(c).first, boost::lambda::_1*coupling_coeff);
 
                     // Bra Access
                     size_t bra_index = bra_tensor.col_dim().position(new_rc);
