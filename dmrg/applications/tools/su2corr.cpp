@@ -192,13 +192,13 @@ int main(int argc, char ** argv)
         //for (int v10= -1; v10 < 2; ++v10) {
         //config[10]=v10;
 
-        //  //matrix ratio = compute_ratio(mps, ref, site_irreps, config);
-        //  //print_triang(ratio);
+            matrix ratio = compute_ratio(mps, ref, site_irreps, config);
+            print_triang(ratio);
 
-            std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
+            //std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
             //std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));
-            std::transform(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / od[0]);
-            cout << endl;
+            //std::transform(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / od[0]);
+            //cout << endl;
         //  std::cout << "    " << v0 << v1 << v2 << v3 << v4 << v5 << v6 << v7 << v8 << v9 << v10 << std::endl;
         //}
         //}

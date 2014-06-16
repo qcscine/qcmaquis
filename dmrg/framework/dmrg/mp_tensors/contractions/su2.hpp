@@ -49,10 +49,13 @@ namespace SU2 {
             for (const_iterator it = er.first; it != er.second; ++it)
             {
                 std::size_t matched_block = std::distance(BBbegin, it);
-                assert(matched_block == B.left_basis().position(A.right_basis_charge(k)));
-                std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
-                                                   A.left_basis_charge(k), B.right_basis_charge(matched_block));
-                gemm(A[k], B[matched_block], C[new_block]);
+                //assert(matched_block == B.left_basis().position(A.right_basis_charge(k)));
+                //std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
+                //                                   A.left_basis_charge(k), B.right_basis_charge(matched_block));
+                //gemm(A[k], B[matched_block], C[new_block]);
+                Matrix3 tmp(num_rows(A[k]), num_cols(B[matched_block]));
+                gemm(A[k], B[matched_block], tmp);
+                C.match_and_add_block(tmp, A.left_basis_charge(k), B.right_basis_charge(matched_block));
             }
         }
     }
@@ -239,7 +242,7 @@ namespace SU2 {
                 assert (mc == mc1);
                 size_t t_pos = t1.basis().position(lc, rc);
 
-                for (size_t w_block = 0; w_block < phys_i.size(); ++w_block)
+                for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                 {
                     charge phys_in = W.left_basis_charge(w_block);
                     charge phys_out = W.right_basis_charge(w_block);
@@ -273,7 +276,7 @@ namespace SU2 {
                             continue;
                     }
                     else if (std::abs(new_rc[1]-free_rc[1]) == 1) { // if Spin 1/2 tensor
-                        assert(phys_in==phys_out);
+                        //assert(phys_in==phys_out);
                         if (std::abs(free_rc[0] - mc[0] == 1))
                         {
                             int phase = ((((j+ip)/2)%2)!=0)?-1:1;
@@ -299,9 +302,9 @@ namespace SU2 {
                     }
 
                     // T Access
-                    if (debug && std::abs(new_rc[1]-free_rc[1]) && a==1)
-                    maquis::cout << "access " << mc << " + " << phys_in<< "|" << free_rc << " -- "
-                                 << lc << " + " << phys_out << "|" << new_rc << std::endl;
+                    //if (debug && std::abs(new_rc[1]-free_rc[1]) && a==1)
+                    //maquis::cout << "access " << mc << " + " << phys_in<< "|" << free_rc << " -- "
+                    //             << lc << " + " << phys_out << "|" << new_rc << std::endl;
                     size_t right_offset = in_right_pb(phys_in, free_rc);
                     //size_t ldim = left_i.size_of_block(mc);
                     size_t ldim = t1.left_basis_size(t_pos);

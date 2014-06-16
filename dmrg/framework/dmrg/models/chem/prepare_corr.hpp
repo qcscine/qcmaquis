@@ -50,9 +50,11 @@ namespace SU2 {
 
             block_matrix<Matrix, SymmGroup> fill;
             fill.insert_block(Matrix(1,1,1), A, A);
-            fill.insert_block(Matrix(1,1,-1), B, B);
-            fill.insert_block(Matrix(1,1,-1), C, C);
+            fill.insert_block(Matrix(1,1,1), B, B);
+            fill.insert_block(Matrix(1,1,1), C, C);
             fill.insert_block(Matrix(1,1,1), D, D);
+            fill.insert_block(Matrix(1,1,1), B, C);
+            fill.insert_block(Matrix(1,1,1), C, B);
 
             block_matrix<Matrix, SymmGroup> create;
             create.insert_block(Matrix(1,1,1), B, A);
@@ -76,14 +78,14 @@ namespace SU2 {
             MPOTensor<Matrix, SymmGroup> op(1,1);
 
             if (p == i) {
-                block_matrix<Matrix, SymmGroup> tmp;
-                SU2::gemm(fill, destroy, tmp);
+                //block_matrix<Matrix, SymmGroup> tmp;
+                //SU2::gemm(fill, destroy, tmp);
                 op.set(0,0,destroy,1.0);
             }
             else if (p == j)
                 op.set(0,0,create);
             else if ( i < p && p < j)
-                op.set(0,0,identity, 1.0);
+                op.set(0,0,fill, 1.0);
             else 
                 op.set(0,0,identity, 1.0);
 
