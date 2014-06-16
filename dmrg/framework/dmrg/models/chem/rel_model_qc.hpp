@@ -189,14 +189,14 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         else if (k == -1 && l == -1) {
             
             
-            if ( i>n_pair && j<=n_pair){
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
-                true, fill_unbar, matrix_elements[m], i, j, create_bar, destroy_unbar, tag_handler)
-            );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
-                true, fill_unbar, matrix_elements[m], j, i, create_unbar, destroy_bar, tag_handler)
-            );
-            }
+            //if ( i>n_pair && j<=n_pair){
+            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
+            //    true, fill_unbar, matrix_elements[m], i, j, create_bar, destroy_unbar, tag_handler)
+            //);
+            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
+            //    true, fill_unbar, matrix_elements[m], j, i, create_unbar, destroy_bar, tag_handler)
+            //);
+            //}
 
 
             // i & j refer to unbarred spinors --> passs create_/destroy/fill_unbar
@@ -294,7 +294,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             }
             // ii unbarred, kl barred
             else if (same_idx < n_pair && k >= n_pair && l >= n_pair) {
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_unbar, destroy_unbar, create_bar, destroy_bar);
+                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_unbar, destroy_unbar, create_bar, destroy_bar);
                 std::cout << "registered: " << i << j << k << l << std::endl;
             }
             // ----------------------------------------------- //
@@ -322,7 +322,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             }
             // ii barred, kl unbarred
             else if (same_idx >= n_pair && k < n_pair && l < n_pair) {
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_bar, destroy_bar, create_unbar, destroy_unbar);
+                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_bar, destroy_bar, create_unbar, destroy_unbar);
                 std::cout << "registered: " << i << j << k << l << std::endl;
             }
             // ----------------------------------------------- //
@@ -350,7 +350,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             }
             // ij barred, ll unbarred
             else if (i >= n_pair && j >= n_pair && same_idx < n_pair) {
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_unbar, destroy_unbar, create_bar, destroy_bar);
+                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_unbar, destroy_unbar, create_bar, destroy_bar);
                 std::cout << "registered: " << i << j << k << l << std::endl;
             }
             // ----------------------------------------------- //
@@ -378,7 +378,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             }
             // ij unbarred, ll barred
             else if (i < n_pair && j < n_pair && same_idx >= n_pair) {
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_bar, destroy_bar, create_unbar, destroy_unbar);
+                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_bar, destroy_bar, create_unbar, destroy_unbar);
                 std::cout << "registered: " << i << j << k << l << std::endl;
             }
             // ----------------------------------------------- //
