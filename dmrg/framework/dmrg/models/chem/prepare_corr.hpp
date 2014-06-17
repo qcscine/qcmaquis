@@ -29,7 +29,7 @@ namespace SU2 {
     }
 
     template<class Matrix, class SymmGroup>
-    MPO<Matrix, SymmGroup> make_op(int i, int j, std::vector<int> site_irreps)
+    MPO<Matrix, SymmGroup> make_1rdm_term(int i, int j, std::vector<int> site_irreps)
     {
         //boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
         MPO<Matrix, SymmGroup> ret(site_irreps.size());

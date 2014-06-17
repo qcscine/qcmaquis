@@ -109,7 +109,7 @@ matrix compute_ratio(MPS<Matrix, SymmGroup> const & mps, matrix const & ref, std
     for (int i=0; i < L-1; ++i)
         for (int j=i+1; j < L; ++j)
         {
-            MPO<Matrix, SymmGroup> mpo = SU2::make_op<Matrix, SymmGroup>(i, j, site_irreps);
+            MPO<Matrix, SymmGroup> mpo = SU2::make_1rdm_term<Matrix, SymmGroup>(i, j, site_irreps);
             rdm(i,j) = SU2::expval(mps, mpo, i, j, config);
             ratio(i,j) = ref(i,j) / rdm(i,j);
         }
@@ -126,7 +126,7 @@ compute_off_diag_ratio(MPS<Matrix, SymmGroup> const & mps, int which_diag, matri
     std::vector<typename Matrix::value_type> ret(L);
     for (int i=0; i < L; ++i)
     {
-        MPO<Matrix, SymmGroup> mpo = SU2::make_op<Matrix, SymmGroup>(i, i+which_diag, site_irreps);
+        MPO<Matrix, SymmGroup> mpo = SU2::make_1rdm_term<Matrix, SymmGroup>(i, i+which_diag, site_irreps);
         ret[i] = SU2::expval(mps, mpo, i, i+which_diag, config);
         ret[i] = ref(i,i+which_diag) / ret[i];
     }
