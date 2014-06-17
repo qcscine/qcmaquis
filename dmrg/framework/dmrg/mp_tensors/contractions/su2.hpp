@@ -220,8 +220,6 @@ namespace SU2 {
         ProductBasis<SymmGroup> in_right_pb(ket_tensor.site_dim(), right_i,
                                 boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                         -boost::lambda::_1, boost::lambda::_2));
-        charge opdelta[2];
-        opdelta[0] = phys_i[1].first; opdelta[1] = phys_i[2].first;
 
         for (std::size_t k = 0; k < left.n_blocks(); ++k) {
 
@@ -287,7 +285,6 @@ namespace SU2 {
 
                     }
 
-                    //if (debug && std::abs(new_rc[1]-free_rc[1]) == 1) {
                     if (debug) {
                         std::cout << j << "," << two_s << "," << jp << " | " << a << "," << k << "," << ap << " | "
                                   << i << "," << two_sp << "," << ip << " | " << phys_in << phys_out
