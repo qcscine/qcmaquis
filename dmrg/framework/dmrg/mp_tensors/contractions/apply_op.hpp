@@ -152,11 +152,33 @@ namespace contraction {
             charge        T_delta = SymmGroup::fuse(T.right_basis()[0].first, -T.left_basis()[0].first);
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
 
+            //maquis::cout << "\n-----------------deltas:-------------------" << std::endl;
+            //maquis::cout << "operator delta: " << operator_delta << std::endl;
+            //maquis::cout << "T_delta: " << T_delta << std::endl;
+            //maquis::cout << "total_delta: " << total_delta << std::endl;
+            //maquis::cout << "---------------------------" << std::endl;
+
             for (size_t l = 0; l < left_i.size(); ++l)
             {
                 charge out_l_charge = left_i[l].first;
                 size_t l_size = left_i[l].second;
                 charge out_r_charge = SymmGroup::fuse(out_l_charge, -total_delta);
+
+                //DEBUG
+                //charge deb1, deb2;
+                //deb1[0] = 1;
+                //deb1[1] = 0;
+                //deb1[2] = 67;
+                //deb2[0] = 1;
+                //deb2[1] = 0;
+                //deb2[2] = 64;
+                //if (deb1 == out_l_charge && deb2 == out_r_charge) {
+                //    maquis::cout << "inserting " << out_l_charge << out_r_charge << std::endl;
+                //    maquis::cout << W;
+                //    maquis::cout << "Aborting program.." << std::endl;
+                //    abort();
+                //}
+
 
                 if (!out_right_i.has(out_r_charge)) continue;
 
@@ -192,6 +214,7 @@ namespace contraction {
                             l_size, T.right_basis()[t_block].second, access.scale);
 
                 }
+                //maquis::cout << "---------------------------------" << std::endl;
             }
         }
         return ret;

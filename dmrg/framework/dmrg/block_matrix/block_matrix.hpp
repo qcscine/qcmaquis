@@ -151,7 +151,7 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
 #ifdef AMBIENT_TRACKING
     ambient_track_as(*block, this->label);
 #endif
-    
+
     return i1;
     //rows_.push_back(p1);
     //cols_.push_back(p2);

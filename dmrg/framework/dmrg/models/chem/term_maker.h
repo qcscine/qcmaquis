@@ -69,7 +69,7 @@ struct TermMaker {
         //typename op_t::type tmp;
         std::pair<tag_type, value_type> ptag;
         if (i < j) {
-            // Query the right fill operator in rel model
+            // Use the fill operator from the model
             fill_op = model->filling_matrix_tag(op1);
             ptag = op_table->get_product_tag(fill_op, op1);
             term.push_back(boost::make_tuple(i, ptag.first));
@@ -77,7 +77,7 @@ struct TermMaker {
             term.coeff *= ptag.second;
         }
         else {
-            // Query the right fill operator in rel model
+            // Use the fill operator from the model
             fill_op = model->filling_matrix_tag(op2);
             ptag = op_table->get_product_tag(fill_op, op2);
             term.push_back(boost::make_tuple(i, op1));
@@ -104,7 +104,7 @@ struct TermMaker {
             // if the bosonic operator is in between
             // the fermionic operators, multiply with fill
             
-            // Query the right fill operator in rel model
+            // Use the fill operator from the model
             fill_op = model->filling_matrix_tag(pb);
 
             ptag1 = op_table->get_product_tag(fill_op, opb2);
@@ -120,7 +120,7 @@ struct TermMaker {
         }
         
         if (p1 < p2) {
-            // Query the right fill operator in rel model
+            // Use the fill operator from the model
             fill_op = model->filling_matrix_tag(p1);
             
             ptag1 = op_table->get_product_tag(fill_op, op1); 
@@ -128,7 +128,7 @@ struct TermMaker {
             term.coeff *= ptag1.second;
         }
         else {
-            // Query the right fill operator in rel model
+            // Use the fill operator from the model
             fill_op = model->filling_matrix_tag(p2);
             
             ptag1 = op_table->get_product_tag(fill_op, op2); 
@@ -145,6 +145,9 @@ struct TermMaker {
         term.push_back(sterm[0]);
         term.push_back(sterm[1]);
         term.push_back(sterm[2]);
+
+        //for (int i_ = 0; i_ < term.size(); ++i_)
+        //   maquis::cout << op_table->get_op(term.operator_tag(i_)) << std::endl;
 
         return term;
     }
