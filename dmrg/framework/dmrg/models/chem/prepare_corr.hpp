@@ -62,25 +62,19 @@ namespace SU2 {
             create.insert_block(Matrix(1,1,-sqrt(2.)), D, B);
             create.insert_block(Matrix(1,1,sqrt(2.)), D, C);
 
-            //create.insert_block(Matrix(1,1,-sqrt(2.)), B, A);
-            //create.insert_block(Matrix(1,1,sqrt(2.)), C, A);
-            //create.insert_block(Matrix(1,1,-1), D, B);
-            //create.insert_block(Matrix(1,1,1), D, C);
-
             block_matrix<Matrix, SymmGroup> destroy;
             destroy.insert_block(Matrix(1,1,1), A, B);
             destroy.insert_block(Matrix(1,1,-1), A, C);
             destroy.insert_block(Matrix(1,1,sqrt(2.)), B, D);
             destroy.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
-            //destroy.insert_block(Matrix(1,1,sqrt(2.)), B, D);
-            //destroy.insert_block(Matrix(1,1,sqrt(2.)), C, D);
 
             //tag_type ident = tag_handler->register_op(identity, tag_detail::bosonic);
             MPOTensor<Matrix, SymmGroup> op(1,1);
 
             if (p == i) {
                 //block_matrix<Matrix, SymmGroup> tmp;
-                //SU2::gemm(fill, destroy, tmp);
+                //SU2::gemm(fill, create, tmp);
+                //maquis::cout << tmp << std::endl;
                 op.set(0,0,destroy,1.0);
             }
             else if (p == j)
