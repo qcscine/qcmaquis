@@ -253,42 +253,26 @@ namespace SU2 {
                     if (!bra_tensor.col_dim().has(new_rc))
                         continue;
 
-
                     int i  = lc[1], ip = new_rc[1];
                     int j  = mc[1], jp  = free_rc[1];
                     int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
                     int a = std::abs(i-j), k = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1])), ap = (a + k == 2) ? 0 : a + k;
-                    double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
+
                     // avoid Spin 1 Tensor
                     if (std::abs(new_rc[1]-free_rc[1]) >= 2)
                         continue;
 
+                    assert(std::abs(std::abs(ip-jp) - abs(i-j)) == k);
+
+                    double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                     coupling_coeff *= access.scale * W[w_block](0,0);
                     coupling_coeff *= pow(ip+1., 0.5) * pow(j+1., 0.5);
                     coupling_coeff *= pow(i+1., -0.5) * pow(jp+1., -0.5);
 
-                    // Coupling coefficient
-                    double coupling = 1.;
-                    if (SymmGroup::fuse(phys_out, -phys_in)[0] == -1) { // if destructor
-                        coupling *= couple_destroy(new_rc[1], free_rc[1], phys_in[1]);
-                    }
-                    else if (SymmGroup::fuse(phys_out, -phys_in)[0] == 1) { // if creator
-                        coupling *= couple_create(free_rc[1], mc[1], phys_in[1], 0);
-                    }
-                    else if (std::abs(new_rc[1]-free_rc[1]) == 1) { // if Spin 1/2 tensor
-                        //assert(phys_in==phys_out);
-                        if (std::abs(free_rc[0] - mc[0] == 1))
-                        {
-                            int phase = ((((j+ip)/2)%2)!=0)?-1:1;
-                            coupling *= phase * sqrt((j+1.) * (ip+1.)) * gsl_sf_coupling_6j(ip, jp, 1, j, i, 1);
-                        }
-                    }
-
                     if (debug) {
                         std::cout << j << "," << two_s << "," << jp << " | " << a << "," << k << "," << ap << " | "
                                   << i << "," << two_sp << "," << ip << " | " << phys_in << phys_out
-                                  << std::right << std::setw(8) << "cc: " << std::setw(12) << coupling_coeff
-                                  << " | " << std::setw(12) << coupling << std::endl;
+                                  << std::right << std::setw(8) << "cc: " << std::setw(12) << coupling_coeff << std::endl;
                     }
 
                     // T Access
