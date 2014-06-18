@@ -50,23 +50,23 @@ namespace SU2 {
 
             block_matrix<Matrix, SymmGroup> fill;
             fill.insert_block(Matrix(1,1,1), A, A);
-            fill.insert_block(Matrix(1,1,1), D, D);
-            fill.insert_block(Matrix(1,1,-1), B, B);
-            fill.insert_block(Matrix(1,1,-1), C, C);
-            fill.insert_block(Matrix(1,1,1), B, C);
-            fill.insert_block(Matrix(1,1,1), C, B);
+            fill.insert_block(Matrix(1,1,1), D, D);  // c^dag * c
+            fill.insert_block(Matrix(1,1,-1), B, B); // -1
+            fill.insert_block(Matrix(1,1,-1), C, C); // -1
+            fill.insert_block(Matrix(1,1,1), B, C);  // -1
+            fill.insert_block(Matrix(1,1,1), C, B);  // -1
 
             block_matrix<Matrix, SymmGroup> create;
-            create.insert_block(Matrix(1,1,-2.), B, A);
-            create.insert_block(Matrix(1,1,2.), C, A);
-            create.insert_block(Matrix(1,1,-sqrt(2.)), D, B);
-            create.insert_block(Matrix(1,1,sqrt(2.)), D, C);
+            create.insert_block(Matrix(1,1,-2.), B, A);       // 1
+            create.insert_block(Matrix(1,1,2.), C, A);       // 1
+            create.insert_block(Matrix(1,1,-sqrt(2.)), D, B); // 1
+            create.insert_block(Matrix(1,1,sqrt(2.)), D, C); // 1
 
             block_matrix<Matrix, SymmGroup> destroy;
-            destroy.insert_block(Matrix(1,1,1), A, B);
-            destroy.insert_block(Matrix(1,1,-1), A, C);
-            destroy.insert_block(Matrix(1,1,sqrt(2.)), B, D);
-            destroy.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
+            destroy.insert_block(Matrix(1,1,1), A, B);        // 1 
+            destroy.insert_block(Matrix(1,1,-1), A, C);        // 1
+            destroy.insert_block(Matrix(1,1,sqrt(2.)), B, D); // 1
+            destroy.insert_block(Matrix(1,1,-sqrt(2.)), C, D); // 1
 
             //tag_type ident = tag_handler->register_op(identity, tag_detail::bosonic);
             MPOTensor<Matrix, SymmGroup> op(1,1);
