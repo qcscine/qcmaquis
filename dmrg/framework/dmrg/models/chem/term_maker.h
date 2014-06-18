@@ -70,7 +70,7 @@ struct TermMaker {
         std::pair<tag_type, value_type> ptag;
         if (i < j) {
             // Use the fill operator from the model
-            fill_op = model->filling_matrix_tag(op1);
+            fill_op = model->filling_matrix_tag(i);
             ptag = op_table->get_product_tag(fill_op, op1);
             term.push_back(boost::make_tuple(i, ptag.first));
             term.push_back(boost::make_tuple(j, op2));
@@ -78,7 +78,7 @@ struct TermMaker {
         }
         else {
             // Use the fill operator from the model
-            fill_op = model->filling_matrix_tag(op2);
+            fill_op = model->filling_matrix_tag(j);
             ptag = op_table->get_product_tag(fill_op, op2);
             term.push_back(boost::make_tuple(i, op1));
             term.push_back(boost::make_tuple(j, ptag.first));
