@@ -211,6 +211,10 @@ int main(int argc, char ** argv)
         //}
         //}
         //}
+
+        MPO<matrix, grp> four = SU2::make_2rdm_term<matrix, grp>(0,1,2,3, site_irreps);
+        double twodm0123 = SU2::expval(mps, four, 0,1, config);
+        maquis::cout << twodm0123 << std::endl;
         
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;

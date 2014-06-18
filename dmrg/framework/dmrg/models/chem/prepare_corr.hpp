@@ -90,6 +90,79 @@ namespace SU2 {
     }
 
     template<class Matrix, class SymmGroup>
+    MPO<Matrix, SymmGroup> make_2rdm_term(int i, int j, int k, int l, std::vector<int> site_irreps)
+    {
+        MPO<Matrix, SymmGroup> ret(site_irreps.size());
+        for (int p=0; p<site_irreps.size(); ++p)
+        {
+            typedef tag_detail::tag_type tag_type;
+            typename SymmGroup::charge A(0), B(0), C(0), D(0);
+            A[0] = 2; // 200
+            B[0] = 1; B[1] =  1; B[2] = site_irreps[p]; // 11I
+            C[0] = 1; C[1] = -1; C[2] = site_irreps[p]; // 1-1I
+            // D = 000
+
+            block_matrix<Matrix, SymmGroup> identity;
+            identity.insert_block(Matrix(1,1,1), A, A);
+            identity.insert_block(Matrix(1,1,1), B, B);
+            identity.insert_block(Matrix(1,1,1), C, C);
+            identity.insert_block(Matrix(1,1,1), D, D);
+
+            block_matrix<Matrix, SymmGroup> fill;
+            fill.insert_block(Matrix(1,1,1), A, A);
+            fill.insert_block(Matrix(1,1,1), D, D);  // c^dag * c
+            fill.insert_block(Matrix(1,1,-1), B, B); // -1
+            fill.insert_block(Matrix(1,1,-1), C, C); // -1
+            fill.insert_block(Matrix(1,1,1), B, C);  // -1
+            fill.insert_block(Matrix(1,1,1), C, B);  // -1
+
+            block_matrix<Matrix, SymmGroup> create1;
+            create1.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
+            create1.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create1.insert_block(Matrix(1,1,1), D, B);
+            create1.insert_block(Matrix(1,1,1), D, C);
+
+            block_matrix<Matrix, SymmGroup> create2;
+            create2.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
+            create2.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create2.insert_block(Matrix(1,1,1), D, B);
+            create2.insert_block(Matrix(1,1,1), D, C);
+
+            block_matrix<Matrix, SymmGroup> destroy1;
+            destroy1.insert_block(Matrix(1,1,1), A, B);      
+            destroy1.insert_block(Matrix(1,1,-1), A, C);     
+            destroy1.insert_block(Matrix(1,1,sqrt(2.)), B, D); 
+            destroy1.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
+
+
+            block_matrix<Matrix, SymmGroup> destroy2;
+            destroy2.insert_block(Matrix(1,1,1), A, B);        
+            destroy2.insert_block(Matrix(1,1,-1), A, C);       
+            destroy2.insert_block(Matrix(1,1,sqrt(2.)), B, D); 
+            destroy2.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
+
+            //tag_type ident = tag_handler->register_op(identity, tag_detail::bosonic);
+            MPOTensor<Matrix, SymmGroup> op(1,1);
+
+            if (p == i)
+                op.set(0,0,create1, 1.0);
+            else if (p == j)
+                op.set(0,0,create2, 1.0);
+            else if (p == k)
+                op.set(0,0,destroy1, 1.0);
+            else if (p == l)
+                op.set(0,0,destroy2, 1.0);
+            //else if ( i < p && p < j)
+            //    op.set(0,0,fill, 1.0);
+            else 
+                op.set(0,0,identity, 1.0);
+
+            ret[p] = op;
+        }
+        return ret;
+    }
+
+    template<class Matrix, class SymmGroup>
     MPO<Matrix, SymmGroup> make_count(int i, std::vector<int> site_irreps)
     {
         //boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;

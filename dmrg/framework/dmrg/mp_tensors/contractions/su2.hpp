@@ -366,7 +366,7 @@ namespace SU2 {
                   int p1, int p2, std::vector<int> config)
     {
         bool debug = false;
-        if (p1 == 1 && p2 == 3) debug = true;
+        if (p1 == 1 && p2 == 3) debug = false;
 
         assert(mpo.length() == mps.length());
         std::size_t L = mps.length();
@@ -374,18 +374,14 @@ namespace SU2 {
 
         for(size_t i = 0; i < L; ++i) {
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
-            if (i==p1) 
+            //if (i==p1) 
+            //    left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
+            //else if (p1 < i && i < p2)
+            //    left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
+            //else if (i==p2) 
+            //    left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
+            //else 
                 left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
-            else if (p1 < i && i < p2)
-                left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
-            else if (i==p2) 
-                left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
-            else 
-                left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
-                //left = contraction::SU2::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
-
-            //if (i==1 && p1 == 1 && p2 == 2) maquis::cout << left[0] << std::endl;
-            //if (i==2 && p1 == 1 && p2 == 2) maquis::cout << left[0] << std::endl;
         }
 
         return maquis::real(left[0].trace());
