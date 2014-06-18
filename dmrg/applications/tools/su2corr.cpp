@@ -85,6 +85,19 @@ matrix generate_reference()
     return ret;
 }
 
+std::vector<double> generate_2rdm_ref()
+{
+    // reference for <cdag_i cdag_i+1 c_i+2 c_i+3>
+    std::vector<double> ret;
+    ret.push_back(0.0057801190338182);      //0123
+    ret.push_back(0.000504560118115581);    //1234
+    ret.push_back(3.94702812535319e-05);    //2345
+    ret.push_back(0);                       //3456
+    ret.push_back(0.000110219364671496);    //4567
+    ret.push_back(0);                       //5678
+    return ret;
+}
+
 template <class Matrix>
 void print_triang(Matrix const & mat)
 {
@@ -212,9 +225,13 @@ int main(int argc, char ** argv)
         //}
         //}
 
-        MPO<matrix, grp> four = SU2::make_2rdm_term<matrix, grp>(0,1,2,3, site_irreps);
-        double twodm0123 = SU2::expval(mps, four, 0,1, config);
-        maquis::cout << twodm0123 << std::endl;
+        std::vector<double> ref2 = generate_2rdm_ref();
+        for(int i=0; i < L-3; ++i)
+        {
+            MPO<matrix, grp> four = SU2::make_2rdm_term<matrix, grp>(i,i+1,i+2,i+3, site_irreps);
+            double twodm0123 = SU2::expval(mps, four, 0,1, config);
+            maquis::cout << twodm0123 / ref2[i] << std::endl;
+        }
         
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
