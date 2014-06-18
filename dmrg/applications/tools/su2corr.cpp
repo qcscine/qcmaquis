@@ -226,12 +226,15 @@ int main(int argc, char ** argv)
         //}
 
         std::vector<double> ref2 = generate_2rdm_ref();
+        std::vector<double> result;
         for(int i=0; i < L-3; ++i)
         {
             MPO<matrix, grp> four = SU2::make_2rdm_term<matrix, grp>(i,i+1,i+2,i+3, site_irreps);
-            double twodm0123 = SU2::expval(mps, four, 0,1, config);
-            maquis::cout << twodm0123 / ref2[i] << std::endl;
+            double twodm0123 = SU2::expval(mps, four, 0,0, config);
+            result.push_back(twodm0123 / ref2[i]);
         }
+        std::copy(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "));
+        std::cout << std::endl;
         
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;

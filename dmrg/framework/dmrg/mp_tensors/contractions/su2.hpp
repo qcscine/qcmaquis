@@ -256,13 +256,12 @@ namespace SU2 {
                     int i  = lc[1], ip = new_rc[1];
                     int j  = mc[1], jp  = free_rc[1];
                     int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
-                    int a = std::abs(i-j), k = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1])), ap = (a + k == 2) ? 0 : a + k;
+                    int a = std::abs(i-j), k = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1]));
 
-                    // avoid Spin 1 Tensor
-                    if (std::abs(new_rc[1]-free_rc[1]) >= 2)
-                        continue;
-
-                    assert(std::abs(std::abs(ip-jp) - abs(i-j)) == k);
+                    for (int ap = std::abs(a-k); ap <= std::abs(a+k); ap+=2)
+                    {
+                    if (ap != std::abs(ip-jp)) continue;
+                    if (ap >= 3) continue;
 
                     double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                     coupling_coeff *= access.scale * W[w_block](0,0);
@@ -280,7 +279,6 @@ namespace SU2 {
                     //maquis::cout << "access " << mc << " + " << phys_in<< "|" << free_rc << " -- "
                     //             << lc << " + " << phys_out << "|" << new_rc << std::endl;
                     size_t right_offset = in_right_pb(phys_in, free_rc);
-                    //size_t ldim = left_i.size_of_block(mc);
                     size_t ldim = t1.left_basis_size(t_pos);
                     size_t rdim = right_i.size_of_block(free_rc);
                     //if(debug) maquis::cout << "t1 block@" << t_pos << " " << ldim << " " << rdim  << " " << right_offset << std::endl;
@@ -309,6 +307,7 @@ namespace SU2 {
 
                     // Check-in
                     ret.match_and_add_block(prod, new_rc, free_rc);
+                    }
                 }
             }
         }
@@ -374,14 +373,7 @@ namespace SU2 {
 
         for(size_t i = 0; i < L; ++i) {
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
-            //if (i==p1) 
-            //    left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
-            //else if (p1 < i && i < p2)
-            //    left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
-            //else if (i==p2) 
-            //    left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
-            //else 
-                left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
+            left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
         }
 
         return maquis::real(left[0].trace());
