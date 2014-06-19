@@ -268,6 +268,8 @@ namespace SU2 {
                     coupling_coeff *= pow(ip+1., 0.5) * pow(j+1., 0.5);
                     coupling_coeff *= pow(i+1., -0.5) * pow(jp+1., -0.5);
 
+                    if(a == 2 && ap == 1) coupling_coeff *= sqrt(3);
+
                     if (debug) {
                         std::cout << j << "," << two_s << "," << jp << " | " << a << "," << k << "," << ap << " | "
                                   << i << "," << two_sp << "," << ip << " | " << phys_in << phys_out
@@ -365,7 +367,7 @@ namespace SU2 {
                   int p1, int p2, std::vector<int> config)
     {
         bool debug = false;
-        if (p1 == 1 && p2 == 3) debug = false;
+        if (p1 == 10 && p2 == 0) debug = false;
 
         assert(mpo.length() == mps.length());
         std::size_t L = mps.length();

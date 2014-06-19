@@ -225,17 +225,27 @@ int main(int argc, char ** argv)
         //}
         //}
 
+        for (int v1=0; v1 < 2; ++v1) {
+        for (int v2=0; v2 < 2; ++v2) {
+        for (int v3=0; v3 < 2; ++v3) {
+        for (int v4=0; v4 < 2; ++v4) {
+
         std::vector<double> ref2 = generate_2rdm_ref();
         std::vector<double> result;
         for(int i=0; i < L-3; ++i)
         {
-            MPO<matrix, grp> four = SU2::make_2rdm_term<matrix, grp>(i,i+1,i+2,i+3, site_irreps);
-            double twodm0123 = SU2::expval(mps, four, 0,0, config);
+            MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, v1,v2,v3,v4, site_irreps);
+            double twodm0123 = SU2::expval(mps, four, i+10,0, config);
             result.push_back(twodm0123 / ref2[i]);
         }
         std::copy(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "));
         std::cout << std::endl;
-        
+
+        }
+        }
+        } 
+        }
+
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
         return 1;
