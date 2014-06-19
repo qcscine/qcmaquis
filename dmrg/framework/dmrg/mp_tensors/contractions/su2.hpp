@@ -151,8 +151,7 @@ namespace SU2 {
         return (count == 1);
     }
 
-    double couple_destroy(int jR, int jRt, int local_spin)
-    {
+    double L_destroy(int jR, int jRt, int local_spin) {
         // jR = bra right spin, jRt = ket right spin
 
         double ret = 1.;
@@ -164,8 +163,7 @@ namespace SU2 {
         return ret;
     }
 
-    double couple_create(int jR, int jLt, int local_spin, int spin_out)
-    {
+    double F0_create(int jR, int jLt, int local_spin, int spin_out) {
         // jR = bra..
         double ret;
         if(local_spin == 0) {
@@ -178,6 +176,29 @@ namespace SU2 {
             for (int p_= 0; p_ < phase; ++p_) ret *= -1.;
         }
         return ret;
+    }
+
+    double S0(int S1, int SLU, int SLD, int SD, int NU, int NLU) {
+        if (NU-NLU == 0) {
+            int fase = ((((S1 - SLD + 1)/2)%2)!=0)?-1:1;
+            return fase * sqrt(0.5 * (SLD+1.0) / (S1+1.0) );
+        }
+        else {
+            assert(NU-NLU==1);
+            return -sqrt(0.5);
+        }
+    }
+
+    double S1(int S1, int SLU, int SLD, int SD, int NU, int NLU) {
+        if (NU-NLU == 0) {
+            int fase = ((((S1 + SD + 2)/2)%2)!=0)?-1:1;
+            return fase * sqrt(3.0*(TwoSLD+1)) * gsl_sf_coupling_6j(1,1,2,S1,SD,SLD);
+        }
+        else {
+            assert(NU-NLU==1);
+            int fase = ((((SLU + SD + 1)/2)%2)!=0)?-1:1;
+            return fase * sqrt(3.0*(S1+1)) * gsl_sf_coupling_6j(1,1,2,S1,SD,SLU);
+        }
     }
 
     template <typename T> int sgn(T val) {
@@ -367,7 +388,7 @@ namespace SU2 {
                   int p1, int p2, std::vector<int> config)
     {
         bool debug = false;
-        if (p1 == 10 && p2 == 0) debug = false;
+        if (p1 == 10 && p2 == 0) debug = true;
 
         assert(mpo.length() == mps.length());
         std::size_t L = mps.length();
