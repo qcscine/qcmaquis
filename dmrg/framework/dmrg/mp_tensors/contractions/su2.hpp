@@ -178,7 +178,7 @@ namespace SU2 {
         return ret;
     }
 
-    double S0(int S1, int SLU, int SLD, int SD, int NU, int NLU) {
+    double S0c(int S1, int SLU, int SLD, int SD, int NU, int NLU) {
         if (NU-NLU == 0) {
             int fase = ((((S1 - SLD + 1)/2)%2)!=0)?-1:1;
             return fase * sqrt(0.5 * (SLD+1.0) / (S1+1.0) );
@@ -189,10 +189,10 @@ namespace SU2 {
         }
     }
 
-    double S1(int S1, int SLU, int SLD, int SD, int NU, int NLU) {
+    double S1c(int S1, int SLU, int SLD, int SD, int NU, int NLU) {
         if (NU-NLU == 0) {
             int fase = ((((S1 + SD + 2)/2)%2)!=0)?-1:1;
-            return fase * sqrt(3.0*(TwoSLD+1)) * gsl_sf_coupling_6j(1,1,2,S1,SD,SLD);
+            return fase * sqrt(3.0*(SLD+1)) * gsl_sf_coupling_6j(1,1,2,S1,SD,SLD);
         }
         else {
             assert(NU-NLU==1);
