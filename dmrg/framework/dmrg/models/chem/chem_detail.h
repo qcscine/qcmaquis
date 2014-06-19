@@ -148,6 +148,10 @@ namespace chem_detail {
             for (typename std::map<TermTuple, term_descriptor>::const_iterator it = three_terms.begin();
                     it != three_terms.end(); ++it)
                 tagterms.push_back(it->second);
+
+            //for (typename std::map<TermTuple, term_descriptor>::const_iterator it = four_terms.begin();
+            //        it != four_terms.end(); ++it)
+            //    tagterms.push_back(it->second);
         }
 
         void add_term(std::vector<term_descriptor> & tagterms,
@@ -181,7 +185,8 @@ namespace chem_detail {
                       int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
         {
             // Collapse terms with identical operators and different scales into one term
-            if (op_i == op_k && op_j == op_l) {
+           
+           if (op_i == op_k && op_j == op_l) {
 
                 // if i>j, we switch l,j to get the related term
                 // if j<i, we have to switch i,k, otherwise we get a forbidden permutation
@@ -191,9 +196,9 @@ namespace chem_detail {
                 if (self > twin) {
                 
                     term_descriptor
-                    term = TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
+                    term = TermMaker<M, S>::four_term(model, ident, fill, 0.5*coefficients[align(i,j,k,l)], i,k,l,j,
                                                    op_i, op_k, op_l, op_j, tag_handler);
-
+                    
                     term.coeff += value_type(sign(twin)) * coefficients[align(twin[0], twin[1], twin[2], twin[3])];
 
                     tagterms.push_back(term);
@@ -201,7 +206,7 @@ namespace chem_detail {
                 //else: we already have the term
             }
             else {
-                tagterms.push_back( TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
+                tagterms.push_back( TermMaker<M, S>::four_term(model, ident, fill, 0.5*coefficients[align(i,j,k,l)], i,k,l,j,
                                    op_i, op_k, op_l, op_j, tag_handler) );
             }
         }
@@ -293,6 +298,7 @@ namespace chem_detail {
 
         std::map<IndexTuple, value_type> coefficients;
 
+        std::map<TermTuple, term_descriptor> four_terms;
         std::map<TermTuple, term_descriptor> three_terms;
         std::map<IndexTuple, term_descriptor> two_terms;
 

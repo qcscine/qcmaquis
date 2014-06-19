@@ -152,7 +152,7 @@ struct TermMaker {
         return term;
     }
 
-    static term_descriptor four_term(tag_type ident, tag_type fill_op,
+    static term_descriptor four_term(Model* model, tag_type ident, tag_type fill_op,
                                 value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
                                 tag_type op_i, tag_type op_j,
                                 tag_type op_k, tag_type op_l,
@@ -177,9 +177,16 @@ struct TermMaker {
         std::sort(sterm.begin(), sterm.end(), compare_tag);
 
         std::pair<tag_type, value_type> ptag;
+        // sterm[0] is associated with op_i, ask the model for the right fill_op
+        fill_op = model->filling_matrix_tag(boost::tuples::get<0>(sterm[0]));
+
         ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[0]));
         boost::tuples::get<1>(sterm[0]) = ptag.first;
         term.coeff *= ptag.second;
+        
+        // sterm[2] is associated with op_k, ask the model for the right fill_op
+        fill_op = model->filling_matrix_tag(boost::tuples::get<0>(sterm[2]));
+
         ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[2]));
         boost::tuples::get<1>(sterm[2]) = ptag.first;
         term.coeff *= ptag.second;
