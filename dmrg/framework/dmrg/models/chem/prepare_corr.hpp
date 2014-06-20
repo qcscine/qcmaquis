@@ -216,16 +216,16 @@ namespace SU2 {
 
 
             block_matrix<Matrix, SymmGroup> create1m;
-            create1m.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
-            create1m.insert_block(Matrix(1,1,-sqrt(2.)), C, A);      
-            create1m.insert_block(Matrix(1,1,1), D, B);
-            create1m.insert_block(Matrix(1,1,-1), D, C);
+            create1m.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
+            create1m.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create1m.insert_block(Matrix(1,1,-1), D, B);
+            create1m.insert_block(Matrix(1,1,1), D, C);
 
             block_matrix<Matrix, SymmGroup> create2m;
-            create2m.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
-            create2m.insert_block(Matrix(1,1,-sqrt(2.)), C, A);      
-            create2m.insert_block(Matrix(1,1,1), D, B);
-            create2m.insert_block(Matrix(1,1,-1), D, C);
+            create2m.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
+            create2m.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create2m.insert_block(Matrix(1,1,-1), D, B);
+            create2m.insert_block(Matrix(1,1,1), D, C);
 
             block_matrix<Matrix, SymmGroup> destroy1m;
             destroy1m.insert_block(Matrix(1,1,1), A, B);      
@@ -244,15 +244,13 @@ namespace SU2 {
             MPOTensor<Matrix, SymmGroup> op(1,1);
 
             if (p == i)
-                op.set(0,0,(m1) ? create1m : create1, 1.0);
+                op.set(0,0,(m1) ? destroy1m : destroy1, 1.0);
             else if (p == j)
-                op.set(0,0,(m2) ? create2m : create2, 1.0);
+                op.set(0,0,(m2) ? destroy2m : destroy2, 1.0);
             else if (p == k)
-                op.set(0,0,(m3) ? destroy1m : destroy1, 1.0);
+                op.set(0,0,(m3) ? create1m : create1, 1.0);
             else if (p == l)
-                op.set(0,0,(m4) ? destroy2m : destroy2, 1.0);
-            //else if ( i < p && p < j)
-            //    op.set(0,0,fill, 1.0);
+                op.set(0,0,(m4) ? create2m : create2, 1.0);
             else 
                 op.set(0,0,identity, 1.0);
 

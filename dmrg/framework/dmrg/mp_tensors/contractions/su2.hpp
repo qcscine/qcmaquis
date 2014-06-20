@@ -179,23 +179,27 @@ namespace SU2 {
     }
 
     double S0c(int S1, int SLU, int SLD, int SD, int NU, int NLU) {
+        //std::swap(SLU,SLD);
+        //std::swap(S1,SD);
         if (NU-NLU == 0) {
             int fase = ((((S1 - SLD + 1)/2)%2)!=0)?-1:1;
             return fase * sqrt(0.5 * (SLD+1.0) / (S1+1.0) );
         }
         else {
-            assert(NU-NLU==1);
+            if (NU-NLU != 1) return 9999;
             return -sqrt(0.5);
         }
     }
 
     double S1c(int S1, int SLU, int SLD, int SD, int NU, int NLU) {
+        //std::swap(SLU,SLD);
+        //std::swap(S1,SD);
         if (NU-NLU == 0) {
             int fase = ((((S1 + SD + 2)/2)%2)!=0)?-1:1;
             return fase * sqrt(3.0*(SLD+1)) * gsl_sf_coupling_6j(1,1,2,S1,SD,SLD);
         }
         else {
-            assert(NU-NLU==1);
+            if (NU-NLU != 1) return 9999;
             int fase = ((((SLU + SD + 1)/2)%2)!=0)?-1:1;
             return fase * sqrt(3.0*(S1+1)) * gsl_sf_coupling_6j(1,1,2,S1,SD,SLU);
         }
@@ -284,6 +288,9 @@ namespace SU2 {
                     if (ap != std::abs(ip-jp)) continue;
                     if (ap >= 3) continue;
 
+                    double c0 = S0c(ip,i,j,jp,new_rc[0],lc[0]);
+                    double c1 = S1c(ip,i,j,jp,new_rc[0],lc[0]);
+
                     double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                     coupling_coeff *= access.scale * W[w_block](0,0);
                     coupling_coeff *= pow(ip+1., 0.5) * pow(j+1., 0.5);
@@ -294,7 +301,9 @@ namespace SU2 {
                     if (debug) {
                         std::cout << j << "," << two_s << "," << jp << " | " << a << "," << k << "," << ap << " | "
                                   << i << "," << two_sp << "," << ip << " | " << phys_in << phys_out
-                                  << std::right << std::setw(8) << "cc: " << std::setw(12) << coupling_coeff << std::endl;
+                                  << "  " << new_rc[0] << "," << lc[0] << "," << mc[0] << "," << free_rc[0]
+                                  << std::right << std::setw(8) << "cc: " << std::setw(12) << coupling_coeff //<< std::endl;
+                                  << std::setw(12) << ((std::abs(ip-jp) == 0) ? c0 : c1) << std::endl;
                     }
 
                     // T Access
