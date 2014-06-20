@@ -148,10 +148,6 @@ namespace chem_detail {
             for (typename std::map<TermTuple, term_descriptor>::const_iterator it = three_terms.begin();
                     it != three_terms.end(); ++it)
                 tagterms.push_back(it->second);
-
-            //for (typename std::map<TermTuple, term_descriptor>::const_iterator it = four_terms.begin();
-            //        it != four_terms.end(); ++it)
-            //    tagterms.push_back(it->second);
         }
 
         void add_term(std::vector<term_descriptor> & tagterms,
@@ -184,9 +180,14 @@ namespace chem_detail {
         void add_term(std::vector<term_descriptor> & tagterms,
                       int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
         {
+            // Check if the model is relativstic to set the 1/2 factor
+            double scale_factor = 1;
+            if (true) {
+                scale_factor = 0.5;
+            }
+
             // Collapse terms with identical operators and different scales into one term
-           
-           if (op_i == op_k && op_j == op_l) {
+            if (op_i == op_k && op_j == op_l) {
 
                 // if i>j, we switch l,j to get the related term
                 // if j<i, we have to switch i,k, otherwise we get a forbidden permutation
@@ -196,7 +197,7 @@ namespace chem_detail {
                 if (self > twin) {
                 
                     term_descriptor
-                    term = TermMaker<M, S>::four_term(model, ident, fill, 0.5*coefficients[align(i,j,k,l)], i,k,l,j,
+                    term = TermMaker<M, S>::four_term(model, ident, fill, scale_factor*coefficients[align(i,j,k,l)], i,k,l,j,
                                                    op_i, op_k, op_l, op_j, tag_handler);
                     
                     term.coeff += value_type(sign(twin)) * coefficients[align(twin[0], twin[1], twin[2], twin[3])];
@@ -206,7 +207,7 @@ namespace chem_detail {
                 //else: we already have the term
             }
             else {
-                tagterms.push_back( TermMaker<M, S>::four_term(model, ident, fill, 0.5*coefficients[align(i,j,k,l)], i,k,l,j,
+                tagterms.push_back( TermMaker<M, S>::four_term(model, ident, fill, scale_factor*coefficients[align(i,j,k,l)], i,k,l,j,
                                    op_i, op_k, op_l, op_j, tag_handler) );
             }
         }
@@ -269,6 +270,26 @@ namespace chem_detail {
                     idx_.push_back(tmp);
                 }
                 else { it++; }
+                ////// TO TEST //////
+                /*if (std::abs(*it) > parms["integral_cutoff"]){
+                    value_type element = *it++;
+                    //matrix_elements.push_back(*it++);
+                    std::vector<int> tmp;
+                    std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
+
+                    IndexTuple aligned = align(reorder(tmp[0]), reorder(tmp[1]), reorder(tmp[2]), reorder(tmp[3]));
+                    tmp[0] = aligned[0];
+                    tmp[1] = aligned[1];
+                    tmp[2] = aligned[2];
+                    tmp[3] = aligned[3];
+                    
+                    // Once we have the indices, check if there are combinations which are not physical
+                    if (is_integral_allowed(tmp[0], tmp[1], tmp[2], tmp[3], lat)) {
+                        idx_.push_back(tmp);
+                        matrix_elements.push_back(element);}
+                    //else {it++;}
+                }
+                else { it++; }*/
 
                 it += 4;
             }
@@ -286,6 +307,27 @@ namespace chem_detail {
             return p >= 0 ? inv_order[p] : p;
         }
 
+        /*bool is_integral_allowed(int i, int j, int k, int l, Lattice const & lat) {
+            typename S::charge I(0), J(0), K(0), L(0), tmp(0);
+            typename S::charge charges[] = {I,J,K,L};
+            std::size_t site[] = {i, j, k, l};
+            for (int ii=0; ii<4; ++ii) {
+                charges[ii][2] = lat.get_prop<int>("irrep", site[ii]);
+                if (site[ii] < lat.size()) {charges[ii][0] = 1;}
+                else if (site[ii] >= lat.size()) {charges[ii][1] = 1;}
+                else {throw std::runtime_error("integrals parsing failed\n");}
+                if (ii%2 == 0) {
+                    tmp = S::fuse(tmp,charges[ii]);}
+                else if (ii%2 == 1) {
+                    tmp = S::fuse(tmp, -charges[ii]);}
+                //maquis::cout << "site: " << site[ii] << " charge: " << charges[ii] << std::endl;
+            }
+            maquis::cout << "(" << i << j << k << l << "): " << tmp << std::endl;
+            if (tmp[0] == 0 && tmp[1] == 0 &&  tmp[2] != 0) {return false;}
+            else {return true;}
+        }*/
+
+
         tag_type ident, fill;
         boost::shared_ptr<TagHandler<M, S> > tag_handler;
         boost::function<IndexTuple(int, int, int, int)> align;
@@ -298,7 +340,6 @@ namespace chem_detail {
 
         std::map<IndexTuple, value_type> coefficients;
 
-        std::map<TermTuple, term_descriptor> four_terms;
         std::map<TermTuple, term_descriptor> three_terms;
         std::map<IndexTuple, term_descriptor> two_terms;
 

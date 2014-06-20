@@ -74,7 +74,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     }
 
     op_t create_unbar_op, create_bar_op, destroy_unbar_op, destroy_bar_op,
-         count_unbar_op, count_bar_op, docc_op, e2d_op, d2e_op,
+         count_unbar_op, count_bar_op, docc_op,
          ident_unbar_op, ident_bar_op, fill_unbar_op, fill_bar_op;
 
     ident_unbar_op.insert_block(Matrix(1, 1, 1), A, A);
@@ -104,7 +104,6 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     op_t tmp;
     tag_type dummy;
 
-    // Not sure if fill_bar is right
     gemm(fill_bar_op, create_bar_op, tmp);
     create_bar_op = tmp;
     gemm(destroy_bar_op, fill_bar_op, tmp);
@@ -132,19 +131,13 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     /**********************************************************************/
 
     // TODO: change term_assistant input paramters
-    // For now just pass ident_unbar (will not be used anyway)
-    // ATTENTION:  pass fill_unbar --> doesn't affect one-term,
-    // but affects 3- and 4-terms --> need to fix it when we use
-    // all terms in the hamiltonian!!!
-    // NOTE: actually also fill is taken from here and there should be
-    // no problem --> need to check again
     chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, dummy, dummy, tag_handler, this->align, this);
     
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
     
-    // TODO: move it up, remove print statement
+    // TODO: move it up
     int n_pair = lat.size()/2;
 
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
@@ -221,7 +214,8 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 
         // V_iijj
         else if ( i==j && k==l && j!=k) {
-
+            
+            if (is_term_allowed(i,j,k,l)) {
             if (i < n_pair && k < n_pair) {
                 term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_unbar, count_unbar);
                 //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i+n_pair, k+n_pair, count_bar, count_bar);
@@ -237,13 +231,14 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
                 term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_bar, count_bar);
                 //maquis::cout << "iijj-4: (" << i << j << k << l << ") : " << matrix_elements[m]*0.5 << std::endl;
             }
-            
+            }
             used_elements[m] += 1;
         }
        
         // V_ijji
         else if ( i==l && j==k && i!=j) {
             
+            if (is_term_allowed(i,j,k,l)) {
             if (i < n_pair && j < n_pair) {
                 term_assistant.add_term(this->terms_, -matrix_elements[m]*0.5, i, j, count_unbar, count_unbar);
                 //term_assistant.add_term(this->terms_, -matrix_elements[m]*0.5, i+n_pair, j+n_pair, count_bar, count_bar);
@@ -262,6 +257,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
                 term_assistant.add_term(this->terms_, -matrix_elements[m]*0.5, i, j, count_bar, count_bar);
                 //maquis::cout << "ijji-4: (" << i << j << k << l << ") : " << -matrix_elements[m]*0.5 << std::endl;
             }
+            }
 
             used_elements[m] += 1;
         }
@@ -269,6 +265,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         // V_iikl & V_ijkk
         else if ( i==j && j!=k && j!=l || k==l && i!=k && j!=k ) {
             
+            if (is_term_allowed(i,j,k,l)) {
             if (i==j) {
                 if        (i <  n_pair && k >= n_pair && l >= n_pair) {
                     term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, l, create_unbar, destroy_unbar, create_bar, destroy_bar);
@@ -306,6 +303,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
                     term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, k, i, j, create_bar, destroy_bar, create_bar, destroy_bar);
                 }
             }
+            }
 
             used_elements[m] += 1;
         } 
@@ -319,6 +317,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         // V_ijjl & V_ijki
         else if ( i!=j && j==k && k!=l || i!=j && j!=k && i==l) {
 
+            if (is_term_allowed(i,j,k,l)) {
             if (i==l) {
                 if        (i <  n_pair && j >= n_pair && k >= n_pair) {
                     term_assistant.add_term(this->terms_, -matrix_elements[m]*0.5, i, k, j, create_unbar, destroy_unbar, create_bar, destroy_bar);
@@ -356,6 +355,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
                     term_assistant.add_term(this->terms_, -matrix_elements[m]*0.5, j, i, l, create_bar, destroy_bar, create_bar, destroy_bar);
                 }
             }
+            }
 
             used_elements[m] += 1;
         }
@@ -363,6 +363,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         // V_ijkl
         else if (i!=j && j!=k && k!=l && i!=k && j!=l) {
             
+            if (is_term_allowed(i,j,k,l)) {
             if        (i <  n_pair && j <  n_pair && k <  n_pair && l <  n_pair) {
                 term_assistant.add_term(this->terms_, i,k,l,j, create_unbar, create_unbar, destroy_unbar, destroy_unbar);
             } else if (i >= n_pair && j <  n_pair && k <  n_pair && l <  n_pair) {
@@ -396,6 +397,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             } else if (i >= n_pair && j >= n_pair && k >= n_pair && l >= n_pair) {
                 term_assistant.add_term(this->terms_, i,k,l,j, create_bar, create_bar, destroy_bar, destroy_bar);
             }
+            }
 
             used_elements[m] += 1;
         }
@@ -405,16 +407,13 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     // make sure all elements have been used
     std::vector<int>::iterator it_0;
     it_0 = std::find(used_elements.begin(), used_elements.end(), 0);
-    //maquis::cout << bool(it_0 < used_elements.end()) << std::endl;
-    //assert( it_0 == used_elements.end() );
+    maquis::cout << bool(it_0 < used_elements.end()) << std::endl;
+    assert( it_0 == used_elements.end() );
 
     term_assistant.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
-    for (int ii = 0; ii < this->terms_.size(); ++ii) {
-        maquis::cout << this->terms_[ii] << std::endl;
-    }
-    //for (int jj = 0; jj < 12; ++jj) {
-    //    maquis::cout << tag_handler->get_op(jj) << std::endl;
+    //for (int ii = 0; ii < this->terms_.size(); ++ii) {
+    //    maquis::cout << this->terms_[ii] << std::endl;
     //}
 }
     
