@@ -163,7 +163,7 @@ namespace SU2 {
     }
 
     template<class Matrix, class SymmGroup>
-    MPO<Matrix, SymmGroup> make_2rdm_term_custom(int i, int j, int k, int l, int m1, int m2, int m3, int m4, std::vector<int> site_irreps)
+    MPO<Matrix, SymmGroup> make_2rdm_term_custom(int i, int j, int k, int l, int m1, int m2, int m3, int m4, int m5, std::vector<int> site_irreps)
     {
         MPO<Matrix, SymmGroup> ret(site_irreps.size());
         for (int p=0; p<site_irreps.size(); ++p)
@@ -189,43 +189,12 @@ namespace SU2 {
             fill.insert_block(Matrix(1,1,1), B, C);  // -1
             fill.insert_block(Matrix(1,1,1), C, B);  // -1
 
-            block_matrix<Matrix, SymmGroup> create1;
-            create1.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
-            create1.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
-            create1.insert_block(Matrix(1,1,1), D, B);
-            create1.insert_block(Matrix(1,1,1), D, C);
-
-            block_matrix<Matrix, SymmGroup> create2;
-            create2.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
-            create2.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
-            create2.insert_block(Matrix(1,1,1), D, B);
-            create2.insert_block(Matrix(1,1,1), D, C);
-
+            // SITE 0 - destroy
             block_matrix<Matrix, SymmGroup> destroy1;
             destroy1.insert_block(Matrix(1,1,1), A, B);      
             destroy1.insert_block(Matrix(1,1,1), A, C);     
             destroy1.insert_block(Matrix(1,1,sqrt(2.)), B, D); 
             destroy1.insert_block(Matrix(1,1,sqrt(2.)), C, D);
-
-
-            block_matrix<Matrix, SymmGroup> destroy2;
-            destroy2.insert_block(Matrix(1,1,1), A, B);        
-            destroy2.insert_block(Matrix(1,1,1), A, C);       
-            destroy2.insert_block(Matrix(1,1,sqrt(2.)), B, D); 
-            destroy2.insert_block(Matrix(1,1,sqrt(2.)), C, D);
-
-
-            block_matrix<Matrix, SymmGroup> create1m;
-            create1m.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
-            create1m.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
-            create1m.insert_block(Matrix(1,1,-1), D, B);
-            create1m.insert_block(Matrix(1,1,1), D, C);
-
-            block_matrix<Matrix, SymmGroup> create2m;
-            create2m.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
-            create2m.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
-            create2m.insert_block(Matrix(1,1,-1), D, B);
-            create2m.insert_block(Matrix(1,1,1), D, C);
 
             block_matrix<Matrix, SymmGroup> destroy1m;
             destroy1m.insert_block(Matrix(1,1,1), A, B);      
@@ -233,26 +202,96 @@ namespace SU2 {
             destroy1m.insert_block(Matrix(1,1,sqrt(2.)), B, D); 
             destroy1m.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
 
+            // SITE 1 - destroy
+            block_matrix<Matrix, SymmGroup> destroy2;
+            destroy2.insert_block(Matrix(1,1,1), A, B);        
+            destroy2.insert_block(Matrix(1,1,1), A, C);       
+            destroy2.insert_block(Matrix(1,1,sqrt(2.)), B, D); 
+            destroy2.insert_block(Matrix(1,1,sqrt(2.)), C, D);
 
             block_matrix<Matrix, SymmGroup> destroy2m;
             destroy2m.insert_block(Matrix(1,1,1), A, B);        
             destroy2m.insert_block(Matrix(1,1,-1), A, C);       
-            destroy2m.insert_block(Matrix(1,1,sqrt(2.)), B, D); 
-            destroy2m.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
+            destroy2m.insert_block(Matrix(1,1,-sqrt(2.)), B, D); 
+            destroy2m.insert_block(Matrix(1,1,sqrt(2.)), C, D);
+
+            block_matrix<Matrix, SymmGroup> destroyS1;
+            destroyS1.insert_block(Matrix(1,1,-1), A, B);        
+            destroyS1.insert_block(Matrix(1,1,1), A, C);       
+            destroyS1.insert_block(Matrix(1,1,sqrt(2.)), B, D); 
+            destroyS1.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
+
+            // SITE 2 - create
+            block_matrix<Matrix, SymmGroup> create1;
+            create1.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
+            create1.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create1.insert_block(Matrix(1,1,1), D, B);
+            create1.insert_block(Matrix(1,1,1), D, C);
+
+            block_matrix<Matrix, SymmGroup> create1m;
+            create1m.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
+            create1m.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create1m.insert_block(Matrix(1,1,-1), D, B);
+            create1m.insert_block(Matrix(1,1,1), D, C);
+
+            block_matrix<Matrix, SymmGroup> createS1;
+            createS1.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
+            createS1.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            createS1.insert_block(Matrix(1,1,1), D, B);
+            createS1.insert_block(Matrix(1,1,1), D, C);
+
+            // SITE 3 - create
+            block_matrix<Matrix, SymmGroup> create2;
+            create2.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
+            create2.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create2.insert_block(Matrix(1,1,1), D, B);
+            create2.insert_block(Matrix(1,1,1), D, C);
+
+            block_matrix<Matrix, SymmGroup> create2m;
+            create2m.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
+            create2m.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create2m.insert_block(Matrix(1,1,-1), D, B);
+            create2m.insert_block(Matrix(1,1,1), D, C);
+
+            block_matrix<Matrix, SymmGroup> create2m2;
+            create2m2.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
+            create2m2.insert_block(Matrix(1,1,-sqrt(2.)), C, A);      
+            create2m2.insert_block(Matrix(1,1,1), D, B);
+            create2m2.insert_block(Matrix(1,1,1), D, C);
 
             //tag_type ident = tag_handler->register_op(identity, tag_detail::bosonic);
-            MPOTensor<Matrix, SymmGroup> op(1,1);
+            MPOTensor<Matrix, SymmGroup> op(1,2);
 
-            if (p == i)
+            if (p == i) {
                 op.set(0,0,(m1) ? destroy1m : destroy1, 1.0);
-            else if (p == j)
+                op.set(0,1,identity, 1.0);
+            }
+            else if (p == j){
                 op.set(0,0,(m2) ? destroy2m : destroy2, 1.0);
-            else if (p == k)
-                op.set(0,0,(m3) ? create1m : create1, 1.0);
-            else if (p == l)
-                op.set(0,0,(m4) ? create2m : create2, 1.0);
-            else 
+                op.set(0,1, destroyS1, 1.0);
+            }
+            else if (p == k) {
+                op.set(0,0,(m4) ? create1m : create1, 1.0);
+                op.set(0,1, createS1, 1.0);
+            }
+            else if (p == l) {
+                switch(m5) {
+                    case 0:
+                        op.set(0,0,create2, 1.0);
+                        break;
+                    case 1:
+                        op.set(0,0,create2m, 1.0);
+                        break;
+                    case 2:
+                        op.set(0,0,create2m2, 1.0);
+                }
+
+                op.set(0,1,identity, 1.0);
+            }
+            else {
                 op.set(0,0,identity, 1.0);
+                op.set(0,1,identity, 1.0);
+            }
 
             ret[p] = op;
         }
