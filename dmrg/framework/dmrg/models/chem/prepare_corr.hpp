@@ -235,8 +235,8 @@ namespace SU2 {
             create1m.insert_block(Matrix(1,1,1), D, C);
 
             block_matrix<Matrix, SymmGroup> createS1;
-            createS1.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
-            createS1.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            createS1.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
+            createS1.insert_block(Matrix(1,1,-sqrt(2.)), C, A);      
             createS1.insert_block(Matrix(1,1,1), D, B);
             createS1.insert_block(Matrix(1,1,1), D, C);
 
@@ -268,11 +268,32 @@ namespace SU2 {
             }
             else if (p == j){
                 op.set(0,0,(m2) ? destroy2m : destroy2, 1.0);
-                op.set(0,1, destroyS1, 1.0);
+                double scale = 1.0;
+                op.set(0,1, destroyS1, scale);
             }
             else if (p == k) {
-                op.set(0,0,(m4) ? create1m : create1, 1.0);
-                op.set(0,1, createS1, 1.0);
+                int phase = (m3 > 2) ? -1 : 1;
+                switch(m3%3) {
+                    case 0:
+                        op.set(0,0,create1, phase);
+                        break;
+                    case 1:
+                        op.set(0,0,create1m, phase);
+                        break;
+                    case 2:
+                        op.set(0,0,createS1, phase);
+                }
+                double scale = 1.0;
+                switch(m4) {
+                    case 0:
+                        op.set(0,1, create1, scale);
+                        break;
+                    case 1:
+                        op.set(0,1, create1m, scale);
+                        break;
+                    case 2:
+                        op.set(0,1, createS1, scale);
+                }
             }
             else if (p == l) {
                 switch(m5) {
