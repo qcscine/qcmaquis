@@ -182,7 +182,7 @@ namespace chem_detail {
         {
             // Check if the model is relativstic to set the 1/2 factor
             double scale_factor = 1;
-            if (true) {
+            if (false) {
                 scale_factor = 0.5;
             }
 
@@ -254,10 +254,18 @@ namespace chem_detail {
                         std::back_inserter(raw));
 
             std::vector<double>::iterator it = raw.begin();
+            
+            // Check symmmetry to use the right factor
+            double integral_value = 0;
+            double scale_factor = 1;
+            if (parms["symmetry"] == "2u1lpg") {scale_factor = 0.5;}
+                
             while (it != raw.end()) {
                 
                 if (std::abs(*it) > parms["integral_cutoff"]){
-                    matrix_elements.push_back(*it++);
+                    integral_value = *it++;
+                    matrix_elements.push_back(scale_factor*integral_value);
+                    
                     std::vector<int> tmp;
                     std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
 
@@ -270,26 +278,6 @@ namespace chem_detail {
                     idx_.push_back(tmp);
                 }
                 else { it++; }
-                ////// TO TEST //////
-                /*if (std::abs(*it) > parms["integral_cutoff"]){
-                    value_type element = *it++;
-                    //matrix_elements.push_back(*it++);
-                    std::vector<int> tmp;
-                    std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
-
-                    IndexTuple aligned = align(reorder(tmp[0]), reorder(tmp[1]), reorder(tmp[2]), reorder(tmp[3]));
-                    tmp[0] = aligned[0];
-                    tmp[1] = aligned[1];
-                    tmp[2] = aligned[2];
-                    tmp[3] = aligned[3];
-                    
-                    // Once we have the indices, check if there are combinations which are not physical
-                    if (is_integral_allowed(tmp[0], tmp[1], tmp[2], tmp[3], lat)) {
-                        idx_.push_back(tmp);
-                        matrix_elements.push_back(element);}
-                    //else {it++;}
-                }
-                else { it++; }*/
 
                 it += 4;
             }
@@ -306,27 +294,6 @@ namespace chem_detail {
         int reorder(int p) {
             return p >= 0 ? inv_order[p] : p;
         }
-
-        /*bool is_integral_allowed(int i, int j, int k, int l, Lattice const & lat) {
-            typename S::charge I(0), J(0), K(0), L(0), tmp(0);
-            typename S::charge charges[] = {I,J,K,L};
-            std::size_t site[] = {i, j, k, l};
-            for (int ii=0; ii<4; ++ii) {
-                charges[ii][2] = lat.get_prop<int>("irrep", site[ii]);
-                if (site[ii] < lat.size()) {charges[ii][0] = 1;}
-                else if (site[ii] >= lat.size()) {charges[ii][1] = 1;}
-                else {throw std::runtime_error("integrals parsing failed\n");}
-                if (ii%2 == 0) {
-                    tmp = S::fuse(tmp,charges[ii]);}
-                else if (ii%2 == 1) {
-                    tmp = S::fuse(tmp, -charges[ii]);}
-                //maquis::cout << "site: " << site[ii] << " charge: " << charges[ii] << std::endl;
-            }
-            maquis::cout << "(" << i << j << k << l << "): " << tmp << std::endl;
-            if (tmp[0] == 0 && tmp[1] == 0 &&  tmp[2] != 0) {return false;}
-            else {return true;}
-        }*/
-
 
         tag_type ident, fill;
         boost::shared_ptr<TagHandler<M, S> > tag_handler;

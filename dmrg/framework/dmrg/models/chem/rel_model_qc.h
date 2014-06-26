@@ -103,7 +103,8 @@ public:
             return fill_bar;
     }
 
-    bool is_term_allowed(int i, int j, int k, int l) {
+    bool is_term_allowed(int i, int j, int k, int l)
+    {
         typename SymmGroup::charge I(0), J(0), K(0), L(0), tmp(0);
         typename SymmGroup::charge charges[] = {I,J,K,L};
         std::size_t site[] = {i, j, k, l};
@@ -121,7 +122,7 @@ public:
         //maquis::cout << "(" << i << j << k << l << "): " << tmp << std::endl;
         if (tmp[0] == 0 && tmp[1] == 0 &&  tmp[2] != 0) {return false;}
         else {return true;}
-        }
+    }
 
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
