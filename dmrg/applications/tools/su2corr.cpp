@@ -205,8 +205,8 @@ int main(int argc, char ** argv)
         //for (int v10= -1; v10 < 2; ++v10) {
         //config[10]=v10;
 
-            matrix ratio = compute_ratio(mps, ref, site_irreps, config);
-            print_triang(ratio);
+            //matrix ratio = compute_ratio(mps, ref, site_irreps, config);
+            //print_triang(ratio);
 
             //std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
             //std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));
@@ -227,22 +227,25 @@ int main(int argc, char ** argv)
 
         //for (int v1=0; v1 < 2; ++v1) {
         //for (int v2=0; v2 < 2; ++v2) {
-        //for (int v3=0; v3 < 2; ++v3) {
-        //for (int v4=0; v4 < 2; ++v4) {
+        for (int v3=0; v3 < 8; ++v3) {
+        for (int v4=0; v4 < 4; ++v4) {
+        for (int v5=0; v5 < 4; ++v5) {
 
         std::vector<double> ref2 = generate_2rdm_ref();
         std::vector<double> result;
         for(int i=0; i < L-3; ++i)
         {
-            MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,0,0,0, site_irreps);
+            MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,v3,v4,v5, site_irreps);
             double twodm0123 = SU2::expval(mps, four, i+10,0, config);
             result.push_back(twodm0123 / ref2[i]);
         }
-        std::copy(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "));
+        //std::copy(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "));
+        std::transform(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / result[0]);
         std::cout << std::endl;
 
-        //}
-        //}
+        }
+        }
+        }
         //} 
         //}
 

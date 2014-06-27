@@ -229,7 +229,9 @@ namespace SU2 {
         ket_tensor.make_right_paired();
 
         MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(0,0);
+        MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> accessS1 = mpo.at(0,1);
         block_matrix<Matrix, SymmGroup> const & W = access.op;
+        block_matrix<Matrix, SymmGroup> const & WS1 = accessS1.op;
         //if(debug) maquis::cout << W << std::endl;
         block_matrix<OtherMatrix, SymmGroup> ret;
 
@@ -292,11 +294,12 @@ namespace SU2 {
                     double c1 = S1c(ip,i,j,jp,new_rc[0],lc[0]);
 
                     double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                    coupling_coeff *= access.scale * W[w_block](0,0);
                     coupling_coeff *= pow(ip+1., 0.5) * pow(j+1., 0.5);
                     coupling_coeff *= pow(i+1., -0.5) * pow(jp+1., -0.5);
-
-                    if(a == 2 && ap == 1) coupling_coeff *= sqrt(3);
+                    if (std::abs(ip-jp) == 2 || std::abs(i-j) == 2)
+                        coupling_coeff *= accessS1.scale * WS1[w_block](0,0);
+                    else
+                        coupling_coeff *= access.scale * W[w_block](0,0);
 
                     if (debug) {
                         std::cout << j << "," << two_s << "," << jp << " | " << a << "," << k << "," << ap << " | "
@@ -397,7 +400,7 @@ namespace SU2 {
                   int p1, int p2, std::vector<int> config)
     {
         bool debug = false;
-        if (p1 == 10 && p2 == 0) debug = true;
+        if (p1 == 11 && p2 == 0) debug = false;
 
         assert(mpo.length() == mps.length());
         std::size_t L = mps.length();

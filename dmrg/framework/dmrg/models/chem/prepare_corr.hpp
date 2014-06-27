@@ -222,42 +222,54 @@ namespace SU2 {
             destroyS1.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
 
             // SITE 2 - create
-            block_matrix<Matrix, SymmGroup> create1;
-            create1.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
-            create1.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
-            create1.insert_block(Matrix(1,1,1), D, B);
-            create1.insert_block(Matrix(1,1,1), D, C);
+            block_matrix<Matrix, SymmGroup> create1m1;
+            create1m1.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
+            create1m1.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create1m1.insert_block(Matrix(1,1,1), D, B);
+            create1m1.insert_block(Matrix(1,1,1), D, C);
 
-            block_matrix<Matrix, SymmGroup> create1m;
-            create1m.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
-            create1m.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
-            create1m.insert_block(Matrix(1,1,-1), D, B);
-            create1m.insert_block(Matrix(1,1,1), D, C);
+            block_matrix<Matrix, SymmGroup> create1m2;
+            create1m2.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
+            create1m2.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create1m2.insert_block(Matrix(1,1,-1), D, B);
+            create1m2.insert_block(Matrix(1,1,1), D, C);
 
-            block_matrix<Matrix, SymmGroup> createS1;
-            createS1.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
-            createS1.insert_block(Matrix(1,1,-sqrt(2.)), C, A);      
-            createS1.insert_block(Matrix(1,1,1), D, B);
-            createS1.insert_block(Matrix(1,1,1), D, C);
+            block_matrix<Matrix, SymmGroup> create1m3;
+            create1m3.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
+            create1m3.insert_block(Matrix(1,1,-sqrt(2.)), C, A);      
+            create1m3.insert_block(Matrix(1,1,1), D, B);
+            create1m3.insert_block(Matrix(1,1,1), D, C);
+
+            block_matrix<Matrix, SymmGroup> create1m4;
+            create1m4.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
+            create1m4.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create1m4.insert_block(Matrix(1,1,1), D, B);
+            create1m4.insert_block(Matrix(1,1,-1), D, C);
 
             // SITE 3 - create
-            block_matrix<Matrix, SymmGroup> create2;
-            create2.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
-            create2.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
-            create2.insert_block(Matrix(1,1,1), D, B);
-            create2.insert_block(Matrix(1,1,1), D, C);
-
-            block_matrix<Matrix, SymmGroup> create2m;
-            create2m.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
-            create2m.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
-            create2m.insert_block(Matrix(1,1,-1), D, B);
-            create2m.insert_block(Matrix(1,1,1), D, C);
+            block_matrix<Matrix, SymmGroup> create2m1;
+            create2m1.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
+            create2m1.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create2m1.insert_block(Matrix(1,1,1), D, B);
+            create2m1.insert_block(Matrix(1,1,1), D, C);
 
             block_matrix<Matrix, SymmGroup> create2m2;
             create2m2.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
-            create2m2.insert_block(Matrix(1,1,-sqrt(2.)), C, A);      
-            create2m2.insert_block(Matrix(1,1,1), D, B);
+            create2m2.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create2m2.insert_block(Matrix(1,1,-1), D, B);
             create2m2.insert_block(Matrix(1,1,1), D, C);
+
+            block_matrix<Matrix, SymmGroup> create2m3;
+            create2m3.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
+            create2m3.insert_block(Matrix(1,1,-sqrt(2.)), C, A);      
+            create2m3.insert_block(Matrix(1,1,1), D, B);
+            create2m3.insert_block(Matrix(1,1,1), D, C);
+
+            block_matrix<Matrix, SymmGroup> create2m4;
+            create2m4.insert_block(Matrix(1,1,-sqrt(2.)), B, A);      
+            create2m4.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
+            create2m4.insert_block(Matrix(1,1,1), D, B);
+            create2m4.insert_block(Matrix(1,1,-1), D, C);
 
             //tag_type ident = tag_handler->register_op(identity, tag_detail::bosonic);
             MPOTensor<Matrix, SymmGroup> op(1,2);
@@ -267,44 +279,55 @@ namespace SU2 {
                 op.set(0,1,identity, 1.0);
             }
             else if (p == j){
-                op.set(0,0,(m2) ? destroy2m : destroy2, 1.0);
-                double scale = 1.0;
-                op.set(0,1, destroyS1, scale);
+                double scale1 = sqrt(2.);
+                op.set(0,0,(m2) ? destroy2m : destroy2,scale1);
+                double scale2 = 1.0;
+                op.set(0,1, destroyS1, scale2);
             }
             else if (p == k) {
-                int phase = (m3 > 2) ? -1 : 1;
-                switch(m3%3) {
+                int phase = (m3 > 3) ? -1 : 1;
+                double scale1 = phase * 1.0;
+                switch(m3%4) {
                     case 0:
-                        op.set(0,0,create1, phase);
+                        op.set(0,0,create1m1, scale1);
                         break;
                     case 1:
-                        op.set(0,0,create1m, phase);
+                        op.set(0,0,create1m2, scale1);
                         break;
                     case 2:
-                        op.set(0,0,createS1, phase);
+                        op.set(0,0,create1m3, scale1);
+                        break;
+                    case 3:
+                        op.set(0,0,create1m4, scale1);
                 }
-                double scale = 1.0;
+                double scale2 = sqrt(3.);
                 switch(m4) {
                     case 0:
-                        op.set(0,1, create1, scale);
+                        op.set(0,1, create1m1, scale2);
                         break;
                     case 1:
-                        op.set(0,1, create1m, scale);
+                        op.set(0,1, create1m2, scale2);
                         break;
                     case 2:
-                        op.set(0,1, createS1, scale);
+                        op.set(0,1, create1m3, scale2);
+                        break;
+                    case 3:
+                        op.set(0,1, create1m4, scale2);
                 }
             }
             else if (p == l) {
                 switch(m5) {
                     case 0:
-                        op.set(0,0,create2, 1.0);
+                        op.set(0,0,create2m1, 1.0);
                         break;
                     case 1:
-                        op.set(0,0,create2m, 1.0);
+                        op.set(0,0,create2m2, 1.0);
                         break;
                     case 2:
-                        op.set(0,0,create2m2, 1.0);
+                        op.set(0,0,create2m3, 1.0);
+                        break;
+                    case 3:
+                        op.set(0,0, create2m4, 1.0);
                 }
 
                 op.set(0,1,identity, 1.0);
