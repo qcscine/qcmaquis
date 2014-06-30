@@ -400,7 +400,7 @@ namespace SU2 {
                   int p1, int p2, std::vector<int> config)
     {
         bool debug = false;
-        if (p1 == 11 && p2 == 0) debug = false;
+        if (p1 == 12 && p2 == 0) debug = false;
 
         assert(mpo.length() == mps.length());
         std::size_t L = mps.length();
