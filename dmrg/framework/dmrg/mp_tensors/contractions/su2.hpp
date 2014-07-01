@@ -21,10 +21,63 @@ namespace SU2 {
                         int two_jg, int two_jh, int two_ji)
     {
         return sqrt( (two_jg+1.) * (two_jh+1.) * (two_jc+1.) * (two_jf+1.) )
-        //return 1.0
                 * gsl_sf_coupling_9j(two_ja, two_jb, two_jc,
                                      two_jd, two_je, two_jf,
                                      two_jg, two_jh, two_ji);
+    }
+
+    double L_destroy(int jR, int jRt, int local_spin) {
+        // jR = bra right spin, jRt = ket right spin
+
+        double ret = 1.;
+        if (local_spin == 0) {
+            ret = std::sqrt( (jR + 1.) / (jRt + 1.));
+            int phase = (jRt - jR + 1)/2;
+            for (int p_= 0; p_ < phase; ++p_) ret *= -1.;
+        }
+        return ret;
+    }
+
+    double F0_create(int jR, int jLt, int local_spin, int spin_out) {
+        // jR = bra..
+        double ret;
+        if(local_spin == 0) {
+            ret = 1./sqrt(2.);
+        }
+        else {
+            ret = std::sqrt( (jLt + 1.) / (jR + 1.));
+            ret *= 1./sqrt(2.);
+            int phase = (jR - jLt + 1)/2;
+            for (int p_= 0; p_ < phase; ++p_) ret *= -1.;
+        }
+        return ret;
+    }
+
+    double S0c(int S1, int SLU, int SLD, int SD, int NU, int NLU) {
+        //std::swap(SLU,SLD);
+        //std::swap(S1,SD);
+        if (NU-NLU == 0) {
+            int fase = ((((S1 - SLD + 1)/2)%2)!=0)?-1:1;
+            return fase * sqrt(0.5 * (SLD+1.0) / (S1+1.0) );
+        }
+        else {
+            if (NU-NLU != 1) return 9999;
+            return -sqrt(0.5);
+        }
+    }
+
+    double S1c(int S1, int SLU, int SLD, int SD, int NU, int NLU) {
+        //std::swap(SLU,SLD);
+        //std::swap(S1,SD);
+        if (NU-NLU == 0) {
+            int fase = ((((S1 + SD + 2)/2)%2)!=0)?-1:1;
+            return fase * sqrt(3.0*(SLD+1)) * gsl_sf_coupling_6j(1,1,2,S1,SD,SLD);
+        }
+        else {
+            if (NU-NLU != 1) return 9999;
+            int fase = ((((SLU + SD + 1)/2)%2)!=0)?-1:1;
+            return fase * sqrt(3.0*(S1+1)) * gsl_sf_coupling_6j(1,1,2,S1,SD,SLU);
+        }
     }
 
     template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
@@ -151,60 +204,6 @@ namespace SU2 {
         return (count == 1);
     }
 
-    double L_destroy(int jR, int jRt, int local_spin) {
-        // jR = bra right spin, jRt = ket right spin
-
-        double ret = 1.;
-        if (local_spin == 0) {
-            ret = std::sqrt( (jR + 1.) / (jRt + 1.));
-            int phase = (jRt - jR + 1)/2;
-            for (int p_= 0; p_ < phase; ++p_) ret *= -1.;
-        }
-        return ret;
-    }
-
-    double F0_create(int jR, int jLt, int local_spin, int spin_out) {
-        // jR = bra..
-        double ret;
-        if(local_spin == 0) {
-            ret = 1./sqrt(2.);
-        }
-        else {
-            ret = std::sqrt( (jLt + 1.) / (jR + 1.));
-            ret *= 1./sqrt(2.);
-            int phase = (jR - jLt + 1)/2;
-            for (int p_= 0; p_ < phase; ++p_) ret *= -1.;
-        }
-        return ret;
-    }
-
-    double S0c(int S1, int SLU, int SLD, int SD, int NU, int NLU) {
-        //std::swap(SLU,SLD);
-        //std::swap(S1,SD);
-        if (NU-NLU == 0) {
-            int fase = ((((S1 - SLD + 1)/2)%2)!=0)?-1:1;
-            return fase * sqrt(0.5 * (SLD+1.0) / (S1+1.0) );
-        }
-        else {
-            if (NU-NLU != 1) return 9999;
-            return -sqrt(0.5);
-        }
-    }
-
-    double S1c(int S1, int SLU, int SLD, int SD, int NU, int NLU) {
-        //std::swap(SLU,SLD);
-        //std::swap(S1,SD);
-        if (NU-NLU == 0) {
-            int fase = ((((S1 + SD + 2)/2)%2)!=0)?-1:1;
-            return fase * sqrt(3.0*(SLD+1)) * gsl_sf_coupling_6j(1,1,2,S1,SD,SLD);
-        }
-        else {
-            if (NU-NLU != 1) return 9999;
-            int fase = ((((SLU + SD + 1)/2)%2)!=0)?-1:1;
-            return fase * sqrt(3.0*(S1+1)) * gsl_sf_coupling_6j(1,1,2,S1,SD,SLU);
-        }
-    }
-
     template <typename T> int sgn(T val) {
         return (T(0) < val) - (val < T(0));
     }
@@ -289,8 +288,8 @@ namespace SU2 {
                     if (ap != std::abs(ip-jp)) continue;
                     if (ap >= 3) continue;
 
-                    double c0 = S0c(ip,i,j,jp,new_rc[0],lc[0]);
-                    double c1 = S1c(ip,i,j,jp,new_rc[0],lc[0]);
+                    double c0 = ::SU2::S0c(ip,i,j,jp,new_rc[0],lc[0]);
+                    double c1 = ::SU2::S1c(ip,i,j,jp,new_rc[0],lc[0]);
 
                     double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                     coupling_coeff *= pow(ip+1., 0.5) * pow(j+1., 0.5);
