@@ -181,81 +181,39 @@ int main(int argc, char ** argv)
         //    maquis::cout <<  n << std::endl;
         //}
 
-        //for (int v0=-1; v0 < 2; ++v0) {
-        //config[0]=v0;
 
-        //for (int v1=-1; v1 < 2; ++v1) {
-        //config[1]=v1;
+        matrix ratio = compute_ratio(mps, ref, site_irreps, config);
+        print_triang(ratio);
 
-        //for (int v2=-1; v2 < 2; ++v2) {
-        //config[2]=v2;
-
-        //for (int v3=-1; v3 < 2; ++v3) {
-        //config[3]=v3;
-
-        //for (int v4= 0; v4 < 2; ++v4) {
-        //config[4]=v4;
-
-        //for (int v5= 0; v5 < 2; ++v5) {
-        //config[5]=v5;
-
-        //for (int v6= -1; v6 < 2; ++v6) {
-        //config[6]=v6;
-
-        //for (int v7= -1; v7 < 2; ++v7) {
-        //config[7]=v7;
-
-        //for (int v8= -1; v8 < 2; ++v8) {
-        //config[8]=v8;
-
-        //for (int v9= -1; v9 < 2; ++v9) {
-        //config[9]=v9;
-
-        //for (int v10= -1; v10 < 2; ++v10) {
-        //config[10]=v10;
-
-            //matrix ratio = compute_ratio(mps, ref, site_irreps, config);
-            //print_triang(ratio);
-
-            //std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
-            //std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));
-            //std::transform(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / od[0]);
-            //cout << endl;
-        //  std::cout << "    " << v0 << v1 << v2 << v3 << v4 << v5 << v6 << v7 << v8 << v9 << v10 << std::endl;
-        //}
-        //}
-        //}
-        //}
-        //}
-        //}
-        //}
-        //}
-        //}
-        //}
-        //}
+        //std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
+        //std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));
+        //std::transform(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / od[0]);
+        //cout << endl;
 
         //for (int v1=0; v1 < 2; ++v1) {
         //for (int v2=0; v2 < 2; ++v2) {
-        for (int v3=0; v3 < 8; ++v3) {
-        for (int v4=0; v4 < 4; ++v4) {
-        for (int v5=0; v5 < 4; ++v5) {
 
-        std::vector<double> ref2 = generate_2rdm_ref();
-        std::vector<double> result;
-        for(int i=0; i < L-3; ++i)
-        {
-            MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,v3,v4,v5, site_irreps);
-            //MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,0,0,0, site_irreps);
-            double twodm0123 = SU2::expval(mps, four, i+10,0, config);
-            result.push_back(twodm0123 / ref2[i]);
-        }
-        //std::copy(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "));
-        std::transform(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / result[0]);
-        std::cout << std::endl;
+        //for (int v3=0; v3 < 8; ++v3) {
+        //for (int v4=0; v4 < 4; ++v4) {
+        //for (int v5=0; v5 < 4; ++v5) {
 
-        }
-        }
-        }
+        //std::vector<double> ref2 = generate_2rdm_ref();
+        //std::vector<double> result;
+        //for(int i=0; i < L-3; ++i)
+        //{
+        //    MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,v3,v4,v5, site_irreps);
+        //    //MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,0,0,0, site_irreps);
+        //    double twodm0123 = SU2::expval(mps, four, i+10,0, config);
+        //    result.push_back(twodm0123 / ref2[i]);
+        //}
+        ////std::copy(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "));
+        //std::transform(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / result[0]);
+        //std::cout << std::endl;
+
+        //}
+        //}
+        //}
+
         //} 
         //}
 
