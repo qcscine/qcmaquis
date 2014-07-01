@@ -89,12 +89,21 @@ std::vector<double> generate_2rdm_ref()
 {
     // reference for <cdag_i cdag_i+1 c_i+2 c_i+3>
     std::vector<double> ret;
-    ret.push_back(0.0057801190338182);      //0123
-    ret.push_back(0.000504560118115581);    //1234
-    ret.push_back(3.94702812535319e-05);    //2345
-    ret.push_back(0);                       //3456
-    ret.push_back(0.000110219364671496);    //4567
-    ret.push_back(0);                       //5678
+    //ret.push_back(0.0057801190338182);      //0123
+    //ret.push_back(0.000504560118115581);    //1234
+    //ret.push_back(3.94702812535319e-05);    //2345
+    //ret.push_back(0);                       //3456
+    //ret.push_back(0.000110219364671496);    //4567
+    //ret.push_back(0);                       //5678
+
+    // reference from Maquis
+    ret.push_back(-8.623925e-03);  //0123
+    ret.push_back(2.521896e-04);   //1234
+    ret.push_back(1.085327e-06);   //2345
+    ret.push_back(0);              //3456
+    ret.push_back(-5.364513e-04);  //4567
+    ret.push_back(0);              //5678
+
     return ret;
 }
 
