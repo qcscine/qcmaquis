@@ -272,7 +272,7 @@ namespace SU2 {
             create2m4.insert_block(Matrix(1,1,-1), D, C);
 
             block_matrix<Matrix, SymmGroup> cmod;
-            cmod.insert_block(Matrix(1,1, sqrt(3.)/sqrt(2.)), A, A);
+            cmod.insert_block(Matrix(1,1,1), A, A);
             cmod.insert_block(Matrix(1,1,1), B, B);
             cmod.insert_block(Matrix(1,1,1), C, C);
             cmod.insert_block(Matrix(1,1,1), D, D);
@@ -288,9 +288,9 @@ namespace SU2 {
                 op.set(0,1,identity, 1.0);
             }
             else if (p == j){
-                double scale1 = sqrt(2.0);
-                op.set(0,0,(m2) ? destroy2m : destroy2,scale1);
-                double scale2 = sqrt(3.0);
+                double scale1 = sqrt(2.);
+                op.set(0,0,(m2) ? destroy2m : destroy2, scale1);
+                double scale2 = 1.;
                 op.set(0,1, destroyS1, scale2);
             }
             else if (p == k) {
@@ -313,23 +313,23 @@ namespace SU2 {
                 switch(m4) {
                     case 0:
                         SU2::gemm(create1m1,cmod,tmp);
-                        op.set(0,1, tmp, scale2);
-                        //op.set(0,1, create1m1, scale2);
+                        //op.set(0,1, tmp, scale2);
+                        op.set(0,1, create1m1, scale2);
                         break;
                     case 1:
                         SU2::gemm(create1m2,cmod,tmp);
-                        op.set(0,1, tmp, scale2);
-                        //op.set(0,1, create1m2, scale2);
+                        //op.set(0,1, tmp, scale2);
+                        op.set(0,1, create1m2, scale2);
                         break;
                     case 2:
                         SU2::gemm(create1m3,cmod,tmp);
-                        op.set(0,1, tmp, scale2);
-                        //op.set(0,1, create1m3, scale2);
+                        //op.set(0,1, tmp, scale2);
+                        op.set(0,1, create1m3, scale2);
                         break;
                     case 3:
                         SU2::gemm(create1m4,cmod,tmp);
-                        op.set(0,1, tmp, scale2);
-                        //op.set(0,1, create1m4, scale2);
+                        //op.set(0,1, tmp, scale2);
+                        op.set(0,1, create1m4, scale2);
                 }
             }
             else if (p == l) {
