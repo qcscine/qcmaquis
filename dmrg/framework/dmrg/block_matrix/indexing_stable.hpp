@@ -360,7 +360,7 @@ public:
         assert(size_.count(pc) > 0);
         return size_[pc];
     }
-    
+
     // for the moment let's avoid the default template argument (C++11)
     inline size_t size(charge a, charge b) const
     {

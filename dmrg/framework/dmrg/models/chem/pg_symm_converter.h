@@ -43,7 +43,7 @@ template <class Matrix, class SymmGroup>
 class PGSymmetryConverter
 {
 public:
-    PGSymmetryConverter(std::vector<int> const & site_irreps_) {}
+    PGSymmetryConverter(Lattice const & lat) {}
     void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in) {}
 private:
 };
@@ -52,7 +52,7 @@ template <class Matrix>
 class PGSymmetryConverter<Matrix, TwoU1PG>
 {
 public:
-    PGSymmetryConverter(std::vector<int> const & site_irreps_) : impl_(site_irreps_) {}
+    PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
     void convert_tags_to_symm_tags(MPO<Matrix, TwoU1PG> & mpo_in)
     {
         impl_.convert_tags_to_symm_tags(mpo_in);
@@ -65,7 +65,7 @@ template <class Matrix>
 class PGSymmetryConverter<Matrix, TwoU1LPG>
 {
 public:
-    PGSymmetryConverter(std::vector<int> const & site_irreps_) : impl_(site_irreps_) {}
+    PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
     void convert_tags_to_symm_tags(MPO<Matrix, TwoU1LPG> & mpo_in)
     {
         impl_.convert_tags_to_symm_tags(mpo_in);
@@ -83,11 +83,18 @@ class PGSymmetryConverter_impl_
 
     typedef tag_detail::tag_type tag_type;
     typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+    typedef Lattice::pos_t pos_t;
 
 public:
-    PGSymmetryConverter_impl_(std::vector<subcharge> const & site_irreps_)
-        : site_irreps(site_irreps_)
+    PGSymmetryConverter_impl_(Lattice const & lat)
+        : site_irreps(lat.size())
     {
+        for (pos_t p = 0; p < lat.size(); ++p)
+            site_irreps[p] = lat.get_prop<int>("irrep", p);
+
+        std::cout << "site irreps are: ";
+        std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<subcharge>(std::cout, " "));
+        std::cout << std::endl;
         // collect all irreducible representations in a set
         std::set<subcharge> irrep_set;
         for(typename std::vector<subcharge>::const_iterator it=site_irreps.begin(); it != site_irreps.end(); ++it)
@@ -102,6 +109,7 @@ public:
     {
 
         alps::numeric::matrix<subcharge> translation_table;
+        alps::numeric::matrix<typename Matrix::value_type> translation_table_coeff;
 
         /*** Set up a new OPTable for the symmetry-enabled operators via TagHandler ****/
         // TODO: assert that op_table is valid for all tensors in the MPO!
@@ -111,9 +119,10 @@ public:
 
         subcharge highest_irrep = *std::max_element(irrep_vector.begin(), irrep_vector.end());
         translation_table.resize(op_table->size(), highest_irrep+1); 
+        translation_table_coeff.resize(op_table->size(), highest_irrep+1); 
 
         /*** Create the tag translation table ****/
-        PGDecorator<SymmGroup> set_symm;
+        //PGDecorator<SymmGroup> set_symm;
         for (std::size_t i = 0; i < op_table->size(); ++i)
         {
             op_t base_op = (*op_table)[i];
@@ -125,6 +134,7 @@ public:
 
                 std::pair<tag_type, typename Matrix::value_type> symm_tag = symm_handler.checked_register(modified, tag_detail::bosonic);
                 translation_table(i, *it) = symm_tag.first;
+                translation_table_coeff(i, *it) = symm_tag.second;
             }
         }
 
@@ -147,10 +157,11 @@ public:
                     typename MPOTensor<Matrix, SymmGroup>::internal_value_type access = mpo_in[i].col_tags(b1, b2);
                     tag_type base_tag = access.first;
                     tag_type symm_tag = translation_table(base_tag, site_irreps[i]);
+                    typename Matrix::value_type coeff = translation_table_coeff(base_tag, site_irreps[i]);
 
                     // replace 'base_tag' with a tag corresponding to the same operator, but with the symmetry
                     // irreducible representation of site 'i', which is site_irreps[i]
-                    mpo_in[i].col_tags(b1, b2) = typename MPOTensor<Matrix, SymmGroup>::internal_value_type(symm_tag, access.second);
+                    mpo_in[i].col_tags(b1, b2) = typename MPOTensor<Matrix, SymmGroup>::internal_value_type(symm_tag, access.second * coeff);
                 }
             }
         }

@@ -141,8 +141,8 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
         #ifdef MAQUIS_OPENMP
         #pragma omp critical
         #endif
-        maquis::cout << "TSMPOTensor: " << mpo1.row_dim() << "x" << mpo2.col_dim() << ",  " << prempo.size() 
-                     << " operators, " << kron_handler.get_kronecker_table()->size() << " tags\n";
+        //maquis::cout << "TSMPOTensor: " << mpo1.row_dim() << "x" << mpo2.col_dim() << ",  " << prempo.size() 
+        //             << " operators, " << kron_handler.get_kronecker_table()->size() << " tags\n";
 
         using boost::tuples::get;
         MPOTensor<MPSMatrix, SymmGroup> mpo_big_tag(mpo1.row_dim(), mpo2.col_dim(), prempo, kron_handler.get_kronecker_table());

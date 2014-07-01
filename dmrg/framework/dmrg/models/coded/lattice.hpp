@@ -218,6 +218,8 @@ public:
             return boost::any( bond_label(pos[0], pos[1]) );
         else if (property == "type" && pos.size() == 1)
             return boost::any( irreps[pos[0]] );
+        else if (property == "irrep" && pos.size() == 1)
+            return boost::any( irreps[pos[0]] );
         else if (property == "type" && pos.size() == 2)
             return boost::any( 0 );
         else {

@@ -26,6 +26,7 @@
 
 #include "dmrg/models/chem/model_qc.h"
 
+
 template<class Matrix>
 struct coded_model_factory<Matrix, TwoU1PG> {
     static boost::shared_ptr<model_impl<Matrix, TwoU1PG> > parse
@@ -38,7 +39,7 @@ struct coded_model_factory<Matrix, TwoU1PG> {
 
             return impl_ptr( new qc_model<Matrix, TwoU1PG>(lattice, parms) );
         }
-
+        
         else {
             throw std::runtime_error("Don't know this model!\n");
             return impl_ptr();

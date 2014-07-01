@@ -82,7 +82,8 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     
     typename SymmGroup::charge cmaxi=maximum_total_charge, cmini=minimum_total_charge;
     for (int i = 1; i < L+1; ++i) {
-        left_allowed[i] = set_irrep(phys_dims[site_type[i-1]], irreps[i-1]) * left_allowed[i-1];
+        left_allowed[i] = phys_dims[site_type[i-1]] * left_allowed[i-1];
+        
         typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
         while ( it != left_allowed[i].end() )
         {
@@ -97,11 +98,20 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
         }
         cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i-1]]);
         cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i-1]]);
+        
+
     }
     
+    //----- Print left allowed terms -----//
+    //std::cout << std::endl;
+    //for (int j = 0; j < L+1; ++j) {
+    //    std::cout << "Left allowed terms for site " << j << ":" << std::endl;
+    //    std::cout << left_allowed[j] << std::endl;
+    //}
+
     cmaxi=maximum_total_charge; cmini=minimum_total_charge;
     for (int i = L-1; i >= 0; --i) {
-        right_allowed[i] = adjoin(set_irrep(phys_dims[site_type[i]], irreps[i])) * right_allowed[i+1];
+        right_allowed[i] = adjoin(phys_dims[site_type[i]]) * right_allowed[i+1];
         
         typename Index<SymmGroup>::iterator it = right_allowed[i].begin();
         while ( it != right_allowed[i].end() )
@@ -120,8 +130,19 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
         
     }
     
+    //----- Print right allowed terms -----//
+    //std::cout << std::endl;
+    //for (int j = 0; j < L+1; ++j) {
+    //    std::cout << "Right allowed terms for site " << j << ":" << std::endl;
+    //    std::cout << right_allowed[j] << std::endl;
+    //}
+    //std::cout << std::endl;
+    
+
     for (int i = 0; i < L+1; ++i) {
         allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
+        //std::cout << "allowed at site " << i <<  std::endl;
+        //std::cout << allowed[i] << std::endl;
         for (typename Index<SymmGroup>::iterator it = allowed[i].begin();
              it != allowed[i].end(); ++it)
             it->second = tri_min(Mmax,
