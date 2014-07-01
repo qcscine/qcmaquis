@@ -102,10 +102,6 @@ namespace SU2 {
             for (const_iterator it = er.first; it != er.second; ++it)
             {
                 std::size_t matched_block = std::distance(BBbegin, it);
-                //assert(matched_block == B.left_basis().position(A.right_basis_charge(k)));
-                //std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
-                //                                   A.left_basis_charge(k), B.right_basis_charge(matched_block));
-                //gemm(A[k], B[matched_block], C[new_block]);
                 Matrix3 tmp(num_rows(A[k]), num_cols(B[matched_block]));
                 gemm(A[k], B[matched_block], tmp);
                 C.match_and_add_block(tmp, A.left_basis_charge(k), B.right_basis_charge(matched_block));
@@ -345,6 +341,26 @@ namespace SU2 {
             }
         }
         if(debug) maquis::cout << std::endl;
+        return ret;
+    }
+
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    std::vector<block_matrix<OtherMatrix, SymmGroup> >
+    boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
+                       Boundary<OtherMatrix, SymmGroup> const & left,
+                       MPOTensor<Matrix, SymmGroup> const & mpo)
+    {
+        std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(left.aux_dim());
+        int loop_max = left.aux_dim();
+        {
+            select_scope(storage::scope_t::common);
+            mps.make_right_paired();
+            storage::hint(mps);
+        }
+        parallel_for(int b1, range(0,loop_max), {
+            select_scope(ambient::scope::permute(b1, mpo.placement_l));
+            ::SU2::gemm(transpose(left[b1]), mps.data(), ret[b1]);
+        });
         return ret;
     }
 
