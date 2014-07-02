@@ -243,22 +243,24 @@ namespace SU2 {
 
         for (std::size_t k = 0; k < left.n_blocks(); ++k) {
 
+            charge lc = left.left_basis_charge(k);
+            charge mc = left.right_basis_charge(k);
+
             std::pair<const_iterator, const_iterator>
               er = std::equal_range(ket_tensor.data().basis().begin(), ket_tensor.data().basis().end(),
-                boost::make_tuple(left.right_basis_charge(k), SymmGroup::IdentityCharge, 0, 0),
-                  dual_index_detail::gt_row<SymmGroup>());
+                boost::make_tuple(mc, SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
 
+            assert(er.first + 1 == er.second);
             for (const_iterator it = er.first; it != er.second; ++it)
             {
                 std::size_t matched_block = std::distance(ket_tensor.data().basis().begin(), it);
                 //Matrix T_block(num_rows(left[k]), num_cols(ket_tensor[matched_block]));
                 //gemm(A[k], B[matched_block], T_block);
-                charge lc = left.left_basis_charge(k);
-                charge mc = left.right_basis_charge(k);
                 charge rc = ket_tensor.data().right_basis_charge(matched_block);
                 charge mc1 = ket_tensor.data().left_basis_charge(matched_block);
                 assert (mc == mc1);
                 size_t t_pos = t1.basis().position(lc, rc);
+                assert(t_pos == k);
 
                 for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                 {
@@ -301,6 +303,7 @@ namespace SU2 {
                                   << std::right << std::setw(8) << "cc: " << std::setw(12) << coupling_coeff //<< std::endl;
                                   << std::setw(12) << ((std::abs(ip-jp) == 0) ? c0 : c1) << std::endl;
                     }
+                    //coupling_coeff = access.scale * W[w_block](0,0);
 
                     // T Access
                     //if (debug && std::abs(new_rc[1]-free_rc[1]) && a==1)
@@ -418,14 +421,16 @@ namespace SU2 {
         assert(mpo.length() == mps.length());
         std::size_t L = mps.length();
         Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+        block_matrix<Matrix, SymmGroup> left_bm = mps.left_boundary()[0];
 
         for(size_t i = 0; i < L; ++i) {
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
-            //left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
+            left_bm = contraction::SU2::apply_operator(cpy, mps[i], left_bm, mpo[i], config, debug);
             left = contraction::SU2::overlap_mpo_left_step(cpy, mps[i], left, mpo[i]);
         }
 
-        return maquis::real(left[0].trace());
+        return maquis::real(left_bm.trace());
+        //return maquis::real(left[0].trace());
     }
 
 } // namespace SU2
