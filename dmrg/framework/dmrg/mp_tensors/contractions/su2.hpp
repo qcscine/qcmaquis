@@ -140,41 +140,40 @@ namespace SU2 {
             if (T.n_blocks() == 0) continue;
             MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
             block_matrix<Matrix, SymmGroup> const & W = access.op;
-            if (W.n_blocks() == 0) continue;
 
-            // charge deltas are constant for all blocks
-            charge operator_delta = SymmGroup::fuse(W.right_basis_charge(0), -W.left_basis_charge(0));
-            charge        T_delta = SymmGroup::fuse(T.right_basis_charge(0), -T.left_basis_charge(0));
-            charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+            charge T_delta = SymmGroup::fuse(T.right_basis_charge(0), -T.left_basis_charge(0));
 
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
             for (size_t r = 0; r < right_i.size(); ++r)
             {
                 charge out_r_charge = right_i[r].first;
-                charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);
                 size_t r_size = right_i[r].second;
-
-                if (!out_left_i.has(out_l_charge)) continue;
-
-                size_t o = ret.find_block(out_l_charge, out_r_charge);
-                if ( o == ret.n_blocks() ) {
-                    o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
-                    ret.resize_block(out_l_charge, out_r_charge, out_left_i.size_of_block(out_l_charge), r_size);
-                }
 
                 for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
                 {
-                    charge phys_c1 = W.left_basis_charge(w_block);
-                    charge phys_c2 = W.right_basis_charge(w_block);
+                    charge phys_in = W.left_basis_charge(w_block);
+                    charge phys_out = W.right_basis_charge(w_block);
+                    // deltas are not constant among blocks of W
+                    charge operator_delta = SymmGroup::fuse(phys_out, -phys_in);
+                    charge total_delta = SymmGroup::fuse(operator_delta, -T_delta);
 
-                    charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_c1);
+                    charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);
+                    if (!out_left_i.has(out_l_charge)) continue;
+
+                    size_t o = ret.find_block(out_l_charge, out_r_charge);
+                    if ( o == ret.n_blocks() ) {
+                        o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
+                        ret.resize_block(out_l_charge, out_r_charge, out_left_i.size_of_block(out_l_charge), r_size);
+                    }
+
+                    charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_in);
                     charge in_l_charge = SymmGroup::fuse(in_r_charge, -T_delta);
                     size_t t_block = T.basis().position(in_l_charge, in_r_charge);
                     if (t_block == T.n_blocks()) continue;
 
-                    size_t in_right_offset = in_right_pb(phys_c1, out_r_charge);
-                    size_t out_left_offset = out_left_pb(phys_c2, in_l_charge);
+                    size_t in_right_offset = in_right_pb(phys_in, out_r_charge);
+                    size_t out_left_offset = out_left_pb(phys_out, in_l_charge);
 
                     size_t phys_s1 = W.left_basis_size(w_block);
                     size_t phys_s2 = W.right_basis_size(w_block);
@@ -422,7 +421,8 @@ namespace SU2 {
 
         for(size_t i = 0; i < L; ++i) {
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
-            left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
+            //left[0] = contraction::SU2::apply_operator(cpy, mps[i], left[0], mpo[i], config, debug);
+            left = contraction::SU2::overlap_mpo_left_step(cpy, mps[i], left, mpo[i]);
         }
 
         return maquis::real(left[0].trace());
