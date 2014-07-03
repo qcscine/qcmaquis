@@ -198,6 +198,7 @@ namespace SU2 {
                      Index<SymmGroup> const & physical_i,
                      Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_left_i,
+                     Index<SymmGroup> const & bra_col_basis,
                      ProductBasis<SymmGroup> const & in_right_pb,
                      ProductBasis<SymmGroup> const & out_left_pb)
     {
@@ -234,7 +235,11 @@ namespace SU2 {
                     if (!right_i.has(out_r_charge)) continue;
 
                     charge out_l_charge = SymmGroup::fuse(lc, phys_out);
-                    if (!out_left_i.has(out_l_charge)) continue;
+                    if (!bra_col_basis.has(out_l_charge) || !out_left_i.has(out_l_charge)) continue;
+
+                    maquis::cout << out_left_i << std::endl;
+                    maquis::cout << "access " << mc << " + " << phys_in<< "|" << out_r_charge << " -- "
+                                 << lc << " + " << phys_out << "|" << out_l_charge << std::endl;
 
                     size_t r_size = right_i.size_of_block(out_r_charge);
 
@@ -259,9 +264,6 @@ namespace SU2 {
                         coupling_coeff *= pow(i+1., -0.5) * pow(jp+1., -0.5);
                         coupling_coeff *= access.scale;
 
-                        // T Access
-                        //maquis::cout << "access " << mc << " + " << phys_in<< "|" << out_r_charge << " -- "
-                        //             << lc << " + " << phys_out << "|" << new_rc << std::endl;
                         size_t phys_s1 = W.left_basis_size(w_block);
                         size_t phys_s2 = W.right_basis_size(w_block);
                         size_t in_right_offset = in_right_pb(phys_in, out_r_charge);
@@ -488,8 +490,9 @@ namespace SU2 {
 
         omp_for(index_type b2, range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-            //maquis::cout << t[b2] << std::endl;
-            contraction::SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
+            //contraction::SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
+            contraction::SU2::lbtm_kernel_new(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, bra_tensor.col_dim(),
+                                              out_left_i, in_right_pb, out_left_pb);
             //maquis::cout << contr_grid(0,0) << "---------------------" << std::endl << std::endl;
             ::SU2::gemm(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
         });
@@ -520,8 +523,8 @@ namespace SU2 {
             left = contraction::SU2::overlap_mpo_left_step(cpy, mps[i], left, mpo[i]);
         }
 
-        return maquis::real(left_bm.trace());
-        //return maquis::real(left[0].trace());
+        //return maquis::real(left_bm.trace());
+        return maquis::real(left[0].trace());
     }
 
 } // namespace SU2
