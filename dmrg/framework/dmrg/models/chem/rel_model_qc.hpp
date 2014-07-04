@@ -357,29 +357,30 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             
             if (is_term_allowed(i,j,k,l)) {
                 if        (i <  n_pair && j <  n_pair && k <  n_pair && l <  n_pair) {
-                    term_assistant.add_term(this->terms_, i,k,l,j, create_unbar, create_unbar, destroy_unbar, destroy_unbar);
-                    term_assistant.add_term(this->terms_, i+n_pair,k+n_pair,l+n_pair,j+n_pair, create_bar, create_bar, destroy_bar, destroy_bar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_unbar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l+n_pair,j+n_pair, create_bar, create_bar, destroy_bar, destroy_bar);
+                    //maquis::cout << i << j << k << l << std::endl;
                 } else if (i <  n_pair && j <  n_pair && k >= n_pair && l >= n_pair) {
-                    term_assistant.add_term(this->terms_, i,k,l,j, create_unbar, create_bar, destroy_bar, destroy_unbar);
-                    term_assistant.add_term(this->terms_, i+n_pair,k-n_pair,l-n_pair,j+n_pair, create_bar, create_unbar, destroy_unbar, destroy_bar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_bar, destroy_bar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l-n_pair,j+n_pair, create_bar, create_unbar, destroy_unbar, destroy_bar);
                 } else if (i <  n_pair && j <  n_pair && k >= n_pair && l <  n_pair) {
-                    //term_assistant.add_term(this->terms_, i,k,l,j, create_unbar, create_bar, destroy_unbar, destroy_unbar);
-                    //term_assistant.add_term(this->terms_, i+n_pair,k-n_pair,l+n_pair,j+n_pair, create_bar, create_unbar, destroy_bar, destroy_bar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_bar, destroy_unbar, destroy_unbar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l+n_pair,j+n_pair, create_bar, create_unbar, destroy_bar, destroy_bar);
                 } else if (i <  n_pair && j <  n_pair && k <  n_pair && l >= n_pair) {
-                    //term_assistant.add_term(this->terms_, i,k,l,j, create_unbar, create_unbar, destroy_bar, destroy_unbar);
-                    //term_assistant.add_term(this->terms_, i+n_pair,k+n_pair,l-n_pair,j+n_pair, create_bar, create_bar, destroy_unbar, destroy_bar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_bar, destroy_unbar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l-n_pair,j+n_pair, create_bar, create_bar, destroy_unbar, destroy_bar);
                 } else if (i <  n_pair && j >= n_pair && k <  n_pair && l >= n_pair) {
-                    term_assistant.add_term(this->terms_, i,k,l,j, create_unbar, create_unbar, destroy_bar, destroy_bar);
-                    term_assistant.add_term(this->terms_, i+n_pair,k+n_pair,l-n_pair,j-n_pair, create_bar, create_bar, destroy_unbar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_bar, destroy_bar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l-n_pair,j-n_pair, create_bar, create_bar, destroy_unbar, destroy_unbar);
                 } else if (i <  n_pair && j >= n_pair && k >= n_pair && l <  n_pair) {
-                    term_assistant.add_term(this->terms_, i,k,l,j, create_unbar, create_bar, destroy_unbar, destroy_bar);
-                    term_assistant.add_term(this->terms_, i+n_pair,k-n_pair,l+n_pair,j-n_pair, create_bar, create_unbar, destroy_bar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_bar, destroy_unbar, destroy_bar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l+n_pair,j-n_pair, create_bar, create_unbar, destroy_bar, destroy_unbar);
                 } else if (i <  n_pair && j >= n_pair && k <  n_pair && l <  n_pair) {
-                    //term_assistant.add_term(this->terms_, i,k,l,j, create_unbar, create_unbar, destroy_unbar, destroy_bar);
-                    //term_assistant.add_term(this->terms_, i+n_pair,k+n_pair,l+n_pair,j-n_pair, create_bar, create_bar, destroy_bar, destroy_unbar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_unbar, destroy_bar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l+n_pair,j-n_pair, create_bar, create_bar, destroy_bar, destroy_unbar);
                 } else if (i <  n_pair && j >= n_pair && k >= n_pair && l >= n_pair) {
-                    //term_assistant.add_term(this->terms_, i,k,l,j, create_unbar, create_bar, destroy_bar, destroy_bar);
-                    //term_assistant.add_term(this->terms_, i+n_pair,k-n_pair,l-n_pair,j-n_pair, create_bar, create_unbar, destroy_unbar, destroy_unbar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_bar, destroy_bar, destroy_bar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l-n_pair,j-n_pair, create_bar, create_unbar, destroy_unbar, destroy_unbar);
                 } else if (i >= n_pair && j >= n_pair && k >= n_pair && l >= n_pair) {
                 } else if (i >= n_pair && j >= n_pair && k <  n_pair && l <  n_pair) {
                 } else if (i >= n_pair && j >= n_pair && k <  n_pair && l >= n_pair) {
