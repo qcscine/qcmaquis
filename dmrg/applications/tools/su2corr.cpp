@@ -182,8 +182,13 @@ int main(int argc, char ** argv)
         //}
 
 
-        matrix ratio = compute_ratio(mps, ref, site_irreps, config);
-        print_triang(ratio);
+        //matrix ratio = compute_ratio(mps, ref, site_irreps, config);
+        //print_triang(ratio);
+
+        int i=0, j=1;
+        MPO<matrix, grp> mpo = SU2::make_1rdm_term<matrix, grp>(i, j, site_irreps);
+        double result = SU2::expval(mps, mpo, i, j, config);
+        maquis::cout << result << "  ref: " << ref(i,j);
 
         //std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
         //std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));
@@ -201,8 +206,8 @@ int main(int argc, char ** argv)
         //std::vector<double> result;
         //for(int i=0; i < L-3; ++i)
         //{
-        //    MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,v3,v4,v5, site_irreps);
-        //    //MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,0,0,0, site_irreps);
+        //    //MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,v3,v4,v5, site_irreps);
+        //    MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,0,0,0, site_irreps);
         //    double twodm0123 = SU2::expval(mps, four, i+10,0, config);
         //    result.push_back(twodm0123 / ref2[i]);
         //}
