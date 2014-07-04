@@ -79,10 +79,6 @@ public:
         return chem_detail::IndexTuple(i,j,k,l);
     }
 
-    //static chem_detail::IndexTuple align(chem_detail::IndexTuple const & rhs) {
-    //    return align(rhs[0], rhs[1], rhs[2], rhs[3]);
-    //}
-
     Index<SymmGroup> const & phys_dim(size_t type) const
     {
         // type == site for lattice = spinors
@@ -148,8 +144,8 @@ public:
         //    return e2d;
         //else if (name == "d2e")
         //    return d2e;
-        else if (name == "docc")
-            return docc;
+        //else if (name == "docc")
+        //    return docc;
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
@@ -165,9 +161,10 @@ public:
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 
         op_t create_unbar_op, create_bar_op, destroy_unbar_op, destroy_bar_op,
-             count_unbar_op, count_bar_op, docc_op, e2d_op, d2e_op,
-             swap_d2u_op, swap_u2d_op,
-             create_unbar_count_bar_op, create_bar_count_unbar_op, destroy_unbar_count_bar_op, destroy_bar_count_unbar_op,
+             count_unbar_op, count_bar_op,
+             //docc_op, e2d_op, d2e_op,
+             //swap_b2u_op, swap_u2b_op,
+             //create_unbar_count_bar_op, create_bar_count_unbar_op, destroy_unbar_count_bar_op, destroy_bar_count_unbar_op,
              ident_unbar_op, ident_bar_op, fill_unbar_op, fill_bar_op;
 
         ident_unbar_op = tag_handler->get_op(ident_unbar);
@@ -182,15 +179,15 @@ public:
         count_bar_op = tag_handler->get_op(count_bar);
         //e2d_op = tag_handler->get_op(e2d);
         //d2e_op = tag_handler->get_op(d2e);
-        docc_op = tag_handler->get_op(docc);
+        //docc_op = tag_handler->get_op(docc);
 
-        gemm(destroy_bar_op, create_unbar_op, swap_d2u_op); // S_plus
-        gemm(destroy_unbar_op, create_bar_op, swap_u2d_op); // S_minus
+        //gemm(destroy_bar_op, create_unbar_op, swap_b2u_op); // S_plus
+        //gemm(destroy_unbar_op, create_bar_op, swap_u2b_op); // S_minus
 
-        gemm(count_bar_op, create_unbar_op, create_unbar_count_bar_op);
-        gemm(count_unbar_op, create_bar_op, create_bar_count_unbar_op);
-        gemm(count_bar_op, destroy_unbar_op, destroy_unbar_count_bar_op);
-        gemm(count_unbar_op, destroy_bar_op, destroy_bar_count_unbar_op);
+        //gemm(count_bar_op, create_unbar_op, create_unbar_count_bar_op);
+        //gemm(count_unbar_op, create_bar_op, create_bar_count_unbar_op);
+        //gemm(count_bar_op, destroy_unbar_op, destroy_unbar_count_bar_op);
+        //gemm(count_unbar_op, destroy_bar_op, destroy_bar_count_unbar_op);
 
         #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
 
@@ -205,16 +202,17 @@ public:
         GENERATE_SITE_SPECIFIC(count_unbar_op)
         GENERATE_SITE_SPECIFIC(count_bar_op)
 
+        // All this cases make no sense using a spinor lattice!
         //GENERATE_SITE_SPECIFIC(e2d_op)
         //GENERATE_SITE_SPECIFIC(d2e_op)
-        GENERATE_SITE_SPECIFIC(docc_op)
+        //GENERATE_SITE_SPECIFIC(docc_op)
 
-        GENERATE_SITE_SPECIFIC(swap_d2u_op)
-        GENERATE_SITE_SPECIFIC(swap_u2d_op)
-        GENERATE_SITE_SPECIFIC(create_unbar_count_bar_op)
-        GENERATE_SITE_SPECIFIC(create_bar_count_unbar_op)
-        GENERATE_SITE_SPECIFIC(destroy_unbar_count_bar_op)
-        GENERATE_SITE_SPECIFIC(destroy_bar_count_unbar_op)
+        //GENERATE_SITE_SPECIFIC(swap_b2u_op)
+        //GENERATE_SITE_SPECIFIC(swap_u2b_op)
+        //GENERATE_SITE_SPECIFIC(create_unbar_count_bar_op)
+        //GENERATE_SITE_SPECIFIC(create_bar_count_unbar_op)
+        //GENERATE_SITE_SPECIFIC(destroy_unbar_count_bar_op)
+        //GENERATE_SITE_SPECIFIC(destroy_bar_count_unbar_op)
 
         #undef GENERATE_SITE_SPECIFIC
 
@@ -231,14 +229,14 @@ public:
                 if (boost::regex_match(lhs, what, expression)) {
 
                     op_vec meas_op;
-                    if (it->value() == "Nup")
+                    if (it->value() == "Nunbar")
                         meas_op = count_unbar_ops;
-                    else if (it->value() == "Ndown")
+                    else if (it->value() == "Nbar")
                         meas_op = count_bar_ops;
-                    else if (it->value() == "Nup*Ndown" || it->value() == "docc")
-                        meas_op = docc_ops;
+                    //else if (it->value() == "Nunbar*Nbar" || it->value() == "docc")
+                    //    meas_op = docc_ops;
                     else
-                        throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nup\" and \"Ndown\"\n");
+                        throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nunbar\" and \"Nbar\"\n");
 
                     //meas.push_back( new measurements::local<Matrix, SymmGroup>(what.str(1), lat, ident_ops, fill_ops, meas_op) );
                 }
@@ -348,19 +346,19 @@ public:
                      it2 != corr_tokens.end();
                      it2++)
                 {
-                    if (*it2 == "c_up") {
+                    if (*it2 == "c_unbar") {
                         meas_operators.push_back( std::make_pair(destroy_unbar_ops, true) );
                         ++f_ops;
                     }
-                    else if (*it2 == "c_down") {
+                    else if (*it2 == "c_bar") {
                         meas_operators.push_back( std::make_pair(destroy_bar_ops, true) );
                         ++f_ops;
                     }
-                    else if (*it2 == "cdag_up") {
+                    else if (*it2 == "cdag_unbar") {
                         meas_operators.push_back( std::make_pair(create_unbar_ops, true) );
                         ++f_ops;
                     }
-                    else if (*it2 == "cdag_down") {
+                    else if (*it2 == "cdag_bar") {
                         meas_operators.push_back( std::make_pair(create_bar_ops, true) );
                         ++f_ops;
                     }
@@ -368,46 +366,44 @@ public:
                     else if (*it2 == "id" || *it2 == "Id") {
                         //meas_operators.push_back( std::make_pair(ident_ops, false) );
                     }
-                    else if (*it2 == "Nup") {
+                    else if (*it2 == "Nunbar") {
                         meas_operators.push_back( std::make_pair(count_unbar_ops, false) );
                     }
-                    else if (*it2 == "Ndown") {
+                    else if (*it2 == "Nbar") {
                         meas_operators.push_back( std::make_pair(count_bar_ops, false) );
                     }
-                    else if (*it2 == "docc" || *it2 == "Nup*Ndown") {
-                        meas_operators.push_back( std::make_pair(docc_ops, false) );
+                    else if (*it2 == "docc" || *it2 == "Nunbar*Nbar") {
+                    //    meas_operators.push_back( std::make_pair(docc_ops, false) );
                     }
-                    else if (*it2 == "cdag_up*c_down" || *it2 == "splus") {
-                        meas_operators.push_back( std::make_pair(swap_d2u_ops, false) );
+                    else if (*it2 == "cdag_unbar*c_bar" || *it2 == "splus") {
+                    //    meas_operators.push_back( std::make_pair(swap_b2u_ops, false) );
                     }
-                    else if (*it2 == "cdag_down*c_up" || *it2 == "sminus") {
-                        meas_operators.push_back( std::make_pair(swap_u2d_ops, false) );
+                    else if (*it2 == "cdag_bar*c_unbar" || *it2 == "sminus") {
+                    //    meas_operators.push_back( std::make_pair(swap_u2b_ops, false) );
                     }
 
-                    else if (*it2 == "cdag_up*cdag_down") {
+                    else if (*it2 == "cdag_unbar*cdag_bar") {
                     //    meas_operators.push_back( std::make_pair(e2d_ops, false) );
-                        std::cout << "Warning! \"meas_operators.push_back( std::make_pair(e2d_ops, false))\" not set!\n";
                     }
-                    else if (*it2 == "c_up*c_down") {
+                    else if (*it2 == "c_unbar*c_bar") {
                     //    meas_operators.push_back( std::make_pair(d2e_ops, false) );
-                        std::cout << "Warning! \"meas_operators.push_back( std::make_pair(d2e_ops, false))\" not set!\n";
                     }
 
-                    else if (*it2 == "cdag_up*Ndown") {
-                        meas_operators.push_back( std::make_pair(create_unbar_count_bar_ops, true) );
-                        ++f_ops;
+                    else if (*it2 == "cdag_unbar*Nbar") {
+                    //    meas_operators.push_back( std::make_pair(create_unbar_count_bar_ops, true) );
+                    //    ++f_ops;
                     }
-                    else if (*it2 == "cdag_down*Nup") {
-                        meas_operators.push_back( std::make_pair(create_bar_count_unbar_ops, true) );
-                        ++f_ops;
+                    else if (*it2 == "cdag_bar*Nunbar") {
+                    //    meas_operators.push_back( std::make_pair(create_bar_count_unbar_ops, true) );
+                    //    ++f_ops;
                     }
-                    else if (*it2 == "c_up*Ndown") {
-                        meas_operators.push_back( std::make_pair(destroy_unbar_count_bar_ops, true) );
-                        ++f_ops;
+                    else if (*it2 == "c_unbar*Nbar") {
+                    //    meas_operators.push_back( std::make_pair(destroy_unbar_count_bar_ops, true) );
+                    //    ++f_ops;
                     }
-                    else if (*it2 == "c_down*Nup") {
-                        meas_operators.push_back( std::make_pair(destroy_bar_count_unbar_ops, true) );
-                        ++f_ops;
+                    else if (*it2 == "c_bar*Nunbar") {
+                    //    meas_operators.push_back( std::make_pair(destroy_bar_count_unbar_ops, true) );
+                    //    ++f_ops;
                     }
                     else
                         throw std::runtime_error("Unrecognized operator in correlation measurement: " 
@@ -428,8 +424,8 @@ public:
                 
                 std::vector<bond_element> synchronous_meas_operators;
                 synchronous_meas_operators.push_back(meas_operators);
-                //meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
-                //                                                              half_only, nearest_neighbors_only, positions));
+                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_bar_ops, fill_bar_ops, synchronous_meas_operators,
+                                                                              half_only, nearest_neighbors_only, positions));
             }
         }
         }
@@ -445,17 +441,19 @@ private:
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type ident_unbar, ident_bar, fill_unbar, fill_bar,
              create_unbar, create_bar, destroy_unbar, destroy_bar,
-             count_unbar, count_bar, docc, e2d, d2e;
+             count_unbar, count_bar;
+             //docc, e2d, d2e;
 
     typename SymmGroup::subcharge max_irrep;
 
-    // TODO: only generate as many operators as irreps actually used
     std::vector<op_t> generate_site_specific_ops(op_t const & op) const
     {
         PGDecorator<SymmGroup> set_symm;
         std::vector<op_t> ret;
-        for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
-            op_t mod(set_symm(op.left_basis(), sc), set_symm(op.right_basis(), sc));
+        for (std::size_t site = 0; site < lat.size(); ++site) {
+            //op_t mod(set_symm(op.left_basis(), sc), set_symm(op.right_basis(), sc));
+            int irrep = lat.get_prop<int>("irrep", site);
+            op_t mod(set_symm(op.left_basis(), irrep), set_symm(op.right_basis(), irrep));
             for (std::size_t b = 0; b < op.n_blocks(); ++b)
                 mod[b] = op[b];
 

@@ -74,7 +74,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     }
 
     op_t create_unbar_op, create_bar_op, destroy_unbar_op, destroy_bar_op,
-         count_unbar_op, count_bar_op, docc_op,
+         count_unbar_op, count_bar_op, //docc_op,
          ident_unbar_op, ident_bar_op, fill_unbar_op, fill_bar_op;
 
     ident_unbar_op.insert_block(Matrix(1, 1, 1), A, A);
@@ -92,8 +92,8 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     count_unbar_op.insert_block(Matrix(1, 1, 1), B, B);
     count_bar_op.insert_block(Matrix(1, 1, 1), C, C);
  
-    docc_op.insert_block(Matrix(1, 1, 1), B, B);
-    docc_op.insert_block(Matrix(1, 1, 1), C, C);
+    //docc_op.insert_block(Matrix(1, 1, 1), B, B);
+    //docc_op.insert_block(Matrix(1, 1, 1), C, C);
     
     fill_unbar_op.insert_block(Matrix(1, 1, 1), A, A);
     fill_unbar_op.insert_block(Matrix(1, 1, -1), B, B);
@@ -125,7 +125,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     REGISTER(destroy_bar,    tag_detail::fermionic)
     REGISTER(count_unbar,    tag_detail::bosonic)
     REGISTER(count_bar,      tag_detail::bosonic)
-    REGISTER(docc,           tag_detail::bosonic)
+    //REGISTER(docc,           tag_detail::bosonic)
 
     #undef REGISTER
     /**********************************************************************/
