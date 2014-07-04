@@ -403,9 +403,6 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 
     term_assistant.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
-    //for (int ii = 0; ii < this->terms_.size(); ++ii) {
-    //    maquis::cout << this->terms_[ii] << std::endl;
-    //}
 }
     
 #endif

@@ -180,12 +180,6 @@ namespace chem_detail {
         void add_term(std::vector<term_descriptor> & tagterms,
                       int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
         {
-            // Check if the model is relativstic to set the 1/2 factor
-            double scale_factor = 1;
-            if (false) {
-                scale_factor = 0.5;
-            }
-
             // Collapse terms with identical operators and different scales into one term
             if (op_i == op_k && op_j == op_l) {
 
@@ -197,7 +191,7 @@ namespace chem_detail {
                 if (self > twin) {
                 
                     term_descriptor
-                    term = TermMaker<M, S>::four_term(model, ident, fill, scale_factor*coefficients[align(i,j,k,l)], i,k,l,j,
+                    term = TermMaker<M, S>::four_term(model, ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
                                                    op_i, op_k, op_l, op_j, tag_handler);
                     
                     term.coeff += value_type(sign(twin)) * coefficients[align(twin[0], twin[1], twin[2], twin[3])];
@@ -207,7 +201,7 @@ namespace chem_detail {
                 //else: we already have the term
             }
             else {
-                tagterms.push_back( TermMaker<M, S>::four_term(model, ident, fill, scale_factor*coefficients[align(i,j,k,l)], i,k,l,j,
+                tagterms.push_back( TermMaker<M, S>::four_term(model, ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
                                    op_i, op_k, op_l, op_j, tag_handler) );
             }
         }
@@ -258,7 +252,7 @@ namespace chem_detail {
             // Check symmmetry to use the right factor
             double integral_value = 0;
             double scale_factor = 1;
-            if (parms["symmetry"] == "2u1lpg") {scale_factor = 0.5;}
+            if (parms["symmetry"] == "2u1lpg" && parms["MODEL"] == "relativistic_quantum_chemistry") {scale_factor = 0.5;}
                 
             while (it != raw.end()) {
                 
