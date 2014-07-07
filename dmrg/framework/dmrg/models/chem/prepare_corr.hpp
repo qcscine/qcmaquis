@@ -142,12 +142,20 @@ namespace SU2 {
 
             std::vector<tag_block> pre_tensor;
 
-            if (p == i)
+            if (p == i) {
                 pre_tensor.push_back(tag_block(0,0,destroy, 1.0));
-            else if (p == j)
+            }
+            else if (p == j) {
                 pre_tensor.push_back(tag_block(0,0,create, 1.0));
-            else if ( i < p && p < j)
+                pre_tensor.push_back(tag_block(0,1,fill, 1.0));
+            }
+            else if (p == j+1) {
+                pre_tensor.push_back(tag_block(0,0,identity, 1.0));
+                pre_tensor.push_back(tag_block(1,0,create, 1.0));
+            }
+            else if ( i < p && p < j){
                 pre_tensor.push_back(tag_block(0,0,fill, 1.0));
+            }
             else 
                 pre_tensor.push_back(tag_block(0,0,identity, 1.0));
 
