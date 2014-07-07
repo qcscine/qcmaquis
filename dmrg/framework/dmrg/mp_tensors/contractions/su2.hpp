@@ -225,7 +225,7 @@ namespace SU2 {
             for (std::size_t t_block = 0; t_block < T.n_blocks(); ++t_block) {
 
                 charge lc = T.left_basis_charge(t_block);
-                charge mc = left[b1].right_basis_charge(t_block);
+                charge mc = left[b1].left_basis_charge(t_block); // left comes as left^T !!
                 charge rc = T.right_basis_charge(t_block);
 
                 for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
