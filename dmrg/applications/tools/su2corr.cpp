@@ -182,13 +182,13 @@ int main(int argc, char ** argv)
         //}
 
 
-        //matrix ratio = compute_ratio(mps, ref, site_irreps, config);
-        //print_triang(ratio);
+        matrix ratio = compute_ratio(mps, ref, site_irreps, config);
+        print_triang(ratio);
 
-        int i=0, j=1;
-        MPO<matrix, grp> mpo = SU2::make_1rdm_term<matrix, grp>(i, j, site_irreps);
-        double result = SU2::expval(mps, mpo, i, j, config);
-        maquis::cout << result << "  ref: " << ref(i,j);
+        //int i=0, j=3;
+        //MPO<matrix, grp> mpo = SU2::make_1rdm_term<matrix, grp>(i, j, site_irreps);
+        //double result = SU2::expval(mps, mpo, i, j, config);
+        //maquis::cout << result << "  ref: " << ref(i,j) << std::endl;
 
         //std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
         //std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));

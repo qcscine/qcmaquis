@@ -210,8 +210,6 @@ namespace SU2 {
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
 
-        maquis::cout << out_left_i << std::endl;
-
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
@@ -278,12 +276,12 @@ namespace SU2 {
                         Matrix const & iblock = T[t_block];
                         Matrix & oblock = ret[o];
 
-                        maquis::cout << "access " << mc << " + " << phys_in<< "|" << out_r_charge << " -- "
-                                 << lc << " + " << phys_out << "|" << out_l_charge
-                                 << " T(" << lc << "," << rc << "): +" << in_right_offset
-                                 << "(" << T.left_basis_size(t_block) << "x" << r_size << ")|" << T.right_basis_size(t_block) << " -> +"
-                                 << out_left_offset << "(" << T.left_basis_size(t_block) << "x" << r_size << ")|" << out_left_i.size_of_block(out_l_charge)
-                                 << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << " " << coupling_coeff << std::endl;
+                        //maquis::cout << "access " << mc << " + " << phys_in<< "|" << out_r_charge << " -- "
+                        //         << lc << " + " << phys_out << "|" << out_l_charge
+                        //         << " T(" << lc << "," << rc << "): +" << in_right_offset
+                        //         << "(" << T.left_basis_size(t_block) << "x" << r_size << ")|" << T.right_basis_size(t_block) << " -> +"
+                        //         << out_left_offset << "(" << T.left_basis_size(t_block) << "x" << r_size << ")|" << out_left_i.size_of_block(out_l_charge)
+                        //         << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << " " << coupling_coeff << std::endl;
 
                         maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
                                 out_left_offset, in_right_offset,
@@ -346,8 +344,8 @@ namespace SU2 {
                                 boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                         -boost::lambda::_1, boost::lambda::_2));
 
-        maquis::cout << "BraLeft: " << bra_tensor.data().left_basis() << std::endl;
-        maquis::cout << "outLeft: " << (phys_i*left_i) << std::endl;
+        //maquis::cout << "BraLeft: " << bra_tensor.data().left_basis() << std::endl;
+        //maquis::cout << "outLeft: " << (phys_i*left_i) << std::endl;
         for (std::size_t k = 0; k < left.n_blocks(); ++k) {
 
             charge lc = left.left_basis_charge(k);
@@ -410,19 +408,18 @@ namespace SU2 {
                                   << std::right << std::setw(8) << "cc: " << std::setw(12) << coupling_coeff //<< std::endl;
                                   << std::setw(12) << ((std::abs(ip-jp) == 0) ? c0 : c1) << std::endl;
                     }
-                    //coupling_coeff = access.scale * W[w_block](0,0);
 
                     // T Access
                     size_t right_offset = in_right_pb(phys_in, free_rc);
                     size_t left_offset = out_left_pb(phys_out, lc);
                     size_t ldim = t1.left_basis_size(t_pos);
                     size_t rdim = right_i.size_of_block(free_rc);
-                    maquis::cout << "access " << mc << " + " << phys_in<< "|" << free_rc << " -- "
-                        << lc << " + " << phys_out << "|" << new_rc
-                        << " T(" << lc << "," << rc << "): +" << right_offset
-                        << "(" << ldim << "x" << rdim << ")|" << t1.right_basis_size(t_pos) << " -> +"
-                        << left_offset << "(" << t1.left_basis_size(t_pos) << "x" << rdim << ")|" << bra_tensor.data().left_basis().size_of_block(new_rc)
-                        << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << std::endl;
+                    //maquis::cout << "access " << mc << " + " << phys_in<< "|" << free_rc << " -- "
+                    //    << lc << " + " << phys_out << "|" << new_rc
+                    //    << " T(" << lc << "," << rc << "): +" << right_offset
+                    //    << "(" << ldim << "x" << rdim << ")|" << t1.right_basis_size(t_pos) << " -> +"
+                    //    << left_offset << "(" << t1.left_basis_size(t_pos) << "x" << rdim << ")|" << bra_tensor.data().left_basis().size_of_block(new_rc)
+                    //    << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << std::endl;
                     Matrix T_cp(ldim, rdim, 0);
                     for (size_t c=0; c<rdim; ++c)
                         std::transform(t1[t_pos].col(right_offset+c).first,
@@ -436,7 +433,6 @@ namespace SU2 {
                     //size_t left_offset = out_left_pb(phys_out, lc);
                     ldim = bra_tensor.row_dim().size_of_block(lc);
                     rdim = bra_tensor.col_dim()[bra_index].second;
-                    //if(debug) maquis::cout << "brablock@" << bra_index << " " << ldim << " " << rdim  << " " << left_offset << std::endl;
                     Matrix bra_cp(ldim, rdim, 0);
                     for (size_t row=0; row<ldim; ++row)
                         std::copy(bra_block.row(left_offset+row).first,
@@ -537,11 +533,11 @@ namespace SU2 {
         for(size_t i = 0; i < L; ++i) {
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
             left_bm = contraction::SU2::apply_operator(cpy, mps[i], left_bm, mpo[i], config, debug);
-            maquis::cout << "REF" << i << "\n";
-            maquis::cout << left_bm << std::endl;
+            //maquis::cout << "REF" << i << "\n";
+            //maquis::cout << left_bm << std::endl;
             left = contraction::SU2::overlap_mpo_left_step(cpy, mps[i], left, mpo[i]);
-            maquis::cout << "TEST" << i << "\n";
-            maquis::cout << transpose(left[0]) << std::endl;
+            //maquis::cout << "TEST" << i << "\n";
+            //maquis::cout << transpose(left[0]) << std::endl;
         }
 
         //return maquis::real(left_bm.trace());
