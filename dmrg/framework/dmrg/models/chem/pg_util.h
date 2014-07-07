@@ -65,6 +65,23 @@ public:
     }
 };
 
+// Added on 07.07.2014
+template < >
+class  PGDecorator<TwoU1LPG>
+{
+public:
+    typedef TwoU1LPG::subcharge subcharge;
+    Index<TwoU1LPG> operator()(Index<TwoU1LPG> rhs, subcharge irr)
+    {
+        for(Index<TwoU1LPG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+            if ( (it->first[0] + it->first[1]) % 2 == 0)
+                it->first[2] = 0;
+            else
+                it->first[2] = irr;
+
+        return rhs;
+    }
+};
 
 template <class SymmGroup>
 Index<SymmGroup>
@@ -97,6 +114,17 @@ public:
     }
 };
 
+// Added on 7.7.2014
+template < >
+class  PGCharge<TwoU1LPG>
+{
+public:
+    typedef typename TwoU1LPG::subcharge subcharge;
+    void operator()(typename TwoU1LPG::charge & rhs, subcharge irr)
+    {
+        rhs[2] = irr;
+    }
+};
 
 template <class SymmGroup> inline
 std::vector<int>

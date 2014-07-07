@@ -191,10 +191,15 @@ public:
 
         #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
 
-        GENERATE_SITE_SPECIFIC(ident_unbar_op)
-        GENERATE_SITE_SPECIFIC(ident_bar_op)
-        GENERATE_SITE_SPECIFIC(fill_unbar_op)
-        GENERATE_SITE_SPECIFIC(fill_bar_op)
+        //GENERATE_SITE_SPECIFIC(ident_unbar_op)
+        //GENERATE_SITE_SPECIFIC(ident_bar_op)
+        //GENERATE_SITE_SPECIFIC(fill_unbar_op)
+        //GENERATE_SITE_SPECIFIC(fill_bar_op)
+        std::vector<op_t> ident_ops = this->generate_site_specific_ops(ident_unbar_op, ident_bar_op);
+        std::vector<op_t> fill_ops = this->generate_site_specific_ops(fill_unbar_op, fill_bar_op);
+        std::vector<op_t> create_ops = this->generate_site_specific_ops(create_unbar_op, create_bar_op);
+        std::vector<op_t> destroy_ops = this->generate_site_specific_ops(destroy_unbar_op, destroy_bar_op);
+        std::vector<op_t> count_ops = this->generate_site_specific_ops(count_unbar_op, count_bar_op);
         GENERATE_SITE_SPECIFIC(create_unbar_op)
         GENERATE_SITE_SPECIFIC(create_bar_op)
         GENERATE_SITE_SPECIFIC(destroy_unbar_op)
@@ -233,12 +238,14 @@ public:
                         meas_op = count_unbar_ops;
                     else if (it->value() == "Nbar")
                         meas_op = count_bar_ops;
+                    else if (it->value() == "N")
+                        meas_op = count_ops;
                     //else if (it->value() == "Nunbar*Nbar" || it->value() == "docc")
                     //    meas_op = docc_ops;
                     else
                         throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nunbar\" and \"Nbar\"\n");
 
-                    //meas.push_back( new measurements::local<Matrix, SymmGroup>(what.str(1), lat, ident_ops, fill_ops, meas_op) );
+                    meas.push_back( new measurements::local<Matrix, SymmGroup>(what.str(1), lat, ident_ops, fill_ops, meas_op) );
                 }
             }
         }
@@ -327,8 +334,8 @@ public:
                 half_only = true;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
-                //meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
-                //                                                              half_only, nearest_neighbors_only, positions, bra_ckp));
+                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
+                                                                              half_only, nearest_neighbors_only, positions, bra_ckp));
             }
             else if (!name.empty()) {
 
@@ -346,7 +353,19 @@ public:
                      it2 != corr_tokens.end();
                      it2++)
                 {
-                    if (*it2 == "c_unbar") {
+                    if (*it2 == "c_dag") {
+                        meas_operators.push_back( std::make_pair(create_ops, true) );
+                        ++f_ops;
+                    }
+                    else if (*it2 == "c") {
+                        meas_operators.push_back( std::make_pair(destroy_ops, true) );
+                        ++f_ops;
+                    }
+                    else if (*it2 == "N") {
+                        meas_operators.push_back( std::make_pair(count_ops, true) );
+                        ++f_ops;
+                    }
+                    else if (*it2 == "c_unbar") {
                         meas_operators.push_back( std::make_pair(destroy_unbar_ops, true) );
                         ++f_ops;
                     }
@@ -364,7 +383,7 @@ public:
                     }
 
                     else if (*it2 == "id" || *it2 == "Id") {
-                        //meas_operators.push_back( std::make_pair(ident_ops, false) );
+                        meas_operators.push_back( std::make_pair(ident_ops, false) );
                     }
                     else if (*it2 == "Nunbar") {
                         meas_operators.push_back( std::make_pair(count_unbar_ops, false) );
@@ -424,7 +443,7 @@ public:
                 
                 std::vector<bond_element> synchronous_meas_operators;
                 synchronous_meas_operators.push_back(meas_operators);
-                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_bar_ops, fill_bar_ops, synchronous_meas_operators,
+                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions));
             }
         }
@@ -450,9 +469,8 @@ private:
     {
         PGDecorator<SymmGroup> set_symm;
         std::vector<op_t> ret;
-        for (std::size_t site = 0; site < lat.size(); ++site) {
-            //op_t mod(set_symm(op.left_basis(), sc), set_symm(op.right_basis(), sc));
-            int irrep = lat.get_prop<int>("irrep", site);
+        for (typename SymmGroup::subcharge irrep = 0; irrep < max_irrep+1; ++irrep) {
+            //int irrep = lat.get_prop<int>("irrep", site);
             op_t mod(set_symm(op.left_basis(), irrep), set_symm(op.right_basis(), irrep));
             for (std::size_t b = 0; b < op.n_blocks(); ++b)
                 mod[b] = op[b];
@@ -462,6 +480,34 @@ private:
         return ret;
     }
 
+    std::vector<op_t> generate_site_specific_ops(op_t const & op_unbar, op_t const & op_bar) const
+    {
+        PGDecorator<SymmGroup> set_symm;
+        std::vector<op_t> ret;
+        for (std::size_t site = 0; site < lat.size()/2; ++site) {
+            int irrep = lat.get_prop<int>("irrep", site);
+            //for (typename SymmGroup::subcharge irrep = 0; irrep < max_irrep + 1; ++irrep) {
+                op_t mod(set_symm(op_unbar.left_basis(), irrep), set_symm(op_unbar.right_basis(), irrep));
+                for (std::size_t b = 0; b < op_unbar.n_blocks(); ++b)
+                    mod[b] = op_unbar[b];
+
+                //maquis::cout << mod << std::endl;
+                ret.push_back(mod);
+            //}
+        }
+        for (std::size_t site = lat.size()/2; site < lat.size(); ++site) {
+            int irrep = lat.get_prop<int>("irrep", site);
+            //for (typename SymmGroup::subcharge irrep = 0; irrep < max_irrep + 1; ++irrep) {
+                op_t mod(set_symm(op_bar.left_basis(), irrep), set_symm(op_bar.right_basis(), irrep));
+                for (std::size_t b = 0; b < op_bar.n_blocks(); ++b)
+                    mod[b] = op_bar[b];
+                
+                //maquis::cout << mod << std::endl;
+                ret.push_back(mod);
+            //}
+        }
+        return ret;
+    }
 };
 
 

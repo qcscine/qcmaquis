@@ -36,10 +36,11 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 {
     // find the highest irreducible representation number 
     // used to generate ops for all irreps 0..max_irrep
+    // TODO: obsolete, probably not used anywhere -> remove it
     max_irrep = 0;
     for (pos_t p=0; p < lat.size(); ++p)
-        max_irrep = (lat.get_prop<typename SymmGroup::subcharge>("type", p) > max_irrep)
-                        ? lat.get_prop<typename SymmGroup::subcharge>("type", p) : max_irrep;
+        max_irrep = (lat.get_prop<typename SymmGroup::subcharge>("irrep", p) > max_irrep)
+                        ? lat.get_prop<typename SymmGroup::subcharge>("irrep", p) : max_irrep;
 
     typename SymmGroup::charge A(0), B(0), C(0);
     B[0]=1; C[1]=1;
