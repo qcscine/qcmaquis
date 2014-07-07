@@ -195,7 +195,7 @@ namespace SU2 {
                      Boundary<OtherMatrix, SymmGroup> const & left,
                      std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     Index<SymmGroup> const & physical_i,
+                     DualIndex<SymmGroup> const & ket_basis,
                      Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_left_i,
                      Index<SymmGroup> const & bra_col_basis,
@@ -217,46 +217,51 @@ namespace SU2 {
             index_type b1 = col_it.index();
 
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
-            //assert(left[b1].left_basis() == T.left_basis());
             MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
             block_matrix<Matrix, SymmGroup> const & W = access.op;
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
-            for (std::size_t t_block = 0; t_block < T.n_blocks(); ++t_block) {
+            for (std::size_t k = 0; k < left[b1].n_blocks(); ++k) {
 
-                charge lc = T.left_basis_charge(t_block);
-                charge mc = left[b1].left_basis_charge(t_block); // left comes as left^T !!
-                charge rc = T.right_basis_charge(t_block);
+                charge lc = left[b1].right_basis_charge(k); // left comes as left^T !
+                charge mc = left[b1].left_basis_charge(k);
 
-                for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
+                std::pair<const_iterator, const_iterator>
+                  er = std::equal_range(ket_basis.begin(), ket_basis.end(),
+                    boost::make_tuple(mc, SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
+
+                assert(er.first + 1 == er.second);
+                for (const_iterator it = er.first; it != er.second; ++it)
                 {
-                    charge phys_in = W.left_basis_charge(w_block);
-                    charge phys_out = W.right_basis_charge(w_block);
+                    std::size_t matched_block = std::distance(ket_basis.begin(), it);
+                    charge rc = boost::tuples::get<1>(ket_basis[matched_block]);
+                    size_t t_block = T.basis().position(lc, rc); // t_block != k in general
 
-                    charge out_r_charge = SymmGroup::fuse(rc, phys_in);
-                    if (!right_i.has(out_r_charge)) continue;
+                    for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
+                    {
+                        charge phys_in = W.left_basis_charge(w_block);
+                        charge phys_out = W.right_basis_charge(w_block);
 
-                    charge out_l_charge = SymmGroup::fuse(lc, phys_out);
-                    if (!bra_col_basis.has(out_l_charge) || !out_left_i.has(out_l_charge)) continue;
+                        charge out_r_charge = SymmGroup::fuse(rc, phys_in);
+                        if (!right_i.has(out_r_charge)) continue;
+
+                        charge out_l_charge = SymmGroup::fuse(lc, phys_out);
+                        if (!bra_col_basis.has(out_l_charge) || !out_left_i.has(out_l_charge)) continue;
 
 
-                    size_t r_size = right_i.size_of_block(out_r_charge);
+                        size_t r_size = right_i.size_of_block(out_r_charge);
 
-                    size_t o = ret.find_block(out_l_charge, out_r_charge);
-                    if ( o == ret.n_blocks() ) {
-                        o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
-                        ret.resize_block(out_l_charge, out_r_charge, out_left_i.size_of_block(out_l_charge), r_size);
-                        //maquis::cout << "inserted " << out_l_charge << out_r_charge << " " << out_left_i.size_of_block(out_l_charge) << "x" << r_size << "\n";
-                    }
+                        size_t o = ret.find_block(out_l_charge, out_r_charge);
+                        if ( o == ret.n_blocks() ) {
+                            o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
+                            ret.resize_block(out_l_charge, out_r_charge, out_left_i.size_of_block(out_l_charge), r_size);
+                        }
 
-                    int i  = lc[1], ip = out_l_charge[1];
-                    int j  = mc[1], jp  = out_r_charge[1];
-                    int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
-                    int a = std::abs(i-j), k = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1]));
+                        int i  = lc[1], ip = out_l_charge[1];
+                        int j  = mc[1], jp  = out_r_charge[1];
+                        int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
+                        int a = std::abs(i-j), k = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1]));
 
-                    //for (int ap = std::abs(a-k); ap <= std::abs(a+k); ap+=2)
-                    //{
-                        //if (ap != std::abs(ip-jp)) continue;
                         int ap = std::abs(ip-jp);
                         if (ap >= 3) continue;
 
@@ -278,12 +283,12 @@ namespace SU2 {
                                  << " T(" << lc << "," << rc << "): +" << in_right_offset
                                  << "(" << T.left_basis_size(t_block) << "x" << r_size << ")|" << T.right_basis_size(t_block) << " -> +"
                                  << out_left_offset << "(" << T.left_basis_size(t_block) << "x" << r_size << ")|" << out_left_i.size_of_block(out_l_charge)
-                                 << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << std::endl;
+                                 << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << " " << coupling_coeff << std::endl;
 
                         maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
                                 out_left_offset, in_right_offset,
                                 phys_s1, phys_s2, T.left_basis_size(t_block), r_size, coupling_coeff);
-                    //}
+                    }
                 }
             }
         } // b1
@@ -503,7 +508,7 @@ namespace SU2 {
         omp_for(index_type b2, range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
             //contraction::SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
-            contraction::SU2::lbtm_kernel_new(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, bra_tensor.col_dim(),
+            contraction::SU2::lbtm_kernel_new(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(),  right_i, out_left_i, bra_tensor.col_dim(),
                                               in_right_pb, out_left_pb);
             //maquis::cout << contr_grid(0,0) << "---------------------" << std::endl << std::endl;
             ::SU2::gemm(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
@@ -536,7 +541,7 @@ namespace SU2 {
             maquis::cout << left_bm << std::endl;
             left = contraction::SU2::overlap_mpo_left_step(cpy, mps[i], left, mpo[i]);
             maquis::cout << "TEST" << i << "\n";
-            maquis::cout << left[0] << std::endl;
+            maquis::cout << transpose(left[0]) << std::endl;
         }
 
         //return maquis::real(left_bm.trace());
