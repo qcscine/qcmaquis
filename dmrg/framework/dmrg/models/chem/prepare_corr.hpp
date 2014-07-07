@@ -91,6 +91,73 @@ namespace SU2 {
     }
 
     template<class Matrix, class SymmGroup>
+    MPO<Matrix, SymmGroup> make_custom(int i, int j, std::vector<int> site_irreps)
+    {
+        typedef tag_detail::tag_type tag_type;
+        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+        typedef typename Matrix::value_type value_type;
+        typedef boost::tuple<std::size_t, std::size_t, tag_type, value_type> tag_block;
+        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler(new TagHandler<Matrix, SymmGroup>());
+
+        MPO<Matrix, SymmGroup> ret(site_irreps.size());
+        for (int p=0; p<site_irreps.size(); ++p)
+        {
+            typedef tag_detail::tag_type tag_type;
+            typename SymmGroup::charge A(0), B(0), C(0), D(0);
+            A[0] = 2; // 200
+            B[0] = 1; B[1] =  1; B[2] = site_irreps[p]; // 11I
+            C[0] = 1; C[1] = -1; C[2] = site_irreps[p]; // 1-1I
+            // D = 000
+
+            block_matrix<Matrix, SymmGroup> identity_op;
+            identity_op.insert_block(Matrix(1,1,1), A, A);
+            identity_op.insert_block(Matrix(1,1,1), B, B);
+            identity_op.insert_block(Matrix(1,1,1), C, C);
+            identity_op.insert_block(Matrix(1,1,1), D, D);
+
+            block_matrix<Matrix, SymmGroup> fill_op;
+            fill_op.insert_block(Matrix(1,1,1), A, A);
+            fill_op.insert_block(Matrix(1,1,1), D, D);  // c^dag * c
+            fill_op.insert_block(Matrix(1,1,-1), B, B); // -1
+            fill_op.insert_block(Matrix(1,1,-1), C, C); // -1
+            fill_op.insert_block(Matrix(1,1,1), B, C);  // -1
+            fill_op.insert_block(Matrix(1,1,1), C, B);  // -1
+
+            block_matrix<Matrix, SymmGroup> create_op;
+            create_op.insert_block(Matrix(1,1,-2.), B, A);       // 1
+            create_op.insert_block(Matrix(1,1,2.), C, A);       // 1
+            create_op.insert_block(Matrix(1,1,-sqrt(2.)), D, B); // 1
+            create_op.insert_block(Matrix(1,1,sqrt(2.)), D, C); // 1
+
+            block_matrix<Matrix, SymmGroup> destroy_op;
+            destroy_op.insert_block(Matrix(1,1,1), A, B);        // 1 
+            destroy_op.insert_block(Matrix(1,1,-1), A, C);        // 1
+            destroy_op.insert_block(Matrix(1,1,sqrt(2.)), B, D); // 1
+            destroy_op.insert_block(Matrix(1,1,-sqrt(2.)), C, D); // 1
+
+            tag_type identity = tag_handler->register_op(identity_op, tag_detail::bosonic);
+            tag_type fill = tag_handler->register_op(fill_op, tag_detail::bosonic);
+            tag_type create = tag_handler->register_op(create_op, tag_detail::bosonic);
+            tag_type destroy = tag_handler->register_op(destroy_op, tag_detail::bosonic);
+
+            std::vector<tag_block> pre_tensor;
+
+            if (p == i)
+                pre_tensor.push_back(tag_block(0,0,destroy, 1.0));
+            else if (p == j)
+                pre_tensor.push_back(tag_block(0,0,create, 1.0));
+            else if ( i < p && p < j)
+                pre_tensor.push_back(tag_block(0,0,fill, 1.0));
+            else 
+                pre_tensor.push_back(tag_block(0,0,identity, 1.0));
+
+            std::pair<index_type, index_type> rcd = ::generate_mpo::rcdim(pre_tensor);
+            ret[p] = MPOTensor<Matrix, SymmGroup>(rcd.first, rcd.second, pre_tensor, tag_handler->get_operator_table());
+        }
+        return ret;
+    }
+
+    template<class Matrix, class SymmGroup>
     MPO<Matrix, SymmGroup> make_1rdm_termB(int i, int j, std::vector<int> site_irreps)
     {   // represents a cdag_i c_j operator term
         //boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
