@@ -6,6 +6,7 @@
 #include "dmrg/block_matrix/symmetry.h"
 #include "dmrg/block_matrix/block_matrix.h"
 
+#include "dmrg/models/generate_mpo.hpp"
 #include "dmrg/mp_tensors/mpo.h"
 
 namespace SU2 {
@@ -222,10 +223,15 @@ namespace SU2 {
     template<class Matrix, class SymmGroup>
     MPO<Matrix, SymmGroup> make_2rdm_term_custom(int i, int j, int k, int l, int m1, int m2, int m3, int m4, int m5, std::vector<int> site_irreps)
     {
+        typedef tag_detail::tag_type tag_type;
+        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+        typedef typename Matrix::value_type value_type;
+        typedef boost::tuple<std::size_t, std::size_t, tag_type, value_type> tag_block;
+        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler(new TagHandler<Matrix, SymmGroup>());
+
         MPO<Matrix, SymmGroup> ret(site_irreps.size());
         for (int p=0; p<site_irreps.size(); ++p)
         {
-            typedef tag_detail::tag_type tag_type;
             typename SymmGroup::charge A(0), B(0), C(0), D(0);
             A[0] = 2; // 200
             B[0] = 1; B[1] =  1; B[2] = site_irreps[p]; // 11I
@@ -337,81 +343,96 @@ namespace SU2 {
             block_matrix<Matrix, SymmGroup> tmp;
 
 
-            //tag_type ident = tag_handler->register_op(identity, tag_detail::bosonic);
-            MPOTensor<Matrix, SymmGroup> op(1,2);
+            tag_type identity_t = tag_handler->register_op(identity, tag_detail::bosonic);
+
+            tag_type destroy1_t = tag_handler->register_op(destroy1, tag_detail::bosonic);
+            tag_type destroy1m_t = tag_handler->register_op(destroy1m, tag_detail::bosonic);
+            tag_type destroy2_t = tag_handler->register_op(destroy2, tag_detail::bosonic);
+            tag_type destroy2m_t = tag_handler->register_op(destroy2m, tag_detail::bosonic);
+            tag_type destroyS1_t = tag_handler->register_op(destroyS1, tag_detail::bosonic);
+
+            tag_type create1m1_t = tag_handler->register_op(create1m1, tag_detail::bosonic);
+            tag_type create1m2_t = tag_handler->register_op(create1m2, tag_detail::bosonic);
+            tag_type create1m3_t = tag_handler->register_op(create1m3, tag_detail::bosonic);
+            tag_type create1m4_t = tag_handler->register_op(create1m4, tag_detail::bosonic);
+
+            tag_type create2m1_t = tag_handler->register_op(create2m1, tag_detail::bosonic);
+            tag_type create2m2_t = tag_handler->register_op(create2m2, tag_detail::bosonic);
+            tag_type create2m3_t = tag_handler->register_op(create2m3, tag_detail::bosonic);
+            tag_type create2m4_t = tag_handler->register_op(create2m4, tag_detail::bosonic);
+
+            std::vector<tag_block> pre_tensor;
 
             if (p == i) {
-                op.set(0,0,(m1) ? destroy1m : destroy1, 1.0);
-                op.set(0,1,identity, 1.0);
+                pre_tensor.push_back(tag_block(0,0,(m1) ? destroy1m_t : destroy1_t, 1.0));
             }
             else if (p == j){
                 double scale1 = sqrt(2.);
-                op.set(0,0,(m2) ? destroy2m : destroy2, scale1);
+                pre_tensor.push_back(tag_block(0,0,(m2) ? destroy2m_t : destroy2_t, scale1));
                 double scale2 = 1.;
-                op.set(0,1, destroyS1, scale2);
+                pre_tensor.push_back(tag_block(0,1, destroyS1_t, scale2));
             }
             else if (p == k) {
                 int phase = (m3 > 3) ? -1 : 1;
                 double scale1 = phase * 1.0;
                 switch(m3%4) {
                     case 0:
-                        op.set(0,0,create1m1, scale1);
+                        pre_tensor.push_back(tag_block(0,0,create1m1_t, scale1));
                         break;
                     case 1:
-                        op.set(0,0,create1m2, scale1);
+                        pre_tensor.push_back(tag_block(0,0,create1m2_t, scale1));
                         break;
                     case 2:
-                        op.set(0,0,create1m3, scale1);
+                        pre_tensor.push_back(tag_block(0,0,create1m3_t, scale1));
                         break;
                     case 3:
-                        op.set(0,0,create1m4, scale1);
+                        pre_tensor.push_back(tag_block(0,0,create1m4_t, scale1));
                 }
                 double scale2 = 1.0;
                 switch(m4) {
                     case 0:
                         SU2::gemm(create1m1,cmod,tmp);
                         //op.set(0,1, tmp, scale2);
-                        op.set(0,1, create1m1, scale2);
+                        pre_tensor.push_back(tag_block(1,0, create1m1_t, scale2));
                         break;
                     case 1:
                         SU2::gemm(create1m2,cmod,tmp);
                         //op.set(0,1, tmp, scale2);
-                        op.set(0,1, create1m2, scale2);
+                        pre_tensor.push_back(tag_block(1,0, create1m2_t, scale2));
                         break;
                     case 2:
                         SU2::gemm(create1m3,cmod,tmp);
                         //op.set(0,1, tmp, scale2);
-                        op.set(0,1, create1m3, scale2);
+                        pre_tensor.push_back(tag_block(1,0, create1m3_t, scale2));
                         break;
                     case 3:
                         SU2::gemm(create1m4,cmod,tmp);
                         //op.set(0,1, tmp, scale2);
-                        op.set(0,1, create1m4, scale2);
+                        pre_tensor.push_back(tag_block(1,0, create1m4_t, scale2));
                 }
             }
             else if (p == l) {
                 switch(m5) {
                     case 0:
-                        op.set(0,0,create2m1, 1.0);
+                        pre_tensor.push_back(tag_block(0,0,create2m1_t, 1.0));
                         break;
                     case 1:
-                        op.set(0,0,create2m2, 1.0);
+                        pre_tensor.push_back(tag_block(0,0,create2m2_t, 1.0));
                         break;
                     case 2:
-                        op.set(0,0,create2m3, 1.0);
+                        pre_tensor.push_back(tag_block(0,0,create2m3_t, 1.0));
                         break;
                     case 3:
-                        op.set(0,0, create2m4, 1.0);
+                        pre_tensor.push_back(tag_block(0,0,create2m4_t, 1.0));
                 }
 
-                op.set(0,1,identity, 1.0);
             }
             else {
-                op.set(0,0,identity, 1.0);
-                op.set(0,1,identity, 1.0);
+                pre_tensor.push_back(tag_block(0,0,identity_t, 1.0));
             }
 
-            ret[p] = op;
+            std::pair<index_type, index_type> rcd = ::generate_mpo::rcdim(pre_tensor);
+            ret[p] = MPOTensor<Matrix, SymmGroup>(rcd.first, rcd.second, pre_tensor, tag_handler->get_operator_table());
         }
         return ret;
     }

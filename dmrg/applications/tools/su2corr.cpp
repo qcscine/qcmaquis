@@ -202,18 +202,18 @@ int main(int argc, char ** argv)
         //for (int v4=0; v4 < 4; ++v4) {
         //for (int v5=0; v5 < 4; ++v5) {
 
-        //std::vector<double> ref2 = generate_2rdm_ref();
-        //std::vector<double> result;
-        //for(int i=0; i < L-3; ++i)
-        //{
-        //    //MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,v3,v4,v5, site_irreps);
-        //    MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,0,0,0, site_irreps);
-        //    double twodm0123 = SU2::expval(mps, four, i+10,0, config);
-        //    result.push_back(twodm0123 / ref2[i]);
-        //}
-        ////std::copy(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "));
-        //std::transform(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / result[0]);
-        //std::cout << std::endl;
+        std::vector<double> ref2 = generate_2rdm_ref();
+        std::vector<double> result;
+        for(int i=0; i < L-3; ++i)
+        {
+            //MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,v3,v4,v5, site_irreps);
+            MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,0,0,0, site_irreps);
+            double twodm0123 = SU2::expval(mps, four, i+10,0, config);
+            result.push_back(twodm0123 / ref2[i]);
+        }
+        //std::copy(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "));
+        std::transform(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / result[0]);
+        std::cout << std::endl;
 
         //}
         //}

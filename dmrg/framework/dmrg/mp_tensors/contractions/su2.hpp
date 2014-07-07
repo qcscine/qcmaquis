@@ -326,9 +326,7 @@ namespace SU2 {
         ket_tensor.make_right_paired();
 
         MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(0,0);
-        //MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> accessS1 = mpo.at(0,1);
         block_matrix<Matrix, SymmGroup> const & W = access.op;
-        //block_matrix<Matrix, SymmGroup> const & WS1 = accessS1.op;
         block_matrix<OtherMatrix, SymmGroup> ret;
 
         block_matrix<OtherMatrix, SymmGroup> t1;
@@ -396,10 +394,7 @@ namespace SU2 {
                     double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                     coupling_coeff *= pow(ip+1., 0.5) * pow(j+1., 0.5);
                     coupling_coeff *= pow(i+1., -0.5) * pow(jp+1., -0.5);
-                    //if (std::abs(ip-jp) == 2 || std::abs(i-j) == 2)
-                    //    coupling_coeff *= accessS1.scale * WS1[w_block](0,0);
-                    //else
-                        coupling_coeff *= access.scale * W[w_block](0,0);
+                    coupling_coeff *= access.scale * W[w_block](0,0);
 
                     if (debug) {
                         std::cout << j << "," << two_s << "," << jp << " | " << a << "," << k << "," << ap << " | "
