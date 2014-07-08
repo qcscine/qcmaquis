@@ -228,7 +228,7 @@ namespace SU2 {
                   er = std::equal_range(ket_basis.begin(), ket_basis.end(),
                     boost::make_tuple(mc, SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
 
-                assert(er.first + 1 == er.second);
+                //assert(er.first + 1 == er.second);
                 for (const_iterator it = er.first; it != er.second; ++it)
                 {
                     std::size_t matched_block = std::distance(ket_basis.begin(), it);
@@ -309,11 +309,11 @@ namespace SU2 {
     template<class Matrix, class OtherMatrix, class SymmGroup>
     block_matrix<OtherMatrix, SymmGroup>
     apply_operator(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
-                          MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                          block_matrix<OtherMatrix, SymmGroup> const & left,
-                          MPOTensor<Matrix, SymmGroup> const & mpo,
-                          std::vector<int> const & config,
-                          bool debug = false)
+                   MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                   block_matrix<OtherMatrix, SymmGroup> const & left,
+                   MPOTensor<Matrix, SymmGroup> const & mpo,
+                   std::vector<int> const & config,
+                   bool debug = false)
     {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
@@ -478,6 +478,7 @@ namespace SU2 {
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
         MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
+        ket_cpy.make_right_paired();
         std::vector<block_matrix<Matrix, SymmGroup> > t = boundary_times_mps(ket_cpy, left, mpo);
 
         Index<SymmGroup> const & left_i = bra_tensor.row_dim();
@@ -498,10 +499,8 @@ namespace SU2 {
 
         omp_for(index_type b2, range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-            //contraction::SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
-            contraction::SU2::lbtm_kernel_new(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(),  right_i, out_left_i, bra_tensor.col_dim(),
+            contraction::SU2::lbtm_kernel_new(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, bra_tensor.col_dim(),
                                               in_right_pb, out_left_pb);
-            //maquis::cout << contr_grid(0,0) << "---------------------" << std::endl << std::endl;
             ::SU2::gemm(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
         });
 
@@ -527,15 +526,10 @@ namespace SU2 {
 
         for(size_t i = 0; i < L; ++i) {
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
-            left_bm = contraction::SU2::apply_operator(cpy, mps[i], left_bm, mpo[i], config, debug);
-            //maquis::cout << "REF" << i << "\n";
-            //maquis::cout << left_bm << std::endl;
+            //left_bm = contraction::SU2::apply_operator(cpy, mps[i], left_bm, mpo[i], config, debug);
             left = contraction::SU2::overlap_mpo_left_step(cpy, mps[i], left, mpo[i]);
-            //maquis::cout << "TEST" << i << "\n";
-            //maquis::cout << transpose(left[0]) << std::endl;
         }
 
-        //return maquis::real(left_bm.trace());
         return maquis::real(left[0].trace());
     }
 
