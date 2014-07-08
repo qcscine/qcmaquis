@@ -114,82 +114,6 @@ namespace contraction {
 namespace SU2 {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    void lbtm_kernel(size_t b2,
-                     ContractionGrid<Matrix, SymmGroup>& contr_grid,
-                     Boundary<OtherMatrix, SymmGroup> const & left,
-                     std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
-                     MPOTensor<Matrix, SymmGroup> const & mpo,
-                     Index<SymmGroup> const & physical_i,
-                     Index<SymmGroup> const & right_i,
-                     Index<SymmGroup> const & out_left_i,
-                     ProductBasis<SymmGroup> const & in_right_pb,
-                     ProductBasis<SymmGroup> const & out_left_pb)
-    {
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
-
-        typedef typename SymmGroup::charge charge;
-        typedef std::size_t size_t;
-
-        col_proxy col_b2 = mpo.column(b2);
-        for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
-            index_type b1 = col_it.index();
-
-            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
-            if (T.n_blocks() == 0) continue;
-            MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
-            block_matrix<Matrix, SymmGroup> const & W = access.op;
-
-            charge T_delta = SymmGroup::fuse(T.right_basis_charge(0), -T.left_basis_charge(0));
-
-            block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
-
-            for (size_t r = 0; r < right_i.size(); ++r)
-            {
-                charge out_r_charge = right_i[r].first;
-                size_t r_size = right_i[r].second;
-
-                for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
-                {
-                    charge phys_in = W.left_basis_charge(w_block);
-                    charge phys_out = W.right_basis_charge(w_block);
-                    // deltas are not constant among blocks of W
-                    charge operator_delta = SymmGroup::fuse(phys_out, -phys_in);
-                    charge total_delta = SymmGroup::fuse(operator_delta, -T_delta);
-
-                    charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);
-                    if (!out_left_i.has(out_l_charge)) continue;
-
-                    size_t o = ret.find_block(out_l_charge, out_r_charge);
-                    if ( o == ret.n_blocks() ) {
-                        o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
-                        ret.resize_block(out_l_charge, out_r_charge, out_left_i.size_of_block(out_l_charge), r_size);
-                    }
-
-                    charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_in);
-                    charge in_l_charge = SymmGroup::fuse(in_r_charge, -T_delta);
-                    size_t t_block = T.basis().position(in_l_charge, in_r_charge);
-                    if (t_block == T.n_blocks()) continue;
-
-                    size_t in_right_offset = in_right_pb(phys_in, out_r_charge);
-                    size_t out_left_offset = out_left_pb(phys_out, in_l_charge);
-
-                    size_t phys_s1 = W.left_basis_size(w_block);
-                    size_t phys_s2 = W.right_basis_size(w_block);
-                    Matrix const & wblock = W[w_block];
-                    Matrix const & iblock = T[t_block];
-                    Matrix & oblock = ret[o];
-
-                    maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
-                            out_left_offset, in_right_offset,
-                            phys_s1, phys_s2, T.left_basis_size(t_block), r_size, access.scale);
-                }
-            } // right index block
-        } // b1
-    }
-
-    template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel_new(size_t b2,
                      ContractionGrid<Matrix, SymmGroup>& contr_grid,
                      Boundary<OtherMatrix, SymmGroup> const & left,
@@ -281,7 +205,7 @@ namespace SU2 {
                         //         << " T(" << lc << "," << rc << "): +" << in_right_offset
                         //         << "(" << T.left_basis_size(t_block) << "x" << r_size << ")|" << T.right_basis_size(t_block) << " -> +"
                         //         << out_left_offset << "(" << T.left_basis_size(t_block) << "x" << r_size << ")|" << out_left_i.size_of_block(out_l_charge)
-                        //         << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << " " << coupling_coeff << std::endl;
+                        //         << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << " " << coupling_coeff * wblock(0,0) << std::endl;
 
                         maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
                                 out_left_offset, in_right_offset,
