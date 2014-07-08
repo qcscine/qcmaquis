@@ -340,9 +340,7 @@ namespace SU2 {
                         if (ap >= 3) continue;
 
                         double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                        coupling_coeff *= pow(ip+1., 0.5) * pow(j+1., 0.5);
-                        coupling_coeff *= pow(i+1., -0.5) * pow(jp+1., -0.5);
-                        coupling_coeff *= access.scale;
+                        coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
 
                         size_t phys_s1 = W.left_basis_size(w_block);
                         size_t phys_s2 = W.right_basis_size(w_block);
