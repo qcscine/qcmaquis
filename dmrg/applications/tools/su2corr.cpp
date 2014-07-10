@@ -188,8 +188,8 @@ int main(int argc, char ** argv)
         int i=0, j=3;
         MPO<matrix, grp> mpo = SU2::make_custom<matrix, grp>(i, j, site_irreps);
         double eval = SU2::expval_r(mps, mpo, i, j, config);
-        //maquis::cout << eval << "  ref: " << ref(i,j) + ref(i,j+1) << std::endl;
-        maquis::cout << eval << "  ref: " << ref(i,j) << std::endl;
+        maquis::cout << eval << "  ref: " << ref(i,j) + ref(i,j+1) << std::endl;
+        //maquis::cout << eval << "  ref: " << ref(i,j) << std::endl;
 
         //std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
         //std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));

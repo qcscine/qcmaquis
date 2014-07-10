@@ -386,18 +386,11 @@ namespace SU2 {
 
         block_matrix<Matrix, SymmGroup> ret;
 
-        maquis::cout << "left_i\n";
-        maquis::cout << left_i << std::endl;
-        maquis::cout << "out_right_i\n";
-        maquis::cout << out_right_i << std::endl;
-        maquis::cout << "ket_basis\n";
-        maquis::cout << ket_basis << std::endl;
-
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
 
-            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b1];
+            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];
             MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
             block_matrix<Matrix, SymmGroup> const & W = access.op;
 
@@ -454,12 +447,12 @@ namespace SU2 {
                         Matrix const & iblock = T[t_block];
                         Matrix & oblock = ret[o];
 
-                        maquis::cout << "access " << mc << " - " << phys_out<< "|" << out_r_charge << " -- "
-                                 << lc << " - " << phys_in << "|" << out_l_charge
-                                 << " T(" << lc << "," << rc << "): +" << in_left_offset
-                                 << "(" << l_size << "x" << T.right_basis_size(t_block) << ")|" << T.left_basis_size(t_block) << " -> +"
-                                 << out_right_offset << "(" << l_size << "x" << T.right_basis_size(t_block) << ")|" << out_right_i.size_of_block(out_r_charge)
-                                 << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << " " << coupling_coeff * wblock(0,0) << std::endl;
+                        //maquis::cout << "access " << mc << " - " << phys_out<< "|" << out_r_charge << " -- "
+                        //         << lc << " - " << phys_in << "|" << out_l_charge
+                        //         << " T(" << lc << "," << rc << "): +" << in_left_offset
+                        //         << "(" << l_size << "x" << T.right_basis_size(t_block) << ")|" << T.left_basis_size(t_block) << " -> +"
+                        //         << out_right_offset << "(" << l_size << "x" << T.right_basis_size(t_block) << ")|" << out_right_i.size_of_block(out_r_charge)
+                        //         << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << " " << coupling_coeff * wblock(0,0) << std::endl;
 
                         maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
                                 out_right_offset, in_left_offset,
@@ -634,8 +627,6 @@ namespace SU2 {
         for(int i = L-1; i >= 0; --i) {
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
             right = contraction::SU2::overlap_mpo_right_step(cpy, mps[i], right, mpo[i]);
-            maquis::cout << "RIGHT" << i << std::endl;
-            maquis::cout << right[0] << std::endl;
         }
 
         return maquis::real(right[0].trace());
