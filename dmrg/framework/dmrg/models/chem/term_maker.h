@@ -177,14 +177,14 @@ struct TermMaker {
         std::sort(sterm.begin(), sterm.end(), compare_tag);
 
         std::pair<tag_type, value_type> ptag;
-        // sterm[0] is associated with op_i, ask the model for the right fill_op
+        // ask the model for the right fill_op
         fill_op = model->filling_matrix_tag(boost::tuples::get<0>(sterm[0]));
 
         ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[0]));
         boost::tuples::get<1>(sterm[0]) = ptag.first;
         term.coeff *= ptag.second;
         
-        // sterm[2] is associated with op_k, ask the model for the right fill_op
+        // ask the model for the right fill_op
         fill_op = model->filling_matrix_tag(boost::tuples::get<0>(sterm[2]));
 
         ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[2]));
