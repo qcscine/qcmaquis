@@ -69,16 +69,16 @@ struct TermMaker {
         //typename op_t::type tmp;
         std::pair<tag_type, value_type> ptag;
         if (i < j) {
-            // Query the right fill operator in rel model
-            fill_op = model->filling_matrix_tag(op1);
+            // Use the fill operator from the model
+            fill_op = model->filling_matrix_tag(i);
             ptag = op_table->get_product_tag(fill_op, op1);
             term.push_back(boost::make_tuple(i, ptag.first));
             term.push_back(boost::make_tuple(j, op2));
             term.coeff *= ptag.second;
         }
         else {
-            // Query the right fill operator in rel model
-            fill_op = model->filling_matrix_tag(op2);
+            // Use the fill operator from the model
+            fill_op = model->filling_matrix_tag(j);
             ptag = op_table->get_product_tag(fill_op, op2);
             term.push_back(boost::make_tuple(i, op1));
             term.push_back(boost::make_tuple(j, ptag.first));
@@ -104,7 +104,7 @@ struct TermMaker {
             // if the bosonic operator is in between
             // the fermionic operators, multiply with fill
             
-            // Query the right fill operator in rel model
+            // Use the fill operator from the model
             fill_op = model->filling_matrix_tag(pb);
 
             ptag1 = op_table->get_product_tag(fill_op, opb2);
@@ -120,7 +120,7 @@ struct TermMaker {
         }
         
         if (p1 < p2) {
-            // Query the right fill operator in rel model
+            // Use the fill operator from the model
             fill_op = model->filling_matrix_tag(p1);
             
             ptag1 = op_table->get_product_tag(fill_op, op1); 
@@ -128,7 +128,7 @@ struct TermMaker {
             term.coeff *= ptag1.second;
         }
         else {
-            // Query the right fill operator in rel model
+            // Use the fill operator from the model
             fill_op = model->filling_matrix_tag(p2);
             
             ptag1 = op_table->get_product_tag(fill_op, op2); 
@@ -146,10 +146,13 @@ struct TermMaker {
         term.push_back(sterm[1]);
         term.push_back(sterm[2]);
 
+        //for (int i_ = 0; i_ < term.size(); ++i_)
+        //   maquis::cout << op_table->get_op(term.operator_tag(i_)) << std::endl;
+
         return term;
     }
 
-    static term_descriptor four_term(tag_type ident, tag_type fill_op,
+    static term_descriptor four_term(Model* model, tag_type ident, tag_type fill_op,
                                 value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
                                 tag_type op_i, tag_type op_j,
                                 tag_type op_k, tag_type op_l,
@@ -174,9 +177,16 @@ struct TermMaker {
         std::sort(sterm.begin(), sterm.end(), compare_tag);
 
         std::pair<tag_type, value_type> ptag;
+        // sterm[0] is associated with op_i, ask the model for the right fill_op
+        fill_op = model->filling_matrix_tag(boost::tuples::get<0>(sterm[0]));
+
         ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[0]));
         boost::tuples::get<1>(sterm[0]) = ptag.first;
         term.coeff *= ptag.second;
+        
+        // sterm[2] is associated with op_k, ask the model for the right fill_op
+        fill_op = model->filling_matrix_tag(boost::tuples::get<0>(sterm[2]));
+
         ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[2]));
         boost::tuples::get<1>(sterm[2]) = ptag.first;
         term.coeff *= ptag.second;

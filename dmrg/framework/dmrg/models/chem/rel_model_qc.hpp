@@ -29,7 +29,6 @@
 #define REL_QC_MODEL_HPP
 
 template <class Matrix, class SymmGroup>
-//qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & parms_)
 rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParameters & parms_)
 : lat(lat_)
 , parms(parms_)
@@ -37,12 +36,13 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 {
     // find the highest irreducible representation number 
     // used to generate ops for all irreps 0..max_irrep
+    // TODO: obsolete, probably not used anywhere -> remove it
     max_irrep = 0;
     for (pos_t p=0; p < lat.size(); ++p)
-        max_irrep = (lat.get_prop<typename SymmGroup::subcharge>("type", p) > max_irrep)
-                        ? lat.get_prop<typename SymmGroup::subcharge>("type", p) : max_irrep;
+        max_irrep = (lat.get_prop<typename SymmGroup::subcharge>("irrep", p) > max_irrep)
+                        ? lat.get_prop<typename SymmGroup::subcharge>("irrep", p) : max_irrep;
 
-    typename SymmGroup::charge A(0), B(0), C(0), D(1);
+    typename SymmGroup::charge A(0), B(0), C(0);
     B[0]=1; C[1]=1;
 
     // A -> empty, B -> unbarred spinor, C-> barred spinor
@@ -75,7 +75,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     }
 
     op_t create_unbar_op, create_bar_op, destroy_unbar_op, destroy_bar_op,
-         count_unbar_op, count_bar_op, docc_op, e2d_op, d2e_op,
+         count_unbar_op, count_bar_op, //docc_op,
          ident_unbar_op, ident_bar_op, fill_unbar_op, fill_bar_op;
 
     ident_unbar_op.insert_block(Matrix(1, 1, 1), A, A);
@@ -93,8 +93,8 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     count_unbar_op.insert_block(Matrix(1, 1, 1), B, B);
     count_bar_op.insert_block(Matrix(1, 1, 1), C, C);
  
-    docc_op.insert_block(Matrix(1, 1, 1), B, B);
-    docc_op.insert_block(Matrix(1, 1, 1), C, C);
+    //docc_op.insert_block(Matrix(1, 1, 1), B, B);
+    //docc_op.insert_block(Matrix(1, 1, 1), C, C);
     
     fill_unbar_op.insert_block(Matrix(1, 1, 1), A, A);
     fill_unbar_op.insert_block(Matrix(1, 1, -1), B, B);
@@ -105,7 +105,6 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     op_t tmp;
     tag_type dummy;
 
-    // Not sure if fill_bar is right
     gemm(fill_bar_op, create_bar_op, tmp);
     create_bar_op = tmp;
     gemm(destroy_bar_op, fill_bar_op, tmp);
@@ -127,27 +126,19 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     REGISTER(destroy_bar,    tag_detail::fermionic)
     REGISTER(count_unbar,    tag_detail::bosonic)
     REGISTER(count_bar,      tag_detail::bosonic)
-    //REGISTER(e2d,          tag_detail::bosonic)
-    //REGISTER(d2e,          tag_detail::bosonic)
-    REGISTER(docc,           tag_detail::bosonic)
+    //REGISTER(docc,           tag_detail::bosonic)
 
     #undef REGISTER
     /**********************************************************************/
 
     // TODO: change term_assistant input paramters
-    // For now just pass ident_unbar (will not be used anyway)
-    // ATTENTION:  pass fill_unbar --> doesn't affect one-term,
-    // but affects 3- and 4-terms --> need to fix it when we use
-    // all terms in the hamiltonian!!!
-    // NOTE: actually also fill is taken from here and there should be
-    // no problem --> need to check again
     chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, dummy, dummy, tag_handler, this->align, this);
     
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
     
-    // TODO: move it up, remove print statement
+    // TODO: move it up
     int n_pair = lat.size()/2;
 
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
@@ -160,7 +151,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         if ( i==-1 && j==-1 && k==-1 && l==-1) {
             
             term_descriptor term;
-            term.coeff = matrix_elements[m];
+            term.coeff = matrix_elements[m]*2.0;
             term.push_back( boost::make_tuple(0, ident_unbar) );
             this->terms_.push_back(term);
 
@@ -171,13 +162,13 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         else if ( i==j && k == -1 && l == -1) {
             {
                 term_descriptor term;
-                term.coeff = matrix_elements[m];
+                term.coeff = matrix_elements[m]*2.0;
                 term.push_back( boost::make_tuple(i, count_unbar));
                 this->terms_.push_back(term);
             }
             {
                 term_descriptor term;
-                term.coeff = matrix_elements[m];
+                term.coeff = matrix_elements[m]*2.0;
                 term.push_back( boost::make_tuple(i+n_pair, count_bar));
                 this->terms_.push_back(term);
             }
@@ -188,530 +179,232 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
             
-            
-            //if ( i>n_pair && j<=n_pair){
-            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
-            //    true, fill_unbar, matrix_elements[m], i, j, create_bar, destroy_unbar, tag_handler)
-            //);
-            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
-            //    true, fill_unbar, matrix_elements[m], j, i, create_unbar, destroy_bar, tag_handler)
-            //);
-            //}
-
-
-            // i & j refer to unbarred spinors --> passs create_/destroy/fill_unbar
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
-                true, fill_unbar, matrix_elements[m], i, j, create_unbar, destroy_unbar, tag_handler)
-            );
-            // i+n_pair, j+n_pair refer to barred spinors --> bar operators
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
-                true, fill_bar, matrix_elements[m], i + n_pair, j + n_pair, create_bar, destroy_bar, tag_handler)
+                true, dummy, matrix_elements[m]*2.0, i, j, create_unbar, destroy_unbar, tag_handler)
             );
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
-                true, fill_unbar, matrix_elements[m], j, i, create_unbar, destroy_unbar, tag_handler)
+                true, dummy, matrix_elements[m]*2.0, i + n_pair, j + n_pair, create_bar, destroy_bar, tag_handler)
             );
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
-                true, fill_bar, matrix_elements[m], j + n_pair, i + n_pair, create_bar, destroy_bar, tag_handler)
+                true, dummy, matrix_elements[m]*2.0, j, i, create_unbar, destroy_unbar, tag_handler)
+            );
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
+                true, dummy, matrix_elements[m]*2.0, j + n_pair, i + n_pair, create_bar, destroy_bar, tag_handler)
             );
             
             used_elements[m] += 1;
         }
 
-        // Two-electron terms V_ijkl
-        // All possible combinations are read in from the FCIDUMP file
-        // ijkl stands for unbarred spinors, pqrs stands for barred spinors
-        
         // V_iiii
-        else if (i == j && j == k && k == l) {
-        
         // This case doesn't exist for the relativistic model!
-        // We cannot have the same spinor occupied twice!
-
-        /*    
-        //------------- 4 unbarred & 0 barred ---------------//
-            if (i < n_pair) {
-                term_descriptor term;
-                term.coeff = matrix_elements[m]*0.5;
-                //term.push_back(boost::make_tuple(i, docc));
-                term.push_back(boost::make_tuple(i, count_unbar));
-                this->terms_.push_back(term);
-            }
-        //------------- 0 unbarred & 4 barred ---------------//
-            else if (i >= n_pair) {
-                term_descriptor term;
-                term.coeff = matrix_elements[m]*0.5;
-                //term.push_back(boost::make_tuple(i, docc));
-                term.push_back(boost::make_tuple(i, count_bar));
-                this->terms_.push_back(term);
-            }
-        */    
+        else if (i == j && j == k && k == l) {
             used_elements[m] += 1;
-        
         }
         
-        // V_iijj == V_jjii
-        else if ( i==j && k==l && j!=k) {
+        // V_ijjj & V_jijj & V_jjij & V_jjji
+        // This case doesn't exist for the relativistic model!
+        else if ( (i==j && j==k && k!=l) || (i==j && j!=k && j==l) || (i!=j && i==k && k==l) || (i!=j && j==k && k==l) ) {
+            used_elements[m] += 1;
+        }
+        
+        // V_ijij
+        // This case doesn't exist for the relativistic model!
+        else if ( i==k && j==l && i!=j) {
+            used_elements[m] += 1;
+        }
 
-            if (i < n_pair && k < n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_unbar, count_unbar);
-            } else if (i < n_pair && k >= n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_unbar, count_bar);
-            } else if (i >= n_pair && k < n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_bar, count_unbar);
-            } else if (i >= n_pair && k >= n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, i, k, count_bar, count_bar);
-            }
+        // V_iijj
+        else if ( i==j && k==l && j!=k) {
             
+            if (is_term_allowed(i,j,k,l)) {
+                if (i < n_pair && k < n_pair) {
+                    term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_unbar, count_unbar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m], i+n_pair, k+n_pair, count_bar, count_bar);
+                } else if (i < n_pair && k >= n_pair) {
+                    term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_unbar, count_bar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m], i+n_pair, k-n_pair, count_bar, count_unbar);
+                } else if (i >= n_pair && k < n_pair) {
+                } else if (i >= n_pair && k >= n_pair) {
+                }
+            }
             used_elements[m] += 1;
         }
        
-        // V_iikl == V_ijll
-        else if ( i==j && j!=k && j!=l || k==l && i!=k && j!=k ) {
+        // V_ijji
+        else if ( i==l && j==k && i!=j) {
             
-            int same_idx;
-            if (i==j) { same_idx = i; }
-            if (k==l) { same_idx = k; }
-
-            // ----------------- ii unbarred ----------------- //
-            //
-            // ii unbarred, k unbarred, l unbarred
-            if (i < n_pair && k < n_pair && l < n_pair) {
-                // do nothing for the moment
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_unbar, destroy_unbar, create_unbar, destroy_unbar);
-                //std::cout << "neglected: " << i << j << k << l << std::endl;
+            if (is_term_allowed(i,j,k,l)) {
+                if (i < n_pair && j < n_pair) {
+                    term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_unbar, count_unbar);
+                    term_assistant.add_term(this->terms_, -matrix_elements[m], i+n_pair, j+n_pair, count_bar, count_bar);
+                } else if (i < n_pair && j >= n_pair) {
+                    term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_unbar, count_bar);
+                    term_assistant.add_term(this->terms_, -matrix_elements[m], i+n_pair, j-n_pair, count_bar, count_unbar);
+                } else if (i >= n_pair && j < n_pair) {
+                } else if (i >= n_pair && j >= n_pair) {
+                }
             }
-            // ii unbarred, k unbarred, l barred
-            else if (i < n_pair && k < n_pair && l >= n_pair) {
-                // do nothing for the moment
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_unbar, destroy_unbar, create_unbar, destroy_bar);
-                //std::cout << "neglected: " << i << j << k << l << std::endl;
-            }
-            // ii unbarred, k barred, l unbarred
-            else if (i < n_pair && k >= n_pair && l < n_pair) {
-                // do nothing for the moment
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_unbar, destroy_unbar, create_bar, destroy_unbar);
-                //std::cout << "neglected: " << i << j << k << l << std::endl;
-            }
-            // ii unbarred, kl barred
-            else if (same_idx < n_pair && k >= n_pair && l >= n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_unbar, destroy_unbar, create_bar, destroy_bar);
-                std::cout << "registered: " << i << j << k << l << std::endl;
-            }
-            // ----------------------------------------------- //
-            
-
-            // ------------------ ii barred ------------------ //
-            //
-            // ii barred, k barred, l barred
-            else if (i >= n_pair && k >= n_pair && l >= n_pair) {
-                // do nothing for the moment
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_bar, destroy_bar, create_bar, destroy_bar);
-                //std::cout << "neglected: " << i << j << k << l << std::endl;
-            }
-            // ii barred, k unbarred, l barred
-            else if (i >= n_pair && k < n_pair && l >= n_pair) {
-                // do nothing for the moment
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_bar, destroy_bar, create_unbar, destroy_bar);
-                //std::cout << "neglected: " << i << j << k << l << std::endl;
-            }
-            // ii barred, k barred, l unbarred
-            else if (i >= n_pair && k >= n_pair && l < n_pair) {
-                // do nothing for the moment
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_bar, destroy_bar, create_bar, destroy_unbar);
-                //std::cout << "neglected: " << i << j << k << l << std::endl;
-            }
-            // ii barred, kl unbarred
-            else if (same_idx >= n_pair && k < n_pair && l < n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, k, l, create_bar, destroy_bar, create_unbar, destroy_unbar);
-                std::cout << "registered: " << i << j << k << l << std::endl;
-            }
-            // ----------------------------------------------- //
-            
-            
-            // ----------------- ll unbarred ----------------- //
-            //
-            // i unbarred, j unbarred, ll unbarred
-            else if (i < n_pair && j < n_pair && l < n_pair) {
-                // do nothing for the moment
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_unbar, destroy_unbar, create_unbar, destroy_unbar);
-                //std::cout << "neglected: " << i << j << k << l << std::endl;
-            }
-            // i unbarred, j barred, ll unbarred
-            else if (i < n_pair && j >= n_pair && l < n_pair) {
-                // do nothing for the moment
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_unbar, destroy_unbar, create_bar, destroy_unbar);
-                //std::cout << "neglected: " << i << j << k << l << std::endl;
-            }
-            // i barred, j unbarred, ll unbarred
-            else if (i >= n_pair && j < n_pair && l < n_pair) {
-                // do nothing for the moment
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_unbar, destroy_unbar, create_unbar, destroy_bar);
-                //std::cout << "neglected: " << i << j << k << l << std::endl;
-            }
-            // ij barred, ll unbarred
-            else if (i >= n_pair && j >= n_pair && same_idx < n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_unbar, destroy_unbar, create_bar, destroy_bar);
-                std::cout << "registered: " << i << j << k << l << std::endl;
-            }
-            // ----------------------------------------------- //
-            
-            
-            // ------------------ ll barred ------------------ //
-            //
-            // i barred, j barred, ll barred
-            else if (i >= n_pair && j >= n_pair && l >= n_pair) {
-                // do nothing for the moment
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_bar, destroy_bar, create_bar, destroy_bar);
-                //std::cout << "neglected: " << i << j << k << l << std::endl;
-            }
-            // i barred, j unbarred, ll barred
-            else if (i >= n_pair && j < n_pair && l >= n_pair) {
-                // do nothing for the moment
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_bar, destroy_bar, create_unbar, destroy_bar);
-                //std::cout << "neglected: " << i << j << k << l << std::endl;
-            }
-            // i unbarred, j barred, ll barred
-            else if (i < n_pair && j >= n_pair && l >= n_pair) {
-                // do nothing for the moment
-                //term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_bar, destroy_bar, create_bar, destroy_unbar);
-                //std::cout << "neglected: " << i << j << k << l << std::endl;
-            }
-            // ij unbarred, ll barred
-            else if (i < n_pair && j < n_pair && same_idx >= n_pair) {
-                term_assistant.add_term(this->terms_, matrix_elements[m]*0.5, same_idx, j, i, create_bar, destroy_bar, create_unbar, destroy_unbar);
-                std::cout << "registered: " << i << j << k << l << std::endl;
-            }
-            // ----------------------------------------------- //
-            
-            used_elements[m] += 1;
-        } 
-
-        /*------------- 3 unbarred & 1 barred ---------------*/
-        // V_pjkl
-        else if (i >= n_pair && j < n_pair && k < n_pair && l < n_pair) {
-            
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_bar, create_unbar, destroy_unbar, destroy_unbar);
-             
             used_elements[m] += 1;
         }
 
-        // V_iqkl
-        else if (i < n_pair && j >= n_pair && k < n_pair && l < n_pair) {
+        // V_iikl
+        else if ( i==j && j!=k && j!=l ) {
             
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_unbar, create_bar, destroy_unbar, destroy_unbar);
-             
+            if (is_term_allowed(i,j,k,l)) {
+                if        (i < n_pair && k <  n_pair && l <  n_pair) {
+                    term_assistant.add_term(this->terms_, matrix_elements[m], i, k, l, create_unbar, destroy_unbar, create_unbar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m], i+n_pair, k+n_pair, l+n_pair, create_bar, destroy_bar, create_bar, destroy_bar);
+                } else if (i < n_pair && k >= n_pair && l >= n_pair) {
+                    term_assistant.add_term(this->terms_, matrix_elements[m], i, k, l, create_unbar, destroy_unbar, create_bar, destroy_bar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m], i+n_pair, k-n_pair, l-n_pair, create_bar, destroy_bar, create_unbar, destroy_unbar);
+                } else if (i < n_pair && k >= n_pair && l <  n_pair) {
+                    //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, l, create_unbar, destroy_unbar, create_bar, destroy_unbar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m], i+n_pair, k-n_pair, l+n_pair, create_bar, destroy_bar, create_unbar, destroy_bar);
+                } else if (i < n_pair && k <  n_pair && l >= n_pair) {
+                    //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, l, create_unbar, destroy_unbar, create_unbar, destroy_bar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m], i+n_pair, k+n_pair, l-n_pair, create_bar, destroy_bar, create_bar, destroy_unbar);
+                } else if (i >= n_pair && k <  n_pair && l <  n_pair) {
+                } else if (i >= n_pair && k >= n_pair && l <  n_pair) {
+                } else if (i >= n_pair && k <  n_pair && l >= n_pair) {
+                } else if (i >= n_pair && k >= n_pair && l >= n_pair) {
+                }
+            } 
+            used_elements[m] += 1;
+        }
+         
+        // V_ijkk   
+        else if (k==l && i!=k && j!=k ) {
+
+            if (is_term_allowed(i,j,k,l)) {
+                if        (i <  n_pair && j <  n_pair && k  < n_pair) {
+                    term_assistant.add_term(this->terms_, matrix_elements[m], k, i, j, create_unbar, destroy_unbar, create_unbar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m], k+n_pair, i+n_pair, j+n_pair, create_bar, destroy_bar, create_bar, destroy_bar);
+                } else if (i <  n_pair && j <  n_pair && k >= n_pair) {
+                    term_assistant.add_term(this->terms_, matrix_elements[m], k, i, j, create_bar, destroy_bar, create_unbar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m], k-n_pair, i+n_pair, j+n_pair, create_unbar, destroy_unbar, create_bar, destroy_bar);
+                } else if (i <  n_pair && j >= n_pair && k <  n_pair) {
+                    //term_assistant.add_term(this->terms_, matrix_elements[m], k, i, j, create_unbar, destroy_unbar, create_unbar, destroy_bar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m], k+n_pair, i+n_pair, j-n_pair, create_bar, destroy_bar, create_bar, destroy_unbar);
+                } else if (i <  n_pair && j >= n_pair && k >= n_pair) {
+                    //term_assistant.add_term(this->terms_, matrix_elements[m], k, i, j, create_bar, destroy_bar, create_unbar, destroy_bar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m], k-n_pair, i+n_pair, j-n_pair, create_unbar, destroy_unbar, create_bar, destroy_unbar);
+                } else if (i >= n_pair && j >= n_pair && k >= n_pair) {
+                } else if (i >= n_pair && j >= n_pair && k <  n_pair) {
+                } else if (i >= n_pair && j <  n_pair && k >= n_pair) {
+                } else if (i >= n_pair && j <  n_pair && k <  n_pair) {
+                }
+            }
             used_elements[m] += 1;
         }
 
-        // V_ijrl
-        else if (i < n_pair && j < n_pair && k >= n_pair && l < n_pair) {
-            
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_unbar, create_unbar, destroy_bar, destroy_unbar);
-             
+        // V_ijil & V_ijkj
+        // This case doesn't exist for the relativistic model!
+        else if ( i==k && i!=j && i!=l || j==l && j!=i && j!=k ) {
             used_elements[m] += 1;
         }
         
-        // V_ijks
-        else if (i < n_pair && j < n_pair && k < n_pair && l >= n_pair) {
-            
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_unbar, create_unbar, destroy_unbar, destroy_bar);
-             
+        // V_ijki
+        else if ( i!=j && j!=k && i==l ) {
+
+            if (is_term_allowed(i,j,k,l)) {
+                if        (i <  n_pair && j <  n_pair && k <  n_pair) {
+                    term_assistant.add_term(this->terms_, -matrix_elements[m], i, k, j, create_unbar, destroy_unbar, create_unbar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, -matrix_elements[m], i+n_pair, k+n_pair, j+n_pair, create_bar, destroy_bar, create_bar, destroy_bar);
+                } else if (i <  n_pair && j >= n_pair && k >= n_pair) {
+                    term_assistant.add_term(this->terms_, -matrix_elements[m], i, k, j, create_unbar, destroy_unbar, create_bar, destroy_bar);
+                    term_assistant.add_term(this->terms_, -matrix_elements[m], i+n_pair, k-n_pair, j-n_pair, create_bar, destroy_bar, create_unbar, destroy_unbar);
+                } else if (i <  n_pair && j >= n_pair && k <  n_pair) {
+                    //term_assistant.add_term(this->terms_, -matrix_elements[m], i, k, j, create_unbar, destroy_unbar, create_unbar, destroy_bar);
+                    //term_assistant.add_term(this->terms_, -matrix_elements[m], i+n_pair, k+n_pair, j-n_pair, create_bar, destroy_bar, create_bar, destroy_unbar);
+                } else if (i <  n_pair && j <  n_pair && k >= n_pair) {
+                    //term_assistant.add_term(this->terms_, -matrix_elements[m], i, k, j, create_unbar, destroy_unbar, create_bar, destroy_unbar);
+                    //term_assistant.add_term(this->terms_, -matrix_elements[m], i+n_pair, k-n_pair, j+n_pair, create_bar, destroy_bar, create_unbar, destroy_bar);
+                } else if (i >= n_pair && j <  n_pair && k <  n_pair) {
+                } else if (i >= n_pair && j >= n_pair && k <  n_pair) {
+                } else if (i >= n_pair && j <  n_pair && k >= n_pair) {
+                } else if (i >= n_pair && j >= n_pair && k >= n_pair) {
+                }
+            }
             used_elements[m] += 1;
         }
 
-        /*------------- 2 unbarred & 2 barred ---------------*/
-        // V_pqkl
-        else if (i >= n_pair && j >= n_pair && k < n_pair && l < n_pair) {
-            
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_bar, create_bar, destroy_unbar, destroy_unbar);
-             
+        // V_ijjl
+        else if ( i!=j && j==k && k!=l ) {
+
+            if (is_term_allowed(i,j,k,l)) {
+                if        (j <  n_pair && i <  n_pair && l <  n_pair) {
+                    term_assistant.add_term(this->terms_, -matrix_elements[m], j, i, l, create_unbar, destroy_unbar, create_unbar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, -matrix_elements[m], j+n_pair, i+n_pair, l+n_pair, create_bar, destroy_bar, create_bar, destroy_bar);
+                } else if (j <  n_pair && i >= n_pair && l >= n_pair) {
+                    term_assistant.add_term(this->terms_, -matrix_elements[m], j, i, l, create_unbar, destroy_unbar, create_bar, destroy_bar);
+                    term_assistant.add_term(this->terms_, -matrix_elements[m], j+n_pair, i-n_pair, l-n_pair, create_bar, destroy_bar, create_unbar, destroy_unbar);
+                } else if (j <  n_pair && i >= n_pair && l <  n_pair) {
+                    //term_assistant.add_term(this->terms_, -matrix_elements[m], j, i, l, create_unbar, destroy_unbar, create_bar, destroy_unbar);
+                    //term_assistant.add_term(this->terms_, -matrix_elements[m], j+n_pair, i-n_pair, l+n_pair, create_bar, destroy_bar, create_unbar, destroy_bar);
+                } else if (j <  n_pair && i <  n_pair && l >= n_pair) {
+                    //term_assistant.add_term(this->terms_, -matrix_elements[m], j, i, l, create_unbar, destroy_unbar, create_unbar, destroy_bar);
+                    //term_assistant.add_term(this->terms_, -matrix_elements[m], j+n_pair, i+n_pair, l-n_pair, create_bar, destroy_bar, create_bar, destroy_unbar);
+                } else if (j >= n_pair && i <  n_pair && l <  n_pair) {
+                } else if (j >= n_pair && i >= n_pair && l <  n_pair) {
+                } else if (j >= n_pair && i <  n_pair && l >= n_pair) {
+                } else if (j >= n_pair && i >= n_pair && l >= n_pair) {
+                }
+            }
             used_elements[m] += 1;
         }
 
-        // V_pjrl
-        else if (i >= n_pair && j < n_pair && k >= n_pair && l < n_pair) {
-            
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_bar, create_unbar, destroy_bar, destroy_unbar);
-             
-            used_elements[m] += 1;
-        }
-
-        // V_pjks
-        else if (i >= n_pair && j < n_pair && k < n_pair && l >= n_pair) {
-            
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_bar, create_unbar, destroy_unbar, destroy_bar);
-             
-            used_elements[m] += 1;
-        }
-
-        // V_iqrl
-        else if (i < n_pair && j >= n_pair && k >= n_pair && l < n_pair) {
-            
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_unbar, create_bar, destroy_bar, destroy_unbar);
-             
-            used_elements[m] += 1;
-        }
-
-
-        // V_iqks
-        else if (i < n_pair && j >= n_pair && k < n_pair && l >= n_pair) {
-            
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_unbar, create_bar, destroy_unbar, destroy_bar);
-             
-            used_elements[m] += 1;
-        }
-
-        // V_ijrs
-        else if (i < n_pair && j < n_pair && k >= n_pair && l >= n_pair) {
-            
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_unbar, create_unbar, destroy_bar, destroy_bar);
-             
-            used_elements[m] += 1;
-        }
-
-        /*------------- 1 unbarred & 3 barred ---------------*/
-        // V_pqrl
-        else if (i >= n_pair && j >= n_pair && k >= n_pair && l < n_pair) {
-            
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_bar, create_bar, destroy_bar, destroy_unbar);
-             
-            used_elements[m] += 1;
-        }
-
-        // V_pqks
-        else if (i >= n_pair && j >= n_pair && k < n_pair && l >= n_pair) {
-            
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_bar, create_bar, destroy_unbar, destroy_bar);
-             
-            used_elements[m] += 1;
-        }
-
-        // V_pjrs
-        else if (i >= n_pair && j < n_pair && k >= n_pair && l >= n_pair) {
-            
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_bar, create_unbar, destroy_bar, destroy_bar);
-             
-            used_elements[m] += 1;
-        }
-        
-        // V_iqrs
-        else if (i < n_pair && j >= n_pair && k >= n_pair && l >= n_pair) {
-            
-            //term_assistant.add_term(this->terms_, i,j,k,l, create_bar, create_bar, destroy_bar, destroy_unbar);
-             
-            used_elements[m] += 1;
-        }
-
-        // --------------------------SEB code------------------------------ //
-        /*
-        // V_ijjj = V_jijj = V_jjij = V_jjji
-        else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
-
-            int same_idx, pos1;
-
-            if      (i==j) { same_idx = i; pos1 = l; }
-            else if (k==l) { same_idx = l; pos1 = i; }
-            else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
-
-            std::pair<tag_type, value_type> ptag;
-
-            // 1a
-            // --> c_l_up * n_i_down * cdag_i_up
-            ptag = tag_handler->get_product_tag(count_bar, create_unbar);
-            this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, destroy_unbar, tag_handler) );
-
-            // 1a_dagger
-            // --> c_i_up * n_i_down * cdag_l_up
-            ptag = tag_handler->get_product_tag(destroy_unbar, count_bar);
-            this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, create_unbar, tag_handler) );
-
-            // 1b
-            // --> c_l_down * n_i_up * cdag_i_down (1b)
-            ptag = tag_handler->get_product_tag(count_unbar, create_bar);
-            this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, destroy_bar, tag_handler) );
-
-            // (1b)_dagger
-            // --> c_i_down * n_i_up * cdag_l_down
-            ptag = tag_handler->get_product_tag(destroy_bar, count_unbar);
-            this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, create_bar, tag_handler) );
-
-            used_elements[m] += 1;
-        }
-
-        // V_iijj == V_jjii
-        else if ( i==j && k==l && j!=k) {
-
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_unbar, count_unbar);
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_unbar, count_bar);
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_bar, count_unbar);
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_bar, count_bar);
-
-            used_elements[m] += 1;
-        }
-
-        // V_ijij == V_jiji = V_ijji = V_jiij
-        else if ( i==k && j==l && i!=j) {
-
-            //term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, e2d, d2e);
-            //term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, d2e, e2d);
-            term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_unbar, count_unbar);
-            term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_bar, count_bar);
-
-            std::pair<tag_type, value_type> ptag1, ptag2;
-
-            // Could insert fill operators without changing the result
-            // --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
-            ptag1 = tag_handler->get_product_tag(destroy_bar, create_unbar);
-            ptag2 = tag_handler->get_product_tag(destroy_unbar, create_bar);
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
-            );
-
-            // --> -c_i_up * cdag_i_down * c_j_down * cdag_j_up
-            ptag1 = tag_handler->get_product_tag(destroy_unbar, create_bar);
-            ptag2 = tag_handler->get_product_tag(destroy_bar, create_unbar);
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
-            );
-            
-            used_elements[m] += 1;
-        }
-
-        // 9987 9877
-
-        // 8 (4x2)-fold degenerate V_iilk == V_iikl = V_lkii = V_klii  <--- coded
-        //                         V_ijkk == V_jikk = V_kkij = V_kkji  <--- contained above
-        else if ( (i==j && j!=k && k!=l) || (k==l && i!=j && j!=k)) {
-
-            int same_idx;
-            if (i==j) { same_idx = i; }
-            if (k==l) { same_idx = k; k = i; l = j; }
-
-            // n_up * cdag_up * c_up <--
-            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, k, l, create_unbar, destroy_unbar, create_unbar, destroy_unbar);
-            // n_up * cdag_down * c_down <--
-            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, k, l, create_unbar, destroy_unbar, create_bar, destroy_bar);
-            // n_down * cdag_up * c_up <--
-            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, k, l, create_bar, destroy_bar, create_unbar, destroy_unbar);
-            // n_down * cdag_down * c_down <--
-            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, k, l, create_bar, destroy_bar, create_bar, destroy_bar);
-
-            // --> n_up * c_up * cdag_up
-            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, l, k, create_unbar, destroy_unbar, create_unbar, destroy_unbar);
-            // --> n_up * c_down * cdag_down
-            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, l, k, create_unbar, destroy_unbar, create_bar, destroy_bar);
-            // --> n_down * c_up * cdag_up
-            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, l, k, create_bar, destroy_bar, create_unbar, destroy_unbar);
-            // --> n_down * c_down * cdag_down
-            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, l, k, create_bar, destroy_bar, create_bar, destroy_bar);
-
-            used_elements[m] += 1;
-        }
-
-        // 9887 7371 8727
-
-        // 4-fold degenerate (+spin) V_ijil = V_ijli = V_jiil = V_jili  <--- coded
-        //                           V_ilij = V_ilji = V_liij = V_liji
-        else if ( ((i==k && j!=l) || j==k || (j==l && i!=k)) && (i!=j && k!=l)) {
-            int same_idx, pos1, pos2;
-            if (i==k) { same_idx = i; pos1 = l; pos2 = j; }
-            if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
-            if (j==l) { same_idx = j; pos1 = k; pos2 = i; }
-
-            std::pair<tag_type, value_type> ptag;
-
-            ptag = tag_handler->get_product_tag(create_unbar, fill);
-            term_assistant.add_term(
-                this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_bar , destroy_bar, destroy_unbar
-            );
-            ptag = tag_handler->get_product_tag(create_bar, fill);
-            term_assistant.add_term(
-                this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_unbar   , destroy_unbar  , destroy_bar
-            );
-            ptag = tag_handler->get_product_tag(destroy_bar, fill);
-            term_assistant.add_term(
-                this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_unbar  , create_unbar   , create_bar
-            );
-            ptag = tag_handler->get_product_tag(destroy_unbar, fill);
-            term_assistant.add_term(
-                this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_bar, create_bar , create_unbar
-            );
-
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_unbar,   destroy_unbar,   create_unbar,   destroy_unbar
-            );
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_unbar,   destroy_bar, create_bar, destroy_unbar
-            );
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_bar, destroy_unbar,   create_unbar,   destroy_bar
-            );
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_bar, destroy_bar, create_bar, destroy_bar
-            );
-
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos2, pos1, create_unbar,   destroy_unbar,   create_unbar,   destroy_unbar
-            );
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos2, pos1, create_unbar,   destroy_bar, create_bar, destroy_unbar
-            );
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos2, pos1, create_bar, destroy_unbar,   create_unbar,   destroy_bar
-            );
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos2, pos1, create_bar, destroy_bar, create_bar, destroy_bar
-            );
-
-            used_elements[m] += 1;
-        }
-
-        // 32 (8x4)-fold degenerate V_ijkl = V_jikl = V_ijlk = V_jilk = V_klij = V_lkij = V_klji = V_lkji * spin
-        // V_ijkl -> 24 permutations which fall into 3 equivalence classes of 8 elements (with identical V_ matrix element)
-        // coded: 4 index permutations x 4 spin combinations 
+        // V_ijkl
         else if (i!=j && j!=k && k!=l && i!=k && j!=l) {
             
-            // 1
-            term_assistant.add_term(this->terms_, i,k,l,j, create_unbar, create_unbar, destroy_unbar, destroy_unbar);
-            term_assistant.add_term(this->terms_, i,k,l,j, create_unbar, create_bar, destroy_bar, destroy_unbar);
-            term_assistant.add_term(this->terms_, i,k,l,j, create_bar, create_unbar, destroy_unbar, destroy_bar);
-            term_assistant.add_term(this->terms_, i,k,l,j, create_bar, create_bar, destroy_bar, destroy_bar);
-
-            // 2
-            term_assistant.add_term(this->terms_, i,l,k,j, create_unbar, create_unbar, destroy_unbar, destroy_unbar);
-            term_assistant.add_term(this->terms_, i,l,k,j, create_unbar, create_bar, destroy_bar, destroy_unbar);
-            term_assistant.add_term(this->terms_, i,l,k,j, create_bar, create_unbar, destroy_unbar, destroy_bar);
-            term_assistant.add_term(this->terms_, i,l,k,j, create_bar, create_bar, destroy_bar, destroy_bar);
-
-            // 3
-            term_assistant.add_term(this->terms_, j,k,l,i, create_unbar, create_unbar, destroy_unbar, destroy_unbar);
-            term_assistant.add_term(this->terms_, j,k,l,i, create_unbar, create_bar, destroy_bar, destroy_unbar);
-            term_assistant.add_term(this->terms_, j,k,l,i, create_bar, create_unbar, destroy_unbar, destroy_bar);
-            term_assistant.add_term(this->terms_, j,k,l,i, create_bar, create_bar, destroy_bar, destroy_bar);
-
-            // 4
-            term_assistant.add_term(this->terms_, j,l,k,i, create_unbar, create_unbar, destroy_unbar, destroy_unbar);
-            term_assistant.add_term(this->terms_, j,l,k,i, create_unbar, create_bar, destroy_bar, destroy_unbar);
-            term_assistant.add_term(this->terms_, j,l,k,i, create_bar, create_unbar, destroy_unbar, destroy_bar);
-            term_assistant.add_term(this->terms_, j,l,k,i, create_bar, create_bar, destroy_bar, destroy_bar);
-        
+            if (is_term_allowed(i,j,k,l)) {
+                if        (i <  n_pair && j <  n_pair && k <  n_pair && l <  n_pair) {
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_unbar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l+n_pair,j+n_pair, create_bar, create_bar, destroy_bar, destroy_bar);
+                    //maquis::cout << i << j << k << l << std::endl;
+                } else if (i <  n_pair && j <  n_pair && k >= n_pair && l >= n_pair) {
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_bar, destroy_bar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l-n_pair,j+n_pair, create_bar, create_unbar, destroy_unbar, destroy_bar);
+                } else if (i <  n_pair && j <  n_pair && k >= n_pair && l <  n_pair) {
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_bar, destroy_unbar, destroy_unbar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l+n_pair,j+n_pair, create_bar, create_unbar, destroy_bar, destroy_bar);
+                } else if (i <  n_pair && j <  n_pair && k <  n_pair && l >= n_pair) {
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_bar, destroy_unbar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l-n_pair,j+n_pair, create_bar, create_bar, destroy_unbar, destroy_bar);
+                } else if (i <  n_pair && j >= n_pair && k <  n_pair && l >= n_pair) {
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_bar, destroy_bar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l-n_pair,j-n_pair, create_bar, create_bar, destroy_unbar, destroy_unbar);
+                } else if (i <  n_pair && j >= n_pair && k >= n_pair && l <  n_pair) {
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_bar, destroy_unbar, destroy_bar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l+n_pair,j-n_pair, create_bar, create_unbar, destroy_bar, destroy_unbar);
+                } else if (i <  n_pair && j >= n_pair && k <  n_pair && l <  n_pair) {
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_unbar, destroy_bar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l+n_pair,j-n_pair, create_bar, create_bar, destroy_bar, destroy_unbar);
+                } else if (i <  n_pair && j >= n_pair && k >= n_pair && l >= n_pair) {
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_bar, destroy_bar, destroy_bar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l-n_pair,j-n_pair, create_bar, create_unbar, destroy_unbar, destroy_unbar);
+                } else if (i >= n_pair && j >= n_pair && k >= n_pair && l >= n_pair) {
+                } else if (i >= n_pair && j >= n_pair && k <  n_pair && l <  n_pair) {
+                } else if (i >= n_pair && j >= n_pair && k <  n_pair && l >= n_pair) {
+                } else if (i >= n_pair && j >= n_pair && k >= n_pair && l <  n_pair) {
+                } else if (i >= n_pair && j <  n_pair && k >= n_pair && l <  n_pair) {
+                } else if (i >= n_pair && j <  n_pair && k <  n_pair && l >= n_pair) {
+                } else if (i >= n_pair && j <  n_pair && k >= n_pair && l >= n_pair) {
+                } else if (i >= n_pair && j <  n_pair && k <  n_pair && l <  n_pair) {
+                }
+            }
             used_elements[m] += 1;
-        }*/
+        }
+
     } // matrix_elements for
 
     // make sure all elements have been used
     std::vector<int>::iterator it_0;
     it_0 = std::find(used_elements.begin(), used_elements.end(), 0);
-    //maquis::cout << bool(it_0 < used_elements.end()) << std::endl;
-    //assert( it_0 == used_elements.end() );
+    maquis::cout << bool(it_0 < used_elements.end()) << std::endl;
+    assert( it_0 == used_elements.end() );
 
     term_assistant.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
-    
 }
     
 #endif

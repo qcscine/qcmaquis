@@ -159,7 +159,7 @@ namespace contraction {
                 charge out_r_charge = SymmGroup::fuse(out_l_charge, -total_delta);
 
                 if (!out_right_i.has(out_r_charge)) continue;
-
+                
                 size_t o = ret.find_block(out_l_charge, out_r_charge);
                 if ( o == ret.n_blocks() ) {
                     o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);

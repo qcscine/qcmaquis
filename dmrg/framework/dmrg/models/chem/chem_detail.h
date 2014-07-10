@@ -191,9 +191,9 @@ namespace chem_detail {
                 if (self > twin) {
                 
                     term_descriptor
-                    term = TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
+                    term = TermMaker<M, S>::four_term(model, ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
                                                    op_i, op_k, op_l, op_j, tag_handler);
-
+                    
                     term.coeff += value_type(sign(twin)) * coefficients[align(twin[0], twin[1], twin[2], twin[3])];
 
                     tagterms.push_back(term);
@@ -201,12 +201,71 @@ namespace chem_detail {
                 //else: we already have the term
             }
             else {
-                tagterms.push_back( TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
+                tagterms.push_back( TermMaker<M, S>::four_term(model, ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
                                    op_i, op_k, op_l, op_j, tag_handler) );
             }
         }
     
+        // 4-terms for the relativistic case
+        void add_term(std::vector<term_descriptor> & tagterms, value_type scale, int n_pair,
+                      int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
+        {
+            // Collapse terms with identical operators and different scales into one term
+            if (op_i == op_k && op_j == op_l) {
+
+                //maquis::cout << "collapsing term: " << i << j << k << l << std::endl;
+                // if i>j, we switch l,j to get the related term
+                // if j<i, we have to switch i,k, otherwise we get a forbidden permutation
+                IndexTuple self(i,j,k,l), twin(i,l,k,j);
+                if (i<j) twin = IndexTuple(k,j,i,l);
+
+                if (self > twin) {
+                
+                    //maquis::cout << "adding twin: " << twin << std::endl;
+                    term_descriptor
+                    term = TermMaker<M, S>::four_term(model, ident, fill, scale, i,k,l,j,
+                                                   op_i, op_k, op_l, op_j, tag_handler);
+                    
+                    // Find time-reversed of twin to get the right coefficient
+                    value_type tmp_coeff;
+                    if (twin[0] >= n_pair) {
+                        if (twin[1] < n_pair) {
+                            tmp_coeff = coefficients[align(twin[0]-n_pair, twin[1]+n_pair, twin[2]-n_pair, twin[3]+n_pair)];
+                        } else {
+                            tmp_coeff = coefficients[align(twin[0]-n_pair, twin[1]-n_pair, twin[2]-n_pair, twin[3]-n_pair)];
+                        }
+                    } else {
+                        tmp_coeff = coefficients[align(twin[0], twin[1], twin[2], twin[3])];
+                    }
+                    //maquis::cout << "with coeff: " << tmp_coeff << std::endl << "-----------------\n";
+
+                    //term.coeff += value_type(sign(twin)) * coefficients[align(twin[0], twin[1], twin[2], twin[3])];
+                    term.coeff += value_type(sign(twin)) * tmp_coeff;
+
+                    tagterms.push_back(term);
+                }
+                //else: we already have the term
+            }
+            else {
+                tagterms.push_back( TermMaker<M, S>::four_term(model, ident, fill, scale, i,k,l,j,
+                                   op_i, op_k, op_l, op_j, tag_handler) );
+            }
+        }
+
     private:
+        /*value_type find_time_reversed(IndexTuple twin, int n_pair) {
+            //int ijkl[] = {twin[0],twin[1],twin[2],twin[3]};
+            IndexTuple res;
+            for (int i = 0; i < 4; ++i) {
+                if (twin[i] < n_pair) {
+                    res[i] = twin[i] + n_pair;
+                } else {
+                    res[i] = twin[i] - n_pair;
+                }
+            }
+            return res;
+        }*/
+
         void parse_integrals(BaseParameters & parms, Lattice const & lat) {
 
             // load ordering and determine inverse ordering
@@ -248,10 +307,18 @@ namespace chem_detail {
                         std::back_inserter(raw));
 
             std::vector<double>::iterator it = raw.begin();
+            
+            // Check symmmetry to use the right factor
+            double integral_value = 0;
+            double scale_factor = 1;
+            if (parms["symmetry"] == "2u1lpg" && parms["MODEL"] == "relativistic_quantum_chemistry") {scale_factor = 0.5;}
+                
             while (it != raw.end()) {
                 
                 if (std::abs(*it) > parms["integral_cutoff"]){
-                    matrix_elements.push_back(*it++);
+                    integral_value = *it++;
+                    matrix_elements.push_back(scale_factor*integral_value);
+                    
                     std::vector<int> tmp;
                     std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
 
