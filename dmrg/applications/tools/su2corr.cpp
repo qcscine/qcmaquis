@@ -177,18 +177,19 @@ int main(int argc, char ** argv)
 
         //for (int i=0; i < L; ++i) {
         //    MPO<matrix, grp> mpo = SU2::make_count<matrix, grp>(i, site_irreps);
-        //    double n = SU2::expval(mps, mpo, i, i, config);
+        //    double n = SU2::expval_r(mps, mpo, i, i, config);
         //    maquis::cout <<  n << std::endl;
         //}
 
 
-        matrix ratio = compute_ratio(mps, ref, site_irreps, config);
-        print_triang(ratio);
+        //matrix ratio = compute_ratio(mps, ref, site_irreps, config);
+        //print_triang(ratio);
 
-        //int i=0, j=3;
-        //MPO<matrix, grp> mpo = SU2::make_custom<matrix, grp>(i, j, site_irreps);
-        //double eval = SU2::expval(mps, mpo, i, j, config);
+        int i=0, j=3;
+        MPO<matrix, grp> mpo = SU2::make_custom<matrix, grp>(i, j, site_irreps);
+        double eval = SU2::expval_r(mps, mpo, i, j, config);
         //maquis::cout << eval << "  ref: " << ref(i,j) + ref(i,j+1) << std::endl;
+        maquis::cout << eval << "  ref: " << ref(i,j) << std::endl;
 
         //std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
         //std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));

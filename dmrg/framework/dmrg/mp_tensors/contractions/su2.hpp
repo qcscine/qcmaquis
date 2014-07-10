@@ -285,7 +285,6 @@ namespace SU2 {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
-        typedef typename Index<SymmGroup>::const_iterator ci;
         typedef typename SymmGroup::charge charge;
 
         col_proxy col_b2 = mpo.column(b2);
@@ -367,6 +366,112 @@ namespace SU2 {
     }
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
+    block_matrix<Matrix, SymmGroup>
+    rbtm_kernel(size_t b1,
+                Boundary<OtherMatrix, SymmGroup> const & right,
+                std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                MPOTensor<Matrix, SymmGroup> const & mpo,
+                DualIndex<SymmGroup> const & ket_basis,
+                Index<SymmGroup> const & left_i,
+                Index<SymmGroup> const & out_right_i,
+                Index<SymmGroup> const & bra_row_basis,
+                ProductBasis<SymmGroup> const & in_left_pb,
+                ProductBasis<SymmGroup> const & out_right_pb)
+    {
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
+        typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
+        typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
+        typedef typename SymmGroup::charge charge;
+
+        block_matrix<Matrix, SymmGroup> ret;
+
+        maquis::cout << "left_i\n";
+        maquis::cout << left_i << std::endl;
+        maquis::cout << "out_right_i\n";
+        maquis::cout << out_right_i << std::endl;
+        maquis::cout << "ket_basis\n";
+        maquis::cout << ket_basis << std::endl;
+
+        row_proxy row_b1 = mpo.row(b1);
+        for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
+            index_type b2 = row_it.index();
+
+            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b1];
+            MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
+            block_matrix<Matrix, SymmGroup> const & W = access.op;
+
+            for (size_t k = 0; k < ket_basis.size(); ++k) {
+
+                charge lc = boost::tuples::get<0>(ket_basis[k]);
+                charge mc = boost::tuples::get<1>(ket_basis[k]);
+
+                std::pair<const_iterator, const_iterator>
+                  er = std::equal_range(right[b2].basis().begin(), right[b2].basis().end(),
+                    boost::make_tuple(mc, SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
+
+                for (const_iterator it = er.first; it != er.second; ++it)
+                {
+                    size_t matched_block = std::distance(right[b2].basis().begin(), it);
+                    charge rc = boost::tuples::get<1>(right[b2].basis()[matched_block]);
+                    size_t t_block = T.basis().position(lc, rc); // t_block != k in general
+
+                    for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
+                    {
+                        charge phys_in = W.left_basis_charge(w_block);
+                        charge phys_out = W.right_basis_charge(w_block);
+
+                        charge out_l_charge = SymmGroup::fuse(lc, -phys_in);
+                        if (!left_i.has(out_l_charge)) continue;
+
+                        charge out_r_charge = SymmGroup::fuse(rc, -phys_out);
+                        if (!bra_row_basis.has(out_r_charge) || !out_right_i.has(out_r_charge)) continue;
+
+                        size_t l_size = left_i.size_of_block(out_l_charge);
+
+                        size_t o = ret.find_block(out_l_charge, out_r_charge);
+                        if ( o == ret.n_blocks() ) {
+                            o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
+                            ret.resize_block(out_l_charge, out_r_charge, l_size, out_right_i.size_of_block(out_r_charge));
+                        }
+
+                        int i  = out_r_charge[1], ip = rc[1];
+                        int j  = out_l_charge[1], jp  = mc[1];
+                        int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
+                        int a = std::abs(i-j), k = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1]));
+
+                        int ap = std::abs(ip-jp);
+                        if (ap >= 3) continue;
+
+                        double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
+                        coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
+
+                        size_t phys_s1 = W.left_basis_size(w_block);
+                        size_t phys_s2 = W.right_basis_size(w_block);
+                        size_t in_left_offset = in_left_pb(phys_in, out_l_charge);
+                        size_t out_right_offset = out_right_pb(phys_out, rc);
+                        Matrix const & wblock = W[w_block];
+                        Matrix const & iblock = T[t_block];
+                        Matrix & oblock = ret[o];
+
+                        maquis::cout << "access " << mc << " - " << phys_out<< "|" << out_r_charge << " -- "
+                                 << lc << " - " << phys_in << "|" << out_l_charge
+                                 << " T(" << lc << "," << rc << "): +" << in_left_offset
+                                 << "(" << l_size << "x" << T.right_basis_size(t_block) << ")|" << T.left_basis_size(t_block) << " -> +"
+                                 << out_right_offset << "(" << l_size << "x" << T.right_basis_size(t_block) << ")|" << out_right_i.size_of_block(out_r_charge)
+                                 << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << " " << coupling_coeff * wblock(0,0) << std::endl;
+
+                        maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
+                                out_right_offset, in_left_offset,
+                                phys_s1, phys_s2, l_size, T.right_basis_size(t_block), coupling_coeff);
+                    }
+                }
+            }
+        } // b1
+        return ret;
+    }
+
+    template<class Matrix, class OtherMatrix, class SymmGroup>
     std::vector<block_matrix<OtherMatrix, SymmGroup> >
     boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
                        Boundary<OtherMatrix, SymmGroup> const & left,
@@ -382,6 +487,26 @@ namespace SU2 {
         parallel_for(int b1, range(0,loop_max), {
             select_scope(ambient::scope::permute(b1, mpo.placement_l));
             ::SU2::gemm(transpose(left[b1]), mps.data(), ret[b1]);
+        });
+        return ret;
+    }
+
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    std::vector<block_matrix<OtherMatrix, SymmGroup> >
+    mps_times_boundary(MPSTensor<Matrix, SymmGroup> const & mps,
+                       Boundary<OtherMatrix, SymmGroup> const & right,
+                       MPOTensor<Matrix, SymmGroup> const & mpo)
+    {
+        std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(right.aux_dim());
+        int loop_max = right.aux_dim();
+        {
+            select_scope(storage::scope_t::common);
+            mps.make_left_paired();
+            storage::hint(mps);
+        }
+        parallel_for(int b2, range(0,loop_max), {
+            select_scope(ambient::scope::permute(b2, mpo.placement_r));
+            ::SU2::gemm(mps.data(), right[b2], ret[b2]);
         });
         return ret;
     }
@@ -426,6 +551,52 @@ namespace SU2 {
         return ret;
     }
 
+    template<class Matrix, class OtherMatrix, class SymmGroup>
+    Boundary<OtherMatrix, SymmGroup>
+    overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                          MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                          Boundary<OtherMatrix, SymmGroup> const & right,
+                          MPOTensor<Matrix, SymmGroup> const & mpo)
+    {
+        #ifdef AMBIENT_TRACKING
+        ambient::overseer::log::region("parallel::overlap_mpo_right_step");
+        #endif
+
+        typedef typename SymmGroup::charge charge;
+        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+
+        MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
+        std::vector<block_matrix<Matrix, SymmGroup> > t = mps_times_boundary(ket_cpy, right, mpo);
+
+        Index<SymmGroup> const & left_i = ket_tensor.row_dim();
+        Index<SymmGroup> const & right_i = bra_tensor.col_dim();
+        Index<SymmGroup> out_right_i = adjoin(ket_tensor.site_dim()) * right_i;
+        ProductBasis<SymmGroup> in_left_pb(ket_tensor.site_dim(), left_i);
+        ProductBasis<SymmGroup> out_right_pb(ket_tensor.site_dim(), right_i,
+                                             boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                                 -boost::lambda::_1, boost::lambda::_2));
+        Boundary<Matrix, SymmGroup> ret;
+        ret.resize(mpo.row_dim());
+
+        //ket_tensor.make_right_paired();
+        index_type loop_max = mpo.row_dim();
+
+        bra_tensor.make_right_paired();
+        block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
+        omp_for(index_type b1, range<index_type>(0,loop_max), {
+            select_scope(ambient::scope::permute(b1,mpo.placement_l));
+            block_matrix<Matrix, SymmGroup> tmp;
+            tmp = contraction::SU2::rbtm_kernel(b1, right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, bra_tensor.row_dim(),
+                                              in_left_pb, out_right_pb);
+            ::SU2::gemm(tmp, transpose(bra_conj), ret[b1]);
+        });
+        #ifdef AMBIENT_TRACKING
+        ambient::overseer::log::region("serial::continue");
+        #endif
+
+        return ret;
+    }
+
 } // namespace SU2
 } // namespace contraction
 
@@ -450,6 +621,24 @@ namespace SU2 {
         }
 
         return maquis::real(left[0].trace());
+    }
+
+    template<class Matrix, class SymmGroup>
+    double expval_r(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
+                  int p1, int p2, std::vector<int> config)
+    {
+        assert(mpo.length() == mps.length());
+        std::size_t L = mps.length();
+        Boundary<Matrix, SymmGroup> right = mps.right_boundary();
+
+        for(int i = L-1; i >= 0; --i) {
+            MPSTensor<Matrix, SymmGroup> cpy = mps[i];
+            right = contraction::SU2::overlap_mpo_right_step(cpy, mps[i], right, mpo[i]);
+            maquis::cout << "RIGHT" << i << std::endl;
+            maquis::cout << right[0] << std::endl;
+        }
+
+        return maquis::real(right[0].trace());
     }
 
 } // namespace SU2
