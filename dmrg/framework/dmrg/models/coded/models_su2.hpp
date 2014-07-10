@@ -121,7 +121,7 @@ public:
         count_op.insert_block(Matrix(1,1,1), C, C);
 
         op_t doubly_occ_op;
-        doubly_occ_op.insert_block(Matrix(1,1,2), A, A);
+        doubly_occ_op.insert_block(Matrix(1,1,1), A, A);
 
         /**********************************************************************/
         /*** Create operator tag table ****************************************/
