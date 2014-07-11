@@ -5,7 +5,7 @@
 #include <alps/numeric/matrix/algorithms.hpp>
 #include "dmrg/block_matrix/detail/alps.hpp"
 #include "dmrg/mp_tensors/mps.h"
-#include "dmrg/mp_tensors/mps_mpo_ops.h"
+#include "dmrg/mp_tensors/mpo.h"
 
 #include <boost/tuple/tuple_io.hpp>
 
