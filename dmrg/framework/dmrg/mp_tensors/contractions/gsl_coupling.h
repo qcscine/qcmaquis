@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,22 +24,12 @@
  *
  *****************************************************************************/
 
-#ifndef CONTRACTIONS_H
-#define CONTRACTIONS_H
+#ifndef GSL_COUPLING_H
+#define GSL_COUPLING_H
 
-#ifdef USE_AMBIENT
-#include "dmrg/mp_tensors/contractions/impl/ambient.hpp"
-#else
-//#include "dmrg/mp_tensors/contractions/impl/alps.hpp"
-#include "dmrg/mp_tensors/contractions/impl/memsave.hpp"
-#endif
-
-//#include "dmrg/mp_tensors/contractions/su2.hpp"
-#include "dmrg/mp_tensors/contractions/boundary_times_mps.hpp"
-#include "dmrg/mp_tensors/contractions/apply_op.hpp"
-#include "dmrg/mp_tensors/contractions/move_boundary.hpp"
-#include "dmrg/mp_tensors/contractions/site_hamil.hpp"
-#include "dmrg/mp_tensors/contractions/prediction.hpp"
-#include "dmrg/mp_tensors/contractions/special.hpp"
+extern "C" {
+    double gsl_sf_coupling_6j(int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf);
+    double gsl_sf_coupling_9j(int two_ja, int two_jb, int two_jc, int two_jd, int two_je, int two_jf, int two_jg, int two_jh, int two_ji);
+}
 
 #endif

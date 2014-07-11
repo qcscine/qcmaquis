@@ -20,7 +20,7 @@ endif(DMRG_HAS_TwoU1)
 
 if(DMRG_HAS_TwoU1PG)
   set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
-  find_package(GSL REQUIRED)
+  #find_package(GSL REQUIRED)
   add_executable(su2corr su2corr.cpp)
   target_link_libraries(su2corr ${DMRG_APP_LIBRARIES} ${GSL_LIBRARIES})
   set_target_properties(su2corr PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1PG")

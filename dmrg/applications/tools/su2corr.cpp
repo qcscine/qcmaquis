@@ -36,8 +36,9 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
+#include "dmrg/mp_tensors/contractions/testing/test_apply.hpp"
 #include "dmrg/mp_tensors/contractions/su2.hpp"
-#include "dmrg/models/chem/prepare_corr.hpp"
+#include "dmrg/mp_tensors/contractions/testing/prepare_corr.hpp"
 
 typedef alps::numeric::matrix<double> matrix;
 typedef TwoU1PG grp;
@@ -182,14 +183,13 @@ int main(int argc, char ** argv)
         //}
 
 
-        //matrix ratio = compute_ratio(mps, ref, site_irreps, config);
-        //print_triang(ratio);
+        matrix ratio = compute_ratio(mps, ref, site_irreps, config);
+        print_triang(ratio);
 
-        int i=0, j=3;
-        MPO<matrix, grp> mpo = SU2::make_custom<matrix, grp>(i, j, site_irreps);
-        double eval = SU2::expval_r(mps, mpo, i, j, config);
-        maquis::cout << eval << "  ref: " << ref(i,j) + ref(i,j+1) << std::endl;
-        //maquis::cout << eval << "  ref: " << ref(i,j) << std::endl;
+        //int i=0, j=3;
+        //MPO<matrix, grp> mpo = SU2::make_custom<matrix, grp>(i, j, site_irreps);
+        //double eval = SU2::expval_r(mps, mpo, i, j, config);
+        //maquis::cout << eval << "  ref: " << ref(i,j) + ref(i,j+1) << std::endl;
 
         //std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
         //std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));
