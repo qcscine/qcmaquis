@@ -86,9 +86,6 @@ public:
         Storage::prefetch(left_[site]);
         Storage::prefetch(right_[site+1]);
         
-#ifndef NDEBUG
-        maquis::cout << mps.description() << std::endl;
-#endif
         for (; _site < 2*L; ++_site) {
             
             int lr = (_site < L) ? +1 : -1;

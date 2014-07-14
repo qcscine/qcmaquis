@@ -283,7 +283,7 @@ private:
         gemm(Ssqrt, V, right);
         
 #ifdef USE_AMBIENT
-        select_scope(ambient::scope_t::common);
+        select_proc(ambient::actor_t::common);
         for(std::size_t k = 0; k < S.n_blocks(); ++k){
             ambient::numeric::merge(S[k]);
             ambient::numeric::touch(S[k][0]);

@@ -379,7 +379,7 @@ class Diffusion2D {
                 grid.push_back(new stencil_t(tailm, tailn)); grid_mirror.push_back(new stencil_t(tailm, tailn));
             }
             {
-                ambient::actor select(ambient::scope_t::common);
+                ambient::actor select(ambient::actor_t::common);
                 null_stencil.fill(0.0);
             }
 

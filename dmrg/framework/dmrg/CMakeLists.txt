@@ -26,7 +26,7 @@ endif(ENABLE_LL_MODELS)
 
 
 # *** Libraries
-add_library(dmrg_utils STATIC block_matrix/symmetry.cpp utils/utils.cpp utils/DmrgOptions.cpp utils/time_stopper.cpp)
+add_library(dmrg_utils STATIC block_matrix/symmetry.cpp utils/utils.cpp utils/DmrgOptions.cpp utils/time_stopper.cpp utils/proc_statm.cpp utils/proc_status.cpp)
 add_library(dmrg_models STATIC ${DMRG_MODELS_SOURCES})
 
 

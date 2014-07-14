@@ -30,6 +30,9 @@
 #include <cstddef>
 #include <complex>
 
+#include "dmrg/utils/proc_statm.h"
+#include "dmrg/utils/proc_status.h"
+
 struct cmp_with_prefactor {
 	static double prefactor;
 	bool operator() (std::size_t i, std::size_t j) {

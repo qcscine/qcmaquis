@@ -168,7 +168,7 @@ namespace contraction {
         index_type loop_max = mpo.row_dim();
 
         omp_for(index_type b1, range<index_type>(0,loop_max), {
-            select_scope(ambient::scope::permute(b1,mpo.placement_l));
+            select_proc(ambient::scope::permute(b1,mpo.placement_l));
             ret[b1] = rbtm_kernel(b1, right, t, mpo, physical_i, left_i, right_i, out_right_i, in_left_pb, out_right_pb);
         });
 
@@ -269,7 +269,7 @@ namespace contraction {
         bra_tensor.make_right_paired();
         block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
         omp_for(index_type b1, range<index_type>(0,loop_max), {
-            select_scope(ambient::scope::permute(b1,mpo.placement_l));
+            select_proc(ambient::scope::permute(b1,mpo.placement_l));
             block_matrix<Matrix, SymmGroup> tmp;
             tmp = rbtm_kernel(b1, right, t, mpo, ket_tensor.site_dim(), left_i, right_i, out_right_i, in_left_pb, out_right_pb);
             gemm(tmp, transpose(bra_conj), ret[b1]);
