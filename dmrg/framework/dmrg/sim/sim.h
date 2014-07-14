@@ -44,7 +44,6 @@
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/twositetensor.h"
 #include "dmrg/mp_tensors/contractions.h"
-#include "dmrg/mp_tensors/contractions.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
