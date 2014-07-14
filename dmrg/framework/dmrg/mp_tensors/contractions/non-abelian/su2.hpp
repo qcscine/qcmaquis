@@ -33,7 +33,7 @@
 #include "dmrg/block_matrix/detail/alps.hpp"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
-#include "dmrg/mp_tensors/contractions/gsl_coupling.h"
+#include "dmrg/mp_tensors/contractions/non-abelian/gsl_coupling.h"
 
 namespace SU2 {
 

@@ -35,11 +35,11 @@
 #endif
 
 //#include "dmrg/mp_tensors/contractions/su2.hpp"
-#include "dmrg/mp_tensors/contractions/boundary_times_mps.hpp"
-#include "dmrg/mp_tensors/contractions/apply_op.hpp"
-#include "dmrg/mp_tensors/contractions/move_boundary.hpp"
-#include "dmrg/mp_tensors/contractions/site_hamil.hpp"
-#include "dmrg/mp_tensors/contractions/prediction.hpp"
-#include "dmrg/mp_tensors/contractions/special.hpp"
+#include "dmrg/mp_tensors/contractions/abelian/boundary_times_mps.hpp"
+#include "dmrg/mp_tensors/contractions/abelian/apply_op.hpp"
+#include "dmrg/mp_tensors/contractions/abelian/move_boundary.hpp"
+#include "dmrg/mp_tensors/contractions/abelian/site_hamil.hpp"
+#include "dmrg/mp_tensors/contractions/abelian/prediction.hpp"
+#include "dmrg/mp_tensors/contractions/abelian/special.hpp"
 
 #endif

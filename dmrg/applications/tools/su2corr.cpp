@@ -36,9 +36,9 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include "dmrg/mp_tensors/contractions/testing/test_apply.hpp"
-#include "dmrg/mp_tensors/contractions/su2.hpp"
-#include "dmrg/mp_tensors/contractions/testing/prepare_corr.hpp"
+#include "dmrg/mp_tensors/contractions/non-abelian/testing/test_apply.hpp"
+#include "dmrg/mp_tensors/contractions/non-abelian/su2.hpp"
+#include "dmrg/mp_tensors/contractions/non-abelian/testing/prepare_corr.hpp"
 
 typedef alps::numeric::matrix<double> matrix;
 typedef TwoU1PG grp;
