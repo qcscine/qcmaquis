@@ -1,0 +1,28 @@
+section#spacer0 {
+    background-image: url(../images/ill0.jpg);
+}
+img#spacer0 {
+    display: none;
+}
+section#spacer1 {
+    background-image: url(../images/ill1.jpg);
+}
+img#spacer1 {
+    display: none;
+}
+section#spacer2 {
+    background-image: url(../images/ill2.jpg);
+}
+img#spacer2 {
+    display: none;
+}
+img#qe {
+    width: 600px;
+}
+p, li {
+    font-size: 28px;
+}
+div.menu-item {
+    font-size: 36px;
+    margin-top: -12px;
+}
