@@ -286,12 +286,12 @@ namespace SU2 {
         std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(left.aux_dim());
         int loop_max = left.aux_dim();
         {
-            select_scope(storage::scope_t::common);
+            select_proc(storage::actor_t::common);
             mps.make_right_paired();
             storage::hint(mps);
         }
         parallel_for(int b1, range(0,loop_max), {
-            select_scope(ambient::scope::permute(b1, mpo.placement_l));
+            select_proc(ambient::scope::permute(b1, mpo.placement_l));
             ::SU2::gemm(transpose(left[b1]), mps.data(), ret[b1]);
         });
         return ret;
@@ -306,12 +306,12 @@ namespace SU2 {
         std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(right.aux_dim());
         int loop_max = right.aux_dim();
         {
-            select_scope(storage::scope_t::common);
+            select_proc(storage::actor_t::common);
             mps.make_left_paired();
             storage::hint(mps);
         }
         parallel_for(int b2, range(0,loop_max), {
-            select_scope(ambient::scope::permute(b2, mpo.placement_r));
+            select_proc(ambient::scope::permute(b2, mpo.placement_r));
             ::SU2::gemm(mps.data(), right[b2], ret[b2]);
         });
         return ret;
@@ -390,7 +390,7 @@ namespace SU2 {
         bra_tensor.make_right_paired();
         block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
         omp_for(index_type b1, range<index_type>(0,loop_max), {
-            select_scope(ambient::scope::permute(b1,mpo.placement_l));
+            select_proc(ambient::scope::permute(b1,mpo.placement_l));
             block_matrix<Matrix, SymmGroup> tmp;
             tmp = contraction::SU2::rbtm_kernel(b1, right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, bra_tensor.row_dim(),
                                               in_left_pb, out_right_pb);
