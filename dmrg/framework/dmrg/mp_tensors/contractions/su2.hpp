@@ -140,7 +140,7 @@ namespace SU2 {
                         size_t o = ret.find_block(out_l_charge, out_r_charge);
                         if ( o == ret.n_blocks() ) {
                             o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
-                            ret.resize_block(out_l_charge, out_r_charge, out_left_i.size_of_block(out_l_charge), r_size);
+                            ret.resize_block(o, out_left_i.size_of_block(out_l_charge), r_size);
                         }
 
                         int i  = lc[1], ip = out_l_charge[1];
@@ -238,7 +238,7 @@ namespace SU2 {
                         size_t o = ret.find_block(out_l_charge, out_r_charge);
                         if ( o == ret.n_blocks() ) {
                             o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
-                            ret.resize_block(out_l_charge, out_r_charge, l_size, out_right_i.size_of_block(out_r_charge));
+                            ret.resize_block(o, l_size, out_right_i.size_of_block(out_r_charge));
                         }
 
                         int i  = out_r_charge[1], ip = rc[1];
