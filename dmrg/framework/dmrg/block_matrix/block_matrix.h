@@ -126,6 +126,9 @@ public:
     void resize_block(charge r, charge c,
                       size_type new_r, size_type new_c,
                       bool pretend = false);
+    void resize_block(size_type pos,
+                      size_type new_r, size_type new_c,
+                      bool pretend = false);
     
     friend void swap(block_matrix & x, block_matrix & y)
     {

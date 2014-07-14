@@ -60,6 +60,7 @@ private:
         add_option("sweep_bond_dimensions", "");
 
         add_option("optimization", "singlesite or twosite", value("twosite"));
+        add_option("twosite_truncation", "`svd` on the two-site mps or `heev` on the reduced density matrix (with alpha factor)", value("svd"));
         
         add_option("alpha_initial","", value(1e-2));
         add_option("alpha_main", "", value(1e-4));

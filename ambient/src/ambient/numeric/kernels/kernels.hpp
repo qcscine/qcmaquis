@@ -330,9 +330,13 @@ namespace ambient { namespace numeric { namespace kernels {
             T* ar = versioned(a).data;
        
             int size = ambient::get_square_dim(a);
+            #ifdef AMBIENT_CILK
+            ar[0:size] += bd[0:size];
+            #else
             #pragma vector always
             for(int k = 0; k < size; k++)
                 ar[k] += bd[k];
+            #endif
         }
 
         template<typename T>
@@ -341,9 +345,13 @@ namespace ambient { namespace numeric { namespace kernels {
             T* ar = versioned(a).data;
        
             int size = ambient::get_square_dim(a);
+            #ifdef AMBIENT_CILK
+            ar[0:size] -= bd[0:size];
+            #else
             #pragma vector always
             for(int k = 0; k < size; k++)
                 ar[k] -= bd[k];
+            #endif
         }
             
         template<typename T>
@@ -351,9 +359,13 @@ namespace ambient { namespace numeric { namespace kernels {
             T* ar = versioned(a).data;
             T factor = t.get();
             int size = ambient::get_square_dim(a);
+            #ifdef AMBIENT_CILK
+            ar[0:size] *= factor;
+            #else
             #pragma vector always
             for(int k = 0; k < size; k++)
                 ar[k] *= factor;
+            #endif
         }
             
         template<typename T>
@@ -369,16 +381,24 @@ namespace ambient { namespace numeric { namespace kernels {
             T* ar = versioned(a).data;
             T factor = t.get();
             int size = ambient::get_square_dim(a);
+            #ifdef AMBIENT_CILK
+            ar[0:size] /= factor;
+            #else
             #pragma vector always
             for(int k = 0; k < size; k++)
                 ar[k] /= factor;
+            #endif
         }
             
         template<typename T>
         void sqrt_diagonal(matrix<T>& a){
             size_t size = a.num_rows();
             T* ar = versioned(a).data;
+            #ifdef AMBIENT_CILK
+            ar[0:size] = std::sqrt(ar[0:size]);
+            #else
             for(size_t i = 0; i < size; ++i) ar[i] = std::sqrt(ar[i]);
+            #endif
         }
             
         template<typename T>

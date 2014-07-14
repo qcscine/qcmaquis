@@ -28,9 +28,20 @@
 #endif
 
 inline size_t getRSSLimit(){
+#if defined(__APPLE__) && defined(__MACH__)
+    /* OSX ------------------------------------------------------ */
+    return 0L;
+
+#elif defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+    /* Linux ---------------------------------------------------- */
     long pages = sysconf(_SC_PHYS_PAGES);
     long page_size = sysconf(_SC_PAGE_SIZE);
     return pages * page_size;
+#else
+    /* AIX, BSD, Solaris, and Unknown OS ------------------------ */
+    return (size_t)0L;          /* Unsupported. */
+#endif
+    
 }
 
 /**

@@ -70,10 +70,10 @@ namespace ambient {
 
     template<class InputIterator, class Function>
     void for_each (InputIterator first, InputIterator last, Function fn){
-        ambient::lambda([fn](vector<int>& a){ 
+        ambient::async([fn](vector<int>& a){ 
             int* a_ = versioned(a).data;
             std::for_each(a_, a_+get_length(a)-1, fn);
-        })(first.base);
+        }, first.base);
     }
 
     template <class InputIterator, class OutputIterator, class BinaryOperation>
@@ -82,23 +82,23 @@ namespace ambient {
                     OutputIterator result,
                     BinaryOperation binary_op)
     {
-        ambient::lambda([binary_op](const vector<int>& first1_, const vector<int>& first2_, unbound< vector<int> >& result_){
+        ambient::async([binary_op](const vector<int>& first1_, const vector<int>& first2_, unbound< vector<int> >& result_){
             int* ifirst1 = versioned(first1_).data;
             int* ifirst2 = versioned(first2_).data;
             int* iresult = versioned(result_).data;
             std::transform(ifirst1, ifirst1+get_length(first1_)-1, ifirst2, iresult, binary_op);
-        })(first1.base, first2.base, result.base);
+        }, first1.base, first2.base, result.base);
     }
 
     template <class InputIterator, class OutputIterator, class UnaryOperation>
     void transform (InputIterator first1, InputIterator last1,
                     OutputIterator result, UnaryOperation op)
     {
-        ambient::lambda([op](const vector<int>& first1_, unbound< vector<int> >& result_){
+        ambient::async([op](const vector<int>& first1_, unbound< vector<int> >& result_){
             int* ifirst1 = versioned(first1_).data;
             int* iresult = versioned(result_).data;
             std::transform(ifirst1, ifirst1+get_length(first1_)-1, iresult, op);
-        })(first1.base, result.base);
+        }, first1.base, result.base);
     }
 
     template<class InputIterator>

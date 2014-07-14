@@ -64,6 +64,16 @@ namespace ambient {
         return overload_lambda<L>(l);
     }
 
+    template <class L, class... Args>
+    void async(L l, Args&& ... args){
+        return lambda(l)(std::forward<Args>(args)...);
+    }
+
+    template <class... L, class... Args>
+    void async(void(*l)(L&...), Args&& ... args){
+        return async(std::function<decltype(*l)>(l), std::forward<Args>(args)...);
+    }
+
 }
 
 #endif

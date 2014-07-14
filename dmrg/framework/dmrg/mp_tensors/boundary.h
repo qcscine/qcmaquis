@@ -130,7 +130,7 @@ public:
         std::vector<std::string> children = ar.list_children("data");
         data_.resize(children.size());
         for(size_t i = 0; i < children.size(); ++i){
-             select_scope(ambient::scope::balance(i,children.size()));
+             select_proc(ambient::scope::balance(i,children.size()));
              ar["data/"+children[i]] >> data_[alps::cast<std::size_t>(children[i])];
         }
     }

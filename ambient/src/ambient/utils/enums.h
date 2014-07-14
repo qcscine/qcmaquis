@@ -29,7 +29,7 @@
 
 namespace ambient {
     enum class locality { remote, local, common };
-    enum class scope_t  { base, common, single };
+    enum class actor_t  { base, common, single };
     enum class region_t { bulk, standard, delegated };
 }
 

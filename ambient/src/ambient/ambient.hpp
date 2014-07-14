@@ -27,7 +27,7 @@
 #ifndef AMBIENT
 #define AMBIENT
 // {{{ system includes
-#ifndef AMBIENT_NOP_CHANNEL
+#ifndef DISABLE_MPI
 #include <mpi.h>
 #endif
 #include <complex>
@@ -76,7 +76,7 @@
 #include "ambient/models/ssm/transformable.h"
 #include "ambient/models/ssm/model.h"
 
-#ifndef AMBIENT_NOP_CHANNEL
+#ifdef MPI_VERSION
 #include "ambient/channels/mpi/group.h"
 #include "ambient/channels/mpi/multirank.h"
 #include "ambient/channels/mpi/channel.h"
@@ -107,7 +107,7 @@
 #include "ambient/models/ssm/transformable.hpp"
 #include "ambient/models/ssm/model.hpp"
 
-#ifndef AMBIENT_NOP_CHANNEL
+#ifdef MPI_VERSION
 #include "ambient/channels/mpi/group.hpp"
 #include "ambient/channels/mpi/multirank.hpp"
 #include "ambient/channels/mpi/channel.hpp"

@@ -88,7 +88,7 @@ namespace contraction {
         void multiply_column(size_t b2, const block_matrix<Matrix, SymmGroup>& rhs){
             for(int b1 = 0; b1 < size1; b1++){
                 if(GRID(b1,b2) == NULL) continue;
-                select_scope(e2[b2] ? (ambient::scope::begin()+b1) : where(b1,b2));
+                select_proc(e2[b2] ? (ambient::scope::begin()+b1) : where(b1,b2));
                 block_matrix<Matrix, SymmGroup> res;
                 gemm(*GRID(b1,b2), rhs, res);
                 swap(*GRID(b1,b2), res);
@@ -98,7 +98,7 @@ namespace contraction {
         void multiply_column_trans(size_t b2, const block_matrix<Matrix, SymmGroup>& rhs){
             block_matrix<Matrix, SymmGroup> tmp;
             block_matrix<Matrix, SymmGroup> red = reduce_column(b2);
-            select_scope(ambient::scope::permute(b2,mpo.placement_r));
+            select_proc(ambient::scope::permute(b2,mpo.placement_r));
             gemm(transpose(red), rhs, tmp);
             swap(*GRID(0,b2), tmp);
         }
@@ -120,7 +120,7 @@ namespace contraction {
                                                      std::pair<block_matrix<Matrix, SymmGroup>*, ambient::scope::const_iterator>& src_pair){
                                                          block_matrix<Matrix, SymmGroup>& dst = *dst_pair.first;
                                                          block_matrix<Matrix, SymmGroup>& src = *src_pair.first;
-                                                         select_scope(dst_pair.second);
+                                                         select_proc(dst_pair.second);
                                                          for(size_t k = 0; k < src.n_blocks(); ++k)
                                                          dst.match_and_add_block(src[k],
                                                                                  src.left_basis()[k].first, 
@@ -170,7 +170,7 @@ namespace contraction {
             while(i < rvector.size()){
                 ambient::scope::const_iterator owner = rvector[i].second;
                 rvector_global.push_back(&rvector[i++]);
-                select_scope(owner);
+                select_proc(owner);
                 while(rvector[i].second == owner && i < rvector.size()){
                     for(size_t k = 0; k < rvector[i].first->n_blocks(); ++k)
                     rvector_global.back()->first->match_and_add_block((*rvector[i].first)[k], 
@@ -226,7 +226,7 @@ namespace contraction {
                     for(int k = stride; k < rblocks_part.size(); k += stride*2){
                         std::pair< Matrix*, ambient::scope::const_iterator >& dst_pair = rblocks_part[k-stride];
                         std::pair< Matrix*, ambient::scope::const_iterator >& src_pair = rblocks_part[k];
-                        select_scope(dst_pair.second);
+                        select_proc(dst_pair.second);
                         Matrix& src = *src_pair.first;
                         Matrix& dst = *dst_pair.first;
                         

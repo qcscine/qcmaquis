@@ -247,21 +247,22 @@ namespace storage {
             }
             void evict(){
                 if(state == core){
-                    if(!dumped){
-                        state = storing;
-                        dumped = true;
-                        #ifdef USE_AMBIENT
-                        ambient::sync();
-                        #endif
-                        this->thread(new boost::thread(evict_request<T>(disk::fp(sid), (T*)this)));
-                    }else{
-                        state = uncore;
-                        #ifdef USE_AMBIENT
-                        ambient::sync();
-                        #endif
-                        drop_request<T>(disk::fp(sid), (T*)this)();
-                    }
-                } 
+                    // if(!dumped){ // MD: storage::migrate moves the data without modifying it, evict has to be enforced even in this case otherwise data is loaded in the wrong way
+                    state = storing;
+                    dumped = true;
+                    #ifdef USE_AMBIENT
+                    ambient::sync();
+                    #endif
+                    this->thread(new boost::thread(evict_request<T>(disk::fp(sid), (T*)this)));
+                    // }else{
+                    //     if (ambient::master()) printf("DROP instead of evict.\n");
+                    //     state = uncore;
+                    //     #ifdef USE_AMBIENT
+                    //     ambient::sync();
+                    //     #endif
+                    //     drop_request<T>(disk::fp(sid), (T*)this)();
+                    // }
+                }
                 assert(this->state != prefetching); // evict of prefetched
             }
             void drop(){
@@ -320,7 +321,7 @@ namespace storage {
     };
 
 #ifdef USE_AMBIENT
-    using ambient::scope_t;
+    using ambient::actor_t;
     template<class Matrix, class SymmGroup> 
     static void migrate(const MPSTensor<Matrix, SymmGroup>& tc){
         MPSTensor<Matrix, SymmGroup>& t = const_cast<MPSTensor<Matrix, SymmGroup>&>(tc);
@@ -335,7 +336,7 @@ namespace storage {
     }
     template<typename T, typename L>
     static void migrate(T& t, L where){
-        select_scope(where); migrate(t);
+        select_proc(where); migrate(t);
     }
     template<class Matrix, class SymmGroup> 
     static void hint(const MPSTensor<Matrix, SymmGroup>& t){
@@ -347,16 +348,16 @@ namespace storage {
     }
     template<typename T, typename L>
     static void hint(T& t, L where){
-        select_scope(where); hint(t);
+        select_proc(where); hint(t);
     }
 #else
-    struct scope_t { enum type { common }; };
+    struct actor_t { enum type { common }; };
     template<typename T>
-    static void migrate(T& t, scope_t::type where){ }
+    static void migrate(T& t, actor_t::type where){ }
     template<typename T>
     static void migrate(T& t){ }
     template<typename T>
-    static void hint(T& t, scope_t::type where){ }
+    static void hint(T& t, actor_t::type where){ }
     template<typename T>
     static void hint(T& t){ }
 #endif
