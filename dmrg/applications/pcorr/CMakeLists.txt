@@ -32,10 +32,10 @@ else(USE_AMBIENT)
   set(DMRG_APP_LIBRARIES ${DMRG_SERIAL_LIBRARIES} ${MPI_LIBRARIES})
 endif(USE_AMBIENT)  
 
-macro(create_pcorr_symm_target TNAME SYMM)
+macro(create_pcorr_symm_target TNAME SYMM CPPFILE)
   get_symm_group_name(SYMM_NAME ${SYMM})
   if(DMRG_HAS_${SYMM_NAME})
-    add_executable(${TNAME} main.cpp)
+    add_executable(${TNAME} ${CPPFILE})
     target_link_libraries(${TNAME} ${DMRG_APP_LIBRARIES})
     set_target_properties(${TNAME} PROPERTIES COMPILE_DEFINITIONS "USE_${SYMM}")
     install(TARGETS ${TNAME} RUNTIME DESTINATION bin COMPONENT applications)
@@ -43,7 +43,12 @@ macro(create_pcorr_symm_target TNAME SYMM)
 endmacro(create_pcorr_symm_target)
 
 
-create_pcorr_symm_target("pcorr_nu1"  "NU1")
-create_pcorr_symm_target("pcorr_2u1"  "TWOU1")
-create_pcorr_symm_target("pcorr_u1"   "U1"   )
-create_pcorr_symm_target("pcorr_none" "NONE" )
+create_pcorr_symm_target("pcorr_nu1"  "NU1"   "main.cpp")
+create_pcorr_symm_target("pcorr_2u1"  "TWOU1" "main.cpp")
+create_pcorr_symm_target("pcorr_u1"   "U1"    "main.cpp")
+create_pcorr_symm_target("pcorr_none" "NONE"  "main.cpp")
+
+
+create_pcorr_symm_target("pcorr_nn_2u1"  "TWOU1" "main_nn.cpp")
+
+

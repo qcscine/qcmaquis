@@ -22,18 +22,18 @@ int main(){ using namespace ambient;
 
     ambient::transform( a.begin(), a.end(), b.begin(), a.begin(), [](double a, double b){ return a + b; } );
 
-    ambient::lambda([&](const vector<int>& val, const vector<int>& val2){ 
+    ambient::async([&](const vector<int>& val, const vector<int>& val2){ 
             size_t size = get_length(val)-1;
             int* val_ = versioned(val).data;
             int* val2_ = versioned(val2).data;
             for(size_t i = 0; i < size; ++i) std::cout << val_[i] << " vs " << val2_[i] << "; num is " << num << "\n";
-    })(a, b);
+    }, a, b);
 
-    ambient::lambda([&](const vector<int>& val){ 
+    ambient::async([&](const vector<int>& val){ 
             size_t size = get_length(val)-1;
             int* val_ = versioned(val).data;
             for(size_t i = 0; i < size; ++i) std::cout << val_[i] << "\n";
-    })(a);
+    }, a);
 
 
     ambient::sync();
@@ -60,9 +60,9 @@ int main(){ using namespace ambient;
     }
 
     for(int i = 0; i < 100; i++){
-        ambient::lambda([&](const vector<int>& val){ 
+        ambient::async([&](const vector<int>& val){ 
             std::cout << versioned(val).data[0] << "\n";
-        })(*list[i]);
+        }, *list[i]);
         ambient::sync();
     }
 

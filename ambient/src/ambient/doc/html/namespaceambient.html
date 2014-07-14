@@ -119,11 +119,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td colspan="2"><h2>Enumerations</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceambient.html#aa22653ea6d7c35ce56dfec3a768affde">locality</a> { <a class="el" href="namespaceambient.html#aa22653ea6d7c35ce56dfec3a768affdeae48cd0e6266202e61d5b6f71832e82ea">remote</a>, 
 <a class="el" href="namespaceambient.html#aa22653ea6d7c35ce56dfec3a768affdea1170be79b1310440e85050e925a57cbe">local</a>, 
-<a class="el" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3aee332a7ee0d5687c69eba7dcd9585377">common</a>
+<a class="el" href="namespaceambient.html#aa9f3841fd4f8b1f5874a395c12d4de88aee332a7ee0d5687c69eba7dcd9585377">common</a>
  }</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3">scope_t</a> { <a class="el" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3a24521e3c2d0821867dbb97b8a45c0bc0">base</a>, 
-<a class="el" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3aee332a7ee0d5687c69eba7dcd9585377">common</a>, 
-<a class="el" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3ac75116c276fa87fa99099cc6f2b2eaeb">single</a>
+<tr><td class="memItemLeft" align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceambient.html#aa9f3841fd4f8b1f5874a395c12d4de88">actor_t</a> { <a class="el" href="namespaceambient.html#aa9f3841fd4f8b1f5874a395c12d4de88a24521e3c2d0821867dbb97b8a45c0bc0">base</a>, 
+<a class="el" href="namespaceambient.html#aa9f3841fd4f8b1f5874a395c12d4de88aee332a7ee0d5687c69eba7dcd9585377">common</a>, 
+<a class="el" href="namespaceambient.html#aa9f3841fd4f8b1f5874a395c12d4de88ac75116c276fa87fa99099cc6f2b2eaeb">single</a>
  }</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceambient.html#a410ee18a89f2b4f6dd4cfb02a4d05ee0">region_t</a> { <a class="el" href="namespaceambient.html#a410ee18a89f2b4f6dd4cfb02a4d05ee0ac9c41082858ecb71d2f9ef3224d91b88">bulk</a>, 
 <a class="el" href="namespaceambient.html#a410ee18a89f2b4f6dd4cfb02a4d05ee0a84a76019ce0316ac599f98310d3e1f9b">standard</a>, 
@@ -177,6 +177,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 ::function&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#a456109695b75de1f3841a850dc3cdd32">to_function</a> (Function &amp;lambda)</td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;class L &gt; </td></tr>
 <tr><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structambient_1_1overload__lambda.html">overload_lambda</a>&lt; L &gt;&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#a79b50dfcbb1b24a81935c029747b4595">lambda</a> (L l)</td></tr>
+<tr><td class="memTemplParams" colspan="2">template&lt;class L , class... Args&gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#a296a64cf270b891c9f2ca1396910994b">async</a> (L l, Args &amp;&amp;...args)</td></tr>
+<tr><td class="memTemplParams" colspan="2">template&lt;class... L, class... Args&gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#aec9762f9ca55db03bbf20d251bfd9571">async</a> (void(*l)(L &amp;...), Args &amp;&amp;...args)</td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#a1551654263fdad7b4d74267f9bdffdd7">memcpy</a> (T *dd, T *sd, size_t w, T alfa)</td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
@@ -262,6 +266,29 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div>
 </div>
 <hr/><h2>Enumeration Type Documentation</h2>
+<a class="anchor" id="aa9f3841fd4f8b1f5874a395c12d4de88"></a><!-- doxytag: member="ambient::actor_t" ref="aa9f3841fd4f8b1f5874a395c12d4de88" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="namespaceambient.html#aa9f3841fd4f8b1f5874a395c12d4de88">ambient::actor_t</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" id="aa9f3841fd4f8b1f5874a395c12d4de88a24521e3c2d0821867dbb97b8a45c0bc0"></a><!-- doxytag: member="base" ref="aa9f3841fd4f8b1f5874a395c12d4de88a24521e3c2d0821867dbb97b8a45c0bc0" args="" -->base</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="aa9f3841fd4f8b1f5874a395c12d4de88aee332a7ee0d5687c69eba7dcd9585377"></a><!-- doxytag: member="common" ref="aa9f3841fd4f8b1f5874a395c12d4de88aee332a7ee0d5687c69eba7dcd9585377" args="" -->common</em>&nbsp;</td><td>
+</td></tr>
+<tr><td valign="top"><em><a class="anchor" id="aa9f3841fd4f8b1f5874a395c12d4de88ac75116c276fa87fa99099cc6f2b2eaeb"></a><!-- doxytag: member="single" ref="aa9f3841fd4f8b1f5874a395c12d4de88ac75116c276fa87fa99099cc6f2b2eaeb" args="" -->single</em>&nbsp;</td><td>
+</td></tr>
+</table>
+</dd>
+</dl>
+
+</div>
+</div>
 <a class="anchor" id="aa22653ea6d7c35ce56dfec3a768affde"></a><!-- doxytag: member="ambient::locality" ref="aa22653ea6d7c35ce56dfec3a768affde" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -277,7 +304,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </td></tr>
 <tr><td valign="top"><em><a class="anchor" id="aa22653ea6d7c35ce56dfec3a768affdea1170be79b1310440e85050e925a57cbe"></a><!-- doxytag: member="local" ref="aa22653ea6d7c35ce56dfec3a768affdea1170be79b1310440e85050e925a57cbe" args="" -->local</em>&nbsp;</td><td>
 </td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ae86e818a298ceb9794fdd84385d93ee3aee332a7ee0d5687c69eba7dcd9585377"></a><!-- doxytag: member="common" ref="ae86e818a298ceb9794fdd84385d93ee3aee332a7ee0d5687c69eba7dcd9585377" args="" -->common</em>&nbsp;</td><td>
+<tr><td valign="top"><em><a class="anchor" id="aa9f3841fd4f8b1f5874a395c12d4de88aee332a7ee0d5687c69eba7dcd9585377"></a><!-- doxytag: member="common" ref="aa9f3841fd4f8b1f5874a395c12d4de88aee332a7ee0d5687c69eba7dcd9585377" args="" -->common</em>&nbsp;</td><td>
 </td></tr>
 </table>
 </dd>
@@ -308,30 +335,65 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 </div>
 </div>
-<a class="anchor" id="ae86e818a298ceb9794fdd84385d93ee3"></a><!-- doxytag: member="ambient::scope_t" ref="ae86e818a298ceb9794fdd84385d93ee3" args="" -->
+<hr/><h2>Function Documentation</h2>
+<a class="anchor" id="aec9762f9ca55db03bbf20d251bfd9571"></a><!-- doxytag: member="ambient::async" ref="aec9762f9ca55db03bbf20d251bfd9571" args="(void(*l)(L &amp;...), Args &amp;&amp;...args)" -->
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;class... L, class... Args&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">enum <a class="el" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3">ambient::scope_t</a></td>
+          <td class="memname">void ambient::async </td>
+          <td>(</td>
+          <td class="paramtype">void(*)(L &amp;...)&nbsp;</td>
+          <td class="paramname"> <em>l</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&nbsp;</td>
+          <td class="paramname"> <em>args</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [inline]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
-<dl><dt><b>Enumerator: </b></dt><dd><table border="0" cellspacing="2" cellpadding="0">
-<tr><td valign="top"><em><a class="anchor" id="ae86e818a298ceb9794fdd84385d93ee3a24521e3c2d0821867dbb97b8a45c0bc0"></a><!-- doxytag: member="base" ref="ae86e818a298ceb9794fdd84385d93ee3a24521e3c2d0821867dbb97b8a45c0bc0" args="" -->base</em>&nbsp;</td><td>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ae86e818a298ceb9794fdd84385d93ee3aee332a7ee0d5687c69eba7dcd9585377"></a><!-- doxytag: member="common" ref="ae86e818a298ceb9794fdd84385d93ee3aee332a7ee0d5687c69eba7dcd9585377" args="" -->common</em>&nbsp;</td><td>
-</td></tr>
-<tr><td valign="top"><em><a class="anchor" id="ae86e818a298ceb9794fdd84385d93ee3ac75116c276fa87fa99099cc6f2b2eaeb"></a><!-- doxytag: member="single" ref="ae86e818a298ceb9794fdd84385d93ee3ac75116c276fa87fa99099cc6f2b2eaeb" args="" -->single</em>&nbsp;</td><td>
-</td></tr>
-</table>
-</dd>
-</dl>
 
 </div>
 </div>
-<hr/><h2>Function Documentation</h2>
+<a class="anchor" id="a296a64cf270b891c9f2ca1396910994b"></a><!-- doxytag: member="ambient::async" ref="a296a64cf270b891c9f2ca1396910994b" args="(L l, Args &amp;&amp;...args)" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class L , class... Args&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void ambient::async </td>
+          <td>(</td>
+          <td class="paramtype">L&nbsp;</td>
+          <td class="paramname"> <em>l</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Args &amp;&amp;...&nbsp;</td>
+          <td class="paramname"> <em>args</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="a01d7bdfed9c6048de1711ef63cc66ace"></a><!-- doxytag: member="ambient::copy" ref="a01d7bdfed9c6048de1711ef63cc66ace" args="(InputIterator first, InputIterator last, OutputIterator result)" -->
 <div class="memitem">
 <div class="memproto">
@@ -1922,7 +1984,7 @@ template&lt;typename V &gt; </div>
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 2 Jun 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 20 Jun 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

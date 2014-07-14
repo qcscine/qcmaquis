@@ -108,10 +108,20 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00064"></a>00064         <span class="keywordflow">return</span> <a class="code" href="structambient_1_1overload__lambda.html">overload_lambda&lt;L&gt;</a>(l);
 <a name="l00065"></a>00065     }
 <a name="l00066"></a>00066 
-<a name="l00067"></a>00067 }
-<a name="l00068"></a>00068 
-<a name="l00069"></a>00069 <span class="preprocessor">#endif</span>
-<a name="l00070"></a>00070 <span class="preprocessor"></span>
+<a name="l00067"></a>00067     <span class="keyword">template</span> &lt;<span class="keyword">class </span>L, <span class="keyword">class</span>... Args&gt;
+<a name="l00068"></a><a class="code" href="namespaceambient.html#a296a64cf270b891c9f2ca1396910994b">00068</a>     <span class="keywordtype">void</span> <a class="code" href="namespaceambient.html#a296a64cf270b891c9f2ca1396910994b">async</a>(L l, Args&amp;&amp; ... args){
+<a name="l00069"></a>00069         <span class="keywordflow">return</span> <a class="code" href="namespaceambient.html#a79b50dfcbb1b24a81935c029747b4595">lambda</a>(l)(std::forward&lt;Args&gt;(args)...);
+<a name="l00070"></a>00070     }
+<a name="l00071"></a>00071 
+<a name="l00072"></a>00072     <span class="keyword">template</span> &lt;<span class="keyword">class</span>... L, <span class="keyword">class</span>... Args&gt;
+<a name="l00073"></a><a class="code" href="namespaceambient.html#aec9762f9ca55db03bbf20d251bfd9571">00073</a>     <span class="keywordtype">void</span> <a class="code" href="namespaceambient.html#a296a64cf270b891c9f2ca1396910994b">async</a>(<span class="keywordtype">void</span>(*l)(L&amp;...), Args&amp;&amp; ... args){
+<a name="l00074"></a>00074         <span class="keywordflow">return</span> <a class="code" href="namespaceambient.html#a296a64cf270b891c9f2ca1396910994b">async</a>(std::function&lt;decltype(*l)&gt;(l), std::forward&lt;Args&gt;(args)...);
+<a name="l00075"></a>00075     }
+<a name="l00076"></a>00076 
+<a name="l00077"></a>00077 }
+<a name="l00078"></a>00078 
+<a name="l00079"></a>00079 <span class="preprocessor">#endif</span>
+<a name="l00080"></a>00080 <span class="preprocessor"></span>
 </pre></div></div>
 <!--- window showing the filter options -->
 <div id="MSearchSelectWindow"
@@ -127,7 +137,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 2 Jun 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 20 Jun 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

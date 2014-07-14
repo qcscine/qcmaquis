@@ -273,7 +273,7 @@ block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operato
 {
     // todo: check if "omp for" used in nested regions
     for(size_t k = 0; k < n_blocks(); ++k){
-        select_scope(ambient::scope::balance(k,n_blocks()));
+        select_proc(ambient::scope::balance(k,n_blocks()));
         data_[k] *= v;
     }
     return *this;
@@ -284,7 +284,7 @@ block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operato
 {
     // todo: check if "omp for" used in nested regions
     for(size_t k = 0; k < n_blocks(); ++k){
-        select_scope(ambient::scope::balance(k,n_blocks()));
+        select_proc(ambient::scope::balance(k,n_blocks()));
         data_[k] /= v;
     }
     return *this;
@@ -304,7 +304,7 @@ typename block_matrix<Matrix, SymmGroup>::real_type block_matrix<Matrix, SymmGro
 {
     std::vector<real_type> vt; vt.reserve(data_.size());
     for(size_t k = 0; k < n_blocks(); ++k){
-        select_scope(ambient::scope::balance(k,n_blocks()));
+        select_proc(ambient::scope::balance(k,n_blocks()));
         vt.push_back(norm_square(data_[k]));
     }
     return maquis::sqrt(maquis::accumulate(vt.begin(), vt.end(), real_type(0.)));
@@ -371,28 +371,29 @@ std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, charge c1, charge c2)
 {
-    if (this->has_block(c1, c2))
+    size_type match = this->find_block(c1, c2);
+    if (match < this->n_blocks())
     {
-        if (num_rows(mtx) == num_rows((*this)(c1, c2)) &&
-            num_cols(mtx) == num_cols((*this)(c1, c2)))
-            (*this)(c1, c2) += mtx;
-        else if (num_rows(mtx) > num_rows((*this)(c1, c2)) &&
-                 num_cols(mtx) > num_cols((*this)(c1, c2)))
+        if (num_rows(mtx) == num_rows((*this)[match]) &&
+            num_cols(mtx) == num_cols((*this)[match]))
+            (*this)[match] += mtx;
+        else if (num_rows(mtx) > num_rows((*this)[match]) &&
+                 num_cols(mtx) > num_cols((*this)[match]))
         {
-            resize_block(c1, c2, num_rows(mtx), num_cols(mtx));
-            (*this)(c1, c2) += mtx;
+            resize_block(match, num_rows(mtx), num_cols(mtx));
+            (*this)[match] += mtx;
         } else {
             std::size_t maxrows = std::max(num_rows(mtx),
-                                           num_rows((*this)(c1, c2)));
+                                           num_rows((*this)[match]));
             std::size_t maxcols = std::max(num_cols(mtx),
-                                           num_cols((*this)(c1, c2)));
+                                           num_cols((*this)[match]));
             
             Matrix cpy(mtx); // only in this case do we need to copy the argument matrix
             
-            resize_block(c1, c2, maxrows, maxcols); // I think useless 
+            resize_block(match, maxrows, maxcols);
             resize(cpy, maxrows, maxcols);
             
-            (*this)(c1, c2) += cpy;
+            (*this)[match] += cpy;
         }
     } else
         insert_block(mtx, c1, c2);
@@ -403,10 +404,17 @@ void block_matrix<Matrix, SymmGroup>::resize_block(charge r, charge c,
                                                    size_type new_r, size_type new_c,
                                                    bool pretend)
 {
-    if (!pretend)
-        resize((*this)(r,c), new_r, new_c);
+    resize_block(find_block(r, c), new_r, new_c, pretend);
+}
 
-    std::size_t pos = basis_.position(r,c);
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::resize_block(size_type pos,
+                                                   size_type new_r, size_type new_c,
+                                                   bool pretend)
+{
+    if (!pretend)
+        resize((*this)[pos], new_r, new_c);
+
     boost::tuples::get<2>(basis_[pos]) = new_r;
     boost::tuples::get<3>(basis_[pos]) = new_c;
 }

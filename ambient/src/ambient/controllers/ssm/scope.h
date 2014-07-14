@@ -54,12 +54,12 @@ namespace ambient {
     public:
        ~actor();
         actor(scope::const_iterator it);
-        actor(scope_t type);
+        actor(actor_t type);
         bool remote() const;
         bool local()  const;
         bool common() const;
         rank_t which()  const;
-        scope_t type;
+        actor_t type;
         bool dry;
         int factor;
         int round;

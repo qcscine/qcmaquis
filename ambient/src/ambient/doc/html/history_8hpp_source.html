@@ -73,7 +73,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a name="l00029"></a><a class="code" href="classambient_1_1models_1_1ssm_1_1history.html#aa308cacffa4dbd308d1e39b94f3ccb1e">00029</a>     <span class="keyword">inline</span> <a class="code" href="classambient_1_1models_1_1ssm_1_1history.html#aa308cacffa4dbd308d1e39b94f3ccb1e">history::history</a>(<a class="code" href="classambient_1_1dim2.html">dim2</a> dim, <span class="keywordtype">size_t</span> ts) : current(NULL), dim(dim), <a class="code" href="namespaceambient.html#af98ebdc13ce8abf763d0aa794ba9ef52">extent</a>(ambient::memory::<a class="code" href="namespaceambient_1_1memory.html#a21c43e25694759afb30e9ddd2ca8eaf0">aligned_64</a>(dim.square()*ts)) { }
 <a name="l00030"></a>00030 
 <a name="l00031"></a><a class="code" href="classambient_1_1models_1_1ssm_1_1history.html#a633d5092916b200f0681f830ec5fdc65">00031</a>     <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classambient_1_1models_1_1ssm_1_1history.html#a633d5092916b200f0681f830ec5fdc65">history::init_state</a>(){
-<a name="l00032"></a>00032         <a class="code" href="classambient_1_1models_1_1ssm_1_1revision.html">revision</a>* r = <span class="keyword">new</span> <a class="code" href="classambient_1_1models_1_1ssm_1_1revision.html">revision</a>(<a class="code" href="classambient_1_1models_1_1ssm_1_1history.html#aed8529abae92d5e35bb95068010a7356">extent</a>, NULL, <a class="code" href="namespaceambient.html#ae86e818a298ceb9794fdd84385d93ee3aee332a7ee0d5687c69eba7dcd9585377">ambient::locality::common</a>, <a class="code" href="namespaceambient.html#a898bd54f0a136f87f4ee25188d8338c6">ambient::rank</a>());
+<a name="l00032"></a>00032         <a class="code" href="classambient_1_1models_1_1ssm_1_1revision.html">revision</a>* r = <span class="keyword">new</span> <a class="code" href="classambient_1_1models_1_1ssm_1_1revision.html">revision</a>(<a class="code" href="classambient_1_1models_1_1ssm_1_1history.html#aed8529abae92d5e35bb95068010a7356">extent</a>, NULL, <a class="code" href="namespaceambient.html#aa9f3841fd4f8b1f5874a395c12d4de88aee332a7ee0d5687c69eba7dcd9585377">ambient::locality::common</a>, <a class="code" href="namespaceambient.html#a898bd54f0a136f87f4ee25188d8338c6">ambient::rank</a>());
 <a name="l00033"></a>00033         this-&gt;<a class="code" href="classambient_1_1models_1_1ssm_1_1history.html#a322db529601202b27c5ded83cd0ddb63">current</a> = r;
 <a name="l00034"></a>00034     }
 <a name="l00035"></a>00035 
@@ -113,7 +113,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 2 Jun 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 20 Jun 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

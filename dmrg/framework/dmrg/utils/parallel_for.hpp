@@ -29,19 +29,19 @@
 #define PARALLEL_FOR_HPP
 
 #ifdef USE_AMBIENT
-    #define select_scope(...) ambient::actor ctxt(__VA_ARGS__)
+    #define select_proc(...) ambient::actor ctxt(__VA_ARGS__)
     #ifndef AMBIENT_SERIAL_FOR
     #define parallel_for(control_variable, loop_range, ...) ambient::threaded_for_each(loop_range.begin(), loop_range.end(), [&](control_variable) __VA_ARGS__);
     #endif
     #define threaded_for(...) for(__VA_ARGS__)
     #define omp_critical
 #elif defined(MAQUIS_OPENMP)
-    #define select_scope(...) 
+    #define select_proc(...) 
     #define parallel_pragma(a) _Pragma( #a )
     #define threaded_for(...) parallel_pragma(omp parallel for schedule(dynamic, 1)) for(__VA_ARGS__)
     #define omp_critical parallel_pragma(omp critical)
 #else
-    #define select_scope(...) 
+    #define select_proc(...) 
     #define threaded_for(...) for(__VA_ARGS__)
     #define omp_critical
 #endif

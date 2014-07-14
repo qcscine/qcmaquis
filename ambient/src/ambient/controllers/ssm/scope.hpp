@@ -76,10 +76,10 @@ namespace ambient {
             selector.revoke_controller(controller);
             selector.pop_actor();
         }
-        inline actor::actor(scope_t t) : type(t){
-            if(t == scope_t::common){
+        inline actor::actor(actor_t t) : type(t){
+            if(t == actor_t::common){
                 if(selector.has_nested_actor()){
-                    if(selector.get_actor().type == scope_t::common){ this->dry = true; return; }
+                    if(selector.get_actor().type == actor_t::common){ this->dry = true; return; }
                     throw std::runtime_error("Error: common actor inside other actor type!");
                 }else{
                     this->dry = false;
@@ -92,7 +92,7 @@ namespace ambient {
                 throw std::runtime_error("Error: unknown scope type!");
             }
         }
-        inline actor::actor(scope::const_iterator it) : type(scope_t::single) {
+        inline actor::actor(scope::const_iterator it) : type(actor_t::single) {
             controller = selector.provide_controller(); // need to change dry stuff
             if(ambient::selector.has_nested_actor()) dry = true;
             else{ 
