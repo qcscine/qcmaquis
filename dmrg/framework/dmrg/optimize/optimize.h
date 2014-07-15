@@ -102,6 +102,9 @@ public:
     , parms(parms_)
     , stop_callback(stop_callback_)
     {
+        // Initialize the contraction engine
+        contr.reset(new contraction::AbelianEngine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>());
+
         std::size_t L = mps.length();
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("optimizer_base::optimizer_base");
@@ -143,7 +146,7 @@ protected:
 
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        left_[site+1] = contraction::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
+        left_[site+1] = contr->overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
         Storage::pin(left_[site+1]);
         
         for (int n = 0; n < northo; ++n)
@@ -152,7 +155,7 @@ protected:
     
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        right_[site] = contraction::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
+        right_[site] = contr->overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
         Storage::pin(right_[site]);
         
         for (int n = 0; n < northo; ++n)
@@ -246,6 +249,8 @@ protected:
     
     BaseParameters & parms;
     boost::function<bool ()> stop_callback;
+
+    boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > contr;
 
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
     
