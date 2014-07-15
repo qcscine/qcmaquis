@@ -54,6 +54,8 @@ public:
 			ret += v[i];
 		return ret;
 	}
+
+    static bool physical(charge a) { return true; }
 };
 
 template <class Archive>

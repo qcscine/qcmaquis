@@ -62,6 +62,8 @@ class Ztwo {
 				v[0] = fuse(v[0], v[i]);
 			return v[0];
 		}
+
+        static bool physical(charge a) { return true; }
 };
 
 #ifdef HAVE_ALPS_HDF5

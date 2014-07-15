@@ -261,6 +261,17 @@ NU1Charge<N, S> operator/(NU1Charge<N, S> const & a, int n)
 template<int N, class S>
 NU1Charge<N, S> operator/(int n, NU1Charge<N, S> const & a) { return a/n; }
 
+template<int N, class S, int I>
+struct physical_tpl
+{
+    static bool check(NU1Charge<N, S> a) { return a[I] >= 0 && physical_tpl<N,S,I+1>::check(a); }
+};
+
+template<int N, class S>
+struct physical_tpl<N,S,N>
+{
+    static bool check(NU1Charge<N, S> a) { return true;}
+};
 
 template<int N, class S = int>
 class NU1_template
@@ -285,6 +296,8 @@ public:
             ret = fuse(ret, v[i]);
         return ret;
     }
+
+    static bool physical(charge a) { return physical_tpl<N,S,0>::check(a);; }
 };
 
 

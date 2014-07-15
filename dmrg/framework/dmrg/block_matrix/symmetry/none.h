@@ -49,6 +49,7 @@ public:
     
 	static inline charge fuse(charge a, charge b) { return Plus; }
 	template<int R> static charge fuse(boost::array<charge, R>) { return Plus; }
+    static inline bool physical(charge a) { return true; }
 };
 
 namespace boost {

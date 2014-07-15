@@ -90,7 +90,7 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                 it = left_allowed[i].erase(it);
             else if (!finitegroup && SymmGroup::fuse(it->first, cmini) > right_end)
                 it = left_allowed[i].erase(it);
-            else if (!finitegroup && it->first[1] < 0)
+            else if (!finitegroup && !SymmGroup::physical(it->first))
                 it = left_allowed[i].erase(it);
             else {
                 it->second = std::min(Mmax, it->second);
@@ -125,7 +125,7 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     for (int i = 0; i < L+1; ++i) {
         allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
         for (typename Index<SymmGroup>::iterator it = allowed[i].begin();
-             it != allowed[i].end(); ++it)
+            it != allowed[i].end(); ++it)
             it->second = tri_min(Mmax,
                                  left_allowed[i].size_of_block(it->first),
                                  right_allowed[i].size_of_block(it->first));

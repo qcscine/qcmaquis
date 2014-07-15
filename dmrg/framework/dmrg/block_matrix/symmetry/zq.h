@@ -114,6 +114,8 @@ public:
             ret = fuse(ret, v[i]);
         return ret;
     }
+
+    static bool physical(charge a) { return true; }
 };
 
 template<int Q> const typename Zq<Q>::charge Zq<Q>::IdentityCharge = ZqCharge<Q>(0);
