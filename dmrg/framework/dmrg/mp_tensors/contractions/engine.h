@@ -39,6 +39,7 @@ class Engine
 public:
     Engine() {}
 
+    /*
     virtual std::vector<block_matrix<OtherMatrix, SymmGroup> >
     boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
                        Boundary<OtherMatrix, SymmGroup> const & left,
@@ -48,6 +49,7 @@ public:
     mps_times_boundary(MPSTensor<Matrix, SymmGroup> const & mps,
                        Boundary<OtherMatrix, SymmGroup> const & right,
                        MPOTensor<Matrix, SymmGroup> const & mpo) = 0;
+    */
 
     virtual block_matrix<OtherMatrix, SymmGroup>
     overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,

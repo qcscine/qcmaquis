@@ -39,18 +39,18 @@ namespace contraction {
 template <class Matrix, class OtherMatrix, class SymmGroup>
 class AbelianEngine : public Engine<Matrix, OtherMatrix, SymmGroup>
 {
-public:
-    AbelianEngine() {}
 
-    virtual std::vector<block_matrix<OtherMatrix, SymmGroup> >
+    std::vector<block_matrix<OtherMatrix, SymmGroup> >
     boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
                        Boundary<OtherMatrix, SymmGroup> const & left,
                        MPOTensor<Matrix, SymmGroup> const & mpo);
 
-    virtual std::vector<block_matrix<OtherMatrix, SymmGroup> >
+    std::vector<block_matrix<OtherMatrix, SymmGroup> >
     mps_times_boundary(MPSTensor<Matrix, SymmGroup> const & mps,
                        Boundary<OtherMatrix, SymmGroup> const & right,
                        MPOTensor<Matrix, SymmGroup> const & mpo);
+public:
+    AbelianEngine() {}
 
     virtual block_matrix<OtherMatrix, SymmGroup>
     overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
