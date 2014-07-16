@@ -44,6 +44,7 @@ public:
     using base::parms;
     using base::iteration_results_;
     using base::stop_callback;
+    using base::contr;
 
     ss_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
@@ -134,7 +135,7 @@ public:
             timeval now, then;
 
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
-            SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site]);
+            SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site], contr);
             
             /// Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);

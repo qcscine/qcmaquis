@@ -49,6 +49,7 @@ public:
     using base::parms;
     using base::iteration_results_;
     using base::stop_callback;
+    using base::contr;
     
     ts_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
@@ -160,7 +161,7 @@ public:
             #ifdef AMBIENT_TRACKING
             ambient_track_as(twin_mps, "twin_mps");
             #endif
-            SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);
+            SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1], contr);
             
             /// Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);

@@ -518,10 +518,12 @@ struct multigrid {
                                        MPS<Matrix, SymmGroup> & mps_large,
                                        std::vector<MPO<Matrix, SymmGroup> > const & mpos_mix)
     {
-                
         std::size_t L = mps_small.length();
         std::size_t LL = mps_large.length();
         assert(LL == 2*L);
+
+        boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > contr;
+        contr.reset(new contraction::AbelianEngine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>());
         
         results_collector graining_results;
         
@@ -568,7 +570,7 @@ struct multigrid {
             right_[L] = mps_small.right_boundary();
             
             for(int i = L-1; i >= 0; --i) {
-                right_[i] = contraction::overlap_mpo_right_step(mps_small[i], mps_small[i], right_[i+1], mpos_mix[0][i]);
+                right_[i] = contr->overlap_mpo_right_step(mps_small[i], mps_small[i], right_[i+1], mpos_mix[0][i]);
             }
         }
         
@@ -604,7 +606,7 @@ struct multigrid {
             Boundary<Matrix, SymmGroup> right_mixed;
             if (p<L-1) {
                 right_mixed = right_[p+2];
-                right_mixed = contraction::overlap_mpo_right_step(mps_small[p+1], mps_small[p+1], right_mixed, mpos_mix[p+1][2*(p+1)]);
+                right_mixed = contr->overlap_mpo_right_step(mps_small[p+1], mps_small[p+1], right_mixed, mpos_mix[p+1][2*(p+1)]);
             }
 
             // Testing energy calculations
@@ -645,11 +647,11 @@ struct multigrid {
              */
             {
                 right = (p<L-1) ? right_mixed : right_[p+1];
-                right = contraction::overlap_mpo_right_step(mps_large[2*p+1], mps_large[2*p+1], right, mpos_mix[p+1][2*p+1]);
+                right = contr->overlap_mpo_right_step(mps_large[2*p+1], mps_large[2*p+1], right, mpos_mix[p+1][2*p+1]);
                 if (p == 0)
                     left_[0] = mps_large.left_boundary();
                 
-                SiteProblem<Matrix, SymmGroup> sp(left_[2*p], right, mpos_mix[p+1][2*p]);
+                SiteProblem<Matrix, SymmGroup> sp(left_[2*p], right, mpos_mix[p+1][2*p], contr);
 
                 
                 // solver
@@ -703,10 +705,10 @@ struct multigrid {
              */
             {
                 right = (p<L-1) ? right_mixed : right_[p+1];
-                left_[2*p+1] = contraction::overlap_mpo_left_step(mps_large[2*p], mps_large[2*p],
+                left_[2*p+1] = contr->overlap_mpo_left_step(mps_large[2*p], mps_large[2*p],
                                                                   left_[2*p], mpos_mix[L][2*p]);
                 
-                SiteProblem<Matrix, SymmGroup> sp(left_[2*p+1], right, mpos_mix[p+1][2*p+1]);
+                SiteProblem<Matrix, SymmGroup> sp(left_[2*p+1], right, mpos_mix[p+1][2*p+1], contr);
 
                 // solver
                 if (parms["finegrain_optim"])
@@ -768,7 +770,7 @@ struct multigrid {
             
             // Preparing left boundary
             if (p < L-1) {
-                left_[2*p+2] = contraction::overlap_mpo_left_step(mps_large[2*p+1], mps_large[2*p+1],
+                left_[2*p+2] = contr->overlap_mpo_left_step(mps_large[2*p+1], mps_large[2*p+1],
                                                                   left_[2*p+1], mpos_mix[L][2*p+1]);
             }
             
