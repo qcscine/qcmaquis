@@ -151,7 +151,7 @@ namespace SU2 {
                         int ap = std::abs(ip-jp);
                         if (ap >= 3) continue;
 
-                        double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
+                        typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                         coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
 
                         size_t phys_s1 = W.left_basis_size(w_block);
@@ -249,7 +249,7 @@ namespace SU2 {
                         int ap = std::abs(ip-jp);
                         if (ap >= 3) continue;
 
-                        double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
+                        typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                         coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
 
                         size_t phys_s1 = W.left_basis_size(w_block);
