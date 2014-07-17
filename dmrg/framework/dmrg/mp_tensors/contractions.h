@@ -41,6 +41,8 @@
 #include "dmrg/mp_tensors/contractions/abelian/site_hamil.hpp"
 #include "dmrg/mp_tensors/contractions/abelian/prediction.hpp"
 #include "dmrg/mp_tensors/contractions/abelian/special.hpp"
+
 #include "dmrg/mp_tensors/contractions/abelian_engine.hpp"
+#include "dmrg/mp_tensors/contractions/su2_engine.hpp"
 
 #endif

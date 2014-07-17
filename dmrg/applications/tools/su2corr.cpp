@@ -39,6 +39,9 @@ using std::endl;
 #include "dmrg/mp_tensors/contractions/non-abelian/testing/test_apply.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/su2.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/testing/prepare_corr.hpp"
+#include "dmrg/mp_tensors/contractions/su2_engine.hpp"
+
+#include "dmrg/mp_tensors/contractions/abelian_engine.hpp"
 
 typedef alps::numeric::matrix<double> matrix;
 typedef TwoU1PG grp;
@@ -124,7 +127,8 @@ void print_triang(Matrix const & mat)
 }
 
 template <class Matrix, class SymmGroup>
-matrix compute_ratio(MPS<Matrix, SymmGroup> const & mps, matrix const & ref, std::vector<int> const & site_irreps, std::vector<int> const & config)
+matrix compute_ratio(boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> > contr,
+                     MPS<Matrix, SymmGroup> const & mps, matrix const & ref, std::vector<int> const & site_irreps, std::vector<int> const & config)
 {
     size_t L = mps.size();
 
@@ -133,7 +137,7 @@ matrix compute_ratio(MPS<Matrix, SymmGroup> const & mps, matrix const & ref, std
         for (int j=i+1; j < L; ++j)
         {
             MPO<Matrix, SymmGroup> mpo = SU2::make_1rdm_term<Matrix, SymmGroup>(i, j, site_irreps);
-            rdm(i,j) = SU2::expval(mps, mpo, i, j, config);
+            rdm(i,j) = SU2::expval(mps, mpo, contr, i, j, config);
             ratio(i,j) = ref(i,j) / rdm(i,j);
         }
 
@@ -142,15 +146,16 @@ matrix compute_ratio(MPS<Matrix, SymmGroup> const & mps, matrix const & ref, std
 
 template <class Matrix, class SymmGroup>
 std::vector<typename Matrix::value_type>
-compute_off_diag_ratio(MPS<Matrix, SymmGroup> const & mps, int which_diag, matrix const & ref,
-                              std::vector<int> const & site_irreps, std::vector<int> const & config)
+compute_off_diag_ratio(boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> > contr,
+                       MPS<Matrix, SymmGroup> const & mps, int which_diag, matrix const & ref,
+                       std::vector<int> const & site_irreps, std::vector<int> const & config)
 {
     size_t L = mps.size() - which_diag;
     std::vector<typename Matrix::value_type> ret(L);
     for (int i=0; i < L; ++i)
     {
         MPO<Matrix, SymmGroup> mpo = SU2::make_1rdm_term<Matrix, SymmGroup>(i, i+which_diag, site_irreps);
-        ret[i] = SU2::expval(mps, mpo, i, i+which_diag, config);
+        ret[i] = SU2::expval(mps, mpo, contr, i, i+which_diag, config);
         ret[i] = ref(i,i+which_diag) / ret[i];
     }
     return ret;
@@ -169,6 +174,9 @@ int main(int argc, char ** argv)
         load(argv[1], mps);
         size_t L = mps.size();
 
+        boost::shared_ptr<contraction::Engine<matrix, matrix, grp> > contr;
+        contr.reset(new contraction::SU2Engine<matrix, matrix, grp>());
+
         std::vector<int> site_irreps;
         for (int i=0; i < L; ++i)
             site_irreps.push_back(mps[i].site_dim()[1].first[2]);
@@ -183,7 +191,7 @@ int main(int argc, char ** argv)
         //}
 
 
-        matrix ratio = compute_ratio(mps, ref, site_irreps, config);
+        matrix ratio = compute_ratio(contr, mps, ref, site_irreps, config);
         print_triang(ratio);
 
         //int i=0, j=3;

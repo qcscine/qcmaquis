@@ -277,6 +277,7 @@ namespace SU2 {
         return ret;
     }
 
+/*
     template<class Matrix, class OtherMatrix, class SymmGroup>
     std::vector<block_matrix<OtherMatrix, SymmGroup> >
     boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
@@ -402,6 +403,7 @@ namespace SU2 {
 
         return ret;
     }
+*/
 
 } // namespace SU2
 } // namespace contraction
@@ -410,6 +412,7 @@ namespace SU2 {
 
     template<class Matrix, class SymmGroup>
     double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
+                  boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> > contr,
                   int p1, int p2, std::vector<int> config)
     {
         bool debug = false;
@@ -423,7 +426,7 @@ namespace SU2 {
         for(size_t i = 0; i < L; ++i) {
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
             //left_bm = contraction::SU2::apply_operator(cpy, mps[i], left_bm, mpo[i], config, debug);
-            left = contraction::SU2::overlap_mpo_left_step(cpy, mps[i], left, mpo[i]);
+            left = contr->overlap_mpo_left_step(cpy, mps[i], left, mpo[i]);
         }
 
         return maquis::real(left[0].trace());
@@ -431,7 +434,8 @@ namespace SU2 {
 
     template<class Matrix, class SymmGroup>
     double expval_r(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
-                  int p1, int p2, std::vector<int> config)
+                    boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> > contr,
+                    int p1, int p2, std::vector<int> config)
     {
         assert(mpo.length() == mps.length());
         std::size_t L = mps.length();
@@ -439,7 +443,7 @@ namespace SU2 {
 
         for(int i = L-1; i >= 0; --i) {
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
-            right = contraction::SU2::overlap_mpo_right_step(cpy, mps[i], right, mpo[i]);
+            right = contr->overlap_mpo_right_step(cpy, mps[i], right, mpo[i]);
         }
 
         return maquis::real(right[0].trace());
