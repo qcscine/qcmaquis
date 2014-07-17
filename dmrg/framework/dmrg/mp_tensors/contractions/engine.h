@@ -87,6 +87,13 @@ public:
                            MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                            Boundary<OtherMatrix, SymmGroup> const & right,
                            MPOTensor<Matrix, SymmGroup> const & mpo) = 0;
+
+    virtual MPSTensor<Matrix, SymmGroup>
+    site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                Boundary<OtherMatrix, SymmGroup> const & left,
+                Boundary<OtherMatrix, SymmGroup> const & right,
+                MPOTensor<Matrix, SymmGroup> const & mpo) = 0;
+
 };
 
 } // namespace contraction
