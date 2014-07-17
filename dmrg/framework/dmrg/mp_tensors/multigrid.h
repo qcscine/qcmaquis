@@ -680,7 +680,7 @@ struct multigrid {
                 } else if (true) {
                     // Compute Energy
                     MPSTensor<Matrix, SymmGroup> vec2 =
-                    contraction::site_hamil2(mps_large[2*p], sp.left, sp.right, sp.mpo);
+                    contr->site_hamil2(mps_large[2*p], sp.left, sp.right, sp.mpo);
                     double energy = mps_large[2*p].scalar_overlap(vec2);
                     maquis::cout << "Energy " << "finegraining_00 " << energy << std::endl;
                     graining_results["Energy"] << energy;
@@ -736,7 +736,7 @@ struct multigrid {
                 } else if (true) {
                     // Compute Energy
                     MPSTensor<Matrix, SymmGroup> vec2 =
-                    contraction::site_hamil2(mps_large[2*p+1], sp.left, sp.right, sp.mpo);
+                    contr->site_hamil2(mps_large[2*p+1], sp.left, sp.right, sp.mpo);
                     double energy = mps_large[2*p+1].scalar_overlap(vec2);
                     maquis::cout << "Energy " << "finegraining_01 " << energy << std::endl;
                     graining_results["Energy"] << energy;

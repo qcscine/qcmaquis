@@ -39,6 +39,6 @@ struct cont_model_factory {
     parse (Lattice const &, BaseParameters &);
 };
     
-#include "factory_lat.hpp"
+#include "factory_lattice.hpp"
 
 #endif
