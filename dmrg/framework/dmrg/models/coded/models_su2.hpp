@@ -191,7 +191,7 @@ public:
                 { // t*c*cdag
                     term_descriptor term;
                     term.is_fermionic = true;
-                    term.coeff = -ti;
+                    term.coeff = ti; // Note no minus due to fermion anticommutation
 
                     for (int fs=0; fs < std::min(*hopto, p); ++fs)
                         term.push_back( boost::make_tuple(fs, identity) );
