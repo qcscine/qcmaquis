@@ -109,8 +109,12 @@ namespace ietl
               MPSTensor<Matrix, SymmGroup> const & x,
               MPSTensor<Matrix, SymmGroup> & y)
     {  
+        maquis::cout << "Davidson Iteration input MPS:\n";
+        maquis::cout << x.data() << std::endl;
         y = H.eng->site_hamil2(x, H.left, H.right, H.mpo);
         x.make_left_paired();
+        maquis::cout << "Davidson Iteration output MPS:\n";
+        maquis::cout << y.data() << std::endl << std::endl;
     }
     
     template<class Matrix, class SymmGroup>
