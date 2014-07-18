@@ -141,6 +141,18 @@ public:
         
 #undef REGISTER
         /**********************************************************************/
+
+#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
+        PRINT(identity)
+        PRINT(fill_ccdag)  
+        PRINT(fill_cdagc)  
+        PRINT(create_head) 
+        PRINT(create_tail) 
+        PRINT(destroy_head)
+        PRINT(destroy_tail)
+        PRINT(count)       
+        PRINT(doubly_occ)  
+#undef PRINT
         
         value_type U = parms["U"];
         std::pair<tag_type, value_type> ptag;
