@@ -70,6 +70,8 @@ private:
         add_option("ietl_jcd_tol", "", value(1e-8));
         add_option("ietl_jcd_gmres", "", value(0));
         add_option("ietl_jcd_maxiter", "", value(8));
+
+        add_option("SU2", "Switch to SU2 contraction scheme. Needed for SU2 models", value(0));
         
         add_option("nsweeps", "");
         add_option("nmainsweeps", "", 0);

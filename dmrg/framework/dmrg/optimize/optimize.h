@@ -106,8 +106,10 @@ public:
     , stop_callback(stop_callback_)
     {
         // Initialize the contraction engine
-        //contr.reset(new contraction::AbelianEngine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>());
-        contr.reset(new contraction::SU2Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>());
+        if (parms["SU2"]==1)
+            contr.reset(new contraction::SU2Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>());
+        else
+            contr.reset(new contraction::AbelianEngine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>());
 
         std::size_t L = mps.length();
         #ifdef AMBIENT_TRACKING
