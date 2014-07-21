@@ -190,7 +190,7 @@ public:
             if (lr == +1) {
                 if (site < L-1) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
-                    trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
+                    trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1], contr,
                                                site, alpha, cutoff, Mmax);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());

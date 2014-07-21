@@ -691,7 +691,7 @@ struct multigrid {
                 /*
                 
                 maquis::cout << "Growing, alpha = " << alpha << std::endl;
-                mps_large.grow_l2r_sweep(mpos_mix[L][2*p], left_[2*p], right,
+                mps_large.grow_l2r_sweep(mpos_mix[L][2*p], left_[2*p], right, contr,
                                          2*p, alpha, cutoff, Mmax);
                  */
                  
