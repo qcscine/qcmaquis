@@ -35,19 +35,17 @@
 
 namespace contraction {
 
-    //template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Lbtm>
-    template<class Matrix, class OtherMatrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
     inline std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_l2r_sweep_tpl(MPSTensor<Matrix, SymmGroup> const & mps,
                                     MPOTensor<Matrix, SymmGroup> const & mpo,
                                     Boundary<OtherMatrix, SymmGroup> const & left,
                                     Boundary<OtherMatrix, SymmGroup> const & right,
                                     double alpha, double cutoff, std::size_t Mmax)
-                                    //Gemm gemm, Lbtm left_boundary_tensor_mpo)
     {
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> dm;
-        gemm(mps.data(), transpose(conjugate(mps.data())), dm);
+        Gemm()(mps.data(), transpose(conjugate(mps.data())), dm);
         
         Boundary<Matrix, SymmGroup> half_dm = left_boundary_tensor_mpo(mps, left, mpo);
         
@@ -55,7 +53,7 @@ namespace contraction {
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
         {
             block_matrix<Matrix, SymmGroup> tdm;
-            gemm(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
+            Gemm()(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
             
             
             tdm *= alpha;

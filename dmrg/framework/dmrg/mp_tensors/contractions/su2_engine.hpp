@@ -507,9 +507,8 @@ predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                             Boundary<OtherMatrix, SymmGroup> const & right,
                             double alpha, double cutoff, std::size_t Mmax)
 {
-    return predict_new_state_l2r_sweep_tpl(mps, mpo, left, right, alpha, cutoff, Mmax
-                                           );
-                                           //,&::SU2::gemm<Matrix, Matrix, Matrix, SymmGroup>, boost::bind(this->left_boundary_tensor_mpo, this));
+    return predict_new_state_l2r_sweep_tpl<Matrix, OtherMatrix, SymmGroup, ::SU2::su2gemm>
+           (mps, mpo, left, right, alpha, cutoff, Mmax);
 }
 
 } // namespace contractions
