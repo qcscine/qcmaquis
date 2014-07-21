@@ -31,6 +31,8 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/block_matrix/indexing.h"
 
+#include "dmrg/mp_tensors/contractions/common/prediction.hpp"
+
 namespace contraction {
 
 template <class Matrix, class OtherMatrix, class SymmGroup>
@@ -38,18 +40,6 @@ class Engine
 {
 public:
     Engine() {}
-
-    /*
-    virtual std::vector<block_matrix<OtherMatrix, SymmGroup> >
-    boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
-                       Boundary<OtherMatrix, SymmGroup> const & left,
-                       MPOTensor<Matrix, SymmGroup> const & mpo) = 0;
-
-    virtual std::vector<block_matrix<OtherMatrix, SymmGroup> >
-    mps_times_boundary(MPSTensor<Matrix, SymmGroup> const & mps,
-                       Boundary<OtherMatrix, SymmGroup> const & right,
-                       MPOTensor<Matrix, SymmGroup> const & mpo) = 0;
-    */
 
     virtual block_matrix<OtherMatrix, SymmGroup>
     overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
@@ -94,6 +84,33 @@ public:
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo) = 0;
 
+    // single-site precition
+
+    virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+    predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                                MPOTensor<Matrix, SymmGroup> const & mpo,
+                                Boundary<OtherMatrix, SymmGroup> const & left,
+                                Boundary<OtherMatrix, SymmGroup> const & right,
+                                double alpha, double cutoff, std::size_t Mmax) = 0;
+
+    /*
+    virtual MPSTensor<Matrix, SymmGroup>
+    predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
+                              MPSTensor<Matrix, SymmGroup> const & psi,
+                              MPSTensor<Matrix, SymmGroup> const & A) = 0;
+
+    virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+    predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                                MPOTensor<Matrix, SymmGroup> const & mpo,
+                                Boundary<OtherMatrix, SymmGroup> const & left,
+                                Boundary<OtherMatrix, SymmGroup> const & right,
+                                double alpha, double cutoff, std::size_t Mmax) = 0;
+
+    virtual MPSTensor<Matrix, SymmGroup>
+    predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
+                              MPSTensor<Matrix, SymmGroup> const & psi,
+                              MPSTensor<Matrix, SymmGroup> const & A) = 0;
+    */
 };
 
 } // namespace contraction

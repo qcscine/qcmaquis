@@ -94,6 +94,32 @@ public:
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo);
+
+    virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+    predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                                MPOTensor<Matrix, SymmGroup> const & mpo,
+                                Boundary<OtherMatrix, SymmGroup> const & left,
+                                Boundary<OtherMatrix, SymmGroup> const & right,
+                                double alpha, double cutoff, std::size_t Mmax);
+
+    /*
+    virtual MPSTensor<Matrix, SymmGroup>
+    predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
+                              MPSTensor<Matrix, SymmGroup> const & psi,
+                              MPSTensor<Matrix, SymmGroup> const & A);
+
+    virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+    predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                                MPOTensor<Matrix, SymmGroup> const & mpo,
+                                Boundary<OtherMatrix, SymmGroup> const & left,
+                                Boundary<OtherMatrix, SymmGroup> const & right,
+                                double alpha, double cutoff, std::size_t Mmax);
+
+    virtual MPSTensor<Matrix, SymmGroup>
+    predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
+                              MPSTensor<Matrix, SymmGroup> const & psi,
+                              MPSTensor<Matrix, SymmGroup> const & A);
+    */
 };
 
 
@@ -443,6 +469,18 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
     });
 #endif
     return ret;
+}
+
+template<class Matrix, class OtherMatrix, class SymmGroup>
+std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+AbelianEngine<Matrix, OtherMatrix, SymmGroup>::
+predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                            MPOTensor<Matrix, SymmGroup> const & mpo,
+                            Boundary<OtherMatrix, SymmGroup> const & left,
+                            Boundary<OtherMatrix, SymmGroup> const & right,
+                            double alpha, double cutoff, std::size_t Mmax)
+{
+    return contraction::predict_new_state_l2r_sweep(mps, mpo, left, right, alpha, cutoff, Mmax);
 }
 
 

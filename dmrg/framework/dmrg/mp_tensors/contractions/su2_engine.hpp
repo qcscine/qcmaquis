@@ -95,6 +95,33 @@ public:
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo);
+
+    // Single-site prediction
+    virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+    predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                                MPOTensor<Matrix, SymmGroup> const & mpo,
+                                Boundary<OtherMatrix, SymmGroup> const & left,
+                                Boundary<OtherMatrix, SymmGroup> const & right,
+                                double alpha, double cutoff, std::size_t Mmax);
+
+    /*
+    virtual MPSTensor<Matrix, SymmGroup>
+    predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
+                              MPSTensor<Matrix, SymmGroup> const & psi,
+                              MPSTensor<Matrix, SymmGroup> const & A);
+
+    virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+    predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                                MPOTensor<Matrix, SymmGroup> const & mpo,
+                                Boundary<OtherMatrix, SymmGroup> const & left,
+                                Boundary<OtherMatrix, SymmGroup> const & right,
+                                double alpha, double cutoff, std::size_t Mmax);
+
+    virtual MPSTensor<Matrix, SymmGroup>
+    predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
+                              MPSTensor<Matrix, SymmGroup> const & psi,
+                              MPSTensor<Matrix, SymmGroup> const & A);
+    */
 };
 
 
@@ -401,6 +428,11 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
     typedef typename SymmGroup::charge charge;
     typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
+    maquis::cout << ket_tensor.row_dim() << std::endl;
+    maquis::cout << ket_tensor.site_dim() << std::endl;
+    maquis::cout << ket_tensor.col_dim() << std::endl;
+    maquis::cout << "sh2 input ket data:\n";
+    maquis::cout << ket_tensor.data() << std::endl;
     std::vector<block_matrix<Matrix, SymmGroup> > t = this->boundary_times_mps(ket_tensor, left, mpo);
 
     Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
@@ -443,13 +475,41 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                                       in_right_pb, out_left_pb);
         block_matrix<Matrix, SymmGroup> tmp;
         ::SU2::gemm(contr_grid(0,0), right[b2], tmp);
+
+        maquis::cout << contr_grid(0,0).left_basis() << std::endl;
+        maquis::cout << contr_grid(0,0).right_basis() << std::endl;
+        maquis::cout << "  *\n";
+        maquis::cout << right[b2].left_basis() << std::endl;
+        maquis::cout << right[b2].right_basis() << std::endl;
+        maquis::cout << "  -->\n";
+        maquis::cout << tmp.left_basis() << std::endl;
+        maquis::cout << tmp.right_basis() << std::endl << std::endl;
+        maquis::cout << "-------------------------------------------\n";
+
         contr_grid(0,0).clear();
         omp_critical
         for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
+            if (tmp.left_basis_charge(k) == tmp.right_basis_charge(k))
             ret.data().match_and_add_block(tmp[k], tmp.left_basis_charge(k), tmp.right_basis_charge(k));
     });
 #endif
+    maquis::cout << "sh2 output ket data:\n";
+    maquis::cout << ret.data() << std::endl;
     return ret;
+}
+
+template<class Matrix, class OtherMatrix, class SymmGroup>
+std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+SU2Engine<Matrix, OtherMatrix, SymmGroup>::
+predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                            MPOTensor<Matrix, SymmGroup> const & mpo,
+                            Boundary<OtherMatrix, SymmGroup> const & left,
+                            Boundary<OtherMatrix, SymmGroup> const & right,
+                            double alpha, double cutoff, std::size_t Mmax)
+{
+    return predict_new_state_l2r_sweep_tpl(mps, mpo, left, right, alpha, cutoff, Mmax
+                                           );
+                                           //,&::SU2::gemm<Matrix, Matrix, Matrix, SymmGroup>, boost::bind(this->left_boundary_tensor_mpo, this));
 }
 
 } // namespace contractions
