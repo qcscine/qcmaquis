@@ -101,7 +101,6 @@ namespace SU2 {
                      DualIndex<SymmGroup> const & ket_basis,
                      Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_left_i,
-                     Index<SymmGroup> const & bra_col_basis,
                      ProductBasis<SymmGroup> const & in_right_pb,
                      ProductBasis<SymmGroup> const & out_left_pb)
     {
@@ -144,7 +143,7 @@ namespace SU2 {
                         if (!right_i.has(out_r_charge)) continue;
 
                         charge out_l_charge = SymmGroup::fuse(lc, phys_out);
-                        if (!bra_col_basis.has(out_l_charge) || !out_left_i.has(out_l_charge)) continue;
+                        if (!right_i.has(out_l_charge) || !out_left_i.has(out_l_charge)) continue;
 
                         size_t r_size = right_i.size_of_block(out_r_charge);
 
@@ -198,7 +197,6 @@ namespace SU2 {
                 DualIndex<SymmGroup> const & ket_basis,
                 Index<SymmGroup> const & left_i,
                 Index<SymmGroup> const & out_right_i,
-                Index<SymmGroup> const & bra_row_basis,
                 ProductBasis<SymmGroup> const & in_left_pb,
                 ProductBasis<SymmGroup> const & out_right_pb)
     {
@@ -242,7 +240,7 @@ namespace SU2 {
                         if (!left_i.has(out_l_charge)) continue;
 
                         charge out_r_charge = SymmGroup::fuse(rc, -phys_out);
-                        if (!bra_row_basis.has(out_r_charge) || !out_right_i.has(out_r_charge)) continue;
+                        if (!left_i.has(out_r_charge) || !out_right_i.has(out_r_charge)) continue;
 
                         size_t l_size = left_i.size_of_block(out_l_charge);
 
