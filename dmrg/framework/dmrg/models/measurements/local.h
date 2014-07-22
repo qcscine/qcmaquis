@@ -54,6 +54,7 @@ namespace measurements {
         , mpo_terms(terms)
         {
             this->cast_to_real = all_true(mpo_terms.begin(), mpo_terms.end(), static_cast<bool (*)(bond_element const&)>(&is_hermitian_meas));
+            base::contr.reset(new contraction::AbelianEngine<Matrix, Matrix, SymmGroup>());
         }
 
         local(std::string const& name_, const Lattice & lat,
@@ -68,6 +69,7 @@ namespace measurements {
         , mpo_terms(std::vector<bond_element>(1, bond_element(1, std::make_pair(op, false)) ))
         {
             this->cast_to_real = is_hermitian_meas(site_term);
+            base::contr.reset(new contraction::AbelianEngine<Matrix, Matrix, SymmGroup>());
         }
 
         void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
@@ -91,7 +93,7 @@ namespace measurements {
                     MPOTensor<Matrix, SymmGroup> temp;
                     temp.set(0, 0, site_term[type]);
                     
-                    MPSTensor<Matrix, SymmGroup> vec2 = contraction::site_hamil2(mps[p], rmps.get().left(p), rmps.get().right(p), temp);
+                    MPSTensor<Matrix, SymmGroup> vec2 = base::contr->site_hamil2(mps[p], rmps.get().left(p), rmps.get().right(p), temp);
                     res += mps[p].scalar_overlap(vec2);
                     evaluated = true;
                 }

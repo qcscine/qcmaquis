@@ -80,6 +80,8 @@ protected:
     std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vector_results;
     
     Index<SymmGroup> phys_psi;
+
+    boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> > contr;
     
 private:
     std::string name_;

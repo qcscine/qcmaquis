@@ -40,7 +40,6 @@
 
 #include "dmrg/mp_tensors/contractions/abelian/apply_op.hpp"
 #include "dmrg/mp_tensors/contractions/abelian/move_boundary.hpp"
-#include "dmrg/mp_tensors/contractions/abelian/site_hamil.hpp"
 #include "dmrg/mp_tensors/contractions/abelian/prediction.hpp"
 #include "dmrg/mp_tensors/contractions/abelian/special.hpp"
 
