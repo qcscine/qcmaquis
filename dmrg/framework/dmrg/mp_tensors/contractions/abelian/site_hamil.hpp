@@ -43,7 +43,8 @@ namespace contraction {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
-        std::vector<block_matrix<Matrix, SymmGroup> > t = boundary_times_mps(ket_tensor, left, mpo);
+        std::vector<block_matrix<Matrix, SymmGroup> > t
+            = boundary_times_mps_tpl<Matrix, OtherMatrix, SymmGroup, gemm_trim_left_functor>(ket_tensor, left, mpo);
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                                & left_i = ket_tensor.row_dim(),
