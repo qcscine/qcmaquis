@@ -43,7 +43,7 @@ namespace contraction {
                      Boundary<OtherMatrix, SymmGroup> const & left,
                      std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     Index<SymmGroup> const & physical_i,
+                     DualIndex<SymmGroup> const & ket_basis, // dummy argument for compatiblity with SU2
                      Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_left_i,
                      ProductBasis<SymmGroup> const & in_right_pb,
@@ -121,7 +121,7 @@ namespace contraction {
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
                 MPOTensor<Matrix, SymmGroup> const & mpo,
-                Index<SymmGroup> const & physical_i,
+                DualIndex<SymmGroup> const & ket_basis, // dummy argument for compatiblity with SU2
                 Index<SymmGroup> const & left_i,
                 Index<SymmGroup> const & right_i,
                 Index<SymmGroup> const & out_right_i,
