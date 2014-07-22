@@ -36,7 +36,7 @@ namespace contraction {
 
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
     std::vector<block_matrix<OtherMatrix, SymmGroup> >
-    boundary_times_mps_tpl(MPSTensor<Matrix, SymmGroup> const & mps,
+    boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
                        Boundary<OtherMatrix, SymmGroup> const & left,
                        MPOTensor<Matrix, SymmGroup> const & mpo)
     {
@@ -56,7 +56,7 @@ namespace contraction {
 
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
     std::vector<block_matrix<OtherMatrix, SymmGroup> >
-    mps_times_boundary_tpl(MPSTensor<Matrix, SymmGroup> const & mps,
+    mps_times_boundary(MPSTensor<Matrix, SymmGroup> const & mps,
                        Boundary<OtherMatrix, SymmGroup> const & right,
                        MPOTensor<Matrix, SymmGroup> const & mpo)
     {

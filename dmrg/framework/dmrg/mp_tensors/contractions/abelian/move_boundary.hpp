@@ -107,7 +107,7 @@ namespace contraction {
             in_low = &mps.row_dim();
         
         std::vector<block_matrix<Matrix, SymmGroup> > t
-            = boundary_times_mps_tpl<Matrix, OtherMatrix, SymmGroup, gemm_trim_left_functor>(mps, left, mpo);
+            = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, gemm_trim_left_functor>(mps, left, mpo);
 
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim(),
                                       out_left_i = physical_i * left_i;
@@ -155,7 +155,7 @@ namespace contraction {
             in_low = &mps.col_dim();
         
         std::vector<block_matrix<Matrix, SymmGroup> > t
-            = mps_times_boundary_tpl<Matrix, OtherMatrix, SymmGroup, gemm_trim_right_functor>(mps, right, mpo);
+            = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, gemm_trim_right_functor>(mps, right, mpo);
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
                          out_right_i = adjoin(physical_i) * right_i;
@@ -193,7 +193,7 @@ namespace contraction {
 
         MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
         std::vector<block_matrix<Matrix, SymmGroup> > t
-            = boundary_times_mps_tpl<Matrix, OtherMatrix, SymmGroup, gemm_trim_left_functor>(ket_cpy, left, mpo);
+            = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, gemm_trim_left_functor>(ket_cpy, left, mpo);
 
         Index<SymmGroup> const & left_i = bra_tensor.row_dim();
         Index<SymmGroup> const & right_i = ket_tensor.col_dim();
@@ -255,7 +255,7 @@ namespace contraction {
 
         MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
         std::vector<block_matrix<Matrix, SymmGroup> > t
-            = mps_times_boundary_tpl<Matrix, OtherMatrix, SymmGroup, gemm_trim_right_functor>(ket_cpy, right, mpo);
+            = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, gemm_trim_right_functor>(ket_cpy, right, mpo);
 
         Index<SymmGroup> const & left_i = ket_tensor.row_dim();
         Index<SymmGroup> const & right_i = bra_tensor.col_dim();
