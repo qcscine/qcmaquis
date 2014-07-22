@@ -100,7 +100,6 @@ namespace contraction {
 
                     size_t in_right_offset = in_right_pb(phys_c1, out_r_charge);
                     size_t out_left_offset = out_left_pb(phys_c2, in_l_charge);
-
                     size_t phys_s1 = W.left_basis_size(w_block);
                     size_t phys_s2 = W.right_basis_size(w_block);
                     Matrix const & wblock = W[w_block];
@@ -123,7 +122,6 @@ namespace contraction {
                 MPOTensor<Matrix, SymmGroup> const & mpo,
                 DualIndex<SymmGroup> const & ket_basis, // dummy argument for compatiblity with SU2
                 Index<SymmGroup> const & left_i,
-                Index<SymmGroup> const & right_i,
                 Index<SymmGroup> const & out_right_i,
                 ProductBasis<SymmGroup> const & in_left_pb,
                 ProductBasis<SymmGroup> const & out_right_pb)
@@ -175,8 +173,6 @@ namespace contraction {
                     charge in_r_charge = SymmGroup::fuse(in_l_charge, T_delta); 
                     size_t t_block = T.basis().position(in_l_charge, in_r_charge);
                     if (t_block == T.basis().size()) continue;
-
-                    assert(right_i.has(in_r_charge));
 
                     size_t in_left_offset = in_left_pb(phys_c1, out_l_charge);
                     size_t out_right_offset = out_right_pb(phys_c2, in_r_charge);

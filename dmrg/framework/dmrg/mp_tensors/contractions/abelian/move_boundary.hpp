@@ -171,7 +171,7 @@ namespace contraction {
 
         omp_for(index_type b1, range<index_type>(0,loop_max), {
             select_proc(ambient::scope::permute(b1,mpo.placement_l));
-            ret[b1] = rbtm_kernel(b1, right, t, mpo, mps.data().basis(), left_i, right_i, out_right_i, in_left_pb, out_right_pb);
+            ret[b1] = rbtm_kernel(b1, right, t, mpo, mps.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
         });
 
         return ret;
@@ -275,7 +275,7 @@ namespace contraction {
         omp_for(index_type b1, range<index_type>(0,loop_max), {
             select_proc(ambient::scope::permute(b1,mpo.placement_l));
             block_matrix<Matrix, SymmGroup> tmp;
-            tmp = rbtm_kernel(b1, right, t, mpo, ket_cpy.data().basis(), left_i, right_i, out_right_i, in_left_pb, out_right_pb);
+            tmp = rbtm_kernel(b1, right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
             gemm(tmp, transpose(bra_conj), ret[b1]);
         });
         #ifdef AMBIENT_TRACKING

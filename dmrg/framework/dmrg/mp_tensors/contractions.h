@@ -34,8 +34,7 @@
 #include "dmrg/mp_tensors/contractions/impl/memsave.hpp"
 #endif
 
-#include "dmrg/mp_tensors/contractions/abelian/gemm_functors.h"
-
+#include "dmrg/mp_tensors/contractions/abelian/functors.h"
 #include "dmrg/mp_tensors/contractions/common/boundary_times_mps.hpp"
 
 #include "dmrg/mp_tensors/contractions/abelian/apply_op.hpp"
