@@ -31,24 +31,16 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/block_matrix/indexing.h"
 
-// implementation includes see below
 #include "dmrg/mp_tensors/contractions/engine.h"
+#include "dmrg/mp_tensors/contractions/abelian/gemm_functors.h"
+
+// implementation includes see below
 
 namespace contraction {
 
 template <class Matrix, class OtherMatrix, class SymmGroup>
 class AbelianEngine : public Engine<Matrix, OtherMatrix, SymmGroup>
 {
-
-    std::vector<block_matrix<OtherMatrix, SymmGroup> >
-    boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
-                       Boundary<OtherMatrix, SymmGroup> const & left,
-                       MPOTensor<Matrix, SymmGroup> const & mpo);
-
-    std::vector<block_matrix<OtherMatrix, SymmGroup> >
-    mps_times_boundary(MPSTensor<Matrix, SymmGroup> const & mps,
-                       Boundary<OtherMatrix, SymmGroup> const & right,
-                       MPOTensor<Matrix, SymmGroup> const & mpo);
 public:
     AbelianEngine() {}
 
@@ -122,49 +114,6 @@ public:
     */
 };
 
-
-template<class Matrix, class OtherMatrix, class SymmGroup>
-std::vector<block_matrix<OtherMatrix, SymmGroup> >
-AbelianEngine<Matrix, OtherMatrix, SymmGroup>::
-boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
-                   Boundary<OtherMatrix, SymmGroup> const & left,
-                   MPOTensor<Matrix, SymmGroup> const & mpo)
-{
-    std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(left.aux_dim());
-    int loop_max = left.aux_dim();
-    {
-        select_proc(storage::actor_t::common);
-        mps.make_right_paired();
-        storage::hint(mps);
-    }
-    parallel_for(int b1, range(0,loop_max), {
-        select_proc(ambient::scope::permute(b1, mpo.placement_l));
-        gemm_trim_left(transpose(left[b1]), mps.data(), ret[b1]);
-    });
-    return ret;
-}
-
-template<class Matrix, class OtherMatrix, class SymmGroup>
-std::vector<block_matrix<OtherMatrix, SymmGroup> >
-AbelianEngine<Matrix, OtherMatrix, SymmGroup>::
-mps_times_boundary(MPSTensor<Matrix, SymmGroup> const & mps,
-                   Boundary<OtherMatrix, SymmGroup> const & right,
-                   MPOTensor<Matrix, SymmGroup> const & mpo)
-{
-    std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(right.aux_dim());
-    int loop_max = right.aux_dim();
-    {
-        select_proc(storage::actor_t::common);
-        mps.make_left_paired();
-        storage::hint(mps);
-    }
-    parallel_for(int b2, range(0,loop_max), {
-        select_proc(ambient::scope::permute(b2, mpo.placement_r));
-        gemm_trim_right(mps.data(), right[b2], ret[b2]);
-    });
-    return ret;
-}
-
 template<class Matrix, class OtherMatrix, class SymmGroup>
 block_matrix<OtherMatrix, SymmGroup>
 AbelianEngine<Matrix, OtherMatrix, SymmGroup>::
@@ -232,7 +181,8 @@ left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
     if (in_low == NULL)
         in_low = &mps.row_dim();
 
-    std::vector<block_matrix<Matrix, SymmGroup> > t = boundary_times_mps(mps, left, mpo);
+    std::vector<block_matrix<Matrix, SymmGroup> > t
+        = boundary_times_mps_tpl<Matrix, OtherMatrix, SymmGroup, gemm_trim_left_functor>(mps, left, mpo);
 
     Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim(),
                                   out_left_i = physical_i * left_i;
@@ -280,7 +230,8 @@ right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
     if (in_low == NULL)
         in_low = &mps.col_dim();
 
-    std::vector<block_matrix<Matrix, SymmGroup> > t = mps_times_boundary(mps, right, mpo);
+    std::vector<block_matrix<Matrix, SymmGroup> > t
+        = mps_times_boundary_tpl<Matrix, OtherMatrix, SymmGroup, gemm_trim_right_functor>(mps, right, mpo);
 
     Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
                      out_right_i = adjoin(physical_i) * right_i;
@@ -318,7 +269,8 @@ overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
     typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
     MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-    std::vector<block_matrix<Matrix, SymmGroup> > t = this->mps_times_boundary(ket_cpy, right, mpo);
+    std::vector<block_matrix<Matrix, SymmGroup> > t
+        = mps_times_boundary_tpl<Matrix, OtherMatrix, SymmGroup, gemm_trim_right_functor>(ket_cpy, right, mpo);
 
     Index<SymmGroup> const & left_i = ket_tensor.row_dim();
     Index<SymmGroup> const & right_i = bra_tensor.col_dim();
@@ -364,7 +316,8 @@ overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
     typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
     MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-    std::vector<block_matrix<Matrix, SymmGroup> > t = this->boundary_times_mps(ket_cpy, left, mpo);
+    std::vector<block_matrix<Matrix, SymmGroup> > t
+        = boundary_times_mps_tpl<Matrix, OtherMatrix, SymmGroup, gemm_trim_left_functor>(ket_cpy, left, mpo);
 
     Index<SymmGroup> const & left_i = bra_tensor.row_dim();
     Index<SymmGroup> const & right_i = ket_tensor.col_dim();
@@ -421,7 +374,8 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
     typedef typename SymmGroup::charge charge;
     typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
-    std::vector<block_matrix<Matrix, SymmGroup> > t = this->boundary_times_mps(ket_tensor, left, mpo);
+    std::vector<block_matrix<Matrix, SymmGroup> > t
+        = boundary_times_mps_tpl<Matrix, OtherMatrix, SymmGroup, gemm_trim_left_functor>(ket_tensor, left, mpo);
 
     Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                            & left_i = ket_tensor.row_dim(),

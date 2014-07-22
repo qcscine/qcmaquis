@@ -25,8 +25,8 @@
  *
  *****************************************************************************/
 
-#ifndef CONTRACTIONS_BOUNDARY_TIMES_MPS_H
-#define CONTRACTIONS_BOUNDARY_TIMES_MPS_H
+#ifndef CONTRACTIONS_COMMON_BOUNDARY_TIMES_MPS_H
+#define CONTRACTIONS_COMMON_BOUNDARY_TIMES_MPS_H
 
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
@@ -34,9 +34,9 @@
 
 namespace contraction {
 
-    template<class Matrix, class OtherMatrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
     std::vector<block_matrix<OtherMatrix, SymmGroup> >
-    boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
+    boundary_times_mps_tpl(MPSTensor<Matrix, SymmGroup> const & mps,
                        Boundary<OtherMatrix, SymmGroup> const & left,
                        MPOTensor<Matrix, SymmGroup> const & mpo)
     {
@@ -49,14 +49,14 @@ namespace contraction {
         }
         parallel_for(int b1, range(0,loop_max), {
             select_proc(ambient::scope::permute(b1, mpo.placement_l));
-            gemm_trim_left(transpose(left[b1]), mps.data(), ret[b1]);
+            Gemm()(transpose(left[b1]), mps.data(), ret[b1]);
         });
         return ret;
     }
 
-    template<class Matrix, class OtherMatrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
     std::vector<block_matrix<OtherMatrix, SymmGroup> >
-    mps_times_boundary(MPSTensor<Matrix, SymmGroup> const & mps,
+    mps_times_boundary_tpl(MPSTensor<Matrix, SymmGroup> const & mps,
                        Boundary<OtherMatrix, SymmGroup> const & right,
                        MPOTensor<Matrix, SymmGroup> const & mpo)
     {
@@ -69,7 +69,7 @@ namespace contraction {
         }
         parallel_for(int b2, range(0,loop_max), {
             select_proc(ambient::scope::permute(b2, mpo.placement_r));
-            gemm_trim_right(mps.data(), right[b2], ret[b2]);
+            Gemm()(mps.data(), right[b2], ret[b2]);
         });
         return ret;
     }
