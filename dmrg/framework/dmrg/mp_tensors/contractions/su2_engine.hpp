@@ -51,7 +51,7 @@ public:
                       block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
     {
         return contraction::overlap_left_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>
-                                             (bra_tensor, ket_tensor, left, localop);
+               (bra_tensor, ket_tensor, left, localop);
     }
 
     virtual block_matrix<OtherMatrix, SymmGroup>
@@ -61,7 +61,7 @@ public:
                        block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
     {
         return contraction::overlap_right_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>
-                                              (bra_tensor, ket_tensor, right, localop);
+               (bra_tensor, ket_tensor, right, localop);
     }
 
     virtual Boundary<Matrix, SymmGroup>
@@ -71,7 +71,7 @@ public:
                              Index<SymmGroup> const * in_low = NULL)
     {
         return contraction::left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::lbtm_functor>
-                                                     (mps, left, mpo, in_low);
+               (mps, left, mpo, in_low);
     }
 
     virtual Boundary<Matrix, SymmGroup>
@@ -81,7 +81,7 @@ public:
                               Index<SymmGroup> const * in_low = NULL)
     {
         return contraction::right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::rbtm_functor>
-                                                     (mps, right, mpo, in_low);
+               (mps, right, mpo, in_low);
     }
 
     virtual Boundary<OtherMatrix, SymmGroup>
@@ -91,7 +91,7 @@ public:
                           MPOTensor<Matrix, SymmGroup> const & mpo)
     {
         return contraction::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::lbtm_functor>
-                                                 (bra_tensor, ket_tensor, left, mpo);
+               (bra_tensor, ket_tensor, left, mpo);
     }
 
     virtual Boundary<OtherMatrix, SymmGroup>
@@ -101,7 +101,7 @@ public:
                            MPOTensor<Matrix, SymmGroup> const & mpo)
     {
         return contraction::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::rbtm_functor>
-                                                 (bra_tensor, ket_tensor, right, mpo);
+               (bra_tensor, ket_tensor, right, mpo);
     }
 
     virtual MPSTensor<Matrix, SymmGroup>
@@ -118,16 +118,19 @@ public:
                                 Boundary<OtherMatrix, SymmGroup> const & right,
                                 double alpha, double cutoff, std::size_t Mmax)
     {
-        return predict_new_state_l2r_sweep_tpl<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::lbtm_functor>
+        return contraction::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::lbtm_functor>
                (mps, mpo, left, right, alpha, cutoff, Mmax);
     }
 
-    /*
     virtual MPSTensor<Matrix, SymmGroup>
     predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
                               MPSTensor<Matrix, SymmGroup> const & psi,
-                              MPSTensor<Matrix, SymmGroup> const & A);
+                              MPSTensor<Matrix, SymmGroup> const & A)
+    {
+        return contraction::predict_lanczos_l2r_sweep<Matrix, SymmGroup, ::SU2::SU2Gemms>(B, psi, A);
+    }
 
+    /*
     virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                 MPOTensor<Matrix, SymmGroup> const & mpo,

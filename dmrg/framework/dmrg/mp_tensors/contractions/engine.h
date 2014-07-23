@@ -95,11 +95,11 @@ public:
                                 Boundary<OtherMatrix, SymmGroup> const & right,
                                 double alpha, double cutoff, std::size_t Mmax) = 0;
 
-    /*
     virtual MPSTensor<Matrix, SymmGroup>
     predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A) = 0;
+    /*
 
     virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,

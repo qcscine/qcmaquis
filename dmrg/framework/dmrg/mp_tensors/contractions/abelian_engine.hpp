@@ -70,7 +70,7 @@ public:
                              Index<SymmGroup> const * in_low = NULL)
     {
         return contraction::left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, AbelianGemms, lbtm_functor>
-                                                    (mps, left, mpo, in_low);
+               (mps, left, mpo, in_low);
     }
 
     virtual Boundary<Matrix, SymmGroup>
@@ -80,7 +80,7 @@ public:
                               Index<SymmGroup> const * in_low = NULL)
     {
         return contraction::right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, AbelianGemms, rbtm_functor>
-                                                     (mps, right, mpo, in_low);
+               (mps, right, mpo, in_low);
     }
 
     virtual Boundary<OtherMatrix, SymmGroup>
@@ -90,7 +90,7 @@ public:
                           MPOTensor<Matrix, SymmGroup> const & mpo)
     {
         return contraction::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, AbelianGemms, lbtm_functor>
-                                                 (bra_tensor, ket_tensor, left, mpo);
+               (bra_tensor, ket_tensor, left, mpo);
     }
 
     virtual Boundary<OtherMatrix, SymmGroup>
@@ -100,7 +100,7 @@ public:
                            MPOTensor<Matrix, SymmGroup> const & mpo)
     {
         return contraction::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, AbelianGemms, rbtm_functor>
-                                                  (bra_tensor, ket_tensor, right, mpo);
+               (bra_tensor, ket_tensor, right, mpo);
     }
 
     virtual MPSTensor<Matrix, SymmGroup>
@@ -116,15 +116,19 @@ public:
                                 Boundary<OtherMatrix, SymmGroup> const & right,
                                 double alpha, double cutoff, std::size_t Mmax)
     {
-        return contraction::predict_new_state_l2r_sweep(mps, mpo, left, right, alpha, cutoff, Mmax);
+        return contraction::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, AbelianGemms, lbtm_functor>
+              (mps, mpo, left, right, alpha, cutoff, Mmax);
     }
 
-    /*
     virtual MPSTensor<Matrix, SymmGroup>
     predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
                               MPSTensor<Matrix, SymmGroup> const & psi,
-                              MPSTensor<Matrix, SymmGroup> const & A);
+                              MPSTensor<Matrix, SymmGroup> const & A)
+    {
+        return contraction::predict_lanczos_l2r_sweep<Matrix, SymmGroup, AbelianGemms>(B, psi, A);
+    }
 
+    /*
     virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                 MPOTensor<Matrix, SymmGroup> const & mpo,

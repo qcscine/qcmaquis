@@ -40,11 +40,11 @@ namespace contraction {
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
     BOOST_FORCEINLINE
     std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
-    predict_new_state_l2r_sweep_tpl(MPSTensor<Matrix, SymmGroup> const & mps,
-                                    MPOTensor<Matrix, SymmGroup> const & mpo,
-                                    Boundary<OtherMatrix, SymmGroup> const & left,
-                                    Boundary<OtherMatrix, SymmGroup> const & right,
-                                    double alpha, double cutoff, std::size_t Mmax)
+    predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                                MPOTensor<Matrix, SymmGroup> const & mpo,
+                                Boundary<OtherMatrix, SymmGroup> const & left,
+                                Boundary<OtherMatrix, SymmGroup> const & right,
+                                double alpha, double cutoff, std::size_t Mmax)
     {
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> dm;
@@ -80,18 +80,18 @@ namespace contraction {
         return std::make_pair(ret, trunc);
     }
     
-    template<class Matrix, class SymmGroup>
+    template<class Matrix, class SymmGroup, class Gemm>
     BOOST_FORCEINLINE
     MPSTensor<Matrix, SymmGroup>
-    predict_lanczos_l2r_sweep_tpl(MPSTensor<Matrix, SymmGroup> B,
-                                  MPSTensor<Matrix, SymmGroup> const & psi,
-                                  MPSTensor<Matrix, SymmGroup> const & A)
+    predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
+                              MPSTensor<Matrix, SymmGroup> const & psi,
+                              MPSTensor<Matrix, SymmGroup> const & A)
     {
         psi.make_left_paired();
         A.make_left_paired();
         
         block_matrix<Matrix, SymmGroup> tmp;
-        gemm(transpose(conjugate(A.data())), psi.data(), tmp);
+        typename Gemm::gemm()(transpose(conjugate(A.data())), psi.data(), tmp);
         B.multiply_from_left(tmp);
         
         return B;
