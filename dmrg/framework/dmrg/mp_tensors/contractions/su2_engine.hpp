@@ -31,8 +31,9 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/block_matrix/indexing.h"
 
-// implementation includes see below
-#include "dmrg/mp_tensors/contractions/non-abelian/su2.hpp"
+#include "dmrg/mp_tensors/contractions/non-abelian/apply_op.hpp"
+#include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
+#include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
 #include "dmrg/mp_tensors/contractions/engine.h"
 
 namespace contraction {

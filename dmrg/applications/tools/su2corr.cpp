@@ -36,12 +36,13 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
+#include <alps/numeric/matrix.hpp>
+#include <alps/numeric/matrix/algorithms.hpp>
+#include "dmrg/block_matrix/detail/alps.hpp"
+
 #include "dmrg/mp_tensors/contractions/non-abelian/testing/test_apply.hpp"
-#include "dmrg/mp_tensors/contractions/non-abelian/su2.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/testing/prepare_corr.hpp"
 #include "dmrg/mp_tensors/contractions/su2_engine.hpp"
-
-#include "dmrg/mp_tensors/contractions/abelian_engine.hpp"
 
 typedef alps::numeric::matrix<double> matrix;
 typedef TwoU1PG grp;

@@ -27,6 +27,7 @@
 #ifndef CONTRACTIONS_SU2_TEST_COUPLING_H
 #define CONTRACTIONS_SU2_TEST_COUPLING_H
 
+#include "dmrg/mp_tensors/contractions/non-abelian/gsl_coupling.h"
 
 namespace SU2 {
 

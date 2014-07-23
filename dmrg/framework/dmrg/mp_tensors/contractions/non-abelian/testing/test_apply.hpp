@@ -27,17 +27,14 @@
 #ifndef CONTRACTIONS_SU2_TESTING_APPLY_HPP
 #define CONTRACTIONS_SU2_TESTING_APPLY_HPP
 
-#include <alps/numeric/matrix.hpp>
-#include <alps/numeric/matrix/algorithms.hpp>
 #include <boost/tuple/tuple_io.hpp>
-#include "dmrg/block_matrix/detail/alps.hpp"
-#include "dmrg/mp_tensors/mps.h"
-#include "dmrg/mp_tensors/mpo.h"
 
-#include "dmrg/mp_tensors/contractions/non-abelian/gsl_coupling.h"
+#include "dmrg/mp_tensors/mpstensor.h"
+#include "dmrg/mp_tensors/mpotensor.h"
+
 #include "dmrg/mp_tensors/contractions/non-abelian/testing/test_coupling.h"
 
-namespace SU2 {
+namespace SU2 { // Forward declarations
 
     double mod_coupling(int two_ja, int two_jb, int two_jc,
                         int two_jd, int two_je, int two_jf,
@@ -206,7 +203,7 @@ namespace SU2 {
         if(debug) maquis::cout << std::endl;
         return ret;
     }
-}
-}
+} // namespace SU2
+} // namespace contractions
 
 #endif
