@@ -57,11 +57,11 @@ namespace contraction {
         block_matrix<OtherMatrix, SymmGroup> t1;
         block_matrix<Matrix, SymmGroup> t3;
         ket_tensor.make_right_paired();
-        Gemm()(left, ket_tensor.data(), t1);
+        typename Gemm::gemm()(left, ket_tensor.data(), t1);
         
         reshape_right_to_left_new(ket_tensor.site_dim(), bra_tensor.row_dim(), ket_tensor.col_dim(),
                                   t1, t3);
-        Gemm()(transpose(conjugate(bra_tensor.data())), t3, t1);
+        typename Gemm::gemm()(transpose(conjugate(bra_tensor.data())), t3, t1);
         return t1;
 
         // original:
@@ -88,16 +88,16 @@ namespace contraction {
         
         block_matrix<OtherMatrix, SymmGroup> t1;
         block_matrix<Matrix, SymmGroup> t3;
-        Gemm()(ket_tensor.data(), transpose(right), t1);
+        typename Gemm::gemm()(ket_tensor.data(), transpose(right), t1);
         reshape_left_to_right_new(ket_tensor.site_dim(), ket_tensor.row_dim(), bra_tensor.col_dim(), t1, t3);
-        Gemm()(conjugate(bra_tensor.data()), transpose(t3), t1);
+        typename Gemm::gemm()(conjugate(bra_tensor.data()), transpose(t3), t1);
 
         return t1;
     }
     
     // note: this function changes the internal structure of Boundary,
     //       each block is transposed
-    template<class Matrix, class OtherMatrix, class SymmGroup, class GemmTrim, class Kernel>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
     BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     Boundary<Matrix, SymmGroup>
     left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
@@ -112,7 +112,7 @@ namespace contraction {
             in_low = &mps.row_dim();
         
         std::vector<block_matrix<Matrix, SymmGroup> > t
-            = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, GemmTrim>(mps, left, mpo);
+            = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, typename Gemm::gemm_trim_left>(mps, left, mpo);
 
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim(),
                                       out_left_i = physical_i * left_i;
@@ -146,7 +146,7 @@ namespace contraction {
 #endif
     }
     
-    template<class Matrix, class OtherMatrix, class SymmGroup, class GemmTrim, class Kernel>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
     BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     Boundary<Matrix, SymmGroup>
     right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
@@ -161,7 +161,7 @@ namespace contraction {
             in_low = &mps.col_dim();
         
         std::vector<block_matrix<Matrix, SymmGroup> > t
-            = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, GemmTrim>(mps, right, mpo);
+            = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, typename Gemm::gemm_trim_right>(mps, right, mpo);
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
                          out_right_i = adjoin(physical_i) * right_i;
@@ -183,7 +183,7 @@ namespace contraction {
         return ret;
     }
     
-    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class GemmTrim, class Kernel>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
     BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     Boundary<OtherMatrix, SymmGroup>
     overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
@@ -200,7 +200,7 @@ namespace contraction {
 
         MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
         std::vector<block_matrix<Matrix, SymmGroup> > t
-            = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, GemmTrim>(ket_cpy, left, mpo);
+            = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, typename Gemm::gemm_trim_left>(ket_cpy, left, mpo);
 
         Index<SymmGroup> const & left_i = bra_tensor.row_dim();
         Index<SymmGroup> const & right_i = ket_tensor.col_dim();
@@ -239,14 +239,14 @@ namespace contraction {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
             block_matrix<Matrix, SymmGroup> tmp;
             Kernel()(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
-            Gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
+            typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
         });
 
         return ret;
 #endif
     }
     
-    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class GemmTrim, class Kernel>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
     BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     Boundary<OtherMatrix, SymmGroup>
     overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
@@ -263,7 +263,7 @@ namespace contraction {
 
         MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
         std::vector<block_matrix<Matrix, SymmGroup> > t
-            = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, GemmTrim>(ket_cpy, right, mpo);
+            = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, typename Gemm::gemm_trim_right>(ket_cpy, right, mpo);
 
         Index<SymmGroup> const & left_i = ket_tensor.row_dim();
         Index<SymmGroup> const & right_i = bra_tensor.col_dim();
@@ -284,7 +284,7 @@ namespace contraction {
             select_proc(ambient::scope::permute(b1,mpo.placement_l));
             block_matrix<Matrix, SymmGroup> tmp;
             tmp = Kernel()(b1, right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
-            Gemm()(tmp, transpose(bra_conj), ret[b1]);
+            typename Gemm::gemm()(tmp, transpose(bra_conj), ret[b1]);
         });
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("serial::continue");

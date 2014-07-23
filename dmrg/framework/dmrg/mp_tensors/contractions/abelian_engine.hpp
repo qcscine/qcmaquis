@@ -122,7 +122,7 @@ overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                   block_matrix<OtherMatrix, SymmGroup> const & left,
                   block_matrix<OtherMatrix, SymmGroup> * localop)
 {
-    return contraction::overlap_left_step<Matrix, OtherMatrix, SymmGroup, gemm_functor>(bra_tensor, ket_tensor, left, localop);
+    return contraction::overlap_left_step<Matrix, OtherMatrix, SymmGroup, AbelianGemms>(bra_tensor, ket_tensor, left, localop);
 }
 
 
@@ -134,7 +134,7 @@ overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                    block_matrix<OtherMatrix, SymmGroup> const & right,
                    block_matrix<OtherMatrix, SymmGroup> * localop)
 {
-    return contraction::overlap_right_step<Matrix, OtherMatrix, SymmGroup, gemm_functor>(bra_tensor, ket_tensor, right, localop);
+    return contraction::overlap_right_step<Matrix, OtherMatrix, SymmGroup, AbelianGemms>(bra_tensor, ket_tensor, right, localop);
 }
 
 
@@ -146,7 +146,7 @@ left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                          MPOTensor<Matrix, SymmGroup> const & mpo,
                          Index<SymmGroup> const * in_low)
 {
-    return contraction::left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, gemm_trim_left_functor, lbtm_functor>
+    return contraction::left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, AbelianGemms, lbtm_functor>
                                                 (mps, left, mpo, in_low);
 }
 
@@ -158,7 +158,7 @@ right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                           MPOTensor<Matrix, SymmGroup> const & mpo,
                           Index<SymmGroup> const * in_low)
 {
-    return contraction::right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, gemm_trim_right_functor, rbtm_functor>
+    return contraction::right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, AbelianGemms, rbtm_functor>
                                                  (mps, right, mpo, in_low);
 }
 
@@ -170,8 +170,8 @@ overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                       Boundary<OtherMatrix, SymmGroup> const & left,
                       MPOTensor<Matrix, SymmGroup> const & mpo)
 {
-    return contraction::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, gemm_functor, gemm_trim_left_functor, lbtm_functor>
-                                             (bra_tensor, ket_tensor, left, mpo);    
+    return contraction::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, AbelianGemms, lbtm_functor>
+                                             (bra_tensor, ket_tensor, left, mpo);
 }
 
 template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -182,7 +182,7 @@ overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                        Boundary<OtherMatrix, SymmGroup> const & right,
                        MPOTensor<Matrix, SymmGroup> const & mpo)
 {
-    return contraction::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, gemm_functor, gemm_trim_right_functor, rbtm_functor>
+    return contraction::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, AbelianGemms, rbtm_functor>
                                               (bra_tensor, ket_tensor, right, mpo);
 }
 

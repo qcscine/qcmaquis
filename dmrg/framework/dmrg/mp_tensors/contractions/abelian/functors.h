@@ -91,6 +91,13 @@ struct gemm_trim_right_functor
     }
 };
 
+struct AbelianGemms
+{
+    typedef gemm_functor gemm;
+    typedef gemm_trim_left_functor gemm_trim_left;
+    typedef gemm_trim_right_functor gemm_trim_right;
+};
+
 struct lbtm_functor
 {
     template<class Matrix, class OtherMatrix, class SymmGroup>
