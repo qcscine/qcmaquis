@@ -237,7 +237,7 @@ public:
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
         boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
-        boost::regex expression_threeptdm("^MEASURE_THREEPTDM(.*)$");
+        boost::regex expression_threeptdm("^THREEPTDM(.*)$");
         boost::regex expression_transition_threeptdm("^MEASURE_TRANSITION_THREEPTDM(.*)$");
         boost::smatch what;
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -280,6 +280,7 @@ public:
                 }
                 else
                     name = "twoptdm";
+                maquis::cout << "Added 2pdm for measuring: name == "<< name <<"\n";
 
                 std::vector<bond_element> synchronous_meas_operators;
                 {
@@ -322,7 +323,7 @@ public:
             }
             else if (boost::regex_match(lhs, what, expression_threeptdm) ||
                     boost::regex_match(lhs, what, expression_transition_threeptdm)) {
-
+  
                 std::string bra_ckp("");
                 if(lhs == "MEASURE_TRANSITION_THREEPTDM"){
                     name = "transition_threeptdm";
@@ -330,7 +331,8 @@ public:
                 }
                 else
                     name = "threeptdm";
-
+                maquis::cout << "Added 3pdm for measuring: name == "<< name <<"\n";
+  
                 std::vector<bond_element> synchronous_meas_operators;
                 {
                 //* c+a c+a c+a ca ca ca *//
@@ -379,7 +381,6 @@ public:
                 half_only = true;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
-                maquis::cout << "Added 3pdm for measuring\n";
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions, bra_ckp));
             }
