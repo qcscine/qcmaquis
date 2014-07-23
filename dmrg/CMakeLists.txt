@@ -33,6 +33,8 @@ set(AMBIENT_SOURCES_DIR "../ambient" CACHE STRINGS "Location of the ambient sour
 set(BUILD_SYMMETRIES "U1;TwoU1;TwoU1PG;NONE" CACHE STRINGS "List of symmetry to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2 and NONE are currently available.")
 set(DMRG_NUMSYMM 6 CACHE INT "Maximum number of U1 symmetries.")
 
+option(ENABLE_SU2 "Compile SU2 code" OFF)
+
 option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" ON)
 option(ENABLE_OMP "Enable OpenMP" OFF)
 option(USE_AMBIENT "Enable Ambient" OFF)
