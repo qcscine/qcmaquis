@@ -123,22 +123,8 @@ overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                   block_matrix<OtherMatrix, SymmGroup> const & left,
                   block_matrix<OtherMatrix, SymmGroup> * localop)
 {
-    if (localop != NULL)
-        throw std::runtime_error("Not implemented!");
-
-    assert(ket_tensor.phys_i == bra_tensor.phys_i);
-
-    bra_tensor.make_left_paired();
-
-    block_matrix<OtherMatrix, SymmGroup> t1;
-    block_matrix<Matrix, SymmGroup> t3;
-    ket_tensor.make_right_paired();
-    ::SU2::gemm(left, ket_tensor.data(), t1);
-
-    reshape_right_to_left_new(ket_tensor.site_dim(), bra_tensor.row_dim(), ket_tensor.col_dim(),
-                              t1, t3);
-    ::SU2::gemm(transpose(conjugate(bra_tensor.data())), t3, t1);
-    return t1;
+    return contraction::overlap_left_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>
+                                         (bra_tensor, ket_tensor, left, localop);
 }
 
 
@@ -150,21 +136,8 @@ overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                    block_matrix<OtherMatrix, SymmGroup> const & right,
                    block_matrix<OtherMatrix, SymmGroup> * localop)
 {
-    if (localop != NULL)
-        throw std::runtime_error("Not implemented!");
-
-    assert(ket_tensor.phys_i == bra_tensor.phys_i);
-
-    bra_tensor.make_right_paired();
-    ket_tensor.make_left_paired();
-
-    block_matrix<OtherMatrix, SymmGroup> t1;
-    block_matrix<Matrix, SymmGroup> t3;
-    ::SU2::gemm(ket_tensor.data(), transpose(right), t1);
-    reshape_left_to_right_new(ket_tensor.site_dim(), ket_tensor.row_dim(), bra_tensor.col_dim(), t1, t3);
-    ::SU2::gemm(conjugate(bra_tensor.data()), transpose(t3), t1);
-
-    return t1;
+    return contraction::overlap_right_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>
+                                          (bra_tensor, ket_tensor, right, localop);
 }
 
 
@@ -176,45 +149,8 @@ left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                          MPOTensor<Matrix, SymmGroup> const & mpo,
                          Index<SymmGroup> const * in_low)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-
-    if (in_low == NULL)
-        in_low = &mps.row_dim();
-
-    std::vector<block_matrix<Matrix, SymmGroup> > t
-        = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, ::SU2::su2gemm>(mps, left, mpo);
-
-    Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim(),
-                                  out_left_i = physical_i * left_i;
-    ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
-    ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,
-                            boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                    -boost::lambda::_1, boost::lambda::_2));
-
-    index_type loop_max = mpo.col_dim();
-
-#ifdef USE_AMBIENT
-    ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
-    contr_grid.hint_left(t);
-
-    parallel_for(index_type b2, range<index_type>(0,loop_max), {
-        SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, mps.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
-    });
-
-    return contr_grid.make_boundary();
-#else
-    Boundary<Matrix, SymmGroup> ret;
-    ret.resize(mpo.col_dim());
-
-    omp_for(index_type b2, range<index_type>(0,loop_max), {
-        ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-        SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, mps.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
-        swap(ret[b2], contr_grid(0,0));
-    });
-
-    return ret;
-#endif
+    return contraction::left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::lbtm_functor>
+                                                 (mps, left, mpo, in_low);
 }
 
 template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -225,33 +161,8 @@ right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                           MPOTensor<Matrix, SymmGroup> const & mpo,
                           Index<SymmGroup> const * in_low)
 {
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-
-    if (in_low == NULL)
-        in_low = &mps.col_dim();
-
-    std::vector<block_matrix<Matrix, SymmGroup> > t
-        = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, ::SU2::su2gemm>(mps, right, mpo);
-
-    Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
-                     out_right_i = adjoin(physical_i) * right_i;
-
-    ProductBasis<SymmGroup> in_left_pb(physical_i, left_i);
-    ProductBasis<SymmGroup> out_right_pb(physical_i, right_i,
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                             -boost::lambda::_1, boost::lambda::_2));
-    Boundary<Matrix, SymmGroup> ret;
-    ret.resize(mpo.row_dim());
-
-    index_type loop_max = mpo.row_dim();
-
-    omp_for(index_type b1, range<index_type>(0,loop_max), {
-        select_proc(ambient::scope::permute(b1,mpo.placement_l));
-        ret[b1] = SU2::rbtm_kernel(b1, right, t, mpo, mps.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
-    });
-
-    return ret;
+    return contraction::right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::rbtm_functor>
+                                                 (mps, right, mpo, in_low);
 }
 
 template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -262,59 +173,9 @@ overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                       Boundary<OtherMatrix, SymmGroup> const & left,
                       MPOTensor<Matrix, SymmGroup> const & mpo)
 {
-    #ifdef AMBIENT_TRACKING
-    ambient::overseer::log::region("parallel::overlap_mpo_left_step");
-    #endif
-
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-
-    MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-    std::vector<block_matrix<Matrix, SymmGroup> > t
-        = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, ::SU2::su2gemm>(ket_cpy, left, mpo);
-
-    Index<SymmGroup> const & left_i = bra_tensor.row_dim();
-    Index<SymmGroup> const & right_i = ket_tensor.col_dim();
-    Index<SymmGroup> out_left_i = ket_tensor.site_dim() * left_i;
-    ProductBasis<SymmGroup> out_left_pb(ket_tensor.site_dim(), left_i);
-    ProductBasis<SymmGroup> in_right_pb(ket_tensor.site_dim(), right_i,
-                            boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                    -boost::lambda::_1, boost::lambda::_2));
-
-    index_type loop_max = mpo.col_dim();
-
-    bra_tensor.make_left_paired();
-    block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
-
-#ifdef USE_AMBIENT
-    ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
-    contr_grid.hint_left(t);
-
-    parallel_for(index_type b2, range<index_type>(0,loop_max), {
-        contraction::SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
-    });
-    for(index_type b2 = 0; b2 < loop_max; b2++){
-        contr_grid.multiply_column_trans(b2, bra_conj);
-    };
-    #ifdef AMBIENT_TRACKING
-    ambient::overseer::log::region("serial::continue");
-    #endif
-
-    return contr_grid.make_boundary();
-#else
-    Boundary<Matrix, SymmGroup> ret;
-    ret.resize(loop_max);
-
-    omp_for(index_type b2, range<index_type>(0,loop_max), {
-        ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-        contraction::SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
-        ::SU2::gemm(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
-    });
-
-        return ret;
-#endif
-
-    }
+    return contraction::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::lbtm_functor>
+                                             (bra_tensor, ket_tensor, left, mpo);
+}
 
 template<class Matrix, class OtherMatrix, class SymmGroup>
 Boundary<OtherMatrix, SymmGroup>
@@ -324,43 +185,8 @@ overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                        Boundary<OtherMatrix, SymmGroup> const & right,
                        MPOTensor<Matrix, SymmGroup> const & mpo)
 {
-    #ifdef AMBIENT_TRACKING
-    ambient::overseer::log::region("parallel::overlap_mpo_right_step");
-    #endif
-
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-
-    MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-    std::vector<block_matrix<Matrix, SymmGroup> > t
-        = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, ::SU2::su2gemm>(ket_cpy, right, mpo);
-
-    Index<SymmGroup> const & left_i = ket_tensor.row_dim();
-    Index<SymmGroup> const & right_i = bra_tensor.col_dim();
-    Index<SymmGroup> out_right_i = adjoin(ket_tensor.site_dim()) * right_i;
-    ProductBasis<SymmGroup> in_left_pb(ket_tensor.site_dim(), left_i);
-    ProductBasis<SymmGroup> out_right_pb(ket_tensor.site_dim(), right_i,
-                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                             -boost::lambda::_1, boost::lambda::_2));
-    Boundary<Matrix, SymmGroup> ret;
-    ret.resize(mpo.row_dim());
-
-    //ket_tensor.make_right_paired();
-    index_type loop_max = mpo.row_dim();
-
-    bra_tensor.make_right_paired();
-    block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
-    omp_for(index_type b1, range<index_type>(0,loop_max), {
-        select_proc(ambient::scope::permute(b1,mpo.placement_l));
-        block_matrix<Matrix, SymmGroup> tmp;
-        tmp = contraction::SU2::rbtm_kernel(b1, right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
-        ::SU2::gemm(tmp, transpose(bra_conj), ret[b1]);
-    });
-    #ifdef AMBIENT_TRACKING
-    ambient::overseer::log::region("serial::continue");
-    #endif
-
-    return ret;
+    return contraction::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::rbtm_functor>
+                                             (bra_tensor, ket_tensor, right, mpo);
 }
 
 template<class Matrix, class OtherMatrix, class SymmGroup>

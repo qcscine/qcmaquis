@@ -44,6 +44,18 @@ namespace SU2 {
         }
     };
 
+    struct SU2Gemms
+    {
+        typedef su2gemm gemm;
+        typedef su2gemm gemm_trim_left;
+        typedef su2gemm gemm_trim_right;
+    };
+
+} // namespace SU2
+
+namespace contraction {
+namespace SU2 {
+
     struct lbtm_functor
     {
         template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -58,7 +70,7 @@ namespace SU2 {
                         ProductBasis<SymmGroup> const & in_right_pb,
                         ProductBasis<SymmGroup> const & out_left_pb)
         {
-            contraction::SU2::lbtm_kernel(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, right_i, out_left_i, in_right_pb, out_left_pb);
+            SU2::lbtm_kernel(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, right_i, out_left_i, in_right_pb, out_left_pb);
         }
     };
 
@@ -76,9 +88,11 @@ namespace SU2 {
                    ProductBasis<SymmGroup> const & in_left_pb,
                    ProductBasis<SymmGroup> const & out_right_pb)
         {
-            return contraction::SU2::rbtm_kernel(b1, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb);
+            return SU2::rbtm_kernel(b1, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb);
         }
     };
-}
+
+    } // namespace contraction
+} // namespace SU2
 
 #endif
