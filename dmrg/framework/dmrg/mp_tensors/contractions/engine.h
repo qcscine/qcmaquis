@@ -32,6 +32,7 @@
 #include "dmrg/block_matrix/indexing.h"
 
 #include "dmrg/mp_tensors/contractions/common/boundary_times_mps.hpp"
+#include "dmrg/mp_tensors/contractions/common/move_boundary.hpp"
 #include "dmrg/mp_tensors/contractions/common/prediction.hpp"
 
 namespace contraction {
