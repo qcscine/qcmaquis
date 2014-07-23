@@ -31,7 +31,7 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 
-namespace contraction {
+namespace contraction { // Forward declaration
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel(size_t b2,
