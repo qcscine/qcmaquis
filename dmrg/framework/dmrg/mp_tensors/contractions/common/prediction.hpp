@@ -27,6 +27,8 @@
 #ifndef CONTRACTIONS_COMMON_PREDICTION_H
 #define CONTRACTIONS_COMMON_PREDICTION_H
 
+#include <boost/config/suffix.hpp>
+
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 
@@ -35,8 +37,9 @@
 
 namespace contraction {
 
-    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
-    inline std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
+    BOOST_FORCEINLINE
+    std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_l2r_sweep_tpl(MPSTensor<Matrix, SymmGroup> const & mps,
                                     MPOTensor<Matrix, SymmGroup> const & mpo,
                                     Boundary<OtherMatrix, SymmGroup> const & left,
@@ -45,15 +48,16 @@ namespace contraction {
     {
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> dm;
-        Gemm()(mps.data(), transpose(conjugate(mps.data())), dm);
+        typename Gemm::gemm()(mps.data(), transpose(conjugate(mps.data())), dm);
         
-        Boundary<Matrix, SymmGroup> half_dm = left_boundary_tensor_mpo(mps, left, mpo);
+        Boundary<Matrix, SymmGroup> half_dm
+            = left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, left, mpo);
         
         mps.make_left_paired();
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
         {
             block_matrix<Matrix, SymmGroup> tdm;
-            Gemm()(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
+            typename Gemm::gemm()(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
             
             
             tdm *= alpha;
@@ -77,6 +81,7 @@ namespace contraction {
     }
     
     template<class Matrix, class SymmGroup>
+    BOOST_FORCEINLINE
     MPSTensor<Matrix, SymmGroup>
     predict_lanczos_l2r_sweep_tpl(MPSTensor<Matrix, SymmGroup> B,
                                   MPSTensor<Matrix, SymmGroup> const & psi,
@@ -93,6 +98,7 @@ namespace contraction {
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup>
+    BOOST_FORCEINLINE
     std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_r2l_sweep_tpl(MPSTensor<Matrix, SymmGroup> const & mps,
                                     MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -134,6 +140,7 @@ namespace contraction {
     }
     
     template<class Matrix, class SymmGroup>
+    BOOST_FORCEINLINE
     MPSTensor<Matrix, SymmGroup>
     predict_lanczos_r2l_sweep_tpl(MPSTensor<Matrix, SymmGroup> B,
                                   MPSTensor<Matrix, SymmGroup> const & psi,

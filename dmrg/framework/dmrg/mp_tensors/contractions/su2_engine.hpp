@@ -118,7 +118,7 @@ public:
                                 Boundary<OtherMatrix, SymmGroup> const & right,
                                 double alpha, double cutoff, std::size_t Mmax)
     {
-        return predict_new_state_l2r_sweep_tpl<Matrix, OtherMatrix, SymmGroup, ::SU2::su2gemm>
+        return predict_new_state_l2r_sweep_tpl<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::lbtm_functor>
                (mps, mpo, left, right, alpha, cutoff, Mmax);
     }
 
