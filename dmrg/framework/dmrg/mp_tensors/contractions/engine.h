@@ -86,8 +86,6 @@ public:
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 MPOTensor<Matrix, SymmGroup> const & mpo) = 0;
 
-    // single-site precition
-
     virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -99,7 +97,6 @@ public:
     predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A) = 0;
-    /*
 
     virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
@@ -112,7 +109,6 @@ public:
     predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A) = 0;
-    */
 };
 
 } // namespace contraction

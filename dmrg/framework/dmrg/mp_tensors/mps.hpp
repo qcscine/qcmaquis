@@ -241,11 +241,12 @@ MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
 }
 
 template<class Matrix, class SymmGroup>
-template<class OtherMatrix>
+template<class OtherMatrix, class Engine>
 truncation_results
 MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                        Boundary<OtherMatrix, SymmGroup> const & left,
                                        Boundary<OtherMatrix, SymmGroup> const & right,
+                                       boost::shared_ptr<Engine> contr,
                                        std::size_t l, double alpha,
                                        double cutoff, std::size_t Mmax)
 { // canonized_i invalided through (*this)[]
@@ -253,9 +254,9 @@ MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
     truncation_results trunc;
     
     boost::tie(new_mps, trunc) =
-    contraction::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
+    contr->predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
     
-    (*this)[l-1] = contraction::predict_lanczos_r2l_sweep((*this)[l-1],
+    (*this)[l-1] = contr->predict_lanczos_r2l_sweep((*this)[l-1],
                                                           (*this)[l], new_mps);
     (*this)[l] = new_mps;
     return trunc;

@@ -130,19 +130,24 @@ public:
         return contraction::predict_lanczos_l2r_sweep<Matrix, SymmGroup, ::SU2::SU2Gemms>(B, psi, A);
     }
 
-    /*
     virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
                                 Boundary<OtherMatrix, SymmGroup> const & left,
                                 Boundary<OtherMatrix, SymmGroup> const & right,
-                                double alpha, double cutoff, std::size_t Mmax);
+                                double alpha, double cutoff, std::size_t Mmax)
+    {
+        return contraction::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::rbtm_functor>
+               (mps, mpo, left, right, alpha, cutoff, Mmax);
+    }
 
     virtual MPSTensor<Matrix, SymmGroup>
     predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
                               MPSTensor<Matrix, SymmGroup> const & psi,
-                              MPSTensor<Matrix, SymmGroup> const & A);
-    */
+                              MPSTensor<Matrix, SymmGroup> const & A)
+    {
+        return contraction::predict_lanczos_r2l_sweep<Matrix, SymmGroup, ::SU2::SU2Gemms>(B, psi, A);
+    }
 };
 
 template<class Matrix, class OtherMatrix, class SymmGroup>

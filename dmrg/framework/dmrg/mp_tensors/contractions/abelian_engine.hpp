@@ -128,19 +128,24 @@ public:
         return contraction::predict_lanczos_l2r_sweep<Matrix, SymmGroup, AbelianGemms>(B, psi, A);
     }
 
-    /*
     virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
                                 Boundary<OtherMatrix, SymmGroup> const & left,
                                 Boundary<OtherMatrix, SymmGroup> const & right,
-                                double alpha, double cutoff, std::size_t Mmax);
+                                double alpha, double cutoff, std::size_t Mmax)
+    {
+        return contraction::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, AbelianGemms, rbtm_functor>
+               (mps, mpo, left, right, alpha, cutoff, Mmax);             
+    }
 
     virtual MPSTensor<Matrix, SymmGroup>
     predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
                               MPSTensor<Matrix, SymmGroup> const & psi,
-                              MPSTensor<Matrix, SymmGroup> const & A);
-    */
+                              MPSTensor<Matrix, SymmGroup> const & A)
+    {
+        return contraction::predict_lanczos_r2l_sweep<Matrix, SymmGroup, AbelianGemms>(B, psi, A);
+    }
 };
 
 

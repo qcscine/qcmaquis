@@ -205,7 +205,7 @@ public:
                 if (site > 0) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     // Invalid read occurs after this!\n
-                    trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
+                    trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1], contr,
                                                site, alpha, cutoff, Mmax);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
