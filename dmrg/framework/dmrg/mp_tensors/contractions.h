@@ -34,12 +34,6 @@
 #include "dmrg/mp_tensors/contractions/impl/memsave.hpp"
 #endif
 
-#include "dmrg/mp_tensors/contractions/abelian/functors.h"
-#include "dmrg/mp_tensors/contractions/common/boundary_times_mps.hpp"
-
-#include "dmrg/mp_tensors/contractions/abelian/apply_op.hpp"
-#include "dmrg/mp_tensors/contractions/abelian/move_boundary.hpp"
-#include "dmrg/mp_tensors/contractions/abelian/prediction.hpp"
 #include "dmrg/mp_tensors/contractions/abelian/special.hpp"
 
 #include "dmrg/mp_tensors/contractions/abelian_engine.hpp"
