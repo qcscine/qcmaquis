@@ -118,6 +118,11 @@ message(STATUS "Boost unit_test: ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")
 # GSL
 find_package(GSL REQUIRED)
 
+# SU2
+if(ENABLE_SU2)
+    add_definitions(-DENABLE_SU2)
+endif(ENABLE_SU2)
+
 # BLAS/LAPACK selector
 if(NOT USE_AMBIENT)
   find_package(MAQUISLapack)
