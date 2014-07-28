@@ -39,10 +39,10 @@ namespace SU2 {
                         int two_jd, int two_je, int two_jf,
                         int two_jg, int two_jh, int two_ji)
     {
-        return sqrt( (two_jg+1.) * (two_jh+1.) * (two_jc+1.) * (two_jf+1.) )
-                * gsl_sf_coupling_9j(two_ja, two_jb, two_jc,
-                                     two_jd, two_je, two_jf,
-                                     two_jg, two_jh, two_ji);
+        return sqrt( (two_jg+1.) * (two_jh+1.) * (two_jc+1.) * (two_jf+1.) ) *
+               gsl_sf_coupling_9j(two_ja, two_jb, two_jc,
+                                  two_jd, two_je, two_jf,
+                                  two_jg, two_jh, two_ji);
     }
 }
 
