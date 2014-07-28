@@ -161,11 +161,11 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
     typedef typename SymmGroup::charge charge;
     typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
-    maquis::cout << ket_tensor.row_dim() << std::endl;
-    maquis::cout << ket_tensor.site_dim() << std::endl;
-    maquis::cout << ket_tensor.col_dim() << std::endl;
-    maquis::cout << "sh2 input ket data:\n";
-    maquis::cout << ket_tensor.data() << std::endl;
+    //maquis::cout << ket_tensor.row_dim() << std::endl;
+    //maquis::cout << ket_tensor.site_dim() << std::endl;
+    //maquis::cout << ket_tensor.col_dim() << std::endl;
+    //maquis::cout << "sh2 input ket data:\n";
+    //maquis::cout << ket_tensor.data() << std::endl;
     std::vector<block_matrix<Matrix, SymmGroup> > t
         = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, ::SU2::su2gemm>(ket_tensor, left, mpo);
 
@@ -208,15 +208,15 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
         block_matrix<Matrix, SymmGroup> tmp;
         ::SU2::gemm(contr_grid(0,0), right[b2], tmp);
 
-        maquis::cout << contr_grid(0,0).left_basis() << std::endl;
-        maquis::cout << contr_grid(0,0).right_basis() << std::endl;
-        maquis::cout << "  *\n";
-        maquis::cout << right[b2].left_basis() << std::endl;
-        maquis::cout << right[b2].right_basis() << std::endl;
-        maquis::cout << "  -->\n";
-        maquis::cout << tmp.left_basis() << std::endl;
-        maquis::cout << tmp.right_basis() << std::endl << std::endl;
-        maquis::cout << "-------------------------------------------\n";
+        //maquis::cout << contr_grid(0,0).left_basis() << std::endl;
+        //maquis::cout << contr_grid(0,0).right_basis() << std::endl;
+        //maquis::cout << "  *\n";
+        //maquis::cout << right[b2].left_basis() << std::endl;
+        //maquis::cout << right[b2].right_basis() << std::endl;
+        //maquis::cout << "  -->\n";
+        //maquis::cout << tmp.left_basis() << std::endl;
+        //maquis::cout << tmp.right_basis() << std::endl << std::endl;
+        //maquis::cout << "-------------------------------------------\n";
 
         contr_grid(0,0).clear();
         omp_critical
@@ -225,8 +225,8 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
             ret.data().match_and_add_block(tmp[k], tmp.left_basis_charge(k), tmp.right_basis_charge(k));
     });
 #endif
-    maquis::cout << "sh2 output ket data:\n";
-    maquis::cout << ret.data() << std::endl;
+    //maquis::cout << "sh2 output ket data:\n";
+    //maquis::cout << ret.data() << std::endl;
     return ret;
 }
 
