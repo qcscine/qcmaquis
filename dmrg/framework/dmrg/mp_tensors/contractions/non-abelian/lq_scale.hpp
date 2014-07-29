@@ -80,7 +80,6 @@ namespace SU2 {
     {
         typedef std::size_t size_t;
         typedef typename SymmGroup::charge charge;
-        maquis::cout << "postscale\n";
 
         ProductBasis<SymmGroup> in_right(physical_i, right_i,
                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
