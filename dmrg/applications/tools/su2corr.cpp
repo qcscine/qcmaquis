@@ -191,6 +191,8 @@ int main(int argc, char ** argv)
         //    maquis::cout <<  n << std::endl;
         //}
 
+        mps.normalize_left();
+        mps.normalize_right();
 
         matrix ratio = compute_ratio(contr, mps, ref, site_irreps, config);
         print_triang(ratio);
