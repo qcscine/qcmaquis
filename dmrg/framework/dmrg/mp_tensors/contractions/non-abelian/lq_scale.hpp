@@ -24,8 +24,8 @@
  *
  *****************************************************************************/
 
-#ifndef CONTRACTIONS_SU2_LQ_PRESCALE_HPP
-#define CONTRACTIONS_SU2_LQ_PRESCALE_HPP
+#ifndef CONTRACTIONS_SU2_LQ_SCALE_HPP
+#define CONTRACTIONS_SU2_LQ_SCALE_HPP
 
 
 #include "dmrg/block_matrix/block_matrix.h"
@@ -67,10 +67,51 @@ namespace SU2 {
                 typename Matrix::value_type norm_factor = sqrt( (out_r_charge[1]+1.0)/(in_l_charge[1]+1.0) );
 
                 for(size_t c = in_right_offset; c < in_right_offset + r_length; ++c)
-                    std::for_each(in_block.col(c).first, inblock.col(c).second, boost::lambda::_1 *= norm_factor);
+                    std::for_each(in_block.col(c).first, in_block.col(c).second, boost::lambda::_1 *= norm_factor);
             }
         }
     }
+
+    template<class Matrix, class SymmGroup>
+    void lq_postscale(Index<SymmGroup> const & physical_i,
+                     Index<SymmGroup> const & left_i,
+                     Index<SymmGroup> const & right_i,
+                     block_matrix<Matrix, SymmGroup> & m)
+    {
+        typedef std::size_t size_t;
+        typedef typename SymmGroup::charge charge;
+        maquis::cout << "postscale\n";
+
+        ProductBasis<SymmGroup> in_right(physical_i, right_i,
+                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                             -boost::lambda::_1, boost::lambda::_2));
+        for (size_t block = 0; block < m.n_blocks(); ++block)
+        {
+            size_t l = left_i.position(m.left_basis_charge(block));
+            if(l == left_i.size()) continue;
+            charge in_l_charge = left_i[l].first;
+            charge in_r_charge = m.right_basis_charge(block);
+
+            for (size_t s = 0; s < physical_i.size(); ++s)
+            {
+                size_t r = right_i.position(SymmGroup::fuse(in_r_charge, physical_i[s].first));
+                if(r == right_i.size()) continue;
+
+                charge out_r_charge = right_i[r].first;
+
+                size_t in_right_offset = in_right(physical_i[s].first, out_r_charge);
+                size_t r_length = right_i[r].second;
+
+                Matrix & in_block = m[block];
+
+                typename Matrix::value_type norm_factor = sqrt( (in_l_charge[1]+1.0)/(out_r_charge[1]+1.0) );
+
+                for(size_t c = in_right_offset; c < in_right_offset + r_length; ++c)
+                    std::for_each(in_block.col(c).first, in_block.col(c).second, boost::lambda::_1 *= norm_factor);
+            }
+        }
+    }
+
 } // namespace SU2
 
 #endif
