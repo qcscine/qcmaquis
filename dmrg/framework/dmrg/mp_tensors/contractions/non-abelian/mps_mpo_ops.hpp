@@ -55,7 +55,7 @@ namespace SU2 {
         std::size_t L = mps.length();
 
         block_matrix<Matrix, SymmGroup> right;
-        right.insert_block(Matrix(1, 1, 1), SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
+        right.insert_block(Matrix(1, 1, 1), mps[L-1].row_dim()[0].first, mps[L-1].row_dim()[0].first);
 
         for(int i = L-1; i >= 0 ; --i) {
             select_proc(ambient::scope::balance(i,L));
