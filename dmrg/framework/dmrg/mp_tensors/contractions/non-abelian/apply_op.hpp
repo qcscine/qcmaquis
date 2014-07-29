@@ -252,6 +252,23 @@ namespace SU2 {
 namespace SU2 {
 
     template<class Matrix, class SymmGroup>
+    typename MPS<Matrix, SymmGroup>::scalar_type norm(MPS<Matrix, SymmGroup> const & mps)
+    {
+        std::size_t L = mps.length();
+
+        block_matrix<Matrix, SymmGroup> left;
+        left.insert_block(Matrix(1, 1, 1), SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
+
+        for(size_t i = 0; i < L; ++i) {
+            select_proc(ambient::scope::balance(i,L));
+            MPSTensor<Matrix, SymmGroup> cpy = mps[i];
+            left = contraction::overlap_left_step<Matrix, Matrix, SymmGroup, AbelianGemms>(mps[i], cpy, left); // serial
+        }
+
+        return trace(left);
+    }
+
+    template<class Matrix, class SymmGroup>
     double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
                   boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> > contr,
                   int p1, int p2, std::vector<int> config)
