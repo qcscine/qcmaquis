@@ -7,7 +7,7 @@ AMBIENT_LIB_PATH?=.
 COMMON?= -std=c++11 -O3 -DNDEBUG
 CXXFLAGS?= $(COMMON)
 
-# CHANNEL?= -DAMBIENT_NOP_CHANNEL                                    # no mpi
+# CHANNEL?= -DDISABLE_MPI # no mpi
 # CXXFLAGS?= $(COMMON) $(CHANNEL) -Wfatal-errors -gcc-name=/opt/local/bin/gcc-mp-4.7 -gxx-name=/opt/local/bin/g++-mp-4.7 -gcc-version=473 -I/opt/local/include/gcc47/c++ -I/opt/local/include/gcc47/c++/x86_64-apple-darwin13/ -L/opt/local/lib/gcc47/        # icc
 # CXXFLAGS?= $(COMMON) $(CHANNEL) -Wno-array-bounds -DAMBIENT_SERIAL # clang
 # CXXFLAGS?= $(COMMON) $(CHANNEL) -fopenmp                           # gcc

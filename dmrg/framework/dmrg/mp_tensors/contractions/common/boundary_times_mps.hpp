@@ -45,9 +45,8 @@ namespace contraction {
         {
             select_proc(storage::actor_t::common);
             mps.make_right_paired();
-            storage::hint(mps);
         }
-        parallel_for(int b1, range(0,loop_max), {
+        omp_for(int b1, range(0,loop_max), {
             select_proc(ambient::scope::permute(b1, mpo.placement_l));
             Gemm()(transpose(left[b1]), mps.data(), ret[b1]);
         });
@@ -65,9 +64,8 @@ namespace contraction {
         {
             select_proc(storage::actor_t::common);
             mps.make_left_paired();
-            storage::hint(mps);
         }
-        parallel_for(int b2, range(0,loop_max), {
+        omp_for(int b2, range(0,loop_max), {
             select_proc(ambient::scope::permute(b2, mpo.placement_r));
             Gemm()(mps.data(), right[b2], ret[b2]);
         });

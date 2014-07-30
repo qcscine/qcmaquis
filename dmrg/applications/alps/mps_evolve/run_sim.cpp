@@ -47,10 +47,18 @@ void run_sim(const boost::filesystem::path& infile, const boost::filesystem::pat
     }
     
     /// Match parameters of ALPS DMRG
-    parms.set("nsweeps", int(parms["SWEEPS"]));
-    parms.set("max_bond_dimension", int(parms["MAXSTATES"]));
-    parms.set("chkpfile",   outfile.stem().string() + ".chkp");
-    parms.set("resultfile", outfile.stem().string() + ".h5");
+    if (parms.defined("MAXSTATES"))        parms.set("max_bond_dimension", int(parms["MAXSTATES"]));
+    if (parms.defined("TRUNCATION_ERROR")) parms.set("truncation_final", double(parms["TRUNCATION_ERROR"]));
+    
+    if (parms.defined("DT"))               parms.set("dt", double(parms["DT"]));
+    if (parms.defined("SWEEPS"))           parms.set("nsweeps", int(parms["SWEEPS"]));
+    if (parms.defined("timesteps"))        parms.set("nsweeps", int(parms["timesteps"]));
+    if (parms.defined("TIMESTEPS"))        parms.set("nsweeps", int(parms["TIMESTEPS"]));
+    if (parms.defined("img_timesteps"))    parms.set("nsweeps_img", int(parms["img_timesteps"]));
+    if (parms.defined("IMG_TIMESTEPS"))    parms.set("nsweeps_img", int(parms["IMG_TIMESTEPS"]));
+
+    parms.set("chkpfile",   (outfile.parent_path() / outfile.stem()).string() + ".chkp");
+    parms.set("resultfile", (outfile.parent_path() / outfile.stem()).string() + ".h5");
     parms.set("run_seconds", time_limit);
     
     

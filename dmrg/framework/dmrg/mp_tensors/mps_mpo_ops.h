@@ -203,10 +203,13 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_overlap(MPS<Matr
     return vals;
 }
 
+//typedef std::vector< std::vector< std::pair<std::string, double> > > entanglement_spectrum_type;
+typedef std::vector< std::pair<std::vector<std::string>, std::vector<double> > > entanglement_spectrum_type;
 template<class Matrix, class SymmGroup>
 std::vector<double>
 calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n,
-                               std::vector< std::vector<double> > * spectra = NULL) // to be optimized later
+                               std::vector<int> * measure_es_where = NULL,
+                               entanglement_spectrum_type * spectra = NULL) // to be optimized later
 {
     std::size_t L = mps.length();
     std::vector<double> ret;
@@ -233,8 +236,21 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n,
         
         std::vector<double> sv = maquis::dmrg::detail::bond_renyi_entropies(s);
         
-        if (spectra != NULL)
-            spectra->push_back(sv);
+        if (spectra != NULL && measure_es_where != NULL
+            && std::find(measure_es_where->begin(), measure_es_where->end(), p) != measure_es_where->end()) {
+            std::vector< std::string > labels;
+            std::vector< double > values;
+            for (std::size_t k = 0; k < s.n_blocks(); ++k) {
+                std::ostringstream oss_c;
+                oss_c << s.left_basis()[k].first;
+                std::string c_str = oss_c.str();
+                for (std::size_t l = 0; l < s.left_basis()[k].second; ++l) {
+                    labels.push_back( c_str );
+                    values.push_back( s[k](l,l) );
+                }
+            }
+            spectra->push_back(std::make_pair(labels, values));
+        }
         
         double S = 0;
         if (n == 1) {
@@ -257,10 +273,9 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n,
 
 template<class Matrix, class SymmGroup>
 std::vector<double>
-calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps,
-                         std::vector< std::vector<double> > * spectra = NULL)
+calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
 {
-    return calculate_bond_renyi_entropies(mps, 1, spectra);
+    return calculate_bond_renyi_entropies(mps, 1, NULL);
 }
 
 template<class Matrix, class SymmGroup>

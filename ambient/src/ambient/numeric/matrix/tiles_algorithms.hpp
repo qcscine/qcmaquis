@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -590,6 +592,24 @@ namespace ambient { namespace numeric {
         swap(a, r);
     }
 
+    template<class Matrix> 
+    inline void remove_cols(tiles<Matrix>& a, size_t j, size_t n){
+        if(n == 0) return;
+        tiles<Matrix> r(a.num_rows(), a.num_cols()-n);
+        if(j > 0) copy_block(a, 0, 0, r, 0, 0, a.num_rows(), j);
+        if(j+n < a.num_cols()) copy_block(a, 0, j+n, r, 0, j, a.num_rows(), a.num_cols()-j-n);
+        swap(a, r);
+    }
+
+    template<class Matrix> 
+    inline void remove_rows(tiles<Matrix>& a, size_t i, size_t m){
+        if(m == 0) return;
+        tiles<Matrix> r(a.num_rows()-m, a.num_cols());
+        if(i > 0) copy_block(a, 0, 0, r, 0, 0, i, a.num_cols());
+        if(i+m < a.num_rows()) copy_block(a, i+m, 0, r, i, 0, a.num_rows()-i-m, a.num_cols());
+        swap(a, r);
+    }
+
     template<typename T> 
     inline void resize(tiles<diagonal_matrix<T> >& a, size_t m, size_t n){
         if(a.num_rows() == m) return;
@@ -607,6 +627,20 @@ namespace ambient { namespace numeric {
             resize(r[r.nt-1], margin, margin);
         }
         swap(a, r);
+    }
+
+    template<typename T> 
+    inline void remove_cols(tiles<diagonal_matrix<T> >& a, size_t j, size_t n){
+        if(n == 0) return;
+        tiles<diagonal_matrix<T> > r(a.num_rows()-n, a.num_cols()-n);
+        if(j > 0) copy_block(a.get_data(), 0, 0, r.get_data(), 0, 0, j, 1);
+        if(j+n < a.num_rows()) copy_block(a.get_data(), j+n, 0, r.get_data(), j, 0, a.num_rows()-j-n, 1);
+        swap(a, r);
+    }
+
+    template<typename T> 
+    inline void remove_rows(tiles<diagonal_matrix<T> >& a, size_t i, size_t m){
+        remove_cols(a, i, m);
     }
 
     template<typename T> 

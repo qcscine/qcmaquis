@@ -150,7 +150,7 @@ public:
                     p.set(what.str(1), *(v.rbegin()));
             }
         }
-        p.set("iter_"+var, val);
+        p.set(var, val);
         return p;
     }
     

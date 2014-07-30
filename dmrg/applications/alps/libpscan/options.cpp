@@ -48,12 +48,13 @@ Options::Options(int argc, char** argv)
     valid = true;
     if (argc) {
         std::string filename;
-        
+        int dummy;
         po::options_description desc("Allowed options");
         desc.add_options()
         ("help", "produce help message")
         ("license,l", "print license conditions")
         ("mpi", "run in parallel using MPI")
+        ("Nmax", po::value<int>(&dummy), "not used, only for backward compatibility with `dmrg`")
         ("time-limit,T", po::value<double>(&time_limit)->default_value(0),"time limit for the simulation")
         ("write-xml","write results to XML files")
         ("input-file", po::value<std::string>(&filename), "input file");

@@ -70,7 +70,7 @@ public:
         double energy = maquis::real(expval(mps, mpoc));
         // MD: removed redundant energy calculation
         // maquis::cout << "Energy before: " << maquis::real(expval(mps, mpo)) << std::endl;
-        if (parms["calc_energy"] > 0) {
+        if (parms["MEASURE[Energy]"]) {
             maquis::cout << "Energy: " << maquis::real(expval(mps, mpoc)) << std::endl;
             {
                 storage::archive ar(rfile, "w");
@@ -78,7 +78,7 @@ public:
             }
         }
         
-        if (parms["calc_h2"] > 0) {
+        if (parms["MEASURE[EnergyVariance]"] > 0) {
             MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpoc);
             mpo2.compress(1e-12);
             

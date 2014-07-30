@@ -35,41 +35,65 @@
 
 namespace dual_index_detail
 {
-    using namespace boost::tuples;
+    template <class SymmGroup>
+    struct QnBlock
+    {
+        typename SymmGroup::charge lc;
+        typename SymmGroup::charge rc;
+        std::size_t                ls;
+        std::size_t                rs;
+
+        bool operator==(QnBlock const & o) const
+        {
+            return lc == o.lc && rc == o.rc && ls == o.ls && rs == o.rs;
+        }
+    };
+
+    template <class SymmGroup>
+    QnBlock<SymmGroup> make_QnBlock(typename SymmGroup::charge lc, typename SymmGroup::charge rc,
+                                    std::size_t ls, std::size_t rs)
+    {
+        QnBlock<SymmGroup> ret;
+        ret.lc = lc;
+        ret.rc = rc;
+        ret.ls = ls;
+        ret.rs = rs;
+        return ret;
+    }
 
     template<class SymmGroup>
     struct gt {
-        bool operator()(boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> const & a,
-                        boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> const & b)
+        bool operator()(QnBlock<SymmGroup> const & a,
+                        QnBlock<SymmGroup> const & b)
         {
-            if (get<0>(a) > get<0>(b))
+            if (a.lc > b.lc)
                 return true;
-            else if (get<0>(a) < get<0>(b))
+            else if (a.lc < b.lc)
                 return false;
             else
-                return get<1>(a) > get<1>(b);
+                return a.rc > b.rc;
         }
     };
 
     template<class SymmGroup>
     struct gt_row{
-        bool operator()(boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> const & a,
-                        boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> const & b)
+        bool operator()(QnBlock<SymmGroup> const & a,
+                        QnBlock<SymmGroup> const & b)
         {
-            return (get<0>(a) > get<0>(b));
+            return (a.lc > b.lc);
         }
     };
 
     template<class SymmGroup>
-    bool lt(boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> const & a,
-            boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> const & b)
+    bool lt(QnBlock<SymmGroup> const & a,
+            QnBlock<SymmGroup> const & b)
     {
-        if (get<0>(a) < get<0>(b))
+        if (a.lc < b.lc)
             return true;
-        else if (get<0>(a) > get<0>(b))
+        else if (a.lc > b.lc)
             return false;
         else
-            return get<1>(a) < get<1>(b);
+            return a.rc < b.rc;
     }
 
     //// simpler, and potentially faster since inlining is easier for the compiler
@@ -79,9 +103,9 @@ namespace dual_index_detail
     public:
         is_first_equal(typename SymmGroup::charge c1, typename SymmGroup::charge c2) : c1_(c1), c2_(c2) { }
 
-        bool operator()(boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> const & x) const
+        bool operator()(QnBlock<SymmGroup> const & x) const
         {
-            return get<0>(x) == c1_ && get<1>(x) == c2_;
+            return x.lc == c1_ && x.rc == c2_;
         }
 
     private:
@@ -91,94 +115,74 @@ namespace dual_index_detail
 }
 
 namespace boost { namespace serialization {
-// from http://uint32t.blogspot.ch/2008/03/update-serializing-boosttuple-using.html
 
-#define GENERATE_ELEMENT_SERIALIZE(z,which,unused) \
-    ar & boost::serialization::make_nvp("element",t.get< which >());
-
-#define GENERATE_TUPLE_SERIALIZE(z,nargs,unused)                        \
-    template< typename Archive, BOOST_PP_ENUM_PARAMS(nargs,typename T) > \
-    void serialize(Archive & ar,                                        \
-                   boost::tuple< BOOST_PP_ENUM_PARAMS(nargs,T) > & t,   \
-                   const unsigned int version)                          \
-    {                                                                   \
-      BOOST_PP_REPEAT_FROM_TO(0,nargs,GENERATE_ELEMENT_SERIALIZE,~);    \
+    template <class Archive, class SymmGroup>
+    void serialize(Archive & ar, dual_index_detail::QnBlock<SymmGroup> & t,
+                   const unsigned int version)
+    {
+        ar & boost::serialization::make_nvp("element",t.lc);
+        ar & boost::serialization::make_nvp("element",t.rc);
+        ar & boost::serialization::make_nvp("element",t.ls);
+        ar & boost::serialization::make_nvp("element",t.rs);
     }
 
-    BOOST_PP_REPEAT_FROM_TO(1,6,GENERATE_TUPLE_SERIALIZE,~);
 }}
 
 
 template<class SymmGroup> class DualIndex
-: protected std::vector<boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> >
 {
-    typedef std::vector<boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> > base_t;
+    typedef std::vector<dual_index_detail::QnBlock<SymmGroup> > data_type;
     
 public:
     typedef typename SymmGroup::charge charge;
-    typedef typename base_t::value_type value_type;
+    typedef typename data_type::value_type value_type;
     
-    typedef typename base_t::iterator iterator;
-    typedef typename base_t::const_iterator const_iterator;
+    typedef typename data_type::iterator iterator;
+    typedef typename data_type::const_iterator const_iterator;
     
-    typedef typename base_t::reverse_iterator reverse_iterator;
-    typedef typename base_t::const_reverse_iterator const_reverse_iterator;
+    typedef typename data_type::reverse_iterator reverse_iterator;
+    typedef typename data_type::const_reverse_iterator const_reverse_iterator;
     
     typedef basis_iterator_<SymmGroup> basis_iterator;
     
     DualIndex() : sorted_(true) {}
     
-    //std::size_t size_of_block(charge c) const
-    //{
-    //    assert( has(c) );
-    //    return (*this)[position(c)].second;
-    //}
-
-    //std::size_t size_of_block(charge c, bool position_check) const
-    //{
-    //    // I have to ignore the position_check argument because I can't dereference the end() iterator anyway
-    //    std::size_t pos = position(c);
-    //    if (pos == this->size())
-    //        return 0;
-    //    return (*this)[pos].second;
-    //}
-
     std::size_t left_block_size(charge r, charge c) const {
-        std::size_t pos = position(boost::make_tuple(r,c,0,0));
-        return boost::tuples::get<2>((*this)[pos]);
+        std::size_t pos = position(dual_index_detail::make_QnBlock<SymmGroup>(r,c,0,0));
+        return (*this)[pos].ls;
     }
     std::size_t right_block_size(charge r, charge c) const {
-        std::size_t pos = position(boost::make_tuple(r,c,0,0));
-        return boost::tuples::get<3>((*this)[pos]);
+        std::size_t pos = position(dual_index_detail::make_QnBlock<SymmGroup>(r,c,0,0));
+        return (*this)[pos].rs;
     }
     
-    std::size_t position(charge r, charge c) const
+    std::size_t position(charge row, charge col) const
     {
         const_iterator match;
         if (sorted_)
-            match = std::lower_bound(this->begin(), this->end(), boost::make_tuple(r,c,0,0), dual_index_detail::gt<SymmGroup>());
+            match = std::lower_bound(data_.begin(), data_.end(), dual_index_detail::make_QnBlock<SymmGroup>(row,col,std::size_t(0),std::size_t(0)), dual_index_detail::gt<SymmGroup>());
         else
-            match = std::find_if(this->begin(), this->end(), dual_index_detail::is_first_equal<SymmGroup>(r,c));
+            match = std::find_if(data_.begin(), data_.end(), dual_index_detail::is_first_equal<SymmGroup>(row,col));
         
-        if (match != this->end() && (boost::tuples::get<0>(*match) != r || boost::tuples::get<1>(*match) != c))
-            match = this->end();
-        return std::distance(this->begin(), match);
+        if (match != data_.end() && ((*match).lc != row || (*match).rc != col))
+            match = data_.end();
+        return std::distance(data_.begin(), match);
     }
 
-    bool has(charge r, charge c) const
+    bool has(charge row, charge col) const
     {
         if (sorted_)
-            return std::binary_search(this->begin(), this->end(), boost::make_tuple(r,c,0,0), dual_index_detail::gt<SymmGroup>());
+            return std::binary_search(data_.begin(), data_.end(), dual_index_detail::make_QnBlock<SymmGroup>(row,col,0,0), dual_index_detail::gt<SymmGroup>());
         else
-            return std::find_if(this->begin(), this->end(),
-                                dual_index_detail::is_first_equal<SymmGroup>(r,c)) != this->end();
+            return std::find_if(data_.begin(), data_.end(),
+                                dual_index_detail::is_first_equal<SymmGroup>(row,col)) != data_.end();
     }
 
     bool is_sorted() const { return sorted_; }
     
     void sort()
     {
-        std::sort(this->begin(), this->end(), dual_index_detail::gt<SymmGroup>());
+        std::sort(data_.begin(), data_.end(), dual_index_detail::gt<SymmGroup>());
         sorted_ = true;
     }
     
@@ -186,33 +190,32 @@ public:
     {
         if (sorted_) {
             std::size_t d = destination(x);
-            base_t::insert(this->begin() + d, x);
+            data_.insert(data_.begin() + d, x);
             return d;
         } else {
             push_back(x);
-            return this->size()-1;
+            return data_.size()-1;
         }
     }
     
     void insert(std::size_t position, std::pair<charge, std::size_t> const & x)
     {
-        base_t::insert(this->begin() + position, x);
+        data_.insert(data_.begin() + position, x);
         sorted_ = false;
     }
     
     void shift(charge diff)
     {
-        for (std::size_t k = 0; k < this->size(); ++k)
+        for (std::size_t k = 0; k < data_.size(); ++k)
         {
-            //(*this)[k].first = SymmGroup::fuse((*this)[k].first, diff);
-            boost::tuples::get<0>((*this)[k]) = SymmGroup::fuse(boost::tuples::get<0>((*this)[k]), diff);
-            boost::tuples::get<1>((*this)[k]) = SymmGroup::fuse(boost::tuples::get<1>((*this)[k]), diff);
+            (*this)[k].lc = SymmGroup::fuse((*this)[k].lc, diff);
+            (*this)[k].rc = SymmGroup::fuse((*this)[k].rc, diff);
         }
     }
     
     bool operator==(DualIndex const & o) const
     {
-        return (this->size() == o.size()) && std::equal(this->begin(), this->end(), o.begin());
+        return (data_.size() == o.size()) && std::equal(data_.begin(), data_.end(), o.begin());
     }
 
     bool operator!=(DualIndex const & o) const
@@ -222,97 +225,79 @@ public:
 
     basis_iterator basis_begin() const
     {
-        assert( this->size() > 0 );
+        assert( data_.size() > 0 );
         return basis_iterator(*this);
-    }
-    
-    std::vector<charge> charges() const
-    {
-        std::vector<charge> ret(this->size());
-        for (std::size_t k = 0; k < this->size(); ++k) ret[k] = (*this)[k].first;
-        return ret;
-    }
-    
-    std::vector<std::size_t> sizes() const
-    {
-        std::vector<std::size_t> ret(this->size());
-        for (std::size_t k = 0; k < this->size(); ++k) ret[k] = (*this)[k].second;
-        return ret;
     }
     
     std::size_t sum_of_left_sizes() const
     {
-        return std::accumulate(this->begin(), this->end(), 0,
-                               boost::lambda::_1 + boost::lambda::bind(
-                                static_cast<std::size_t(*)(value_type)>(boost::tuples::get<2>), boost::lambda::_2)
+        return std::accumulate(data_.begin(), data_.end(), 0,
+                               boost::lambda::_1
+                               + boost::lambda::bind(&dual_index_detail::QnBlock<SymmGroup>::ls, boost::lambda::_2)
                               );
     }
 
     // This is mostly forwarding of the std::vector
-    iterator begin() { return base_t::begin(); }
-    iterator end() { return base_t::end(); }
-    const_iterator begin() const { return base_t::begin(); }
-    const_iterator end() const { return base_t::end(); }
+    iterator begin() { return data_.begin(); }
+    iterator end() { return data_.end(); }
+    const_iterator begin() const { return data_.begin(); }
+    const_iterator end() const { return data_.end(); }
     
-    reverse_iterator rbegin() { return base_t::rbegin(); }
-    reverse_iterator rend() { return base_t::rend(); }
-    const_reverse_iterator rbegin() const { return base_t::rbegin(); }
-    const_reverse_iterator rend() const { return base_t::rend(); }
+    reverse_iterator rbegin() { return data_.rbegin(); }
+    reverse_iterator rend() { return data_.rend(); }
+    const_reverse_iterator rbegin() const { return data_.rbegin(); }
+    const_reverse_iterator rend() const { return data_.rend(); }
 
-    void resize(std::size_t sz) { base_t::resize(sz); }
+    void resize(std::size_t sz) { data_.resize(sz); }
     
-    value_type & operator[](std::size_t p) { return static_cast<base_t&>(*this)[p]; }
-    value_type const & operator[](std::size_t p) const { return static_cast<base_t const&>(*this)[p]; }
+    value_type & operator[](std::size_t p) { return data_[p]; }
+    value_type const & operator[](std::size_t p) const { return data_[p]; }
     
-    //boost::tuple<charge, std::size_t> element(std::size_t p) const
-    //{
-    //    std::size_t i=0;
-    //    while (p >= (*this)[i].second) {
-    //        p -= (*this)[i].second;
-    //        ++i;
-    //    }
-    //    return boost::make_tuple( (*this)[i].first, p );
-    //}
+    std::size_t size() const { return data_.size(); }
+    
+    iterator erase(iterator p) { iterator r = data_.erase(p); return r; }
+    iterator erase(iterator a, iterator b) { iterator r = data_.erase(a,b); return r; }
 
-    std::size_t size() const { return base_t::size(); }
-    
-    iterator erase(iterator p) { iterator r = base_t::erase(p); return r; }
-    iterator erase(iterator a, iterator b) { iterator r = base_t::erase(a,b); return r; }
+    friend void swap(DualIndex & a, DualIndex & b)
+    {
+        using std::swap;
+        swap(a.data_,   b.data_);
+        swap(a.sorted_, b.sorted_);
+    }
     
 private:
+    data_type data_;
     bool sorted_;
     
     void push_back(value_type const & x){
-        base_t::push_back(x);
+        data_.push_back(x);
     }
     
     std::size_t destination(value_type const & x) const
     {
-        return std::find_if(this->begin(), this->end(),
+        return std::find_if(data_.begin(), data_.end(),
                             boost::lambda::bind(dual_index_detail::lt<SymmGroup>,
                                                 boost::lambda::_1,
-                                                x)) - this->begin();
+                                                x)) - data_.begin();
     }
 
 public:
 #ifdef PYTHON_EXPORTS
     std::size_t py_insert(wrapped_pair<SymmGroup> p)
     {
-        return this->insert(p.data_);
+        return data_.insert(p.data_);
     }
 #endif /* PYTHON_EXPORTS */
    
     template <class Archive>
     void load(Archive & ar)
     {
-        typedef std::vector<boost::tuple<typename SymmGroup::charge, typename SymmGroup::charge, std::size_t, std::size_t> > my_type;
-        ar["DualIndex"] >> static_cast<my_type&>(*this);
+        ar["DualIndex"] >> data_;
     }
     template <class Archive>
     void save(Archive & ar) const
     {
-        typedef std::vector<std::pair<typename SymmGroup::charge, std::size_t> > my_type;
-        ar["DualIndex"] << static_cast<value_type const &>(*this);
+        ar["DualIndex"] << data_;
     }
     
     friend class boost::serialization::access;
@@ -320,12 +305,12 @@ public:
     template <class Archive>
     void load(Archive & ar, const unsigned int version)
     {
-        ar & boost::serialization::base_object<base_t>(*this);
+        ar & data_;
     }
     template <class Archive>
     void save(Archive & ar, const unsigned int version) const
     {
-        ar & boost::serialization::base_object<base_t>(*this);
+        ar & data_;
     }
     
     BOOST_SERIALIZATION_SPLIT_MEMBER()
@@ -339,10 +324,10 @@ std::ostream& operator<<(std::ostream& os, DualIndex<SymmGroup> const & idx)
          it != idx.end();
          ++it)
     {
-        os << "( " << boost::tuples::get<0>(*it) << ","
-                   << boost::tuples::get<1>(*it) << ": "
-                   << boost::tuples::get<2>(*it) << "x"
-                   << boost::tuples::get<3>(*it)
+        os << "( " << (*it).lc << ","
+                   << (*it).rc << ": "
+                   << (*it).ls << "x"
+                   << (*it).rs
            << " )";
     }
     os << "|";

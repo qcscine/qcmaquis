@@ -143,7 +143,7 @@ namespace tag_detail {
             ambient::sync();
         }
         #endif
-        if (reference.left_basis() != sample.left_basis() || reference.right_basis() != sample.right_basis())
+        if (reference.basis() != sample.basis())
             return std::make_pair(false, 0.);
 
         if (sample.n_blocks() == 0)

@@ -31,9 +31,7 @@
 
 #include <boost/functional/hash.hpp>
  
-#ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
-#endif
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/array.hpp>
@@ -70,7 +68,6 @@ namespace boost {
     };
 };
 
-#ifdef HAVE_ALPS_HDF5
 inline void save(alps::hdf5::archive & ar
                  , std::string const & path
                  , TrivialGroup::charge const & value
@@ -90,7 +87,6 @@ inline void load(alps::hdf5::archive & ar
 {             
     value = TrivialGroup::Plus;
 }
-#endif
 
 template <class Archive>
 inline void serialize(Archive & ar, TrivialGroup::charge & c, const unsigned int version)

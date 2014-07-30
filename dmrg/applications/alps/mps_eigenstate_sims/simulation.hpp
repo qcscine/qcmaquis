@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,34 +24,29 @@
  *
  *****************************************************************************/
 
-#include "libpscan/scheduler.hpp"
+#ifndef ALPS_MPS_SIM_RUN_H
+#define ALPS_MPS_SIM_RUN_H
 
-#include <alps/utility/copyright.hpp>
-#include <iostream>
+#include <boost/shared_ptr.hpp>
+#include "dmrg/utils/DmrgParameters.h"
 
-int main(int argc, char ** argv)
-{
-    try {
-        std::cout << "ALPS/MPS version X (2013-2014)\n"
-                  << "  Density Matrix Renormalization Group algorithm\n"
-                  << "  available from http://alps.comp-phys.org/\n"
-                  << "  copyright (c) 2013 Institute for Theoretical Physics, ETH Zurich\n"
-                  << "  copyright (c) 2010-2011 by Bela Bauer\n"
-                  << "  copyright (c) 2011-2013 by Michele Dolfi\n"
-                  << "  for details see the publication: \n"
-                  << "  todo...\n"
-                  << std::endl;
-        alps::print_copyright(std::cout);
-        
-        Options opt(argc,argv);
-        if (opt.valid) {
-            Scheduler pscan(opt);
-            pscan.run();
-        }
-    } catch (std::exception & e) {
-        std::cerr << "Exception thrown:" << std::endl;
-        std::cerr << e.what() << std::endl;
-        exit(1);
-    }
-}
+enum run_type {optim_and_measure, optim_only, measure_only};
 
+struct simulation_base {
+    virtual ~simulation_base() {}
+    virtual void run(DmrgParameters & parms, bool write_xml, run_type rt) =0;
+};
+
+template <class SymmGroup>
+struct simulation : public simulation_base {
+    void run(DmrgParameters & parms, bool write_xml, run_type rt);
+};
+
+struct simulation_traits {
+    typedef boost::shared_ptr<simulation_base> shared_ptr;
+    template <class SymmGroup> struct F {
+        typedef simulation<SymmGroup> type;
+    };
+};
+
+#endif

@@ -99,7 +99,7 @@ meas_sublist(boost::ptr_vector<measurement<Matrix, SymmGroup> > const& m,
              std::vector<std::string> const& meas_list)
 {
     boost::ptr_vector<measurement<Matrix, SymmGroup> > sublist(m.clone());
-    sublist.erase_if( detail::name_not_in_list(meas_list) );
+    sublist.erase_if( ::detail::name_not_in_list(meas_list) );
     return sublist;
 }
 

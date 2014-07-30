@@ -293,7 +293,7 @@ MPS<Matrix, SymmGroup>::right_boundary() const
 }
 
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& op, MPS<Matrix, SymmGroup>::size_type p)
+void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& op, typename MPS<Matrix, SymmGroup>::size_type p)
 {
     typedef typename SymmGroup::charge charge;
     using std::size_t;
@@ -317,7 +317,7 @@ void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& op, MP
 }
 
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& fill, block_matrix<Matrix, SymmGroup> const& op, MPS<Matrix, SymmGroup>::size_type p)
+void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& fill, block_matrix<Matrix, SymmGroup> const& op, typename MPS<Matrix, SymmGroup>::size_type p)
 {
     for (size_t i=0; i<p; ++i) {
         (*this)[i] = contraction::multiply_with_op((*this)[i], fill);
@@ -357,9 +357,14 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
     size_t loop_max = mps.length();
 #ifdef USE_AMBIENT
     for(size_t k = 0; k < loop_max; ++k){
-        select_proc(ambient::scope::balance(k,loop_max));
-        mps[k].make_left_paired();
-        storage::migrate(mps[k]);
+        {
+            select_proc(ambient::scope::balance(k,loop_max));
+            mps[k].make_left_paired();
+        }
+        {
+            select_group(ambient::scope::balance(k,loop_max),1);
+            storage::migrate(mps[k]);
+        }
     }
     ambient::sync();
 #endif
