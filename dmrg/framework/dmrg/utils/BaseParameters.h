@@ -87,7 +87,25 @@ public:
     BaseParameters(alps::Parameters const& p)
     : alps::Parameters(p)
     { }
-
+    
+    template <class Stream>
+    void print_description(Stream& os) const
+    {
+        typedef std::map<std::string, std::string>::const_iterator map_iterator;
+        
+        std::size_t column_length = 0;
+        for (map_iterator it = descriptions.begin(); it != descriptions.end(); ++it)
+            column_length = std::max(column_length, it->first.size());
+        column_length += 2;
+        
+        for (map_iterator it = descriptions.begin(); it != descriptions.end(); ++it) {
+            os << std::setw(column_length) << std::left << it->first << it->second << std::endl;
+            map_iterator matched = defaults.find(it->first);
+            if (matched != defaults.end())
+                os << std::setw(column_length) << "" << "(default: " << matched->second << ")" << std::endl;
+        }
+    }
+    
     bool is_set (std::string const & key) const
     {
         return defined(key);
@@ -132,7 +150,7 @@ public:
                     p.set(what.str(1), *(v.rbegin()));
             }
         }
-        p.set("iter_"+var, val);
+        p.set(var, val);
         return p;
     }
     

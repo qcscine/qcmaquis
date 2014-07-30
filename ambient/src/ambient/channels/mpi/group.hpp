@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -24,7 +26,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "ambient/utils/reduce.hpp"
+#include "ambient/utils/math.hpp"
 
 // goals: 
 // 1. minimize the number of transfers

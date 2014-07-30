@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -32,7 +34,7 @@ namespace ambient { namespace controllers { namespace ssm {
         ((functor*)t.generator)->queue(new set(t));
     }
     inline set<transformable>::set(transformable& t) : t(t) {
-        handle = ambient::ctxt.get_controller().get_channel().bcast(t, ambient::ctxt.which());
+        handle = ambient::selector.get_controller().get_channel().bcast(t, ambient::which());
     }
     inline bool set<transformable>::ready(){
         return (t.generator != NULL ? false : handle->test());
@@ -44,24 +46,24 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline void set<revision>::spawn(revision& r){
         set*& transfer = (set*&)r.assist.second;
-        if(ambient::ctxt.get_controller().update(r)) transfer = new set(r);
-        *transfer += ambient::ctxt.which();
-        ambient::ctxt.generate_sid();
+        if(ambient::selector.get_controller().update(r)) transfer = new set(r);
+        *transfer += ambient::which();
+        ambient::selector.generate_sid();
     }
     inline set<revision>::set(revision& r) : t(r) {
         t.use();
-        handle = ambient::ctxt.get_controller().get_channel().set(t);
+        handle = ambient::selector.get_controller().get_channel().set(t);
         if(t.generator != NULL) ((functor*)t.generator)->queue(this);
-        else ambient::ctxt.get_controller().queue(this);
+        else ambient::selector.get_controller().queue(this);
     }
-    inline void set<revision>::operator += (int rank){
+    inline void set<revision>::operator += (rank_t rank){
         *handle += rank;
     }
     inline bool set<revision>::ready(){
         return (t.generator != NULL ? false : handle->test());
     }
     inline void set<revision>::invoke(){
-        ambient::ctxt.get_controller().squeeze(&t);
+        ambient::selector.get_controller().squeeze(&t);
         t.release(); 
     }
 

@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -280,8 +282,8 @@ namespace ambient { namespace numeric { namespace kernels {
        static void gebrd (const int* m, const int* n, T* a, const int* lda, T * d, T* e, T* tauq, T* taup, T* work,
                         //  typename T::value_type * d, typename T::value_type* e, T* tauq, T* taup, T* work, <------ the good one
                           const int* lwork, int* info){
-          assert(false); // fix the signature and the mix double/complex for TE
-         //  zgebrd_(m, n, a, lda, d, e, tauq, taup, work, lwork, info);  
+           throw std::runtime_error("Error: fix the signature and the mix double/complex for TE");
+           //zgebrd_(m, n, a, lda, d, e, tauq, taup, work, lwork, info);  
        }
 
        static void orgbr(const char* vect, const int* m, const int* n, const int* k, T* a, const int* lda, const T* tau, T* work, const int* lwork, int* info){
@@ -289,13 +291,13 @@ namespace ambient { namespace numeric { namespace kernels {
        }
 
        static void gbbrd (const char* vect, const int* m, const int* n, const int* ncc, const int* kl, const int* ku, T* ab, const int* ldab, T* d, T* e, T* q, const int* ldq, T* pt, const int* ldpt, T* c, const int* ldc, T* work, int* info ){
-           assert(false); // fix I need one more buffer for complex
+           throw std::runtime_error("Error: fix I need one more buffer for complex");
            //zggbrd(vect, m, n, ncc, kl, ku, ab, ldab, d, e, q, ldq, pt, ldpt, c, ldc, work, info);
        }
 
        static void bdsqr(const char* uplo, const int* n, const int* ncvt, const int* nru, const int* ncc, T* d, T* e, T* vt, const int* ldvt, T* u, const int* ldu, T* c, const int* ldc, T* work, int* info ){
-          assert(false); // fix the signature and the mix double/complex for TE
-        //   zdsqr(uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u, ldu, c, ldc, work, info);
+           throw std::runtime_error("Error: fix the signature and the mix double/complex for TE");
+           //zdsqr(uplo, n, ncvt, nru, ncc, d, e, vt, ldvt, u, ldu, c, ldc, work, info);
        }
     };
 

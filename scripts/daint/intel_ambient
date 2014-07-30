@@ -5,27 +5,37 @@ STATE_DMRG="build"
 # end of target states #
 PREFIX=ambient
 COMPILER=intel
-COMPILER_VERSION=13.1
-MYAPPS=/project/h07/dolfim/apps/daint/intel_13_1_0
+COMPILER_VERSION=14.0.2
+MYAPPS=$SCRATCH/apps/intel_14_0_2
 
-export PLASMA_ROOT=$MYAPPS/plasma
-export ALPS_ROOT=$MYAPPS/alps
-export CRAYPE_LINK_TYPE=dynamic
-export CXX=CC.dynamic # CC -dynamic -lz $*
-export CC=cc.dynamic  # cc -dynamic -lz $*
+MAQUIS_INSTALL=$MYAPPS/maquis/$CONFIG_NAME
+echo $MAQUIS_INSTALL
+
 
 if [[ -z "$MAQUIS_ONCE" ]]
 then
     export MAQUIS_ONCE=true
-    module load gcc/4.7.3
     module switch PrgEnv-cray PrgEnv-intel
-    module load intel/13.1.3.192
-    module load cray-hdf5/1.8.11
+    module load intel/14.0.2.144
     module load cmake
+
+    export PLASMA_ROOT=$MYAPPS/plasma
+    export ALPS_ROOT=$MYAPPS/alps
+    export CRAYPE_LINK_TYPE=dynamic
+    export PATH=$ALPS_ROOT/bin:$MYAPPS/hdf5/bin:$MYAPPS/bin:$PATH
+    export LD_LIBRARY_PATH=${ALPS_ROOT}/lib:$MYAPPS/hdf5/lib:${LD_LIBRARY_PATH}
+    export CXX=CC.dynamic # CC -dynamic -lz -gxx-name=/apps/pilatus/gcc/4.8.2/bin/g++ $*
+    export CC=cc.dynamic  # cc -dynamic -lz -gcc-name=/apps/pilatus/gcc/4.8.2/bin/gcc $*
+    export MPICH_MAX_THREAD_SAFETY=funneled
+    
+    export PATH=${MAQUIS_INSTALL}/bin:${PATH}
+
+    alias sync_maquis_deps='rsync -aut /project/s512/install.bkp/daint/apps/intel_14_0_2/ $MYAPPS'
 fi
 
+COMMON_CMAKE_INSTALL_PREFIX=${MAQUIS_INSTALL}
 COMMON_MPI_CXX_FOUND=TRUE
-COMMON_CMAKE_SYSTEM_NAME="Generic"
+#COMMON_CMAKE_SYSTEM_NAME="Generic"
 COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
 COMMON_PLASMA_LIB_DIR="$PLASMA_ROOT/lib"
 DMRG_BUILD_AMBIENT=ON

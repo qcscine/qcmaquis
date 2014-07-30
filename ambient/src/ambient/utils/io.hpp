@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -43,7 +45,7 @@ namespace ambient { namespace utils {
 
         template<class T>
         ostream& operator<<(ambient::numeric::future<T> const & obj){
-            std::cout << obj.get();
+            std::cout << obj.load();
             return *this;
         }
 
@@ -74,8 +76,8 @@ namespace ambient { namespace utils {
 
         template<class T>
         mpostream& operator<<(ambient::numeric::future<T> const & obj){
-            if(ambient::verbose()) std::cout << obj.get();
-            else nullio << obj.get();
+            if(ambient::verbose()) std::cout << obj.load();
+            else nullio << obj.load();
             return *this;
         }
 

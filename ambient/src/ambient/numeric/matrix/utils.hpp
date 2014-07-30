@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -47,16 +49,23 @@ namespace ambient {
     }
 
     template<class Matrix>
-    inline int get_owner(const numeric::tiles<Matrix>& a){
-        int p = a[0].versioned.core->current->owner;
-        return (p == -1 ? ambient::rank() : p);
+    inline void hint(const numeric::tiles<Matrix>& a){
+        int size = a.data.size();
+        for(int i = 0; i < size; i++){
+            hint(a[i]);
+        }
+    }
+
+    template<class Matrix>
+    inline rank_t get_owner(const numeric::tiles<Matrix>& a){
+        return ambient::get_owner(a[0]);
     }
 
     template<class InputIterator, class Function, class Weight>
     void for_each_redist(InputIterator first, InputIterator last, Function op, Weight weight){
         typedef std::pair<double,size_t> pair;
         double avg = 0.;
-        size_t np = ambient::num_workers();
+        size_t np = ambient::num_procs();
         size_t range = last-first;
         std::vector<pair> wl(np, std::make_pair(0,0));
         std::vector<pair> cx; cx.reserve(range);
@@ -73,7 +82,7 @@ namespace ambient {
         // filling the workload with smallest local parts first
         for(size_t p = 0; p < np; ++p){
             wl[p].second = p;
-            ambient::scope ctxt(p);
+            ambient::actor proc(ambient::scope::begin()+p);
             for(size_t i = 0; i < range; ++i){
                 size_t k = cx[i].second;
                 if(ambient::get_owner(*(first+k)) != p) continue;
@@ -85,7 +94,7 @@ namespace ambient {
         }
         // rebalancing using difference with average
         for(size_t p = 0; p < np; ++p){
-            ambient::scope ctxt(p);
+            ambient::actor proc(ambient::scope::begin()+p);
             for(size_t i = 0; i < range; ++i){
                 if(cx[i].first == 0) continue;
                 if(wl[p].first + cx[i].first >= avg) break;
@@ -101,8 +110,7 @@ namespace ambient {
         size_t p = 0;
         for(int i = range-1; i >= 0; --i){
             if(cx[i].first == 0) continue;
-            int owner = wl[p++].second;
-            ambient::scope ctxt(owner);
+            ambient::actor proc(ambient::scope::begin()+wl[p++].second);
             merge(*(first+cx[i].second)); 
             p %= np;
         }

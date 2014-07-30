@@ -64,7 +64,7 @@ def ReadDMRGSweeps(ar, measurements, props, path='/simulation', selector=None):
                 ret_sweep += ReadMeasurements(ar, measurements, p_sweep+'/results', props_sweep)
             if len(ret_sweep) > 0:
                 ret.append(ret_sweep)
-        elif sweep_name == 'results':
+        elif sweep_name == 'results' and 'simulation' in path:
             props_sweep = deepcopy(props)
             props_sweep['sweep'] = -1
             if 'parameters' in ar.list_children(path):
@@ -107,6 +107,12 @@ def LoadDMRGSweeps(files, what, selector=None):
             props = dict(ar['/parameters'])
             props['filename'] = fname
             tmp = ReadDMRGSweeps(ar, what, props, path='/simulation', selector=selector)
+            if len(tmp) > 0:
+                ret.append(tmp)
+        if 'spectrum' in ar.list_children('/') and 'iteration' in  ar.list_children('/spectrum'):
+            props = dict(ar['/parameters'])
+            props['filename'] = fname
+            tmp = ReadDMRGSweeps(ar, what, props, path='/spectrum', selector=selector)
             if len(tmp) > 0:
                 ret.append(tmp)
     return ret

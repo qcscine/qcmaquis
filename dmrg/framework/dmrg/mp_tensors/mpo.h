@@ -127,7 +127,6 @@ private:
                     index[index.position(it->second)] = std::make_pair(it->second, index.size_of_block(it->second)+1);
                 else
                     index.insert(std::make_pair(it->second, 1));
-            maquis::cout << index << std::endl;
         }
     }
     

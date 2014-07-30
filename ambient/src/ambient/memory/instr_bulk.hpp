@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -29,8 +31,8 @@
 
 namespace ambient { namespace memory {
 
-        template<size_t S> void* instr_bulk::malloc()         { return ambient::ctxt.get_controller().memory.malloc(S); }
-                   inline  void* instr_bulk::malloc(size_t s) { return ambient::ctxt.get_controller().memory.malloc(s); }
+        template<size_t S> void* instr_bulk::malloc()         { return ambient::selector.get_controller().memory.malloc(S); }
+                   inline  void* instr_bulk::malloc(size_t s) { return ambient::selector.get_controller().memory.malloc(s); }
 
 } }
 

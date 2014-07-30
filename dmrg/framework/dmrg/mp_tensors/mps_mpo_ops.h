@@ -118,19 +118,18 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matri
 }
 
 template<class Matrix, class SymmGroup>
-std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matrix, SymmGroup> const & mps1,
-                                                                       MPS<Matrix, SymmGroup> const & mps2,
+std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matrix, SymmGroup> const & bra,
+                                                                       MPS<Matrix, SymmGroup> const & ket,
                                                                        MPO<Matrix, SymmGroup> const & mpo)
 {
-    assert(mps1.length() == mps2.length());
-    assert(mpo.length() == mps1.length());
-    std::size_t L = mps1.length();
+    assert(bra.length() == ket.length());
+    assert(mpo.length() == bra.length());
+    std::size_t L = bra.length();
     
-    Boundary<Matrix, SymmGroup> left = mps1.left_boundary();
+    Boundary<Matrix, SymmGroup> left = make_left_boundary(bra, ket);
     
-    for (int i = 0; i < L; ++i) {
-        left = contraction::overlap_mpo_left_step(mps1[i], mps2[i], left, mpo[i]);
-    }
+    for (int i = 0; i < L; ++i)
+        left = contraction::overlap_mpo_left_step(bra[i], ket[i], left, mpo[i]);
     
     return left.traces();
 }
@@ -200,10 +199,13 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_overlap(MPS<Matr
     return vals;
 }
 
+//typedef std::vector< std::vector< std::pair<std::string, double> > > entanglement_spectrum_type;
+typedef std::vector< std::pair<std::vector<std::string>, std::vector<double> > > entanglement_spectrum_type;
 template<class Matrix, class SymmGroup>
 std::vector<double>
 calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n,
-                               std::vector< std::vector<double> > * spectra = NULL) // to be optimized later
+                               std::vector<int> * measure_es_where = NULL,
+                               entanglement_spectrum_type * spectra = NULL) // to be optimized later
 {
     std::size_t L = mps.length();
     std::vector<double> ret;
@@ -230,8 +232,21 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n,
         
         std::vector<double> sv = maquis::dmrg::detail::bond_renyi_entropies(s);
         
-        if (spectra != NULL)
-            spectra->push_back(sv);
+        if (spectra != NULL && measure_es_where != NULL
+            && std::find(measure_es_where->begin(), measure_es_where->end(), p) != measure_es_where->end()) {
+            std::vector< std::string > labels;
+            std::vector< double > values;
+            for (std::size_t k = 0; k < s.n_blocks(); ++k) {
+                std::ostringstream oss_c;
+                oss_c << s.left_basis()[k].first;
+                std::string c_str = oss_c.str();
+                for (std::size_t l = 0; l < s.left_basis()[k].second; ++l) {
+                    labels.push_back( c_str );
+                    values.push_back( s[k](l,l) );
+                }
+            }
+            spectra->push_back(std::make_pair(labels, values));
+        }
         
         double S = 0;
         if (n == 1) {
@@ -254,10 +269,9 @@ calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n,
 
 template<class Matrix, class SymmGroup>
 std::vector<double>
-calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps,
-                         std::vector< std::vector<double> > * spectra = NULL)
+calculate_bond_entropies(MPS<Matrix, SymmGroup> & mps)
 {
-    return calculate_bond_renyi_entropies(mps, 1, spectra);
+    return calculate_bond_renyi_entropies(mps, 1, NULL);
 }
 
 template<class Matrix, class SymmGroup>

@@ -139,8 +139,8 @@ public:
                 }
                 
                 /// measure observables specified in 'always_measure'
-                if (!parms["always_measure"].empty())
-                    this->measure(results_archive_path(0, graining, mg_measure) + "/results/", measurements.sublist(parms["always_measure"]));
+                if (!parms["ALWAYS_MEASURE"].empty())
+                    this->measure(results_archive_path(0, graining, mg_measure) + "/results/", measurements.sublist(parms["ALWAYS_MEASURE"]));
                 
                 /// checkpoint new mps
                 this->checkpoint_simulation(mps, 0, -1, graining+1);
@@ -228,9 +228,9 @@ private:
                         // ar[results_archive_path(sweep, graining, sweep_measure) + "/results/Runtime/mean/value"] << std::vector<double>(1, elapsed_sweep + elapsed_measure);
                     }
                     
-                    /// measure observables specified in 'always_measure'
+                    /// measure ALWAYS_MEASURE specified in 'always_measure'
                     if (!parms["always_measure"].empty())
-                        this->measure(results_archive_path(sweep, graining, sweep_measure) + "/results/", measurements.sublist(parms["always_measure"]));
+                        this->measure(results_archive_path(sweep, graining, sweep_measure) + "/results/", measurements.sublist(parms["ALWAYS_MEASURE"]));
                 }
                 
                 /// write checkpoint

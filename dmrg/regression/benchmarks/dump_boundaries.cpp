@@ -44,6 +44,7 @@
 #include "dmrg/models/generate_mpo.hpp"
 
 #include "dmrg/mp_tensors/mps.h"
+#include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
 
 #include "utils/timings.h"
@@ -52,16 +53,11 @@
 int main(int argc, char ** argv)
 {
     try {
-        if (argc != 2 && argc != 3)
-        {
-            maquis::cout << "Usage: <parms> [<model_parms>]" << std::endl;
-            exit(1);
-        }
+        DmrgOptions opt(argc, argv);
+        if (!opt.valid) return 0;
+        DmrgParameters parms = opt.parms;
         
         maquis::cout.precision(10);
-        
-        /// Load parameters
-        DmrgParameters parms = load_parms_and_model(argv[1], (argc == 3) ? argv[2] : "");
         
         /// Timers
 #ifdef USE_AMBIENT

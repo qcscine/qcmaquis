@@ -9,5 +9,5 @@ add_library(mps_pscan STATIC libpscan/scheduler.cpp libpscan/options.cpp)
 
 # *** Targets
 set(MYAPP_LIBRARIES mps_pscan dmrg_models dmrg_utils ${DMRG_LIBRARIES})
-add_subdirectory(mps_optim)
+add_subdirectory(mps_eigenstate_sims)
 add_subdirectory(mps_evolve)

@@ -25,6 +25,7 @@
  *****************************************************************************/
 
 #include "utils/io.hpp" // has to be first include because of impi
+#include "dmrg/utils/DmrgOptions.h"
 #include "simulation.h"
 #include "dmrg/sim/symmetry_factory.h"
 
@@ -34,33 +35,27 @@
 
 int main(int argc, char ** argv)
 {
-    if (argc != 2 && argc != 3)
-    {
-        maquis::cout << "Usage: <parms> [<model_parms>]" << std::endl;
-        exit(1);
+    DmrgOptions opt(argc, argv);
+    if (opt.valid) {
+        
+        maquis::cout.precision(10);
+        
+        timeval now, then, snow, sthen;
+        gettimeofday(&now, NULL);
+        
+        
+        try {
+            simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(opt.parms);
+            sim->run(opt.parms);
+        } catch (std::exception & e) {
+            maquis::cerr << "Exception thrown!" << std::endl;
+            maquis::cerr << e.what() << std::endl;
+            exit(1);
+        }
+        
+        gettimeofday(&then, NULL);
+        double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
+        
+        maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
     }
-    
-    maquis::cout.precision(10);
-    
-    /// Load parameters
-    DmrgParameters parms = load_parms_and_model(argv[1], (argc == 3) ? argv[2] : "");
-    
-    timeval now, then, snow, sthen;
-    gettimeofday(&now, NULL);
-    
-    
-    try {
-        simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(parms);
-        sim->run(parms);
-    } catch (std::exception & e) {
-        maquis::cerr << "Exception thrown!" << std::endl;
-        maquis::cerr << e.what() << std::endl;
-        exit(1);
-    }    
-    
-    gettimeofday(&then, NULL);
-    double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
-    
-    maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
 }
-

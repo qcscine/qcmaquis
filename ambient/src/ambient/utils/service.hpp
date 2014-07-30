@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -52,10 +54,10 @@ namespace ambient {
     private:
         void import(){
             void* handle = dlopen("libmkl_intel_lp64.so", RTLD_LAZY); 
-            if(!handle) printf("Error: cannot open libmkl_intel_lp64.so\n");
+            if(!handle) throw std::runtime_error("Error: cannot open libmkl_intel_lp64.so!");
             dlerror(); // reset errors
             fptr = (fptr_t) dlsym(handle, "MKL_Set_Num_Threads");
-            if(dlerror()) printf("Error: cannot load symbol 'MKL_Set_Num_Threads'\n");
+            if(dlerror()) throw std::runtime_error("Error: cannot load symbol 'MKL_Set_Num_Threads'");
             dlclose(handle);
         }
     private:

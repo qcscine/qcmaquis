@@ -195,7 +195,7 @@ std::string block_matrix<Matrix, SymmGroup>::description() const
 }
 
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::shift_basis(block_matrix<Matrix, SymmGroup>::charge diff)
+void block_matrix<Matrix, SymmGroup>::shift_basis(typename block_matrix<Matrix, SymmGroup>::charge diff)
 {
     rows_.shift(diff);
     cols_.shift(diff);
@@ -338,7 +338,7 @@ template<class Matrix, class SymmGroup>
 template<class Generator>
 void block_matrix<Matrix, SymmGroup>::generate(Generator g)
 {
-    for(std::size_t k = 0; k < n_blocks(); ++k) detail::generate_impl(data_[k], g);
+    for(std::size_t k = 0; k < n_blocks(); ++k) ::detail::generate_impl(data_[k], g);
 }
 
 template<class Matrix, class SymmGroup>
@@ -363,29 +363,29 @@ std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, charge c1, charge c2)
 {
-    
-    if (this->has_block(c1, c2))
+    size_type match = this->find_block(c1, c2);
+    if (match < this->n_blocks())
     {
-        if (num_rows(mtx) == num_rows((*this)(c1, c2)) &&
-            num_cols(mtx) == num_cols((*this)(c1, c2)))
-            (*this)(c1, c2) += mtx;
-        else if (num_rows(mtx) > num_rows((*this)(c1, c2)) &&
-                 num_cols(mtx) > num_cols((*this)(c1, c2)))
+        if (num_rows(mtx) == num_rows((*this)[match]) &&
+            num_cols(mtx) == num_cols((*this)[match]))
+            (*this)[match] += mtx;
+        else if (num_rows(mtx) > num_rows((*this)[match]) &&
+                 num_cols(mtx) > num_cols((*this)[match]))
         {
-            resize_block(c1, c2, num_rows(mtx), num_cols(mtx));
-            (*this)(c1, c2) += mtx;
+            resize_block(match, num_rows(mtx), num_cols(mtx));
+            (*this)[match] += mtx;
         } else {
             std::size_t maxrows = std::max(num_rows(mtx),
-                                           num_rows((*this)(c1, c2)));
+                                           num_rows((*this)[match]));
             std::size_t maxcols = std::max(num_cols(mtx),
-                                           num_cols((*this)(c1, c2)));
+                                           num_cols((*this)[match]));
             
             Matrix cpy(mtx); // only in this case do we need to copy the argument matrix
             
-            resize_block(c1, c2, maxrows, maxcols); // I think useless 
+            resize_block(match, maxrows, maxcols);
             resize(cpy, maxrows, maxcols);
             
-            (*this)(c1, c2) += cpy;
+            (*this)[match] += cpy;
         }
     } else
         insert_block(mtx, c1, c2);
@@ -396,10 +396,18 @@ void block_matrix<Matrix, SymmGroup>::resize_block(charge r, charge c,
                                                    size_type new_r, size_type new_c,
                                                    bool pretend)
 {
+    resize_block(find_block(r, c), new_r, new_c, pretend);
+}
+
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::resize_block(size_type pos,
+                                                   size_type new_r, size_type new_c,
+                                                   bool pretend)
+{
     if (!pretend)
-        resize((*this)(r,c), new_r, new_c);
-    rows_[rows_.position(r)].second = new_r;
-    cols_[cols_.position(c)].second = new_c;
+        resize((*this)[pos], new_r, new_c);
+    rows_[pos].second = new_r;
+    cols_[pos].second = new_c;
 }
 
 template<class Matrix, class SymmGroup>
@@ -534,17 +542,17 @@ std::size_t block_matrix<Matrix, SymmGroup>::num_elements() const
 template<class Matrix, class SymmGroup>
 void block_matrix<Matrix, SymmGroup>::print_distribution() const
 {
-    if(ambient::rank() != 0) return;
-
-    double total = 0;
-    for(int i = 0; i < this->n_blocks(); ++i) total += num_rows((*this)[i])*num_cols((*this)[i]);
+    if(!ambient::master()) return;
+    double total = num_elements();
+    printf("%.2f GB:", total*sizeof(typename Matrix::value_type)/1024/1024/1024);
     for(int p = 0; p < ambient::num_procs(); ++p){
         double part = 0;
         for(int i = 0; i < this->n_blocks(); ++i){
-            if((*this)[i][0].core->current->owner == p || (p == 0 && (*this)[i][0].core->current->owner == -1))
+            if(!ambient::weak((*this)[i][0]) && ambient::get_owner((*this)[i][0]) == p)
                 part += num_rows((*this)[i])*num_cols((*this)[i]);
         }
-        printf("R%d: %d%\n", p, (int)(100*part/total));
+        printf(" %.1f%%", 100*part/total);
     }
+    printf("\n");
 }
 #endif

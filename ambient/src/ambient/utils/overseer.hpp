@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -69,7 +71,7 @@ namespace ambient {
         };
         template<typename V>
         static void track(V& o, const std::string& label){
-            log::renaming(o.versioned.core, label);
+            log::renaming(o.ambient_rc.desc, label);
             o->label = label;
         }
     };

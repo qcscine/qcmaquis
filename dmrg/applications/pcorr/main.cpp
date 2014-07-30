@@ -65,6 +65,7 @@ typedef NU1 grp;
 #include "dmrg/optimize/ietl_lanczos_solver.h"
 #include "dmrg/optimize/ietl_jacobi_davidson.h"
 
+#include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
 
 #include "utils/timings.h"
@@ -108,39 +109,6 @@ private:
 };
 
 
-template<class Matrix, class SymmGroup>
-Boundary<Matrix, SymmGroup>
-make_left_boundary(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> const & ket)
-{
-    assert(ket.length() == bra.length());
-    Index<SymmGroup> i = ket[0].row_dim();
-    Index<SymmGroup> j = bra[0].row_dim();
-    Boundary<Matrix, SymmGroup> ret(i, j, 1);
-    
-    for(typename Index<SymmGroup>::basis_iterator it1 = i.basis_begin(); !it1.end(); ++it1)
-        for(typename Index<SymmGroup>::basis_iterator it2 = j.basis_begin(); !it2.end(); ++it2)
-            ret[0](*it1, *it2) = 1;
-    
-    return ret;
-}
-
-template<class Matrix, class SymmGroup>
-Boundary<Matrix, SymmGroup>
-make_right_boundary(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> const & ket)
-{
-    assert(ket.length() == bra.length());
-    std::size_t L = ket.length();
-    Index<SymmGroup> i = ket[L-1].col_dim();
-    Index<SymmGroup> j = bra[L-1].col_dim();
-    Boundary<Matrix, SymmGroup> ret(j, i, 1);
-    
-    for(typename Index<SymmGroup>::basis_iterator it1 = i.basis_begin(); !it1.end(); ++it1)
-        for(typename Index<SymmGroup>::basis_iterator it2 = j.basis_begin(); !it2.end(); ++it2)
-            ret[0](*it2, *it1) = 1;
-    
-    return ret;
-}
-
 struct corr_measurement {
     typedef block_matrix<matrix, grp> op_t;
     
@@ -170,7 +138,7 @@ void measure_correlation(Range const& range,
         const size_t p = range[i];
         Timer tim("measure p="+boost::lexical_cast<std::string>(p)); tim.begin();
         
-        std::vector<std::vector<std::size_t> > numeric_labels;
+        std::vector<std::vector<typename Lattice::pos_t> > numeric_labels;
         std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
         
         {
@@ -198,7 +166,7 @@ void measure_correlation(Range const& range,
             }
             dct.push_back(obs);
             
-            std::vector<std::size_t> lab(2);
+            std::vector<typename Lattice::pos_t> lab(2);
             lab[0] = p; lab[1] = q;
             numeric_labels.push_back(lab);
             
@@ -222,16 +190,11 @@ int main(int argc, char ** argv)
         mpi::environment env(argc, argv);
         mpi::communicator comm;
         
-        if (argc != 2 && argc != 3)
-        {
-            maquis::cout << "Usage: <parms> [<model_parms>]" << std::endl;
-            exit(1);
-        }
-        
+        DmrgOptions opt(argc, argv);
+        if (!opt.valid) return 0;
+        DmrgParameters parms = opt.parms;
+
         maquis::cout.precision(10);
-        
-        /// Load parameters
-        DmrgParameters parms = load_parms_and_model(argv[1], (argc == 3) ? argv[2] : "");
         
         typedef matrix::value_type value_type;
         typedef block_matrix<matrix, grp> op_t;

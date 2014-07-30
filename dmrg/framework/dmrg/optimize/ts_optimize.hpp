@@ -58,7 +58,7 @@ public:
     : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
-        select_proc(ambient::scope_t::common);
+        select_proc(ambient::actor_t::common);
         make_ts_cache_mpo(mpo, ts_cache_mpo, mps);
     }
 
@@ -73,8 +73,7 @@ public:
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("ts_optimize::sweep");
         #endif
-    	timeval sweep_now, sweep_then;
-    	gettimeofday(&sweep_now, NULL);
+        boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
 
         iteration_results_.clear();
         
@@ -94,9 +93,6 @@ public:
             Storage::prefetch(right_[site+1]);
         }
         
-#ifndef NDEBUG
-    	maquis::cout << mps.description() << std::endl;
-#endif
         for (; _site < 2*L-2; ++_site) {
 	/* (0,1), (1,2), ... , (L-1,L), (L-1,L), (L-2, L-1), ... , (0,1)
 	    | |                        |
@@ -155,8 +151,8 @@ public:
             }
 
 
-    	    timeval now, then;
-
+            boost::chrono::high_resolution_clock::time_point now, then;
+            
     	    // Create TwoSite objects
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
     	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
@@ -211,6 +207,16 @@ public:
             maquis::cout << "Energy " << lr << " " << res.first << std::endl;
             iteration_results_["Energy"] << res.first;
             
+            
+            double alpha;
+            int ngs = parms["ngrowsweeps"], nms = parms["nmainsweeps"];
+            if (sweep < ngs)
+                alpha = parms["alpha_initial"];
+            else if (sweep < ngs + nms)
+                alpha = parms["alpha_main"];
+            else
+                alpha = parms["alpha_final"];
+
             double cutoff = this->get_cutoff(sweep);
             std::size_t Mmax = this->get_Mmax(sweep);
             truncation_results trunc;
@@ -218,7 +224,13 @@ public:
     	    if (lr == +1)
     	    {
         		// Write back result from optimization
-        		boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_l2r(Mmax, cutoff);
+                BEGIN_TIMING("TRUNC")
+                if (parms["twosite_truncation"] == "svd")
+                    boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_l2r(Mmax, cutoff);
+                else
+                    boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo[site1]);
+                END_TIMING("TRUNC")
+
                 #ifdef AMBIENT_TRACKING
                 ambient_track_array(mps, site1);
                 ambient_track_array(mps, site2);
@@ -245,7 +257,7 @@ public:
                         #ifdef USE_AMBIENT
                         std::vector<int> placement_l = get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
                         for(size_t b = 0; b < left_[site1].aux_dim(); ++b){
-                            select_proc(ambient::scope::permute(b,placement_l)); 
+                            select_group(ambient::scope::permute(b,placement_l), 1);
                             storage::migrate(left_[site1][b]);
                         }
                         ambient::sync();
@@ -255,13 +267,19 @@ public:
                     Storage::evict(left_[site1]);
                 }
                 #ifdef USE_AMBIENT
-                { select_proc(ambient::scope::balance(site1,L)); storage::migrate(mps[site1]); }
-                { select_proc(ambient::scope::balance(site2,L)); storage::migrate(mps[site2]); }
+                { select_group(ambient::scope::balance(site1,L),1); storage::migrate(mps[site1]); }
+                { select_group(ambient::scope::balance(site2,L),1); storage::migrate(mps[site2]); }
                 #endif
     	    }
     	    if (lr == -1){
         		// Write back result from optimization
-        		boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_r2l(Mmax, cutoff);
+                BEGIN_TIMING("TRUNC")
+                if (parms["twosite_truncation"] == "svd")
+                    boost::tie(mps[site1], mps[site2], trunc) = tst.split_mps_r2l(Mmax, cutoff);
+                else
+                    boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo[site2]);
+                END_TIMING("TRUNC")
+
                 #ifdef AMBIENT_TRACKING
                 ambient_track_array(mps, site1);
                 ambient_track_array(mps, site2);
@@ -288,7 +306,7 @@ public:
                         #ifdef USE_AMBIENT
                         std::vector<int> placement_r = get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
                         for(size_t b = 0; b < right_[site2+1].aux_dim(); ++b){
-                            select_proc(ambient::scope::permute(b,placement_r));
+                            select_group(ambient::scope::permute(b,placement_r), 1);
                             storage::migrate(right_[site2+1][b]);
                         }
                         ambient::sync();
@@ -298,8 +316,8 @@ public:
                     Storage::evict(right_[site2+1]); 
                 }
                 #ifdef USE_AMBIENT
-                { select_proc(ambient::scope::balance(site1,L)); storage::migrate(mps[site1]); }
-                { select_proc(ambient::scope::balance(site2,L)); storage::migrate(mps[site2]); }
+                { select_group(ambient::scope::balance(site1,L),1); storage::migrate(mps[site1]); }
+                { select_group(ambient::scope::balance(site2,L),1); storage::migrate(mps[site2]); }
                 #endif
     	    }
             
@@ -309,8 +327,10 @@ public:
             iteration_results_["SmallestEV"]        << trunc.smallest_ev;
             
             
-            gettimeofday(&sweep_then, NULL);
-            double elapsed = sweep_then.tv_sec-sweep_now.tv_sec + 1e-6 * (sweep_then.tv_usec-sweep_now.tv_usec);
+            maquis::cout << "Memory usage : " << proc_status_mem() << std::endl;
+            
+            boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
+            double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();
             maquis::cout << "Sweep has been running for " << elapsed << " seconds." << std::endl;
             
             if (stop_callback())

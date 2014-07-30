@@ -247,21 +247,22 @@ namespace storage {
             }
             void evict(){
                 if(state == core){
-                    if(!dumped){
-                        state = storing;
-                        dumped = true;
-                        #ifdef USE_AMBIENT
-                        ambient::sync();
-                        #endif
-                        this->thread(new boost::thread(evict_request<T>(disk::fp(sid), (T*)this)));
-                    }else{
-                        state = uncore;
-                        #ifdef USE_AMBIENT
-                        ambient::sync();
-                        #endif
-                        drop_request<T>(disk::fp(sid), (T*)this)();
-                    }
-                } 
+                    // if(!dumped){ // MD: storage::migrate moves the data without modifying it, evict has to be enforced even in this case otherwise data is loaded in the wrong way
+                    state = storing;
+                    dumped = true;
+                    #ifdef USE_AMBIENT
+                    ambient::sync();
+                    #endif
+                    this->thread(new boost::thread(evict_request<T>(disk::fp(sid), (T*)this)));
+                    // }else{
+                    //     if (ambient::master()) printf("DROP instead of evict.\n");
+                    //     state = uncore;
+                    //     #ifdef USE_AMBIENT
+                    //     ambient::sync();
+                    //     #endif
+                    //     drop_request<T>(disk::fp(sid), (T*)this)();
+                    // }
+                }
                 assert(this->state != prefetching); // evict of prefetched
             }
             void drop(){
@@ -320,26 +321,47 @@ namespace storage {
     };
 
 #ifdef USE_AMBIENT
-    using ambient::scope_t;
+    using ambient::actor_t;
     template<class Matrix, class SymmGroup> 
-    static void migrate(MPSTensor<Matrix, SymmGroup>& t){
-        for(int i = 0; i < t.data().n_blocks(); ++i) 
-        ambient::migrate(t.data()[i]);
+    static void migrate(const MPSTensor<Matrix, SymmGroup>& tc){
+        auto it = ambient::scope::begin();
+        MPSTensor<Matrix, SymmGroup>& t = const_cast<MPSTensor<Matrix, SymmGroup>&>(tc);
+        for(int i = 0; i < t.data().n_blocks(); ++i){
+            select_proc_safe(it); it++;
+            ambient::migrate(t.data()[i]);
+        }
     }
     template<class Matrix, class SymmGroup> 
-    static void migrate(block_matrix<Matrix, SymmGroup>& t){
-        for(int i = 0; i < t.n_blocks(); ++i)
-        ambient::migrate(t[i]);
+    static void migrate(const block_matrix<Matrix, SymmGroup>& tc){
+        auto it = ambient::scope::begin();
+        block_matrix<Matrix, SymmGroup>& t = const_cast<block_matrix<Matrix, SymmGroup>&>(tc);
+        for(int i = 0; i < t.n_blocks(); ++i){
+            select_proc_safe(it); it++;
+            ambient::migrate(t[i]);
+        }
     }
-    template<typename T, typename L>
-    static void migrate(T& t, L where){
-        select_proc(where);
-        migrate(t);
+    template<class Matrix, class SymmGroup> 
+    static void hint(const MPSTensor<Matrix, SymmGroup>& t){
+        auto it = ambient::scope::begin();
+        for(int i = 0; i < t.data().n_blocks(); ++i){
+            select_proc_safe(it); it++;
+            ambient::hint(t.data()[i]);
+        }
+    }
+    template<class Matrix, class SymmGroup> 
+    static void hint(const block_matrix<Matrix, SymmGroup>& t){
+        auto it = ambient::scope::begin();
+        for(int i = 0; i < t.n_blocks(); ++i){
+            select_proc_safe(it); it++;
+            ambient::hint(t[i]);
+        }
     }
 #else
-    struct scope_t { enum type { common }; };
+    struct actor_t { enum type { common }; };
     template<typename T>
-    static void migrate(T& t, scope_t::type where){ }
+    static void migrate(T& t){ }
+    template<typename T>
+    static void hint(T& t){ }
 #endif
 
     inline static void setup(BaseParameters& parms){

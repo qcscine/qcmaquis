@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -24,8 +26,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#define AMBIENT_MASTER_RANK 0
-
 namespace ambient { namespace channels { namespace mpi {
 
     inline void recv_impl(request_impl* r){
@@ -41,11 +41,11 @@ namespace ambient { namespace channels { namespace mpi {
     inline channel::mount::mount(){
         int np, level, zero = 0;
         MPI_Init_thread(&zero, NULL, AMBIENT_MPI_THREADING, &level); 
-        if(level != AMBIENT_MPI_THREADING) printf("Error: Wrong threading level\n");
+        if(level != AMBIENT_MPI_THREADING) throw std::runtime_error("Error: Wrong threading level");
         MPI_Comm_size(MPI_COMM_WORLD, &np);
         
         trees.resize(2); // 0,1 are empty
-        for(int i = 2; i <= np; i++)  trees.push_back(new binary_tree(i));
+        for(int i = 2; i <= np; i++)  trees.push_back(new binary_tree<rank_t>(i));
         for(int i = 0; i < 2*np; i++) circle.push_back(i % np);
     }
 
@@ -66,7 +66,7 @@ namespace ambient { namespace channels { namespace mpi {
         return this->world->size;
     }
 
-    inline collective<typename channel::scalar_type>* channel::bcast(scalar_type& v, int root){
+    inline collective<typename channel::scalar_type>* channel::bcast(scalar_type& v, rank_t root){
         return new collective<scalar_type>(v, root);
     }
 

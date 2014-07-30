@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -417,7 +419,7 @@ namespace ambient { namespace numeric {
                              row.step, col.step);
                 ctree.push_back(part);
             }
-            __a_reduce(ctree);
+            ambient::reduce(ctree);
             add_vectors<beta>(c.locate(row.second, cj), c.addr(row.second, cj), *ctree[0], 0, row.step);
             for(int k = 0; k < ctree.size(); k++) delete ctree[k];
         }
@@ -442,7 +444,7 @@ namespace ambient { namespace numeric {
                              row.step, col.step);
                 ctree.push_back(part);
             }
-            __a_reduce(ctree);
+            ambient::reduce(ctree);
             add_vectors<beta>(c.locate(row.second, cj), c.addr(row.second, cj), *ctree[0], 0, row.step);
             for(int k = 0; k < ctree.size(); k++) delete ctree[k];
         }

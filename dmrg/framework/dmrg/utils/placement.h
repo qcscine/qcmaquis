@@ -78,6 +78,8 @@ std::vector<int> get_left_placement(const MPOTensor<Matrix, SymmGroup>& mpo, con
         }
     }
     make_complete(placement_l);
+    mpo.exceptions_l = ts_exceptions_l;
+    mpo.exceptions_r = ts_exceptions_r;
     return placement_l;
 }
 
@@ -94,6 +96,8 @@ std::vector<int> get_right_placement(const MPOTensor<Matrix, SymmGroup>& mpo, co
         }
     }
     make_complete(placement_r);
+    mpo.exceptions_l = ts_exceptions_l;
+    mpo.exceptions_r = ts_exceptions_r;
     return placement_r;
 }
 
@@ -114,6 +118,8 @@ std::vector<std::vector<int> > construct_placements(const MPO<Matrix, SymmGroup>
         make_complete(placements[s+1]);
         mpo[s].placement_l = placements[s];
         mpo[s].placement_r = placements[s+1];
+        mpo[s].exceptions_l = exceptions[s].first;
+        mpo[s].exceptions_r = exceptions[s+1].second;
     }
 #ifdef USE_AMBIENT
     for(int s = 0; s < mpo.length()+1; s++){

@@ -31,7 +31,7 @@ parms = {
             'init_state'                 : 'coherent_dm',
             'init_coeff'                 : '0,0.5,0',
             
-            'always_measure'             : 'Local density',
+            'ALWAYS_MEASURE'             : 'Local density',
             
             'symmetry'                   : 'none',
             'model_library'              : 'coded',
@@ -49,7 +49,7 @@ model = {
             'U'                         : 1,
             'Gamma1a'                   : 0.2,
             
-            'ENABLE_MEASURE[Local density]' : 1,
+            'MEASURE[Local density]' : 1,
         }
 
 class mytest_2nd(apptest.DMRGTestBase):

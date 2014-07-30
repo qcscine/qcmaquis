@@ -151,11 +151,15 @@ public:
         std::vector<pos_t> order(L);
         if (!model.is_set("orbital_order"))
             for (pos_t p = 0; p < L; ++p)
-                order[p] = p;
+                order[p] = p+1;
         else
             order = model["orbital_order"].as<std::vector<pos_t> >();
 
         if (model.is_set("integral_file")) {
+            std::string integral_file = model["integral_file"];
+            if (!boost::filesystem::exists(integral_file))
+                throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
+
             std::ifstream orb_file;
             orb_file.open(model["integral_file"].c_str());
             orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
