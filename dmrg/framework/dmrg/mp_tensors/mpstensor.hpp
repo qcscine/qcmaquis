@@ -35,6 +35,7 @@
 
 #include "utils/traits.hpp"
 
+#include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
 
 // implementation of join functions
 #include "dmrg/mp_tensors/joins.hpp"
@@ -231,7 +232,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
             assert(data().left_basis() == U.left_basis());
             
             swap(data(), U);
-            gemm(S, V, U);
+            SU2::gemm(S, V, U);
 
             cur_normalization = Lnorm;
             return U;
@@ -250,6 +251,8 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
     if (cur_normalization == Unorm || cur_normalization == Lnorm) {
         if (method == QR) { //enum QR but LQ decomposition
             make_right_paired();
+
+            //SU2::lq_prescale(phys_i, left_i, right_i, data());
             
             block_matrix<Matrix, SymmGroup> L, Q;
             lq(data(), L, Q);
@@ -257,6 +260,8 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             swap(data(), Q);
             left_i = data().left_basis();
             assert(left_i == L.right_basis());
+
+            //SU2::lq_postscale(phys_i, left_i, right_i, data());
             
             cur_normalization = Rnorm;
             return L;
@@ -265,14 +270,18 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             
             block_matrix<Matrix, SymmGroup> U, V;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
+
+            //SU2::lq_prescale(phys_i, left_i, right_i, data());
             
             svd(data(), U, V, S);
             
             left_i = V.left_basis();
             assert(data().right_basis() == V.right_basis());
             swap(data(), V);
+
+            //SU2::lq_postscale(phys_i, left_i, right_i, data());
             
-            gemm(U, S, V);
+            SU2::gemm(U, S, V);
             
             cur_normalization = Rnorm;
             return V;
@@ -297,7 +306,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<OtherMatrix, Symm
     cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;
     make_left_paired();
-    gemm(data(), N, tmp);
+    SU2::gemm(data(), N, tmp);
     replace_left_paired(tmp);
 }
 
@@ -309,7 +318,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<OtherMatrix, SymmG
     cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;
     make_right_paired();
-    gemm(N, data(), tmp);
+    SU2::gemm(N, data(), tmp);
     replace_right_paired(tmp);
 }
 
