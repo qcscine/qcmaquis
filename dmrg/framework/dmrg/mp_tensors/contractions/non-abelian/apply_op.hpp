@@ -83,12 +83,12 @@ namespace SU2 {
 
                 std::pair<const_iterator, const_iterator>
                   er = std::equal_range(ket_basis.begin(), ket_basis.end(),
-                    boost::make_tuple(mc, SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
+                    dual_index_detail::make_QnBlock<SymmGroup>(mc, SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
 
                 for (const_iterator it = er.first; it != er.second; ++it)
                 {
                     size_t matched_block = std::distance(ket_basis.begin(), it);
-                    charge rc = boost::tuples::get<1>(ket_basis[matched_block]);
+                    charge rc = ket_basis[matched_block].rc;
                     size_t t_block = T.basis().position(lc, rc); // t_block != k in general
 
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
@@ -175,17 +175,17 @@ namespace SU2 {
 
             for (size_t k = 0; k < ket_basis.size(); ++k) {
 
-                charge lc = boost::tuples::get<0>(ket_basis[k]);
-                charge mc = boost::tuples::get<1>(ket_basis[k]);
+                charge lc = ket_basis[k].lc;
+                charge mc = ket_basis[k].rc;
 
                 std::pair<const_iterator, const_iterator>
                   er = std::equal_range(right[b2].basis().begin(), right[b2].basis().end(),
-                    boost::make_tuple(mc, SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
+                    dual_index_detail::make_QnBlock<SymmGroup>(mc, SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
 
                 for (const_iterator it = er.first; it != er.second; ++it)
                 {
                     size_t matched_block = std::distance(right[b2].basis().begin(), it);
-                    charge rc = boost::tuples::get<1>(right[b2].basis()[matched_block]);
+                    charge rc = right[b2].basis()[matched_block].rc;
                     size_t t_block = T.basis().position(lc, rc); // t_block != k in general
 
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
