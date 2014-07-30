@@ -24,7 +24,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/alps/model_symm.hpp"
+#include "dmrg/models/alps/symm_handler.hpp"
 #include "dmrg/block_matrix/symmetry/z2.h"
 	
 // Symmetry dependent implementation
@@ -33,6 +33,7 @@
 template <>
 Ztwo::charge init_charge<Ztwo> (const alps::Parameters& parms, std::map<std::string, int> const& all_conserved_qn)
 {
+    typedef std::map<std::string, int> qn_map_type;
     assert(all_conserved_qn.size() == 1);
     qn_map_type::const_iterator it = all_conserved_qn.begin();
     int tmp = alps::evaluate<double>(static_cast<std::string>(parms[it->first+"_total"]), parms);
@@ -52,5 +53,5 @@ Ztwo::charge state_to_charge<Ztwo>(alps::site_state<short> const & state, alps::
         if (match != all_conserved_qn.end())
             tmp = detail::to_integer( get_quantumnumber(state, it->name(), b) );
     }
-    return (tmp % 2 == 0 ? Ztwo::Plus : Ztwo::Minus);
+    return (tmp % 4 == 0 ? Ztwo::Plus : Ztwo::Minus);
 }

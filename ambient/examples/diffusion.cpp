@@ -19,7 +19,7 @@ namespace detail {
     {
         size_t m = get_dim(a).y;
         size_t n = get_dim(a).x;
-        T* a_ = versioned(a).data; 
+        T* a_ = &a(0,0); 
         memset(a_, 0, ambient::extent(a)); 
         for(size_t i = 0; i < m; ++i)
         for(size_t j = 0; j < n; ++j){
@@ -35,11 +35,11 @@ namespace detail {
                                   const block<T>& bottom,
                                   double*& res)
     {
-        T* a_ = versioned(a).data;
-        T* l  = versioned(left).data;
-        T* r  = versioned(right).data;
-        T* t  = versioned(top).data;
-        T* b  = versioned(bottom).data;
+        const T* a_ = &a(0,0);
+        const T* l  = &left(0,0);
+        const T* r  = &right(0,0);
+        const T* t  = &top(0,0);
+        const T* b  = &bottom(0,0);
 
         double summ = 0.;
         size_t n = get_dim(a).x;
@@ -63,11 +63,11 @@ namespace detail {
                                           double& dr, double*& res)
     {
 
-        T* a_ = versioned(a).data;
-        T* l  = versioned(left).data;
-        T* r  = versioned(right).data;
-        T* t  = versioned(top).data;
-        T* b  = versioned(bottom).data;
+        const T* a_ = &a(0,0);
+        const T* l  = &left(0,0);
+        const T* r  = &right(0,0);
+        const T* t  = &top(0,0);
+        const T* b  = &bottom(0,0);
 
         double summ = 0.;
         size_t n = get_dim(a).x;
@@ -97,12 +97,12 @@ namespace detail {
         size_t ind;
         size_t m = get_dim(s).y;
         size_t n = get_dim(s).x;
-        T* u_ = versioned(s_).data;
-        T* u  = versioned(s).data;
-        T* t  = versioned(top).data;
-        T* r  = versioned(right).data;
-        T* b  = versioned(bottom).data;
-        T* l  = versioned(left).data;
+        T* u_ = &s_(0,0);
+        const T* u  = &s(0,0);
+        const T* t  = &top(0,0);
+        const T* r  = &right(0,0);
+        const T* b  = &bottom(0,0);
+        const T* l  = &left(0,0);
 
         ind = (n-1)*m;     u_[ind] = u[ind] + fac*(u[ind+1] + t[n]     + r[0]     + u[ind-m] - 4*u[ind]);
         ind = m-1;         u_[ind] = u[ind] + fac*(b[1]     + u[ind-1] + u[ind+m] + l[ind]   - 4*u[ind]);
@@ -142,14 +142,14 @@ namespace detail {
     {
         size_t n = get_dim(top_).x-1;
         size_t m = get_dim(s).y;
-        T* t_ = versioned(top_).data;
-        T* t  = versioned(top).data;
-        T* l  = versioned(left).data;
-        T* r  = versioned(right).data;
-        T* x  = versioned(s).data;
-        T* lt = versioned(ln_top).data;
-        T* tb = versioned(tn_bottom).data;
-        T* rt = versioned(rn_top).data;
+        T* t_ = &top_(0,0);
+        const T* t  = &top(0,0);
+        const T* l  = &left(0,0);
+        const T* r  = &right(0,0);
+        const T* x  = &s(0,0);
+        const T* lt = &ln_top(0,0);
+        const T* tb = &tn_bottom(0,0);
+        const T* rt = &rn_top(0,0);
                                    t_[0] = t[0] + fac*(t[1] + lt[get_dim(ln_top).x-1] + l[0] + tb[0] - 4*t[0]);
         for(int j = 1; j < n; j++) t_[j] = t[j] + fac*(t[j+1] + t[j-1] + x[(j-1)*m] + tb[j] - 4*t[j]);
                                    t_[n] = t[n] + fac*(rt[0] + t[n-1] + r[0] + tb[n] - 4*t[n]);
@@ -167,14 +167,14 @@ namespace detail {
     {
         size_t n = get_dim(bottom_).x-1;
         size_t m = get_dim(s).y;
-        T* b_ = versioned(bottom_).data;
-        T* b  = versioned(bottom).data;
-        T* l  = versioned(left).data;
-        T* r  = versioned(right).data;
-        T* x  = versioned(s).data;
-        T* lb = versioned(ln_bottom).data;
-        T* bt = versioned(bn_top).data;
-        T* rb = versioned(rn_bottom).data;
+        T* b_ = &bottom_(0,0);
+        const T* b  = &bottom(0,0);
+        const T* l  = &left(0,0);
+        const T* r  = &right(0,0);
+        const T* x  = &s(0,0);
+        const T* lb = &ln_bottom(0,0);
+        const T* bt = &bn_top(0,0);
+        const T* rb = &rn_bottom(0,0);
 
                                    b_[0] = b[0] + fac*(b[1] + lb[get_dim(ln_bottom).x-1] + bt[0] + l[m-1] - 4*b[0]);
         for(int j = 1; j < n; j++) b_[j] = b[j] + fac*(b[j+1] + b[j-1] + bt[j] + x[j*m-1] - 4*b[j]);
@@ -190,12 +190,12 @@ namespace detail {
                                                            double& fac)
     {
         size_t m = get_dim(left_).y-1;
-        T* l_ = versioned(left_).data;
-        T* l  = versioned(left).data;
-        T* t  = versioned(top).data;
-        T* b  = versioned(bottom).data;
-        T* x  = versioned(s).data;
-        T* lr = versioned(ln_right).data;
+        T* l_ = &left_(0,0);
+        const T* l  = &left(0,0);
+        const T* t  = &top(0,0);
+        const T* b  = &bottom(0,0);
+        const T* x  = &s(0,0);
+        const T* lr = &ln_right(0,0);
 
                                    l_[0] = l[0] + fac*(lr[0] + x[0] + t[0] + l[1] - 4*l[0]);
         for(int i = 1; i < m; i++) l_[i] = l[i] + fac*(lr[i] + x[i] + l[i-1] + l[i+1] - 4*l[i]);
@@ -212,12 +212,12 @@ namespace detail {
     {
         size_t m = get_dim(right_).y-1;
         size_t n = get_dim(s).x;
-        T* r_ = versioned(right_).data;
-        T* r  = versioned(right).data;
-        T* t  = versioned(top).data;
-        T* b  = versioned(bottom).data;
-        T* x  = versioned(s).data + (m+1)*(n-1);
-        T* rl = versioned(rn_left).data;
+        T* r_ = &right_(0,0);
+        const T* r  = &right(0,0);
+        const T* t  = &top(0,0);
+        const T* b  = &bottom(0,0);
+        const T* x  = &s(0,0) + (m+1)*(n-1);
+        const T* rl = &rn_left(0,0);
 
                                    r_[0] = r[0] + fac*(x[0] + rl[0] + t[n+1] + r[1] - 4*r[0]);
         for(int i = 1; i < m; i++) r_[i] = r[i] + fac*(x[i] + rl[i] + r[i-1] + r[i+1] - 4*r[i]);
@@ -275,17 +275,17 @@ public:
     border<T>& right()  const { return *f->right;  }
 
     void print(){
-        for(int j = 0; j < IB; j++) printf("%.2f ", ambient::load(top()).data[j]);
+        for(int j = 0; j < IB; j++) printf("%.2f ", ambient::load(top())(j,0));
         printf("\n");
         for(int i = 0; i < IB-2; i++){
-            printf("%.2f ", ambient::load(left()).data[i]);
+            printf("%.2f ", ambient::load(left())(i,0));
             for(int j = 0; j < IB-2; j++){
-                printf("%.2f ", ambient::load(*this).data[i+j*(IB-2)]);
+                printf("%.2f ", ambient::load(*this)(i,j));
             }
-            printf("%.2f ", ambient::load(right()).data[i]);
+            printf("%.2f ", ambient::load(right())(i,0));
             printf("\n");
         }
-        for(int j = 0; j < IB; j++) printf("%.2f ", ambient::load(bottom()).data[j]);
+        for(int j = 0; j < IB; j++) printf("%.2f ", ambient::load(bottom())(j,0));
         printf("\n");
     }
 

@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -46,13 +48,13 @@ namespace ambient {
     template <typename T> struct singular_info {
         template<size_t arg> static void deallocate     (functor* m){                        }
         template<size_t arg> static bool pin            (functor* m){ return false;          }
-        template<size_t arg> static void score          (T& obj)     {                        }
+        template<size_t arg> static void score          (T& obj)    {                        }
         template<size_t arg> static bool ready          (functor* m){ return true;           }
         template<size_t arg> static T&   revised        (functor* m){ EXTRACT(o); return *o; }
         template<size_t arg> static void modify (T& obj, functor* m){
             m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj); 
         }
-        template<size_t arg> static void modify_remote(T& obj)       {                        }
+        template<size_t arg> static void modify_remote(T& obj)      {                        }
         template<size_t arg> static void modify_local(T& obj, functor* m){
             m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj);
         }
@@ -137,6 +139,11 @@ namespace ambient {
             selector.get_controller().use_revision(o);
             var->ambient_after = o->current;
         }
+        template<size_t arg>
+        static T& revised(functor* m){ 
+            EXTRACT(o); revise(*o);
+            return *o;
+        }
         template<size_t arg> 
         static bool pin(functor* m){ 
             EXTRACT(o);
@@ -180,7 +187,7 @@ namespace ambient {
             decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
             selector.get_controller().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
-            var->ambient_before = o->current;
+            var->ambient_before = var->ambient_after = o->current;
             selector.get_controller().lsync(o->back());
             selector.get_controller().use_revision(o);
         }
@@ -188,7 +195,7 @@ namespace ambient {
             decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
             selector.get_controller().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
-            var->ambient_before = o->current;
+            var->ambient_before = var->ambient_after = o->current;
             selector.get_controller().sync(o->back());
             selector.get_controller().use_revision(o);
         }

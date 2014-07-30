@@ -5,7 +5,7 @@ template<class Matrix>
 void fill(std::vector<Matrix>& left, std::vector<Matrix>& right, std::vector<Matrix>& res, 
           size_t x, size_t y, size_t length)
 {
-    ambient::cout << "scope size: " << ambient::scope::top().provision.size() << "\n"; 
+    ambient::cout << "scope size: " << ambient::scope::size() << "\n"; 
     auto it = ambient::scope::begin();
     for(int i = 0; i < length; i++){
         if(it == ambient::scope::end()) it = ambient::scope::begin();

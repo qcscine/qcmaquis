@@ -24,27 +24,17 @@
  *
  *****************************************************************************/
 
-#ifndef ALPS_MPS_SIM_RUN_H
-#define ALPS_MPS_SIM_RUN_H
+#include "dmrg/sim/matrix_types.h"
 
-#include <boost/shared_ptr.hpp>
-#include "dmrg/utils/DmrgParameters.h"
-
-struct simulation_base {
-    virtual ~simulation_base() {}
-    virtual void run(DmrgParameters & parms, bool write_xml) =0;
-};
+#include "mps_eigenstate_sims/run_eigenstate_sim.hpp"
+#include "mps_eigenstate_sims/simulation.hpp"
 
 template <class SymmGroup>
-struct simulation : public simulation_base {
-    void run(DmrgParameters & parms, bool write_xml);
-};
-
-struct simulation_traits {
-    typedef boost::shared_ptr<simulation_base> shared_ptr;
-    template <class SymmGroup> struct F {
-        typedef simulation<SymmGroup> type;
-    };
-};
-
-#endif
+void simulation<SymmGroup>::run(DmrgParameters & parms, bool write_xml, run_type rt)
+{
+    if (parms["COMPLEX"]) {
+        run_eigenstate_sim<cmatrix, SymmGroup>(parms, write_xml, rt);
+    } else {
+        run_eigenstate_sim<matrix, SymmGroup>(parms, write_xml, rt);
+    }
+}

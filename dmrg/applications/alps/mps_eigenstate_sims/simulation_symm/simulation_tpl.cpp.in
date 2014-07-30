@@ -24,5 +24,5 @@
  *
  *****************************************************************************/
 
-#include "mps_optim/simulation.ipp"
+#include "mps_eigenstate_sims/simulation.ipp"
 template struct simulation<@CMAKE_SYMM_GROUP@>;

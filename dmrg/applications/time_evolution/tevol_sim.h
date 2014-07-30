@@ -65,7 +65,7 @@ public:
         int nsweeps     = parms["nsweeps"];
         int nsweeps_img = parms["nsweeps_img"];
         
-        parms << parms.iteration_params("t", init_sweep);
+        parms << parms.iteration_params("Time", init_sweep);
         
         /// compute nsteps as the min of the three above
         int nsteps = parms["nsweeps"];
@@ -93,10 +93,10 @@ public:
             // TODO: introduce some timings
             
             int sweep = i*nsteps;
-            BaseParameters iteration_params = parms.iteration_params("t", sweep);
+            BaseParameters iteration_params = parms.iteration_params("Time", sweep);
             if (update_each > -1 && (sweep % update_each) == 0)
             {
-                if (iteration_params.size() > 1) { // iter_t will always be set
+                if (iteration_params.size() > 1) { // Time will always be set
                     parms << iteration_params;
                     meas_each    = parms["measure_each"];
                     chkp_each    = parms["chkp_each"];
@@ -114,7 +114,7 @@ public:
             /// time evolution
             evolver(sweep, nsteps);
             sweep = (i+1)*nsteps - 1;
-            iteration_params.set("iter_t", sweep);
+            iteration_params.set("Time", sweep);
             
             /// measurements
             if ((sweep+1) % meas_each == 0 || (sweep+1) == parms["nsweeps"])
@@ -125,7 +125,7 @@ public:
                 
                 /// measure observables specified in 'always_measure'
                 measurements_type always_measure = this->iteration_measurements(sweep); // todo: make measure() using const&
-                if (!parms["always_measure"].empty())
+                if (!parms["ALWAYS_MEASURE"].empty())
                     this->measure(this->results_archive_path(sweep) + "/results/", always_measure);
                 
                 /// write iteration results

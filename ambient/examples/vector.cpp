@@ -12,7 +12,7 @@ int main(){ using namespace ambient;
     a += b;
                                  }
     for(int i = 0; i < 10; i++)
-    cout << "After sync: " << load(a).data[i] << ";\n";
+    cout << "After sync: " << load(a)[i] << ";\n";
 
     cout << "Messing with lambda:\n";
     int num = 13;
@@ -24,14 +24,14 @@ int main(){ using namespace ambient;
 
     ambient::async([&](const vector<int>& val, const vector<int>& val2){ 
             size_t size = get_length(val)-1;
-            int* val_ = versioned(val).data;
-            int* val2_ = versioned(val2).data;
+            const int* val_ = &val[0];
+            const int* val2_ = &val2[0];
             for(size_t i = 0; i < size; ++i) std::cout << val_[i] << " vs " << val2_[i] << "; num is " << num << "\n";
     }, a, b);
 
     ambient::async([&](const vector<int>& val){ 
             size_t size = get_length(val)-1;
-            int* val_ = versioned(val).data;
+            const int* val_ = &val[0];
             for(size_t i = 0; i < size; ++i) std::cout << val_[i] << "\n";
     }, a);
 
@@ -61,7 +61,7 @@ int main(){ using namespace ambient;
 
     for(int i = 0; i < 100; i++){
         ambient::async([&](const vector<int>& val){ 
-            std::cout << versioned(val).data[0] << "\n";
+            std::cout << val[0] << "\n";
         }, *list[i]);
         ambient::sync();
     }

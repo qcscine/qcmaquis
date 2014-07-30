@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -51,24 +53,24 @@ namespace ambient { namespace numeric {
 
     template<typename T>
     inline const value_type& diagonal_matrix<T>::operator[](size_t i) const {
-        return this->data_(i,0);
+        return ambient::load(this->data_)(i,0);
     }
 
     template<typename T>
     inline value_type& diagonal_matrix<T>::operator[](size_t i){
-        return this->data_(i,0);
+        return ambient::load(this->data_)(i,0);
     }
 
     template<typename T>
     inline const value_type& diagonal_matrix<T>::operator()(size_t i, size_t j) const {
         assert(i == j);
-        return this->data_(i,0);
+        return ambient::load(this->data_)(i,0);
     }
 
     template<typename T>
     inline value_type& diagonal_matrix<T>:: operator()(size_t i, size_t j){
         assert(i == j);
-        return this->data_(i,0);
+        return ambient::load(this->data_)(i,0);
     }
 
     template<typename T>
