@@ -49,9 +49,9 @@ class mytest(apptest.DMRGTestBase):
                             'u1_total_charge2'          : 10,
                             
                             
-                            'ENABLE_MEASURE[Local density]' : 1, # enables both up and down
-                            'ENABLE_MEASURE[Onebody density matrix]' : 1, # enables both up and down
-                            'ENABLE_MEASURE[Entropy]'       : 1,
+                            'MEASURE[Local density]' : 1, # enables both up and down
+                            'MEASURE[Onebody density matrix]' : 1, # enables both up and down
+                            'MEASURE[Entropy]'       : 1,
                           },
                   }
     observables = [

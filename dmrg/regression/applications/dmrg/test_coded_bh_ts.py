@@ -40,8 +40,8 @@ class mytest(apptest.DMRGTestBase):
                             
                             'u1_total_charge'           : 5,
                             
-                            'ENABLE_MEASURE[Local density]' : 1,
-                            'ENABLE_MEASURE[Entropy]'       : 1,
+                            'MEASURE[Local density]' : 1,
+                            'MEASURE[Entropy]'       : 1,
                           },
                   }
     observables = [

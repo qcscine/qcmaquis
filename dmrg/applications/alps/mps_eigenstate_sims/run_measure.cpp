@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,17 +24,36 @@
  *
  *****************************************************************************/
 
-#include "dmrg/sim/matrix_types.h"
+#include <boost/filesystem/fstream.hpp>
+#include <string>
 
-#include "mps_optim/run_eigenstate_sim.hpp"
-#include "mps_optim/simulation.hpp"
+#include "libpscan/run_sim.hpp"
 
-template <class SymmGroup>
-void simulation<SymmGroup>::run(DmrgParameters & parms, bool write_xml)
+#include "mps_eigenstate_sims/simulation.hpp"
+#include "dmrg/sim/symmetry_factory.h"
+
+
+void run_sim(const boost::filesystem::path& infile, const boost::filesystem::path& outfile,
+             bool write_xml, double time_limit)
 {
-    if (parms["COMPLEX"]) {
-        run_eigenstate_sim<cmatrix, SymmGroup>(parms, write_xml);
-    } else {
-        run_eigenstate_sim<matrix, SymmGroup>(parms, write_xml);
+    maquis::cout.precision(10);
+    
+    /// Load parameters
+    DmrgParameters parms;
+    {
+        boost::filesystem::ifstream param_file(infile);
+        if (!param_file)
+            throw std::runtime_error(std::string("Could not open parameter file ") + infile.string() +".");
+        alps::Parameters p; p.extract_from_xml(param_file);
+        parms = DmrgParameters(p);
     }
+    
+    /// Match parameters of ALPS DMRG
+    parms.set("chkpfile",   (outfile.parent_path() / outfile.stem()).string() + ".chkp");
+    parms.set("resultfile", (outfile.parent_path() / outfile.stem()).string() + ".h5");
+    parms.set("run_seconds", time_limit);
+    
+    /// Start simulation
+    simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(parms);
+    sim->run(parms, write_xml, measure_only);
 }

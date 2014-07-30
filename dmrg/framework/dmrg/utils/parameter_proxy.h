@@ -73,8 +73,9 @@ namespace parameters {
                 typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
                 boost::char_separator<char> sep(",");
                 tokenizer tokens(raw, sep);
-                std::transform(tokens.begin(), tokens.end(), std::back_inserter(ret),
-                               static_cast<T (*)(std::string const&)>(boost::lexical_cast<T, std::string>));
+                BOOST_FOREACH(std::string t, tokens) {
+                  ret.push_back(boost::lexical_cast<T, std::string>(t));
+                }
                 return ret;
             }
         };
@@ -88,7 +89,8 @@ namespace parameters {
     CALLBACK(float)                                         \
     CALLBACK(long)                                          \
     CALLBACK(unsigned)                                      \
-    CALLBACK(std::size_t)
+    CALLBACK(unsigned long)                                 \
+    CALLBACK(unsigned long long)
 
     #define FOREACH_PROXY_STRING_TYPE(CALLBACK)            \
     CALLBACK(std::string)

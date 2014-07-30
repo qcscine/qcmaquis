@@ -324,40 +324,42 @@ namespace storage {
     using ambient::actor_t;
     template<class Matrix, class SymmGroup> 
     static void migrate(const MPSTensor<Matrix, SymmGroup>& tc){
+        auto it = ambient::scope::begin();
         MPSTensor<Matrix, SymmGroup>& t = const_cast<MPSTensor<Matrix, SymmGroup>&>(tc);
-        for(int i = 0; i < t.data().n_blocks(); ++i) 
-        ambient::migrate(t.data()[i]);
+        for(int i = 0; i < t.data().n_blocks(); ++i){
+            select_proc_safe(it); it++;
+            ambient::migrate(t.data()[i]);
+        }
     }
     template<class Matrix, class SymmGroup> 
     static void migrate(const block_matrix<Matrix, SymmGroup>& tc){
+        auto it = ambient::scope::begin();
         block_matrix<Matrix, SymmGroup>& t = const_cast<block_matrix<Matrix, SymmGroup>&>(tc);
-        for(int i = 0; i < t.n_blocks(); ++i)
-        ambient::migrate(t[i]);
-    }
-    template<typename T, typename L>
-    static void migrate(T& t, L where){
-        select_proc(where); migrate(t);
+        for(int i = 0; i < t.n_blocks(); ++i){
+            select_proc_safe(it); it++;
+            ambient::migrate(t[i]);
+        }
     }
     template<class Matrix, class SymmGroup> 
     static void hint(const MPSTensor<Matrix, SymmGroup>& t){
-        for(int i = 0; i < t.data().n_blocks(); ++i) ambient::hint(t.data()[i]);
+        auto it = ambient::scope::begin();
+        for(int i = 0; i < t.data().n_blocks(); ++i){
+            select_proc_safe(it); it++;
+            ambient::hint(t.data()[i]);
+        }
     }
     template<class Matrix, class SymmGroup> 
     static void hint(const block_matrix<Matrix, SymmGroup>& t){
-        for(int i = 0; i < t.n_blocks(); ++i) ambient::hint(t[i]);
-    }
-    template<typename T, typename L>
-    static void hint(T& t, L where){
-        select_proc(where); hint(t);
+        auto it = ambient::scope::begin();
+        for(int i = 0; i < t.n_blocks(); ++i){
+            select_proc_safe(it); it++;
+            ambient::hint(t[i]);
+        }
     }
 #else
     struct actor_t { enum type { common }; };
     template<typename T>
-    static void migrate(T& t, actor_t::type where){ }
-    template<typename T>
     static void migrate(T& t){ }
-    template<typename T>
-    static void hint(T& t, actor_t::type where){ }
     template<typename T>
     static void hint(T& t){ }
 #endif

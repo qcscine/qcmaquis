@@ -126,9 +126,8 @@ namespace generate_mpo
             for (size_t p = 0; p < length-1; ++p)
                 prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(model.identity_matrix_tag(lat.get_prop<int>("type",p)), 1.);
             
-            using boost::bind;
             typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
-            std::for_each(terms.begin(), terms.end(), bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
+            std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
         }
         
         void add_term(term_descriptor term)
