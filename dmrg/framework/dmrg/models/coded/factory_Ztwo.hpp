@@ -4,7 +4,6 @@
  *
  * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
- *               2012      by Jan Gukelberger <gukelberger@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -25,12 +24,18 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/coded/models_none.hpp"
-#include "dmrg/models/coded/super_models_none.hpp"
+//#include "dmrg/models/coded/models_none.hpp"
+//#include "dmrg/models/coded/super_models_none.hpp"
+#include "dmrg/models/model.h"
+#include "dmrg/utils/BaseParameters.h"
 
 template<class Matrix>
-struct model_factory<Matrix, Ztwo> {
-    static boost::shared_ptr<model_impl<Matrix, SymmGroup> > parse
-    (Lattice const & lattice, BaseParameters & parms)
-    { }
+struct coded_model_factory<Matrix, Ztwo> {
+    static boost::shared_ptr<model_impl<Matrix, Ztwo> > parse
+    (Lattice const& lattice, BaseParameters & parms)
+    {
+        typedef boost::shared_ptr<model_impl<Matrix, Ztwo> > impl_ptr;
+        throw std::runtime_error("Don't know any model with Ztwo symmetry group!");
+        return impl_ptr();
+    }
 };

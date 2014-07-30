@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -34,7 +36,7 @@ namespace ambient {
         typedef std::vector<int> container;
         typedef container::const_iterator const_iterator;
         static const_iterator balance(int k, int max_k);
-        static const_iterator permute(int k, const std::vector<int>& s);
+        static const_iterator permute(int k, const std::vector<int>& s, size_t granularity = 1);
         static bool nested();
         static bool local();
         static scope& top();
@@ -43,42 +45,8 @@ namespace ambient {
         static const_iterator end();
        ~scope();
         scope(const_iterator first, const_iterator last);
+        scope(const_iterator first, size_t size);
         container provision;
-    };
-
-    class actor {
-    protected:
-        typedef models::ssm::model model_type;
-        typedef controllers::ssm::controller controller_type;
-        actor(){}
-    public:
-       ~actor();
-        actor(scope::const_iterator it);
-        actor(actor_t type);
-        bool remote() const;
-        bool local()  const;
-        bool common() const;
-        rank_t which()  const;
-        actor_t type;
-        bool dry;
-        int factor;
-        int round;
-        rank_t rank;
-        ambient::locality state;
-        controller_type* controller;
-    };
-
-    class base_actor : public actor {
-    public:
-        typedef typename actor::model_type model_type;
-        base_actor();
-        void set(rank_t r);
-        void set(scope::const_iterator it);
-        void schedule();
-        void intend_read(models::ssm::revision* o);
-        void intend_write(models::ssm::revision* o);
-        mutable std::vector<rank_t> stakeholders;
-        mutable std::vector<int> scores;
     };
 
 }

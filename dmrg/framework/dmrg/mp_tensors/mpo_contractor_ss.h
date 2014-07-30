@@ -37,11 +37,6 @@
 
 #include "dmrg/utils/BaseParameters.h"
 
-#ifndef WIN32
-#include <sys/time.h>
-#define HAVE_GETTIMEOFDAY
-#endif
-
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem
@@ -64,16 +59,12 @@ struct SiteProblem
     boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > eng;
 };
 
-#ifdef HAVE_GETTIMEOFDAY
 #define BEGIN_TIMING(name) \
-gettimeofday(&now, NULL);
+now = boost::chrono::high_resolution_clock::now();
 #define END_TIMING(name) \
-gettimeofday(&then, NULL); \
-maquis::cout << "Time elapsed in " << name << ": " << then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec) << std::endl;
-#else
-#define BEGIN_TIMING(name)
-#define END_TIMING(name)
-#endif
+then = boost::chrono::high_resolution_clock::now(); \
+    maquis::cout << "Time elapsed in " << name << ": " << boost::chrono::duration<double>(then-now).count() << std::endl;
+
 
 /// TODO: 1) implement two-site time evolution. (single-site is stuck in initial MPS structure)
 ///       2) implement zip-up compression. E. M. Stoudenmire and S. R. White, New Journal of Physics 12, 055026 (2010).
@@ -99,8 +90,7 @@ public:
     
     std::pair<double,double> sweep(int sweep)
     {
-        timeval sweep_now, sweep_then;
-        gettimeofday(&sweep_now, NULL);
+        boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
         
         std::size_t L = mps.length();
         

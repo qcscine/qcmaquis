@@ -619,21 +619,21 @@ public:
         
         measurements_type meas;
 
-        if (model["ENABLE_MEASURE[Density]"]) {
+        if (model["MEASURE[Density]"]) {
             meas.push_back( new measurements::average<Matrix, TrivialGroup>("Density", lattice,
                                                                             op_vec(1,ident_psi), op_vec(1,ident_psi),
                                                                             op_vec(1,count_psi)) );
             meas[meas.size()-1].set_super_meas(phys_psi);
         }
         
-        if (model["ENABLE_MEASURE[Local density]"]) {
+        if (model["MEASURE[Local density]"]) {
             meas.push_back( new measurements::local<Matrix, TrivialGroup>("Local density", lattice,
                                                                           op_vec(1,ident_psi), op_vec(1,ident_psi),
                                                                           op_vec(1,count_psi)) );
             meas[meas.size()-1].set_super_meas(phys_psi);
         }
         
-        if (model["ENABLE_MEASURE[Local density^2]"]) {
+        if (model["MEASURE[Local density^2]"]) {
             op_t count2_psi;
             gemm(count_psi, count_psi, count2_psi);
             meas.push_back( new measurements::local<Matrix, TrivialGroup>("Local density^2", lattice,
@@ -642,7 +642,7 @@ public:
             meas[meas.size()-1].set_super_meas(phys_psi);
         }
         
-        if (model["ENABLE_MEASURE[Onebody density matrix]"]) {
+        if (model["MEASURE[Onebody density matrix]"]) {
             bond_element ops;
             ops.push_back( std::make_pair(op_vec(1,create_psi), false) );
             ops.push_back( std::make_pair(op_vec(1,destroy_psi), false) );
@@ -652,7 +652,7 @@ public:
             meas[meas.size()-1].set_super_meas(phys_psi);
         }
         
-        if (model["ENABLE_MEASURE[Density correlation]"]) {
+        if (model["MEASURE[Density correlation]"]) {
             bond_element ops;
             ops.push_back( std::make_pair(op_vec(1,count_psi), false) );
             ops.push_back( std::make_pair(op_vec(1,count_psi), false) );

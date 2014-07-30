@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -43,9 +45,10 @@ namespace ambient {
             }
             return scope::begin() + k % capacity;
         }
-        inline scope::const_iterator scope::permute(int k, const std::vector<int>& s){
+        inline scope::const_iterator scope::permute(int k, const std::vector<int>& s, size_t granularity){
             if(k >= s.size()) throw std::runtime_error("Error: permutation overflow!");
-            return scope::begin() + s[k] % scope::size();
+            if(granularity > scope::size()) granularity = 1;
+            return scope::begin() + granularity * (s[k] % (scope::size() / granularity));
         }
         inline scope& scope::top(){
             return selector.get_scope();
@@ -64,104 +67,13 @@ namespace ambient {
         }
         inline scope::scope(const_iterator first, const_iterator last){
             for(const_iterator it = first; it != last; it++) provision.push_back(*it);
-            if(ambient::master()){
-                printf("Scope created: "); for(int i = 0; i < provision.size(); i++) printf("%d ", provision[i]);
-                printf("\n");
-            }
             selector.push_scope(this);
         }
-
-        inline actor::~actor(){
-            if(dry) return;
-            selector.revoke_controller(controller);
-            selector.pop_actor();
+        inline scope::scope(const_iterator first, size_t size){
+            const_iterator last = first + std::min(ambient::scope::size(),size);
+            for(const_iterator it = first; it != last; it++) provision.push_back(*it);
+            selector.push_scope(this);
         }
-        inline actor::actor(actor_t t) : type(t){
-            if(t == actor_t::common){
-                if(selector.has_nested_actor()){
-                    if(selector.get_actor().type == actor_t::common){ this->dry = true; return; }
-                    throw std::runtime_error("Error: common actor inside other actor type!");
-                }else{
-                    this->dry = false;
-                    this->rank = selector.get_controller().get_shared_rank();
-                    this->state = ambient::locality::common;
-                    controller = selector.provide_controller();
-                    selector.push_actor(this);
-                }
-            }else{
-                throw std::runtime_error("Error: unknown scope type!");
-            }
-        }
-        inline actor::actor(scope::const_iterator it) : type(actor_t::single) {
-            controller = selector.provide_controller(); // need to change dry stuff
-            if(ambient::selector.has_nested_actor()) dry = true;
-            else{ 
-                dry = false; 
-                selector.push_actor(this); 
-            }
-            this->round = controller->get_num_procs();
-            this->rank = (*it) % this->round;
-            this->state = (this->rank == controller->get_rank()) ? ambient::locality::local : ambient::locality::remote;
-        }
-        inline bool actor::remote() const {
-            return (state == ambient::locality::remote);
-        }
-        inline bool actor::local() const {
-            return (state == ambient::locality::local);
-        }
-        inline bool actor::common() const {
-            return (state == ambient::locality::common);
-        }
-        inline rank_t actor::which() const {
-            return this->rank;
-        }
-        
-
-        inline base_actor::base_actor(){
-            this->controller = selector.provide_controller();
-            this->controller->reserve();
-            this->round = controller->get_num_procs();
-            this->scores.resize(round, 0);
-            this->set(0);
-        }
-        inline void base_actor::set(scope::const_iterator it){
-            this->set(*it);
-        }
-        inline void base_actor::set(rank_t r){
-            this->rank = r;
-            this->state = (this->rank == controller->get_rank()) ? ambient::locality::local : ambient::locality::remote;
-        }
-        inline void base_actor::intend_read(models::ssm::revision* r){
-            if(r == NULL || model_type::common(r)) return;
-            this->scores[model_type::owner(r)] += r->spec.extent;
-        }
-        inline void base_actor::intend_write(models::ssm::revision* r){
-            if(r == NULL || model_type::common(r)) return;
-            this->stakeholders.push_back(model_type::owner(r));
-        }
-        inline void base_actor::schedule(){
-            int max = 0;
-            rank_t rank = this->rank;
-            if(stakeholders.empty()){
-                for(int i = 0; i < this->round; i++)
-                if(scores[i] >= max){
-                    max = scores[i];
-                    rank = i;
-                }
-            }else{
-                for(int i = 0; i < stakeholders.size(); i++){
-                    rank_t k = stakeholders[i];
-                    if(scores[k] >= max){
-                        max = scores[k];
-                        rank = k;
-                    }
-                }
-                stakeholders.clear();
-            }
-            std::fill(scores.begin(), scores.end(), 0);
-            this->set(rank);
-        }
-
 }
 
 #endif

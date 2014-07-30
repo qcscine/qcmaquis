@@ -29,7 +29,7 @@
 
 #include "libpscan/run_sim.hpp"
 
-#include "mps_optim/simulation.hpp"
+#include "mps_eigenstate_sims/simulation.hpp"
 #include "dmrg/sim/symmetry_factory.h"
 
 
@@ -49,8 +49,8 @@ void run_sim(const boost::filesystem::path& infile, const boost::filesystem::pat
     }
     
     /// Match parameters of ALPS DMRG
-    parms.set("chkpfile",   outfile.stem().string() + ".chkp");
-    parms.set("resultfile", outfile.stem().string() + ".h5");
+    parms.set("chkpfile",   (outfile.parent_path() / outfile.stem()).string() + ".chkp");
+    parms.set("resultfile", (outfile.parent_path() / outfile.stem()).string() + ".h5");
     parms.set("run_seconds", time_limit);
     if (parms.defined("SWEEPS"))           parms.set("nsweeps", int(parms["SWEEPS"]));
     if (parms.defined("TRUNCATION_ERROR")) parms.set("truncation_final", parms["TRUNCATION_ERROR"]);
@@ -77,5 +77,5 @@ void run_sim(const boost::filesystem::path& infile, const boost::filesystem::pat
     
     /// Start simulation
     simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(parms);
-    sim->run(parms, write_xml);
+    sim->run(parms, write_xml, optim_and_measure);
 }

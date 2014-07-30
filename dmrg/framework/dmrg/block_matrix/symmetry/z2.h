@@ -31,9 +31,7 @@
 
 #include <boost/functional/hash.hpp>
  
-#ifdef HAVE_ALPS_HDF5
 #include <alps/hdf5.hpp>
-#endif
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/array.hpp>
@@ -66,7 +64,6 @@ class Ztwo {
         static bool physical(charge a) { return true; }
 };
 
-#ifdef HAVE_ALPS_HDF5
 inline void save(alps::hdf5::archive & ar,
                  std::string const & p,
                  Ztwo::charge const & v,
@@ -88,7 +85,6 @@ inline void load(alps::hdf5::archive & ar,
     ar[p] >> t;
     v = (t == 0 ? Ztwo::Plus : Ztwo::Minus);
 }
-#endif
 
 template <class Archive>
 inline void serialize(Archive & ar, Ztwo::charge & c, const unsigned int version)

@@ -30,7 +30,7 @@ parms = {
             'init_state'                 : 'basis_state',
             'init_basis_state'           : '0,1,0',
             
-            'always_measure'             : 'Local density',
+            'ALWAYS_MEASURE'             : 'Local density',
             
             'symmetry'                   : 'none',
             'model_library'              : 'coded',
@@ -47,7 +47,7 @@ model = {
             't'                         : 1,
             'U'                         : 1,
             
-            'ENABLE_MEASURE[Local density]' : 1,
+            'MEASURE[Local density]' : 1,
         }
 
 class mytest_2nd(apptest.DMRGTestBase):
