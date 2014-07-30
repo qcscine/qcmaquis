@@ -39,10 +39,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_C2D, T, test_types) //complex to double only
     BOOST_CHECK(pAd==pBd);
 }
 
-
-/*
 BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_P2S_DIAG, T, test_types)
 {
+    typedef alps::numeric::diagonal_matrix<typename T::value_type> sDiagMatrix;
+    typedef ambient::numeric::tiles<ambient::numeric::diagonal_matrix<typename T::value_type> > pDiagMatrix;
+
     pDiagMatrix pA(T::valuex,T::valuex);
     sDiagMatrix sA((std::size_t)T::valuex);
 
@@ -53,11 +54,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_P2S_DIAG, T, test_types)
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_S2P_DIAG, T, test_types)
 {
+    typedef alps::numeric::diagonal_matrix<typename T::value_type> sDiagMatrix;
+    typedef ambient::numeric::tiles<ambient::numeric::diagonal_matrix<typename T::value_type> > pDiagMatrix;
+
+    pDiagMatrix pH(T::valuex,T::valuex);
     pDiagMatrix pA(T::valuex,T::valuex);
     sDiagMatrix sA((std::size_t)T::valuex);
    
-    sA.generate(Rd); // Rd is rand generator static variable inside utilities
+    generate(pH);
+    sA = cast<sDiagMatrix>(pH);
+
     pA = cast<pDiagMatrix>(sA);
     BOOST_CHECK(sA==pA);
 }
-*/

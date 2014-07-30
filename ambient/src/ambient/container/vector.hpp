@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -34,8 +36,8 @@ namespace ambient {
         template<typename T>
         void add(vector<T>& a, const vector<T>& b){
             size_t size = get_length(a)-1;
-            T* a_ = versioned(a).data;
-            T* b_ = versioned(b).data;
+            T* a_ = &a[0];
+            const T* b_ = &b[0];
             for(size_t i = 0; i < size; ++i) a_[i] += b_[i];
         }
     }
@@ -65,13 +67,19 @@ namespace ambient {
             add<T>(*this, rhs);
             return *this;
         }
+        value_type& operator[](size_t i){
+            return ambient::delegated(*this).data[ i ];
+        }
+        const value_type& operator[](size_t i) const {
+            return ambient::delegated(*this).data[ i ];
+        }
     };
 
 
     template<class InputIterator, class Function>
     void for_each (InputIterator first, InputIterator last, Function fn){
         ambient::async([fn](vector<int>& a){ 
-            int* a_ = versioned(a).data;
+            int* a_ = &a[0];
             std::for_each(a_, a_+get_length(a)-1, fn);
         }, first.base);
     }
@@ -83,9 +91,9 @@ namespace ambient {
                     BinaryOperation binary_op)
     {
         ambient::async([binary_op](const vector<int>& first1_, const vector<int>& first2_, unbound< vector<int> >& result_){
-            int* ifirst1 = versioned(first1_).data;
-            int* ifirst2 = versioned(first2_).data;
-            int* iresult = versioned(result_).data;
+            const int* ifirst1 = &first1_[0];
+            const int* ifirst2 = &first2_[0];
+            int* iresult = &result_[0];
             std::transform(ifirst1, ifirst1+get_length(first1_)-1, ifirst2, iresult, binary_op);
         }, first1.base, first2.base, result.base);
     }
@@ -95,8 +103,8 @@ namespace ambient {
                     OutputIterator result, UnaryOperation op)
     {
         ambient::async([op](const vector<int>& first1_, unbound< vector<int> >& result_){
-            int* ifirst1 = versioned(first1_).data;
-            int* iresult = versioned(result_).data;
+            const int* ifirst1 = &first1_[0];
+            int* iresult = &result_[0];
             std::transform(ifirst1, ifirst1+get_length(first1_)-1, iresult, op);
         }, first1.base, result.base);
     }

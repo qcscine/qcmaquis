@@ -209,33 +209,33 @@ public:
         
         measurements_type meas;
 
-        if (parms["ENABLE_MEASURE[Density]"]) {
+        if (parms["MEASURE[Density]"]) {
             meas.push_back( new measurements::average<Matrix, TwoU1>("Density up", lat,
                                                                 op_vec(1,this->identity_matrix(0)),
                                                                 op_vec(1,this->filling_matrix(0)),
                                                                 op_vec(1,tag_handler->get_op(count_up))) );
         }
-        if (parms["ENABLE_MEASURE[Density]"]) {
+        if (parms["MEASURE[Density]"]) {
             meas.push_back( new measurements::average<Matrix, TwoU1>("Density down", lat,
                                                                 op_vec(1,this->identity_matrix(0)),
                                                                 op_vec(1,this->filling_matrix(0)),
                                                                 op_vec(1,tag_handler->get_op(count_down))) );
         }
         
-        if (parms["ENABLE_MEASURE[Local density]"]) {
+        if (parms["MEASURE[Local density]"]) {
             meas.push_back( new measurements::local<Matrix, TwoU1>("Local density up", lat,
                                                                 op_vec(1,this->identity_matrix(0)),
                                                                 op_vec(1,this->filling_matrix(0)),
                                                                 op_vec(1,tag_handler->get_op(count_up))) );
         }
-        if (parms["ENABLE_MEASURE[Local density]"]) {
+        if (parms["MEASURE[Local density]"]) {
             meas.push_back( new measurements::local<Matrix, TwoU1>("Local density down", lat,
                                                                 op_vec(1,this->identity_matrix(0)),
                                                                 op_vec(1,this->filling_matrix(0)),
                                                                 op_vec(1,tag_handler->get_op(count_down))) );
         }
         
-        if (parms["ENABLE_MEASURE[Onebody density matrix]"]) {
+        if (parms["MEASURE[Onebody density matrix]"]) {
             bond_element ops;
             ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(create_up)), true) );
             ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(destroy_up)), true) );
@@ -244,7 +244,7 @@ public:
                                                                        op_vec(1,this->filling_matrix(0)),
                                                                        ops, false, false) );
         }
-        if (parms["ENABLE_MEASURE[Onebody density matrix]"]) {
+        if (parms["MEASURE[Onebody density matrix]"]) {
             bond_element ops;
             ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(create_down)), true) );
             ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(destroy_down)), true) );

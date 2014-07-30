@@ -195,7 +195,7 @@ std::string block_matrix<Matrix, SymmGroup>::description() const
 }
 
 template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::shift_basis(block_matrix<Matrix, SymmGroup>::charge diff)
+void block_matrix<Matrix, SymmGroup>::shift_basis(typename block_matrix<Matrix, SymmGroup>::charge diff)
 {
     rows_.shift(diff);
     cols_.shift(diff);
@@ -338,7 +338,7 @@ template<class Matrix, class SymmGroup>
 template<class Generator>
 void block_matrix<Matrix, SymmGroup>::generate(Generator g)
 {
-    for(std::size_t k = 0; k < n_blocks(); ++k) detail::generate_impl(data_[k], g);
+    for(std::size_t k = 0; k < n_blocks(); ++k) ::detail::generate_impl(data_[k], g);
 }
 
 template<class Matrix, class SymmGroup>

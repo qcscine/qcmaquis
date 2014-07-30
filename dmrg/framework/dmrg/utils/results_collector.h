@@ -103,7 +103,7 @@ public:
     template <class Archive>
     void save(Archive & ar) const
     {
-        for (std::map<std::string, boost::shared_ptr<detail::collector_impl_base> >::const_iterator
+        for (std::map<std::string, boost::shared_ptr< ::detail::collector_impl_base> >::const_iterator
              it = collection.begin(); it != collection.end(); ++it)
         {
             ar[it->first] << *it->second;
@@ -111,7 +111,7 @@ public:
     }
     
 private:
-    std::map<std::string, boost::shared_ptr<detail::collector_impl_base> > collection;
+    std::map<std::string, boost::shared_ptr< ::detail::collector_impl_base> > collection;
 };
 
 #endif

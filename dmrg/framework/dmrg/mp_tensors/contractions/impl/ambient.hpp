@@ -63,14 +63,17 @@ namespace contraction {
             for(int b2 = 0; b2 < size2; b2++) if(!e2[b2]) GRID(0,b2) = new block_matrix<Matrix, SymmGroup>();
         }
         void hint_left(const std::vector<block_matrix<Matrix, SymmGroup> >& t){
-            for(int b1 : mpo.exceptions_l) for(int b2 = 0; b2 < size2; b2++) if(mpo.has(b1,b2)) 
-                storage::hint(t[b1], ambient::scope::permute(b2,mpo.placement_r));
+            for(int b1 : mpo.exceptions_l) for(int b2 = 0; b2 < size2; b2++) if(mpo.has(b1,b2)){
+                select_group(ambient::scope::permute(b2,mpo.placement_r), 1);
+                storage::hint(t[b1]);
+            }
         }
         void hint_right(Boundary<Matrix, SymmGroup> const & t){
             for(int b1 = 0; b1 < size1_; b1++)
             for(int b2 = 0; b2 < size2; b2++){
                 if(!mpo.has(b1,b2)) continue;
-                storage::hint(t[b2], where(b1,b2));
+                select_group(where(b1,b2), 1);
+                storage::hint(t[b2]);
             }
         }
         ambient::scope::const_iterator where(size_t b1, size_t b2){
@@ -127,7 +130,10 @@ namespace contraction {
                                                                                  src.right_basis()[k].first);
                                                      }).first;
             e2[b2] = false;
-            if(rvector[0].second != r) storage::migrate(*rvector[0].first, r);
+            if(rvector[0].second != r){
+                select_group(r, 1);
+                storage::migrate(*rvector[0].first);
+            }
             for(int i = 1; i < rvector.size(); i++) delete rvector[i].first;
             return *GRID(0,b2);
         }
