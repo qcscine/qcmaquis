@@ -69,8 +69,10 @@ template <class SymmGroup>
 class PGCharge
 {
 public:
-    void operator()(typename SymmGroup::charge & rhs, int irr)
-    { }
+    typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, int irr)
+    { 
+        return rhs;
+    }
 };
 
 template < >
@@ -78,9 +80,10 @@ class  PGCharge<TwoU1PG>
 {
 public:
     typedef TwoU1PG::subcharge subcharge;
-    void operator()(TwoU1PG::charge & rhs, subcharge irr)
+    TwoU1PG::charge operator()(TwoU1PG::charge rhs, subcharge irr)
     {
         rhs[2] = irr;
+        return rhs;
     }
 };
 

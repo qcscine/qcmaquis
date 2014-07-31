@@ -86,12 +86,12 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
                 case 3:
                     site_charge[0] = 1;
                     site_charge[1] = 0;
-                    PGCharge<SymmGroup>()(site_charge, irreps[i]);
+                    site_charge = PGCharge<SymmGroup>()(site_charge, irreps[i]);
                     break;
                 case 2:
                     site_charge[0] = 0;
                     site_charge[1] = 1;
-                    PGCharge<SymmGroup>()(site_charge, irreps[i]);
+                    site_charge = PGCharge<SymmGroup>()(site_charge, irreps[i]);
                     break;
                 case 1:
                     site_charge[0] = 0;
