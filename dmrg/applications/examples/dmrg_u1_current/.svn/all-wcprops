@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/4204/dmrg/trunk/src/dmrg/applications/examples/dmrg_u1_current
+END
+dmrg_u1_current.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/hp2c/hp2c/!svn/ver/4020/dmrg/trunk/src/dmrg/applications/examples/dmrg_u1_current/dmrg_u1_current.cpp
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/hp2c/hp2c/!svn/ver/4204/dmrg/trunk/src/dmrg/applications/examples/dmrg_u1_current/CMakeLists.txt
+END
+dmrg_u1_proposal.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/applications/examples/dmrg_u1_current/dmrg_u1_proposal.cpp
+END

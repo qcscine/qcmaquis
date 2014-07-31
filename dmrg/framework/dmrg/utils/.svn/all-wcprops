@@ -1,0 +1,137 @@
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/hp2c/hp2c/!svn/ver/4398/dmrg/trunk/src/dmrg/framework/dmrg/utils
+END
+utils.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/utils/utils.cpp
+END
+BaseParameters.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/utils/BaseParameters.h
+END
+DmrgOptions.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/hp2c/hp2c/!svn/ver/4301/dmrg/trunk/src/dmrg/framework/dmrg/utils/DmrgOptions.cpp
+END
+utils.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/4381/dmrg/trunk/src/dmrg/framework/dmrg/utils/utils.hpp
+END
+proc_status.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/hp2c/hp2c/!svn/ver/4381/dmrg/trunk/src/dmrg/framework/dmrg/utils/proc_status.cpp
+END
+parallel_for.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/4398/dmrg/trunk/src/dmrg/framework/dmrg/utils/parallel_for.hpp
+END
+tracking.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/utils/tracking.h
+END
+storage.h
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/4392/dmrg/trunk/src/dmrg/framework/dmrg/utils/storage.h
+END
+time_stopper.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/4367/dmrg/trunk/src/dmrg/framework/dmrg/utils/time_stopper.cpp
+END
+DmrgOptions.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/hp2c/hp2c/!svn/ver/4282/dmrg/trunk/src/dmrg/framework/dmrg/utils/DmrgOptions.h
+END
+proc_statm.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/hp2c/hp2c/!svn/ver/4365/dmrg/trunk/src/dmrg/framework/dmrg/utils/proc_statm.cpp
+END
+proc_status.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/hp2c/hp2c/!svn/ver/4381/dmrg/trunk/src/dmrg/framework/dmrg/utils/proc_status.h
+END
+results_collector.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/utils/results_collector.h
+END
+placement.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/hp2c/hp2c/!svn/ver/4254/dmrg/trunk/src/dmrg/framework/dmrg/utils/placement.h
+END
+time_limit_exception.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/hp2c/hp2c/!svn/ver/4011/dmrg/trunk/src/dmrg/framework/dmrg/utils/time_limit_exception.h
+END
+time_stopper.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/hp2c/hp2c/!svn/ver/4011/dmrg/trunk/src/dmrg/framework/dmrg/utils/time_stopper.h
+END
+proc_statm.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/hp2c/hp2c/!svn/ver/4364/dmrg/trunk/src/dmrg/framework/dmrg/utils/proc_statm.h
+END
+DmrgParameters.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/utils/DmrgParameters.h
+END
+logger.h
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/utils/logger.h
+END
+random.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/utils/random.hpp
+END
+archive.h
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/4341/dmrg/trunk/src/dmrg/framework/dmrg/utils/archive.h
+END
+parameter_proxy.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/utils/parameter_proxy.h
+END

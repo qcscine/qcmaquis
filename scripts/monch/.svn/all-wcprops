@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/hp2c/hp2c/!svn/ver/4239/dmrg/trunk/src/scripts/monch
+END
+intel_ambient_mvapich2
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/hp2c/hp2c/!svn/ver/4238/dmrg/trunk/src/scripts/monch/intel_ambient_mvapich2
+END
+intel_omp
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/hp2c/hp2c/!svn/ver/4092/dmrg/trunk/src/scripts/monch/intel_omp
+END
+gcc_omp
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/hp2c/hp2c/!svn/ver/4206/dmrg/trunk/src/scripts/monch/gcc_omp
+END
+intel_ambient_impi
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/hp2c/hp2c/!svn/ver/4239/dmrg/trunk/src/scripts/monch/intel_ambient_impi
+END
+itac.sh
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/hp2c/hp2c/!svn/ver/3938/dmrg/trunk/src/scripts/monch/itac.sh
+END
+gcc_ambient
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/hp2c/hp2c/!svn/ver/4231/dmrg/trunk/src/scripts/monch/gcc_ambient
+END

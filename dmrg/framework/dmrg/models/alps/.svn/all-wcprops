@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/models/alps
+END
+model.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/models/alps/model.hpp
+END
+symm_handler.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/hp2c/hp2c/!svn/ver/4236/dmrg/trunk/src/dmrg/framework/dmrg/models/alps/symm_handler.hpp
+END
+lattice.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/models/alps/lattice.hpp
+END

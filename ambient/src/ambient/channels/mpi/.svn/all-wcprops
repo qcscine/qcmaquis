@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/channels/mpi
+END
+collective.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/channels/mpi/collective.h
+END
+collective.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/channels/mpi/collective.hpp
+END
+group.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/channels/mpi/group.h
+END
+group.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/channels/mpi/group.hpp
+END
+multirank.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/channels/mpi/multirank.h
+END
+multirank.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/channels/mpi/multirank.hpp
+END
+channel.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/channels/mpi/channel.h
+END
+channel.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/channels/mpi/channel.hpp
+END
+request.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/channels/mpi/request.h
+END
+request.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/channels/mpi/request.hpp
+END

@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/hp2c/hp2c/!svn/ver/4112/dmrg/trunk/src/ambient/regression/performance
+END
+qr.ambient.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/3983/dmrg/trunk/src/ambient/regression/performance/qr.ambient.cpp
+END
+gemm.ambient.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hp2c/hp2c/!svn/ver/3983/dmrg/trunk/src/ambient/regression/performance/gemm.ambient.cpp
+END
+gemm.tiled.ambient.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/hp2c/hp2c/!svn/ver/3983/dmrg/trunk/src/ambient/regression/performance/gemm.tiled.ambient.cpp
+END
+gemm.blas.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hp2c/hp2c/!svn/ver/3983/dmrg/trunk/src/ambient/regression/performance/gemm.blas.cpp
+END
+gemm.pblas.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/3983/dmrg/trunk/src/ambient/regression/performance/gemm.pblas.cpp
+END
+lq.lapack.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hp2c/hp2c/!svn/ver/3983/dmrg/trunk/src/ambient/regression/performance/lq.lapack.cpp
+END
+params.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/ambient/regression/performance/params.hpp
+END
+lq.ambient.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/3983/dmrg/trunk/src/ambient/regression/performance/lq.ambient.cpp
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/4112/dmrg/trunk/src/ambient/regression/performance/CMakeLists.txt
+END
+qr.lapack.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hp2c/hp2c/!svn/ver/3983/dmrg/trunk/src/ambient/regression/performance/qr.lapack.cpp
+END

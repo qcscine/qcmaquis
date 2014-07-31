@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/deprecated/mpos
+END
+alps_adjacency.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/framework/dmrg/deprecated/mpos/alps_adjacency.cpp
+END
+alps_adjacency.h
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/framework/dmrg/deprecated/mpos/alps_adjacency.h
+END
+adjacency.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/deprecated/mpos/adjacency.h
+END
+generate_mpo.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/deprecated/mpos/generate_mpo.h
+END
+hamiltonians.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/deprecated/mpos/hamiltonians.h
+END
+measurements.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/deprecated/mpos/measurements.h
+END

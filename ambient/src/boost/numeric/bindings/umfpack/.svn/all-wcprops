@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/umfpack
+END
+umfpack_inc.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/umfpack/umfpack_inc.hpp
+END
+umfpack_overloads.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/umfpack/umfpack_overloads.hpp
+END
+umfpack.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/umfpack/umfpack.hpp
+END

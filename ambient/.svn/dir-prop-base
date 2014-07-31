@@ -1,0 +1,13 @@
+K 13
+svn:mergeinfo
+V 366
+/branches/reordering_trunk/ambient:1363-1375
+/branches/stable/ambient:2156-2239
+/branches/tim/src/ambient:2684-2749
+/dmrg/branches/dolfim/develop/ambient:3853-3960
+/dmrg/branches/mpo_tags/ambient:3444-3849
+/dmrg/branches/mps_storage/ambient:3685
+/dmrg/branches/new_sim/ambient:3473-3486
+/dmrg/branches/production/ambient:4268-4281
+/experimental/src/ambient:3175-3192
+END

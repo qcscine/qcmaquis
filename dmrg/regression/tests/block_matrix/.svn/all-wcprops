@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/hp2c/hp2c/!svn/ver/3973/dmrg/trunk/src/dmrg/regression/tests/block_matrix
+END
+block_matrix.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/regression/tests/block_matrix/block_matrix.cpp
+END
+selector.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/regression/tests/block_matrix/selector.h
+END
+reshape.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/hp2c/hp2c/!svn/ver/3973/dmrg/trunk/src/dmrg/regression/tests/block_matrix/reshape.cpp
+END
+serialize.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/regression/tests/block_matrix/serialize.cpp
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/regression/tests/block_matrix/CMakeLists.txt
+END

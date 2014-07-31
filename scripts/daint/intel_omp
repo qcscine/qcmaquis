@@ -1,0 +1,43 @@
+#!/bin/bash -l
+STATE="void"
+STATE_AMBIENT="void"
+STATE_DMRG="build"
+# end of target states #
+PREFIX=omp
+COMPILER=intel
+COMPILER_VERSION=14.0.2
+MYAPPS=$SCRATCH/apps/intel_14_0_2
+
+MAQUIS_INSTALL=$MYAPPS/maquis/$CONFIG_NAME
+echo $MAQUIS_INSTALL
+
+
+if [[ -z "$MAQUIS_ONCE" ]]
+then
+    export MAQUIS_ONCE=true
+    module switch PrgEnv-cray PrgEnv-intel
+    module load intel/14.0.2.144
+    module load cmake
+
+    export ALPS_ROOT=$MYAPPS/alps
+    export CRAYPE_LINK_TYPE=dynamic
+    export PATH=$ALPS_ROOT/bin:$MYAPPS/hdf5/bin:$MYAPPS/bin:$PATH
+    export LD_LIBRARY_PATH=${ALPS_ROOT}/lib:$MYAPPS/hdf5/lib:${LD_LIBRARY_PATH}
+    export CXX=CC.dynamic # CC -dynamic -lz -gxx-name=/apps/pilatus/gcc/4.8.2/bin/g++ $*
+    export CC=cc.dynamic  # cc -dynamic -lz -gcc-name=/apps/pilatus/gcc/4.8.2/bin/gcc $*
+    export MPICH_MAX_THREAD_SAFETY=funneled
+    
+    export PATH=${MAQUIS_INSTALL}/bin:${PATH}
+
+    alias sync_maquis_deps='rsync -aut /project/s512/install.bkp/daint/apps/intel_14_0_2/ $MYAPPS'
+fi
+
+COMMON_CMAKE_INSTALL_PREFIX=${MAQUIS_INSTALL}
+COMMON_MPI_CXX_FOUND=TRUE
+COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
+DMRG_ENABLE_OMP=ON
+DMRG_BUILD_MPI_APPS=ON
+DMRG_USE_AMBIENT=OFF
+
+source $ROOT_DIR/scripts/common/common.sh 
+execute $*

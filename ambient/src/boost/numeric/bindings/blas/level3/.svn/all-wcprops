@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/blas/level3
+END
+herk.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/blas/level3/herk.hpp
+END
+syr2k.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/blas/level3/syr2k.hpp
+END
+her2k.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/blas/level3/her2k.hpp
+END
+trmm.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/blas/level3/trmm.hpp
+END
+gemm.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/blas/level3/gemm.hpp
+END
+symm.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/blas/level3/symm.hpp
+END
+trsm.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/blas/level3/trsm.hpp
+END
+hemm.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/blas/level3/hemm.hpp
+END
+syrk.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/blas/level3/syrk.hpp
+END

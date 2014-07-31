@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/hp2c/hp2c/!svn/ver/4398/dmrg/trunk/src/dmrg/framework/dmrg/optimize
+END
+ietl_jacobi_davidson.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/hp2c/hp2c/!svn/ver/4020/dmrg/trunk/src/dmrg/framework/dmrg/optimize/ietl_jacobi_davidson.h
+END
+anasazi_solver.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/4020/dmrg/trunk/src/dmrg/framework/dmrg/optimize/anasazi_solver.h
+END
+ietl_lanczos_solver.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/hp2c/hp2c/!svn/ver/4020/dmrg/trunk/src/dmrg/framework/dmrg/optimize/ietl_lanczos_solver.h
+END
+optimize.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/optimize/optimize.h
+END
+ss_optimize.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/optimize/ss_optimize.hpp
+END
+ts_optimize.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hp2c/hp2c/!svn/ver/4398/dmrg/trunk/src/dmrg/framework/dmrg/optimize/ts_optimize.hpp
+END

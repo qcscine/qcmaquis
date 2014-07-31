@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/hp2c/hp2c/!svn/ver/4394/dmrg/trunk/src/dmrg/applications/pcorr
+END
+main_nn.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/4374/dmrg/trunk/src/dmrg/applications/pcorr/main_nn.cpp
+END
+main_serial.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/hp2c/hp2c/!svn/ver/4302/dmrg/trunk/src/dmrg/applications/pcorr/main_serial.cpp
+END
+main.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/hp2c/hp2c/!svn/ver/4282/dmrg/trunk/src/dmrg/applications/pcorr/main.cpp
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/hp2c/hp2c/!svn/ver/4394/dmrg/trunk/src/dmrg/applications/pcorr/CMakeLists.txt
+END

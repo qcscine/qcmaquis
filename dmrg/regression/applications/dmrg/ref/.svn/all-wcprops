@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/hp2c/hp2c/!svn/ver/3961/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref
+END
+test_fermiladder.diag.xml
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/test_fermiladder.diag.xml
+END
+test_fermiladder_u1_ts.h5
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/hp2c/hp2c/!svn/ver/3850/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/test_fermiladder_u1_ts.h5
+END
+ALPS.xsl
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/ALPS.xsl
+END
+test_coded_bh_ts.h5
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/hp2c/hp2c/!svn/ver/3850/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/test_coded_bh_ts.h5
+END
+test_bh_ss.h5
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/hp2c/hp2c/!svn/ver/3457/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/test_bh_ss.h5
+END
+test_ff.diag.h5
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/test_ff.diag.h5
+END
+test_bh_ts.h5
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/hp2c/hp2c/!svn/ver/3457/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/test_bh_ts.h5
+END
+test_ff_ss.h5
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/hp2c/hp2c/!svn/ver/3850/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/test_ff_ss.h5
+END
+test_fermiladder.diag.h5
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/test_fermiladder.diag.h5
+END
+test_ff_ts.h5
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/hp2c/hp2c/!svn/ver/3457/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/test_ff_ts.h5
+END
+test_coded_fermiladder_ts.h5
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/hp2c/hp2c/!svn/ver/3961/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/test_coded_fermiladder_ts.h5
+END
+test_ff.diag.xml
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/test_ff.diag.xml
+END
+test_fermiladder_ss.h5
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/hp2c/hp2c/!svn/ver/3850/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/test_fermiladder_ss.h5
+END
+test_fermiladder_ts.h5
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/hp2c/hp2c/!svn/ver/3457/dmrg/trunk/src/dmrg/regression/applications/dmrg/ref/test_fermiladder_ts.h5
+END

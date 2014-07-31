@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/models/measurements
+END
+average.h
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/models/measurements/average.h
+END
+custom.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/hp2c/hp2c/!svn/ver/4003/dmrg/trunk/src/dmrg/framework/dmrg/models/measurements/custom.h
+END
+local.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/models/measurements/local.h
+END
+nrankrdm.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/hp2c/hp2c/!svn/ver/4253/dmrg/trunk/src/dmrg/framework/dmrg/models/measurements/nrankrdm.h
+END
+local_at.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/models/measurements/local_at.h
+END
+entanglement.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/hp2c/hp2c/!svn/ver/4075/dmrg/trunk/src/dmrg/framework/dmrg/models/measurements/entanglement.h
+END
+correlations.h
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/hp2c/hp2c/!svn/ver/4235/dmrg/trunk/src/dmrg/framework/dmrg/models/measurements/correlations.h
+END
+overlap.h
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/hp2c/hp2c/!svn/ver/4115/dmrg/trunk/src/dmrg/framework/dmrg/models/measurements/overlap.h
+END

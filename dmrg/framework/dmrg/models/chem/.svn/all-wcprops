@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/hp2c/hp2c/!svn/ver/4408/dmrg/trunk/src/dmrg/framework/dmrg/models/chem
+END
+chem_detail.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/4408/dmrg/trunk/src/dmrg/framework/dmrg/models/chem/chem_detail.h
+END
+mps_init_hf.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hp2c/hp2c/!svn/ver/4325/dmrg/trunk/src/dmrg/framework/dmrg/models/chem/mps_init_hf.hpp
+END
+pg_symm_converter.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/models/chem/pg_symm_converter.h
+END
+model_qc.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/4338/dmrg/trunk/src/dmrg/framework/dmrg/models/chem/model_qc.h
+END
+model_qc.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/models/chem/model_qc.hpp
+END
+pg_util.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/hp2c/hp2c/!svn/ver/4408/dmrg/trunk/src/dmrg/framework/dmrg/models/chem/pg_util.h
+END
+term_maker.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/models/chem/term_maker.h
+END

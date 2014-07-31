@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/4412/dmrg/trunk/src/ambient/src/ambient/numeric/kernels
+END
+math.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/numeric/kernels/math.hpp
+END
+experimental.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/hp2c/hp2c/!svn/ver/4412/dmrg/trunk/src/ambient/src/ambient/numeric/kernels/experimental.hpp
+END
+utils.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/4409/dmrg/trunk/src/ambient/src/ambient/numeric/kernels/utils.hpp
+END
+kernels.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hp2c/hp2c/!svn/ver/4410/dmrg/trunk/src/ambient/src/ambient/numeric/kernels/kernels.hpp
+END

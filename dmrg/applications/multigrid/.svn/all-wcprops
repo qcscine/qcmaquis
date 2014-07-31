@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/applications/multigrid
+END
+mg_dmrg.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/hp2c/hp2c/!svn/ver/3973/dmrg/trunk/src/dmrg/applications/multigrid/mg_dmrg.h
+END
+mg_meas_sim.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/applications/multigrid/mg_meas_sim.h
+END
+mg_meas.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/hp2c/hp2c/!svn/ver/3973/dmrg/trunk/src/dmrg/applications/multigrid/mg_meas.cpp
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/4204/dmrg/trunk/src/dmrg/applications/multigrid/CMakeLists.txt
+END
+mg_dmrg.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/hp2c/hp2c/!svn/ver/3973/dmrg/trunk/src/dmrg/applications/multigrid/mg_dmrg.cpp
+END
+mg_meas.h
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/hp2c/hp2c/!svn/ver/3973/dmrg/trunk/src/dmrg/applications/multigrid/mg_meas.h
+END
+multigrid_sim.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/applications/multigrid/multigrid_sim.h
+END

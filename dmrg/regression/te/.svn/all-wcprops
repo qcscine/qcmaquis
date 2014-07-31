@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/hp2c/hp2c/!svn/ver/3452/dmrg/trunk/src/dmrg/regression/te
+END
+make_mpo_exp.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/3452/dmrg/trunk/src/dmrg/regression/te/make_mpo_exp.cpp
+END
+block_to_mpo.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/3452/dmrg/trunk/src/dmrg/regression/te/block_to_mpo.cpp
+END
+model_bh
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/regression/te/model_bh
+END
+parms_bh
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/regression/te/parms_bh
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/regression/te/CMakeLists.txt
+END

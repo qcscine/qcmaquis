@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html><head><title></title>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<link rel="stylesheet" type="text/css" href="search.css"/>
+<script type="text/javascript" src="search.js"></script>
+</head>
+<body class="SRPage">
+<div id="SRIndex">
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRResult" id="SR_back">
+ <div class="SREntry">
+  <a id="Item0" onkeydown="return searchResults.Nav(event,0)" onkeypress="return searchResults.Nav(event,0)" onkeyup="return searchResults.Nav(event,0)" class="SRSymbol" href="../classambient_1_1models_1_1ssm_1_1history.html#a3c775d192f48203fb8dc0ca76c740db4" target="_parent">back</a>
+  <span class="SRScope">ambient::models::ssm::history</span>
+ </div>
+</div>
+<div class="SRResult" id="SR_backbone">
+ <div class="SREntry">
+  <a id="Item1" onkeydown="return searchResults.Nav(event,1)" onkeypress="return searchResults.Nav(event,1)" onkeyup="return searchResults.Nav(event,1)" class="SRSymbol" href="../classambient_1_1backbone.html#a8db18da9ef7e0f28f3b39726e97c64dc" target="_parent">backbone</a>
+  <span class="SRScope">ambient::backbone</span>
+ </div>
+</div>
+<div class="SRResult" id="SR_balance">
+ <div class="SREntry">
+  <a id="Item2" onkeydown="return searchResults.Nav(event,2)" onkeypress="return searchResults.Nav(event,2)" onkeyup="return searchResults.Nav(event,2)" class="SRSymbol" href="../classambient_1_1scope.html#a7e8bf36378e5bda72c2dc3066f16be1b" target="_parent">balance</a>
+  <span class="SRScope">ambient::scope</span>
+ </div>
+</div>
+<div class="SRResult" id="SR_band">
+ <div class="SREntry">
+  <a id="Item3" onkeydown="return searchResults.Nav(event,3)" onkeypress="return searchResults.Nav(event,3)" onkeyup="return searchResults.Nav(event,3)" class="SRSymbol" href="../namespaceambient_1_1numeric.html#a2eb931f8a669f7c3a3f887ce0ca23a16" target="_parent">band</a>
+  <span class="SRScope">ambient::numeric</span>
+ </div>
+</div>
+<div class="SRResult" id="SR_barrier">
+ <div class="SREntry">
+  <a id="Item4" onkeydown="return searchResults.Nav(event,4)" onkeypress="return searchResults.Nav(event,4)" onkeyup="return searchResults.Nav(event,4)" class="SRSymbol" href="javascript:searchResults.Toggle('SR_barrier')">barrier</a>
+  <div class="SRChildren">
+    <a id="Item4_c0" onkeydown="return searchResults.NavChild(event,4,0)" onkeypress="return searchResults.NavChild(event,4,0)" onkeyup="return searchResults.NavChild(event,4,0)" class="SRScope" href="../classambient_1_1channels_1_1mpi_1_1channel.html#aa0a60912c186ce2c2d6b49a8f1c5f678" target="_parent">ambient::channels::mpi::channel::barrier()</a>
+    <a id="Item4_c1" onkeydown="return searchResults.NavChild(event,4,1)" onkeypress="return searchResults.NavChild(event,4,1)" onkeyup="return searchResults.NavChild(event,4,1)" class="SRScope" href="../classambient_1_1channels_1_1nop_1_1channel.html#a2287c3cf583ccea215a44de59262edcb" target="_parent">ambient::channels::nop::channel::barrier()</a>
+  </div>
+ </div>
+</div>
+<div class="SRResult" id="SR_base_5factor">
+ <div class="SREntry">
+  <a id="Item5" onkeydown="return searchResults.Nav(event,5)" onkeypress="return searchResults.Nav(event,5)" onkeyup="return searchResults.Nav(event,5)" class="SRSymbol" href="../classambient_1_1base__actor.html#aff65e39b079a8ce19404ce6b35db606c" target="_parent">base_actor</a>
+  <span class="SRScope">ambient::base_actor</span>
+ </div>
+</div>
+<div class="SRResult" id="SR_bcast">
+ <div class="SREntry">
+  <a id="Item6" onkeydown="return searchResults.Nav(event,6)" onkeypress="return searchResults.Nav(event,6)" onkeyup="return searchResults.Nav(event,6)" class="SRSymbol" href="javascript:searchResults.Toggle('SR_bcast')">bcast</a>
+  <div class="SRChildren">
+    <a id="Item6_c0" onkeydown="return searchResults.NavChild(event,6,0)" onkeypress="return searchResults.NavChild(event,6,0)" onkeyup="return searchResults.NavChild(event,6,0)" class="SRScope" href="../classambient_1_1channels_1_1mpi_1_1channel.html#a33e4ad8c30f50f64daa0ca42d0d0055d" target="_parent">ambient::channels::mpi::channel::bcast(scalar_type &amp;v, rank_t root)</a>
+    <a id="Item6_c1" onkeydown="return searchResults.NavChild(event,6,1)" onkeypress="return searchResults.NavChild(event,6,1)" onkeyup="return searchResults.NavChild(event,6,1)" class="SRScope" href="../classambient_1_1channels_1_1mpi_1_1channel.html#a7e2d950c439b26af80745654d68066d4" target="_parent">ambient::channels::mpi::channel::bcast(scalar_type &amp;v)</a>
+    <a id="Item6_c2" onkeydown="return searchResults.NavChild(event,6,2)" onkeypress="return searchResults.NavChild(event,6,2)" onkeyup="return searchResults.NavChild(event,6,2)" class="SRScope" href="../classambient_1_1channels_1_1mpi_1_1bcast.html#abb49ab947f446f7b67a189c2659c504f" target="_parent">ambient::channels::mpi::bcast::bcast()</a>
+    <a id="Item6_c3" onkeydown="return searchResults.NavChild(event,6,3)" onkeypress="return searchResults.NavChild(event,6,3)" onkeyup="return searchResults.NavChild(event,6,3)" class="SRScope" href="../classambient_1_1channels_1_1nop_1_1channel.html#a1fa094d29b3c09b850df828365daebeb" target="_parent">ambient::channels::nop::channel::bcast(scalar_type &amp;v, rank_t root)</a>
+    <a id="Item6_c4" onkeydown="return searchResults.NavChild(event,6,4)" onkeypress="return searchResults.NavChild(event,6,4)" onkeyup="return searchResults.NavChild(event,6,4)" class="SRScope" href="../classambient_1_1channels_1_1nop_1_1channel.html#a95035b2d1e318d3f41d8d62343c1f293" target="_parent">ambient::channels::nop::channel::bcast(scalar_type &amp;v)</a>
+  </div>
+ </div>
+</div>
+<div class="SRResult" id="SR_bdsqr">
+ <div class="SREntry">
+  <a id="Item7" onkeydown="return searchResults.Nav(event,7)" onkeypress="return searchResults.Nav(event,7)" onkeyup="return searchResults.Nav(event,7)" class="SRSymbol" href="javascript:searchResults.Toggle('SR_bdsqr')">bdsqr</a>
+  <div class="SRChildren">
+    <a id="Item7_c0" onkeydown="return searchResults.NavChild(event,7,0)" onkeypress="return searchResults.NavChild(event,7,0)" onkeyup="return searchResults.NavChild(event,7,0)" class="SRScope" href="../structambient_1_1numeric_1_1kernels_1_1helper__lapack_3_01T_00_01typename_01boost_1_1enable__if_d7679a0a7d3236a0a96eee0cdb8c14b7.html#ae711443a8071fcec69d4d9f4211203e4" target="_parent">ambient::numeric::kernels::helper_lapack&lt; T, typename boost::enable_if&lt; boost::is_same&lt; T, double &gt; &gt;::type &gt;::bdsqr()</a>
+    <a id="Item7_c1" onkeydown="return searchResults.NavChild(event,7,1)" onkeypress="return searchResults.NavChild(event,7,1)" onkeyup="return searchResults.NavChild(event,7,1)" class="SRScope" href="../structambient_1_1numeric_1_1kernels_1_1helper__lapack_3_01T_00_01typename_01boost_1_1enable__if_43f8db340da725563ae63c0e1ab4f118.html#ab76666393b0ec39a4a2d685b21892f27" target="_parent">ambient::numeric::kernels::helper_lapack&lt; T, typename boost::enable_if&lt; boost::mpl::and_&lt; boost::is_complex&lt; T &gt;, boost::is_same&lt; typename T::value_type, double &gt; &gt; &gt;::type &gt;::bdsqr()</a>
+    <a id="Item7_c2" onkeydown="return searchResults.NavChild(event,7,2)" onkeypress="return searchResults.NavChild(event,7,2)" onkeyup="return searchResults.NavChild(event,7,2)" class="SRScope" href="../namespaceambient_1_1numeric_1_1kernels_1_1detail.html#a71ed59517a7a2d672543cee0bc39b939" target="_parent">ambient::numeric::kernels::detail::bdsqr()</a>
+    <a id="Item7_c3" onkeydown="return searchResults.NavChild(event,7,3)" onkeypress="return searchResults.NavChild(event,7,3)" onkeyup="return searchResults.NavChild(event,7,3)" class="SRScope" href="../namespaceambient_1_1numeric.html#a695289f66e6464466f663902befbdf5b" target="_parent">ambient::numeric::bdsqr()</a>
+  </div>
+ </div>
+</div>
+<div class="SRResult" id="SR_begin">
+ <div class="SREntry">
+  <a id="Item8" onkeydown="return searchResults.Nav(event,8)" onkeypress="return searchResults.Nav(event,8)" onkeyup="return searchResults.Nav(event,8)" class="SRSymbol" href="javascript:searchResults.Toggle('SR_begin')">begin</a>
+  <div class="SRChildren">
+    <a id="Item8_c0" onkeydown="return searchResults.NavChild(event,8,0)" onkeypress="return searchResults.NavChild(event,8,0)" onkeyup="return searchResults.NavChild(event,8,0)" class="SRScope" href="../classambient_1_1vector.html#a7b49c78ef897e8ad0b74bb5983e0313d" target="_parent">ambient::vector::begin()</a>
+    <a id="Item8_c1" onkeydown="return searchResults.NavChild(event,8,1)" onkeypress="return searchResults.NavChild(event,8,1)" onkeyup="return searchResults.NavChild(event,8,1)" class="SRScope" href="../classambient_1_1scope.html#a5e34568d266cc2e69f1905fd1ce0d86f" target="_parent">ambient::scope::begin()</a>
+    <a id="Item8_c2" onkeydown="return searchResults.NavChild(event,8,2)" onkeypress="return searchResults.NavChild(event,8,2)" onkeyup="return searchResults.NavChild(event,8,2)" class="SRScope" href="../classambient_1_1numeric_1_1tiles_3_01diagonal__matrix_3_01T_01_4_01_4.html#ac717d4aa8edfc683f73087cf4f3f80fb" target="_parent">ambient::numeric::tiles&lt; diagonal_matrix&lt; T &gt; &gt;::begin()</a>
+    <a id="Item8_c3" onkeydown="return searchResults.NavChild(event,8,3)" onkeypress="return searchResults.NavChild(event,8,3)" onkeyup="return searchResults.NavChild(event,8,3)" class="SRScope" href="../classambient_1_1async__timer.html#ad88b64c0db27bd508b62b9f12467f4ac" target="_parent">ambient::async_timer::begin()</a>
+    <a id="Item8_c4" onkeydown="return searchResults.NavChild(event,8,4)" onkeypress="return searchResults.NavChild(event,8,4)" onkeyup="return searchResults.NavChild(event,8,4)" class="SRScope" href="../classambient_1_1timer.html#a5b9c2612dfbe1f300399c92de238f8ad" target="_parent">ambient::timer::begin()</a>
+  </div>
+ </div>
+</div>
+<div class="SRResult" id="SR_belongs">
+ <div class="SREntry">
+  <a id="Item9" onkeydown="return searchResults.Nav(event,9)" onkeypress="return searchResults.Nav(event,9)" onkeyup="return searchResults.Nav(event,9)" class="SRSymbol" href="../classambient_1_1channels_1_1mpi_1_1multirank.html#afb2b9c22ed51bd01f270a7924ad4dfa0" target="_parent">belongs</a>
+  <span class="SRScope">ambient::channels::mpi::multirank</span>
+ </div>
+</div>
+<div class="SRResult" id="SR_binary_5ftree">
+ <div class="SREntry">
+  <a id="Item10" onkeydown="return searchResults.Nav(event,10)" onkeypress="return searchResults.Nav(event,10)" onkeyup="return searchResults.Nav(event,10)" class="SRSymbol" href="../classambient_1_1binary__tree.html#adb5d06cd27451d570f7d2a144e5dffc3" target="_parent">binary_tree</a>
+  <span class="SRScope">ambient::binary_tree</span>
+ </div>
+</div>
+<div class="SRResult" id="SR_block">
+ <div class="SREntry">
+  <a id="Item11" onkeydown="return searchResults.Nav(event,11)" onkeypress="return searchResults.Nav(event,11)" onkeyup="return searchResults.Nav(event,11)" class="SRSymbol" href="../classambient_1_1block.html#ad891d1e07fb73f985f9517919ef19b07" target="_parent">block</a>
+  <span class="SRScope">ambient::block</span>
+ </div>
+</div>
+<div class="SRResult" id="SR_block_5fpacket_5ft">
+ <div class="SREntry">
+  <a id="Item12" onkeydown="return searchResults.Nav(event,12)" onkeypress="return searchResults.Nav(event,12)" onkeyup="return searchResults.Nav(event,12)" class="SRSymbol" href="../structambient_1_1channels_1_1mpi_1_1block__packet__t.html#a8ec289f0a059e33b3e564d801ca74a6b" target="_parent">block_packet_t</a>
+  <span class="SRScope">ambient::channels::mpi::block_packet_t</span>
+ </div>
+</div>
+<div class="SRResult" id="SR_bulk_5fallocator">
+ <div class="SREntry">
+  <a id="Item13" onkeydown="return searchResults.Nav(event,13)" onkeypress="return searchResults.Nav(event,13)" onkeyup="return searchResults.Nav(event,13)" class="SRSymbol" href="javascript:searchResults.Toggle('SR_bulk_5fallocator')">bulk_allocator</a>
+  <div class="SRChildren">
+    <a id="Item13_c0" onkeydown="return searchResults.NavChild(event,13,0)" onkeypress="return searchResults.NavChild(event,13,0)" onkeyup="return searchResults.NavChild(event,13,0)" class="SRScope" href="../classambient_1_1bulk__allocator.html#a346be9648285d1007c15728261abdc09" target="_parent">ambient::bulk_allocator::bulk_allocator()</a>
+    <a id="Item13_c1" onkeydown="return searchResults.NavChild(event,13,1)" onkeypress="return searchResults.NavChild(event,13,1)" onkeyup="return searchResults.NavChild(event,13,1)" class="SRScope" href="../classambient_1_1bulk__allocator.html#a32ee02ef37e8c0d961b7e74e85716603" target="_parent">ambient::bulk_allocator::bulk_allocator(const bulk_allocator &amp;)</a>
+    <a id="Item13_c2" onkeydown="return searchResults.NavChild(event,13,2)" onkeypress="return searchResults.NavChild(event,13,2)" onkeyup="return searchResults.NavChild(event,13,2)" class="SRScope" href="../classambient_1_1bulk__allocator.html#a5f6592553fa42c03ff161fe5351f3817" target="_parent">ambient::bulk_allocator::bulk_allocator(const bulk_allocator&lt; U &gt; &amp;)</a>
+  </div>
+ </div>
+</div>
+<div class="SRResult" id="SR_bulked">
+ <div class="SREntry">
+  <a id="Item14" onkeydown="return searchResults.Nav(event,14)" onkeypress="return searchResults.Nav(event,14)" onkeyup="return searchResults.Nav(event,14)" class="SRSymbol" href="../structambient_1_1pool_1_1descriptor.html#ab5a5b28f81f52916868df55fc6b22554" target="_parent">bulked</a>
+  <span class="SRScope">ambient::pool::descriptor</span>
+ </div>
+</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+<script type="text/javascript"><!--
+document.getElementById("Loading").style.display="none";
+document.getElementById("NoMatches").style.display="none";
+var searchResults = new SearchResults("searchResults");
+searchResults.Search();
+--></script>
+</div>
+</body>
+</html>

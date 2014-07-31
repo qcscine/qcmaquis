@@ -1,0 +1,17 @@
+K 13
+svn:mergeinfo
+V 858
+/branches/Adrian/trunk/src/dmrg/applications/dmrg/dmrg_sim.h:1670-1677
+/branches/dmrg_new_main/applications/dmrg/dmrg_sim.h:1266-1342
+/branches/dolfim/production/dmrg/applications/dmrg/dmrg_sim.h:2324-2346,2351-2504
+/branches/dolfim/stable/dmrg/applications/dmrg/dmrg_sim.h:1927-2154
+/branches/reordering_trunk/dmrg/applications/dmrg/dmrg_sim.h:1363-1371
+/branches/stable/dmrg/applications/dmrg/dmrg_sim.h:2156-2239
+/dmrg/branches/dolfim/develop/dmrg/applications/dmrg/dmrg_sim.h:3853-3960
+/dmrg/branches/mpo_tags/dmrg/applications/dmrg/dmrg_sim.h:3444-3849
+/dmrg/branches/mps_storage/dmrg/applications/dmrg/dmrg_sim.h:3685
+/dmrg/branches/new_sim/dmrg/applications/dmrg/dmrg_sim.h:3473-3486
+/experimental/src/dmrg/applications/dmrg/dmrg_sim.h:3175-3192
+/trunk/src/dmrg/app/dmrg_sim.h:1364-1540
+/trunk/src/dmrg/applications/dmrg/dmrg_sim.h:1364-1540,3378-3400
+END

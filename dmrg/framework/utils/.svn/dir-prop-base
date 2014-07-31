@@ -1,0 +1,13 @@
+K 13
+svn:mergeinfo
+V 442
+/branches/dolfim/stable/maquis_utils:1927-2154
+/branches/stable/maquis_utils:2156-2239
+/dmrg/branches/alps/src/framework/utils:4050,4393
+/dmrg/branches/dolfim/develop/dmrg/framework/utils:3853-3960
+/dmrg/branches/mpo_tags/dmrg/framework/utils:3444-3849
+/dmrg/branches/mps_storage/dmrg/framework/utils:3685
+/dmrg/branches/new_sim/dmrg/framework/utils:3473-3486
+/experimental/src/maquis_utils:3175-3192
+/trunk/src/dmrg/framework/utils:3378-3400
+END

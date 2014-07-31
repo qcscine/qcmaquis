@@ -1,0 +1,23 @@
+K 10
+svn:ignore
+V 5
+tags
+
+K 13
+svn:mergeinfo
+V 549
+/branches/Adrian/trunk/src/dmrg:1670-1677
+/branches/dmrg_new_main:1266-1342
+/branches/dolfim/production/dmrg:2324-2346,2351-2504
+/branches/dolfim/stable/dmrg:1927-2154
+/branches/reordering_trunk/dmrg:1363-1541
+/branches/stable/dmrg:2156-2239
+/dmrg/branches/alps/src:4050,4052,4054-4055,4071
+/dmrg/branches/dolfim/develop/dmrg:3853-3960
+/dmrg/branches/mpo_tags/dmrg:3444-3849
+/dmrg/branches/mps_storage/dmrg:3685
+/dmrg/branches/new_sim/dmrg:3473-3486
+/dmrg/branches/production/dmrg:4268-4281
+/experimental/src/dmrg:3175-3192
+/trunk/src/dmrg:3378-3400
+END

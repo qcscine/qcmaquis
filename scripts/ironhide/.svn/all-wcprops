@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/hp2c/hp2c/!svn/ver/4357/dmrg/trunk/src/scripts/ironhide
+END
+gcc_ambient_openmpi
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/hp2c/hp2c/!svn/ver/4357/dmrg/trunk/src/scripts/ironhide/gcc_ambient_openmpi
+END
+clang_mkl
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/hp2c/hp2c/!svn/ver/4091/dmrg/trunk/src/scripts/ironhide/clang_mkl
+END

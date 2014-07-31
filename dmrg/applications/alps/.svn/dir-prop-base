@@ -1,0 +1,19 @@
+K 13
+svn:mergeinfo
+V 830
+/branches/Adrian/trunk/src/dmrg/applications/alps:1670-1677
+/branches/dmrg_new_main/applications/alps:1266-1342
+/branches/dolfim/production/dmrg/applications/alps:2324-2346,2351-2504
+/branches/dolfim/stable/dmrg/applications/alps:1927-2154
+/branches/reordering_trunk/dmrg/applications/alps:1363-1541
+/branches/stable/dmrg/applications/alps:2156-2239
+/dmrg/branches/alps/src:4393
+/dmrg/branches/alps/src/applications/alps:4050,4052,4054-4055,4071
+/dmrg/branches/dolfim/develop/dmrg/applications/alps:3853-3960
+/dmrg/branches/mpo_tags/dmrg/applications/alps:3444-3849
+/dmrg/branches/mps_storage/dmrg/applications/alps:3685
+/dmrg/branches/new_sim/dmrg/applications/alps:3473-3486
+/dmrg/branches/production/dmrg/applications/alps:4268-4281
+/experimental/src/dmrg/applications/alps:3175-3192
+/trunk/src/dmrg/applications/alps:3378-3400
+END

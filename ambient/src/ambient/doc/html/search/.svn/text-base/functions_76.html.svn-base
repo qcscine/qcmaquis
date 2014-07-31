@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html><head><title></title>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<link rel="stylesheet" type="text/css" href="search.css"/>
+<script type="text/javascript" src="search.js"></script>
+</head>
+<body class="SRPage">
+<div id="SRIndex">
+<div class="SRStatus" id="Loading">Loading...</div>
+<div class="SRResult" id="SR_valid">
+ <div class="SREntry">
+  <a id="Item0" onkeydown="return searchResults.Nav(event,0)" onkeypress="return searchResults.Nav(event,0)" onkeyup="return searchResults.Nav(event,0)" class="SRSymbol" href="../classambient_1_1models_1_1ssm_1_1revision.html#a3baa6307b7420833c95c6272ca059711" target="_parent">valid</a>
+  <span class="SRScope">ambient::models::ssm::revision</span>
+ </div>
+</div>
+<div class="SRResult" id="SR_validation">
+ <div class="SREntry">
+  <a id="Item1" onkeydown="return searchResults.Nav(event,1)" onkeypress="return searchResults.Nav(event,1)" onkeyup="return searchResults.Nav(event,1)" class="SRSymbol" href="../namespaceambient_1_1numeric_1_1kernels_1_1detail.html#a6ce89bd2fd582eedae4fd0a5e92091a5" target="_parent">validation</a>
+  <span class="SRScope">ambient::numeric::kernels::detail</span>
+ </div>
+</div>
+<div class="SRResult" id="SR_vector">
+ <div class="SREntry">
+  <a id="Item2" onkeydown="return searchResults.Nav(event,2)" onkeypress="return searchResults.Nav(event,2)" onkeyup="return searchResults.Nav(event,2)" class="SRSymbol" href="../classambient_1_1vector.html#afb63b9b3e80622f5836ff06f87ed1e3d" target="_parent">vector</a>
+  <span class="SRScope">ambient::vector</span>
+ </div>
+</div>
+<div class="SRResult" id="SR_verbose">
+ <div class="SREntry">
+  <a id="Item3" onkeydown="return searchResults.Nav(event,3)" onkeypress="return searchResults.Nav(event,3)" onkeyup="return searchResults.Nav(event,3)" class="SRSymbol" href="javascript:searchResults.Toggle('SR_verbose')">verbose</a>
+  <div class="SRChildren">
+    <a id="Item3_c0" onkeydown="return searchResults.NavChild(event,3,0)" onkeypress="return searchResults.NavChild(event,3,0)" onkeyup="return searchResults.NavChild(event,3,0)" class="SRScope" href="../classambient_1_1controllers_1_1ssm_1_1controller.html#a07a93510e4bc175f959ddb5b4f908b1d" target="_parent">ambient::controllers::ssm::controller::verbose()</a>
+    <a id="Item3_c1" onkeydown="return searchResults.NavChild(event,3,1)" onkeypress="return searchResults.NavChild(event,3,1)" onkeyup="return searchResults.NavChild(event,3,1)" class="SRScope" href="../namespaceambient.html#abbf49f47da3080f46fbed306c808eaa9" target="_parent">ambient::verbose()</a>
+  </div>
+ </div>
+</div>
+<div class="SRStatus" id="Searching">Searching...</div>
+<div class="SRStatus" id="NoMatches">No Matches</div>
+<script type="text/javascript"><!--
+document.getElementById("Loading").style.display="none";
+document.getElementById("NoMatches").style.display="none";
+var searchResults = new SearchResults("searchResults");
+searchResults.Search();
+--></script>
+</div>
+</body>
+</html>

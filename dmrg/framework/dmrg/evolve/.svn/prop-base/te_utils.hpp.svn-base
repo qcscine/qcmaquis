@@ -1,0 +1,18 @@
+K 13
+svn:mergeinfo
+V 971
+/branches/Adrian/trunk/src/dmrg/framework/dmrg/sim/te_utils.hpp:1670-1677
+/branches/dmrg_new_main/applications/time_evolution/te_utils.hpp:1266-1342
+/branches/dolfim/production/dmrg/framework/dmrg/sim/te_utils.hpp:2324-2346,2351-2504
+/branches/dolfim/stable/dmrg/framework/dmrg/sim/te_utils.hpp:1927-2154
+/branches/reordering_trunk/dmrg/applications/time_evolution/te_utils.hpp:1363-1371
+/branches/stable/dmrg/framework/dmrg/sim/te_utils.hpp:2156-2239
+/dmrg/branches/dolfim/develop/dmrg/framework/dmrg/sim/te_utils.hpp:3853-3960
+/dmrg/branches/mpo_tags/dmrg/framework/dmrg/sim/te_utils.hpp:3444-3849
+/dmrg/branches/mps_storage/dmrg/framework/dmrg/sim/te_utils.hpp:3685
+/dmrg/branches/new_sim/dmrg/framework/dmrg/sim/te_utils.hpp:3473-3486
+/experimental/src/dmrg/framework/dmrg/sim/te_utils.hpp:3175-3192
+/trunk/src/dmrg/app/te_utils.hpp:1364-1502
+/trunk/src/dmrg/applications/time_evolution/te_utils.hpp:1364-1540
+/trunk/src/dmrg/framework/dmrg/sim/te_utils.hpp:3378-3400
+END

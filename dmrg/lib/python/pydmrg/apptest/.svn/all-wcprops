@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/hp2c/hp2c/!svn/ver/3961/dmrg/trunk/src/dmrg/lib/python/pydmrg/apptest
+END
+testbase.py
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/lib/python/pydmrg/apptest/testbase.py
+END
+exception.py
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/lib/python/pydmrg/apptest/exception.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/lib/python/pydmrg/apptest/__init__.py
+END
+observable_test.py
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/hp2c/hp2c/!svn/ver/3961/dmrg/trunk/src/dmrg/lib/python/pydmrg/apptest/observable_test.py
+END
+main.py
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/lib/python/pydmrg/apptest/main.py
+END

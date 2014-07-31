@@ -1,0 +1,273 @@
+# -*- text -*-
+#
+# Copyright (c) 2004-2005 The Trustees of Indiana University and Indiana
+#                         University Research and Technology
+#                         Corporation.  All rights reserved.
+# Copyright (c) 2004-2005 The University of Tennessee and The University
+#                         of Tennessee Research Foundation.  All rights
+#                         reserved.
+# Copyright (c) 2004-2005 High Performance Computing Center Stuttgart, 
+#                         University of Stuttgart.  All rights reserved.
+# Copyright (c) 2004-2005 The Regents of the University of California.
+#                         All rights reserved.
+# $COPYRIGHT$
+# 
+# Additional copyrights may follow
+# 
+# $HEADER$
+#
+
+###############################################################
+#
+# OPAL suppressions
+#
+###############################################################
+
+## pmpi_init_thread ##
+{
+   pmpi_init0
+   Memcheck:Cond
+   ...
+   fun:PMPI_Init_thread
+}
+{
+   pmpi_init1
+   Memcheck:Value8
+   ...
+   fun:PMPI_Init_thread
+   ...
+}
+{
+   pmpi_init2
+   Memcheck:Value8
+   ...
+   fun:PMPI_Init_thread
+}
+{
+   pmpi_init3
+   Memcheck:Addr4
+   ...
+   fun:PMPI_Init_thread
+   ...
+}
+{
+   pmpi_init4
+   Memcheck:Addr8
+   ...
+   fun:PMPI_Init_thread
+   ...
+}
+{
+   pmpi_init5
+   Memcheck:Param
+   ...
+   fun:PMPI_Init_thread
+   ...
+}
+{
+   pmpi_init6
+   Memcheck:Param
+   writev(vector[...])
+   ...
+   fun:PMPI_Init_thread
+   ...
+}
+
+## sse2 strings ##
+{
+   sse0
+   Memcheck:Addr8
+   fun:__intel_sse2_strdup
+}
+{
+   sse1
+   Memcheck:Cond
+   ...
+   fun:__intel_sse2_strdup
+}
+{
+   sse2
+   Memcheck:Value8
+   ...
+   fun:__intel_sse2_strdup
+   ...
+}
+
+## ompi init ##
+{
+   ompi_init0
+   Memcheck:Value8
+   ...
+   fun:ompi_mpi_init
+}
+{
+   ompi_init1
+   Memcheck:Cond
+   ...
+   fun:ompi_mpi_init
+}
+{
+   ompi_init2
+   Memcheck:Addr8
+   ...
+   fun:ompi_mpi_init
+}
+
+## orte init ##
+{
+   orte_init0
+   Memcheck:Value8
+   ...
+   fun:orte_init
+}
+{
+   orte_init1
+   Memcheck:Cond
+   ...
+   fun:orte_init
+}
+{
+   orte_init2
+   Memcheck:Addr8
+   ...
+   fun:orte_init
+}
+
+## orte base select ##
+{
+   orte0
+   Memcheck:Cond
+   ...
+   fun:orte_rml_base_select
+}
+{
+   orte1
+   Memcheck:Value8
+   ...
+   fun:orte_rml_base_select
+}
+{
+   orte2
+   Memcheck:Param
+   mmap(length)
+   ...
+   fun:orte_rml_base_select
+   ...
+}
+{
+   orte3
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:orte_rml_base_select
+   ...
+}
+
+## rml oob init ##
+{
+   rml_oob_init0
+   Memcheck:Param
+   madvise(length)
+   ...
+   fun:rml_oob_init
+}
+{
+   rml_oob_init1
+   Memcheck:Cond
+   ...
+   fun:rml_oob_init
+}
+
+
+## standard suppressions ##
+
+
+{
+  linux_pthread_init
+  Memcheck:Leak
+  fun:calloc
+  fun:allocate_dtv
+  fun:_dl_allocate_tls_storage
+  fun:_dl_allocate_tls
+}
+{
+  linux_pthread_init2
+  Memcheck:Leak
+  fun:calloc
+  fun:_dl_tls_setup
+  fun:__pthread_initialize_minimal
+}
+{
+  linux_pthread_init3
+  Memcheck:Leak
+  fun:memalign
+  fun:_dl_allocate_tls_storage
+  fun:_dl_allocate_tls
+  fun:__pthread_initialize_minimal
+}
+
+# The event library leaves some blocks in use that we should clean up,
+# but it would require much changing of the event library, so it
+# really isn't worth it...
+{
+  event_lib_poll
+  Memcheck:Leak
+  fun:malloc
+  fun:realloc
+  fun:opal_realloc
+  fun:poll_dispatch
+}
+
+
+###############################################################
+#
+# ORTE suppressions
+#
+###############################################################
+
+# inet_ntoa on linux mallocs a static buffer.  We can't free 
+# it, so we have to live with it
+{
+  linux_inet_ntoa
+  Memcheck:Leak
+  fun:malloc
+  fun:inet_ntoa
+}
+{
+  linux_inet_ntoa_thread
+  Memcheck:Leak
+  fun:calloc
+  fun:pthread_setspecific
+  fun:inet_ntoa
+}
+
+
+###############################################################
+#
+# OMPI suppressions
+#
+###############################################################
+{
+  tcp_send
+  Memcheck:Param
+  fun:writev
+  fun:mca_btl_tcp_frag_send
+  fun:mca_btl_tcp_endpoint_send
+}
+
+###############################################################
+#
+# Suppressions for various commonly-used packages
+#
+###############################################################
+
+# Portals reference implementation has a read from invalid issue
+{
+  portals_send
+  Memcheck:Param
+  socketcall.send(msg)
+  fun:send
+  fun:utcp_sendbytes
+  fun:utcp_sendto
+  fun:utcp_msg_wait
+}

@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/block_matrix/symmetry
+END
+nu1pg.h
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/hp2c/hp2c/!svn/ver/4146/dmrg/trunk/src/dmrg/framework/dmrg/block_matrix/symmetry/nu1pg.h
+END
+zq.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/block_matrix/symmetry/zq.h
+END
+z2.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/block_matrix/symmetry/z2.h
+END
+none.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/framework/dmrg/block_matrix/symmetry/none.h
+END
+nu1_tpl.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/hp2c/hp2c/!svn/ver/3969/dmrg/trunk/src/dmrg/framework/dmrg/block_matrix/symmetry/nu1_tpl.h
+END
+u1.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/framework/dmrg/block_matrix/symmetry/u1.h
+END
+2u1.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hp2c/hp2c/!svn/ver/3969/dmrg/trunk/src/dmrg/framework/dmrg/block_matrix/symmetry/2u1.h
+END
+3u1.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hp2c/hp2c/!svn/ver/3969/dmrg/trunk/src/dmrg/framework/dmrg/block_matrix/symmetry/3u1.h
+END
+nu1.h.in
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/hp2c/hp2c/!svn/ver/3969/dmrg/trunk/src/dmrg/framework/dmrg/block_matrix/symmetry/nu1.h.in
+END

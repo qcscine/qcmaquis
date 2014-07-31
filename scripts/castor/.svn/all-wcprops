@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/hp2c/hp2c/!svn/ver/4222/dmrg/trunk/src/scripts/castor
+END
+intel_ambient_mvapich2
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/hp2c/hp2c/!svn/ver/4203/dmrg/trunk/src/scripts/castor/intel_ambient_mvapich2
+END
+gcc_ambient_mvapich2
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/4125/dmrg/trunk/src/scripts/castor/gcc_ambient_mvapich2
+END
+intel_omp
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/hp2c/hp2c/!svn/ver/4222/dmrg/trunk/src/scripts/castor/intel_omp
+END

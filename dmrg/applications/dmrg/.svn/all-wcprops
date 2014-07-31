@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/hp2c/hp2c/!svn/ver/4282/dmrg/trunk/src/dmrg/applications/dmrg
+END
+dmrg_sim.h
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/hp2c/hp2c/!svn/ver/4136/dmrg/trunk/src/dmrg/applications/dmrg/dmrg_sim.h
+END
+dmrg.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/hp2c/hp2c/!svn/ver/4282/dmrg/trunk/src/dmrg/applications/dmrg/dmrg.cpp
+END
+simulation.h
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/4103/dmrg/trunk/src/dmrg/applications/dmrg/simulation.h
+END
+simulation.ipp
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/hp2c/hp2c/!svn/ver/4103/dmrg/trunk/src/dmrg/applications/dmrg/simulation.ipp
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/hp2c/hp2c/!svn/ver/4204/dmrg/trunk/src/dmrg/applications/dmrg/CMakeLists.txt
+END

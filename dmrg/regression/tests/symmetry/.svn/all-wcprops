@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/regression/tests/symmetry
+END
+symmetry_u1.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/regression/tests/symmetry/symmetry_u1.cpp
+END
+symmetry_NU1Charge.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/regression/tests/symmetry/symmetry_NU1Charge.cpp
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/3886/dmrg/trunk/src/dmrg/regression/tests/symmetry/CMakeLists.txt
+END
+symmetry_ZqCharge.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/regression/tests/symmetry/symmetry_ZqCharge.cpp
+END

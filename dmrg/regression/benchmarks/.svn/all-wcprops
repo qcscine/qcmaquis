@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/hp2c/hp2c/!svn/ver/4358/dmrg/trunk/src/dmrg/regression/benchmarks
+END
+ts_optim.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/hp2c/hp2c/!svn/ver/4358/dmrg/trunk/src/dmrg/regression/benchmarks/ts_optim.cpp
+END
+dump_boundaries.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/hp2c/hp2c/!svn/ver/4282/dmrg/trunk/src/dmrg/regression/benchmarks/dump_boundaries.cpp
+END
+matrix_selector.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/regression/benchmarks/matrix_selector.hpp
+END
+symm_selector.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/regression/benchmarks/symm_selector.hpp
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/hp2c/hp2c/!svn/ver/4204/dmrg/trunk/src/dmrg/regression/benchmarks/CMakeLists.txt
+END
+ss_optim.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/hp2c/hp2c/!svn/ver/4282/dmrg/trunk/src/dmrg/regression/benchmarks/ss_optim.cpp
+END

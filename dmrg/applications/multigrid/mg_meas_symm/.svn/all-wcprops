@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/applications/multigrid/mg_meas_symm
+END
+mg_meas_tpl.cpp.in
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/applications/multigrid/mg_meas_symm/mg_meas_tpl.cpp.in
+END
+sim.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/hp2c/hp2c/!svn/ver/3966/dmrg/trunk/src/dmrg/applications/multigrid/mg_meas_symm/sim.h
+END

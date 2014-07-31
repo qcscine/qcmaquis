@@ -1,0 +1,101 @@
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail
+END
+adaptor.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/adaptor.hpp
+END
+if_left.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/if_left.hpp
+END
+if_row_major.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/if_row_major.hpp
+END
+array.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/array.hpp
+END
+adaptable_type.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/adaptable_type.hpp
+END
+get.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/get.hpp
+END
+copy_const.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/copy_const.hpp
+END
+basic_wrapper.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/basic_wrapper.hpp
+END
+property_map.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/property_map.hpp
+END
+pod.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/pod.hpp
+END
+generate_functions.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/generate_functions.hpp
+END
+convert_to.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/convert_to.hpp
+END
+linear_iterator.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/linear_iterator.hpp
+END
+basic_unwrapper.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/basic_unwrapper.hpp
+END
+offset.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/offset.hpp
+END
+complex_utils.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/detail/complex_utils.hpp
+END

@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/models/ssm
+END
+revision.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/models/ssm/revision.h
+END
+revision.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/models/ssm/revision.hpp
+END
+transformable.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/models/ssm/transformable.h
+END
+transformable.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/models/ssm/transformable.hpp
+END
+model.h
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/models/ssm/model.h
+END
+model.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/models/ssm/model.hpp
+END
+history.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/models/ssm/history.h
+END
+history.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/models/ssm/history.hpp
+END

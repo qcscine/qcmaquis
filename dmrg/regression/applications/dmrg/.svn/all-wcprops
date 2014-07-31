@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/regression/applications/dmrg
+END
+test_fermiladder_u1_ts.py
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/regression/applications/dmrg/test_fermiladder_u1_ts.py
+END
+test_coded_bh_ts.py
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/regression/applications/dmrg/test_coded_bh_ts.py
+END
+test_bh_ss.py
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/regression/applications/dmrg/test_bh_ss.py
+END
+test_bh_ts.py
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/regression/applications/dmrg/test_bh_ts.py
+END
+test_ff_ss.py
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/regression/applications/dmrg/test_ff_ss.py
+END
+test_ff_ts.py
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/regression/applications/dmrg/test_ff_ts.py
+END
+test_coded_fermiladder_ts.py
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/regression/applications/dmrg/test_coded_fermiladder_ts.py
+END
+test_fermiladder_ss.py
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/regression/applications/dmrg/test_fermiladder_ss.py
+END
+test_fermiladder_ts.py
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/hp2c/hp2c/!svn/ver/4395/dmrg/trunk/src/dmrg/regression/applications/dmrg/test_fermiladder_ts.py
+END
+create.sh
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/regression/applications/dmrg/create.sh
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/regression/applications/dmrg/CMakeLists.txt
+END
+run.sh
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/regression/applications/dmrg/run.sh
+END

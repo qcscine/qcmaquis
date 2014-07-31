@@ -1,0 +1,31 @@
+#!/bin/bash -l
+STATE="void"
+STATE_AMBIENT="void"
+STATE_DMRG="build"
+# end of target states #
+PREFIX=ambient
+COMPILER=intel
+COMPILER_VERSION=13.1.0
+MYAPPS=/project/h07/dolfim/apps/daint/intel_13_1_0
+
+export ALPS_ROOT=$MYAPPS/alps
+export PLASMA_PATH=$MYAPPS/plasma
+export FC=ftn
+export CXX=CC
+export CC=cc
+
+export XTPE_LINK_TYPE=dynamic
+
+module load gcc/4.7.3
+module switch PrgEnv-cray PrgEnv-intel
+module load cray-hdf5
+module load cmake
+
+COMMON_CMAKE_SYSTEM_NAME="Generic"
+COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
+COMMON_PLASMA_LIB_DIR="$MYAPPS/plasma/lib"
+DMRG_BUILD_AMBIENT=ON
+DMRG_USE_AMBIENT=ON
+
+source $ROOT_DIR/scripts/common/common.sh 
+execute $*

@@ -1,0 +1,95 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm
+END
+set.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/set.hpp
+END
+set.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/set.h
+END
+backbone.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/backbone.hpp
+END
+backbone.h
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/backbone.h
+END
+actor.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/actor.hpp
+END
+actor.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/actor.h
+END
+scope.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/scope.hpp
+END
+scope.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/scope.h
+END
+get.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/get.hpp
+END
+get.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/get.h
+END
+functor.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/functor.h
+END
+controller.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/controller.hpp
+END
+controller.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/controller.h
+END
+collector.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/collector.hpp
+END
+collector.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hp2c/hp2c/!svn/ver/4403/dmrg/trunk/src/ambient/src/ambient/controllers/ssm/collector.h
+END

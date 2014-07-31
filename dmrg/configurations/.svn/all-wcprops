@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/configurations
+END
+bh.model
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/configurations/bh.model
+END
+ff_middle.model
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/configurations/ff_middle.model
+END
+ff_short.model
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/configurations/ff_short.model
+END
+bh.parms
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/configurations/bh.parms
+END
+ff_middle.parms
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/configurations/ff_middle.parms
+END
+ff_short.parms
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/dmrg/configurations/ff_short.parms
+END

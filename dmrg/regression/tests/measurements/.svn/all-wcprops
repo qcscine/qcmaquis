@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/hp2c/hp2c/!svn/ver/4204/dmrg/trunk/src/dmrg/regression/tests/measurements
+END
+super_meas.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/hp2c/hp2c/!svn/ver/3972/dmrg/trunk/src/dmrg/regression/tests/measurements/super_meas.cpp
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/hp2c/hp2c/!svn/ver/4204/dmrg/trunk/src/dmrg/regression/tests/measurements/CMakeLists.txt
+END

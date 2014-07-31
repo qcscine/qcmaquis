@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/hp2c/hp2c/!svn/ver/3961/dmrg/trunk/src/scripts/common/cmake
+END
+clang_fixes.cmake
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/hp2c/hp2c/!svn/ver/3961/dmrg/trunk/src/scripts/common/cmake/clang_fixes.cmake
+END
+find_boost.cmake
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/hp2c/hp2c/!svn/ver/3422/dmrg/trunk/src/scripts/common/cmake/find_boost.cmake
+END
+FindMAQUISLapack.cmake
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/hp2c/hp2c/!svn/ver/3887/dmrg/trunk/src/scripts/common/cmake/FindMAQUISLapack.cmake
+END

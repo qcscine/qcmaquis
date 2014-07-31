@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/glas
+END
+dense_vector_collection.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 107
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/glas/dense_vector_collection.hpp
+END
+dense_vector.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/glas/dense_vector.hpp
+END
+dense_matrix.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/glas/dense_matrix.hpp
+END
+compressed.hpp
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/hp2c/hp2c/!svn/ver/3987/dmrg/trunk/src/ambient/src/boost/numeric/bindings/glas/compressed.hpp
+END
