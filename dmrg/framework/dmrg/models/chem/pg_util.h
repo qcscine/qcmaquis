@@ -107,8 +107,8 @@ template < >
 class  PGCharge<TwoU1PG>
 {
 public:
-    typedef typename TwoU1PG::subcharge subcharge;
-    void operator()(typename TwoU1PG::charge & rhs, subcharge irr)
+    typedef TwoU1PG::subcharge subcharge;
+    void operator()(TwoU1PG::charge & rhs, subcharge irr)
     {
         rhs[2] = irr;
     }
@@ -135,10 +135,10 @@ parse_symm(int L, BaseParameters& model)
 
 // TODO: This function moved to lattice, remove as soon as possible
 template < > inline
-std::vector<typename TwoU1PG::subcharge>
+std::vector<TwoU1PG::subcharge>
 parse_symm<TwoU1PG>(int L, BaseParameters& model)
 {
-    typedef typename TwoU1PG::subcharge subcharge;
+    typedef TwoU1PG::subcharge subcharge;
 
     // TODO: pos_t type consistency
     std::vector<int> order(L);

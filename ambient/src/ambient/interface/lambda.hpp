@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -62,6 +64,16 @@ namespace ambient {
     template <class L>
     overload_lambda<L> lambda(L l){
         return overload_lambda<L>(l);
+    }
+
+    template <class L, class... Args>
+    void async(L l, Args&& ... args){
+        return lambda(l)(std::forward<Args>(args)...);
+    }
+
+    template <class... L, class... Args>
+    void async(void(*l)(L&...), Args&& ... args){
+        return async(std::function<decltype(*l)>(l), std::forward<Args>(args)...);
     }
 
 }

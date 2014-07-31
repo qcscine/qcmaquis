@@ -189,7 +189,7 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
 
     std::size_t loop_max = M.n_blocks();
     for(size_t k = 0; k < loop_max; ++k){
-        select_proc(ambient::get_owner(M[k]));
+        select_proc(ambient::scope::begin()+ambient::get_owner(M[k]));
         svd_merged(M[k], U[k], V[k], S[k]);
     }
     ambient::sync(ambient::mkl_parallel());
@@ -235,7 +235,7 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     typedef std::vector<typename maquis::traits::real_type<value_type>::type > real_vector_t;
     real_vector_t allevals(length);
 #ifdef USE_AMBIENT
-    select_proc(ambient::scope_t::common);
+    select_proc(ambient::actor_t::common);
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
         ambient::numeric::migrate(const_cast<DiagMatrix&>(evals[k])[0]);
     }

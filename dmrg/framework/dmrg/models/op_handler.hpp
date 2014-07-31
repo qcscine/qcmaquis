@@ -94,7 +94,7 @@ TagHandler<Matrix, SymmGroup>::get_product_tag(const typename
 
     // return tag of product, if already there
     try {
-#if defined(__xlC__)
+#if defined(__xlC__) || defined(__FCC_VERSION)
         if (product_tags.count(std::make_pair(t1, t2)) == 0)
             throw std::out_of_range("");
 
@@ -167,7 +167,7 @@ typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::ge
 
     // return tag of kronecker product, if already there
     try {
-#if defined(__xlC__)
+#if defined(__xlC__) || defined(__FCC_VERSION)
         if (kron_tags.count(std::make_pair(t1, t2)) == 0)
             throw std::out_of_range("");
 

@@ -71,6 +71,7 @@ namespace contraction {
             charge        T_delta = SymmGroup::fuse(T.right_basis()[0].first, -T.left_basis()[0].first);
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
         
+            select_proc(contr_grid.where(b1,b2));
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
             for (size_t r = 0; r < right_i.size(); ++r)
@@ -84,7 +85,7 @@ namespace contraction {
                 size_t o = ret.find_block(out_l_charge, out_r_charge);
                 if ( o == ret.n_blocks() ) {
                     o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
-                    ret.resize_block(out_l_charge, out_r_charge, out_left_i.size_of_block(out_l_charge), r_size);
+                    ret.resize_block(o, out_left_i.size_of_block(out_l_charge), r_size);
                 }
 
                 for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
@@ -163,7 +164,7 @@ namespace contraction {
                 size_t o = ret.find_block(out_l_charge, out_r_charge);
                 if ( o == ret.n_blocks() ) {
                     o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
-                    ret.resize_block(out_l_charge, out_r_charge, l_size, out_right_i.size_of_block(out_r_charge));
+                    ret.resize_block(o, l_size, out_right_i.size_of_block(out_r_charge));
                 }
 
                 for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)

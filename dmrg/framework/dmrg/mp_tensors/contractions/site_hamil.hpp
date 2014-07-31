@@ -55,24 +55,31 @@ namespace contraction {
                                         -boost::lambda::_1, boost::lambda::_2));
 
         MPSTensor<Matrix, SymmGroup> ret;
+        ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
         index_type loop_max = mpo.col_dim();
 
 #ifdef USE_AMBIENT
+        {
+            block_matrix<Matrix, SymmGroup> empty;
+            swap(ket_tensor.data(), empty); // deallocating mpstensor before exiting the stack
+        }
+        ambient::sync(); 
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
         contr_grid.hint_left(t);
         contr_grid.hint_right(right);
 
         parallel_for(index_type b2, range<index_type>(0,loop_max), {
-            select_proc(ambient::scope::permute(b2,mpo.placement_r));
             lbtm_kernel(b2, contr_grid, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
             contr_grid.multiply_column(b2, right[b2]);
         });
+        t.clear();
+        ambient::sync(); 
          
-        ret.data() = contr_grid.reduce();
+        swap(ret.data(), contr_grid.reduce());
+        ambient::sync();
 #else
         omp_for(index_type b2, range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-            select_proc(ambient::scope::permute(b2,mpo.placement_r));
 
             lbtm_kernel(b2, contr_grid, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
             block_matrix<Matrix, SymmGroup> tmp;
@@ -83,7 +90,6 @@ namespace contraction {
                 ret.data().match_and_add_block(tmp[k], tmp.left_basis()[k].first, tmp.right_basis()[k].first);
         });
 #endif
-        ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
         return ret;
     }
 }

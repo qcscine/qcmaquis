@@ -69,23 +69,21 @@ public:
     }
 
     void print_distribution() const {
-        if(ambient::rank() != 0) return;
-
-        int loop_max = this->aux_dim();
+        if(!ambient::master()) return;
         double total = 0;
-        for(int b = 0; b < loop_max; ++b){
-            for(int i = 0; i < (*this)[b].n_blocks(); ++i) total += num_rows((*this)[b][i])*num_cols((*this)[b][i]);
-        }
+        int loop_max = this->aux_dim();
+        for(int b = 0; b < loop_max; ++b) total += (*this)[b].num_elements();
+        printf("%.2f GB:", total*sizeof(value_type)/1024/1024/1024);
         for(int p = 0; p < ambient::num_procs(); ++p){
             double part = 0;
-            for(int b = 0; b < loop_max; ++b){
-                for(int i = 0; i < (*this)[b].n_blocks(); ++i){
-                    if(ambient::get_owner((*this)[b][i][0]) == p)
-                        part += num_rows((*this)[b][i])*num_cols((*this)[b][i]);
-                }
+            for(int b = 0; b < loop_max; ++b)
+            for(int i = 0; i < (*this)[b].n_blocks(); ++i){
+                if(!ambient::weak((*this)[b][i][0]) && ambient::get_owner((*this)[b][i][0]) == p)
+                    part += num_rows((*this)[b][i])*num_cols((*this)[b][i]);
             }
-            printf("R%d: %d%\n", p, (int)(100*part/total));
+            printf(" %.1f%%", 100*part/total);
         }
+        printf("\n");
     }
     #endif
     

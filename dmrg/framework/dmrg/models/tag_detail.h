@@ -56,7 +56,7 @@ namespace tag_detail {
     {
         #ifdef USE_AMBIENT
         {
-            select_proc(ambient::scope_t::common);
+            select_proc(ambient::actor_t::common);
             for(int i = 0; i < op.n_blocks(); ++i) ambient::migrate(op[i]);
             ambient::sync();
         }
@@ -90,7 +90,7 @@ namespace tag_detail {
         typename Matrix::value_type invscale;
         #ifdef USE_AMBIENT
         {
-            select_proc(ambient::scope_t::common);
+            select_proc(ambient::actor_t::common);
             for(int i = 0; i < op.n_blocks(); ++i) ambient::migrate(op[i]);
             ambient::sync();
         }
@@ -137,7 +137,7 @@ namespace tag_detail {
     {
         #ifdef USE_AMBIENT
         {
-            select_proc(ambient::scope_t::common);
+            select_proc(ambient::actor_t::common);
             for(int i = 0; i < reference.n_blocks(); ++i) ambient::migrate(reference[i]);
             for(int i = 0; i < sample.n_blocks(); ++i) ambient::migrate(sample[i]);
             ambient::sync();

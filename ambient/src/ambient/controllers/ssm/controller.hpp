@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -37,13 +39,12 @@ namespace ambient { namespace controllers { namespace ssm {
         this->clear();
     }
 
-    inline controller::controller() : chains(&stack_m), mirror(&stack_s), db(0) {}
+    inline controller::controller() : chains(&stack_m), mirror(&stack_s) {}
 
-    inline void controller::reserve(int db){
+    inline void controller::reserve(){
         this->stack_m.reserve(AMBIENT_STACK_RESERVE);
         this->stack_s.reserve(AMBIENT_STACK_RESERVE);
         this->garbage.reserve(AMBIENT_STACK_RESERVE);
-        this->db = get_num_procs() > db ? db : 0;
     }
 
     inline void controller::flush(){
@@ -58,7 +59,6 @@ namespace ambient { namespace controllers { namespace ssm {
             }
             chains->clear();
             std::swap(chains,mirror);
-            check_mem();
         }
         AMBIENT_SMP_DISABLE
         model.clock++;
@@ -151,10 +151,6 @@ namespace ambient { namespace controllers { namespace ssm {
         return get_num_procs();
     }
 
-    inline rank_t controller::get_dedicated_rank() const {
-        return (get_num_procs()-db);
-    }
-
     inline bool controller::is_serial() const {
         return (get_num_procs() == 1);
     }
@@ -168,15 +164,12 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline void controller::meminfo() const {
-        size_t current_size = getCurrentRSS();
-        size_t peak_size = getPeakRSS();
-        size_t avail_size = getRSSLimit();
+        double current_size = (double)getCurrentRSS();
+        double peak_size = (double)getPeakRSS();
+        double avail_size = (double)getRSSLimit();
         for(int i = 0; i < get_num_procs(); i++){
-            if(get_rank() == i){
-                std::cout << "R" << i << ": current: " << current_size/1024/1024/1024 << "G.\n";
-                std::cout << "R" << i << ": peak: " << peak_size/1024/1024/1024 << "G.\n";
-                std::cout << "R" << i << ": avail: " << avail_size/1024/1024/1024 << "G.\n";
-            }
+            if(get_rank() == i)
+                printf("R%d: current: %.2f%%; peak: %.2f%%\n", i, (current_size/avail_size)*100, (peak_size/avail_size)*100);
             fence();
         }
     }
@@ -191,14 +184,6 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline int controller::get_num_procs() const {
         return channel.dim();
-    }
-
-    inline int controller::get_num_db_procs() const {
-        return this->db;
-    }
-
-    inline int controller::get_num_workers() const {
-        return (get_num_procs()-db);
     }
 
     inline typename controller::channel_type & controller::get_channel(){

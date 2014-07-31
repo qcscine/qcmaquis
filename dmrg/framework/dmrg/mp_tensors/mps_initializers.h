@@ -81,7 +81,7 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
         
 #ifndef NDEBUG
         maquis::cout << "init norm: " << norm(mps) << std::endl;
-        maquis::cout << mps.description() << std::endl;
+//        maquis::cout << mps.description() << std::endl;
 #endif
     }
 
@@ -132,7 +132,7 @@ struct default_mps_init<Matrix, TwoU1PG> : public mps_initializer<Matrix, TwoU1P
         
 #ifndef NDEBUG
         maquis::cout << "init norm: " << norm(mps) << std::endl;
-        maquis::cout << mps.description() << std::endl;
+//        maquis::cout << mps.description() << std::endl;
 #endif
     }
 

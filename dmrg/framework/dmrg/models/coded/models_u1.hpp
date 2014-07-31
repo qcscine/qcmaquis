@@ -448,7 +448,7 @@ public:
         
         measurements_type meas;
         
-        if (model["ENABLE_MEASURE[Density]"]) {
+        if (model["MEASURE[Density]"]) {
             std::string name = "Density";
             meas.push_back( new measurements::average<Matrix, U1>(name, lat,
                                                       op_vec(1,this->identity_matrix(0)),
@@ -456,7 +456,7 @@ public:
                                                       op_vec(1,tag_handler->get_op(count))) );
         }
         
-        if (model["ENABLE_MEASURE[Local density]"]) {
+        if (model["MEASURE[Local density]"]) {
             std::string name = "Local density";
             meas.push_back( new measurements::local<Matrix, U1>(name, lat,
                                                     op_vec(1,this->identity_matrix(0)),
@@ -464,7 +464,7 @@ public:
                                                     op_vec(1,tag_handler->get_op(count))) );
         }
         
-        if (model["ENABLE_MEASURE[Onebody density matrix]"]) {
+        if (model["MEASURE[Onebody density matrix]"]) {
             std::string name = "Onebody density matrix";
             bond_element ops;
             ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(create)), false) );
