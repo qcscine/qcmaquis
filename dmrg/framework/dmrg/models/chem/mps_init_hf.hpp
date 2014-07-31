@@ -125,11 +125,8 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
     }
 
     BaseParameters parms;
-<<<<<<< HEAD
-=======
     std::vector<Index<SymmGroup> > phys_dims;
     std::vector<int> site_types;
->>>>>>> 33453594f2f8068d90a2facf25e250f2aa487c35
     default_mps_init<Matrix, SymmGroup> di;
 };
 

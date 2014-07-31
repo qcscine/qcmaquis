@@ -395,11 +395,7 @@ public:
 private:
     Lattice const & lat;
     BaseParameters & parms;
-<<<<<<< HEAD
-    Index<SymmGroup> phys;
-=======
     std::vector<Index<SymmGroup> > phys_indices;
->>>>>>> 33453594f2f8068d90a2facf25e250f2aa487c35
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type ident, fill,
