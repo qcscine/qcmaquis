@@ -36,30 +36,25 @@
 namespace dual_index_detail
 {
     template <class SymmGroup>
-    struct QnBlock
+    class QnBlock
     {
-        typename SymmGroup::charge lc;
-        typename SymmGroup::charge rc;
-        std::size_t                ls;
-        std::size_t                rs;
+        typedef typename SymmGroup::charge charge;
+
+    public:
+        QnBlock() {}
+        QnBlock(charge lc_, charge rc_, std::size_t ls_, std::size_t rs_)
+            : lc(lc_), rc(rc_), ls(ls_), rs(rs_) {}
 
         bool operator==(QnBlock const & o) const
         {
             return lc == o.lc && rc == o.rc && ls == o.ls && rs == o.rs;
         }
-    };
 
-    template <class SymmGroup>
-    QnBlock<SymmGroup> make_QnBlock(typename SymmGroup::charge lc, typename SymmGroup::charge rc,
-                                    std::size_t ls, std::size_t rs)
-    {
-        QnBlock<SymmGroup> ret;
-        ret.lc = lc;
-        ret.rc = rc;
-        ret.ls = ls;
-        ret.rs = rs;
-        return ret;
-    }
+        typename SymmGroup::charge lc;
+        typename SymmGroup::charge rc;
+        std::size_t                ls;
+        std::size_t                rs;
+    };
 
     template<class SymmGroup>
     struct gt {
@@ -148,11 +143,11 @@ public:
     DualIndex() : sorted_(true) {}
     
     std::size_t left_block_size(charge r, charge c) const {
-        std::size_t pos = position(dual_index_detail::make_QnBlock<SymmGroup>(r,c,0,0));
+        std::size_t pos = position(dual_index_detail::QnBlock<SymmGroup>(r,c,0,0));
         return (*this)[pos].ls;
     }
     std::size_t right_block_size(charge r, charge c) const {
-        std::size_t pos = position(dual_index_detail::make_QnBlock<SymmGroup>(r,c,0,0));
+        std::size_t pos = position(dual_index_detail::QnBlock<SymmGroup>(r,c,0,0));
         return (*this)[pos].rs;
     }
     
@@ -160,7 +155,7 @@ public:
     {
         const_iterator match;
         if (sorted_)
-            match = std::lower_bound(data_.begin(), data_.end(), dual_index_detail::make_QnBlock<SymmGroup>(row,col,std::size_t(0),std::size_t(0)), dual_index_detail::gt<SymmGroup>());
+            match = std::lower_bound(data_.begin(), data_.end(), dual_index_detail::QnBlock<SymmGroup>(row,col,0,0), dual_index_detail::gt<SymmGroup>());
         else
             match = std::find_if(data_.begin(), data_.end(), dual_index_detail::is_first_equal<SymmGroup>(row,col));
         
@@ -172,7 +167,7 @@ public:
     bool has(charge row, charge col) const
     {
         if (sorted_)
-            return std::binary_search(data_.begin(), data_.end(), dual_index_detail::make_QnBlock<SymmGroup>(row,col,0,0), dual_index_detail::gt<SymmGroup>());
+            return std::binary_search(data_.begin(), data_.end(), dual_index_detail::QnBlock<SymmGroup>(row,col,0,0), dual_index_detail::gt<SymmGroup>());
         else
             return std::find_if(data_.begin(), data_.end(),
                                 dual_index_detail::is_first_equal<SymmGroup>(row,col)) != data_.end();
