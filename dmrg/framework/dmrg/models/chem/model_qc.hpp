@@ -34,6 +34,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 , parms(parms_)
 , tag_handler(new table_type())
 {
+    typedef typename SymmGroup::subcharge subcharge;
     // find the highest irreducible representation number 
     // used to generate ops for all irreps 0..max_irrep
     max_irrep = 0;
@@ -44,11 +45,16 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     typename SymmGroup::charge A(0), B(0), C(0), D(1);
     B[0]=1; C[1]=1;
 
-    // Site adaptation needed
-    phys.insert(std::make_pair(A, 1));
-    phys.insert(std::make_pair(B, 1));
-    phys.insert(std::make_pair(C, 1));
-    phys.insert(std::make_pair(D, 1));
+    for (subcharge irr=0; irr <= max_irrep; ++irr)
+    {
+        Index<SymmGroup> phys;
+        phys.insert(std::make_pair(A, 1));
+        phys.insert(std::make_pair(PGCharge<SymmGroup>()(B, irr), 1));
+        phys.insert(std::make_pair(PGCharge<SymmGroup>()(C, irr), 1));
+        phys.insert(std::make_pair(D, 1));
+
+        phys_indices.push_back(phys);
+    }
 
     op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
          count_up_op, count_down_op, docc_op, e2d_op, d2e_op,

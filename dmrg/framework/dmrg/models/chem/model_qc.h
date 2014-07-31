@@ -86,9 +86,10 @@ public:
     //    return align(rhs[0], rhs[1], rhs[2], rhs[3]);
     //} 
 
+    // For this model: site_type == point group irrep
     Index<SymmGroup> const & phys_dim(size_t type) const
     {
-        return phys;
+        return phys_indices[type];
     }
     tag_type identity_matrix_tag(size_t type) const
     {
@@ -407,7 +408,7 @@ public:
 private:
     Lattice const & lat;
     BaseParameters & parms;
-    Index<SymmGroup> phys;
+    std::vector<Index<SymmGroup> > phys_indices;
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type ident, fill,

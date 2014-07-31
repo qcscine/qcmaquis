@@ -43,19 +43,11 @@ template <class SymmGroup>
 inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& site_type,
                                                       std::vector<Index<SymmGroup> > const& phys_dims,
                                                       typename SymmGroup::charge right_end,
-                                                      std::size_t Mmax,
-                                                      std::vector<typename SymmGroup::subcharge> irreps
-                                                       = std::vector<typename SymmGroup::subcharge>())
+                                                      std::size_t Mmax)
 {
     bool finitegroup = SymmGroup::finite;
 
     std::size_t L = site_type.size();
-    
-    typedef typename SymmGroup::subcharge subcharge;
-    PGDecorator<SymmGroup> set_irrep;
-    if (irreps.size() != L) {
-        irreps = std::vector<subcharge>(L, 0);
-    }
     
     std::vector<typename SymmGroup::charge> maximum_charges(phys_dims.size()), minimum_charges(phys_dims.size());
     for (int type=0; type<phys_dims.size(); ++type) {
@@ -83,7 +75,7 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     typename SymmGroup::charge cmaxi=maximum_total_charge, cmini=minimum_total_charge;
     for (int i = 1; i < L+1; ++i) {
         left_allowed[i] = phys_dims[site_type[i-1]] * left_allowed[i-1];
-        
+
         typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
         while ( it != left_allowed[i].end() )
         {
