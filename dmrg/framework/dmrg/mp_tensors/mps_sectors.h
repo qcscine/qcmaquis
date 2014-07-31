@@ -119,7 +119,6 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
             it->second = tri_min(Mmax,
                                  left_allowed[i].size_of_block(it->first),
                                  right_allowed[i].size_of_block(it->first));
-        maquis::cout << allowed[i] << std::endl;
     }
     
     return allowed;
