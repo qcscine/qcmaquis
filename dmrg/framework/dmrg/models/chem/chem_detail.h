@@ -55,6 +55,20 @@ namespace chem_detail {
         }
     };
 
+    // added 10.7.2014
+    template <>
+    struct qn_helper<TwoU1LPG>
+    {
+        typename TwoU1LPG::charge total_qn(BaseParameters & parms)
+        {
+            typename TwoU1LPG::charge ret(0);
+            ret[0] = parms["u1_total_charge1"];
+            ret[1] = parms["u1_total_charge2"];
+            ret[2] = parms["irrep_charge"];
+            return ret;
+        }
+    };
+
     class IndexTuple : public NU1Charge<4>
     {
     public:

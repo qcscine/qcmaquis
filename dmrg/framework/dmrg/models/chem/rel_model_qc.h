@@ -200,6 +200,9 @@ public:
         std::vector<op_t> create_ops = this->generate_site_specific_ops(create_unbar_op, create_bar_op);
         std::vector<op_t> destroy_ops = this->generate_site_specific_ops(destroy_unbar_op, destroy_bar_op);
         std::vector<op_t> count_ops = this->generate_site_specific_ops(count_unbar_op, count_bar_op);
+        //std::vector<op_t> create_ops = this->generate_site_specific_ops(create_unbar_op, ident_bar_op);
+        //std::vector<op_t> destroy_ops = this->generate_site_specific_ops(destroy_unbar_op, ident_bar_op);
+        //std::vector<op_t> count_ops = this->generate_site_specific_ops(count_unbar_op, ident_bar_op);
         GENERATE_SITE_SPECIFIC(create_unbar_op)
         GENERATE_SITE_SPECIFIC(create_bar_op)
         GENERATE_SITE_SPECIFIC(destroy_unbar_op)

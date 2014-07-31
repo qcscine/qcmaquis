@@ -183,4 +183,53 @@ parse_symm<TwoU1PG>(int L, BaseParameters& model)
     return irreps;
 }
 
+//TODO: find a smarter solution, remove with Two1PG
+template < > inline
+std::vector<typename TwoU1LPG::subcharge>
+parse_symm<TwoU1LPG>(int L, BaseParameters& model)
+{
+    typedef typename TwoU1LPG::subcharge subcharge;
+
+    // TODO: pos_t type consistency
+    std::vector<int> order(L);
+    if (!model.is_set("orbital_order"))
+        for (int p = 0; p < L; ++p)
+            order[p] = p;
+    else
+        order = model["orbital_order"].as<std::vector<int> >();
+
+    std::vector<subcharge> irreps(L, 0);
+    if (model.is_set("integral_file")) {
+        std::ifstream orb_file;
+        orb_file.open(model["integral_file"].c_str());
+        orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+
+        std::string line;
+        std::getline(orb_file, line);
+
+        std::vector<std::string> split_line;
+        boost::split(split_line, line, boost::is_any_of("="));
+        std::vector<subcharge> symm_vec;
+
+        std::replace(split_line[1].begin(), split_line[1].end(), ',', ' ');
+        std::istringstream iss(split_line[1]);
+        subcharge number;
+        while( iss >> number )
+            symm_vec.push_back(number-1);
+
+        assert( L == symm_vec.size() );
+        for (int p = 0; p < L; ++p)
+            irreps[p] = symm_vec[order[p]-1];
+
+        maquis::cout << "Symmetry string (reordered): ";
+        std::copy(irreps.begin(), irreps.end(), maquis::ostream_iterator<subcharge>(maquis::cout, ","));
+        maquis::cout << std::endl;
+
+        orb_file.close();
+    }
+    else
+        throw std::runtime_error("\"integral_file\" in model input file is not set\n");
+
+    return irreps;
+}
 #endif
