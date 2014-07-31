@@ -36,7 +36,6 @@
 
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
-#include "dmrg/mp_tensors/chem_compression.h"
 
 #include "dmrg/models/lattice.h"
 #include "dmrg/models/model.h"
@@ -127,9 +126,8 @@ namespace generate_mpo
             for (size_t p = 0; p < length-1; ++p)
                 prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(model.identity_matrix_tag(lat.get_prop<int>("type",p)), 1.);
             
-            using boost::bind;
             typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
-            std::for_each(terms.begin(), terms.end(), bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
+            std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
         }
         
         void add_term(term_descriptor term)
@@ -194,7 +192,7 @@ namespace generate_mpo
                     pre_tensor.push_back( tag_block(ll->second, rr->second, val.first, val.second) );
                 }
                 
-                std::pair<std::size_t, std::size_t> rcd = rcdim(pre_tensor);
+                std::pair<index_type, index_type> rcd = rcdim(pre_tensor);
                 if (p == 0)
                     mpo.push_back( MPOTensor<Matrix, SymmGroup>(1, rcd.second, pre_tensor, tag_handler->get_operator_table()) );
                 else if (p == length - 1)

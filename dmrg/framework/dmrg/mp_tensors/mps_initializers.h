@@ -69,18 +69,18 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
         
         std::vector<Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, Mmax);
         
-        omp_for(size_t i = 0; i < L; ++i) {
+        omp_for(size_t i, range<size_t>(0,L), {
             select_proc(ambient::scope::balance(i,L));
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], fillrand, val);
             mps[i].divide_by_scalar(mps[i].scalar_norm());
             #ifdef AMBIENT_TRACKING
             ambient_track_array(mps, i);
             #endif
-        }
+        });
         
 #ifndef NDEBUG
         maquis::cout << "init norm: " << norm(mps) << std::endl;
-        maquis::cout << mps.description() << std::endl;
+//        maquis::cout << mps.description() << std::endl;
 #endif
     }
 
@@ -120,18 +120,18 @@ struct default_mps_init<Matrix, TwoU1PG> : public mps_initializer<Matrix, TwoU1P
         
         std::vector<Index<TwoU1PG> > allowed = allowed_sectors(site_type, phys_dims, right_end, Mmax, irreps);
         
-        omp_for(size_t i = 0; i < L; ++i) {
+        omp_for(size_t i, range<size_t>(0,L), {
             select_proc(ambient::scope::balance(i,L));
             mps[i] = MPSTensor<Matrix, TwoU1PG>(PGDecorator<TwoU1PG>()(phys_dims[site_type[i]], irreps[i]) , allowed[i], allowed[i+1], fillrand, val);
             mps[i].divide_by_scalar(mps[i].scalar_norm());
             #ifdef AMBIENT_TRACKING
             ambient_track_array(mps, i);
             #endif
-        }
+        });
         
 #ifndef NDEBUG
         maquis::cout << "init norm: " << norm(mps) << std::endl;
-        maquis::cout << mps.description() << std::endl;
+//        maquis::cout << mps.description() << std::endl;
 #endif
     }
 

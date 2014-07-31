@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -213,7 +215,7 @@ namespace ambient { namespace memory {
         };
 
         static inline void init(const std::string& path){
-            if(ambient::rank() == 0) printf("Temporary storage enabled in %s\n", path.c_str());
+            if(ambient::master()) printf("Temporary storage enabled in %s\n", path.c_str());
             pool::instance().init(path);
         }
 

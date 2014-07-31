@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -35,7 +37,7 @@ namespace ambient { namespace models { namespace ssm {
     public:
         template<typename T> operator T* (){ return (T*)data; }
         operator revision* (){ return NULL; }
-        revision(size_t extent, void* g, ambient::locality l, int owner = -1);
+        revision(size_t extent, void* g, ambient::locality l, rank_t owner);
 
         void embed(void* ptr);
         void reuse(revision& r);
@@ -52,7 +54,7 @@ namespace ambient { namespace models { namespace ssm {
 
         void* generator;
         void* data;
-        int   owner;
+        rank_t owner;
         std::atomic<int> users;
         ambient::locality state;
         std::pair<size_t, void*> assist;

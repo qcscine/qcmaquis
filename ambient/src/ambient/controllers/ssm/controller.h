@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -44,7 +46,7 @@ namespace ambient { namespace controllers { namespace ssm {
                                                > memory_type;
         controller();
        ~controller();
-        void reserve(int db = 0);
+        void reserve();
         bool empty();
         void flush();
         void clear();
@@ -64,15 +66,13 @@ namespace ambient { namespace controllers { namespace ssm {
         void add_revision(history* o, G g);
 
         void fence() const;
-        int  get_rank() const;
-        int  get_shared_rank() const;
-        int  get_dedicated_rank() const;
-        int  get_num_db_procs() const;
-        int  get_num_workers() const;
-        int  get_num_procs() const;
+        rank_t get_rank() const;
+        rank_t get_shared_rank() const;
+        int get_num_procs() const;
         channel_type & get_channel();
 
         void meminfo() const;
+        void check_mem() const;
         bool verbose() const;
         bool is_serial() const;
 
@@ -85,7 +85,6 @@ namespace ambient { namespace controllers { namespace ssm {
         std::vector< functor* >* chains;
         std::vector< functor* >* mirror;
         ambient::memory::collector garbage;
-        int db;
     };
     
 } } }

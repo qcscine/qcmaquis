@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -152,6 +154,7 @@ namespace ambient { namespace numeric {
                     
                     using alps::hdf5::detail::get_pointer;
                     assert(ambient::naked(m.tile(i,j)).state == ambient::locality::local);
+                    if(ambient::weak(m.tile(i,j))) throw std::runtime_error("Error: attempting to write uninitialised data!");
                     ar.write(path, (typename traits::real_type<value_type>::type *)ambient::naked(m.tile(i,j)), size, chunk, offset);
                 }
             }

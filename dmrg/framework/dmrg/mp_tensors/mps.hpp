@@ -173,10 +173,13 @@ void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2, Decomp
     {
         if ((*this)[i].isleftnormalized())
             continue;
-        select_proc(ambient::scope::balance(i,length()));
-        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_left(method);
-        if (i < length()-1) { 
-            switch_proc(ambient::scope::balance(i+1,length()));
+        block_matrix<Matrix, SymmGroup> t;
+        {
+            select_proc(ambient::scope::balance(i,length()));
+            t = (*this)[i].normalize_left(method);
+        }
+        if (i < length()-1) {
+            select_proc(ambient::scope::balance(i+1,length()));
             (*this)[i+1].multiply_from_left(t);
             (*this)[i+1].divide_by_scalar((*this)[i+1].scalar_norm());
         }
@@ -198,10 +201,13 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
     {
         if ((*this)[i].isrightnormalized())
             continue;
-        select_proc(ambient::scope::balance(i,length()));
-        block_matrix<Matrix, SymmGroup> t = (*this)[i].normalize_right(method);
-        if (i > 0) { 
-            switch_proc(ambient::scope::balance(i-1,length()));
+        block_matrix<Matrix, SymmGroup> t;
+        {
+            select_proc(ambient::scope::balance(i,length()));
+            t = (*this)[i].normalize_right(method);
+        }
+        if (i > 0) {
+            select_proc(ambient::scope::balance(i-1,length()));
             (*this)[i-1].multiply_from_right(t);
             (*this)[i-1].divide_by_scalar((*this)[i-1].scalar_norm());
         }
@@ -285,7 +291,7 @@ MPS<Matrix, SymmGroup>::right_boundary() const
 }
 
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& op, MPS<Matrix, SymmGroup>::size_type p)
+void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& op, typename MPS<Matrix, SymmGroup>::size_type p)
 {
     typedef typename SymmGroup::charge charge;
     using std::size_t;
@@ -309,7 +315,7 @@ void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& op, MP
 }
 
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& fill, block_matrix<Matrix, SymmGroup> const& op, MPS<Matrix, SymmGroup>::size_type p)
+void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& fill, block_matrix<Matrix, SymmGroup> const& op, typename MPS<Matrix, SymmGroup>::size_type p)
 {
     for (size_t i=0; i<p; ++i) {
         (*this)[i] = contraction::multiply_with_op((*this)[i], fill);
@@ -349,28 +355,39 @@ void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
     size_t loop_max = mps.length();
 #ifdef USE_AMBIENT
     for(size_t k = 0; k < loop_max; ++k){
-        select_proc(ambient::scope::balance(k,loop_max));
-        mps[k].make_left_paired();
+        {
+            select_proc(ambient::scope::balance(k,loop_max));
+            mps[k].make_left_paired();
+        }
+        {
+            select_group(ambient::scope::balance(k,loop_max),1);
+            storage::migrate(mps[k]);
+        }
     }
     ambient::sync();
 #endif
     for(size_t k = 0; k < loop_max; ++k){
 #ifdef USE_AMBIENT
         select_proc(ambient::scope::balance(k,loop_max));
-        if(!ambient::ctxt.local()) continue;
+        if(!ambient::scope::local()) continue;
 #endif
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5.new";
         storage::archive ar(fname, "w");
         ar["/tensor"] << mps[k];
     }
-    omp_for(size_t k = 0; k < loop_max; ++k){
+    
+#ifdef USE_AMBIENT
+    ambient::sync(); // be sure that chkp is in valid state before overwriting the old one.
+#endif
+    
+    omp_for(size_t k, range<size_t>(0,loop_max), {
 #ifdef USE_AMBIENT
         select_proc(ambient::scope::balance(k,loop_max));
-        if(!ambient::ctxt.local()) continue;
+        if(!ambient::scope::local()) continue;
 #endif
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
         boost::filesystem::rename(fname+".new", fname);
-    }
+    });
 }
 
 template <class Matrix, class SymmGroup>

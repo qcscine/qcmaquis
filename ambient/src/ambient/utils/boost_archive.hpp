@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -61,7 +63,7 @@ namespace ambient { namespace memory {
             boost::archive::load(*this, t);
         }
         template<class T> void load(T& t){ 
-            assert(false);
+            throw std::runtime_error("Error: failed to override boost_archive::load");
         }
         void load(int& t)          { /* ... */ }
         void load(unsigned long& t){ /* ... */ }

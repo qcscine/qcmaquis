@@ -2,30 +2,29 @@
 
 template<class T, std::size_t Size>
 struct helper_test{
-     /* only for TE (complex) */
-     static void test(){ }
+     static void test(){ } /* only for TE (complex) */
 };
 
 template<class T, std::size_t Size>
 struct helper_test<std::complex<T>, Size >{
-     static void test(){
-         typedef alps::numeric::matrix<std::complex<T>> sMatrix;
-         typedef ambient::numeric::tiles<ambient::numeric::matrix<std::complex<T> > > pMatrix;
-     
-         std::complex<T> a; 
-         ambient::numeric::kernels::detail::randomize(a);
-     
-         pMatrix pA(Size, Size), pB(Size, Size);
-         sMatrix sA(Size, Size), sB(Size, Size);
-        
-         generate(pA);
-         sA = cast<sMatrix>(pA);
-     
-         sB = exp(sA,a);
-         pB = exp(pA,a);
-     
-         BOOST_CHECK(pB==sB);
-     }
+    static void test(){
+        typedef alps::numeric::matrix<std::complex<T>> sMatrix;
+        typedef ambient::numeric::tiles<ambient::numeric::matrix<std::complex<T> > > pMatrix;
+    
+        std::complex<T> a; 
+        ambient::numeric::kernels::detail::randomize(a);
+    
+        pMatrix pA(Size, Size), pB(Size, Size);
+        sMatrix sA(Size, Size), sB(Size, Size);
+       
+        generate(pA);
+        sA = cast<sMatrix>(pA);
+    
+        sB = exp(sA,a);
+        pB = exp(pA,a);
+    
+        BOOST_CHECK(pB==sB);
+    }
 };
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( EXP_ALGO, T, test_types) {

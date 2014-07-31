@@ -28,8 +28,6 @@
 #ifndef APP_SIM_H
 #define APP_SIM_H
 
-#include "dmrg/version.h"
-
 #include <cmath>
 #include <iterator>
 #include <iostream>
@@ -45,7 +43,6 @@
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/twositetensor.h"
-#include "dmrg/mp_tensors/contractions.h"
 #include "dmrg/mp_tensors/contractions.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/mpo_ops.h"

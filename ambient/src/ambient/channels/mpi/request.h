@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -32,12 +34,12 @@ namespace ambient { namespace channels { namespace mpi {
     class request_impl : public memory::use_bulk_new<request_impl> {
     public:
         request_impl(){}
-        request_impl(void(*impl)(request_impl*), typename channel::scalar_type& v, int target, int tag = 0);
-        request_impl(void(*impl)(request_impl*), typename channel::block_type& r, int target, int tag = 0);
+        request_impl(void(*impl)(request_impl*), typename channel::scalar_type& v, rank_t target, int tag = 0);
+        request_impl(void(*impl)(request_impl*), typename channel::block_type& r, rank_t target, int tag = 0);
         inline bool operator()();
         void* data;
         int extent;
-        int target;
+        int target; // MPI_INT
         MPI_Request mpi_request;
         void(*impl)(request_impl*);
         bool once;

@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -84,6 +86,16 @@ namespace ambient { namespace numeric {
     template <typename T>
     inline void migrate(diagonal_matrix<T>& a){
         kernels::template migrate<T,ambient::default_allocator<T> >(a); 
+    }
+
+    template <typename T, class A>
+    inline void hint(const matrix<T,A>& a){
+        kernels::template hint<T,A>(a); 
+    }
+
+    template <typename T>
+    inline void hint(const diagonal_matrix<T>& a){
+        kernels::template hint<T,ambient::default_allocator<T> >(a); 
     }
 
     template<class MatrixViewA, class MatrixViewB, typename T, class A>

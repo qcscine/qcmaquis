@@ -29,12 +29,13 @@ then
     export CC=cc.dynamic  # cc -dynamic -lz $*
     
     export PATH=${MAQUIS_INSTALL}/bin:${PATH}
+
+    alias sync_maquis_deps='rsync -aut /project/s512/install.bkp/daint/apps/gcc_4_8_2/ $MYAPPS'
 fi
 
 COMMON_AMBIENT_THREADING="openmp"
 COMMON_CMAKE_INSTALL_PREFIX=${MAQUIS_INSTALL}
 COMMON_MPI_CXX_FOUND=TRUE
-COMMON_CMAKE_SYSTEM_NAME="Generic"
 COMMON_BLAS_LAPACK_SELECTOR="manual"
 COMMON_PLASMA_LIB_DIR="$PLASMA_ROOT/lib"
 DMRG_BUILD_AMBIENT=ON

@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -52,9 +54,8 @@ namespace ambient { namespace models { namespace ssm {
         return (r->state == ambient::locality::common);
     }
 
-    inline int model::owner(const revision* r){
-        int p = r->owner;
-        return (p == -1 ? ambient::rank() : p);
+    inline rank_t model::owner(const revision* r){
+        return r->owner;
     }
 
 } } }

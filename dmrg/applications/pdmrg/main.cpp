@@ -64,6 +64,7 @@ typedef TrivialGroup grp;
 #include "dmrg/optimize/ietl_lanczos_solver.h"
 #include "dmrg/optimize/ietl_jacobi_davidson.h"
 
+#include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
 
 #include "utils/timings.h"
@@ -232,16 +233,11 @@ int main(int argc, char ** argv)
         mpi::environment env(argc, argv);
         mpi::communicator comm;
         
-        if (argc != 2 && argc != 3)
-        {
-            maquis::cout << "Usage: <parms> [<model_parms>]" << std::endl;
-            exit(1);
-        }
+        DmrgOptions opt(argc, argv);
+        if (!opt.valid) return 0;
+        DmrgParameters parms = opt.parms;
         
         maquis::cout.precision(10);
-        
-        /// Load parameters
-        DmrgParameters parms = load_parms_and_model(argv[1], (argc == 3) ? argv[2] : "");
     
         /// Parsing model
         Lattice lattice(parms);

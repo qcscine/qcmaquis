@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -27,7 +29,7 @@
 #ifndef AMBIENT
 #define AMBIENT
 // {{{ system includes
-#ifndef AMBIENT_NOP_CHANNEL
+#ifndef DISABLE_MPI
 #include <mpi.h>
 #endif
 #include <complex>
@@ -37,6 +39,7 @@
 #include <string>
 #include <limits>
 #include <vector>
+#include <stack>
 #include <set>
 #include <map>
 #include <list>
@@ -48,19 +51,23 @@
 #include <sys/time.h>
 #include <algorithm>
 #include <execinfo.h>
+#include <stdexcept>
 // }}}
 
 #define AMBIENT_IB                    2048
 #define AMBIENT_INSTR_BULK_CHUNK      16777216 // 16 MB
 #define AMBIENT_DATA_BULK_CHUNK       67108864 // 64 MB
 #define AMBIENT_MAX_SID               2097152  // Cray MPI
+#define AMBIENT_MPI_THREADING         MPI_THREAD_FUNNELED
+#define AMBIENT_MASTER_RANK           0
 
 #include "ambient/utils/dim2.h"
 #include "ambient/utils/enums.h"
 #include "ambient/utils/tree.hpp"
 #include "ambient/utils/fence.hpp"
 #include "ambient/utils/enable_threading.hpp"
-#include "ambient/utils/reduce.hpp"
+#include "ambient/utils/math.hpp"
+#include "ambient/utils/rank_t.hpp"
 
 #include "ambient/memory/pool.hpp"
 #include "ambient/memory/new.h"
@@ -71,7 +78,7 @@
 #include "ambient/models/ssm/transformable.h"
 #include "ambient/models/ssm/model.h"
 
-#ifndef AMBIENT_NOP_CHANNEL
+#ifdef MPI_VERSION
 #include "ambient/channels/mpi/group.h"
 #include "ambient/channels/mpi/multirank.h"
 #include "ambient/channels/mpi/channel.h"
@@ -87,7 +94,8 @@
 #include "ambient/controllers/ssm/get.h"
 #include "ambient/controllers/ssm/set.h"
 #include "ambient/controllers/ssm/scope.h"
-#include "ambient/controllers/ssm/workflow.h"
+#include "ambient/controllers/ssm/actor.h"
+#include "ambient/controllers/ssm/backbone.h"
 
 #include "ambient/utils/auxiliary.hpp"
 #include "ambient/utils/io.hpp"
@@ -102,7 +110,7 @@
 #include "ambient/models/ssm/transformable.hpp"
 #include "ambient/models/ssm/model.hpp"
 
-#ifndef AMBIENT_NOP_CHANNEL
+#ifdef MPI_VERSION
 #include "ambient/channels/mpi/group.hpp"
 #include "ambient/channels/mpi/multirank.hpp"
 #include "ambient/channels/mpi/channel.hpp"
@@ -115,7 +123,8 @@
 #include "ambient/controllers/ssm/collector.hpp"
 #include "ambient/controllers/ssm/controller.hpp"
 #include "ambient/controllers/ssm/scope.hpp"
-#include "ambient/controllers/ssm/workflow.hpp"
+#include "ambient/controllers/ssm/actor.hpp"
+#include "ambient/controllers/ssm/backbone.hpp"
 
 #include "ambient/interface/typed.hpp"
 #include "ambient/interface/kernel.hpp"

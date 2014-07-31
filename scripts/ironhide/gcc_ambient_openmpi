@@ -1,7 +1,7 @@
 #!/bin/bash -l
 STATE="void"
 STATE_AMBIENT="void"
-STATE_DMRG="configure"
+STATE_DMRG="build"
 # end of target states #
 PREFIX=ambient
 COMPILER=gcc
@@ -10,7 +10,7 @@ MPI_WRAPPER=openmpi
 MPI_WRAPPER_VERSION=""
 
 export ALPS_ROOT=$HOME/opt/alps-gcc48
-export PLASMA_ROOT=$HOME/opt/plasma-2.6
+export PLASMA_ROOT=$HOME/opt/plasma
 export PATH=${ALPS_ROOT}/bin:${PATH}
 export PYTHONPATH=${ALPS_ROOT}/lib:${PYTHONPATH} # md: ALPS is installed without python, therefore not needed
 

@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -38,11 +40,11 @@ namespace ambient {
     }
 
     template <typename T> static bool exclusive(T& obj){
-        ctxt.get_controller().touch(obj.ambient_rc.desc);
+        selector.get_controller().touch(obj.ambient_rc.desc);
         revision& c = *obj.ambient_rc.desc->current;
-        if(ctxt.remote()){
+        if(selector.get_actor().remote()){
             c.state = ambient::locality::remote;
-            c.owner = ctxt.which();
+            c.owner = ambient::which();
             return true;
         }else{
             c.state = ambient::locality::local;
@@ -51,33 +53,34 @@ namespace ambient {
         }
     }
 
-    template <typename T> static mapping& load(T& obj){ 
-        ctxt.get_controller().touch(obj.ambient_rc.desc);
+    template <typename T> static T& load(T& obj){ 
+        selector.get_controller().touch(obj.ambient_rc.desc);
         ambient::sync(); 
         revision& c = *obj.ambient_rc.desc->current;
         assert(c.state == ambient::locality::local || c.state == ambient::locality::common);
-        if(!c.valid()){
-            c.embed(get_allocator<T>::type::calloc(c.spec));
-        }
-        return *(mapping*)c;
+        if(!c.valid()) c.embed(get_allocator<T>::type::calloc(c.spec));
+        obj.ambient_after = obj.ambient_rc.desc->current;
+        return obj;
     }
 
-    template <typename T> static mapping& versioned(const T& obj){
-        revision& c = *obj.ambient_before; if(c.valid()) return *(mapping*)c;
+    template <typename T> static mapping& delegated(T& obj){
+        return *(mapping*)(*obj.ambient_after);
+    }
+
+    template <typename T> static void revise(const T& obj){
+        revision& c = *obj.ambient_before; if(c.valid()) return;
         c.embed(get_allocator<T>::type::calloc(c.spec));
-        return *(mapping*)c;
     }
 
-    template <typename T> static mapping& versioned(unbound< T >& obj){ 
-        revision& c = *obj.ambient_after; if(c.valid()) return *(mapping*)c;
+    template <typename T> static void revise(unbound< T >& obj){
+        revision& c = *obj.ambient_after; if(c.valid()) return;
         revision& p = *obj.ambient_before;
         if(p.valid() && p.locked_once() && !p.referenced() && c.spec.conserves(p.spec)) c.reuse(p);
         else c.embed(get_allocator<T>::type::alloc(c.spec));
-        return *(mapping*)c;
     }
 
-    template <typename T> static mapping& versioned(T& obj){
-        revision& c = *obj.ambient_after; if(c.valid()) return *(mapping*)c;
+    template <typename T> static void revise(T& obj){
+        revision& c = *obj.ambient_after; if(c.valid()) return;
         revision& p = *obj.ambient_before;
         if(!p.valid()) c.embed(get_allocator<T>::type::calloc(c.spec));
         else if(p.locked_once() && !p.referenced() && c.spec.conserves(p.spec)) c.reuse(p);
@@ -85,7 +88,6 @@ namespace ambient {
             c.embed(get_allocator<T>::type::alloc(c.spec));
             memcpy((T*)c, (T*)p, p.spec.extent);
         }
-        return *(mapping*)c;
     }
 }
 

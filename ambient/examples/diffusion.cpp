@@ -1,23 +1,17 @@
 #include "ambient/ambient.hpp"
-#include "ambient/utils/reduce.hpp"
+#include "ambient/utils/math.hpp"
 #include "ambient/utils/timings.hpp"
 #define IB 256
 
-template<typename T> class block;
 template<typename T> class stencil;
 template<typename T> class border;
 
-namespace detail { using namespace ambient;
+namespace detail { 
+    using namespace ambient;
 
     // Dirichlet boundaries; central differences in space, forward Euler in time:
     // u[i,j]' = u[i,j] + dt*D*(u(i,j+1) + u(i,j-1) + u(i+1,j) + u(i-1,j) - 4*u(i,j)) / (dr * dr)
 
-    template<typename T>
-    void init_value(unbound< block<T> >& a, T& value){
-        size_t size = get_square_dim(a);
-        T* a_ = versioned(a).val;
-        for(size_t i = 0; i < size; ++i) a_[i] = value;
-    }
     template<typename T>
     void partial_init_value(unbound< block<T> >& a, T& value, 
                             double& posi, double& posj, 
@@ -25,7 +19,7 @@ namespace detail { using namespace ambient;
     {
         size_t m = get_dim(a).y;
         size_t n = get_dim(a).x;
-        T* a_ = versioned(a).val; 
+        T* a_ = &a(0,0); 
         memset(a_, 0, ambient::extent(a)); 
         for(size_t i = 0; i < m; ++i)
         for(size_t j = 0; j < n; ++j){
@@ -41,11 +35,11 @@ namespace detail { using namespace ambient;
                                   const block<T>& bottom,
                                   double*& res)
     {
-        T* a_ = versioned(a).val;
-        T* l  = versioned(left).val;
-        T* r  = versioned(right).val;
-        T* t  = versioned(top).val;
-        T* b  = versioned(bottom).val;
+        const T* a_ = &a(0,0);
+        const T* l  = &left(0,0);
+        const T* r  = &right(0,0);
+        const T* t  = &top(0,0);
+        const T* b  = &bottom(0,0);
 
         double summ = 0.;
         size_t n = get_dim(a).x;
@@ -69,11 +63,11 @@ namespace detail { using namespace ambient;
                                           double& dr, double*& res)
     {
 
-        T* a_ = versioned(a).val;
-        T* l  = versioned(left).val;
-        T* r  = versioned(right).val;
-        T* t  = versioned(top).val;
-        T* b  = versioned(bottom).val;
+        const T* a_ = &a(0,0);
+        const T* l  = &left(0,0);
+        const T* r  = &right(0,0);
+        const T* t  = &top(0,0);
+        const T* b  = &bottom(0,0);
 
         double summ = 0.;
         size_t n = get_dim(a).x;
@@ -103,12 +97,12 @@ namespace detail { using namespace ambient;
         size_t ind;
         size_t m = get_dim(s).y;
         size_t n = get_dim(s).x;
-        T* u_ = versioned(s_).val;
-        T* u  = versioned(s).val;
-        T* t  = versioned(top).val;
-        T* r  = versioned(right).val;
-        T* b  = versioned(bottom).val;
-        T* l  = versioned(left).val;
+        T* u_ = &s_(0,0);
+        const T* u  = &s(0,0);
+        const T* t  = &top(0,0);
+        const T* r  = &right(0,0);
+        const T* b  = &bottom(0,0);
+        const T* l  = &left(0,0);
 
         ind = (n-1)*m;     u_[ind] = u[ind] + fac*(u[ind+1] + t[n]     + r[0]     + u[ind-m] - 4*u[ind]);
         ind = m-1;         u_[ind] = u[ind] + fac*(b[1]     + u[ind-1] + u[ind+m] + l[ind]   - 4*u[ind]);
@@ -148,14 +142,14 @@ namespace detail { using namespace ambient;
     {
         size_t n = get_dim(top_).x-1;
         size_t m = get_dim(s).y;
-        T* t_ = versioned(top_).val;
-        T* t  = versioned(top).val;
-        T* l  = versioned(left).val;
-        T* r  = versioned(right).val;
-        T* x  = versioned(s).val;
-        T* lt = versioned(ln_top).val;
-        T* tb = versioned(tn_bottom).val;
-        T* rt = versioned(rn_top).val;
+        T* t_ = &top_(0,0);
+        const T* t  = &top(0,0);
+        const T* l  = &left(0,0);
+        const T* r  = &right(0,0);
+        const T* x  = &s(0,0);
+        const T* lt = &ln_top(0,0);
+        const T* tb = &tn_bottom(0,0);
+        const T* rt = &rn_top(0,0);
                                    t_[0] = t[0] + fac*(t[1] + lt[get_dim(ln_top).x-1] + l[0] + tb[0] - 4*t[0]);
         for(int j = 1; j < n; j++) t_[j] = t[j] + fac*(t[j+1] + t[j-1] + x[(j-1)*m] + tb[j] - 4*t[j]);
                                    t_[n] = t[n] + fac*(rt[0] + t[n-1] + r[0] + tb[n] - 4*t[n]);
@@ -173,14 +167,14 @@ namespace detail { using namespace ambient;
     {
         size_t n = get_dim(bottom_).x-1;
         size_t m = get_dim(s).y;
-        T* b_ = versioned(bottom_).val;
-        T* b  = versioned(bottom).val;
-        T* l  = versioned(left).val;
-        T* r  = versioned(right).val;
-        T* x  = versioned(s).val;
-        T* lb = versioned(ln_bottom).val;
-        T* bt = versioned(bn_top).val;
-        T* rb = versioned(rn_bottom).val;
+        T* b_ = &bottom_(0,0);
+        const T* b  = &bottom(0,0);
+        const T* l  = &left(0,0);
+        const T* r  = &right(0,0);
+        const T* x  = &s(0,0);
+        const T* lb = &ln_bottom(0,0);
+        const T* bt = &bn_top(0,0);
+        const T* rb = &rn_bottom(0,0);
 
                                    b_[0] = b[0] + fac*(b[1] + lb[get_dim(ln_bottom).x-1] + bt[0] + l[m-1] - 4*b[0]);
         for(int j = 1; j < n; j++) b_[j] = b[j] + fac*(b[j+1] + b[j-1] + bt[j] + x[j*m-1] - 4*b[j]);
@@ -196,12 +190,12 @@ namespace detail { using namespace ambient;
                                                            double& fac)
     {
         size_t m = get_dim(left_).y-1;
-        T* l_ = versioned(left_).val;
-        T* l  = versioned(left).val;
-        T* t  = versioned(top).val;
-        T* b  = versioned(bottom).val;
-        T* x  = versioned(s).val;
-        T* lr = versioned(ln_right).val;
+        T* l_ = &left_(0,0);
+        const T* l  = &left(0,0);
+        const T* t  = &top(0,0);
+        const T* b  = &bottom(0,0);
+        const T* x  = &s(0,0);
+        const T* lr = &ln_right(0,0);
 
                                    l_[0] = l[0] + fac*(lr[0] + x[0] + t[0] + l[1] - 4*l[0]);
         for(int i = 1; i < m; i++) l_[i] = l[i] + fac*(lr[i] + x[i] + l[i-1] + l[i+1] - 4*l[i]);
@@ -218,12 +212,12 @@ namespace detail { using namespace ambient;
     {
         size_t m = get_dim(right_).y-1;
         size_t n = get_dim(s).x;
-        T* r_ = versioned(right_).val;
-        T* r  = versioned(right).val;
-        T* t  = versioned(top).val;
-        T* b  = versioned(bottom).val;
-        T* x  = versioned(s).val + (m+1)*(n-1);
-        T* rl = versioned(rn_left).val;
+        T* r_ = &right_(0,0);
+        const T* r  = &right(0,0);
+        const T* t  = &top(0,0);
+        const T* b  = &bottom(0,0);
+        const T* x  = &s(0,0) + (m+1)*(n-1);
+        const T* rl = &rn_left(0,0);
 
                                    r_[0] = r[0] + fac*(x[0] + rl[0] + t[n+1] + r[1] - 4*r[0]);
         for(int i = 1; i < m; i++) r_[i] = r[i] + fac*(x[i] + rl[i] + r[i-1] + r[i+1] - 4*r[i]);
@@ -232,7 +226,6 @@ namespace detail { using namespace ambient;
 
 }
 
-AMBIENT_EXPORT(detail::init_value, init_value)
 AMBIENT_EXPORT(detail::partial_init_value, partial_init_value)
 AMBIENT_EXPORT(detail::reduce, reduce)
 AMBIENT_EXPORT(detail::reduce_moment, reduce_moment)
@@ -242,31 +235,19 @@ AMBIENT_EXPORT(detail::contract_border_bottom, contract_border_bottom)
 AMBIENT_EXPORT(detail::contract_border_left, contract_border_left)
 AMBIENT_EXPORT(detail::contract_border_right, contract_border_right)
 
-template <typename T>
-class block {
-public:
-AMBIENT_DELEGATE
-( 
-    T val[AMBIENT_VAR_LENGTH];
-)
-    block(size_t m, size_t n) : AMBIENT_ALLOC_2D(m, n, sizeof(T)) {}
+template<typename T>
+void partial_init(ambient::block<T>& b, T value, double posi, double posj, double dr, double bound){
+    partial_init_value<T>(b, value, posi, posj, dr, bound);
+}
 
-    void init(T value){
-        init_value<T>(*this, value);
-    }
-    void partial_init(T value, double posi, double posj, double dr, double bound){
-        partial_init_value<T>(*this, value, posi, posj, dr, bound);
-    }
+template <typename T>
+class border : public ambient::block<T>{
+public:
+    border(size_t m, size_t n) : ambient::block<T>(m, n) {}
 };
 
 template <typename T>
-class border : public block<T>{
-public:
-    border(size_t m, size_t n) : block<T>(m, n) {}
-};
-
-template <typename T>
-class stencil : public block<T> {
+class stencil : public ambient::block<T> {
 public:
     class frame {
     public:
@@ -281,8 +262,8 @@ public:
         border<T>* bottom;
         border<T>* left;
     };
-    void init(T value){
-        block<T>::init(value);
+    void fill(T value){
+        this->init(value);
         top().init(value);
         right().init(value);
         bottom().init(value);
@@ -294,27 +275,26 @@ public:
     border<T>& right()  const { return *f->right;  }
 
     void print(){
-        for(int j = 0; j < IB; j++) printf("%.2f ", ambient::load(top()).val[j]);
+        for(int j = 0; j < IB; j++) printf("%.2f ", ambient::load(top())(j,0));
         printf("\n");
         for(int i = 0; i < IB-2; i++){
-            printf("%.2f ", ambient::load(left()).val[i]);
+            printf("%.2f ", ambient::load(left())(i,0));
             for(int j = 0; j < IB-2; j++){
-                printf("%.2f ", ambient::load(*this).val[i+j*(IB-2)]);
+                printf("%.2f ", ambient::load(*this)(i,j));
             }
-            printf("%.2f ", ambient::load(right()).val[i]);
+            printf("%.2f ", ambient::load(right())(i,0));
             printf("\n");
         }
-        for(int j = 0; j < IB; j++) printf("%.2f ", ambient::load(bottom()).val[j]);
+        for(int j = 0; j < IB; j++) printf("%.2f ", ambient::load(bottom())(j,0));
         printf("\n");
     }
 
     void partial_init(T value, double posi, double posj, double dr, double bound){
-        top().   partial_init(value, posi,                   posj,                   dr, bound);
-        right(). partial_init(value, posi+dr,                posj+(num_cols()-1)*dr, dr, bound);
-        bottom().partial_init(value, posi+(num_rows()-1)*dr, posj,                   dr, bound);
-        left().  partial_init(value, posi+dr,                posj,                   dr, bound);
-
-        block<T>::partial_init(value, posi + dr, posj + dr, dr, bound);
+        ::partial_init(top(),    value, posi,                   posj,                   dr, bound);
+        ::partial_init(right(),  value, posi+dr,                posj+(num_cols()-1)*dr, dr, bound);
+        ::partial_init(bottom(), value, posi+(num_rows()-1)*dr, posj,                   dr, bound);
+        ::partial_init(left(),   value, posi+dr,                posj,                   dr, bound);
+        ::partial_init(*this,    value, posi + dr,              posj + dr,              dr, bound);
     }
     size_t num_rows(){ return ambient::get_dim(*this).y+2; }
     size_t num_cols(){ return ambient::get_dim(*this).x+2; }
@@ -342,7 +322,7 @@ public:
         double resv = *res; delete res;
         return resv;
     }
-    stencil(size_t m, size_t n) : block<T>(m-2, n-2) { f = new frame(m, n); }
+    stencil(size_t m, size_t n) : ambient::block<T>(m-2, n-2) { f = new frame(m, n); }
     frame* f;
 };
 
@@ -357,7 +337,7 @@ class Diffusion2D {
         time(0)
         {
             // process grid - manual for now //
-            int n = ambient::num_workers();
+            int n = ambient::num_procs();
             if(n == 2){
                 np = 1;
                 nq = 2;
@@ -399,8 +379,8 @@ class Diffusion2D {
                 grid.push_back(new stencil_t(tailm, tailn)); grid_mirror.push_back(new stencil_t(tailm, tailn));
             }
             {
-                ambient::scope select(ambient::scope_t::common);
-                null_stencil.init(0.0);
+                ambient::actor select(ambient::actor_t::common);
+                null_stencil.fill(0.0);
             }
 
             //initialize grid density(x,y,t=0)
@@ -410,7 +390,7 @@ class Diffusion2D {
 
             for(size_t i = 0; i < mt; ++i)
             for(size_t j = 0; j < nt; ++j){
-                ambient::scope select(get_rank(i,j));
+                ambient::actor select(ambient::scope::begin()+get_rank(i,j));
                 get(i,j).partial_init(value, i*IB*dr+rmin, j*IB*dr+rmin, dr, bound);
             }
         }
@@ -451,7 +431,7 @@ class Diffusion2D {
         void propagate_density(){ 
             for(int i = 0; i < mt; i++){
                 for(int j = 0; j < nt; j++){
-                    ambient::scope select(get_rank(i,j));
+                    ambient::actor select(ambient::scope::begin()+get_rank(i,j));
                     grid_mirror[i+j*mt]->evolve_from(get(i,j), fac);
                     grid_mirror[i+j*mt]->contract(get(i,j), get(i-1,j), get(i,j+1), get(i+1,j), get(i,j-1), fac);
                 }
@@ -489,7 +469,7 @@ int main(int argc, char* argv[]){
     }
     time.end();
     {
-        ambient::scope select(0);
+        ambient::actor select(ambient::scope::begin());
         ambient::cout << "getting results... ";
         ambient::cout << task.get_size() << '\t' << task.get_moment() << std::endl;
     }

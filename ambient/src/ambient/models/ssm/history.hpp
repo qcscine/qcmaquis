@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -29,19 +31,19 @@ namespace ambient { namespace models { namespace ssm {
     inline history::history(dim2 dim, size_t ts) : current(NULL), dim(dim), extent(ambient::memory::aligned_64(dim.square()*ts)) { }
 
     inline void history::init_state(){
-        revision* r = new revision(extent, NULL, ambient::locality::common); 
+        revision* r = new revision(extent, NULL, ambient::locality::common, ambient::rank());
         this->current = r;
     }
 
     template<ambient::locality L>
     inline void history::add_state(void* g){
-        revision* r = new revision(extent, g, L); 
+        revision* r = new revision(extent, g, L, ambient::rank());
         this->current = r;
     }
 
     template<ambient::locality L>
-    inline void history::add_state(int g){
-        revision* r = new revision(extent, NULL, L, g); 
+    inline void history::add_state(rank_t g){
+        revision* r = new revision(extent, NULL, L, g);
         this->current = r;
     }
 

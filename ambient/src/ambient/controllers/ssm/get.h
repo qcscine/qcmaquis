@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -53,7 +55,7 @@ namespace ambient { namespace controllers { namespace ssm {
         get(revision& r);
         virtual void invoke();
         virtual bool ready();
-        void operator += (int rank);
+        void operator += (rank_t rank);
     private:
         collective<revision>* handle;
         revision& t;

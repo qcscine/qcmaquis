@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -24,36 +26,40 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#define BOUNDARY_OVERFLOW -1
+
 namespace ambient { namespace channels { namespace mpi {
 
     template<typename T>
     inline void bcast<T>::dispatch(){
-        std::pair<int,int> lr = (*channel::setup().trees[size])[self];
+        std::pair<rank_t,rank_t> lr = (*channel::setup().trees[size])[self];
         if(!self){ // self == root
-            if(lr.first  != -1) impl &= new request_impl(send_impl, object, list[lr.first], tags[lr.first]);
-            if(lr.second != -1) impl &= new request_impl(send_impl, object, list[lr.second], tags[lr.second]);
+            if(lr.first  != BOUNDARY_OVERFLOW) impl &= new request_impl(send_impl, object, list[lr.first],  tags[lr.first]);
+            if(lr.second != BOUNDARY_OVERFLOW) impl &= new request_impl(send_impl, object, list[lr.second], tags[lr.second]);
         }else{
             impl &= new request_impl(recv_impl, object, MPI_ANY_SOURCE, tags[self]);
-            if(lr.first  != -1) impl += new request_impl(send_impl, object, list[lr.first], tags[lr.first]);
-            if(lr.second != -1) impl += new request_impl(send_impl, object, list[lr.second], tags[lr.second]);
+            if(lr.first  != BOUNDARY_OVERFLOW) impl += new request_impl(send_impl, object, list[lr.first],  tags[lr.first]);
+            if(lr.second != BOUNDARY_OVERFLOW) impl += new request_impl(send_impl, object, list[lr.second], tags[lr.second]);
         }
     }
 
-    inline collective<typename channel::block_type>::collective(typename channel::block_type& r, int root) 
+    inline collective<typename channel::block_type>::collective(typename channel::block_type& r, rank_t root) 
     : bcast<typename channel::block_type>(r, root), states(ambient::num_procs()+1) {
         this->tree.push_back(root);
         this->tags.push_back(-1);
     }
 
-    inline void collective<typename channel::block_type>::operator += (int rank){
+    inline void collective<typename channel::block_type>::operator += (rank_t rank){
         if(!states[rank]){
             states[rank] = true;
             if(states.back()){
                 for(int i = this->tags.size(); i <= ambient::num_procs(); i++)
-                    this->tags.push_back(ambient::ctxt.generate_sid());
+                    this->tags.push_back(ambient::selector.generate_sid());
+                for(int i = 0; i < ambient::num_procs(); i++)
+                    this->states[i] = true;
             }else{
                 if(rank == ambient::rank()) this->self = tree.size();
-                this->tags.push_back(ambient::ctxt.get_sid());
+                this->tags.push_back(ambient::selector.get_sid());
                 this->tree.push_back(rank);
             }
         }
@@ -78,11 +84,11 @@ namespace ambient { namespace channels { namespace mpi {
         return this->impl();
     }
 
-    inline collective<typename channel::scalar_type>::collective(typename channel::scalar_type& v, int root)
+    inline collective<typename channel::scalar_type>::collective(typename channel::scalar_type& v, rank_t root)
     : bcast<typename channel::scalar_type>(v, root) {
         tags.reserve(ambient::num_procs()+1);
         for(int i = 0; i <= ambient::num_procs(); i++)
-            this->tags.push_back(ambient::ctxt.generate_sid());
+            this->tags.push_back(ambient::selector.generate_sid());
     }
 
     inline bool collective<typename channel::scalar_type>::test(){

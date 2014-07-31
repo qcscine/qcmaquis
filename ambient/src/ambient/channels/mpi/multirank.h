@@ -1,5 +1,7 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Ambient Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -32,16 +34,15 @@ namespace ambient { namespace channels { namespace mpi {
     class group;
     class multirank {
     public:
-        int operator()() const;
-        int operator()(const group* grp) const;
-        int translate(int rank, const group* source) const; // default: world
-        int translate(int rank, const group* source, const group* target) const;
-        int cast_to_parent(int rank, const group* source, const group* target) const;
-        int cast_to_child(int rank, const group* source, const group* target) const;
+        rank_t operator()() const;
+        rank_t operator()(const group* grp) const;
+        rank_t translate(rank_t rank, const group* source) const; // default: world
+        rank_t translate(rank_t rank, const group* source, const group* target) const;
+        rank_t cast_to_parent(rank_t rank, const group* source, const group* target) const;
+        rank_t cast_to_child(rank_t rank, const group* source, const group* target) const;
         bool belongs(const group* target) const;
-        bool masters(const group* target) const;
-        int left_neighbor() const;
-        int right_neighbor() const;
+        rank_t left_neighbor() const;
+        rank_t right_neighbor() const;
         const group* world;
     };
 

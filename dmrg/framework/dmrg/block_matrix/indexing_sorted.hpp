@@ -457,7 +457,7 @@ basis_iterator_<SymmGroup> operator+(basis_iterator_<SymmGroup> it, std::size_t 
 // It can be removed as soon as this bug is fixed:
 // http://social.msdn.microsoft.com/Forums/en/vclanguage/thread/bab04536-8a8d-4b5e-9a49-e10144688667
 
-#ifdef WIN32
+#if defined(WIN32) || defined(WIN64)
 template<class A, class B> std::pair<A, B> mypair(A & a, B & b) { return std::pair<A,B>(a,b); }
 #endif
 
@@ -484,7 +484,7 @@ Index<SymmGroup> adjoin(Index<SymmGroup> const & inp)
     
     Index<SymmGroup> ret;
     for (size_t i=0; i<nc.size(); ++i)
-#ifndef WIN32
+#if not defined(WIN32) && not defined(WIN64)
         ret.insert(std::make_pair(nc[i], nd[i]));
 #else
         ret.insert(mypair(nc[i], nd[i]));
