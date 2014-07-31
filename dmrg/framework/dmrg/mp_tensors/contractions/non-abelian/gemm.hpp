@@ -48,7 +48,7 @@ namespace SU2 {
 
             std::pair<const_iterator, const_iterator>
               er = std::equal_range(BBbegin, B.basis().end(),
-                dual_index_detail::make_QnBlock<SymmGroup>(A.right_basis_charge(k), SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
+                dual_index_detail::QnBlock<SymmGroup>(A.right_basis_charge(k), SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
 
             for (const_iterator it = er.first; it != er.second; ++it)
             {
