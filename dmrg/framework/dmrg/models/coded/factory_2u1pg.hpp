@@ -25,6 +25,7 @@
  *****************************************************************************/
 
 #include "dmrg/models/chem/model_qc.h"
+#include "dmrg/models/chem/model_stub.h"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, TwoU1PG> {
@@ -37,6 +38,13 @@ struct coded_model_factory<Matrix, TwoU1PG> {
                 throw std::runtime_error("Please use \"LATTICE = orbitals\" for quantum_chemistry\n");
 
             return impl_ptr( new qc_model<Matrix, TwoU1PG>(lattice, parms) );
+        }
+
+        if (parms["MODEL"] == std::string("quantum_chemistry_stub")) {
+            if (parms["LATTICE"] == std::string("quantum_chemistry"))
+                throw std::runtime_error("Please use \"LATTICE = orbitals\" for quantum_chemistry\n");
+
+            return impl_ptr( new qc_stub<Matrix, TwoU1PG>(lattice, parms) );
         }
 
         else {
