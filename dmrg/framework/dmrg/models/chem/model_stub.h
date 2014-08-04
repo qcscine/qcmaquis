@@ -291,18 +291,18 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
 
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler)
-            );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], i, j, create_down, destroy_down, tag_handler)
-            );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], j, i, create_up, destroy_up, tag_handler)
-            );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], j, i, create_down, destroy_down, tag_handler)
-            );
+            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+            //    true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler)
+            //);
+            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+            //    true, fill, matrix_elements[m], i, j, create_down, destroy_down, tag_handler)
+            //);
+            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+            //    true, fill, matrix_elements[m], j, i, create_up, destroy_up, tag_handler)
+            //);
+            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+            //    true, fill, matrix_elements[m], j, i, create_down, destroy_down, tag_handler)
+            //);
 
             used_elements[m] += 1;
         }
@@ -318,80 +318,14 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
             used_elements[m] += 1;
         }
 
-        // V_ijjj = V_jijj = V_jjij = V_jjji
-        else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
-
-            int same_idx, pos1;
-
-            if      (i==j) { same_idx = i; pos1 = l; }
-            else if (k==l) { same_idx = l; pos1 = i; }
-            else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
-
-            std::pair<tag_type, value_type> ptag;
-
-            // 1a
-            // --> c_l_up * n_i_down * cdag_i_up
-            ptag = tag_handler->get_product_tag(count_down, create_up);
-            this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, destroy_up, tag_handler) );
-
-            // 1a_dagger
-            // --> c_i_up * n_i_down * cdag_l_up
-            ptag = tag_handler->get_product_tag(destroy_up, count_down);
-            this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, create_up, tag_handler) );
-
-            // 1b
-            // --> c_l_down * n_i_up * cdag_i_down (1b)
-            ptag = tag_handler->get_product_tag(count_up, create_down);
-            this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, destroy_down, tag_handler) );
-
-            // (1b)_dagger
-            // --> c_i_down * n_i_up * cdag_l_down
-            ptag = tag_handler->get_product_tag(destroy_down, count_up);
-            this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, create_down, tag_handler) );
-
-            used_elements[m] += 1;
-        }
-
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
 
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_up);
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_down);
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_up);
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_down);
+            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_up);
+            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_down);
+            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_up);
+            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_down);
 
-            used_elements[m] += 1;
-        }
-
-        // V_ijij == V_jiji = V_ijji = V_jiij
-        else if ( i==k && j==l && i!=j) {
-
-            term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, e2d, d2e);
-            term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, d2e, e2d);
-            term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_up, count_up);
-            term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_down, count_down);
-
-            std::pair<tag_type, value_type> ptag1, ptag2;
-
-            // Could insert fill operators without changing the result
-            // --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
-            ptag1 = tag_handler->get_product_tag(destroy_down, create_up);
-            ptag2 = tag_handler->get_product_tag(destroy_up, create_down);
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
-            );
-
-            // --> -c_i_up * cdag_i_down * c_j_down * cdag_j_up
-            ptag1 = tag_handler->get_product_tag(destroy_up, create_down);
-            ptag2 = tag_handler->get_product_tag(destroy_down, create_up);
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
-            );
-            
             used_elements[m] += 1;
         }
 
