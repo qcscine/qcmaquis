@@ -243,6 +243,18 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 #undef REGISTER
     /**********************************************************************/
 
+#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
+    PRINT(ident)
+    PRINT(fill_ccdag)
+    PRINT(fill_cdagc)
+    PRINT(create_head)
+    PRINT(create_tail)
+    PRINT(destroy_head)
+    PRINT(destroy_tail)
+    PRINT(count)
+    PRINT(docc)
+#undef PRINT
+
     chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, ident, tag_handler);
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
@@ -271,7 +283,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
                 term_descriptor term;
                 term.coeff = matrix_elements[m];
                 term.push_back( boost::make_tuple(i, count));
-                //this->terms_.push_back(term);
+                this->terms_.push_back(term);
             }
 
             used_elements[m] += 1;
@@ -303,7 +315,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             term_descriptor term;
             term.coeff = matrix_elements[m];
             term.push_back(boost::make_tuple(i, docc));
-            this->terms_.push_back(term);
+            //this->terms_.push_back(term);
 
             used_elements[m] += 1;
         }

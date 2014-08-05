@@ -51,6 +51,8 @@ typedef alps::numeric::matrix<double> matrix;
 
 #if defined(USE_TWOU1)
 typedef TwoU1 symm;
+#elif defined(USE_TWOU1PG)
+typedef TwoU1PG symm;
 #elif defined(USE_NONE)
 typedef TrivialGroup symm;
 #elif defined(USE_U1)

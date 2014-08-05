@@ -24,6 +24,10 @@ if(DMRG_HAS_TwoU1PG)
   add_executable(su2corr su2corr.cpp)
   target_link_libraries(su2corr ${DMRG_APP_LIBRARIES} ${GSL_LIBRARIES})
   set_target_properties(su2corr PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1PG")
+
+  add_executable(mpo_stats_2u1pg mpo_stats.cpp)
+  target_link_libraries(mpo_stats_2u1pg dmrg_models dmrg_utils ${DMRG_APP_LIBRARIES})
+  set_target_properties(mpo_stats_2u1pg PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1PG")
 endif(DMRG_HAS_TwoU1PG)
 
 #add_executable(mpo_stats_none mpo_stats.cpp)
