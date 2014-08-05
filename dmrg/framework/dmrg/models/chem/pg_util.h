@@ -33,6 +33,7 @@
 #include <boost/tokenizer.hpp>
 
 #include "dmrg/block_matrix/indexing.h"
+#include "dmrg/block_matrix/dual_index.h"
 
 #include "dmrg/models/op_handler.h"
 
@@ -42,7 +43,7 @@ template <class SymmGroup>
 class PGDecorator
 {
 public:
-    Index<SymmGroup> operator()(Index<SymmGroup> const & rhs, int irr)
+    DualIndex<SymmGroup> operator()(DualIndex<SymmGroup> const & rhs, int irr)
     {
        return rhs;
     }
@@ -53,13 +54,20 @@ class  PGDecorator<TwoU1PG>
 {
 public:
     typedef TwoU1PG::subcharge subcharge;
-    Index<TwoU1PG> operator()(Index<TwoU1PG> rhs, subcharge irr)
+    DualIndex<TwoU1PG> operator()(DualIndex<TwoU1PG> rhs, subcharge irr)
     {
-        for(Index<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
-            if ( (it->first[0] + it->first[1]) % 2 == 0)
-                it->first[2] = 0;
+        for(DualIndex<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+        {
+            if ( (it->lc[0] + it->lc[1]) % 2 == 0)
+                it->lc[2] = 0;
             else
-                it->first[2] = irr;
+                it->lc[2] = irr;
+
+            if ( (it->rc[0] + it->rc[1]) % 2 == 0)
+                it->rc[2] = 0;
+            else
+                it->rc[2] = irr;
+        }
 
         return rhs;
     }

@@ -409,7 +409,7 @@ private:
         PGDecorator<SymmGroup> set_symm;
         std::vector<op_t> ret;
         for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
-            op_t mod(set_symm(op.left_basis(), sc), set_symm(op.right_basis(), sc));
+            op_t mod(set_symm(op.basis(), sc));
             for (std::size_t b = 0; b < op.n_blocks(); ++b)
                 mod[b] = op[b];
 

@@ -88,7 +88,7 @@ public:
             op_t base_op = (*op_table)[i];
             for(typename std::vector<subcharge>::const_iterator it=irrep_vector.begin(); it != irrep_vector.end(); ++it)
             {
-                op_t modified(set_symm(base_op.left_basis(), *it), set_symm(base_op.right_basis(), *it));
+                op_t modified(set_symm(base_op.basis(), *it));
                 for (std::size_t p = 0; p < modified.n_blocks(); ++p)
                     modified[p] = base_op[p];
 
@@ -98,7 +98,6 @@ public:
         }
 
         typedef typename MPOTensor<Matrix, TwoU1PG>::row_proxy row_proxy;
-
         
         // TODO: traverse by columns instead of rows
         /*** Perform tag translation to symmetry tags ****/
