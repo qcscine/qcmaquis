@@ -54,7 +54,6 @@ namespace measurements {
         , mpo_terms(terms)
         {
             this->cast_to_real = all_true(mpo_terms.begin(), mpo_terms.end(), static_cast<bool (*)(bond_element const&)>(&is_hermitian_meas));
-            base::contr.reset(new contraction::AbelianEngine<Matrix, Matrix, SymmGroup>());
         }
 
         local(std::string const& name_, const Lattice & lat,
@@ -69,7 +68,6 @@ namespace measurements {
         , mpo_terms(std::vector<bond_element>(1, bond_element(1, std::make_pair(op, false)) ))
         {
             this->cast_to_real = is_hermitian_meas(site_term);
-            base::contr.reset(new contraction::AbelianEngine<Matrix, Matrix, SymmGroup>());
         }
 
         void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
@@ -132,7 +130,7 @@ namespace measurements {
                         boost::tie(match, boost::tuples::ignore) = res.insert( std::make_pair(mit->first, 0.) );
                     
                     if (!this->is_super_meas) {
-                        match->second += expval(mps, mit->second);
+                        match->second += expval(mps, mit->second, base::contr);
                     } else {
                         MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mit->second, this->phys_psi);
                         // static_cast needed for icpc 12.x

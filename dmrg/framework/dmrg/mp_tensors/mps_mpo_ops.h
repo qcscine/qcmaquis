@@ -105,6 +105,26 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
 }
 
 template<class Matrix, class SymmGroup>
+double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
+              boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> > contr,
+              bool verbose = false)
+{
+    assert(mpo.length() == mps.length());
+    std::size_t L = mps.length();
+    
+    Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+    
+    for(size_t i = 0; i < L; ++i) {
+        select_proc(ambient::scope::balance(i,L));
+        if (verbose)
+            maquis::cout << "expval site " << (size_t)i << std::endl;
+        left = contr->overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+    }
+    
+    return maquis::real(left[0].trace());
+}
+
+template<class Matrix, class SymmGroup>
 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matrix, SymmGroup> const & mps,
                                                                        MPO<Matrix, SymmGroup> const & mpo)
 {
