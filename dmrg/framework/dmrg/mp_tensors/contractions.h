@@ -42,4 +42,6 @@
 #include "dmrg/mp_tensors/contractions/su2_engine.hpp"
 #endif
 
+#include "dmrg/mp_tensors/contractions/engine_factory.h"
+
 #endif
