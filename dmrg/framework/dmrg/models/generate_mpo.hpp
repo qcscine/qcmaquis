@@ -49,10 +49,10 @@ MPO<Matrix, SymmGroup> make_mpo(Lattice const& lat, Model<Matrix, SymmGroup> con
     MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
 
     std::vector<int> site_types(lat.size());
-    for (int p = 0; p < lat.size(); ++p)
-        site_types[p] = lat.get_prop<int>("type", p);
+    //for (int p = 0; p < lat.size(); ++p)
+    //    site_types[p] = lat.get_prop<int>("type", p);
     
-    PGSymmetryConverter<Matrix, SymmGroup> symm_conv(site_types);
+    PGSymmetryConverter<Matrix, SymmGroup> symm_conv(lat);
     symm_conv.convert_tags_to_symm_tags(mpo);
     
     return mpo;

@@ -67,6 +67,16 @@ public:
                 it->rc[2] = 0;
             else
                 it->rc[2] = irr;
+
+            //if ( (it->lc[0]) % 2 == 0)
+            //    it->lc[2] = 0;
+            //else
+            //    it->lc[2] = irr;
+
+            //if ( (it->rc[0]) % 2 == 0)
+            //    it->rc[2] = 0;
+            //else
+            //    it->rc[2] = irr;
         }
 
         return rhs;
