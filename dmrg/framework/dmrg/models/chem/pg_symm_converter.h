@@ -37,13 +37,15 @@
 #include "dmrg/models/op_handler.h"
 #include "dmrg/models/chem/pg_util.h"
 
+// This code will become obsolete, as soon as the point group irreps are added in the model directly.
+
 template <class Matrix, class SymmGroup> class PGSymmetryConverter_impl_;
 
 template <class Matrix, class SymmGroup>
 class PGSymmetryConverter
 {
 public:
-    PGSymmetryConverter(Lattice const & lat) {}
+    PGSymmetryConverter(Lattice const & lat, BaseParameters & parms) {}
     void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in) {}
 private:
 };
@@ -52,7 +54,7 @@ template <class Matrix>
 class PGSymmetryConverter<Matrix, TwoU1PG>
 {
 public:
-    PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
+    PGSymmetryConverter(Lattice const & lat, BaseParameters & parms) : impl_(lat, parms) {}
     void convert_tags_to_symm_tags(MPO<Matrix, TwoU1PG> & mpo_in)
     {
         impl_.convert_tags_to_symm_tags(mpo_in);
@@ -73,8 +75,8 @@ class PGSymmetryConverter_impl_
     typedef Lattice::pos_t pos_t;
 
 public:
-    PGSymmetryConverter_impl_(Lattice const & lat)
-        : site_irreps(lat.size())
+    PGSymmetryConverter_impl_(Lattice const & lat, BaseParameters & parms)
+        : site_irreps(lat.size()), set_symm(parms)
     {
         for (pos_t p = 0; p < lat.size(); ++p)
             site_irreps[p] = lat.get_prop<int>("type", p);
@@ -91,7 +93,6 @@ public:
 
     void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in)
     {
-
         alps::numeric::matrix<subcharge> translation_table;
         alps::numeric::matrix<typename Matrix::value_type> translation_table_coeff;
 
@@ -106,7 +107,6 @@ public:
         translation_table_coeff.resize(op_table->size(), highest_irrep+1); 
 
         /*** Create the tag translation table ****/
-        PGDecorator<SymmGroup> set_symm;
         for (std::size_t i = 0; i < op_table->size(); ++i)
         {
             op_t base_op = (*op_table)[i];
@@ -153,6 +153,8 @@ public:
 private:
     std::vector<subcharge> irrep_vector; // a list of all irreps present
     std::vector<subcharge> site_irreps;  // irreps of the sites
+
+    PGDecorator<SymmGroup> set_symm;
 };
 
 #endif

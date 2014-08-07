@@ -272,7 +272,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             term_descriptor term;
             term.coeff = matrix_elements[m];
             term.push_back( boost::make_tuple(0, ident) );
-            //this->terms_.push_back(term);
+            this->terms_.push_back(term);
             
             used_elements[m] += 1;
         }
@@ -315,7 +315,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             term_descriptor term;
             term.coeff = matrix_elements[m];
             term.push_back(boost::make_tuple(i, docc));
-            //this->terms_.push_back(term);
+            this->terms_.push_back(term);
 
             used_elements[m] += 1;
         }
