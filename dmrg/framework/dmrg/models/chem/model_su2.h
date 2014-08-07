@@ -238,7 +238,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     REGISTER(destroy_head, tag_detail::fermionic)
     REGISTER(destroy_tail, tag_detail::bosonic)
     REGISTER(count,        tag_detail::bosonic)
-    REGISTER(docc,   tag_detail::bosonic)
+    REGISTER(docc,         tag_detail::bosonic)
 
 #undef REGISTER
     /**********************************************************************/
@@ -292,19 +292,43 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
+            int start = std::min(i,j), end = std::max(i,j);
+            {
+                term_descriptor term;
+                term.is_fermionic = true;
+                term.coeff = matrix_elements[m];
 
-            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-            //    true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler)
-            //);
-            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-            //    true, fill, matrix_elements[m], i, j, create_down, destroy_down, tag_handler)
-            //);
-            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-            //    true, fill, matrix_elements[m], j, i, create_up, destroy_up, tag_handler)
-            //);
-            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-            //    true, fill, matrix_elements[m], j, i, create_down, destroy_down, tag_handler)
-            //);
+                for (int fs=0; fs < start; ++fs)
+                    term.push_back( boost::make_tuple(fs, ident) );
+                term.push_back( boost::make_tuple(start, create_head) );
+
+                for (int fs = start+1; fs < end; ++fs)
+                    term.push_back( boost::make_tuple(fs, fill_cdagc) );
+                term.push_back( boost::make_tuple(end, destroy_head) );
+
+                for (int fs = end+1; fs < lat.size(); ++fs)
+                    term.push_back( boost::make_tuple(fs, ident) );
+
+                this->terms_.push_back(term);
+            }
+            {
+                term_descriptor term;
+                term.is_fermionic = true;
+                term.coeff = matrix_elements[m];
+
+                for (int fs=0; fs < start; ++fs)
+                    term.push_back( boost::make_tuple(fs, ident) );
+                term.push_back( boost::make_tuple(start, destroy_tail) );
+
+                for (int fs = start+1; fs < end; ++fs)
+                    term.push_back( boost::make_tuple(fs, fill_ccdag) );
+                term.push_back( boost::make_tuple(end, create_tail) );
+
+                for (int fs = end+1; fs < lat.size(); ++fs)
+                    term.push_back( boost::make_tuple(fs, ident) );
+
+                this->terms_.push_back(term);
+            }
 
             used_elements[m] += 1;
         }
@@ -323,10 +347,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
 
-            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_up);
-            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_down);
-            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_up);
-            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_down);
+            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count, count);
 
             used_elements[m] += 1;
         }

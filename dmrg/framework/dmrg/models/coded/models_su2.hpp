@@ -181,7 +181,7 @@ public:
 
                     for (int fs = std::min(*hopto, p)+1; fs < std::max(*hopto, p); ++fs)
                         term.push_back( boost::make_tuple(fs, fill_cdagc) );
-                    term.push_back( boost::make_tuple(std::max(*hopto,p), destroy_tail) );
+                    term.push_back( boost::make_tuple(std::max(*hopto,p), destroy_head) );
 
                     for (int fs = std::max(*hopto, p)+1; fs < lat.size(); ++fs)
                         term.push_back( boost::make_tuple(fs, identity) );
@@ -191,11 +191,11 @@ public:
                 { // t*c*cdag
                     term_descriptor term;
                     term.is_fermionic = true;
-                    term.coeff = ti; // Note no minus due to fermion anticommutation
+                    term.coeff = -ti;
 
                     for (int fs=0; fs < std::min(*hopto, p); ++fs)
                         term.push_back( boost::make_tuple(fs, identity) );
-                    term.push_back( boost::make_tuple(std::min(*hopto,p), destroy_head) );
+                    term.push_back( boost::make_tuple(std::min(*hopto,p), destroy_tail) );
 
                     for (int fs = std::min(*hopto, p)+1; fs < std::max(*hopto, p); ++fs)
                         term.push_back( boost::make_tuple(fs, fill_ccdag) );

@@ -291,18 +291,18 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
 
-            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-            //    true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler)
-            //);
-            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-            //    true, fill, matrix_elements[m], i, j, create_down, destroy_down, tag_handler)
-            //);
-            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-            //    true, fill, matrix_elements[m], j, i, create_up, destroy_up, tag_handler)
-            //);
-            //this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-            //    true, fill, matrix_elements[m], j, i, create_down, destroy_down, tag_handler)
-            //);
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+                true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler)
+            );
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+                true, fill, matrix_elements[m], i, j, create_down, destroy_down, tag_handler)
+            );
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+                true, fill, matrix_elements[m], j, i, create_up, destroy_up, tag_handler)
+            );
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+                true, fill, matrix_elements[m], j, i, create_down, destroy_down, tag_handler)
+            );
 
             used_elements[m] += 1;
         }
@@ -321,10 +321,10 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
 
-            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_up);
-            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_down);
-            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_up);
-            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_down);
+            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_up);
+            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_down);
+            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_up);
+            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_down);
 
             used_elements[m] += 1;
         }
