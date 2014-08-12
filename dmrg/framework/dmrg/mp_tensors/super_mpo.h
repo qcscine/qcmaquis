@@ -103,9 +103,9 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
                     for (size_t n=0; n<in_block.n_blocks(); ++n)
                     {
                         charge s1_charge; size_t size1;
-                        boost::tie(s1_charge, size1) = boost::make_tuple(in_block.left_basis_charge(n), in_block.left_basis_size(n));
+                        boost::tie(s1_charge, size1) = boost::make_tuple(in_block.basis().lc(n), in_block.basis().ls(n));
                         charge s2_charge; size_t size2;
-                        boost::tie(s2_charge, size2) = boost::make_tuple(in_block.right_basis_charge(n), in_block.right_basis_size(n));
+                        boost::tie(s2_charge, size2) = boost::make_tuple(in_block.basis().rc(n), in_block.basis().rs(n));
                         
                         charge s_charge = phys_fuse(s1_charge, s2_charge);
                         charge out_l_charge = SymmGroup::fuse(s_charge, l_charge);
@@ -239,9 +239,9 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matri
                         for (size_t n=0; n<in_block.n_blocks(); ++n)
                         {
                             in_charge s1_charge; size_t size1;
-                            boost::tie(s1_charge, size1) = boost::make_tuple(in_block.left_basis_charge(n), in_block.left_basis_size(n));
+                            boost::tie(s1_charge, size1) = boost::make_tuple(in_block.basis().lc(n), in_block.basis().ls(n));
                             in_charge s2_charge; size_t size2;
-                            boost::tie(s2_charge, size2) = boost::make_tuple(in_block.right_basis_charge(n), in_block.right_basis_size(n));
+                            boost::tie(s2_charge, size2) = boost::make_tuple(in_block.basis().rc(n), in_block.basis().rs(n));
                             
                             out_charge s_charge = phys_group(s1_charge, s2_charge);
                             out_charge out_l_charge = OutSymm::fuse(s_charge, l_charge);

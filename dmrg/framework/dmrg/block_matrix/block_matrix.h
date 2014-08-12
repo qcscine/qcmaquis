@@ -73,10 +73,6 @@ public:
     Index<SymmGroup> left_basis() const;
     Index<SymmGroup> right_basis() const;
     DualIndex<SymmGroup> const & basis() const;
-    charge const & left_basis_charge(std::size_t pos) const;
-    charge const & right_basis_charge(std::size_t pos) const;
-    std::size_t left_basis_size(std::size_t pos) const;
-    std::size_t right_basis_size(std::size_t pos) const;
 
     void shift_basis(charge diff);
 
