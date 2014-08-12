@@ -72,6 +72,8 @@ namespace ambient { namespace numeric {
         template <typename T2> matrix& operator /= (const T2& t);
         value_type& operator() (size_type i, size_type j);
         const value_type& operator() (size_type i, size_type j) const;
+        value_type* data();
+        const value_type* data() const;
         static const char* code();
     };
 

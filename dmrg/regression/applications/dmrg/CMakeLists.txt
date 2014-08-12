@@ -1,9 +1,6 @@
 set(APPTEST_PREFIX dmrg_)
-get_target_property(APPTEST_DMRGAPP dmrg LOCATION)
-get_target_property(APPTEST_MEASAPP dmrg_meas LOCATION)
-
-message(STATUS "Using ${APPTEST_DMRGAPP} for dmrg exec")
-message(STATUS "Using ${APPTEST_MEASAPP} for dmrg_meas exec")
+set(APPTEST_DMRGAPP $<TARGET_FILE:dmrg>)
+set(APPTEST_MEASAPP $<TARGET_FILE:dmrg_meas>)
 
 file(GLOB apptests "test_*py")
 foreach(tt ${apptests})

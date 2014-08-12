@@ -19,7 +19,7 @@ namespace detail {
     {
         size_t m = get_dim(a).y;
         size_t n = get_dim(a).x;
-        T* a_ = &a(0,0); 
+        T* a_ = a.data(); 
         memset(a_, 0, ambient::extent(a)); 
         for(size_t i = 0; i < m; ++i)
         for(size_t j = 0; j < n; ++j){
@@ -35,11 +35,11 @@ namespace detail {
                                   const block<T>& bottom,
                                   double*& res)
     {
-        const T* a_ = &a(0,0);
-        const T* l  = &left(0,0);
-        const T* r  = &right(0,0);
-        const T* t  = &top(0,0);
-        const T* b  = &bottom(0,0);
+        const T* a_ = a.data();
+        const T* l  = left.data();
+        const T* r  = right.data();
+        const T* t  = top.data();
+        const T* b  = bottom.data();
 
         double summ = 0.;
         size_t n = get_dim(a).x;
@@ -63,11 +63,11 @@ namespace detail {
                                           double& dr, double*& res)
     {
 
-        const T* a_ = &a(0,0);
-        const T* l  = &left(0,0);
-        const T* r  = &right(0,0);
-        const T* t  = &top(0,0);
-        const T* b  = &bottom(0,0);
+        const T* a_ = a.data();
+        const T* l  = left.data();
+        const T* r  = right.data();
+        const T* t  = top.data();
+        const T* b  = bottom.data();
 
         double summ = 0.;
         size_t n = get_dim(a).x;
@@ -97,12 +97,12 @@ namespace detail {
         size_t ind;
         size_t m = get_dim(s).y;
         size_t n = get_dim(s).x;
-        T* u_ = &s_(0,0);
-        const T* u  = &s(0,0);
-        const T* t  = &top(0,0);
-        const T* r  = &right(0,0);
-        const T* b  = &bottom(0,0);
-        const T* l  = &left(0,0);
+        T* u_ = s_.data();
+        const T* u  = s.data();
+        const T* t  = top.data();
+        const T* r  = right.data();
+        const T* b  = bottom.data();
+        const T* l  = left.data();
 
         ind = (n-1)*m;     u_[ind] = u[ind] + fac*(u[ind+1] + t[n]     + r[0]     + u[ind-m] - 4*u[ind]);
         ind = m-1;         u_[ind] = u[ind] + fac*(b[1]     + u[ind-1] + u[ind+m] + l[ind]   - 4*u[ind]);
@@ -142,14 +142,14 @@ namespace detail {
     {
         size_t n = get_dim(top_).x-1;
         size_t m = get_dim(s).y;
-        T* t_ = &top_(0,0);
-        const T* t  = &top(0,0);
-        const T* l  = &left(0,0);
-        const T* r  = &right(0,0);
-        const T* x  = &s(0,0);
-        const T* lt = &ln_top(0,0);
-        const T* tb = &tn_bottom(0,0);
-        const T* rt = &rn_top(0,0);
+        T* t_ = top_.data();
+        const T* t  = top.data();
+        const T* l  = left.data();
+        const T* r  = right.data();
+        const T* x  = s.data();
+        const T* lt = ln_top.data();
+        const T* tb = tn_bottom.data();
+        const T* rt = rn_top.data();
                                    t_[0] = t[0] + fac*(t[1] + lt[get_dim(ln_top).x-1] + l[0] + tb[0] - 4*t[0]);
         for(int j = 1; j < n; j++) t_[j] = t[j] + fac*(t[j+1] + t[j-1] + x[(j-1)*m] + tb[j] - 4*t[j]);
                                    t_[n] = t[n] + fac*(rt[0] + t[n-1] + r[0] + tb[n] - 4*t[n]);
@@ -167,14 +167,14 @@ namespace detail {
     {
         size_t n = get_dim(bottom_).x-1;
         size_t m = get_dim(s).y;
-        T* b_ = &bottom_(0,0);
-        const T* b  = &bottom(0,0);
-        const T* l  = &left(0,0);
-        const T* r  = &right(0,0);
-        const T* x  = &s(0,0);
-        const T* lb = &ln_bottom(0,0);
-        const T* bt = &bn_top(0,0);
-        const T* rb = &rn_bottom(0,0);
+        T* b_ = bottom_.data();
+        const T* b  = bottom.data();
+        const T* l  = left.data();
+        const T* r  = right.data();
+        const T* x  = s.data();
+        const T* lb = ln_bottom.data();
+        const T* bt = bn_top.data();
+        const T* rb = rn_bottom.data();
 
                                    b_[0] = b[0] + fac*(b[1] + lb[get_dim(ln_bottom).x-1] + bt[0] + l[m-1] - 4*b[0]);
         for(int j = 1; j < n; j++) b_[j] = b[j] + fac*(b[j+1] + b[j-1] + bt[j] + x[j*m-1] - 4*b[j]);
@@ -190,12 +190,12 @@ namespace detail {
                                                            double& fac)
     {
         size_t m = get_dim(left_).y-1;
-        T* l_ = &left_(0,0);
-        const T* l  = &left(0,0);
-        const T* t  = &top(0,0);
-        const T* b  = &bottom(0,0);
-        const T* x  = &s(0,0);
-        const T* lr = &ln_right(0,0);
+        T* l_ = left_.data();
+        const T* l  = left.data();
+        const T* t  = top.data();
+        const T* b  = bottom.data();
+        const T* x  = s.data();
+        const T* lr = ln_right.data();
 
                                    l_[0] = l[0] + fac*(lr[0] + x[0] + t[0] + l[1] - 4*l[0]);
         for(int i = 1; i < m; i++) l_[i] = l[i] + fac*(lr[i] + x[i] + l[i-1] + l[i+1] - 4*l[i]);
@@ -212,12 +212,12 @@ namespace detail {
     {
         size_t m = get_dim(right_).y-1;
         size_t n = get_dim(s).x;
-        T* r_ = &right_(0,0);
-        const T* r  = &right(0,0);
-        const T* t  = &top(0,0);
-        const T* b  = &bottom(0,0);
-        const T* x  = &s(0,0) + (m+1)*(n-1);
-        const T* rl = &rn_left(0,0);
+        T* r_ = right_.data();
+        const T* r  = right.data();
+        const T* t  = top.data();
+        const T* b  = bottom.data();
+        const T* x  = s.data() + (m+1)*(n-1);
+        const T* rl = rn_left.data();
 
                                    r_[0] = r[0] + fac*(x[0] + rl[0] + t[n+1] + r[1] - 4*r[0]);
         for(int i = 1; i < m; i++) r_[i] = r[i] + fac*(x[i] + rl[i] + r[i-1] + r[i+1] - 4*r[i]);
