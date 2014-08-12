@@ -80,8 +80,8 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
         ProductBasis<SymmGroup> in_left(phys_i, m.row_dim());
         
         for (size_t b = 0; b < m.data().n_blocks(); ++b) {
-            typename SymmGroup::charge const& sl_charge = m.data().left_basis_charge(b); // phys + left
-            typename SymmGroup::charge const& r_charge = m.data().right_basis_charge(b); // right
+            typename SymmGroup::charge const& sl_charge = m.data().basis().lc(b); // phys + left
+            typename SymmGroup::charge const& r_charge = m.data().basis().rc(b); // right
             size_t out_r_charge_i = out_right.position(r_charge);
 
             if (!ret.data().has_block(sl_charge, r_charge))
@@ -90,7 +90,7 @@ MPSTensor<Matrix, SymmGroup> join(MPSTensor<Matrix, SymmGroup> const & m1, MPSTe
 
             Matrix & nb = ret.data()(sl_charge, r_charge);
             
-            size_t in_r_size = m.data().right_basis_size(b);
+            size_t in_r_size = m.data().basis().rs(b);
             size_t out_r_offset = 0;
             if (t == 1 && boundary_f != r_boundary_f)
                 out_r_offset += m1.col_dim().size_of_block(r_charge, true);

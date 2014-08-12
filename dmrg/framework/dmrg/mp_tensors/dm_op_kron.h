@@ -50,16 +50,16 @@ void dm_kron(Index<SymmGroup> const & phys,
     
     for (int i=0; i<A.n_blocks(); ++i) {
         for (int j=0; j<B.n_blocks(); ++j) {
-            charge new_left = phys_fuse(A.left_basis_charge(i), B.left_basis_charge(j));
-            charge new_right = phys_fuse(A.right_basis_charge(i), B.right_basis_charge(j));
+            charge new_left = phys_fuse(A.basis().lc(i), B.basis().lc(j));
+            charge new_right = phys_fuse(A.basis().rc(i), B.basis().rc(j));
             
             Matrix tmp(pb_left.size(new_left), pb_right.size(new_right), 0);
             
             maquis::dmrg::detail::op_kron(tmp, B[j], A[i],
-                                          pb_left(A.left_basis_charge(i), B.left_basis_charge(j)),
-                                          pb_right(A.right_basis_charge(i), B.right_basis_charge(j)),
-                                          A.left_basis_size(i), B.left_basis_size(j),
-                                          A.right_basis_size(i), B.right_basis_size(j));
+                                          pb_left(A.basis().lc(i), B.basis().lc(j)),
+                                          pb_right(A.basis().rc(i), B.basis().rc(j)),
+                                          A.basis().ls(i), B.basis().ls(j),
+                                          A.basis().rs(i), B.basis().rs(j));
             
             C.match_and_add_block(tmp, new_left, new_right);
         }
@@ -83,14 +83,14 @@ void dm_group_kron(Index<SymmGroup> const & phys_psi,
     
     for (int i=0; i<A.n_blocks(); ++i) {
         for (int j=0; j<B.n_blocks(); ++j) {
-            charge new_left  = group(A.left_basis_charge(i), -B.left_basis_charge(j));
-            charge new_right = group(A.right_basis_charge(i), -B.right_basis_charge(j));
+            charge new_left  = group(A.basis().lc(i), -B.basis().lc(j));
+            charge new_right = group(A.basis().rc(i), -B.basis().rc(j));
             
             Matrix tmp(phys_rho.size_of_block(new_left), phys_rho.size_of_block(new_right), 0);
             
             maquis::dmrg::detail::op_kron(tmp, B[j], A[i], 0, 0,
-                                          A.left_basis_size(i), B.left_basis_size(j),
-                                          A.right_basis_size(i), B.right_basis_size(j));
+                                          A.basis().ls(i), B.basis().ls(j),
+                                          A.basis().rs(i), B.basis().rs(j));
             
             C.match_and_add_block(tmp, new_left, new_right);
         }
