@@ -163,17 +163,6 @@ namespace ambient { namespace controllers { namespace ssm {
         channel.barrier();
     }
 
-    inline void controller::meminfo() const {
-        double current_size = (double)getCurrentRSS();
-        double peak_size = (double)getPeakRSS();
-        double avail_size = (double)getRSSLimit();
-        for(int i = 0; i < get_num_procs(); i++){
-            if(get_rank() == i)
-                printf("R%d: current: %.2f%%; peak: %.2f%%\n", i, (current_size/avail_size)*100, (peak_size/avail_size)*100);
-            fence();
-        }
-    }
-
     inline void controller::check_mem() const {
         double peak_size = (double)getPeakRSS();
         double avail_size = (double)getRSSLimit();

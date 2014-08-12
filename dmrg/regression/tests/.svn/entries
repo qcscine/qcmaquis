@@ -1,80 +1,0 @@
-10
-
-dir
-4413
-https://alps.comp-phys.org/hp2c/hp2c/dmrg/trunk/src/dmrg/regression/tests
-https://alps.comp-phys.org/hp2c/hp2c
-
-
-
-2014-03-06T16:11:12.637597Z
-4204
-dolfim
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-31e2c19e-47e4-4696-900e-09aa6ff92a94
-
-index
-dir
-
-measurements
-dir
-
-mp_tensors
-dir
-
-symmetry
-dir
-
-qrdecomp
-dir
-
-CMakeLists.txt
-file
-
-
-
-
-2014-07-30T15:29:34.634631Z
-9f173792f2f224465f3d4352dac5c30c
-2013-01-18T09:18:44.031929Z
-2840
-dolfim
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-182
-
-block_matrix
-dir
-

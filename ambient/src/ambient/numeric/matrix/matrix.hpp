@@ -246,6 +246,16 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T, class A>
+    inline value_type* matrix<T,A>::data(){
+        return ambient::block<T>::data();
+    }
+
+    template<typename T, class A>
+    inline const value_type* matrix<T,A>::data() const {
+        return ambient::block<T>::data();
+    }
+
+    template<typename T, class A>
     const char* matrix<T,A>::code(){ 
         return "N"; 
     }

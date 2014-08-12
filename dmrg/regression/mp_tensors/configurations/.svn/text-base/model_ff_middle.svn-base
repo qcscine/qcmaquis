@@ -1,5 +1,0 @@
-lattice = square_lattice
-model = FreeFermions
-u1_total_charge = 10
-L = 5
-W = 5

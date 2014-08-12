@@ -64,10 +64,6 @@ namespace ambient {
         return selector.get_controller().verbose();
     }
 
-    inline void meminfo(){
-        selector.get_controller().meminfo(); 
-    }
-
     template<typename T>
     inline void destroy(T* o){ 
         selector.get_controller().collect(o); 
