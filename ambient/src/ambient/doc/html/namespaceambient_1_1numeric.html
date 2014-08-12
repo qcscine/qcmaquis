@@ -328,8 +328,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient_1_1numeric.html#aec281209a9fd1d74e03207c13b8c5010">lq</a> (<a class="el" href="classambient_1_1numeric_1_1tiles.html">tiles</a>&lt; Matrix &gt; a, <a class="el" href="classambient_1_1numeric_1_1tiles.html">tiles</a>&lt; Matrix &gt; &amp;l, <a class="el" href="classambient_1_1numeric_1_1tiles.html">tiles</a>&lt; Matrix &gt; &amp;q)</td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;class Matrix &gt; </td></tr>
 <tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient_1_1numeric.html#a87bbafb5dab7dbaaee18d2999040ac59">resize</a> (<a class="el" href="classambient_1_1numeric_1_1tiles.html">tiles</a>&lt; Matrix &gt; &amp;a, size_t m, size_t n)</td></tr>
+<tr><td class="memTemplParams" colspan="2">template&lt;class Matrix &gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient_1_1numeric.html#a55ea90615e670c90c04fdb916689a464">remove_cols</a> (<a class="el" href="classambient_1_1numeric_1_1tiles.html">tiles</a>&lt; Matrix &gt; &amp;a, size_t j, size_t n)</td></tr>
+<tr><td class="memTemplParams" colspan="2">template&lt;class Matrix &gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient_1_1numeric.html#a44007f9cec4202e9a31d8e466f4a69f5">remove_rows</a> (<a class="el" href="classambient_1_1numeric_1_1tiles.html">tiles</a>&lt; Matrix &gt; &amp;a, size_t i, size_t m)</td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient_1_1numeric.html#aff574812f9d038330b66ecefd14049d6">resize</a> (<a class="el" href="classambient_1_1numeric_1_1tiles.html">tiles</a>&lt; <a class="el" href="classambient_1_1numeric_1_1diagonal__matrix.html">diagonal_matrix</a>&lt; T &gt; &gt; &amp;a, size_t m, size_t n)</td></tr>
+<tr><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient_1_1numeric.html#a715e34e09c077ecfe217bff3ef67d536">remove_cols</a> (<a class="el" href="classambient_1_1numeric_1_1tiles.html">tiles</a>&lt; <a class="el" href="classambient_1_1numeric_1_1diagonal__matrix.html">diagonal_matrix</a>&lt; T &gt; &gt; &amp;a, size_t j, size_t n)</td></tr>
+<tr><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient_1_1numeric.html#a9be06920544e9dd2623c6ec4420ac596">remove_rows</a> (<a class="el" href="classambient_1_1numeric_1_1tiles.html">tiles</a>&lt; <a class="el" href="classambient_1_1numeric_1_1diagonal__matrix.html">diagonal_matrix</a>&lt; T &gt; &gt; &amp;a, size_t i, size_t m)</td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient_1_1numeric.html#a64bb0844076db12ced7087ed490ccb70">sqrt_inplace</a> (<a class="el" href="classambient_1_1numeric_1_1tiles.html">tiles</a>&lt; <a class="el" href="classambient_1_1numeric_1_1diagonal__matrix.html">diagonal_matrix</a>&lt; T &gt; &gt; &amp;a)</td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
@@ -4951,6 +4959,146 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="a715e34e09c077ecfe217bff3ef67d536"></a><!-- doxytag: member="ambient::numeric::remove_cols" ref="a715e34e09c077ecfe217bff3ef67d536" args="(tiles&lt; diagonal_matrix&lt; T &gt; &gt; &amp;a, size_t j, size_t n)" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void ambient::numeric::remove_cols </td>
+          <td>(</td>
+          <td class="paramtype">tiles&lt; diagonal_matrix&lt; T &gt; &gt; &amp;&nbsp;</td>
+          <td class="paramname"> <em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>n</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a55ea90615e670c90c04fdb916689a464"></a><!-- doxytag: member="ambient::numeric::remove_cols" ref="a55ea90615e670c90c04fdb916689a464" args="(tiles&lt; Matrix &gt; &amp;a, size_t j, size_t n)" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Matrix &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void ambient::numeric::remove_cols </td>
+          <td>(</td>
+          <td class="paramtype">tiles&lt; Matrix &gt; &amp;&nbsp;</td>
+          <td class="paramname"> <em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>j</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>n</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9be06920544e9dd2623c6ec4420ac596"></a><!-- doxytag: member="ambient::numeric::remove_rows" ref="a9be06920544e9dd2623c6ec4420ac596" args="(tiles&lt; diagonal_matrix&lt; T &gt; &gt; &amp;a, size_t i, size_t m)" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void ambient::numeric::remove_rows </td>
+          <td>(</td>
+          <td class="paramtype">tiles&lt; diagonal_matrix&lt; T &gt; &gt; &amp;&nbsp;</td>
+          <td class="paramname"> <em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>i</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>m</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a44007f9cec4202e9a31d8e466f4a69f5"></a><!-- doxytag: member="ambient::numeric::remove_rows" ref="a44007f9cec4202e9a31d8e466f4a69f5" args="(tiles&lt; Matrix &gt; &amp;a, size_t i, size_t m)" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;class Matrix &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void ambient::numeric::remove_rows </td>
+          <td>(</td>
+          <td class="paramtype">tiles&lt; Matrix &gt; &amp;&nbsp;</td>
+          <td class="paramname"> <em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>i</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>m</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="aff574812f9d038330b66ecefd14049d6"></a><!-- doxytag: member="ambient::numeric::resize" ref="aff574812f9d038330b66ecefd14049d6" args="(tiles&lt; diagonal_matrix&lt; T &gt; &gt; &amp;a, size_t m, size_t n)" -->
 <div class="memitem">
 <div class="memproto">
@@ -6107,7 +6255,7 @@ template&lt;typename T , class A &gt; </div>
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 20 Jun 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 30 Jul 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>
