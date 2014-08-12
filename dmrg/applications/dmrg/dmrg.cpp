@@ -29,6 +29,7 @@
 #include <iterator>
 #include <iostream>
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #include "utils/data_collector.hpp"
 #include "dmrg/utils/DmrgOptions.h"

@@ -52,16 +52,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td class="memItemLeft" align="right" valign="top">namespace &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceambient.html">ambient</a></td></tr>
 <tr><td colspan="2"><h2>Functions</h2></td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#a1551654263fdad7b4d74267f9bdffdd7">ambient::memcpy</a> (T *dd, T *sd, size_t w, T alfa)</td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#a318bb33514b5cf5788b2ea4b6e51430c">ambient::memcpy</a> (T *dd, const T *sd, size_t w, T alfa)</td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#abb02fc9c834a090a0a525215bd7183e8">ambient::memscal</a> (T *dd, T *sd, size_t w, T alfa)</td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#a227f1aef0e1e7aea86bfe6e352ac2f13">ambient::memscal</a> (T *dd, const T *sd, size_t w, T alfa)</td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#a8e598ceb83b48d2f7cf807141d2ba997">ambient::memscala</a> (T *dd, T *sd, size_t w, T alfa)</td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#abf91e62f19df842f7004faac0357b268">ambient::memscala</a> (T *dd, const T *sd, size_t w, T alfa)</td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr><td class="memTemplItemLeft" align="right" valign="top">std::complex&lt; T &gt;::value_type&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#ad33b9c8fa9823861bc1e557d88492dc7">ambient::dot</a> (std::complex&lt; T &gt; *a, std::complex&lt; T &gt; *b, int size)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceambient.html#a4c36508f9bd6e65f8dd936a43af61ffd">ambient::dot</a> (double *a, double *b, int size)</td></tr>
-<tr><td class="memTemplParams" colspan="2">template&lt;typename T , void(*)(T *dd, T *sd, size_t w, T alfa) PTF&gt; </td></tr>
-<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#a724d92b1af85525b1e57687f08ff1e67">ambient::memptf</a> (T *dst, int ldb, dim2 dst_p, T *src, int lda, dim2 src_p, dim2 size, T alfa=0.0)</td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">std::complex&lt; T &gt;::value_type&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#a5ae00503a03444f5f53d3c6ec12c2fcf">ambient::dot</a> (const std::complex&lt; T &gt; *a, const std::complex&lt; T &gt; *b, int size)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceambient.html#a803f177f7aaf7a25afb8eb25add4a3ec">ambient::dot</a> (const double *a, const double *b, int size)</td></tr>
+<tr><td class="memTemplParams" colspan="2">template&lt;typename T , void(*)(T *dd, const T *sd, size_t w, T alfa) PTF&gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&nbsp;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespaceambient.html#ae6f4f6defdbd8ea08f5c81ca5b2d4f3c">ambient::memptf</a> (T *dst, int ldb, dim2 dst_p, const T *src, int lda, dim2 src_p, dim2 size, T alfa=0.0)</td></tr>
 </table>
 </div>
 <!--- window showing the filter options -->
@@ -78,7 +78,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 20 Jun 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 30 Jul 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

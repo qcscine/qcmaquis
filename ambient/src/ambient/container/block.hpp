@@ -36,7 +36,7 @@ namespace ambient {
         template<typename T>
         void fill_value(unbound< block<T> >& a, T& value){
             size_t size = get_square_dim(a);
-            T* a_ = &a(0,0);
+            T* a_ = a.data();
             for(size_t i = 0; i < size; ++i) a_[i] = value;
         }
     }
@@ -59,6 +59,12 @@ namespace ambient {
         }
         const value_type& operator()(size_t i, size_t j) const {
             return ambient::delegated(*this).data[ j*this->lda() + i ];
+        }
+        value_type* data(){
+            return ambient::delegated(*this).data;
+        }
+        const value_type* data() const {
+            return ambient::delegated(*this).data;
         }
     AMBIENT_DELEGATE
     (

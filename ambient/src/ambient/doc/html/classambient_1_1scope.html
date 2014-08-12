@@ -58,9 +58,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td colspan="2"><h2>Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a60a72cf5bd500248efee4ce68d6b9bb6">~scope</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a00f614798ac432354819d51b1f5f276a">scope</a> (<a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a> first, <a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a> last)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#ac2651d4696eb31ad5768457240f4b6d8">scope</a> (<a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a> first, size_t size)</td></tr>
 <tr><td colspan="2"><h2>Static Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a7e8bf36378e5bda72c2dc3066f16be1b">balance</a> (int k, int max_k)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#ab712e6aca5f5bae6c1ab38636a84eed4">permute</a> (int k, const std::vector&lt; int &gt; &amp;s)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a8b08604208cdf5bc2eae89d8b5cf9bc4">permute</a> (int k, const std::vector&lt; int &gt; &amp;s, size_t granularity=1)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#ac63479408771a097348e70ba7ec27941">nested</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static bool&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#a62cf400d48ce38b003b9aee1688d6c6e">local</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">static <a class="el" href="classambient_1_1scope.html">scope</a> &amp;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classambient_1_1scope.html#aea424405d8fa3952ef3b479dce377167">top</a> ()</td></tr>
@@ -130,6 +131,33 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
           <td></td>
           <td class="paramtype"><a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a>&nbsp;</td>
           <td class="paramname"> <em>last</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac2651d4696eb31ad5768457240f4b6d8"></a><!-- doxytag: member="ambient::scope::scope" ref="ac2651d4696eb31ad5768457240f4b6d8" args="(const_iterator first, size_t size)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ambient::scope::scope </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classambient_1_1scope.html#a85bd59bbe856a19959484f50ef011a48">const_iterator</a>&nbsp;</td>
+          <td class="paramname"> <em>first</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>size</em></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -238,7 +266,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 </div>
 </div>
-<a class="anchor" id="ab712e6aca5f5bae6c1ab38636a84eed4"></a><!-- doxytag: member="ambient::scope::permute" ref="ab712e6aca5f5bae6c1ab38636a84eed4" args="(int k, const std::vector&lt; int &gt; &amp;s)" -->
+<a class="anchor" id="a8b08604208cdf5bc2eae89d8b5cf9bc4"></a><!-- doxytag: member="ambient::scope::permute" ref="a8b08604208cdf5bc2eae89d8b5cf9bc4" args="(int k, const std::vector&lt; int &gt; &amp;s, size_t granularity=1)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -252,7 +280,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const std::vector&lt; int &gt; &amp;&nbsp;</td>
-          <td class="paramname"> <em>s</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>s</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&nbsp;</td>
+          <td class="paramname"> <em>granularity</em> = <code>1</code></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -332,7 +366,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 20 Jun 2014 by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 30 Jul 2014 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>
