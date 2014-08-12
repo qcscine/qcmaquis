@@ -78,8 +78,8 @@ namespace SU2 {
 
             for (size_t k = 0; k < left[b1].n_blocks(); ++k) {
 
-                charge lc = left[b1].right_basis_charge(k); // left comes as left^T !
-                charge mc = left[b1].left_basis_charge(k);
+                charge lc = left[b1].basis().rc(k); // left comes as left^T !
+                charge mc = left[b1].basis().lc(k);
 
                 std::pair<const_iterator, const_iterator>
                   er = std::equal_range(ket_basis.begin(), ket_basis.end(),
@@ -93,8 +93,8 @@ namespace SU2 {
 
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                     {
-                        charge phys_in = W.left_basis_charge(w_block);
-                        charge phys_out = W.right_basis_charge(w_block);
+                        charge phys_in = W.basis().lc(w_block);
+                        charge phys_out = W.basis().rc(w_block);
 
                         charge out_r_charge = SymmGroup::fuse(rc, phys_in);
                         if (!right_i.has(out_r_charge)) continue;
@@ -121,8 +121,8 @@ namespace SU2 {
                         typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                         coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
 
-                        size_t phys_s1 = W.left_basis_size(w_block);
-                        size_t phys_s2 = W.right_basis_size(w_block);
+                        size_t phys_s1 = W.basis().ls(w_block);
+                        size_t phys_s2 = W.basis().rs(w_block);
                         size_t in_right_offset = in_right_pb(phys_in, out_r_charge);
                         size_t out_left_offset = out_left_pb(phys_out, lc);
                         Matrix const & wblock = W[w_block];
@@ -132,13 +132,13 @@ namespace SU2 {
                         //maquis::cout << "access " << mc << " + " << phys_in<< "|" << out_r_charge << " -- "
                         //         << lc << " + " << phys_out << "|" << out_l_charge
                         //         << " T(" << lc << "," << rc << "): +" << in_right_offset
-                        //         << "(" << T.left_basis_size(t_block) << "x" << r_size << ")|" << T.right_basis_size(t_block) << " -> +"
-                        //         << out_left_offset << "(" << T.left_basis_size(t_block) << "x" << r_size << ")|" << out_left_i.size_of_block(out_l_charge)
+                        //         << "(" << T.basis().ls(t_block) << "x" << r_size << ")|" << T.basis().rs(t_block) << " -> +"
+                        //         << out_left_offset << "(" << T.basis().ls(t_block) << "x" << r_size << ")|" << out_left_i.size_of_block(out_l_charge)
                         //         << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << " " << coupling_coeff * wblock(0,0) << std::endl;
 
                         maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
                                 out_left_offset, in_right_offset,
-                                phys_s1, phys_s2, T.left_basis_size(t_block), r_size, coupling_coeff);
+                                phys_s1, phys_s2, T.basis().ls(t_block), r_size, coupling_coeff);
                     }
                 }
             }
@@ -190,8 +190,8 @@ namespace SU2 {
 
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                     {
-                        charge phys_in = W.left_basis_charge(w_block);
-                        charge phys_out = W.right_basis_charge(w_block);
+                        charge phys_in = W.basis().lc(w_block);
+                        charge phys_out = W.basis().rc(w_block);
 
                         charge out_l_charge = SymmGroup::fuse(lc, -phys_in);
                         if (!left_i.has(out_l_charge)) continue;
@@ -218,8 +218,8 @@ namespace SU2 {
                         typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                         coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
 
-                        size_t phys_s1 = W.left_basis_size(w_block);
-                        size_t phys_s2 = W.right_basis_size(w_block);
+                        size_t phys_s1 = W.basis().ls(w_block);
+                        size_t phys_s2 = W.basis().rs(w_block);
                         size_t in_left_offset = in_left_pb(phys_in, out_l_charge);
                         size_t out_right_offset = out_right_pb(phys_out, rc);
                         Matrix const & wblock = W[w_block];
@@ -229,13 +229,13 @@ namespace SU2 {
                         //maquis::cout << "access " << mc << " - " << phys_out<< "|" << out_r_charge << " -- "
                         //         << lc << " - " << phys_in << "|" << out_l_charge
                         //         << " T(" << lc << "," << rc << "): +" << in_left_offset
-                        //         << "(" << l_size << "x" << T.right_basis_size(t_block) << ")|" << T.left_basis_size(t_block) << " -> +"
-                        //         << out_right_offset << "(" << l_size << "x" << T.right_basis_size(t_block) << ")|" << out_right_i.size_of_block(out_r_charge)
+                        //         << "(" << l_size << "x" << T.basis().rs(t_block) << ")|" << T.basis().ls(t_block) << " -> +"
+                        //         << out_right_offset << "(" << l_size << "x" << T.basis().rs(t_block) << ")|" << out_right_i.size_of_block(out_r_charge)
                         //         << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << " " << coupling_coeff * wblock(0,0) << std::endl;
 
                         maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
                                 out_right_offset, in_left_offset,
-                                phys_s1, phys_s2, l_size, T.right_basis_size(t_block), coupling_coeff);
+                                phys_s1, phys_s2, l_size, T.basis().rs(t_block), coupling_coeff);
                     }
                 }
             }

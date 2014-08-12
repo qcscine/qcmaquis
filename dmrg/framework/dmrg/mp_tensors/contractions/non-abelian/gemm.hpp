@@ -48,14 +48,14 @@ namespace SU2 {
 
             std::pair<const_iterator, const_iterator>
               er = std::equal_range(BBbegin, B.basis().end(),
-                dual_index_detail::QnBlock<SymmGroup>(A.right_basis_charge(k), SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
+                dual_index_detail::QnBlock<SymmGroup>(A.basis().rc(k), SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
 
             for (const_iterator it = er.first; it != er.second; ++it)
             {
                 std::size_t matched_block = std::distance(BBbegin, it);
                 Matrix3 tmp(num_rows(A[k]), num_cols(B[matched_block]));
                 gemm(A[k], B[matched_block], tmp);
-                C.match_and_add_block(tmp, A.left_basis_charge(k), B.right_basis_charge(matched_block));
+                C.match_and_add_block(tmp, A.basis().lc(k), B.basis().rc(matched_block));
             }
         }
     }

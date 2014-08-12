@@ -54,7 +54,7 @@ namespace contraction {
             block_matrix<Matrix, SymmGroup> ret;
             for(int b2 = 0; b2 < size; b2++)
             for(int k = 0; k < grid[b2].n_blocks(); ++k)
-                ret.match_and_add_block(grid[b2][k], grid[b2].left_basis_charge(k), grid[b2].right_basis_charge(k)[k]);
+                ret.match_and_add_block(grid[b2][k], grid[b2].basis().lc(k), grid[b2].basis().rc(k)[k]);
             return ret;
         }
         Boundary<Matrix, SymmGroup> make_boundary(){

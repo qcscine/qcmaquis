@@ -185,18 +185,6 @@ template<class Matrix, class SymmGroup>
 DualIndex<SymmGroup> const & block_matrix<Matrix, SymmGroup>::basis() const { return basis_; }
 
 template<class Matrix, class SymmGroup>
-typename SymmGroup::charge const & block_matrix<Matrix, SymmGroup>::left_basis_charge(std::size_t pos) const { return basis_[pos].lc; }
-
-template<class Matrix, class SymmGroup>
-typename SymmGroup::charge const & block_matrix<Matrix, SymmGroup>::right_basis_charge(std::size_t pos) const { return basis_[pos].rc; }
-
-template<class Matrix, class SymmGroup>
-std::size_t block_matrix<Matrix, SymmGroup>::left_basis_size(std::size_t pos) const { return basis_[pos].ls; }
-
-template<class Matrix, class SymmGroup>
-std::size_t block_matrix<Matrix, SymmGroup>::right_basis_size(std::size_t pos) const { return basis_[pos].rs; }
-
-template<class Matrix, class SymmGroup>
 typename Matrix::size_type block_matrix<Matrix, SymmGroup>::n_blocks() const { return data_.size(); }
 
 template<class Matrix, class SymmGroup>

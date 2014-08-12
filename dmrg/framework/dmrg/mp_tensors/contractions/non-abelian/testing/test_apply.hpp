@@ -103,8 +103,8 @@ namespace SU2 {
         //maquis::cout << "outLeft: " << (phys_i*left_i) << std::endl;
         for (std::size_t k = 0; k < left.n_blocks(); ++k) {
 
-            charge lc = left.left_basis_charge(k);
-            charge mc = left.right_basis_charge(k);
+            charge lc = left.basis().lc(k);
+            charge mc = left.basis().rc(k);
 
             std::pair<const_iterator, const_iterator>
               er = std::equal_range(ket_tensor.data().basis().begin(), ket_tensor.data().basis().end(),
@@ -116,16 +116,16 @@ namespace SU2 {
                 std::size_t matched_block = std::distance(ket_tensor.data().basis().begin(), it);
                 //Matrix T_block(num_rows(left[k]), num_cols(ket_tensor[matched_block]));
                 //gemm(A[k], B[matched_block], T_block);
-                charge rc = ket_tensor.data().right_basis_charge(matched_block);
-                charge mc1 = ket_tensor.data().left_basis_charge(matched_block);
+                charge rc = ket_tensor.data().basis().rc(matched_block);
+                charge mc1 = ket_tensor.data().basis().lc(matched_block);
                 assert (mc == mc1);
                 size_t t_pos = t1.basis().position(lc, rc);
                 assert(t_pos == k);
 
                 for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
                 {
-                    charge phys_in = W.left_basis_charge(w_block);
-                    charge phys_out = W.right_basis_charge(w_block);
+                    charge phys_in = W.basis().lc(w_block);
+                    charge phys_out = W.basis().rc(w_block);
 
                     charge free_rc = SymmGroup::fuse(rc, phys_in);
                     if (!right_i.has(free_rc))
@@ -164,13 +164,13 @@ namespace SU2 {
                     // T Access
                     size_t right_offset = in_right_pb(phys_in, free_rc);
                     size_t left_offset = out_left_pb(phys_out, lc);
-                    size_t ldim = t1.left_basis_size(t_pos);
+                    size_t ldim = t1.basis().ls(t_pos);
                     size_t rdim = right_i.size_of_block(free_rc);
                     //maquis::cout << "access " << mc << " + " << phys_in<< "|" << free_rc << " -- "
                     //    << lc << " + " << phys_out << "|" << new_rc
                     //    << " T(" << lc << "," << rc << "): +" << right_offset
-                    //    << "(" << ldim << "x" << rdim << ")|" << t1.right_basis_size(t_pos) << " -> +"
-                    //    << left_offset << "(" << t1.left_basis_size(t_pos) << "x" << rdim << ")|" << bra_tensor.data().left_basis().size_of_block(new_rc)
+                    //    << "(" << ldim << "x" << rdim << ")|" << t1.basis().rs(t_pos) << " -> +"
+                    //    << left_offset << "(" << t1.basis().ls(t_pos) << "x" << rdim << ")|" << bra_tensor.data().left_basis().size_of_block(new_rc)
                     //    << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << std::endl;
                     Matrix T_cp(ldim, rdim, 0);
                     for (size_t c=0; c<rdim; ++c)

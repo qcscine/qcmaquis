@@ -243,6 +243,16 @@ public:
     const_reverse_iterator rbegin() const { return data_.rbegin(); }
     const_reverse_iterator rend() const { return data_.rend(); }
 
+    charge & lc(std::size_t k) { return data_[k].lc; }
+    charge & rc(std::size_t k) { return data_[k].rc; }
+    std::size_t & ls(std::size_t k) { return data_[k].ls; }
+    std::size_t & rs(std::size_t k) { return data_[k].rs; }
+
+    charge const & lc(std::size_t k) const { return data_[k].lc; }
+    charge const & rc(std::size_t k) const { return data_[k].rc; }
+    std::size_t const & ls(std::size_t k) const { return data_[k].ls; }
+    std::size_t const & rs(std::size_t k) const { return data_[k].rs; }
+
     void resize(std::size_t sz) { data_.resize(sz); }
     
     value_type & operator[](std::size_t p) { return data_[p]; }

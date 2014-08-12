@@ -206,7 +206,7 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
         contr_grid(0,0).clear();
         omp_critical
         for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
-            ret.data().match_and_add_block(tmp[k], tmp.left_basis_charge(k), tmp.right_basis_charge(k));
+            ret.data().match_and_add_block(tmp[k], tmp.basis().lc(k), tmp.basis().rc(k));
     });
 #endif
     return ret;

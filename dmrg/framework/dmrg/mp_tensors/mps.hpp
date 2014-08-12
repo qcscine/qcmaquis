@@ -301,9 +301,9 @@ void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& op, ty
     /// Compute (and check) charge difference
     charge diff = SymmGroup::IdentityCharge;
     if (op.n_blocks() > 0)
-        diff = SymmGroup::fuse(op.right_basis_charge(0), -op.left_basis_charge(0));
+        diff = SymmGroup::fuse(op.basis().rc(0), -op.basis().lc(0));
     for (size_t n=0; n< op.n_blocks(); ++n) {
-        if ( SymmGroup::fuse(op.right_basis_charge(n), -op.left_basis_charge(n)) != diff )
+        if ( SymmGroup::fuse(op.basis().rc(n), -op.basis().lc(n)) != diff )
             throw std::runtime_error("Operator not allowed. All non-zero blocks have to provide same `diff`.");
     }
     
