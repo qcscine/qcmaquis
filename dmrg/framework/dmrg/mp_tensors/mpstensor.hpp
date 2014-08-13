@@ -511,6 +511,13 @@ MPSTensor<Matrix, SymmGroup>::operator-=(MPSTensor<Matrix, SymmGroup> const & rh
 }
 
 template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::clear()
+{
+    block_matrix<Matrix, SymmGroup> empty;
+    swap(data(), empty);
+}
+
+template<class Matrix, class SymmGroup>
 void MPSTensor<Matrix, SymmGroup>::swap_with(MPSTensor<Matrix, SymmGroup> & b)
 {
     using std::swap;

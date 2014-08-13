@@ -156,6 +156,7 @@ public:
     	    // Create TwoSite objects
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
     	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
+            tst.clear();
             #ifdef AMBIENT_TRACKING
             ambient_track_as(twin_mps, "twin_mps");
             #endif
@@ -192,7 +193,9 @@ public:
                 }
 
         		tst << res.second;
+                res.second.clear();
             }
+            twin_mps.clear();
 
             #ifdef AMBIENT_TRACKING
             ambient::overseer::log::region("ts_optimize::continue");
@@ -230,6 +233,7 @@ public:
                 else
                     boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_l2r(Mmax, cutoff, alpha, left_[site1], mpo[site1]);
                 END_TIMING("TRUNC")
+                tst.clear();
 
                 #ifdef AMBIENT_TRACKING
                 ambient_track_array(mps, site1);
@@ -279,6 +283,7 @@ public:
                 else
                     boost::tie(mps[site1], mps[site2], trunc) = tst.predict_split_r2l(Mmax, cutoff, alpha, right_[site2+1], mpo[site2]);
                 END_TIMING("TRUNC")
+                tst.clear();
 
                 #ifdef AMBIENT_TRACKING
                 ambient_track_array(mps, site1);
@@ -326,8 +331,12 @@ public:
             iteration_results_["TruncatedFraction"] << trunc.truncated_fraction;
             iteration_results_["SmallestEV"]        << trunc.smallest_ev;
             
-            
+            #ifdef USE_AMBIENT
+            ambient::sync();
+            ambient::meminfo();
+            #else
             maquis::cout << "Memory usage : " << proc_status_mem() << std::endl;
+            #endif
             
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();

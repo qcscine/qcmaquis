@@ -350,6 +350,13 @@ TwoSiteTensor<Matrix, SymmGroup>::data() const
 }
 
 template<class Matrix, class SymmGroup>
+void TwoSiteTensor<Matrix, SymmGroup>::clear()
+{
+    block_matrix<Matrix, SymmGroup> empty;
+    swap(data(), empty);
+}
+
+template<class Matrix, class SymmGroup>
 void TwoSiteTensor<Matrix, SymmGroup>::swap_with(TwoSiteTensor<Matrix, SymmGroup> & b)
 {
     swap(this->phys_i, b.phys_i);
@@ -365,7 +372,7 @@ void TwoSiteTensor<Matrix, SymmGroup>::swap_with(TwoSiteTensor<Matrix, SymmGroup
 template<class Matrix, class SymmGroup>
 TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator << (MPSTensor<Matrix, SymmGroup> const & rhs)
 {
-    this->make_left_paired();
+    cur_storage = TSLeftPaired;
     rhs.make_left_paired();
 
     // Precondition: rhs.data() and this->data() have same shape if both are left_paired
