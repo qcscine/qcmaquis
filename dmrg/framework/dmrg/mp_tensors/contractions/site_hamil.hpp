@@ -86,7 +86,7 @@ namespace contraction {
             contr_grid(0,0).clear();
             omp_critical
             for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
-                ret.data().match_and_add_block(tmp[k], tmp.basis().lc(k), tmp.basis().rc(k));
+                ret.data().match_and_add_block(tmp[k], tmp.basis().left_charge(k), tmp.basis().right_charge(k));
         });
 #endif
         return ret;

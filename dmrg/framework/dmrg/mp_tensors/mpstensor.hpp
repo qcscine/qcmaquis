@@ -476,7 +476,7 @@ MPSTensor<Matrix, SymmGroup>::operator+=(MPSTensor<Matrix, SymmGroup> const & rh
 
     for (std::size_t i = 0; i < data().n_blocks(); ++i)
     {
-        typename SymmGroup::charge lc = data().basis().lc(i), rc = data().basis().rc(i);
+        typename SymmGroup::charge lc = data().basis().left_charge(i), rc = data().basis().right_charge(i);
         std::size_t matched_block = rhs.data().find_block(lc,rc);
         if (matched_block < rhs.data().n_blocks()) {
             data()[i] += rhs.data()[matched_block];
@@ -501,7 +501,7 @@ MPSTensor<Matrix, SymmGroup>::operator-=(MPSTensor<Matrix, SymmGroup> const & rh
     
     for (std::size_t i = 0; i < data().n_blocks(); ++i)
     {
-        typename SymmGroup::charge lc = data().basis().lc(i), rc = data().basis().rc(i);
+        typename SymmGroup::charge lc = data().basis().left_charge(i), rc = data().basis().right_charge(i);
         if (rhs.data().has_block(lc,rc)) {
             data()[i] -= rhs.data()(lc,rc);
         }
@@ -585,7 +585,7 @@ bool MPSTensor<Matrix, SymmGroup>::reasonable() const
     {
         for (std::size_t i = 0; i < data().n_blocks(); ++i)
         {
-            if (data().basis().lc(i) != data().basis().rc(i))
+            if (data().basis().left_charge(i) != data().basis().right_charge(i))
                 throw std::runtime_error("particle number is wrong");
         }
     }

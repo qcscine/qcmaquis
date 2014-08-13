@@ -126,8 +126,8 @@ namespace contraction {
                                                          select_proc(dst_pair.second);
                                                          for(size_t k = 0; k < src.n_blocks(); ++k)
                                                          dst.match_and_add_block(src[k],
-                                                                                 src.basis().lc(k), 
-                                                                                 src.basis().rc(k));
+                                                                                 src.basis().left_charge(k), 
+                                                                                 src.basis().right_charge(k));
                                                      }).first;
             e2[b2] = false;
             if(rvector[0].second != r){
@@ -178,12 +178,12 @@ namespace contraction {
             for(size_t n = 0; n < rvector_global.size(); ++n){
                 block_matrix<Matrix, SymmGroup>& src = *rvector_global[n]->first;
                 for(size_t k = 0; k < src.n_blocks(); ++k){
-                    if(!skeleton->has_block(src.basis().lc(k), src.basis().rc(k))){
-                        skeleton->insert_block(new Matrix(), src.basis().lc(k), src.basis().rc(k));
+                    if(!skeleton->has_block(src.basis().left_charge(k), src.basis().right_charge(k))){
+                        skeleton->insert_block(new Matrix(), src.basis().left_charge(k), src.basis().right_charge(k));
                     }
                     blocks.push_back(&src[k]);
-                    c1.push_back(src.basis().lc(k));
-                    c2.push_back(src.basis().rc(k));
+                    c1.push_back(src.basis().left_charge(k));
+                    c2.push_back(src.basis().right_charge(k));
                     owners.push_back(rvector_global[n]->second);
                 }
             }

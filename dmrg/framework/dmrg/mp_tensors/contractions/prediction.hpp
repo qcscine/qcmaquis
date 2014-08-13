@@ -58,10 +58,10 @@ namespace contraction {
             
             tdm *= alpha;
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                if (mps.data().left_basis().has(tdm.basis().lc(k)))
+                if (mps.data().left_basis().has(tdm.basis().left_charge(k)))
                     dm.match_and_add_block(tdm[k],
-                                           tdm.basis().lc(k),
-                                           tdm.basis().rc(k));
+                                           tdm.basis().left_charge(k),
+                                           tdm.basis().right_charge(k));
             }
         }
         mps.make_left_paired();
@@ -114,10 +114,10 @@ namespace contraction {
             
             tdm *= alpha;
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                if (mps.data().right_basis().has(tdm.basis().rc(k)))
+                if (mps.data().right_basis().has(tdm.basis().right_charge(k)))
                     dm.match_and_add_block(tdm[k],
-                                           tdm.basis().lc(k),
-                                           tdm.basis().rc(k));
+                                           tdm.basis().left_charge(k),
+                                           tdm.basis().right_charge(k));
             }
         }
         
