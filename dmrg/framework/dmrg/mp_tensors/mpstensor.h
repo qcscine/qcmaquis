@@ -128,6 +128,7 @@ public:
     void make_left_paired() const;
     void make_right_paired() const;
     
+    void clear();
     void conjugate_inplace();
     void swap_with(MPSTensor & b);
     friend void swap(MPSTensor& a, MPSTensor& b){

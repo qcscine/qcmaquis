@@ -81,8 +81,8 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
 
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
-          block_matrix<Matrix2, SymmGroup> const & B,
-          block_matrix<Matrix3, SymmGroup> & C)
+                    block_matrix<Matrix2, SymmGroup> const & B,
+                    block_matrix<Matrix3, SymmGroup> & C)
 {
     C.clear();
     
@@ -107,8 +107,8 @@ void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
 
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
-          block_matrix<Matrix2, SymmGroup> const & B,
-          block_matrix<Matrix3, SymmGroup> & C)
+                     block_matrix<Matrix2, SymmGroup> const & B,
+                     block_matrix<Matrix3, SymmGroup> & C)
 {
     C.clear();
     
@@ -206,12 +206,19 @@ void heev_merged(block_matrix<Matrix, SymmGroup> const & M,
 
     evecs = block_matrix<Matrix, SymmGroup>(M.basis());
     evals = block_matrix<DiagMatrix, SymmGroup>(M.basis());
-    std::size_t loop_max = M.n_blocks();
 
-    omp_for(size_t k, range<size_t>(0,loop_max), {
-        select_proc(ambient::scope::balance(k,loop_max));
+    ambient::for_each_redist(M.blocks().first, M.blocks().second, 
+                             [](const Matrix& m){ merge(m); },
+                             [](const Matrix& m){ return (num_rows(m)*num_rows(m)*num_cols(m) +
+                                                          2*num_cols(m)*num_cols(m)*num_cols(m)); });
+    ambient::sync();
+
+    std::size_t loop_max = M.n_blocks();
+    for(size_t k = 0; k < loop_max; ++k){
+        select_proc(ambient::scope::begin()+ambient::get_owner(M[k]));
         heev_merged(M[k], evecs[k], evals[k]);
-    });
+    }
+    ambient::sync(ambient::mkl_parallel());
 }
 #endif
 
