@@ -126,8 +126,8 @@ namespace contraction {
                                                          select_proc(dst_pair.second);
                                                          for(size_t k = 0; k < src.n_blocks(); ++k)
                                                          dst.match_and_add_block(src[k],
-                                                                                 src.basis().lc(k), 
-                                                                                 src.basis().rc(k));
+                                                                                 src.basis().left_charge(k), 
+                                                                                 src.basis().right_charge(k));
                                                      }).first;
             e2[b2] = false;
             if(rvector[0].second != r){
@@ -136,25 +136,6 @@ namespace contraction {
             }
             for(int i = 1; i < rvector.size(); i++) delete rvector[i].first;
             return *GRID(0,b2);
-        }
-        void print_distribution(){
-            if(!ambient::master()) return;
-            double total = 0;
-            for(int b2 = 0; b2 < size2; b2++)
-            for(int b1 = 0; b1 < size1; b1++) if(GRID(b1,b2) != NULL) 
-                total += GRID(b1,b2)->num_elements();
-            printf("%.2f GB:", total*sizeof(typename Matrix::value_type)/1024/1024/1024);
-            for(int p = 0; p < ambient::num_procs(); ++p){
-                double part = 0;
-                for(int b2 = 0; b2 < size2; b2++)
-                for(int b1 = 0; b1 < size1; b1++) if(GRID(b1,b2) != NULL)
-                for(int i = 0; i < (*GRID(b1,b2)).n_blocks(); ++i){
-                    if(!ambient::weak((*GRID(b1,b2))[i][0]) && ambient::get_owner((*GRID(b1,b2))[i][0]) == p)
-                        part += num_rows((*GRID(b1,b2))[i])*num_cols((*GRID(b1,b2))[i]);
-                }
-                printf(" %.1f%%", 100*part/total);
-            }
-            printf("\n");
         }
         block_matrix<Matrix, SymmGroup>& reduce(){
             std::vector< std::pair< block_matrix<Matrix, SymmGroup>*, ambient::scope::const_iterator > > rvector;
@@ -197,12 +178,12 @@ namespace contraction {
             for(size_t n = 0; n < rvector_global.size(); ++n){
                 block_matrix<Matrix, SymmGroup>& src = *rvector_global[n]->first;
                 for(size_t k = 0; k < src.n_blocks(); ++k){
-                    if(!skeleton->has_block(src.basis().lc(k), src.basis().rc(k))){
-                        skeleton->insert_block(new Matrix(), src.basis().lc(k), src.basis().rc(k));
+                    if(!skeleton->has_block(src.basis().left_charge(k), src.basis().right_charge(k))){
+                        skeleton->insert_block(new Matrix(), src.basis().left_charge(k), src.basis().right_charge(k));
                     }
                     blocks.push_back(&src[k]);
-                    c1.push_back(src.basis().lc(k));
-                    c2.push_back(src.basis().rc(k));
+                    c1.push_back(src.basis().left_charge(k));
+                    c2.push_back(src.basis().right_charge(k));
                     owners.push_back(rvector_global[n]->second);
                 }
             }
@@ -221,6 +202,7 @@ namespace contraction {
                                                                                return (ambient::num_procs() + *a.second - *root) % ambient::num_procs()
                                                                                     < (ambient::num_procs() + *b.second - *root) % ambient::num_procs();
                                                                            });
+                rblocks_part[0].second = root;
                 rblocks.push_back(rblocks_part);
                 if(rblocks_part.size() > max_stride) 
                     max_stride = rblocks_part.size();
@@ -236,10 +218,9 @@ namespace contraction {
                         Matrix& src = *src_pair.first;
                         Matrix& dst = *dst_pair.first;
                         
-                        if(num_rows(src) == num_rows(dst) && num_cols(src) == num_cols(dst)){
-                        }else if(num_rows(src) > num_rows(dst) && num_cols(src) > num_cols(dst))
+                        if(num_rows(src) > num_rows(dst) && num_cols(src) > num_cols(dst))
                             resize(dst, num_rows(src), num_cols(src));
-                        else{
+                        else if(num_rows(src) != num_rows(dst) || num_cols(src) != num_cols(dst)){
                             size_t maxrows = std::max(num_rows(src), num_rows(dst));
                             size_t maxcols = std::max(num_cols(src), num_cols(dst));
                             resize(dst, maxrows, maxcols);
@@ -260,6 +241,25 @@ namespace contraction {
             delete skeleton;
             GRID(0,0) = res;
             return *res;
+        }
+        void print_distribution(){
+            if(!ambient::master()) return;
+            double total = 0;
+            for(int b2 = 0; b2 < size2; b2++)
+            for(int b1 = 0; b1 < size1; b1++) if(GRID(b1,b2) != NULL) 
+                total += GRID(b1,b2)->num_elements();
+            printf("%.2f GB:", total*sizeof(typename Matrix::value_type)/1024/1024/1024);
+            for(int p = 0; p < ambient::num_procs(); ++p){
+                double part = 0;
+                for(int b2 = 0; b2 < size2; b2++)
+                for(int b1 = 0; b1 < size1; b1++) if(GRID(b1,b2) != NULL)
+                for(int i = 0; i < (*GRID(b1,b2)).n_blocks(); ++i){
+                    if(!ambient::weak((*GRID(b1,b2))[i][0]) && ambient::get_owner((*GRID(b1,b2))[i][0]) == p)
+                        part += num_rows((*GRID(b1,b2))[i])*num_cols((*GRID(b1,b2))[i]);
+                }
+                printf(" %.1f%%", 100*part/total);
+            }
+            printf("\n");
         }
         MPOTensor<Matrix, SymmGroup> const & mpo;
         mutable std::vector< block_matrix<Matrix, SymmGroup>* > grid;
