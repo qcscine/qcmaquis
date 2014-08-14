@@ -190,8 +190,8 @@ namespace contraction {
             std::vector< std::vector<std::pair<Matrix*,ambient::scope::const_iterator> > > rblocks;
             size_t max_stride = 0;
             for(size_t k = 0; k < skeleton->n_blocks(); ++k){
-                auto tc1 = skeleton->.basis().left_charge(k); 
-                auto tc2 = skeleton->.basis().right_charge(k);
+                auto tc1 = skeleton->basis().left_charge(k); 
+                auto tc2 = skeleton->basis().right_charge(k);
                 std::vector<std::pair<Matrix*,ambient::scope::const_iterator> > rblocks_part;
                 for(size_t n = 0; n < blocks.size(); n++){
                     if(tc1 == c1[n] && tc2 == c2[n]) rblocks_part.push_back(std::make_pair(blocks[n], owners[n]));
