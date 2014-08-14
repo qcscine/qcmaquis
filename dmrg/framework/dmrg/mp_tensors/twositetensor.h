@@ -88,6 +88,7 @@ public:
     predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right,
                       MPOTensor<Matrix, SymmGroup> const& mpo, boost::shared_ptr<Engine> contr);
     
+    void clear();
     void swap_with(TwoSiteTensor & b);
 
     friend void swap(TwoSiteTensor & a, TwoSiteTensor & b)

@@ -73,21 +73,20 @@ namespace contraction {
             contr_grid.multiply_column(b2, right[b2]);
         });
         t.clear();
-        ambient::sync(); 
+        ambient::sync();
          
         swap(ret.data(), contr_grid.reduce());
         ambient::sync();
 #else
         omp_for(index_type b2, range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-
             lbtm_kernel(b2, contr_grid, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(contr_grid(0,0), right[b2], tmp);
             contr_grid(0,0).clear();
             omp_critical
             for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
-                ret.data().match_and_add_block(tmp[k], tmp.basis().lc(k), tmp.basis().rc(k));
+                ret.data().match_and_add_block(tmp[k], tmp.basis().left_charge(k), tmp.basis().right_charge(k));
         });
 #endif
         return ret;

@@ -68,65 +68,65 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
     typedef typename SymmGroup::charge charge;
     Index<SymmGroup> B_left_basis = B.left_basis();
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        std::size_t matched_block = B_left_basis.position(A.basis().rc(k));
+        std::size_t matched_block = B_left_basis.position(A.basis().right_charge(k));
 
         if ( matched_block == B.n_blocks() )
             continue;
         
         std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
-                                               A.basis().lc(k), B.basis().rc(matched_block));
+                                               A.basis().left_charge(k), B.basis().right_charge(matched_block));
         gemm(A[k], B[matched_block], C[new_block]);
     }
 }
 
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
-          block_matrix<Matrix2, SymmGroup> const & B,
-          block_matrix<Matrix3, SymmGroup> & C)
+                    block_matrix<Matrix2, SymmGroup> const & B,
+                    block_matrix<Matrix3, SymmGroup> & C)
 {
     C.clear();
     
     typedef typename SymmGroup::charge charge;
     Index<SymmGroup> B_left_basis = B.left_basis();
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        std::size_t matched_block = B_left_basis.position(A.basis().rc(k));
+        std::size_t matched_block = B_left_basis.position(A.basis().right_charge(k));
 
         // Match right basis of A with left basis of B
         if ( matched_block == B.n_blocks() )
             continue;
 
         // Also match left basis of A with left basis of B
-        if ( !B_left_basis.has(A.basis().lc(k)) )
+        if ( !B_left_basis.has(A.basis().left_charge(k)) )
             continue;
         
         std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
-                                               A.basis().lc(k), B.basis().rc(matched_block));
+                                               A.basis().left_charge(k), B.basis().right_charge(matched_block));
         gemm(A[k], B[matched_block], C[new_block]);
     }
 }
 
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
-          block_matrix<Matrix2, SymmGroup> const & B,
-          block_matrix<Matrix3, SymmGroup> & C)
+                     block_matrix<Matrix2, SymmGroup> const & B,
+                     block_matrix<Matrix3, SymmGroup> & C)
 {
     C.clear();
     
     typedef typename SymmGroup::charge charge;
     Index<SymmGroup> A_right_basis = A.right_basis();
     for (std::size_t k = 0; k < B.n_blocks(); ++k) {
-        std::size_t matched_block = A_right_basis.position(B.basis().lc(k));
+        std::size_t matched_block = A_right_basis.position(B.basis().left_charge(k));
 
         // Match right basis of A with left basis of B
         if ( matched_block == A.n_blocks() )
             continue;
 
         // Also match A.right_basis() with B.right_basis()
-        if ( !A_right_basis.has(B.basis().rc(k)) )
+        if ( !A_right_basis.has(B.basis().right_charge(k)) )
             continue;
         
         std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[matched_block]), num_cols(B[k])),
-                                               A.basis().lc(matched_block), B.basis().rc(k));
+                                               A.basis().left_charge(matched_block), B.basis().right_charge(k));
         gemm(A[matched_block], B[k], C[new_block]);
     }
 }
@@ -206,12 +206,19 @@ void heev_merged(block_matrix<Matrix, SymmGroup> const & M,
 
     evecs = block_matrix<Matrix, SymmGroup>(M.basis());
     evals = block_matrix<DiagMatrix, SymmGroup>(M.basis());
-    std::size_t loop_max = M.n_blocks();
 
-    omp_for(size_t k, range<size_t>(0,loop_max), {
-        select_proc(ambient::scope::balance(k,loop_max));
+    ambient::for_each_redist(M.blocks().first, M.blocks().second, 
+                             [](const Matrix& m){ merge(m); },
+                             [](const Matrix& m){ return (num_rows(m)*num_rows(m)*num_cols(m) +
+                                                          2*num_cols(m)*num_cols(m)*num_cols(m)); });
+    ambient::sync();
+
+    std::size_t loop_max = M.n_blocks();
+    for(size_t k = 0; k < loop_max; ++k){
+        select_proc(ambient::scope::begin()+ambient::get_owner(M[k]));
         heev_merged(M[k], evecs[k], evals[k]);
-    });
+    }
+    ambient::sync(ambient::mkl_parallel());
 }
 #endif
 
@@ -307,33 +314,33 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
        size_t keep = keeps[k];
   
         if (keep == 0) {
-            S.remove_block(S.basis().lc(k),
-                           S.basis().rc(k));
-            U.remove_block(U.basis().lc(k),
-                           U.basis().rc(k));
-            V.remove_block(V.basis().lc(k),
-                           V.basis().rc(k));
+            S.remove_block(S.basis().left_charge(k),
+                           S.basis().right_charge(k));
+            U.remove_block(U.basis().left_charge(k),
+                           U.basis().right_charge(k));
+            V.remove_block(V.basis().left_charge(k),
+                           V.basis().right_charge(k));
   // C- idem heev_truncate          --k; // everything gets shifted, to we have to look into the same k again
         } else {
             #ifdef USE_AMBIENT
-            ambient::numeric::split(S(S.basis().lc(k), S.basis().rc(k)));
-            ambient::numeric::split(U(U.basis().lc(k), U.basis().rc(k)));
-            ambient::numeric::split(V(V.basis().lc(k), V.basis().rc(k)));
+            ambient::numeric::split(S(S.basis().left_charge(k), S.basis().right_charge(k)));
+            ambient::numeric::split(U(U.basis().left_charge(k), U.basis().right_charge(k)));
+            ambient::numeric::split(V(V.basis().left_charge(k), V.basis().right_charge(k)));
             #endif
 
             if (keep >= num_rows(S[k])) continue;
         
-            S.resize_block(S.basis().lc(k),
-                           S.basis().rc(k),
+            S.resize_block(S.basis().left_charge(k),
+                           S.basis().right_charge(k),
                            keep, keep);
-            U.resize_block(U.basis().lc(k),
-                           U.basis().rc(k),
-                           U.basis().ls(k),
+            U.resize_block(U.basis().left_charge(k),
+                           U.basis().right_charge(k),
+                           U.basis().left_size(k),
                            keep);
-            V.resize_block(V.basis().lc(k),
-                           V.basis().rc(k),
+            V.resize_block(V.basis().left_charge(k),
+                           V.basis().right_charge(k),
                            keep,
-                           V.basis().rs(k));
+                           V.basis().right_size(k));
         }
     }
 
@@ -425,26 +432,26 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         size_t keep = keeps[k];
         
         if (keep == 0) {
-            evals.remove_block(evals.basis().lc(k),
-                               evals.basis().rc(k));
-            evecs.remove_block(evecs.basis().lc(k),
-                               evecs.basis().rc(k));
+            evals.remove_block(evals.basis().left_charge(k),
+                               evals.basis().right_charge(k));
+            evecs.remove_block(evecs.basis().left_charge(k),
+                               evecs.basis().right_charge(k));
 //            --k; // everything gets shifted, to we have to look into the same k again
 // C - Tim : I reversed the loop because the new version was incompatible with the keeps array, and created a bug when keeps[k]=0.
         } else {
             #ifdef USE_AMBIENT
-            ambient::numeric::split(evals(evals.basis().lc(k), evals.basis().rc(k)));
-            ambient::numeric::split(evecs(evecs.basis().lc(k), evecs.basis().rc(k)));
+            ambient::numeric::split(evals(evals.basis().left_charge(k), evals.basis().right_charge(k)));
+            ambient::numeric::split(evecs(evecs.basis().left_charge(k), evecs.basis().right_charge(k)));
             #endif
 
             if(keep >= num_rows(evals[k])) continue;
 
-            evals.resize_block(evals.basis().lc(k),
-                               evals.basis().rc(k),
+            evals.resize_block(evals.basis().left_charge(k),
+                               evals.basis().right_charge(k),
                                keep, keep);
-            evecs.resize_block(evecs.basis().lc(k),
-                               evecs.basis().rc(k),
-                               evecs.basis().ls(k),
+            evecs.resize_block(evecs.basis().left_charge(k),
+                               evecs.basis().right_charge(k),
+                               evecs.basis().left_size(k),
                                keep);
         }
     }
@@ -512,7 +519,7 @@ block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> t
 { 
     block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> ret; 
     for(size_t k=0; k<m.n_blocks(); ++k) 
-        ret.insert_block(transpose(m[k]), m.basis().rc(k), m.basis().lc(k));
+        ret.insert_block(transpose(m[k]), m.basis().right_charge(k), m.basis().left_charge(k));
 #ifdef AMBIENT_TRACKING
     ambient_track_as(ret, m.label);
 #endif
@@ -545,8 +552,8 @@ block_matrix<Matrix, SymmGroup> adjoin(block_matrix<Matrix, SymmGroup> const & m
     block_matrix<Matrix, SymmGroup> ret;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
         ret.insert_block(m[k],
-                         -m.basis().lc(k),
-                         -m.basis().rc(k));
+                         -m.basis().left_charge(k),
+                         -m.basis().right_charge(k));
     return ret;
 }
 
@@ -570,14 +577,14 @@ bool is_hermitian(block_matrix<Matrix, SymmGroup> const & m)
 {
     bool ret = true;
     for (size_t k=0; ret && k < m.n_blocks(); ++k) {
-        if (m.basis().ls(k) != m.basis().rs(k))
+        if (m.basis().left_size(k) != m.basis().right_size(k))
             return false;
-        else if (m.basis().lc(k) == m.basis().rc(k))
+        else if (m.basis().left_charge(k) == m.basis().right_charge(k))
             ret = is_hermitian(m[k]);
-        else if (! m.has_block(m.basis().rc(k), m.basis().lc(k)))
+        else if (! m.has_block(m.basis().right_charge(k), m.basis().left_charge(k)))
             return false;
         else
-            ret = ( m[k] == transpose(conj( m(m.basis().rc(k), m.basis().lc(k)) )) );
+            ret = ( m[k] == transpose(conj( m(m.basis().right_charge(k), m.basis().left_charge(k)) )) );
     }
     return ret;
 }
@@ -667,19 +674,19 @@ void op_kron(Index<SymmGroup> const & phys_A,
 
     for (int i = 0; i < A.n_blocks(); ++i) {
         for (int j = 0; j < B.n_blocks(); ++j) {
-            typename SymmGroup::charge new_right = SymmGroup::fuse(A.basis().rc(i), B.basis().rc(j));
-            typename SymmGroup::charge new_left = SymmGroup::fuse(A.basis().lc(i), B.basis().lc(j));
+            typename SymmGroup::charge new_right = SymmGroup::fuse(A.basis().right_charge(i), B.basis().right_charge(j));
+            typename SymmGroup::charge new_left = SymmGroup::fuse(A.basis().left_charge(i), B.basis().left_charge(j));
 
 
-            Matrix2 tmp(pb_left.size(A.basis().lc(i), B.basis().lc(j)),
-                       pb_right.size(A.basis().rc(i), B.basis().rc(j)),
+            Matrix2 tmp(pb_left.size(A.basis().left_charge(i), B.basis().left_charge(j)),
+                       pb_right.size(A.basis().right_charge(i), B.basis().right_charge(j)),
                        0);
 
             maquis::dmrg::detail::op_kron(tmp, B[j], A[i],
-                                          pb_left(A.basis().lc(i), B.basis().lc(j)),
-                                          pb_right(A.basis().rc(i), B.basis().rc(j)),
-                                          A.basis().ls(i), B.basis().ls(j),
-                                          A.basis().rs(i), B.basis().rs(j));
+                                          pb_left(A.basis().left_charge(i), B.basis().left_charge(j)),
+                                          pb_right(A.basis().right_charge(i), B.basis().right_charge(j)),
+                                          A.basis().left_size(i), B.basis().left_size(j),
+                                          A.basis().right_size(i), B.basis().right_size(j));
 
             C.match_and_add_block(tmp, new_left, new_right);
         }

@@ -217,7 +217,7 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_overlap(MPS<Matr
     std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vals;
     vals.reserve(left.left_basis().sum_of_sizes());
     for (int n=0; n<left.n_blocks(); ++n)
-        for (int i=0; i<left.basis().ls(n); ++i)
+        for (int i=0; i<left.basis().left_size(n); ++i)
             vals.push_back( left[n](i,0) );
         
     return vals;

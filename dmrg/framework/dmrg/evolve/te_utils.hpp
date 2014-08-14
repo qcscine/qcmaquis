@@ -293,10 +293,10 @@ private:
         for(std::size_t k = 0; k < S.n_blocks(); ++k){
             int keep = std::find_if(S[k].diagonal().first, S[k].diagonal().second, boost::lambda::_1 < 1e-10)-S[k].diagonal().first;
             
-            left.resize_block(left.basis().lc(k), left.basis().rc(k),
-                              left.basis().ls(k), keep);
-            right.resize_block(right.basis().lc(k), right.basis().rc(k),
-                               keep, right.basis().rs(k));
+            left.resize_block(left.basis().left_charge(k), left.basis().right_charge(k),
+                              left.basis().left_size(k), keep);
+            right.resize_block(right.basis().left_charge(k), right.basis().right_charge(k),
+                               keep, right.basis().right_size(k));
         }
         
         left_ops  = reshape_right_to_list(phys1, left);

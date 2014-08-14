@@ -222,8 +222,8 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
         contr_grid(0,0).clear();
         omp_critical
         for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
-            if (tmp.basis().lc(k) == tmp.basis().rc(k))
-            ret.data().match_and_add_block(tmp[k], tmp.basis().lc(k), tmp.basis().rc(k));
+            if (tmp.basis().left_charge(k) == tmp.basis().right_charge(k))
+            ret.data().match_and_add_block(tmp[k], tmp.basis().left_charge(k), tmp.basis().right_charge(k));
     });
 #endif
     //maquis::cout << "sh2 output ket data:\n";
