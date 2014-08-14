@@ -218,8 +218,8 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
             block_matrix<Matrix, SymmGroup> const& tdm = half_dm[b];
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                if (data_.left_basis().has(tdm.left_basis()[k].first))
-                    dm.reserve(tdm.left_basis()[k].first, tdm.right_basis()[k].first,
+                if (data_.basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
+                    dm.reserve(tdm.basis().left_charge(k), tdm.basis().right_charge(k),
                                num_rows(tdm[k]), num_cols(tdm[k]));
             }
         }
@@ -227,7 +227,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
         
         parallel_for(std::size_t k, range<std::size_t>(0,dm.n_blocks()), {
             for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
-                std::size_t match = half_dm[b].find_block(dm.left_basis()[k].first, dm.right_basis()[k].first);
+                std::size_t match = half_dm[b].find_block(dm.basis().left_charge(k), dm.basis().right_charge(k));
                 if (match < half_dm[b].n_blocks())
                     dm[k] += (half_dm[b][match]);
             }
@@ -286,8 +286,8 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cut
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
             block_matrix<Matrix, SymmGroup> const& tdm = half_dm[b];
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                if (data_.right_basis().has(tdm.right_basis()[k].first))
-                    dm.reserve(tdm.left_basis()[k].first, tdm.right_basis()[k].first,
+                if (data_.basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
+                    dm.reserve(tdm.basis().left_charge(k), tdm.basis().right_charge(k),
                                num_rows(tdm[k]), num_cols(tdm[k]));
             }
         }
@@ -295,7 +295,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cut
         
         parallel_for(std::size_t k, range<std::size_t>(0,dm.n_blocks()), {
             for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
-                std::size_t match = half_dm[b].find_block(dm.left_basis()[k].first, dm.right_basis()[k].first);
+                std::size_t match = half_dm[b].find_block(dm.basis().left_charge(k), dm.basis().right_charge(k));
                 if (match < half_dm[b].n_blocks())
                     dm[k] += (half_dm[b][match]);
             }

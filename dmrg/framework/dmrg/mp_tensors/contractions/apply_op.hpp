@@ -108,7 +108,7 @@ namespace contraction {
 
                     maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
                                                         out_left_offset, in_right_offset,
-                                                        phys_s1, phys_s2, T.left_basis()[t_block].second, r_size, access.scale);
+                                                        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, access.scale);
                 }
             } // right index block
         } // b1
@@ -185,7 +185,7 @@ namespace contraction {
                     maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
                                                         out_right_offset, in_left_offset,
                                                         phys_s1, phys_s2,
-                                                        l_size, T.right_basis()[t_block].second, access.scale);
+                                                        l_size, T.basis().right_size(t_block), access.scale);
                 }
             }
         }

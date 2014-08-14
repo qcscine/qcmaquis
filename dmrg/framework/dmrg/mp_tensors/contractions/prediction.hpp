@@ -58,7 +58,7 @@ namespace contraction {
             
             tdm *= alpha;
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                if (mps.data().left_basis().has(tdm.basis().left_charge(k)))
+                if (mps.data().basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
                     dm.match_and_add_block(tdm[k],
                                            tdm.basis().left_charge(k),
                                            tdm.basis().right_charge(k));
@@ -114,7 +114,7 @@ namespace contraction {
             
             tdm *= alpha;
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                if (mps.data().right_basis().has(tdm.basis().right_charge(k)))
+                if (mps.data().basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
                     dm.match_and_add_block(tdm[k],
                                            tdm.basis().left_charge(k),
                                            tdm.basis().right_charge(k));

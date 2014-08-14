@@ -346,7 +346,7 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
 
     delete[] keeps;
 
-    std::size_t bond_dimension = S.left_basis().sum_of_sizes();
+    std::size_t bond_dimension = S.basis().sum_of_left_sizes();
     if(verbose){
         maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << bond_dimension << std::endl;
     }
@@ -365,7 +365,7 @@ truncation_results alt_svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                     double rel_tol, std::size_t Mmax,
                                     bool verbose = true)
 {
-    assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
+    assert( M.basis().sum_of_left_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
 
     block_matrix<Matrix, SymmGroup> t;
     block_matrix<Matrix, SymmGroup> R;
@@ -415,7 +415,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                  double cutoff, std::size_t Mmax,
                                  bool verbose = true)
 {
-    assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
+    assert( M.basis().sum_of_left_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
     #ifdef USE_AMBIENT
     heev_merged(M, evecs, evals);
     #else
@@ -457,7 +457,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
     }
     delete[] keeps;
 
-    std::size_t bond_dimension = evals.left_basis().sum_of_sizes();
+    std::size_t bond_dimension = evals.basis().sum_of_left_sizes();
     if(verbose){
         maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << bond_dimension << std::endl;
     }
