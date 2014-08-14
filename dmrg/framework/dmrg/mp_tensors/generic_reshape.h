@@ -54,9 +54,8 @@ void reshape(MultiIndex<SymmGroup> const & midx,
         for (size_t block = 0; block < m1.n_blocks(); ++block)
         {
             
-            charge in_l_charge = m1.left_basis()[block].first;
-            charge in_r_charge = m1.right_basis()[block].first;
-            
+            charge in_l_charge = m1.basis().left_charge(block);
+            charge in_r_charge = m1.basis().right_charge(block);
             
             Matrix const & in_block = m1[block];
             

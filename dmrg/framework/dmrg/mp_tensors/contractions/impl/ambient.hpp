@@ -126,8 +126,8 @@ namespace contraction {
                                                          select_proc(dst_pair.second);
                                                          for(size_t k = 0; k < src.n_blocks(); ++k)
                                                          dst.match_and_add_block(src[k],
-                                                                                 src.left_basis()[k].first, 
-                                                                                 src.right_basis()[k].first);
+                                                                                 src.basis().left_charge(k), 
+                                                                                 src.basis().right_charge(k));
                                                      }).first;
             e2[b2] = false;
             if(rvector[0].second != r){
@@ -161,8 +161,8 @@ namespace contraction {
                 while(rvector[i].second == owner && i < rvector.size()){
                     for(size_t k = 0; k < rvector[i].first->n_blocks(); ++k)
                     rvector_global.back()->first->match_and_add_block((*rvector[i].first)[k], 
-                                                                      rvector[i].first->left_basis()[k].first, 
-                                                                      rvector[i].first->right_basis()[k].first);
+                                                                      rvector[i].first->basis().lc(k), 
+                                                                      rvector[i].first->basis().rc(k));
                     delete rvector[i].first;
                     i++;
                 }
@@ -178,20 +178,20 @@ namespace contraction {
             for(size_t n = 0; n < rvector_global.size(); ++n){
                 block_matrix<Matrix, SymmGroup>& src = *rvector_global[n]->first;
                 for(size_t k = 0; k < src.n_blocks(); ++k){
-                    if(!skeleton->has_block(src.left_basis()[k].first, src.right_basis()[k].first)){
-                        skeleton->insert_block(new Matrix(), src.left_basis()[k].first, src.right_basis()[k].first);
+                    if(!skeleton->has_block(src.basis().left_charge(k), src.basis().right_charge(k))){
+                        skeleton->insert_block(new Matrix(), src.basis().left_charge(k), src.basis().right_charge(k));
                     }
                     blocks.push_back(&src[k]);
-                    c1.push_back(src.left_basis()[k].first);
-                    c2.push_back(src.right_basis()[k].first);
+                    c1.push_back(src.basis().left_charge(k));
+                    c2.push_back(src.basis().right_charge(k));
                     owners.push_back(rvector_global[n]->second);
                 }
             }
             std::vector< std::vector<std::pair<Matrix*,ambient::scope::const_iterator> > > rblocks;
             size_t max_stride = 0;
             for(size_t k = 0; k < skeleton->n_blocks(); ++k){
-                auto tc1 = skeleton->left_basis()[k].first; 
-                auto tc2 = skeleton->right_basis()[k].first;
+                auto tc1 = skeleton->basis().lc(k); 
+                auto tc2 = skeleton->basis().rc(k);
                 std::vector<std::pair<Matrix*,ambient::scope::const_iterator> > rblocks_part;
                 for(size_t n = 0; n < blocks.size(); n++){
                     if(tc1 == c1[n] && tc2 == c2[n]) rblocks_part.push_back(std::make_pair(blocks[n], owners[n]));
@@ -233,8 +233,8 @@ namespace contraction {
                 ambient::sync();
             }
             for(size_t k = 0; k < skeleton->n_blocks(); ++k){
-                auto tc1 = skeleton->left_basis()[k].first; 
-                auto tc2 = skeleton->right_basis()[k].first;
+                auto tc1 = skeleton->basis().lc(k); 
+                auto tc2 = skeleton->basis().rc(k);
                 res->insert_block(*rblocks[k][0].first, tc1, tc2);
             }
             for(size_t n = 0; n < rvector_global.size(); ++n) delete rvector_global[n]->first;

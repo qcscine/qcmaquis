@@ -67,8 +67,8 @@ namespace contraction {
             if (W.n_blocks() == 0) continue;
 
             // charge deltas are constant for all blocks
-            charge operator_delta = SymmGroup::fuse(W.right_basis()[0].first, -W.left_basis()[0].first);
-            charge        T_delta = SymmGroup::fuse(T.right_basis()[0].first, -T.left_basis()[0].first);
+            charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
+            charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
         
             select_proc(contr_grid.where(b1,b2));
@@ -89,27 +89,26 @@ namespace contraction {
 
                 for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
                 {
-                    charge phys_c1 = W.left_basis()[w_block].first;
-                    charge phys_c2 = W.right_basis()[w_block].first;
+                    charge phys_c1 = W.basis().left_charge(w_block);
+                    charge phys_c2 = W.basis().right_charge(w_block);
 
                     charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_c1);
-                    size_t t_block = T.right_basis().position(in_r_charge);
-                    if (t_block == T.right_basis().size()) continue;
- 
-                    charge in_l_charge = T.left_basis()[t_block].first;
+                    charge in_l_charge = SymmGroup::fuse(in_r_charge, -T_delta);
+                    size_t t_block = T.basis().position(in_l_charge, in_r_charge);
+                    if (t_block == T.basis().size()) continue;
 
                     size_t in_right_offset = in_right_pb(phys_c1, out_r_charge);
                     size_t out_left_offset = out_left_pb(phys_c2, in_l_charge);
 
-                    size_t phys_s1 = W.left_basis()[w_block].second;
-                    size_t phys_s2 = W.right_basis()[w_block].second;
+                    size_t phys_s1 = W.basis().left_size(w_block);
+                    size_t phys_s2 = W.basis().right_size(w_block);
                     Matrix const & wblock = W[w_block];
                     Matrix const & iblock = T[t_block];
                     Matrix & oblock = ret[o];
 
                     maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
                                                         out_left_offset, in_right_offset,
-                                                        phys_s1, phys_s2, T.left_basis()[t_block].second, r_size, access.scale);
+                                                        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, access.scale);
                 }
             } // right index block
         } // b1
@@ -146,8 +145,8 @@ namespace contraction {
             if (W.n_blocks() == 0) continue;
 
             // charge deltas are constant for all blocks
-            charge operator_delta = SymmGroup::fuse(W.right_basis()[0].first, -W.left_basis()[0].first);
-            charge        T_delta = SymmGroup::fuse(T.right_basis()[0].first, -T.left_basis()[0].first);
+            charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
+            charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
 
             for (size_t l = 0; l < left_i.size(); ++l){
@@ -165,20 +164,20 @@ namespace contraction {
 
                 for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
                 {
-                    charge phys_c1 = W.left_basis()[w_block].first;
-                    charge phys_c2 = W.right_basis()[w_block].first;
+                    charge phys_c1 = W.basis().left_charge(w_block);
+                    charge phys_c2 = W.basis().right_charge(w_block);
 
-                    charge in_l_charge = SymmGroup::fuse(out_l_charge,  phys_c1); 
-                    size_t t_block = T.left_basis().position(in_l_charge);
-                    if (t_block == T.left_basis().size()) continue;
+                    charge in_l_charge = SymmGroup::fuse(out_l_charge, phys_c1); 
+                    charge in_r_charge = SymmGroup::fuse(in_l_charge, T_delta); 
+                    size_t t_block = T.basis().position(in_l_charge, in_r_charge);
+                    if (t_block == T.basis().size()) continue;
 
-                    charge in_r_charge = T.right_basis()[t_block].first;
                     assert(right_i.has(in_r_charge));
 
                     size_t in_left_offset = in_left_pb(phys_c1, out_l_charge);
                     size_t out_right_offset = out_right_pb(phys_c2, in_r_charge);
-                    size_t phys_s1 = W.left_basis()[w_block].second;
-                    size_t phys_s2 = W.right_basis()[w_block].second;
+                    size_t phys_s1 = W.basis().left_size(w_block);
+                    size_t phys_s2 = W.basis().right_size(w_block);
                     const Matrix & wblock = W[w_block];
                     const Matrix & iblock = T[t_block];
                     Matrix & oblock = ret[o];
@@ -186,8 +185,7 @@ namespace contraction {
                     maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
                                                         out_right_offset, in_left_offset,
                                                         phys_s1, phys_s2,
-                                                        l_size, T.right_basis()[t_block].second, access.scale);
-
+                                                        l_size, T.basis().right_size(t_block), access.scale);
                 }
             }
         }

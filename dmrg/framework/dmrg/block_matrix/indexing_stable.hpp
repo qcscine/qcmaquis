@@ -113,6 +113,7 @@ public:
     typedef basis_iterator_<SymmGroup> basis_iterator;
     
     Index() : sorted_(true) {}
+    Index(std::size_t s_) : sorted_(true), data_(s_) {}
     
     std::size_t size_of_block(charge c) const
     {
@@ -312,6 +313,8 @@ public:
     
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
+
+#include "dual_index.h"
 
 template<class SymmGroup>
 class ProductBasis

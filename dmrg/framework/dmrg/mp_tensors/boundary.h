@@ -159,7 +159,7 @@ Boundary<Matrix, SymmGroup> simplify(Boundary<Matrix, SymmGroup> b)
         block_matrix<Matrix, SymmGroup> U, V, t;
         block_matrix<dmt, SymmGroup> S;
         
-        if (b[k].left_basis().sum_of_sizes() == 0)
+        if (b[k].basis().sum_of_left_sizes() == 0)
             continue;
         
         svd_truncate(b[k], U, V, S, 1e-4, 1, false);

@@ -36,7 +36,7 @@ std::string identify_op(block_matrix<Matrix, SymmGroup> const & m)
     if (m.n_blocks() == 2)
         return "I";
     else {
-        typename SymmGroup::charge c1 = m.left_basis()[0].first, c2 = m.right_basis()[0].first;
+        typename SymmGroup::charge c1 = m.basis().left_charge(0), c2 = m.basis().right_charge(0);
         if (c1 == 1 && c2 == 0)
             return "c";
         else if (c1 == 0 && c2 == 1)

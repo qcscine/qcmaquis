@@ -56,9 +56,9 @@ void reshape_left_to_right(Index<SymmGroup> physical_i,
         {
             for (size_t s = 0; s < physical_i.size(); ++s)
             {
-                size_t r = right_i.position(m1.right_basis()[block].first);
+                size_t r = right_i.position(m1.basis().right_charge(block));
                 if(r == right_i.size()) continue;
-                size_t l = left_i.position(SymmGroup::fuse(m1.left_basis()[block].first,
+                size_t l = left_i.position(SymmGroup::fuse(m1.basis().left_charge(block),
                                                            -physical_i[s].first));
                 if(l == left_i.size()) continue;
 
@@ -152,9 +152,9 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
         {
             for (size_t s = 0; s < physical_i.size(); ++s)
             {
-                size_t l = left_i.position(m1.left_basis()[block].first);
+                size_t l = left_i.position(m1.basis().left_charge(block));
                 if(l == left_i.size()) continue;
-                size_t r = right_i.position(SymmGroup::fuse(m1.right_basis()[block].first,
+                size_t r = right_i.position(SymmGroup::fuse(m1.basis().right_charge(block),
                                                             physical_i[s].first));
                 if(r == right_i.size()) continue;
 
@@ -194,9 +194,9 @@ void reshape_right_to_left(Index<SymmGroup> physical_i,
 // Moving physical index from left to right
 // [(phys_i, left_i), right_i]  -->  [left_i, (-phys_i, right_i)]
 template<class Matrix, class OtherMatrix, class SymmGroup>
-void reshape_left_to_right_new(Index<SymmGroup> physical_i,
-                               Index<SymmGroup> left_i,
-                               Index<SymmGroup> right_i,
+void reshape_left_to_right_new(Index<SymmGroup> const & physical_i,
+                               Index<SymmGroup> const & left_i,
+                               Index<SymmGroup> const & right_i,
                                block_matrix<OtherMatrix, SymmGroup> const & m1,
                                block_matrix<Matrix, SymmGroup> & m2)
 {
@@ -212,14 +212,14 @@ void reshape_left_to_right_new(Index<SymmGroup> physical_i,
     
     for (size_t block = 0; block < m1.n_blocks(); ++block)
     {
-        size_t r = right_i.position(m1.right_basis()[block].first);
+        size_t r = right_i.position(m1.basis().right_charge(block));
         if(r == right_i.size()) continue;
         charge in_r_charge = right_i[r].first;
-        charge in_l_charge = m1.left_basis()[block].first;
+        charge in_l_charge = m1.basis().left_charge(block);
 
         for (size_t s = 0; s < physical_i.size(); ++s)
         {
-            size_t l = left_i.position(SymmGroup::fuse(m1.left_basis()[block].first, -physical_i[s].first));
+            size_t l = left_i.position(SymmGroup::fuse(m1.basis().left_charge(block), -physical_i[s].first));
             if(l == left_i.size()) continue;
 
             charge out_l_charge = left_i[l].first;
@@ -262,10 +262,10 @@ void reshape_and_pad_left(Index<SymmGroup> physical_i,
     {
         for (size_t s = 0; s < physical_i.size(); ++s)
         {
-            size_t r = in_right_i.position(m1.right_basis()[block].first);
+            size_t r = in_right_i.position(m1.basis().right_charge(block));
             if(r == in_right_i.size()) continue;
             
-            size_t l = in_left_i.position(SymmGroup::fuse(m1.left_basis()[block].first,
+            size_t l = in_left_i.position(SymmGroup::fuse(m1.basis().left_charge(block),
                                                        -physical_i[s].first));
             if(l == in_left_i.size()) continue;
             
@@ -303,15 +303,12 @@ void reshape_and_pad_left(Index<SymmGroup> physical_i,
 // Moving physical index from right to left
 // [left_i, (-phys_i, right_i)]  -->  [(phys_i, left_i), right_i]
 template<class Matrix, class OtherMatrix, class SymmGroup>
-void reshape_right_to_left_new(Index<SymmGroup> physical_i,
-                               Index<SymmGroup> left_i,
-                               Index<SymmGroup> right_i,
+void reshape_right_to_left_new(Index<SymmGroup> const & physical_i,
+                               Index<SymmGroup> const & left_i,
+                               Index<SymmGroup> const & right_i,
                                block_matrix<OtherMatrix, SymmGroup> const & m1,
                                block_matrix<Matrix, SymmGroup> & m2)
 {
-    //    assert(m1.left_basis() == left_i);
-    
-    
     m2 = block_matrix<Matrix, SymmGroup>();
     
     typedef std::size_t size_t;
@@ -324,14 +321,14 @@ void reshape_right_to_left_new(Index<SymmGroup> physical_i,
    
     for (size_t block = 0; block < m1.n_blocks(); ++block)
     {
-        size_t l = left_i.position(m1.left_basis()[block].first);
+        size_t l = left_i.position(m1.basis().left_charge(block));
         if(l == left_i.size()) continue;
         charge in_l_charge = left_i[l].first;
-        charge in_r_charge = m1.right_basis()[block].first;
+        charge in_r_charge = m1.basis().right_charge(block);
 
         for (size_t s = 0; s < physical_i.size(); ++s)
         {
-            size_t r = right_i.position(SymmGroup::fuse(m1.right_basis()[block].first,
+            size_t r = right_i.position(SymmGroup::fuse(m1.basis().right_charge(block),
                                                         physical_i[s].first));
             if(r == right_i.size()) continue;
 
@@ -376,9 +373,9 @@ reshape_left_to_physleft(Index<SymmGroup> physical_i,
     {
         for (size_t s = 0; s < physical_i.size(); ++s)
         {
-            size_t r = right_i.position(m1.right_basis()[block].first);
+            size_t r = right_i.position(m1.basis().right_charge(block));
             if(r == right_i.size()) continue;
-            size_t l = left_i.position(SymmGroup::fuse(m1.left_basis()[block].first,
+            size_t l = left_i.position(SymmGroup::fuse(m1.basis().left_charge(block),
                                                        -physical_i[s].first));
             if(l == left_i.size()) continue;
             
