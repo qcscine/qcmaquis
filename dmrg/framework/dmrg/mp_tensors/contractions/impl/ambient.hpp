@@ -161,8 +161,8 @@ namespace contraction {
                 while(rvector[i].second == owner && i < rvector.size()){
                     for(size_t k = 0; k < rvector[i].first->n_blocks(); ++k)
                     rvector_global.back()->first->match_and_add_block((*rvector[i].first)[k], 
-                                                                      rvector[i].first->basis().lc(k), 
-                                                                      rvector[i].first->basis().rc(k));
+                                                                      rvector[i].first->basis().left_charge(k), 
+                                                                      rvector[i].first->basis().right_charge(k));
                     delete rvector[i].first;
                     i++;
                 }
@@ -190,8 +190,8 @@ namespace contraction {
             std::vector< std::vector<std::pair<Matrix*,ambient::scope::const_iterator> > > rblocks;
             size_t max_stride = 0;
             for(size_t k = 0; k < skeleton->n_blocks(); ++k){
-                auto tc1 = skeleton->basis().lc(k); 
-                auto tc2 = skeleton->basis().rc(k);
+                auto tc1 = skeleton->basis().left_charge(k); 
+                auto tc2 = skeleton->basis().right_charge(k);
                 std::vector<std::pair<Matrix*,ambient::scope::const_iterator> > rblocks_part;
                 for(size_t n = 0; n < blocks.size(); n++){
                     if(tc1 == c1[n] && tc2 == c2[n]) rblocks_part.push_back(std::make_pair(blocks[n], owners[n]));
@@ -233,8 +233,8 @@ namespace contraction {
                 ambient::sync();
             }
             for(size_t k = 0; k < skeleton->n_blocks(); ++k){
-                auto tc1 = skeleton->basis().lc(k); 
-                auto tc2 = skeleton->basis().rc(k);
+                auto tc1 = skeleton->basis().left_charge(k); 
+                auto tc2 = skeleton->basis().right_charge(k);
                 res->insert_block(*rblocks[k][0].first, tc1, tc2);
             }
             for(size_t n = 0; n < rvector_global.size(); ++n) delete rvector_global[n]->first;
