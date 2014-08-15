@@ -29,6 +29,7 @@
 #define PARALLEL_FOR_HPP
 
 #ifdef USE_AMBIENT
+    #include "ambient/utils/meminfo.h"
     #define select_proc(...) ambient::actor ctxt(__VA_ARGS__)
     #define select_proc_safe(iter) if(iter == ambient::scope::end()) iter = ambient::scope::begin(); ambient::actor ctxt(iter);
     #define select_group(iterator, size) ambient::scope scope(iterator, size);
