@@ -50,7 +50,6 @@ namespace contraction {
                      ProductBasis<SymmGroup> const & out_left_pb)
     {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
 
         typedef typename SymmGroup::charge charge;
@@ -59,12 +58,9 @@ namespace contraction {
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
-
-            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
-            if (T.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
             MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
-            block_matrix<Matrix, SymmGroup> const & W = access.op;
-            if (W.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
 
             // charge deltas are constant for all blocks
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
@@ -76,10 +72,8 @@ namespace contraction {
 
             for (size_t r = 0; r < right_i.size(); ++r){
                 charge out_r_charge = right_i[r].first;
-                charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);
+                charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);             if(!out_left_i.has(out_l_charge)) continue;
                 size_t r_size = right_i[r].second;
-
-                if (!out_left_i.has(out_l_charge)) continue;
 
                 size_t o = ret.find_block(out_l_charge, out_r_charge);
                 if(o == ret.n_blocks()){
@@ -87,15 +81,13 @@ namespace contraction {
                     ret.resize_block(o, out_left_i.size_of_block(out_l_charge), r_size);
                 }
 
-                for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
-                {
+                for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block){
                     charge phys_c1 = W.basis().left_charge(w_block);
                     charge phys_c2 = W.basis().right_charge(w_block);
 
                     charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_c1);
                     charge in_l_charge = SymmGroup::fuse(in_r_charge, -T_delta);
-                    size_t t_block = T.basis().position(in_l_charge, in_r_charge);
-                    if (t_block == T.basis().size()) continue;
+                    size_t t_block = T.basis().position(in_l_charge, in_r_charge);            if(t_block == T.basis().size()) continue;
 
                     size_t in_right_offset = in_right_pb(phys_c1, out_r_charge);
                     size_t out_left_offset = out_left_pb(phys_c2, in_l_charge);
@@ -127,7 +119,6 @@ namespace contraction {
     {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::index_type index_type;
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::row_proxy row_proxy;
-        typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
 
         typedef typename SymmGroup::charge charge;
         typedef std::size_t size_t;
@@ -136,11 +127,9 @@ namespace contraction {
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
-            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];
-            if (T.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
             MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
-            block_matrix<Matrix, SymmGroup> const & W = access.op;
-            if (W.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
 
             // charge deltas are constant for all blocks
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
@@ -149,26 +138,23 @@ namespace contraction {
 
             for (size_t l = 0; l < left_i.size(); ++l){
                 charge out_l_charge = left_i[l].first;
+                charge out_r_charge = SymmGroup::fuse(out_l_charge, -total_delta);            if(!out_right_i.has(out_r_charge)) continue;
                 size_t l_size = left_i[l].second;
-                charge out_r_charge = SymmGroup::fuse(out_l_charge, -total_delta);
-
-                if (!out_right_i.has(out_r_charge)) continue;
-
                 size_t o = ret.find_block(out_l_charge, out_r_charge);
+
                 if(o == ret.n_blocks()){
                     o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
                     ret.resize_block(o, l_size, out_right_i.size_of_block(out_r_charge));
                 }
 
-                for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block)
-                {
+                for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block){
                     charge phys_c1 = W.basis().left_charge(w_block);
                     charge phys_c2 = W.basis().right_charge(w_block);
 
                     charge in_l_charge = SymmGroup::fuse(out_l_charge, phys_c1); 
                     charge in_r_charge = SymmGroup::fuse(in_l_charge, T_delta); 
-                    size_t t_block = T.basis().position(in_l_charge, in_r_charge);
-                    if (t_block == T.basis().size()) continue;
+                    size_t t_block = T.basis().position(in_l_charge, in_r_charge);            if (t_block == T.basis().size()) continue;
+                    assert(right_i.has(in_r_charge));
 
                     size_t in_left_offset = in_left_pb(phys_c1, out_l_charge);
                     size_t out_right_offset = out_right_pb(phys_c2, in_r_charge);
