@@ -119,7 +119,7 @@ private:
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type create_head, create_tail, destroy_head, destroy_tail,
-             count, docc,
+             count, docc, e2d, d2e, flip, count_single,
              ident, fill_cdagc, fill_ccdag;
 
     typename SymmGroup::subcharge max_irrep;
@@ -224,6 +224,21 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     op_t docc_op;
     docc_op.insert_block(Matrix(1,1,1), A, A);
 
+    op_t e2d_op;
+    e2d_op.insert_block(Matrix(1,1,1), D, A);
+
+    op_t d2e_op;
+    d2e_op.insert_block(Matrix(1,1,1), A, D);
+
+    op_t flip_op;
+    flip_op.insert_block(Matrix(1,1,1), B, B);
+    flip_op.insert_block(Matrix(1,1,1), C, C);
+
+    op_t count_single_op;
+    count_single_op.insert_block(Matrix(1,1,1), A, A);
+    count_single_op.insert_block(Matrix(1,1,1), B, B);
+    count_single_op.insert_block(Matrix(1,1,1), C, C);
+
     /**********************************************************************/
     /*** Create operator tag table ****************************************/
     /**********************************************************************/
@@ -239,6 +254,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     REGISTER(destroy_tail, tag_detail::bosonic)
     REGISTER(count,        tag_detail::bosonic)
     REGISTER(docc,         tag_detail::bosonic)
+    REGISTER(e2d,         tag_detail::bosonic)
+    REGISTER(d2e,         tag_detail::bosonic)
+    REGISTER(flip,         tag_detail::bosonic)
+    REGISTER(count_single,         tag_detail::bosonic)
 
 #undef REGISTER
     /**********************************************************************/
@@ -253,6 +272,9 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     PRINT(destroy_tail)
     PRINT(count)
     PRINT(docc)
+    PRINT(e2d)
+    PRINT(d2e)
+    PRINT(flip)
 #undef PRINT
 
     chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, ident, tag_handler);
@@ -348,6 +370,21 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         else if ( i==j && k==l && j!=k) {
 
             term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count, count);
+
+            used_elements[m] += 1;
+        }
+
+        // V_ijij == V_jiji = V_ijji = V_jiij
+        else if ( i==k && j==l && i!=j) {
+
+            term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, e2d, d2e);
+            term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, d2e, e2d);
+            term_assistant.add_term(this->terms_,  -matrix_elements[m], i, j, count_single, count_single);
+
+            // --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
+            term_assistant.add_term(
+                this->terms_, matrix_elements[m], i, j, flip, flip
+            );
 
             used_elements[m] += 1;
         }

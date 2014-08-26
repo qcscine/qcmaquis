@@ -154,7 +154,6 @@ namespace contraction {
                     charge in_l_charge = SymmGroup::fuse(out_l_charge, phys_c1); 
                     charge in_r_charge = SymmGroup::fuse(in_l_charge, T_delta); 
                     size_t t_block = T.basis().position(in_l_charge, in_r_charge);            if (t_block == T.basis().size()) continue;
-                    assert(right_i.has(in_r_charge));
 
                     size_t in_left_offset = in_left_pb(phys_c1, out_l_charge);
                     size_t out_right_offset = out_right_pb(phys_c2, in_r_charge);
