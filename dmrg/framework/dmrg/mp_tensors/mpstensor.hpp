@@ -252,8 +252,6 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
         if (method == QR) { //enum QR but LQ decomposition
             make_right_paired();
 
-            //SU2::lq_prescale(phys_i, left_i, right_i, data());
-            
             block_matrix<Matrix, SymmGroup> L, Q;
             lq(data(), L, Q);
             
@@ -261,8 +259,6 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             left_i = data().left_basis();
             assert(left_i == L.right_basis());
 
-            //SU2::lq_postscale(phys_i, left_i, right_i, data());
-            
             cur_normalization = Rnorm;
             return L;
         } else {
@@ -271,16 +267,12 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             block_matrix<Matrix, SymmGroup> U, V;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
 
-            //SU2::lq_prescale(phys_i, left_i, right_i, data());
-            
             svd(data(), U, V, S);
             
             left_i = V.left_basis();
             assert(data().right_basis() == V.right_basis());
             swap(data(), V);
 
-            //SU2::lq_postscale(phys_i, left_i, right_i, data());
-            
             SU2::gemm(U, S, V);
             
             cur_normalization = Rnorm;
