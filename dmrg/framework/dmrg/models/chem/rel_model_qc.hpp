@@ -358,11 +358,14 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             
             if (is_term_allowed(i,j,k,l)) {
                 if        (i <  n_pair && j <  n_pair && k <  n_pair && l <  n_pair) {
-                    ////term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_unbar, destroy_unbar);
-                    ////term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l+n_pair,j+n_pair, create_bar, create_bar, destroy_bar, destroy_bar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_unbar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l+n_pair,j+n_pair, create_bar, create_bar, destroy_bar, destroy_bar);
                 } else if (i <  n_pair && j <  n_pair && k >= n_pair && l >= n_pair) {
-                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_bar, destroy_bar, destroy_unbar);
-                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l-n_pair,j+n_pair, create_bar, create_unbar, destroy_unbar, destroy_bar);
+                    if ( i > 7 && j > 7 && k < 12 && l < 12 ) {
+                    term_assistant.add_term(this->terms_, 50.0*matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_bar, destroy_bar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, 50.0*matrix_elements[m],n_pair,i+n_pair,k-n_pair,l-n_pair,j+n_pair, create_bar, create_unbar, destroy_unbar, destroy_bar);
+                    maquis::cout << "check" << std::endl;
+                    }
                 } else if (i <  n_pair && j <  n_pair && k >= n_pair && l <  n_pair) {
                     //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_bar, destroy_unbar, destroy_unbar);
                     //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l+n_pair,j+n_pair, create_bar, create_unbar, destroy_bar, destroy_bar);
@@ -370,11 +373,22 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
                     //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_bar, destroy_unbar);
                     //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l-n_pair,j+n_pair, create_bar, create_bar, destroy_unbar, destroy_bar);
                 } else if (i <  n_pair && j >= n_pair && k <  n_pair && l >= n_pair) {
-                    ////term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_bar, destroy_bar);
-                    ////term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l-n_pair,j-n_pair, create_bar, create_bar, destroy_unbar, destroy_unbar);
+                    
+                    if ( i > 7 && k > 7 && j < 12 && l < 12 ) {
+                        term_assistant.add_term(this->terms_, 50.0*matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_bar, destroy_bar);
+                        term_assistant.add_term(this->terms_, 50.0*matrix_elements[m],n_pair,i+n_pair,k+n_pair,l-n_pair,j-n_pair, create_bar, create_bar, destroy_unbar, destroy_unbar);
+                    maquis::cout << "check" << std::endl;
+                    }
+                    
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_bar, destroy_bar);
+                    //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l-n_pair,j-n_pair, create_bar, create_bar, destroy_unbar, destroy_unbar);
+                    //maquis::cout << matrix_elements[m] << std::endl;
                 } else if (i <  n_pair && j >= n_pair && k >= n_pair && l <  n_pair) {
-                    ////term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_bar, destroy_unbar, destroy_bar);
-                    ////term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l+n_pair,j-n_pair, create_bar, create_unbar, destroy_bar, destroy_unbar);
+                    if ( i > 7 && l > 7 && j < 12 && k < 12 ) {
+                    term_assistant.add_term(this->terms_, 50.0*matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_bar, destroy_unbar, destroy_bar);
+                    term_assistant.add_term(this->terms_, 50.0*matrix_elements[m],n_pair,i+n_pair,k-n_pair,l+n_pair,j-n_pair, create_bar, create_unbar, destroy_bar, destroy_unbar);
+                    maquis::cout << "check" << std::endl;
+                    }
                 } else if (i <  n_pair && j >= n_pair && k <  n_pair && l <  n_pair) {
                     //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j, create_unbar, create_unbar, destroy_unbar, destroy_bar);
                     //term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l+n_pair,j-n_pair, create_bar, create_bar, destroy_bar, destroy_unbar);

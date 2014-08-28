@@ -204,6 +204,8 @@ public:
                 maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
 #endif
 
+            // OUTPUT PRECISION
+            maquis::cout.precision(15);
             maquis::cout << "Energy " << lr << " " << res.first << std::endl;
             iteration_results_["Energy"] << res.first;
             

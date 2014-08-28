@@ -308,6 +308,8 @@ namespace generate_mpo
                     nferm -= 1;
                 bool trivial_fill = (nferm % 2 == 0);
                 insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill);
+                //maquis::cout << "ADDING op_" << i << " at site " << term.position(i) << std::endl;
+                //maquis::cout << "INSERTING fill from " << term.position(i)+1 << " to " << term.position(i+1) << ". Trivial fill? " << trivial_fill << std::endl;
             }
             /// op_2
             {
@@ -320,12 +322,15 @@ namespace generate_mpo
                     nferm -= 1;
                 bool trivial_fill = (nferm % 2 == 0);
                 insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill);
+                //maquis::cout << "ADDING op_" << i << " at site " << term.position(i) << std::endl;
+                //maquis::cout << "INSERTING fill from " << term.position(i)+1 << " to " << term.position(i+1) << ". Trivial fill? " << trivial_fill << std::endl;
             }
 
             /// op_3
             {
                 int i = 3;
                 insert_operator(term.position(i), make_pair(k1, trivial_right), prempo_value_type(term.operator_tag(i), 1.), detach);
+                //maquis::cout << "ADDING op_" << i << " at site " << term.position(i) << std::endl;
             }
         }
 

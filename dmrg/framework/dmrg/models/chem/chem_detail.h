@@ -225,9 +225,10 @@ namespace chem_detail {
                       int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
         {
             // Collapse terms with identical operators and different scales into one term
+            /*
             if (op_i == op_k && op_j == op_l) {
 
-                //maquis::cout << "collapsing term: " << i << j << k << l << std::endl;
+                maquis::cout << "collapsing term: " << i << j << k << l << std::endl;
                 // if i>j, we switch l,j to get the related term
                 // if j<i, we have to switch i,k, otherwise we get a forbidden permutation
                 IndexTuple self(i,j,k,l), twin(i,l,k,j);
@@ -260,7 +261,8 @@ namespace chem_detail {
                 }
                 //else: we already have the term
             }
-            else {
+            else*/ {
+                //maquis::cout << "PUSHING " << i << "," << j << "," << k << "," << l << "," << std::endl;
                 tagterms.push_back( TermMaker<M, S>::four_term(model, ident, fill, scale, i,k,l,j,
                                    op_i, op_k, op_l, op_j, tag_handler) );
             }

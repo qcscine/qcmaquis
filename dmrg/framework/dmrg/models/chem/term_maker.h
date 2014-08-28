@@ -162,12 +162,29 @@ struct TermMaker {
         term.is_fermionic = true;
         term.coeff = scale;
 
+        //maquis::cout << "ENTERING 4TERM <iklj>: " << "<" << i << "," << j << "," << k << "," << l << ">" << std::endl;
+
         // Simple O(n^2) algorithm to determine sign of permutation
         pos_t idx[] = { i,j,k,l };
         pos_t inv_count=0, n=4;
         for(pos_t c1 = 0; c1 < n - 1; c1++)
             for(pos_t c2 = c1+1; c2 < n; c2++)
                 if(idx[c1] > idx[c2]) inv_count++;
+
+        //HARDCODED for test purposes only
+        //pos_t idx[] = { i,j,k,l };
+        //pos_t inv_count=0, n=4;
+        //for(pos_t c1 = 0; c1 < n - 1; c1++) {
+        //    for(pos_t c2 = c1+1; c2 < n; c2++) {
+        //        if(idx[c1] > idx[c2]) {
+        //           if(idx[c1] >= 10 && idx[c2] >= 10) {
+        //               inv_count++;}
+        //           else if(idx[c1] < 10 && idx[c2] < 10) {
+        //               inv_count++;}
+        //        }
+        //    }
+        //}
+
 
         std::vector<pos_op_t> sterm;
         sterm.push_back(boost::make_tuple(i, op_i));
@@ -179,6 +196,7 @@ struct TermMaker {
         std::pair<tag_type, value_type> ptag;
         // ask the model for the right fill_op
         fill_op = model->filling_matrix_tag(boost::tuples::get<0>(sterm[0]));
+        //maquis::cout << "sterm[0]: " << boost::tuples::get<0>(sterm[0]) << std::endl;
 
         ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[0]));
         boost::tuples::get<1>(sterm[0]) = ptag.first;
@@ -186,6 +204,7 @@ struct TermMaker {
         
         // ask the model for the right fill_op
         fill_op = model->filling_matrix_tag(boost::tuples::get<0>(sterm[2]));
+        //maquis::cout << "sterm[2]: " << boost::tuples::get<0>(sterm[2]) << std::endl;
 
         ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[2]));
         boost::tuples::get<1>(sterm[2]) = ptag.first;
@@ -198,6 +217,10 @@ struct TermMaker {
         term.push_back(sterm[1]);
         term.push_back(sterm[2]);
         term.push_back(sterm[3]);
+        //std::cout << "CREATING " << term << std::endl;
+        //maquis::cout << "LEAVING 4TERM <iklj>: " << "<" << boost::tuples::get<0>(sterm[0]) << "," << boost::tuples::get<0>(sterm[1]) << "," << boost::tuples::get<0>(sterm[2]) << "," << boost::tuples::get<0>(sterm[3]) << ">" << std::endl;
+        //for (int i_ = 0; i_ < term.size(); ++i_)
+        //   maquis::cout << op_table->get_op(term.operator_tag(i_)) << std::endl;
         return term;
     }
 };
