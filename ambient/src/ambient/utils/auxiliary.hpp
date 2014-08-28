@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -89,6 +88,8 @@ namespace ambient {
     template<typename V>
     inline void swap_with(V& left, V& right){
         std::swap(left.ambient_rc.desc, right.ambient_rc.desc);
+        left.ambient_after = left.ambient_rc.desc->current;
+        right.ambient_after = right.ambient_rc.desc->current;
     }
 
     template<typename V>

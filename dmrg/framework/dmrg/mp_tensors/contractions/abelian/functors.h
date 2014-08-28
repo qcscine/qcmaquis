@@ -46,16 +46,16 @@ namespace contraction { // Forward declaration
                      ProductBasis<SymmGroup> const & out_left_pb);
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    block_matrix<Matrix, SymmGroup>
-    rbtm_kernel(size_t b1,
-                Boundary<OtherMatrix, SymmGroup> const & right,
-                std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
-                MPOTensor<Matrix, SymmGroup> const & mpo,
-                DualIndex<SymmGroup> const & ket_basis,
-                Index<SymmGroup> const & left_i,
-                Index<SymmGroup> const & out_right_i,
-                ProductBasis<SymmGroup> const & in_left_pb,
-                ProductBasis<SymmGroup> const & out_right_pb);
+    void rbtm_kernel(size_t b1,
+                     block_matrix<Matrix, SymmGroup> & ret,
+                     Boundary<OtherMatrix, SymmGroup> const & right,
+                     std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                     MPOTensor<Matrix, SymmGroup> const & mpo,
+                     DualIndex<SymmGroup> const & ket_basis,
+                     Index<SymmGroup> const & left_i,
+                     Index<SymmGroup> const & out_right_i,
+                     ProductBasis<SymmGroup> const & in_left_pb,
+                     ProductBasis<SymmGroup> const & out_right_pb);
 }
 
 struct gemm_functor
@@ -122,18 +122,18 @@ namespace contraction {
     struct rbtm_functor
     {
         template<class Matrix, class OtherMatrix, class SymmGroup>
-        block_matrix<Matrix, SymmGroup>
-        operator()(size_t b1,
-                   Boundary<OtherMatrix, SymmGroup> const & right,
-                   std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
-                   MPOTensor<Matrix, SymmGroup> const & mpo,
-                   DualIndex<SymmGroup> const & ket_basis,
-                   Index<SymmGroup> const & left_i,
-                   Index<SymmGroup> const & out_right_i,
-                   ProductBasis<SymmGroup> const & in_left_pb,
-                   ProductBasis<SymmGroup> const & out_right_pb)
+        void operator()(size_t b1,
+                        block_matrix<Matrix, SymmGroup> & ret,
+                        Boundary<OtherMatrix, SymmGroup> const & right,
+                        std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                        MPOTensor<Matrix, SymmGroup> const & mpo,
+                        DualIndex<SymmGroup> const & ket_basis,
+                        Index<SymmGroup> const & left_i,
+                        Index<SymmGroup> const & out_right_i,
+                        ProductBasis<SymmGroup> const & in_left_pb,
+                        ProductBasis<SymmGroup> const & out_right_pb)
         {
-            return contraction::rbtm_kernel(b1, right, right_mult_mps, mpo, ket_basis,
+            return contraction::rbtm_kernel(b1, ret, right, right_mult_mps, mpo, ket_basis,
                                             left_i, out_right_i, in_left_pb, out_right_pb);
         }
 

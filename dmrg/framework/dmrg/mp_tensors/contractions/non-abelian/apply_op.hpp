@@ -146,8 +146,8 @@ namespace SU2 {
     }
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
-    block_matrix<Matrix, SymmGroup>
-    rbtm_kernel(size_t b1,
+    void rbtm_kernel(size_t b1,
+                block_matrix<Matrix, SymmGroup> & ret,
                 Boundary<OtherMatrix, SymmGroup> const & right,
                 std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
                 MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -162,8 +162,6 @@ namespace SU2 {
         typedef typename MPOTensor<OtherMatrix, SymmGroup>::col_proxy col_proxy;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
-
-        block_matrix<Matrix, SymmGroup> ret;
 
         row_proxy row_b1 = mpo.row(b1);
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
@@ -240,9 +238,7 @@ namespace SU2 {
                 }
             }
         } // b1
-        return ret;
     }
-
 } // namespace SU2
 } // namespace contraction
 

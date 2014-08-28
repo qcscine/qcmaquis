@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -105,16 +104,26 @@ namespace ambient {
         #undef inliner
     };
 
-    #define AMBIENT_EXPORT(fn, name)  template<typename... TF> \
-                                      struct name ## _kernel : public ambient::kernel< name ## _kernel<TF...> > { \
-                                          typedef decltype(&fn<TF...>) ftype; \
+    #define AMBIENT_EXPORT_TEMPLATE(fn, name)  template<typename... TF> \
+                                               struct name ## _kernel : public ambient::kernel< name ## _kernel<TF...> > { \
+                                                   typedef decltype(&fn<TF...>) ftype; \
+                                                   template<typename... Args> \
+                                                   static void c(Args&&... args){ \
+                                                       fn<TF...>(std::forward<Args>(args)...); \
+                                                   } \
+                                               }; \
+                                               template<typename... TF, typename... Args> \
+                                               void name(Args&... args){ name ## _kernel<TF...>::spawn(args...); }
+
+    #define AMBIENT_EXPORT(fn, name)  struct name ## _kernel : public ambient::kernel< name ## _kernel > { \
+                                          typedef decltype(&fn) ftype; \
                                           template<typename... Args> \
                                           static void c(Args&&... args){ \
-                                              fn<TF...>(std::forward<Args>(args)...); \
+                                              fn(std::forward<Args>(args)...); \
                                           } \
                                       }; \
-                                      template<typename... TF, typename... Args> \
-                                      void name(Args&... args){ name ## _kernel<TF...>::spawn(args...); }
+                                      template<typename... Args> \
+                                      void name(Args&... args){ name ## _kernel::spawn(args...); }
 }
 
 #endif

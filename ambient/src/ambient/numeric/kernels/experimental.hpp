@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -415,24 +414,24 @@ namespace ambient { namespace numeric { namespace kernels {
 
     }
 
-    AMBIENT_EXPORT(detail::laset2, laset2)
-    AMBIENT_EXPORT(detail::add_vectors, add_vectors)
-    AMBIENT_EXPORT(detail::labrd_update_col, labrd_update_col)
-    AMBIENT_EXPORT(detail::labrd_reduce_col, labrd_reduce_col)
-    AMBIENT_EXPORT(detail::labrd_update_row, labrd_update_row)
-    AMBIENT_EXPORT(detail::labrd_reduce_row, labrd_reduce_row)
-    AMBIENT_EXPORT(detail::larfg, larfg)
-    AMBIENT_EXPORT(detail::gebd2, gebd2)
-    AMBIENT_EXPORT(detail::gebrd, gebrd)
-    AMBIENT_EXPORT(detail::gbbrd, gbbrd)
-    AMBIENT_EXPORT(detail::bdsqr, bdsqr)
-    AMBIENT_EXPORT(detail::copy_band, copy_band)
-    AMBIENT_EXPORT(detail::gemv_scale, gemv_scale)
-    AMBIENT_EXPORT(detail::gemv, gemv)
-    AMBIENT_EXPORT(detail::norm_vector, norm_vector)
-    AMBIENT_EXPORT(detail::max_vector, max_vector)
-    AMBIENT_EXPORT(detail::sqrt_inplace, sqrt_inplace)
-    AMBIENT_EXPORT(detail::init_gaussian, init_gaussian)
+    AMBIENT_EXPORT_TEMPLATE(detail::laset2, laset2)
+    AMBIENT_EXPORT_TEMPLATE(detail::add_vectors, add_vectors)
+    AMBIENT_EXPORT_TEMPLATE(detail::labrd_update_col, labrd_update_col)
+    AMBIENT_EXPORT_TEMPLATE(detail::labrd_reduce_col, labrd_reduce_col)
+    AMBIENT_EXPORT_TEMPLATE(detail::labrd_update_row, labrd_update_row)
+    AMBIENT_EXPORT_TEMPLATE(detail::labrd_reduce_row, labrd_reduce_row)
+    AMBIENT_EXPORT_TEMPLATE(detail::larfg, larfg)
+    AMBIENT_EXPORT_TEMPLATE(detail::gebd2, gebd2)
+    AMBIENT_EXPORT_TEMPLATE(detail::gebrd, gebrd)
+    AMBIENT_EXPORT_TEMPLATE(detail::gbbrd, gbbrd)
+    AMBIENT_EXPORT_TEMPLATE(detail::bdsqr, bdsqr)
+    AMBIENT_EXPORT_TEMPLATE(detail::copy_band, copy_band)
+    AMBIENT_EXPORT_TEMPLATE(detail::gemv_scale, gemv_scale)
+    AMBIENT_EXPORT_TEMPLATE(detail::gemv, gemv)
+    AMBIENT_EXPORT_TEMPLATE(detail::norm_vector, norm_vector)
+    AMBIENT_EXPORT_TEMPLATE(detail::max_vector, max_vector)
+    AMBIENT_EXPORT_TEMPLATE(detail::sqrt_inplace, sqrt_inplace)
+    AMBIENT_EXPORT_TEMPLATE(detail::init_gaussian, init_gaussian)
 
 } } }
 

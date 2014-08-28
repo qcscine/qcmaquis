@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *
  * 
@@ -45,7 +45,7 @@
 #include "dmrg/utils/results_collector.h"
 #include "dmrg/utils/storage.h"
 #include "dmrg/utils/time_limit_exception.h"
-#include "dmrg/utils/placement.h"
+#include "dmrg/utils/parallel/placement.hpp"
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem
@@ -104,10 +104,6 @@ public:
         contr = engine_factory<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>(parms);
 
         std::size_t L = mps.length();
-        #ifdef AMBIENT_TRACKING
-        ambient::overseer::log::region("optimizer_base::optimizer_base");
-        for(int i = 0; i < L; ++i) ambient_track_array(mps, i);
-        #endif
         
         mps.canonize(site);
         maquis::cout << "norm(mps) after canonization: " << SU2::norm_r(mps) << std::endl;
@@ -163,7 +159,7 @@ protected:
 
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        construct_placements(mpo);
+        parallel::construct_placements(mpo);
         std::size_t L = mps.length();
         
         left_.resize(mpo.length()+1);
@@ -188,9 +184,7 @@ protected:
             Storage::drop(left_[i+1]);
             boundary_left_step(mpo, i);
             Storage::evict(left_[i]);
-            #ifdef USE_AMBIENT
-            ambient::sync(); // to scale down memory
-            #endif
+            parallel::sync(); // to scale down memory
         }
         Storage::evict(left_[site]);
         //tlb.end();
@@ -206,9 +200,7 @@ protected:
             Storage::drop(right_[i]);
             boundary_right_step(mpo, i);
             Storage::evict(right_[i+1]);
-            #ifdef USE_AMBIENT
-            ambient::sync(); // to scale down memory
-            #endif
+            parallel::sync(); // to scale down memory
         }
         Storage::evict(right_[site]);
         //trb.end();

@@ -1,5 +1,6 @@
 /*
- * Ambient, License - Version 1.0 - May 3rd, 2012
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by

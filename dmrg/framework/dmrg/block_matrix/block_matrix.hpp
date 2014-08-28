@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -65,19 +65,17 @@ template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix const& rhs)
 : basis_(rhs.basis())
 , data_(rhs.data_)
+, size_index(rhs.size_index)
+, iter_index(rhs.iter_index)
 {
-    #ifdef AMBIENT_TRACKING
-    if(!rhs.label.empty()){
-        this->label = rhs.label + "'";
-        ambient_track_as(*this, this->label);
-    }
-    #endif
 }
 
 template<class Matrix, class SymmGroup>
 template <class OtherMatrix>
 block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<OtherMatrix,SymmGroup> const& rhs)
 : basis_(rhs.basis())
+, size_index(rhs.size_index)
+, iter_index(rhs.iter_index)
 {
     data_.reserve(rhs.n_blocks());
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
@@ -96,6 +94,8 @@ template<class OtherMatrix>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(const block_matrix<OtherMatrix, SymmGroup> & rhs)
 {
     basis_ = rhs.basis_;
+    size_index = rhs.size_index;
+    iter_index = rhs.iter_index;
     data_.resize(rhs.data_.size());
     for(int k = 0; k < data_.size(); k++){
         data_[k].resize(num_rows(rhs.data_[k]), num_cols(rhs.data_[k]));
@@ -141,9 +141,7 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
     size_type i1 = basis_.insert(dual_index_detail::QnBlock<SymmGroup>(c1, c2, num_rows(mtx), num_cols(mtx)));
     Matrix* block = new Matrix(mtx);
     data_.insert(data_.begin() + i1, block);
-#ifdef AMBIENT_TRACKING
-    ambient_track_as(*block, this->label);
-#endif
+    size_index.insert(i1, (data_.size()-1));
     
     return i1;
 }
@@ -154,9 +152,7 @@ typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGro
     assert( !has_block(c1, c2) );
     size_type i1 = basis_.insert(dual_index_detail::QnBlock<SymmGroup>(c1, c2, num_rows(*mtx), num_cols(*mtx)));
     data_.insert(data_.begin() + i1, mtx);
-#ifdef AMBIENT_TRACKING
-    ambient_track_as(*mtx, this->label);
-#endif
+    size_index.insert(i1, (data_.size()-1));
     
     return i1;
 }
@@ -257,11 +253,24 @@ typename Matrix::value_type const & block_matrix<Matrix, SymmGroup>::operator()(
 //}
 
 template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::index_iter(int i, int max) const
+{
+    iter_index.set(i, max);
+}
+
+template<class Matrix, class SymmGroup>
+void block_matrix<Matrix, SymmGroup>::index_sizes() const
+{
+    size_index.set(*this);
+}
+
+template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operator*=(const scalar_type& v)
 {
+    parallel::scheduler_balanced_iterative scheduler(*this);
     // todo: check if "omp for" used in nested regions
     for(size_t k = 0; k < n_blocks(); ++k){
-        select_proc(ambient::scope::balance(k,n_blocks()));
+        parallel::guard proc(scheduler(k));
         data_[k] *= v;
     }
     return *this;
@@ -270,9 +279,10 @@ block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operato
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> const & block_matrix<Matrix, SymmGroup>::operator/=(const scalar_type& v)
 {
+    parallel::scheduler_balanced_iterative scheduler(*this);
     // todo: check if "omp for" used in nested regions
     for(size_t k = 0; k < n_blocks(); ++k){
-        select_proc(ambient::scope::balance(k,n_blocks()));
+        parallel::guard proc(scheduler(k));
         data_[k] /= v;
     }
     return *this;
@@ -290,9 +300,10 @@ typename block_matrix<Matrix, SymmGroup>::scalar_type block_matrix<Matrix, SymmG
 template<class Matrix, class SymmGroup>
 typename block_matrix<Matrix, SymmGroup>::real_type block_matrix<Matrix, SymmGroup>::norm() const
 {
+    parallel::scheduler_balanced_iterative scheduler(*this);
     std::vector<real_type> vt; vt.reserve(data_.size());
     for(size_t k = 0; k < n_blocks(); ++k){
-        select_proc(ambient::scope::balance(k,n_blocks()));
+        parallel::guard proc(scheduler(k));
         vt.push_back(norm_square(data_[k]));
     }
     return maquis::sqrt(maquis::accumulate(vt.begin(), vt.end(), real_type(0.)));
@@ -499,9 +510,6 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         size_type i1 = basis_.insert(dual_index_detail::QnBlock<SymmGroup>(c1, c2, r, c));
         Matrix* block = new Matrix(1,1);
         data_.insert(data_.begin() + i1, block); 
-#ifdef AMBIENT_TRACKING
-        ambient_track_as(*block, this->label);
-#endif
     }
     assert( this->has_block(c1,c2) );
 }
@@ -537,22 +545,3 @@ std::size_t block_matrix<Matrix, SymmGroup>::num_elements() const
         ret += num_rows(data_[k])*num_cols(data_[k]);
     return ret;
 }
-
-#ifdef USE_AMBIENT
-template<class Matrix, class SymmGroup>
-void block_matrix<Matrix, SymmGroup>::print_distribution() const
-{
-    if(!ambient::master()) return;
-    double total = num_elements();
-    printf("%.2f GB:", total*sizeof(typename Matrix::value_type)/1024/1024/1024);
-    for(int p = 0; p < ambient::num_procs(); ++p){
-        double part = 0;
-        for(int i = 0; i < this->n_blocks(); ++i){
-            if(!ambient::weak((*this)[i][0]) && ambient::get_owner((*this)[i][0]) == p)
-                part += num_rows((*this)[i])*num_cols((*this)[i]);
-        }
-        printf(" %.1f%%", 100*part/total);
-    }
-    printf("\n");
-}
-#endif

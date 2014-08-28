@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -109,9 +109,8 @@ namespace dmrg {
             return factory_map[symm_name];
         else
             throw std::runtime_error("Don't know this symmetry group. Please, check your compilation flags.");
-#ifdef USE_AMBIENT
-        ambient::sync();
-#endif
+
+        parallel::sync();
         return ptr_type();
     }
 

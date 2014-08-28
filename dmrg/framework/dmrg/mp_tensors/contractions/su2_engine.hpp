@@ -184,26 +184,29 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
     index_type loop_max = mpo.col_dim();
 
 #ifdef USE_AMBIENT
+    // TODO: use SU2 variants of allocate / execute Kernels
     {
         block_matrix<Matrix, SymmGroup> empty;
         swap(ket_tensor.data(), empty); // deallocating mpstensor before exiting the stack
     }
-    ambient::sync();
+    parallel::sync();
     ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
-    contr_grid.hint_left(t);
-    contr_grid.hint_right(right);
 
-    parallel_for(index_type b2, range<index_type>(0,loop_max), {
+    parallel_for(index_type b2, parallel::range<index_type>(0,loop_max), {
+        lbtm_kernel_allocate(b2, contr_grid, t, mpo, right_i, out_left_i);
+    });
+    omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
+        lbtm_kernel_execute(b2, contr_grid, left, t, mpo, ket_tensor.data().basks(), right_i, out_left_i, in_right_pb, out_left_pb);
         contr_grid.multiply_column(b2, right[b2]);
-        contraction::SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
     });
     t.clear();
-    ambient::sync();
+    parallel::sync();
 
     swap(ret.data(), contr_grid.reduce());
-    ambient::sync();
+    parallel::sync();
+
 #else
-    omp_for(index_type b2, range<index_type>(0,loop_max), {
+    omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
         contraction::SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
         block_matrix<Matrix, SymmGroup> tmp;
@@ -220,7 +223,7 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
         //maquis::cout << "-------------------------------------------\n";
 
         contr_grid(0,0).clear();
-        omp_critical
+        parallel_critical
         for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
             if (tmp.basis().left_charge(k) == tmp.basis().right_charge(k))
             ret.data().match_and_add_block(tmp[k], tmp.basis().left_charge(k), tmp.basis().right_charge(k));

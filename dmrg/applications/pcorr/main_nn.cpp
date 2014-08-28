@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
@@ -332,8 +332,15 @@ int main(int argc, char ** argv)
             }
         }
         
-        mpi::broadcast(comm, right, 0       );
-        mpi::broadcast(comm, left,  nprocs-1);
+        if (L/2 > 96) {
+            for (int p=0; p<L+1; ++p) {
+                mpi::broadcast(comm, right[p], 0       );
+                mpi::broadcast(comm, left[p],  nprocs-1);
+            }
+        } else {
+            mpi::broadcast(comm, right, 0       );
+            mpi::broadcast(comm, left,  nprocs-1);
+        }
         
         /// Compute all measurements in local range
         for (std::vector<corr_measurement>::const_iterator it = measurements.begin();

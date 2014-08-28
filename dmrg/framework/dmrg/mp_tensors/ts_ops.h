@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * 
@@ -205,7 +205,7 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     for (int p=0; p<L_ts && global_table; ++p)
         global_table = (mpo_orig[p].get_operator_table() == mpo_orig[0].get_operator_table());
 
-    omp_for(size_t p, range<size_t>(0,L_ts), {
+    omp_for(size_t p, parallel::range<size_t>(0,L_ts), {
         mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1],
                                                             mps[p].site_dim(), mps[p+1].site_dim(), global_table);
     });

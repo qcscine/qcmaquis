@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -32,10 +32,18 @@ namespace contraction {
     template<class Matrix, class SymmGroup>
     class ContractionGrid {
     public:
-        ContractionGrid(MPOTensor<Matrix, SymmGroup> const & mpo, size_t s1, size_t s2){
+        ContractionGrid(MPOTensor<Matrix, SymmGroup> const & mpo, size_t s1, size_t s2) : granularity(1) {
         }
         block_matrix<Matrix, SymmGroup>& operator()(size_t b1, size_t b2){
             return data_;
+        }
+        void index_sizes(size_t){
+            data_.index_sizes();
+        }
+        static void iterate_reduction_layout(int, int){
+        }
+        int where(size_t b1, size_t b2){
+            return 0;
         }
         void hint(const std::vector<block_matrix<Matrix, SymmGroup> >& t){
             throw std::runtime_error("ContractionGrid::hint not implemented\n");
@@ -53,6 +61,7 @@ namespace contraction {
             throw std::runtime_error("ContractionGrid::make_boundary not implemented\n");
         }
         mutable block_matrix<Matrix, SymmGroup> data_;
+        int granularity;
     };
 }
 

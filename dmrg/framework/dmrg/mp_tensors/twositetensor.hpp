@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  * 
@@ -209,7 +209,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
         Boundary<Matrix, SymmGroup> half_dm = contr->left_boundary_tensor_mpo(tmp, left, mpo);
         tmp = MPSTensor<Matrix, SymmGroup>();
         
-        parallel_for(std::size_t b, range<std::size_t>(0,half_dm.aux_dim()), {
+        parallel_for(std::size_t b, parallel::range<std::size_t>(0,half_dm.aux_dim()), {
             block_matrix<Matrix, SymmGroup> tdm;
             gemm(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
             tdm *= alpha;
@@ -226,7 +226,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
         }
         dm.allocate_blocks();
         
-        parallel_for(std::size_t k, range<std::size_t>(0,dm.n_blocks()), {
+        parallel_for(std::size_t k, parallel::range<std::size_t>(0,dm.n_blocks()), {
             for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
                 std::size_t match = half_dm[b].find_block(dm.basis().left_charge(k), dm.basis().right_charge(k));
                 if (match < half_dm[b].n_blocks())
@@ -278,7 +278,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cut
         Boundary<Matrix, SymmGroup> half_dm = contr->right_boundary_tensor_mpo(tmp, right, mpo);
         tmp = MPSTensor<Matrix, SymmGroup>();
         
-        parallel_for(std::size_t b, range<std::size_t>(0,half_dm.aux_dim()), {
+        parallel_for(std::size_t b, parallel::range<std::size_t>(0,half_dm.aux_dim()), {
             block_matrix<Matrix, SymmGroup> tdm;
             gemm(transpose(conjugate(half_dm[b])), half_dm[b], tdm);
             tdm *= alpha;
@@ -295,7 +295,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cut
         }
         dm.allocate_blocks();
         
-        parallel_for(std::size_t k, range<std::size_t>(0,dm.n_blocks()), {
+        parallel_for(std::size_t k, parallel::range<std::size_t>(0,dm.n_blocks()), {
             for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
                 std::size_t match = half_dm[b].find_block(dm.basis().left_charge(k), dm.basis().right_charge(k));
                 if (match < half_dm[b].n_blocks())

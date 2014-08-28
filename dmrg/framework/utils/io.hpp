@@ -1,23 +1,15 @@
 #ifndef MAQUIS_IO_HPP
 #define MAQUIS_IO_HPP
 
-#ifdef USE_AMBIENT
-#include "ambient/ambient.hpp"
-#endif
-
+#include "dmrg/utils/parallel.hpp"
 #include <iostream>
 #include <string>
 #include <iterator>
 
 namespace maquis {
     
-#ifdef USE_AMBIENT
-    using ambient::cout;
-    using ambient::cerr;
-#else
-    using std::cout;
-    using std::cerr;
-#endif
+    using parallel::cout;
+    using parallel::cerr;
     
     template<class T, class Stream>
     class ostream_iterator_

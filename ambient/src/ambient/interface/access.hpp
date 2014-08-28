@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -65,6 +64,11 @@ namespace ambient {
 
     template <typename T> static mapping& delegated(T& obj){
         return *(mapping*)(*obj.ambient_after);
+    }
+
+    template <typename T> static void transform(const T& obj){
+        if(!is_polymorphic<T>::value) return;
+        new ((void*)&obj) typename get_async_type<T>::type();
     }
 
     template <typename T> static void revise(const T& obj){
