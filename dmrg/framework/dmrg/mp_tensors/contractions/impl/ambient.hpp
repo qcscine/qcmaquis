@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Alexandr Kosenkov <alex.kosenkov@gmail.com>
  *                            Timothee Ewart <timothee.ewart@gmail.com>
  * 
@@ -56,33 +56,36 @@ namespace contraction {
             for(int i = 0; i < size1*size2; i++) delete grid[i];
         }
         ContractionGrid(MPOTensor<Matrix, SymmGroup> const & mpo, size_t s1, size_t s2)
-        : mpo(mpo), grid(ambient::scope::size()*s2), e2(s2, false), size1_(s1), size1(ambient::scope::size()), size2(s2) 
+        : mpo(mpo), 
+          size1_(s1),
+          size2(s2),
+          e2(s2, false)
         {
+            granularity = parallel::groups_granularity;
+            if(granularity > ambient::scope::size()) granularity = 1;
+            size1 = ambient::scope::size()/granularity;
+            grid.resize(size1*size2);
             const std::vector<int>& except = mpo.exceptions_r;
             for(int i = 0; i < except.size(); i++) e2[except[i]] = true;
             for(int b2 = 0; b2 < size2; b2++) if(!e2[b2]) GRID(0,b2) = new block_matrix<Matrix, SymmGroup>();
         }
-        void hint_left(const std::vector<block_matrix<Matrix, SymmGroup> >& t){
-            for(int b1 : mpo.exceptions_l) for(int b2 = 0; b2 < size2; b2++) if(mpo.has(b1,b2)){
-                select_group(ambient::scope::permute(b2,mpo.placement_r), 1);
-                storage::hint(t[b1]);
-            }
+        static void iterate_reduction_layout(int start, int end){
+            reduction_iteration = start;
+            reduction_max_iteration = end;
         }
-        void hint_right(Boundary<Matrix, SymmGroup> const & t){
-            for(int b1 = 0; b1 < size1_; b1++)
-            for(int b2 = 0; b2 < size2; b2++){
-                if(!mpo.has(b1,b2)) continue;
-                select_group(where(b1,b2), 1);
-                storage::hint(t[b2]);
+        void index_sizes(size_t b2){
+            for(int b1 = 0; b1 < size1; b1++){
+                if(GRID(b1,b2) == NULL) continue;
+                GRID(b1,b2)->index_sizes();
             }
         }
         ambient::scope::const_iterator where(size_t b1, size_t b2){
-            if(e2[b2]) return ambient::scope::permute(b1,mpo.placement_l);
-            return ambient::scope::permute(b2,mpo.placement_r);
+            if(e2[b2]) return ambient::scope::permute(b1,mpo.placement_l,granularity);
+            return ambient::scope::permute(b2,mpo.placement_r,granularity);
         }
         block_matrix<Matrix, SymmGroup>& operator()(size_t b1, size_t b2){
             if(e2[b2]){
-                block_matrix<Matrix, SymmGroup>*& el = GRID(ambient::which(),b2);
+                block_matrix<Matrix, SymmGroup>*& el = GRID((where(b1,b2)-ambient::scope::begin())/granularity,b2);
                 if(el == NULL) el = new block_matrix<Matrix, SymmGroup>();
                 return *el;
             }
@@ -91,18 +94,19 @@ namespace contraction {
         void multiply_column(size_t b2, const block_matrix<Matrix, SymmGroup>& rhs){
             for(int b1 = 0; b1 < size1; b1++){
                 if(GRID(b1,b2) == NULL) continue;
-                select_proc(e2[b2] ? (ambient::scope::begin()+b1) : where(b1,b2));
+                auto it = e2[b2] ? (ambient::scope::begin()+b1*granularity) : where(b1,b2);
+                parallel::guard group(it, granularity);
                 block_matrix<Matrix, SymmGroup> res;
-                gemm(*GRID(b1,b2), rhs, res);
+                gemm(*GRID(b1,b2), rhs, res, parallel::scheduler_size_indexed(*GRID(b1,b2)));
                 swap(*GRID(b1,b2), res);
                 if(!e2[b2]) return;
             }
         }
         void multiply_column_trans(size_t b2, const block_matrix<Matrix, SymmGroup>& rhs){
             block_matrix<Matrix, SymmGroup> tmp;
-            block_matrix<Matrix, SymmGroup> red = reduce_column(b2);
-            select_proc(ambient::scope::permute(b2,mpo.placement_r));
-            gemm(transpose(red), rhs, tmp);
+            auto red = transpose(reduce_column(b2));
+            parallel::guard group(ambient::scope::permute(b2, mpo.placement_r, granularity), granularity);
+            gemm(red, rhs, tmp, parallel::scheduler_size_indexed(red));
             swap(*GRID(0,b2), tmp);
         }
         Boundary<Matrix, SymmGroup> make_boundary(){
@@ -112,39 +116,46 @@ namespace contraction {
         }
         block_matrix<Matrix, SymmGroup>& reduce_column(size_t b2){
             if(!e2[b2]) return *GRID(0,b2);
-            ambient::scope::const_iterator r = ambient::scope::permute(b2,mpo.placement_r);
+            ambient::scope::const_iterator center = ambient::scope::permute(b2,mpo.placement_r,granularity);
+            int r = (center-ambient::scope::begin())/granularity;
 
             std::vector< std::pair< block_matrix<Matrix, SymmGroup>*, ambient::scope::const_iterator > > rvector;
-            for(int b1 = *r; b1 < size1; b1++) if(GRID(b1,b2) != NULL) rvector.push_back(std::make_pair(GRID(b1,b2), ambient::scope::begin()+b1));
-            for(int b1 = 0; b1 < *r; b1++)     if(GRID(b1,b2) != NULL) rvector.push_back(std::make_pair(GRID(b1,b2), ambient::scope::begin()+b1));
+            for(int b1 = r; b1 < size1; b1++) if(GRID(b1,b2) != NULL) rvector.push_back(std::make_pair(GRID(b1,b2), ambient::scope::begin()+b1*granularity));
+            for(int b1 = 0; b1 < r; b1++)     if(GRID(b1,b2) != NULL) rvector.push_back(std::make_pair(GRID(b1,b2), ambient::scope::begin()+b1*granularity));
             for(int b1 = 0; b1 < size1; b1++) GRID(b1,b2) = NULL;
 
-            GRID(0,b2) = ambient::reduce(rvector, [](std::pair<block_matrix<Matrix, SymmGroup>*, ambient::scope::const_iterator>& dst_pair, 
-                                                     std::pair<block_matrix<Matrix, SymmGroup>*, ambient::scope::const_iterator>& src_pair){
-                                                         block_matrix<Matrix, SymmGroup>& dst = *dst_pair.first;
-                                                         block_matrix<Matrix, SymmGroup>& src = *src_pair.first;
-                                                         select_proc(dst_pair.second);
-                                                         for(size_t k = 0; k < src.n_blocks(); ++k)
-                                                         dst.match_and_add_block(src[k],
-                                                                                 src.basis().left_charge(k), 
-                                                                                 src.basis().right_charge(k));
-                                                     }).first;
+            GRID(0,b2) = ambient::reduce(rvector, [this](std::pair<block_matrix<Matrix, SymmGroup>*, ambient::scope::const_iterator>& dst_pair, 
+                                                         std::pair<block_matrix<Matrix, SymmGroup>*, ambient::scope::const_iterator>& src_pair){
+                                                             parallel::scheduler_cyclic scheduler;
+
+                                                             block_matrix<Matrix, SymmGroup>& dst = *dst_pair.first;
+                                                             block_matrix<Matrix, SymmGroup>& src = *src_pair.first;
+                                                             parallel::guard group(dst_pair.second, granularity);
+                                                             for(size_t k = 0; k < src.n_blocks(); ++k){
+                                                                 size_t index = dst.find_block(src.basis().left_charge(k), src.basis().right_charge(k));
+                                                                 // alternative: index = src.size_index(k);
+                                                                 parallel::guard proc(scheduler(index));
+                                                                 dst.match_and_add_block(src[k],
+                                                                                         src.basis().left_charge(k), 
+                                                                                         src.basis().right_charge(k));
+                                                             }
+                                                         }).first;
             e2[b2] = false;
-            if(rvector[0].second != r){
-                select_group(r, 1);
-                storage::migrate(*rvector[0].first);
-            }
+
+            rvector[0].first->index_sizes();
+            parallel::guard group(center, granularity);
+            storage::migrate(*rvector[0].first, parallel::scheduler_size_indexed(*rvector[0].first));
+
             for(int i = 1; i < rvector.size(); i++) delete rvector[i].first;
             return *GRID(0,b2);
         }
         block_matrix<Matrix, SymmGroup>& reduce(){
             std::vector< std::pair< block_matrix<Matrix, SymmGroup>*, ambient::scope::const_iterator > > rvector;
-            std::vector< std::pair< block_matrix<Matrix, SymmGroup>*, ambient::scope::const_iterator >* > rvector_global;
         
             for(int b2 = 0; b2 < size2; b2++)
             for(int b1 = 0; b1 < size1; b1++){
                 if(GRID(b1,b2) == NULL) continue;
-                ambient::scope::const_iterator owner = e2[b2] ? (ambient::scope::begin()+b1) : ambient::scope::permute(b2,mpo.placement_r);
+                ambient::scope::const_iterator owner = e2[b2] ? (ambient::scope::begin()+b1*granularity) : ambient::scope::permute(b2,mpo.placement_r,granularity);
                 rvector.push_back(std::make_pair(GRID(b1,b2), owner));
                 GRID(b1,b2) = NULL;
             }
@@ -153,21 +164,6 @@ namespace contraction {
                                                          const std::pair<block_matrix<Matrix, SymmGroup>*, ambient::scope::const_iterator>& b){ 
                                                              return a.second < b.second; 
                                                          });
-            int i = 0;
-            while(i < rvector.size()){
-                ambient::scope::const_iterator owner = rvector[i].second;
-                rvector_global.push_back(&rvector[i++]);
-                select_proc(owner);
-                while(rvector[i].second == owner && i < rvector.size()){
-                    for(size_t k = 0; k < rvector[i].first->n_blocks(); ++k)
-                    rvector_global.back()->first->match_and_add_block((*rvector[i].first)[k], 
-                                                                      rvector[i].first->basis().left_charge(k), 
-                                                                      rvector[i].first->basis().right_charge(k));
-                    delete rvector[i].first;
-                    i++;
-                }
-            }
-
             std::vector<Matrix*> blocks;
             std::vector<typename SymmGroup::charge> c1;
             std::vector<typename SymmGroup::charge> c2;
@@ -175,8 +171,8 @@ namespace contraction {
             block_matrix<Matrix, SymmGroup>* skeleton = new block_matrix<Matrix, SymmGroup>();
             block_matrix<Matrix, SymmGroup>* res = new block_matrix<Matrix, SymmGroup>();
 
-            for(size_t n = 0; n < rvector_global.size(); ++n){
-                block_matrix<Matrix, SymmGroup>& src = *rvector_global[n]->first;
+            for(size_t n = 0; n < rvector.size(); ++n){
+                block_matrix<Matrix, SymmGroup>& src = *rvector[n].first;
                 for(size_t k = 0; k < src.n_blocks(); ++k){
                     if(!skeleton->has_block(src.basis().left_charge(k), src.basis().right_charge(k))){
                         skeleton->insert_block(new Matrix(), src.basis().left_charge(k), src.basis().right_charge(k));
@@ -184,9 +180,15 @@ namespace contraction {
                     blocks.push_back(&src[k]);
                     c1.push_back(src.basis().left_charge(k));
                     c2.push_back(src.basis().right_charge(k));
-                    owners.push_back(rvector_global[n]->second);
+                    owners.push_back(rvector[n].second + src.size_index(k)%granularity);
                 }
             }
+
+            res->index_iter(reduction_iteration, reduction_max_iteration);
+            skeleton->index_iter(reduction_iteration, reduction_max_iteration);
+            parallel::scheduler_balanced_iterative scheduler(*skeleton);
+            ++reduction_iteration %= reduction_max_iteration;
+
             std::vector< std::vector<std::pair<Matrix*,ambient::scope::const_iterator> > > rblocks;
             size_t max_stride = 0;
             for(size_t k = 0; k < skeleton->n_blocks(); ++k){
@@ -196,7 +198,7 @@ namespace contraction {
                 for(size_t n = 0; n < blocks.size(); n++){
                     if(tc1 == c1[n] && tc2 == c2[n]) rblocks_part.push_back(std::make_pair(blocks[n], owners[n]));
                 }
-                ambient::scope::const_iterator root = ambient::scope::balance(k,skeleton->n_blocks());
+                ambient::scope::const_iterator root = scheduler(k);
                 std::sort(rblocks_part.begin(), rblocks_part.end(), [root](const std::pair<Matrix*, ambient::scope::const_iterator>& a,
                                                                            const std::pair<Matrix*, ambient::scope::const_iterator>& b){
                                                                                return (ambient::num_procs() + *a.second - *root) % ambient::num_procs()
@@ -214,7 +216,7 @@ namespace contraction {
                     for(int k = stride; k < rblocks_part.size(); k += stride*2){
                         std::pair< Matrix*, ambient::scope::const_iterator >& dst_pair = rblocks_part[k-stride];
                         std::pair< Matrix*, ambient::scope::const_iterator >& src_pair = rblocks_part[k];
-                        select_proc(dst_pair.second);
+                        parallel::guard proc(dst_pair.second);
                         Matrix& src = *src_pair.first;
                         Matrix& dst = *dst_pair.first;
                         
@@ -230,14 +232,14 @@ namespace contraction {
                         Matrix tmp; src.swap(tmp);
                     }
                 }
-                ambient::sync();
+                parallel::sync();
             }
             for(size_t k = 0; k < skeleton->n_blocks(); ++k){
                 auto tc1 = skeleton->basis().left_charge(k); 
                 auto tc2 = skeleton->basis().right_charge(k);
                 res->insert_block(*rblocks[k][0].first, tc1, tc2);
             }
-            for(size_t n = 0; n < rvector_global.size(); ++n) delete rvector_global[n]->first;
+            for(size_t n = 0; n < rvector.size(); ++n) delete rvector[n].first;
             delete skeleton;
             GRID(0,0) = res;
             return *res;
@@ -263,12 +265,18 @@ namespace contraction {
         }
         MPOTensor<Matrix, SymmGroup> const & mpo;
         mutable std::vector< block_matrix<Matrix, SymmGroup>* > grid;
+        static int reduction_max_iteration;
+        static int reduction_iteration;
         std::vector<bool> e2;
+        size_t granularity;
         size_t size1_; // actual
         size_t size1;  // optimized
         size_t size2;
         #undef GRID
     };
+
+    template<class Matrix, class SymmGroup> int ContractionGrid<Matrix, SymmGroup>::reduction_iteration = 0;
+    template<class Matrix, class SymmGroup> int ContractionGrid<Matrix, SymmGroup>::reduction_max_iteration = 1;
 }
 
 #endif

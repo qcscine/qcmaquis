@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -283,12 +283,13 @@ private:
         gemm(Ssqrt, V, right);
         
 #ifdef USE_AMBIENT
-        select_proc(ambient::actor_t::common);
-        for(std::size_t k = 0; k < S.n_blocks(); ++k){
-            ambient::numeric::merge(S[k]);
-            ambient::numeric::touch(S[k][0]);
+        {
+            parallel::guard::serial guard;
+            for(std::size_t k = 0; k < S.n_blocks(); ++k){
+                ambient::numeric::merge(S[k]);
+                ambient::numeric::touch(S[k][0]);
+            }
         }
-        ambient::sync();
 #endif
         for(std::size_t k = 0; k < S.n_blocks(); ++k){
             int keep = std::find_if(S[k].diagonal().first, S[k].diagonal().second, boost::lambda::_1 < 1e-10)-S[k].diagonal().first;

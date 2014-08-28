@@ -226,14 +226,14 @@ namespace detail {
 
 }
 
-AMBIENT_EXPORT(detail::partial_init_value, partial_init_value)
-AMBIENT_EXPORT(detail::reduce, reduce)
-AMBIENT_EXPORT(detail::reduce_moment, reduce_moment)
-AMBIENT_EXPORT(detail::evolve, evolve)
-AMBIENT_EXPORT(detail::contract_border_top, contract_border_top)
-AMBIENT_EXPORT(detail::contract_border_bottom, contract_border_bottom)
-AMBIENT_EXPORT(detail::contract_border_left, contract_border_left)
-AMBIENT_EXPORT(detail::contract_border_right, contract_border_right)
+AMBIENT_EXPORT_TEMPLATE(detail::partial_init_value, partial_init_value)
+AMBIENT_EXPORT_TEMPLATE(detail::reduce, reduce)
+AMBIENT_EXPORT_TEMPLATE(detail::reduce_moment, reduce_moment)
+AMBIENT_EXPORT_TEMPLATE(detail::evolve, evolve)
+AMBIENT_EXPORT_TEMPLATE(detail::contract_border_top, contract_border_top)
+AMBIENT_EXPORT_TEMPLATE(detail::contract_border_bottom, contract_border_bottom)
+AMBIENT_EXPORT_TEMPLATE(detail::contract_border_left, contract_border_left)
+AMBIENT_EXPORT_TEMPLATE(detail::contract_border_right, contract_border_right)
 
 template<typename T>
 void partial_init(ambient::block<T>& b, T value, double posi, double posj, double dr, double bound){

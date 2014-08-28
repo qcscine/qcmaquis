@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -78,9 +78,6 @@ public:
 
     std::string description() const;
     std::size_t num_elements() const;
-    #ifdef USE_AMBIENT
-    void print_distribution() const;
-    #endif
     
     Matrix &             operator[](size_type c);
     Matrix const &       operator[](size_type c) const;
@@ -104,6 +101,12 @@ public:
     void remove_block(charge r, charge c);
     void remove_block(std::size_t which);
 
+    mutable typename parallel::scheduler_balanced_iterative::index iter_index;
+    mutable typename parallel::scheduler_size_indexed::index size_index;
+
+    void index_iter(int i, int max) const;
+    void index_sizes() const;
+    
     scalar_type trace() const;
     real_type norm() const;
     void transpose_inplace();
@@ -130,10 +133,8 @@ public:
     {
         swap(x.data_, y.data_);
         swap(x.basis_, y.basis_);
-#ifdef AMBIENT_TRACKING
-        ambient_track_as(x, x.label);
-        ambient_track_as(y, y.label);
-#endif
+        swap(x.size_index, y.size_index);
+        swap(x.iter_index, y.iter_index);
     }
 
     Matrix const & operator()(charge r, charge c) const
@@ -160,9 +161,6 @@ public:
     
     bool reasonable() const;
     
-#ifdef AMBIENT_TRACKING
-    std::string label;
-#endif
 private:
     DualIndex<SymmGroup> basis_;
     boost::ptr_vector<Matrix> data_;

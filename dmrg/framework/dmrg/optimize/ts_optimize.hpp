@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Bela Bauer <bauerb@phys.ethz.ch> 
  *	                          Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
@@ -58,7 +58,7 @@ public:
     : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
-        select_proc(ambient::actor_t::common);
+        parallel::guard::serial guard;
         make_ts_cache_mpo(mpo, ts_cache_mpo, mps);
     }
 
@@ -70,14 +70,12 @@ public:
     }
     void sweep(int sweep, OptimizeDirection d = Both)
     {
-        #ifdef AMBIENT_TRACKING
-        ambient::overseer::log::region("ts_optimize::sweep");
-        #endif
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
 
         iteration_results_.clear();
         
         std::size_t L = mps.length();
+        parallel::scheduler_balanced scheduler_mps(L);
 
         int _site = 0, site = 0;
         if (initial_site != -1) {
@@ -107,13 +105,13 @@ public:
         		site1 = site;
         		site2 = site+1;
                 ts_cache_mpo[site1].placement_l = mpo[site1].placement_l;
-                ts_cache_mpo[site1].placement_r = get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
+                ts_cache_mpo[site1].placement_r = parallel::get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
             } else {
                 site = to_site(L, _site);
                 lr = -1;
         		site1 = site-1;
         		site2 = site;
-                ts_cache_mpo[site1].placement_l = get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
+                ts_cache_mpo[site1].placement_l = parallel::get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
                 ts_cache_mpo[site1].placement_r = mpo[site2].placement_r;
             }
 
@@ -157,9 +155,6 @@ public:
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
     	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
             tst.clear();
-            #ifdef AMBIENT_TRACKING
-            ambient_track_as(twin_mps, "twin_mps");
-            #endif
             SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);
             
             /// Compute orthogonal vectors
@@ -172,9 +167,6 @@ public:
 
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
 
-            #ifdef AMBIENT_TRACKING
-            ambient::overseer::log::region("ts_optimize::jcd");
-            #endif
 
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
@@ -197,9 +189,6 @@ public:
             }
             twin_mps.clear();
 
-            #ifdef AMBIENT_TRACKING
-            ambient::overseer::log::region("ts_optimize::continue");
-            #endif
 
 #ifndef NDEBUG
             // Caution: this is an O(L) operation, so it really should be done only in debug mode
@@ -235,10 +224,6 @@ public:
                 END_TIMING("TRUNC")
                 tst.clear();
 
-                #ifdef AMBIENT_TRACKING
-                ambient_track_array(mps, site1);
-                ambient_track_array(mps, site2);
-                #endif
 
         		block_matrix<Matrix, SymmGroup> t;
 		
@@ -259,21 +244,20 @@ public:
                 if (site1 != L-2){ 
                     if(site1 != 0){
                         #ifdef USE_AMBIENT
-                        std::vector<int> placement_l = get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
+                        std::vector<int> placement_l = parallel::get_left_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
+                        parallel::scheduler_permute scheduler(placement_l, parallel::groups_granularity);
                         for(size_t b = 0; b < left_[site1].aux_dim(); ++b){
-                            select_group(ambient::scope::permute(b,placement_l), 1);
-                            storage::migrate(left_[site1][b]);
+                            parallel::guard group(scheduler(b), parallel::groups_granularity);
+                            storage::migrate(left_[site1][b], parallel::scheduler_size_indexed(left_[site1][b]));
                         }
-                        ambient::sync();
+                        parallel::sync();
                         #endif
                     }
                     Storage::evict(mps[site1]);
                     Storage::evict(left_[site1]);
                 }
-                #ifdef USE_AMBIENT
-                { select_group(ambient::scope::balance(site1,L),1); storage::migrate(mps[site1]); }
-                { select_group(ambient::scope::balance(site2,L),1); storage::migrate(mps[site2]); }
-                #endif
+                { parallel::guard proc(scheduler_mps(site1)); storage::migrate(mps[site1]); }
+                { parallel::guard proc(scheduler_mps(site2)); storage::migrate(mps[site2]); }
     	    }
     	    if (lr == -1){
         		// Write back result from optimization
@@ -285,10 +269,6 @@ public:
                 END_TIMING("TRUNC")
                 tst.clear();
 
-                #ifdef AMBIENT_TRACKING
-                ambient_track_array(mps, site1);
-                ambient_track_array(mps, site2);
-                #endif
 
         		block_matrix<Matrix, SymmGroup> t;
 
@@ -309,21 +289,20 @@ public:
                 if(site1 != 0){
                     if(site1 != L-2){
                         #ifdef USE_AMBIENT
-                        std::vector<int> placement_r = get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
+                        std::vector<int> placement_r = parallel::get_right_placement(ts_cache_mpo[site1], mpo[site1].placement_l, mpo[site2].placement_r);
+                        parallel::scheduler_permute scheduler(placement_r, parallel::groups_granularity);
                         for(size_t b = 0; b < right_[site2+1].aux_dim(); ++b){
-                            select_group(ambient::scope::permute(b,placement_r), 1);
-                            storage::migrate(right_[site2+1][b]);
+                            parallel::guard group(scheduler(b), parallel::groups_granularity);
+                            storage::migrate(right_[site2+1][b], parallel::scheduler_size_indexed(right_[site2+1][b]));
                         }
-                        ambient::sync();
+                        parallel::sync();
                         #endif
                     }
                     Storage::evict(mps[site2]);
                     Storage::evict(right_[site2+1]); 
                 }
-                #ifdef USE_AMBIENT
-                { select_group(ambient::scope::balance(site1,L),1); storage::migrate(mps[site1]); }
-                { select_group(ambient::scope::balance(site2,L),1); storage::migrate(mps[site2]); }
-                #endif
+                { parallel::guard proc(scheduler_mps(site1)); storage::migrate(mps[site1]); }
+                { parallel::guard proc(scheduler_mps(site2)); storage::migrate(mps[site2]); }
     	    }
             
             iteration_results_["BondDimension"]     << trunc.bond_dimension;
@@ -331,12 +310,7 @@ public:
             iteration_results_["TruncatedFraction"] << trunc.truncated_fraction;
             iteration_results_["SmallestEV"]        << trunc.smallest_ev;
             
-            #ifdef USE_AMBIENT
-            ambient::sync();
-            ambient::meminfo();
-            #else
-            maquis::cout << "Memory usage : " << proc_status_mem() << std::endl;
-            #endif
+            parallel::meminfo();
             
             boost::chrono::high_resolution_clock::time_point sweep_then = boost::chrono::high_resolution_clock::now();
             double elapsed = boost::chrono::duration<double>(sweep_then - sweep_now).count();

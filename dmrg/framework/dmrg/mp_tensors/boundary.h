@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -31,7 +31,7 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "utils/function_objects.h"
-#include "dmrg/utils/parallel_for.hpp"
+#include "dmrg/utils/parallel.hpp"
 
 #include <iostream>
 #include <set>
@@ -54,38 +54,6 @@ public:
              std::size_t ad = 1)
     : data_(ad, block_matrix<Matrix, SymmGroup>(ud, ld))
     { }
-    
-    #ifdef USE_AMBIENT
-    std::vector<std::pair<size_t, size_t> > sort() const {
-        std::vector<std::pair<size_t, size_t> > sizes;
-        int loop_max = this->aux_dim();
-        for(int b = 0; b < loop_max; ++b){
-            size_t size = 0;
-            for(int i = 0; i < (*this)[b].n_blocks(); ++i) size += num_rows((*this)[b][i])*num_cols((*this)[b][i]);
-            sizes.push_back(std::make_pair(size, b));
-        }
-        std::sort(sizes.begin(), sizes.end(), [](const std::pair<double,size_t>& a, const std::pair<double,size_t>& b){ return a.first < b.first; });
-        return sizes;
-    }
-
-    void print_distribution() const {
-        if(!ambient::master()) return;
-        double total = 0;
-        int loop_max = this->aux_dim();
-        for(int b = 0; b < loop_max; ++b) total += (*this)[b].num_elements();
-        printf("%.2f GB:", total*sizeof(value_type)/1024/1024/1024);
-        for(int p = 0; p < ambient::num_procs(); ++p){
-            double part = 0;
-            for(int b = 0; b < loop_max; ++b)
-            for(int i = 0; i < (*this)[b].n_blocks(); ++i){
-                if(!ambient::weak((*this)[b][i][0]) && ambient::get_owner((*this)[b][i][0]) == p)
-                    part += num_rows((*this)[b][i])*num_cols((*this)[b][i]);
-            }
-            printf(" %.1f%%", 100*part/total);
-        }
-        printf("\n");
-    }
-    #endif
     
     Boundary& operator = (const Boundary& rhs){
         storage::disk::serializable<Boundary>::operator=(rhs);
@@ -129,8 +97,9 @@ public:
     void load(Archive & ar){
         std::vector<std::string> children = ar.list_children("data");
         data_.resize(children.size());
+        parallel::scheduler_balanced scheduler(children.size());
         for(size_t i = 0; i < children.size(); ++i){
-             select_proc(ambient::scope::balance(i,children.size()));
+             parallel::guard proc(scheduler(i));
              ar["data/"+children[i]] >> data_[alps::cast<std::size_t>(children[i])];
         }
     }

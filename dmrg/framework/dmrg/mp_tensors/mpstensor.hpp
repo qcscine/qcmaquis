@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -374,12 +374,14 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     common_subset(i1, i2);
     std::vector<scalar_type> vt; vt.reserve(i1.size());
 
+    parallel::scheduler_balanced_iterative scheduler(data());
+
     for (size_t b = 0; b < i1.size(); ++b) {
         typename SymmGroup::charge c = i1[b].first;
         size_type l = data().find_block(c, c);
         size_type r = rhs.data().find_block(c, c);
+        parallel::guard proc(scheduler(l));
         assert( l != data().n_blocks() && r != rhs.data().n_blocks() );
-        select_proc(ambient::scope::balance(l,data().n_blocks()));
         vt.push_back(overlap(data()[l], rhs.data()[r]));
     } // should be reformulated in terms of reduction (todo: Matthias, 30.04.12 / scalar-value types)
 
@@ -659,10 +661,3 @@ std::size_t MPSTensor<Matrix, SymmGroup>::num_elements() const
 {
     return data().num_elements();
 }
-
-#ifdef USE_AMBIENT
-template<class Matrix, class SymmGroup>
-void MPSTensor<Matrix, SymmGroup>::print_distribution() const {
-    data().print_distribution();
-}
-#endif

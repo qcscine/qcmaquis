@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Alexandr Kosenkov <alex.kosenkov@gmail.com>
  *                            Timothee Ewart <timothee.ewart@gmail.com>
  * 
@@ -167,7 +167,7 @@ namespace maquis { namespace dmrg { namespace detail {
                 ambient::numeric::kernels::template round_square<value_type>(set[k][kk], v_ptr);
             }
         }
-        ambient::sync();
+        parallel::sync();
 
         std::vector<double> ret;
         for(size_t k = 0; k < nblocks; ++k)

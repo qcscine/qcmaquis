@@ -40,11 +40,13 @@ namespace contraction {
                        Boundary<OtherMatrix, SymmGroup> const & left,
                        MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
+
         std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(left.aux_dim());
         int loop_max = left.aux_dim();
         mps.make_right_paired();
-        omp_for(int b1, range(0,loop_max), {
-            select_proc(ambient::scope::permute(b1, mpo.placement_l));
+        omp_for(int b1, parallel::range(0,loop_max), {
+            parallel::guard group(scheduler(b1), parallel::groups_granularity);
             gemm_trim_left(transpose(left[b1]), mps.data(), ret[b1]);
         });
         return ret;
@@ -56,11 +58,13 @@ namespace contraction {
                        Boundary<OtherMatrix, SymmGroup> const & right,
                        MPOTensor<Matrix, SymmGroup> const & mpo)
     {
+        parallel::scheduler_permute scheduler(mpo.placement_r, parallel::groups_granularity);
+
         std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(right.aux_dim());
         int loop_max = right.aux_dim();
         mps.make_left_paired();
-        omp_for(int b2, range(0,loop_max), {
-            select_proc(ambient::scope::permute(b2, mpo.placement_r));
+        omp_for(int b2, parallel::range(0,loop_max), {
+            parallel::guard group(scheduler(b2), parallel::groups_granularity);
             gemm_trim_right(mps.data(), right[b2], ret[b2]);
         });
         return ret;

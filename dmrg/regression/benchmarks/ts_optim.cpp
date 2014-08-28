@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *                            Bela Bauer <bauerb@comp-phys.org>
  * 
@@ -49,7 +49,7 @@
 
 #include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
-#include "dmrg/utils/placement.h"
+#include "dmrg/utils/parallel/placement.hpp"
 
 #include "utils/timings.h"
 
@@ -132,7 +132,7 @@ int main(int argc, char ** argv)
         
 
         std::string boundary_name;
-        construct_placements(mpo);
+        parallel::construct_placements(mpo);
         
         /// Create TwoSite objects
         tim_ts_obj.begin();
@@ -141,9 +141,9 @@ int main(int argc, char ** argv)
         MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim(), mps[site+1].site_dim(), true);
         if(lr == +1){
             ts_mpo.placement_l = mpo[site].placement_l;
-            ts_mpo.placement_r = get_right_placement(ts_mpo, mpo[site].placement_l, mpo[site+1].placement_r);
+            ts_mpo.placement_r = parallel::get_right_placement(ts_mpo, mpo[site].placement_l, mpo[site+1].placement_r);
         }else{
-            ts_mpo.placement_l = get_left_placement(ts_mpo, mpo[site].placement_l, mpo[site+1].placement_r);
+            ts_mpo.placement_l = parallel::get_left_placement(ts_mpo, mpo[site].placement_l, mpo[site+1].placement_r);
             ts_mpo.placement_r = mpo[site+1].placement_r;
         }
         tim_ts_obj.end();
@@ -163,11 +163,13 @@ int main(int argc, char ** argv)
                 left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
         }
         #ifdef USE_AMBIENT
-        if(exists(chkpfile / boundary_name) || lr == -1)
+        if(exists(chkpfile / boundary_name) || lr == -1){
+            parallel::scheduler_permute scheduler(ts_mpo.placement_l);
             for(size_t b = 0; b < left.aux_dim(); ++b){
-                select_proc(ambient::scope::permute(b,ts_mpo.placement_l));
+                parallel::guard proc(scheduler(b));
                 storage::migrate(left[b]);
             }
+        }
         #endif
         tim_l_boundary.end();
         maquis::cout << "Left boundary done!\n";
@@ -186,11 +188,13 @@ int main(int argc, char ** argv)
                 right = contraction::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
         }
         #ifdef USE_AMBIENT
-        if(exists(chkpfile / boundary_name) || lr == +1) 
+        if(exists(chkpfile / boundary_name) || lr == +1){
+            parallel::scheduler_permute scheduler(ts_mpo.placement_r);
             for(size_t b = 0; b < right.aux_dim(); ++b){
-                select_proc(ambient::scope::permute(b,ts_mpo.placement_r));
+                parallel::guard proc(scheduler(b));
                 storage::migrate(right[b]);
             }
+        }
         #endif
         tim_r_boundary.end();
         maquis::cout << "Right boundary done!\n";
