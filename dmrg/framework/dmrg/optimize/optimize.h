@@ -106,7 +106,6 @@ public:
         std::size_t L = mps.length();
         
         mps.canonize(site);
-        maquis::cout << "norm(mps) after canonization: " << SU2::norm_r(mps) << std::endl;
         for(int i = 0; i < mps.length(); ++i)
             Storage::evict(mps[i]);
 
