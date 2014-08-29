@@ -296,7 +296,7 @@ namespace contraction {
         });
         omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
             parallel::guard group(scheduler(b1), parallel::groups_granularity);
-            rbtm_kernel_execute(b1, ret[b1], right, t, mpo, ket_tensor.site_dim(), left_i, out_right_i, in_left_pb, out_right_pb);
+            rbtm_kernel_execute(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
 
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(ret[b1], transpose(bra_conj), tmp, parallel::scheduler_size_indexed(ret[b1]));
