@@ -33,22 +33,26 @@
 
 #include "dmrg/mp_tensors/contractions.h"
 
-template <class Matrix, class OtherMatrix, class SymmGroup>
-boost::shared_ptr<contraction::Engine<Matrix, OtherMatrix, SymmGroup> >
-engine_factory(BaseParameters & parms)
-{
-    typedef boost::shared_ptr<contraction::Engine<Matrix, OtherMatrix, SymmGroup> > impl_ptr;
+namespace contraction {
+
+    template <class Matrix, class OtherMatrix, class SymmGroup>
+    boost::shared_ptr<contraction::Engine<Matrix, OtherMatrix, SymmGroup> >
+    engine_factory(BaseParameters & parms)
+    {
+        typedef boost::shared_ptr<contraction::Engine<Matrix, OtherMatrix, SymmGroup> > impl_ptr;
 #ifdef ENABLE_SU2
-    if (parms["MODEL"] == "quantum_chemistry_SU2")
-        return impl_ptr(new contraction::SU2Engine<Matrix, OtherMatrix, SymmGroup>());
-    else if (parms["MODEL"] == "fermion Hubbard SU2")
-        return impl_ptr(new contraction::SU2Engine<Matrix, OtherMatrix, SymmGroup>());
-    else
-        return impl_ptr(new contraction::AbelianEngine<Matrix, OtherMatrix, SymmGroup>());
+        if (parms["MODEL"] == "quantum_chemistry_SU2")
+            return impl_ptr(new contraction::SU2Engine<Matrix, OtherMatrix, SymmGroup>());
+        else if (parms["MODEL"] == "fermion Hubbard SU2")
+            return impl_ptr(new contraction::SU2Engine<Matrix, OtherMatrix, SymmGroup>());
+        else
+            return impl_ptr(new contraction::AbelianEngine<Matrix, OtherMatrix, SymmGroup>());
 #else
-    return impl_ptr(new contraction::AbelianEngine<Matrix, OtherMatrix, SymmGroup>());
+        return impl_ptr(new contraction::AbelianEngine<Matrix, OtherMatrix, SymmGroup>());
 
 #endif
-}
+    }
+
+} // namespace contraction
 
 #endif

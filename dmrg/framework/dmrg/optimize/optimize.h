@@ -53,18 +53,18 @@ struct SiteProblem
     SiteProblem(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
                 Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
                 MPOTensor<Matrix, SymmGroup> const & mpo_,
-                boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > eng_)
+                boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine_)
     : left(left_)
     , right(right_)
     , mpo(mpo_) 
-    , eng(eng_)
+    , engine(engine_)
     {
     }
     
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
-    boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > eng;
+    boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine;
     double ortho_shift;
 };
 
@@ -101,7 +101,7 @@ public:
     , stop_callback(stop_callback_)
     {
         // Initialize the contraction engine
-        contr = engine_factory<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>(parms);
+        contr = contraction::engine_factory<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>(parms);
 
         std::size_t L = mps.length();
         

@@ -31,10 +31,6 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/block_matrix/indexing.h"
 
-#include "dmrg/mp_tensors/contractions/common/boundary_times_mps.hpp"
-#include "dmrg/mp_tensors/contractions/common/move_boundary.hpp"
-#include "dmrg/mp_tensors/contractions/common/prediction.hpp"
-
 namespace contraction {
 
 template <class Matrix, class OtherMatrix, class SymmGroup>

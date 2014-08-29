@@ -31,6 +31,10 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/block_matrix/indexing.h"
 
+#include "dmrg/mp_tensors/contractions/common/boundary_times_mps.hpp"
+#include "dmrg/mp_tensors/contractions/common/move_boundary.hpp"
+#include "dmrg/mp_tensors/contractions/common/prediction.hpp"
+
 #include "dmrg/mp_tensors/contractions/non-abelian/apply_op.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
