@@ -28,11 +28,9 @@
 #ifndef ABELIAN_SITE_HAMIL
 #define ABELIAN_SITE_HAMIL
 
-namespace contraction {
-
 template<class Matrix, class OtherMatrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>
-AbelianEngine<Matrix, OtherMatrix, SymmGroup>::
+contraction::AbelianEngine<Matrix, OtherMatrix, SymmGroup>::
 site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
             Boundary<OtherMatrix, SymmGroup> const & left,
             Boundary<OtherMatrix, SymmGroup> const & right,
@@ -91,7 +89,5 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
 #endif
     return ret;
 }
-
-} // namespace contractions
 
 #endif
