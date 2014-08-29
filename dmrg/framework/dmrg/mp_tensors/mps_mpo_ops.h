@@ -47,7 +47,8 @@ left_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> con
     left_[0] = mps.left_boundary();
     
     for (int i = 0; i < L; ++i) {
-        left_[i+1] = contraction::overlap_mpo_left_step(mps[i], mps[i], left_[i], mpo[i]);
+        left_[i+1] = contraction::overlap_mpo_left_step<Matrix, Matrix, SymmGroup, AbelianGemms, contraction::lbtm_functor>
+                     (mps[i], mps[i], left_[i], mpo[i]);
     }
     return left_;
 }
@@ -63,7 +64,8 @@ right_mpo_overlaps(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> co
     right_[L] = mps.right_boundary();
     
     for (int i = L-1; i >= 0; --i) {
-        right_[i] = contraction::overlap_mpo_right_step(mps[i], mps[i], right_[i+1], mpo[i]);
+        right_[i] = contraction::overlap_mpo_right_step<Matrix, Matrix, SymmGroup, AbelianGemms, contraction::rbtm_functor>
+                    (mps[i], mps[i], right_[i+1], mpo[i]);
     }
     return right_;
 }
@@ -96,7 +98,28 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
         parallel::guard proc(scheduler(i));
         if (verbose)
             maquis::cout << "expval site " << (size_t)i << std::endl;
-        left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+        left = contraction::overlap_mpo_left_step<Matrix, Matrix, SymmGroup, AbelianGemms, contraction::lbtm_functor>
+               (mps[i], mps[i], left, mpo[i]);
+    }
+    
+    return maquis::real(left[0].trace());
+}
+
+template<class Matrix, class SymmGroup>
+double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
+              boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> > contr,
+              bool verbose = false)
+{
+    assert(mpo.length() == mps.length());
+    std::size_t L = mps.length();
+    
+    Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+    
+    for(size_t i = 0; i < L; ++i) {
+        select_proc(ambient::scope::balance(i,L));
+        if (verbose)
+            maquis::cout << "expval site " << (size_t)i << std::endl;
+        left = contr->overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
     }
     
     return maquis::real(left[0].trace());
@@ -112,7 +135,8 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matri
     Boundary<Matrix, SymmGroup> left = mps.left_boundary();
     
     for (int i = 0; i < L; ++i) {
-        left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+        left = contraction::overlap_mpo_left_step<Matrix, Matrix, SymmGroup, AbelianGemms, contraction::lbtm_functor>
+               (mps[i], mps[i], left, mpo[i]);
     }
     
     return left.traces();
@@ -130,7 +154,8 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matri
     Boundary<Matrix, SymmGroup> left = make_left_boundary(bra, ket);
     
     for (int i = 0; i < L; ++i)
-        left = contraction::overlap_mpo_left_step(bra[i], ket[i], left, mpo[i]);
+        left = contraction::overlap_mpo_left_step<Matrix, Matrix, SymmGroup, AbelianGemms, contraction::lbtm_functor>
+               (bra[i], ket[i], left, mpo[i]);
     
     return left.traces();
 }
@@ -147,7 +172,7 @@ typename MPS<Matrix, SymmGroup>::scalar_type norm(MPS<Matrix, SymmGroup> const &
     for(size_t i = 0; i < L; ++i) {
         parallel::guard proc(scheduler(i));
         MPSTensor<Matrix, SymmGroup> cpy = mps[i];
-        left = contraction::overlap_left_step(mps[i], cpy, left); // serial
+        left = contraction::overlap_left_step<Matrix, Matrix, SymmGroup, AbelianGemms>(mps[i], cpy, left); // serial
     }
     
     return trace(left);
@@ -167,7 +192,7 @@ typename MPS<Matrix, SymmGroup>::scalar_type overlap(MPS<Matrix, SymmGroup> cons
     
     for(size_t i = 0; i < L; ++i) {
         parallel::guard proc(scheduler(i));
-        left = contraction::overlap_left_step(mps1[i], mps2[i], left);
+        left = contraction::overlap_left_step<Matrix, Matrix, SymmGroup, AbelianGemms>(mps1[i], mps2[i], left);
     }
     
     return trace(left);
@@ -180,7 +205,6 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_overlap(MPS<Matr
     // assuming mps2 to have `correct` shape, i.e. left size=1, right size=1
     //          mps1 more generic, i.e. left size=1, right size arbitrary
     
-    
     assert(mps1.length() == mps2.length());
     
     std::size_t L = mps1.length();
@@ -189,7 +213,7 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_overlap(MPS<Matr
     left.insert_block(Matrix(1, 1, 1), SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
     
     for (int i = 0; i < L; ++i) {
-        left = contraction::overlap_left_step(mps1[i], mps2[i], left);
+        left = contraction::overlap_left_step<Matrix, Matrix, SymmGroup, AbelianGemms>(mps1[i], mps2[i], left);
     }
     
     assert(left.right_basis().sum_of_sizes() == 1);

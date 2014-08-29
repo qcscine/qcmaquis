@@ -24,12 +24,14 @@
  *
  *****************************************************************************/
 
-#ifndef CONTRACTIONS_MOVE_BOUNDARY_H
-#define CONTRACTIONS_MOVE_BOUNDARY_H
+#ifndef CONTRACTIONS_COMMON_MOVE_BOUNDARY_H
+#define CONTRACTIONS_COMMON_MOVE_BOUNDARY_H
+
+#include <boost/config/suffix.hpp>
 
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
-#include "dmrg/mp_tensors/contractions/boundary_times_mps.hpp"
+#include "dmrg/mp_tensors/contractions/common/boundary_times_mps.hpp"
 
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/indexing.h"
@@ -37,7 +39,8 @@
 namespace contraction {
 
     // output/input: left_i for bra_tensor, right_i for ket_tensor
-    template<class Matrix, class OtherMatrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
+    BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     block_matrix<OtherMatrix, SymmGroup>
     overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                       MPSTensor<Matrix, SymmGroup> const & ket_tensor,
@@ -54,11 +57,11 @@ namespace contraction {
         block_matrix<OtherMatrix, SymmGroup> t1;
         block_matrix<Matrix, SymmGroup> t3;
         ket_tensor.make_right_paired();
-        gemm(left, ket_tensor.data(), t1);
+        typename Gemm::gemm()(left, ket_tensor.data(), t1);
         
         reshape_right_to_left_new(ket_tensor.site_dim(), bra_tensor.row_dim(), ket_tensor.col_dim(),
                                   t1, t3);
-        gemm(transpose(conjugate(bra_tensor.data())), t3, t1);
+        typename Gemm::gemm()(transpose(conjugate(bra_tensor.data())), t3, t1);
         return t1;
 
         // original:
@@ -67,7 +70,8 @@ namespace contraction {
         // return transpose(t1);
     }
     
-    template<class Matrix, class OtherMatrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
+    BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     block_matrix<OtherMatrix, SymmGroup>
     overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                        MPSTensor<Matrix, SymmGroup> const & ket_tensor,
@@ -84,16 +88,17 @@ namespace contraction {
         
         block_matrix<OtherMatrix, SymmGroup> t1;
         block_matrix<Matrix, SymmGroup> t3;
-        gemm(ket_tensor.data(), transpose(right), t1);
+        typename Gemm::gemm()(ket_tensor.data(), transpose(right), t1);
         reshape_left_to_right_new(ket_tensor.site_dim(), ket_tensor.row_dim(), bra_tensor.col_dim(), t1, t3);
-        gemm(conjugate(bra_tensor.data()), transpose(t3), t1);
+        typename Gemm::gemm()(conjugate(bra_tensor.data()), transpose(t3), t1);
 
         return t1;
     }
     
     // note: this function changes the internal structure of Boundary,
     //       each block is transposed
-    template<class Matrix, class OtherMatrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
+    BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     Boundary<Matrix, SymmGroup>
     left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                              Boundary<OtherMatrix, SymmGroup> const & left,
@@ -106,7 +111,8 @@ namespace contraction {
         if (in_low == NULL)
             in_low = &mps.row_dim();
         
-        std::vector<block_matrix<Matrix, SymmGroup> > t = boundary_times_mps(mps, left, mpo);
+        std::vector<block_matrix<Matrix, SymmGroup> > t
+            = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, typename Gemm::gemm_trim_left>(mps, left, mpo);
 
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim(),
                                       out_left_i = physical_i * left_i;
@@ -120,11 +126,12 @@ namespace contraction {
 #ifdef USE_AMBIENT
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
 
+        // TODO add separate allocate / execute Kernel templates
         parallel_for(index_type b2, parallel::range<index_type>(0,loop_max), {
             lbtm_kernel_allocate(b2, contr_grid, t, mpo, right_i, out_left_i);
         });
         omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-            lbtm_kernel_execute(b2, contr_grid, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
+            lbtm_kernel_execute(b2, contr_grid, left, t, mpo, mps.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
         });
 
         return contr_grid.make_boundary();
@@ -134,7 +141,7 @@ namespace contraction {
 
         omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-            lbtm_kernel(b2, contr_grid, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
+            Kernel()(b2, contr_grid, left, t, mpo, mps.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
             swap(ret[b2], contr_grid(0,0));
         });
 
@@ -142,7 +149,8 @@ namespace contraction {
 #endif
     }
     
-    template<class Matrix, class OtherMatrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
+    BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     Boundary<Matrix, SymmGroup>
     right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                               Boundary<OtherMatrix, SymmGroup> const & right,
@@ -156,7 +164,8 @@ namespace contraction {
         if (in_low == NULL)
             in_low = &mps.col_dim();
         
-        std::vector<block_matrix<Matrix, SymmGroup> > t = mps_times_boundary(mps, right, mpo);
+        std::vector<block_matrix<Matrix, SymmGroup> > t
+            = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, typename Gemm::gemm_trim_right>(mps, right, mpo);
         
         Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
                          out_right_i = adjoin(physical_i) * right_i;
@@ -170,30 +179,40 @@ namespace contraction {
         
         index_type loop_max = mpo.row_dim();
 
+#ifdef USE_AMBIENT
+
+        // TODO: add separate allocate / execute Kernel templates
         parallel_for(index_type b1, parallel::range<index_type>(0,loop_max), {
             rbtm_kernel_allocate(b1, ret[b1], t, mpo, left_i, out_right_i);
         });
         omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
             parallel::guard group(scheduler(b1), parallel::groups_granularity);
-            rbtm_kernel_execute(b1, ret[b1], right, t, mpo, physical_i, left_i, right_i, out_right_i, in_left_pb, out_right_pb);
+            rbtm_kernel_execute(b1, ret[b1], right, t, mpo, mps.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
+        });
+#else
+        omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
+            parallel::guard group(scheduler(b1), parallel::groups_granularity);
+            Kernel()(b1, ret[b1], right, t, mpo, mps.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
         });
 
+#endif
         return ret;
     }
     
-    template<class Matrix, class OtherMatrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
+    BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     Boundary<OtherMatrix, SymmGroup>
     overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                           Boundary<OtherMatrix, SymmGroup> const & left,
                           MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
         MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-        std::vector<block_matrix<Matrix, SymmGroup> > t = boundary_times_mps(ket_cpy, left, mpo);
+        std::vector<block_matrix<Matrix, SymmGroup> > t
+            = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, typename Gemm::gemm_trim_left>(ket_cpy, left, mpo);
 
         Index<SymmGroup> const & left_i = bra_tensor.row_dim();
         Index<SymmGroup> const & right_i = ket_tensor.col_dim();
@@ -211,13 +230,15 @@ namespace contraction {
 #ifdef USE_AMBIENT
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
 
+        // TODO: add separate allocate / execute Kernel templates
         parallel_for(index_type b2, parallel::range<index_type>(0,loop_max), {
             lbtm_kernel_allocate(b2, contr_grid, t, mpo, right_i, out_left_i);
         });
         omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-            lbtm_kernel_execute(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
+            lbtm_kernel_execute(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
         });
         for(index_type b2 = 0; b2 < loop_max; b2++){
+            // TODO: use SU2 gemm in contr_grid in SU2 runs
             contr_grid.multiply_column_trans(b2, bra_conj);
         };
 
@@ -229,29 +250,29 @@ namespace contraction {
         omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
             block_matrix<Matrix, SymmGroup> tmp;
-            lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
-            gemm(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
+            Kernel()(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
+            typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
         });
 
         return ret;
 #endif
     }
     
-    template<class Matrix, class OtherMatrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
+    BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     Boundary<OtherMatrix, SymmGroup>
     overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                            MPSTensor<Matrix, SymmGroup> const & ket_tensor,
                            Boundary<OtherMatrix, SymmGroup> const & right,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-
-
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
         parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
 
         MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
-        std::vector<block_matrix<Matrix, SymmGroup> > t = mps_times_boundary(ket_cpy, right, mpo);
+        std::vector<block_matrix<Matrix, SymmGroup> > t
+            = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, typename Gemm::gemm_trim_right>(ket_cpy, right, mpo);
 
         Index<SymmGroup> const & left_i = ket_tensor.row_dim();
         Index<SymmGroup> const & right_i = bra_tensor.col_dim();
@@ -275,7 +296,7 @@ namespace contraction {
         });
         omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
             parallel::guard group(scheduler(b1), parallel::groups_granularity);
-            rbtm_kernel_execute(b1, ret[b1], right, t, mpo, ket_tensor.site_dim(), left_i, right_i, out_right_i, in_left_pb, out_right_pb);
+            rbtm_kernel_execute(b1, ret[b1], right, t, mpo, ket_tensor.site_dim(), left_i, out_right_i, in_left_pb, out_right_pb);
 
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(ret[b1], transpose(bra_conj), tmp, parallel::scheduler_size_indexed(ret[b1]));
@@ -284,10 +305,11 @@ namespace contraction {
 
 #else
         omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
-            rbtm_kernel(b1, ret[b1], right, t, mpo, ket_tensor.site_dim(), left_i, right_i, out_right_i, in_left_pb, out_right_pb);
+            Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
 
             block_matrix<Matrix, SymmGroup> tmp;
-            gemm(ret[b1], transpose(bra_conj), tmp, parallel::scheduler_size_indexed(ret[b1]));
+            typename Gemm::gemm()(ret[b1], transpose(bra_conj), tmp);
+            //gemm(ret[b1], transpose(bra_conj), tmp, parallel::scheduler_size_indexed(ret[b1]));
             swap(ret[b1], tmp);
         });
 #endif

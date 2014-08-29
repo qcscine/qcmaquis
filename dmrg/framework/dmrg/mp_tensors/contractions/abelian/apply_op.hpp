@@ -82,7 +82,7 @@ namespace contraction {
                              Boundary<OtherMatrix, SymmGroup> const & left,
                              std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
-                             Index<SymmGroup> const & physical_i,
+                             DualIndex<SymmGroup> const & ket_basis,
                              Index<SymmGroup> const & right_i,
                              Index<SymmGroup> const & out_left_i,
                              ProductBasis<SymmGroup> const & in_right_pb,
@@ -126,7 +126,6 @@ namespace contraction {
 
                     size_t in_right_offset = in_right_pb(phys_c1, out_r_charge);
                     size_t out_left_offset = out_left_pb(phys_c2, in_l_charge);
-
                     size_t phys_s1 = W.basis().left_size(w_block);
                     size_t phys_s2 = W.basis().right_size(w_block);
                     Matrix const & wblock = W[w_block];
@@ -185,9 +184,8 @@ namespace contraction {
                              Boundary<OtherMatrix, SymmGroup> const & right,
                              std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
                              MPOTensor<Matrix, SymmGroup> const & mpo,
-                             Index<SymmGroup> const & physical_i,
+                             DualIndex<SymmGroup> const & ket_basis,
                              Index<SymmGroup> const & left_i,
-                             Index<SymmGroup> const & right_i,
                              Index<SymmGroup> const & out_right_i,
                              ProductBasis<SymmGroup> const & in_left_pb,
                              ProductBasis<SymmGroup> const & out_right_pb)
@@ -225,7 +223,6 @@ namespace contraction {
                     charge in_l_charge = SymmGroup::fuse(out_l_charge, phys_c1); 
                     charge in_r_charge = SymmGroup::fuse(in_l_charge, T_delta); 
                     size_t t_block = T.basis().position(in_l_charge, in_r_charge);            if (t_block == T.basis().size()) continue;
-                    assert(right_i.has(in_r_charge));
 
                     size_t in_left_offset = in_left_pb(phys_c1, out_l_charge);
                     size_t out_right_offset = out_right_pb(phys_c2, in_r_charge);
@@ -251,14 +248,14 @@ namespace contraction {
                      Boundary<OtherMatrix, SymmGroup> const & left,
                      std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     Index<SymmGroup> const & physical_i,
+                     DualIndex<SymmGroup> const & ket_basis, // dummy argument for compatiblity with SU2
                      Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_left_i,
                      ProductBasis<SymmGroup> const & in_right_pb,
                      ProductBasis<SymmGroup> const & out_left_pb)
     {
         lbtm_kernel_allocate(b2, contr_grid, left_mult_mps, mpo, right_i, out_left_i);
-        lbtm_kernel_execute(b2, contr_grid, left, left_mult_mps, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
+        lbtm_kernel_execute(b2, contr_grid, left, left_mult_mps, mpo, ket_basis, right_i, out_left_i, in_right_pb, out_left_pb);
     }
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -267,15 +264,14 @@ namespace contraction {
                      Boundary<OtherMatrix, SymmGroup> const & right,
                      std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
                      MPOTensor<Matrix, SymmGroup> const & mpo,
-                     Index<SymmGroup> const & physical_i,
+                     DualIndex<SymmGroup> const & ket_basis, // dummy argument for compatiblity with SU2
                      Index<SymmGroup> const & left_i,
-                     Index<SymmGroup> const & right_i,
                      Index<SymmGroup> const & out_right_i,
                      ProductBasis<SymmGroup> const & in_left_pb,
                      ProductBasis<SymmGroup> const & out_right_pb)
     {
         rbtm_kernel_allocate(b1, ret, right_mult_mps, mpo, left_i, out_right_i);
-        rbtm_kernel_execute(b1, ret, right, right_mult_mps, mpo, physical_i, left_i, right_i, out_right_i, in_left_pb, out_right_pb);
+        rbtm_kernel_execute(b1, ret, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb);
     }
 
 }

@@ -98,7 +98,8 @@ typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & bra,
     for (int i = 0; i < L; ++i) {
         if (verbose)
             std::cout << "expval site " << i << std::endl;
-        left = contraction::overlap_mpo_left_step(bra[i], ket[i], left, mpo[i]);
+        left = contraction::overlap_mpo_left_step<Matrix, Matrix, SymmGroup, AbelianGemms, contraction::lbtm_functor>
+               (bra[i], ket[i], left, mpo[i]);
     }
     
     return left.traces()[0];

@@ -54,7 +54,14 @@ class measurement {
 public:
     typedef typename Matrix::value_type value_type;
     
-    measurement(std::string const& n="") : cast_to_real(true), is_super_meas(false), name_(n), eigenstate(0) { }
+    measurement(std::string const& n="", boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> > contr_ 
+                                            = boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> >() )
+    : cast_to_real(true), is_super_meas(false), contr(contr_), name_(n), eigenstate(0)
+    {
+        if (contr.get() == NULL)
+            contr.reset(new contraction::AbelianEngine<Matrix, Matrix, SymmGroup>());
+    }
+
     virtual ~measurement() { }
     
     virtual void evaluate(MPS<Matrix, SymmGroup> const&, boost::optional<reduced_mps<Matrix, SymmGroup> const&> = boost::none) =0;
@@ -80,6 +87,8 @@ protected:
     std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> vector_results;
     
     Index<SymmGroup> phys_psi;
+
+    boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> > contr;
     
 private:
     std::string name_;

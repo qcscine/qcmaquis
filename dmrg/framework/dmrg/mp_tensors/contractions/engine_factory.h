@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,18 +24,31 @@
  *
  *****************************************************************************/
 
-#ifndef CONTRACTIONS_H
-#define CONTRACTIONS_H
+#ifndef ENGINES_H
+#define ENGINES_H
 
-#ifdef USE_AMBIENT
-#include "dmrg/mp_tensors/contractions/impl/ambient.hpp"
+// Move this to separate compilation unit once done
+
+#include <boost/shared_ptr.hpp>
+
+#include "dmrg/mp_tensors/contractions.h"
+
+template <class Matrix, class OtherMatrix, class SymmGroup>
+boost::shared_ptr<contraction::Engine<Matrix, OtherMatrix, SymmGroup> >
+engine_factory(BaseParameters & parms)
+{
+    typedef boost::shared_ptr<contraction::Engine<Matrix, OtherMatrix, SymmGroup> > impl_ptr;
+#ifdef ENABLE_SU2
+    if (parms["MODEL"] == "quantum_chemistry_SU2")
+        return impl_ptr(new contraction::SU2Engine<Matrix, OtherMatrix, SymmGroup>());
+    else if (parms["MODEL"] == "fermion Hubbard SU2")
+        return impl_ptr(new contraction::SU2Engine<Matrix, OtherMatrix, SymmGroup>());
+    else
+        return impl_ptr(new contraction::AbelianEngine<Matrix, OtherMatrix, SymmGroup>());
 #else
-//#include "dmrg/mp_tensors/contractions/impl/alps.hpp"
-#include "dmrg/mp_tensors/contractions/impl/memsave.hpp"
-#endif
+    return impl_ptr(new contraction::AbelianEngine<Matrix, OtherMatrix, SymmGroup>());
 
-#include "dmrg/mp_tensors/contractions/abelian/special.hpp"
-#include "dmrg/mp_tensors/contractions/abelian_engine.hpp"
-#include "dmrg/mp_tensors/contractions/engine_factory.h"
+#endif
+}
 
 #endif

@@ -24,8 +24,10 @@
  *
  *****************************************************************************/
 
-#ifndef CONTRACTIONS_PREDICTION_H
-#define CONTRACTIONS_PREDICTION_H
+#ifndef CONTRACTIONS_COMMON_PREDICTION_H
+#define CONTRACTIONS_COMMON_PREDICTION_H
+
+#include <boost/config/suffix.hpp>
 
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
@@ -35,7 +37,8 @@
 
 namespace contraction {
 
-    template<class Matrix, class OtherMatrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
+    BOOST_FORCEINLINE // called from one place only (per template)
     std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -45,15 +48,16 @@ namespace contraction {
     {
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> dm;
-        gemm(mps.data(), transpose(conjugate(mps.data())), dm);
+        typename Gemm::gemm()(mps.data(), transpose(conjugate(mps.data())), dm);
         
-        Boundary<Matrix, SymmGroup> half_dm = left_boundary_tensor_mpo(mps, left, mpo);
+        Boundary<Matrix, SymmGroup> half_dm
+            = left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, left, mpo);
         
         mps.make_left_paired();
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
         {
             block_matrix<Matrix, SymmGroup> tdm;
-            gemm(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
+            typename Gemm::gemm()(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
             
             
             tdm *= alpha;
@@ -64,6 +68,7 @@ namespace contraction {
                                            tdm.basis().right_charge(k));
             }
         }
+
         mps.make_left_paired();
         assert( weak_equal(dm.left_basis(), mps.data().left_basis()) );
         
@@ -76,7 +81,8 @@ namespace contraction {
         return std::make_pair(ret, trunc);
     }
     
-    template<class Matrix, class SymmGroup>
+    template<class Matrix, class SymmGroup, class Gemm>
+    BOOST_FORCEINLINE
     MPSTensor<Matrix, SymmGroup>
     predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
                               MPSTensor<Matrix, SymmGroup> const & psi,
@@ -86,31 +92,33 @@ namespace contraction {
         A.make_left_paired();
         
         block_matrix<Matrix, SymmGroup> tmp;
-        gemm(transpose(conjugate(A.data())), psi.data(), tmp);
+        typename Gemm::gemm()(transpose(conjugate(A.data())), psi.data(), tmp);
         B.multiply_from_left(tmp);
         
         return B;
     }
     
-    template<class Matrix, class OtherMatrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
+    BOOST_FORCEINLINE
     std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
-                                MPOTensor<Matrix, SymmGroup> const & mpo,
-                                Boundary<OtherMatrix, SymmGroup> const & left,
-                                Boundary<OtherMatrix, SymmGroup> const & right,
-                                double alpha, double cutoff, std::size_t Mmax)
+                                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                                    Boundary<OtherMatrix, SymmGroup> const & left,
+                                    Boundary<OtherMatrix, SymmGroup> const & right,
+                                    double alpha, double cutoff, std::size_t Mmax)
     {
         mps.make_right_paired();
         block_matrix<Matrix, SymmGroup> dm;
-        gemm(transpose(conjugate(mps.data())), mps.data(), dm);
+        typename Gemm::gemm()(transpose(conjugate(mps.data())), mps.data(), dm);
             
-        Boundary<Matrix, SymmGroup> half_dm = right_boundary_tensor_mpo(mps, right, mpo);
+        Boundary<Matrix, SymmGroup> half_dm
+            = right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, right, mpo);
         
         mps.make_right_paired();
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
         {
             block_matrix<Matrix, SymmGroup> tdm;
-            gemm(transpose(conjugate(half_dm[b])), half_dm[b], tdm);
+            typename Gemm::gemm()(transpose(conjugate(half_dm[b])), half_dm[b], tdm);
             
             tdm *= alpha;
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
@@ -133,7 +141,8 @@ namespace contraction {
         return std::make_pair(ret, trunc);
     }
     
-    template<class Matrix, class SymmGroup>
+    template<class Matrix, class SymmGroup, class Gemm>
+    BOOST_FORCEINLINE
     MPSTensor<Matrix, SymmGroup>
     predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
                               MPSTensor<Matrix, SymmGroup> const & psi,
@@ -143,7 +152,7 @@ namespace contraction {
         A.make_right_paired();
         
         block_matrix<Matrix, SymmGroup> tmp;
-        gemm(psi.data(), transpose(conjugate(A.data())), tmp);
+        typename Gemm::gemm()(psi.data(), transpose(conjugate(A.data())), tmp);
         
         B.multiply_from_right(tmp);
         
