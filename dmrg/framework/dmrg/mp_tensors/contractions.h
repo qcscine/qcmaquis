@@ -28,18 +28,18 @@
 #define CONTRACTIONS_H
 
 #ifdef USE_AMBIENT
-#include "dmrg/mp_tensors/contractions/impl/ambient.hpp"
+#include "dmrg/mp_tensors/contractions/detail/ambient.hpp"
 #else
 //#include "dmrg/mp_tensors/contractions/impl/alps.hpp"
-#include "dmrg/mp_tensors/contractions/impl/memsave.hpp"
+#include "dmrg/mp_tensors/contractions/detail/memsave.hpp"
 #endif
 
 #include "dmrg/mp_tensors/contractions/abelian/special.hpp"
 
-#include "dmrg/mp_tensors/contractions/abelian_engine.hpp"
+#include "dmrg/mp_tensors/contractions/abelian/engine.hpp"
 
 #ifdef ENABLE_SU2
-#include "dmrg/mp_tensors/contractions/su2_engine.hpp"
+#include "dmrg/mp_tensors/contractions/non-abelian/engine.hpp"
 #endif
 
 #include "dmrg/mp_tensors/contractions/engine_factory.h"

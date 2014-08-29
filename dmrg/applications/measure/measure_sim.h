@@ -68,7 +68,7 @@ public:
             mpoc.compress(1e-12);
 
         boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> >
-        contr = engine_factory<Matrix, Matrix, SymmGroup>(parms);
+        contr = contraction::engine_factory<Matrix, Matrix, SymmGroup>(parms);
         
         double energy = maquis::real(expval(mps, mpoc, contr));
         // MD: removed redundant energy calculation

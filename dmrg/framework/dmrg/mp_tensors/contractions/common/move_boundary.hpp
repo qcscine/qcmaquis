@@ -40,7 +40,6 @@ namespace contraction {
 
     // output/input: left_i for bra_tensor, right_i for ket_tensor
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
-    BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     block_matrix<OtherMatrix, SymmGroup>
     overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                       MPSTensor<Matrix, SymmGroup> const & ket_tensor,
@@ -71,7 +70,6 @@ namespace contraction {
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
-    BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     block_matrix<OtherMatrix, SymmGroup>
     overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                        MPSTensor<Matrix, SymmGroup> const & ket_tensor,
@@ -98,7 +96,6 @@ namespace contraction {
     // note: this function changes the internal structure of Boundary,
     //       each block is transposed
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
-    BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     Boundary<Matrix, SymmGroup>
     left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                              Boundary<OtherMatrix, SymmGroup> const & left,
@@ -150,7 +147,6 @@ namespace contraction {
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
-    BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     Boundary<Matrix, SymmGroup>
     right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                               Boundary<OtherMatrix, SymmGroup> const & right,
@@ -200,7 +196,6 @@ namespace contraction {
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
-    BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     Boundary<OtherMatrix, SymmGroup>
     overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
@@ -259,7 +254,6 @@ namespace contraction {
     }
     
     template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
-    BOOST_FORCEINLINE // GCC doesn't inline, unless forced. This func is called from one place only, so inlining doesn't harm.
     Boundary<OtherMatrix, SymmGroup>
     overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                            MPSTensor<Matrix, SymmGroup> const & ket_tensor,
