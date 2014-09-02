@@ -178,7 +178,6 @@ int main(int argc, char ** argv)
         {
             left = mps.left_boundary(); ambient::sync();
             for (size_t i = 0; i < site; ++i){
-                left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
                 left = contraction::overlap_mpo_left_step<matrix, matrix, grp, AbelianGemms, contraction::lbtm_functor>(mps[i], mps[i], left, mpo[i]);
                 if(can_clean(i, site, L, lr)) mps[i].data().clear();
                 ambient::sync();
