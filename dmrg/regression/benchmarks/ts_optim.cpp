@@ -76,6 +76,12 @@ struct SiteProblem
     double ortho_shift;
 };
 
+bool can_clean(int k, int site, int L, int lr){
+    if(k == site || k == site+1) return false;
+    if(lr == -1 && site > 0   && k == site-1) return false;
+    if(lr == +1 && site < L-2 && k == site+2) return false;
+    return true;
+}
 
 int main(int argc, char ** argv)
 {
@@ -170,9 +176,13 @@ int main(int argc, char ** argv)
         } else 
         #endif
         {
-            left = mps.left_boundary();
-            for (size_t i=0; i<site; ++i)
+            left = mps.left_boundary(); ambient::sync();
+            for (size_t i = 0; i < site; ++i){
+                left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
                 left = contraction::overlap_mpo_left_step<matrix, matrix, grp, AbelianGemms, contraction::lbtm_functor>(mps[i], mps[i], left, mpo[i]);
+                if(can_clean(i, site, L, lr)) mps[i].data().clear();
+                ambient::sync();
+            }
         }
         time_l_boundary.end();
         maquis::cout << "Left boundary done!\n";
@@ -189,21 +199,26 @@ int main(int argc, char ** argv)
         } else 
         #endif
         {
+<<<<<<< .mine
             right = mps.right_boundary();
             for (int i=L-1; i>site+1; --i)
                 right = contraction::overlap_mpo_right_step<matrix, matrix, grp, AbelianGemms, contraction::rbtm_functor>(mps[i], mps[i], right, mpo[i]);
+=======
+            right = mps.right_boundary(); ambient::sync();
+            for (int i = L-1; i > site+1; --i){
+                right = contraction::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
+>>>>>>> .r4504
+                if(can_clean(i, site, L, lr)) mps[i].data().clear();
+                ambient::sync();
+            }
         }
         time_r_boundary.end();
         maquis::cout << "Right boundary done!\n";
         
         // Clearing unneeded MPS Tensors
         for (int k = 0; k < mps.length(); k++){
-            if(k == site || k == site+1) continue;
-            if(lr == -1 && site > 0   && k == site-1) continue; 
-            if(lr == +1 && site < L-2 && k == site+2) continue; 
-            mps[k].data().clear();
+            if(can_clean(k, site, L, lr)) mps[k].data().clear();
         }
-        
         
         std::vector<MPSTensor<matrix, grp> > ortho_vecs;
         std::pair<double, MPSTensor<matrix, grp> > res;
