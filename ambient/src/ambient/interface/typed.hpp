@@ -57,6 +57,7 @@ namespace ambient {
         template<size_t arg> static void modify_local(T& obj, functor* m){
             m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj);
         }
+        static constexpr bool ReferenceOnly = false;
     };
     template <typename T> struct singular_inplace_info : public singular_info<T> {
         template<size_t arg> static T& revised(functor* m){ return *(T*)&m->arguments[arg]; }
@@ -79,6 +80,7 @@ namespace ambient {
         template<size_t arg> static void modify(const T& obj, functor* m){ 
             m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.desc);
         }
+        static constexpr bool ReferenceOnly = true;
     };
     template <typename T> struct read_future_info : public future_info<T> {
         template<size_t arg> static void deallocate(functor* m){ }
@@ -165,6 +167,7 @@ namespace ambient {
             if(r.generator == NULL || r.generator == m) return true;
             return false;
         }
+        static constexpr bool ReferenceOnly = true;
     };
     // }}}
     // {{{ compile-time type info: only read/write iteratable derived types

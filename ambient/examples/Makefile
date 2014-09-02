@@ -20,13 +20,19 @@ CXXFLAGS?= $(COMMON)
 .DEFAULT: all
 .PHONY: all
 
-all: libambient.a diffusion vector matrix groups
+all: libambient.a diffusion partitioned_vector vector atomic matrix groups
 
 diffusion: libambient.a diffusion.cpp
 	$(CXX) diffusion.cpp -o diffusion $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH)
 
+partitioned_vector: libambient.a partitioned_vector.cpp
+	$(CXX) partitioned_vector.cpp -o partitioned_vector $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH)
+
 vector: libambient.a vector.cpp
 	$(CXX) vector.cpp -o vector $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH)
+
+atomic: libambient.a atomic.cpp
+	$(CXX) atomic.cpp -o atomic $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH)
 
 matrix: libambient.a matrix.cpp
 	$(CXX) matrix.cpp -o matrix $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH) -mkl -I$(BOOST_INCLUDE_PATH)
@@ -43,6 +49,8 @@ libambient.a: $(AMBIENT_PATH)/ambient/ambient.cpp
 clean:
 	-rm -f libambient.a
 	-rm -f diffusion
+	-rm -f partitioned_vector
 	-rm -f vector
+	-rm -f atomic
 	-rm -f matrix
 	-rm -f groups
