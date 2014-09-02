@@ -199,15 +199,9 @@ int main(int argc, char ** argv)
         } else 
         #endif
         {
-<<<<<<< .mine
-            right = mps.right_boundary();
-            for (int i=L-1; i>site+1; --i)
-                right = contraction::overlap_mpo_right_step<matrix, matrix, grp, AbelianGemms, contraction::rbtm_functor>(mps[i], mps[i], right, mpo[i]);
-=======
             right = mps.right_boundary(); ambient::sync();
             for (int i = L-1; i > site+1; --i){
-                right = contraction::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
->>>>>>> .r4504
+                right = contraction::overlap_mpo_right_step<matrix, matrix, grp, AbelianGemms, contraction::rbtm_functor>(mps[i], mps[i], right, mpo[i]);
                 if(can_clean(i, site, L, lr)) mps[i].data().clear();
                 ambient::sync();
             }
