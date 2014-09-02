@@ -43,6 +43,7 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/twositetensor.h"
+#include "dmrg/mp_tensors/contractions.h"
 
 #include "dmrg/optimize/ietl_lanczos_solver.h"
 #include "dmrg/optimize/ietl_jacobi_davidson.h"
@@ -59,16 +60,19 @@ struct SiteProblem
 {
     SiteProblem(Boundary<Matrix, SymmGroup> const & left_,
                 Boundary<Matrix, SymmGroup> const & right_,
-                MPOTensor<Matrix, SymmGroup> const & mpo_)
+                MPOTensor<Matrix, SymmGroup> const & mpo_,
+		boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine_)
     : left(left_)
     , right(right_)
     , mpo(mpo_)
+    , engine(engine_)
     {
     }
     
     Boundary<Matrix, SymmGroup> const & left;
     Boundary<Matrix, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
+    boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine;
     double ortho_shift;
 };
 
@@ -101,7 +105,10 @@ int main(int argc, char ** argv)
         MPO<matrix, grp> mpo = make_mpo(lattice, model, parms);
         tim_model.end();
         maquis::cout << "Parsing model done!\n";
-        
+
+	/// initialize contraction engine
+        boost::shared_ptr<contraction::Engine<matrix, typename storage::constrained<matrix>::type, grp> > contr;
+        contr = contraction::engine_factory<matrix, typename storage::constrained<matrix>::type, grp>(parms);
 
         boost::filesystem::path chkpfile(parms["chkpfile"].str());
         
@@ -160,7 +167,7 @@ int main(int argc, char ** argv)
         } else {
             left = mps.left_boundary();
             for (size_t i=0; i<site; ++i)
-                left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+                left = contraction::overlap_mpo_left_step<matrix, matrix, grp, AbelianGemms, contraction::lbtm_functor>(mps[i], mps[i], left, mpo[i]);
         }
         #ifdef USE_AMBIENT
         if(exists(chkpfile / boundary_name) || lr == -1){
@@ -185,7 +192,7 @@ int main(int argc, char ** argv)
         } else {
             right = mps.right_boundary();
             for (int i=L-1; i>site+1; --i)
-                right = contraction::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
+                right = contraction::overlap_mpo_right_step<matrix, matrix, grp, AbelianGemms, contraction::rbtm_functor>(mps[i], mps[i], right, mpo[i]);
         }
         #ifdef USE_AMBIENT
         if(exists(chkpfile / boundary_name) || lr == +1){
@@ -210,7 +217,7 @@ int main(int argc, char ** argv)
         
         std::vector<MPSTensor<matrix, grp> > ortho_vecs;
         std::pair<double, MPSTensor<matrix, grp> > res;
-        SiteProblem<matrix, grp> sp(left, right, ts_mpo);
+        SiteProblem<matrix, grp> sp(left, right, ts_mpo, contr);
 
         /// Optimization: JCD
         tim_optim_jcd.begin();
