@@ -36,17 +36,6 @@
 
 #include "dmrg/mp_tensors/contractions/abelian/engine_factory.h"
 
-// Forward declarations
-
-//namespace contraction
-//{
-//    template <class Matrix, class OtherMatrix, class SymmGroup>
-//    class AbelianEngineFactory;
-//
-//    template <class Matrix, class OtherMatrix, class SymmGroup>
-//    class SU2EngineFactory;
-//}
-
 namespace contraction {
 
     template <class Matrix, class OtherMatrix, class SymmGroup>

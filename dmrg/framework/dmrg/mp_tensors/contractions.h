@@ -36,9 +36,6 @@
 
 #include "dmrg/mp_tensors/contractions/abelian/special.hpp"
 
-//#include "dmrg/mp_tensors/contractions/abelian/engine.hpp"
-//#include "dmrg/mp_tensors/contractions/non-abelian/engine.hpp"
-
 #include "dmrg/mp_tensors/contractions/engine_factory.h"
 
 #endif

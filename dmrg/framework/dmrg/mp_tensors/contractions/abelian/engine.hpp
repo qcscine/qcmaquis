@@ -36,11 +36,15 @@
 #include "dmrg/mp_tensors/contractions/abelian/functors.h"
 
 
-
 namespace contraction {
 
-template <class Matrix, class OtherMatrix, class SymmGroup>
-class EngineFactory;
+    // Forward declaration
+    template <class Matrix, class OtherMatrix, class SymmGroup>
+    class EngineFactory;
+
+}
+
+namespace contraction {
 
 template <class Matrix, class OtherMatrix, class SymmGroup>
 class AbelianEngine : public Engine<Matrix, OtherMatrix, SymmGroup>
