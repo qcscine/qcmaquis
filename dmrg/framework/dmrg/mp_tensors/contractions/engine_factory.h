@@ -76,7 +76,7 @@ namespace contraction {
             mps.make_right_paired();
             omp_for(int b1, parallel::range(0,loop_max), {
                 parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                Gemm()(transpose(left[b1]), mps.data(), ret[b1]);
+                typename Gemm::gemm_trim_left()(transpose(left[b1]), mps.data(), ret[b1]);
             });
             return ret;
         }
@@ -94,7 +94,7 @@ namespace contraction {
             mps.make_left_paired();
             omp_for(int b2, parallel::range(0,loop_max), {
                 parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                Gemm()(mps.data(), right[b2], ret[b2]);
+                typename Gemm::gemm_trim_right()(mps.data(), right[b2], ret[b2]);
             });
             return ret;
         }
@@ -170,7 +170,7 @@ namespace contraction {
                 in_low = &mps.row_dim();
 
             std::vector<block_matrix<Matrix, SymmGroup> > t
-                = boundary_times_mps<typename Gemm::gemm_trim_left>(mps, left, mpo);
+                = boundary_times_mps<Gemm>(mps, left, mpo);
 
             Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim(),
                                           out_left_i = physical_i * left_i;
@@ -222,7 +222,7 @@ namespace contraction {
                 in_low = &mps.col_dim();
 
             std::vector<block_matrix<Matrix, SymmGroup> > t
-                = mps_times_boundary<typename Gemm::gemm_trim_right>(mps, right, mpo);
+                = mps_times_boundary<Gemm>(mps, right, mpo);
 
             Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
                              out_right_i = adjoin(physical_i) * right_i;
@@ -268,7 +268,7 @@ namespace contraction {
 
             MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
             std::vector<block_matrix<Matrix, SymmGroup> > t
-                = boundary_times_mps<typename Gemm::gemm_trim_left>(ket_cpy, left, mpo);
+                = boundary_times_mps<Gemm>(ket_cpy, left, mpo);
 
             Index<SymmGroup> const & left_i = bra_tensor.row_dim();
             Index<SymmGroup> const & right_i = ket_tensor.col_dim();
@@ -327,7 +327,7 @@ namespace contraction {
 
             MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
             std::vector<block_matrix<Matrix, SymmGroup> > t
-                = mps_times_boundary<typename Gemm::gemm_trim_right>(ket_cpy, right, mpo);
+                = mps_times_boundary<Gemm>(ket_cpy, right, mpo);
 
             Index<SymmGroup> const & left_i = ket_tensor.row_dim();
             Index<SymmGroup> const & right_i = bra_tensor.col_dim();
