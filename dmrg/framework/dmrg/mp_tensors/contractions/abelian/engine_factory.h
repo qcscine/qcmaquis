@@ -107,12 +107,6 @@ namespace contraction {
                    (bra_tensor, ket_tensor, right, mpo);
         }
 
-        static MPSTensor<Matrix, SymmGroup>
-        site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
-                    Boundary<OtherMatrix, SymmGroup> const & left,
-                    Boundary<OtherMatrix, SymmGroup> const & right,
-                    MPOTensor<Matrix, SymmGroup> const & mpo);
-
         static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
         predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                     MPOTensor<Matrix, SymmGroup> const & mpo,
