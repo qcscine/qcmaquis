@@ -99,10 +99,10 @@ int main(int argc, char ** argv)
         MPO<matrix, grp> mpo = make_mpo(lattice, model, parms);
         tim_model.end();
 
-	/// initialize contraction engine
-	boost::shared_ptr<contraction::Engine<matrix, typename storage::constrained<matrix>::type, grp> > contr;
-	contr = contraction::engine_factory<matrix, typename storage::constrained<matrix>::type, grp>(parms);
-        
+        /// initialize contraction engine
+        boost::shared_ptr<contraction::Engine<matrix, typename storage::constrained<matrix>::type, grp> > contr;
+        contr = contraction::EngineFactory<matrix, typename storage::constrained<matrix>::type, grp>::makeFactory(parms)->makeEngine(); 
+
         /// Initialize & load MPS
         tim_load.begin();
         int L = lattice.size();
@@ -131,14 +131,14 @@ int main(int argc, char ** argv)
         tim_l_boundary.begin();
         Boundary<matrix, grp> left = mps.left_boundary();
         for (size_t i=0; i<site; ++i)
-            left = contraction::overlap_mpo_left_step<matrix, matrix, grp, AbelianGemms, contraction::lbtm_functor>(mps[i], mps[i], left, mpo[i]);
+            left = contr->overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
         tim_l_boundary.end();
         
         /// Compute right boundary
         tim_r_boundary.begin();
         Boundary<matrix, grp> right = mps.right_boundary();
         for (int i=L-1; i>site; --i)
-            right = contraction::overlap_mpo_right_step<matrix, matrix, grp, AbelianGemms, contraction::rbtm_functor>(mps[i], mps[i], right, mpo[i]);
+            right = contr->overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
         tim_r_boundary.end();
 
 

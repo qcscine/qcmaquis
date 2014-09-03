@@ -40,7 +40,7 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
     typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
     std::vector<block_matrix<Matrix, SymmGroup> > t
-        = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, gemm_trim_left_functor>(ket_tensor, left, mpo);
+        = EngineFactory<Matrix, OtherMatrix, SymmGroup>::template boundary_times_mps<gemm_trim_left_functor>(ket_tensor, left, mpo);
 
     Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                            & left_i = ket_tensor.row_dim(),

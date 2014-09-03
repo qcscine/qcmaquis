@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,21 +24,36 @@
  *
  *****************************************************************************/
 
-#ifndef CONTRACTIONS_H
-#define CONTRACTIONS_H
+#ifndef MAKE_FACTORY_H
+#define MAKE_FACTORY_H
 
-#ifdef USE_AMBIENT
-#include "dmrg/mp_tensors/contractions/detail/ambient.hpp"
-#else
-//#include "dmrg/mp_tensors/contractions/impl/alps.hpp"
-#include "dmrg/mp_tensors/contractions/detail/memsave.hpp"
-#endif
+// Move this to separate compilation unit once done
 
-#include "dmrg/mp_tensors/contractions/abelian/special.hpp"
-
-//#include "dmrg/mp_tensors/contractions/abelian/engine.hpp"
-//#include "dmrg/mp_tensors/contractions/non-abelian/engine.hpp"
+#include <boost/shared_ptr.hpp>
 
 #include "dmrg/mp_tensors/contractions/engine_factory.h"
+#include "dmrg/mp_tensors/contractions/abelian/engine_factory.h"
+
+namespace contraction {
+
+    template <class Matrix, class OtherMatrix, class SymmGroup>
+    boost::shared_ptr<contraction::EngineFactory<Matrix, OtherMatrix, SymmGroup> >
+    make_factory(BaseParameters & parms)
+    {
+        typedef boost::shared_ptr<contraction::EngineFactory<Matrix, OtherMatrix, SymmGroup> > impl_ptr;
+#ifdef ENABLE_SU2
+        if (parms["MODEL"] == "quantum_chemistry_SU2")
+            return impl_ptr(new contraction::SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>());
+        else if (parms["MODEL"] == "fermion Hubbard SU2")
+            return impl_ptr(new contraction::SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>());
+        else
+            return impl_ptr(new contraction::AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>());
+#else
+        return impl_ptr(new contraction::AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>());
+
+#endif
+    }
+
+} // namespace contraction
 
 #endif

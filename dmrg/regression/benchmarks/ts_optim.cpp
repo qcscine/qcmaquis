@@ -112,9 +112,9 @@ int main(int argc, char ** argv)
         time_model.end();
         maquis::cout << "Parsing model done!\n";
 
-	/// initialize contraction engine
+	    /// initialize contraction engine
         boost::shared_ptr<contraction::Engine<matrix, typename storage::constrained<matrix>::type, grp> > contr;
-        contr = contraction::engine_factory<matrix, typename storage::constrained<matrix>::type, grp>(parms);
+        contr = contraction::EngineFactory<matrix, typename storage::constrained<matrix>::type, grp>::makeFactory(parms)->makeEngine();
 
         boost::filesystem::path chkpfile(parms["chkpfile"].str());
         
@@ -178,7 +178,7 @@ int main(int argc, char ** argv)
         {
             left = mps.left_boundary(); ambient::sync();
             for (size_t i = 0; i < site; ++i){
-                left = contraction::overlap_mpo_left_step<matrix, matrix, grp, AbelianGemms, contraction::lbtm_functor>(mps[i], mps[i], left, mpo[i]);
+                left = contr->overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
                 if(can_clean(i, site, L, lr)) mps[i].data().clear();
                 ambient::sync();
             }
@@ -200,7 +200,7 @@ int main(int argc, char ** argv)
         {
             right = mps.right_boundary(); ambient::sync();
             for (int i = L-1; i > site+1; --i){
-                right = contraction::overlap_mpo_right_step<matrix, matrix, grp, AbelianGemms, contraction::rbtm_functor>(mps[i], mps[i], right, mpo[i]);
+                right = contr->overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
                 if(can_clean(i, site, L, lr)) mps[i].data().clear();
                 ambient::sync();
             }
