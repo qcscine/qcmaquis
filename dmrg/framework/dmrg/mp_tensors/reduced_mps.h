@@ -55,14 +55,14 @@ public:
             {
                 MPOTensor<Matrix, SymmGroup> ident;
                 ident.set(0, 0, identity_matrix<Matrix>(mps[L-i].site_dim()));
-                right = contraction::EngineFactory<Matrix, Matrix, SymmGroup>::template overlap_mpo_right_step<AbelianGemms, contraction::rbtm_functor>
+                right = contraction::EngineFactory<Matrix, Matrix, SymmGroup>::template overlap_mpo_right_step<Abelian::Gemms, contraction::rbtm_functor>
                         (mps[L-i], mps[L-i], right, ident);
                 right_[L-1-i] = right;
             }
             {
                 MPOTensor<Matrix, SymmGroup> ident;
                 ident.set(0, 0, identity_matrix<Matrix>(mps[i-1].site_dim()));
-                left = contraction::EngineFactory<Matrix, Matrix, SymmGroup>::template overlap_mpo_left_step<AbelianGemms, contraction::lbtm_functor>
+                left = contraction::EngineFactory<Matrix, Matrix, SymmGroup>::template overlap_mpo_left_step<Abelian::Gemms, contraction::lbtm_functor>
                        (mps[i-1], mps[i-1], left, ident);
                 left_[i] = left;
             }

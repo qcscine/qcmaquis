@@ -31,7 +31,56 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 
-namespace contraction { // Forward declaration
+namespace Abelian {
+
+    namespace detail {
+
+        struct gemm_functor
+        {
+            template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
+            void operator()(block_matrix<Matrix1, SymmGroup> const & A,
+                            block_matrix<Matrix2, SymmGroup> const & B,
+                            block_matrix<Matrix3, SymmGroup> & C)
+            {
+                gemm(A,B,C);
+            }
+        };
+
+        struct gemm_trim_left_functor
+        {
+            template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
+            void operator()(block_matrix<Matrix1, SymmGroup> const & A,
+                            block_matrix<Matrix2, SymmGroup> const & B,
+                            block_matrix<Matrix3, SymmGroup> & C)
+            {
+                gemm_trim_left(A,B,C);
+            }
+        };
+
+        struct gemm_trim_right_functor
+        {
+            template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
+            void operator()(block_matrix<Matrix1, SymmGroup> const & A,
+                            block_matrix<Matrix2, SymmGroup> const & B,
+                            block_matrix<Matrix3, SymmGroup> & C)
+            {
+                gemm_trim_right(A,B,C);
+            }
+        };
+
+    } // namespace detail
+
+    struct Gemms
+    {
+        typedef detail::gemm_functor gemm;
+        typedef detail::gemm_trim_left_functor gemm_trim_left;
+        typedef detail::gemm_trim_right_functor gemm_trim_right;
+    };
+
+} // namespace abelian
+
+namespace contraction {
+    // Forward declarations
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel(size_t b2,
@@ -56,49 +105,7 @@ namespace contraction { // Forward declaration
                      Index<SymmGroup> const & out_right_i,
                      ProductBasis<SymmGroup> const & in_left_pb,
                      ProductBasis<SymmGroup> const & out_right_pb);
-}
-
-struct gemm_functor
-{
-    template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
-    void operator()(block_matrix<Matrix1, SymmGroup> const & A,
-                    block_matrix<Matrix2, SymmGroup> const & B,
-                    block_matrix<Matrix3, SymmGroup> & C)
-    {
-        gemm(A,B,C);
-    }
-};
-
-struct gemm_trim_left_functor
-{
-    template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
-    void operator()(block_matrix<Matrix1, SymmGroup> const & A,
-                    block_matrix<Matrix2, SymmGroup> const & B,
-                    block_matrix<Matrix3, SymmGroup> & C)
-    {
-        gemm_trim_left(A,B,C);
-    }
-};
-
-struct gemm_trim_right_functor
-{
-    template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
-    void operator()(block_matrix<Matrix1, SymmGroup> const & A,
-                    block_matrix<Matrix2, SymmGroup> const & B,
-                    block_matrix<Matrix3, SymmGroup> & C)
-    {
-        gemm_trim_right(A,B,C);
-    }
-};
-
-struct AbelianGemms
-{
-    typedef gemm_functor gemm;
-    typedef gemm_trim_left_functor gemm_trim_left;
-    typedef gemm_trim_right_functor gemm_trim_right;
-};
-
-namespace contraction {
+    /////
 
     struct lbtm_functor
     {

@@ -104,12 +104,6 @@ public:
         return AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::overlap_mpo_right_step(bra_tensor, ket_tensor, right, mpo);
     }
 
-    virtual MPSTensor<Matrix, SymmGroup>
-    site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
-                Boundary<OtherMatrix, SymmGroup> const & left,
-                Boundary<OtherMatrix, SymmGroup> const & right,
-                MPOTensor<Matrix, SymmGroup> const & mpo);
-
     virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                 MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -145,6 +139,14 @@ public:
     {
         return AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep(B, psi, A);
     }
+
+    // non-generic method
+
+    virtual MPSTensor<Matrix, SymmGroup>
+    site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                Boundary<OtherMatrix, SymmGroup> const & left,
+                Boundary<OtherMatrix, SymmGroup> const & right,
+                MPOTensor<Matrix, SymmGroup> const & mpo);
 };
 
 #include "dmrg/mp_tensors/contractions/abelian/site_hamil.hpp"
