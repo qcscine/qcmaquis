@@ -45,6 +45,7 @@ namespace contraction {
         typedef boost::shared_ptr<EngineFactory<Matrix, OtherMatrix, SymmGroup> > factory_ptr;
 
     public:
+
         virtual engine_ptr makeEngine() =0;
 
         static boost::shared_ptr<EngineFactory<Matrix, OtherMatrix, SymmGroup> > makeFactory(BaseParameters & parms)
@@ -62,6 +63,8 @@ namespace contraction {
 
             #endif
         }
+
+    protected:
 
         template<class Gemm>
         static std::vector<block_matrix<OtherMatrix, SymmGroup> >

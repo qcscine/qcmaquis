@@ -90,6 +90,22 @@ namespace contraction {
 
         // generic methods forward
 
+        static std::vector<block_matrix<OtherMatrix, SymmGroup> >
+        boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
+                           Boundary<OtherMatrix, SymmGroup> const & left,
+                           MPOTensor<Matrix, SymmGroup> const & mpo)
+        {
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template boundary_times_mps<Abelian::Gemms>(mps, left, mpo);
+        }
+
+        static std::vector<block_matrix<OtherMatrix, SymmGroup> >
+        mps_times_boundary(MPSTensor<Matrix, SymmGroup> const & mps,
+                           Boundary<OtherMatrix, SymmGroup> const & right,
+                           MPOTensor<Matrix, SymmGroup> const & mpo)
+        {
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template mps_times_boundary<Abelian::Gemms>(mps, right, mpo);
+        }
+
         static block_matrix<OtherMatrix, SymmGroup>
         overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
