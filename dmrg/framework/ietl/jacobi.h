@@ -384,86 +384,72 @@ namespace ietl
                                                       SOLVER& solver,
                                                       ITER& iter)
     {
-        vector_type t  = new_vector(vecspace_);
-        vector_type u  = new_vector(vecspace_);
-        vector_type uA = new_vector(vecspace_);
-        // vector_type vA = new_vector(vecspace_);
-        vector_type r  = new_vector(vecspace_);
         std::vector<scalar_type> s(iter.max_iterations());
         std::vector<vector_type> V(iter.max_iterations());
         std::vector<vector_type> VA(iter.max_iterations());
-        unsigned int i,j;
         M.resize(iter.max_iterations(), iter.max_iterations());
-        magnitude_type theta, tau;
+        magnitude_type theta, tau, rel_tol;
         magnitude_type kappa = 0.25;
-        magnitude_type rel_tol;
         atol_ = iter.absolute_tolerance();
         
         // Start with t=v_o, starting guess
-        ietl::generate(t,gen);
-        const_cast<GEN&>(gen).clear();
-        ietl::project(t,vecspace_);
+        ietl::generate(V[0],gen); const_cast<GEN&>(gen).clear();
+        ietl::project(V[0],vecspace_);
         
         // Start iteration
-        do
-        {
+        do {
+            vector_type& t = V[iter.iterations()];
+
             // Modified Gram-Schmidt Orthogonalization with Refinement
             tau = ietl::two_norm(t);
-            for (i=1;i<=iter.iterations();i++)
+            for(int i = 1; i <= iter.iterations(); i++)
                 t -= ietl::dot(V[i-1],t)*V[i-1];
-            if (ietl::two_norm(t) < kappa * tau)
-                for (i=1;i<=iter.iterations();i++)
+            if(ietl::two_norm(t) < kappa * tau)
+                for(int i = 1; i <= iter.iterations(); i++)
                     t -= ietl::dot(V[i-1],t) * V[i-1];
             
             // Project out orthogonal subspace
             ietl::project(t,vecspace_);
             
             // v_m = t / |t|_2,  v_m^A = A v_m
-            V[iter.iterations()] = t/ietl::two_norm(t);
-            ietl::mult(matrix_, V[iter.iterations()], VA[iter.iterations()]);
+            t /= ietl::two_norm(t);
+            ietl::mult(matrix_, t, VA[iter.iterations()]);
             
             // for i=1, ..., iter
             //   M_{i,m} = v_i ^\star v_m ^A
-            // end for
-            for (i=1;i<=iter.iterations()+1;i++)
+            for(int i = 1; i <= iter.iterations()+1; i++)
                 M(i-1,iter.iterations()) = ietl::dot(V[i-1], VA[iter.iterations()]);
             
             // compute the largest eigenpair (\theta, s) of M (|s|_2 = 1)
             get_extremal_eigenvalue(theta,s,iter.iterations()+1);
             
             // u = V s
-            u = V[0] * s[0];
-            for (j=1;j<=iter.iterations();j++)
+            vector_type u = V[0] * s[0];
+            for(int j = 1; j <= iter.iterations(); ++j)
                 u += V[j] * s[j];
             
             // u^A = V^A s
             // ietl::mult(matrix_,u,uA);
-            uA = VA[0] * s[0];
-            for (j=1;j<=iter.iterations();++j)
+            vector_type uA = VA[0] * s[0];
+            for(int j = 1; j <= iter.iterations(); ++j)
                 uA += VA[j] * s[j];
             
             ietl::project(uA,vecspace_);
             
             // r = u^A - \theta u
-            r = uA-theta*u;
-//            std::cout << "Iteration " << iter.iterations() << ", resid = " << ietl::two_norm(r) << std::endl;
+            vector_type& r = uA; r -= theta*u;
             
             // if (|r|_2 < \epsilon) stop
             ++iter;
-            if (iter.finished(ietl::two_norm(r),theta))
-                break;
+            // accept lambda=theta and x=u
+            if(iter.finished(ietl::two_norm(r),theta)) return std::make_pair(theta, u);
             
             // solve (approximately) a t orthogonal to u from
             //   (I-uu^\star)(A-\theta I)(I- uu^\star)t = -r
             rel_tol = 1. / pow(2.,double(iter.iterations()+1));
-            vector_type told = t;
-            solver(u, theta, r, t, rel_tol);
-            // std::cout << "Orthogonal? " << ietl::dot(t, u) << std::endl;
-            // std::cout << "Expansion? " << ietl::dot(t, told) << std::endl;
-        } while (true);
+            solver(u, theta, r, V[iter.iterations()], rel_tol);
+        } while(true);
         
-        // accept lambda=theta and x=u
-        return std::make_pair(theta, u);
     }
     
     template <class MATRIX, class VS>
