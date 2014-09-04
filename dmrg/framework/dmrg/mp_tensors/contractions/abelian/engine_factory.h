@@ -46,9 +46,6 @@ namespace contraction {
     {
         typedef boost::shared_ptr<contraction::Engine<Matrix, OtherMatrix, SymmGroup> > engine_ptr;
 
-    public:
-        virtual engine_ptr makeEngine() { return engine_ptr(new AbelianEngine<Matrix, OtherMatrix, SymmGroup>()); }
-
         // abelian functors
 
         struct lbtm_functor
@@ -86,6 +83,10 @@ namespace contraction {
                                              left_i, out_right_i, in_left_pb, out_right_pb);
             }
         };
+
+    public:
+
+        virtual engine_ptr makeEngine() { return engine_ptr(new AbelianEngine<Matrix, OtherMatrix, SymmGroup>()); }
 
         // generic methods forward
 
