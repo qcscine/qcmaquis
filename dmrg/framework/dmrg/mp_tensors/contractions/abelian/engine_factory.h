@@ -29,7 +29,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "dmrg/mp_tensors/contractions/abelian/functors.h"
 #include "dmrg/mp_tensors/contractions/abelian/engine.hpp"
 
 namespace contraction {
@@ -84,6 +83,46 @@ namespace contraction {
             }
         };
 
+        struct gemm_functor
+        {
+            template<class Matrix1, class Matrix2, class Matrix3>
+            void operator()(block_matrix<Matrix1, SymmGroup> const & A,
+                            block_matrix<Matrix2, SymmGroup> const & B,
+                            block_matrix<Matrix3, SymmGroup> & C)
+            {
+                gemm(A,B,C);
+            }
+        };
+
+        struct gemm_trim_left_functor
+        {
+            template<class Matrix1, class Matrix2, class Matrix3>
+            void operator()(block_matrix<Matrix1, SymmGroup> const & A,
+                            block_matrix<Matrix2, SymmGroup> const & B,
+                            block_matrix<Matrix3, SymmGroup> & C)
+            {
+                gemm_trim_left(A,B,C);
+            }
+        };
+
+        struct gemm_trim_right_functor
+        {
+            template<class Matrix1, class Matrix2, class Matrix3>
+            void operator()(block_matrix<Matrix1, SymmGroup> const & A,
+                            block_matrix<Matrix2, SymmGroup> const & B,
+                            block_matrix<Matrix3, SymmGroup> & C)
+            {
+                gemm_trim_right(A,B,C);
+            }
+        };
+
+        struct Gemms
+        {
+            typedef gemm_functor gemm;
+            typedef gemm_trim_left_functor gemm_trim_left;
+            typedef gemm_trim_right_functor gemm_trim_right;
+        };
+
     public:
 
         virtual engine_ptr makeEngine() { return engine_ptr(new AbelianEngine<Matrix, OtherMatrix, SymmGroup>()); }
@@ -95,7 +134,7 @@ namespace contraction {
                            Boundary<OtherMatrix, SymmGroup> const & left,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template boundary_times_mps<Abelian::Gemms>(mps, left, mpo);
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template boundary_times_mps<Gemms>(mps, left, mpo);
         }
 
         static std::vector<block_matrix<OtherMatrix, SymmGroup> >
@@ -103,7 +142,7 @@ namespace contraction {
                            Boundary<OtherMatrix, SymmGroup> const & right,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template mps_times_boundary<Abelian::Gemms>(mps, right, mpo);
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template mps_times_boundary<Gemms>(mps, right, mpo);
         }
 
         static block_matrix<OtherMatrix, SymmGroup>
@@ -112,7 +151,7 @@ namespace contraction {
                           block_matrix<OtherMatrix, SymmGroup> const & left,
                           block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template overlap_left_step<Abelian::Gemms>(bra_tensor, ket_tensor, left, localop);
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template overlap_left_step<Gemms>(bra_tensor, ket_tensor, left, localop);
         }
 
         static block_matrix<OtherMatrix, SymmGroup>
@@ -121,7 +160,7 @@ namespace contraction {
                            block_matrix<OtherMatrix, SymmGroup> const & right,
                            block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template overlap_right_step<Abelian::Gemms>(bra_tensor, ket_tensor, right, localop);
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template overlap_right_step<Gemms>(bra_tensor, ket_tensor, right, localop);
         }
 
         static Boundary<Matrix, SymmGroup>
@@ -130,7 +169,7 @@ namespace contraction {
                                  MPOTensor<Matrix, SymmGroup> const & mpo,
                                  Index<SymmGroup> const * in_low = NULL)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template left_boundary_tensor_mpo<Abelian::Gemms, lbtm_functor>
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template left_boundary_tensor_mpo<Gemms, lbtm_functor>
                    (mps, left, mpo, in_low);
         }
 
@@ -140,7 +179,7 @@ namespace contraction {
                                   MPOTensor<Matrix, SymmGroup> const & mpo,
                                   Index<SymmGroup> const * in_low = NULL)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template right_boundary_tensor_mpo<Abelian::Gemms, rbtm_functor>
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template right_boundary_tensor_mpo<Gemms, rbtm_functor>
                    (mps, right, mpo, in_low);
         }
 
@@ -150,7 +189,7 @@ namespace contraction {
                               Boundary<OtherMatrix, SymmGroup> const & left,
                               MPOTensor<Matrix, SymmGroup> const & mpo)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template overlap_mpo_left_step<Abelian::Gemms, lbtm_functor>
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template overlap_mpo_left_step<Gemms, lbtm_functor>
                    (bra_tensor, ket_tensor, left, mpo);
         }
 
@@ -160,7 +199,7 @@ namespace contraction {
                                Boundary<OtherMatrix, SymmGroup> const & right,
                                MPOTensor<Matrix, SymmGroup> const & mpo)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template overlap_mpo_right_step<Abelian::Gemms, rbtm_functor>
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template overlap_mpo_right_step<Gemms, rbtm_functor>
                    (bra_tensor, ket_tensor, right, mpo);
         }
 
@@ -171,7 +210,7 @@ namespace contraction {
                                     Boundary<OtherMatrix, SymmGroup> const & right,
                                     double alpha, double cutoff, std::size_t Mmax)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template predict_new_state_l2r_sweep<Abelian::Gemms, lbtm_functor>
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template predict_new_state_l2r_sweep<Gemms, lbtm_functor>
                   (mps, mpo, left, right, alpha, cutoff, Mmax);
         }
 
@@ -180,7 +219,7 @@ namespace contraction {
                                   MPSTensor<Matrix, SymmGroup> const & psi,
                                   MPSTensor<Matrix, SymmGroup> const & A)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template predict_lanczos_l2r_sweep<Abelian::Gemms>(B, psi, A);
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template predict_lanczos_l2r_sweep<Gemms>(B, psi, A);
         }
 
         static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
@@ -190,7 +229,7 @@ namespace contraction {
                                     Boundary<OtherMatrix, SymmGroup> const & right,
                                     double alpha, double cutoff, std::size_t Mmax)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template predict_new_state_r2l_sweep<Abelian::Gemms, rbtm_functor>
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template predict_new_state_r2l_sweep<Gemms, rbtm_functor>
                    (mps, mpo, left, right, alpha, cutoff, Mmax);
         }
 
@@ -199,7 +238,7 @@ namespace contraction {
                                   MPSTensor<Matrix, SymmGroup> const & psi,
                                   MPSTensor<Matrix, SymmGroup> const & A)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template predict_lanczos_r2l_sweep<Abelian::Gemms>(B, psi, A);
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template predict_lanczos_r2l_sweep<Gemms>(B, psi, A);
         }
 
     };
