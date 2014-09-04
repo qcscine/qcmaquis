@@ -1,5 +1,4 @@
-/*****************************************************************************
- *
+/***************************************************************************** *
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
@@ -24,23 +23,22 @@
  *
  *****************************************************************************/
 
-#ifndef ABELIAN_ENGINE
-#define ABELIAN_ENGINE
+#ifndef ABELIAN_ENGINE_HPP
+#define ABELIAN_ENGINE_HPP
 
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/block_matrix/indexing.h"
 
-#include "dmrg/mp_tensors/contractions/common/boundary_times_mps.hpp"
-#include "dmrg/mp_tensors/contractions/common/move_boundary.hpp"
-#include "dmrg/mp_tensors/contractions/common/prediction.hpp"
-
 #include "dmrg/mp_tensors/contractions/engine.h"
 #include "dmrg/mp_tensors/contractions/abelian/apply_op.hpp"
-#include "dmrg/mp_tensors/contractions/abelian/functors.h"
 
+namespace contraction {
 
-// implementation includes see below
+    // Forward declaration
+    template <class Matrix, class OtherMatrix, class SymmGroup>
+    class AbelianEngineFactory;
+}
 
 namespace contraction {
 
@@ -56,9 +54,8 @@ public:
                       block_matrix<OtherMatrix, SymmGroup> const & left,
                       block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
     {
-        return contraction::overlap_left_step<Matrix, OtherMatrix, SymmGroup, AbelianGemms>(bra_tensor, ket_tensor, left, localop);
+        return AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::overlap_left_step(bra_tensor, ket_tensor, left, localop);
     }
-
 
     virtual block_matrix<OtherMatrix, SymmGroup>
     overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
@@ -66,7 +63,7 @@ public:
                        block_matrix<OtherMatrix, SymmGroup> const & right,
                        block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
     {
-        return contraction::overlap_right_step<Matrix, OtherMatrix, SymmGroup, AbelianGemms>(bra_tensor, ket_tensor, right, localop);
+        return AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::overlap_right_step(bra_tensor, ket_tensor, right, localop);
     }
 
     virtual Boundary<Matrix, SymmGroup>
@@ -75,8 +72,7 @@ public:
                              MPOTensor<Matrix, SymmGroup> const & mpo,
                              Index<SymmGroup> const * in_low = NULL)
     {
-        return contraction::left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, AbelianGemms, lbtm_functor>
-               (mps, left, mpo, in_low);
+        return AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::left_boundary_tensor_mpo(mps, left, mpo, in_low);
     }
 
     virtual Boundary<Matrix, SymmGroup>
@@ -85,8 +81,7 @@ public:
                               MPOTensor<Matrix, SymmGroup> const & mpo,
                               Index<SymmGroup> const * in_low = NULL)
     {
-        return contraction::right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, AbelianGemms, rbtm_functor>
-               (mps, right, mpo, in_low);
+        return AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::right_boundary_tensor_mpo(mps, right, mpo, in_low);
     }
 
     virtual Boundary<OtherMatrix, SymmGroup>
@@ -95,8 +90,7 @@ public:
                           Boundary<OtherMatrix, SymmGroup> const & left,
                           MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        return contraction::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, AbelianGemms, lbtm_functor>
-               (bra_tensor, ket_tensor, left, mpo);
+        return AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::overlap_mpo_left_step(bra_tensor, ket_tensor, left, mpo);
     }
 
     virtual Boundary<OtherMatrix, SymmGroup>
@@ -105,15 +99,8 @@ public:
                            Boundary<OtherMatrix, SymmGroup> const & right,
                            MPOTensor<Matrix, SymmGroup> const & mpo)
     {
-        return contraction::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, AbelianGemms, rbtm_functor>
-               (bra_tensor, ket_tensor, right, mpo);
+        return AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::overlap_mpo_right_step(bra_tensor, ket_tensor, right, mpo);
     }
-
-    virtual MPSTensor<Matrix, SymmGroup>
-    site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
-                Boundary<OtherMatrix, SymmGroup> const & left,
-                Boundary<OtherMatrix, SymmGroup> const & right,
-                MPOTensor<Matrix, SymmGroup> const & mpo);
 
     virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
     predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
@@ -122,8 +109,7 @@ public:
                                 Boundary<OtherMatrix, SymmGroup> const & right,
                                 double alpha, double cutoff, std::size_t Mmax)
     {
-        return contraction::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, AbelianGemms, lbtm_functor>
-              (mps, mpo, left, right, alpha, cutoff, Mmax);
+        return AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep(mps, mpo, left, right, alpha, cutoff, Mmax);
     }
 
     virtual MPSTensor<Matrix, SymmGroup>
@@ -131,7 +117,7 @@ public:
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A)
     {
-        return contraction::predict_lanczos_l2r_sweep<Matrix, SymmGroup, AbelianGemms>(B, psi, A);
+        return AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep(B, psi, A);
     }
 
     virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
@@ -141,8 +127,7 @@ public:
                                 Boundary<OtherMatrix, SymmGroup> const & right,
                                 double alpha, double cutoff, std::size_t Mmax)
     {
-        return contraction::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, AbelianGemms, rbtm_functor>
-               (mps, mpo, left, right, alpha, cutoff, Mmax);             
+        return AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep(mps, mpo, left, right, alpha, cutoff, Mmax);             
     }
 
     virtual MPSTensor<Matrix, SymmGroup>
@@ -150,8 +135,16 @@ public:
                               MPSTensor<Matrix, SymmGroup> const & psi,
                               MPSTensor<Matrix, SymmGroup> const & A)
     {
-        return contraction::predict_lanczos_r2l_sweep<Matrix, SymmGroup, AbelianGemms>(B, psi, A);
+        return AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep(B, psi, A);
     }
+
+    // non-generic method
+
+    virtual MPSTensor<Matrix, SymmGroup>
+    site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                Boundary<OtherMatrix, SymmGroup> const & left,
+                Boundary<OtherMatrix, SymmGroup> const & right,
+                MPOTensor<Matrix, SymmGroup> const & mpo);
 };
 
 #include "dmrg/mp_tensors/contractions/abelian/site_hamil.hpp"

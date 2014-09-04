@@ -32,7 +32,10 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/block_matrix/indexing.h"
 
-namespace contraction {
+namespace Abelian {
+    namespace detail {
+
+    using ::contraction::ContractionGrid;
 
     template<class Matrix, class SymmGroup>
     void lbtm_kernel_allocate(size_t b2,
@@ -273,6 +276,8 @@ namespace contraction {
         rbtm_kernel_allocate(b1, ret, right_mult_mps, mpo, left_i, out_right_i);
         rbtm_kernel_execute(b1, ret, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb);
     }
+    
+    } // namespace detail
 
-}
+} // namespace Abelian
 #endif

@@ -40,7 +40,7 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
     typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
     std::vector<block_matrix<Matrix, SymmGroup> > t
-        = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, gemm_trim_left_functor>(ket_tensor, left, mpo);
+        = AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::boundary_times_mps(ket_tensor, left, mpo);
 
     Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                            & left_i = ket_tensor.row_dim(),
@@ -64,10 +64,10 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
     ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
 
     parallel_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-        lbtm_kernel_allocate(b2, contr_grid, t, mpo, right_i, out_left_i);
+        Abelian::detail::lbtm_kernel_allocate(b2, contr_grid, t, mpo, right_i, out_left_i);
     });
     omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-        lbtm_kernel_execute(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
+        Abelian::detail::lbtm_kernel_execute(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
         contr_grid.multiply_column(b2, right[b2]);
     });
     t.clear();
@@ -78,7 +78,7 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
 #else
     omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-        lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
+        Abelian::detail::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
         block_matrix<Matrix, SymmGroup> tmp;
         gemm(contr_grid(0,0), right[b2], tmp);
         contr_grid(0,0).clear();
