@@ -101,7 +101,7 @@ public:
     , stop_callback(stop_callback_)
     {
         // Initialize the contraction engine
-        contr = contraction::engine_factory<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>(parms);
+        contr = contraction::EngineFactory<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>::makeFactory(parms)->makeEngine();
 
         std::size_t L = mps.length();
         
