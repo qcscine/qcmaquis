@@ -36,12 +36,6 @@
 
 #include "dmrg/mp_tensors/contractions/abelian/special.hpp"
 
-#include "dmrg/mp_tensors/contractions/abelian/engine.hpp"
-
-#ifdef ENABLE_SU2
-#include "dmrg/mp_tensors/contractions/non-abelian/engine.hpp"
-#endif
-
 #include "dmrg/mp_tensors/contractions/engine_factory.h"
 
 #endif

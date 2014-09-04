@@ -32,7 +32,21 @@
 
 namespace ambient {
 
+    template <typename T>
+    using remove_reference = typename std::remove_reference<T>::type;
     using ambient::controllers::ssm::functor;
+
+    template<typename T>
+    struct check_if_not_reference {
+        template<bool C, typename F>  struct fail_if_true { typedef F type; };
+        template<typename F> struct fail_if_true<true, F> { };
+        typedef typename fail_if_true<info<T>::typed::ReferenceOnly, T>::type type; // T can be passed only by reference
+    };
+ 
+    template<typename T>
+    struct check_if_not_reference<T&> {
+        typedef T type;
+    };
 
     template<int N> void expand_score(){}
     template<int N> void expand_modify_remote(){}
@@ -64,27 +78,29 @@ namespace ambient {
     }
     template<int N, typename T, typename... TF>
     bool expand_pin(functor* o){
-        return info<T>::typed::template pin<N>(o) ||
+        return info<remove_reference<T> >::typed::template pin<N>(o) ||
                expand_pin<N+1,TF...>(o);
     }
     template<int N, typename T, typename... TF>
     void expand_deallocate(functor* o){
-        info<T>::typed::template deallocate<N>(o);
+        info<remove_reference<T> >::typed::template deallocate<N>(o);
         expand_deallocate<N+1,TF...>(o);
     }
     template<int N, typename T, typename... TF>
     bool expand_ready(functor* o){
-        return info<T>::typed::template ready<N>(o) &&
+        return info<remove_reference<T> >::typed::template ready<N>(o) &&
                expand_ready<N+1,TF...>(o);
     }
 
     template<typename FP, FP fp>
     struct kernel_inliner {};
 
-    template< typename... TF , void(*fp)( TF&... )>
-    struct kernel_inliner<void(*)( TF&... ), fp> {
+    template< typename... TF , void(*fp)( TF... )>
+    struct kernel_inliner<void(*)( TF... ), fp> {
         template <int N>
-        using get_type = typename std::tuple_element<N, std::tuple<TF...> >::type;
+        using get_type = remove_reference< typename check_if_not_reference< 
+                             typename std::tuple_element<N, std::tuple<TF...> >::type 
+                         >::type >;
         static const int arity = sizeof...(TF);
 
         static inline void latch(functor* o, TF&... args){
@@ -102,7 +118,7 @@ namespace ambient {
         }
         template<unsigned...I>
         static void expand_invoke(redi::index_tuple<I...>, functor* o){
-            (*fp)(info<TF>::typed::template revised<I>(o)...);
+            (*fp)(info<remove_reference<TF> >::typed::template revised<I>(o)...);
         }
         static inline void invoke(functor* o){
             expand_invoke(redi::to_index_tuple<TF...>(), o);

@@ -44,6 +44,7 @@
 #include "dmrg/models/generate_mpo.hpp"
 
 #include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/contractions.h"
 
 #include "dmrg/optimize/ietl_lanczos_solver.h"
 #include "dmrg/optimize/ietl_jacobi_davidson.h"
@@ -59,16 +60,19 @@ struct SiteProblem
 {
     SiteProblem(Boundary<Matrix, SymmGroup> const & left_,
                 Boundary<Matrix, SymmGroup> const & right_,
-                MPOTensor<Matrix, SymmGroup> const & mpo_)
+                MPOTensor<Matrix, SymmGroup> const & mpo_,
+		boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine_)
     : left(left_)
     , right(right_)
     , mpo(mpo_)
+    , engine(engine_)
     {
     }
     
     Boundary<Matrix, SymmGroup> const & left;
     Boundary<Matrix, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
+    boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine;
     double ortho_shift;
 };
 
@@ -94,8 +98,11 @@ int main(int argc, char ** argv)
         
         MPO<matrix, grp> mpo = make_mpo(lattice, model, parms);
         tim_model.end();
-        
-        
+
+        /// initialize contraction engine
+        boost::shared_ptr<contraction::Engine<matrix, typename storage::constrained<matrix>::type, grp> > contr;
+        contr = contraction::EngineFactory<matrix, typename storage::constrained<matrix>::type, grp>::makeFactory(parms)->makeEngine(); 
+
         /// Initialize & load MPS
         tim_load.begin();
         int L = lattice.size();
@@ -124,21 +131,21 @@ int main(int argc, char ** argv)
         tim_l_boundary.begin();
         Boundary<matrix, grp> left = mps.left_boundary();
         for (size_t i=0; i<site; ++i)
-            left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+            left = contr->overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
         tim_l_boundary.end();
         
         /// Compute right boundary
         tim_r_boundary.begin();
         Boundary<matrix, grp> right = mps.right_boundary();
         for (int i=L-1; i>site; --i)
-            right = contraction::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
+            right = contr->overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
         tim_r_boundary.end();
 
 
         /// Optimization
         std::vector<MPSTensor<matrix, grp> > ortho_vecs;
         std::pair<double, MPSTensor<matrix, grp> > res;
-        SiteProblem<matrix, grp> sp(left, right, mpo[site]);
+        SiteProblem<matrix, grp> sp(left, right, mpo[site], contr);
         
         /// Optimization: JCD
         tim_optim_jcd.begin();
@@ -158,7 +165,7 @@ int main(int argc, char ** argv)
         if (lr == +1) {
             if (site < L-1) {
                 maquis::cout << "Growing, alpha = " << alpha << std::endl;
-                mps.grow_l2r_sweep(mpo[site], left, right, site, alpha, cutoff, Mmax);
+                mps.grow_l2r_sweep(mpo[site], left, right, contr, site, alpha, cutoff, Mmax);
             } else {
                 block_matrix<matrix, grp> t = mps[site].normalize_left(DefaultSolver());
                 if (site < L-1)
@@ -167,7 +174,7 @@ int main(int argc, char ** argv)
         } else if (lr == -1) {
             if (site > 0) {
                 maquis::cout << "Growing, alpha = " << alpha << std::endl;
-                mps.grow_r2l_sweep(mpo[site], left, right, site, alpha, cutoff, Mmax);
+                mps.grow_r2l_sweep(mpo[site], left, right, contr, site, alpha, cutoff, Mmax);
             } else {
                 block_matrix<matrix, grp> t = mps[site].normalize_right(DefaultSolver());
                 if (site > 0)
