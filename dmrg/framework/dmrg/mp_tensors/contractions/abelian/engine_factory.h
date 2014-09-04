@@ -49,6 +49,46 @@ namespace contraction {
     public:
         virtual engine_ptr makeEngine() { return engine_ptr(new AbelianEngine<Matrix, OtherMatrix, SymmGroup>()); }
 
+        // abelian functors
+
+        struct lbtm_functor
+        {
+            void operator()(size_t b2,
+                            contraction::ContractionGrid<Matrix, SymmGroup>& contr_grid,
+                            Boundary<OtherMatrix, SymmGroup> const & left,
+                            std::vector<block_matrix<Matrix, SymmGroup> > const & left_mult_mps,
+                            MPOTensor<Matrix, SymmGroup> const & mpo,
+                            DualIndex<SymmGroup> const & ket_basis,
+                            Index<SymmGroup> const & right_i,
+                            Index<SymmGroup> const & out_left_i,
+                            ProductBasis<SymmGroup> const & in_right_pb,
+                            ProductBasis<SymmGroup> const & out_left_pb)
+            {
+                Abelian::detail::lbtm_kernel(b2, contr_grid, left, left_mult_mps, mpo, ket_basis,
+                                             right_i, out_left_i, in_right_pb, out_left_pb);
+            }
+        };
+
+        struct rbtm_functor
+        {
+            void operator()(size_t b1,
+                            block_matrix<Matrix, SymmGroup> & ret,
+                            Boundary<OtherMatrix, SymmGroup> const & right,
+                            std::vector<block_matrix<Matrix, SymmGroup> > const & right_mult_mps,
+                            MPOTensor<Matrix, SymmGroup> const & mpo,
+                            DualIndex<SymmGroup> const & ket_basis,
+                            Index<SymmGroup> const & left_i,
+                            Index<SymmGroup> const & out_right_i,
+                            ProductBasis<SymmGroup> const & in_left_pb,
+                            ProductBasis<SymmGroup> const & out_right_pb)
+            {
+                Abelian::detail::rbtm_kernel(b1, ret, right, right_mult_mps, mpo, ket_basis,
+                                             left_i, out_right_i, in_left_pb, out_right_pb);
+            }
+        };
+
+        // generic methods forward
+
         static block_matrix<OtherMatrix, SymmGroup>
         overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
@@ -73,7 +113,7 @@ namespace contraction {
                                  MPOTensor<Matrix, SymmGroup> const & mpo,
                                  Index<SymmGroup> const * in_low = NULL)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template left_boundary_tensor_mpo<Abelian::Gemms, contraction::lbtm_functor>
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template left_boundary_tensor_mpo<Abelian::Gemms, lbtm_functor>
                    (mps, left, mpo, in_low);
         }
 
@@ -83,7 +123,7 @@ namespace contraction {
                                   MPOTensor<Matrix, SymmGroup> const & mpo,
                                   Index<SymmGroup> const * in_low = NULL)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template right_boundary_tensor_mpo<Abelian::Gemms, contraction::rbtm_functor>
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template right_boundary_tensor_mpo<Abelian::Gemms, rbtm_functor>
                    (mps, right, mpo, in_low);
         }
 
@@ -93,7 +133,7 @@ namespace contraction {
                               Boundary<OtherMatrix, SymmGroup> const & left,
                               MPOTensor<Matrix, SymmGroup> const & mpo)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template overlap_mpo_left_step<Abelian::Gemms, contraction::lbtm_functor>
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template overlap_mpo_left_step<Abelian::Gemms, lbtm_functor>
                    (bra_tensor, ket_tensor, left, mpo);
         }
 
@@ -103,7 +143,7 @@ namespace contraction {
                                Boundary<OtherMatrix, SymmGroup> const & right,
                                MPOTensor<Matrix, SymmGroup> const & mpo)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template overlap_mpo_right_step<Abelian::Gemms, contraction::rbtm_functor>
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template overlap_mpo_right_step<Abelian::Gemms, rbtm_functor>
                    (bra_tensor, ket_tensor, right, mpo);
         }
 
@@ -114,7 +154,7 @@ namespace contraction {
                                     Boundary<OtherMatrix, SymmGroup> const & right,
                                     double alpha, double cutoff, std::size_t Mmax)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template predict_new_state_l2r_sweep<Abelian::Gemms, contraction::lbtm_functor>
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template predict_new_state_l2r_sweep<Abelian::Gemms, lbtm_functor>
                   (mps, mpo, left, right, alpha, cutoff, Mmax);
         }
 
@@ -133,7 +173,7 @@ namespace contraction {
                                     Boundary<OtherMatrix, SymmGroup> const & right,
                                     double alpha, double cutoff, std::size_t Mmax)
         {
-            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template predict_new_state_r2l_sweep<Abelian::Gemms, contraction::rbtm_functor>
+            return EngineFactory<Matrix, OtherMatrix, SymmGroup>::template predict_new_state_r2l_sweep<Abelian::Gemms, rbtm_functor>
                    (mps, mpo, left, right, alpha, cutoff, Mmax);
         }
 
