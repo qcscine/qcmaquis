@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -33,8 +32,9 @@ namespace ambient {
 
     template<typename F, typename... T>
     struct lambda_kernel : public ambient::kernel< lambda_kernel<F, T...> > {
-        static void c(T... args, F& func){ func(args...); }
         typedef void(*ftype)(T..., F&);
+        static void fw(T... args, F& func){ func(args...); }
+        static constexpr ftype c = &fw;
     };
 
     template <typename Function>
@@ -72,7 +72,7 @@ namespace ambient {
     }
 
     template <class... L, class... Args>
-    void async(void(*l)(L&...), Args&& ... args){
+    void async(void(*l)(L...), Args&& ... args){
         return async(std::function<decltype(*l)>(l), std::forward<Args>(args)...);
     }
 

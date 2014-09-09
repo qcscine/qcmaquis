@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -98,7 +98,7 @@ typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & bra,
     for (int i = 0; i < L; ++i) {
         if (verbose)
             std::cout << "expval site " << i << std::endl;
-        left = contraction::overlap_mpo_left_step(bra[i], ket[i], left, mpo[i]);
+        left = contraction::AbelianEngineFactory<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(bra[i], ket[i], left, mpo[i]);
     }
     
     return left.traces()[0];

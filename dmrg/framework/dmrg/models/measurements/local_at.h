@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
  *
@@ -97,7 +97,7 @@ namespace measurements {
                 MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
                 
                 if (!this->is_super_meas){
-                    typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo);
+                    typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo, base::contr);
                     this->vector_results.push_back(val);
                 } else {
                     typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, this->phys_psi);

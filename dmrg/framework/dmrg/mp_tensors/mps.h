@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -83,16 +83,18 @@ public:
     
     std::string description() const;
    
-    template<class OtherMatrix>
+    template<class OtherMatrix, class Engine>
     truncation_results grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                       Boundary<OtherMatrix, SymmGroup> const & left,
                                       Boundary<OtherMatrix, SymmGroup> const & right,
+                                      boost::shared_ptr<Engine> contr,
                                       std::size_t l, double alpha,
                                       double cutoff, std::size_t Mmax);
-    template<class OtherMatrix>
+    template<class OtherMatrix, class Engine>
     truncation_results grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
                                       Boundary<OtherMatrix, SymmGroup> const & left,
                                       Boundary<OtherMatrix, SymmGroup> const & right,
+                                      boost::shared_ptr<Engine> contr,
                                       std::size_t l, double alpha,
                                       double cutoff, std::size_t Mmax);
     

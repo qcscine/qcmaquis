@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  * 
@@ -94,9 +94,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     
     
     /// MPS initialization
-    #ifdef AMBIENT_TRACKING
-    ambient::overseer::log::region("sim::mps_init");
-    #endif
     if (restore) {
         load(chkpfile, mps);
     } else if (!parms["initfile"].empty()) {
@@ -104,9 +101,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         load(parms["initfile"].str(), mps);
     } else {
         mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
-        #ifdef AMBIENT_TRACKING
-        for(int i = 0; i < mps.length(); ++i) ambient_track_array(mps, i);
-        #endif
     }
     
     assert(mps.length() == lat.size());
@@ -139,20 +133,13 @@ void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const&
 {
     if (!dns) {
         /// create chkp dir
-        #ifdef USE_AMBIENT
-        if (ambient::master() && !boost::filesystem::exists(chkpfile))
+        if(parallel::master() && !boost::filesystem::exists(chkpfile))
             boost::filesystem::create_directory(chkpfile);
-        #else
-        if (!boost::filesystem::exists(chkpfile))
-            boost::filesystem::create_directory(chkpfile);
-        #endif
         /// save state to chkp dir
         save(chkpfile, state);
         
         /// save status
-        #ifdef USE_AMBIENT
-        if(!ambient::master()) return;
-        #endif
+        if(!parallel::master()) return;
         storage::archive ar(chkpfile+"/props.h5", "w");
         ar["/status"] << status;
     }

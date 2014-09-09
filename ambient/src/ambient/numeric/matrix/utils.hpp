@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -64,9 +63,11 @@ namespace ambient {
     template<class InputIterator, class Function, class Weight>
     void for_each_redist(InputIterator first, InputIterator last, Function op, Weight weight){
         typedef std::pair<double,size_t> pair;
-        double avg = 0.;
-        size_t np = ambient::num_procs();
         size_t range = last-first;
+        size_t np = ambient::num_procs();
+        double avg = 0.;
+
+        if(range < np) return; // one element per proc
         std::vector<pair> wl(np, std::make_pair(0,0));
         std::vector<pair> cx; cx.reserve(range);
         
@@ -111,7 +112,7 @@ namespace ambient {
         for(int i = range-1; i >= 0; --i){
             if(cx[i].first == 0) continue;
             ambient::actor proc(ambient::scope::begin()+wl[p++].second);
-            merge(*(first+cx[i].second)); 
+            op(*(first+cx[i].second)); 
             p %= np;
         }
     }

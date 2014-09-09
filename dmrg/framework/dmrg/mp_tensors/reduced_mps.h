@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
  *
@@ -55,13 +55,13 @@ public:
             {
                 MPOTensor<Matrix, SymmGroup> ident;
                 ident.set(0, 0, identity_matrix<Matrix>(mps[L-i].site_dim()));
-                right = contraction::overlap_mpo_right_step(mps[L-i], mps[L-i], right, ident);
+                right = contraction::AbelianEngineFactory<Matrix, Matrix, SymmGroup>::overlap_mpo_right_step(mps[L-i], mps[L-i], right, ident);
                 right_[L-1-i] = right;
             }
             {
                 MPOTensor<Matrix, SymmGroup> ident;
                 ident.set(0, 0, identity_matrix<Matrix>(mps[i-1].site_dim()));
-                left = contraction::overlap_mpo_left_step(mps[i-1], mps[i-1], left, ident);
+                left = contraction::AbelianEngineFactory<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps[i-1], mps[i-1], left, ident);
                 left_[i] = left;
             }
         }

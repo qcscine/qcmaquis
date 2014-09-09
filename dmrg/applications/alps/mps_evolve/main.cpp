@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
@@ -37,7 +37,7 @@ int main(int argc, char ** argv)
         std::cout << "ALPS/MPS Time Evolution version " DMRG_VERSION_STRING " (2013-2014)\n"
                   << "  Density Matrix Renormalization Group algorithm\n"
                   << "  available from http://alps.comp-phys.org/\n"
-                  << "  copyright (c) 2013 Institute for Theoretical Physics, ETH Zurich\n"
+                  << "  copyright (c) 2014 Institute for Theoretical Physics, ETH Zurich\n"
                   << "  copyright (c) 2010-2011 by Bela Bauer\n"
                   << "  copyright (c) 2011-2013 by Michele Dolfi\n"
                   << "  for details see the publication: \n"

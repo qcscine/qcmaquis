@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -36,12 +35,12 @@ namespace ambient {
         template<typename T>
         void fill_value(unbound< block<T> >& a, T& value){
             size_t size = get_square_dim(a);
-            T* a_ = &a(0,0);
+            T* a_ = a.data();
             for(size_t i = 0; i < size; ++i) a_[i] = value;
         }
     }
 
-    AMBIENT_EXPORT(detail::fill_value, fill_value)
+    AMBIENT_EXPORT_TEMPLATE(detail::fill_value, fill_value)
 
     template <class T>
     class block {
@@ -59,6 +58,12 @@ namespace ambient {
         }
         const value_type& operator()(size_t i, size_t j) const {
             return ambient::delegated(*this).data[ j*this->lda() + i ];
+        }
+        value_type* data(){
+            return ambient::delegated(*this).data;
+        }
+        const value_type* data() const {
+            return ambient::delegated(*this).data;
         }
     AMBIENT_DELEGATE
     (

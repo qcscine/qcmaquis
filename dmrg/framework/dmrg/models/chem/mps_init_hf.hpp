@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * 
@@ -29,17 +29,18 @@
 #define MPS_INIT_HF_HPP
 
 #include "dmrg/mp_tensors/compression.h"
-#include "dmrg/models/chem/pg_util.h"
 
 template<class Matrix, class SymmGroup>
 struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
     hf_mps_init(BaseParameters parms_,
-                std::vector<Index<SymmGroup> > const& phys_dims,
+                std::vector<Index<SymmGroup> > const& phys_dims_,
                 typename SymmGroup::charge right_end,
                 std::vector<int> const& site_type)
     : parms(parms_)
-    , di(parms, phys_dims, right_end, site_type)
+    , phys_dims(phys_dims_)
+    , site_types(site_type)
+    , di(parms, phys_dims_, right_end, site_type)
     {}
 
     typedef Lattice::pos_t pos_t;
@@ -63,8 +64,6 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
         if (hf_init.size() != mps.length())
             throw std::runtime_error("HF occupation vector length != MPS length\n");
 
-        std::vector<typename SymmGroup::subcharge> irreps = parse_symm<SymmGroup>(mps.length(), parms);
-
         typename SymmGroup::charge max_charge = SymmGroup::IdentityCharge;
         for (pos_t i = 0; i < mps.length(); ++i)
         {
@@ -80,22 +79,16 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 
             switch(sc_input) {
                 case 4:
-                    site_charge[0] = 1; // up
-                    site_charge[1] = 1; // down
+                    site_charge = phys_dims[site_types[i]][0].first; // updown
                     break;
                 case 3:
-                    site_charge[0] = 1;
-                    site_charge[1] = 0;
-                    PGCharge<SymmGroup>()(site_charge, irreps[i]);
+                    site_charge = phys_dims[site_types[i]][1].first; // up
                     break;
                 case 2:
-                    site_charge[0] = 0;
-                    site_charge[1] = 1;
-                    PGCharge<SymmGroup>()(site_charge, irreps[i]);
+                    site_charge = phys_dims[site_types[i]][2].first; // down
                     break;
                 case 1:
-                    site_charge[0] = 0;
-                    site_charge[1] = 0;
+                    site_charge = phys_dims[site_types[i]][3].first; // empty
                     break;
             }
 
@@ -132,6 +125,8 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
     }
 
     BaseParameters parms;
+    std::vector<Index<SymmGroup> > phys_dims;
+    std::vector<int> site_types;
     default_mps_init<Matrix, SymmGroup> di;
 };
 

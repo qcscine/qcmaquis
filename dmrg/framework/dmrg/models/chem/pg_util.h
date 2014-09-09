@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -33,6 +33,7 @@
 #include <boost/tokenizer.hpp>
 
 #include "dmrg/block_matrix/indexing.h"
+#include "dmrg/block_matrix/dual_index.h"
 
 #include "dmrg/models/op_handler.h"
 
@@ -42,7 +43,10 @@ template <class SymmGroup>
 class PGDecorator
 {
 public:
-    Index<SymmGroup> operator()(Index<SymmGroup> const & rhs, int irr)
+    PGDecorator(BaseParameters & parms) {}
+    PGDecorator(bool su2_) {}
+
+    DualIndex<SymmGroup> operator()(DualIndex<SymmGroup> const & rhs, int irr)
     {
        return rhs;
     }
@@ -52,25 +56,61 @@ template < >
 class  PGDecorator<TwoU1PG>
 {
 public:
-    typedef TwoU1PG::subcharge subcharge;
-    Index<TwoU1PG> operator()(Index<TwoU1PG> rhs, subcharge irr)
+
+    PGDecorator(BaseParameters & parms) : su2(false)
     {
-        for(Index<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
-            if ( (it->first[0] + it->first[1]) % 2 == 0)
-                it->first[2] = 0;
-            else
-                it->first[2] = irr;
+        if (parms["MODEL"] == "quantum_chemistry_SU2")
+            su2 = true;
+    }
+
+    PGDecorator(bool su2_) : su2(su2_) {}
+
+    typedef TwoU1PG::subcharge subcharge;
+    DualIndex<TwoU1PG> operator()(DualIndex<TwoU1PG> rhs, subcharge irr)
+    {
+        if(su2)
+            for(DualIndex<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+            {
+                if ( (it->lc[0]) % 2 == 0)
+                    it->lc[2] = 0;
+                else
+                    it->lc[2] = irr;
+
+                if ( (it->rc[0]) % 2 == 0)
+                    it->rc[2] = 0;
+                else
+                    it->rc[2] = irr;
+            }
+
+        else
+            for(DualIndex<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+            {
+                if ( (it->lc[0] + it->lc[1]) % 2 == 0)
+                    it->lc[2] = 0;
+                else
+                    it->lc[2] = irr;
+
+                if ( (it->rc[0] + it->rc[1]) % 2 == 0)
+                    it->rc[2] = 0;
+                else
+                    it->rc[2] = irr;
+            }
 
         return rhs;
     }
+
+private:
+    bool su2;
 };
 
 template <class SymmGroup>
 class PGCharge
 {
 public:
-    void operator()(typename SymmGroup::charge & rhs, int irr)
-    { }
+    typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, int irr)
+    { 
+        return rhs;
+    }
 };
 
 template < >
@@ -78,68 +118,11 @@ class  PGCharge<TwoU1PG>
 {
 public:
     typedef TwoU1PG::subcharge subcharge;
-    void operator()(TwoU1PG::charge & rhs, subcharge irr)
+    TwoU1PG::charge operator()(TwoU1PG::charge rhs, subcharge irr)
     {
         rhs[2] = irr;
+        return rhs;
     }
 };
-
-
-template <class SymmGroup> inline
-std::vector<int>
-parse_symm(int L, BaseParameters& model)
-{
-    return std::vector<int>(L, 0);
-}
-
-// TODO: This function moved to lattice, remove as soon as possible
-template < > inline
-std::vector<TwoU1PG::subcharge>
-parse_symm<TwoU1PG>(int L, BaseParameters& model)
-{
-    typedef TwoU1PG::subcharge subcharge;
-
-    // TODO: pos_t type consistency
-    std::vector<int> order(L);
-    if (!model.is_set("orbital_order"))
-        for (int p = 0; p < L; ++p)
-            order[p] = p;
-    else
-        order = model["orbital_order"].as<std::vector<int> >();
-
-    std::vector<subcharge> irreps(L, 0);
-    if (model.is_set("integral_file")) {
-        std::ifstream orb_file;
-        orb_file.open(model["integral_file"].c_str());
-        orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-
-        std::string line;
-        std::getline(orb_file, line);
-
-        std::vector<std::string> split_line;
-        boost::split(split_line, line, boost::is_any_of("="));
-        std::vector<subcharge> symm_vec;
-
-        std::replace(split_line[1].begin(), split_line[1].end(), ',', ' ');
-        std::istringstream iss(split_line[1]);
-        subcharge number;
-        while( iss >> number )
-            symm_vec.push_back(number-1);
-
-        assert( L == symm_vec.size() );
-        for (int p = 0; p < L; ++p)
-            irreps[p] = symm_vec[order[p]-1];
-
-        maquis::cout << "Symmetry string (reordered): ";
-        std::copy(irreps.begin(), irreps.end(), maquis::ostream_iterator<subcharge>(maquis::cout, ","));
-        maquis::cout << std::endl;
-
-        orb_file.close();
-    }
-    else
-        throw std::runtime_error("\"integral_file\" in model input file is not set\n");
-
-    return irreps;
-}
 
 #endif

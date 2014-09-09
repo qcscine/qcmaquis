@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  * 
@@ -52,7 +52,7 @@ TwoSiteTensor<Matrix, SymmGroup>::TwoSiteTensor(MPSTensor<Matrix, SymmGroup> con
 {
     mps1.make_left_paired();
     mps2.make_right_paired();
-    gemm(mps1.data(), mps2.data(), data_);
+    gemm(mps1.data(), mps2.data(), data_, parallel::scheduler_balanced(mps1.data()));
  
 }
 
@@ -190,8 +190,9 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff)
 }
 
 template<class Matrix, class SymmGroup>
+template<class Engine>
 boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left, MPOTensor<Matrix, SymmGroup> const& mpo)
+TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left, MPOTensor<Matrix, SymmGroup> const& mpo, boost::shared_ptr<Engine> contr)
 {
     make_both_paired();
     
@@ -205,10 +206,10 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
         Index<SymmGroup> right_phys_i = adjoin(phys_i_right) * right_i;
         MPSTensor<Matrix, SymmGroup> tmp(phys_i_left, left_i, right_phys_i, data_, LeftPaired);
         
-        Boundary<Matrix, SymmGroup> half_dm = contraction::left_boundary_tensor_mpo(tmp, left, mpo);
+        Boundary<Matrix, SymmGroup> half_dm = contr->left_boundary_tensor_mpo(tmp, left, mpo);
         tmp = MPSTensor<Matrix, SymmGroup>();
         
-        parallel_for(std::size_t b, range<std::size_t>(0,half_dm.aux_dim()), {
+        parallel_for(std::size_t b, parallel::range<std::size_t>(0,half_dm.aux_dim()), {
             block_matrix<Matrix, SymmGroup> tdm;
             gemm(half_dm[b], transpose(conjugate(half_dm[b])), tdm);
             tdm *= alpha;
@@ -218,16 +219,16 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
             block_matrix<Matrix, SymmGroup> const& tdm = half_dm[b];
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                if (data_.left_basis().has(tdm.left_basis()[k].first))
-                    dm.reserve(tdm.left_basis()[k].first, tdm.right_basis()[k].first,
+                if (data_.basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
+                    dm.reserve(tdm.basis().left_charge(k), tdm.basis().right_charge(k),
                                num_rows(tdm[k]), num_cols(tdm[k]));
             }
         }
         dm.allocate_blocks();
         
-        parallel_for(std::size_t k, range<std::size_t>(0,dm.n_blocks()), {
+        parallel_for(std::size_t k, parallel::range<std::size_t>(0,dm.n_blocks()), {
             for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
-                std::size_t match = half_dm[b].find_block(dm.left_basis()[k].first, dm.right_basis()[k].first);
+                std::size_t match = half_dm[b].find_block(dm.basis().left_charge(k), dm.basis().right_charge(k));
                 if (match < half_dm[b].n_blocks())
                     dm[k] += (half_dm[b][match]);
             }
@@ -258,8 +259,9 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
 
 
 template<class Matrix, class SymmGroup>
+template<class Engine>
 boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right, MPOTensor<Matrix, SymmGroup> const& mpo)
+TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right, MPOTensor<Matrix, SymmGroup> const& mpo, boost::shared_ptr<Engine> contr)
 {
     make_both_paired();
     
@@ -273,10 +275,10 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cut
         Index<SymmGroup> left_phys_i = phys_i_left * left_i;
         MPSTensor<Matrix, SymmGroup> tmp(phys_i_right, left_phys_i, right_i, data_, RightPaired);
         
-        Boundary<Matrix, SymmGroup> half_dm = contraction::right_boundary_tensor_mpo(tmp, right, mpo);
+        Boundary<Matrix, SymmGroup> half_dm = contr->right_boundary_tensor_mpo(tmp, right, mpo);
         tmp = MPSTensor<Matrix, SymmGroup>();
         
-        parallel_for(std::size_t b, range<std::size_t>(0,half_dm.aux_dim()), {
+        parallel_for(std::size_t b, parallel::range<std::size_t>(0,half_dm.aux_dim()), {
             block_matrix<Matrix, SymmGroup> tdm;
             gemm(transpose(conjugate(half_dm[b])), half_dm[b], tdm);
             tdm *= alpha;
@@ -286,16 +288,16 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cut
         for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
             block_matrix<Matrix, SymmGroup> const& tdm = half_dm[b];
             for (std::size_t k = 0; k < tdm.n_blocks(); ++k) {
-                if (data_.right_basis().has(tdm.right_basis()[k].first))
-                    dm.reserve(tdm.left_basis()[k].first, tdm.right_basis()[k].first,
+                if (data_.basis().has(tdm.basis().left_charge(k), tdm.basis().right_charge(k)))
+                    dm.reserve(tdm.basis().left_charge(k), tdm.basis().right_charge(k),
                                num_rows(tdm[k]), num_cols(tdm[k]));
             }
         }
         dm.allocate_blocks();
         
-        parallel_for(std::size_t k, range<std::size_t>(0,dm.n_blocks()), {
+        parallel_for(std::size_t k, parallel::range<std::size_t>(0,dm.n_blocks()), {
             for (std::size_t b = 0; b < half_dm.aux_dim(); ++b) {
-                std::size_t match = half_dm[b].find_block(dm.left_basis()[k].first, dm.right_basis()[k].first);
+                std::size_t match = half_dm[b].find_block(dm.basis().left_charge(k), dm.basis().right_charge(k));
                 if (match < half_dm[b].n_blocks())
                     dm[k] += (half_dm[b][match]);
             }
@@ -350,6 +352,13 @@ TwoSiteTensor<Matrix, SymmGroup>::data() const
 }
 
 template<class Matrix, class SymmGroup>
+void TwoSiteTensor<Matrix, SymmGroup>::clear()
+{
+    block_matrix<Matrix, SymmGroup> empty;
+    swap(data(), empty);
+}
+
+template<class Matrix, class SymmGroup>
 void TwoSiteTensor<Matrix, SymmGroup>::swap_with(TwoSiteTensor<Matrix, SymmGroup> & b)
 {
     swap(this->phys_i, b.phys_i);
@@ -365,7 +374,7 @@ void TwoSiteTensor<Matrix, SymmGroup>::swap_with(TwoSiteTensor<Matrix, SymmGroup
 template<class Matrix, class SymmGroup>
 TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator << (MPSTensor<Matrix, SymmGroup> const & rhs)
 {
-    this->make_left_paired();
+    cur_storage = TSLeftPaired;
     rhs.make_left_paired();
 
     // Precondition: rhs.data() and this->data() have same shape if both are left_paired

@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -72,6 +71,8 @@ namespace ambient { namespace numeric {
         template <typename T2> matrix& operator /= (const T2& t);
         value_type& operator() (size_type i, size_type j);
         const value_type& operator() (size_type i, size_type j) const;
+        value_type* data();
+        const value_type* data() const;
         static const char* code();
     };
 

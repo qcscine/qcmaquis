@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -44,6 +44,7 @@ public:
     using base::parms;
     using base::iteration_results_;
     using base::stop_callback;
+    using base::contr;
 
     ss_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
@@ -133,7 +134,7 @@ public:
             boost::chrono::high_resolution_clock::time_point now, then;
 
             std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
-            SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site]);
+            SiteProblem<Matrix, SymmGroup> sp(left_[site], right_[site+1], mpo[site], contr);
             
             /// Compute orthogonal vectors
             std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs(base::northo);
@@ -188,12 +189,12 @@ public:
             if (lr == +1) {
                 if (site < L-1) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
-                    trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
+                    trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1], contr,
                                                site, alpha, cutoff, Mmax);
                 } else {
-                    block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
-                    if (site < L-1)
-                        mps[site+1].multiply_from_left(t);
+                  block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
+                  if (site < L-1)
+                      mps[site+1].multiply_from_left(t);
                 }
                 
                 
@@ -202,13 +203,13 @@ public:
             } else if (lr == -1) {
                 if (site > 0) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
-                    // Invalid read occurs after this!\n
-                    trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
+                  // Invalid read occurs after this!\n
+                    trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1], contr,
                                                site, alpha, cutoff, Mmax);
                 } else {
-                    block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
-                    if (site > 0)
-                        mps[site-1].multiply_from_right(t);
+                  block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
+                  if (site > 0)
+                      mps[site-1].multiply_from_right(t);
                 }
                 
                 

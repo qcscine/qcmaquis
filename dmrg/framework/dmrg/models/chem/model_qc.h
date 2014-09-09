@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * 
@@ -73,9 +73,10 @@ public:
         return;
     }
     
+    // For this model: site_type == point group irrep
     Index<SymmGroup> const & phys_dim(size_t type) const
     {
-        return phys;
+        return phys_indices[type];
     }
     tag_type identity_matrix_tag(size_t type) const
     {
@@ -462,7 +463,7 @@ public:
 private:
     Lattice const & lat;
     BaseParameters & parms;
-    Index<SymmGroup> phys;
+    std::vector<Index<SymmGroup> > phys_indices;
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type ident, fill,
@@ -473,10 +474,10 @@ private:
 
     std::vector<op_t> generate_site_specific_ops(op_t const & op) const
     {
-        PGDecorator<SymmGroup> set_symm;
+        PGDecorator<SymmGroup> set_symm(false);
         std::vector<op_t> ret;
         for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
-            op_t mod(set_symm(op.left_basis(), sc), set_symm(op.right_basis(), sc));
+            op_t mod(set_symm(op.basis(), sc));
             for (std::size_t b = 0; b < op.n_blocks(); ++b)
                 mod[b] = op[b];
 

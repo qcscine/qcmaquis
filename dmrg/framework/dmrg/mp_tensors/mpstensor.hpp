@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -374,11 +374,15 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     common_subset(i1, i2);
     std::vector<scalar_type> vt; vt.reserve(i1.size());
 
+    parallel::scheduler_balanced_iterative scheduler(data());
+
     for (size_t b = 0; b < i1.size(); ++b) {
-        select_proc(ambient::scope::balance(b,i1.size()));
         typename SymmGroup::charge c = i1[b].first;
-        assert( data().has_block(c,c) && rhs.data().has_block(c,c) );
-        vt.push_back(overlap(data()(c,c), rhs.data()(c,c)));
+        size_type l = data().find_block(c, c);
+        size_type r = rhs.data().find_block(c, c);
+        parallel::guard proc(scheduler(l));
+        assert( l != data().n_blocks() && r != rhs.data().n_blocks() );
+        vt.push_back(overlap(data()[l], rhs.data()[r]));
     } // should be reformulated in terms of reduction (todo: Matthias, 30.04.12 / scalar-value types)
 
     return maquis::accumulate(vt.begin(), vt.end(), scalar_type(0.));
@@ -476,7 +480,7 @@ MPSTensor<Matrix, SymmGroup>::operator+=(MPSTensor<Matrix, SymmGroup> const & rh
 
     for (std::size_t i = 0; i < data().n_blocks(); ++i)
     {
-        typename SymmGroup::charge lc = data().left_basis()[i].first, rc = data().right_basis()[i].first;
+        typename SymmGroup::charge lc = data().basis().left_charge(i), rc = data().basis().right_charge(i);
         std::size_t matched_block = rhs.data().find_block(lc,rc);
         if (matched_block < rhs.data().n_blocks()) {
             data()[i] += rhs.data()[matched_block];
@@ -501,13 +505,20 @@ MPSTensor<Matrix, SymmGroup>::operator-=(MPSTensor<Matrix, SymmGroup> const & rh
     
     for (std::size_t i = 0; i < data().n_blocks(); ++i)
     {
-        typename SymmGroup::charge lc = data().left_basis()[i].first, rc = data().right_basis()[i].first;
+        typename SymmGroup::charge lc = data().basis().left_charge(i), rc = data().basis().right_charge(i);
         if (rhs.data().has_block(lc,rc)) {
             data()[i] -= rhs.data()(lc,rc);
         }
     }
     
     return *this;
+}
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::clear()
+{
+    block_matrix<Matrix, SymmGroup> empty;
+    swap(data(), empty);
 }
 
 template<class Matrix, class SymmGroup>
@@ -578,7 +589,7 @@ bool MPSTensor<Matrix, SymmGroup>::reasonable() const
     {
         for (std::size_t i = 0; i < data().n_blocks(); ++i)
         {
-            if (data().left_basis()[i].first != data().right_basis()[i].first)
+            if (data().basis().left_charge(i) != data().basis().right_charge(i))
                 throw std::runtime_error("particle number is wrong");
         }
     }
@@ -650,10 +661,3 @@ std::size_t MPSTensor<Matrix, SymmGroup>::num_elements() const
 {
     return data().num_elements();
 }
-
-#ifdef USE_AMBIENT
-template<class Matrix, class SymmGroup>
-void MPSTensor<Matrix, SymmGroup>::print_distribution() const {
-    data().print_distribution();
-}
-#endif

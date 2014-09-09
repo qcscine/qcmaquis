@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -41,12 +40,15 @@ namespace ambient { namespace models { namespace ssm {
             bool b; 
             double d; 
             std::complex<double> c; 
+            size_t s; 
             operator bool& ();
             operator double& ();
             operator std::complex<double>& ();
+            operator size_t& ();
             void operator = (bool value);
             void operator = (double value);
             void operator = (std::complex<double> value);
+            void operator = (size_t value);
             numeric_union(){ }
         };
         void* operator new  (size_t, void*);

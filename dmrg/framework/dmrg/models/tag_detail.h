@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -54,13 +54,10 @@ namespace tag_detail {
     template <class Matrix, class SymmGroup>
     void remove_empty_blocks(block_matrix<Matrix, SymmGroup> & op)
     {
-        #ifdef USE_AMBIENT
         {
-            select_proc(ambient::actor_t::common);
-            for(int i = 0; i < op.n_blocks(); ++i) ambient::migrate(op[i]);
-            ambient::sync();
+            parallel::guard::serial guard;
+            storage::migrate(op);
         }
-        #endif
 
         for (typename Matrix::size_type b=0; b < op.n_blocks(); ++b)
         {
@@ -88,13 +85,10 @@ namespace tag_detail {
             return true;
 
         typename Matrix::value_type invscale;
-        #ifdef USE_AMBIENT
         {
-            select_proc(ambient::actor_t::common);
-            for(int i = 0; i < op.n_blocks(); ++i) ambient::migrate(op[i]);
-            ambient::sync();
+            parallel::guard::serial guard;
+            storage::migrate(op);
         }
-        #endif
         
         // determine scale of matrices
         const Matrix& m = op[0];
@@ -113,7 +107,7 @@ namespace tag_detail {
             {
                 typename maquis::traits::real_type<typename Matrix::value_type>::type normalized = std::abs(m(i,j) * invscale);
                 // if not 1 and not 0
-                if (std::abs(normalized-1.0) > 1e-15 && normalized > 1e-15)
+                if (std::abs(normalized-1.0) > 1e-15 && std::abs(normalized) > 1e-15)
                     return false;
             }
         }
@@ -135,15 +129,12 @@ namespace tag_detail {
     equal(block_matrix<Matrix, SymmGroup> const& reference,
           block_matrix<Matrix, SymmGroup> const& sample)
     {
-        #ifdef USE_AMBIENT
         {
-            select_proc(ambient::actor_t::common);
-            for(int i = 0; i < reference.n_blocks(); ++i) ambient::migrate(reference[i]);
-            for(int i = 0; i < sample.n_blocks(); ++i) ambient::migrate(sample[i]);
-            ambient::sync();
+            parallel::guard::serial guard;
+            storage::migrate(reference);
+            storage::migrate(sample);
         }
-        #endif
-        if (reference.left_basis() != sample.left_basis() || reference.right_basis() != sample.right_basis())
+        if (reference.basis() != sample.basis())
             return std::make_pair(false, 0.);
 
         if (sample.n_blocks() == 0)

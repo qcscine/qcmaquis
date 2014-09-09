@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -44,9 +44,6 @@ int main(int argc, char ** argv)
         
         maquis::cout.precision(10);
         
-        timeval now, then, snow, sthen;
-        gettimeofday(&now, NULL);
-        
         try {
             simulation_traits::shared_ptr sim = dmrg::symmetry_factory<simulation_traits>(opt.parms);
             sim->run(opt.parms);
@@ -56,10 +53,6 @@ int main(int argc, char ** argv)
             exit(1);
         }
         
-        gettimeofday(&then, NULL);
-        double elapsed = then.tv_sec-now.tv_sec + 1e-6 * (then.tv_usec-now.tv_usec);
-        
-        maquis::cout << "Task took " << elapsed << " seconds." << std::endl;
     }
 }
 

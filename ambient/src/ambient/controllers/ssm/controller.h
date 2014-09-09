@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -71,7 +70,6 @@ namespace ambient { namespace controllers { namespace ssm {
         int get_num_procs() const;
         channel_type & get_channel();
 
-        void meminfo() const;
         void check_mem() const;
         bool verbose() const;
         bool is_serial() const;

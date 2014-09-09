@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -72,9 +72,6 @@ public:
     Index<SymmGroup> const & col_dim() const;
     bool isobccompatible(Indicator) const;
     std::size_t num_elements() const;
-    #ifdef USE_AMBIENT
-    void print_distribution() const;
-    #endif
     
     void replace_right_paired(block_matrix<Matrix, SymmGroup> const &, Indicator =Unorm);
     void replace_left_paired(block_matrix<Matrix, SymmGroup> const &, Indicator =Unorm);
@@ -128,6 +125,7 @@ public:
     void make_left_paired() const;
     void make_right_paired() const;
     
+    void clear();
     void conjugate_inplace();
     void swap_with(MPSTensor & b);
     friend void swap(MPSTensor& a, MPSTensor& b){

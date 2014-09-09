@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  * 
@@ -133,22 +133,22 @@ struct multigrid {
         for (size_t Mblock = 0; Mblock < MM.n_blocks(); ++Mblock)
             for (size_t Tb = 0; Tb < T.n_blocks(); ++Tb)
                 for (size_t s1=0; s1<phys_large.size(); ++s1) {
-                    size_t s2 = phys_large.position(SymmGroup::fuse(T.right_basis()[Tb].first,
+                    size_t s2 = phys_large.position(SymmGroup::fuse(T.basis().right_charge(Tb),
                                                                     -phys_large[s1].first));
                     if(s2 == phys_large.size()) continue;
-                    size_t l = left_i.position(SymmGroup::fuse(MM.left_basis()[Mblock].first,
+                    size_t l = left_i.position(SymmGroup::fuse(MM.basis().left_charge(Mblock),
                                                                -phys_large[s1].first));
                     if(l == left_i.size()) continue;
-                    size_t r = right_i.position(SymmGroup::fuse(MM.right_basis()[Mblock].first,
+                    size_t r = right_i.position(SymmGroup::fuse(MM.basis().right_charge(Mblock),
                                                                 phys_large[s2].first));
                     if(r == right_i.size()) continue;
-                    size_t s = phys_small.position(T.left_basis()[Tb].first);
+                    size_t s = phys_small.position(T.basis().left_charge(Tb));
                     
                     {
                         charge in_l_charge = SymmGroup::fuse(phys_large[s1].first, left_i[l].first);
                         charge in_r_charge = SymmGroup::fuse(-phys_large[s2].first, right_i[r].first);
                         
-                        charge T_l_charge = T.left_basis()[Tb].first;
+                        charge T_l_charge = T.basis().left_charge(Tb);
                         charge T_r_charge = SymmGroup::fuse(phys_large[s1].first, phys_large[s2].first);
                         
                         charge out_l_charge = SymmGroup::fuse(phys_small[s].first, left_i[l].first);
@@ -518,10 +518,12 @@ struct multigrid {
                                        MPS<Matrix, SymmGroup> & mps_large,
                                        std::vector<MPO<Matrix, SymmGroup> > const & mpos_mix)
     {
-                
         std::size_t L = mps_small.length();
         std::size_t LL = mps_large.length();
         assert(LL == 2*L);
+
+        boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > contr;
+        contr.reset(new contraction::AbelianEngine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>());
         
         results_collector graining_results;
         
@@ -568,7 +570,7 @@ struct multigrid {
             right_[L] = mps_small.right_boundary();
             
             for(int i = L-1; i >= 0; --i) {
-                right_[i] = contraction::overlap_mpo_right_step(mps_small[i], mps_small[i], right_[i+1], mpos_mix[0][i]);
+                right_[i] = contr->overlap_mpo_right_step(mps_small[i], mps_small[i], right_[i+1], mpos_mix[0][i]);
             }
         }
         
@@ -604,7 +606,7 @@ struct multigrid {
             Boundary<Matrix, SymmGroup> right_mixed;
             if (p<L-1) {
                 right_mixed = right_[p+2];
-                right_mixed = contraction::overlap_mpo_right_step(mps_small[p+1], mps_small[p+1], right_mixed, mpos_mix[p+1][2*(p+1)]);
+                right_mixed = contr->overlap_mpo_right_step(mps_small[p+1], mps_small[p+1], right_mixed, mpos_mix[p+1][2*(p+1)]);
             }
 
             // Testing energy calculations
@@ -645,11 +647,11 @@ struct multigrid {
              */
             {
                 right = (p<L-1) ? right_mixed : right_[p+1];
-                right = contraction::overlap_mpo_right_step(mps_large[2*p+1], mps_large[2*p+1], right, mpos_mix[p+1][2*p+1]);
+                right = contr->overlap_mpo_right_step(mps_large[2*p+1], mps_large[2*p+1], right, mpos_mix[p+1][2*p+1]);
                 if (p == 0)
                     left_[0] = mps_large.left_boundary();
                 
-                SiteProblem<Matrix, SymmGroup> sp(left_[2*p], right, mpos_mix[p+1][2*p]);
+                SiteProblem<Matrix, SymmGroup> sp(left_[2*p], right, mpos_mix[p+1][2*p], contr);
 
                 
                 // solver
@@ -678,7 +680,7 @@ struct multigrid {
                 } else if (true) {
                     // Compute Energy
                     MPSTensor<Matrix, SymmGroup> vec2 =
-                    contraction::site_hamil2(mps_large[2*p], sp.left, sp.right, sp.mpo);
+                    contr->site_hamil2(mps_large[2*p], sp.left, sp.right, sp.mpo);
                     double energy = mps_large[2*p].scalar_overlap(vec2);
                     maquis::cout << "Energy " << "finegraining_00 " << energy << std::endl;
                     graining_results["Energy"] << energy;
@@ -689,7 +691,7 @@ struct multigrid {
                 /*
                 
                 maquis::cout << "Growing, alpha = " << alpha << std::endl;
-                mps_large.grow_l2r_sweep(mpos_mix[L][2*p], left_[2*p], right,
+                mps_large.grow_l2r_sweep(mpos_mix[L][2*p], left_[2*p], right, contr,
                                          2*p, alpha, cutoff, Mmax);
                  */
                  
@@ -703,10 +705,10 @@ struct multigrid {
              */
             {
                 right = (p<L-1) ? right_mixed : right_[p+1];
-                left_[2*p+1] = contraction::overlap_mpo_left_step(mps_large[2*p], mps_large[2*p],
+                left_[2*p+1] = contr->overlap_mpo_left_step(mps_large[2*p], mps_large[2*p],
                                                                   left_[2*p], mpos_mix[L][2*p]);
                 
-                SiteProblem<Matrix, SymmGroup> sp(left_[2*p+1], right, mpos_mix[p+1][2*p+1]);
+                SiteProblem<Matrix, SymmGroup> sp(left_[2*p+1], right, mpos_mix[p+1][2*p+1], contr);
 
                 // solver
                 if (parms["finegrain_optim"])
@@ -734,7 +736,7 @@ struct multigrid {
                 } else if (true) {
                     // Compute Energy
                     MPSTensor<Matrix, SymmGroup> vec2 =
-                    contraction::site_hamil2(mps_large[2*p+1], sp.left, sp.right, sp.mpo);
+                    contr->site_hamil2(mps_large[2*p+1], sp.left, sp.right, sp.mpo);
                     double energy = mps_large[2*p+1].scalar_overlap(vec2);
                     maquis::cout << "Energy " << "finegraining_01 " << energy << std::endl;
                     graining_results["Energy"] << energy;
@@ -768,7 +770,7 @@ struct multigrid {
             
             // Preparing left boundary
             if (p < L-1) {
-                left_[2*p+2] = contraction::overlap_mpo_left_step(mps_large[2*p+1], mps_large[2*p+1],
+                left_[2*p+2] = contr->overlap_mpo_left_step(mps_large[2*p+1], mps_large[2*p+1],
                                                                   left_[2*p+1], mpos_mix[L][2*p+1]);
             }
             
