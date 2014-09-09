@@ -40,6 +40,9 @@ namespace parallel {
         resource_iterator operator()(int k) const {
             return traits::balance(k,max_k);
         }
+        bool propagate() const {
+            return false;
+        }
     protected:
         int max_k;
     };

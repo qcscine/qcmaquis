@@ -52,7 +52,7 @@ TwoSiteTensor<Matrix, SymmGroup>::TwoSiteTensor(MPSTensor<Matrix, SymmGroup> con
 {
     mps1.make_left_paired();
     mps2.make_right_paired();
-    gemm(mps1.data(), mps2.data(), data_);
+    gemm(mps1.data(), mps2.data(), data_, parallel::scheduler_balanced(mps1.data()));
  
 }
 
