@@ -59,7 +59,7 @@ namespace generate_mpo
             size_t range_end = opnr+1;
 
             // while the next operator is still on the same site
-            while (pos_ops[range_end].first == pos_ops[opnr].first) {
+            while (range_end < pos_ops.size() && pos_ops[range_end].first == pos_ops[opnr].first) {
                 // multiply operators for all irreps (types)
                 for (size_t type=0; type < pos_ops[opnr].second.first.size(); ++type) {
                     op_t tmp;
