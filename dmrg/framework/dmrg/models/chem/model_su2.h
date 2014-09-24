@@ -231,14 +231,14 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     d2e_op.insert_block(Matrix(1,1,1), A, D);
 
     op_t count_fill_cdagc_op;
-    count_fill_cdagc_op.insert_block(Matrix(2,1,1),  A, A);
+    count_fill_cdagc_op.insert_block(Matrix(1,1,2),  A, A);
     count_fill_cdagc_op.insert_block(Matrix(1,1,-1), B, B);
     count_fill_cdagc_op.insert_block(Matrix(1,1,-1), C, C);
     count_fill_cdagc_op.insert_block(Matrix(1,1,-1), B, C);
     count_fill_cdagc_op.insert_block(Matrix(1,1,-1), C, B);
 
     op_t count_fill_ccdag_op;
-    count_fill_ccdag_op.insert_block(Matrix(2,1,1),  A, A);
+    count_fill_ccdag_op.insert_block(Matrix(1,1,2),  A, A);
     count_fill_ccdag_op.insert_block(Matrix(1,1,-1), B, B);
     count_fill_ccdag_op.insert_block(Matrix(1,1,-1), C, C);
     count_fill_ccdag_op.insert_block(Matrix(1,1,1),  B, C);
@@ -271,6 +271,8 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     PRINT(ident)
     PRINT(fill_ccdag)
     PRINT(fill_cdagc)
+    PRINT(count_fill_ccdag)
+    PRINT(count_fill_cdagc)
     PRINT(create_head)
     PRINT(create_tail)
     PRINT(destroy_head)
@@ -403,10 +405,58 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             if (i==j) { same_idx = i; }
             if (k==l) { same_idx = k; k = i; l = j; }
 
-            if ( same_idx > k || same_idx > l) continue;
-
+            //if ( same_idx > k || same_idx > l) continue;
+            //
             //int start = std::min(std::min(k,l), same_idx), end = std::max(std::max(k,l), same_idx);
-            int start = same_idx, mid = std::min(k,l), end = std::max(k,l);
+            //int start = same_idx, mid = std::min(k,l), end = std::max(k,l);
+            //{
+            //    term_descriptor term;
+            //    term.is_fermionic = true;
+            //    term.coeff = matrix_elements[m];
+
+            //    for (int fs=0; fs < start; ++fs)
+            //        term.push_back( boost::make_tuple(fs, ident) );
+            //    term.push_back( boost::make_tuple(start, count) );
+
+            //    for (int fs = start+1; fs < mid; ++fs)
+            //        term.push_back( boost::make_tuple(fs, ident) );
+            //    term.push_back( boost::make_tuple(mid, create_head) );
+
+            //    for (int fs = mid+1; fs < end; ++fs)
+            //        term.push_back( boost::make_tuple(fs, fill_cdagc) );
+            //    term.push_back( boost::make_tuple(end, destroy_head) );
+
+            //    for (int fs = end+1; fs < lat.size(); ++fs)
+            //        term.push_back( boost::make_tuple(fs, ident) );
+
+            //    this->terms_.push_back(term);
+            //}
+            //{
+            //    term_descriptor term;
+            //    term.is_fermionic = true;
+            //    term.coeff = matrix_elements[m];
+
+            //    for (int fs=0; fs < start; ++fs)
+            //        term.push_back( boost::make_tuple(fs, ident) );
+            //    term.push_back( boost::make_tuple(start, count) );
+
+            //    for (int fs = start+1; fs < mid; ++fs)
+            //        term.push_back( boost::make_tuple(fs, ident) );
+            //    term.push_back( boost::make_tuple(mid, destroy_tail) );
+
+            //    for (int fs = mid+1; fs < end; ++fs)
+            //        term.push_back( boost::make_tuple(fs, fill_ccdag) );
+            //    term.push_back( boost::make_tuple(end, create_tail) );
+
+            //    for (int fs = end+1; fs < lat.size(); ++fs)
+            //        term.push_back( boost::make_tuple(fs, ident) );
+
+            //    this->terms_.push_back(term);
+            //}
+
+            int start = std::min(k,l), mid = same_idx, end = std::max(k,l);
+            if (!(same_idx > start && same_idx < end)) continue;
+
             {
                 term_descriptor term;
                 term.is_fermionic = true;
@@ -414,11 +464,11 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
                 for (int fs=0; fs < start; ++fs)
                     term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(start, count) );
+                term.push_back( boost::make_tuple(start, create_head) );
 
                 for (int fs = start+1; fs < mid; ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(mid, create_head) );
+                    term.push_back( boost::make_tuple(fs, fill_cdagc) );
+                term.push_back( boost::make_tuple(mid, count_fill_cdagc) );
 
                 for (int fs = mid+1; fs < end; ++fs)
                     term.push_back( boost::make_tuple(fs, fill_cdagc) );
@@ -436,11 +486,11 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
                 for (int fs=0; fs < start; ++fs)
                     term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(start, count) );
+                term.push_back( boost::make_tuple(start, destroy_tail) );
 
                 for (int fs = start+1; fs < mid; ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(mid, destroy_tail) );
+                    term.push_back( boost::make_tuple(fs, fill_ccdag) );
+                term.push_back( boost::make_tuple(mid, count_fill_ccdag) );
 
                 for (int fs = mid+1; fs < end; ++fs)
                     term.push_back( boost::make_tuple(fs, fill_ccdag) );
