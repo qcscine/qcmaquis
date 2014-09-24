@@ -359,6 +359,40 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
             used_elements[m] += 1;
         }
 
+        // 9987 9877
+
+        // 8 (4x2)-fold degenerate V_iilk == V_iikl = V_lkii = V_klii  <--- coded
+        //                         V_ijkk == V_jikk = V_kkij = V_kkji  <--- contained above
+        else if ( (i==j && j!=k && k!=l) || (k==l && i!=j && j!=k)) {
+
+            int same_idx;
+            if (i==j) { same_idx = i; }
+            if (k==l) { same_idx = k; k = i; l = j; }
+
+            // for now skip if i<n<j
+            if ( same_idx > l || same_idx > k) continue;
+
+            // n_up * cdag_up * c_up <--
+            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, k, l, create_up, destroy_up, create_up, destroy_up);
+            // n_up * cdag_down * c_down <--
+            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, k, l, create_up, destroy_up, create_down, destroy_down);
+            // n_down * cdag_up * c_up <--
+            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, k, l, create_down, destroy_down, create_up, destroy_up);
+            // n_down * cdag_down * c_down <--
+            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, k, l, create_down, destroy_down, create_down, destroy_down);
+
+            // --> n_up * c_up * cdag_up
+            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, l, k, create_up, destroy_up, create_up, destroy_up);
+            // --> n_up * c_down * cdag_down
+            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, l, k, create_up, destroy_up, create_down, destroy_down);
+            // --> n_down * c_up * cdag_up
+            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, l, k, create_down, destroy_down, create_up, destroy_up);
+            // --> n_down * c_down * cdag_down
+            term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, l, k, create_down, destroy_down, create_down, destroy_down);
+
+            used_elements[m] += 1;
+        }
+
     } // matrix_elements for
 
     term_assistant.commit_terms(this->terms_);

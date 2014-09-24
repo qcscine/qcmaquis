@@ -119,8 +119,8 @@ private:
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type create_head, create_tail, destroy_head, destroy_tail,
-             count, docc, e2d, d2e, flip, count_single,
-             ident, fill_cdagc, fill_ccdag;
+             count, docc, e2d, d2e,
+             ident, fill_cdagc, fill_ccdag, count_fill_cdagc, count_fill_ccdag;
 
     typename SymmGroup::subcharge max_irrep;
 
@@ -230,14 +230,19 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     op_t d2e_op;
     d2e_op.insert_block(Matrix(1,1,1), A, D);
 
-    op_t flip_op;
-    flip_op.insert_block(Matrix(1,1,1), B, B);
-    flip_op.insert_block(Matrix(1,1,1), C, C);
+    op_t count_fill_cdagc_op;
+    count_fill_cdagc_op.insert_block(Matrix(2,1,1),  A, A);
+    count_fill_cdagc_op.insert_block(Matrix(1,1,-1), B, B);
+    count_fill_cdagc_op.insert_block(Matrix(1,1,-1), C, C);
+    count_fill_cdagc_op.insert_block(Matrix(1,1,-1), B, C);
+    count_fill_cdagc_op.insert_block(Matrix(1,1,-1), C, B);
 
-    op_t count_single_op;
-    count_single_op.insert_block(Matrix(1,1,1), A, A);
-    count_single_op.insert_block(Matrix(1,1,1), B, B);
-    count_single_op.insert_block(Matrix(1,1,1), C, C);
+    op_t count_fill_ccdag_op;
+    count_fill_ccdag_op.insert_block(Matrix(2,1,1),  A, A);
+    count_fill_ccdag_op.insert_block(Matrix(1,1,-1), B, B);
+    count_fill_ccdag_op.insert_block(Matrix(1,1,-1), C, C);
+    count_fill_ccdag_op.insert_block(Matrix(1,1,1),  B, C);
+    count_fill_ccdag_op.insert_block(Matrix(1,1,1),  C, B);
 
     /**********************************************************************/
     /*** Create operator tag table ****************************************/
@@ -254,10 +259,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     REGISTER(destroy_tail, tag_detail::bosonic)
     REGISTER(count,        tag_detail::bosonic)
     REGISTER(docc,         tag_detail::bosonic)
-    REGISTER(e2d,         tag_detail::bosonic)
-    REGISTER(d2e,         tag_detail::bosonic)
-    REGISTER(flip,         tag_detail::bosonic)
-    REGISTER(count_single,         tag_detail::bosonic)
+    REGISTER(e2d,          tag_detail::bosonic)
+    REGISTER(d2e,          tag_detail::bosonic)
+    REGISTER(count_fill_cdagc,         tag_detail::bosonic)
+    REGISTER(count_fill_ccdag,         tag_detail::bosonic)
 
 #undef REGISTER
     /**********************************************************************/
@@ -274,7 +279,6 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     PRINT(docc)
     PRINT(e2d)
     PRINT(d2e)
-    PRINT(flip)
 #undef PRINT
 
     chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, ident, tag_handler);
@@ -385,6 +389,68 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             //term_assistant.add_term(
             //    this->terms_, matrix_elements[m], i, j, flip, flip
             //);
+
+            used_elements[m] += 1;
+        }
+
+        // 9987 9877
+
+        // 8 (4x2)-fold degenerate V_iilk == V_iikl = V_lkii = V_klii  <--- coded
+        //                         V_ijkk == V_jikk = V_kkij = V_kkji  <--- contained above
+        else if ( (i==j && j!=k && k!=l) || (k==l && i!=j && j!=k)) {
+
+            int same_idx;
+            if (i==j) { same_idx = i; }
+            if (k==l) { same_idx = k; k = i; l = j; }
+
+            if ( same_idx > k || same_idx > l) continue;
+
+            //int start = std::min(std::min(k,l), same_idx), end = std::max(std::max(k,l), same_idx);
+            int start = same_idx, mid = std::min(k,l), end = std::max(k,l);
+            {
+                term_descriptor term;
+                term.is_fermionic = true;
+                term.coeff = matrix_elements[m];
+
+                for (int fs=0; fs < start; ++fs)
+                    term.push_back( boost::make_tuple(fs, ident) );
+                term.push_back( boost::make_tuple(start, count) );
+
+                for (int fs = start+1; fs < mid; ++fs)
+                    term.push_back( boost::make_tuple(fs, ident) );
+                term.push_back( boost::make_tuple(mid, create_head) );
+
+                for (int fs = mid+1; fs < end; ++fs)
+                    term.push_back( boost::make_tuple(fs, fill_cdagc) );
+                term.push_back( boost::make_tuple(end, destroy_head) );
+
+                for (int fs = end+1; fs < lat.size(); ++fs)
+                    term.push_back( boost::make_tuple(fs, ident) );
+
+                this->terms_.push_back(term);
+            }
+            {
+                term_descriptor term;
+                term.is_fermionic = true;
+                term.coeff = matrix_elements[m];
+
+                for (int fs=0; fs < start; ++fs)
+                    term.push_back( boost::make_tuple(fs, ident) );
+                term.push_back( boost::make_tuple(start, count) );
+
+                for (int fs = start+1; fs < mid; ++fs)
+                    term.push_back( boost::make_tuple(fs, ident) );
+                term.push_back( boost::make_tuple(mid, destroy_tail) );
+
+                for (int fs = mid+1; fs < end; ++fs)
+                    term.push_back( boost::make_tuple(fs, fill_ccdag) );
+                term.push_back( boost::make_tuple(end, create_tail) );
+
+                for (int fs = end+1; fs < lat.size(); ++fs)
+                    term.push_back( boost::make_tuple(fs, ident) );
+
+                this->terms_.push_back(term);
+            }
 
             used_elements[m] += 1;
         }
