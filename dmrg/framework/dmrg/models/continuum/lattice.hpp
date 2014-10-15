@@ -108,7 +108,7 @@ public:
     
     int maximum_vertex_type() const
     {
-        return 0;
+        return N-1;
     }
 
 private:

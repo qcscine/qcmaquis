@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,16 +24,15 @@
  *
  *****************************************************************************/
 
-#include "model_factory_symm.h"
-#include "dmrg/models/coded/factory_nu1.hpp"
-#include "dmrg/models/continuum/factory_nu1.hpp"
+#include "dmrg/block_matrix/symmetry/nu1.h"
 
-typedef NU1 grp;
-
-#if defined USE_AMBIENT
-impl_model_factory(pmatrix, grp)
-impl_model_factory(cpmatrix, grp)
-#else
-impl_model_factory(matrix, grp)
-impl_model_factory(cmatrix, grp)
-#endif
+template<class Matrix>
+struct cont_model_factory<Matrix, NU1> {
+    static boost::shared_ptr<model_impl<Matrix, NU1> > parse
+    (Lattice const& lattice, BaseParameters & parms)
+    {
+        typedef boost::shared_ptr<model_impl<Matrix, NU1> > impl_ptr;
+        throw std::runtime_error("No coded models using the NU1 SymmGroup");
+        return impl_ptr();
+    }
+};

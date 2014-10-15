@@ -29,6 +29,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <numeric>
 #include <utility>
 
 #include <boost/unordered_map.hpp>

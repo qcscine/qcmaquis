@@ -27,7 +27,7 @@
 #include "matrices.h"
 
 #include "dmrg/models/coded/factory.h"
-//#include "dmrg/models/continuum/factory.h" // temporary fix until model can be patched to new format.
+#include "dmrg/models/continuum/factory.h" // temporary fix until model can be patched to new format.
 #include "dmrg/models/factory/initializer_factory.h"
 
 #ifdef ENABLE_ALPS_MODELS
@@ -59,8 +59,8 @@ model_factory(Lattice const& lattice, BaseParameters & parms)
 #endif
     } else if (parms["model_library"] == "coded") {
         return coded_model_factory<Matrix, SymmGroup>::parse(lattice, parms);
-//    } else if (parms["model_library"] == "continuum") {
-//        return cont_model_factory<Matrix, SymmGroup>::parse(lattice, parms);
+    } else if (parms["model_library"] == "continuum") {
+        return cont_model_factory<Matrix, SymmGroup>::parse(lattice, parms);
 //#ifdef ENABLE_LL_MODELS
 //    } else if (parms["model_library"] == "ll") {
 //        return ll_model_factory<Matrix, SymmGroup>::parse(lattice, parms);

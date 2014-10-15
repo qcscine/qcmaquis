@@ -198,7 +198,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
     
     /// build reduced density matrix (with left index open)
     block_matrix<Matrix, SymmGroup> dm;
-    gemm(data_, transpose(conjugate(data_)), dm);
+    gemm(data_, transpose(conjugate(data_)), dm, parallel::scheduler_balanced(data_));
     
     /// state prediction
     if (alpha != 0.) {
@@ -267,7 +267,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cut
     
     /// build reduced density matrix (with right index open)
     block_matrix<Matrix, SymmGroup> dm;
-    gemm(transpose(conjugate(data_)), data_, dm);
+    gemm(transpose(conjugate(data_)), data_, dm, parallel::scheduler_balanced(data_));
     
     /// state prediction
     if (alpha != 0.) {

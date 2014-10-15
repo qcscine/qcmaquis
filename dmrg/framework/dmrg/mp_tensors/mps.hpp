@@ -363,6 +363,10 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
 template<class Matrix, class SymmGroup>
 void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
 {
+    /// create chkp dir
+    if(parallel::master() && !boost::filesystem::exists(dirname))
+        boost::filesystem::create_directory(dirname);
+    
     parallel::scheduler_balanced scheduler(mps.length());
     size_t loop_max = mps.length();
 

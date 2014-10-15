@@ -24,21 +24,20 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/continuum/models_none.hpp"
+//#include "dmrg/models/continuum/models_none.hpp"
+
 
 template<class Matrix>
 struct cont_model_factory<Matrix, TrivialGroup> {
-    static typename model_traits<Matrix, TrivialGroup>::model_ptr parse
-    (Lattice const & lattice, BaseParameters & model)
+    static boost::shared_ptr<model_impl<Matrix, TrivialGroup> > parse
+    (Lattice const& lattice, BaseParameters & parms)
     {
-        std::string model_str = model.is_set("model") ? "model" : "MODEL";
-        if (model[model_str] == std::string("optical_lattice"))
-            return typename model_traits<Matrix, TrivialGroup>::model_ptr(
-                        new OpticalLatticeNull<Matrix>(lattice, model)
-                   );
-        else {
-            throw std::runtime_error("Don't know this model!");
-            return typename model_traits<Matrix, TrivialGroup>::model_ptr();
-        }
+        typedef boost::shared_ptr<model_impl<Matrix, TrivialGroup> > impl_ptr;
+//        if (parms["MODEL"] == std::string("optical_lattice"))
+//            return impl_ptr( new OpticalLatticeNull<Matrix>(lattice, model) );
+
+        throw std::runtime_error("No coded models using the NU1 SymmGroup");
+        return impl_ptr();
     }
 };
+

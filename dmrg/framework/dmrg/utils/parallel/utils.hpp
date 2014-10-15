@@ -29,7 +29,7 @@
 #define UTILS_PARALLEL_UTILS_HPP
 
 #ifdef USE_AMBIENT
-#include "ambient/numeric/future.hpp"
+#include "ambient/container/future.hpp"
 #include "ambient/utils/meminfo.h"
 #else
 #include "dmrg/utils/proc_status.h"

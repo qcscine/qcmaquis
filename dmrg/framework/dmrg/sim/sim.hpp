@@ -132,9 +132,6 @@ template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status)
 {
     if (!dns) {
-        /// create chkp dir
-        if(parallel::master() && !boost::filesystem::exists(chkpfile))
-            boost::filesystem::create_directory(chkpfile);
         /// save state to chkp dir
         save(chkpfile, state);
         
