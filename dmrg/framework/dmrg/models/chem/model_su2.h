@@ -119,7 +119,7 @@ private:
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type create_head, create_tail, destroy_head, destroy_tail,
-             count, docc, e2d, d2e,
+             count, docc, e2d, d2e, flip,
              ident, fill_cdagc, fill_ccdag, count_fill_cdagc, count_fill_ccdag;
 
     typename SymmGroup::subcharge max_irrep;
@@ -244,6 +244,13 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     count_fill_ccdag_op.insert_block(Matrix(1,1,1),  B, C);
     count_fill_ccdag_op.insert_block(Matrix(1,1,1),  C, B);
 
+    op_t flip_op;
+    flip_op.insert_block(Matrix(1,1,2), A, A);
+    flip_op.insert_block(Matrix(1,1,1), B, B);
+    flip_op.insert_block(Matrix(1,1,1), C, C);
+    //flip_op.insert_block(Matrix(1,1,-1),  B, C);
+    //flip_op.insert_block(Matrix(1,1,-1),  C, B);
+
     /**********************************************************************/
     /*** Create operator tag table ****************************************/
     /**********************************************************************/
@@ -261,6 +268,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     REGISTER(docc,         tag_detail::bosonic)
     REGISTER(e2d,          tag_detail::bosonic)
     REGISTER(d2e,          tag_detail::bosonic)
+    REGISTER(flip,         tag_detail::bosonic)
     REGISTER(count_fill_cdagc,         tag_detail::bosonic)
     REGISTER(count_fill_ccdag,         tag_detail::bosonic)
 
@@ -385,12 +393,8 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, e2d, d2e);
             term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, d2e, e2d);
-            //term_assistant.add_term(this->terms_,  -matrix_elements[m], i, j, count_single, count_single);
 
-            // --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
-            //term_assistant.add_term(
-            //    this->terms_, matrix_elements[m], i, j, flip, flip
-            //);
+            term_assistant.add_term(this->terms_, -0.5 * matrix_elements[m], i, j, flip, flip);
 
             used_elements[m] += 1;
         }
