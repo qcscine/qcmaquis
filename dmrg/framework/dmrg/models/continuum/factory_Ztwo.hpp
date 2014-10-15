@@ -24,14 +24,14 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/continuum/models_none.hpp"
-
 template<class Matrix>
 struct cont_model_factory<Matrix, Ztwo> {
-    static typename model_traits<Matrix, Ztwo>::model_ptr parse
-    (Lattice const & lattice, BaseParameters & model)
+    static boost::shared_ptr<model_impl<Matrix, Ztwo> > parse
+    (Lattice const& lattice, BaseParameters & parms)
     {
-        throw std::runtime_error("Don't know this model!");
-        return typename model_traits<Matrix, Ztwo>::model_ptr();
+        typedef boost::shared_ptr<model_impl<Matrix, Ztwo> > impl_ptr;
+        throw std::runtime_error("No coded models using the Ztwo SymmGroup");
+        return impl_ptr();
     }
 };
+

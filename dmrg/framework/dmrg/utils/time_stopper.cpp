@@ -26,7 +26,7 @@
 
 #ifdef USE_AMBIENT
 #include <ambient/ambient.hpp>
-#include <ambient/numeric/future.hpp>
+#include <ambient/container/future.hpp>
 #endif
 
 #include "dmrg/utils/time_stopper.h"

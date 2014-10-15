@@ -27,7 +27,7 @@
 #include "model_factory_symm.h"
 
 #include "dmrg/models/coded/factory_u1.hpp"
-//#include "dmrg/models/continuum/factory_u1.hpp"
+#include "dmrg/models/continuum/factory_u1.hpp"
 
 typedef U1 grp;
 
