@@ -82,8 +82,8 @@ int main(int argc, char ** argv)
         maquis::cout << "Parsing model done!\n";
 
         /// initialize contraction engine
-        boost::shared_ptr<contraction::Engine<matrix, typename storage::constrained<matrix>::type, grp> > contr;
-        contr = contraction::EngineFactory<matrix, typename storage::constrained<matrix>::type, grp>::makeFactory(parms)->makeEngine();
+        boost::shared_ptr<contraction::Engine<matrix, storage::constrained<matrix>::type, grp> > contr;
+        contr = contraction::EngineFactory<matrix, storage::constrained<matrix>::type, grp>::makeFactory(parms)->makeEngine();
         
         /// Initialize & load MPS
         tim_load.begin();

@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 
 ## benchmark ##
 TARGET="ambient"

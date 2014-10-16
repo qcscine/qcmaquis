@@ -61,7 +61,7 @@ struct SiteProblem
     SiteProblem(Boundary<Matrix, SymmGroup> const & left_,
                 Boundary<Matrix, SymmGroup> const & right_,
                 MPOTensor<Matrix, SymmGroup> const & mpo_,
-		boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine_)
+                boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine_)
     : left(left_)
     , right(right_)
     , mpo(mpo_)
@@ -100,8 +100,8 @@ int main(int argc, char ** argv)
         tim_model.end();
 
         /// initialize contraction engine
-        boost::shared_ptr<contraction::Engine<matrix, typename storage::constrained<matrix>::type, grp> > contr;
-        contr = contraction::EngineFactory<matrix, typename storage::constrained<matrix>::type, grp>::makeFactory(parms)->makeEngine(); 
+        boost::shared_ptr<contraction::Engine<matrix, storage::constrained<matrix>::type, grp> > contr;
+        contr = contraction::EngineFactory<matrix, storage::constrained<matrix>::type, grp>::makeFactory(parms)->makeEngine();
 
         /// Initialize & load MPS
         tim_load.begin();

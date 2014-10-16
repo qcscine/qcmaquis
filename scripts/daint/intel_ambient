@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash 
 STATE="void"
 STATE_AMBIENT="void"
 STATE_DMRG="build"
@@ -16,6 +16,9 @@ if [[ -z "$MAQUIS_ONCE" ]]
 then
     export MAQUIS_ONCE=true
     module switch PrgEnv-cray PrgEnv-intel
+    module swap cray-mpich/6.2.2 cray-mpich/7.0.3
+    module switch atp/1.7.1 atp/1.7.2
+    module unload cray-libsci
     module load intel/14.0.2.144
     module load cmake
 
@@ -40,6 +43,7 @@ COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
 COMMON_PLASMA_LIB_DIR="$PLASMA_ROOT/lib"
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
+DMRG_REGRESSION_PERFORMANCE_TESTS=ON
 
 source $ROOT_DIR/scripts/common/common.sh 
 execute $*

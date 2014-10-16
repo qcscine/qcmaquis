@@ -51,7 +51,7 @@ namespace ambient { namespace models { namespace ssm {
         bool valid() const;
         bool referenced() const;
 
-        void* generator;
+        std::atomic<void*> generator;
         void* data;
         rank_t owner;
         std::atomic<int> users;

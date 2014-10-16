@@ -38,6 +38,7 @@ namespace ambient {
         struct thread_context {
             controller_type controller;
             std::stack<actor*, std::vector<actor*> > stack;
+            std::stack<scope*, std::vector<scope*> > scopes;
             struct sid_t {
                 struct divergence_guard {
                     divergence_guard();
@@ -54,8 +55,6 @@ namespace ambient {
             } sid;
         };
 
-        mutable std::stack<scope*, std::vector<scope*> > scopes;
-        mutable std::stack<rank_t, std::vector<rank_t> > resources;
         mutable std::vector<thread_context> thread_context_lane;
         mutable base_actor base;
         mutable ambient::mutex mtx;
@@ -73,7 +72,6 @@ namespace ambient {
         void push_scope(scope* s);
         void pop_scope();
         void sync_all();
-        void reset_sid();
         int  generate_sid();
         int  get_sid() const;
         bool tunable() const; 

@@ -52,7 +52,7 @@ namespace ambient { namespace controllers { namespace ssm {
     inline set<revision>::set(revision& r) : t(r) {
         t.use();
         handle = ambient::selector.get_controller().get_channel().set(t);
-        if(t.generator != NULL) ((functor*)t.generator)->queue(this);
+        if(t.generator != NULL) ((functor*)t.generator.load())->queue(this);
         else ambient::selector.get_controller().queue(this);
     }
     inline void set<revision>::operator += (rank_t rank){

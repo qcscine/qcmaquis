@@ -39,8 +39,8 @@ namespace ambient {
                 ambient::cout << "ambient: size of data bulk chunks: "      << AMBIENT_DATA_BULK_CHUNK        << "\n";
                 if(ambient::isset("AMBIENT_BULK_LIMIT")) ambient::cout << "ambient: max chunks of data bulk: " << ambient::getint("AMBIENT_BULK_LIMIT") << "\n";
                 if(ambient::isset("AMBIENT_BULK_REUSE")) ambient::cout << "ambient: enabled bulk garbage collection\n";
-                if(ambient::isset("AMBIENT_BULK_DEALLOCATE")) ambient::cout << "ambient: enabled bulk deallocation\n";
-                ambient::cout << "ambient: maximum sid value: "             << AMBIENT_MAX_SID                << "\n";
+                if(ambient::isset("AMBIENT_FORCE_BULK_DEALLOCATION")) ambient::cout << "ambient: enabled bulk deallocation\n";
+                ambient::cout << "ambient: maximum tag value: "             << AMBIENT_MAX_TAG                << "\n";
                 ambient::cout << "ambient: number of procs: "               << ambient::num_procs()           << "\n";
                 ambient::cout << "ambient: number of threads per proc: "    << ambient::num_threads()         << "\n";
                 ambient::cout << "\n";
@@ -53,6 +53,7 @@ namespace ambient {
             for(auto& k : selector.thread_context_lane){
                 k.sid.max = k.sid.min = selector.thread_context_lane[0].sid.value;
                 k.stack.push(selector.thread_context_lane[0].stack.top());
+                k.scopes.push(selector.thread_context_lane[0].scopes.top());
             }
         }
         inline backbone::thread_context::sid_t::divergence_guard::~divergence_guard(){
@@ -61,6 +62,7 @@ namespace ambient {
                 max = std::max(max, k.sid.max);
                 k.sid.inc = 1;
                 k.stack.pop();
+                k.scopes.pop();
             }
         }
         inline void backbone::thread_context::sid_t::offset(int offset, int increment){
@@ -68,15 +70,12 @@ namespace ambient {
             this->inc = increment;
         }
         inline void backbone::thread_context::sid_t::maximize(){
-            if(value < min) value += AMBIENT_MAX_SID;
+            if(value < min) value += AMBIENT_MAX_TAG;
             if(value > max) max = value;
         }
         inline int backbone::thread_context::sid_t::generate(){
-            value = (value + inc) % AMBIENT_MAX_SID;
+            value = (value + inc) % AMBIENT_MAX_TAG;
             return value;
-        }
-        inline void backbone::reset_sid(){
-            selector.thread_context_lane[0].sid.value = 1;
         }
         inline int backbone::generate_sid(){
             return get_thread_context().sid.generate();
@@ -120,13 +119,13 @@ namespace ambient {
             get_thread_context().stack.push(s);
         }
         inline scope& backbone::get_scope() const {
-            return *scopes.top();
+            return *get_thread_context().scopes.top();
         }
         inline void backbone::pop_scope(){
-            scopes.pop();
+            get_thread_context().scopes.pop();
         }
         inline void backbone::push_scope(scope* s){
-            scopes.push(s);
+            get_thread_context().scopes.push(s);
         }
         inline bool backbone::tunable() const { 
             return (!get_controller().is_serial() && !has_nested_actor());

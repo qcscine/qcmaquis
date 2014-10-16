@@ -61,7 +61,7 @@ struct SiteProblem
     SiteProblem(Boundary<Matrix, SymmGroup> const & left_,
                 Boundary<Matrix, SymmGroup> const & right_,
                 MPOTensor<Matrix, SymmGroup> const & mpo_,
-		boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine_)
+                boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine_)
     : left(left_)
     , right(right_)
     , mpo(mpo_)
@@ -113,8 +113,8 @@ int main(int argc, char ** argv)
         maquis::cout << "Parsing model done!\n";
 
 	    /// initialize contraction engine
-        boost::shared_ptr<contraction::Engine<matrix, typename storage::constrained<matrix>::type, grp> > contr;
-        contr = contraction::EngineFactory<matrix, typename storage::constrained<matrix>::type, grp>::makeFactory(parms)->makeEngine();
+        boost::shared_ptr<contraction::Engine<matrix, storage::constrained<matrix>::type, grp> > contr;
+        contr = contraction::EngineFactory<matrix, storage::constrained<matrix>::type, grp>::makeFactory(parms)->makeEngine();
 
         boost::filesystem::path chkpfile(parms["chkpfile"].str());
         
@@ -176,11 +176,11 @@ int main(int argc, char ** argv)
         } else 
         #endif
         {
-            left = mps.left_boundary(); ambient::sync();
+            left = mps.left_boundary(); parallel::sync();
             for (size_t i = 0; i < site; ++i){
                 left = contr->overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
                 if(can_clean(i, site, L, lr)) mps[i].data().clear();
-                ambient::sync();
+                parallel::sync();
             }
         }
         time_l_boundary.end();
@@ -198,11 +198,11 @@ int main(int argc, char ** argv)
         } else 
         #endif
         {
-            right = mps.right_boundary(); ambient::sync();
+            right = mps.right_boundary(); parallel::sync();
             for (int i = L-1; i > site+1; --i){
                 right = contr->overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
                 if(can_clean(i, site, L, lr)) mps[i].data().clear();
-                ambient::sync();
+                parallel::sync();
             }
         }
         time_r_boundary.end();
