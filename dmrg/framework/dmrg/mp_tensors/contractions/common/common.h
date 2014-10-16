@@ -24,86 +24,21 @@
  *
  *****************************************************************************/
 
-#ifndef ENGINE_FACTORY_H
-#define ENGINE_FACTORY_H
-
-#include <boost/shared_ptr.hpp>
+#ifndef ENGINE_COMMON_H
+#define ENGINE_COMMON_H
 
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/indexing.h"
 
-#include "dmrg/mp_tensors/contractions/abelian/engine_factory.h"
+#include "dmrg/mp_tensors/contractions/common/boundary_times_mps.hpp"
 
 namespace contraction {
-
-    template <class Matrix, class OtherMatrix, class SymmGroup>
-    class EngineFactory
-    {
-        typedef boost::shared_ptr<Engine<Matrix, OtherMatrix, SymmGroup> > engine_ptr;
-        typedef boost::shared_ptr<EngineFactory<Matrix, OtherMatrix, SymmGroup> > factory_ptr;
-
-    public:
-
-        virtual engine_ptr makeEngine() =0;
-
-        static boost::shared_ptr<EngineFactory<Matrix, OtherMatrix, SymmGroup> > makeFactory(BaseParameters & parms)
-        {
-            #ifdef ENABLE_SU2
-            if (parms["MODEL"] == "quantum_chemistry_SU2")
-                return factory_ptr(new SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>());
-            else if (parms["MODEL"] == "fermion Hubbard SU2")
-                return factory_ptr(new SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>());
-            else
-                return factory_ptr(new AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>());
-            #else
-
-            return factory_ptr(new AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>());
-
-            #endif
-        }
-
-    protected:
-
-        template<class Gemm>
-        static std::vector<block_matrix<OtherMatrix, SymmGroup> >
-        boundary_times_mps(MPSTensor<Matrix, SymmGroup> const & mps,
-                           Boundary<OtherMatrix, SymmGroup> const & left,
-                           MPOTensor<Matrix, SymmGroup> const & mpo)
-        {
-            parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
-
-            std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(left.aux_dim());
-            int loop_max = left.aux_dim();
-            mps.make_right_paired();
-            omp_for(int b1, parallel::range(0,loop_max), {
-                parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                typename Gemm::gemm_trim_left()(transpose(left[b1]), mps.data(), ret[b1]);
-            });
-            return ret;
-        }
-
-        template<class Gemm>
-        static std::vector<block_matrix<OtherMatrix, SymmGroup> >
-        mps_times_boundary(MPSTensor<Matrix, SymmGroup> const & mps,
-                           Boundary<OtherMatrix, SymmGroup> const & right,
-                           MPOTensor<Matrix, SymmGroup> const & mpo)
-        {
-            parallel::scheduler_permute scheduler(mpo.placement_r, parallel::groups_granularity);
-
-            std::vector<block_matrix<OtherMatrix, SymmGroup> > ret(right.aux_dim());
-            int loop_max = right.aux_dim();
-            mps.make_left_paired();
-            omp_for(int b2, parallel::range(0,loop_max), {
-                parallel::guard group(scheduler(b2), parallel::groups_granularity);
-                typename Gemm::gemm_trim_right()(mps.data(), right[b2], ret[b2]);
-            });
-            return ret;
-        }
+    namespace common {
 
         // output/input: left_i for bra_tensor, right_i for ket_tensor
-        template<class Gemm>
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
         static block_matrix<OtherMatrix, SymmGroup>
         overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
@@ -133,7 +68,7 @@ namespace contraction {
             // return transpose(t1);
         }
 
-        template<class Gemm>
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
         static block_matrix<OtherMatrix, SymmGroup>
         overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                            MPSTensor<Matrix, SymmGroup> const & ket_tensor,
@@ -159,7 +94,7 @@ namespace contraction {
 
         // note: this function changes the internal structure of Boundary,
         //       each block is transposed
-        template<class Gemm, class Kernel>
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
         static Boundary<Matrix, SymmGroup>
         left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                                  Boundary<OtherMatrix, SymmGroup> const & left,
@@ -173,7 +108,7 @@ namespace contraction {
                 in_low = &mps.row_dim();
 
             std::vector<block_matrix<Matrix, SymmGroup> > t
-                = boundary_times_mps<Gemm>(mps, left, mpo);
+                = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, Gemm>(mps, left, mpo);
 
             Index<SymmGroup> physical_i = mps.site_dim(), left_i = *in_low, right_i = mps.col_dim(),
                                           out_left_i = physical_i * left_i;
@@ -210,7 +145,7 @@ namespace contraction {
     #endif
         }
 
-        template<class Gemm, class Kernel>
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
         static Boundary<Matrix, SymmGroup>
         right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
                                   Boundary<OtherMatrix, SymmGroup> const & right,
@@ -225,7 +160,7 @@ namespace contraction {
                 in_low = &mps.col_dim();
 
             std::vector<block_matrix<Matrix, SymmGroup> > t
-                = mps_times_boundary<Gemm>(mps, right, mpo);
+                = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, Gemm>(mps, right, mpo);
 
             Index<SymmGroup> physical_i = mps.site_dim(), left_i = mps.row_dim(), right_i = *in_low,
                              out_right_i = adjoin(physical_i) * right_i;
@@ -259,7 +194,7 @@ namespace contraction {
             return ret;
         }
 
-        template<class Gemm, class Kernel>
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
         static Boundary<OtherMatrix, SymmGroup>
         overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                               MPSTensor<Matrix, SymmGroup> const & ket_tensor,
@@ -271,7 +206,7 @@ namespace contraction {
 
             MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
             std::vector<block_matrix<Matrix, SymmGroup> > t
-                = boundary_times_mps<Gemm>(ket_cpy, left, mpo);
+                = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, Gemm>(ket_cpy, left, mpo);
 
             Index<SymmGroup> const & left_i = bra_tensor.row_dim();
             Index<SymmGroup> const & right_i = ket_tensor.col_dim();
@@ -317,7 +252,7 @@ namespace contraction {
     #endif
         }
 
-        template<class Gemm, class Kernel>
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
         static Boundary<OtherMatrix, SymmGroup>
         overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                                MPSTensor<Matrix, SymmGroup> const & ket_tensor,
@@ -330,7 +265,7 @@ namespace contraction {
 
             MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
             std::vector<block_matrix<Matrix, SymmGroup> > t
-                = mps_times_boundary<Gemm>(ket_cpy, right, mpo);
+                = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, Gemm>(ket_cpy, right, mpo);
 
             Index<SymmGroup> const & left_i = ket_tensor.row_dim();
             Index<SymmGroup> const & right_i = bra_tensor.col_dim();
@@ -374,7 +309,7 @@ namespace contraction {
             return ret;
         }
 
-        template<class Gemm, class Kernel>
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
         static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
         predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                     MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -387,7 +322,7 @@ namespace contraction {
             typename Gemm::gemm()(mps.data(), transpose(conjugate(mps.data())), dm);
             
             Boundary<Matrix, SymmGroup> half_dm
-                = left_boundary_tensor_mpo<Gemm, Kernel>(mps, left, mpo);
+                = left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, left, mpo);
             
             mps.make_left_paired();
             for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
@@ -417,7 +352,7 @@ namespace contraction {
             return std::make_pair(ret, trunc);
         }
         
-        template<class Gemm>
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
         static MPSTensor<Matrix, SymmGroup>
         predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
                                   MPSTensor<Matrix, SymmGroup> const & psi,
@@ -433,7 +368,7 @@ namespace contraction {
             return B;
         }
         
-        template<class Gemm, class Kernel>
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm, class Kernel>
         static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
         predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
                                         MPOTensor<Matrix, SymmGroup> const & mpo,
@@ -446,7 +381,7 @@ namespace contraction {
             typename Gemm::gemm()(transpose(conjugate(mps.data())), mps.data(), dm);
                 
             Boundary<Matrix, SymmGroup> half_dm
-                = right_boundary_tensor_mpo<Gemm, Kernel>(mps, right, mpo);
+                = right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemm, Kernel>(mps, right, mpo);
             
             mps.make_right_paired();
             for (std::size_t b = 0; b < half_dm.aux_dim(); ++b)
@@ -475,7 +410,7 @@ namespace contraction {
             return std::make_pair(ret, trunc);
         }
         
-        template<class Gemm>
+        template<class Matrix, class OtherMatrix, class SymmGroup, class Gemm>
         static MPSTensor<Matrix, SymmGroup>
         predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
                                   MPSTensor<Matrix, SymmGroup> const & psi,
@@ -491,8 +426,7 @@ namespace contraction {
             
             return B;
         }
-    };
-
+    } // namespace common
 } // namespace contraction
 
 #endif

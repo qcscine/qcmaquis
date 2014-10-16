@@ -30,7 +30,7 @@
 
 template<class Matrix, class OtherMatrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>
-contraction::AbelianEngine<Matrix, OtherMatrix, SymmGroup>::
+contraction::Engine<Matrix, OtherMatrix, SymmGroup, AbelianTag>::
 site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
             Boundary<OtherMatrix, SymmGroup> const & left,
             Boundary<OtherMatrix, SymmGroup> const & right,
@@ -40,7 +40,7 @@ site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
     typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
     std::vector<block_matrix<Matrix, SymmGroup> > t
-        = AbelianEngineFactory<Matrix, OtherMatrix, SymmGroup>::boundary_times_mps(ket_tensor, left, mpo);
+        = boundary_times_mps(ket_tensor, left, mpo);
 
     Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                            & left_i = ket_tensor.row_dim(),

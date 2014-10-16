@@ -52,19 +52,16 @@ struct SiteProblem
 {
     SiteProblem(Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
                 Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
-                MPOTensor<Matrix, SymmGroup> const & mpo_,
-                boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine_)
+                MPOTensor<Matrix, SymmGroup> const & mpo_)
     : left(left_)
     , right(right_)
     , mpo(mpo_) 
-    , engine(engine_)
     {
     }
     
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
-    boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine;
     double ortho_shift;
 };
 
@@ -89,6 +86,7 @@ enum OptimizeDirection { Both, LeftOnly, RightOnly };
 template<class Matrix, class SymmGroup, class Storage>
 class optimizer_base
 {
+    typedef contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> contr;
 public:
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    MPO<Matrix, SymmGroup> const & mpo_,
@@ -100,9 +98,6 @@ public:
     , parms(parms_)
     , stop_callback(stop_callback_)
     {
-        // Initialize the contraction engine
-        contr = contraction::EngineFactory<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>::makeFactory(parms)->makeEngine();
-
         std::size_t L = mps.length();
         
         mps.canonize(site);
@@ -140,20 +135,20 @@ protected:
 
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        left_[site+1] = contr->overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
+        left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
         Storage::pin(left_[site+1]);
         
         for (int n = 0; n < northo; ++n)
-            ortho_left_[n][site+1] = contr->overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
+            ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
     }
     
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        right_[site] = contr->overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
+        right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
         Storage::pin(right_[site]);
         
         for (int n = 0; n < northo; ++n)
-            ortho_right_[n][site] = contr->overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
+            ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
     }
 
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
@@ -239,8 +234,6 @@ protected:
     
     BaseParameters & parms;
     boost::function<bool ()> stop_callback;
-
-    boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > contr;
 
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
     

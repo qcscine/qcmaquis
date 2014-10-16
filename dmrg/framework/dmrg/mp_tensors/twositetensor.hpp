@@ -190,9 +190,8 @@ TwoSiteTensor<Matrix, SymmGroup>::split_mps_r2l(std::size_t Mmax, double cutoff)
 }
 
 template<class Matrix, class SymmGroup>
-template<class Engine>
 boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left, MPOTensor<Matrix, SymmGroup> const& mpo, boost::shared_ptr<Engine> contr)
+TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left, MPOTensor<Matrix, SymmGroup> const& mpo)
 {
     make_both_paired();
     
@@ -206,7 +205,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
         Index<SymmGroup> right_phys_i = adjoin(phys_i_right) * right_i;
         MPSTensor<Matrix, SymmGroup> tmp(phys_i_left, left_i, right_phys_i, data_, LeftPaired);
         
-        Boundary<Matrix, SymmGroup> half_dm = contr->left_boundary_tensor_mpo(tmp, left, mpo);
+        Boundary<Matrix, SymmGroup> half_dm = contraction::Engine<Matrix, Matrix, SymmGroup>::left_boundary_tensor_mpo(tmp, left, mpo);
         tmp = MPSTensor<Matrix, SymmGroup>();
         
         parallel_for(std::size_t b, parallel::range<std::size_t>(0,half_dm.aux_dim()), {
@@ -259,9 +258,8 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_l2r(std::size_t Mmax, double cut
 
 
 template<class Matrix, class SymmGroup>
-template<class Engine>
 boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right, MPOTensor<Matrix, SymmGroup> const& mpo, boost::shared_ptr<Engine> contr)
+TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right, MPOTensor<Matrix, SymmGroup> const& mpo)
 {
     make_both_paired();
     
@@ -275,7 +273,7 @@ TwoSiteTensor<Matrix, SymmGroup>::predict_split_r2l(std::size_t Mmax, double cut
         Index<SymmGroup> left_phys_i = phys_i_left * left_i;
         MPSTensor<Matrix, SymmGroup> tmp(phys_i_right, left_phys_i, right_i, data_, RightPaired);
         
-        Boundary<Matrix, SymmGroup> half_dm = contr->right_boundary_tensor_mpo(tmp, right, mpo);
+        Boundary<Matrix, SymmGroup> half_dm = contraction::Engine<Matrix, Matrix, SymmGroup>::right_boundary_tensor_mpo(tmp, right, mpo);
         tmp = MPSTensor<Matrix, SymmGroup>();
         
         parallel_for(std::size_t b, parallel::range<std::size_t>(0,half_dm.aux_dim()), {
