@@ -36,7 +36,7 @@
 #include "dmrg/mp_tensors/contractions/non-abelian/apply_op.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
-#include "dmrg/mp_tensors/contractions/non-abelian/mps_mpo_ops.hpp"
+//#include "dmrg/mp_tensors/contractions/non-abelian/mps_mpo_ops.hpp"
 
 namespace contraction {
 
