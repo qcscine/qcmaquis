@@ -224,8 +224,8 @@ namespace contraction {
 
     };
 
-    #include "dmrg/mp_tensors/contractions/abelian/site_hamil.hpp"
-
 } // namespace contraction
+
+#include "dmrg/mp_tensors/contractions/abelian/site_hamil.hpp"
 
 #endif

@@ -113,5 +113,6 @@ namespace contraction {
 } // namespace contraction
 
 #include "dmrg/mp_tensors/contractions/abelian/engine.hpp"
+#include "dmrg/mp_tensors/contractions/non-abelian/engine.hpp"
 
 #endif
