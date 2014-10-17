@@ -34,6 +34,7 @@
 namespace contraction {
 
     struct AbelianTag {};
+    struct SU2Tag {};
 
     template <class Matrix, class OtherMatrix, class SymmGroup, class ContractionTag = AbelianTag>
     class Engine
