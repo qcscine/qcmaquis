@@ -3,7 +3,8 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,16 +25,24 @@
  *
  *****************************************************************************/
 
-#ifndef SYMMETRY_H
-#define SYMMETRY_H
+//#include "dmrg/models/coded/models_2u1.hpp"
+//#include "dmrg/models/chem/model_qc.h"
 
-#include "dmrg/block_matrix/symmetry/none.h"
-#include "dmrg/block_matrix/symmetry/u1.h"
-#include "dmrg/block_matrix/symmetry/2u1.h"
-#include "dmrg/block_matrix/symmetry/nu1.h"
-#include "dmrg/block_matrix/symmetry/nu1pg.h"
-#include "dmrg/block_matrix/symmetry/z2.h"
-#include "dmrg/block_matrix/symmetry/zq.h"
-#include "dmrg/block_matrix/symmetry/su2u1.h"
+template<class Matrix>
+struct coded_model_factory<Matrix, SU2U1> {
+    static boost::shared_ptr<model_impl<Matrix, SU2U1 > > parse
+    (Lattice const & lattice, BaseParameters & parms)
+    {
+        typedef boost::shared_ptr<model_impl<Matrix, SU2U1> > impl_ptr;
+        //if (parms["MODEL"] == std::string("fermion Hubbard"))
+        //    return impl_ptr( new FermiHubbardSU2U1<Matrix>(lattice, parms) );
+        //else
+        //    if (parms["MODEL"] == std::string("quantum_chemistry"))
+        //    return impl_ptr( new qc_model<Matrix, SU2U1>(lattice, parms) );
 
-#endif
+        //else {
+            throw std::runtime_error("Don't know this model!");
+            return impl_ptr();
+        //}
+    }
+};

@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,16 +24,38 @@
  *
  *****************************************************************************/
 
-#ifndef SYMMETRY_H
-#define SYMMETRY_H
+#ifndef SYMMETRY_SU2U1_H
+#define SYMMETRY_SU2U1_H
 
-#include "dmrg/block_matrix/symmetry/none.h"
-#include "dmrg/block_matrix/symmetry/u1.h"
-#include "dmrg/block_matrix/symmetry/2u1.h"
-#include "dmrg/block_matrix/symmetry/nu1.h"
-#include "dmrg/block_matrix/symmetry/nu1pg.h"
-#include "dmrg/block_matrix/symmetry/z2.h"
-#include "dmrg/block_matrix/symmetry/zq.h"
-#include "dmrg/block_matrix/symmetry/su2u1.h"
+#include "dmrg/block_matrix/symmetry/nu1_tpl.h"
+
+template<class S = int>
+class SU2U1_template
+{
+public:
+    typedef S subcharge;
+    typedef NU1Charge<2, S> charge;
+    typedef std::vector<charge> charge_v;
+
+    static const charge IdentityCharge;
+    static const bool finite = false;
+
+    static charge fuse(charge a, charge b)
+    {
+        return a+b;
+    }
+
+    template<int R> static charge fuse(boost::array<charge, R> const & v)
+    {
+        charge ret = v[0];
+        for (int i = 1; i < R; ++i)
+            ret = fuse(ret, v[i]);
+        return ret;
+    }
+};
+
+template<class S> const typename SU2U1_template<S>::charge SU2U1_template<S>::IdentityCharge = typename SU2U1_template<S>::charge();
+
+typedef SU2U1_template<> SU2U1;
 
 #endif
