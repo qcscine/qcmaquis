@@ -25,12 +25,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_SSM_BACKBONE
-#define AMBIENT_CONTROLLERS_SSM_BACKBONE
-
-#ifdef AMBIENT_THREADED_COLLECTION
-#include "ambient/controllers/ssm/backbone_ts.h"
-#else
+#ifndef AMBIENT_CONTROLLERS_SSM_BACKBONE_TS
+#define AMBIENT_CONTROLLERS_SSM_BACKBONE_TS
 
 namespace ambient { 
 
@@ -39,14 +35,27 @@ namespace ambient {
         typedef controllers::ssm::controller controller_type;
         typedef typename controller_type::model_type model_type;
 
-        mutable controller_type controller;
-        mutable std::stack<actor*, std::vector<actor*> > stack;
-        mutable std::stack<scope*, std::vector<scope*> > scopes;
+        struct thread_context {
+            controller_type controller;
+            std::stack<actor*, std::vector<actor*> > stack;
+            std::stack<scope*, std::vector<scope*> > scopes;
+            void diverge(int o);
+            int offset;
+        };
+        struct divergence_guard {
+           ~divergence_guard();
+            divergence_guard(size_t length);
+            std::vector< std::vector<controllers::ssm::meta*> > transfers;
+        };
+
+        mutable std::vector<thread_context> thread_context_lane;
+        mutable divergence_guard* threaded_region;
         mutable base_actor base;
         mutable ambient::mutex mtx;
         mutable int sid;
 
         backbone();
+        thread_context& get_thread_context() const;
         controller_type& get_controller() const;
         controller_type* provide_controller();
         void revoke_controller(controller_type* c);
@@ -63,21 +72,11 @@ namespace ambient {
         bool threaded() const;
         bool tunable() const; 
         void schedule() const;
+        void delay_transfer(controllers::ssm::meta* m);
         void intend_read(models::ssm::revision* o) const;
         void intend_write(models::ssm::revision* o) const;
         ambient::mutex& get_mutex() const;
     };
-}
-
-#endif
-
-namespace ambient {
-    #ifdef AMBIENT_BUILD_LIBRARY
-    backbone selector;
-    void sync(){ selector.sync_all(); }
-    #else
-    extern backbone selector;
-    #endif
 }
 
 #endif

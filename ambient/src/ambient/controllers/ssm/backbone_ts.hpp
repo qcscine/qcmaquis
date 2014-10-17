@@ -25,17 +25,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_SSM_BACKBONE_HPP
-#define AMBIENT_CONTROLLERS_SSM_BACKBONE_HPP
-
-#ifdef AMBIENT_THREADED_COLLECTION
-#include "ambient/controllers/ssm/backbone_ts.hpp"
-#else
+#ifndef AMBIENT_CONTROLLERS_SSM_BACKBONE_TS_HPP
+#define AMBIENT_CONTROLLERS_SSM_BACKBONE_TS_HPP
 
 namespace ambient { 
 
-        inline backbone::backbone() : sid(1) {
-            stack.push(&base);
+        inline backbone::backbone() : thread_context_lane(ambient::num_threads()), sid(1), threaded_region(NULL) {
+            for(thread_context& k : thread_context_lane) k.stack.push(&base);
             if(ambient::isset("AMBIENT_VERBOSE")){
                 ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE      << ")\n";
                 if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
@@ -53,48 +49,92 @@ namespace ambient {
             std::vector<int> procs; for(int i = 0; i < ambient::num_procs(); i++) procs.push_back(i);
             ambient::scope* global = new ambient::scope(procs.begin(), procs.end());
         }
+
+        inline backbone::divergence_guard::divergence_guard(size_t length) : transfers(length) {
+            selector.threaded_region = this;
+            for(auto& k : selector.thread_context_lane){
+                k.stack.push(selector.thread_context_lane[0].stack.top());
+                k.scopes.push(selector.thread_context_lane[0].scopes.top());
+            }
+        }
+        inline backbone::divergence_guard::~divergence_guard(){
+            selector.threaded_region = NULL;
+            for(auto& k : selector.thread_context_lane){
+                k.stack.pop();
+                k.scopes.pop();
+            }
+            if(selector.has_nested_actor())
+                throw std::runtime_error("Error: nested actor divergence.");
+            for(auto& transfers_part : transfers) for(auto& transfer : transfers_part){
+                selector.base.set(transfer->which);
+                if(transfer->t == controllers::ssm::meta::type::set)
+                    controllers::ssm::set<models::ssm::revision>::spawn(transfer->r);
+                else
+                    controllers::ssm::get<models::ssm::revision>::spawn(transfer->r);
+            }
+            for(auto& transfers_part : transfers) for(auto& transfer : transfers_part)
+            if(transfer->t == controllers::ssm::meta::type::get){
+                for(auto d : transfer->deps) ((controllers::ssm::functor*)transfer->r.generator.load())->queue(d);
+            }
+        }
+        inline void backbone::thread_context::diverge(int o){
+            this->offset = o;
+        }
         inline int backbone::generate_sid(){
             return (++sid %= AMBIENT_MAX_TAG);
         }
         inline int backbone::get_sid() const {
             return sid;
         }
+        inline backbone::thread_context& backbone::get_thread_context() const {
+            return thread_context_lane[AMBIENT_THREAD_ID];
+        }
         inline typename backbone::controller_type& backbone::get_controller() const {
-            return *get_actor().controller;
+            return *get_actor().controller; // caution: != get_thread_context().controller;
         }
         inline typename backbone::controller_type* backbone::provide_controller(){
-            return &controller;
+            return &get_thread_context().controller;
         }
         inline void backbone::revoke_controller(controller_type* c){
+            // some cleanups ?
         }
         inline void backbone::sync_all(){
-            controller.flush();
-            controller.clear();
+            for(int k = 1; k < thread_context_lane.size(); k++){
+                for(auto i : *thread_context_lane[k].controller.chains) thread_context_lane[0].controller.queue(i);
+                thread_context_lane[k].controller.chains->clear();
+            }
+            for(auto& k : thread_context_lane){
+                k.controller.flush();
+                k.controller.clear();
+            }
             memory::data_bulk::drop();
         }
         inline bool backbone::has_nested_actor() const {
             return (&get_actor() != &this->base);
         }
         inline actor& backbone::get_actor() const {
-            return *stack.top();
+            return *get_thread_context().stack.top();
         }
         inline void backbone::pop_actor(){
-            stack.pop();
+            get_thread_context().stack.pop();
         }
         inline void backbone::push_actor(actor* s){
-            stack.push(s);
+            get_thread_context().stack.push(s);
         }
         inline scope& backbone::get_scope() const {
-            return *scopes.top();
+            return *get_thread_context().scopes.top();
         }
         inline void backbone::pop_scope(){
-            scopes.pop();
+            get_thread_context().scopes.pop();
         }
         inline void backbone::push_scope(scope* s){
-            scopes.push(s);
+            get_thread_context().scopes.push(s);
         }
-        inline bool backbone::threaded() const { 
-            return false;
+        inline bool backbone::threaded() const {
+            return (threaded_region != NULL);
+        }
+        inline void backbone::delay_transfer(controllers::ssm::meta* m){
+            this->threaded_region->transfers[get_thread_context().offset].push_back(m);
         }
         inline bool backbone::tunable() const { 
             return (!get_controller().is_serial() && !has_nested_actor());
@@ -112,7 +152,5 @@ namespace ambient {
             return mtx;
         }
 }
-
-#endif
 
 #endif

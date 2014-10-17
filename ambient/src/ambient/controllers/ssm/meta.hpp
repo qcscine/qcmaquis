@@ -27,51 +27,21 @@
 
 namespace ambient { namespace controllers { namespace ssm {
 
-    // {{{ transformable
-
-    inline void get<transformable>::spawn(transformable& t){
-        ambient::selector.get_controller().queue(new get(t));
+    inline void meta::spawn(revision& r, type t){
+        #ifdef AMBIENT_THREADED_COLLECTION
+        meta* m = new meta(r, ambient::which(), t);
+        if(t == type::get) r.generator = m;
+        ambient::selector.delay_transfer(m);
+        #endif
     }
-    inline get<transformable>::get(transformable& t){
-        handle = ambient::selector.get_controller().get_channel().bcast(t, ambient::which());
+    inline meta::meta(revision& r, rank_t w, type t)
+    : r(r), which(w), t(t)
+    {
     }
-    inline bool get<transformable>::ready(){
-        return handle->test();
+    inline bool meta::ready(){
+        return false;
     }
-    inline void get<transformable>::invoke(){}
-
-    // }}}
-    // {{{ revision
-
-    inline void get<revision>::spawn(revision& r){
-        if(ambient::selector.threaded()){ meta::spawn(r, meta::type::get); return; }
-        get*& transfer = (get*&)r.assist.second;
-        if(ambient::selector.get_controller().update(r)) transfer = new get(r);
-        *transfer += ambient::which();
-        ambient::selector.generate_sid();
+    inline void meta::invoke(){
     }
-    inline get<revision>::get(revision& r) : t(r) {
-        handle = ambient::selector.get_controller().get_channel().get(t);
-        t.invalidate();
-    }
-    inline void get<revision>::operator += (rank_t rank){
-        *handle += rank;
-        if(handle->involved() && !t.valid()){
-            t.use();
-            t.generator = this;
-            t.embed(ambient::pool::malloc<data_bulk>(t.spec)); 
-            ambient::selector.get_controller().queue(this);
-        }
-    }
-    inline bool get<revision>::ready(){
-        return handle->test();
-    }
-    inline void get<revision>::invoke(){
-        ambient::selector.get_controller().squeeze(&t);
-        t.release();
-        t.complete();
-    }
-
-    // }}}
 
 } } }

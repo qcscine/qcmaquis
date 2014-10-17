@@ -159,9 +159,8 @@ std::string sim<Matrix, SymmGroup>::results_archive_path(status_type const& stat
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type & meas)
 {
-    maquis::cout << "Measurements." << std::endl;
     std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile, archive_path, mps));
-    
+
     // TODO: move into special measurement
     std::vector<int> * measure_es_where = NULL;
     entanglement_spectrum_type * spectra = NULL;
@@ -183,11 +182,11 @@ void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type
     {
         storage::archive ar(rfile, "w");
         if (entropies.size() > 0)
-            ar[archive_path + "/Entropy/mean/value"] << entropies;
+            ar[archive_path + "Entropy/mean/value"] << entropies;
         if (renyi2.size() > 0)
-            ar[archive_path + "/Renyi2/mean/value"] << renyi2;
+            ar[archive_path + "Renyi2/mean/value"] << renyi2;
         if (spectra != NULL)
-            ar[archive_path + "/Entanglement Spectra/mean/value"] << *spectra;
+            ar[archive_path + "Entanglement Spectra/mean/value"] << *spectra;
     }
 }
 

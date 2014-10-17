@@ -61,6 +61,8 @@
 #define AMBIENT_MPI_THREADING         MPI_THREAD_FUNNELED
 #define AMBIENT_MASTER_RANK           0
 
+//#define AMBIENT_THREADED_COLLECTION
+
 #include "ambient/utils/dim2.h"
 #include "ambient/utils/enums.h"
 #include "ambient/utils/tree.hpp"
@@ -91,6 +93,7 @@
 #include "ambient/controllers/ssm/functor.h"
 #include "ambient/controllers/ssm/collector.h"
 #include "ambient/controllers/ssm/controller.h"
+#include "ambient/controllers/ssm/meta.h"
 #include "ambient/controllers/ssm/get.h"
 #include "ambient/controllers/ssm/set.h"
 #include "ambient/controllers/ssm/scope.h"
@@ -118,6 +121,7 @@
 #include "ambient/channels/mpi/collective.hpp"
 #endif
 
+#include "ambient/controllers/ssm/meta.hpp"
 #include "ambient/controllers/ssm/get.hpp"
 #include "ambient/controllers/ssm/set.hpp"
 #include "ambient/controllers/ssm/collector.hpp"

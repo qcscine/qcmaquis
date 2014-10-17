@@ -25,24 +25,23 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_UTILS_THREADED_FOR_EACH
-#define AMBIENT_UTILS_THREADED_FOR_EACH
+#ifndef AMBIENT_CONTROLLERS_SSM_META
+#define AMBIENT_CONTROLLERS_SSM_META
 
-namespace ambient {
+namespace ambient { namespace controllers { namespace ssm {
 
-    template<class T> auto dereference(T a) -> decltype(*a){ return *a; }
-    inline int dereference(int a){ return a; }
+    class meta : public functor, public memory::use_bulk_new<meta> {
+    public:
+        enum class type { get, set };
+        static void spawn(revision& r, type t);
+        meta(revision& r, rank_t w, type t);
+        virtual void invoke();
+        virtual bool ready();
+        revision& r;
+        rank_t which;
+        type t;
+    };
 
-    template<class InputIterator, class Function>
-    void threaded_for_each(InputIterator first, InputIterator last, Function fn){
-        int dist = last-first;
-        ambient::backbone::divergence_guard g(dist);
-        AMBIENT_PARALLEL_FOR(int i = 0; i < dist; i++){
-            ambient::selector.get_thread_context().diverge(i);
-            fn(dereference(first+i));
-        }
-    }
-
-}
+} } }
 
 #endif
