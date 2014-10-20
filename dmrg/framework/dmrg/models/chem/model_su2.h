@@ -394,7 +394,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, e2d, d2e);
             term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, d2e, e2d);
 
-            term_assistant.add_term(this->terms_, -0.5 * matrix_elements[m], i, j, flip, flip);
+            //term_assistant.add_term(this->terms_, -0.5 * matrix_elements[m], i, j, flip, flip);
 
             used_elements[m] += 1;
         }
