@@ -28,6 +28,10 @@
 #ifndef AMBIENT_CONTROLLERS_SSM_BACKBONE
 #define AMBIENT_CONTROLLERS_SSM_BACKBONE
 
+#ifdef AMBIENT_THREADED_COLLECTION
+#include "ambient/controllers/ssm/backbone_ts.h"
+#else
+
 namespace ambient { 
 
     class backbone {
@@ -35,33 +39,14 @@ namespace ambient {
         typedef controllers::ssm::controller controller_type;
         typedef typename controller_type::model_type model_type;
 
-        struct thread_context {
-            controller_type controller;
-            std::stack<actor*, std::vector<actor*> > stack;
-            struct sid_t {
-                struct divergence_guard {
-                    divergence_guard();
-                   ~divergence_guard();
-                };
-                sid_t() : value(1), inc(1) {}
-                void offset(int offset, int increment);
-                void maximize();
-                int generate();
-                int value;
-                int inc;
-                int max;
-                int min;
-            } sid;
-        };
-
+        mutable controller_type controller;
+        mutable std::stack<actor*, std::vector<actor*> > stack;
         mutable std::stack<scope*, std::vector<scope*> > scopes;
-        mutable std::stack<rank_t, std::vector<rank_t> > resources;
-        mutable std::vector<thread_context> thread_context_lane;
         mutable base_actor base;
         mutable ambient::mutex mtx;
+        mutable int sid;
 
         backbone();
-        thread_context& get_thread_context() const;
         controller_type& get_controller() const;
         controller_type* provide_controller();
         void revoke_controller(controller_type* c);
@@ -73,25 +58,26 @@ namespace ambient {
         void push_scope(scope* s);
         void pop_scope();
         void sync_all();
-        void reset_sid();
         int  generate_sid();
         int  get_sid() const;
+        bool threaded() const;
         bool tunable() const; 
         void schedule() const;
         void intend_read(models::ssm::revision* o) const;
         void intend_write(models::ssm::revision* o) const;
         ambient::mutex& get_mutex() const;
     };
+}
 
+#endif
+
+namespace ambient {
     #ifdef AMBIENT_BUILD_LIBRARY
     backbone selector;
     void sync(){ selector.sync_all(); }
     #else
     extern backbone selector;
     #endif
-
-    typedef typename backbone::thread_context::sid_t sid_t;
 }
 
 #endif
-

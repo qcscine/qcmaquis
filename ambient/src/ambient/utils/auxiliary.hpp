@@ -117,6 +117,11 @@ namespace ambient {
         return o.ambient_rc.desc->current->owner;
     }
 
+    template<typename V>
+    inline bool locked_once(const V& o){
+        return o.ambient_before->locked_once();
+    }
+
     inline rank_t which(){
         return ambient::selector.get_actor().which();
     }

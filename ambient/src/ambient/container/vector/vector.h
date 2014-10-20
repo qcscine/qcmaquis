@@ -36,7 +36,7 @@ namespace ambient {
     class vector_async;
 
     template <class T, class Allocator = ambient::default_allocator<T> >
-    class vector : public ambient::allow_vt_override {
+    class vector : public ambient::allow_vt_override<vector<T,Allocator> > {
     public:
         typedef vector_async<T,Allocator> async_type;
         typedef Allocator allocator_type;

@@ -119,10 +119,12 @@ namespace ambient {
             m->arguments[arg] = (void*)var;
             selector.get_controller().lsync(o->back());
             selector.get_controller().use_revision(o);
-            selector.get_controller().collect(o->back());
 
             var->ambient_before = o->current;
-            selector.get_controller().add_revision<ambient::locality::local>(o, m); 
+            if(o->current->generator != m){
+                selector.get_controller().collect(o->back());
+                selector.get_controller().add_revision<ambient::locality::local>(o, m);
+            }
             selector.get_controller().use_revision(o);
             var->ambient_after = o->current;
         }
@@ -133,10 +135,12 @@ namespace ambient {
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             selector.get_controller().sync(o->back());
             selector.get_controller().use_revision(o);
-            selector.get_controller().collect(o->back());
 
             var->ambient_before = o->current;
-            selector.get_controller().add_revision<ambient::locality::common>(o, m); 
+            if(o->current->generator != m){
+                selector.get_controller().collect(o->back());
+                selector.get_controller().add_revision<ambient::locality::common>(o, m); 
+            }
             selector.get_controller().use_revision(o);
             var->ambient_after = o->current;
         }
@@ -149,8 +153,8 @@ namespace ambient {
         static bool pin(functor* m){ 
             EXTRACT(o);
             revision& r = *o->ambient_before;
-            if(r.generator != NULL){
-                ((functor*)r.generator)->queue(m);
+            if(r.generator != NULL && r.generator != m){
+                ((functor*)r.generator.load())->queue(m);
                 return true;
             }
             return false;
@@ -211,7 +215,7 @@ namespace ambient {
             revision& r = *o->ambient_before;
             if(r.generator != NULL){
                 ambient::guard<ambient::mutex> g(selector.get_mutex());
-                ((functor*)r.generator)->queue(m);
+                ((functor*)r.generator.load())->queue(m);
                 return true;
             }
             return false;

@@ -33,79 +33,221 @@
 
 namespace contraction {
 
-template <class Matrix, class OtherMatrix, class SymmGroup>
-class Engine
-{
-public:
-    Engine() {}
+    class AbelianTag {};
+    class SU2Tag {};
 
-    virtual block_matrix<OtherMatrix, SymmGroup>
-    overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
-                      MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                      block_matrix<OtherMatrix, SymmGroup> const & left,
-                      block_matrix<OtherMatrix, SymmGroup> * localop = NULL) = 0;
+    template <class SymmGroup>
+    class SymmTypeTrait
+    {
+    public:
+        typedef AbelianTag type;
+    };
 
+    template <>
+    class SymmTypeTrait<SU2U1>
+    {
+    public:
+        typedef SU2Tag type;
+    };
 
-    virtual block_matrix<OtherMatrix, SymmGroup>
-    overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
-                       MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                       block_matrix<OtherMatrix, SymmGroup> const & right,
-                       block_matrix<OtherMatrix, SymmGroup> * localop = NULL) = 0;
+    template <class Matrix, class OtherMatrix, class SymmGroup, class SymmetryType>
+    class EngineBackEnd;
 
-    virtual Boundary<Matrix, SymmGroup>
-    left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
-                             Boundary<OtherMatrix, SymmGroup> const & left,
-                             MPOTensor<Matrix, SymmGroup> const & mpo,
-                             Index<SymmGroup> const * in_low = NULL) = 0;
+    template <class Matrix, class OtherMatrix, class SymmGroup>
+    class Engine
+    {
+    public:
+        Engine() {}
 
-    virtual Boundary<Matrix, SymmGroup>
-    right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
-                              Boundary<OtherMatrix, SymmGroup> const & right,
-                              MPOTensor<Matrix, SymmGroup> const & mpo,
-                              Index<SymmGroup> const * in_low = NULL) = 0;
-
-    virtual Boundary<OtherMatrix, SymmGroup>
-    overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+        static block_matrix<OtherMatrix, SymmGroup>
+        overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                          Boundary<OtherMatrix, SymmGroup> const & left,
-                          MPOTensor<Matrix, SymmGroup> const & mpo) = 0;
+                          block_matrix<OtherMatrix, SymmGroup> const & left,
+                          block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
+        {
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::overlap_left_step
+                    (bra_tensor, ket_tensor, left, localop);
+        }
 
-    virtual Boundary<OtherMatrix, SymmGroup>
-    overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+
+        static block_matrix<OtherMatrix, SymmGroup>
+        overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                            MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                           Boundary<OtherMatrix, SymmGroup> const & right,
-                           MPOTensor<Matrix, SymmGroup> const & mpo) = 0;
+                           block_matrix<OtherMatrix, SymmGroup> const & right,
+                           block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
+        {
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::overlap_right_step
+                    (bra_tensor, ket_tensor, right, localop);
+        }
 
-    virtual MPSTensor<Matrix, SymmGroup>
-    site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
-                Boundary<OtherMatrix, SymmGroup> const & left,
-                Boundary<OtherMatrix, SymmGroup> const & right,
-                MPOTensor<Matrix, SymmGroup> const & mpo) = 0;
+        static Boundary<Matrix, SymmGroup>
+        left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
+                                 Boundary<OtherMatrix, SymmGroup> const & left,
+                                 MPOTensor<Matrix, SymmGroup> const & mpo,
+                                 Index<SymmGroup> const * in_low = NULL)
+        {
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::left_boundary_tensor_mpo
+                    (mps, left, mpo, in_low);
+        }
 
-    virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
-    predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
-                                MPOTensor<Matrix, SymmGroup> const & mpo,
-                                Boundary<OtherMatrix, SymmGroup> const & left,
-                                Boundary<OtherMatrix, SymmGroup> const & right,
-                                double alpha, double cutoff, std::size_t Mmax) = 0;
+        static Boundary<Matrix, SymmGroup>
+        right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
+                                  Boundary<OtherMatrix, SymmGroup> const & right,
+                                  MPOTensor<Matrix, SymmGroup> const & mpo,
+                                  Index<SymmGroup> const * in_low = NULL)
+        {
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::right_boundary_tensor_mpo
+                    (mps, right, mpo, in_low);
+        }
 
-    virtual MPSTensor<Matrix, SymmGroup>
-    predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
-                              MPSTensor<Matrix, SymmGroup> const & psi,
-                              MPSTensor<Matrix, SymmGroup> const & A) = 0;
+        static Boundary<OtherMatrix, SymmGroup>
+        overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                              MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                              Boundary<OtherMatrix, SymmGroup> const & left,
+                              MPOTensor<Matrix, SymmGroup> const & mpo)
+        {
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::overlap_mpo_left_step
+                    (bra_tensor, ket_tensor, left, mpo);
+        }
 
-    virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
-    predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
-                                MPOTensor<Matrix, SymmGroup> const & mpo,
-                                Boundary<OtherMatrix, SymmGroup> const & left,
-                                Boundary<OtherMatrix, SymmGroup> const & right,
-                                double alpha, double cutoff, std::size_t Mmax) = 0;
+        static Boundary<OtherMatrix, SymmGroup>
+        overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                               MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                               Boundary<OtherMatrix, SymmGroup> const & right,
+                               MPOTensor<Matrix, SymmGroup> const & mpo)
+        {
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::overlap_mpo_right_step
+                    (bra_tensor, ket_tensor, right, mpo);
+        }
 
-    virtual MPSTensor<Matrix, SymmGroup>
-    predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
-                              MPSTensor<Matrix, SymmGroup> const & psi,
-                              MPSTensor<Matrix, SymmGroup> const & A) = 0;
-};
+        static MPSTensor<Matrix, SymmGroup>
+        site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                    Boundary<OtherMatrix, SymmGroup> const & left,
+                    Boundary<OtherMatrix, SymmGroup> const & right,
+                    MPOTensor<Matrix, SymmGroup> const & mpo)
+        {
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::site_hamil2
+                    (ket_tensor, left, right, mpo);
+        }
+
+        static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+        predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                                    Boundary<OtherMatrix, SymmGroup> const & left,
+                                    Boundary<OtherMatrix, SymmGroup> const & right,
+                                    double alpha, double cutoff, std::size_t Mmax)
+        {
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::predict_new_state_l2r_sweep
+                    (mps, mpo, left, right, alpha, cutoff, Mmax);
+        }
+
+        static MPSTensor<Matrix, SymmGroup>
+        predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
+                                  MPSTensor<Matrix, SymmGroup> const & psi,
+                                  MPSTensor<Matrix, SymmGroup> const & A)
+        {
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::predict_lanczos_l2r_sweep
+                    (B, psi, A);
+        }
+
+        static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+        predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                                    Boundary<OtherMatrix, SymmGroup> const & left,
+                                    Boundary<OtherMatrix, SymmGroup> const & right,
+                                    double alpha, double cutoff, std::size_t Mmax)
+        {
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::predict_new_state_r2l_sweep
+                    (mps, mpo, left, right, alpha, cutoff, Mmax);
+        }
+
+        static MPSTensor<Matrix, SymmGroup>
+        predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
+                                  MPSTensor<Matrix, SymmGroup> const & psi,
+                                  MPSTensor<Matrix, SymmGroup> const & A)
+        {
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::predict_lanczos_r2l_sweep
+                    (B, psi, A);
+        }
+    };
+
+    template <class Matrix, class OtherMatrix, class SymmGroup, class SymmetryType>
+    class EngineBackEnd
+    {
+    public:
+        EngineBackEnd() {}
+
+        static block_matrix<OtherMatrix, SymmGroup>
+        overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                          MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                          block_matrix<OtherMatrix, SymmGroup> const & left,
+                          block_matrix<OtherMatrix, SymmGroup> * localop = NULL);
+
+
+        static block_matrix<OtherMatrix, SymmGroup>
+        overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                           block_matrix<OtherMatrix, SymmGroup> const & right,
+                           block_matrix<OtherMatrix, SymmGroup> * localop = NULL);
+
+        static Boundary<Matrix, SymmGroup>
+        left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
+                                 Boundary<OtherMatrix, SymmGroup> const & left,
+                                 MPOTensor<Matrix, SymmGroup> const & mpo,
+                                 Index<SymmGroup> const * in_low = NULL);
+
+        static Boundary<Matrix, SymmGroup>
+        right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
+                                  Boundary<OtherMatrix, SymmGroup> const & right,
+                                  MPOTensor<Matrix, SymmGroup> const & mpo,
+                                  Index<SymmGroup> const * in_low = NULL);
+
+        static Boundary<OtherMatrix, SymmGroup>
+        overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                              MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                              Boundary<OtherMatrix, SymmGroup> const & left,
+                              MPOTensor<Matrix, SymmGroup> const & mpo);
+
+        static Boundary<OtherMatrix, SymmGroup>
+        overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                               MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                               Boundary<OtherMatrix, SymmGroup> const & right,
+                               MPOTensor<Matrix, SymmGroup> const & mpo);
+
+        static MPSTensor<Matrix, SymmGroup>
+        site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                    Boundary<OtherMatrix, SymmGroup> const & left,
+                    Boundary<OtherMatrix, SymmGroup> const & right,
+                    MPOTensor<Matrix, SymmGroup> const & mpo);
+
+        static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+        predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                                    Boundary<OtherMatrix, SymmGroup> const & left,
+                                    Boundary<OtherMatrix, SymmGroup> const & right,
+                                    double alpha, double cutoff, std::size_t Mmax);
+
+        static MPSTensor<Matrix, SymmGroup>
+        predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
+                                  MPSTensor<Matrix, SymmGroup> const & psi,
+                                  MPSTensor<Matrix, SymmGroup> const & A);
+
+        static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+        predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                                    Boundary<OtherMatrix, SymmGroup> const & left,
+                                    Boundary<OtherMatrix, SymmGroup> const & right,
+                                    double alpha, double cutoff, std::size_t Mmax);
+
+        static MPSTensor<Matrix, SymmGroup>
+        predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
+                                  MPSTensor<Matrix, SymmGroup> const & psi,
+                                  MPSTensor<Matrix, SymmGroup> const & A);
+    };
 
 } // namespace contraction
+
+#include "dmrg/mp_tensors/contractions/abelian/engine.hpp"
+#include "dmrg/mp_tensors/contractions/non-abelian/engine.hpp"
+
 #endif

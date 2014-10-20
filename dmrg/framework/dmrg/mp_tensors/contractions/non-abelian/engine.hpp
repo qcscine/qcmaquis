@@ -24,215 +24,135 @@
  *
  *****************************************************************************/
 
-#ifndef SU2_ENGINE_HPP
-#define SU2_ENGINE_HPP
+#ifndef SU2_ENGINE
+#define SU2_ENGINE
 
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/block_matrix/indexing.h"
 
-#include "dmrg/mp_tensors/contractions/engine.h"
+#include "dmrg/mp_tensors/contractions/common/common.h"
+
 #include "dmrg/mp_tensors/contractions/non-abelian/apply_op.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
+#include "dmrg/mp_tensors/contractions/non-abelian/functors.h"
 //#include "dmrg/mp_tensors/contractions/non-abelian/mps_mpo_ops.hpp"
 
 namespace contraction {
 
-    // Forward declaration
     template <class Matrix, class OtherMatrix, class SymmGroup>
-    class SU2EngineFactory;
-}
-
-namespace contraction {
-
-template <class Matrix, class OtherMatrix, class SymmGroup>
-class SU2Engine : public Engine<Matrix, OtherMatrix, SymmGroup>
-{
-public:
-    SU2Engine() {}
-
-    virtual block_matrix<OtherMatrix, SymmGroup>
-    overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
-                      MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                      block_matrix<OtherMatrix, SymmGroup> const & left,
-                      block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
+    class EngineBackEnd<Matrix, OtherMatrix, SymmGroup, SU2Tag>
     {
-        return SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>::overlap_left_step(bra_tensor, ket_tensor, left, localop);
-    }
+    public:
 
-    virtual block_matrix<OtherMatrix, SymmGroup>
-    overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
-                       MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                       block_matrix<OtherMatrix, SymmGroup> const & right,
-                       block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
-    {
-        return SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>::overlap_right_step(bra_tensor, ket_tensor, right, localop);
-    }
-
-    virtual Boundary<Matrix, SymmGroup>
-    left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
-                             Boundary<OtherMatrix, SymmGroup> const & left,
-                             MPOTensor<Matrix, SymmGroup> const & mpo,
-                             Index<SymmGroup> const * in_low = NULL)
-    {
-        return SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>::left_boundary_tensor_mpo(mps, left, mpo, in_low);
-    }
-
-    virtual Boundary<Matrix, SymmGroup>
-    right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
-                              Boundary<OtherMatrix, SymmGroup> const & right,
-                              MPOTensor<Matrix, SymmGroup> const & mpo,
-                              Index<SymmGroup> const * in_low = NULL)
-    {
-        return SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>::right_boundary_tensor_mpo(mps, right, mpo, in_low);
-    }
-
-    virtual Boundary<OtherMatrix, SymmGroup>
-    overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+        static block_matrix<OtherMatrix, SymmGroup>
+        overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                           MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                          Boundary<OtherMatrix, SymmGroup> const & left,
-                          MPOTensor<Matrix, SymmGroup> const & mpo)
-    {
-        return SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>::overlap_mpo_left_step(bra_tensor, ket_tensor, left, mpo);
-    }
+                          block_matrix<OtherMatrix, SymmGroup> const & left,
+                          block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
+        {
+            return common::overlap_left_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>
+                   (bra_tensor, ket_tensor, left, localop);
+        }
 
-    virtual Boundary<OtherMatrix, SymmGroup>
-    overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+        static block_matrix<OtherMatrix, SymmGroup>
+        overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
                            MPSTensor<Matrix, SymmGroup> const & ket_tensor,
-                           Boundary<OtherMatrix, SymmGroup> const & right,
-                           MPOTensor<Matrix, SymmGroup> const & mpo)
-    {
-        return SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>::overlap_mpo_right_step(bra_tensor, ket_tensor, right, mpo);
-    }
+                           block_matrix<OtherMatrix, SymmGroup> const & right,
+                           block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
+        {
+            return common::overlap_right_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>
+                   (bra_tensor, ket_tensor, right, localop);
+        }
 
-    virtual MPSTensor<Matrix, SymmGroup>
-    site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
-                Boundary<OtherMatrix, SymmGroup> const & left,
-                Boundary<OtherMatrix, SymmGroup> const & right,
-                MPOTensor<Matrix, SymmGroup> const & mpo);
+        static Boundary<Matrix, SymmGroup>
+        left_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
+                                 Boundary<OtherMatrix, SymmGroup> const & left,
+                                 MPOTensor<Matrix, SymmGroup> const & mpo,
+                                 Index<SymmGroup> const * in_low = NULL)
+        {
+            return common::left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::lbtm_functor>
+                   (mps, left, mpo, in_low);
+        }
 
-    // Single-site prediction
-    virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
-    predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
-                                MPOTensor<Matrix, SymmGroup> const & mpo,
-                                Boundary<OtherMatrix, SymmGroup> const & left,
-                                Boundary<OtherMatrix, SymmGroup> const & right,
-                                double alpha, double cutoff, std::size_t Mmax)
-    {
-        return SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep(mps, mpo, left, right, alpha, cutoff, Mmax);
-    }
+        static Boundary<Matrix, SymmGroup>
+        right_boundary_tensor_mpo(MPSTensor<Matrix, SymmGroup> mps,
+                                  Boundary<OtherMatrix, SymmGroup> const & right,
+                                  MPOTensor<Matrix, SymmGroup> const & mpo,
+                                  Index<SymmGroup> const * in_low = NULL)
+        {
+            return common::right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::rbtm_functor>
+                   (mps, right, mpo, in_low);
+        }
 
-    virtual MPSTensor<Matrix, SymmGroup>
-    predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
-                              MPSTensor<Matrix, SymmGroup> const & psi,
-                              MPSTensor<Matrix, SymmGroup> const & A)
-    {
-        return SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep(B, psi, A);
-    }
+        static Boundary<OtherMatrix, SymmGroup>
+        overlap_mpo_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                              MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                              Boundary<OtherMatrix, SymmGroup> const & left,
+                              MPOTensor<Matrix, SymmGroup> const & mpo)
+        {
+            return common::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::lbtm_functor>
+                   (bra_tensor, ket_tensor, left, mpo);
+        }
 
-    virtual std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
-    predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
-                                MPOTensor<Matrix, SymmGroup> const & mpo,
-                                Boundary<OtherMatrix, SymmGroup> const & left,
-                                Boundary<OtherMatrix, SymmGroup> const & right,
-                                double alpha, double cutoff, std::size_t Mmax)
-    {
-        return SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep(mps, mpo, left, right, alpha, cutoff, Mmax);
-    }
+        static Boundary<OtherMatrix, SymmGroup>
+        overlap_mpo_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
+                               MPSTensor<Matrix, SymmGroup> const & ket_tensor,
+                               Boundary<OtherMatrix, SymmGroup> const & right,
+                               MPOTensor<Matrix, SymmGroup> const & mpo)
+        {
+            return common::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::rbtm_functor>
+                   (bra_tensor, ket_tensor, right, mpo);
+        }
 
-    virtual MPSTensor<Matrix, SymmGroup>
-    predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
-                              MPSTensor<Matrix, SymmGroup> const & psi,
-                              MPSTensor<Matrix, SymmGroup> const & A)
-    {
-        return SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep(B, psi, A);
-    }
-};
+        // Single-site prediction
+        static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+        predict_new_state_l2r_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                                    Boundary<OtherMatrix, SymmGroup> const & left,
+                                    Boundary<OtherMatrix, SymmGroup> const & right,
+                                    double alpha, double cutoff, std::size_t Mmax)
+        {
+            return common::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::lbtm_functor>
+                   (mps, mpo, left, right, alpha, cutoff, Mmax);
+        }
 
-template<class Matrix, class OtherMatrix, class SymmGroup>
-MPSTensor<Matrix, SymmGroup>
-SU2Engine<Matrix, OtherMatrix, SymmGroup>::
-site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
-            Boundary<OtherMatrix, SymmGroup> const & left,
-            Boundary<OtherMatrix, SymmGroup> const & right,
-            MPOTensor<Matrix, SymmGroup> const & mpo)
-{
-    typedef typename SymmGroup::charge charge;
-    typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
+        static MPSTensor<Matrix, SymmGroup>
+        predict_lanczos_l2r_sweep(MPSTensor<Matrix, SymmGroup> B,
+                                  MPSTensor<Matrix, SymmGroup> const & psi,
+                                  MPSTensor<Matrix, SymmGroup> const & A)
+        {
+            return common::predict_lanczos_l2r_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(B, psi, A);
+        }
 
-    //maquis::cout << ket_tensor.row_dim() << std::endl;
-    //maquis::cout << ket_tensor.site_dim() << std::endl;
-    //maquis::cout << ket_tensor.col_dim() << std::endl;
-    //maquis::cout << "sh2 input ket data:\n";
-    //maquis::cout << ket_tensor.data() << std::endl;
-    std::vector<block_matrix<Matrix, SymmGroup> > t
-        = SU2EngineFactory<Matrix, OtherMatrix, SymmGroup>::boundary_times_mps(ket_tensor, left, mpo);
+        static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
+        predict_new_state_r2l_sweep(MPSTensor<Matrix, SymmGroup> const & mps,
+                                    MPOTensor<Matrix, SymmGroup> const & mpo,
+                                    Boundary<OtherMatrix, SymmGroup> const & left,
+                                    Boundary<OtherMatrix, SymmGroup> const & right,
+                                    double alpha, double cutoff, std::size_t Mmax)
+        {
+            return common::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, SU2::rbtm_functor>
+                   (mps, mpo, left, right, alpha, cutoff, Mmax);
+        }
 
-    Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
-                           & left_i = ket_tensor.row_dim(),
-                           & right_i = ket_tensor.col_dim(),
-                             out_left_i = physical_i * left_i;
-    ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
-    ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,
-                            boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                    -boost::lambda::_1, boost::lambda::_2));
+        static MPSTensor<Matrix, SymmGroup>
+        predict_lanczos_r2l_sweep(MPSTensor<Matrix, SymmGroup> B,
+                                  MPSTensor<Matrix, SymmGroup> const & psi,
+                                  MPSTensor<Matrix, SymmGroup> const & A)
+        {
+            return common::predict_lanczos_r2l_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(B, psi, A);
+        }
 
-    MPSTensor<Matrix, SymmGroup> ret;
-    ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
-    index_type loop_max = mpo.col_dim();
-
-#ifdef USE_AMBIENT
-    // TODO: use SU2 variants of allocate / execute Kernels
-    {
-        block_matrix<Matrix, SymmGroup> empty;
-        swap(ket_tensor.data(), empty); // deallocating mpstensor before exiting the stack
-    }
-    parallel::sync();
-    ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
-
-    parallel_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-        Abelian::detail::lbtm_kernel_allocate(b2, contr_grid, t, mpo, right_i, out_left_i);
-    });
-    omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-        Abelian::detail::lbtm_kernel_execute(b2, contr_grid, left, t, mpo, ket_tensor.data().basks(), right_i, out_left_i, in_right_pb, out_left_pb);
-        contr_grid.multiply_column(b2, right[b2]);
-    });
-    t.clear();
-    parallel::sync();
-
-    swap(ret.data(), contr_grid.reduce());
-    parallel::sync();
-
-#else
-    omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-        ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
-        ::SU2::detail::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
-        block_matrix<Matrix, SymmGroup> tmp;
-        ::SU2::gemm(contr_grid(0,0), right[b2], tmp);
-
-        //maquis::cout << contr_grid(0,0).left_basis() << std::endl;
-        //maquis::cout << contr_grid(0,0).right_basis() << std::endl;
-        //maquis::cout << "  *\n";
-        //maquis::cout << right[b2].left_basis() << std::endl;
-        //maquis::cout << right[b2].right_basis() << std::endl;
-        //maquis::cout << "  -->\n";
-        //maquis::cout << tmp.left_basis() << std::endl;
-        //maquis::cout << tmp.right_basis() << std::endl << std::endl;
-        //maquis::cout << "-------------------------------------------\n";
-
-        contr_grid(0,0).clear();
-        parallel_critical
-        for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
-            // TODO prevent these blocks from even being computed
-            if (tmp.basis().left_charge(k) == tmp.basis().right_charge(k))
-            ret.data().match_and_add_block(tmp[k], tmp.basis().left_charge(k), tmp.basis().right_charge(k));
-    });
-#endif
-    //maquis::cout << "sh2 output ket data:\n";
-    //maquis::cout << ret.data() << std::endl;
-    return ret;
-}
+        static MPSTensor<Matrix, SymmGroup>
+        site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
+                    Boundary<OtherMatrix, SymmGroup> const & left,
+                    Boundary<OtherMatrix, SymmGroup> const & right,
+                    MPOTensor<Matrix, SymmGroup> const & mpo);
+    };
 
 } // namespace contraction
+
+#include "dmrg/mp_tensors/contractions/non-abelian/site_hamil.hpp"
 
 #endif

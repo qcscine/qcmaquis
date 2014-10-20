@@ -44,6 +44,7 @@ namespace ambient { namespace controllers { namespace ssm {
     // {{{ revision
 
     inline void get<revision>::spawn(revision& r){
+        if(ambient::selector.threaded()){ meta::spawn(r, meta::type::get); return; }
         get*& transfer = (get*&)r.assist.second;
         if(ambient::selector.get_controller().update(r)) transfer = new get(r);
         *transfer += ambient::which();

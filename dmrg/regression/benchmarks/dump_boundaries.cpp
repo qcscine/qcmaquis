@@ -80,10 +80,6 @@ int main(int argc, char ** argv)
         MPO<matrix, grp> mpo = make_mpo(lattice, model, parms);
         tim_model.end();
         maquis::cout << "Parsing model done!\n";
-
-        /// initialize contraction engine
-        boost::shared_ptr<contraction::Engine<matrix, typename storage::constrained<matrix>::type, grp> > contr;
-        contr = contraction::EngineFactory<matrix, typename storage::constrained<matrix>::type, grp>::makeFactory(parms)->makeEngine();
         
         /// Initialize & load MPS
         tim_load.begin();
@@ -113,7 +109,7 @@ int main(int argc, char ** argv)
         tim_l_boundary.begin();
         Boundary<matrix, grp> left = mps.left_boundary();
         for (size_t i=0; i<site; ++i)
-            left = contr->overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+            left = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
         {
             std::string fname = "left" + boost::lexical_cast<std::string>(site) + ".h5";
             storage::archive ar(parms["chkpfile"].str()+"/"+fname, "w");
@@ -128,7 +124,7 @@ int main(int argc, char ** argv)
         tim_r_boundary.begin();
         Boundary<matrix, grp> right = mps.right_boundary();
         for (int i=L-1; i>site+1; --i)
-            right = contr->overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
+            right = contraction::Engine<matrix, matrix, grp>::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
         {
             std::string fname = "right" + boost::lexical_cast<std::string>(site+2) + ".h5";
             storage::archive ar(parms["chkpfile"].str()+"/"+fname, "w");

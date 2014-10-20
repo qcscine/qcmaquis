@@ -28,12 +28,14 @@
 #ifndef MULTIGRID_H
 #define MULTIGRID_H
 
+#include <boost/optional.hpp>
+#include <sys/stat.h>
+#include <sys/time.h>
+
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/optimize/optimize.h"
 #include "dmrg/utils/results_collector.h"
-
-#include <boost/optional.hpp>
 
 struct multigrid {
     
@@ -522,9 +524,6 @@ struct multigrid {
         std::size_t LL = mps_large.length();
         assert(LL == 2*L);
 
-        boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > contr;
-        contr.reset(new contraction::AbelianEngine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>());
-        
         results_collector graining_results;
         
         int sweep = 0;
@@ -570,7 +569,7 @@ struct multigrid {
             right_[L] = mps_small.right_boundary();
             
             for(int i = L-1; i >= 0; --i) {
-                right_[i] = contr->overlap_mpo_right_step(mps_small[i], mps_small[i], right_[i+1], mpos_mix[0][i]);
+                right_[i] = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_right_step(mps_small[i], mps_small[i], right_[i+1], mpos_mix[0][i]);
             }
         }
         
@@ -606,7 +605,7 @@ struct multigrid {
             Boundary<Matrix, SymmGroup> right_mixed;
             if (p<L-1) {
                 right_mixed = right_[p+2];
-                right_mixed = contr->overlap_mpo_right_step(mps_small[p+1], mps_small[p+1], right_mixed, mpos_mix[p+1][2*(p+1)]);
+                right_mixed = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_right_step(mps_small[p+1], mps_small[p+1], right_mixed, mpos_mix[p+1][2*(p+1)]);
             }
 
             // Testing energy calculations
@@ -647,11 +646,11 @@ struct multigrid {
              */
             {
                 right = (p<L-1) ? right_mixed : right_[p+1];
-                right = contr->overlap_mpo_right_step(mps_large[2*p+1], mps_large[2*p+1], right, mpos_mix[p+1][2*p+1]);
+                right = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_right_step(mps_large[2*p+1], mps_large[2*p+1], right, mpos_mix[p+1][2*p+1]);
                 if (p == 0)
                     left_[0] = mps_large.left_boundary();
                 
-                SiteProblem<Matrix, SymmGroup> sp(left_[2*p], right, mpos_mix[p+1][2*p], contr);
+                SiteProblem<Matrix, SymmGroup> sp(left_[2*p], right, mpos_mix[p+1][2*p]);
 
                 
                 // solver
@@ -661,13 +660,13 @@ struct multigrid {
                     std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
                     timeval now, then;
                     if (parms["eigensolver"] == std::string("IETL")) {
-                        BEGIN_TIMING("IETL")
+                        //BEGIN_TIMING("IETL")
                         res = solve_ietl_lanczos(sp, mps_large[2*p], parms);
-                        END_TIMING("IETL")
+                        //END_TIMING("IETL")
                     } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
-                        BEGIN_TIMING("JCD")
+                        //BEGIN_TIMING("JCD")
                         res = solve_ietl_jcd(sp, mps_large[2*p], parms);
-                        END_TIMING("JCD")
+                        //END_TIMING("JCD")
                     } else {
                         throw std::runtime_error("I don't know this eigensolver.");
                     }
@@ -680,7 +679,7 @@ struct multigrid {
                 } else if (true) {
                     // Compute Energy
                     MPSTensor<Matrix, SymmGroup> vec2 =
-                    contr->site_hamil2(mps_large[2*p], sp.left, sp.right, sp.mpo);
+                    contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(mps_large[2*p], sp.left, sp.right, sp.mpo);
                     double energy = mps_large[2*p].scalar_overlap(vec2);
                     maquis::cout << "Energy " << "finegraining_00 " << energy << std::endl;
                     graining_results["Energy"] << energy;
@@ -691,7 +690,7 @@ struct multigrid {
                 /*
                 
                 maquis::cout << "Growing, alpha = " << alpha << std::endl;
-                mps_large.grow_l2r_sweep(mpos_mix[L][2*p], left_[2*p], right, contr,
+                mps_large.grow_l2r_sweep(mpos_mix[L][2*p], left_[2*p], right,
                                          2*p, alpha, cutoff, Mmax);
                  */
                  
@@ -705,10 +704,10 @@ struct multigrid {
              */
             {
                 right = (p<L-1) ? right_mixed : right_[p+1];
-                left_[2*p+1] = contr->overlap_mpo_left_step(mps_large[2*p], mps_large[2*p],
+                left_[2*p+1] = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps_large[2*p], mps_large[2*p],
                                                                   left_[2*p], mpos_mix[L][2*p]);
                 
-                SiteProblem<Matrix, SymmGroup> sp(left_[2*p+1], right, mpos_mix[p+1][2*p+1], contr);
+                SiteProblem<Matrix, SymmGroup> sp(left_[2*p+1], right, mpos_mix[p+1][2*p+1]);
 
                 // solver
                 if (parms["finegrain_optim"])
@@ -717,13 +716,13 @@ struct multigrid {
                     std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
                     timeval now, then;
                     if (parms["eigensolver"] == std::string("IETL")) {
-                        BEGIN_TIMING("IETL")
+                        //BEGIN_TIMING("IETL")
                         res = solve_ietl_lanczos(sp, mps_large[2*p+1], parms);
-                        END_TIMING("IETL")
+                        //END_TIMING("IETL")
                     } else if (parms["eigensolver"] == std::string("IETL_JCD")) {
-                        BEGIN_TIMING("JCD")
+                        //BEGIN_TIMING("JCD")
                         res = solve_ietl_jcd(sp, mps_large[2*p+1], parms);
-                        END_TIMING("JCD")
+                        //END_TIMING("JCD")
                     } else {
                         throw std::runtime_error("I don't know this eigensolver.");
                     }
@@ -736,7 +735,7 @@ struct multigrid {
                 } else if (true) {
                     // Compute Energy
                     MPSTensor<Matrix, SymmGroup> vec2 =
-                    contr->site_hamil2(mps_large[2*p+1], sp.left, sp.right, sp.mpo);
+                    contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(mps_large[2*p+1], sp.left, sp.right, sp.mpo);
                     double energy = mps_large[2*p+1].scalar_overlap(vec2);
                     maquis::cout << "Energy " << "finegraining_01 " << energy << std::endl;
                     graining_results["Energy"] << energy;
@@ -748,9 +747,9 @@ struct multigrid {
                 if (p < L-1) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     MPSTensor<Matrix, SymmGroup> new_mps =
-                    contraction::predict_new_state_l2r_sweep(mps_large[2*p+1], mpos_mix[L][2*p+1], left_[2*p+1], right, alpha, cutoff, Mmax);
+                    contraction::Engine<Matrix, Matrix, SymmGroup>::predict_new_state_l2r_sweep(mps_large[2*p+1], mpos_mix[L][2*p+1], left_[2*p+1], right, alpha, cutoff, Mmax);
                     // New tensor for next iteration
-                    Msmall = contraction::predict_lanczos_l2r_sweep(mps_small[p+1],
+                    Msmall = contraction::Engine<Matrix, Matrix, SymmGroup>::predict_lanczos_l2r_sweep(mps_small[p+1],
                                                                     mps_large[2*p+1], new_mps);
                     mps_large[2*p+1] = new_mps;
                 } else {
@@ -770,7 +769,7 @@ struct multigrid {
             
             // Preparing left boundary
             if (p < L-1) {
-                left_[2*p+2] = contr->overlap_mpo_left_step(mps_large[2*p+1], mps_large[2*p+1],
+                left_[2*p+2] = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps_large[2*p+1], mps_large[2*p+1],
                                                                   left_[2*p+1], mpos_mix[L][2*p+1]);
             }
             

@@ -34,5 +34,6 @@
 #include "dmrg/block_matrix/symmetry/nu1pg.h"
 #include "dmrg/block_matrix/symmetry/z2.h"
 #include "dmrg/block_matrix/symmetry/zq.h"
+#include "dmrg/block_matrix/symmetry/su2u1.h"
 
 #endif

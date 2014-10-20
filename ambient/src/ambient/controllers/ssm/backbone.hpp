@@ -28,10 +28,14 @@
 #ifndef AMBIENT_CONTROLLERS_SSM_BACKBONE_HPP
 #define AMBIENT_CONTROLLERS_SSM_BACKBONE_HPP
 
+#ifdef AMBIENT_THREADED_COLLECTION
+#include "ambient/controllers/ssm/backbone_ts.hpp"
+#else
+
 namespace ambient { 
 
-        inline backbone::backbone() : thread_context_lane(ambient::num_threads()) {
-            for(thread_context& k : thread_context_lane) k.stack.push(&base);
+        inline backbone::backbone() : sid(1) {
+            stack.push(&base);
             if(ambient::isset("AMBIENT_VERBOSE")){
                 ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE      << ")\n";
                 if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
@@ -39,8 +43,8 @@ namespace ambient {
                 ambient::cout << "ambient: size of data bulk chunks: "      << AMBIENT_DATA_BULK_CHUNK        << "\n";
                 if(ambient::isset("AMBIENT_BULK_LIMIT")) ambient::cout << "ambient: max chunks of data bulk: " << ambient::getint("AMBIENT_BULK_LIMIT") << "\n";
                 if(ambient::isset("AMBIENT_BULK_REUSE")) ambient::cout << "ambient: enabled bulk garbage collection\n";
-                if(ambient::isset("AMBIENT_BULK_DEALLOCATE")) ambient::cout << "ambient: enabled bulk deallocation\n";
-                ambient::cout << "ambient: maximum sid value: "             << AMBIENT_MAX_SID                << "\n";
+                if(ambient::isset("AMBIENT_FORCE_BULK_DEALLOCATION")) ambient::cout << "ambient: enabled bulk deallocation\n";
+                ambient::cout << "ambient: maximum tag value: "             << AMBIENT_MAX_TAG                << "\n";
                 ambient::cout << "ambient: number of procs: "               << ambient::num_procs()           << "\n";
                 ambient::cout << "ambient: number of threads per proc: "    << ambient::num_threads()         << "\n";
                 ambient::cout << "\n";
@@ -49,75 +53,36 @@ namespace ambient {
             std::vector<int> procs; for(int i = 0; i < ambient::num_procs(); i++) procs.push_back(i);
             ambient::scope* global = new ambient::scope(procs.begin(), procs.end());
         }
-        inline backbone::thread_context::sid_t::divergence_guard::divergence_guard(){
-            for(auto& k : selector.thread_context_lane){
-                k.sid.max = k.sid.min = selector.thread_context_lane[0].sid.value;
-                k.stack.push(selector.thread_context_lane[0].stack.top());
-            }
-        }
-        inline backbone::thread_context::sid_t::divergence_guard::~divergence_guard(){
-            int& max = selector.thread_context_lane[0].sid.value;
-            for(auto& k : selector.thread_context_lane){
-                max = std::max(max, k.sid.max);
-                k.sid.inc = 1;
-                k.stack.pop();
-            }
-        }
-        inline void backbone::thread_context::sid_t::offset(int offset, int increment){
-            this->value = this->min + offset;
-            this->inc = increment;
-        }
-        inline void backbone::thread_context::sid_t::maximize(){
-            if(value < min) value += AMBIENT_MAX_SID;
-            if(value > max) max = value;
-        }
-        inline int backbone::thread_context::sid_t::generate(){
-            value = (value + inc) % AMBIENT_MAX_SID;
-            return value;
-        }
-        inline void backbone::reset_sid(){
-            selector.thread_context_lane[0].sid.value = 1;
-        }
         inline int backbone::generate_sid(){
-            return get_thread_context().sid.generate();
+            return (++sid %= AMBIENT_MAX_TAG);
         }
         inline int backbone::get_sid() const {
-            return get_thread_context().sid.value;
-        }
-        inline backbone::thread_context& backbone::get_thread_context() const {
-            return thread_context_lane[AMBIENT_THREAD_ID];
+            return sid;
         }
         inline typename backbone::controller_type& backbone::get_controller() const {
-            return *get_actor().controller; // caution: != get_thread_context().controller;
+            return *get_actor().controller;
         }
         inline typename backbone::controller_type* backbone::provide_controller(){
-            return &get_thread_context().controller;
+            return &controller;
         }
         inline void backbone::revoke_controller(controller_type* c){
-            // some cleanups ?
         }
         inline void backbone::sync_all(){
-            for(int k = 1; k < thread_context_lane.size(); k++){
-                for(auto i : *thread_context_lane[k].controller.chains) thread_context_lane[0].controller.queue(i);
-                thread_context_lane[k].controller.chains->clear();
-            }
-            for(auto& k : thread_context_lane){
-                k.controller.flush();
-                k.controller.clear();
-            }
+            controller.flush();
+            controller.clear();
             memory::data_bulk::drop();
         }
         inline bool backbone::has_nested_actor() const {
             return (&get_actor() != &this->base);
         }
         inline actor& backbone::get_actor() const {
-            return *get_thread_context().stack.top();
+            return *stack.top();
         }
         inline void backbone::pop_actor(){
-            get_thread_context().stack.pop();
+            stack.pop();
         }
         inline void backbone::push_actor(actor* s){
-            get_thread_context().stack.push(s);
+            stack.push(s);
         }
         inline scope& backbone::get_scope() const {
             return *scopes.top();
@@ -127,6 +92,9 @@ namespace ambient {
         }
         inline void backbone::push_scope(scope* s){
             scopes.push(s);
+        }
+        inline bool backbone::threaded() const { 
+            return false;
         }
         inline bool backbone::tunable() const { 
             return (!get_controller().is_serial() && !has_nested_actor());
@@ -147,3 +115,4 @@ namespace ambient {
 
 #endif
 
+#endif

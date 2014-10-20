@@ -60,19 +60,16 @@ struct SiteProblem
 {
     SiteProblem(Boundary<Matrix, SymmGroup> const & left_,
                 Boundary<Matrix, SymmGroup> const & right_,
-                MPOTensor<Matrix, SymmGroup> const & mpo_,
-		boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine_)
+                MPOTensor<Matrix, SymmGroup> const & mpo_)
     : left(left_)
     , right(right_)
     , mpo(mpo_)
-    , engine(engine_)
     {
     }
     
     Boundary<Matrix, SymmGroup> const & left;
     Boundary<Matrix, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
-    boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine;
     double ortho_shift;
 };
 
@@ -111,10 +108,6 @@ int main(int argc, char ** argv)
         MPO<matrix, grp> mpo = make_mpo(lattice, model, parms);
         time_model.end();
         maquis::cout << "Parsing model done!\n";
-
-	    /// initialize contraction engine
-        boost::shared_ptr<contraction::Engine<matrix, typename storage::constrained<matrix>::type, grp> > contr;
-        contr = contraction::EngineFactory<matrix, typename storage::constrained<matrix>::type, grp>::makeFactory(parms)->makeEngine();
 
         boost::filesystem::path chkpfile(parms["chkpfile"].str());
         
@@ -176,11 +169,11 @@ int main(int argc, char ** argv)
         } else 
         #endif
         {
-            left = mps.left_boundary(); ambient::sync();
+            left = mps.left_boundary(); parallel::sync();
             for (size_t i = 0; i < site; ++i){
-                left = contr->overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+                left = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
                 if(can_clean(i, site, L, lr)) mps[i].data().clear();
-                ambient::sync();
+                parallel::sync();
             }
         }
         time_l_boundary.end();
@@ -198,11 +191,11 @@ int main(int argc, char ** argv)
         } else 
         #endif
         {
-            right = mps.right_boundary(); ambient::sync();
+            right = mps.right_boundary(); parallel::sync();
             for (int i = L-1; i > site+1; --i){
-                right = contr->overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
+                right = contraction::Engine<matrix, matrix, grp>::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
                 if(can_clean(i, site, L, lr)) mps[i].data().clear();
-                ambient::sync();
+                parallel::sync();
             }
         }
         time_r_boundary.end();
@@ -215,7 +208,7 @@ int main(int argc, char ** argv)
         
         std::vector<MPSTensor<matrix, grp> > ortho_vecs;
         std::pair<double, MPSTensor<matrix, grp> > res;
-        SiteProblem<matrix, grp> sp(left, right, ts_mpo, contr);
+        SiteProblem<matrix, grp> sp(left, right, ts_mpo);
 
         /// Optimization: JCD
         time_optim_jcd.begin();
@@ -240,7 +233,7 @@ int main(int argc, char ** argv)
             if(parms["twosite_truncation"] == "svd")
                 boost::tie(mps[site], mps[site+1], trunc) = tst.split_mps_l2r(Mmax, cutoff);
             else
-                boost::tie(mps[site], mps[site+1], trunc) = tst.predict_split_l2r(Mmax, cutoff, alpha, left, mpo[site], contr);
+                boost::tie(mps[site], mps[site+1], trunc) = tst.predict_split_l2r(Mmax, cutoff, alpha, left, mpo[site]);
             tst.clear();
             
             block_matrix<matrix, grp> t;
@@ -251,7 +244,7 @@ int main(int argc, char ** argv)
             if(parms["twosite_truncation"] == "svd")
                 boost::tie(mps[site], mps[site+1], trunc) = tst.split_mps_r2l(Mmax, cutoff);
             else
-                boost::tie(mps[site], mps[site+1], trunc) = tst.predict_split_r2l(Mmax, cutoff, alpha, right, mpo[site+1], contr);
+                boost::tie(mps[site], mps[site+1], trunc) = tst.predict_split_r2l(Mmax, cutoff, alpha, right, mpo[site+1]);
             tst.clear();
             
             block_matrix<matrix, grp> t;

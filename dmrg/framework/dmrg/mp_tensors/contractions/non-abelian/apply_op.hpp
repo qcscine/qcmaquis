@@ -46,10 +46,8 @@ namespace SU2 {
     }
 }
 
+namespace contraction {
 namespace SU2 {
-    namespace detail {
-
-    using ::contraction::ContractionGrid;
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel(size_t b2,
@@ -241,7 +239,7 @@ namespace SU2 {
             }
         } // b1
     }
-} // namespace detail
 } // namespace SU2
+} // namespace contraction
 
 #endif

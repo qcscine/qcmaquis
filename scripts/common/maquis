@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 ## run control
 
 export HOST=`hostname | tr -d [:digit:] | sed  -e "s/\.ethz\.ch//g"`

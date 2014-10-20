@@ -34,10 +34,6 @@
 #include "dmrg/block_matrix/indexing.h"
 //#include "solver.h"
 
-#ifdef ENABLE_SU2
-#include "dmrg/mp_tensors/contractions/non-abelian/lq_scale.hpp"
-#endif
-
 enum boundary_flag_t {no_boundary_f,l_boundary_f,r_boundary_f};
 enum MPSStorageLayout { LeftPaired, RightPaired };
 // these are actually used in several places

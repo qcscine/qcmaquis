@@ -37,10 +37,10 @@
 
 /* ****************** FERMI HUBBARD */
 template<class Matrix>
-class FermiHubbardSU2 : public model_impl<Matrix, TwoU1>
+class FermiHubbardSU2 : public model_impl<Matrix, SU2U1>
 {
 public:
-    typedef model_impl<Matrix, TwoU1> base;
+    typedef model_impl<Matrix, SU2U1> base;
 
     typedef typename base::table_type table_type;
     typedef typename base::table_ptr table_ptr;
@@ -56,9 +56,9 @@ public:
     FermiHubbardSU2(const Lattice& lat_, BaseParameters & parms_)
     : lat(lat_)
     , parms(parms_)
-    , tag_handler(new TagHandler<Matrix, TwoU1>())
+    , tag_handler(new TagHandler<Matrix, SU2U1>())
     {
-        TwoU1::charge A(0), B(0), C(0), D(0);
+        SU2U1::charge A(0), B(0), C(0), D(0);
         A[0] = 2; // 20
         B[0] = 1; B[1] =  1; // 11
         C[0] = 1; C[1] = -1; // 1-1
@@ -217,7 +217,7 @@ public:
         return;
     }
     
-    Index<TwoU1> const & phys_dim(size_t type) const
+    Index<SU2U1> const & phys_dim(size_t type) const
     {
         return phys;
     }
@@ -231,26 +231,26 @@ public:
 
         /*
         if (parms["ENABLE_MEASURE[Density]"]) {
-            meas.push_back( new measurements::average<Matrix, TwoU1>("Density up", lat,
+            meas.push_back( new measurements::average<Matrix, SU2U1>("Density up", lat,
                                                                 op_vec(1,this->identity_matrix(0)),
                                                                 op_vec(1,this->filling_matrix(0)),
                                                                 op_vec(1,tag_handler->get_op(count_up))) );
         }
         if (parms["ENABLE_MEASURE[Density]"]) {
-            meas.push_back( new measurements::average<Matrix, TwoU1>("Density down", lat,
+            meas.push_back( new measurements::average<Matrix, SU2U1>("Density down", lat,
                                                                 op_vec(1,this->identity_matrix(0)),
                                                                 op_vec(1,this->filling_matrix(0)),
                                                                 op_vec(1,tag_handler->get_op(count_down))) );
         }
         
         if (parms["ENABLE_MEASURE[Local density]"]) {
-            meas.push_back( new measurements::local<Matrix, TwoU1>("Local density up", lat,
+            meas.push_back( new measurements::local<Matrix, SU2U1>("Local density up", lat,
                                                                 op_vec(1,this->identity_matrix(0)),
                                                                 op_vec(1,this->filling_matrix(0)),
                                                                 op_vec(1,tag_handler->get_op(count_up))) );
         }
         if (parms["ENABLE_MEASURE[Local density]"]) {
-            meas.push_back( new measurements::local<Matrix, TwoU1>("Local density down", lat,
+            meas.push_back( new measurements::local<Matrix, SU2U1>("Local density down", lat,
                                                                 op_vec(1,this->identity_matrix(0)),
                                                                 op_vec(1,this->filling_matrix(0)),
                                                                 op_vec(1,tag_handler->get_op(count_down))) );
@@ -260,7 +260,7 @@ public:
             bond_element ops;
             ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(create_up)), true) );
             ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(destroy_up)), true) );
-            meas.push_back( new measurements::correlations<Matrix, TwoU1>("Onebody density matrix up", lat,
+            meas.push_back( new measurements::correlations<Matrix, SU2U1>("Onebody density matrix up", lat,
                                                                        op_vec(1,this->identity_matrix(0)),
                                                                        op_vec(1,this->filling_matrix(0)),
                                                                        ops, false, false) );
@@ -269,7 +269,7 @@ public:
             bond_element ops;
             ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(create_down)), true) );
             ops.push_back( std::make_pair(op_vec(1,tag_handler->get_op(destroy_down)), true) );
-            meas.push_back( new measurements::correlations<Matrix, TwoU1>("Onebody density matrix down", lat,
+            meas.push_back( new measurements::correlations<Matrix, SU2U1>("Onebody density matrix down", lat,
                                                                        op_vec(1,this->identity_matrix(0)),
                                                                        op_vec(1,this->filling_matrix(0)),
                                                                        ops, false, false) );
@@ -287,9 +287,9 @@ public:
     {
         return fill_cdagc;
     }
-    typename TwoU1::charge total_quantum_numbers(BaseParameters & parms) const
+    typename SU2U1::charge total_quantum_numbers(BaseParameters & parms) const
     {
-        typename TwoU1::charge ret(0);
+        typename SU2U1::charge ret(0);
         ret[0] = static_cast<int>(parms["u1_total_charge1"]);
         ret[1] = static_cast<int>(parms["u1_total_charge2"]);
         return ret;
@@ -320,12 +320,12 @@ public:
     }
     
 private:
-    Index<TwoU1> phys;
+    Index<SU2U1> phys;
 
     Lattice const & lat;
     BaseParameters & parms;
 
-    boost::shared_ptr<TagHandler<Matrix, TwoU1> > tag_handler;
+    boost::shared_ptr<TagHandler<Matrix, SU2U1> > tag_handler;
     tag_type create_head, create_tail, destroy_head, destroy_tail,
              count, doubly_occ,
              identity, fill_cdagc, fill_ccdag;

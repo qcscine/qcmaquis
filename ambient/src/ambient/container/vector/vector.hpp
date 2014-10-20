@@ -29,7 +29,7 @@
 #define AMBIENT_CONTAINER_VECTOR_VECTOR_HPP
 
 #include "ambient/container/vector/vector.h"
-#include "ambient/numeric/future.hpp"
+#include "ambient/container/future.hpp"
 #include "ambient/container/vector/detail.hpp"
 
 namespace ambient {

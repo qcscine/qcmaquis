@@ -4,7 +4,7 @@
 template<typename T>
 void reverse(ambient::vector<T>& vec){
     int start = 0;
-    int end = get_length(vec);
+    int end = vec.size();
     while((start != end) && (start != --end)){
         std::swap(vec[start],vec[end]); start++;
     }

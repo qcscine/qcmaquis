@@ -67,14 +67,11 @@ public:
         if (parms["use_compressed"])
             mpoc.compress(1e-12);
 
-        boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> >
-        contr = contraction::EngineFactory<Matrix, Matrix, SymmGroup>::makeFactory(parms)->makeEngine();
-        
-        double energy = maquis::real(expval(mps, mpoc, contr));
+        double energy = maquis::real(expval(mps, mpoc));
         // MD: removed redundant energy calculation
         // maquis::cout << "Energy before: " << maquis::real(expval(mps, mpo)) << std::endl;
         if (parms["MEASURE[Energy]"]) {
-            maquis::cout << "Energy: " << maquis::real(expval(mps, mpoc, contr)) << std::endl;
+            maquis::cout << "Energy: " << maquis::real(expval(mps, mpoc)) << std::endl;
             {
                 storage::archive ar(rfile, "w");
                 ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
@@ -85,7 +82,7 @@ public:
             MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpoc);
             mpo2.compress(1e-12);
             
-            double energy2 = maquis::real(expval(mps, mpo2, contr, true));
+            double energy2 = maquis::real(expval(mps, mpo2, true));
             
             maquis::cout << "Energy^2: " << energy2 << std::endl;
             maquis::cout << "Variance: " << energy2 - energy*energy << std::endl;

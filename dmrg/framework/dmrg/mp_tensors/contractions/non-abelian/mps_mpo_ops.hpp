@@ -43,7 +43,7 @@ namespace SU2 {
         for(size_t i = 0; i < L; ++i) {
             select_proc(ambient::scope::balance(i,L));
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
-            left = contraction::SU2EngineFactory<Matrix, Matrix, SymmGroup>::overlap_left_step(mps[i], cpy, left); // serial
+            left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_left_step(mps[i], cpy, left); // serial
         }
 
         return trace(left);
@@ -60,7 +60,7 @@ namespace SU2 {
         for(int i = L-1; i >= 0 ; --i) {
             select_proc(ambient::scope::balance(i,L));
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
-            right = contraction::SU2EngineFactory<Matrix, Matrix, SymmGroup>::overlap_right_step(mps[i], cpy, right); // serial
+            right = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_right_stepj(mps[i], cpy, right); // serial
         }
 
         return trace(right);
@@ -68,7 +68,6 @@ namespace SU2 {
 
     template<class Matrix, class SymmGroup>
     double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
-                  boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> > contr,
                   int p1, int p2, std::vector<int> config)
     {
         assert(mpo.length() == mps.length());
@@ -78,7 +77,8 @@ namespace SU2 {
 
         for(size_t i = 0; i < L; ++i) {
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
-            left = contr->overlap_mpo_left_step(cpy, mps[i], left, mpo[i]);
+            //left_bm = contraction::SU2::apply_operator(cpy, mps[i], left_bm, mpo[i], config, debug);
+            left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(cpy, mps[i], left, mpo[i]);
         }
 
         return maquis::real(left[0].trace());
@@ -86,7 +86,6 @@ namespace SU2 {
 
     template<class Matrix, class SymmGroup>
     double expval_r(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
-                    boost::shared_ptr<contraction::Engine<Matrix, Matrix, SymmGroup> > contr,
                     int p1, int p2, std::vector<int> config)
     {
         assert(mpo.length() == mps.length());
@@ -95,7 +94,7 @@ namespace SU2 {
 
         for(int i = L-1; i >= 0; --i) {
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
-            right = contr->overlap_mpo_right_step(cpy, mps[i], right, mpo[i]);
+            right = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_right_step(cpy, mps[i], right, mpo[i]);
         }
 
         return maquis::real(right[0].trace());

@@ -20,7 +20,7 @@ CXXFLAGS?= $(COMMON)
 .DEFAULT: all
 .PHONY: all
 
-all: libambient.a diffusion partitioned_vector vector atomic matrix groups
+all: libambient.a diffusion partitioned_vector vector atomic matrix mp_gemm_simple mp_gemm_log groups
 
 diffusion: libambient.a diffusion.cpp
 	$(CXX) diffusion.cpp -o diffusion $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH)
@@ -36,6 +36,12 @@ atomic: libambient.a atomic.cpp
 
 matrix: libambient.a matrix.cpp
 	$(CXX) matrix.cpp -o matrix $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH) -mkl -I$(BOOST_INCLUDE_PATH)
+
+mp_gemm_simple: libambient.a mp_gemm_simple.cpp
+	$(CXX) mp_gemm_simple.cpp -o mp_gemm_simple $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH) -mkl -I$(BOOST_INCLUDE_PATH)
+
+mp_gemm_log: libambient.a mp_gemm_log.cpp
+	$(CXX) mp_gemm_log.cpp -o mp_gemm_log $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH) -mkl -I$(BOOST_INCLUDE_PATH)
 
 groups: libambient.a groups.cpp
 	$(CXX) groups.cpp -o groups $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH) -mkl -I$(BOOST_INCLUDE_PATH)
@@ -53,4 +59,6 @@ clean:
 	-rm -f vector
 	-rm -f atomic
 	-rm -f matrix
+	-rm -f mp_gemm_simple
+	-rm -f mp_gemm_log
 	-rm -f groups
