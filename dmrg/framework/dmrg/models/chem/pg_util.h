@@ -37,15 +37,14 @@
 
 #include "dmrg/models/op_handler.h"
 
+// function objects to set point group symmetry in Indices depending on the occupation
+// (do not set irrep if empty or doubly occupied)
 
 // TODO: rename to PGIndexConverter
 template <class SymmGroup>
 class PGDecorator
 {
 public:
-    PGDecorator(BaseParameters & parms) {}
-    PGDecorator(bool su2_) {}
-
     DualIndex<SymmGroup> operator()(DualIndex<SymmGroup> const & rhs, int irr)
     {
        return rhs;
@@ -56,52 +55,50 @@ template < >
 class  PGDecorator<TwoU1PG>
 {
 public:
-
-    PGDecorator(BaseParameters & parms) : su2(false)
-    {
-        if (parms["MODEL"] == "quantum_chemistry_SU2")
-            su2 = true;
-    }
-
-    PGDecorator(bool su2_) : su2(su2_) {}
-
     typedef TwoU1PG::subcharge subcharge;
     DualIndex<TwoU1PG> operator()(DualIndex<TwoU1PG> rhs, subcharge irr)
     {
-        if(su2)
-            for(DualIndex<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
-            {
-                if ( (it->lc[0]) % 2 == 0)
-                    it->lc[2] = 0;
-                else
-                    it->lc[2] = irr;
+        for(DualIndex<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+        {
+            if ( (it->lc[0] + it->lc[1]) % 2 == 0)
+                it->lc[2] = 0;
+            else
+                it->lc[2] = irr;
 
-                if ( (it->rc[0]) % 2 == 0)
-                    it->rc[2] = 0;
-                else
-                    it->rc[2] = irr;
-            }
-
-        else
-            for(DualIndex<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
-            {
-                if ( (it->lc[0] + it->lc[1]) % 2 == 0)
-                    it->lc[2] = 0;
-                else
-                    it->lc[2] = irr;
-
-                if ( (it->rc[0] + it->rc[1]) % 2 == 0)
-                    it->rc[2] = 0;
-                else
-                    it->rc[2] = irr;
-            }
+            if ( (it->rc[0] + it->rc[1]) % 2 == 0)
+                it->rc[2] = 0;
+            else
+                it->rc[2] = irr;
+        }
 
         return rhs;
     }
-
-private:
-    bool su2;
 };
+
+template < >
+class  PGDecorator<SU2U1PG>
+{
+public:
+    typedef SU2U1PG::subcharge subcharge;
+    DualIndex<SU2U1PG> operator()(DualIndex<SU2U1PG> rhs, subcharge irr)
+    {
+        for(DualIndex<SU2U1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+        {
+            if ( (it->lc[0]) % 2 == 0)
+                it->lc[2] = 0;
+            else
+                it->lc[2] = irr;
+
+            if ( (it->rc[0]) % 2 == 0)
+                it->rc[2] = 0;
+            else
+                it->rc[2] = irr;
+        }
+        return rhs;
+    }
+};
+
+//////////////////////////////////////////////////
 
 template <class SymmGroup>
 class PGCharge
@@ -119,6 +116,18 @@ class  PGCharge<TwoU1PG>
 public:
     typedef TwoU1PG::subcharge subcharge;
     TwoU1PG::charge operator()(TwoU1PG::charge rhs, subcharge irr)
+    {
+        rhs[2] = irr;
+        return rhs;
+    }
+};
+
+template < >
+class  PGCharge<SU2U1PG>
+{
+public:
+    typedef SU2U1PG::subcharge subcharge;
+    SU2U1PG::charge operator()(SU2U1PG::charge rhs, subcharge irr)
     {
         rhs[2] = irr;
         return rhs;

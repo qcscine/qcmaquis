@@ -105,7 +105,7 @@ int main(int argc, char ** argv)
         Lattice lattice(parms);
         Model<matrix, grp> model(lattice, parms);
         
-        MPO<matrix, grp> mpo = make_mpo(lattice, model, parms);
+        MPO<matrix, grp> mpo = make_mpo(lattice, model);
         time_model.end();
         maquis::cout << "Parsing model done!\n";
 

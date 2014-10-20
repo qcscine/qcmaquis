@@ -93,7 +93,7 @@ int main(int argc, char ** argv)
         Lattice lattice(parms);
         Model<matrix, grp> model(lattice, parms);
         
-        MPO<matrix, grp> mpo = make_mpo(lattice, model, parms);
+        MPO<matrix, grp> mpo = make_mpo(lattice, model);
         tim_model.end();
 
         /// Initialize & load MPS

@@ -406,7 +406,7 @@ private:
 
     std::vector<op_t> generate_site_specific_ops(op_t const & op) const
     {
-        PGDecorator<SymmGroup> set_symm(false);
+        PGDecorator<SymmGroup> set_symm;
         std::vector<op_t> ret;
         for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
             op_t mod(set_symm(op.basis(), sc));

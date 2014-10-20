@@ -28,6 +28,11 @@
 #define SYMMETRY_SU2U1_H
 
 #include "dmrg/block_matrix/symmetry/nu1_tpl.h"
+#include "dmrg/block_matrix/symmetry/nu1pg.h"
+
+// SU2 x U1 Symmetry
+// ---
+// reusing TwoU1 charges
 
 template<class S = int>
 class SU2U1_template
@@ -57,5 +62,39 @@ public:
 template<class S> const typename SU2U1_template<S>::charge SU2U1_template<S>::IdentityCharge = typename SU2U1_template<S>::charge();
 
 typedef SU2U1_template<> SU2U1;
+
+
+// SU2 x U1 x PG Symmetry
+// ---
+// reusing TwoU1PG charges
+
+template<class S = int>
+class SU2U1PG_template
+{
+public:
+    typedef S subcharge;
+    typedef NU1ChargePG<2, S> charge;
+    typedef std::vector<charge> charge_v;
+
+    static const charge IdentityCharge;
+    static const bool finite = false;
+
+    static charge fuse(charge a, charge b)
+    {
+        return a+b;
+    }
+
+    template<int R> static charge fuse(boost::array<charge, R> const & v)
+    {
+        charge ret = v[0];
+        for (int i = 1; i < R; ++i)
+            ret = fuse(ret, v[i]);
+        return ret;
+    }
+};
+
+template<class S> const typename SU2U1PG_template<S>::charge SU2U1PG_template<S>::IdentityCharge = typename SU2U1PG_template<S>::charge();
+
+typedef SU2U1PG_template<> SU2U1PG;
 
 #endif

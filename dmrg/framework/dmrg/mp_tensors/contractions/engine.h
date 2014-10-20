@@ -50,12 +50,21 @@ namespace contraction {
         typedef SU2Tag type;
     };
 
+    template <>
+    class SymmTypeTrait<SU2U1PG>
+    {
+    public:
+        typedef SU2Tag type;
+    };
+
     template <class Matrix, class OtherMatrix, class SymmGroup, class SymmetryType>
     class EngineBackEnd;
 
     template <class Matrix, class OtherMatrix, class SymmGroup>
     class Engine
     {
+        typedef typename SymmTypeTrait<SymmGroup>::type symm_type_t;
+
     public:
         Engine() {}
 
@@ -65,7 +74,7 @@ namespace contraction {
                           block_matrix<OtherMatrix, SymmGroup> const & left,
                           block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
         {
-            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::overlap_left_step
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_type_t>::overlap_left_step
                     (bra_tensor, ket_tensor, left, localop);
         }
 
@@ -76,7 +85,7 @@ namespace contraction {
                            block_matrix<OtherMatrix, SymmGroup> const & right,
                            block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
         {
-            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::overlap_right_step
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_type_t>::overlap_right_step
                     (bra_tensor, ket_tensor, right, localop);
         }
 
@@ -86,7 +95,7 @@ namespace contraction {
                                  MPOTensor<Matrix, SymmGroup> const & mpo,
                                  Index<SymmGroup> const * in_low = NULL)
         {
-            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::left_boundary_tensor_mpo
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_type_t>::left_boundary_tensor_mpo
                     (mps, left, mpo, in_low);
         }
 
@@ -96,7 +105,7 @@ namespace contraction {
                                   MPOTensor<Matrix, SymmGroup> const & mpo,
                                   Index<SymmGroup> const * in_low = NULL)
         {
-            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::right_boundary_tensor_mpo
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_type_t>::right_boundary_tensor_mpo
                     (mps, right, mpo, in_low);
         }
 
@@ -106,7 +115,7 @@ namespace contraction {
                               Boundary<OtherMatrix, SymmGroup> const & left,
                               MPOTensor<Matrix, SymmGroup> const & mpo)
         {
-            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::overlap_mpo_left_step
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_type_t>::overlap_mpo_left_step
                     (bra_tensor, ket_tensor, left, mpo);
         }
 
@@ -116,7 +125,7 @@ namespace contraction {
                                Boundary<OtherMatrix, SymmGroup> const & right,
                                MPOTensor<Matrix, SymmGroup> const & mpo)
         {
-            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::overlap_mpo_right_step
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_type_t>::overlap_mpo_right_step
                     (bra_tensor, ket_tensor, right, mpo);
         }
 
@@ -126,7 +135,7 @@ namespace contraction {
                     Boundary<OtherMatrix, SymmGroup> const & right,
                     MPOTensor<Matrix, SymmGroup> const & mpo)
         {
-            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::site_hamil2
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_type_t>::site_hamil2
                     (ket_tensor, left, right, mpo);
         }
 
@@ -137,7 +146,7 @@ namespace contraction {
                                     Boundary<OtherMatrix, SymmGroup> const & right,
                                     double alpha, double cutoff, std::size_t Mmax)
         {
-            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::predict_new_state_l2r_sweep
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_type_t>::predict_new_state_l2r_sweep
                     (mps, mpo, left, right, alpha, cutoff, Mmax);
         }
 
@@ -146,7 +155,7 @@ namespace contraction {
                                   MPSTensor<Matrix, SymmGroup> const & psi,
                                   MPSTensor<Matrix, SymmGroup> const & A)
         {
-            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::predict_lanczos_l2r_sweep
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_type_t>::predict_lanczos_l2r_sweep
                     (B, psi, A);
         }
 
@@ -157,7 +166,7 @@ namespace contraction {
                                     Boundary<OtherMatrix, SymmGroup> const & right,
                                     double alpha, double cutoff, std::size_t Mmax)
         {
-            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::predict_new_state_r2l_sweep
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_type_t>::predict_new_state_r2l_sweep
                     (mps, mpo, left, right, alpha, cutoff, Mmax);
         }
 
@@ -166,7 +175,7 @@ namespace contraction {
                                   MPSTensor<Matrix, SymmGroup> const & psi,
                                   MPSTensor<Matrix, SymmGroup> const & A)
         {
-            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, typename SymmTypeTrait<SymmGroup>::type>::predict_lanczos_r2l_sweep
+            return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_type_t>::predict_lanczos_r2l_sweep
                     (B, psi, A);
         }
     };

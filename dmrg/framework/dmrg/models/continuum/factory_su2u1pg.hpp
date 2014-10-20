@@ -3,7 +3,8 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
+ *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,34 +25,13 @@
  *
  *****************************************************************************/
 
-#ifndef GENERATE_MPO_H
-#define GENERATE_MPO_H
-
-#include "dmrg/models/generate_mpo/mpo_maker.hpp"
-#include "dmrg/models/generate_mpo/tagged_mpo_maker_optim.hpp"
-#include "dmrg/models/generate_mpo/corr_maker.hpp"
-#include "dmrg/models/generate_mpo/bg_corr_maker.hpp"
-
-#include "dmrg/models/chem/pg_symm_converter.h"
-
-#include "dmrg/models/model.h"
-
-
-template<class Matrix, class SymmGroup>
-MPO<Matrix, SymmGroup> make_mpo(Lattice const& lat, Model<Matrix, SymmGroup> const& model)
-{
-    //    typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
-    //    generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(lat.size(), model.identity_matrix_tag(), model.operators_table());
-    //    for (std::size_t i = 0; i < terms.size(); ++i)
-    //        mpom.add_term(terms[i], model.filling_matrix_tag());
-    
-    generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(lat, model);
-    MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-
-    PGSymmetryConverter<Matrix, SymmGroup> symm_conv(lat);
-    symm_conv.convert_tags_to_symm_tags(mpo);
-    
-    return mpo;
-}
-
-#endif
+template<class Matrix>
+struct cont_model_factory<Matrix, SU2U1PG> {
+    static boost::shared_ptr<model_impl<Matrix, SU2U1PG> > parse
+    (Lattice const & lattice, BaseParameters & model)
+    {
+        typedef boost::shared_ptr<model_impl<Matrix, SU2U1PG> > impl_ptr;
+        throw std::runtime_error("Don't know any continuum SU2U1PG models!");
+            return impl_ptr();
+    }
+};

@@ -31,7 +31,7 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 set(AMBIENT_SOURCES_DIR "../ambient" CACHE STRINGS "Location of the ambient source tree")
 
 set(BUILD_SYMMETRIES "U1;TwoU1;TwoU1PG;NONE" CACHE STRINGS "List of symmetry
-to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1 and NONE are currently available.")
+to include in the build objects. U1, TwoU1, TwoU1PG, NU1, Z2, SU2U1, SU2U1PG and NONE are currently available.")
 set(DMRG_NUMSYMM 6 CACHE INT "Maximum number of U1 symmetries.")
 
 option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" ON)
@@ -264,6 +264,7 @@ macro(get_symm_suffix RET SYMM)
   string(REGEX REPLACE "^NONE$" "none" ${RET} ${${RET}})
   string(REGEX REPLACE "^Z2$" "Ztwo" ${RET} ${${RET}})
   string(REGEX REPLACE "^SU2U1$" "su2u1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^SU2U1PG$" "su2u1pg" ${RET} ${${RET}})
 endmacro(get_symm_suffix)
 
 macro(get_symm_group_name RET SYMM)
@@ -277,6 +278,7 @@ macro(get_symm_group_name RET SYMM)
   string(REGEX REPLACE "^NONE$" "TrivialGroup" ${RET} ${${RET}})
   string(REGEX REPLACE "^Z2$" "Ztwo" ${RET} ${${RET}})
   string(REGEX REPLACE "^SU2U1$" "SU2U1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^SU2U1PG$" "SU2U1PG" ${RET} ${${RET}})
 endmacro(get_symm_group_name)
 
 macro(get_symm_files TYPE RET FILEBASE)

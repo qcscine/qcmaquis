@@ -88,7 +88,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     /// Model initialization
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
-    mpo = make_mpo(lat, model, parms);
+    mpo = make_mpo(lat, model);
     all_measurements = model.measurements();
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
     

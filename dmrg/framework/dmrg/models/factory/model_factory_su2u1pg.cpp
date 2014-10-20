@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,34 +24,17 @@
  *
  *****************************************************************************/
 
-#ifndef GENERATE_MPO_H
-#define GENERATE_MPO_H
+#include "model_factory_symm.h"
 
-#include "dmrg/models/generate_mpo/mpo_maker.hpp"
-#include "dmrg/models/generate_mpo/tagged_mpo_maker_optim.hpp"
-#include "dmrg/models/generate_mpo/corr_maker.hpp"
-#include "dmrg/models/generate_mpo/bg_corr_maker.hpp"
+#include "dmrg/models/coded/factory_su2u1pg.hpp"
+#include "dmrg/models/continuum/factory_su2u1pg.hpp"
 
-#include "dmrg/models/chem/pg_symm_converter.h"
+typedef SU2U1PG grp;
 
-#include "dmrg/models/model.h"
-
-
-template<class Matrix, class SymmGroup>
-MPO<Matrix, SymmGroup> make_mpo(Lattice const& lat, Model<Matrix, SymmGroup> const& model)
-{
-    //    typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
-    //    generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(lat.size(), model.identity_matrix_tag(), model.operators_table());
-    //    for (std::size_t i = 0; i < terms.size(); ++i)
-    //        mpom.add_term(terms[i], model.filling_matrix_tag());
-    
-    generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(lat, model);
-    MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-
-    PGSymmetryConverter<Matrix, SymmGroup> symm_conv(lat);
-    symm_conv.convert_tags_to_symm_tags(mpo);
-    
-    return mpo;
-}
-
+#if defined USE_AMBIENT
+impl_model_factory(pmatrix, grp)
+impl_model_factory(cpmatrix, grp)
+#else
+impl_model_factory(matrix, grp)
+impl_model_factory(cmatrix, grp)
 #endif

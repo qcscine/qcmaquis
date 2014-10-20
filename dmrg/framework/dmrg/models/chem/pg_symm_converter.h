@@ -45,7 +45,7 @@ template <class Matrix, class SymmGroup>
 class PGSymmetryConverter
 {
 public:
-    PGSymmetryConverter(Lattice const & lat, BaseParameters & parms) {}
+    PGSymmetryConverter(Lattice const & lat) {}
     void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in) {}
 private:
 };
@@ -54,13 +54,26 @@ template <class Matrix>
 class PGSymmetryConverter<Matrix, TwoU1PG>
 {
 public:
-    PGSymmetryConverter(Lattice const & lat, BaseParameters & parms) : impl_(lat, parms) {}
+    PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
     void convert_tags_to_symm_tags(MPO<Matrix, TwoU1PG> & mpo_in)
     {
         impl_.convert_tags_to_symm_tags(mpo_in);
     } 
 private:
     PGSymmetryConverter_impl_<Matrix, TwoU1PG> impl_;
+};
+
+template <class Matrix>
+class PGSymmetryConverter<Matrix, SU2U1PG>
+{
+public:
+    PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
+    void convert_tags_to_symm_tags(MPO<Matrix, SU2U1PG> & mpo_in)
+    {
+        impl_.convert_tags_to_symm_tags(mpo_in);
+    } 
+private:
+    PGSymmetryConverter_impl_<Matrix, SU2U1PG> impl_;
 };
 
 //*******************************************************************
@@ -75,8 +88,8 @@ class PGSymmetryConverter_impl_
     typedef Lattice::pos_t pos_t;
 
 public:
-    PGSymmetryConverter_impl_(Lattice const & lat, BaseParameters & parms)
-        : site_irreps(lat.size()), set_symm(parms)
+    PGSymmetryConverter_impl_(Lattice const & lat)
+        : site_irreps(lat.size())
     {
         for (pos_t p = 0; p < lat.size(); ++p)
             site_irreps[p] = lat.get_prop<int>("type", p);

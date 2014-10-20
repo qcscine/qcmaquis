@@ -47,7 +47,12 @@ using std::endl;
 #include "dmrg/mp_tensors/contractions/non-abelian/mps_mpo_ops.hpp"
 
 typedef alps::numeric::matrix<double> matrix;
+
+#if defined(USE_SU2U1)
 typedef SU2U1 grp;
+#elif defined(USE_SU2U1PG)
+typedef SU2U1PG grp;
+#endif
 
 matrix generate_reference()
 {
