@@ -41,10 +41,9 @@
 namespace contraction {
 
     template <class Matrix, class OtherMatrix, class SymmGroup>
-    class Engine<Matrix, OtherMatrix, SymmGroup, SU2Tag>
+    class EngineBackEnd<Matrix, OtherMatrix, SymmGroup, SU2Tag>
     {
     public:
-        Engine() {}
 
         static block_matrix<OtherMatrix, SymmGroup>
         overlap_left_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
@@ -123,7 +122,7 @@ namespace contraction {
                                   MPSTensor<Matrix, SymmGroup> const & psi,
                                   MPSTensor<Matrix, SymmGroup> const & A)
         {
-            return common::predict_lanczos_l2r_sweep<Matrix, SymmGroup, ::SU2::SU2Gemms>(B, psi, A);
+            return common::predict_lanczos_l2r_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(B, psi, A);
         }
 
         static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
@@ -142,7 +141,7 @@ namespace contraction {
                                   MPSTensor<Matrix, SymmGroup> const & psi,
                                   MPSTensor<Matrix, SymmGroup> const & A)
         {
-            return common::predict_lanczos_r2l_sweep<Matrix, SymmGroup, ::SU2::SU2Gemms>(B, psi, A);
+            return common::predict_lanczos_r2l_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(B, psi, A);
         }
 
         static MPSTensor<Matrix, SymmGroup>

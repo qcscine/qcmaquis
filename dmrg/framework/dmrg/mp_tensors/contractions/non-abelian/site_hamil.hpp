@@ -31,7 +31,7 @@ namespace contraction {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     MPSTensor<Matrix, SymmGroup>
-    Engine<Matrix, OtherMatrix, SymmGroup, SU2Tag>::
+    EngineBackEnd<Matrix, OtherMatrix, SymmGroup, SU2Tag>::
     site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,
@@ -46,7 +46,7 @@ namespace contraction {
         //maquis::cout << "sh2 input ket data:\n";
         //maquis::cout << ket_tensor.data() << std::endl;
         std::vector<block_matrix<Matrix, SymmGroup> > t
-            = common::boundary_times_mps<Matrix, OtherMatrix, SymmGroup, ::SU2::su2gemm>(ket_tensor, left, mpo);
+            = common::boundary_times_mps<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(ket_tensor, left, mpo);
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                                & left_i = ket_tensor.row_dim(),
