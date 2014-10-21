@@ -25,26 +25,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CHANNELS_MPI_MULTIRANK
-#define AMBIENT_CHANNELS_MPI_MULTIRANK
+#ifndef AMBIENT_CONTROLLERS_SSM_CONTEXT_SERIAL
+#define AMBIENT_CONTROLLERS_SSM_CONTEXT_SERIAL
 
-namespace ambient { namespace channels { namespace mpi {
+namespace ambient { 
 
-    class group;
-    class multirank {
-    public:
-        rank_t operator()() const;
-        rank_t operator()(const group* grp) const;
-        rank_t translate(rank_t rank, const group* source) const; // default: world
-        rank_t translate(rank_t rank, const group* source, const group* target) const;
-        rank_t cast_to_parent(rank_t rank, const group* source, const group* target) const;
-        rank_t cast_to_child(rank_t rank, const group* source, const group* target) const;
-        bool belongs(const group* target) const;
-        rank_t left_neighbor() const;
-        rank_t right_neighbor() const;
-        const group* world;
+    struct context_serial {
+        typedef controllers::ssm::controller controller_type;
+
+        controller_type controller;
+        std::stack<actor*, std::vector<actor*> > actors;
+        std::stack<scope*, std::vector<scope*> > scopes;
+
+        context_serial& get();
+        void delay_transfer(controllers::ssm::meta* m);
+        bool threaded() const;
+        void init(actor*);
+        void sync();
+        void fork(void*);
+        void join();
+        void diverge(int);
     };
-
-} } }
+}
 
 #endif

@@ -25,57 +25,40 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTROLLERS_SSM_BACKBONE_TS
-#define AMBIENT_CONTROLLERS_SSM_BACKBONE_TS
+#ifndef AMBIENT_CONTROLLERS_SSM_CONTEXT_MT
+#define AMBIENT_CONTROLLERS_SSM_CONTEXT_MT
 
 namespace ambient { 
 
-    class backbone {
-    public:
+    struct context_mt {
         typedef controllers::ssm::controller controller_type;
-        typedef typename controller_type::model_type model_type;
 
         struct thread_context {
             controller_type controller;
-            std::stack<actor*, std::vector<actor*> > stack;
+            std::stack<actor*, std::vector<actor*> > actors;
             std::stack<scope*, std::vector<scope*> > scopes;
-            void diverge(int o);
             int offset;
         };
+        
         struct divergence_guard {
            ~divergence_guard();
             divergence_guard(size_t length);
             std::vector< std::vector<controllers::ssm::meta*> > transfers;
         };
 
-        mutable std::vector<thread_context> thread_context_lane;
-        mutable divergence_guard* threaded_region;
-        mutable base_actor base;
-        mutable ambient::mutex mtx;
-        mutable int sid;
-
-        backbone();
-        thread_context& get_thread_context() const;
-        controller_type& get_controller() const;
-        controller_type* provide_controller();
-        void revoke_controller(controller_type* c);
-        bool has_nested_actor() const;
-        actor& get_actor() const;
-        void push_actor(actor* s);
-        void pop_actor();
-        scope& get_scope() const;
-        void push_scope(scope* s);
-        void pop_scope();
-        void sync_all();
-        int  generate_sid();
-        int  get_sid() const;
-        bool threaded() const;
-        bool tunable() const; 
-        void schedule() const;
+        context_mt();
+        thread_context& get();
+        const thread_context& get() const;
         void delay_transfer(controllers::ssm::meta* m);
-        void intend_read(models::ssm::revision* o) const;
-        void intend_write(models::ssm::revision* o) const;
-        ambient::mutex& get_mutex() const;
+        bool threaded() const;
+        void init(actor*);
+        void sync();
+        void fork(divergence_guard*);
+        void join();
+        void diverge(int o);
+
+        std::vector<thread_context> thread_context_lane;
+        divergence_guard* threaded_region;
     };
 }
 

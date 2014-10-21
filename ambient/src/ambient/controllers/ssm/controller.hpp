@@ -143,7 +143,7 @@ namespace ambient { namespace controllers { namespace ssm {
     }
 
     inline rank_t controller::get_rank() const {
-        return channel.rank();
+        return channel.rank;
     }
 
     inline rank_t controller::get_shared_rank() const {

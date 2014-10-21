@@ -60,8 +60,7 @@
 #define AMBIENT_MAX_INT               2097152
 #define AMBIENT_MPI_THREADING         MPI_THREAD_FUNNELED
 #define AMBIENT_MASTER_RANK           0
-
-//#define AMBIENT_THREADED_COLLECTION
+#define AMBIENT_THREADED_COLLECTION
 
 #include "ambient/utils/dim2.h"
 #include "ambient/utils/enums.h"
@@ -82,7 +81,6 @@
 
 #ifdef MPI_VERSION
 #include "ambient/channels/mpi/group.h"
-#include "ambient/channels/mpi/multirank.h"
 #include "ambient/channels/mpi/channel.h"
 #include "ambient/channels/mpi/request.h"
 #include "ambient/channels/mpi/collective.h"
@@ -98,6 +96,8 @@
 #include "ambient/controllers/ssm/set.h"
 #include "ambient/controllers/ssm/scope.h"
 #include "ambient/controllers/ssm/actor.h"
+#include "ambient/controllers/ssm/context_mt.h"
+#include "ambient/controllers/ssm/context_serial.h"
 #include "ambient/controllers/ssm/backbone.h"
 
 #include "ambient/utils/auxiliary.hpp"
@@ -115,7 +115,6 @@
 
 #ifdef MPI_VERSION
 #include "ambient/channels/mpi/group.hpp"
-#include "ambient/channels/mpi/multirank.hpp"
 #include "ambient/channels/mpi/channel.hpp"
 #include "ambient/channels/mpi/request.hpp"
 #include "ambient/channels/mpi/collective.hpp"
@@ -128,6 +127,8 @@
 #include "ambient/controllers/ssm/controller.hpp"
 #include "ambient/controllers/ssm/scope.hpp"
 #include "ambient/controllers/ssm/actor.hpp"
+#include "ambient/controllers/ssm/context_mt.hpp"
+#include "ambient/controllers/ssm/context_serial.hpp"
 #include "ambient/controllers/ssm/backbone.hpp"
 
 #include "ambient/interface/typed.hpp"
