@@ -54,7 +54,8 @@ namespace ambient { namespace channels { namespace mpi {
 
     inline channel::channel(){
         channel::setup(); // making sure MPI is initialised
-        this->rank.world = this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
+        this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
+        this->rank = this->world->rank;
     }
 
     inline void channel::barrier(){
@@ -70,7 +71,7 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline collective<typename channel::scalar_type>* channel::bcast(scalar_type& v){
-        return new collective<scalar_type>(v, rank());
+        return new collective<scalar_type>(v, rank);
     }
 
     inline collective<typename channel::block_type>* channel::get(block_type& r){
@@ -78,7 +79,7 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline collective<typename channel::block_type>* channel::set(block_type& r){
-        return new collective<block_type>(r, rank());
+        return new collective<block_type>(r, rank);
     }
 
 } } }

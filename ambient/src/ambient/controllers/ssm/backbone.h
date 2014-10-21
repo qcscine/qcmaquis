@@ -28,55 +28,51 @@
 #ifndef AMBIENT_CONTROLLERS_SSM_BACKBONE
 #define AMBIENT_CONTROLLERS_SSM_BACKBONE
 
-#ifdef AMBIENT_THREADED_COLLECTION
-#include "ambient/controllers/ssm/backbone_ts.h"
-#else
+namespace ambient {
 
-namespace ambient { 
-
-    class backbone {
+    template <class Context>
+    class backbone : public Context {
+    private:
+        typedef typename Context::controller_type controller_type;
+        actor_auto base;
+        ambient::mutex mtx;
+        int sid;
     public:
-        typedef controllers::ssm::controller controller_type;
-        typedef typename controller_type::model_type model_type;
-
-        mutable controller_type controller;
-        mutable std::stack<actor*, std::vector<actor*> > stack;
-        mutable std::stack<scope*, std::vector<scope*> > scopes;
-        mutable base_actor base;
-        mutable ambient::mutex mtx;
-        mutable int sid;
-
         backbone();
-        controller_type& get_controller() const;
         controller_type* provide_controller();
         void revoke_controller(controller_type* c);
-        bool has_nested_actor() const;
-        actor& get_actor() const;
-        void push_actor(actor* s);
-        void pop_actor();
-        scope& get_scope() const;
-        void push_scope(scope* s);
-        void pop_scope();
-        void sync_all();
+        void sync();
         int  generate_sid();
-        int  get_sid() const;
-        bool threaded() const;
-        bool tunable() const; 
-        void schedule() const;
-        void intend_read(models::ssm::revision* o) const;
-        void intend_write(models::ssm::revision* o) const;
-        ambient::mutex& get_mutex() const;
+        bool tunable();
+        void schedule();
+        void intend_read(models::ssm::revision* o);
+        void intend_write(models::ssm::revision* o);
+        bool has_nested_actor();
+        void pop_actor();
+        void pop_scope();
+        void push_actor(actor* s);
+        void push_scope(scope* s);
+        controller_type& get_controller();
+        ambient::mutex& get_mutex();
+        actor_auto& get_base();
+        actor& get_actor();
+        scope& get_scope();
+        int get_sid();
     };
 }
 
-#endif
-
 namespace ambient {
-    #ifdef AMBIENT_BUILD_LIBRARY
-    backbone selector;
-    void sync(){ selector.sync_all(); }
+    #ifdef AMBIENT_THREADED_COLLECTION
+    typedef backbone<ambient::context_mt> backbone_type;
     #else
-    extern backbone selector;
+    typedef backbone<ambient::context_serial> backbone_type;
+    #endif
+
+    #ifdef AMBIENT_BUILD_LIBRARY
+    backbone_type selector;
+    void sync(){ selector.sync(); }
+    #else
+    extern backbone_type selector;
     #endif
 }
 

@@ -61,7 +61,7 @@ namespace ambient { namespace channels { namespace mpi {
         collective<block_type>* set(block_type& r);
         collective<scalar_type>* bcast(scalar_type& v, rank_t root);
         collective<scalar_type>* bcast(scalar_type& v);
-        multirank rank;
+        rank_t rank;
         group* world;
     };
 

@@ -36,9 +36,9 @@ namespace ambient {
     template<class InputIterator, class Function>
     void threaded_for_each(InputIterator first, InputIterator last, Function fn){
         int dist = last-first;
-        ambient::backbone::divergence_guard g(dist);
+        ambient::backbone_type::divergence_guard g(dist);
         AMBIENT_PARALLEL_FOR(int i = 0; i < dist; i++){
-            ambient::selector.get_thread_context().diverge(i);
+            ambient::selector.diverge(i);
             fn(dereference(first+i));
         }
     }

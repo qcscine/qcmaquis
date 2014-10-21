@@ -28,14 +28,11 @@
 #ifndef AMBIENT_CONTROLLERS_SSM_BACKBONE_HPP
 #define AMBIENT_CONTROLLERS_SSM_BACKBONE_HPP
 
-#ifdef AMBIENT_THREADED_COLLECTION
-#include "ambient/controllers/ssm/backbone_ts.hpp"
-#else
-
 namespace ambient { 
 
-        inline backbone::backbone() : sid(1) {
-            stack.push(&base);
+        template<class Context>
+        backbone<Context>::backbone() : sid(1) {
+            this->init(&base);
             if(ambient::isset("AMBIENT_VERBOSE")){
                 ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE      << ")\n";
                 if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
@@ -53,66 +50,82 @@ namespace ambient {
             std::vector<int> procs; for(int i = 0; i < ambient::num_procs(); i++) procs.push_back(i);
             ambient::scope* global = new ambient::scope(procs.begin(), procs.end());
         }
-        inline int backbone::generate_sid(){
+        template<class Context>
+        int backbone<Context>::generate_sid(){
             return (++sid %= AMBIENT_MAX_TAG);
         }
-        inline int backbone::get_sid() const {
+        template<class Context>
+        int backbone<Context>::get_sid(){
             return sid;
         }
-        inline typename backbone::controller_type& backbone::get_controller() const {
-            return *get_actor().controller;
+        template<class Context>
+        typename backbone<Context>::controller_type& backbone<Context>::get_controller(){
+            return *get_actor().controller; // caution: != Context::get().controller
         }
-        inline typename backbone::controller_type* backbone::provide_controller(){
-            return &controller;
+        template<class Context>
+        void backbone<Context>::revoke_controller(controller_type* c){
         }
-        inline void backbone::revoke_controller(controller_type* c){
-        }
-        inline void backbone::sync_all(){
-            controller.flush();
-            controller.clear();
-            memory::data_bulk::drop();
-        }
-        inline bool backbone::has_nested_actor() const {
+        template<class Context>
+        bool backbone<Context>::has_nested_actor(){
             return (&get_actor() != &this->base);
         }
-        inline actor& backbone::get_actor() const {
-            return *stack.top();
+        template<class Context>
+        typename backbone<Context>::controller_type* backbone<Context>::provide_controller(){
+            return &Context::get().controller;
         }
-        inline void backbone::pop_actor(){
-            stack.pop();
+        template<class Context>
+        void backbone<Context>::sync(){
+            Context::sync();
+            memory::data_bulk::drop();
         }
-        inline void backbone::push_actor(actor* s){
-            stack.push(s);
+        template<class Context>
+        actor& backbone<Context>::get_actor(){
+            return *Context::get().actors.top();
         }
-        inline scope& backbone::get_scope() const {
-            return *scopes.top();
+        template<class Context>
+        actor_auto& backbone<Context>::get_base(){
+            return this->base;
         }
-        inline void backbone::pop_scope(){
-            scopes.pop();
+        template<class Context>
+        void backbone<Context>::pop_actor(){
+            Context::get().actors.pop();
         }
-        inline void backbone::push_scope(scope* s){
-            scopes.push(s);
+        template<class Context>
+        void backbone<Context>::push_actor(actor* s){
+            Context::get().actors.push(s);
         }
-        inline bool backbone::threaded() const { 
-            return false;
+        template<class Context>
+        scope& backbone<Context>::get_scope(){
+            return *Context::get().scopes.top();
         }
-        inline bool backbone::tunable() const { 
+        template<class Context>
+        void backbone<Context>::pop_scope(){
+            Context::get().scopes.pop();
+        }
+        template<class Context>
+        void backbone<Context>::push_scope(scope* s){
+            Context::get().scopes.push(s);
+        }
+        template<class Context>
+        bool backbone<Context>::tunable(){
             return (!get_controller().is_serial() && !has_nested_actor());
         }
-        inline void backbone::intend_read(models::ssm::revision* r) const {
+        template<class Context>
+        void backbone<Context>::intend_read(models::ssm::revision* r){
             base.intend_read(r); 
         }
-        inline void backbone::intend_write(models::ssm::revision* r) const {
+        template<class Context>
+        void backbone<Context>::intend_write(models::ssm::revision* r){
             base.intend_write(r); 
         }
-        inline void backbone::schedule() const {
+        template<class Context>
+        void backbone<Context>::schedule(){
             base.schedule();
         }
-        inline ambient::mutex& backbone::get_mutex() const {
+        template<class Context>
+        ambient::mutex& backbone<Context>::get_mutex(){
             return mtx;
         }
 }
-
-#endif
 
 #endif

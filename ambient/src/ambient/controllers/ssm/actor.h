@@ -52,10 +52,10 @@ namespace ambient {
         controller_type* controller;
     };
 
-    class base_actor : public actor {
+    class actor_auto : public actor {
     public:
         typedef typename actor::model_type model_type;
-        base_actor();
+        actor_auto();
         void set(rank_t r);
         void set(scope::const_iterator it);
         void schedule();
