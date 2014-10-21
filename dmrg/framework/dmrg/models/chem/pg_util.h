@@ -100,8 +100,8 @@ public:
 
 //////////////////////////////////////////////////
 
-template <class SymmGroup>
-class PGCharge
+template <class SymmGroup, class PGTag>
+class PGCharge_
 {
 public:
     typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, int irr)
@@ -110,27 +110,25 @@ public:
     }
 };
 
-template < >
-class  PGCharge<TwoU1PG>
+template <class SymmGroup>
+class  PGCharge_<SymmGroup, SymmTraits::PGat2>
 {
 public:
-    typedef TwoU1PG::subcharge subcharge;
-    TwoU1PG::charge operator()(TwoU1PG::charge rhs, subcharge irr)
+    typedef typename SymmGroup::subcharge subcharge;
+    typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, subcharge irr)
     {
         rhs[2] = irr;
         return rhs;
     }
 };
 
-template < >
-class  PGCharge<SU2U1PG>
+template <class SymmGroup>
+class PGCharge
 {
 public:
-    typedef SU2U1PG::subcharge subcharge;
-    SU2U1PG::charge operator()(SU2U1PG::charge rhs, subcharge irr)
-    {
-        rhs[2] = irr;
-        return rhs;
+    typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, int irr)
+    { 
+        return PGCharge_<SymmGroup, typename SymmTraits::PGType<SymmGroup>::type>()(rhs, irr);
     }
 };
 

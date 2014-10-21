@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,18 +24,55 @@
  *
  *****************************************************************************/
 
-#ifndef SYMMETRY_H
-#define SYMMETRY_H
+#ifndef SYMMETRY_TRAITS_H
+#define SYMMETRY_TRAITS_H
 
-#include "dmrg/block_matrix/symmetry/none.h"
-#include "dmrg/block_matrix/symmetry/u1.h"
-#include "dmrg/block_matrix/symmetry/2u1.h"
-#include "dmrg/block_matrix/symmetry/nu1.h"
-#include "dmrg/block_matrix/symmetry/nu1pg.h"
-#include "dmrg/block_matrix/symmetry/z2.h"
-#include "dmrg/block_matrix/symmetry/zq.h"
-#include "dmrg/block_matrix/symmetry/su2u1.h"
+namespace SymmTraits {
 
-#include "dmrg/block_matrix/symmetry/symmetry_traits.h"
+    class AbelianTag {};
+    class SU2Tag {};
+
+    template <class SymmGroup>
+    struct SymmType
+    {
+        typedef AbelianTag type;
+    };
+
+    template <>
+    struct SymmType<SU2U1>
+    {
+        typedef SU2Tag type;
+    };
+
+    template <>
+    struct SymmType<SU2U1PG>
+    {
+        typedef SU2Tag type;
+    };
+
+    /////////////////////////////////////
+
+    class NoPG {};
+    class PGat2 {};
+
+    template <class SymmGroup>
+    struct PGType
+    {
+        typedef NoPG type;
+    };
+
+    template <>
+    struct PGType<TwoU1PG>
+    {
+        typedef PGat2 type;
+    };
+
+    template <>
+    struct PGType<SU2U1PG>
+    {
+        typedef PGat2 type;
+    };
+
+}
 
 #endif

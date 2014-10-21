@@ -33,37 +33,13 @@
 
 namespace contraction {
 
-    class AbelianTag {};
-    class SU2Tag {};
-
-    template <class SymmGroup>
-    class SymmTypeTrait
-    {
-    public:
-        typedef AbelianTag type;
-    };
-
-    template <>
-    class SymmTypeTrait<SU2U1>
-    {
-    public:
-        typedef SU2Tag type;
-    };
-
-    template <>
-    class SymmTypeTrait<SU2U1PG>
-    {
-    public:
-        typedef SU2Tag type;
-    };
-
     template <class Matrix, class OtherMatrix, class SymmGroup, class SymmetryType>
     class EngineBackEnd;
 
     template <class Matrix, class OtherMatrix, class SymmGroup>
     class Engine
     {
-        typedef typename SymmTypeTrait<SymmGroup>::type symm_type_t;
+        typedef typename SymmTraits::SymmType<SymmGroup>::type symm_type_t;
 
     public:
         Engine() {}
@@ -77,7 +53,6 @@ namespace contraction {
             return EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_type_t>::overlap_left_step
                     (bra_tensor, ket_tensor, left, localop);
         }
-
 
         static block_matrix<OtherMatrix, SymmGroup>
         overlap_right_step(MPSTensor<Matrix, SymmGroup> const & bra_tensor,
