@@ -60,8 +60,6 @@ class Ztwo {
 				v[0] = fuse(v[0], v[i]);
 			return v[0];
 		}
-
-        static bool physical(charge a) { return true; }
 };
 
 inline void save(alps::hdf5::archive & ar,
