@@ -144,8 +144,8 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired() const
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps() const
 {
-    make_left_paired();
-    return MPSTensor<Matrix, SymmGroup>(phys_i, left_i, right_i, data_, LeftPaired);
+    make_right_paired();
+    return MPSTensor<Matrix, SymmGroup>(phys_i, left_i, right_i, data_, RightPaired);
 }
 
 template<class Matrix, class SymmGroup>
