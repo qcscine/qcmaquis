@@ -205,7 +205,7 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_overlap(MPS<Matr
 typedef std::vector< std::pair<std::vector<std::string>, std::vector<double> > > entanglement_spectrum_type;
 template<class Matrix, class SymmGroup>
 std::vector<double>
-calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> & mps, double n,
+calculate_bond_renyi_entropies(MPS<Matrix, SymmGroup> mps, double n,
                                std::vector<int> * measure_es_where = NULL,
                                entanglement_spectrum_type * spectra = NULL) // to be optimized later
 {
