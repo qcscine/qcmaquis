@@ -32,8 +32,8 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/block_matrix/indexing.h"
 
-namespace Abelian {
-    namespace detail {
+namespace contraction {
+    namespace abelian {
 
     using ::contraction::ContractionGrid;
 
@@ -277,7 +277,6 @@ namespace Abelian {
         rbtm_kernel_execute(b1, ret, right, right_mult_mps, mpo, ket_basis, left_i, out_right_i, in_left_pb, out_right_pb);
     }
     
-    } // namespace detail
-
-} // namespace Abelian
+    } // namespace ablian
+} // namespace contraction
 #endif

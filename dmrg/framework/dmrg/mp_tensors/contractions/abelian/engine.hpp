@@ -29,8 +29,8 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "dmrg/mp_tensors/contractions/common/common.h"
 #include "dmrg/mp_tensors/contractions/abelian/apply_op.hpp"
+#include "dmrg/mp_tensors/contractions/common/common.h"
 
 namespace contraction {
 
@@ -52,7 +52,7 @@ namespace contraction {
                             ProductBasis<SymmGroup> const & in_right_pb,
                             ProductBasis<SymmGroup> const & out_left_pb)
             {
-                Abelian::detail::lbtm_kernel(b2, contr_grid, left, left_mult_mps, mpo, ket_basis,
+                abelian::lbtm_kernel(b2, contr_grid, left, left_mult_mps, mpo, ket_basis,
                                              right_i, out_left_i, in_right_pb, out_left_pb);
             }
         };
@@ -70,7 +70,7 @@ namespace contraction {
                             ProductBasis<SymmGroup> const & in_left_pb,
                             ProductBasis<SymmGroup> const & out_right_pb)
             {
-                Abelian::detail::rbtm_kernel(b1, ret, right, right_mult_mps, mpo, ket_basis,
+                abelian::rbtm_kernel(b1, ret, right, right_mult_mps, mpo, ket_basis,
                                              left_i, out_right_i, in_left_pb, out_right_pb);
             }
         };
