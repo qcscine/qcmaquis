@@ -38,10 +38,12 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline channel::mount::mount(){
-        int np, level, zero = 0;
+        int *ub, flag, np, level, zero = 0;
         MPI_Init_thread(&zero, NULL, AMBIENT_MPI_THREADING, &level); 
         if(level != AMBIENT_MPI_THREADING) throw std::runtime_error("Error: Wrong threading level");
         MPI_Comm_size(MPI_COMM_WORLD, &np);
+        MPI_Attr_get(MPI_COMM_WORLD, MPI_TAG_UB, &ub, &flag);
+        this->tag_ub = flag ? *ub : 32767;
         
         trees.resize(2); // 0,1 are empty
         for(int i = 2; i <= np; i++)  trees.push_back(new binary_tree<rank_t>(i));
@@ -53,8 +55,8 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline channel::channel(){
-        channel::setup(); // making sure MPI is initialised
-        this->world = new group(AMBIENT_MASTER_RANK, MPI_COMM_WORLD);
+        this->tag_ub = channel::setup().tag_ub; // making sure MPI is initialised
+        this->world = new group(MPI_COMM_WORLD);
         this->rank = this->world->rank;
     }
 

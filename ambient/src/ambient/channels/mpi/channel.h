@@ -49,6 +49,7 @@ namespace ambient { namespace channels { namespace mpi {
            ~mount();
             std::vector<binary_tree<rank_t>*> trees;
             std::vector<rank_t> circle;
+            int tag_ub;
         };
         static mount& setup(){ 
             static mount m; 
@@ -63,6 +64,7 @@ namespace ambient { namespace channels { namespace mpi {
         collective<scalar_type>* bcast(scalar_type& v);
         rank_t rank;
         group* world;
+        int tag_ub;
     };
 
 } } }

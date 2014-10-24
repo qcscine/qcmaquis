@@ -51,6 +51,10 @@ namespace ambient {
         return selector.get_controller().get_num_procs();
     }
 
+    inline int get_tag_ub(){
+        return selector.get_controller().get_tag_ub();
+    }
+
     inline rank_t rank(){
         return selector.get_controller().get_rank();
     }
