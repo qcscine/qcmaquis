@@ -140,10 +140,12 @@ private:
             {
                 if (!(*this)[p].has(r,c))
                     continue;
-                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.left_basis().size(); ++cs) {
-                    std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
-                    if (! phys_i.has(sector.first))
-                        phys_i.insert(sector);
+                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.basis().size(); ++cs) {
+                    //std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
+                    dual_index_detail::QnBlock<SymmGroup> sector = (*this)[p].at(r, c).op.basis()[cs];
+                    //if (! phys_i.has(sector.first))
+                    if (! phys_i.has(sector.lc))
+                        phys_i.insert(std::make_pair(sector.lc, sector.ls));
                 }
             }
         
@@ -175,7 +177,8 @@ private:
                         if (! (*this)[p].at(r,c).op.has_block(phys_i[ls].first, phys_i[rs].first) )
                             continue;                       
                         
-                        std::size_t cs = (*this)[p].at(r, c).op.left_basis().position(phys_i[ls].first);
+                        //std::size_t cs = (*this)[p].at(r, c).op.left_basis().position(phys_i[ls].first);
+                        std::size_t cs = (*this)[p].at(r, c).op.basis().position(phys_i[ls].first, phys_i[rs].first);
                         
                         assert( lc == rc );
                         assert( outr < left_i.size_of_block(lc) );
@@ -212,10 +215,13 @@ private:
             {
                 if (!(*this)[p].has(r,c))
                     continue;
-                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.left_basis().size(); ++cs) {
-                    std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
-                    if (! phys_i.has(sector.first))
-                        phys_i.insert(sector);
+                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.basis().size(); ++cs) {
+                    //std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
+                    dual_index_detail::QnBlock<SymmGroup> sector = (*this)[p].at(r, c).op.basis()[cs];
+                    //if (! phys_i.has(sector.first))
+                    if (! phys_i.has(sector.lc))
+                        //phys_i.insert(sector);
+                        phys_i.insert(std::make_pair(sector.lc, sector.ls));
                 }
             }
         
@@ -247,7 +253,8 @@ private:
                         if (! (*this)[p].at(r, c).op.has_block(phys_i[ls].first, phys_i[rs].first) )
                             continue;
                         
-                        std::size_t cs = (*this)[p].at(r, c).op.left_basis().position(phys_i[ls].first);
+                        //std::size_t cs = (*this)[p].at(r, c).op.left_basis().position(phys_i[ls].first);
+                        std::size_t cs = (*this)[p].at(r, c).op.basis().position(phys_i[ls].first, phys_i[rs].first);
                         
                         assert( lc == rc );
                         assert( outc < right_i.size_of_block(rc) );
@@ -284,10 +291,13 @@ private:
         for (size_t r = 0; r < (*this)[p].row_dim(); ++r)
             for (size_t c = 0; c < (*this)[p].col_dim(); ++c)
             {
-                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.left_basis().size(); ++cs) {
-                    std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
-                    if (! phys_i.has(sector.first))
-                        phys_i.insert(sector);
+                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.basis().size(); ++cs) {
+                    //std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
+                    dual_index_detail::QnBlock<SymmGroup> sector = (*this)[p].at(r, c).op.basis()[cs];
+                    //if (! phys_i.has(sector.first))
+                    if (! phys_i.has(sector.lc))
+                        //phys_i.insert(sector);
+                        phys_i.insert(std::make_pair(sector.lc, sector.ls));
                 }
             }
         
@@ -296,7 +306,8 @@ private:
         {
             std::size_t count = 0;
             bond_index_charges[p+1].clear();
-            for (typename Index<SymmGroup>::basis_iterator it = left.right_basis().basis_begin();
+            Index<SymmGroup> left_right_basis_cp = left.right_basis();
+            for (typename Index<SymmGroup>::basis_iterator it = left_right_basis_cp.basis_begin();
                  !it.end(); ++it)
                 bond_index_charges[p+1][count++] = (*it).first;
         }
