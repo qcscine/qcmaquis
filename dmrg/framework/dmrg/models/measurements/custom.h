@@ -60,7 +60,7 @@ namespace measurements {
         
         void evaluate(MPS<Matrix, SymmGroup> const& mps, boost::optional<reduced_mps<Matrix, SymmGroup> const&> rmps = boost::none)
         {
-            this->result = expval(mps, mpo, base::contr);
+            this->result = expval(mps, mpo);
         }
     
     protected:

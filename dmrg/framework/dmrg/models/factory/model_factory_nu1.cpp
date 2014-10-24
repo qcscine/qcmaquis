@@ -26,6 +26,7 @@
 
 #include "model_factory_symm.h"
 #include "dmrg/models/coded/factory_nu1.hpp"
+#include "dmrg/models/continuum/factory_nu1.hpp"
 
 typedef NU1 grp;
 

@@ -424,16 +424,30 @@ namespace ietl
             get_extremal_eigenvalue(theta,s,iter.iterations()+1);
             
             // u = V s
+            #ifdef USE_AMBIENT
+            std::vector<vector_type> u_parts; u_parts.reserve(iter.iterations()+1);
+            for(int j = 0; j <= iter.iterations(); ++j) u_parts.push_back(V[j] * s[j]);
+            vector_type u = ambient::reduce_sync(u_parts, [](vector_type& dst, vector_type& src){ dst += src; src.clear(); });
+            std::vector<vector_type>().swap(u_parts);
+            #else
             vector_type u = V[0] * s[0];
             for(int j = 1; j <= iter.iterations(); ++j)
                 u += V[j] * s[j];
-            
+            #endif
+
             // u^A = V^A s
             // ietl::mult(matrix_,u,uA);
+            #ifdef USE_AMBIENT
+            std::vector<vector_type> uA_parts; uA_parts.reserve(iter.iterations()+1);
+            for(int j = 0; j <= iter.iterations(); ++j) uA_parts.push_back(VA[j] * s[j]);
+            vector_type uA = ambient::reduce_sync(uA_parts, [](vector_type& dst, vector_type& src){ dst += src; src.clear(); });
+            std::vector<vector_type>().swap(uA_parts);
+            #else
             vector_type uA = VA[0] * s[0];
             for(int j = 1; j <= iter.iterations(); ++j)
                 uA += VA[j] * s[j];
-            
+            #endif
+
             ietl::project(uA,vecspace_);
             
             // r = u^A - \theta u
@@ -448,6 +462,9 @@ namespace ietl
             //   (I-uu^\star)(A-\theta I)(I- uu^\star)t = -r
             rel_tol = 1. / pow(2.,double(iter.iterations()+1));
             solver(u, theta, r, V[iter.iterations()], rel_tol);
+
+            V[iter.iterations()].data().iter_index = VA[iter.iterations()-1].data().iter_index;
+            storage::migrate(V[iter.iterations()], parallel::scheduler_balanced_iterative(V[iter.iterations()].data()));
         } while(true);
         
     }

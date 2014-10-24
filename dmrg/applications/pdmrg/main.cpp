@@ -73,6 +73,8 @@ typedef TrivialGroup grp;
 #include <boost/mpi.hpp>
 namespace mpi = boost::mpi;
 
+typedef boost::shared_ptr<contraction::Engine<matrix, storage::constrained<matrix>::type, grp> > engine_ptr;
+
 
 enum optim_normalize_t {with_normalization, no_normalization};
 
@@ -81,16 +83,18 @@ struct SiteProblem
 {
     SiteProblem(Boundary<Matrix, SymmGroup> const & left_,
                 Boundary<Matrix, SymmGroup> const & right_,
-                MPOTensor<Matrix, SymmGroup> const & mpo_)
+                MPOTensor<Matrix, SymmGroup> const & mpo_,
+                engine_ptr const & engine_)
     : left(left_)
     , right(right_)
     , mpo(mpo_)
-    {
-    }
+    , engine(engine_)
+    { }
     
     Boundary<Matrix, SymmGroup> const & left;
     Boundary<Matrix, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
+    engine_ptr engine;
     double ortho_shift;
 };
 
@@ -127,7 +131,8 @@ void central_optim(unsigned site, block_matrix<DiagMatrix, SymmGroup> & inv,
                    MPS<Matrix, SymmGroup> & mps, MPO<Matrix, SymmGroup> const& mpo,
                    Boundary<Matrix, SymmGroup> const & left, Boundary<Matrix, SymmGroup> const & right,
                    Boundary<Matrix, SymmGroup> & newleft, Boundary<Matrix, SymmGroup> & newright,
-                   double cutoff, std::size_t Mmax, BaseParameters & parms)
+                   double cutoff, std::size_t Mmax, BaseParameters & parms,
+                   engine_ptr contr)
 {
     
     /// Create TwoSite objects
@@ -141,7 +146,7 @@ void central_optim(unsigned site, block_matrix<DiagMatrix, SymmGroup> & inv,
     /// Create site problem
     std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs;
     std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
-    SiteProblem<Matrix, SymmGroup> sp(left, right, ts_mpo);
+    SiteProblem<Matrix, SymmGroup> sp(left, right, ts_mpo, contr);
     
     /// Optimization: JCD
     res = solve_ietl_jcd(sp, ts_mps, parms, ortho_vecs);
@@ -159,12 +164,12 @@ void central_optim(unsigned site, block_matrix<DiagMatrix, SymmGroup> & inv,
     {
         MPSTensor<Matrix, SymmGroup> t = mps[site];
         t.multiply_from_right(inv);
-        newleft = contraction::overlap_mpo_left_step(t, t, left, mpo[site]);
+        newleft = contr->overlap_mpo_left_step(t, t, left, mpo[site]);
     }
     {
         MPSTensor<Matrix, SymmGroup> t = mps[site+1];
         t.multiply_from_left(inv);
-        newright = contraction::overlap_mpo_right_step(t, t, right, mpo[site+1]);
+        newright = contr->overlap_mpo_right_step(t, t, right, mpo[site+1]);
     }
 }
 
@@ -174,7 +179,8 @@ void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
                 MPS<Matrix, SymmGroup> & mps, MPO<Matrix, SymmGroup> const& mpo,
                 std::vector<Boundary<Matrix, SymmGroup> > & left, std::vector<Boundary<Matrix, SymmGroup> > & right,
                 double cutoff, std::size_t Mmax, BaseParameters & parms,
-                optim_normalize_t normalize)
+                optim_normalize_t normalize,
+                engine_ptr contr)
 {
     /// Create TwoSite objects
     TwoSiteTensor<Matrix, SymmGroup> tst(mps[site], mps[site+1]);
@@ -186,7 +192,7 @@ void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
     /// Create site problem
     std::vector<MPSTensor<Matrix, SymmGroup> > ortho_vecs;
     std::pair<double, MPSTensor<Matrix, SymmGroup> > res;
-    SiteProblem<Matrix, SymmGroup> sp(left[local_site], right[local_site+1], ts_mpo);
+    SiteProblem<Matrix, SymmGroup> sp(left[local_site], right[local_site+1], ts_mpo, contr);
     
     /// Optimization: JCD
     res = solve_ietl_jcd(sp, ts_mps, parms, ortho_vecs);
@@ -219,10 +225,10 @@ void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
 
     /// Move boundaries
     if (lr == +1) {
-        if (site < L+1) left[local_site+1] = contraction::overlap_mpo_left_step(mps[site], mps[site], left[local_site], mpo[site]);
+        if (site < L+1) left[local_site+1] = contr->overlap_mpo_left_step(mps[site], mps[site], left[local_site], mpo[site]);
     }
     if (lr == -1) {
-        if (site > 0) right[local_site] = contraction::overlap_mpo_right_step(mps[site+1], mps[site+1], right[local_site+1], mpo[site+1]);
+        if (site > 0) right[local_site] = contr->overlap_mpo_right_step(mps[site+1], mps[site+1], right[local_site+1], mpo[site+1]);
     }
     
 }
@@ -245,6 +251,9 @@ int main(int argc, char ** argv)
         
         MPO<matrix, grp> mpo = make_mpo(lattice, model, parms);
         maquis::cout << "Parsing model done!\n";
+        
+        /// initialize contraction engine
+        engine_ptr contr = contraction::EngineFactory<matrix, storage::constrained<matrix>::type, grp>::makeFactory(parms)->makeEngine();
         
         /// Initialize & load MPS
         int L = lattice.size(), lr, site;
@@ -277,7 +286,7 @@ int main(int argc, char ** argv)
             if (rank == nprocs-1) {
                 tmp_left[0] = mps.left_boundary();
                 for (size_t i=0; i<L-1; ++i)
-                    tmp_left[i+1] = contraction::overlap_mpo_left_step(mps[i], mps[i], tmp_left[i], mpo[i]);
+                    tmp_left[i+1] = contr->overlap_mpo_left_step(mps[i], mps[i], tmp_left[i], mpo[i]);
                 maquis::cout << "Left boundary done!\n";
             }
             
@@ -286,7 +295,7 @@ int main(int argc, char ** argv)
             if (rank == 0) {
                 tmp_right[L-1] = mps.right_boundary();
                 for (int i=L-2; i>=0; --i)
-                    tmp_right[i] = contraction::overlap_mpo_right_step(mps[i+1], mps[i+1], tmp_right[i+1], mpo[i+1]);
+                    tmp_right[i] = contr->overlap_mpo_right_step(mps[i+1], mps[i+1], tmp_right[i+1], mpo[i+1]);
                 maquis::cout << "Right boundary done!\n";
             }
             
@@ -329,7 +338,7 @@ int main(int argc, char ** argv)
                     comm.recv(rank+1, 1, right[local_size]);
                     
                     maquis::cout << "[" << rank << "] " << "doing : " << end-1 << " dir M" << std::endl;
-                    central_optim(end-1, inv, mps, mpo, left[local_size-1], right[local_size], left[local_size], right[local_size-1], cutoff, Mmax, parms);
+                    central_optim(end-1, inv, mps, mpo, left[local_size-1], right[local_size], left[local_size], right[local_size-1], cutoff, Mmax, parms, contr);
                     
                     comm.send(rank+1, 2, mps[end]);
                     comm.send(rank+1, 3, left[local_size]);
@@ -346,13 +355,13 @@ int main(int argc, char ** argv)
                 for (site = end-2; site >= start; --site) {
                     maquis::cout << "[" << rank << "] " << "doing : " << site << " dir " << -1 << std::endl;
                     optim_normalize_t normalize = (site != start) ? with_normalization : no_normalization;
-                    dmrg_optim(site, site - start, -1, L, mps, mpo, left, right, cutoff, Mmax, parms, normalize);
+                    dmrg_optim(site, site - start, -1, L, mps, mpo, left, right, cutoff, Mmax, parms, normalize, contr);
                 }
             } else {
                 for (site = start; site < end-1; ++site) {
                     maquis::cout << "[" << rank << "] " << "doing : " << site << " dir " << +1 << std::endl;
                     optim_normalize_t normalize = (site != end-2) ? with_normalization : no_normalization;
-                    dmrg_optim(site, site - start, +1, L, mps, mpo, left, right, cutoff, Mmax, parms, normalize);
+                    dmrg_optim(site, site - start, +1, L, mps, mpo, left, right, cutoff, Mmax, parms, normalize, contr);
                 }
             }
             
@@ -362,7 +371,7 @@ int main(int argc, char ** argv)
                 comm.recv(rank+1, 1, right[local_size]);
                 
                 maquis::cout << "[" << rank << "] " << "doing : " << end-1 << " dir M" << std::endl;
-                central_optim(end-1, inv, mps, mpo, left[local_size-1], right[local_size], left[local_size], right[local_size-1], cutoff, Mmax, parms);
+                central_optim(end-1, inv, mps, mpo, left[local_size-1], right[local_size], left[local_size], right[local_size-1], cutoff, Mmax, parms, contr);
                 
                 comm.send(rank+1, 2, mps[end]);
                 comm.send(rank+1, 3, left[local_size]);
@@ -381,7 +390,7 @@ int main(int argc, char ** argv)
                     optim_normalize_t normalize;
                     if (rank == nprocs-1) normalize = with_normalization;
                     else                  normalize = (site != end-2) ? with_normalization : no_normalization;
-                    dmrg_optim(site, site - start, +1, L, mps, mpo, left, right, cutoff, Mmax, parms, normalize);
+                    dmrg_optim(site, site - start, +1, L, mps, mpo, left, right, cutoff, Mmax, parms, normalize, contr);
                 }
             } else {
                 for (site = end-2; site >= int(start); --site) {
@@ -389,7 +398,7 @@ int main(int argc, char ** argv)
                     optim_normalize_t normalize;
                     if (rank == 0) normalize = with_normalization;
                     else           normalize = (site != start) ? with_normalization : no_normalization;
-                    dmrg_optim(site, site - start, -1, L, mps, mpo, left, right, cutoff, Mmax, parms, normalize);
+                    dmrg_optim(site, site - start, -1, L, mps, mpo, left, right, cutoff, Mmax, parms, normalize, contr);
                 }
             }
             
@@ -403,7 +412,7 @@ int main(int argc, char ** argv)
                 comm.recv(rank+1, 1, right[local_size]);
                 
                 maquis::cout << "[" << rank << "] " << "doing : " << end-1 << " dir M" << std::endl;
-                central_optim(end-1, inv, mps, mpo, left[local_size-1], right[local_size], left[local_size], right[local_size-1], cutoff, Mmax, parms);
+                central_optim(end-1, inv, mps, mpo, left[local_size-1], right[local_size], left[local_size], right[local_size-1], cutoff, Mmax, parms, contr);
                 
                 comm.send(rank+1, 2, mps[end]);
                 // comm.send(rank+1, 3, left[local_size]); // not really needed

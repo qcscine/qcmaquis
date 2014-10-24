@@ -28,6 +28,9 @@
 #ifndef AMBIENT_MEMORY_DATA_BULK_HPP
 #define AMBIENT_MEMORY_DATA_BULK_HPP
 
+#include "ambient/utils/mem.h"
+#define FORCE_DROP_CRITERIA 60
+
 namespace ambient { namespace memory {
 
     inline data_bulk& data_bulk::instance(){
@@ -35,9 +38,10 @@ namespace ambient { namespace memory {
     }
 
     inline data_bulk::data_bulk(){
-        this->limit = ambient::isset("AMBIENT_BULK_LIMIT") ? ambient::getint("AMBIENT_BULK_LIMIT") : AMBIENT_MAX_SID;
         this->reuse_enabled = ambient::isset("AMBIENT_BULK_REUSE") ? true : false; 
-        this->reset_enabled = ambient::isset("AMBIENT_BULK_DEALLOCATE") ? true : false; 
+        this->reset_enabled = ambient::isset("AMBIENT_FORCE_BULK_DEALLOCATION") ? true : false; 
+        this->limit = (ambient::isset("AMBIENT_BULK_LIMIT") ? ambient::getint("AMBIENT_BULK_LIMIT") : FORCE_DROP_CRITERIA) * 
+                      ((double)getRSSLimit() / AMBIENT_DATA_BULK_CHUNK / 100);
     }
 
     template<size_t S> void* data_bulk::malloc()         { return instance().memory.malloc(S);     }
@@ -51,6 +55,10 @@ namespace ambient { namespace memory {
 
     inline void data_bulk::drop(){
         instance().memory.reset();
+        if(!instance().reset_enabled){
+            double peak = (double)getPeakRSS()*100 / (double)getRSSLimit();
+            if(peak > FORCE_DROP_CRITERIA) instance().reset_enabled = true;
+        }
         if(instance().reset_enabled) factory<AMBIENT_DATA_BULK_CHUNK>::deallocate();
         factory<AMBIENT_DATA_BULK_CHUNK>::reset();
     }
@@ -65,5 +73,6 @@ namespace ambient { namespace memory {
 
 } }
 
+#undef FORCE_DROP_CRITERIA
 #endif
 

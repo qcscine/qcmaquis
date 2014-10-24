@@ -88,7 +88,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     /// Model initialization
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
-    mpo = make_mpo(lat, model, parms);
+    mpo = make_mpo(lat, model);
     all_measurements = model.measurements();
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
     
@@ -132,9 +132,6 @@ template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status)
 {
     if (!dns) {
-        /// create chkp dir
-        if(parallel::master() && !boost::filesystem::exists(chkpfile))
-            boost::filesystem::create_directory(chkpfile);
         /// save state to chkp dir
         save(chkpfile, state);
         
@@ -166,11 +163,11 @@ void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type
 //  for (typename measurements_type::iterator m = meas.begin(); m != meas.end(); ++m)
 //	maquis::cout << m->name << std::endl;
     std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile, archive_path, mps));
-    
+
     // TODO: move into special measurement
     std::vector<int> * measure_es_where = NULL;
     entanglement_spectrum_type * spectra = NULL;
-    if (!parms["entanglement_spectra"].empty()) {
+    if (parms.defined("entanglement_spectra")) {
         spectra = new entanglement_spectrum_type();
         measure_es_where = new std::vector<int>();
         *measure_es_where = parms.template get<std::vector<int> >("entanglement_spectra");
@@ -188,11 +185,11 @@ void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type
     {
         storage::archive ar(rfile, "w");
         if (entropies.size() > 0)
-            ar[archive_path + "/Entropy/mean/value"] << entropies;
+            ar[archive_path + "Entropy/mean/value"] << entropies;
         if (renyi2.size() > 0)
-            ar[archive_path + "/Renyi2/mean/value"] << renyi2;
+            ar[archive_path + "Renyi2/mean/value"] << renyi2;
         if (spectra != NULL)
-            ar[archive_path + "/Entanglement Spectra/mean/value"] << *spectra;
+            ar[archive_path + "Entanglement Spectra/mean/value"] << *spectra;
     }
 }
 

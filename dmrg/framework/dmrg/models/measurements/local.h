@@ -91,7 +91,8 @@ namespace measurements {
                     MPOTensor<Matrix, SymmGroup> temp;
                     temp.set(0, 0, site_term[type]);
                     
-                    MPSTensor<Matrix, SymmGroup> vec2 = base::contr->site_hamil2(mps[p], rmps.get().left(p), rmps.get().right(p), temp);
+                    MPSTensor<Matrix, SymmGroup> vec2
+                        = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(mps[p], rmps.get().left(p), rmps.get().right(p), temp);
                     res += mps[p].scalar_overlap(vec2);
                     evaluated = true;
                 }
@@ -130,7 +131,7 @@ namespace measurements {
                         boost::tie(match, boost::tuples::ignore) = res.insert( std::make_pair(mit->first, 0.) );
                     
                     if (!this->is_super_meas) {
-                        match->second += expval(mps, mit->second, base::contr);
+                        match->second += expval(mps, mit->second);
                     } else {
                         MPS<Matrix, SymmGroup> super_mpo = mpo_to_smps(mit->second, this->phys_psi);
                         // static_cast needed for icpc 12.x

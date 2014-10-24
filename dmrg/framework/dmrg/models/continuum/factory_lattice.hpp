@@ -24,6 +24,9 @@
  *
  *****************************************************************************/
 
+#ifndef MAQUIS_DMRG_MODELS_CONTINUUM_FACTORY_LATTICE_H
+#define MAQUIS_DMRG_MODELS_CONTINUUM_FACTORY_LATTICE_H
+
 #include "dmrg/models/continuum/lattice.hpp"
 
 inline boost::shared_ptr<lattice_impl> cont_lattice_factory (BaseParameters & parms)
@@ -40,3 +43,5 @@ inline boost::shared_ptr<lattice_impl> cont_lattice_factory (BaseParameters & pa
         throw std::runtime_error("Don't know this lattice!");
     }
 }
+
+#endif

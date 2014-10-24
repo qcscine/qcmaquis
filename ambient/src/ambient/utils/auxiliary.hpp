@@ -51,6 +51,10 @@ namespace ambient {
         return selector.get_controller().get_num_procs();
     }
 
+    inline int get_tag_ub(){
+        return selector.get_controller().get_tag_ub();
+    }
+
     inline rank_t rank(){
         return selector.get_controller().get_rank();
     }
@@ -115,6 +119,11 @@ namespace ambient {
     template<typename V>
     inline rank_t get_owner(const V& o){
         return o.ambient_rc.desc->current->owner;
+    }
+
+    template<typename V>
+    inline bool locked_once(const V& o){
+        return o.ambient_before->locked_once();
     }
 
     inline rank_t which(){

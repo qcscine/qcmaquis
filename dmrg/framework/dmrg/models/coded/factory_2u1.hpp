@@ -35,8 +35,8 @@ struct coded_model_factory<Matrix, TwoU1> {
         typedef boost::shared_ptr<model_impl<Matrix, TwoU1> > impl_ptr;
         if (parms["MODEL"] == std::string("fermion Hubbard"))
             return impl_ptr( new FermiHubbardTwoU1<Matrix>(lattice, parms) );
-        else
-            if (parms["MODEL"] == std::string("quantum_chemistry"))
+
+        else if (parms["MODEL"] == std::string("quantum_chemistry"))
             return impl_ptr( new qc_model<Matrix, TwoU1>(lattice, parms) );
 
         else {

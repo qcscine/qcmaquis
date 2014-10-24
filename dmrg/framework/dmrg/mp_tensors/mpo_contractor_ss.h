@@ -44,19 +44,16 @@ struct SiteProblem
     SiteProblem(MPSTensor<Matrix, SymmGroup> const & ket_tensor_,
                 Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left_,
                 Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right_,
-                MPOTensor<Matrix, SymmGroup> const & mpo_,
-                boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine_)
+                MPOTensor<Matrix, SymmGroup> const & mpo_)
     : ket_tensor(ket_tensor_)
     , left(left_)
     , right(right_)
-    , mpo(mpo_)
-    , engine(engine_) { }
+    , mpo(mpo_) { }
     
     MPSTensor<Matrix, SymmGroup> const & ket_tensor;
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & left;
     Boundary<typename storage::constrained<Matrix>::type, SymmGroup> const & right;
     MPOTensor<Matrix, SymmGroup> const & mpo;
-    boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > engine;
 };
 
 #define BEGIN_TIMING(name) \
@@ -72,6 +69,8 @@ then = boost::chrono::high_resolution_clock::now(); \
 template<class Matrix, class SymmGroup, class Storage>
 class mpo_contractor_ss
 {
+    typedef contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> contr;
+
 public:
     mpo_contractor_ss(MPS<Matrix, SymmGroup> const & mps_,
                       MPO<Matrix, SymmGroup> const & mpo_,
@@ -81,7 +80,6 @@ public:
     , mpo(mpo_)
     , parms(parms_)
     {
-        contr.reset(new contraction::AbelianEngine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup>());
         mps.canonize(0);
         init_left_right(mpo);
         
@@ -109,7 +107,7 @@ public:
                 lr = -1;
             }
             
-            SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site], contr);
+            SiteProblem<Matrix, SymmGroup> sp(mps[site], left_[site], right_[site+1], mpo[site]);
             ietl::mult(sp, mps[site], mpsp[site]);
             
             if (lr == +1) {
@@ -119,8 +117,8 @@ public:
                     mpsp[site+1].multiply_from_left(t);
                 }
                 
-                left_[site+1] = contr->overlap_mpo_left_step(mpsp[site], mps[site], left_[site], mpo[site]);
-                norm_boudary = contr->overlap_left_step(mpsp[site], MPSTensor<Matrix,SymmGroup>(mpsp[site]), norm_boudary);
+                left_[site+1] = contr::overlap_mpo_left_step(mpsp[site], mps[site], left_[site], mpo[site]);
+                norm_boudary = contr::overlap_left_step(mpsp[site], MPSTensor<Matrix,SymmGroup>(mpsp[site]), norm_boudary);
             } else if (lr == -1) {
                 if (site > 0) {
                     block_matrix<Matrix, SymmGroup> t;
@@ -128,8 +126,8 @@ public:
                     mpsp[site-1].multiply_from_right(t);
                 }   
                 
-                right_[site] = contr->overlap_mpo_right_step(mpsp[site], mps[site], right_[site+1], mpo[site]);
-                norm_boudary = contr->overlap_right_step(mpsp[site], MPSTensor<Matrix,SymmGroup>(mpsp[site]), norm_boudary);
+                right_[site] = contr::overlap_mpo_right_step(mpsp[site], mps[site], right_[site+1], mpo[site]);
+                norm_boudary = contr::overlap_right_step(mpsp[site], MPSTensor<Matrix,SymmGroup>(mpsp[site]), norm_boudary);
             }
             
             if (_site == L-1) {
@@ -173,7 +171,7 @@ private:
         
         for (int i = 0; i < L; ++i) {
             Storage::drop(left_[i+1]);
-            left_[i+1] = contr->overlap_mpo_left_step(mpsp[i], mps[i], left_[i], mpo[i]);
+            left_[i+1] = contr::overlap_mpo_left_step(mpsp[i], mps[i], left_[i], mpo[i]);
             Storage::evict(left_[i+1]);
         }
         
@@ -183,7 +181,7 @@ private:
         
         for(int i = L-1; i >= 0; --i) {
             Storage::drop(right_[i]);
-            right_[i] = contr->overlap_mpo_right_step(mpsp[i], mps[i], right_[i+1], mpo[i]);
+            right_[i] = contr::overlap_mpo_right_step(mpsp[i], mps[i], right_[i+1], mpo[i]);
             Storage::evict(right_[i]);
         }
     }
@@ -191,8 +189,6 @@ private:
     MPS<Matrix, SymmGroup> mps, mpsp;
     MPO<Matrix, SymmGroup> const& mpo;
 
-    boost::shared_ptr<contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> > contr;
-    
     BaseParameters & parms;
     std::vector<Boundary<typename storage::constrained<Matrix>::type, SymmGroup> > left_, right_;
 };

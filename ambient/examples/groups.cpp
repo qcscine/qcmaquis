@@ -1,5 +1,5 @@
 #include "ambient/ambient.hpp"
-#include "ambient/numeric/matrix.hpp"
+#include "ambient/container/numeric/matrix.hpp"
 
 template<class Matrix>
 void fill(std::vector<Matrix>& left, std::vector<Matrix>& right, std::vector<Matrix>& res, 

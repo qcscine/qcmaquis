@@ -56,15 +56,14 @@
 #define AMBIENT_IB                    2048
 #define AMBIENT_INSTR_BULK_CHUNK      16777216 // 16 MB
 #define AMBIENT_DATA_BULK_CHUNK       67108864 // 64 MB
-#define AMBIENT_MAX_SID               2097152  // Cray MPI
 #define AMBIENT_MPI_THREADING         MPI_THREAD_FUNNELED
-#define AMBIENT_MASTER_RANK           0
+#define AMBIENT_THREADED_COLLECTION
 
 #include "ambient/utils/dim2.h"
 #include "ambient/utils/enums.h"
 #include "ambient/utils/tree.hpp"
 #include "ambient/utils/fence.hpp"
-#include "ambient/utils/enable_threading.hpp"
+#include "ambient/utils/threads.hpp"
 #include "ambient/utils/math.hpp"
 #include "ambient/utils/rank_t.hpp"
 
@@ -79,7 +78,6 @@
 
 #ifdef MPI_VERSION
 #include "ambient/channels/mpi/group.h"
-#include "ambient/channels/mpi/multirank.h"
 #include "ambient/channels/mpi/channel.h"
 #include "ambient/channels/mpi/request.h"
 #include "ambient/channels/mpi/collective.h"
@@ -90,10 +88,13 @@
 #include "ambient/controllers/ssm/functor.h"
 #include "ambient/controllers/ssm/collector.h"
 #include "ambient/controllers/ssm/controller.h"
+#include "ambient/controllers/ssm/meta.h"
 #include "ambient/controllers/ssm/get.h"
 #include "ambient/controllers/ssm/set.h"
 #include "ambient/controllers/ssm/scope.h"
 #include "ambient/controllers/ssm/actor.h"
+#include "ambient/controllers/ssm/context_mt.h"
+#include "ambient/controllers/ssm/context_serial.h"
 #include "ambient/controllers/ssm/backbone.h"
 
 #include "ambient/utils/auxiliary.hpp"
@@ -111,25 +112,26 @@
 
 #ifdef MPI_VERSION
 #include "ambient/channels/mpi/group.hpp"
-#include "ambient/channels/mpi/multirank.hpp"
 #include "ambient/channels/mpi/channel.hpp"
 #include "ambient/channels/mpi/request.hpp"
 #include "ambient/channels/mpi/collective.hpp"
 #endif
 
+#include "ambient/controllers/ssm/meta.hpp"
 #include "ambient/controllers/ssm/get.hpp"
 #include "ambient/controllers/ssm/set.hpp"
 #include "ambient/controllers/ssm/collector.hpp"
 #include "ambient/controllers/ssm/controller.hpp"
 #include "ambient/controllers/ssm/scope.hpp"
 #include "ambient/controllers/ssm/actor.hpp"
+#include "ambient/controllers/ssm/context_mt.hpp"
+#include "ambient/controllers/ssm/context_serial.hpp"
 #include "ambient/controllers/ssm/backbone.hpp"
 
 #include "ambient/interface/typed.hpp"
 #include "ambient/interface/kernel.hpp"
 #include "ambient/interface/access.hpp"
 #include "ambient/interface/lambda.hpp"
-#include "ambient/interface/algorithms.hpp"
 
 #include "ambient/container/proxy.hpp"
 #include "ambient/container/block.hpp"

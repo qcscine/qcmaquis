@@ -51,6 +51,12 @@ typedef alps::numeric::matrix<double> matrix;
 
 #if defined(USE_TWOU1)
 typedef TwoU1 symm;
+#elif defined(USE_TWOU1PG)
+typedef TwoU1PG symm;
+#elif defined(USE_SU2U1)
+typedef SU2U1 symm;
+#elif defined(USE_SU2U1PG)
+typedef SU2U1PG symm;
 #elif defined(USE_NONE)
 typedef TrivialGroup symm;
 #elif defined(USE_U1)
@@ -74,14 +80,14 @@ int main(int argc, char ** argv)
         Lattice lattice = Lattice(parms);
         Model<matrix, symm> model = Model<matrix, symm>(lattice, parms);
         
-        MPO<matrix, symm> mpo = make_mpo(lattice, model, parms);
+        MPO<matrix, symm> mpo = make_mpo(lattice, model);
         
         for (int p = 0; p < lattice.size(); ++p) {
             std::ofstream ofs(std::string("mpo_stats."+boost::lexical_cast<std::string>(p)+".dat").c_str());
             for (int b1 = 0; b1 < mpo[p].row_dim(); ++b1) {
                 for (int b2 = 0; b2 < mpo[p].col_dim(); ++b2) {
-                    if (mpo[p].has(b1, b2)) ofs << mpo[p].tag_number(b1,b2)+1 << " ";
-                    else ofs << "0 ";
+                    if (mpo[p].has(b1, b2)) ofs << mpo[p].tag_number(b1,b2) << " ";
+                    else ofs << ". ";
                 }
                 ofs << std::endl;
             }

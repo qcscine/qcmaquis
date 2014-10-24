@@ -1,5 +1,6 @@
 #include "ambient/ambient.hpp"
 #include "ambient/container/atomic.hpp"
+#include "ambient/utils/reduce.hpp"
 
 int main(){
     const int N = 100;

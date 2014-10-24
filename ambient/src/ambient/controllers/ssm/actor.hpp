@@ -76,29 +76,29 @@ namespace ambient {
         }
         
 
-        inline base_actor::base_actor(){
+        inline actor_auto::actor_auto(){
             this->controller = selector.provide_controller();
             this->controller->reserve();
             this->round = controller->get_num_procs();
             this->scores.resize(round, 0);
             this->set(0);
         }
-        inline void base_actor::set(scope::const_iterator it){
+        inline void actor_auto::set(scope::const_iterator it){
             this->set(*it);
         }
-        inline void base_actor::set(rank_t r){
+        inline void actor_auto::set(rank_t r){
             this->rank = r;
             this->state = (this->rank == controller->get_rank()) ? ambient::locality::local : ambient::locality::remote;
         }
-        inline void base_actor::intend_read(models::ssm::revision* r){
+        inline void actor_auto::intend_read(models::ssm::revision* r){
             if(r == NULL || model_type::common(r)) return;
             this->scores[model_type::owner(r)] += r->spec.extent;
         }
-        inline void base_actor::intend_write(models::ssm::revision* r){
+        inline void actor_auto::intend_write(models::ssm::revision* r){
             if(r == NULL || model_type::common(r)) return;
             this->stakeholders.push_back(model_type::owner(r));
         }
-        inline void base_actor::schedule(){
+        inline void actor_auto::schedule(){
             int max = 0;
             rank_t rank = this->rank;
             if(stakeholders.empty()){

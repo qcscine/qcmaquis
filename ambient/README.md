@@ -19,7 +19,7 @@ AMBIENT_BULK_LIMIT=[chunks number]     # limit the data bulk memory consumption 
 AMBIENT_BULK_REUSE                     # setting this variable will enable bulk garbage collection
 [not set]                              #
 
-AMBIENT_BULK_DEALLOCATE                # deallocate data bulk every time the sync has finished
+AMBIENT_FORCE_BULK_DEALLOCATION        # deallocate data bulk every time the sync has finished
 [not set]                              #
 
 

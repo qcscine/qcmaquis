@@ -27,7 +27,7 @@
 #include "model_factory_symm.h"
 
 #include "dmrg/models/coded/factory_none.hpp"
-//#include "dmrg/models/continuum/factory_none.hpp"
+#include "dmrg/models/continuum/factory_none.hpp"
 
 typedef TrivialGroup grp;
 

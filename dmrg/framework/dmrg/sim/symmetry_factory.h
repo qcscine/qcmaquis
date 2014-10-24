@@ -90,6 +90,14 @@ namespace dmrg {
         factory_map["Z2"] = ptr_type(new typename TR::template F<Ztwo>::type());
         maquis::cout << "Z2 ";
 #endif
+#ifdef HAVE_SU2U1
+        factory_map["su2u1"] = ptr_type(new typename TR::template F<SU2U1>::type());
+        maquis::cout << "su2u1 ";
+#endif
+#ifdef HAVE_SU2U1PG
+        factory_map["su2u1pg"] = ptr_type(new typename TR::template F<SU2U1PG>::type());
+        maquis::cout << "su2u1pg ";
+#endif
         maquis::cout << std::endl;
         
         

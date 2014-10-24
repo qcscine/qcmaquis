@@ -39,6 +39,19 @@ T tri_min(T a, T b, T c)
                     std::min(a, c));
 }
 
+namespace charge_detail {
+
+    template <class SymmGroup>
+    inline bool physical(typename SymmGroup::charge c) { return true; }
+
+    template <>
+    inline bool physical<SU2U1>(SU2U1::charge c) { return c[1] >= 0; }
+
+    template <>
+    inline bool physical<SU2U1PG>(SU2U1PG::charge c) { return c[1] >= 0; }
+
+}
+
 template <class SymmGroup>
 inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& site_type,
                                                       std::vector<Index<SymmGroup> > const& phys_dims,
@@ -82,6 +95,8 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                 it = left_allowed[i].erase(it);
             else if (!finitegroup && SymmGroup::fuse(it->first, cmini) > right_end)
                 it = left_allowed[i].erase(it);
+            else if (!finitegroup && !charge_detail::physical<SymmGroup>(it->first))
+                it = left_allowed[i].erase(it);
             else {
                 it->second = std::min(Mmax, it->second);
                 ++it;
@@ -115,7 +130,7 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     for (int i = 0; i < L+1; ++i) {
         allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
         for (typename Index<SymmGroup>::iterator it = allowed[i].begin();
-             it != allowed[i].end(); ++it)
+            it != allowed[i].end(); ++it)
             it->second = tri_min(Mmax,
                                  left_allowed[i].size_of_block(it->first),
                                  right_allowed[i].size_of_block(it->first));

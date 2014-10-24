@@ -97,7 +97,7 @@ namespace measurements {
                 MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
                 
                 if (!this->is_super_meas){
-                    typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo, base::contr);
+                    typename MPS<Matrix, SymmGroup>::scalar_type val = expval(mps, mpo);
                     this->vector_results.push_back(val);
                 } else {
                     typename MPS<Matrix, SymmGroup>::scalar_type nn = dm_trace(mps, this->phys_psi);
