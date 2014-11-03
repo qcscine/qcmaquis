@@ -144,7 +144,7 @@ matrix compute_ratio(MPS<Matrix, SymmGroup> const & mps, matrix const & ref, std
         for (int j=i+1; j < L; ++j)
         {
             MPO<Matrix, SymmGroup> mpo = SU2::make_1rdm_term<Matrix, SymmGroup>(i, j, site_irreps);
-            rdm(i,j) = SU2::expval(mps, mpo, i, j, config);
+            rdm(i,j) = SU2::expval(mps, mpo, config);
             ratio(i,j) = ref(i,j) / rdm(i,j);
         }
 
@@ -161,16 +161,150 @@ compute_off_diag_ratio(MPS<Matrix, SymmGroup> const & mps, int which_diag, matri
     for (int i=0; i < L; ++i)
     {
         MPO<Matrix, SymmGroup> mpo = SU2::make_1rdm_term<Matrix, SymmGroup>(i, i+which_diag, site_irreps);
-        ret[i] = SU2::expval(mps, mpo, i, i+which_diag, config);
+        ret[i] = SU2::expval(mps, mpo, config);
         ret[i] = ref(i,i+which_diag) / ret[i];
     }
     return ret;
 }
 
+template <class Matrix, class SymmGroup>
+void tryOneRdm(MPS<Matrix, SymmGroup> const & mps, std::vector<int> const & site_irreps)
+{
+    int L = mps.size();
+    Matrix ref = generate_reference();
+    std::vector<int> config(20,0);
+
+    Matrix ratio = compute_ratio(mps, ref, site_irreps, config);
+    print_triang(ratio);
+}
+
+template <class Matrix, class SymmGroup>
+void tryFourTerms(MPS<Matrix, SymmGroup> const & mps, std::vector<int> const & site_irreps)
+{
+    int L = mps.size();
+    Matrix ref = generate_reference();
+    std::vector<int> config(20,0);
+
+    Matrix ratio = compute_ratio(mps, ref, site_irreps, config);
+    print_triang(ratio);
+
+    int i=0, j=3;
+    MPO<Matrix, SymmGroup> mpo = SU2::make_custom<Matrix, SymmGroup>(i, j, site_irreps);
+    double eval = SU2::expval(mps, mpo, i, j, config);
+    maquis::cout << eval << "  ref: " << ref(i,j) + ref(i,j+1) << std::endl;
+
+    std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
+    std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));
+    std::transform(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / od[0]);
+    cout << endl;
+
+    for (int v1=0; v1 < 2; ++v1) {
+    for (int v2=0; v2 < 2; ++v2) {
+
+    for (int v3=0; v3 < 8; ++v3) {
+    for (int v4=0; v4 < 4; ++v4) {
+    for (int v5=0; v5 < 4; ++v5) {
+
+    std::vector<double> ref2 = generate_2rdm_ref();
+    std::vector<double> result;
+    for(int i=0; i < L-3; ++i)
+    {
+        //MPO<Matrix, SymmGroup> four = SU2::make_2rdm_term_custom<Matrix, SymmGroup>(i,i+1,i+2,i+3, 1,1,v3,v4,v5, site_irreps);
+        MPO<Matrix, SymmGroup> four = SU2::make_2rdm_term_custom<Matrix, SymmGroup>(i,i+1,i+2,i+3, 1,1,0,0,0, site_irreps);
+        double twodm0123 = SU2::expval(mps, four, config);
+        result.push_back(twodm0123 / ref2[i]);
+    }
+    //std::copy(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "));
+    std::transform(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / result[0]);
+    std::cout << std::endl;
+
+    }
+    }
+    }
+
+    } 
+    }
+}
+
+template <class Matrix, class SymmGroup>
+void tryFlipTerms(MPS<Matrix, SymmGroup> const & mps, double flipref, std::vector<int> const & site_irreps)
+{
+    //MPO<matrix, grp> mpo = SU2::make_count<matrix, grp>(2, site_irreps);
+    //MPO<matrix, grp> mpo = SU2::make_e2d_d2e<matrix, grp>(2,3, site_irreps);
+
+    std::vector<double> values;
+
+    //values[10] = std::sqrt(3.)/2.;            
+    //values[11] = std::sqrt(3.)/std::sqrt(2.);            
+    //values[12] = std::sqrt(2.) * 2. / 3.;            
+    //values.push_back(-1.);
+    values.push_back(-0.5);
+    values.push_back(0);
+    values.push_back(0.5);
+    values.push_back(1.0);
+    values.push_back(2.0);
+    values.push_back(std::sqrt(3.)/std::sqrt(2.));
+
+    std::vector<int> indices(8, 0);
+    std::vector<double> config(indices.size());
+
+    //for(indices[0]=0; indices[0] < values.size(); indices[0]++)
+    //for(indices[1]=0; indices[1] < values.size(); indices[1]++)
+    //for(indices[2]=0; indices[2] < values.size(); indices[2]++)
+    //for(indices[3]=0; indices[3] < values.size(); indices[3]++)
+    //for(indices[4]=0; indices[4] < values.size(); indices[4]++)
+    //for(indices[5]=0; indices[5] < values.size(); indices[5]++)
+    //for(indices[6]=0; indices[6] < values.size(); indices[6]++)
+    //for(indices[7]=0; indices[7] < values.size(); indices[7]++)
+    {
+        indices[0]=5;
+        indices[1]=4;
+        indices[2]=3;
+        //indices[3]=3;
+        //indices[4]=5;
+        //indices[5]=1;
+        //indices[6]=3;
+        //indices[7]=0;
+
+        for(int i=0; i<indices.size(); ++i)
+            config[i] = values[indices[i]];
+
+        MPO<Matrix, SymmGroup> mpo = SU2::make_flip<Matrix, SymmGroup>(1,2, config, site_irreps);
+        double n = SU2::expval(mps, mpo, std::vector<int>());
+        //if (std::abs(n/flipref - 1.0) < 1e-4) {
+            //std::copy(indices.begin(), indices.end(), std::ostream_iterator<int>(std::cout, ""));
+            //maquis::cout << " " << n/flipref << std::endl;
+            maquis::cout << " " << n << std::endl;
+        //}
+        //maquis::cout << i<<j<<k<<l<< "   " << n << std::endl;
+    }
+}
+
+template <class Matrix>
+double calcAbelianRef(MPS<Matrix, TwoU1PG> const & mps)
+{
+    size_t L = mps.size();
+
+    std::vector<int> site_irreps;
+    for (int i=0; i < L; ++i)
+        site_irreps.push_back(mps[i].site_dim()[1].first[2]);
+
+    std::cout << "site irreps: ";
+    std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(std::cout, " "));
+    std::cout << std::endl;
+
+    //MPO<Matrix, TwoU1PG> mpo = make_count_abelian<Matrix>(i, site_irreps);
+    MPO<Matrix, TwoU1PG> mpo = make_flip_abelian<Matrix>(1,2, site_irreps);
+    double n = expval(mps, mpo);
+    maquis::cout << "flip ref term: " << n << std::endl;
+
+    return n;
+}
+
 int main(int argc, char ** argv)
 {
     try {
-        if (argc != 2) {
+        if (argc <= 2) {
             std::cout << "Usage: " << argv[0] << " <mps.h5>" << std::endl;
             return 1;
         }
@@ -184,57 +318,28 @@ int main(int argc, char ** argv)
         for (int i=0; i < L; ++i)
             site_irreps.push_back(mps[i].site_dim()[1].first[2]);
 
-        matrix ref = generate_reference();
-        std::vector<int> config(20,0);
+        std::cout << "site irreps: ";
+        std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(std::cout, " "));
+        std::cout << std::endl;
+
+        //tryOneRdm(mps, site_irreps);
 
         //for (int i=0; i < L; ++i) {
         //    MPO<matrix, grp> mpo = SU2::make_count<matrix, grp>(i, site_irreps);
-        //    double n = SU2::expval_r(mps, mpo, i, i, config);
+        //    double n = SU2::expval_r(mps, mpo, config);
         //    maquis::cout <<  n << std::endl;
         //}
 
-        mps.normalize_left();
-        mps.normalize_right();
+        if (argc == 3) {
+            MPS<matrix, TwoU1PG> mps_ref;
+            load(argv[2], mps_ref);
 
-        matrix ratio = compute_ratio(mps, ref, site_irreps, config);
-        print_triang(ratio);
+            //double flipref = 0.000367966;
+            double flipref = -0.000058008;
+            flipref = calcAbelianRef(mps_ref);
+            tryFlipTerms<matrix, grp>(mps, flipref, site_irreps);
+        }
 
-        //int i=0, j=3;
-        //MPO<matrix, grp> mpo = SU2::make_custom<matrix, grp>(i, j, site_irreps);
-        //double eval = SU2::expval_r(mps, mpo, i, j, config);
-        //maquis::cout << eval << "  ref: " << ref(i,j) + ref(i,j+1) << std::endl;
-
-        //std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
-        //std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));
-        //std::transform(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / od[0]);
-        //cout << endl;
-
-        //for (int v1=0; v1 < 2; ++v1) {
-        //for (int v2=0; v2 < 2; ++v2) {
-
-        //for (int v3=0; v3 < 8; ++v3) {
-        //for (int v4=0; v4 < 4; ++v4) {
-        //for (int v5=0; v5 < 4; ++v5) {
-
-        //std::vector<double> ref2 = generate_2rdm_ref();
-        //std::vector<double> result;
-        //for(int i=0; i < L-3; ++i)
-        //{
-        //    //MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,v3,v4,v5, site_irreps);
-        //    MPO<matrix, grp> four = SU2::make_2rdm_term_custom<matrix, grp>(i,i+1,i+2,i+3, 1,1,0,0,0, site_irreps);
-        //    double twodm0123 = SU2::expval(mps, four, i+10,0, config);
-        //    result.push_back(twodm0123 / ref2[i]);
-        //}
-        ////std::copy(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "));
-        //std::transform(result.begin(), result.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / result[0]);
-        //std::cout << std::endl;
-
-        //}
-        //}
-        //}
-
-        //} 
-        //}
 
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;

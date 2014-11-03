@@ -68,7 +68,7 @@ namespace SU2 {
 
     template<class Matrix, class SymmGroup>
     double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
-                  int p1, int p2, std::vector<int> config)
+                  std::vector<int> config)
     {
         assert(mpo.length() == mps.length());
         std::size_t L = mps.length();
@@ -86,7 +86,7 @@ namespace SU2 {
 
     template<class Matrix, class SymmGroup>
     double expval_r(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
-                    int p1, int p2, std::vector<int> config)
+                    std::vector<int> config)
     {
         assert(mpo.length() == mps.length());
         std::size_t L = mps.length();

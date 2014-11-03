@@ -575,6 +575,243 @@ namespace SU2 {
         return ret;
     }
 
+    template<class Matrix, class SymmGroup>
+    MPO<Matrix, SymmGroup> make_e2d_d2e(int i, int j, std::vector<int> site_irreps)
+    {
+        typedef block_matrix<Matrix, SymmGroup> op_t;
+        //boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+        MPO<Matrix, SymmGroup> ret(site_irreps.size());
+        for (int p=0; p<site_irreps.size(); ++p)
+        {
+            typedef tag_detail::tag_type tag_type;
+            typename SymmGroup::charge A(0), B(0), C(0), D(0);
+            A[0] = 2; // 200
+            B[0] = 1; B[1] =  1; B[2] = site_irreps[p]; // 11I
+            C[0] = 1; C[1] = -1; C[2] = site_irreps[p]; // 1-1I
+            // D = 000
+
+            block_matrix<Matrix, SymmGroup> ident;
+            ident.insert_block(Matrix(1,1,1), A, A);
+            ident.insert_block(Matrix(1,1,1), B, B);
+            ident.insert_block(Matrix(1,1,1), C, C);
+            ident.insert_block(Matrix(1,1,1), D, D);
+
+            op_t e2d_op;
+            e2d_op.insert_block(Matrix(1,1,1), D, A);
+
+            op_t d2e_op;
+            d2e_op.insert_block(Matrix(1,1,1), A, D);
+
+            MPOTensor<Matrix, SymmGroup> op(1,1);
+            if (p==i)
+                op.set(0,0, e2d_op, 1.0);
+            else if (p==j)
+                op.set(0,0, d2e_op, 1.0);
+            else
+                op.set(0,0, ident, 1.0);
+
+            ret[p] = op;
+        }
+        return ret;
+    }
+
+    template<class Matrix, class SymmGroup>
+    MPO<Matrix, SymmGroup> make_flip(int i, int j, std::vector<double> & values, std::vector<int> site_irreps)
+    {
+        typedef block_matrix<Matrix, SymmGroup> op_t;
+        MPO<Matrix, SymmGroup> ret(site_irreps.size());
+
+        for (int p=0; p<site_irreps.size(); ++p)
+        {
+            typedef tag_detail::tag_type tag_type;
+            typename SymmGroup::charge A(0), B(0), C(0), D(0);
+            A[0] = 2; // 200
+            B[0] = 1; B[1] =  1; B[2] = site_irreps[p]; // 11I
+            C[0] = 1; C[1] = -1; C[2] = site_irreps[p]; // 1-1I
+            // D = 000
+
+            block_matrix<Matrix, SymmGroup> ident;
+            ident.insert_block(Matrix(1,1,1), A, A);
+            ident.insert_block(Matrix(1,1,1), B, B);
+            ident.insert_block(Matrix(1,1,1), C, C);
+            ident.insert_block(Matrix(1,1,1), D, D);
+
+            values[0] = std::sqrt(3./2.); values[1] = 2.; values[2] = 1;
+
+            op_t flip1a;
+            flip1a.insert_block(Matrix(1,1,values[0]), B, B);
+            flip1a.insert_block(Matrix(1,1,values[0]), C, C);
+            flip1a.insert_block(Matrix(1,1,values[0]), B, C);
+            flip1a.insert_block(Matrix(1,1,values[0]), C, B);
+            op_t flip1b;
+            flip1b.insert_block(Matrix(1,1,values[1]), A, A);
+            flip1b.insert_block(Matrix(1,1,values[2]), B, B);
+            flip1b.insert_block(Matrix(1,1,values[2]), C, C);
+
+            op_t flip2a;
+            flip2a.insert_block(Matrix(1,1,values[0]), B, B);
+            flip2a.insert_block(Matrix(1,1,values[0]), C, C);
+            flip2a.insert_block(Matrix(1,1,values[0]), B, C);
+            flip2a.insert_block(Matrix(1,1,values[0]), C, B);
+            op_t flip2b;
+            flip2b.insert_block(Matrix(1,1,values[1]), A, A);
+            flip2b.insert_block(Matrix(1,1,values[2]), B, B);
+            flip2b.insert_block(Matrix(1,1,values[2]), C, C);
+
+            MPOTensor<Matrix, SymmGroup> op(1,1);
+            if (p==i) {
+                //op = MPOTensor<Matrix, SymmGroup>(1,2);
+                op.set(0,0, flip1a, 1.0);
+                //op.set(0,1, flip1b, 0.5);
+            }
+            else if (p==j) {
+                //op = MPOTensor<Matrix, SymmGroup>(2,1);
+                op.set(0,0, flip2a, 1.0);
+                //op.set(1,0, flip2b, 1.0);
+            }
+            else
+                op.set(0,0, ident, 1.0);
+
+            ret[p] = op;
+        }
+        return ret;
+    }
+
 } // namespace SU2
+
+    template<class Matrix>
+    MPO<Matrix, TwoU1PG> make_e2d_d2e_abelian(int i, int j, std::vector<int> site_irreps)
+    {
+        typedef block_matrix<Matrix, TwoU1PG> op_t;
+        //boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+        MPO<Matrix, TwoU1PG> ret(site_irreps.size());
+        for (int p=0; p<site_irreps.size(); ++p)
+        {
+            typedef tag_detail::tag_type tag_type;
+            typename TwoU1PG::charge A(0), B(0), C(0), D(0);
+            B[0] = 1; C[1] = 1;
+            D[0] = 1; D[1] = 1;
+            B[2] = site_irreps[p];
+            C[2] = site_irreps[p];
+
+            block_matrix<Matrix, TwoU1PG> ident;
+            ident.insert_block(Matrix(1,1,1), A, A);
+            ident.insert_block(Matrix(1,1,1), B, B);
+            ident.insert_block(Matrix(1,1,1), C, C);
+            ident.insert_block(Matrix(1,1,1), D, D);
+
+            op_t e2d_op;
+            e2d_op.insert_block(Matrix(1,1,1), D, A);
+
+            op_t d2e_op;
+            d2e_op.insert_block(Matrix(1,1,1), A, D);
+
+            MPOTensor<Matrix, TwoU1PG> op(1,1);
+            if (p==i)
+                op.set(0,0, e2d_op, 1.0);
+            else if (p==j)
+                op.set(0,0, d2e_op, 1.0);
+            else
+                op.set(0,0, ident, 1.0);
+
+            ret[p] = op;
+        }
+        return ret;
+    }
+
+    template<class Matrix>
+    MPO<Matrix, TwoU1PG> make_count_abelian(int i, std::vector<int> site_irreps)
+    {
+        typedef block_matrix<Matrix, TwoU1PG> op_t;
+        //boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+        MPO<Matrix, TwoU1PG> ret(site_irreps.size());
+        for (int p=0; p<site_irreps.size(); ++p)
+        {
+            typedef tag_detail::tag_type tag_type;
+            typename TwoU1PG::charge A(0), B(0), C(0), D(0);
+            B[0] = 1; C[1] = 1;
+            D[0] = 1; D[1] = 1;
+            B[2] = site_irreps[p];
+            C[2] = site_irreps[p];
+
+            block_matrix<Matrix, TwoU1PG> ident;
+            ident.insert_block(Matrix(1,1,1), A, A);
+            ident.insert_block(Matrix(1,1,1), B, B);
+            ident.insert_block(Matrix(1,1,1), C, C);
+            ident.insert_block(Matrix(1,1,1), D, D);
+
+            op_t count;
+            count.insert_block(Matrix(1,1,1), B, B);
+            count.insert_block(Matrix(1,1,1), C, C);
+            count.insert_block(Matrix(1,1,2), D, D);
+
+            MPOTensor<Matrix, TwoU1PG> op(1,1);
+            if (p==i)
+                op.set(0,0, count, 1.0);
+            else
+                op.set(0,0, ident, 1.0);
+
+            ret[p] = op;
+        }
+        return ret;
+    }
+
+    template<class Matrix>
+    MPO<Matrix, TwoU1PG> make_flip_abelian(int i, int j, std::vector<int> site_irreps)
+    {
+        typedef block_matrix<Matrix, TwoU1PG> op_t;
+        //boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+        MPO<Matrix, TwoU1PG> ret(site_irreps.size());
+        for (int p=0; p<site_irreps.size(); ++p)
+        {
+            typedef tag_detail::tag_type tag_type;
+            typename TwoU1PG::charge A(0), B(0), C(0), D(0);
+            B[0] = 1; C[1] = 1;
+            D[0] = 1; D[1] = 1;
+            B[2] = site_irreps[p];
+            C[2] = site_irreps[p];
+
+            block_matrix<Matrix, TwoU1PG> ident;
+            ident.insert_block(Matrix(1,1,1), A, A);
+            ident.insert_block(Matrix(1,1,1), B, B);
+            ident.insert_block(Matrix(1,1,1), C, C);
+            ident.insert_block(Matrix(1,1,1), D, D);
+
+            op_t count_up;
+            count_up.insert_block(Matrix(1,1,1), B, B);
+            count_up.insert_block(Matrix(1,1,1), D, D);
+
+            op_t count_down;
+            count_down.insert_block(Matrix(1,1,1), C, C);
+            count_down.insert_block(Matrix(1,1,1), D, D);
+
+            op_t flip_up_down;
+            flip_up_down.insert_block(Matrix(1,1,1), B, C);
+
+            op_t flip_down_up;
+            flip_down_up.insert_block(Matrix(1,1,1), C, B);
+
+            MPOTensor<Matrix, TwoU1PG> op(1,1);
+            if (p==i) {
+                op = MPOTensor<Matrix, TwoU1PG>(1,4);
+                op.set(0,0, flip_up_down, 1.0);
+                op.set(0,1, flip_down_up, 1.0);
+                op.set(0,2, count_up, 1.0);
+                op.set(0,3, count_down, 1.0);
+            }
+            else if (p==j) {
+                op = MPOTensor<Matrix, TwoU1PG>(4,1);
+                op.set(0,0, flip_down_up, 1.0);
+                op.set(1,0, flip_up_down, 1.0);
+                op.set(2,0, count_up, 1.0);
+                op.set(3,0, count_down, 1.0);
+            }
+            else
+                op.set(0,0, ident, 1.0);
+
+            ret[p] = op;
+        }
+        return ret;
+    }
 
 #endif
