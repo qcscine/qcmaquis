@@ -50,6 +50,7 @@ namespace ambient { namespace channels { namespace nop {
         collective<scalar_type>* bcast(scalar_type& v, rank_t root){ return NULL; }
         collective<scalar_type>* bcast(scalar_type& v){ return NULL; }
         static constexpr rank_t rank = 0;
+        static constexpr int tag_ub = 1;
     };
 
 } } }

@@ -142,6 +142,10 @@ namespace ambient { namespace controllers { namespace ssm {
         model.add_revision<L>(o, g);
     }
 
+    inline int controller::get_tag_ub() const {
+        return channel.tag_ub;
+    }
+
     inline rank_t controller::get_rank() const {
         return channel.rank;
     }

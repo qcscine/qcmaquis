@@ -27,7 +27,7 @@
 
 namespace ambient { namespace channels { namespace mpi {
 
-    inline group::group(int master, MPI_Comm parent)
+    inline group::group(MPI_Comm parent)
     : mpi_comm(parent)
     {
         MPI_Comm_group(this->mpi_comm,  &this->mpi_group);

@@ -56,10 +56,7 @@
 #define AMBIENT_IB                    2048
 #define AMBIENT_INSTR_BULK_CHUNK      16777216 // 16 MB
 #define AMBIENT_DATA_BULK_CHUNK       67108864 // 64 MB
-#define AMBIENT_MAX_TAG               2097152  // Cray MPI
-#define AMBIENT_MAX_INT               2097152
 #define AMBIENT_MPI_THREADING         MPI_THREAD_FUNNELED
-#define AMBIENT_MASTER_RANK           0
 #define AMBIENT_THREADED_COLLECTION
 
 #include "ambient/utils/dim2.h"

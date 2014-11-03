@@ -48,7 +48,7 @@ namespace ambient { namespace memory {
         region<AMBIENT_DATA_BULK_CHUNK, factory<AMBIENT_DATA_BULK_CHUNK> > memory;
         bool reuse_enabled;
         bool reset_enabled;
-        int limit;
+        size_t limit;
     };
 
 } }

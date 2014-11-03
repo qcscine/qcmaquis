@@ -36,6 +36,7 @@ namespace ambient {
         typedef typename Context::controller_type controller_type;
         actor_auto base;
         ambient::mutex mtx;
+        int tag_ub;
         int sid;
     public:
         backbone();

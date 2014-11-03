@@ -65,6 +65,7 @@ namespace ambient { namespace controllers { namespace ssm {
         void add_revision(history* o, G g);
 
         void fence() const;
+        int get_tag_ub() const;
         rank_t get_rank() const;
         rank_t get_shared_rank() const;
         int get_num_procs() const;

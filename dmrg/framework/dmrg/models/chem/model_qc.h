@@ -400,7 +400,7 @@ private:
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type ident, fill,
              create_up, create_down, destroy_up, destroy_down,
-             count_up, count_down, docc, e2d, d2e;
+             count_up, count_down, count_up_down, docc, e2d, d2e;
 
     typename SymmGroup::subcharge max_irrep;
 
