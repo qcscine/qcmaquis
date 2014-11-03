@@ -660,14 +660,14 @@ namespace SU2 {
 
             MPOTensor<Matrix, SymmGroup> op(1,1);
             if (p==i) {
-                //op = MPOTensor<Matrix, SymmGroup>(1,2);
+                op = MPOTensor<Matrix, SymmGroup>(1,2);
                 op.set(0,0, flip1a, 1.0);
-                //op.set(0,1, flip1b, 0.5);
+                op.set(0,1, flip1b, 0.5);
             }
             else if (p==j) {
-                //op = MPOTensor<Matrix, SymmGroup>(2,1);
+                op = MPOTensor<Matrix, SymmGroup>(2,1);
                 op.set(0,0, flip2a, 1.0);
-                //op.set(1,0, flip2b, 1.0);
+                op.set(1,0, flip2b, 1.0);
             }
             else
                 op.set(0,0, ident, 1.0);
