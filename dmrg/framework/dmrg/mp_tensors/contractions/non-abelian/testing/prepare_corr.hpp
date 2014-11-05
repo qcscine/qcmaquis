@@ -84,12 +84,14 @@ namespace SU2 {
             fill.insert_block(Matrix(1,1,1), C, B);  // -1
 
             block_matrix<Matrix, SymmGroup> create;
+            create.twoS = 1; create.twoSaction = -1;
             create.insert_block(Matrix(1,1,-2.), B, A);       // 1
             create.insert_block(Matrix(1,1,2.), C, A);       // 1
             create.insert_block(Matrix(1,1,-sqrt(2.)), D, B); // 1
             create.insert_block(Matrix(1,1,sqrt(2.)), D, C); // 1
 
             block_matrix<Matrix, SymmGroup> destroy;
+            destroy.twoS = 1; destroy.twoSaction = 1;
             destroy.insert_block(Matrix(1,1,1), A, B);        // 1 
             destroy.insert_block(Matrix(1,1,-1), A, C);        // 1
             destroy.insert_block(Matrix(1,1,sqrt(2.)), B, D); // 1
@@ -220,12 +222,14 @@ namespace SU2 {
             fill.insert_block(Matrix(1,1,-1), C, B);
 
             block_matrix<Matrix, SymmGroup> create;
+            create.twoS = 1; create.twoSaction = 1;
             create.insert_block(Matrix(1,1,2.), B, A);      
             create.insert_block(Matrix(1,1,2.), C, A);      
             create.insert_block(Matrix(1,1,sqrt(2.)), D, B);
             create.insert_block(Matrix(1,1,sqrt(2.)), D, C);
 
             block_matrix<Matrix, SymmGroup> destroy;
+            destroy.twoS = 1; destroy.twoSaction = -1;
             destroy.insert_block(Matrix(1,1,1), A, B);        
             destroy.insert_block(Matrix(1,1,1), A, C);       
             destroy.insert_block(Matrix(1,1,sqrt(2.)), B, D);
@@ -631,37 +635,36 @@ namespace SU2 {
             // D = 000
 
             block_matrix<Matrix, SymmGroup> ident;
+            ident.twoS = 0;
             ident.insert_block(Matrix(1,1,1), A, A);
             ident.insert_block(Matrix(1,1,1), B, B);
             ident.insert_block(Matrix(1,1,1), C, C);
             ident.insert_block(Matrix(1,1,1), D, D);
 
-            values[0] = std::sqrt(3./2.); values[1] = 2.; values[2] = 1;
-
-            op_t flip1a;
+            op_t flip1a; flip1a.twoS = 2; flip1a.twoSaction = 2;
             flip1a.insert_block(Matrix(1,1,values[0]), B, B);
-            flip1a.insert_block(Matrix(1,1,values[0]), C, C);
-            flip1a.insert_block(Matrix(1,1,values[0]), B, C);
-            flip1a.insert_block(Matrix(1,1,values[0]), C, B);
-            op_t flip1b;
-            flip1b.insert_block(Matrix(1,1,values[1]), A, A);
-            flip1b.insert_block(Matrix(1,1,values[2]), B, B);
-            flip1b.insert_block(Matrix(1,1,values[2]), C, C);
+            flip1a.insert_block(Matrix(1,1,values[1]), C, C);
+            flip1a.insert_block(Matrix(1,1,values[2]), B, C);
+            flip1a.insert_block(Matrix(1,1,values[3]), C, B);
+            op_t flip1b; flip1b.twoS = 0;
+            flip1b.insert_block(Matrix(1,1,2), A, A);
+            flip1b.insert_block(Matrix(1,1,1), B, B);
+            flip1b.insert_block(Matrix(1,1,1), C, C);
 
-            op_t flip2a;
-            flip2a.insert_block(Matrix(1,1,values[0]), B, B);
-            flip2a.insert_block(Matrix(1,1,values[0]), C, C);
-            flip2a.insert_block(Matrix(1,1,values[0]), B, C);
-            flip2a.insert_block(Matrix(1,1,values[0]), C, B);
-            op_t flip2b;
-            flip2b.insert_block(Matrix(1,1,values[1]), A, A);
-            flip2b.insert_block(Matrix(1,1,values[2]), B, B);
-            flip2b.insert_block(Matrix(1,1,values[2]), C, C);
+            op_t flip2a; flip2a.twoS = 2; flip2a.twoSaction = -2;
+            flip2a.insert_block(Matrix(1,1,values[5]), B, B);
+            flip2a.insert_block(Matrix(1,1,values[6]), C, C);
+            flip2a.insert_block(Matrix(1,1,values[7]), B, C);
+            flip2a.insert_block(Matrix(1,1,values[8]), C, B);
+            op_t flip2b; flip2b.twoS = 0;
+            flip2b.insert_block(Matrix(1,1,2), A, A);
+            flip2b.insert_block(Matrix(1,1,1), B, B);
+            flip2b.insert_block(Matrix(1,1,1), C, C);
 
             MPOTensor<Matrix, SymmGroup> op(1,1);
             if (p==i) {
                 op = MPOTensor<Matrix, SymmGroup>(1,2);
-                op.set(0,0, flip1a, 1.0);
+                op.set(0,0, flip1a, -std::sqrt(3.));
                 op.set(0,1, flip1b, 0.5);
             }
             else if (p==j) {

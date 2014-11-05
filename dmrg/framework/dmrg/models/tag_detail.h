@@ -140,6 +140,9 @@ namespace tag_detail {
         if (sample.n_blocks() == 0)
             return std::make_pair(true, 1.0);
 
+        if (reference.twoSaction != sample.twoSaction || reference.twoS != sample.twoS)
+            return std::make_pair(false, 0.);
+
         typename Matrix::value_type invscale1, invscale2;
      
         // determine scale of matrices

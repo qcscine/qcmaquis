@@ -35,13 +35,13 @@
 #include <boost/ptr_container/serialize_ptr_vector.hpp>
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup>::block_matrix() 
+block_matrix<Matrix, SymmGroup>::block_matrix() : twoS(0), twoSaction(0)
 {
 }
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,
-                                              Index<SymmGroup> const & cols)
+                                              Index<SymmGroup> const & cols) : twoS(0), twoSaction(0)
 {
     assert(rows.size() == cols.size());
 
@@ -55,7 +55,7 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix(DualIndex<SymmGroup> const & basis)
-: basis_(basis)
+: basis_(basis), twoS(0), twoSaction(0)
 {
     for (size_type k = 0; k < basis_.size(); ++k)
         data_.push_back(new Matrix(basis_[k].ls, basis_[k].rs));
@@ -67,6 +67,8 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix const& rhs)
 , data_(rhs.data_)
 , size_index(rhs.size_index)
 , iter_index(rhs.iter_index)
+, twoS(rhs.twoS)
+, twoSaction(rhs.twoSaction)
 {
 }
 
@@ -76,6 +78,8 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<OtherMatrix,SymmGroup
 : basis_(rhs.basis())
 , size_index(rhs.size_index)
 , iter_index(rhs.iter_index)
+, twoS(rhs.twoS)
+, twoSaction(rhs.twoSaction)
 {
     data_.reserve(rhs.n_blocks());
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
@@ -93,6 +97,8 @@ template<class Matrix, class SymmGroup>
 template<class OtherMatrix>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(const block_matrix<OtherMatrix, SymmGroup> & rhs)
 {
+    twoS = rhs.twoS;
+    twoSaction = rhs.twoSaction;
     basis_ = rhs.basis_;
     size_index = rhs.size_index;
     iter_index = rhs.iter_index;
@@ -359,7 +365,7 @@ void block_matrix<Matrix, SymmGroup>::clear()
 template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const & m)
 {
-    os << "Basis: " << m.basis() << std::endl;
+    os << "Basis: " << m.basis() << m.twoS << " " << m.twoSaction << std::endl;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
         os << "Block (" << m.basis()[k].lc << "," << m.basis()[k].rc
            << "):\n" << m[k] << std::endl;

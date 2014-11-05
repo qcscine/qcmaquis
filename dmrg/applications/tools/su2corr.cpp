@@ -238,12 +238,8 @@ void tryFlipTerms(MPS<Matrix, SymmGroup> const & mps, double flipref, std::vecto
     //values[11] = std::sqrt(3.)/std::sqrt(2.);            
     //values[12] = std::sqrt(2.) * 2. / 3.;            
     //values.push_back(-1.);
-    values.push_back(-0.5);
-    values.push_back(0);
-    values.push_back(0.5);
-    values.push_back(1.0);
-    values.push_back(2.0);
     values.push_back(std::sqrt(3.)/std::sqrt(2.));
+    values.push_back(-std::sqrt(3.)/std::sqrt(2.));
 
     std::vector<int> indices(8, 0);
     std::vector<double> config(indices.size());
@@ -257,22 +253,22 @@ void tryFlipTerms(MPS<Matrix, SymmGroup> const & mps, double flipref, std::vecto
     //for(indices[6]=0; indices[6] < values.size(); indices[6]++)
     //for(indices[7]=0; indices[7] < values.size(); indices[7]++)
     {
-        indices[0]=5;
-        indices[1]=4;
-        indices[2]=3;
-        //indices[3]=3;
-        //indices[4]=5;
-        //indices[5]=1;
-        //indices[6]=3;
-        //indices[7]=0;
+        indices[0]=0;
+        indices[1]=0;
+        indices[2]=0;
+        indices[3]=0;
+        indices[4]=0;
+        indices[5]=0;
+        indices[6]=0;
+        indices[7]=0;
 
         for(int i=0; i<indices.size(); ++i)
             config[i] = values[indices[i]];
 
-        MPO<Matrix, SymmGroup> mpo = SU2::make_flip<Matrix, SymmGroup>(1,2, config, site_irreps);
+        MPO<Matrix, SymmGroup> mpo = SU2::make_flip<Matrix, SymmGroup>(2,3, config, site_irreps);
         double n = SU2::expval(mps, mpo, std::vector<int>());
         //if (std::abs(n/flipref - 1.0) < 1e-4) {
-            //std::copy(indices.begin(), indices.end(), std::ostream_iterator<int>(std::cout, ""));
+            std::copy(indices.begin(), indices.end(), std::ostream_iterator<int>(std::cout, ""));
             //maquis::cout << " " << n/flipref << std::endl;
             maquis::cout << " " << n << std::endl;
         //}
@@ -294,7 +290,7 @@ double calcAbelianRef(MPS<Matrix, TwoU1PG> const & mps)
     std::cout << std::endl;
 
     //MPO<Matrix, TwoU1PG> mpo = make_count_abelian<Matrix>(i, site_irreps);
-    MPO<Matrix, TwoU1PG> mpo = make_flip_abelian<Matrix>(1,2, site_irreps);
+    MPO<Matrix, TwoU1PG> mpo = make_flip_abelian<Matrix>(2,3, site_irreps);
     double n = expval(mps, mpo);
     maquis::cout << "flip ref term: " << n << std::endl;
 
@@ -322,7 +318,7 @@ int main(int argc, char ** argv)
         std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(std::cout, " "));
         std::cout << std::endl;
 
-        //tryOneRdm(mps, site_irreps);
+        tryOneRdm(mps, site_irreps);
 
         //for (int i=0; i < L; ++i) {
         //    MPO<matrix, grp> mpo = SU2::make_count<matrix, grp>(i, site_irreps);

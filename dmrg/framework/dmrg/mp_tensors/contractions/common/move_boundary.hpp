@@ -244,6 +244,7 @@ namespace contraction {
                 block_matrix<Matrix, SymmGroup> tmp;
                 Kernel()(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
                 typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
+                ret[b2].twoS = contr_grid(0,0).twoS;
             });
 
             return ret;

@@ -135,6 +135,8 @@ public:
         swap(x.basis_, y.basis_);
         swap(x.size_index, y.size_index);
         swap(x.iter_index, y.iter_index);
+        std::swap(x.twoS, y.twoS);
+        std::swap(x.twoSaction, y.twoSaction);
     }
 
     Matrix const & operator()(charge r, charge c) const
@@ -160,6 +162,8 @@ public:
     inline void serialize(Archive & ar, const unsigned int version);
     
     bool reasonable() const;
+
+    int twoS, twoSaction;
     
 private:
     DualIndex<SymmGroup> basis_;

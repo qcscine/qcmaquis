@@ -193,24 +193,28 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     fill_cdagc_op.insert_block(Matrix(1,1,-1), C, B);
 
     op_t create_tail_op;
+    create_tail_op.twoS = 1; create_tail_op.twoSaction = -1;
     create_tail_op.insert_block(Matrix(1,1,-2.), B, A);
     create_tail_op.insert_block(Matrix(1,1,2.), C, A);
     create_tail_op.insert_block(Matrix(1,1,-sqrt(2.)), D, B);
     create_tail_op.insert_block(Matrix(1,1,sqrt(2.)), D, C);
 
     op_t destroy_tail_op;
+    destroy_tail_op.twoS = 1; destroy_tail_op.twoSaction = 1;
     destroy_tail_op.insert_block(Matrix(1,1,1), A, B);
     destroy_tail_op.insert_block(Matrix(1,1,-1), A, C);
     destroy_tail_op.insert_block(Matrix(1,1,sqrt(2.)), B, D);
     destroy_tail_op.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
 
     op_t create_head_op;
+    create_head_op.twoS = 1; create_head_op.twoSaction = 1;
     create_head_op.insert_block(Matrix(1,1,2.), B, A);
     create_head_op.insert_block(Matrix(1,1,2.), C, A);
     create_head_op.insert_block(Matrix(1,1,sqrt(2.)), D, B);
     create_head_op.insert_block(Matrix(1,1,sqrt(2.)), D, C);
 
     op_t destroy_head_op;
+    destroy_head_op.twoS = 1; destroy_head_op.twoSaction = -1;
     destroy_head_op.insert_block(Matrix(1,1,1), A, B);
     destroy_head_op.insert_block(Matrix(1,1,1), A, C);
     destroy_head_op.insert_block(Matrix(1,1,sqrt(2.)), B, D);

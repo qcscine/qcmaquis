@@ -85,6 +85,9 @@ namespace SU2 {
                   er = std::equal_range(ket_basis.begin(), ket_basis.end(),
                     dual_index_detail::QnBlock<SymmGroup>(mc, SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
 
+                int a = left[b1].twoS, k = W.twoS, ap = a + W.twoSaction;
+                ret.twoS = ap;
+
                 for (const_iterator it = er.first; it != er.second; ++it)
                 {
                     size_t matched_block = std::distance(ket_basis.begin(), it);
@@ -113,12 +116,13 @@ namespace SU2 {
                         int i  = lc[1], ip = out_l_charge[1];
                         int j  = mc[1], jp  = out_r_charge[1];
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
-                        int a = std::abs(i-j), k = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1]));
+                        //int a = std::abs(i-j), k = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1]));
 
-                        int ap = std::abs(ip-jp);
-                        if (ap >= 3) continue;
+                        //int ap = std::abs(ip-jp);
+                        //if (ap >= 3) continue;
 
                         typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
+                        if (std::abs(coupling_coeff) < 1.e-40) continue;
                         coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
 
                         size_t phys_s1 = W.basis().left_size(w_block);
