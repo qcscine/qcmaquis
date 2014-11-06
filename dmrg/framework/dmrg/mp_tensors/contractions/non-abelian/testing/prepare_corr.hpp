@@ -635,42 +635,54 @@ namespace SU2 {
             // D = 000
 
             block_matrix<Matrix, SymmGroup> ident;
-            ident.twoS = 0;
+            ident.twoS = 0; ident.twoSaction = 0;
             ident.insert_block(Matrix(1,1,1), A, A);
             ident.insert_block(Matrix(1,1,1), B, B);
             ident.insert_block(Matrix(1,1,1), C, C);
             ident.insert_block(Matrix(1,1,1), D, D);
 
-            op_t flip1a; flip1a.twoS = 2; flip1a.twoSaction = 2;
-            flip1a.insert_block(Matrix(1,1,values[0]), B, B);
-            flip1a.insert_block(Matrix(1,1,values[1]), C, C);
-            flip1a.insert_block(Matrix(1,1,values[2]), B, C);
-            flip1a.insert_block(Matrix(1,1,values[3]), C, B);
-            op_t flip1b; flip1b.twoS = 0;
-            flip1b.insert_block(Matrix(1,1,2), A, A);
-            flip1b.insert_block(Matrix(1,1,1), B, B);
-            flip1b.insert_block(Matrix(1,1,1), C, C);
+            block_matrix<Matrix, SymmGroup> fill;
+            fill.twoS = 0; fill.twoSaction = 0;
+            fill.insert_block(Matrix(1,1,1), A, A);
+            fill.insert_block(Matrix(1,1,1), B, B);
+            fill.insert_block(Matrix(1,1,1), C, C);
+            fill.insert_block(Matrix(1,1,1), B, C);
+            fill.insert_block(Matrix(1,1,1), C, B);
+            fill.insert_block(Matrix(1,1,1), D, D);
 
-            op_t flip2a; flip2a.twoS = 2; flip2a.twoSaction = -2;
-            flip2a.insert_block(Matrix(1,1,values[5]), B, B);
-            flip2a.insert_block(Matrix(1,1,values[6]), C, C);
-            flip2a.insert_block(Matrix(1,1,values[7]), B, C);
-            flip2a.insert_block(Matrix(1,1,values[8]), C, B);
-            op_t flip2b; flip2b.twoS = 0;
-            flip2b.insert_block(Matrix(1,1,2), A, A);
-            flip2b.insert_block(Matrix(1,1,1), B, B);
-            flip2b.insert_block(Matrix(1,1,1), C, C);
+            op_t flip1; flip1.twoS = 2; flip1.twoSaction = 2;
+            flip1.insert_block(Matrix(1,1,values[0]), B, B);
+            flip1.insert_block(Matrix(1,1,values[1]), C, C);
+            flip1.insert_block(Matrix(1,1,values[2]), B, C);
+            flip1.insert_block(Matrix(1,1,values[3]), C, B);
+
+            op_t flip2; flip2.twoS = 2; flip2.twoSaction = -2;
+            flip2.insert_block(Matrix(1,1,values[4]), B, B);
+            flip2.insert_block(Matrix(1,1,values[5]), C, C);
+            flip2.insert_block(Matrix(1,1,values[6]), B, C);
+            flip2.insert_block(Matrix(1,1,values[7]), C, B);
+
+            op_t count; count.twoS = 0;
+            count.insert_block(Matrix(1,1,2), A, A);
+            count.insert_block(Matrix(1,1,1), B, B);
+            count.insert_block(Matrix(1,1,1), C, C);
 
             MPOTensor<Matrix, SymmGroup> op(1,1);
             if (p==i) {
                 op = MPOTensor<Matrix, SymmGroup>(1,2);
-                op.set(0,0, flip1a, -std::sqrt(3.));
-                op.set(0,1, flip1b, 0.5);
+                op.set(0,0, flip1, -std::sqrt(3.));
+                op.set(0,1, count, 0.5);
             }
             else if (p==j) {
                 op = MPOTensor<Matrix, SymmGroup>(2,1);
-                op.set(0,0, flip2a, 1.0);
-                op.set(1,0, flip2b, 1.0);
+                op.set(0,0, flip2, 1.0);
+                op.set(1,0, count, 1.0);
+            }
+            else if (i < p && p < j)
+            {
+                op = MPOTensor<Matrix, SymmGroup>(2,2);
+                op.set(0,0, fill, 1.0);
+                op.set(1,1, ident, 1.0);
             }
             else
                 op.set(0,0, ident, 1.0);
@@ -808,6 +820,14 @@ namespace SU2 {
                 op.set(1,0, flip_up_down, 1.0);
                 op.set(2,0, count_up, 1.0);
                 op.set(3,0, count_down, 1.0);
+            }
+            else if (i < p && p < j)
+            {
+                op = MPOTensor<Matrix, TwoU1PG>(4,4);
+                op.set(0,0, ident, 1.0);
+                op.set(1,1, ident, 1.0);
+                op.set(2,2, ident, 1.0);
+                op.set(3,3, ident, 1.0);
             }
             else
                 op.set(0,0, ident, 1.0);

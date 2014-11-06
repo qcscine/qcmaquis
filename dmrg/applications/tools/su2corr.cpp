@@ -265,7 +265,7 @@ void tryFlipTerms(MPS<Matrix, SymmGroup> const & mps, double flipref, std::vecto
         for(int i=0; i<indices.size(); ++i)
             config[i] = values[indices[i]];
 
-        MPO<Matrix, SymmGroup> mpo = SU2::make_flip<Matrix, SymmGroup>(2,3, config, site_irreps);
+        MPO<Matrix, SymmGroup> mpo = SU2::make_flip<Matrix, SymmGroup>(1,5, config, site_irreps);
         double n = SU2::expval(mps, mpo, std::vector<int>());
         //if (std::abs(n/flipref - 1.0) < 1e-4) {
             std::copy(indices.begin(), indices.end(), std::ostream_iterator<int>(std::cout, ""));
@@ -290,7 +290,7 @@ double calcAbelianRef(MPS<Matrix, TwoU1PG> const & mps)
     std::cout << std::endl;
 
     //MPO<Matrix, TwoU1PG> mpo = make_count_abelian<Matrix>(i, site_irreps);
-    MPO<Matrix, TwoU1PG> mpo = make_flip_abelian<Matrix>(2,3, site_irreps);
+    MPO<Matrix, TwoU1PG> mpo = make_flip_abelian<Matrix>(1,5, site_irreps);
     double n = expval(mps, mpo);
     maquis::cout << "flip ref term: " << n << std::endl;
 
