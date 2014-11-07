@@ -334,11 +334,16 @@ namespace chem_detail {
                 if (std::abs(*it) > parms["integral_cutoff"]){
                     integral_value = *it++;
                     matrix_elements.push_back(scale_factor*integral_value);
-                    
                     std::vector<int> tmp;
                     std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
+// 					maquis::cout << "tmp vector:" << std::endl;
+// 					maquis::cout << tmp[0] << ' ' << tmp[1] << ' ' << tmp[2] << ' ' << tmp[3] << ' ' << integral_value << std::endl;
 
                     IndexTuple aligned = align(reorder(tmp[0]), reorder(tmp[1]), reorder(tmp[2]), reorder(tmp[3]));
+ 
+// 					maquis::cout << "aligned vector:" << std::endl;
+// 					maquis::cout << aligned[0] << ' ' << aligned[1] << ' ' << aligned[2] << ' ' << aligned[3] << ' ' << integral_value << std::endl;
+
                     tmp[0] = aligned[0];
                     tmp[1] = aligned[1];
                     tmp[2] = aligned[2];

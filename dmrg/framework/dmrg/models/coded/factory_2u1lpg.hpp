@@ -32,7 +32,8 @@ struct coded_model_factory<Matrix, TwoU1LPG> {
     static boost::shared_ptr<model_impl<Matrix, TwoU1LPG> > parse
     (Lattice const & lattice, BaseParameters & parms)
     {
-        typedef boost::shared_ptr<model_impl<Matrix, TwoU1LPG> > impl_ptr;
+        // TODO: remove the standard implementation for double group symmetry
+		typedef boost::shared_ptr<model_impl<Matrix, TwoU1LPG> > impl_ptr;
         if (parms["MODEL"] == std::string("quantum_chemistry")) {
             if (parms["LATTICE"] != std::string("orbitals"))
                 throw std::runtime_error("Please use \"LATTICE = orbitals\" for quantum_chemistry\n");

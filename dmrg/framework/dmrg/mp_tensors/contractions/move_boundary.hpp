@@ -59,7 +59,13 @@ namespace contraction {
         reshape_right_to_left_new(ket_tensor.site_dim(), bra_tensor.row_dim(), ket_tensor.col_dim(),
                                   t1, t3);
         gemm(transpose(conjugate(bra_tensor.data())), t3, t1);
-        return t1;
+        
+		#define DEBUG_OVERLAP
+		#ifdef DEBUG_OVERLAP
+		maquis::cout << "DEBUG_OVERLAP" << std::endl;
+		#endif
+		
+		return t1;
 
         // original:
         // t3 = transpose(t3);
@@ -202,9 +208,18 @@ namespace contraction {
 
         index_type loop_max = mpo.col_dim();
 
-        bra_tensor.make_left_paired();
-        block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
-
+		bra_tensor.make_left_paired();
+		block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
+		
+		#define DEBUG_MPO_OVERLAP_LEFT
+		#ifdef DEBUG_MPO_OVERLAP_LEFT
+		maquis::cout << "****************BEGIN MPO OVERLAP*****************" << std::endl;
+		maquis::cout << "bra_tensor (left paired):\n" << bra_tensor;
+// 		maquis::cout << "ket_tensor:\n" << ket_tensor;
+		maquis::cout << "mpo_tensor:\n";
+		maquis::cout << "rows: " << mpo.row_dim() << "\ncols: " << mpo.col_dim() << std::endl;
+		#endif
+		
 #ifdef USE_AMBIENT
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
         contr_grid.hint_left(t);
@@ -231,6 +246,16 @@ namespace contraction {
             gemm(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
         });
 
+		#define DEBUG_MPO_OVERLAP_LEFT_2
+		#ifdef DEBUG_MPO_OVERLAP_LEFT_2
+		maquis::cout << "DEBUG_MPO_OVERLAP_LEFT" << std::endl;
+// 		maquis::cout << ret.aux_dim() << std::endl;
+		for (int ii=0; ii < ret.aux_dim(); ++ii){
+			maquis::cout << "element: " << ii << "\n" << ret[ii] << std::endl;
+		}
+		maquis::cout << "****************END MPO OVERLAP*****************\n" << std::endl;
+		#endif
+		
         return ret;
 #endif
     }
@@ -277,6 +302,14 @@ namespace contraction {
         #ifdef AMBIENT_TRACKING
         ambient::overseer::log::region("serial::continue");
         #endif
+
+// 		#define DEBUG_MPO_OVERLAP_RIGHT
+		#ifdef DEBUG_MPO_OVERLAP_RIGHT
+		maquis::cout << "DEBUG_MPO_OVERLAP_RIGHT" << std::endl;
+		for (int ii=0; ii < ret.aux_dim(); ++ii){
+			maquis::cout << "element: " << ii << "\n" << ret[ii] << std::endl;
+		}
+		#endif
 
         return ret;
     }

@@ -73,7 +73,7 @@ public:
         return;
     }
     
-    // align function moved in the model from chem_detail.h
+    // align function moved here from chem_detail.h
     static chem_detail::IndexTuple align(int i, int j, int k, int l) {
         // For the time being (12.06.14) do nothing in the relativistic model
         return chem_detail::IndexTuple(i,j,k,l);
@@ -200,15 +200,20 @@ public:
         std::vector<op_t> create_ops = this->generate_site_specific_ops(create_unbar_op, create_bar_op);
         std::vector<op_t> destroy_ops = this->generate_site_specific_ops(destroy_unbar_op, destroy_bar_op);
         std::vector<op_t> count_ops = this->generate_site_specific_ops(count_unbar_op, count_bar_op);
-        //std::vector<op_t> create_ops = this->generate_site_specific_ops(create_unbar_op, ident_bar_op);
-        //std::vector<op_t> destroy_ops = this->generate_site_specific_ops(destroy_unbar_op, ident_bar_op);
-        //std::vector<op_t> count_ops = this->generate_site_specific_ops(count_unbar_op, ident_bar_op);
-        GENERATE_SITE_SPECIFIC(create_unbar_op)
-        GENERATE_SITE_SPECIFIC(create_bar_op)
-        GENERATE_SITE_SPECIFIC(destroy_unbar_op)
-        GENERATE_SITE_SPECIFIC(destroy_bar_op)
-        GENERATE_SITE_SPECIFIC(count_unbar_op)
-        GENERATE_SITE_SPECIFIC(count_bar_op)
+        
+//         GENERATE_SITE_SPECIFIC(create_unbar_op)
+//         GENERATE_SITE_SPECIFIC(create_bar_op)
+//         GENERATE_SITE_SPECIFIC(destroy_unbar_op)
+//         GENERATE_SITE_SPECIFIC(destroy_bar_op)
+//         GENERATE_SITE_SPECIFIC(count_unbar_op)
+//         GENERATE_SITE_SPECIFIC(count_bar_op)
+        std::vector<op_t> create_unbar_ops = this->generate_site_specific_ops(create_unbar_op, fill_bar_op);
+		std::vector<op_t> create_bar_ops = this->generate_site_specific_ops(fill_unbar_op, create_bar_op);
+		std::vector<op_t> destroy_unbar_ops = this->generate_site_specific_ops(destroy_unbar_op, fill_bar_op);
+		std::vector<op_t> destroy_bar_ops = this->generate_site_specific_ops(fill_unbar_op, destroy_bar_op);
+		std::vector<op_t> count_unbar_ops = this->generate_site_specific_ops(count_unbar_op, ident_bar_op);
+		std::vector<op_t> count_bar_ops = this->generate_site_specific_ops(ident_unbar_op, count_bar_op);
+
 
         // All this cases make no sense using a spinor lattice!
         //GENERATE_SITE_SPECIFIC(e2d_op)
@@ -457,14 +462,14 @@ public:
 private:
     Lattice const & lat;
     BaseParameters & parms;
-    Index<SymmGroup> phys;
+//     Index<SymmGroup> phys;
     std::vector<Index<SymmGroup> > phys_indices;
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type ident_unbar, ident_bar, fill_unbar, fill_bar,
              create_unbar, create_bar, destroy_unbar, destroy_bar,
              count_unbar, count_bar;
-             //docc, e2d, d2e;
+             //ident;
 
     typename SymmGroup::subcharge max_irrep;
 

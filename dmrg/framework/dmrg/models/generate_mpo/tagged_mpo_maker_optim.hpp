@@ -125,7 +125,7 @@ namespace generate_mpo
         {
             for (size_t p = 0; p < length-1; ++p)
                 prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(model.identity_matrix_tag(lat.get_prop<int>("type",p)), 1.);
-            
+			
             typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
             std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
         }
@@ -372,6 +372,7 @@ namespace generate_mpo
 		{
 			for (; i < j; ++i) {
                 tag_type op = (trivial_fill) ? model.identity_matrix_tag(lat.get_prop<int>("type",i)) : model.filling_matrix_tag(lat.get_prop<int>("type",i));
+				
 				std::pair<typename prempo_map_type::iterator,bool> ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
 				if (!ret.second && ret.first->second.first != op)
 					throw std::runtime_error("Pre-existing term at site "+boost::lexical_cast<std::string>(i)

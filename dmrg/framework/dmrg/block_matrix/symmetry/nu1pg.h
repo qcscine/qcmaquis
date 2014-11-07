@@ -300,7 +300,6 @@ public:
         return a+b;
     }
     
-    //Not sure
     static subcharge adjoin(subcharge I)
     {
         return I;
