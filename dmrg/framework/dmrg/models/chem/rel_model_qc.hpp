@@ -128,7 +128,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     op_t tmp;
     tag_type dummy;
 
-	// WHY???
+	// Anticommutation relations!!
 // 	gemm(create_bar_op, fill_bar_op, tmp);
 //     create_bar_op = tmp;
 // 	gemm(fill_bar_op, destroy_bar_op, tmp);
