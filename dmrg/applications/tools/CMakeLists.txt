@@ -87,3 +87,8 @@ if(USE_AMBIENT)
   # set_target_properties(mps_converter PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1")
 endif(USE_AMBIENT)
 
+if(DMRG_HAS_TwoU1PG)
+  add_executable(expval_2u1pg mpoexpect.cpp)
+  target_link_libraries(expval_2u1pg ${DMRG_APP_LIBRARIES})
+  set_target_properties(expval_2u1pg PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1PG")
+endif(DMRG_HAS_TwoU1PG)
