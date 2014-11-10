@@ -84,7 +84,7 @@ public:
     }
     tag_type filling_matrix_tag(size_t type) const
     {
-        return fill_cdagc;
+        return fill;
     }
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
@@ -118,9 +118,9 @@ private:
     std::vector<Index<SymmGroup> > phys_indices;
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
-    tag_type create_head, create_tail, destroy_head, destroy_tail,
+    tag_type create_fill, create, destroy_fill, destroy,
              count, docc, e2d, d2e, flip,
-             ident, fill_cdagc, fill_ccdag, count_fill_cdagc, count_fill_ccdag;
+             ident, fill, count_fill;
 
     typename SymmGroup::subcharge max_irrep;
 
@@ -176,49 +176,41 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     ident_op.insert_block(Matrix(1,1,1), C, C);
     ident_op.insert_block(Matrix(1,1,1), D, D);
 
-    op_t fill_ccdag_op;
-    fill_ccdag_op.insert_block(Matrix(1,1,1),  A, A);
-    fill_ccdag_op.insert_block(Matrix(1,1,1),  D, D);
-    fill_ccdag_op.insert_block(Matrix(1,1,-1), B, B);
-    fill_ccdag_op.insert_block(Matrix(1,1,-1), C, C);
-    fill_ccdag_op.insert_block(Matrix(1,1,1),  B, C);
-    fill_ccdag_op.insert_block(Matrix(1,1,1),  C, B);
+    op_t fill_op;
+    fill_op.insert_block(Matrix(1,1,1),  A, A);
+    fill_op.insert_block(Matrix(1,1,1),  D, D);
+    fill_op.insert_block(Matrix(1,1,-1), B, B);
+    fill_op.insert_block(Matrix(1,1,-1), C, C);
+    fill_op.insert_block(Matrix(1,1,-1), B, C);
+    fill_op.insert_block(Matrix(1,1,-1), C, B);
 
-    op_t fill_cdagc_op;
-    fill_cdagc_op.insert_block(Matrix(1,1,1),  A, A);
-    fill_cdagc_op.insert_block(Matrix(1,1,1),  D, D);
-    fill_cdagc_op.insert_block(Matrix(1,1,-1), B, B);
-    fill_cdagc_op.insert_block(Matrix(1,1,-1), C, C);
-    fill_cdagc_op.insert_block(Matrix(1,1,-1), B, C);
-    fill_cdagc_op.insert_block(Matrix(1,1,-1), C, B);
+    op_t create_fill_op;
+    create_fill_op.twoS = 1; create_fill_op.twoSaction = 1;
+    create_fill_op.insert_block(Matrix(1,1,2.), B, A);
+    create_fill_op.insert_block(Matrix(1,1,2.), C, A);
+    create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), D, B);
+    create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), D, C);
 
-    op_t create_tail_op;
-    create_tail_op.twoS = 1; create_tail_op.twoSaction = -1;
-    create_tail_op.insert_block(Matrix(1,1,-2.), B, A);
-    create_tail_op.insert_block(Matrix(1,1,2.), C, A);
-    create_tail_op.insert_block(Matrix(1,1,-sqrt(2.)), D, B);
-    create_tail_op.insert_block(Matrix(1,1,sqrt(2.)), D, C);
+    op_t destroy_op;
+    destroy_op.twoS = 1; destroy_op.twoSaction = -1;
+    destroy_op.insert_block(Matrix(1,1,1), A, B);
+    destroy_op.insert_block(Matrix(1,1,1), A, C);
+    destroy_op.insert_block(Matrix(1,1,sqrt(2.)), B, D);
+    destroy_op.insert_block(Matrix(1,1,sqrt(2.)), C, D);
 
-    op_t destroy_tail_op;
-    destroy_tail_op.twoS = 1; destroy_tail_op.twoSaction = 1;
-    destroy_tail_op.insert_block(Matrix(1,1,1), A, B);
-    destroy_tail_op.insert_block(Matrix(1,1,-1), A, C);
-    destroy_tail_op.insert_block(Matrix(1,1,sqrt(2.)), B, D);
-    destroy_tail_op.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
+    op_t destroy_fill_op;
+    destroy_fill_op.twoS = 1; destroy_fill_op.twoSaction = 1;
+    destroy_fill_op.insert_block(Matrix(1,1,1), A, B);
+    destroy_fill_op.insert_block(Matrix(1,1,1), A, C);
+    destroy_fill_op.insert_block(Matrix(1,1,-sqrt(2.)), B, D);
+    destroy_fill_op.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
 
-    op_t create_head_op;
-    create_head_op.twoS = 1; create_head_op.twoSaction = 1;
-    create_head_op.insert_block(Matrix(1,1,2.), B, A);
-    create_head_op.insert_block(Matrix(1,1,2.), C, A);
-    create_head_op.insert_block(Matrix(1,1,sqrt(2.)), D, B);
-    create_head_op.insert_block(Matrix(1,1,sqrt(2.)), D, C);
-
-    op_t destroy_head_op;
-    destroy_head_op.twoS = 1; destroy_head_op.twoSaction = -1;
-    destroy_head_op.insert_block(Matrix(1,1,1), A, B);
-    destroy_head_op.insert_block(Matrix(1,1,1), A, C);
-    destroy_head_op.insert_block(Matrix(1,1,sqrt(2.)), B, D);
-    destroy_head_op.insert_block(Matrix(1,1,sqrt(2.)), C, D);
+    op_t create_op;
+    create_op.twoS = 1; create_op.twoSaction = -1;
+    create_op.insert_block(Matrix(1,1,2.), B, A);
+    create_op.insert_block(Matrix(1,1,2.), C, A);
+    create_op.insert_block(Matrix(1,1,-sqrt(2.)), D, B);
+    create_op.insert_block(Matrix(1,1,-sqrt(2.)), D, C);
 
     op_t count_op;
     count_op.insert_block(Matrix(1,1,2), A, A);
@@ -234,19 +226,12 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     op_t d2e_op;
     d2e_op.insert_block(Matrix(1,1,1), A, D);
 
-    op_t count_fill_cdagc_op;
-    count_fill_cdagc_op.insert_block(Matrix(1,1,2),  A, A);
-    count_fill_cdagc_op.insert_block(Matrix(1,1,-1), B, B);
-    count_fill_cdagc_op.insert_block(Matrix(1,1,-1), C, C);
-    count_fill_cdagc_op.insert_block(Matrix(1,1,-1), B, C);
-    count_fill_cdagc_op.insert_block(Matrix(1,1,-1), C, B);
-
-    op_t count_fill_ccdag_op;
-    count_fill_ccdag_op.insert_block(Matrix(1,1,2),  A, A);
-    count_fill_ccdag_op.insert_block(Matrix(1,1,-1), B, B);
-    count_fill_ccdag_op.insert_block(Matrix(1,1,-1), C, C);
-    count_fill_ccdag_op.insert_block(Matrix(1,1,1),  B, C);
-    count_fill_ccdag_op.insert_block(Matrix(1,1,1),  C, B);
+    op_t count_fill_op;
+    count_fill_op.insert_block(Matrix(1,1,2),  A, A);
+    count_fill_op.insert_block(Matrix(1,1,-1), B, B);
+    count_fill_op.insert_block(Matrix(1,1,-1), C, C);
+    count_fill_op.insert_block(Matrix(1,1,-1), B, C);
+    count_fill_op.insert_block(Matrix(1,1,-1), C, B);
 
     op_t flip_op;
     flip_op.insert_block(Matrix(1,1,1), A, A);
@@ -262,34 +247,30 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
 
     REGISTER(ident,        tag_detail::bosonic)
-    REGISTER(fill_ccdag,   tag_detail::bosonic)
-    REGISTER(fill_cdagc,   tag_detail::fermionic)
-    REGISTER(create_head,  tag_detail::fermionic)
-    REGISTER(create_tail,  tag_detail::fermionic)
-    REGISTER(destroy_head, tag_detail::fermionic)
-    REGISTER(destroy_tail, tag_detail::bosonic)
+    REGISTER(fill,         tag_detail::bosonic)
+    REGISTER(create_fill,  tag_detail::fermionic)
+    REGISTER(create,       tag_detail::fermionic)
+    REGISTER(destroy_fill, tag_detail::fermionic)
+    REGISTER(destroy,      tag_detail::fermionic)
     REGISTER(count,        tag_detail::bosonic)
     REGISTER(docc,         tag_detail::bosonic)
     REGISTER(e2d,          tag_detail::bosonic)
     REGISTER(d2e,          tag_detail::bosonic)
     REGISTER(flip,         tag_detail::bosonic)
-    REGISTER(count_fill_cdagc,         tag_detail::bosonic)
-    REGISTER(count_fill_ccdag,         tag_detail::bosonic)
+    REGISTER(count_fill,   tag_detail::bosonic)
 
 #undef REGISTER
     /**********************************************************************/
 
 #define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
     PRINT(ident)
-    PRINT(fill_ccdag)
-    PRINT(fill_cdagc)
-    PRINT(count_fill_ccdag)
-    PRINT(count_fill_cdagc)
-    PRINT(create_head)
-    PRINT(create_tail)
-    PRINT(destroy_head)
-    PRINT(destroy_tail)
+    PRINT(fill)
+    PRINT(create_fill)
+    PRINT(create)
+    PRINT(destroy_fill)
+    PRINT(destroy)
     PRINT(count)
+    PRINT(count_fill)
     PRINT(docc)
     PRINT(e2d)
     PRINT(d2e)
@@ -340,11 +321,11 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
                 for (int fs=0; fs < start; ++fs)
                     term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(start, create_head) );
+                term.push_back( boost::make_tuple(start, create_fill) );
 
                 for (int fs = start+1; fs < end; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill_cdagc) );
-                term.push_back( boost::make_tuple(end, destroy_head) );
+                    term.push_back( boost::make_tuple(fs, fill) );
+                term.push_back( boost::make_tuple(end, destroy) );
 
                 for (int fs = end+1; fs < lat.size(); ++fs)
                     term.push_back( boost::make_tuple(fs, ident) );
@@ -354,15 +335,15 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             {
                 term_descriptor term;
                 term.is_fermionic = true;
-                term.coeff = matrix_elements[m];
+                term.coeff = -matrix_elements[m];
 
                 for (int fs=0; fs < start; ++fs)
                     term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(start, destroy_tail) );
+                term.push_back( boost::make_tuple(start, destroy_fill) );
 
                 for (int fs = start+1; fs < end; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill_ccdag) );
-                term.push_back( boost::make_tuple(end, create_tail) );
+                    term.push_back( boost::make_tuple(fs, fill) );
+                term.push_back( boost::make_tuple(end, create) );
 
                 for (int fs = end+1; fs < lat.size(); ++fs)
                     term.push_back( boost::make_tuple(fs, ident) );
@@ -472,15 +453,15 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
                 for (int fs=0; fs < start; ++fs)
                     term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(start, create_head) );
+                term.push_back( boost::make_tuple(start, create_fill) );
 
                 for (int fs = start+1; fs < mid; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill_cdagc) );
-                term.push_back( boost::make_tuple(mid, count_fill_cdagc) );
+                    term.push_back( boost::make_tuple(fs, fill) );
+                term.push_back( boost::make_tuple(mid, count_fill) );
 
                 for (int fs = mid+1; fs < end; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill_cdagc) );
-                term.push_back( boost::make_tuple(end, destroy_head) );
+                    term.push_back( boost::make_tuple(fs, fill) );
+                term.push_back( boost::make_tuple(end, destroy) );
 
                 for (int fs = end+1; fs < lat.size(); ++fs)
                     term.push_back( boost::make_tuple(fs, ident) );
@@ -490,19 +471,19 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             {
                 term_descriptor term;
                 term.is_fermionic = true;
-                term.coeff = matrix_elements[m];
+                term.coeff = -matrix_elements[m];
 
                 for (int fs=0; fs < start; ++fs)
                     term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(start, destroy_tail) );
+                term.push_back( boost::make_tuple(start, destroy_fill) );
 
                 for (int fs = start+1; fs < mid; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill_ccdag) );
-                term.push_back( boost::make_tuple(mid, count_fill_ccdag) );
+                    term.push_back( boost::make_tuple(fs, fill) );
+                term.push_back( boost::make_tuple(mid, count_fill) );
 
                 for (int fs = mid+1; fs < end; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill_ccdag) );
-                term.push_back( boost::make_tuple(end, create_tail) );
+                    term.push_back( boost::make_tuple(fs, fill) );
+                term.push_back( boost::make_tuple(end, create) );
 
                 for (int fs = end+1; fs < lat.size(); ++fs)
                     term.push_back( boost::make_tuple(fs, ident) );
