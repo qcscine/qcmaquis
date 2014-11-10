@@ -341,6 +341,16 @@ int main(int argc, char ** argv)
             maquis::cout << "2rdm_term: " << twodmterm << std::endl;
         }
 
+        if (argc == 3) {
+            MPS<matrix, TwoU1PG> mps_ref;
+            load(argv[2], mps_ref);
+            for (int i=0; i < L-4; ++i) {
+                MPO<matrix, TwoU1PG> mpo = make_2rdm_term_abelian<matrix>(i,i+1,i+2,i+3, site_irreps);
+                double twodmterm = expval(mps_ref, mpo);
+                maquis::cout << "2rdm_term ref: " << twodmterm << std::endl;
+            }
+        }
+
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
         return 1;

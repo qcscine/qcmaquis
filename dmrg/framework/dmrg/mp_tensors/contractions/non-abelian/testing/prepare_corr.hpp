@@ -644,4 +644,89 @@ namespace SU2 {
         return ret;
     }
 
+    template<class Matrix>
+    MPO<Matrix, TwoU1PG> make_2rdm_term_abelian(int i, int j, int k, int l, std::vector<int> site_irreps)
+    {
+        typedef block_matrix<Matrix, TwoU1PG> op_t;
+        MPO<Matrix, TwoU1PG> ret(site_irreps.size());
+        for (int p=0; p<site_irreps.size(); ++p)
+        {
+            typedef tag_detail::tag_type tag_type;
+            typename TwoU1PG::charge A(0), B(0), C(0), D(0);
+            A[0] = 1; A[1] = 1;
+            B[0] = 1; C[1] = 1;
+            B[2] = site_irreps[p];
+            C[2] = site_irreps[p];
+
+            block_matrix<Matrix, TwoU1PG> ident;
+            ident.insert_block(Matrix(1,1,1), A, A);
+            ident.insert_block(Matrix(1,1,1), B, B);
+            ident.insert_block(Matrix(1,1,1), C, C);
+            ident.insert_block(Matrix(1,1,1), D, D);
+
+            op_t create_up;
+            create_up.insert_block(Matrix(1,1,1), C, A);
+            create_up.insert_block(Matrix(1,1,1), D, B);
+            op_t create_up_fill;
+            create_up_fill.insert_block(Matrix(1,1,-1), C, A);
+            create_up_fill.insert_block(Matrix(1,1,1), D, B);
+
+            op_t create_down;
+            create_down.insert_block(Matrix(1,1,-1), B, A);
+            create_down.insert_block(Matrix(1,1,1), D, C);
+            op_t create_down_fill;
+            create_down_fill.insert_block(Matrix(1,1,1), B, A);
+            create_down_fill.insert_block(Matrix(1,1,1), D, C);
+
+            op_t destroy_up;
+            destroy_up.insert_block(Matrix(1,1,1), A, C);
+            destroy_up.insert_block(Matrix(1,1,1), B, D);
+            op_t destroy_up_fill;
+            destroy_up_fill.insert_block(Matrix(1,1,1), A, C);
+            destroy_up_fill.insert_block(Matrix(1,1,-1), B, D);
+
+            op_t destroy_down;
+            destroy_down.insert_block(Matrix(1,1,-1), A, B);
+            destroy_down.insert_block(Matrix(1,1,1), C, D);
+            op_t destroy_down_fill;
+            destroy_down_fill.insert_block(Matrix(1,1,-1), A, B);
+            destroy_down_fill.insert_block(Matrix(1,1,-1), C, D);
+
+            MPOTensor<Matrix, TwoU1PG> op(1,1);
+            if (p==i) {
+                op = MPOTensor<Matrix, TwoU1PG>(1,4);
+                op.set(0,0, create_up_fill, 1.0);
+                op.set(0,1, create_up_fill, 1.0);
+                op.set(0,2, create_down_fill, 1.0);
+                op.set(0,3, create_down_fill, 1.0);
+            }
+            else if (p==j) {
+                op = MPOTensor<Matrix, TwoU1PG>(4,4);
+                op.set(0,0, create_up, 1.0);
+                op.set(1,1, create_down, 1.0);
+                op.set(2,2, create_up, 1.0);
+                op.set(3,3, create_down, 1.0);
+            }
+            else if (p==k) {
+                op = MPOTensor<Matrix, TwoU1PG>(4,4);
+                op.set(0,0, destroy_up_fill, 1.0);
+                op.set(1,1, destroy_down_fill, 1.0);
+                op.set(2,2, destroy_up_fill, 1.0);
+                op.set(3,3, destroy_down_fill, 1.0);
+            }
+            else if (p==l) {
+                op = MPOTensor<Matrix, TwoU1PG>(4,1);
+                op.set(0,0, destroy_up, 1.0);
+                op.set(1,0, destroy_up, 1.0);
+                op.set(2,0, destroy_down, 1.0);
+                op.set(3,0, destroy_down, 1.0);
+            }
+            else
+                op.set(0,0, ident, 1.0);
+
+            ret[p] = op;
+        }
+        return ret;
+    }
+
 #endif
