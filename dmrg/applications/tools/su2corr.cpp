@@ -330,8 +330,6 @@ int main(int argc, char ** argv)
             MPS<matrix, TwoU1PG> mps_ref;
             load(argv[2], mps_ref);
 
-            //double flipref = 0.000367966;
-            double flipref = -0.000058008;
             flipref = calcAbelianRef(mps_ref);
             tryFlipTerms<matrix, grp>(mps, flipref, site_irreps);
         }

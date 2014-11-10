@@ -213,8 +213,8 @@ namespace SU2 {
                             ret.resize_block(o, l_size, out_right_i.size_of_block(out_r_charge));
                         }
 
-                        int i  = out_r_charge[1], ip = rc[1];
-                        int j  = out_l_charge[1], jp  = mc[1];
+                        int i = out_r_charge[1], ip = rc[1];
+                        int j = out_l_charge[1], jp  = mc[1];
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
                         //int aold = std::abs(i-j), kold = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1]));
