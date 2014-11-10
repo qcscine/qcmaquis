@@ -119,6 +119,7 @@ private:
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type create_fill, create, destroy_fill, destroy,
+             create_fill_count, create_count, destroy_fill_count, destroy_count,
              count, docc, e2d, d2e, flip_to_S2, flip_to_S0,
              ident, ident_full, fill, count_fill;
 
@@ -194,6 +195,8 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     fill_op.insert_block(Matrix(1,1,-1), B, C);
     fill_op.insert_block(Matrix(1,1,-1), C, B);
 
+    /*************************************************************/
+
     op_t create_fill_op;
     create_fill_op.twoS = 1; create_fill_op.twoSaction = 1;
     create_fill_op.insert_block(Matrix(1,1,2.), B, A);
@@ -221,6 +224,30 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     create_op.insert_block(Matrix(1,1,2.), C, A);
     create_op.insert_block(Matrix(1,1,-sqrt(2.)), D, B);
     create_op.insert_block(Matrix(1,1,-sqrt(2.)), D, C);
+
+    /*************************************************************/
+
+    op_t create_fill_count_op;
+    create_fill_count_op.twoS = 1; create_fill_count_op.twoSaction = 1;
+    create_fill_count_op.insert_block(Matrix(1,1,2.), B, A);
+    create_fill_count_op.insert_block(Matrix(1,1,2.), C, A);
+
+    op_t destroy_count_op;
+    destroy_count_op.twoS = 1; destroy_count_op.twoSaction = -1;
+    destroy_count_op.insert_block(Matrix(1,1,1), A, B);
+    destroy_count_op.insert_block(Matrix(1,1,1), A, C);
+
+    op_t destroy_fill_count_op;
+    destroy_fill_count_op.twoS = 1; destroy_fill_count_op.twoSaction = 1;
+    destroy_fill_count_op.insert_block(Matrix(1,1,1), A, B);
+    destroy_fill_count_op.insert_block(Matrix(1,1,1), A, C);
+
+    op_t create_count_op;
+    create_count_op.twoS = 1; create_count_op.twoSaction = -1;
+    create_count_op.insert_block(Matrix(1,1,2.), B, A);
+    create_count_op.insert_block(Matrix(1,1,2.), C, A);
+
+    /*************************************************************/
 
     op_t count_op;
     count_op.insert_block(Matrix(1,1,2), A, A);
@@ -262,10 +289,17 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     REGISTER(ident,        tag_detail::bosonic)
     REGISTER(ident_full,   tag_detail::bosonic)
     REGISTER(fill,         tag_detail::bosonic)
+
     REGISTER(create_fill,  tag_detail::fermionic)
     REGISTER(create,       tag_detail::fermionic)
     REGISTER(destroy_fill, tag_detail::fermionic)
     REGISTER(destroy,      tag_detail::fermionic)
+
+    REGISTER(create_fill_count,  tag_detail::fermionic)
+    REGISTER(create_count,       tag_detail::fermionic)
+    REGISTER(destroy_fill_count, tag_detail::fermionic)
+    REGISTER(destroy_count,      tag_detail::fermionic)
+
     REGISTER(count,        tag_detail::bosonic)
     REGISTER(docc,         tag_detail::bosonic)
     REGISTER(e2d,          tag_detail::bosonic)
@@ -376,6 +410,99 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             term.coeff = matrix_elements[m];
             term.push_back(boost::make_tuple(i, docc));
             this->terms_.push_back(term);
+
+            used_elements[m] += 1;
+        }
+
+        // V_ijjj = V_jijj = V_jjij = V_jjji
+        else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
+
+            int same_idx, pos1;
+
+            if      (i==j) { same_idx = i; pos1 = l; }
+            else if (k==l) { same_idx = l; pos1 = i; }
+            else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
+
+            if (same_idx < pos1)
+            {
+                int start = same_idx, end = pos1;
+                {
+                    term_descriptor term;
+                    term.is_fermionic = true;
+                    term.coeff = matrix_elements[m];
+
+                    for (int fs=0; fs < start; ++fs)
+                        term.push_back( boost::make_tuple(fs, ident) );
+                    term.push_back( boost::make_tuple(start, create_fill_count) );
+
+                    for (int fs = start+1; fs < end; ++fs)
+                        term.push_back( boost::make_tuple(fs, fill) );
+                    term.push_back( boost::make_tuple(end, destroy) );
+
+                    for (int fs = end+1; fs < lat.size(); ++fs)
+                        term.push_back( boost::make_tuple(fs, ident) );
+
+                    this->terms_.push_back(term);
+                }
+                {
+                    term_descriptor term;
+                    term.is_fermionic = true;
+                    term.coeff = -matrix_elements[m];
+
+                    for (int fs=0; fs < start; ++fs)
+                        term.push_back( boost::make_tuple(fs, ident) );
+                    term.push_back( boost::make_tuple(start, destroy_fill_count) );
+
+                    for (int fs = start+1; fs < end; ++fs)
+                        term.push_back( boost::make_tuple(fs, fill) );
+                    term.push_back( boost::make_tuple(end, create) );
+
+                    for (int fs = end+1; fs < lat.size(); ++fs)
+                        term.push_back( boost::make_tuple(fs, ident) );
+
+                    this->terms_.push_back(term);
+                }
+            }
+            else
+            {
+                int start = pos1, end = same_idx;
+                {
+                    term_descriptor term;
+                    term.is_fermionic = true;
+                    term.coeff = matrix_elements[m];
+
+                    for (int fs=0; fs < start; ++fs)
+                        term.push_back( boost::make_tuple(fs, ident) );
+                    term.push_back( boost::make_tuple(start, create_fill) );
+
+                    for (int fs = start+1; fs < end; ++fs)
+                        term.push_back( boost::make_tuple(fs, fill) );
+                    term.push_back( boost::make_tuple(end, destroy_count) );
+
+                    for (int fs = end+1; fs < lat.size(); ++fs)
+                        term.push_back( boost::make_tuple(fs, ident) );
+
+                    this->terms_.push_back(term);
+                }
+                {
+                    term_descriptor term;
+                    term.is_fermionic = true;
+                    term.coeff = -matrix_elements[m];
+
+                    for (int fs=0; fs < start; ++fs)
+                        term.push_back( boost::make_tuple(fs, ident) );
+                    term.push_back( boost::make_tuple(start, destroy_fill) );
+
+                    for (int fs = start+1; fs < end; ++fs)
+                        term.push_back( boost::make_tuple(fs, fill) );
+                    term.push_back( boost::make_tuple(end, create_count) );
+
+                    for (int fs = end+1; fs < lat.size(); ++fs)
+                        term.push_back( boost::make_tuple(fs, ident) );
+
+                    this->terms_.push_back(term);
+                }
+            }
 
             used_elements[m] += 1;
         }
