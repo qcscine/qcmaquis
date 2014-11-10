@@ -86,7 +86,7 @@ public:
     }
     tag_type identity_matrix_tag(size_t type) const
     {
-        if (type < lat.size()/2)
+		if (type < lat.size()/2)
             return ident_unbar;
         else
             return ident_bar;
@@ -469,7 +469,6 @@ private:
     tag_type ident_unbar, ident_bar, fill_unbar, fill_bar,
              create_unbar, create_bar, destroy_unbar, destroy_bar,
              count_unbar, count_bar;
-             //ident;
 
     typename SymmGroup::subcharge max_irrep;
 

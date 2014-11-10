@@ -211,13 +211,23 @@ namespace contraction {
 		bra_tensor.make_left_paired();
 		block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
 		
-		#define DEBUG_MPO_OVERLAP_LEFT
+// 		#define DEBUG_MPO_OVERLAP_LEFT
 		#ifdef DEBUG_MPO_OVERLAP_LEFT
-		maquis::cout << "****************BEGIN MPO OVERLAP*****************" << std::endl;
-		maquis::cout << "bra_tensor (left paired):\n" << bra_tensor;
+		maquis::cout << "\n****************BEGIN MPO OVERLAP*****************" << std::endl;
+		maquis::cout << "BRA TENSOR (left paired):\n" << bra_tensor;
 // 		maquis::cout << "ket_tensor:\n" << ket_tensor;
-		maquis::cout << "mpo_tensor:\n";
+		maquis::cout << "MPO TENSOR:\n";
 		maquis::cout << "rows: " << mpo.row_dim() << "\ncols: " << mpo.col_dim() << std::endl;
+		for (int ii=0; ii<mpo.row_dim(); ++ii) {
+			for (int jj=0; jj<mpo.col_dim(); ++jj) {
+				maquis::cout << "OPERATOR TAG at: (" << ii << "," << jj << "): " << mpo.tag_number(ii,jj) << std::endl;
+				if (mpo.has(ii,jj)) {
+					maquis::cout << "opertor structure:\n" << mpo.at(ii,jj).op;
+					maquis::cout << "opertor coeff:\n" << mpo.at(ii,jj).scale << std::endl;
+				} else
+					maquis::cout << "No operator here" << std::endl;
+			}
+		}
 		#endif
 		
 #ifdef USE_AMBIENT
@@ -246,13 +256,14 @@ namespace contraction {
             gemm(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
         });
 
-		#define DEBUG_MPO_OVERLAP_LEFT_2
+// 		#define DEBUG_MPO_OVERLAP_LEFT_2
 		#ifdef DEBUG_MPO_OVERLAP_LEFT_2
-		maquis::cout << "DEBUG_MPO_OVERLAP_LEFT" << std::endl;
+		maquis::cout << "\n----BOUNDARIES returned----" << std::endl;
 // 		maquis::cout << ret.aux_dim() << std::endl;
 		for (int ii=0; ii < ret.aux_dim(); ++ii){
-			maquis::cout << "element: " << ii << "\n" << ret[ii] << std::endl;
+			maquis::cout << "element: " << ii << "\n" << ret[ii];
 		}
+// 		maquis::cout << "element: " << 
 		maquis::cout << "****************END MPO OVERLAP*****************\n" << std::endl;
 		#endif
 		

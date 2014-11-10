@@ -73,10 +73,13 @@ struct TermMaker {
             fill_op = model->filling_matrix_tag(i);
             ptag = op_table->get_product_tag(fill_op, op1);
 			
-			//#define DEBUG_OP
+			#define DEBUG_OP
 			#ifdef DEBUG_OP
+			maquis::cout << "TERM: (" << i << "," << j << ")\n";
+			maquis::cout << "product fill * op1\n";
 			maquis::cout << "operator tag before fill: " << op1 << std::endl;
 			maquis::cout << "operator tag after fill: " << ptag.first << std::endl;
+			maquis::cout << "operator coeff: " << ptag.second << std::endl;
 			#endif
 			
             term.push_back(boost::make_tuple(i, ptag.first));
@@ -89,8 +92,11 @@ struct TermMaker {
             ptag = op_table->get_product_tag(fill_op, op2);
 			
 			#ifdef DEBUG_OP
+			maquis::cout << "TERM: (" << i << "," << j << ")\n";
+			maquis::cout << "product fill * op2\n";
 			maquis::cout << "operator tag before fill: " << op2 << std::endl;
 			maquis::cout << "operator tag after fill: " << ptag.first << std::endl;
+			maquis::cout << "operator coeff: " << ptag.second << std::endl;
 			#endif
 			
             term.push_back(boost::make_tuple(i, op1));
