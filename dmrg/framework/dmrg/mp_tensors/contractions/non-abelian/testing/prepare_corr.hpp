@@ -101,10 +101,7 @@ namespace SU2 {
             MPOTensor<Matrix, SymmGroup> op(1,1);
 
             if (p == i) {
-                //block_matrix<Matrix, SymmGroup> tmp;
-                //SU2::gemm(fill, create, tmp);
-                //maquis::cout << tmp << std::endl;
-                op.set(0,0,destroy,1.0);
+                op.set(0,0,destroy,-1.0);
             }
             else if (p == j)
                 op.set(0,0,create);
