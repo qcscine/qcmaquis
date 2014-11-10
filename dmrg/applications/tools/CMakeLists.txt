@@ -50,6 +50,12 @@ if(DMRG_HAS_TwoU1)
   set_target_properties(mps_upgrade_2u1 PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1")
 endif(DMRG_HAS_TwoU1)
 
+if(DMRG_HAS_TwoU1LPG)
+  add_executable(expval_2u1lpg mpoexpect.cpp)
+  target_link_libraries(expval_2u1lpg ${DMRG_APP_LIBRARIES})
+  set_target_properties(expval_2u1lpg PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1LPG")
+endif(DMRG_HAS_TwoU1LPG)
+
 if(USE_AMBIENT)
   ## enable only if needed, and with a revision < r3578
   # add_executable(mps_converter mps_converter.cpp)
