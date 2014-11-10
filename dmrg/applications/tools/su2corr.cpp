@@ -144,7 +144,7 @@ matrix compute_ratio(MPS<Matrix, SymmGroup> const & mps, matrix const & ref, std
         for (int j=i+1; j < L; ++j)
         {
             MPO<Matrix, SymmGroup> mpo = SU2::make_1rdm_term<Matrix, SymmGroup>(i, j, site_irreps);
-            rdm(i,j) = SU2::expval(mps, mpo, config);
+            rdm(i,j) = SU2::expval_r(mps, mpo, config);
             ratio(i,j) = ref(i,j) / rdm(i,j);
         }
 
@@ -210,7 +210,7 @@ void tryFourTerms(MPS<Matrix, SymmGroup> const & mps, std::vector<int> const & s
     for(int i=0; i < L-3; ++i)
     {
         //MPO<Matrix, SymmGroup> four = SU2::make_2rdm_term_custom<Matrix, SymmGroup>(i,i+1,i+2,i+3, 1,1,v3,v4,v5, site_irreps);
-        MPO<Matrix, SymmGroup> four = SU2::make_2rdm_term_custom<Matrix, SymmGroup>(i,i+1,i+2,i+3, 1,1,0,0,0, site_irreps);
+        MPO<Matrix, SymmGroup> four = SU2::make_2rdm_term<Matrix, SymmGroup>(i,i+1,i+2,i+3, site_irreps);
         double twodm0123 = SU2::expval(mps, four, config);
         result.push_back(twodm0123 / ref2[i]);
     }
@@ -266,7 +266,7 @@ void tryFlipTerms(MPS<Matrix, SymmGroup> const & mps, double flipref, std::vecto
             config[i] = values[indices[i]];
 
         MPO<Matrix, SymmGroup> mpo = SU2::make_flip<Matrix, SymmGroup>(1,5, config, site_irreps);
-        double n = SU2::expval(mps, mpo, std::vector<int>());
+        double n = SU2::expval_r(mps, mpo, std::vector<int>());
         //if (std::abs(n/flipref - 1.0) < 1e-4) {
             std::copy(indices.begin(), indices.end(), std::ostream_iterator<int>(std::cout, ""));
             //maquis::cout << " " << n/flipref << std::endl;
@@ -334,10 +334,12 @@ int main(int argc, char ** argv)
             tryFlipTerms<matrix, grp>(mps, flipref, site_irreps);
         }
 
-        //MPO<matrix, grp> mpo = SU2::make_2rdm_term<matrix, grp>(0,1,2,3, site_irreps);
-        MPO<matrix, grp> mpo = SU2::make_1rdm_term<matrix, grp>(1, 4, site_irreps);
-        double twodmterm = SU2::expval(mps, mpo, std::vector<int>());
-        maquis::cout << "2rdm_term: " << twodmterm << std::endl;
+        for (int i=0; i < L-4; ++i) {
+            MPO<matrix, grp> mpo = SU2::make_2rdm_term<matrix, grp>(i,i+1,i+2,i+3, site_irreps);
+            //MPO<matrix, grp> mpo = SU2::make_1rdm_term<matrix, grp>(1, 4, site_irreps);
+            double twodmterm = SU2::expval(mps, mpo, std::vector<int>());
+            maquis::cout << "2rdm_term: " << twodmterm << std::endl;
+        }
 
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
