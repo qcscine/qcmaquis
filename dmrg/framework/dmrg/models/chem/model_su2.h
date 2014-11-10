@@ -119,8 +119,8 @@ private:
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type create_fill, create, destroy_fill, destroy,
-             count, docc, e2d, d2e, flip,
-             ident, fill, count_fill;
+             count, docc, e2d, d2e, flip_to_S2, flip_to_S0,
+             ident, ident_full, fill, count_fill;
 
     typename SymmGroup::subcharge max_irrep;
 
@@ -170,11 +170,21 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         phys_indices.push_back(phys);
     }
 
+    // cheaper to use this for spin0 tensors, instead of ident_full
     op_t ident_op;
     ident_op.insert_block(Matrix(1,1,1), A, A);
     ident_op.insert_block(Matrix(1,1,1), B, B);
     ident_op.insert_block(Matrix(1,1,1), C, C);
     ident_op.insert_block(Matrix(1,1,1), D, D);
+
+    // apply if spin > 0
+    op_t ident_full_op;
+    ident_full_op.insert_block(Matrix(1,1,1), A, A);
+    ident_full_op.insert_block(Matrix(1,1,1), D, D);
+    ident_full_op.insert_block(Matrix(1,1,1), B, B);
+    ident_full_op.insert_block(Matrix(1,1,1), C, C);
+    ident_full_op.insert_block(Matrix(1,1,1), B, C);
+    ident_full_op.insert_block(Matrix(1,1,1), C, B);
 
     op_t fill_op;
     fill_op.insert_block(Matrix(1,1,1),  A, A);
@@ -233,12 +243,15 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     count_fill_op.insert_block(Matrix(1,1,-1), B, C);
     count_fill_op.insert_block(Matrix(1,1,-1), C, B);
 
-    op_t flip_op;
-    flip_op.insert_block(Matrix(1,1,1), A, A);
-    flip_op.insert_block(Matrix(1,1,1), B, B);
-    flip_op.insert_block(Matrix(1,1,1), C, C);
-    //flip_op.insert_block(Matrix(1,1,-1),  B, C);
-    //flip_op.insert_block(Matrix(1,1,-1),  C, B);
+    op_t flip_to_S2_op;
+    flip_to_S2_op.twoS = 2; flip_to_S2_op.twoSaction = 2;
+    flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2)), B, B);
+    flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)), C, C);
+    flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)),  B, C);
+    flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)),  C, B);
+
+    op_t flip_to_S0_op = flip_to_S2_op;
+    flip_to_S0_op.twoSaction = -2;
 
     /**********************************************************************/
     /*** Create operator tag table ****************************************/
@@ -247,6 +260,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
 
     REGISTER(ident,        tag_detail::bosonic)
+    REGISTER(ident_full,   tag_detail::bosonic)
     REGISTER(fill,         tag_detail::bosonic)
     REGISTER(create_fill,  tag_detail::fermionic)
     REGISTER(create,       tag_detail::fermionic)
@@ -256,25 +270,26 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     REGISTER(docc,         tag_detail::bosonic)
     REGISTER(e2d,          tag_detail::bosonic)
     REGISTER(d2e,          tag_detail::bosonic)
-    REGISTER(flip,         tag_detail::bosonic)
+    REGISTER(flip_to_S2,   tag_detail::bosonic)
+    REGISTER(flip_to_S0,   tag_detail::bosonic)
     REGISTER(count_fill,   tag_detail::bosonic)
 
 #undef REGISTER
     /**********************************************************************/
 
-#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
-    PRINT(ident)
-    PRINT(fill)
-    PRINT(create_fill)
-    PRINT(create)
-    PRINT(destroy_fill)
-    PRINT(destroy)
-    PRINT(count)
-    PRINT(count_fill)
-    PRINT(docc)
-    PRINT(e2d)
-    PRINT(d2e)
-#undef PRINT
+//#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
+//    PRINT(ident)
+//    PRINT(fill)
+//    PRINT(create_fill)
+//    PRINT(create)
+//    PRINT(destroy_fill)
+//    PRINT(destroy)
+//    PRINT(count)
+//    PRINT(count_fill)
+//    PRINT(docc)
+//    PRINT(e2d)
+//    PRINT(d2e)
+//#undef PRINT
 
     chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, ident, tag_handler);
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
@@ -379,7 +394,28 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, e2d, d2e);
             term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, d2e, e2d);
 
-            //term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, flip, flip);
+            {
+                // here we have spin0--j--spin1--i--spin0
+                term_descriptor term;
+                term.is_fermionic = false;
+                term.coeff = std::sqrt(3.) * matrix_elements[m];
+
+                int start = std::min(i,j), end = std::max(i,j);
+                for (int fs=0; fs < start; ++fs)
+                    term.push_back( boost::make_tuple(fs, ident) );
+                term.push_back( boost::make_tuple(start, flip_to_S2) );
+
+                for (int fs = start+1; fs < end; ++fs)
+                    term.push_back( boost::make_tuple(fs, ident_full) );
+                term.push_back( boost::make_tuple(end, flip_to_S0) );
+
+                for (int fs = end+1; fs < lat.size(); ++fs)
+                    term.push_back( boost::make_tuple(fs, ident) );
+
+                this->terms_.push_back(term);
+            }
+
+            term_assistant.add_term(this->terms_, -0.5 * matrix_elements[m], i, j, count, count);
 
             used_elements[m] += 1;
         }

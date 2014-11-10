@@ -328,7 +328,7 @@ namespace SU2 {
             else if (p == j) {
                 op = MPOTensor<Matrix, SymmGroup>(1,2);
                 op.set(0,0,createS0, 0.5);
-                op.set(0,1,createS2, -1.0);
+                op.set(0,1,createS2, 1.0);
             }
             else if (p == k) {
                 op = MPOTensor<Matrix, SymmGroup>(2,1);
@@ -441,6 +441,8 @@ namespace SU2 {
             C[0] = 1; C[1] = -1; C[2] = site_irreps[p]; // 1-1I
             // D = 000
 
+            double root32 = std::sqrt(3./2.);
+
             block_matrix<Matrix, SymmGroup> ident;
             ident.twoS = 0; ident.twoSaction = 0;
             ident.insert_block(Matrix(1,1,1), A, A);
@@ -458,16 +460,16 @@ namespace SU2 {
             fill.insert_block(Matrix(1,1,1), D, D);
 
             op_t flip1; flip1.twoS = 2; flip1.twoSaction = 2;
-            flip1.insert_block(Matrix(1,1,values[0]), B, B);
-            flip1.insert_block(Matrix(1,1,values[1]), C, C);
-            flip1.insert_block(Matrix(1,1,values[2]), B, C);
-            flip1.insert_block(Matrix(1,1,values[3]), C, B);
+            flip1.insert_block(Matrix(1,1,root32), B, B);
+            flip1.insert_block(Matrix(1,1,root32), C, C);
+            flip1.insert_block(Matrix(1,1,root32), B, C);
+            flip1.insert_block(Matrix(1,1,root32), C, B);
 
             op_t flip2; flip2.twoS = 2; flip2.twoSaction = -2;
-            flip2.insert_block(Matrix(1,1,values[4]), B, B);
-            flip2.insert_block(Matrix(1,1,values[5]), C, C);
-            flip2.insert_block(Matrix(1,1,values[6]), B, C);
-            flip2.insert_block(Matrix(1,1,values[7]), C, B);
+            flip2.insert_block(Matrix(1,1,root32), B, B);
+            flip2.insert_block(Matrix(1,1,root32), C, C);
+            flip2.insert_block(Matrix(1,1,root32), B, C);
+            flip2.insert_block(Matrix(1,1,root32), C, B);
 
             op_t count; count.twoS = 0;
             count.insert_block(Matrix(1,1,2), A, A);
