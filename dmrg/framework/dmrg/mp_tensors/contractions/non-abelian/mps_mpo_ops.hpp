@@ -60,7 +60,7 @@ namespace SU2 {
         for(int i = L-1; i >= 0 ; --i) {
             select_proc(ambient::scope::balance(i,L));
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
-            right = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_right_stepj(mps[i], cpy, right); // serial
+            right = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_right_step(mps[i], cpy, right); // serial
         }
 
         return trace(right);
@@ -73,7 +73,7 @@ namespace SU2 {
         assert(mpo.length() == mps.length());
         std::size_t L = mps.length();
         Boundary<Matrix, SymmGroup> left = mps.left_boundary();
-        block_matrix<Matrix, SymmGroup> left_bm = mps.left_boundary()[0];
+        //block_matrix<Matrix, SymmGroup> left_bm = mps.left_boundary()[0];
 
         for(size_t i = 0; i < L; ++i) {
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];

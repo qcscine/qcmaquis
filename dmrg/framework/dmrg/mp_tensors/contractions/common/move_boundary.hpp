@@ -303,6 +303,7 @@ namespace contraction {
                 typename Gemm::gemm()(ret[b1], transpose(bra_conj), tmp);
                 //gemm(ret[b1], transpose(bra_conj), tmp, parallel::scheduler_size_indexed(ret[b1]));
                 swap(ret[b1], tmp);
+                ret[b1].twoS = tmp.twoS;
             });
     #endif
             return ret;

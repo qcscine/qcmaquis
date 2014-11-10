@@ -76,6 +76,9 @@ namespace SU2 {
             block_matrix<Matrix, SymmGroup> const & W = access.op;
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
+            int a = left[b1].twoS, k = W.twoS, ap = a + W.twoSaction;
+            ret.twoS = ap;
+
             for (size_t lblock = 0; lblock < left[b1].n_blocks(); ++lblock) {
 
                 charge lc = left[b1].basis().right_charge(lblock); // left comes as left^T !
@@ -84,9 +87,6 @@ namespace SU2 {
                 std::pair<const_iterator, const_iterator>
                   er = std::equal_range(ket_basis.begin(), ket_basis.end(),
                     dual_index_detail::QnBlock<SymmGroup>(mc, SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
-
-                int a = left[b1].twoS, k = W.twoS, ap = a + W.twoSaction;
-                ret.twoS = ap;
 
                 for (const_iterator it = er.first; it != er.second; ++it)
                 {
@@ -175,6 +175,10 @@ namespace SU2 {
             MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
             block_matrix<Matrix, SymmGroup> const & W = access.op;
 
+            // note minus sign, as we move the boundary to the left
+            int ap = right[b2].twoS, k = W.twoS, a = ap - W.twoSaction;
+            ret.twoS = a;
+
             for (size_t ketblock = 0; ketblock < ket_basis.size(); ++ketblock) {
 
                 charge lc = ket_basis[ketblock].lc;
@@ -212,12 +216,14 @@ namespace SU2 {
                         int i  = out_r_charge[1], ip = rc[1];
                         int j  = out_l_charge[1], jp  = mc[1];
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
-                        int a = std::abs(i-j), k = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1]));
 
-                        int ap = std::abs(ip-jp);
-                        if (ap >= 3) continue;
+                        //int aold = std::abs(i-j), kold = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1]));
+                        //int apold = std::abs(ip-jp);
+                        //maquis::cout << "a,k,ap old:" << aold << " " << kold << " " << apold << " a,k,ap: " << a << " " << k << " " << ap << std::endl;
+                        //if (ap >= 3) continue;
 
                         typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
+                        if (std::abs(coupling_coeff) < 1.e-40) continue;
                         coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
 
                         size_t phys_s1 = W.basis().left_size(w_block);
