@@ -336,6 +336,10 @@ int main(int argc, char ** argv)
             tryFlipTerms<matrix, grp>(mps, flipref, site_irreps);
         }
 
+        //MPO<matrix, grp> mpo = SU2::make_2rdm_term<matrix, grp>(0,1,2,3, site_irreps);
+        MPO<matrix, grp> mpo = SU2::make_1rdm_term<matrix, grp>(1, 4, site_irreps);
+        double twodmterm = SU2::expval(mps, mpo, std::vector<int>());
+        maquis::cout << "2rdm_term: " << twodmterm << std::endl;
 
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;

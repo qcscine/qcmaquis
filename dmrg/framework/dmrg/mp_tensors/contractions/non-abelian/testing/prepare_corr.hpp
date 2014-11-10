@@ -279,46 +279,73 @@ namespace SU2 {
             fill.insert_block(Matrix(1,1,1), B, C);  // -1
             fill.insert_block(Matrix(1,1,1), C, B);  // -1
 
-            block_matrix<Matrix, SymmGroup> create1;
-            create1.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
-            create1.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
-            create1.insert_block(Matrix(1,1,1), D, B);
-            create1.insert_block(Matrix(1,1,1), D, C);
+            block_matrix<Matrix, SymmGroup> createS1;
+            createS1.twoS = 1; createS1.twoSaction = 1;
+            createS1.insert_block(Matrix(1,1,std::sqrt(2.)), B, A);      
+            createS1.insert_block(Matrix(1,1,std::sqrt(2.)), C, A);      
+            createS1.insert_block(Matrix(1,1,1), D, B);
+            createS1.insert_block(Matrix(1,1,1), D, C);
 
-            block_matrix<Matrix, SymmGroup> create2;
-            create2.insert_block(Matrix(1,1,sqrt(2.)), B, A);      
-            create2.insert_block(Matrix(1,1,sqrt(2.)), C, A);      
-            create2.insert_block(Matrix(1,1,1), D, B);
-            create2.insert_block(Matrix(1,1,1), D, C);
+            block_matrix<Matrix, SymmGroup> createS0;
+            createS0.twoS = 1; createS0.twoSaction = -1;
+            createS0.insert_block(Matrix(1,1,2.), B, A);      
+            createS0.insert_block(Matrix(1,1,2.), C, A);      
+            createS0.insert_block(Matrix(1,1,-std::sqrt(2.)), D, B);
+            createS0.insert_block(Matrix(1,1,-std::sqrt(2.)), D, C);
 
-            block_matrix<Matrix, SymmGroup> destroy1;
-            destroy1.insert_block(Matrix(1,1,1), A, B);      
-            destroy1.insert_block(Matrix(1,1,-1), A, C);     
-            destroy1.insert_block(Matrix(1,1,sqrt(2.)), B, D); 
-            destroy1.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
+            block_matrix<Matrix, SymmGroup> createS2;
+            createS2.twoS = 1; createS2.twoSaction = 1;
+            createS2.insert_block(Matrix(1,1,-std::sqrt(2.)), B, A);      
+            createS2.insert_block(Matrix(1,1,-std::sqrt(2.)), C, A);      
+            createS2.insert_block(Matrix(1,1,1), D, B);
+            createS2.insert_block(Matrix(1,1,1), D, C);
 
+            block_matrix<Matrix, SymmGroup> destroyS0;
+            destroyS0.twoS = 1; destroyS0.twoSaction = 1;
+            destroyS0.insert_block(Matrix(1,1,1), A, B);      
+            destroyS0.insert_block(Matrix(1,1,1), A, C);     
+            destroyS0.insert_block(Matrix(1,1,-std::sqrt(2.)), B, D); 
+            destroyS0.insert_block(Matrix(1,1,-std::sqrt(2.)), C, D);
 
-            block_matrix<Matrix, SymmGroup> destroy2;
-            destroy2.insert_block(Matrix(1,1,1), A, B);        
-            destroy2.insert_block(Matrix(1,1,1), A, C);       
-            destroy2.insert_block(Matrix(1,1,sqrt(2.)), B, D); 
-            destroy2.insert_block(Matrix(1,1,sqrt(2.)), C, D);
+            double root32 = std::sqrt(3./2.);
+            block_matrix<Matrix, SymmGroup> destroyS2;
+            destroyS2.twoS = 1; destroyS2.twoSaction = -1;
+            destroyS2.insert_block(Matrix(1,1,root32), A, B);        
+            destroyS2.insert_block(Matrix(1,1,root32), A, C);       
+            destroyS2.insert_block(Matrix(1,1,-root32 * sqrt(2.)), B, D); 
+            destroyS2.insert_block(Matrix(1,1,-root32 * sqrt(2.)), C, D);
+
+            block_matrix<Matrix, SymmGroup> destroyS1;
+            destroyS1.twoS = 1; destroyS1.twoSaction = -1;
+            destroyS1.insert_block(Matrix(1,1,std::sqrt(2.)), A, B);      
+            destroyS1.insert_block(Matrix(1,1,std::sqrt(2.)), A, C);     
+            destroyS1.insert_block(Matrix(1,1,2.), B, D); 
+            destroyS1.insert_block(Matrix(1,1,2.), C, D);
 
             //tag_type ident = tag_handler->register_op(identity, tag_detail::bosonic);
             MPOTensor<Matrix, SymmGroup> op(1,1);
 
-            if (p == i)
-                op.set(0,0,create1, 1.0);
-            else if (p == j)
-                op.set(0,0,create2, 1.0);
-            else if (p == k)
-                op.set(0,0,destroy1, 1.0);
-            else if (p == l)
-                op.set(0,0,destroy2, 1.0);
+            if (p == i) {
+                op.set(0,0,createS1, 1.0);
+            }
+            else if (p == j) {
+                op = MPOTensor<Matrix, SymmGroup>(1,2);
+                op.set(0,0,createS0, 0.5);
+                op.set(0,1,createS2, 1.0);
+            }
+            else if (p == k) {
+                op = MPOTensor<Matrix, SymmGroup>(2,1);
+                op.set(0,0,destroyS0, 1.0);
+                op.set(1,0,destroyS2, 1.0);
+            }
+            else if (p == l) {
+                op.set(0,0,destroyS1, 1.0);
+            }
             //else if ( i < p && p < j)
             //    op.set(0,0,fill, 1.0);
-            else 
+            else  {
                 op.set(0,0,identity, 1.0);
+            }
 
             ret[p] = op;
         }
