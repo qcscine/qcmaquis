@@ -132,9 +132,9 @@ typedef TwoU1PG grp;
                 op.set(2,0, destroy_down, 1.0);
                 op.set(3,0, destroy_down, 1.0);
             }
-            else if ((i < p && p < j) || (k < p && p < l)) ) {
+            else if ((i < p && p < j) || (k < p && p < l)) {
                 // position is in between first or second pair of operators -> push fill
-                op.set(0,0, fill, 1.0)
+                op.set(0,0, fill, 1.0);
             }
             else
                 op.set(0,0, ident, 1.0);
@@ -166,7 +166,7 @@ int main(int argc, char ** argv)
         std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(std::cout, " "));
         std::cout << std::endl;
 
-        MPO<matrix, grp> mpo = make_mpo<matrix>(0,1,2,3, site_irreps);
+        MPO<matrix, grp> mpo = make_2rdm_term<matrix>(0,0,0,0, site_irreps);
         double expectation_value = expval(mps, mpo);
         maquis::cout << "expectation value: " << expectation_value << std::endl;
 
