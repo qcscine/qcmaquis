@@ -45,7 +45,7 @@
     } \
 }
 
-#if defined(USE_AMBIENT) && defined(AMBIENT_THREADED_COLLECTION)
+#if defined(USE_AMBIENT) && !defined(AMBIENT_SERIAL_COLLECTION)
     #include "ambient/utils/threaded_for_each.hpp"
     #define parallel_for(control_variable, loop_range, ...) ambient::threaded_for_each(loop_range.begin(), loop_range.end(), [&](control_variable) __VA_ARGS__);
 #else

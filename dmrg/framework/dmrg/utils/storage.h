@@ -225,6 +225,9 @@ namespace storage {
 
         template<class T> class serializable : public descriptor {
         public: 
+            ~serializable(){
+                std::remove(disk::fp(sid).c_str()); // it will return 1 in case the file does not exist, but we do not care.
+            }
             serializable& operator = (const serializable& rhs){
                 this->join();
                 descriptor::operator=(rhs);

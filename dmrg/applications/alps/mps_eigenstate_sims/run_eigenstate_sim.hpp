@@ -88,7 +88,7 @@ void run_eigenstate_sim(BaseParameters parms, bool write_xml, run_type rt)
         /// Build model
         Lattice lattice(parms);
         Model<Matrix, SymmGroup> model(lattice, parms);
-        MPO<Matrix, SymmGroup> mpo = make_mpo(lattice, model, parms);
+        MPO<Matrix, SymmGroup> mpo = make_mpo(lattice, model);
 
         /// Get measurements
         typedef typename Model<Matrix, SymmGroup>::measurements_type measurements_type;

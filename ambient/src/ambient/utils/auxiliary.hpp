@@ -84,7 +84,10 @@ namespace ambient {
         revision* r = src.ambient_rc.desc->back();
         dst.ambient_rc.desc->current = r;
         // do not deallocate or reuse
-        if(!r->valid()) r->spec.protect();
+        if(!r->valid() && r->state != ambient::locality::remote){
+            assert(r->spec.region != region_t::delegated);
+            r->spec.protect();
+        }
         assert(!r->valid() || !r->spec.bulked() || ambient::models::ssm::model::remote(r)); // can't rely on bulk memory
         r->spec.crefs++;
     }

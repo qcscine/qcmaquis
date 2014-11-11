@@ -32,7 +32,6 @@
 #include "ambient/ambient.hpp"
 #endif
 #include "dmrg/utils/parallel/params.hpp"
-#include "dmrg/utils/parallel/select.hpp"
 #include "dmrg/utils/parallel/loops.hpp"
 #include "dmrg/utils/parallel/range.hpp"
 #include "dmrg/utils/parallel/traits.hpp"

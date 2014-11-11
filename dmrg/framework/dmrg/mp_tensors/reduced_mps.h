@@ -47,25 +47,36 @@ public:
     
     void init() const
     {
-        // init right_ & left_
-        Boundary<Matrix, SymmGroup> right = mps.right_boundary(), left = mps.left_boundary();
-        right_[L-1] = right;
-        left_[0] = left;
-        for (int i = 1; i < L; ++i) {
-            {
-                MPOTensor<Matrix, SymmGroup> ident;
-                ident.set(0, 0, identity_matrix<Matrix>(mps[L-i].site_dim()));
-                right = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_right_step(mps[L-i], mps[L-i], right, ident);
-                right_[L-1-i] = right;
+        if (!initialized) {
+            parallel::scheduler_balanced scheduler(L);
+            
+            // init right_ & left_
+            Boundary<Matrix, SymmGroup> right = mps.right_boundary(), left = mps.left_boundary();
+            right_[L-1] = right;
+            left_[0] = left;
+            for (int i = 1; i < L; ++i) {
+                {
+                    MPOTensor<Matrix, SymmGroup> ident;
+                    ident.set(0, 0, identity_matrix<Matrix>(mps[L-i].site_dim()));
+                    
+                    {
+                        parallel::guard proc(scheduler(L-i));
+                        right_[L-1-i] = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_right_step(mps[L-i], mps[L-i], right_[L-i], ident);
+                    }
+                    { parallel::guard proc(scheduler(L-i-1)); storage::migrate(right_[L-1-i][0]); }
+                }
+                {
+                    MPOTensor<Matrix, SymmGroup> ident;
+                    ident.set(0, 0, identity_matrix<Matrix>(mps[i-1].site_dim()));
+                    {
+                        parallel::guard proc(scheduler(i-1));
+                        left_[i] = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps[i-1], mps[i-1], left_[i-1], ident);
+                    }
+                    { parallel::guard proc(scheduler(i)); storage::migrate(left_[i][0]); }
+                }
             }
-            {
-                MPOTensor<Matrix, SymmGroup> ident;
-                ident.set(0, 0, identity_matrix<Matrix>(mps[i-1].site_dim()));
-                left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps[i-1], mps[i-1], left, ident);
-                left_[i] = left;
-            }
+            initialized = true;
         }
-        initialized = true;
     }
     
     const Boundary<Matrix, SymmGroup> & left(int i) const
@@ -82,7 +93,7 @@ public:
     
 private:
     const MPS<Matrix, SymmGroup> & mps;
-    int L;
+    std::size_t L;
     mutable std::vector<Boundary<Matrix, SymmGroup> > left_, right_;
     mutable bool initialized;
 };

@@ -65,12 +65,9 @@ namespace ambient { namespace pool {
         descriptor(size_t e, region_t r = region_t::standard) : extent(e), region(r), persistency(1), crefs(1) {}
 
         void protect(){
-            assert(region != region_t::delegated);
             if(!(persistency++)) region = region_t::standard;
         }
         void weaken(){
-            assert(region != region_t::bulk);
-            assert(region != region_t::delegated);
             if(!(--persistency)) region = region_t::bulk;
         }
         void reuse(descriptor& d){

@@ -190,9 +190,9 @@ public:
                     trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
                                                site, alpha, cutoff, Mmax);
                 } else {
-                  block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
-                  if (site < L-1)
-                      mps[site+1].multiply_from_left(t);
+                    block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
+                    if (site < L-1)
+                        mps[site+1].multiply_from_left(t);
                 }
                 
                 this->boundary_left_step(mpo, site); // creating left_[site+1]
@@ -203,13 +203,13 @@ public:
             } else if (lr == -1) {
                 if (site > 0) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
-                  // Invalid read occurs after this!\n
+                    // Invalid read occurs after this!\n
                     trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
                                                site, alpha, cutoff, Mmax);
                 } else {
-                  block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
-                  if (site > 0)
-                      mps[site-1].multiply_from_right(t);
+                    block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
+                    if (site > 0)
+                        mps[site-1].multiply_from_right(t);
                 }
                 
                 this->boundary_right_step(mpo, site); // creating right_[site]
