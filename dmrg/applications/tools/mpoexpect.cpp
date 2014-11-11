@@ -47,105 +47,102 @@ using std::endl;
 
 typedef alps::numeric::matrix<double> matrix;
 
-typedef TwoU1LPG grp;
+typedef TwoU1PG grp;
 
-template<class Matrix>
-MPO<Matrix, grp> make_mpo(int i, int j, std::vector<int> site_irreps)
-{
-    typedef block_matrix<Matrix, grp> op_t;
-    MPO<Matrix, grp> ret(site_irreps.size());
-    for (int p=0; p<site_irreps.size(); ++p)
+    template<class Matrix>
+    MPO<Matrix, TwoU1PG> make_2rdm_term(int i, int j, int k, int l, std::vector<int> site_irreps)
     {
-        typedef tag_detail::tag_type tag_type;
-        typename grp::charge A(0), B(0), C(0);
-        B[0]=1; C[1]=1;
-        B[2] = site_irreps[p];
-        C[2] = site_irreps[p];
+        typedef block_matrix<Matrix, TwoU1PG> op_t;
+        MPO<Matrix, TwoU1PG> ret(site_irreps.size());
+        for (int p=0; p<site_irreps.size(); ++p)
+        {
+            typedef tag_detail::tag_type tag_type;
+            typename TwoU1PG::charge A(0), B(0), C(0), D(0);
+            A[0] = 1; A[1] = 1;
+            B[0] = 1; C[1] = 1;
+            B[2] = site_irreps[p];
+            C[2] = site_irreps[p];
 
-        block_matrix<Matrix, grp> ident_unbarred;
-        ident_unbarred.insert_block(Matrix(1,1,1), A, A);
-        ident_unbarred.insert_block(Matrix(1,1,1), B, B);
+            block_matrix<Matrix, TwoU1PG> ident;
+            ident.insert_block(Matrix(1,1,1), A, A);
+            ident.insert_block(Matrix(1,1,1), B, B);
+            ident.insert_block(Matrix(1,1,1), C, C);
+            ident.insert_block(Matrix(1,1,1), D, D);
 
-        block_matrix<Matrix, grp> ident_barred;
-        ident_barred.insert_block(Matrix(1,1,1), A, A);
-        ident_barred.insert_block(Matrix(1,1,1), C, C);
+            block_matrix<Matrix, TwoU1PG> fill;
+            fill.insert_block(Matrix(1,1,1), A, A);
+            fill.insert_block(Matrix(1,1,-1), B, B);
+            fill.insert_block(Matrix(1,1,-1), C, C);
+            fill.insert_block(Matrix(1,1,1), D, D);
 
-        block_matrix<Matrix, grp> fill_unbarred;
-        fill_unbarred.insert_block(Matrix(1,1,1), A, A);
-        fill_unbarred.insert_block(Matrix(1,1,-1), B, B);
- 
-        block_matrix<Matrix, grp> fill_barred;
-        fill_barred.insert_block(Matrix(1,1,1), A, A);
-        fill_barred.insert_block(Matrix(1,1,-1), C, C);
+            op_t create_up;
+            create_up.insert_block(Matrix(1,1,1), C, A);
+            create_up.insert_block(Matrix(1,1,1), D, B);
+            op_t create_up_fill;
+            create_up_fill.insert_block(Matrix(1,1,-1), C, A);
+            create_up_fill.insert_block(Matrix(1,1,1), D, B);
 
-        /***********************************************/
+            op_t create_down;
+            create_down.insert_block(Matrix(1,1,-1), B, A);
+            create_down.insert_block(Matrix(1,1,1), D, C);
+            op_t create_down_fill;
+            create_down_fill.insert_block(Matrix(1,1,1), B, A);
+            create_down_fill.insert_block(Matrix(1,1,1), D, C);
 
-        op_t count_unbarred;
-        count_unbarred.insert_block(Matrix(1,1,1), B, B);
+            op_t destroy_up;
+            destroy_up.insert_block(Matrix(1,1,1), A, C);
+            destroy_up.insert_block(Matrix(1,1,1), B, D);
+            op_t destroy_up_fill;
+            destroy_up_fill.insert_block(Matrix(1,1,1), A, C);
+            destroy_up_fill.insert_block(Matrix(1,1,-1), B, D);
 
-        op_t count_barred;
-        count_barred.insert_block(Matrix(1,1,1), C, C);
+            op_t destroy_down;
+            destroy_down.insert_block(Matrix(1,1,-1), A, B);
+            destroy_down.insert_block(Matrix(1,1,1), C, D);
+            op_t destroy_down_fill;
+            destroy_down_fill.insert_block(Matrix(1,1,-1), A, B);
+            destroy_down_fill.insert_block(Matrix(1,1,-1), C, D);
 
-        /***********************************************/
-
-        op_t create_unbarred;
-        create_unbarred.insert_block(Matrix(1,1,1), A, B);
-
-        op_t create_barred;
-        create_barred.insert_block(Matrix(1,1,1), A, C);
-
-        op_t destroy_unbarred;
-        destroy_unbarred.insert_block(Matrix(1,1,1), B, A);
-
-        op_t destroy_barred;
-        destroy_barred.insert_block(Matrix(1,1,1), C, A);
-
-        /***********************************************/
-
-        op_t create_unbarred_fill;
-        create_unbarred_fill.insert_block(Matrix(1,1,-1), A, B);
-
-        op_t create_barred_fill;
-        create_barred_fill.insert_block(Matrix(1,1,1), A, C);
-
-        op_t destroy_unbarred_fill;
-        destroy_unbarred_fill.insert_block(Matrix(1,1,1), B, A);
-
-        op_t destroy_barred_fill;
-        destroy_barred_fill.insert_block(Matrix(1,1,1), C, A);
-
-        /***********************************************/
-
-        MPOTensor<Matrix, grp> op(1,1);
-        if (p==i) {
-            if (i < site_irreps.size() / 2)
-                op.set(0,0, create_unbarred_fill, 1.0);
+            MPOTensor<Matrix, TwoU1PG> op(1,1);
+            if (p==i) {
+                op = MPOTensor<Matrix, TwoU1PG>(1,4);
+                op.set(0,0, create_up_fill, 1.0);
+                op.set(0,1, create_up_fill, 1.0);
+                op.set(0,2, create_down_fill, 1.0);
+                op.set(0,3, create_down_fill, 1.0);
+            }
+            else if (p==j) {
+                op = MPOTensor<Matrix, TwoU1PG>(4,4);
+                op.set(0,0, create_up, 1.0);
+                op.set(1,1, create_down, 1.0);
+                op.set(2,2, create_up, 1.0);
+                op.set(3,3, create_down, 1.0);
+            }
+            else if (p==k) {
+                op = MPOTensor<Matrix, TwoU1PG>(4,4);
+                op.set(0,0, destroy_up_fill, 1.0);
+                op.set(1,1, destroy_down_fill, 1.0);
+                op.set(2,2, destroy_up_fill, 1.0);
+                op.set(3,3, destroy_down_fill, 1.0);
+            }
+            else if (p==l) {
+                op = MPOTensor<Matrix, TwoU1PG>(4,1);
+                op.set(0,0, destroy_up, 1.0);
+                op.set(1,0, destroy_up, 1.0);
+                op.set(2,0, destroy_down, 1.0);
+                op.set(3,0, destroy_down, 1.0);
+            }
+            else if ((i < p && p < j) || (k < p && p < l)) ) {
+                // position is in between first or second pair of operators -> push fill
+                op.set(0,0, fill, 1.0)
+            }
             else
-                op.set(0,0, create_barred_fill, 1.0);
+                op.set(0,0, ident, 1.0);
+
+            ret[p] = op;
         }
-        else if (p==j) {
-            if (j < site_irreps.size() / 2)
-                op.set(0,0, destroy_unbarred, 1.0);
-            else
-                op.set(0,0, destroy_barred, 1.0);
-        }
-        else if (i < p && p < j) {
-            if (p < site_irreps.size() / 2)
-                op.set(0,0, fill_unbarred, 1.0);
-            else
-                op.set(0,0, fill_barred, 1.0);
-        }     
-        else {
-            if (p < site_irreps.size() / 2)
-                op.set(0,0, ident_unbarred, 1.0);
-            else
-                op.set(0,0, ident_barred, 1.0);
-        }
-
-        ret[p] = op;
+        return ret;
     }
-    return ret;
-}
 
 
 int main(int argc, char ** argv)
@@ -163,13 +160,13 @@ int main(int argc, char ** argv)
 
         std::vector<int> site_irreps;
         for (int i=0; i < L; ++i)
-            site_irreps.push_back(mps[i].site_dim()[0].first[2]);
+            site_irreps.push_back(mps[i].site_dim()[1].first[2]);
 
         std::cout << "site irreps: ";
         std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(std::cout, " "));
         std::cout << std::endl;
 
-        MPO<matrix, grp> mpo = make_mpo<matrix>(0,4, site_irreps);
+        MPO<matrix, grp> mpo = make_mpo<matrix>(0,1,2,3, site_irreps);
         double expectation_value = expval(mps, mpo);
         maquis::cout << "expectation value: " << expectation_value << std::endl;
 
