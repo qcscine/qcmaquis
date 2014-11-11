@@ -62,7 +62,6 @@ namespace contraction {
         index_type loop_max = mpo.col_dim();
 
 #ifdef USE_AMBIENT
-        // TODO: use SU2 variants of allocate / execute Kernels
         {
             block_matrix<Matrix, SymmGroup> empty;
             swap(ket_tensor.data(), empty); // deallocating mpstensor before exiting the stack
@@ -71,7 +70,7 @@ namespace contraction {
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
 
         parallel_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-            lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
+            SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
         });
         omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
             contr_grid.multiply_column(b2, right[b2]);
