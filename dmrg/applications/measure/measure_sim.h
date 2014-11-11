@@ -68,8 +68,7 @@ public:
             mpoc.compress(1e-12);
 
         double energy = maquis::real(expval(mps, mpoc));
-        // MD: removed redundant energy calculation
-        // maquis::cout << "Energy before: " << maquis::real(expval(mps, mpo)) << std::endl;
+
         if (parms["MEASURE[Energy]"]) {
             maquis::cout << "Energy: " << maquis::real(expval(mps, mpoc)) << std::endl;
             {

@@ -74,8 +74,6 @@ typedef NU1 grp;
 #include <boost/mpi.hpp>
 namespace mpi = boost::mpi;
 
-typedef boost::shared_ptr<contraction::Engine<matrix, storage::constrained<matrix>::type, grp> > engine_ptr;
-
 class triag_range {
 public:
     typedef std::size_t size_type;
@@ -129,8 +127,7 @@ void measure_correlation(Range const& range,
                          std::vector<Boundary<Matrix,SymmGroup> > const & left,
                          std::vector<Boundary<Matrix,SymmGroup> > const & right,
                          std::vector<typename Matrix::value_type>& dc,
-                         std::vector<std::string>& labels,
-                         engine_ptr contr)
+                         std::vector<std::string>& labels)
 {
     std::size_t L = lattice.size();
     assert( range.extent() == L-1 );
@@ -164,22 +161,22 @@ void measure_correlation(Range const& range,
         std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
         
         int type_p = lattice.get_prop<int>("type", p);
-        Boundary<Matrix, SymmGroup> current = contr->overlap_mpo_left_step(bra[p], ket[p], left[p], mpo_signed_ops[0][type_p]);
+        Boundary<Matrix, SymmGroup> current = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(bra[p], ket[p], left[p], mpo_signed_ops[0][type_p]);
         
         
         {
-            current = contr->overlap_mpo_left_step(bra[p+d], ket[p+d], current, mpo_ops[1][lattice.get_prop<int>("type", p+d)]);
+            current = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(bra[p+d], ket[p+d], current, mpo_ops[1][lattice.get_prop<int>("type", p+d)]);
             
             for (int q = p+d+1; q < L-d; ++q) {
                 int type_q = lattice.get_prop<int>("type", q);
                 
-                Boundary<Matrix, SymmGroup> current2 = contr->overlap_mpo_left_step(bra[q], ket[q], current, mpo_signed_ops[2][type_q]);
+                Boundary<Matrix, SymmGroup> current2 = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(bra[q], ket[q], current, mpo_signed_ops[2][type_q]);
                 for (int r = q+1; r < q+d; ++r) {
                     int type_r = lattice.get_prop<int>("type", r);
                     mpo_fill.set(0,0, fillings[type_r]);
-                    current2 = contr->overlap_mpo_left_step(bra[r], ket[r], current2, mpo_fill);
+                    current2 = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(bra[r], ket[r], current2, mpo_fill);
                 }
-                current2 = contr->overlap_mpo_left_step(bra[q+d], ket[q+d], current2, mpo_ops[3][lattice.get_prop<int>("type", q+d)]);
+                current2 = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(bra[q+d], ket[q+d], current2, mpo_ops[3][lattice.get_prop<int>("type", q+d)]);
                 block_matrix<Matrix, SymmGroup> const& vec = current2[0];
                 
                 double obs = 0.;
@@ -201,7 +198,7 @@ void measure_correlation(Range const& range,
                 {
                     mpo_fill.set(0,0, fillings[type_q]);
                     mpo_ident.set(0,0, identities[type_q]);
-                    current = contr->overlap_mpo_left_step(bra[q], ket[q], current, mpo_ident);
+                    current = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(bra[q], ket[q], current, mpo_ident);
                 }
             }
         }
@@ -233,9 +230,6 @@ int main(int argc, char ** argv)
         typedef Model<matrix, grp>::tag_type tag_type;
         
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-
-        /// initialize contraction engine
-        engine_ptr contr = contraction::EngineFactory<matrix, storage::constrained<matrix>::type, grp>::makeFactory(parms)->makeEngine();
 
         /// Parsing model
         Lattice lattice(parms);
@@ -325,7 +319,7 @@ int main(int argc, char ** argv)
         if (rank == 0) {
             right[L] = make_right_boundary(mps, mps);
             for (int p=L-1; p>=static_cast<int>(0); --p)
-                right[p][0] = contr->overlap_right_step(mps[p], MPSTensor<matrix, grp>(mps[p]), right[p+1][0]);
+                right[p][0] = contraction::Engine<matrix, matrix, grp>::overlap_right_step(mps[p], MPSTensor<matrix, grp>(mps[p]), right[p+1][0]);
         }
         
         if (rank == nprocs-1) {
@@ -333,7 +327,7 @@ int main(int argc, char ** argv)
             left[0] = make_left_boundary(mps, mps);
             for (int p=0; p<L; ++p) {
                 mpo_ident.set(0,0, identity_matrix<matrix>(mps[p].site_dim()) );
-                left[p+1] = contr->overlap_mpo_left_step(mps[p], mps[p], left[p], mpo_ident);
+                left[p+1] = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(mps[p], mps[p], left[p], mpo_ident);
             }
         }
         
@@ -355,7 +349,7 @@ int main(int argc, char ** argv)
             
             std::vector<value_type> values;
             std::vector<std::string> labels;
-            measure_correlation(myrange, mps, mps, lattice, identities, (it->fermionic) ? fillings : identities, *it, left, right, values, labels, contr);
+            measure_correlation(myrange, mps, mps, lattice, identities, (it->fermionic) ? fillings : identities, *it, left, right, values, labels);
 
             
             if (rank != 0) {

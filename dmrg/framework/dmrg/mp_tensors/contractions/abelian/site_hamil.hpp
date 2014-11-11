@@ -66,10 +66,9 @@ namespace contraction {
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
 
         parallel_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-            abelian::lbtm_kernel_allocate(b2, contr_grid, t, mpo, right_i, out_left_i);
+            abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
         });
         omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-            abelian::lbtm_kernel_execute(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
             contr_grid.multiply_column(b2, right[b2]);
         });
         t.clear();

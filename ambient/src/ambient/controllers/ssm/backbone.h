@@ -63,10 +63,10 @@ namespace ambient {
 }
 
 namespace ambient {
-    #ifdef AMBIENT_THREADED_COLLECTION
-    typedef backbone<ambient::context_mt> backbone_type;
-    #else
+    #ifdef AMBIENT_SERIAL_COLLECTION
     typedef backbone<ambient::context_serial> backbone_type;
+    #else
+    typedef backbone<ambient::context_mt> backbone_type;
     #endif
 
     #ifdef AMBIENT_BUILD_LIBRARY

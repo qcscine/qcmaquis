@@ -122,10 +122,7 @@ namespace contraction {
 
             // TODO add separate allocate / execute Kernel templates
             parallel_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-                ::contraction::abelian::lbtm_kernel_allocate(b2, contr_grid, t, mpo, right_i, out_left_i);
-            });
-            omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-                ::contraction::abelian::lbtm_kernel_execute(b2, contr_grid, left, t, mpo, mps.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
+                ::contraction::abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, mps.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
             });
 
             return contr_grid.make_boundary();
@@ -176,11 +173,8 @@ namespace contraction {
 
             // TODO: add separate allocate / execute Kernel templates
             parallel_for(index_type b1, parallel::range<index_type>(0,loop_max), {
-                ::contraction::abelian::rbtm_kernel_allocate(b1, ret[b1], t, mpo, left_i, out_right_i);
-            });
-            omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
                 parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                ::contraction::abelian::rbtm_kernel_execute(b1, ret[b1], right, t, mpo, mps.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
+                ::contraction::abelian::rbtm_kernel(b1, ret[b1], right, t, mpo, mps.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
             });
     #else
             omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
@@ -224,10 +218,7 @@ namespace contraction {
 
             // TODO: add separate allocate / execute Kernel templates
             parallel_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-                ::contraction::abelian::lbtm_kernel_allocate(b2, contr_grid, t, mpo, right_i, out_left_i);
-            });
-            omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
-                ::contraction::abelian::lbtm_kernel_execute(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
+                ::contraction::abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
             });
             for(index_type b2 = 0; b2 < loop_max; b2++){
                 // TODO: use SU2 gemm in contr_grid in SU2 runs
@@ -283,12 +274,10 @@ namespace contraction {
 
     #ifdef USE_AMBIENT
             parallel_for(index_type b1, parallel::range<index_type>(0,loop_max), {
-                ::contraction::abelian::rbtm_kernel_allocate(b1, ret[b1], t, mpo, left_i, out_right_i);
+                parallel::guard group(scheduler(b1), parallel::groups_granularity);
+                ::contraction::abelian::rbtm_kernel(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
             });
             omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
-                parallel::guard group(scheduler(b1), parallel::groups_granularity);
-                ::contraction::abelian::rbtm_kernel_execute(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
-
                 block_matrix<Matrix, SymmGroup> tmp;
                 gemm(ret[b1], transpose(bra_conj), tmp, parallel::scheduler_size_indexed(ret[b1]));
                 swap(ret[b1], tmp);
