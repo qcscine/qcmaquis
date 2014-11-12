@@ -40,9 +40,10 @@
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
-#include "dmrg/models/chem/term_maker.h"
-#include "dmrg/models/chem/chem_detail.h"
+#include "dmrg/models/chem/util.h"
 #include "dmrg/models/chem/pg_util.h"
+#include "dmrg/models/chem/2u1/term_maker.h"
+#include "dmrg/models/chem/2u1/chem_helper.h"
 
 template<class Matrix, class SymmGroup>
 class qc_model : public model_impl<Matrix, SymmGroup>
@@ -421,6 +422,6 @@ private:
 };
 
 
-#include "dmrg/models/chem/model_qc.hpp"
+#include "dmrg/models/chem/2u1/model_qc.hpp"
 
 #endif
