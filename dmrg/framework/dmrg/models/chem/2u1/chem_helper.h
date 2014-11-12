@@ -55,7 +55,6 @@ namespace chem_detail {
         std::vector<value_type> & getMatrixElements() { return matrix_elements; }
         
         int idx(int m, int pos) const {
-            //return idx_[m][pos];
             return idx_(m,pos);
         }
 
@@ -128,6 +127,17 @@ namespace chem_detail {
     private:
         void parse_integrals(BaseParameters & parms, Lattice const & lat) {
 
+            typedef Lattice::pos_t pos_t;
+
+            std::vector<pos_t> inv_order;
+
+            struct reorderer
+            {
+                pos_t operator()(pos_t p, std::vector<pos_t> const & inv_order) {
+                    return p >= 0 ? inv_order[p] : p;
+                }
+            };
+
             // load ordering and determine inverse ordering
             std::vector<pos_t> order(lat.size());
             if (!parms.is_set("orbital_order"))
@@ -176,7 +186,8 @@ namespace chem_detail {
                     std::vector<int> tmp;
                     std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
 
-                    IndexTuple aligned = align(reorder(tmp[0]), reorder(tmp[1]), reorder(tmp[2]), reorder(tmp[3]));
+                    IndexTuple aligned = align(reorderer()(tmp[0], inv_order), reorderer()(tmp[1], inv_order),
+                                               reorderer()(tmp[2], inv_order), reorderer()(tmp[3], inv_order));
                     idx_(row, 0) = aligned[0];
                     idx_(row, 1) = aligned[1];
                     idx_(row, 2) = aligned[2];
@@ -194,11 +205,6 @@ namespace chem_detail {
                 assert( *std::max_element(idx_.elements().first, idx_.elements().second) <= lat.size() );
             }
             #endif
-            
-        }
-
-        int reorder(int p) {
-            return p >= 0 ? inv_order[p] : p;
         }
 
         tag_type ident, fill;
@@ -206,14 +212,11 @@ namespace chem_detail {
 
         std::vector<value_type> matrix_elements;
         alps::numeric::matrix<Lattice::pos_t> idx_;
-        std::vector<int> order;
-        std::vector<int> inv_order;
 
         std::map<IndexTuple, value_type> coefficients;
 
         std::map<TermTuple, term_descriptor> three_terms;
         std::map<IndexTuple, term_descriptor> two_terms;
-
     };
 }
 
