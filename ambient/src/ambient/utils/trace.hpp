@@ -26,6 +26,7 @@
  */
 
 #ifndef AMBIENT_UTILS_TRACE
+#define AMBIENT_UTILS_TRACE
 
 namespace ambient {
 

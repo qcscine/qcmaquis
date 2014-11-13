@@ -36,12 +36,13 @@ namespace SU2 {
     typename MPS<Matrix, SymmGroup>::scalar_type norm(MPS<Matrix, SymmGroup> const & mps)
     {
         std::size_t L = mps.length();
+        parallel::scheduler_balanced scheduler(L);
 
         block_matrix<Matrix, SymmGroup> left;
         left.insert_block(Matrix(1, 1, 1), SymmGroup::IdentityCharge, SymmGroup::IdentityCharge);
 
         for(size_t i = 0; i < L; ++i) {
-            select_proc(ambient::scope::balance(i,L));
+            parallel::guard proc(scheduler(i));
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
             left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_left_step(mps[i], cpy, left); // serial
         }
@@ -53,12 +54,13 @@ namespace SU2 {
     typename MPS<Matrix, SymmGroup>::scalar_type norm_r(MPS<Matrix, SymmGroup> const & mps)
     {
         std::size_t L = mps.length();
+        parallel::scheduler_balanced scheduler(L);
 
         block_matrix<Matrix, SymmGroup> right;
         right.insert_block(Matrix(1, 1, 1), mps[L-1].row_dim()[0].first, mps[L-1].row_dim()[0].first);
 
         for(int i = L-1; i >= 0 ; --i) {
-            select_proc(ambient::scope::balance(i,L));
+            parallel::guard proc(scheduler(i));
             MPSTensor<Matrix, SymmGroup> cpy = mps[i];
             right = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_right_stepj(mps[i], cpy, right); // serial
         }
@@ -68,7 +70,7 @@ namespace SU2 {
 
     template<class Matrix, class SymmGroup>
     double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
-                  int p1, int p2, std::vector<int> config)
+                  std::vector<int> config)
     {
         assert(mpo.length() == mps.length());
         std::size_t L = mps.length();
@@ -86,7 +88,7 @@ namespace SU2 {
 
     template<class Matrix, class SymmGroup>
     double expval_r(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
-                    int p1, int p2, std::vector<int> config)
+                    std::vector<int> config)
     {
         assert(mpo.length() == mps.length());
         std::size_t L = mps.length();

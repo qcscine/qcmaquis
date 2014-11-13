@@ -41,7 +41,7 @@ namespace parallel {
     inline void meminfo(){
         ambient::sync();
         for(int i = 0; i < ambient::scope::size()/groups_granularity; i++){
-            parallel::guard group(ambient::scope::begin()+i*groups_granularity, groups_granularity);
+            parallel::guard group(parallel::traits::to_iterator(i*groups_granularity), groups_granularity);
             ambient::meminfo();
         }
     }

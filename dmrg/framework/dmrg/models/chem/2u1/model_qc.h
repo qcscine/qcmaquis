@@ -40,9 +40,10 @@
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
-#include "dmrg/models/chem/term_maker.h"
-#include "dmrg/models/chem/chem_detail.h"
+#include "dmrg/models/chem/util.h"
 #include "dmrg/models/chem/pg_util.h"
+#include "dmrg/models/chem/2u1/term_maker.h"
+#include "dmrg/models/chem/2u1/chem_helper.h"
 
 template<class Matrix, class SymmGroup>
 class qc_model : public model_impl<Matrix, SymmGroup>
@@ -468,7 +469,7 @@ private:
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type ident, fill,
              create_up, create_down, destroy_up, destroy_down,
-             count_up, count_down, docc, e2d, d2e;
+             count_up, count_down, count_up_down, docc, e2d, d2e;
 
     typename SymmGroup::subcharge max_irrep;
 
@@ -489,6 +490,6 @@ private:
 };
 
 
-#include "dmrg/models/chem/model_qc.hpp"
+#include "dmrg/models/chem/2u1/model_qc.hpp"
 
 #endif

@@ -67,15 +67,26 @@ namespace ambient {
     }
 
     inline void context_mt::fork(divergence_guard* guard){
+        assert(threaded_region == NULL);
         threaded_region = guard;
         for(auto& k : thread_context_lane){
             k.actors.push(thread_context_lane[0].actors.top());
             k.scopes.push(thread_context_lane[0].scopes.top());
         }
+        if(selector.has_nested_actor())
+        for(auto& k : thread_context_lane){
+            k.actors.push(new actor(*thread_context_lane[0].actors.top()));
+            k.actors.top()->controller = &k.controller;
+        } // otherwise assuming loop private actors
     }
 
     inline void context_mt::join(){
         threaded_region = NULL;
+        if(selector.has_nested_actor())
+        for(auto& k : thread_context_lane){
+            k.actors.top()->dry = true; // avoiding destructor
+            delete k.actors.top(); k.actors.pop();
+        }
         for(auto& k : thread_context_lane){
             k.actors.pop();
             k.scopes.pop();
@@ -91,10 +102,8 @@ namespace ambient {
     }
     inline context_mt::divergence_guard::~divergence_guard(){
         selector.join();
-        if(selector.has_nested_actor())
-            throw std::runtime_error("Error: nested actor divergence.");
         for(auto& transfers_part : transfers) for(auto& transfer : transfers_part){
-            selector.get_base().set(transfer->which);
+            if(!selector.has_nested_actor()) selector.get_base().set(transfer->which);
             if(transfer->t == controllers::ssm::meta::type::set)
                 controllers::ssm::set<models::ssm::revision>::spawn(transfer->r);
             else

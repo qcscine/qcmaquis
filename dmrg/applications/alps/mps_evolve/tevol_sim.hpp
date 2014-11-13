@@ -110,7 +110,7 @@ public:
                     chkp_each    = parms["chkp_each"];
                     update_each  = parms["update_each"];
                     model.update(parms);
-                    mpo = make_mpo(lat, model, parms);
+                    mpo = make_mpo(lat, model);
                     evolver = TimeEvolver(&parms, &mps, lat, model, sweep);
                 }
             } else if (sweep == nsweeps_img) {

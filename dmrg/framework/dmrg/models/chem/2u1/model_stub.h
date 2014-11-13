@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * 
@@ -25,11 +25,140 @@
  *
  *****************************************************************************/
 
-#ifndef QC_MODEL_HPP
-#define QC_MODEL_HPP
+#ifndef QC_STUB_H
+#define QC_STUB_H
+
+#include <cmath>
+#include <sstream>
+#include <fstream>
+#include <iterator>
+#include <boost/shared_ptr.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/regex.hpp>
+
+#include "dmrg/models/model.h"
+#include "dmrg/models/measurements.h"
+#include "dmrg/utils/BaseParameters.h"
+
+#include "dmrg/models/chem/util.h"
+#include "dmrg/models/chem/pg_util.h"
+#include "dmrg/models/chem/2u1/term_maker.h"
+#include "dmrg/models/chem/2u1/chem_helper.h"
+
+template<class Matrix, class SymmGroup>
+class qc_stub : public model_impl<Matrix, SymmGroup>
+{
+    typedef model_impl<Matrix, SymmGroup> base;
+    
+    typedef typename base::table_type table_type;
+    typedef typename base::table_ptr table_ptr;
+    typedef typename base::tag_type tag_type;
+    
+    typedef typename base::term_descriptor term_descriptor;
+    typedef typename base::terms_type terms_type;
+    typedef typename base::op_t op_t;
+    typedef typename base::measurements_type measurements_type;
+
+    typedef typename Lattice::pos_t pos_t;
+    typedef typename Matrix::value_type value_type;
+    typedef typename alps::numeric::associated_one_matrix<Matrix>::type one_matrix;
+
+public:
+    
+    qc_stub(Lattice const & lat_, BaseParameters & parms_);
+    
+    void update(BaseParameters const& p)
+    {
+        // TODO: update this->terms_ with the new parameters
+        throw std::runtime_error("update() not yet implemented for this model.");
+        return;
+    }
+    
+    // For this model: site_type == point group irrep
+    Index<SymmGroup> const & phys_dim(size_t type) const
+    {
+        return phys_indices[type];
+    }
+    tag_type identity_matrix_tag(size_t type) const
+    {
+        return ident;
+    }
+    tag_type filling_matrix_tag(size_t type) const
+    {
+        return fill;
+    }
+
+    typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
+    {
+        return chem_detail::qn_helper<SymmGroup>().total_qn(parms_);
+    }
+
+    tag_type get_operator_tag(std::string const & name, size_t type) const
+    {
+        if (name == "create_up")
+            return create_up;
+        else if (name == "create_down")
+            return create_down;
+        else if (name == "destroy_up")
+            return destroy_up;
+        else if (name == "destroy_down")
+            return destroy_down;
+        else if (name == "count_up")
+            return count_up;
+        else if (name == "count_down")
+            return count_down;
+        else if (name == "e2d")
+            return e2d;
+        else if (name == "d2e")
+            return d2e;
+        else if (name == "docc")
+            return docc;
+        else
+            throw std::runtime_error("Operator not valid for this model.");
+        return 0;
+    }
+
+    table_ptr operators_table() const
+    {
+        return tag_handler;
+    }
+    
+    measurements_type measurements () const
+    {
+        measurements_type meas;
+        return meas;
+    }
+
+private:
+    Lattice const & lat;
+    BaseParameters & parms;
+    std::vector<Index<SymmGroup> > phys_indices;
+
+    boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+    tag_type ident, fill,
+             create_up, create_down, destroy_up, destroy_down,
+             count_up, count_down, docc, e2d, d2e;
+
+    typename SymmGroup::subcharge max_irrep;
+
+    std::vector<op_t> generate_site_specific_ops(op_t const & op) const
+    {
+        PGDecorator<SymmGroup> set_symm;
+        std::vector<op_t> ret;
+        for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
+            op_t mod(set_symm(op.left_basis(), sc), set_symm(op.right_basis(), sc));
+            for (std::size_t b = 0; b < op.n_blocks(); ++b)
+                mod[b] = op[b];
+
+            ret.push_back(mod);
+        }
+        return ret;
+    }
+
+};
 
 template <class Matrix, class SymmGroup>
-qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & parms_)
+qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms_)
 : lat(lat_)
 , parms(parms_)
 , tag_handler(new table_type())
@@ -190,44 +319,6 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
             used_elements[m] += 1;
         }
 
-        // V_ijjj = V_jijj = V_jjij = V_jjji
-        else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
-
-            int same_idx, pos1;
-
-            if      (i==j) { same_idx = i; pos1 = l; }
-            else if (k==l) { same_idx = l; pos1 = i; }
-            else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
-
-            std::pair<tag_type, value_type> ptag;
-
-            // 1a
-            // --> c_l_up * n_i_down * cdag_i_up
-            ptag = tag_handler->get_product_tag(count_down, create_up);
-            this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, destroy_up, tag_handler) );
-
-            // 1a_dagger
-            // --> c_i_up * n_i_down * cdag_l_up
-            ptag = tag_handler->get_product_tag(destroy_up, count_down);
-            this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, create_up, tag_handler) );
-
-            // 1b
-            // --> c_l_down * n_i_up * cdag_i_down (1b)
-            ptag = tag_handler->get_product_tag(count_up, create_down);
-            this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, destroy_down, tag_handler) );
-
-            // (1b)_dagger
-            // --> c_i_down * n_i_up * cdag_l_down
-            ptag = tag_handler->get_product_tag(destroy_down, count_up);
-            this->terms_.push_back( TermMaker<Matrix, SymmGroup>::positional_two_term(true, fill, -matrix_elements[m] * ptag.second, same_idx, pos1,
-                                           ptag.first, create_down, tag_handler) );
-
-            used_elements[m] += 1;
-        }
-
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
 
@@ -244,25 +335,25 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 
             term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, e2d, d2e);
             term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, d2e, e2d);
-            term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_up, count_up);
-            term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_down, count_down);
+            //term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_up, count_up);
+            //term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_down, count_down);
 
-            std::pair<tag_type, value_type> ptag1, ptag2;
+            //std::pair<tag_type, value_type> ptag1, ptag2;
 
-            // Could insert fill operators without changing the result
-            // --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
-            ptag1 = tag_handler->get_product_tag(destroy_down, create_up);
-            ptag2 = tag_handler->get_product_tag(destroy_up, create_down);
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
-            );
+            //// Could insert fill operators without changing the result
+            //// --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
+            //ptag1 = tag_handler->get_product_tag(destroy_down, create_up);
+            //ptag2 = tag_handler->get_product_tag(destroy_up, create_down);
+            //term_assistant.add_term(
+            //    this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
+            //);
 
-            // --> -c_i_up * cdag_i_down * c_j_down * cdag_j_up
-            ptag1 = tag_handler->get_product_tag(destroy_up, create_down);
-            ptag2 = tag_handler->get_product_tag(destroy_down, create_up);
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
-            );
+            //// --> -c_i_up * cdag_i_down * c_j_down * cdag_j_up
+            //ptag1 = tag_handler->get_product_tag(destroy_up, create_down);
+            //ptag2 = tag_handler->get_product_tag(destroy_down, create_up);
+            //term_assistant.add_term(
+            //    this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
+            //);
             
             used_elements[m] += 1;
         }
@@ -276,6 +367,12 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
             int same_idx;
             if (i==j) { same_idx = i; }
             if (k==l) { same_idx = k; k = i; l = j; }
+
+            // for now skip if i<n<j
+            //if ( same_idx > l || same_idx > k) continue;
+
+            int start = std::min(k,l), end = std::max(k,l);
+            if (!(same_idx > start && same_idx < end)) continue;
 
             // n_up * cdag_up * c_up <--
             term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, k, l, create_up, destroy_up, create_up, destroy_up);
@@ -298,104 +395,10 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
             used_elements[m] += 1;
         }
 
-        // 9887 7371 8727
-
-        // 4-fold degenerate (+spin) V_ijil = V_ijli = V_jiil = V_jili  <--- coded
-        //                           V_ilij = V_ilji = V_liij = V_liji
-        else if ( ((i==k && j!=l) || j==k || (j==l && i!=k)) && (i!=j && k!=l)) {
-            int same_idx, pos1, pos2;
-            if (i==k) { same_idx = i; pos1 = l; pos2 = j; }
-            if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
-            if (j==l) { same_idx = j; pos1 = k; pos2 = i; }
-
-            std::pair<tag_type, value_type> ptag;
-
-            ptag = tag_handler->get_product_tag(create_up, fill);
-            term_assistant.add_term(
-                this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_down , destroy_down, destroy_up
-            );
-            ptag = tag_handler->get_product_tag(create_down, fill);
-            term_assistant.add_term(
-                this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_up   , destroy_up  , destroy_down
-            );
-            ptag = tag_handler->get_product_tag(destroy_down, fill);
-            term_assistant.add_term(
-                this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_up  , create_up   , create_down
-            );
-            ptag = tag_handler->get_product_tag(destroy_up, fill);
-            term_assistant.add_term(
-                this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_down, create_down , create_up
-            );
-
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_up,   create_up,   destroy_up
-            );
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_down, create_down, destroy_up
-            );
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_down, destroy_up,   create_up,   destroy_down
-            );
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_down, destroy_down, create_down, destroy_down
-            );
-
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos2, pos1, create_up,   destroy_up,   create_up,   destroy_up
-            );
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos2, pos1, create_up,   destroy_down, create_down, destroy_up
-            );
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos2, pos1, create_down, destroy_up,   create_up,   destroy_down
-            );
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m], same_idx, pos2, pos1, create_down, destroy_down, create_down, destroy_down
-            );
-
-            used_elements[m] += 1;
-        }
-
-        // 32 (8x4)-fold degenerate V_ijkl = V_jikl = V_ijlk = V_jilk = V_klij = V_lkij = V_klji = V_lkji * spin
-        // V_ijkl -> 24 permutations which fall into 3 equivalence classes of 8 elements (with identical V_ matrix element)
-        // coded: 4 index permutations x 4 spin combinations 
-        else if (i!=j && j!=k && k!=l && i!=k && j!=l) {
-            
-            // 1
-            term_assistant.add_term(this->terms_, i,k,l,j, create_up, create_up, destroy_up, destroy_up);
-            term_assistant.add_term(this->terms_, i,k,l,j, create_up, create_down, destroy_down, destroy_up);
-            term_assistant.add_term(this->terms_, i,k,l,j, create_down, create_up, destroy_up, destroy_down);
-            term_assistant.add_term(this->terms_, i,k,l,j, create_down, create_down, destroy_down, destroy_down);
-
-            // 2
-            term_assistant.add_term(this->terms_, i,l,k,j, create_up, create_up, destroy_up, destroy_up);
-            term_assistant.add_term(this->terms_, i,l,k,j, create_up, create_down, destroy_down, destroy_up);
-            term_assistant.add_term(this->terms_, i,l,k,j, create_down, create_up, destroy_up, destroy_down);
-            term_assistant.add_term(this->terms_, i,l,k,j, create_down, create_down, destroy_down, destroy_down);
-
-            // 3
-            term_assistant.add_term(this->terms_, j,k,l,i, create_up, create_up, destroy_up, destroy_up);
-            term_assistant.add_term(this->terms_, j,k,l,i, create_up, create_down, destroy_down, destroy_up);
-            term_assistant.add_term(this->terms_, j,k,l,i, create_down, create_up, destroy_up, destroy_down);
-            term_assistant.add_term(this->terms_, j,k,l,i, create_down, create_down, destroy_down, destroy_down);
-
-            // 4
-            term_assistant.add_term(this->terms_, j,l,k,i, create_up, create_up, destroy_up, destroy_up);
-            term_assistant.add_term(this->terms_, j,l,k,i, create_up, create_down, destroy_down, destroy_up);
-            term_assistant.add_term(this->terms_, j,l,k,i, create_down, create_up, destroy_up, destroy_down);
-            term_assistant.add_term(this->terms_, j,l,k,i, create_down, create_down, destroy_down, destroy_down);
-        
-            used_elements[m] += 1;
-        }
     } // matrix_elements for
-
-    // make sure all elements have been used
-    std::vector<int>::iterator it_0;
-    it_0 = std::find(used_elements.begin(), used_elements.end(), 0);
-    assert( it_0 == used_elements.end() );
 
     term_assistant.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
 }
-    
+
 #endif
