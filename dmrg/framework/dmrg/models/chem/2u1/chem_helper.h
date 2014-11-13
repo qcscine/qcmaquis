@@ -25,86 +25,10 @@
  *
  *****************************************************************************/
 
-#ifndef QC_CHEM_DETAIL_H
-#define QC_CHEM_DETAIL_H
+#ifndef QC_CHEM_HELPER_H
+#define QC_CHEM_HELPER_H
 
 namespace chem_detail {
-
-    template <class SymmGroup>
-    struct qn_helper
-    {
-        typename SymmGroup::charge total_qn(BaseParameters & parms)
-        {
-            typename SymmGroup::charge ret(0);
-            ret[0] = parms["u1_total_charge1"];
-            ret[1] = parms["u1_total_charge2"];
-            return ret;
-        }
-    };
-
-    template <>
-    struct qn_helper<TwoU1PG>
-    {
-        TwoU1PG::charge total_qn(BaseParameters & parms)
-        {
-            TwoU1PG::charge ret(0);
-            ret[0] = parms["u1_total_charge1"];
-            ret[1] = parms["u1_total_charge2"];
-            ret[2] = parms["irrep_charge"];
-            return ret;
-        }
-    };
-
-    class IndexTuple : public NU1Charge<4>
-    {
-    public:
-        IndexTuple() {}
-        IndexTuple(int i, int j, int k, int l) {
-            (*this)[0] = i; (*this)[1] = j; (*this)[2] = k; (*this)[3] = l;
-        }
-    };
-
-    inline IndexTuple align(int i, int j, int k, int l) {
-        if (i<j) std::swap(i,j);
-        if (k<l) std::swap(k,l);
-        if (i<k) { std::swap(i,k); std::swap(j,l); }
-        if (i==k && j<l) { std::swap(j,l); }
-        return IndexTuple(i,j,k,l);
-    }
-    
-    inline IndexTuple align(IndexTuple const & rhs) {
-        return align(rhs[0], rhs[1], rhs[2], rhs[3]);
-    }
-
-    inline int sign(IndexTuple const & idx)
-    {
-        int inv_count=0, n=4;
-        for(int c1 = 0; c1 < n - 1; c1++)
-            for(int c2 = c1+1; c2 < n; c2++)
-                if(idx[c1] > idx[c2]) inv_count++;  
-
-        return 1 - 2 * (inv_count % 2);
-    }
-
-    inline std::ostream& operator<<(std::ostream & os, IndexTuple const & c) {
-        os << "<";
-        for (int i = 0; i < 4; ++i) {
-            os << c[i];
-            if (i+1 < 4)
-                os << ",";
-        }
-        os << ">";
-        return os;
-    }
-
-    class TermTuple : public NU1Charge<8>
-    {
-    public:
-        TermTuple() {}
-        TermTuple(IndexTuple const & a, IndexTuple const & b) {
-            for (int i=0; i<4; i++) { (*this)[i] = a[i]; (*this)[i+4] = b[i]; }
-        }
-    };
 
     template <typename M, class S>
     class ChemHelper
@@ -123,7 +47,7 @@ namespace chem_detail {
 
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;
-                std::copy(idx_[m].begin(), idx_[m].end(), pos.begin());
+                std::copy(idx_.row(m).first, idx_.row(m).second, pos.begin());
                 coefficients[pos] = matrix_elements[m];
             }
         }
@@ -131,9 +55,7 @@ namespace chem_detail {
         std::vector<value_type> & getMatrixElements() { return matrix_elements; }
         
         int idx(int m, int pos) const {
-            //int tmp = idx_[m][pos];
-            //return tmp >= 0 ? inv_order[tmp] : tmp;
-            return idx_[m][pos];
+            return idx_(m,pos);
         }
 
         void commit_terms(std::vector<term_descriptor> & tagterms) {
@@ -205,6 +127,17 @@ namespace chem_detail {
     private:
         void parse_integrals(BaseParameters & parms, Lattice const & lat) {
 
+            typedef Lattice::pos_t pos_t;
+
+            std::vector<pos_t> inv_order;
+
+            struct reorderer
+            {
+                pos_t operator()(pos_t p, std::vector<pos_t> const & inv_order) {
+                    return p >= 0 ? inv_order[p] : p;
+                }
+            };
+
             // load ordering and determine inverse ordering
             std::vector<pos_t> order(lat.size());
             if (!parms.is_set("orbital_order"))
@@ -243,7 +176,9 @@ namespace chem_detail {
             std::copy(std::istream_iterator<double>(orb_file), std::istream_iterator<double>(),
                         std::back_inserter(raw));
 
+            idx_.resize(raw.size()/5, 4);
             std::vector<double>::iterator it = raw.begin();
+            int row = 0;
             while (it != raw.end()) {
                 
                 if (std::abs(*it) > parms["integral_cutoff"]){
@@ -251,45 +186,37 @@ namespace chem_detail {
                     std::vector<int> tmp;
                     std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
 
-                    IndexTuple aligned = align(reorder(tmp[0]), reorder(tmp[1]), reorder(tmp[2]), reorder(tmp[3]));
-                    tmp[0] = aligned[0];
-                    tmp[1] = aligned[1];
-                    tmp[2] = aligned[2];
-                    tmp[3] = aligned[3];
-
-                    idx_.push_back(tmp);
+                    IndexTuple aligned = align(reorderer()(tmp[0], inv_order), reorderer()(tmp[1], inv_order),
+                                               reorderer()(tmp[2], inv_order), reorderer()(tmp[3], inv_order));
+                    idx_(row, 0) = aligned[0];
+                    idx_(row, 1) = aligned[1];
+                    idx_(row, 2) = aligned[2];
+                    idx_(row, 3) = aligned[3];
                 }
                 else { it++; }
 
                 it += 4;
+                row++;
             }
 
             #ifndef NDEBUG
             for (std::size_t m = 0; m < matrix_elements.size(); ++m)
             {
-                assert( *std::max_element(idx_[m].begin(), idx_[m].end()) <= lat.size() );
+                assert( *std::max_element(idx_.elements().first, idx_.elements().second) <= lat.size() );
             }
             #endif
-            
-        }
-
-        int reorder(int p) {
-            return p >= 0 ? inv_order[p] : p;
         }
 
         tag_type ident, fill;
         boost::shared_ptr<TagHandler<M, S> > tag_handler;
 
         std::vector<value_type> matrix_elements;
-        std::vector<std::vector<int> > idx_;
-        std::vector<int> order;
-        std::vector<int> inv_order;
+        alps::numeric::matrix<Lattice::pos_t> idx_;
 
         std::map<IndexTuple, value_type> coefficients;
 
         std::map<TermTuple, term_descriptor> three_terms;
         std::map<IndexTuple, term_descriptor> two_terms;
-
     };
 }
 
