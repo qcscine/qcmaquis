@@ -43,8 +43,7 @@
 #include "dmrg/models/chem/util.h"
 #include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/pg_util.h"
-#include "dmrg/models/chem/2u1/term_maker.h"
-#include "dmrg/models/chem/2u1/chem_helper.h"
+#include "dmrg/models/chem/su2u1/term_maker_su2.h"
 
 template<class Matrix, class SymmGroup>
 class qc_su2 : public model_impl<Matrix, SymmGroup>
@@ -327,16 +326,18 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 //    PRINT(d2e)
 //#undef PRINT
 
-    chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, ident, tag_handler);
-    std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
+    //chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, ident, tag_handler);
+    alps::numeric::matrix<Lattice::pos_t> idx_;
+    std::vector<value_type> matrix_elements;
+    boost::tie(idx_, matrix_elements) = chem_detail::parse_integrals<value_type>(parms, lat);
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
  
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
-        int i = term_assistant.idx(m, 0);
-        int j = term_assistant.idx(m, 1);
-        int k = term_assistant.idx(m, 2);
-        int l = term_assistant.idx(m, 3);
+        int i = idx_(m, 0);
+        int j = idx_(m, 1);
+        int k = idx_(m, 2);
+        int l = idx_(m, 3);
 
         // Core electrons energy
         if ( i==-1 && j==-1 && k==-1 && l==-1) {
@@ -512,7 +513,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
 
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count, count);
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, k, count, count, tag_handler));
 
             used_elements[m] += 1;
         }
@@ -520,8 +521,8 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // V_ijij == V_jiji = V_ijji = V_jiij
         else if ( i==k && j==l && i!=j) {
 
-            term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, e2d, d2e);
-            term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, d2e, e2d);
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, e2d, d2e, tag_handler));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, d2e, e2d, tag_handler));
 
             {
                 // here we have spin0--j--spin1--i--spin0
@@ -544,7 +545,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
                 this->terms_.push_back(term);
             }
 
-            term_assistant.add_term(this->terms_, -0.5 * matrix_elements[m], i, j, count, count);
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, -0.5 * matrix_elements[m], i, j, count, count, tag_handler));
 
             used_elements[m] += 1;
         }
@@ -661,7 +662,6 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     } // matrix_elements for
 
-    term_assistant.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
 }
 
