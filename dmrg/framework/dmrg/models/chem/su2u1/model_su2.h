@@ -396,86 +396,12 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             else if (k==l) { same_idx = l; pos1 = i; }
             else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
 
-            if (same_idx < pos1)
-            {
-                int start = same_idx, end = pos1;
-                {
-                    term_descriptor term;
-                    term.is_fermionic = true;
-                    term.coeff = matrix_elements[m];
-
-                    for (int fs=0; fs < start; ++fs)
-                        term.push_back( boost::make_tuple(fs, ident) );
-                    term.push_back( boost::make_tuple(start, create_fill_count) );
-
-                    for (int fs = start+1; fs < end; ++fs)
-                        term.push_back( boost::make_tuple(fs, fill) );
-                    term.push_back( boost::make_tuple(end, destroy) );
-
-                    for (int fs = end+1; fs < lat.size(); ++fs)
-                        term.push_back( boost::make_tuple(fs, ident) );
-
-                    this->terms_.push_back(term);
-                }
-                {
-                    term_descriptor term;
-                    term.is_fermionic = true;
-                    term.coeff = -matrix_elements[m];
-
-                    for (int fs=0; fs < start; ++fs)
-                        term.push_back( boost::make_tuple(fs, ident) );
-                    term.push_back( boost::make_tuple(start, destroy_fill_count) );
-
-                    for (int fs = start+1; fs < end; ++fs)
-                        term.push_back( boost::make_tuple(fs, fill) );
-                    term.push_back( boost::make_tuple(end, create) );
-
-                    for (int fs = end+1; fs < lat.size(); ++fs)
-                        term.push_back( boost::make_tuple(fs, ident) );
-
-                    this->terms_.push_back(term);
-                }
-            }
-            else
-            {
-                int start = pos1, end = same_idx;
-                {
-                    term_descriptor term;
-                    term.is_fermionic = true;
-                    term.coeff = matrix_elements[m];
-
-                    for (int fs=0; fs < start; ++fs)
-                        term.push_back( boost::make_tuple(fs, ident) );
-                    term.push_back( boost::make_tuple(start, create_fill) );
-
-                    for (int fs = start+1; fs < end; ++fs)
-                        term.push_back( boost::make_tuple(fs, fill) );
-                    term.push_back( boost::make_tuple(end, destroy_count) );
-
-                    for (int fs = end+1; fs < lat.size(); ++fs)
-                        term.push_back( boost::make_tuple(fs, ident) );
-
-                    this->terms_.push_back(term);
-                }
-                {
-                    term_descriptor term;
-                    term.is_fermionic = true;
-                    term.coeff = -matrix_elements[m];
-
-                    for (int fs=0; fs < start; ++fs)
-                        term.push_back( boost::make_tuple(fs, ident) );
-                    term.push_back( boost::make_tuple(start, destroy_fill) );
-
-                    for (int fs = start+1; fs < end; ++fs)
-                        term.push_back( boost::make_tuple(fs, fill) );
-                    term.push_back( boost::make_tuple(end, create_count) );
-
-                    for (int fs = end+1; fs < lat.size(); ++fs)
-                        term.push_back( boost::make_tuple(fs, ident) );
-
-                    this->terms_.push_back(term);
-                }
-            }
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                true, lat.size(), ident, fill, matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill
+            ));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                true, lat.size(), ident, fill, -matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill
+            ));
 
             used_elements[m] += 1;
         }
