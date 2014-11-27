@@ -365,43 +365,13 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
-            int start = std::min(i,j), end = std::max(i,j);
-            {
-                term_descriptor term;
-                term.is_fermionic = true;
-                term.coeff = matrix_elements[m];
 
-                for (int fs=0; fs < start; ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(start, create_fill) );
-
-                for (int fs = start+1; fs < end; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill) );
-                term.push_back( boost::make_tuple(end, destroy) );
-
-                for (int fs = end+1; fs < lat.size(); ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-
-                this->terms_.push_back(term);
-            }
-            {
-                term_descriptor term;
-                term.is_fermionic = true;
-                term.coeff = -matrix_elements[m];
-
-                for (int fs=0; fs < start; ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(start, destroy_fill) );
-
-                for (int fs = start+1; fs < end; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill) );
-                term.push_back( boost::make_tuple(end, create) );
-
-                for (int fs = end+1; fs < lat.size(); ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-
-                this->terms_.push_back(term);
-            }
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                true, lat.size(), ident, fill, matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill
+            ));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                true, lat.size(), ident, fill, matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill
+            ));
 
             used_elements[m] += 1;
         }

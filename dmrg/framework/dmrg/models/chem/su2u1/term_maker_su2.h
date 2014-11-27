@@ -56,33 +56,28 @@ struct TermMakerSU2 {
         return term;
     }
 
-    static term_descriptor positional_two_term(bool sign, tag_type fill_op, value_type scale, pos_t i, pos_t j,
-                                     tag_type op1, tag_type op2,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table)
+    static term_descriptor positional_two_term(bool sign, pos_t lat_size, tag_type ident, tag_type fill, value_type scale, pos_t i, pos_t j,
+                                     tag_type op1, tag_type op1_fill, tag_type op2, tag_type op2_fill)
     {
         term_descriptor term;
         term.is_fermionic = sign;
         term.coeff = scale;
 
-        //int start = same_idx, end = pos1;
-        //{
-        //    term_descriptor term;
-        //    term.is_fermionic = true;
-        //    term.coeff = matrix_elements[m];
+        tag_type op1_use = (i<j) ? op1_fill : op2_fill;
+        tag_type op2_use = (i<j) ? op2 : op1;
+        if (j<i) term.coeff = -term.coeff;
 
-        //    for (int fs=0; fs < start; ++fs)
-        //        term.push_back( boost::make_tuple(fs, ident) );
-        //    term.push_back( boost::make_tuple(start, create_fill_count) );
+        int start = std::min(i,j), end = std::max(i,j);
+        //for (int fs=0; fs < start; ++fs)
+        //    term.push_back( boost::make_tuple(fs, ident) );
+        term.push_back( boost::make_tuple(start, op1_use) );
 
-        //    for (int fs = start+1; fs < end; ++fs)
-        //        term.push_back( boost::make_tuple(fs, fill) );
-        //    term.push_back( boost::make_tuple(end, destroy) );
+        //for (int fs = start+1; fs < end; ++fs)
+        //    term.push_back( boost::make_tuple(fs, fill) );
+        term.push_back( boost::make_tuple(end, op2_use) );
 
-        //    for (int fs = end+1; fs < lat.size(); ++fs)
-        //        term.push_back( boost::make_tuple(fs, ident) );
-
-        //    this->terms_.push_back(term);
-        //}
+        //for (int fs = end+1; fs < lat_size; ++fs)
+        //    term.push_back( boost::make_tuple(fs, ident) );
 
         return term;
     }
