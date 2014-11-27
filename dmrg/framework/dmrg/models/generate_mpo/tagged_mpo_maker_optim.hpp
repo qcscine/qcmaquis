@@ -233,8 +233,8 @@ namespace generate_mpo
             }
 
             bool trivial_fill = !tag_handler->is_fermionic(term.operator_tag(1));
-            // todo: check with long-range n_i*n_j                                  if spin > 0, need to use the full identity
-            insert_filling(term.position(0)+1, term.position(1), k1, trivial_fill, (mpo_spin > 0) ? term.full_identity : -1);
+            // todo: check with long-range n_i*n_j                                  if spin > 0.5, need to use the full identity
+            insert_filling(term.position(0)+1, term.position(1), k1, trivial_fill, (mpo_spin > 1) ? term.full_identity : -1);
             {
                 int i = 1;
                 mpo_spin += (tag_handler->get_op(term.operator_tag(i))).twoSaction;

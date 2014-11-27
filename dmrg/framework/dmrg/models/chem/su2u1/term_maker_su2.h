@@ -85,48 +85,34 @@ struct TermMakerSU2 {
     }
 
     static term_descriptor three_term(tag_type ident, tag_type fill_op,
-                                     value_type scale, pos_t pb, pos_t p1, pos_t p2,
-                                     tag_type opb1, tag_type opb2,
-                                     tag_type op1,  tag_type op2,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table)
+                                      value_type scale, pos_t pb, pos_t p1, pos_t p2,
+                                      tag_type boson_op, tag_type boson_op_fill,
+                                      tag_type op1, tag_type op1_fill, tag_type op2, tag_type op2_fill)
     {
         term_descriptor term;
         term.is_fermionic = true;
         term.coeff = scale;
 
-        tag_type tmp, boson_op;
-        std::pair<tag_type, value_type> ptag1, ptag2;
+        tag_type boson_op_use, op1_use, op2_use;
+
+        op1_use = (p1<p2) ? op1_fill : op2_fill;
+        op2_use = (p1<p2) ? op2 : op1;
 
         if ( (pb>p1 && pb<p2) || (pb>p2 && pb<p1) ) {
             // if the bosonic operator is in between
-            // the fermionic operators, multiply with fill
-            ptag1 = op_table->get_product_tag(fill_op, opb2);
-            term.coeff *= ptag1.second;
-            ptag2 = op_table->get_product_tag(ptag1.first, opb1);
-            term.coeff *= ptag2.second;
-            boson_op = ptag2.first;
+            // the fermionic operators, use fill-multiplied version
+            boson_op_use = boson_op_fill;
         }
         else {
-            ptag1 = op_table->get_product_tag(opb2, opb1);
-            boson_op = ptag1.first;
-            term.coeff *= ptag1.second; 
-        }
-        
-        if (p1 < p2) {
-            ptag1 = op_table->get_product_tag(fill_op, op1); 
-            op1 = ptag1.first;
-            term.coeff *= ptag1.second;
-        }
-        else {
-            ptag1 = op_table->get_product_tag(fill_op, op2); 
-            op2 = ptag1.first;
-            term.coeff *= -ptag1.second;
+            boson_op_use = boson_op;
         }
 
+        if (p2<p1) term.coeff = -term.coeff;
+
         std::vector<pos_op_t> sterm;
-        sterm.push_back( boost::make_tuple(pb, boson_op) );
-        sterm.push_back( boost::make_tuple(p1, op1) );
-        sterm.push_back( boost::make_tuple(p2, op2) );
+        sterm.push_back( boost::make_tuple(pb, boson_op_use) );
+        sterm.push_back( boost::make_tuple(std::min(p1,p2), op1_use) );
+        sterm.push_back( boost::make_tuple(std::max(p1,p2), op2_use) );
         std::sort(sterm.begin(), sterm.end(), compare_tag);
 
         term.push_back(sterm[0]);
