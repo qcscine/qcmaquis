@@ -441,59 +441,6 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             int same_idx;
             if (i==j) { same_idx = i; }
             if (k==l) { same_idx = k; k = i; l = j; }
-
-            //if ( same_idx > k || same_idx > l) continue;
-            //
-            //int start = std::min(std::min(k,l), same_idx), end = std::max(std::max(k,l), same_idx);
-            //int start = same_idx, mid = std::min(k,l), end = std::max(k,l);
-            //{
-            //    term_descriptor term;
-            //    term.is_fermionic = true;
-            //    term.coeff = matrix_elements[m];
-
-            //    for (int fs=0; fs < start; ++fs)
-            //        term.push_back( boost::make_tuple(fs, ident) );
-            //    term.push_back( boost::make_tuple(start, count) );
-
-            //    for (int fs = start+1; fs < mid; ++fs)
-            //        term.push_back( boost::make_tuple(fs, ident) );
-            //    term.push_back( boost::make_tuple(mid, create_head) );
-
-            //    for (int fs = mid+1; fs < end; ++fs)
-            //        term.push_back( boost::make_tuple(fs, fill_cdagc) );
-            //    term.push_back( boost::make_tuple(end, destroy_head) );
-
-            //    for (int fs = end+1; fs < lat.size(); ++fs)
-            //        term.push_back( boost::make_tuple(fs, ident) );
-
-            //    this->terms_.push_back(term);
-            //}
-            //{
-            //    term_descriptor term;
-            //    term.is_fermionic = true;
-            //    term.coeff = matrix_elements[m];
-
-            //    for (int fs=0; fs < start; ++fs)
-            //        term.push_back( boost::make_tuple(fs, ident) );
-            //    term.push_back( boost::make_tuple(start, count) );
-
-            //    for (int fs = start+1; fs < mid; ++fs)
-            //        term.push_back( boost::make_tuple(fs, ident) );
-            //    term.push_back( boost::make_tuple(mid, destroy_tail) );
-
-            //    for (int fs = mid+1; fs < end; ++fs)
-            //        term.push_back( boost::make_tuple(fs, fill_ccdag) );
-            //    term.push_back( boost::make_tuple(end, create_tail) );
-
-            //    for (int fs = end+1; fs < lat.size(); ++fs)
-            //        term.push_back( boost::make_tuple(fs, ident) );
-
-            //    this->terms_.push_back(term);
-            //}
-
-
-            int start = std::min(k,l), mid = same_idx, end = std::max(k,l);
-            if (!(same_idx > start && same_idx < end)) continue;
             
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
                 ident, fill, matrix_elements[m], same_idx, k, l, count, count_fill, create, create_fill, destroy, destroy_fill

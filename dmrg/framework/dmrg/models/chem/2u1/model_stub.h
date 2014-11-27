@@ -407,12 +407,6 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
             if (i==j) { same_idx = i; }
             if (k==l) { same_idx = k; k = i; l = j; }
 
-            // for now skip if i<n<j
-            //if ( same_idx > l || same_idx > k) continue;
-
-            int start = std::min(k,l), end = std::max(k,l);
-            if (!(same_idx > start && same_idx < end)) continue;
-
             // n_up * cdag_up * c_up <--
             term_assistant.add_term(this->terms_, matrix_elements[m], same_idx, k, l, create_up, destroy_up, create_up, destroy_up);
             // n_up * cdag_down * c_down <--
