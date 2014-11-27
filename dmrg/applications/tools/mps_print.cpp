@@ -24,24 +24,30 @@
  *
  *****************************************************************************/
 
-#include <cmath>
+//#include <cmath>
 #include <iostream>
-#include <iomanip>
-#include <sys/time.h>
-#include <sys/stat.h>
+#include <fstream>
+//#include <iomanip>
+//#include <sys/time.h>
+//#include <sys/stat.h>
 
-#include <boost/lambda/lambda.hpp>
+//#include <boost/lambda/lambda.hpp>
 
-using std::cerr;
+//using std::cerr;
 
-#include <alps/numeric/matrix.hpp>
-#include <alps/numeric/matrix/algorithms.hpp>
+//#include <alps/numeric/matrix.hpp>
+//#include <alps/numeric/matrix/algorithms.hpp>
 #include "dmrg/block_matrix/detail/alps.hpp"
 #include "dmrg/mp_tensors/mps.h"
-#include "dmrg/mp_tensors/mpo.h"
-#include "dmrg/mp_tensors/boundary.h"
+#include "dmrg/mp_tensors/mpstensor.h"
+//#include "dmrg/mp_tensors/mpo.h"
+//#include "dmrg/mp_tensors/boundary.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
-#include "dmrg/mp_tensors/contractions.h"
+//#include "dmrg/mp_tensors/contractions.h"
+
+typedef alps::numeric::matrix<double> matrix;
+
+typedef TwoU1LPG grp;
 
 int main(int argc, char ** argv)
 {
@@ -64,7 +70,38 @@ int main(int argc, char ** argv)
         std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(std::cout, " "));
         std::cout << std::endl;
 
-        std::cout << mps[0] << std::endl;
+        std::cout << "Printing left paired mps:" << std::endl;
+        for (int i=0; i < L; ++i) {
+            std::cout << "################## SITE " << i << " ##################\n" << std::endl;
+            MPSTensor<matrix, grp> tmp(mps[i]);
+            tmp.make_left_paired();
+            std::cout << tmp;
+        }
+
+        bool print_flag = false;
+        if(print_flag) {
+            std::ofstream myfile;
+            myfile.open ("mps_leftpaired");
+            myfile << "***** Left paired MPS *****\n" << "Number of sites: " << L << std::endl;
+            myfile << "Site irreps are: ";
+            for(int i=0; i < L; ++i) {
+                myfile << site_irreps[i] << " ";
+            }
+            myfile << std::endl << std::endl;
+            for (int i=0; i < L; ++i) {
+                myfile << "################## SITE " << i << " ##################\n\n";
+                MPSTensor<matrix, grp> tmp(mps[i]);
+                tmp.make_left_paired();
+                myfile << tmp;
+            }
+            myfile.close();
+        }
+
+        //Check <psi|psi> == 1
+        //double norm_expectation = overlap(mps,mps);
+        double norm_expectation = norm(mps);
+
+        std::cout << "Norm of the ground state wave function:\n<psi|psi> = " << norm_expectation << std::endl;
 
 
     } catch (std::exception& e) {

@@ -168,7 +168,7 @@ namespace generate_mpo
             
             for (pos_t p = 0; p < length; ++p) {
                 std::vector<tag_block> pre_tensor; pre_tensor.reserve(prempo[p].size());
-                
+
                 index_map right;
                 index_type r = 2;
                 for (typename prempo_map_type::const_iterator it = prempo[p].begin();
@@ -214,14 +214,25 @@ namespace generate_mpo
             /// retrieve the actual operator from the tag table
             // TODO implement plus operation
             op_t current_op = tag_handler->get_op(term.operator_tag(0));
+
             current_op *= term.coeff;
+            // DEBUG
+            //maquis::cout << "Current operator:\n" << current_op << "inserted on site: " << term.position(0) << "\n----------------------------------------\n\n\n";
+           
             site_terms[term.position(0)] += current_op;
+            //maquis::cout << "---------------------------------\nOperator on site: " << term.position(0) << "\n" << site_terms[term.position(0)];
         }
         
         void add_2term(term_descriptor const& term)
         {
             assert(term.size() == 2);
-            
+
+            //DEBUG
+            //maquis::cout << "\n#########################\n";
+            //maquis::cout << "On site: " << term.position(0)+1 << std::endl << tag_handler->get_op(term.operator_tag(0)) << "----------------------------------------\n";
+            //maquis::cout << "On site: " << term.position(1)+1 << std::endl << tag_handler->get_op(term.operator_tag(1)) << "----------------------------------------\n";
+            //maquis::cout << "with coeff: " << term.coeff << "\n#########################\n";
+
             prempo_key_type k1 = trivial_left;
             {
                 int i = 0;
@@ -424,6 +435,8 @@ namespace generate_mpo
             /// fill with ident until the end
             bool trivial_fill = true;
             insert_filling(leftmost_right+1, length, trivial_right, trivial_fill);
+            //DEBUG
+            //maquis::cout << "i: " << leftmost_right+1 << " j: " << length << std::endl;
 
             finalized = true;
         }

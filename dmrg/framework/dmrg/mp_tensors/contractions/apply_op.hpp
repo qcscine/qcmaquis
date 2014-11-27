@@ -70,7 +70,7 @@ namespace contraction {
             charge operator_delta = SymmGroup::fuse(W.right_basis()[0].first, -W.left_basis()[0].first);
             charge        T_delta = SymmGroup::fuse(T.right_basis()[0].first, -T.left_basis()[0].first);
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
-        
+
             select_proc(contr_grid.where(b1,b2));
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
@@ -96,12 +96,11 @@ namespace contraction {
                     charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_c1);
                     size_t t_block = T.right_basis().position(in_r_charge);
                     if (t_block == T.right_basis().size()) continue;
- 
+
                     charge in_l_charge = T.left_basis()[t_block].first;
 
                     size_t in_right_offset = in_right_pb(phys_c1, out_r_charge);
                     size_t out_left_offset = out_left_pb(phys_c2, in_l_charge);
-
                     size_t phys_s1 = W.left_basis()[w_block].second;
                     size_t phys_s2 = W.right_basis()[w_block].second;
                     Matrix const & wblock = W[w_block];

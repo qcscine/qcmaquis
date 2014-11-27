@@ -50,7 +50,7 @@ typedef alps::numeric::matrix<double> matrix;
 typedef TwoU1LPG grp;
 
 template<class Matrix>
-MPO<Matrix, grp> make_mpo(int i, int j, std::vector<int> site_irreps)
+MPO<Matrix, grp> make_mpo_2(std::vector<int> site_irreps)
 {
     typedef block_matrix<Matrix, grp> op_t;
     MPO<Matrix, grp> ret(site_irreps.size());
@@ -102,8 +102,86 @@ MPO<Matrix, grp> make_mpo(int i, int j, std::vector<int> site_irreps)
 
         /***********************************************/
 
+        //MPOTensor<Matrix, grp> op(1,1);
+        if (p==0) {
+            MPOTensor<Matrix, grp> op(1,2);
+            op.set(0,0,create_unbarred, 1.0);
+            op.set(0,1,destroy_unbarred, 1.0);
+        ret[p] = op;
+        } else if (p==1) {
+            MPOTensor<Matrix, grp> op(2,1);
+            op.set(0,0, destroy_unbarred, 1.0);
+            op.set(1,0, create_unbarred, 1.0);
+        ret[p] = op;
+        } else {
+            MPOTensor<Matrix, grp> op(1,1);
+            op.set(0,0, ident_barred, 1.0);
+        ret[p] = op;
+        }
+
+    }
+    return ret;
+}
+
+template<class Matrix>
+MPO<Matrix, grp> make_mpo(int i, int j, std::vector<int> site_irreps)
+{
+    typedef block_matrix<Matrix, grp> op_t;
+    MPO<Matrix, grp> ret(site_irreps.size());
+    for (int p=0; p<site_irreps.size(); ++p)
+    {
+        typedef tag_detail::tag_type tag_type;
+        typename grp::charge A(0), B(0), C(0);
+        B[0]=1; C[1]=1;
+        B[2] = site_irreps[p];
+        C[2] = site_irreps[p];
+
+        block_matrix<Matrix, grp> ident_unbarred;
+        ident_unbarred.insert_block(Matrix(1,1,1), A, A);
+        ident_unbarred.insert_block(Matrix(1,1,1), B, B);
+
+        block_matrix<Matrix, grp> ident_barred;
+        ident_barred.insert_block(Matrix(1,1,1), A, A);
+        ident_barred.insert_block(Matrix(1,1,1), C, C);
+
+        block_matrix<Matrix, grp> fill_unbarred;
+        fill_unbarred.insert_block(Matrix(1,1,1), A, A);
+        fill_unbarred.insert_block(Matrix(1,1,-1), B, B);
+ 
+        block_matrix<Matrix, grp> fill_barred;
+        fill_barred.insert_block(Matrix(1,1,1), A, A);
+        fill_barred.insert_block(Matrix(1,1,-1), C, C);
+
+        block_matrix<Matrix, grp> transfer;
+        transfer.insert_block(Matrix(1,1,1), A, A);
+        transfer.insert_block(Matrix(1,1,-1), B, C);
+
+        /***********************************************/
+
+        op_t count_unbarred;
+        count_unbarred.insert_block(Matrix(1,1,1), B, B);
+
+        op_t count_barred;
+        count_barred.insert_block(Matrix(1,1,1), C, C);
+
+        /***********************************************/
+
+        op_t create_unbarred;
+        create_unbarred.insert_block(Matrix(1,1,1), A, B);
+
+        op_t create_barred;
+        create_barred.insert_block(Matrix(1,1,1), A, C);
+
+        op_t destroy_unbarred;
+        destroy_unbarred.insert_block(Matrix(1,1,1), B, A);
+
+        op_t destroy_barred;
+        destroy_barred.insert_block(Matrix(1,1,1), C, A);
+
+        /***********************************************/
+
         op_t create_unbarred_fill;
-        create_unbarred_fill.insert_block(Matrix(1,1,-1), A, B);
+        create_unbarred_fill.insert_block(Matrix(1,1,1), A, B);
 
         op_t create_barred_fill;
         create_barred_fill.insert_block(Matrix(1,1,1), A, C);
@@ -117,11 +195,17 @@ MPO<Matrix, grp> make_mpo(int i, int j, std::vector<int> site_irreps)
         /***********************************************/
 
         MPOTensor<Matrix, grp> op(1,1);
+        int half_lattice = (site_irreps.size()/2)-1;
+        //if (p==half_lattice) {
+        //    if (p==i)
+        //        op.set(0,0, gemm(create_unbarred,transfer), 1.0);
+        //}
+        //else {
         if (p==i) {
             if (i < site_irreps.size() / 2)
-                op.set(0,0, create_unbarred_fill, 1.0);
+                op.set(0,0, create_unbarred, 1.0);
             else
-                op.set(0,0, create_barred_fill, 1.0);
+                op.set(0,0, create_barred, 1.0);
         }
         else if (p==j) {
             if (j < site_irreps.size() / 2)
@@ -131,9 +215,9 @@ MPO<Matrix, grp> make_mpo(int i, int j, std::vector<int> site_irreps)
         }
         else if (i < p && p < j) {
             if (p < site_irreps.size() / 2)
-                op.set(0,0, fill_unbarred, 1.0);
+                op.set(0,0, fill_unbarred, -1.0);
             else
-                op.set(0,0, fill_barred, 1.0);
+                op.set(0,0, fill_barred, -1.0);
         }     
         else {
             if (p < site_irreps.size() / 2)
@@ -141,7 +225,7 @@ MPO<Matrix, grp> make_mpo(int i, int j, std::vector<int> site_irreps)
             else
                 op.set(0,0, ident_barred, 1.0);
         }
-
+        //}
         ret[p] = op;
     }
     return ret;
@@ -169,9 +253,33 @@ int main(int argc, char ** argv)
         std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(std::cout, " "));
         std::cout << std::endl;
 
-        MPO<matrix, grp> mpo = make_mpo<matrix>(0,4, site_irreps);
-        double expectation_value = expval(mps, mpo);
+        //int pos1=0;
+        //int pos2=1;
+        //MPO<matrix, grp> mpo = make_mpo<matrix>(pos1,pos2, site_irreps);
+        //double expectation_value = expval(mps, mpo, true);
+        //maquis::cout << "expectation value for (" << pos1 << "," << pos2 << "): " << expectation_value << std::endl;
+
+        /*
+        MPO<matrix, grp> mpo = make_mpo_2<matrix>(site_irreps);
+        double expectation_value = expval(mps, mpo, true);
         maquis::cout << "expectation value: " << expectation_value << std::endl;
+        */
+        MPO<matrix, grp> mpo = make_mpo<matrix>(1,2,site_irreps);
+        double expectation_value = expval(mps, mpo, true);
+        maquis::cout << "expectation value (2,3): " << expectation_value << std::endl;
+        
+        mpo = make_mpo<matrix>(0,2,site_irreps);
+        expectation_value = expval(mps, mpo, true);
+        maquis::cout << "expectation value (1,3): " << expectation_value << std::endl;
+        /*
+        for (int i=0; i < L; ++i) {
+            for (int j=i+1; j < L; ++j) {
+                MPO<matrix, grp> mpo = make_mpo<matrix>(i,j, site_irreps);
+                double expectation_value = expval(mps, mpo, true);
+                maquis::cout << "expectation value for (" << i+1 << "," << j+1 << "): " << expectation_value << std::endl;
+            }
+        }
+        */
 
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;

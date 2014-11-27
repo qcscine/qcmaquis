@@ -56,6 +56,12 @@ if(DMRG_HAS_TwoU1LPG)
   set_target_properties(expval_2u1lpg PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1LPG")
 endif(DMRG_HAS_TwoU1LPG)
 
+if(DMRG_HAS_TwoU1LPG)
+  add_executable(mps_print mps_print.cpp)
+  target_link_libraries(mps_print ${DMRG_APP_LIBRARIES})
+  set_target_properties(mps_print PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1LPG")
+endif(DMRG_HAS_TwoU1LPG)
+
 if(USE_AMBIENT)
   ## enable only if needed, and with a revision < r3578
   # add_executable(mps_converter mps_converter.cpp)

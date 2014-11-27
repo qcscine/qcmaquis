@@ -76,7 +76,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 	C[2] = 0;
 	
     op_t create_unbar_op, create_bar_op, destroy_unbar_op, destroy_bar_op,
-         count_unbar_op, count_bar_op,
+         count_unbar_op, count_bar_op, ident_transfer_op, fill_transfer_op,
          ident_unbar_op, ident_bar_op, fill_unbar_op, fill_bar_op;
 	
     ident_unbar_op.insert_block(Matrix(1, 1, 1), A, A);
@@ -108,23 +108,6 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 //     create_bar_op = tmp;
 // 	gemm(fill_bar_op, destroy_bar_op, tmp);
 //     destroy_bar_op = tmp;
-
-// 	maquis::cout << create_unbar_op << std::endl;
-// 	maquis::cout << fill_unbar_op << std::endl;
-	
-// 	gemm(create_unbar_op, fill_unbar_op, tmp);
-	
-// 	create_unbar_op = tmp;
-	
-// 	maquis::cout << create_unbar_op << std::endl;
-	
-// 	gemm(fill_unbar_op, destroy_unbar_op, tmp);
-// 	destroy_unbar_op = tmp;
-	
-// 	maquis::cout << create_unbar_op << std::endl;
-// 	maquis::cout << create_bar_op << std::endl;
-// 	maquis::cout << destroy_unbar_op << std::endl;
-// 	maquis::cout << destroy_bar_op << std::endl;
 	
     /**********************************************************************/
     /*** Create operator tag table ****************************************/
@@ -146,28 +129,8 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     #undef REGISTER
     /**********************************************************************/
 
-	//#define check_op
-	#ifdef check_op
-	for (int ii=0; ii < 10; ++ii) {
-		op_t debug_op = tag_handler->get_op(ii);
-		maquis::cout << debug_op << std::endl;
-	}
-	#endif
-	
-	// DEBUG_TAGHandler
-// 	#define DEBUG_TAGHandler
-	#ifdef DEBUG_TAGHandler
-	maquis::cout << "DEBUG_TAGHandler" << std::endl;
-	maquis::cout << "fill_unbar: " << fill_unbar << std::endl << tag_handler->get_op(fill_unbar) << std::endl;
-	maquis::cout << "destroy_unbar: " << destroy_unbar << std::endl << tag_handler->get_op(destroy_unbar) << std::endl;
-	std::pair<tag_type,value_type> debug_prod_op = tag_handler->get_product_tag(fill_unbar,destroy_unbar);
-	maquis::cout << "get_product_tag(fill_unbar,destroy_unbar): " << debug_prod_op.first << std::endl;
-	maquis::cout << tag_handler->get_op(debug_prod_op.first) << std::endl;
-	maquis::cout << debug_prod_op.second << std::endl;
-	#endif
-	
     // TODO: change term_assistant input paramters
-    chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, dummy, dummy, tag_handler, this->align, this);
+    rel_chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, dummy, dummy, tag_handler, this->align, this);
     
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
@@ -211,21 +174,22 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             used_elements[m] += 1;
         }
 
-		#define hopping
+        #define hopping
 		#ifdef hopping
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
             
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
+            //matrix_elements[m] = 0.0;
+            this->terms_.push_back(RelTermMaker<Matrix, SymmGroup>::positional_two_term(this, 
                 true, dummy, matrix_elements[m]*2.0, i, j, create_unbar, destroy_unbar, tag_handler)
             );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
+            this->terms_.push_back(RelTermMaker<Matrix, SymmGroup>::positional_two_term(this, 
                 true, dummy, matrix_elements[m]*2.0, i + n_pair, j + n_pair, create_bar, destroy_bar, tag_handler)
             );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
+            this->terms_.push_back(RelTermMaker<Matrix, SymmGroup>::positional_two_term(this, 
                 true, dummy, matrix_elements[m]*2.0, j, i, create_unbar, destroy_unbar, tag_handler)
             );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
+            this->terms_.push_back(RelTermMaker<Matrix, SymmGroup>::positional_two_term(this, 
                 true, dummy, matrix_elements[m]*2.0, j + n_pair, i + n_pair, create_bar, destroy_bar, tag_handler)
             );
             
@@ -251,11 +215,11 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             used_elements[m] += 1;
         }
 
-		#define all_2_terms
+ 		#define all_2_terms
 		#ifdef all_2_terms
         // V_iijj
         else if ( i==j && k==l && j!=k) {
-            
+            //matrix_elements[m] = 0.0;
             if (is_term_allowed(i,j,k,l)) {
                 if (i < n_pair && k < n_pair) {
                     term_assistant.add_term(this->terms_, matrix_elements[m],
@@ -276,7 +240,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
        
         // V_ijji
         else if ( i==l && j==k && i!=j) {
-            
+            //matrix_elements[m] = 0.0;
             if (is_term_allowed(i,j,k,l)) {
                 if (i < n_pair && j < n_pair) {
                     term_assistant.add_term(this->terms_, -matrix_elements[m],
@@ -297,11 +261,12 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         
         #endif
 		
-		#define all_3_terms
+ 		#define all_3_terms
 		#ifdef all_3_terms
         // V_iikl
         else if ( i==j && j!=k && j!=l ) {
             
+            //matrix_elements[m] = 0.0;
             if (is_term_allowed(i,j,k,l)) {
                 if        (i < n_pair && k <  n_pair && l <  n_pair) {
                     term_assistant.add_term(this->terms_, matrix_elements[m],
@@ -335,6 +300,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         // V_ijkk   
         else if (k==l && i!=k && j!=k ) {
 
+            //matrix_elements[m] = 0.0;
             if (is_term_allowed(i,j,k,l)) {
                 if        (i <  n_pair && j <  n_pair && k  < n_pair) {
                     term_assistant.add_term(this->terms_, matrix_elements[m],
@@ -374,6 +340,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         // V_ijki
         else if ( i!=j && j!=k && i==l ) {
 
+            //matrix_elements[m] = 0.0;
             if (is_term_allowed(i,j,k,l)) {
                 if        (i <  n_pair && j <  n_pair && k <  n_pair) {
                     term_assistant.add_term(this->terms_, -matrix_elements[m],
@@ -407,6 +374,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         // V_ijjl
         else if ( i!=j && j==k && k!=l ) {
 
+            //matrix_elements[m] = 0.0;
             if (is_term_allowed(i,j,k,l)) {
                 if        (i <  n_pair && j <  n_pair && l <  n_pair) {
                     term_assistant.add_term(this->terms_, -matrix_elements[m],
@@ -438,7 +406,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         }
 		#endif
 		
-		#define all_4_terms
+ 		#define all_4_terms
 		#ifdef all_4_terms
         // V_ijkl
         else if (i!=j && j!=k && k!=l && i!=k && j!=l) {
@@ -455,11 +423,12 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
                 
 				} else if (i <  n_pair && j <  n_pair && k >= n_pair && l >= n_pair) {
                 
-// 					term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j,
-// 											create_unbar, create_bar, destroy_bar, destroy_unbar);
+                    //matrix_elements[m] = 0.0;
+ 					term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j,
+ 											create_unbar, create_bar, destroy_bar, destroy_unbar);
 											
-//                     term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l-n_pair,j+n_pair,
-// 											create_bar, create_unbar, destroy_unbar, destroy_bar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l-n_pair,j+n_pair,
+ 											create_bar, create_unbar, destroy_unbar, destroy_bar);
 											
                 } else if (i <  n_pair && j <  n_pair && k >= n_pair && l <  n_pair) {
 //                     term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j,
@@ -473,19 +442,20 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 // 											create_bar, create_bar, destroy_unbar, destroy_bar);
                 } else if (i <  n_pair && j >= n_pair && k <  n_pair && l >= n_pair) {
 					
-// 					term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j,
-// 											create_unbar, create_unbar, destroy_bar, destroy_bar);
+                    //matrix_elements[m] = 0.0;
+ 					term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j,
+ 											create_unbar, create_unbar, destroy_bar, destroy_bar);
 											
-// 					term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l-n_pair,j-n_pair,
-// 											create_bar, create_bar, destroy_unbar, destroy_unbar);
+ 					term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l-n_pair,j-n_pair,
+ 											create_bar, create_bar, destroy_unbar, destroy_unbar);
 											
                 } else if (i <  n_pair && j >= n_pair && k >= n_pair && l <  n_pair) {
-					
-//                     term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j,
-// 											create_unbar, create_bar, destroy_unbar, destroy_bar);
+                    //matrix_elements[m] = 0.0;
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j,
+ 											create_unbar, create_bar, destroy_unbar, destroy_bar);
 											
-//                     term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l+n_pair,j-n_pair,
-// 											create_bar, create_unbar, destroy_bar, destroy_unbar);
+                    term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k-n_pair,l+n_pair,j-n_pair,
+ 											create_bar, create_unbar, destroy_bar, destroy_unbar);
 											
                 } else if (i <  n_pair && j >= n_pair && k <  n_pair && l <  n_pair) {
 //                     term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j,
@@ -517,7 +487,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     std::vector<int>::iterator it_0;
     it_0 = std::find(used_elements.begin(), used_elements.end(), 0);
     maquis::cout << bool(it_0 < used_elements.end()) << std::endl;
-//     assert( it_0 == used_elements.end() );
+    assert( it_0 == used_elements.end() );
 
     term_assistant.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";

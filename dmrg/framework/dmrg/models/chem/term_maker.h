@@ -65,7 +65,22 @@ struct TermMaker {
         term.is_fermionic = sign;
         term.coeff = scale;
 
+        // Ad hoc fix for 20 spinors HF
+        /*
+        if (i == 2 || i == 3 || i == 5)
+            term.coeff *= -1.0;
         
+        if (j == 2 || j == 3 || j == 5)
+            term.coeff *= -1.0;
+        
+        if (i == 12 || i == 13 || i == 15)
+            term.coeff *= -1.0;
+        
+        if (j == 12 || j == 13 || j == 15)
+            term.coeff *= -1.0;
+        */
+
+
         //typename op_t::type tmp;
         std::pair<tag_type, value_type> ptag;
         if (i < j) {
@@ -73,7 +88,7 @@ struct TermMaker {
             fill_op = model->filling_matrix_tag(i);
             ptag = op_table->get_product_tag(fill_op, op1);
 			
-			#define DEBUG_OP
+			//#define DEBUG_OP
 			#ifdef DEBUG_OP
 			maquis::cout << "TERM: (" << i << "," << j << ")\n";
 			maquis::cout << "product fill * op1\n";
@@ -82,9 +97,10 @@ struct TermMaker {
 			maquis::cout << "operator coeff: " << ptag.second << std::endl;
 			#endif
 			
-            term.push_back(boost::make_tuple(i, ptag.first));
+            term.push_back(boost::make_tuple(i, op1));
             term.push_back(boost::make_tuple(j, op2));
-            term.coeff *= ptag.second;
+            //maquis::cout << "term: (" << i << "," << j << "); coeff: " << term.coeff << std::endl;
+            //term.coeff *= ptag.second;
         }
         else {
             // Use the fill operator from the model
@@ -96,12 +112,15 @@ struct TermMaker {
 			maquis::cout << "product fill * op2\n";
 			maquis::cout << "operator tag before fill: " << op2 << std::endl;
 			maquis::cout << "operator tag after fill: " << ptag.first << std::endl;
-			maquis::cout << "operator coeff: " << ptag.second << std::endl;
+			maquis::cout << "operator coeff: " << -ptag.second << std::endl;
 			#endif
 			
             term.push_back(boost::make_tuple(i, op1));
-            term.push_back(boost::make_tuple(j, ptag.first));
-            term.coeff *= -ptag.second;
+            term.push_back(boost::make_tuple(j, op2));
+            //term.push_back(boost::make_tuple(j, ptag.first));
+            //term.coeff *= -ptag.second;
+            //term.coeff *= -1.0;
+            //maquis::cout << "term: (" << i << "," << j << "); coeff: " << term.coeff << std::endl;
         }
         return term;
     }

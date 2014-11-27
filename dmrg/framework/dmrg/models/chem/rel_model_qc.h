@@ -40,8 +40,8 @@
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
-#include "dmrg/models/chem/term_maker.h"
-#include "dmrg/models/chem/chem_detail.h"
+#include "dmrg/models/chem/rel_term_maker.h"
+#include "dmrg/models/chem/rel_chem_detail.h"
 #include "dmrg/models/chem/pg_util.h"
 
 template<class Matrix, class SymmGroup>
@@ -73,10 +73,10 @@ public:
         return;
     }
     
-    // align function moved here from chem_detail.h
-    static chem_detail::IndexTuple align(int i, int j, int k, int l) {
+    // align function moved here from rel_chem_detail.h
+    static rel_chem_detail::IndexTuple align(int i, int j, int k, int l) {
         // For the time being (12.06.14) do nothing in the relativistic model
-        return chem_detail::IndexTuple(i,j,k,l);
+        return rel_chem_detail::IndexTuple(i,j,k,l);
     }
 
     Index<SymmGroup> const & phys_dim(size_t type) const
@@ -86,13 +86,19 @@ public:
     }
     tag_type identity_matrix_tag(size_t type) const
     {
-		if (type < lat.size()/2)
+		// transfer operator
+        //if (type == (lat.size()/2) -1)
+        //    return ident_transfer;
+        if (type < lat.size()/2)
             return ident_unbar;
         else
             return ident_bar;
     }
     tag_type filling_matrix_tag(size_t type) const
     {
+		// transfer operator
+        //if (type == (lat.size()/2) -1)
+        //    return fill_transfer;
         if (type < lat.size()/2)
             return fill_unbar;
         else
@@ -106,8 +112,8 @@ public:
         std::size_t site[] = {i, j, k, l};
         for (int ii=0; ii<4; ++ii) {
             charges[ii][2] = lat.get_prop<int>("irrep", site[ii]);
-            if (site[ii] < lat.size()) {charges[ii][0] = 1;}
-            else if (site[ii] >= lat.size()) {charges[ii][1] = 1;}
+            if (site[ii] < lat.size()/2) {charges[ii][0] = 1;}
+            else if (site[ii] >= lat.size()/2) {charges[ii][1] = 1;}
             else {throw std::runtime_error("integrals parsing failed\n");}
         if (ii%2 == 0) {
             tmp = SymmGroup::fuse(tmp,charges[ii]);}
@@ -123,7 +129,7 @@ public:
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
     {
-        return chem_detail::qn_helper<SymmGroup>().total_qn(parms_);
+        return rel_chem_detail::qn_helper<SymmGroup>().total_qn(parms_);
     }
 
     tag_type get_operator_tag(std::string const & name, size_t type) const
@@ -468,7 +474,7 @@ private:
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type ident_unbar, ident_bar, fill_unbar, fill_bar,
              create_unbar, create_bar, destroy_unbar, destroy_bar,
-             count_unbar, count_bar;
+             count_unbar, count_bar, ident_transfer, fill_transfer;
 
     typename SymmGroup::subcharge max_irrep;
 

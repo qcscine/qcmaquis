@@ -44,6 +44,7 @@ namespace contraction {
         int loop_max = left.aux_dim();
         {
             select_proc(storage::actor_t::common);
+            
             mps.make_right_paired();
         }
         omp_for(int b1, range(0,loop_max), {
