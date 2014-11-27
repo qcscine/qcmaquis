@@ -222,20 +222,27 @@ namespace generate_mpo
         {
             assert(term.size() == 2);
             
+            int mpo_spin = 0;
             prempo_key_type k1 = trivial_left;
             {
                 int i = 0;
+                mpo_spin += (tag_handler->get_op(term.operator_tag(i))).twoSaction;
                 prempo_key_type k2;
                 k2.pos_op.push_back(to_pair(term[i+1]));
                 k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
             }
+
             bool trivial_fill = !tag_handler->is_fermionic(term.operator_tag(1));
-            insert_filling(term.position(0)+1, term.position(1), k1, trivial_fill); // todo: check with long-range n_i*n_j
+            // todo: check with long-range n_i*n_j                                  if spin > 0, need to use the full identity
+            insert_filling(term.position(0)+1, term.position(1), k1, trivial_fill, (mpo_spin > 0) ? term.full_identity : -1);
             {
                 int i = 1;
+                mpo_spin += (tag_handler->get_op(term.operator_tag(i))).twoSaction;
                 prempo_key_type k2 = trivial_right;
                 insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), detach);
             }
+
+            assert(mpo_spin == 0); // H is a spin 0 operator
         }
         
         void add_3term(term_descriptor const& term)
@@ -363,10 +370,11 @@ namespace generate_mpo
             
         }
 
-		void insert_filling(pos_t i, pos_t j, prempo_key_type k, bool trivial_fill)
+		void insert_filling(pos_t i, pos_t j, prempo_key_type k, bool trivial_fill, int custom_fill = -1)
 		{
 			for (; i < j; ++i) {
                 tag_type op = (trivial_fill) ? model.identity_matrix_tag(lat.get_prop<int>("type",i)) : model.filling_matrix_tag(lat.get_prop<int>("type",i));
+                op = (custom_fill != -1) ? custom_fill : op;
 				std::pair<typename prempo_map_type::iterator,bool> ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
 				if (!ret.second && ret.first->second.first != op)
 					throw std::runtime_error("Pre-existing term at site "+boost::lexical_cast<std::string>(i)

@@ -314,6 +314,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
 //#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
 //    PRINT(ident)
+//    PRINT(ident_full)
 //    PRINT(fill)
 //    PRINT(create_fill)
 //    PRINT(create)
@@ -423,7 +424,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             // here we have spin0--j--spin1--i--spin0
             // the sqrt(3.) counteracts the Clebsch coeff C^{110}_{mrm'} which applies when the spin1 couples back to spin0
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                false, lat.size(), ident, fill, std::sqrt(3.) * matrix_elements[m], i, j, flip_to_S2, flip_to_S0, flip_to_S0, flip_to_S2
+                false, lat.size(), ident, ident_full, std::sqrt(3.) * matrix_elements[m], i, j, flip_to_S0, flip_to_S2, flip_to_S0, flip_to_S2
             ));
 
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, -0.5 * matrix_elements[m], i, j, count, count, tag_handler));

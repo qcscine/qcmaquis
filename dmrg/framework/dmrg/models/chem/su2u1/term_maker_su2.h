@@ -44,12 +44,13 @@ struct TermMakerSU2 {
         return boost::tuples::get<0>(p1) < boost::tuples::get<0>(p2);
     }
 
-    static term_descriptor two_term(bool sign, tag_type fill_op, value_type scale, pos_t i, pos_t j,
+    static term_descriptor two_term(bool sign, tag_type full_ident, value_type scale, pos_t i, pos_t j,
                                      tag_type op1, tag_type op2,
                                      boost::shared_ptr<TagHandler<M, S> > op_table)
     {
         term_descriptor term;
         term.is_fermionic = sign;
+        term.full_identity = full_ident;
         term.coeff = scale;
         term.push_back(boost::make_tuple(i, op1));
         term.push_back(boost::make_tuple(j, op2));
@@ -61,11 +62,12 @@ struct TermMakerSU2 {
     {
         term_descriptor term;
         term.is_fermionic = sign;
+        term.full_identity = fill;
         term.coeff = scale;
 
         tag_type op1_use = (i<j) ? op1_fill : op2_fill;
         tag_type op2_use = (i<j) ? op2 : op1;
-        if (j<i) term.coeff = -term.coeff;
+        if (j<i && sign) term.coeff = -term.coeff;
 
         int start = std::min(i,j), end = std::max(i,j);
         //for (int fs=0; fs < start; ++fs)
