@@ -45,8 +45,7 @@ struct TermMakerSU2 {
     }
 
     static term_descriptor two_term(bool sign, tag_type full_ident, value_type scale, pos_t i, pos_t j,
-                                     tag_type op1, tag_type op2,
-                                     boost::shared_ptr<TagHandler<M, S> > op_table)
+                                     tag_type op1, tag_type op2)
     {
         term_descriptor term;
         term.is_fermionic = sign;
