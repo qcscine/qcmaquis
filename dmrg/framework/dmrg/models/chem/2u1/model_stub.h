@@ -428,6 +428,58 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
             used_elements[m] += 1;
         }
 
+        // 9887 7371 8727
+
+        // 4-fold degenerate (+spin) V_ijil = V_ijli = V_jiil = V_jili  <--- coded
+        //                           V_ilij = V_ilji = V_liij = V_liji
+        else if ( ((i==k && j!=l) || j==k || (j==l && i!=k)) && (i!=j && k!=l)) {
+            int same_idx, pos1, pos2;
+            if (i==k) { same_idx = i; pos1 = l; pos2 = j; }
+            if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
+            if (j==l) { same_idx = j; pos1 = k; pos2 = i; }
+
+            //term_assistant.add_term(
+            //    this->terms_, matrix_elements[m], same_idx, pos1, pos2, create_up, create_down , destroy_down, destroy_up
+            //);
+            //term_assistant.add_term(
+            //    this->terms_, matrix_elements[m], same_idx, pos1, pos2, create_down, create_up   , destroy_up  , destroy_down
+            //);
+            //term_assistant.add_term(
+            //    this->terms_, matrix_elements[m], same_idx, pos1, pos2, destroy_down, destroy_up  , create_up   , create_down
+            //);
+            //term_assistant.add_term(
+            //    this->terms_, matrix_elements[m], same_idx, pos1, pos2, destroy_up, destroy_down, create_down , create_up
+            //);
+
+            //term_assistant.add_term(
+            //    this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_up,   create_up,   destroy_up
+            //);
+            //term_assistant.add_term(
+            //    this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_down, create_down, destroy_up
+            //);
+            //term_assistant.add_term(
+            //    this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_down, destroy_up,   create_up,   destroy_down
+            //);
+            //term_assistant.add_term(
+            //    this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_down, destroy_down, create_down, destroy_down
+            //);
+
+            //term_assistant.add_term(
+            //    this->terms_, -matrix_elements[m], same_idx, pos2, pos1, create_up,   destroy_up,   create_up,   destroy_up
+            //);
+            //term_assistant.add_term(
+            //    this->terms_, -matrix_elements[m], same_idx, pos2, pos1, create_up,   destroy_down, create_down, destroy_up
+            //);
+            //term_assistant.add_term(
+            //    this->terms_, -matrix_elements[m], same_idx, pos2, pos1, create_down, destroy_up,   create_up,   destroy_down
+            //);
+            //term_assistant.add_term(
+            //    this->terms_, -matrix_elements[m], same_idx, pos2, pos1, create_down, destroy_down, create_down, destroy_down
+            //);
+
+            used_elements[m] += 1;
+        }
+
     } // matrix_elements for
 
     term_assistant.commit_terms(this->terms_);

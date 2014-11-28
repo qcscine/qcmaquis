@@ -200,10 +200,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     op_t create_fill_op;
     create_fill_op.twoS = 1; create_fill_op.twoSaction = 1;
-    create_fill_op.insert_block(Matrix(1,1,2.), B, A);
-    create_fill_op.insert_block(Matrix(1,1,2.), C, A);
-    create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), D, B);
-    create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), D, C);
+    create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
+    create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
+    create_fill_op.insert_block(Matrix(1,1,1), D, B);
+    create_fill_op.insert_block(Matrix(1,1,1), D, C);
 
     op_t destroy_op;
     destroy_op.twoS = 1; destroy_op.twoSaction = -1;
@@ -221,17 +221,17 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     op_t create_op;
     create_op.twoS = 1; create_op.twoSaction = -1;
-    create_op.insert_block(Matrix(1,1,2.), B, A);
-    create_op.insert_block(Matrix(1,1,2.), C, A);
-    create_op.insert_block(Matrix(1,1,-sqrt(2.)), D, B);
-    create_op.insert_block(Matrix(1,1,-sqrt(2.)), D, C);
+    create_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
+    create_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
+    create_op.insert_block(Matrix(1,1,-1), D, B);
+    create_op.insert_block(Matrix(1,1,-1), D, C);
 
     /*************************************************************/
 
     op_t create_fill_count_op;
     create_fill_count_op.twoS = 1; create_fill_count_op.twoSaction = 1;
-    create_fill_count_op.insert_block(Matrix(1,1,2.), B, A);
-    create_fill_count_op.insert_block(Matrix(1,1,2.), C, A);
+    create_fill_count_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
+    create_fill_count_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
 
     op_t destroy_count_op;
     destroy_count_op.twoS = 1; destroy_count_op.twoSaction = -1;
@@ -245,8 +245,8 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     op_t create_count_op;
     create_count_op.twoS = 1; create_count_op.twoSaction = -1;
-    create_count_op.insert_block(Matrix(1,1,2.), B, A);
-    create_count_op.insert_block(Matrix(1,1,2.), C, A);
+    create_count_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
+    create_count_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
 
     /*************************************************************/
 
@@ -367,11 +367,12 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
 
+            // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, lat.size(), ident, fill, matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill
+                true, lat.size(), ident, fill, std::sqrt(2.)*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill
             ));
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, lat.size(), ident, fill, matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill
+                true, lat.size(), ident, fill, std::sqrt(2.)*matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill
             ));
 
             used_elements[m] += 1;
@@ -398,10 +399,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
 
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, lat.size(), ident, fill, matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill
+                true, lat.size(), ident, fill, std::sqrt(2.)*matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill
             ));
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, lat.size(), ident, fill, -matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill
+                true, lat.size(), ident, fill, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill
             ));
 
             used_elements[m] += 1;
@@ -443,11 +444,31 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             if (k==l) { same_idx = k; k = i; l = j; }
             
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
-                ident, fill, matrix_elements[m], same_idx, k, l, count, count_fill, create, create_fill, destroy, destroy_fill
+                ident, fill, std::sqrt(2.)*matrix_elements[m], same_idx, k, l, count, count_fill, create, create_fill, destroy, destroy_fill
             ));
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
-                ident, fill, matrix_elements[m], same_idx, l, k, count, count_fill, create, create_fill, destroy, destroy_fill
+                ident, fill, std::sqrt(2.)*matrix_elements[m], same_idx, l, k, count, count_fill, create, create_fill, destroy, destroy_fill
             ));
+
+            used_elements[m] += 1;
+        }
+
+        // 9887 7371 8727
+
+        // 4-fold degenerate (+spin) V_ijil = V_ijli = V_jiil = V_jili  <--- coded
+        //                           V_ilij = V_ilji = V_liij = V_liji
+        else if ( ((i==k && j!=l) || j==k || (j==l && i!=k)) && (i!=j && k!=l)) {
+            int same_idx, pos1, pos2;
+            if (i==k) { same_idx = i; pos1 = l; pos2 = j; }
+            if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
+            if (j==l) { same_idx = j; pos1 = k; pos2 = i; }
+            
+            //this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+            //    ident, fill, std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill
+            //));
+            //this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+            //    ident, fill, std::sqrt(0.5)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill
+            //));
 
             used_elements[m] += 1;
         }
