@@ -256,13 +256,15 @@ namespace generate_mpo
                 if (tag_handler->is_fermionic(term.operator_tag(i)))
                     nferm += 1;
             }
-            
+
+            int mpo_spin = 0;
             prempo_key_type k1 = trivial_left;
             std::vector<pos_op_type> ops_left;
             
             /// op_0
             {
                 int i = 0;
+                mpo_spin += (tag_handler->get_op(term.operator_tag(i))).twoSaction;
                 prempo_key_type k2;
                 k2.pos_op.push_back(to_pair(term[i])); // k2: applied operator
                 k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), attach);
@@ -275,6 +277,7 @@ namespace generate_mpo
             /// op_1
             {
                 int i = 1;
+                mpo_spin += (tag_handler->get_op(term.operator_tag(i))).twoSaction;
                 prempo_key_type k2;
                 k2.pos_op.push_back(to_pair(term[i+1])); // k2: future operators
                 k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
@@ -287,8 +290,10 @@ namespace generate_mpo
             /// op_2
             {
                 int i = 2;
+                mpo_spin += (tag_handler->get_op(term.operator_tag(i))).twoSaction;
                 insert_operator(term.position(i), make_pair(k1, trivial_right), prempo_value_type(term.operator_tag(i), 1.), detach);
             }
+            assert(mpo_spin == 0); // H is a spin 0 operator
         }
         
         void add_4term(term_descriptor const& term)
