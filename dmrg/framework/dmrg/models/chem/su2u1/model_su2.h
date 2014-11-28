@@ -442,7 +442,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             int same_idx;
             if (i==j) { same_idx = i; }
             if (k==l) { same_idx = k; k = i; l = j; }
-            
+
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
                 ident, fill, std::sqrt(2.)*matrix_elements[m], same_idx, k, l, count, count_fill, create, create_fill, destroy, destroy_fill
             ));
@@ -462,13 +462,13 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             if (i==k) { same_idx = i; pos1 = l; pos2 = j; }
             if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
             if (j==l) { same_idx = j; pos1 = k; pos2 = i; }
-            
-            //this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
-            //    ident, fill, std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill
-            //));
-            //this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
-            //    ident, fill, std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill
-            //));
+
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                ident, fill, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill
+            ));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                ident, fill, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill
+            ));
 
             used_elements[m] += 1;
         }

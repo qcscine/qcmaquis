@@ -438,18 +438,18 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
             if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
             if (j==l) { same_idx = j; pos1 = k; pos2 = i; }
 
-            //term_assistant.add_term(
-            //    this->terms_, matrix_elements[m], same_idx, pos1, pos2, create_up, create_down , destroy_down, destroy_up
-            //);
-            //term_assistant.add_term(
-            //    this->terms_, matrix_elements[m], same_idx, pos1, pos2, create_down, create_up   , destroy_up  , destroy_down
-            //);
-            //term_assistant.add_term(
-            //    this->terms_, matrix_elements[m], same_idx, pos1, pos2, destroy_down, destroy_up  , create_up   , create_down
-            //);
-            //term_assistant.add_term(
-            //    this->terms_, matrix_elements[m], same_idx, pos1, pos2, destroy_up, destroy_down, create_down , create_up
-            //);
+            term_assistant.add_term(
+                this->terms_, matrix_elements[m], same_idx, pos1, pos2, create_up, create_down , destroy_down, destroy_up
+            );
+            term_assistant.add_term(
+                this->terms_, matrix_elements[m], same_idx, pos1, pos2, create_down, create_up   , destroy_up  , destroy_down
+            );
+            term_assistant.add_term(
+                this->terms_, matrix_elements[m], same_idx, pos1, pos2, destroy_down, destroy_up  , create_up   , create_down
+            );
+            term_assistant.add_term(
+                this->terms_, matrix_elements[m], same_idx, pos1, pos2, destroy_up, destroy_down, create_down , create_up
+            );
 
             //term_assistant.add_term(
             //    this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_up,   create_up,   destroy_up
