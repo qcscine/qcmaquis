@@ -123,7 +123,7 @@ private:
              create_fill_couple_down, destroy_fill_couple_down,
              create_couple_up, destroy_couple_up,
              create_fill_count, create_count, destroy_fill_count, destroy_count,
-             count, docc, e2d, d2e, flip_to_S2, flip_to_S0,
+             count, docc, e2d, d2e, flip_S0, flip_to_S2, flip_to_S0,
              ident, ident_full, fill, count_fill;
 
     typename SymmGroup::subcharge max_irrep;
@@ -297,6 +297,9 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     op_t flip_to_S0_op = flip_to_S2_op;
     flip_to_S0_op.twoSaction = -2;
 
+    op_t flip_S0_op = flip_to_S2_op;
+    flip_S0_op.twoSaction = 0;
+
     /**********************************************************************/
     /*** Create operator tag table ****************************************/
     /**********************************************************************/
@@ -326,6 +329,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     REGISTER(docc,         tag_detail::bosonic)
     REGISTER(e2d,          tag_detail::bosonic)
     REGISTER(d2e,          tag_detail::bosonic)
+    REGISTER(flip_S0,      tag_detail::bosonic)
     REGISTER(flip_to_S2,   tag_detail::bosonic)
     REGISTER(flip_to_S0,   tag_detail::bosonic)
     REGISTER(count_fill,   tag_detail::bosonic)
@@ -524,6 +528,22 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
                 ));
                 this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
                     ident, fill, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
+                ));
+            }
+            else
+            {
+                this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                    ident, fill, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill
+                ));
+                this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                    ident, fill, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count_fill, count_fill, create, create_fill, destroy, destroy_fill
+                ));
+
+                this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                    ident, fill, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill
+                ));
+                this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                    ident, fill, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count_fill, count_fill, create, create_fill, destroy, destroy_fill
                 ));
             }
 
