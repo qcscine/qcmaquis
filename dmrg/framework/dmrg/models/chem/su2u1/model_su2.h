@@ -120,7 +120,8 @@ private:
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type create_fill, create, destroy_fill, destroy,
-             create_fill_couple_down,
+             create_fill_couple_down, destroy_fill_couple_down,
+             create_couple_up, destroy_couple_up,
              create_fill_count, create_count, destroy_fill_count, destroy_count,
              count, docc, e2d, d2e, flip_to_S2, flip_to_S0,
              ident, ident_full, fill, count_fill;
@@ -232,6 +233,15 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     op_t create_fill_couple_down_op = create_fill_op;
     create_fill_couple_down_op.twoSaction = -1;
 
+    op_t destroy_fill_couple_down_op = destroy_fill_op;
+    destroy_fill_couple_down_op.twoSaction = -1;
+
+    op_t create_couple_up_op = create_op;
+    create_couple_up_op.twoSaction = 1;
+
+    op_t destroy_couple_up_op = destroy_op;
+    destroy_couple_up_op.twoSaction = 1;
+
     /*************************************************************/
 
     op_t create_fill_count_op;
@@ -303,6 +313,9 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     REGISTER(destroy,      tag_detail::fermionic)
 
     REGISTER(create_fill_couple_down,  tag_detail::fermionic)
+    REGISTER(destroy_fill_couple_down,  tag_detail::fermionic)
+    REGISTER(create_couple_up,  tag_detail::fermionic)
+    REGISTER(destroy_couple_up,  tag_detail::fermionic)
 
     REGISTER(create_fill_count,  tag_detail::fermionic)
     REGISTER(create_count,       tag_detail::fermionic)
@@ -480,13 +493,20 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             ));
 
             if (! (same_idx < std::min(pos1,pos2))) continue;
-            assert (pos1 < pos2);
 
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
                 ident_full, fill, std::sqrt(3./2.)*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill
             ));
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
                 ident, fill, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
+            ));
+
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                // note minus sign, because commutation on same_idx is not taken into account
+                ident_full, fill, -std::sqrt(3./2.)*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill_couple_down
+            ));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                ident, fill, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
             ));
 
             used_elements[m] += 1;
