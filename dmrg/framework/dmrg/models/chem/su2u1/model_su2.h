@@ -120,6 +120,7 @@ private:
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type create_fill, create, destroy_fill, destroy,
+             create_fill_couple_down,
              create_fill_count, create_count, destroy_fill_count, destroy_count,
              count, docc, e2d, d2e, flip_to_S2, flip_to_S0,
              ident, ident_full, fill, count_fill;
@@ -228,6 +229,11 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     /*************************************************************/
 
+    op_t create_fill_couple_down_op = create_fill_op;
+    create_fill_couple_down_op.twoSaction = -1;
+
+    /*************************************************************/
+
     op_t create_fill_count_op;
     create_fill_count_op.twoS = 1; create_fill_count_op.twoSaction = 1;
     create_fill_count_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
@@ -295,6 +301,8 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     REGISTER(create,       tag_detail::fermionic)
     REGISTER(destroy_fill, tag_detail::fermionic)
     REGISTER(destroy,      tag_detail::fermionic)
+
+    REGISTER(create_fill_couple_down,  tag_detail::fermionic)
 
     REGISTER(create_fill_count,  tag_detail::fermionic)
     REGISTER(create_count,       tag_detail::fermionic)
@@ -463,11 +471,22 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
             if (j==l) { same_idx = j; pos1 = k; pos2 = i; }
 
+            // Note: need minus because of clebsch gordan coeff from two destructors or two creators
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
                 ident, fill, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill
             ));
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
                 ident, fill, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill
+            ));
+
+            if (! (same_idx < std::min(pos1,pos2))) continue;
+            assert (pos1 < pos2);
+
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                ident_full, fill, std::sqrt(3./2.)*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill
+            ));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                ident, fill, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
             ));
 
             used_elements[m] += 1;

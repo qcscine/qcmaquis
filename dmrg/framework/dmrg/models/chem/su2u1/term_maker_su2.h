@@ -91,6 +91,7 @@ struct TermMakerSU2 {
         term_descriptor term;
         term.is_fermionic = true;
         term.coeff = scale;
+        term.full_identity = ident;
 
         tag_type boson_op_use, op1_use, op2_use;
 

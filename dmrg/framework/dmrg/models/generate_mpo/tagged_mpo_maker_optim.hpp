@@ -272,7 +272,7 @@ namespace generate_mpo
                 if (tag_handler->is_fermionic(term.operator_tag(i)))
                     nferm -= 1;
                 bool trivial_fill = (nferm % 2 == 0);
-                insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill);
+                insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill, (mpo_spin > 1) ? term.full_identity : -1);
             }
             /// op_1
             {
@@ -375,11 +375,11 @@ namespace generate_mpo
             
         }
 
-		void insert_filling(pos_t i, pos_t j, prempo_key_type k, bool trivial_fill, int custom_fill = -1)
+		void insert_filling(pos_t i, pos_t j, prempo_key_type k, bool trivial_fill, int custom_ident = -1)
 		{
 			for (; i < j; ++i) {
-                tag_type op = (trivial_fill) ? model.identity_matrix_tag(lat.get_prop<int>("type",i)) : model.filling_matrix_tag(lat.get_prop<int>("type",i));
-                op = (custom_fill != -1) ? custom_fill : op;
+                tag_type use_ident = (custom_ident != -1) ? custom_ident : model.identity_matrix_tag(lat.get_prop<int>("type",i));
+                tag_type op = (trivial_fill) ? use_ident : model.filling_matrix_tag(lat.get_prop<int>("type",i));
 				std::pair<typename prempo_map_type::iterator,bool> ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
 				if (!ret.second && ret.first->second.first != op)
 					throw std::runtime_error("Pre-existing term at site "+boost::lexical_cast<std::string>(i)

@@ -450,19 +450,22 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
             term_assistant.add_term(
                 this->terms_, matrix_elements[m], same_idx, pos1, pos2, destroy_up, destroy_down, create_down , create_up
             );
+            
+            if (!(same_idx < std::min(pos1,pos2))) continue;
+            assert(pos1 < pos2);
 
-            //term_assistant.add_term(
-            //    this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_up,   create_up,   destroy_up
-            //);
-            //term_assistant.add_term(
-            //    this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_down, create_down, destroy_up
-            //);
-            //term_assistant.add_term(
-            //    this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_down, destroy_up,   create_up,   destroy_down
-            //);
-            //term_assistant.add_term(
-            //    this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_down, destroy_down, create_down, destroy_down
-            //);
+            term_assistant.add_term(
+                this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_up,   create_up,   destroy_up
+            );
+            term_assistant.add_term(
+                this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_up,   destroy_down, create_down, destroy_up
+            );
+            term_assistant.add_term(
+                this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_down, destroy_up,   create_up,   destroy_down
+            );
+            term_assistant.add_term(
+                this->terms_, -matrix_elements[m], same_idx, pos1, pos2, create_down, destroy_down, create_down, destroy_down
+            );
 
             //term_assistant.add_term(
             //    this->terms_, -matrix_elements[m], same_idx, pos2, pos1, create_up,   destroy_up,   create_up,   destroy_up
