@@ -492,22 +492,40 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
                 ident, fill, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill
             ));
 
-            if (! (same_idx < std::min(pos1,pos2))) continue;
+            if ( same_idx < std::min(pos1,pos2) )
+            {
+                this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                    ident_full, fill, std::sqrt(3./2.)*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill
+                ));
+                this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                    ident, fill, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
+                ));
 
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
-                ident_full, fill, std::sqrt(3./2.)*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill
-            ));
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
-                ident, fill, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
-            ));
+                this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                    // note minus sign, because commutation on same_idx is not taken into account
+                    ident_full, fill, -std::sqrt(3./2.)*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill_couple_down
+                ));
+                this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                    ident, fill, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
+                ));
+            }
+            else if (same_idx > std::max(pos1,pos2))
+            {
+                this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                    ident_full, fill, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill
+                ));
+                this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                    ident, fill, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
+                ));
 
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
-                // note minus sign, because commutation on same_idx is not taken into account
-                ident_full, fill, -std::sqrt(3./2.)*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill_couple_down
-            ));
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
-                ident, fill, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
-            ));
+                this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                    // note minus sign, because commutation on same_idx is not taken into account
+                    ident_full, fill, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill
+                ));
+                this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::three_term(
+                    ident, fill, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
+                ));
+            }
 
             used_elements[m] += 1;
         }

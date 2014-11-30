@@ -285,7 +285,7 @@ namespace generate_mpo
                 if (tag_handler->is_fermionic(term.operator_tag(i)))
                     nferm -= 1;
                 bool trivial_fill = (nferm % 2 == 0);
-                insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill);
+                insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill, (mpo_spin > 1) ? term.full_identity : -1);
             }
             /// op_2
             {
