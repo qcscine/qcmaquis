@@ -293,6 +293,7 @@ namespace generate_mpo
                 mpo_spin += (tag_handler->get_op(term.operator_tag(i))).twoSaction;
                 insert_operator(term.position(i), make_pair(k1, trivial_right), prempo_value_type(term.operator_tag(i), 1.), detach);
             }
+
             assert(mpo_spin == 0); // H is a spin 0 operator
         }
         
@@ -308,22 +309,25 @@ namespace generate_mpo
                     nferm += 1;
             }
             
+            int mpo_spin = 0;
             prempo_key_type k1 = trivial_left;
             std::vector<pos_op_type> ops_left;
             
             /// op_0, op_1
             for (int i = 0; i < 2; ++i) {
+                mpo_spin += (tag_handler->get_op(term.operator_tag(i))).twoSaction;
                 ops_left.push_back(to_pair(term[i])); prempo_key_type k2(ops_left);
                 k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), attach);
                 
                 if (tag_handler->is_fermionic(term.operator_tag(i)))
                     nferm -= 1;
                 bool trivial_fill = (nferm % 2 == 0);
-                insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill);
+                insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill, (mpo_spin > 1) ? term.full_identity : -1);
             }
             /// op_2
             {
                 int i = 2;
+                mpo_spin += (tag_handler->get_op(term.operator_tag(i))).twoSaction;
                 prempo_key_type k2;
                 k2.pos_op.push_back(to_pair(term[3]));
                 k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
@@ -331,14 +335,17 @@ namespace generate_mpo
                 if (tag_handler->is_fermionic(term.operator_tag(i)))
                     nferm -= 1;
                 bool trivial_fill = (nferm % 2 == 0);
-                insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill);
+                insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill, (mpo_spin > 1) ? term.full_identity : -1);
             }
 
             /// op_3
             {
                 int i = 3;
+                mpo_spin += (tag_handler->get_op(term.operator_tag(i))).twoSaction;
                 insert_operator(term.position(i), make_pair(k1, trivial_right), prempo_value_type(term.operator_tag(i), 1.), detach);
             }
+
+            assert(mpo_spin == 0); // H is a spin 0 operator
         }
 
         void add_nterm(term_descriptor const& term)
