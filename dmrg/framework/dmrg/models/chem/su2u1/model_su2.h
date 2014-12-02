@@ -43,6 +43,7 @@
 #include "dmrg/models/chem/util.h"
 #include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/pg_util.h"
+#include "dmrg/models/chem/su2u1/chem_helper_su2.h"
 #include "dmrg/models/chem/su2u1/term_maker_su2.h"
 
 template<class Matrix, class SymmGroup>
@@ -365,10 +366,9 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     destroy_pkg.fill_couple_down = destroy_fill_couple_down;
     /**********************************************************************/
 
-    //chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, ident, tag_handler);
-    alps::numeric::matrix<Lattice::pos_t> idx_;
-    std::vector<value_type> matrix_elements;
-    boost::tie(idx_, matrix_elements) = chem_detail::parse_integrals<value_type>(parms, lat);
+    chem_detail::ChemHelperSU2<Matrix, SymmGroup> term_assistant(parms, lat, ident, ident, tag_handler);
+    alps::numeric::matrix<Lattice::pos_t> idx_ = term_assistant.getIdx();
+    std::vector<value_type> matrix_elements = term_assistant.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
  
@@ -564,11 +564,11 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
         // 32 (8x4)-fold degenerate V_ijkl = V_jikl = V_ijlk = V_jilk = V_klij = V_lkij = V_klji = V_lkji * spin
         // V_ijkl -> 24 permutations which fall into 3 equivalence classes of 8 elements (with identical V_ matrix element)
-        // coded: 4 index permutations x 4 spin combinations 
+        // coded: 4 index permutations which generate all Sz spins
         else if (i!=j && j!=k && k!=l && i!=k && j!=l) {
             typedef TermMakerSU2<Matrix, SymmGroup> TM;
 
-            // These 3 cases produce different S_z spin patterns, which differ along with different index orders
+            // These 3 cases produce different S_z spin patterns, which differ along with different index permutations
             // As in standard notation of the Hamiltonian, the first two positions get a creator, the last two a destructor
 
             if (k > l && l > j) // eg V_4132
