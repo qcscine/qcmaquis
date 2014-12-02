@@ -38,8 +38,19 @@ struct TermMakerSU2 {
     typedef typename TagHandler<M, S>::tag_type tag_type;
     typedef typename term_descriptor::value_type pos_op_t;
 
-    static bool compare_tag(pos_op_t p1,
-                            pos_op_t p2)
+    struct OperatorBundle
+    {
+        tag_type couple_up;
+        tag_type couple_down;
+        tag_type fill_couple_up;
+        tag_type fill_couple_down;
+    };
+
+    typedef boost::tuple<tag_type, OperatorBundle> pos_bundle_t;
+
+    template <class Tuple>
+    static bool compare_tag(Tuple p1,
+                            Tuple p2)
     {
         return boost::tuples::get<0>(p1) < boost::tuples::get<0>(p2);
     }
@@ -83,7 +94,7 @@ struct TermMakerSU2 {
         return term;
     }
 
-    static term_descriptor three_term(tag_type ident, tag_type fill_op,
+    static term_descriptor three_term(tag_type full_ident,
                                       value_type scale, pos_t pb, pos_t p1, pos_t p2,
                                       tag_type boson_op, tag_type boson_op_fill,
                                       tag_type op1, tag_type op1_fill, tag_type op2, tag_type op2_fill)
@@ -91,7 +102,7 @@ struct TermMakerSU2 {
         term_descriptor term;
         term.is_fermionic = true;
         term.coeff = scale;
-        term.full_identity = ident;
+        term.full_identity = full_ident;
 
         tag_type boson_op_use, op1_use, op2_use;
 
@@ -113,7 +124,7 @@ struct TermMakerSU2 {
         sterm.push_back( boost::make_tuple(pb, boson_op_use) );
         sterm.push_back( boost::make_tuple(std::min(p1,p2), op1_use) );
         sterm.push_back( boost::make_tuple(std::max(p1,p2), op2_use) );
-        std::sort(sterm.begin(), sterm.end(), compare_tag);
+        std::sort(sterm.begin(), sterm.end(), compare_tag<pos_op_t>);
 
         term.push_back(sterm[0]);
         term.push_back(sterm[1]);
@@ -122,14 +133,15 @@ struct TermMakerSU2 {
         return term;
     }
 
-    static term_descriptor four_term(tag_type ident, tag_type fill_op,
-                                value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
-                                tag_type op_i, tag_type op_j,
-                                tag_type op_k, tag_type op_l,
-                                boost::shared_ptr<TagHandler<M, S> > op_table)
+    static term_descriptor four_term(tag_type full_ident, int max_two_S,
+                                     value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
+                                     OperatorBundle op_i, OperatorBundle op_k)
     {
+        using boost::tuples::get;
+
         term_descriptor term;
         term.is_fermionic = true;
+        term.full_identity = full_ident;
         term.coeff = scale;
 
         // Simple O(n^2) algorithm to determine sign of permutation
@@ -139,28 +151,29 @@ struct TermMakerSU2 {
             for(pos_t c2 = c1+1; c2 < n; c2++)
                 if(idx[c1] > idx[c2]) inv_count++;
 
-        std::vector<pos_op_t> sterm;
-        sterm.push_back(boost::make_tuple(i, op_i));
-        sterm.push_back(boost::make_tuple(j, op_j));
-        sterm.push_back(boost::make_tuple(k, op_k));
-        sterm.push_back(boost::make_tuple(l, op_l));
-        std::sort(sterm.begin(), sterm.end(), compare_tag);
-
-        std::pair<tag_type, value_type> ptag;
-        ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[0]));
-        boost::tuples::get<1>(sterm[0]) = ptag.first;
-        term.coeff *= ptag.second;
-        ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[2]));
-        boost::tuples::get<1>(sterm[2]) = ptag.first;
-        term.coeff *= ptag.second;
-        
         if (inv_count % 2)
             term.coeff = -term.coeff;
 
-        term.push_back(sterm[0]);
-        term.push_back(sterm[1]);
-        term.push_back(sterm[2]);
-        term.push_back(sterm[3]);
+        std::vector<pos_bundle_t> sterm;
+        sterm.push_back(boost::make_tuple(i, op_i));
+        sterm.push_back(boost::make_tuple(j, op_i));
+        sterm.push_back(boost::make_tuple(k, op_k));
+        sterm.push_back(boost::make_tuple(l, op_k));
+        std::sort(sterm.begin(), sterm.end(), compare_tag<pos_bundle_t>);
+
+        if (max_two_S == 2) {
+            term.push_back(boost::make_tuple(get<0>(sterm[0]), get<1>(sterm[0]).fill_couple_up));
+            term.push_back(boost::make_tuple(get<0>(sterm[1]), get<1>(sterm[1]).couple_up));
+            term.push_back(boost::make_tuple(get<0>(sterm[2]), get<1>(sterm[2]).fill_couple_down));
+            term.push_back(boost::make_tuple(get<0>(sterm[3]), get<1>(sterm[3]).couple_down));
+        }
+        else {
+            term.push_back(boost::make_tuple(get<0>(sterm[0]), get<1>(sterm[0]).fill_couple_up));
+            term.push_back(boost::make_tuple(get<0>(sterm[1]), get<1>(sterm[1]).couple_down));
+            term.push_back(boost::make_tuple(get<0>(sterm[2]), get<1>(sterm[2]).fill_couple_up));
+            term.push_back(boost::make_tuple(get<0>(sterm[3]), get<1>(sterm[3]).couple_down));
+        }
+
         return term;
     }
 };
