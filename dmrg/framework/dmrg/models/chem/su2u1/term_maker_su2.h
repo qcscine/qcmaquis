@@ -67,12 +67,12 @@ struct TermMakerSU2 {
         return term;
     }
 
-    static term_descriptor positional_two_term(bool sign, pos_t lat_size, tag_type ident, tag_type fill, value_type scale, pos_t i, pos_t j,
+    static term_descriptor positional_two_term(bool sign, tag_type full_ident, value_type scale, pos_t i, pos_t j,
                                      tag_type op1, tag_type op1_fill, tag_type op2, tag_type op2_fill)
     {
         term_descriptor term;
         term.is_fermionic = sign;
-        term.full_identity = fill;
+        term.full_identity = full_ident;
         term.coeff = scale;
 
         tag_type op1_use = (i<j) ? op1_fill : op2_fill;
@@ -80,16 +80,9 @@ struct TermMakerSU2 {
         if (j<i && sign) term.coeff = -term.coeff;
 
         int start = std::min(i,j), end = std::max(i,j);
-        //for (int fs=0; fs < start; ++fs)
-        //    term.push_back( boost::make_tuple(fs, ident) );
         term.push_back( boost::make_tuple(start, op1_use) );
 
-        //for (int fs = start+1; fs < end; ++fs)
-        //    term.push_back( boost::make_tuple(fs, fill) );
         term.push_back( boost::make_tuple(end, op2_use) );
-
-        //for (int fs = end+1; fs < lat_size; ++fs)
-        //    term.push_back( boost::make_tuple(fs, ident) );
 
         return term;
     }

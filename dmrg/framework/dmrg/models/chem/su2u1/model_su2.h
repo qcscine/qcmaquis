@@ -391,12 +391,11 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
         // On site energy t_ii
         else if ( i==j && k == -1 && l == -1) {
-            {
-                term_descriptor term;
-                term.coeff = matrix_elements[m];
-                term.push_back( boost::make_tuple(i, count));
-                this->terms_.push_back(term);
-            }
+
+            term_descriptor term;
+            term.coeff = matrix_elements[m];
+            term.push_back( boost::make_tuple(i, count));
+            this->terms_.push_back(term);
 
             used_elements[m] += 1;
             continue;
@@ -407,10 +406,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, lat.size(), ident, fill, std::sqrt(2.)*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill
+                true, ident, std::sqrt(2.)*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill
             ));
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, lat.size(), ident, fill, std::sqrt(2.)*matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill
+                true, ident, std::sqrt(2.)*matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill
             ));
 
             used_elements[m] += 1;
@@ -437,10 +436,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
 
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, lat.size(), ident, fill, std::sqrt(2.)*matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill
+                true, ident,  std::sqrt(2.)*matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill
             ));
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, lat.size(), ident, fill, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill
+                true, ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill
             ));
 
             used_elements[m] += 1;
@@ -463,7 +462,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             // here we have spin0--j--spin1--i--spin0
             // the sqrt(3.) counteracts the Clebsch coeff C^{110}_{mrm'} which applies when the spin1 couples back to spin0
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                false, lat.size(), ident, ident_full, std::sqrt(3.) * matrix_elements[m], i, j, flip_to_S0, flip_to_S2, flip_to_S0, flip_to_S2
+                false, ident_full, std::sqrt(3.) * matrix_elements[m], i, j, flip_to_S0, flip_to_S2, flip_to_S0, flip_to_S2
             ));
 
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, -0.5 * matrix_elements[m], i, j, count, count));
