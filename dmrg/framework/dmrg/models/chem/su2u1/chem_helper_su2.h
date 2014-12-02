@@ -69,62 +69,46 @@ namespace chem_detail {
             for (typename std::map<TermTuple, term_descriptor>::const_iterator it = three_terms.begin();
                     it != three_terms.end(); ++it)
                 tagterms.push_back(it->second);
+
+            for (typename std::map<TermTuple, term_descriptor>::const_iterator it = four_terms.begin();
+                    it != four_terms.end(); ++it)
+                tagterms.push_back(it->second);
         }
 
-        void add_term(std::vector<term_descriptor> & tagterms,
-                      value_type scale, int p1, int p2, tag_type op_1, tag_type op_2) {
+        // Collapse terms with identical operators and different scales into one term
 
-            //term_descriptor
-            //term = TermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler);
-            //IndexTuple id(p1, p2, op_1, op_2);
-            //if (two_terms.count(id) == 0) {
-            //    two_terms[id] = term;
-            //}
-            //else 
-            //    two_terms[id].coeff += term.coeff;
-        }
-
-        void add_term(std::vector<term_descriptor> & tagterms,
-                      value_type scale, int s, int p1, int p2, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j) {
-
-            //term_descriptor
-            //term = TermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler);
-            //TermTuple id(IndexTuple(s,s,p1,p2),IndexTuple(op_i,op_k,op_l,op_j));
-            //if (three_terms.count(id) == 0) {
-            //    three_terms[id] = term;
-            //}
-            //else
-            //    three_terms[id].coeff += term.coeff;
-    
-        }
-
-        void add_term(std::vector<term_descriptor> & tagterms,
-                      int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
+        void add_2term(std::vector<term_descriptor> & tagterms, term_descriptor term)
         {
-            //// Collapse terms with identical operators and different scales into one term
-            //if (op_i == op_k && op_j == op_l) {
+            IndexTuple id(term.position(0), term.position(1), term.operator_tag(0), term.operator_tag(1));
+            if (two_terms.count(id) == 0) {
+                two_terms[id] = term;
+            }
+            else 
+                two_terms[id].coeff += term.coeff;
+        }
 
-            //    // if i>j, we switch l,j to get the related term
-            //    // if j<i, we have to switch i,k, otherwise we get a forbidden permutation
-            //    IndexTuple self(i,j,k,l), twin(i,l,k,j);
-            //    if (i<j) twin = IndexTuple(k,j,i,l);
+        void add_3term(std::vector<term_descriptor> & tagterms, term_descriptor term)
+        {        
+            IndexTuple pos(term.position(0), term.position(1), term.position(2), 0);
+            IndexTuple ops(term.operator_tag(0), term.operator_tag(1), term.operator_tag(2), 0);
+            TermTuple id(pos,ops);
+            if (three_terms.count(id) == 0 ) {
+                three_terms[id] = term;
+            }
+            else
+                three_terms[id].coeff += term.coeff;
+        }
 
-            //    if (self > twin) {
-            //    
-            //        term_descriptor
-            //        term = TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
-            //                                       op_i, op_k, op_l, op_j, tag_handler);
-
-            //        term.coeff += value_type(sign(twin)) * coefficients[align(twin)];
-
-            //        tagterms.push_back(term);
-            //    }
-            //    //else: we already have the term
-            //}
-            //else {
-            //    tagterms.push_back( TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
-            //                       op_i, op_k, op_l, op_j, tag_handler) );
-            //}
+        void add_4term(std::vector<term_descriptor> & tagterms, term_descriptor term)
+        {
+            IndexTuple pos(term.position(0), term.position(1), term.position(2), term.position(3));
+            IndexTuple ops(term.operator_tag(0), term.operator_tag(1), term.operator_tag(2), term.operator_tag(3));
+            TermTuple id(pos,ops);
+            if (four_terms.count(id) == 0 ) {
+                four_terms[id] = term;
+            }
+            else
+                four_terms[id].coeff += term.coeff;
         }
     
     private:
@@ -137,8 +121,9 @@ namespace chem_detail {
 
         std::map<IndexTuple, value_type> coefficients;
 
-        std::map<TermTuple, term_descriptor> three_terms;
         std::map<IndexTuple, term_descriptor> two_terms;
+        std::map<TermTuple, term_descriptor> three_terms;
+        std::map<TermTuple, term_descriptor> four_terms;
     };
 }
 
