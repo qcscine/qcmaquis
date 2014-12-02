@@ -366,9 +366,9 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     destroy_pkg.fill_couple_down = destroy_fill_couple_down;
     /**********************************************************************/
 
-    chem_detail::ChemHelperSU2<Matrix, SymmGroup> term_assistant(parms, lat, ident, ident, tag_handler);
-    alps::numeric::matrix<Lattice::pos_t> idx_ = term_assistant.getIdx();
-    std::vector<value_type> matrix_elements = term_assistant.getMatrixElements();
+    chem_detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, ident, ident, tag_handler);
+    alps::numeric::matrix<Lattice::pos_t> idx_ = ta.getIdx();
+    std::vector<value_type> matrix_elements = ta.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
  

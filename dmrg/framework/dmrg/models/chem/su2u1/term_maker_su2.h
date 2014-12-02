@@ -113,15 +113,12 @@ struct TermMakerSU2 {
 
         if (p2<p1) term.coeff = -term.coeff;
 
-        std::vector<pos_op_t> sterm;
-        sterm.push_back( boost::make_tuple(pb, boson_op_use) );
-        sterm.push_back( boost::make_tuple(std::min(p1,p2), op1_use) );
-        sterm.push_back( boost::make_tuple(std::max(p1,p2), op2_use) );
-        std::sort(sterm.begin(), sterm.end(), compare_tag<pos_op_t>);
+        term.push_back( boost::make_tuple(pb, boson_op_use) );
+        term.push_back( boost::make_tuple(std::min(p1,p2), op1_use) );
+        term.push_back( boost::make_tuple(std::max(p1,p2), op2_use) );
 
-        term.push_back(sterm[0]);
-        term.push_back(sterm[1]);
-        term.push_back(sterm[2]);
+        // sort the terms w.r. to position
+        term.canonical_order();
 
         return term;
     }
