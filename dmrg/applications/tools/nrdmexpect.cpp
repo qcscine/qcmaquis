@@ -222,6 +222,75 @@ typedef TwoU1PG grp;
         return ret;
     }
 
+    template<class Matrix>
+    MPO<Matrix, TwoU1PG> make_diagonal_3rdm_term(int i, std::vector<int> site_irreps)
+    {
+        typedef block_matrix<Matrix, TwoU1PG> op_t;
+        MPO<Matrix, TwoU1PG> ret(site_irreps.size());
+        for (int p=0; p<site_irreps.size(); ++p)
+        {
+            typedef tag_detail::tag_type tag_type;
+            typename TwoU1PG::charge A(0), B(0), C(0), D(0);
+            A[0] = 1; A[1] = 1;
+            B[0] = 1; C[1] = 1;
+            B[2] = site_irreps[p];
+            C[2] = site_irreps[p];
+
+            block_matrix<Matrix, TwoU1PG> ident;
+            ident.insert_block(Matrix(1,1,1), A, A);
+            ident.insert_block(Matrix(1,1,1), B, B);
+            ident.insert_block(Matrix(1,1,1), C, C);
+            ident.insert_block(Matrix(1,1,1), D, D);
+
+            block_matrix<Matrix, TwoU1PG> fill;
+            fill.insert_block(Matrix(1,1,1), A, A);
+            fill.insert_block(Matrix(1,1,-1), B, B);
+            fill.insert_block(Matrix(1,1,-1), C, C);
+            fill.insert_block(Matrix(1,1,1), D, D);
+
+            block_matrix<Matrix, TwoU1PG> doubly_occupied;
+            doubly_occupied.insert_block(Matrix(1,1,1.0), A, A);
+
+            op_t create_up;
+            create_up.insert_block(Matrix(1,1,1), C, A);
+            create_up.insert_block(Matrix(1,1,1), D, B);
+            op_t create_up_fill;
+            create_up_fill.insert_block(Matrix(1,1,-1), C, A);
+            create_up_fill.insert_block(Matrix(1,1,1), D, B);
+
+            op_t create_down;
+            create_down.insert_block(Matrix(1,1,-1), B, A);
+            create_down.insert_block(Matrix(1,1,1), D, C);
+            op_t create_down_fill;
+            create_down_fill.insert_block(Matrix(1,1,1), B, A);
+            create_down_fill.insert_block(Matrix(1,1,1), D, C);
+
+            op_t destroy_up;
+            destroy_up.insert_block(Matrix(1,1,1), A, C);
+            destroy_up.insert_block(Matrix(1,1,1), B, D);
+            op_t destroy_up_fill;
+            destroy_up_fill.insert_block(Matrix(1,1,1), A, C);
+            destroy_up_fill.insert_block(Matrix(1,1,-1), B, D);
+
+            op_t destroy_down;
+            destroy_down.insert_block(Matrix(1,1,-1), A, B);
+            destroy_down.insert_block(Matrix(1,1,1), C, D);
+            op_t destroy_down_fill;
+            destroy_down_fill.insert_block(Matrix(1,1,-1), A, B);
+            destroy_down_fill.insert_block(Matrix(1,1,-1), C, D);
+
+            MPOTensor<Matrix, TwoU1PG> op(1,1);
+            if (p==i) {
+                op.set(0,0, doubly_occupied, 2.0);
+            }
+            else
+                op.set(0,0, ident, 1.0);
+
+            ret[p] = op;
+        }
+        return ret;
+    }
+
 int main(int argc, char ** argv)
 {
     try {
@@ -252,7 +321,7 @@ int main(int argc, char ** argv)
         double expectation_value = expval(mps, mpo);
         maquis::cout << "expectation value for (" << i << j << k << l << "): " << expectation_value << std::endl;
 
-        mpo = make_diagonal_2rdm_term<matrix>(4, site_irreps);
+        mpo = make_diagonal_2rdm_term<matrix>(0, site_irreps);
         expectation_value = expval(mps, mpo);
         maquis::cout << "expectation value for (" << 0 << 0 << 0 << 0 << "): " << expectation_value << std::endl;
 
