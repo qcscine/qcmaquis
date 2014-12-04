@@ -164,6 +164,12 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     C[0] = 1; C[1] = -1; // 1-1
     // D = 00
 
+    SpinDescriptor<SymmTraits::SU2Tag> one_half_up(1,1);
+    SpinDescriptor<SymmTraits::SU2Tag> one_half_down(1,-1);
+    SpinDescriptor<SymmTraits::SU2Tag> one_up(2,2);
+    SpinDescriptor<SymmTraits::SU2Tag> one_flat(2,0);
+    SpinDescriptor<SymmTraits::SU2Tag> one_down(2,-2);
+
     for (subcharge irr=0; irr <= max_irrep; ++irr)
     {
         Index<SymmGroup> phys;
@@ -203,6 +209,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     op_t create_fill_op;
     create_fill_op.twoS = 1; create_fill_op.twoSaction = 1;
+    create_fill_op.spin = one_half_up;
     create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
     create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
     create_fill_op.insert_block(Matrix(1,1,1), D, B);
@@ -210,6 +217,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     op_t destroy_op;
     destroy_op.twoS = 1; destroy_op.twoSaction = -1;
+    destroy_op.spin = one_half_down;
     destroy_op.insert_block(Matrix(1,1,1), A, B);
     destroy_op.insert_block(Matrix(1,1,1), A, C);
     destroy_op.insert_block(Matrix(1,1,sqrt(2.)), B, D);
@@ -217,6 +225,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     op_t destroy_fill_op;
     destroy_fill_op.twoS = 1; destroy_fill_op.twoSaction = 1;
+    destroy_fill_op.spin = one_half_up;
     destroy_fill_op.insert_block(Matrix(1,1,1), A, B);
     destroy_fill_op.insert_block(Matrix(1,1,1), A, C);
     destroy_fill_op.insert_block(Matrix(1,1,-sqrt(2.)), B, D);
@@ -224,6 +233,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     op_t create_op;
     create_op.twoS = 1; create_op.twoSaction = -1;
+    create_op.spin = one_half_down;
     create_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
     create_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
     create_op.insert_block(Matrix(1,1,-1), D, B);
@@ -233,35 +243,43 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     op_t create_fill_couple_down_op = create_fill_op;
     create_fill_couple_down_op.twoSaction = -1;
+    create_fill_couple_down_op.spin = one_half_down;
 
     op_t destroy_fill_couple_down_op = destroy_fill_op;
     destroy_fill_couple_down_op.twoSaction = -1;
+    destroy_fill_couple_down_op.spin = one_half_down;
 
     op_t create_couple_up_op = create_op;
     create_couple_up_op.twoSaction = 1;
+    create_couple_up_op.spin = one_half_up;
 
     op_t destroy_couple_up_op = destroy_op;
     destroy_couple_up_op.twoSaction = 1;
+    destroy_couple_up_op.spin = one_half_up;
 
     /*************************************************************/
 
     op_t create_fill_count_op;
     create_fill_count_op.twoS = 1; create_fill_count_op.twoSaction = 1;
+    create_fill_count_op.spin = one_half_up;
     create_fill_count_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
     create_fill_count_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
 
     op_t destroy_count_op;
     destroy_count_op.twoS = 1; destroy_count_op.twoSaction = -1;
+    destroy_count_op.spin = one_half_down;
     destroy_count_op.insert_block(Matrix(1,1,1), A, B);
     destroy_count_op.insert_block(Matrix(1,1,1), A, C);
 
     op_t destroy_fill_count_op;
     destroy_fill_count_op.twoS = 1; destroy_fill_count_op.twoSaction = 1;
+    destroy_fill_count_op.spin = one_half_up;
     destroy_fill_count_op.insert_block(Matrix(1,1,1), A, B);
     destroy_fill_count_op.insert_block(Matrix(1,1,1), A, C);
 
     op_t create_count_op;
     create_count_op.twoS = 1; create_count_op.twoSaction = -1;
+    create_count_op.spin = one_half_down;
     create_count_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
     create_count_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
 
@@ -290,6 +308,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     op_t flip_to_S2_op;
     flip_to_S2_op.twoS = 2; flip_to_S2_op.twoSaction = 2;
+    flip_to_S2_op.spin = one_up;
     flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2)), B, B);
     flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)), C, C);
     flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)),  B, C);
@@ -297,9 +316,11 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     op_t flip_to_S0_op = flip_to_S2_op;
     flip_to_S0_op.twoSaction = -2;
+    flip_to_S0_op.spin = one_down;
 
     op_t flip_S0_op = flip_to_S2_op;
     flip_S0_op.twoSaction = 0;
+    flip_S0_op.spin = one_flat;
 
     /**********************************************************************/
     /*** Create operator tag table ****************************************/

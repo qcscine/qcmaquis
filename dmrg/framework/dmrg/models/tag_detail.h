@@ -143,6 +143,9 @@ namespace tag_detail {
         if (reference.twoSaction != sample.twoSaction || reference.twoS != sample.twoS)
             return std::make_pair(false, 0.);
 
+        if (reference.spin != sample.spin)
+            return std::make_pair(false, 0.);
+
         typename Matrix::value_type invscale1, invscale2;
      
         // determine scale of matrices

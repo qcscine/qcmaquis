@@ -137,6 +137,7 @@ public:
         swap(x.iter_index, y.iter_index);
         std::swap(x.twoS, y.twoS);
         std::swap(x.twoSaction, y.twoSaction);
+        std::swap(x.spin, y.spin);
     }
 
     Matrix const & operator()(charge r, charge c) const
@@ -164,6 +165,7 @@ public:
     bool reasonable() const;
 
     int twoS, twoSaction;
+    SpinDescriptor<typename SymmTraits::SymmType<SymmGroup>::type > spin;
     
 private:
     DualIndex<SymmGroup> basis_;

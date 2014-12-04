@@ -78,6 +78,11 @@ namespace SU2 {
 
             int a = left[b1].twoS, k = W.twoS, ap = a + W.twoSaction;
             ret.twoS = ap;
+            ret.spin = couple(left[b1].spin, W.spin);
+            if (k != W.spin.get()) { maquis::cout << "k " << k << "W.spin.get() " << W.spin.get() << std::endl; }
+            assert(k == W.spin.get());
+            assert(a == left[b1].spin.get());
+            assert(ret.twoS == ret.spin.get());
 
             for (size_t lblock = 0; lblock < left[b1].n_blocks(); ++lblock) {
 
@@ -121,6 +126,7 @@ namespace SU2 {
                         //int ap = std::abs(ip-jp);
                         //if (ap >= 3) continue;
 
+                        //typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, left[b1].spin.get(),W.spin.get(),ret.spin.get(), i, two_sp, ip);
                         typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                         if (std::abs(coupling_coeff) < 1.e-40) continue;
                         coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;

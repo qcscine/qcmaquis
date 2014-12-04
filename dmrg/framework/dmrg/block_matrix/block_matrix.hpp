@@ -69,6 +69,7 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix const& rhs)
 , iter_index(rhs.iter_index)
 , twoS(rhs.twoS)
 , twoSaction(rhs.twoSaction)
+, spin(rhs.spin)
 {
 }
 
@@ -80,6 +81,7 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<OtherMatrix,SymmGroup
 , iter_index(rhs.iter_index)
 , twoS(rhs.twoS)
 , twoSaction(rhs.twoSaction)
+, spin(rhs.spin)
 {
     data_.reserve(rhs.n_blocks());
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
@@ -99,6 +101,7 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(con
 {
     twoS = rhs.twoS;
     twoSaction = rhs.twoSaction;
+    spin = rhs.spin;
     basis_ = rhs.basis_;
     size_index = rhs.size_index;
     iter_index = rhs.iter_index;
@@ -360,6 +363,7 @@ void block_matrix<Matrix, SymmGroup>::clear()
 {
     data_.clear();
     basis_ = DualIndex<SymmGroup>();
+    spin.clear();
 }
 
 template<class Matrix, class SymmGroup>

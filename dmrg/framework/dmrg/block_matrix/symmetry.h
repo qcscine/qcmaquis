@@ -37,5 +37,6 @@
 #include "dmrg/block_matrix/symmetry/su2u1.h"
 
 #include "dmrg/block_matrix/symmetry/symmetry_traits.h"
+#include "dmrg/block_matrix/symmetry/spin_descriptor.h"
 
 #endif

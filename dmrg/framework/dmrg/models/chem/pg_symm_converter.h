@@ -128,6 +128,7 @@ public:
                 op_t modified(set_symm(base_op.basis(), *it));
                 modified.twoS = base_op.twoS;
                 modified.twoSaction = base_op.twoSaction;
+                modified.spin = base_op.spin;
 
                 for (std::size_t p = 0; p < modified.n_blocks(); ++p)
                     modified[p] = base_op[p];
