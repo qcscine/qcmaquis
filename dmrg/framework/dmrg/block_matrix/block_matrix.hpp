@@ -449,6 +449,7 @@ void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
     Index<SymmGroup> r_, c_;
     ar["rows_"] >> r_;
     ar["cols_"] >> c_;
+    ar["spin"] >> spin;
 
     basis_.resize(r_.size());
     for (std::size_t s = 0; s < r_.size(); ++s)
@@ -482,6 +483,7 @@ void block_matrix<Matrix, SymmGroup>::save(Archive & ar) const
     Index<SymmGroup> c_ = right_basis();
     ar["rows_"] << r_;
     ar["cols_"] << c_;
+    ar["spin"] << spin;
 
     std::vector<Matrix> tmp(data_.begin(), data_.end());
     ar["data_"] << tmp;
@@ -491,7 +493,7 @@ template<class Matrix, class SymmGroup>
 template <class Archive>
 void block_matrix<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
 {
-    ar & basis_ & data_;
+    ar & basis_ & spin & data_;
 }
 
 

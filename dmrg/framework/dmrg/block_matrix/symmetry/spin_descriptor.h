@@ -38,6 +38,18 @@ public:
 
     bool operator==(SpinDescriptor const & rhs) const { return true; }
     bool operator!=(SpinDescriptor const & rhs) const { return false; }
+
+    template<class Archive>
+    void save(Archive & ar) const
+    {}
+
+    template<class Archive>
+    void load(Archive & ar)
+    {}
+
+    template <class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {}
 };
 
 template <class SymmType> inline
@@ -76,6 +88,26 @@ public:
     bool operator!=(SpinDescriptor const & rhs) const { return !(*this==rhs); }
     friend SpinDescriptor operator-(SpinDescriptor);
     friend std::ostream & operator<<(std::ostream & os, SpinDescriptor);
+
+    template<class Archive>
+    void save(Archive & ar) const
+    {
+        ar["twoS"] << twoS;
+        ar["twoSaction"] << twoSaction;
+    }
+
+    template<class Archive>
+    void load(Archive & ar)
+    {
+        ar["twoS"] >> twoS;
+        ar["twoSaction"] >> twoSaction;
+    }
+
+    template <class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & twoS & twoSaction;
+    }
 
 private:
     spin_t twoS;
