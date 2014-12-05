@@ -76,13 +76,10 @@ namespace SU2 {
             block_matrix<Matrix, SymmGroup> const & W = access.op;
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
-            int a = left[b1].twoS, k = W.twoS, ap = a + W.twoSaction;
-            ret.twoS = ap;
             ret.spin = couple(left[b1].spin, W.spin);
+            int a = left[b1].spin.get(), k = W.spin.get(), ap = ret.spin.get();
+
             if (k != W.spin.get()) { maquis::cout << "k " << k << "W.spin.get() " << W.spin.get() << std::endl; }
-            assert(k == W.spin.get());
-            assert(a == left[b1].spin.get());
-            assert(ret.twoS == ret.spin.get());
 
             for (size_t lblock = 0; lblock < left[b1].n_blocks(); ++lblock) {
 
@@ -121,10 +118,6 @@ namespace SU2 {
                         int i  = lc[1], ip = out_l_charge[1];
                         int j  = mc[1], jp  = out_r_charge[1];
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
-                        //int a = std::abs(i-j), k = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1]));
-
-                        //int ap = std::abs(ip-jp);
-                        //if (ap >= 3) continue;
 
                         //typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, left[b1].spin.get(),W.spin.get(),ret.spin.get(), i, two_sp, ip);
                         typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
@@ -182,8 +175,8 @@ namespace SU2 {
             block_matrix<Matrix, SymmGroup> const & W = access.op;
 
             // note minus sign, as we move the boundary to the left
-            int ap = right[b2].twoS, k = W.twoS, a = ap - W.twoSaction;
-            ret.twoS = a;
+            ret.spin = couple(right[b2].spin, -W.spin);
+            int ap = right[b2].spin.get(), k = W.spin.get(), a = ret.spin.get();
 
             for (size_t ketblock = 0; ketblock < ket_basis.size(); ++ketblock) {
 
@@ -222,11 +215,6 @@ namespace SU2 {
                         int i = out_r_charge[1], ip = rc[1];
                         int j = out_l_charge[1], jp  = mc[1];
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
-
-                        //int aold = std::abs(i-j), kold = std::abs(std::abs(phys_in[1])-std::abs(phys_out[1]));
-                        //int apold = std::abs(ip-jp);
-                        //maquis::cout << "a,k,ap old:" << aold << " " << kold << " " << apold << " a,k,ap: " << a << " " << k << " " << ap << std::endl;
-                        //if (ap >= 3) continue;
 
                         typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                         if (std::abs(coupling_coeff) < 1.e-40) continue;

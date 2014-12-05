@@ -35,7 +35,7 @@
 namespace contraction {
 
     template <class Matrix, class OtherMatrix, class SymmGroup>
-    class EngineBackEnd<Matrix, OtherMatrix, SymmGroup, SymmTraits::AbelianTag>
+    class EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_traits::AbelianTag>
     {
         // abelian functors
 

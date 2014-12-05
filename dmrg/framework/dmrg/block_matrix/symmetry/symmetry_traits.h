@@ -27,7 +27,7 @@
 #ifndef SYMMETRY_TRAITS_H
 #define SYMMETRY_TRAITS_H
 
-namespace SymmTraits {
+namespace symm_traits {
 
     class AbelianTag {};
     class SU2Tag {};

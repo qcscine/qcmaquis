@@ -165,7 +165,7 @@ public:
     bool reasonable() const;
 
     int twoS, twoSaction;
-    SpinDescriptor<typename SymmTraits::SymmType<SymmGroup>::type > spin;
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > spin;
     
 private:
     DualIndex<SymmGroup> basis_;

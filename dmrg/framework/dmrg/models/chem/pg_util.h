@@ -111,7 +111,7 @@ public:
 };
 
 template <class SymmGroup>
-class  PGCharge_<SymmGroup, SymmTraits::PGat2>
+class  PGCharge_<SymmGroup, symm_traits::PGat2>
 {
 public:
     typedef typename SymmGroup::subcharge subcharge;
@@ -128,7 +128,7 @@ class PGCharge
 public:
     typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, int irr)
     { 
-        return PGCharge_<SymmGroup, typename SymmTraits::PGType<SymmGroup>::type>()(rhs, irr);
+        return PGCharge_<SymmGroup, typename symm_traits::PGType<SymmGroup>::type>()(rhs, irr);
     }
 };
 

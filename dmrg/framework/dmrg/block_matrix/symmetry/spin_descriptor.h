@@ -40,7 +40,7 @@ public:
 };
 
 template <>
-class SpinDescriptor<SymmTraits::SU2Tag>
+class SpinDescriptor<symm_traits::SU2Tag>
 {
     typedef int spin_t;
 public:
@@ -55,11 +55,6 @@ public:
         return *this;
     }
 
-    SpinDescriptor & operator-()
-    {
-        twoSaction = -twoSaction;
-    }
-
     spin_t get() const { return twoS; }
 
     void clear()
@@ -68,24 +63,22 @@ public:
     }
 
     bool operator!=(SpinDescriptor rhs) const { twoS != rhs.twoS || twoSaction != rhs.twoSaction; }
+    friend SpinDescriptor operator-(SpinDescriptor);
 
 private:
     spin_t twoS;
     spin_t twoSaction; // only used for operators in the MPO
 };
 
-template <class SymmType>
-inline
-SpinDescriptor<SymmType> couple(SpinDescriptor<SymmType> a, SpinDescriptor<SymmType> b)
-{
-    return a;
-}
-
-template <>
-inline
-SpinDescriptor<SymmTraits::SU2Tag> couple(SpinDescriptor<SymmTraits::SU2Tag> a, SpinDescriptor<SymmTraits::SU2Tag> b)
+inline SpinDescriptor<symm_traits::SU2Tag> couple(SpinDescriptor<symm_traits::SU2Tag> a, SpinDescriptor<symm_traits::SU2Tag> b)
 {
     return a += b;
+}
+
+inline SpinDescriptor<symm_traits::SU2Tag> operator-(SpinDescriptor<symm_traits::SU2Tag> rhs)
+{
+    rhs.twoSaction = -rhs.twoSaction;
+    return rhs;
 }
 
 #endif

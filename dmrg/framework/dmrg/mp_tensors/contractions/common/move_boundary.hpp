@@ -235,7 +235,6 @@ namespace contraction {
                 block_matrix<Matrix, SymmGroup> tmp;
                 Kernel()(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
                 typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
-                ret[b2].twoS = contr_grid(0,0).twoS;
                 ret[b2].spin = contr_grid(0,0).spin;
             });
 
@@ -293,7 +292,6 @@ namespace contraction {
                 typename Gemm::gemm()(ret[b1], transpose(bra_conj), tmp);
                 //gemm(ret[b1], transpose(bra_conj), tmp, parallel::scheduler_size_indexed(ret[b1]));
                 swap(ret[b1], tmp);
-                ret[b1].twoS = tmp.twoS;
                 ret[b1].spin = tmp.spin;
             });
     #endif
