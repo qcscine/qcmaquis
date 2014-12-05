@@ -134,17 +134,12 @@ namespace tag_detail {
             storage::migrate(reference);
             storage::migrate(sample);
         }
-        if (reference.basis() != sample.basis())
+
+        if (!shape_equal(reference, sample))
             return std::make_pair(false, 0.);
 
         if (sample.n_blocks() == 0)
             return std::make_pair(true, 1.0);
-
-        if (reference.twoSaction != sample.twoSaction || reference.twoS != sample.twoS)
-            return std::make_pair(false, 0.);
-
-        if (reference.spin != sample.spin)
-            return std::make_pair(false, 0.);
 
         typename Matrix::value_type invscale1, invscale2;
      

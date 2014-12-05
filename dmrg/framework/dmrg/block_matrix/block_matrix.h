@@ -135,8 +135,6 @@ public:
         swap(x.basis_, y.basis_);
         swap(x.size_index, y.size_index);
         swap(x.iter_index, y.iter_index);
-        std::swap(x.twoS, y.twoS);
-        std::swap(x.twoSaction, y.twoSaction);
         std::swap(x.spin, y.spin);
     }
 
@@ -164,7 +162,6 @@ public:
     
     bool reasonable() const;
 
-    int twoS, twoSaction;
     SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > spin;
     
 private:
@@ -203,6 +200,12 @@ block_matrix<Matrix, SymmGroup> operator-(block_matrix<Matrix,SymmGroup> b1, blo
     return b1;
 }
 
+
+template<class Matrix, class SymmGroup>
+bool shape_equal(block_matrix<Matrix, SymmGroup> const & a, block_matrix<Matrix, SymmGroup> const & b)
+{
+    return (a.basis() == b.basis() && a.spin == b.spin);
+}
 
 template<class Matrix, class SymmGroup>
 std::size_t size_of(block_matrix<Matrix, SymmGroup> const & m)

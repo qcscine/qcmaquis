@@ -126,8 +126,6 @@ public:
             for(typename std::vector<subcharge>::const_iterator it=irrep_vector.begin(); it != irrep_vector.end(); ++it)
             {
                 op_t modified(set_symm(base_op.basis(), *it));
-                modified.twoS = base_op.twoS;
-                modified.twoSaction = base_op.twoSaction;
                 modified.spin = base_op.spin;
 
                 for (std::size_t p = 0; p < modified.n_blocks(); ++p)

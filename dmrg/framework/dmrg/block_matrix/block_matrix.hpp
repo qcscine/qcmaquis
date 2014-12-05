@@ -35,13 +35,13 @@
 #include <boost/ptr_container/serialize_ptr_vector.hpp>
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup>::block_matrix() : twoS(0), twoSaction(0)
+block_matrix<Matrix, SymmGroup>::block_matrix()
 {
 }
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,
-                                              Index<SymmGroup> const & cols) : twoS(0), twoSaction(0)
+                                              Index<SymmGroup> const & cols)
 {
     assert(rows.size() == cols.size());
 
@@ -55,7 +55,7 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,
 
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup>::block_matrix(DualIndex<SymmGroup> const & basis)
-: basis_(basis), twoS(0), twoSaction(0)
+: basis_(basis)
 {
     for (size_type k = 0; k < basis_.size(); ++k)
         data_.push_back(new Matrix(basis_[k].ls, basis_[k].rs));
@@ -67,8 +67,6 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix const& rhs)
 , data_(rhs.data_)
 , size_index(rhs.size_index)
 , iter_index(rhs.iter_index)
-, twoS(rhs.twoS)
-, twoSaction(rhs.twoSaction)
 , spin(rhs.spin)
 {
 }
@@ -79,8 +77,6 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<OtherMatrix,SymmGroup
 : basis_(rhs.basis())
 , size_index(rhs.size_index)
 , iter_index(rhs.iter_index)
-, twoS(rhs.twoS)
-, twoSaction(rhs.twoSaction)
 , spin(rhs.spin)
 {
     data_.reserve(rhs.n_blocks());
@@ -99,8 +95,6 @@ template<class Matrix, class SymmGroup>
 template<class OtherMatrix>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(const block_matrix<OtherMatrix, SymmGroup> & rhs)
 {
-    twoS = rhs.twoS;
-    twoSaction = rhs.twoSaction;
     spin = rhs.spin;
     basis_ = rhs.basis_;
     size_index = rhs.size_index;
@@ -369,7 +363,7 @@ void block_matrix<Matrix, SymmGroup>::clear()
 template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const & m)
 {
-    os << "Basis: " << m.basis() << m.twoS << " " << m.twoSaction << std::endl;
+    os << "Basis: " << m.basis() << m.spin << std::endl;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
         os << "Block (" << m.basis()[k].lc << "," << m.basis()[k].rc
            << "):\n" << m[k] << std::endl;

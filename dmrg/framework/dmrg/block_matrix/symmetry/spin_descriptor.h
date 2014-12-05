@@ -36,8 +36,18 @@ public:
     void clear() { }
     int get() const { return 0; }
 
-    bool operator!=(SpinDescriptor rhs) const { return false; }
+    bool operator==(SpinDescriptor const & rhs) const { return true; }
+    bool operator!=(SpinDescriptor const & rhs) const { return false; }
 };
+
+template <class SymmType> inline
+SpinDescriptor<SymmType> couple(SpinDescriptor<SymmType> a, SpinDescriptor<SymmType> b)
+{
+    return SpinDescriptor<SymmType>();
+}
+
+template <class SymmType> inline
+std::ostream & operator << (std::ostream & os, SpinDescriptor<SymmType> rhs) { return os; }
 
 template <>
 class SpinDescriptor<symm_traits::SU2Tag>
@@ -62,14 +72,17 @@ public:
         twoS = 0; twoSaction = 0;
     }
 
-    bool operator!=(SpinDescriptor rhs) const { twoS != rhs.twoS || twoSaction != rhs.twoSaction; }
+    bool operator==(SpinDescriptor const & rhs) const { return (twoS == rhs.twoS && twoSaction == rhs.twoSaction); }
+    bool operator!=(SpinDescriptor const & rhs) const { return !(*this==rhs); }
     friend SpinDescriptor operator-(SpinDescriptor);
+    friend std::ostream & operator<<(std::ostream & os, SpinDescriptor);
 
 private:
     spin_t twoS;
     spin_t twoSaction; // only used for operators in the MPO
 };
 
+// Attention: not symmetric
 inline SpinDescriptor<symm_traits::SU2Tag> couple(SpinDescriptor<symm_traits::SU2Tag> a, SpinDescriptor<symm_traits::SU2Tag> b)
 {
     return a += b;
@@ -79,6 +92,12 @@ inline SpinDescriptor<symm_traits::SU2Tag> operator-(SpinDescriptor<symm_traits:
 {
     rhs.twoSaction = -rhs.twoSaction;
     return rhs;
+}
+
+inline std::ostream & operator<<(std::ostream & os, SpinDescriptor<symm_traits::SU2Tag> rhs)
+{
+    os << "Spin: " << rhs.get() << ", Spin action: " << rhs.twoSaction;
+    return os;
 }
 
 #endif

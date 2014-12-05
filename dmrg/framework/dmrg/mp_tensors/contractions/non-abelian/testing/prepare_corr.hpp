@@ -58,7 +58,9 @@ namespace SU2 {
     template<class Matrix, class SymmGroup>
     MPO<Matrix, SymmGroup> make_1rdm_term(int i, int j, std::vector<int> site_irreps)
     {
-        //boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_up(1,1);
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_down(1,-1);
+
         MPO<Matrix, SymmGroup> ret(site_irreps.size());
         for (int p=0; p<site_irreps.size(); ++p)
         {
@@ -84,14 +86,14 @@ namespace SU2 {
             fill.insert_block(Matrix(1,1,-1), C, B);  // -1
 
             block_matrix<Matrix, SymmGroup> destroy;
-            destroy.twoS = 1; destroy.twoSaction = 1;
+            destroy.spin = one_half_up;
             destroy.insert_block(Matrix(1,1,1), A, B);        // 1 
             destroy.insert_block(Matrix(1,1,1), A, C);        // 1
             destroy.insert_block(Matrix(1,1,-sqrt(2.)), B, D); // 1
             destroy.insert_block(Matrix(1,1,-sqrt(2.)), C, D); // 1
 
             block_matrix<Matrix, SymmGroup> create;
-            create.twoS = 1; create.twoSaction = -1;
+            create.spin = one_half_down;
             create.insert_block(Matrix(1,1,2.), B, A);       // 1
             create.insert_block(Matrix(1,1,2.), C, A);       // 1
             create.insert_block(Matrix(1,1,-sqrt(2.)), D, B); // 1
@@ -118,7 +120,9 @@ namespace SU2 {
     template<class Matrix, class SymmGroup>
     MPO<Matrix, SymmGroup> make_1rdm_termB(int i, int j, std::vector<int> site_irreps)
     {   // represents a cdag_i c_j operator term
-        //boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_up(1,1);
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_down(1,-1);
+
         MPO<Matrix, SymmGroup> ret(site_irreps.size());
         for (int p=0; p<site_irreps.size(); ++p)
         {
@@ -144,14 +148,14 @@ namespace SU2 {
             fill.insert_block(Matrix(1,1,-1), C, B);
 
             block_matrix<Matrix, SymmGroup> create;
-            create.twoS = 1; create.twoSaction = 1;
+            create.spin = one_half_up;
             create.insert_block(Matrix(1,1,2.), B, A);      
             create.insert_block(Matrix(1,1,2.), C, A);      
             create.insert_block(Matrix(1,1,sqrt(2.)), D, B);
             create.insert_block(Matrix(1,1,sqrt(2.)), D, C);
 
             block_matrix<Matrix, SymmGroup> destroy;
-            destroy.twoS = 1; destroy.twoSaction = -1;
+            destroy.spin = one_half_down;
             destroy.insert_block(Matrix(1,1,1), A, B);        
             destroy.insert_block(Matrix(1,1,1), A, C);       
             destroy.insert_block(Matrix(1,1,sqrt(2.)), B, D);
@@ -175,83 +179,11 @@ namespace SU2 {
     }
 
     template<class Matrix, class SymmGroup>
-    MPO<Matrix, SymmGroup> make_custom(int i, int j, std::vector<int> site_irreps)
-    {
-        typedef tag_detail::tag_type tag_type;
-        typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-        typedef typename Matrix::value_type value_type;
-        typedef boost::tuple<std::size_t, std::size_t, tag_type, value_type> tag_block;
-        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler(new TagHandler<Matrix, SymmGroup>());
-
-        MPO<Matrix, SymmGroup> ret(site_irreps.size());
-        for (int p=0; p<site_irreps.size(); ++p)
-        {
-            typedef tag_detail::tag_type tag_type;
-            typename SymmGroup::charge A(0), B(0), C(0), D(0);
-            A[0] = 2; // 200
-            B[0] = 1; B[1] =  1; B[2] = site_irreps[p]; // 11I
-            C[0] = 1; C[1] = -1; C[2] = site_irreps[p]; // 1-1I
-            // D = 000
-
-            block_matrix<Matrix, SymmGroup> identity_op;
-            identity_op.insert_block(Matrix(1,1,1), A, A);
-            identity_op.insert_block(Matrix(1,1,1), B, B);
-            identity_op.insert_block(Matrix(1,1,1), C, C);
-            identity_op.insert_block(Matrix(1,1,1), D, D);
-
-            block_matrix<Matrix, SymmGroup> fill_op;
-            fill_op.insert_block(Matrix(1,1,1), A, A);
-            fill_op.insert_block(Matrix(1,1,1), D, D);  // c^dag * c
-            fill_op.insert_block(Matrix(1,1,-1), B, B); // -1
-            fill_op.insert_block(Matrix(1,1,-1), C, C); // -1
-            fill_op.insert_block(Matrix(1,1,1), B, C);  // -1
-            fill_op.insert_block(Matrix(1,1,1), C, B);  // -1
-
-            block_matrix<Matrix, SymmGroup> create_op;
-            create_op.insert_block(Matrix(1,1,-2.), B, A);       // 1
-            create_op.insert_block(Matrix(1,1,2.), C, A);       // 1
-            create_op.insert_block(Matrix(1,1,-sqrt(2.)), D, B); // 1
-            create_op.insert_block(Matrix(1,1,sqrt(2.)), D, C); // 1
-
-            block_matrix<Matrix, SymmGroup> destroy_op;
-            destroy_op.insert_block(Matrix(1,1,1), A, B);        // 1 
-            destroy_op.insert_block(Matrix(1,1,-1), A, C);        // 1
-            destroy_op.insert_block(Matrix(1,1,sqrt(2.)), B, D); // 1
-            destroy_op.insert_block(Matrix(1,1,-sqrt(2.)), C, D); // 1
-
-            tag_type identity = tag_handler->register_op(identity_op, tag_detail::bosonic);
-            tag_type fill = tag_handler->register_op(fill_op, tag_detail::bosonic);
-            tag_type create = tag_handler->register_op(create_op, tag_detail::bosonic);
-            tag_type destroy = tag_handler->register_op(destroy_op, tag_detail::bosonic);
-
-            std::vector<tag_block> pre_tensor;
-
-            if (p == i) {
-                pre_tensor.push_back(tag_block(0,0,destroy, 1.0));
-            }
-            else if (p == j) {
-                pre_tensor.push_back(tag_block(0,0,create, 1.0));
-                pre_tensor.push_back(tag_block(0,1,fill, 1.0));
-            }
-            else if (p == j+1) {
-                pre_tensor.push_back(tag_block(0,0,identity, 1.0));
-                pre_tensor.push_back(tag_block(1,0,create, 1.0));
-            }
-            else if ( i < p && p < j){
-                pre_tensor.push_back(tag_block(0,0,fill, 1.0));
-            }
-            else 
-                pre_tensor.push_back(tag_block(0,0,identity, 1.0));
-
-            std::pair<index_type, index_type> rcd = ::generate_mpo::rcdim(pre_tensor);
-            ret[p] = MPOTensor<Matrix, SymmGroup>(rcd.first, rcd.second, pre_tensor, tag_handler->get_operator_table());
-        }
-        return ret;
-    }
-
-    template<class Matrix, class SymmGroup>
     MPO<Matrix, SymmGroup> make_2rdm_term(int i, int j, int k, int l, std::vector<int> site_irreps)
     {
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_up(1,1);
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_down(1,-1);
+
         MPO<Matrix, SymmGroup> ret(site_irreps.size());
         for (int p=0; p<site_irreps.size(); ++p)
         {
@@ -277,28 +209,28 @@ namespace SU2 {
             fill.insert_block(Matrix(1,1,1), C, B);  // -1
 
             block_matrix<Matrix, SymmGroup> createS1;
-            createS1.twoS = 1; createS1.twoSaction = 1;
+            createS1.spin = one_half_up;
             createS1.insert_block(Matrix(1,1,std::sqrt(2.)), B, A);      
             createS1.insert_block(Matrix(1,1,std::sqrt(2.)), C, A);      
             createS1.insert_block(Matrix(1,1,1), D, B);
             createS1.insert_block(Matrix(1,1,1), D, C);
 
             block_matrix<Matrix, SymmGroup> createS0;
-            createS0.twoS = 1; createS0.twoSaction = -1;
+            createS0.spin = one_half_down;
             createS0.insert_block(Matrix(1,1,2.), B, A);      
             createS0.insert_block(Matrix(1,1,2.), C, A);      
             createS0.insert_block(Matrix(1,1,-std::sqrt(2.)), D, B);
             createS0.insert_block(Matrix(1,1,-std::sqrt(2.)), D, C);
 
             block_matrix<Matrix, SymmGroup> createS2;
-            createS2.twoS = 1; createS2.twoSaction = 1;
+            createS2.spin = one_half_up;
             createS2.insert_block(Matrix(1,1,-std::sqrt(2.)), B, A);      
             createS2.insert_block(Matrix(1,1,-std::sqrt(2.)), C, A);      
             createS2.insert_block(Matrix(1,1,1), D, B);
             createS2.insert_block(Matrix(1,1,1), D, C);
 
             block_matrix<Matrix, SymmGroup> destroyS0;
-            destroyS0.twoS = 1; destroyS0.twoSaction = 1;
+            destroyS0.spin = one_half_up;
             destroyS0.insert_block(Matrix(1,1,1), A, B);      
             destroyS0.insert_block(Matrix(1,1,1), A, C);     
             destroyS0.insert_block(Matrix(1,1,-std::sqrt(2.)), B, D); 
@@ -306,14 +238,14 @@ namespace SU2 {
 
             double root32 = std::sqrt(3./2.);
             block_matrix<Matrix, SymmGroup> destroyS2;
-            destroyS2.twoS = 1; destroyS2.twoSaction = -1;
+            destroyS2.spin = one_half_down;
             destroyS2.insert_block(Matrix(1,1,root32), A, B);        
             destroyS2.insert_block(Matrix(1,1,root32), A, C);       
             destroyS2.insert_block(Matrix(1,1,-root32 * sqrt(2.)), B, D); 
             destroyS2.insert_block(Matrix(1,1,-root32 * sqrt(2.)), C, D);
 
             block_matrix<Matrix, SymmGroup> destroyS1;
-            destroyS1.twoS = 1; destroyS1.twoSaction = -1;
+            destroyS1.spin = one_half_down;
             destroyS1.insert_block(Matrix(1,1,std::sqrt(2.)), A, B);      
             destroyS1.insert_block(Matrix(1,1,std::sqrt(2.)), A, C);     
             destroyS1.insert_block(Matrix(1,1,2.), B, D); 
@@ -432,6 +364,9 @@ namespace SU2 {
         typedef block_matrix<Matrix, SymmGroup> op_t;
         MPO<Matrix, SymmGroup> ret(site_irreps.size());
 
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_up(2,2);
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_down(2,-2);
+
         for (int p=0; p<site_irreps.size(); ++p)
         {
             typedef tag_detail::tag_type tag_type;
@@ -444,14 +379,12 @@ namespace SU2 {
             double root32 = std::sqrt(3./2.);
 
             block_matrix<Matrix, SymmGroup> ident;
-            ident.twoS = 0; ident.twoSaction = 0;
             ident.insert_block(Matrix(1,1,1), A, A);
             ident.insert_block(Matrix(1,1,1), B, B);
             ident.insert_block(Matrix(1,1,1), C, C);
             ident.insert_block(Matrix(1,1,1), D, D);
 
             block_matrix<Matrix, SymmGroup> fill;
-            fill.twoS = 0; fill.twoSaction = 0;
             fill.insert_block(Matrix(1,1,1), A, A);
             fill.insert_block(Matrix(1,1,1), B, B);
             fill.insert_block(Matrix(1,1,1), C, C);
@@ -459,19 +392,21 @@ namespace SU2 {
             fill.insert_block(Matrix(1,1,1), C, B);
             fill.insert_block(Matrix(1,1,1), D, D);
 
-            op_t flip1; flip1.twoS = 2; flip1.twoSaction = 2;
+            op_t flip1;
+            flip1.spin = one_up;
             flip1.insert_block(Matrix(1,1,root32), B, B);
             flip1.insert_block(Matrix(1,1,root32), C, C);
             flip1.insert_block(Matrix(1,1,root32), B, C);
             flip1.insert_block(Matrix(1,1,root32), C, B);
 
-            op_t flip2; flip2.twoS = 2; flip2.twoSaction = -2;
+            op_t flip2;
+            flip2.spin = one_down;
             flip2.insert_block(Matrix(1,1,root32), B, B);
             flip2.insert_block(Matrix(1,1,root32), C, C);
             flip2.insert_block(Matrix(1,1,root32), B, C);
             flip2.insert_block(Matrix(1,1,root32), C, B);
 
-            op_t count; count.twoS = 0;
+            op_t count;
             count.insert_block(Matrix(1,1,2), A, A);
             count.insert_block(Matrix(1,1,1), B, B);
             count.insert_block(Matrix(1,1,1), C, C);

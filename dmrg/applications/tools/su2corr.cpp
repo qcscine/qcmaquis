@@ -188,11 +188,6 @@ void tryFourTerms(MPS<Matrix, SymmGroup> const & mps, std::vector<int> const & s
     Matrix ratio = compute_ratio(mps, ref, site_irreps, config);
     print_triang(ratio);
 
-    int i=0, j=3;
-    MPO<Matrix, SymmGroup> mpo = SU2::make_custom<Matrix, SymmGroup>(i, j, site_irreps);
-    double eval = SU2::expval(mps, mpo, i, j, config);
-    maquis::cout << eval << "  ref: " << ref(i,j) + ref(i,j+1) << std::endl;
-
     std::vector<double> od = compute_off_diag_ratio(mps, 2, ref, site_irreps, config);
     std::copy(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "));
     std::transform(od.begin(), od.end(), std::ostream_iterator<double>(cout, "  "), boost::lambda::_1 / od[0]);
@@ -209,7 +204,6 @@ void tryFourTerms(MPS<Matrix, SymmGroup> const & mps, std::vector<int> const & s
     std::vector<double> result;
     for(int i=0; i < L-3; ++i)
     {
-        //MPO<Matrix, SymmGroup> four = SU2::make_2rdm_term_custom<Matrix, SymmGroup>(i,i+1,i+2,i+3, 1,1,v3,v4,v5, site_irreps);
         MPO<Matrix, SymmGroup> four = SU2::make_2rdm_term<Matrix, SymmGroup>(i,i+1,i+2,i+3, site_irreps);
         double twodm0123 = SU2::expval(mps, four, config);
         result.push_back(twodm0123 / ref2[i]);
