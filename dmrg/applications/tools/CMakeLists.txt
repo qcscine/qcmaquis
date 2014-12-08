@@ -41,23 +41,10 @@ create_tools_symm_target("mps_upgrade_u1"   "U1"     "mps_upgrade.cpp"  "${DMRG_
 create_tools_symm_target("mps_upgrade_2u1"  "TWOU1"  "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mps_upgrade_none" "NONE"   "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
 
+create_tools_symm_target("su2corr_su2u1"   "SU2U1"   "su2corr.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("su2corr_su2u1pg" "SU2U1PG" "su2corr.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
-if(DMRG_HAS_SU2U1)
-  set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
-  #find_package(GSL REQUIRED)
-  add_executable(su2corr su2corr.cpp)
-  target_link_libraries(su2corr ${DMRG_APP_LIBRARIES} ${GSL_LIBRARIES})
-  set_target_properties(su2corr PROPERTIES COMPILE_DEFINITIONS "USE_SU2U1")
-endif(DMRG_HAS_SU2U1)
-
-if(DMRG_HAS_SU2U1PG)
-  set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
-  #find_package(GSL REQUIRED)
-  add_executable(su2corr_pg su2corr.cpp)
-  target_link_libraries(su2corr_pg ${DMRG_APP_LIBRARIES} ${GSL_LIBRARIES})
-  set_target_properties(su2corr_pg PROPERTIES COMPILE_DEFINITIONS "USE_SU2U1PG")
-endif(DMRG_HAS_SU2U1PG)
-
+create_tools_symm_target("nrdmexpect_2u1pg"   "TWOU1PG" "nrdmexpect.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 if(USE_AMBIENT)
   ## enable only if needed, and with a revision < r3578
@@ -65,10 +52,4 @@ if(USE_AMBIENT)
   # target_link_libraries(mps_converter ${DMRG_APP_LIBRARIES})
   # set_target_properties(mps_converter PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1")
 endif(USE_AMBIENT)
-
-if(DMRG_HAS_TwoU1PG)
-  add_executable(nrdmexpect_2u1pg nrdmexpect.cpp)
-  target_link_libraries(nrdmexpect_2u1pg ${DMRG_APP_LIBRARIES})
-  set_target_properties(nrdmexpect_2u1pg PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1PG")
-endif(DMRG_HAS_TwoU1PG)
 
