@@ -6,23 +6,41 @@ if(USE_AMBIENT)
   compile_with_ambient()
 endif(USE_AMBIENT)
 
-add_executable(mps_overlap mps_overlap.cpp)
-target_link_libraries(mps_overlap ${DMRG_APP_LIBRARIES})
 
-add_executable(mps_stats mps_stats.cpp)
-target_link_libraries(mps_stats ${DMRG_APP_LIBRARIES})
+macro(create_tools_symm_target TNAME SYMM CPPFILE LIBS)
+  get_symm_group_name(SYMM_NAME ${SYMM})
+  if(DMRG_HAS_${SYMM_NAME})
+    add_executable(${TNAME} ${CPPFILE})
+    target_link_libraries(${TNAME} ${LIBS})
+    set_target_properties(${TNAME} PROPERTIES COMPILE_DEFINITIONS "USE_${SYMM}")
+    install(TARGETS ${TNAME} RUNTIME DESTINATION bin COMPONENT applications)
+  endif(DMRG_HAS_${SYMM_NAME})
+endmacro(create_tools_symm_target)
 
-if(DMRG_HAS_TwoU1)
-  add_executable(mps_stats_2u1 mps_stats.cpp)
-  target_link_libraries(mps_stats_2u1 ${DMRG_APP_LIBRARIES})
-  set_target_properties(mps_stats_2u1 PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1")
-endif(DMRG_HAS_TwoU1)
 
-if(DMRG_HAS_TwoU1PG)
-  add_executable(mpo_stats_2u1pg mpo_stats.cpp)
-  target_link_libraries(mpo_stats_2u1pg dmrg_models dmrg_utils ${DMRG_APP_LIBRARIES})
-  set_target_properties(mpo_stats_2u1pg PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1PG")
-endif(DMRG_HAS_TwoU1PG)
+
+create_tools_symm_target("mps_overlap_u1"   "U1"     "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_overlap_2u1"  "TWOU1"  "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_overlap_none" "NONE"   "mps_overlap.cpp"  "${DMRG_APP_LIBRARIES}")
+
+# create_tools_symm_target("mps_reflect_u1"   "U1"     "mps_reflect.cpp"  "${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_reflect_2u1"  "TWOU1"  "mps_reflect.cpp"  "${DMRG_APP_LIBRARIES}")
+# create_tools_symm_target("mps_reflect_none" "NONE"   "mps_reflect.cpp"  "${DMRG_APP_LIBRARIES}")
+
+create_tools_symm_target("mps_stats_u1"   "U1"     "mps_stats.cpp"  "${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_stats_2u1"  "TWOU1"  "mps_stats.cpp"  "${DMRG_APP_LIBRARIES}")
+
+create_tools_symm_target("mpo_stats_u1"      "U1"      "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_2u1"     "TWOU1"   "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_2u1pg"   "TWOU1PG" "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_su2u1"   "SU2U1"   "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_su2u1pg" "SU2U1PG" "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+
+
+create_tools_symm_target("mps_upgrade_u1"   "U1"     "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_upgrade_2u1"  "TWOU1"  "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mps_upgrade_none" "NONE"   "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
+
 
 if(DMRG_HAS_SU2U1)
   set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -30,10 +48,6 @@ if(DMRG_HAS_SU2U1)
   add_executable(su2corr su2corr.cpp)
   target_link_libraries(su2corr ${DMRG_APP_LIBRARIES} ${GSL_LIBRARIES})
   set_target_properties(su2corr PROPERTIES COMPILE_DEFINITIONS "USE_SU2U1")
-
-  add_executable(mpo_stats_su2u1 mpo_stats.cpp)
-  target_link_libraries(mpo_stats_su2u1 dmrg_models dmrg_utils ${DMRG_APP_LIBRARIES})
-  set_target_properties(mpo_stats_su2u1 PROPERTIES COMPILE_DEFINITIONS "USE_SU2U1")
 endif(DMRG_HAS_SU2U1)
 
 if(DMRG_HAS_SU2U1PG)
@@ -42,43 +56,8 @@ if(DMRG_HAS_SU2U1PG)
   add_executable(su2corr_pg su2corr.cpp)
   target_link_libraries(su2corr_pg ${DMRG_APP_LIBRARIES} ${GSL_LIBRARIES})
   set_target_properties(su2corr_pg PROPERTIES COMPILE_DEFINITIONS "USE_SU2U1PG")
-
-  add_executable(mpo_stats_su2u1pg mpo_stats.cpp)
-  target_link_libraries(mpo_stats_su2u1pg dmrg_models dmrg_utils ${DMRG_APP_LIBRARIES})
-  set_target_properties(mpo_stats_su2u1pg PROPERTIES COMPILE_DEFINITIONS "USE_SU2U1PG")
 endif(DMRG_HAS_SU2U1PG)
 
-#add_executable(mpo_stats_none mpo_stats.cpp)
-#target_link_libraries(mpo_stats_none dmrg_models dmrg_utils ${DMRG_LIBRARIES})
-#set_target_properties(mpo_stats_none PROPERTIES COMPILE_DEFINITIONS "USE_NONE")
-
-#add_executable(mpo_stats_u1 mpo_stats.cpp)
-#target_link_libraries(mpo_stats_u1 dmrg_models dmrg_utils ${DMRG_LIBRARIES})
-#set_target_properties(mpo_stats_u1 PROPERTIES COMPILE_DEFINITIONS "USE_U1")
-
-if(DMRG_HAS_TwoU1)
-  add_executable(mpo_stats_2u1 mpo_stats.cpp)
-  target_link_libraries(mpo_stats_2u1 dmrg_models dmrg_utils ${DMRG_LIBRARIES})
-  set_target_properties(mpo_stats_2u1 PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1")
-endif(DMRG_HAS_TwoU1)
-
-if(DMRG_HAS_TrivialGroup)
-  add_executable(mps_upgrade_none mps_upgrade.cpp)
-  target_link_libraries(mps_upgrade_none ${DMRG_APP_LIBRARIES})
-  set_target_properties(mps_upgrade_none PROPERTIES COMPILE_DEFINITIONS "USE_NONE")
-endif(DMRG_HAS_TrivialGroup)
-
-if(DMRG_HAS_U1)
-  add_executable(mps_upgrade_u1 mps_upgrade.cpp)
-  target_link_libraries(mps_upgrade_u1 ${DMRG_APP_LIBRARIES})
-  set_target_properties(mps_upgrade_u1 PROPERTIES COMPILE_DEFINITIONS "USE_U1")
-endif(DMRG_HAS_U1)
-
-if(DMRG_HAS_TwoU1)
-  add_executable(mps_upgrade_2u1 mps_upgrade.cpp)
-  target_link_libraries(mps_upgrade_2u1 ${DMRG_APP_LIBRARIES})
-  set_target_properties(mps_upgrade_2u1 PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1")
-endif(DMRG_HAS_TwoU1)
 
 if(USE_AMBIENT)
   ## enable only if needed, and with a revision < r3578
