@@ -48,7 +48,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
-        di.init_sectors(mps, 5, true, 0);
+        di.init_sectors(mps, parms["init_bond_dimension"], true, 0);
 
         std::vector<std::size_t> hf_init = parms["hf_occ"];
 
@@ -82,13 +82,16 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
                     site_charge = phys_dims[site_types[i]][0].first; // updown
                     break;
                 case 3:
-                    site_charge = phys_dims[site_types[i]][1].first; // up
+                    //site_charge = phys_dims[site_types[i]][1].first; // up
+                    site_charge = phys_dims[site_types[i]][0].first; // up
                     break;
                 case 2:
-                    site_charge = phys_dims[site_types[i]][2].first; // down
+                    //site_charge = phys_dims[site_types[i]][2].first; // down
+                    site_charge = phys_dims[site_types[i]][0].first; // down
                     break;
                 case 1:
-                    site_charge = phys_dims[site_types[i]][3].first; // empty
+                    //site_charge = phys_dims[site_types[i]][3].first; // empty
+                    site_charge = phys_dims[site_types[i]][1].first; // empty
                     break;
             }
 

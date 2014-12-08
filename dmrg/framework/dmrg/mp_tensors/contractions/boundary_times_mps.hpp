@@ -46,6 +46,7 @@ namespace contraction {
             select_proc(storage::actor_t::common);
             
             mps.make_right_paired();
+            //maquis::cout << "MPSTensor right paired (-A=):\n" << mps;
         }
         omp_for(int b1, range(0,loop_max), {
             select_proc(ambient::scope::permute(b1, mpo.placement_l));

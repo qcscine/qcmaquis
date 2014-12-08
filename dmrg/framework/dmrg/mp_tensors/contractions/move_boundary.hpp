@@ -60,11 +60,6 @@ namespace contraction {
                                   t1, t3);
         gemm(transpose(conjugate(bra_tensor.data())), t3, t1);
         
-		#define DEBUG_OVERLAP
-		#ifdef DEBUG_OVERLAP
-		maquis::cout << "DEBUG_OVERLAP" << std::endl;
-		#endif
-		
 		return t1;
 
         // original:
@@ -201,6 +196,9 @@ namespace contraction {
         Index<SymmGroup> const & left_i = bra_tensor.row_dim();
         Index<SymmGroup> const & right_i = ket_tensor.col_dim();
         Index<SymmGroup> out_left_i = ket_tensor.site_dim() * left_i;
+        //maquis::cout << "Left space (left_i): " << left_i << std::endl;
+        //maquis::cout << "Right space (right_i): " << right_i << std::endl;
+        //maquis::cout << "ket_tensor.site_dim(): " << ket_tensor.site_dim() << std::endl << std::endl;
         ProductBasis<SymmGroup> out_left_pb(ket_tensor.site_dim(), left_i);
         ProductBasis<SymmGroup> in_right_pb(ket_tensor.site_dim(), right_i,
                                 boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
@@ -210,6 +208,8 @@ namespace contraction {
 
 		bra_tensor.make_left_paired();
 	    block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
+
+        //maquis::cout << "MPSTensor left paired (=A-):\n" << bra_tensor;
 		
 #ifdef USE_AMBIENT
         ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, left.aux_dim(), mpo.col_dim());
@@ -231,9 +231,13 @@ namespace contraction {
         ret.resize(loop_max);
 
         omp_for(index_type b2, range<index_type>(0,loop_max), {
+            //maquis::cout << "Loop over columns of the MPO. Column " << b2 << "\n\n";
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
             block_matrix<Matrix, SymmGroup> tmp;
+            //maquis::cout << "Calling lbtm_kernel...\n\n";
             lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.site_dim(), right_i, out_left_i, in_right_pb, out_left_pb);
+            //maquis::cout << "contr_grid\n" << contr_grid(0,0);
+            //maquis::cout << "bra_conj\n" << bra_conj;
             gemm(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
         });
 		

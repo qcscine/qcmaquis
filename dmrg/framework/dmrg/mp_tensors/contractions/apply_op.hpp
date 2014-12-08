@@ -59,6 +59,7 @@ namespace contraction {
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
+            //maquis::cout << "Loop over entries of the column. Entry " << b1 << "\n\n";
 
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
             if (T.n_blocks() == 0) continue;
@@ -66,10 +67,17 @@ namespace contraction {
             block_matrix<Matrix, SymmGroup> const & W = access.op;
             if (W.n_blocks() == 0) continue;
 
+            //maquis::cout << "Accessing block matrix of trans(L)--A=\n" << T;
+            //maquis::cout << "Accessing block matrix of MPO\n" << W;
+
             // charge deltas are constant for all blocks
             charge operator_delta = SymmGroup::fuse(W.right_basis()[0].first, -W.left_basis()[0].first);
             charge        T_delta = SymmGroup::fuse(T.right_basis()[0].first, -T.left_basis()[0].first);
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+
+            //maquis::cout << "Operator charge delta: " << operator_delta << std::endl;
+            //maquis::cout << "trans(L)*A charge delta: " << T_delta << std::endl;
+            //maquis::cout << "Total charge delta: " << total_delta << std::endl << std::endl;
 
             select_proc(contr_grid.where(b1,b2));
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);

@@ -90,12 +90,18 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     std::size_t L = mps.length();
     
     Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+    maquis::cout << "Starting left boundary:\n" << left[0];
     
     for(size_t i = 0; i < L; ++i) {
+        maquis::cout << "############# SITE " << i << " #############\n\n";
+        maquis::cout << "Entering overlap_mpo_left_step...\n\n";
         select_proc(ambient::scope::balance(i,L));
         if (verbose)
             maquis::cout << "expval site " << (size_t)i << std::endl;
         left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+        maquis::cout << "Left boundary after contraction:\n";
+        for(int ii=0; ii < left.aux_dim() ; ++ii)
+             maquis::cout << left[ii];
     }
     
     return maquis::real(left[0].trace());

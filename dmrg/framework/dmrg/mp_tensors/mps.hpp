@@ -265,9 +265,6 @@ Boundary<Matrix, SymmGroup>
 MPS<Matrix, SymmGroup>::left_boundary() const
 {
     Index<SymmGroup> i = (*this)[0].row_dim();
-    //DEBUG
-    maquis::cout << "Index for left boundary: " << i << std::endl;
-    
     Boundary<Matrix, SymmGroup> ret(i, i, 1);
 
     for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
