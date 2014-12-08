@@ -277,7 +277,7 @@ public:
     {
         typename SU2U1::charge ret(0);
         ret[0] = static_cast<int>(parms["u1_total_charge1"]);
-        ret[1] = static_cast<int>(parms["u1_total_charge2"]);
+        ret[1] = static_cast<int>(parms["su2_total_charge"]);
         return ret;
     }
 
