@@ -123,9 +123,38 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_both_paired() const
 template<class Matrix, class SymmGroup>
 void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired() const
 {   
+    make_right_paired_(type_helper<typename symm_traits::SymmType<SymmGroup>::type>());
+}
+
+template<class Matrix, class SymmGroup>
+template<class SymmType>
+void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired_(type_helper<SymmType>) const
+{   
     if (cur_storage == TSRightPaired)
         return;
     
+    block_matrix<Matrix, SymmGroup> tmp;
+    if (cur_storage == TSBothPaired)
+        ts_reshape::reshape_both_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
+    else {
+        // direct left to right reshape should not be needed
+	    make_both_paired();
+        ts_reshape::reshape_both_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
+    }
+    
+    swap(data_, tmp);
+    cur_storage = TSRightPaired;
+    
+    // assert( left_i == data_.left_basis() );
+}
+
+template<class Matrix, class SymmGroup>
+void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired_(type_helper<symm_traits::SU2Tag>) const
+{   
+    if (cur_storage == TSRightPaired)
+        return;
+    
+    maquis::cout << "SU2 TwositeTensor::make::right_paired\n";
     block_matrix<Matrix, SymmGroup> tmp;
     if (cur_storage == TSBothPaired)
         ts_reshape::reshape_both_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);

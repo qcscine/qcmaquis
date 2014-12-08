@@ -98,6 +98,12 @@ public:
     template<class Archive> void save(Archive & ar) const;
     
 private:
+    template <class SymmType> class type_helper { };
+    template <class SymmType>
+    void make_right_paired_(type_helper<SymmType>) const;
+
+    void make_right_paired_(type_helper<symm_traits::SU2Tag>) const;
+
     MultiIndex<SymmGroup> midx;
     set_id left_paired;
     set_id right_paired;
