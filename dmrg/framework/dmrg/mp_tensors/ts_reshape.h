@@ -136,13 +136,12 @@ namespace ts_reshape {
         for (size_t block = 0; block < m1.n_blocks(); ++block)
         {
             size_t r = right_i.position(m1.basis().right_charge(block));
-            if(r == right_i.size()) continue;
+            assert(r != right_i.size());
 
             for (size_t s1 = 0; s1 < physical_i_left.size(); ++s1)
                 for (size_t s2 = 0; s2 < physical_i_right.size(); ++s2)
                 {
                     charge s_charge = SymmGroup::fuse(physical_i_left[s1].first, physical_i_right[s2].first);
-                    //size_t s_out = phys2_i.position(s_charge);
                     
                     size_t l = left_i.position(SymmGroup::fuse(m1.basis().left_charge(block), -s_charge));
                     if(l == left_i.size()) continue;
@@ -153,15 +152,13 @@ namespace ts_reshape {
                         //charge in_l_charge = SymmGroup::fuse(s_charge, left_i[l].first);
                         //charge in_r_charge = right_i[r].first;
                         
-                        //if (! m1.has_block(in_l_charge, in_r_charge) ) continue;
-                        
-                        if (! m2.has_block(out_l_charge, out_r_charge) )
-                            m2.insert_block(new Matrix(out_left.size(physical_i_left[s1].first, left_i[l].first),
+                        size_t o = m2.find_block(out_l_charge, out_r_charge);
+                        if ( o == m2.n_blocks() )
+                            o = m2.insert_block(new Matrix(out_left.size(physical_i_left[s1].first, left_i[l].first),
                                                    out_right.size(-physical_i_right[s2].first, right_i[r].first), 0),
                                             out_l_charge, out_r_charge);
                         
-                        //maquis::dmrg::detail::reshape_l2b( m2(out_l_charge, out_r_charge), m1(in_l_charge, in_r_charge),
-                        maquis::dmrg::detail::reshape_l2b( m2(out_l_charge, out_r_charge), m1[block],
+                        maquis::dmrg::detail::reshape_l2b( m2[o], m1[block],
                                                            in_left(s_charge, left_i[l].first), phys_pb(physical_i_left[s1].first, physical_i_right[s2].first),
                                                            out_left(physical_i_left[s1].first, left_i[l].first), out_right(physical_i_right[s2].first, right_i[r].first),
                                                            physical_i_left[s1].second, physical_i_right[s2].second, left_i[l].second, right_i[r].second );
