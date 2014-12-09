@@ -163,14 +163,13 @@ namespace ts_reduction {
     */
     
     template<class Matrix, class SymmGroup>
-    void reshape_right_to_both(Index<SymmGroup> const & physical_i_left,
-                               Index<SymmGroup> const & physical_i_right,
-                               Index<SymmGroup> const & left_i,
-                               Index<SymmGroup> const & right_i,
-                               block_matrix<Matrix, SymmGroup> const & m1,
-                               block_matrix<Matrix, SymmGroup> & m2)
+    void reduce_to_right(Index<SymmGroup> const & physical_i_left,
+                         Index<SymmGroup> const & physical_i_right,
+                         Index<SymmGroup> const & left_i,
+                         Index<SymmGroup> const & right_i,
+                         block_matrix<Matrix, SymmGroup> const & m1,
+                         block_matrix<Matrix, SymmGroup> & m2)
     {
-        
         m2 = block_matrix<Matrix, SymmGroup>();
         
         typedef std::size_t size_t;
@@ -186,56 +185,96 @@ namespace ts_reduction {
                                           boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                               -boost::lambda::_1, boost::lambda::_2));
         ProductBasis<SymmGroup> out_left(physical_i_left, left_i);
+
+        maquis::cout << "physical_i_left: " << physical_i_left << std::endl;
+        maquis::cout << "physical_i_right: " << physical_i_right << std::endl;
+        maquis::cout << "left_i: " << left_i << std::endl;
+        maquis::cout << "right_i: " << right_i << std::endl;
+        maquis::cout << "phys2_i: " << phys2_i << std::endl << std::endl;
+
+        std::vector<std::size_t> right_block_sizes(m1.n_blocks(), 0);
+        std::vector<std::size_t> fullsize(m1.n_blocks(), 0);
+        for (size_t block = 0; block < m1.n_blocks(); ++block)
+        {
+            size_t l = left_i.position(m1.basis().left_charge(block));
+            assert(l != left_i.size());
+                  
+            for (size_t s = 0; s < phys2_i.size(); ++s)
+            {
+                charge s_charge = phys2_i[s].first;
+                size_t r = right_i.position(SymmGroup::fuse(m1.basis().right_charge(block), s_charge));
+                if(r == right_i.size()) continue;
+                right_block_sizes[block] += right_i[r].second;
+
+                for (size_t s1 = 0; s1 < physical_i_left.size(); ++s1)
+                    for (size_t s2 = 0; s2 < physical_i_right.size(); ++s2)
+                    {
+                        if (s_charge != SymmGroup::fuse(physical_i_left[s1].first, physical_i_right[s2].first)) continue;
+                        fullsize[block] += right_i[r].second;
+                    }
+            }
+            maquis::cout << block << " red size " << right_block_sizes[block] << " full size " << fullsize[block] << std::endl;
+        } // m1 block
+
+        maquis::cout << std::endl;
         
         for (size_t block = 0; block < m1.n_blocks(); ++block)
         {
             size_t l = left_i.position(m1.basis().left_charge(block));
-            //if(l == left_i.size()) continue;
-            maquis::cout << "Test\n";
             assert(l != left_i.size());
                   
-            for (size_t s1 = 0; s1 < physical_i_left.size(); ++s1)
-                for (size_t s2 = 0; s2 < physical_i_right.size(); ++s2)
-                {
-                    charge s_charge = SymmGroup::fuse(physical_i_left[s1].first, physical_i_right[s2].first);
-                    //size_t s_out = phys2_i.position(s_charge);
-                    size_t r = right_i.position(SymmGroup::fuse(m1.basis().right_charge(block), s_charge));
-                    if(r == right_i.size()) continue;
-
+            maquis::cout << "lcharge: " << left_i[l].first << " right_size: " << m1.basis().right_size(block) << std::endl;
+            for (size_t s = 0; s < phys2_i.size(); ++s)
+            {
+                maquis::cout << "  s_charge: " << phys2_i[s].first << " ";
+                for (size_t s1 = 0; s1 < physical_i_left.size(); ++s1)
+                    for (size_t s2 = 0; s2 < physical_i_right.size(); ++s2)
                     {
-                        charge out_l_charge = SymmGroup::fuse(physical_i_left[s1].first, left_i[l].first);
-                        charge out_r_charge = SymmGroup::fuse(-physical_i_right[s2].first, right_i[r].first);
-                        //charge in_l_charge = left_i[l].first;
-                        //charge in_r_charge = SymmGroup::fuse(-s_charge, right_i[r].first);
+                        charge s_charge = SymmGroup::fuse(physical_i_left[s1].first, physical_i_right[s2].first);
+                        if (s_charge != phys2_i[s].first) continue;
                         
-                        //if (! m1.has_block(in_l_charge, in_r_charge) ) continue;
-                        
-                        if (! m2.has_block(out_l_charge, out_r_charge) )
-                            m2.insert_block(new Matrix(out_left.size(physical_i_left[s1].first, left_i[l].first),
-                                                   out_right.size(-physical_i_right[s2].first, right_i[r].first), 0),
-                                            out_l_charge, out_r_charge);
-                        
-                        size_t in_right_offset  = in_right  (s_charge            , right_i[r].first);
-                        size_t out_right_offset = out_right (physical_i_right[s2].first, right_i[r].first);
-                        size_t out_left_offset  = out_left  (physical_i_left[s1].first, left_i[l].first);
-                        size_t in_phys_offset   = phys_pb   (physical_i_left[s1].first, physical_i_right[s2].first);
-                        
-                        //Matrix const & in_block = m1(in_l_charge, in_r_charge);
-                        Matrix const & in_block = m1[block];
-                        Matrix & out_block = m2(out_l_charge, out_r_charge);
-                        
-                        for (size_t ss1 = 0; ss1 < physical_i_left[s1].second; ++ss1)
-                            for (size_t ss2 = 0; ss2 < physical_i_right[s2].second; ++ss2)
-                            {
-                                size_t ss_out = in_phys_offset + ss1*physical_i_right[s2].second + ss2;
-                                for (size_t rr = 0; rr < right_i[r].second; ++rr)
-                                    for (size_t ll = 0; ll < left_i[l].second; ++ll)
-                                        out_block(out_left_offset + ss1*left_i[l].second + ll, out_right_offset + ss2*right_i[r].second + rr) = in_block(ll, in_right_offset + ss_out*right_i[r].second + rr);
+                        maquis::cout << "    phys_c1, phys_c2 " << physical_i_left[s1].first << physical_i_right[s2].first << std::endl;
+
+                        size_t r = right_i.position(SymmGroup::fuse(m1.basis().right_charge(block), s_charge));
+                        if(r == right_i.size()) continue;
+
+                        {
+                            //charge out_l_charge = SymmGroup::fuse(physical_i_left[s1].first, left_i[l].first);
+                            //charge out_r_charge = SymmGroup::fuse(-physical_i_right[s2].first, right_i[r].first);
+                            charge in_l_charge = left_i[l].first;
+                            charge in_r_charge = SymmGroup::fuse(-s_charge, right_i[r].first);
+                            
+                            std::size_t o = m2.find_block(in_l_charge, in_r_charge);
+                            if ( o == m2.n_blocks()) {
+                                maquis::cout << "    inserting " << "s1s2 " << s1 << "," << s2 << " "
+                                             << left_i[l].second << "x" << right_i[r].second << " " << in_l_charge << in_r_charge << std::endl;
+                                o = m2.insert_block(new Matrix(left_i[l].second, right_i[r].second, 0) , in_l_charge, in_r_charge);
                             }
-                        
+                            else
+                            maquis::cout << "    reaccessing " << "s1s2 " << s1 << "," << s2 << " "
+                                         << left_i[l].second << "x" << right_i[r].second << " " << in_l_charge << in_r_charge << std::endl;
+
+                            assert(num_cols(m2[o]) == right_i[r].second);
+                            
+                            size_t in_right_offset  = in_right  (s_charge            , right_i[r].first);
+                            size_t in_phys_offset   = phys_pb   (physical_i_left[s1].first, physical_i_right[s2].first);
+                            
+                            Matrix const & in_block = m1[block];
+                            Matrix & out_block = m2[o];
+
+                            for (size_t ss1 = 0; ss1 < physical_i_left[s1].second; ++ss1)
+                                for (size_t ss2 = 0; ss2 < physical_i_right[s2].second; ++ss2)
+                                {
+                                    size_t ss_out = in_phys_offset + ss1*physical_i_right[s2].second + ss2;
+                                    for (size_t rr = 0; rr < right_i[r].second; ++rr)
+                                        for (size_t ll = 0; ll < left_i[l].second; ++ll)
+                                            out_block(ss1*left_i[l].second + ll, in_right_offset + ss2*right_i[r].second + rr)
+                                                        += in_block(ll, in_right_offset + ss_out*right_i[r].second + rr);
+                                }
+                        }
                     }
-                }
-        }
+            }
+        } // m1 block
     }
     
     /*

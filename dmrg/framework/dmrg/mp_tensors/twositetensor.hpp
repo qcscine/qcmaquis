@@ -38,6 +38,7 @@
 #include <utility>
 
 #include "ts_reshape.h"
+#include "ts_reduction.h"
 
 template<class Matrix, class SymmGroup>
 TwoSiteTensor<Matrix, SymmGroup>::TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & mps1,
@@ -155,9 +156,13 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired_(type_helper<symm_trait
         return;
     
     maquis::cout << "SU2 TwositeTensor::make::right_paired\n";
-    block_matrix<Matrix, SymmGroup> tmp;
-    if (cur_storage == TSBothPaired)
+    block_matrix<Matrix, SymmGroup> tmp, tmp2;
+    if (cur_storage == TSBothPaired) {
         ts_reshape::reshape_both_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
+        ts_reduction::reduce_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, tmp, tmp2);
+        maquis::cout << "original:\n" << tmp << std::endl;
+        maquis::cout << "reduced:\n" << tmp2 << std::endl;
+    }
     else {
         // direct left to right reshape should not be needed
 	    make_both_paired();
