@@ -124,13 +124,6 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_both_paired() const
 template<class Matrix, class SymmGroup>
 void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired() const
 {   
-    make_right_paired_(type_helper<typename symm_traits::SymmType<SymmGroup>::type>());
-}
-
-template<class Matrix, class SymmGroup>
-template<class SymmType>
-void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired_(type_helper<SymmType>) const
-{   
     if (cur_storage == TSRightPaired)
         return;
     
@@ -150,36 +143,26 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired_(type_helper<SymmType>)
 }
 
 template<class Matrix, class SymmGroup>
-void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired_(type_helper<symm_traits::SU2Tag>) const
-{   
-    if (cur_storage == TSRightPaired)
-        return;
-    
-    maquis::cout << "SU2 TwositeTensor::make::right_paired\n";
-    block_matrix<Matrix, SymmGroup> tmp, tmp2;
-    if (cur_storage == TSBothPaired) {
-        ts_reshape::reshape_both_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
-        ts_reduction::reduce_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, tmp, tmp2);
-        maquis::cout << "original:\n" << tmp << std::endl;
-        maquis::cout << "reduced:\n" << tmp2 << std::endl;
-    }
-    else {
-        // direct left to right reshape should not be needed
-	    make_both_paired();
-        ts_reshape::reshape_both_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
-    }
-    
-    swap(data_, tmp);
-    cur_storage = TSRightPaired;
-    
-    // assert( left_i == data_.left_basis() );
+MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps() const
+{
+    return make_mps_(type_helper<typename symm_traits::SymmType<SymmGroup>::type>());
 }
 
 template<class Matrix, class SymmGroup>
-MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps() const
+template<class SymmType>
+MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_helper<SymmType>) const
 {
     make_right_paired();
     return MPSTensor<Matrix, SymmGroup>(phys_i, left_i, right_i, data_, RightPaired);
+}
+
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_helper<symm_traits::SU2Tag>) const
+{
+    make_right_paired();
+    block_matrix<Matrix, SymmGroup> tmp;
+    Index<SymmGroup> phys_out = ts_reduction::reduce_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
+    return MPSTensor<Matrix, SymmGroup>(phys_out, left_i, right_i, tmp, RightPaired);
 }
 
 template<class Matrix, class SymmGroup>
