@@ -25,17 +25,16 @@
  *
  *****************************************************************************/
 
-#include "twositetensor.h"
+#include <vector>
+#include <utility>
+#include <alps/numeric/real.hpp>
+
+#include "dmrg/utils/random.hpp"
 #include "dmrg/mp_tensors/mpstensor.h"
 
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 
-#include "dmrg/utils/random.hpp"
-#include <alps/numeric/real.hpp>
-
-#include <vector>
-#include <utility>
 
 namespace ts_reshape {
     
@@ -47,7 +46,6 @@ namespace ts_reshape {
                               block_matrix<Matrix, SymmGroup> const & m1,
                               block_matrix<Matrix, SymmGroup> & m2)
     {   
-        
         m2 = block_matrix<Matrix, SymmGroup>();
         
         typedef std::size_t size_t;
@@ -60,7 +58,6 @@ namespace ts_reshape {
                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                              -boost::lambda::_1, boost::lambda::_2));
         ProductBasis<SymmGroup> out_left(phys2_i, left_i);
-        
        
         for (size_t block = 0; block < m1.n_blocks(); ++block)
         {
