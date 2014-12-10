@@ -197,6 +197,7 @@ namespace ts_reduction {
         {
             size_t l = left_i.position(m1.basis().left_charge(block));
             assert(l != left_i.size());
+            charge lc = left_i[l].first;
                   
             size_t reduced_size=0;
             for (size_t s = 0; s < phys2_i.size(); ++s)
@@ -206,9 +207,9 @@ namespace ts_reduction {
                 if(r == right_i.size()) continue;
                 reduced_size += right_i[r].second;
             }
-            maquis::cout << "lcharge: " << left_i[l].first << " right_size: " << m1.basis().right_size(block) << " red size " << reduced_size << std::endl;
+            maquis::cout << "lcharge: " << lc << " right_size: " << m1.basis().right_size(block) << " red size " << reduced_size << std::endl;
 
-            charge in_l_charge = left_i[l].first;
+            charge in_l_charge = lc;
             charge in_r_charge = m1.basis().right_charge(block);
             
             maquis::cout << "inserting " << left_i[l].second << "x" << reduced_size << " " << in_l_charge << in_r_charge << std::endl;
@@ -230,13 +231,21 @@ namespace ts_reduction {
                 for (size_t s1 = 0; s1 < physical_i_left.size(); ++s1)
                     for (size_t s2 = 0; s2 < physical_i_right.size(); ++s2)
                     {
-                        if (s_charge != SymmGroup::fuse(physical_i_left[s1].first, physical_i_right[s2].first)) continue;
+                        charge phys_c1 = physical_i_left[s1].first, phys_c2 = physical_i_right[s2].first;
+                        if (s_charge != SymmGroup::fuse(phys_c1, phys_c2)) continue;
                         
-                        size_t in_phys_offset = phys_pb(physical_i_left[s1].first, physical_i_right[s2].first);
+                        size_t in_phys_offset = phys_pb(phys_c1, phys_c2);
 
-                        maquis::cout << "    phys_c1, phys_c2 " << physical_i_left[s1].first << physical_i_right[s2].first
+                        maquis::cout << "    phys_c1, phys_c2 " << phys_c1 << phys_c2
                                      << " copy " << in_right_offset << "+" << in_phys_offset*right_i[r].second << "--" << right_i[r].second
                                      << " to " << out_right_offset << "--" << right_i[r].second << std::endl;
+
+                        int jl,jm,jr,S1,S2,j;
+                        j = std::abs(s_charge[1]); S1 = std::abs(phys_c1[1]); S2 = std::abs(phys_c2[1]);
+                        jl = std::abs(in_l_charge[1]); jm = std::abs(lc[1] + phys_c1[1]); jr = std::abs(right_i[r].first[1]);
+
+                        typename Matrix::value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
+                        coupling_coeff = ((jl+jr+s1+s2)%2) ? -coupling_coeff : coupling_coeff;
 
                         for (size_t ss1 = 0; ss1 < physical_i_left[s1].second; ++ss1)
                             for (size_t ss2 = 0; ss2 < physical_i_right[s2].second; ++ss2)
@@ -245,7 +254,7 @@ namespace ts_reduction {
                                 for (size_t rr = 0; rr < right_i[r].second; ++rr)
                                     for (size_t ll = 0; ll < left_i[l].second; ++ll)
                                         out_block(ss1*left_i[l].second + ll, out_right_offset + ss2*right_i[r].second + rr)
-                                                    += in_block(ll, in_right_offset + ss_out*right_i[r].second + rr);
+                                                    += coupling_coeff * in_block(ll, in_right_offset + ss_out*right_i[r].second + rr);
                             }
                     }
             }

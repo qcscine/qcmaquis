@@ -161,6 +161,7 @@ MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_he
 {
     make_right_paired();
     block_matrix<Matrix, SymmGroup> tmp;
+    maquis::cout << "original\n" << data_ << std::endl;
     Index<SymmGroup> phys_out = ts_reduction::reduce_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
     return MPSTensor<Matrix, SymmGroup>(phys_out, left_i, right_i, tmp, RightPaired);
 }
