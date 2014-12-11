@@ -223,7 +223,7 @@ typedef TwoU1PG grp;
     }
 
     template<class Matrix>
-    MPO<Matrix, TwoU1PG> make_diagonal_3rdm_term(int i, std::vector<int> site_irreps)
+    MPO<Matrix, TwoU1PG> make_simple_3rdm_term(int i, int j, int k, std::vector<int> site_irreps)
     {
         typedef block_matrix<Matrix, TwoU1PG> op_t;
         MPO<Matrix, TwoU1PG> ret(site_irreps.size());
@@ -247,9 +247,6 @@ typedef TwoU1PG grp;
             fill.insert_block(Matrix(1,1,-1), B, B);
             fill.insert_block(Matrix(1,1,-1), C, C);
             fill.insert_block(Matrix(1,1,1), D, D);
-
-            block_matrix<Matrix, TwoU1PG> doubly_occupied;
-            doubly_occupied.insert_block(Matrix(1,1,1.0), A, A);
 
             op_t create_up;
             create_up.insert_block(Matrix(1,1,1), C, A);
@@ -279,10 +276,32 @@ typedef TwoU1PG grp;
             destroy_down_fill.insert_block(Matrix(1,1,-1), A, B);
             destroy_down_fill.insert_block(Matrix(1,1,-1), C, D);
 
+            op_t count_up;
+            count_up.insert_block(Matrix(1, 1, 1), B, B);
+            count_up.insert_block(Matrix(1, 1, 1), A, A);
+
             MPOTensor<Matrix, TwoU1PG> op(1,1);
             if (p==i) {
-                op.set(0,0, doubly_occupied, 2.0);
+                op = MPOTensor<Matrix, TwoU1PG>(1,1);
+                op.set(0,0, count_up, 1.0);
             }
+            else if (p==j) {
+                op = MPOTensor<Matrix, TwoU1PG>(1,1);
+                op.set(0,0, count_up, 1.0);
+            }
+            else if (p==k) {
+                op = MPOTensor<Matrix, TwoU1PG>(1,1);
+                op.set(0,0, count_up, 1.0);
+            }
+//           else if ((i < p && p < j) || (k < p )) {
+//               // position is in between first or second pair of operators -> push fill
+//               std::cout << "i am here for fill: " << i <<j << k << std::endl;
+//               op = MPOTensor<Matrix, TwoU1PG>(4,4);
+//               op.set(0,0, fill, 1.0);
+//               op.set(1,1, fill, 1.0);
+//               op.set(2,2, fill, 1.0);
+//               op.set(3,3, fill, 1.0);
+//           }
             else
                 op.set(0,0, ident, 1.0);
 
@@ -313,9 +332,9 @@ int main(int argc, char ** argv)
         std::cout << std::endl;
 
         int i=0;
-        int j=2;
-        int k=3;
-        int l=5;
+        int j=1;
+        int k=2;
+        int l=3;
 
         MPO<matrix, grp> mpo = make_2rdm_term<matrix>(i,j,k,l, site_irreps);
         double expectation_value = expval(mps, mpo);
@@ -325,6 +344,18 @@ int main(int argc, char ** argv)
         expectation_value = expval(mps, mpo);
         maquis::cout << "expectation value for (" << 0 << 0 << 0 << 0 << "): " << expectation_value << std::endl;
 
+        for(i=0;i<L; i++)
+        {
+          for(j=i+1; j<L; j++)
+          {
+            for(k=j+1; k<L; k++)
+            {
+              mpo = make_simple_3rdm_term<matrix>(i, j, k, site_irreps);
+              expectation_value = expval(mps, mpo);
+              maquis::cout << "3-RDM expectation value for c+a_i c+a_j c+a_k ca_i ca_j ca_k (" << i << j << k << "): " << expectation_value << std::endl;
+            }
+          }
+        }
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
         return 1;
