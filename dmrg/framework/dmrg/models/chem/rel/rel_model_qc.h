@@ -40,8 +40,8 @@
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
-#include "dmrg/models/chem/rel_term_maker.h"
-#include "dmrg/models/chem/rel_chem_detail.h"
+#include "dmrg/models/chem/term_maker.h"
+#include "dmrg/models/chem/rel/rel_chem_detail.h"
 #include "dmrg/models/chem/pg_util.h"
 
 template<class Matrix, class SymmGroup>
@@ -524,6 +524,6 @@ private:
 };
 
 
-#include "dmrg/models/chem/rel_model_qc.hpp"
+#include "dmrg/models/chem/rel/rel_model_qc.hpp"
 
 #endif

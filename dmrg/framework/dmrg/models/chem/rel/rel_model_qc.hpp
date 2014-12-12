@@ -180,16 +180,16 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         else if (k == -1 && l == -1) {
             
             //matrix_elements[m] = 0.0;
-            this->terms_.push_back(RelTermMaker<Matrix, SymmGroup>::positional_two_term(this, 
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
                 true, dummy, matrix_elements[m]*2.0, i, j, create_unbar, destroy_unbar, tag_handler)
             );
-            this->terms_.push_back(RelTermMaker<Matrix, SymmGroup>::positional_two_term(this, 
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
                 true, dummy, matrix_elements[m]*2.0, i + n_pair, j + n_pair, create_bar, destroy_bar, tag_handler)
             );
-            this->terms_.push_back(RelTermMaker<Matrix, SymmGroup>::positional_two_term(this, 
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
                 true, dummy, matrix_elements[m]*2.0, j, i, create_unbar, destroy_unbar, tag_handler)
             );
-            this->terms_.push_back(RelTermMaker<Matrix, SymmGroup>::positional_two_term(this, 
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
                 true, dummy, matrix_elements[m]*2.0, j + n_pair, i + n_pair, create_bar, destroy_bar, tag_handler)
             );
             

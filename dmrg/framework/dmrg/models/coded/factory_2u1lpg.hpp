@@ -24,24 +24,16 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/chem/model_qc.h"
-#include "dmrg/models/chem/rel_model_qc.h"
+#include "dmrg/models/chem/rel/rel_model_qc.h"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, TwoU1LPG> {
     static boost::shared_ptr<model_impl<Matrix, TwoU1LPG> > parse
     (Lattice const & lattice, BaseParameters & parms)
     {
-        // TODO: remove the standard implementation for double group symmetry
 		typedef boost::shared_ptr<model_impl<Matrix, TwoU1LPG> > impl_ptr;
-        if (parms["MODEL"] == std::string("quantum_chemistry")) {
-            if (parms["LATTICE"] != std::string("orbitals"))
-                throw std::runtime_error("Please use \"LATTICE = orbitals\" for quantum_chemistry\n");
 
-            return impl_ptr( new qc_model<Matrix, TwoU1LPG>(lattice, parms) );
-        }
-
-        else if (parms["MODEL"] == std::string("relativistic_quantum_chemistry")) {
+        if (parms["MODEL"] == std::string("relativistic_quantum_chemistry")) {
             if (parms["LATTICE"] != std::string("spinors"))
                 throw std::runtime_error("Please use \"LATTICE = spinors\" for relativistic_quantum_chemistry\n");
             
