@@ -74,6 +74,10 @@ namespace contraction {
             charge operator_delta = SymmGroup::fuse(W.right_basis()[0].first, -W.left_basis()[0].first);
             charge        T_delta = SymmGroup::fuse(T.right_basis()[0].first, -T.left_basis()[0].first);
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+#ifndef NDEBUG
+            for (size_t t = 0; t < T.n_blocks(); ++t)
+				assert(SymmGroup::fuse(T.right_basis()[t].first, -T.left_basis()[t].first) == T_delta);
+#endif
 
             //maquis::cout << "Operator charge delta: " << operator_delta << std::endl;
             //maquis::cout << "trans(L)*A charge delta: " << T_delta << std::endl;
@@ -92,6 +96,8 @@ namespace contraction {
 
                 size_t o = ret.find_block(out_l_charge, out_r_charge);
                 if ( o == ret.n_blocks() ) {
+					if (b2==1)
+						maquis::cout << "inserting " << out_l_charge << out_r_charge << std::endl;
                     o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
                     ret.resize_block(o, out_left_i.size_of_block(out_l_charge), r_size);
                 }
@@ -120,6 +126,8 @@ namespace contraction {
                             phys_s1, phys_s2, T.left_basis()[t_block].second, r_size, access.scale);
                 }
             } // right index block
+			if(b2==1)
+				maquis::cout << "ret basis is" << ret.left_basis() << " " << ret.right_basis() << std::endl;
         } // b1
     }
 

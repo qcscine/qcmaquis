@@ -155,7 +155,9 @@ public:
             
     	    // Create TwoSite objects
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
+			maquis::cout << "tst\n" << tst << std::endl;
     	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
+			maquis::cout << "twin_mps\n" << twin_mps << std::endl;
             #ifdef AMBIENT_TRACKING
             ambient_track_as(twin_mps, "twin_mps");
             #endif

@@ -78,10 +78,18 @@ namespace contraction {
         swap(ret.data(), contr_grid.reduce());
         ambient::sync();
 #else
+		//maquis::cout << "********************************\n";
+		//for(index_type b1 = 0; b1 < left.aux_dim(); ++b1)
+		//{
+		//	maquis::cout << "t[" << b1 << "] basis" << t[b1].left_basis() << t[b1].right_basis() << std::endl;
+		//}
+		maquis::cout << "********************************\n";
         omp_for(index_type b2, range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
 
             lbtm_kernel(b2, contr_grid, left, t, mpo, physical_i, right_i, out_left_i, in_right_pb, out_left_pb);
+			//maquis::cout << "contr_grid basis\n" << contr_grid(0,0).left_basis() << contr_grid(0,0).right_basis() << std::endl;
+			//maquis::cout << "right basis\n" << right[b2].left_basis() << right[b2].right_basis() << std::endl;
             block_matrix<Matrix, SymmGroup> tmp;
             gemm(contr_grid(0,0), right[b2], tmp);
             contr_grid(0,0).clear();
