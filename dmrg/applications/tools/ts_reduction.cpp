@@ -81,7 +81,7 @@ int main(int argc, char ** argv)
         MPSTensor<Matrix, grp> mpstensor = ts.make_mps();
         mpstensor.make_left_paired();
         mpstensor.make_right_paired();
-        maquis::cout << "reduced twosite object\n" << mpstensor << std::endl;
+        //maquis::cout << "reduced twosite object\n" << mpstensor << std::endl;
         
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;

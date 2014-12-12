@@ -157,6 +157,27 @@ namespace ts_reduction {
         
     }
     */
+
+    template <class T, class SymmGroup>
+    struct print_values
+    {
+        void operator()(block_matrix<alps::numeric::matrix<T>, SymmGroup> const & m2) {}
+    };
+
+    template <class SymmGroup>
+    struct print_values<double, SymmGroup>
+    {
+        void operator()(block_matrix<alps::numeric::matrix<double>, SymmGroup> const & m2) {
+            std::vector<double> vcopy;
+            for(int b = 0; b < m2.n_blocks(); ++b)
+            {
+                std::copy(m2[b].elements().first, m2[b].elements().second, std::back_inserter(vcopy));
+            }
+            std::sort(vcopy.begin(), vcopy.end());
+            std::copy(vcopy.begin(), vcopy.end(), std::ostream_iterator<double>(maquis::cout, ", "));
+            maquis::cout << std::endl;
+        }
+    };
     
     template<class Matrix, class SymmGroup>
     Index<SymmGroup> reduce_to_right(Index<SymmGroup> const & physical_i_left,
@@ -236,16 +257,18 @@ namespace ts_reduction {
                         
                         size_t in_phys_offset = phys_pb(phys_c1, phys_c2);
 
-                        maquis::cout << "    phys_c1, phys_c2 " << phys_c1 << phys_c2
-                                     << " copy " << in_right_offset << "+" << in_phys_offset*right_i[r].second << "--" << right_i[r].second
-                                     << " to " << out_right_offset << "--" << right_i[r].second << std::endl;
-
                         int jl,jm,jr,S1,S2,j;
                         j = std::abs(s_charge[1]); S1 = std::abs(phys_c1[1]); S2 = std::abs(phys_c2[1]);
                         jl = std::abs(in_l_charge[1]); jm = std::abs(lc[1] + phys_c1[1]); jr = std::abs(right_i[r].first[1]);
 
                         typename Matrix::value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
-                        coupling_coeff = ((jl+jr+s1+s2)%2) ? -coupling_coeff : coupling_coeff;
+                        coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
+
+                        maquis::cout << "    phys_c1, phys_c2 " << phys_c1 << phys_c2
+                                     << " copy " << in_right_offset << "+" << in_phys_offset*right_i[r].second << "--" << right_i[r].second
+                                     << " to " << out_right_offset << "--" << right_i[r].second
+                                     << "  " << jl<<jr<<j<<S2<<S1<<jm << "  * " << coupling_coeff
+                                     << " (phase: " << ((((jl+jr+S1+S2)/2)%2)?-1:1) << ")" << std::endl;
 
                         for (size_t ss1 = 0; ss1 < physical_i_left[s1].second; ++ss1)
                             for (size_t ss2 = 0; ss2 < physical_i_right[s2].second; ++ss2)
@@ -259,6 +282,13 @@ namespace ts_reduction {
                     }
             }
         } // m1 block
+
+        maquis::cout << std::endl;
+        print_values<typename Matrix::value_type, SymmGroup> p;
+        p(m1);
+        maquis::cout << std::endl;
+        p(m2);
+
         return phys_out;
     }
     
