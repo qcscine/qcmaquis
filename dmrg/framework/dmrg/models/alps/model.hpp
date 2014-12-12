@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -102,7 +102,7 @@ public:
     , model(lattice, parms, true)
     , tag_handler(new table_type())
     {
-        select_proc(ambient::actor_t::common);
+        parallel::guard::serial guard;
         
         size_t num_vertex_types = alps::maximum_vertex_type(lattice.graph())+1;
         symm_basis.reserve(num_vertex_types);

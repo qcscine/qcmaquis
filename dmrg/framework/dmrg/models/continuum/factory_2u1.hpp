@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -25,23 +25,22 @@
  *****************************************************************************/
 
 #include "dmrg/models/continuum/models_2u1.hpp"
-#include "dmrg/models/continuum/super_models_2u1.hpp"
+//#include "dmrg/models/continuum/super_models_2u1.hpp"
 
 template<class Matrix>
 struct cont_model_factory<Matrix, TwoU1> {
-    static typename model_traits<Matrix, TwoU1>::model_ptr parse
+    static boost::shared_ptr<model_impl<Matrix, TwoU1> > parse
     (Lattice const & lattice, BaseParameters & model)
     {
+        typedef boost::shared_ptr<model_impl<Matrix, TwoU1> > impl_ptr;
         std::string model_str = model.is_set("model") ? "model" : "MODEL";
         if (model[model_str] == std::string("fermi_optical_lattice"))
-            return typename model_traits<Matrix, TwoU1>::model_ptr(
-                        new FermiOpticalLattice<Matrix>(lattice, model)
-                   );
-        else if (model[model_str] == std::string("optical_lattice_cons_dm"))
-            return typename model_traits<Matrix, TwoU1>::model_ptr( new DMOpticalLatticeTwoU1<Matrix>(lattice, model) );
-        else {
+            return impl_ptr( new FermiOpticalLattice<Matrix>(lattice, model) );
+//        else if (model[model_str] == std::string("optical_lattice_cons_dm"))
+//            return impl_ptr( new DMOpticalLatticeTwoU1<Matrix>(lattice, model) );
+//        else {
             throw std::runtime_error("Don't know this model!");
-            return typename model_traits<Matrix, TwoU1>::model_ptr();
-        }
+            return impl_ptr();
+//        }
     }
 };

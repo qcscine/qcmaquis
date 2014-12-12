@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -28,17 +28,14 @@
 #define CONTRACTIONS_H
 
 #ifdef USE_AMBIENT
-#include "dmrg/mp_tensors/contractions/impl/ambient.hpp"
+#include "dmrg/mp_tensors/contractions/detail/ambient.hpp"
 #else
 //#include "dmrg/mp_tensors/contractions/impl/alps.hpp"
-#include "dmrg/mp_tensors/contractions/impl/memsave.hpp"
+#include "dmrg/mp_tensors/contractions/detail/memsave.hpp"
 #endif
 
-#include "dmrg/mp_tensors/contractions/boundary_times_mps.hpp"
-#include "dmrg/mp_tensors/contractions/apply_op.hpp"
-#include "dmrg/mp_tensors/contractions/move_boundary.hpp"
-#include "dmrg/mp_tensors/contractions/site_hamil.hpp"
-#include "dmrg/mp_tensors/contractions/prediction.hpp"
-#include "dmrg/mp_tensors/contractions/special.hpp"
+#include "dmrg/mp_tensors/contractions/abelian/special.hpp"
+
+#include "dmrg/mp_tensors/contractions/engine.h"
 
 #endif

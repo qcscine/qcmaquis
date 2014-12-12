@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  * 
@@ -63,25 +63,22 @@ struct default_mps_init : public mps_initializer<Matrix, SymmGroup>
     
     void init_sectors(MPS<Matrix, SymmGroup> & mps, size_t Mmax, bool fillrand = true, typename Matrix::value_type val = 0)
     {
+        parallel::scheduler_balanced scheduler(mps.length());
         std::size_t L = mps.length();
         
         maquis::cout << "Right end: " << right_end << std::endl;
         
         std::vector<Index<SymmGroup> > allowed = allowed_sectors(site_type, phys_dims, right_end, Mmax);
         
-        omp_for(size_t i, range<size_t>(0,L), {
-            select_proc(ambient::scope::balance(i,L));
+        omp_for(size_t i, parallel::range<size_t>(0,L), {
+            parallel::guard proc(scheduler(i));
             mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_type[i]], allowed[i], allowed[i+1], fillrand, val);
             mps[i].divide_by_scalar(mps[i].scalar_norm());
-
-            #ifdef AMBIENT_TRACKING
-            ambient_track_array(mps, i);
-            #endif
         });
         
 #ifndef NDEBUG
         maquis::cout << "init norm: " << norm(mps) << std::endl;
-//        maquis::cout << mps.description() << std::endl;
+        maquis::cout << mps.description() << std::endl;
 #endif
     }
 

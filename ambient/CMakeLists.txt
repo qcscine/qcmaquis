@@ -46,8 +46,8 @@ set(PLASMA_LIBRARIES "-lplasma -lcoreblas -llapacke -lquark" CACHE STRINGS "PLAS
 set(AMBIENT_CPP11 "-std=c++11" CACHE STRINGS "Flags needed for C++11, e.g. -std=c++11 and -gcc-name=XX. Leave empty to disable C++11.")
 
 set (BOOST_ROOT $ENV{BOOST_ROOT} CACHE PATH "Path to the Boost installation (or to the Boost source)")
-option(ENABLE_REGRESSION_FUNCTIONAL "Build regression functional tests" OFF)
-option(ENABLE_REGRESSION_PERFORMANCE "Build regression performance tests" OFF)
+option(FUNCTIONAL_REGRESSION_TESTS  "Build functional regression tests" OFF)
+option(PERFORMANCE_REGRESSION_TESTS "Build performance regression tests" OFF)
 
 
 ########################################################################
@@ -111,10 +111,10 @@ endif(NOT ALPS_DIR AND DEFINED ENV{ALPS_ROOT})
 
 ## set Boost dependencies
 set(Boost_requirements)
-if(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
+if(FUNCTIONAL_REGRESSION_TESTS OR PERFORMANCE_REGRESSION_TESTS)
   list(APPEND Boost_requirements bindings)
   list(APPEND Boost_requirements system)
-endif(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
+endif(FUNCTIONAL_REGRESSION_TESTS OR PERFORMANCE_REGRESSION_TESTS)
 
 ## MAQUIS find_boost fall back on ALPS pre-compiled Boost, if ALPS is present
 include(${PROJECT_SOURCE_DIR}/config/find_boost.cmake)
@@ -152,7 +152,7 @@ add_subdirectory(src/ambient)
 #
 ########################################################################
 
-if(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
+if(FUNCTIONAL_REGRESSION_TESTS OR PERFORMANCE_REGRESSION_TESTS)
   list(APPEND AMBIENT_TESTS_LIBRARIES ambient ${AMBIENT_LIBRARIES} ${MAQUIS_Boost_LIBRARIES})
   
   macro(compile_with_ambient)
@@ -164,16 +164,16 @@ if(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
 
   include(CTest)
   enable_testing() 
-  include_directories(${PROJECT_SOURCE_DIR}/regression)
-endif(ENABLE_REGRESSION_FUNCTIONAL OR ENABLE_REGRESSION_PERFORMANCE)
+  include_directories(${PROJECT_SOURCE_DIR}/tests)
+endif(FUNCTIONAL_REGRESSION_TESTS OR PERFORMANCE_REGRESSION_TESTS)
 
-if(ENABLE_REGRESSION_FUNCTIONAL)
-  add_subdirectory(regression/functional)
-endif(ENABLE_REGRESSION_FUNCTIONAL)
+if(FUNCTIONAL_REGRESSION_TESTS)
+  add_subdirectory(tests/functional)
+endif(FUNCTIONAL_REGRESSION_TESTS)
 
-if(ENABLE_REGRESSION_PERFORMANCE)
-  add_subdirectory(regression/performance)
-endif(ENABLE_REGRESSION_PERFORMANCE)
+if(PERFORMANCE_REGRESSION_TESTS)
+  add_subdirectory(tests/performance)
+endif(PERFORMANCE_REGRESSION_TESTS)
 
 ########################################################################
 #
@@ -211,9 +211,6 @@ set(AMBIENT_INSTALL_HEADERS src/ambient/ambient.h
                             src/ambient/model.h
                             src/ambient/groups/group.h
                             src/ambient/groups/multirank.h
-                            src/ambient/packets/types.h
-                            src/ambient/packets/packet.h
-                            src/ambient/packets/packet_t.h
                             src/ambient/core/auxiliary.h
                             src/ambient/core/layout.h
                             src/ambient/core/operation/operation.h

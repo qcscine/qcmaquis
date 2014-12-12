@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -26,27 +25,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_INTERFACE_KERNELS
-#define AMBIENT_INTERFACE_KERNELS
+#ifndef AMBIENT_INTERFACE_KERNEL
+#define AMBIENT_INTERFACE_KERNEL
+
 #include "ambient/utils/timings.hpp"
+#include "ambient/utils/index_tuple.h"
+
+#include "ambient/interface/kernel_inliner.hpp"
 
 namespace ambient {
 
     using ambient::controllers::ssm::functor;
     using ambient::memory::instr_bulk;
 
-    template<typename FP, FP fp> struct kernel_inliner{};
-    #include "ambient/interface/pp/kernel_inliner.pp.hpp"
-
     template<class K>
     class kernel : public functor {
     public:
-        #define inliner kernel_inliner<typename K::ftype,&K::c>
+        #define inliner kernel_inliner<typename K::ftype,K::c>
         inline void operator delete (void* ptr){ }
         inline void* operator new (size_t size){
             return ambient::pool::malloc<instr_bulk,sizeof(K)+sizeof(void*)*inliner::arity>();
         }
-
         virtual bool ready(){ 
             return inliner::ready(this);
         }
@@ -54,67 +53,31 @@ namespace ambient {
             inliner::invoke(this);
             inliner::cleanup(this);
         }
-        template <class T0>
-        static inline void spawn(T0& arg0){
-            inliner::latch(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0));
+        template<unsigned...I, typename... Args>
+        static void expand_spawn(redi::index_tuple<I...>, Args&... args){
+            inliner::latch(new kernel(), info<Args>::template unfold<typename inliner::template get_type<I> >(args)...);
         }
-        template <class T0, class T1>
-        static inline void spawn(T0& arg0, T1& arg1){
-            inliner::latch(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0) , info<T1>::template unfold<typename inliner::t1>(arg1));
-        }
-        template <class T0, class T1, class T2>
-        static inline void spawn(T0& arg0, T1& arg1, T2& arg2){
-            inliner::latch(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0) , info<T1>::template unfold<typename inliner::t1>(arg1) , info<T2>::template unfold<typename inliner::t2>(arg2));
-        }
-        template <class T0 , class T1 , class T2 , class T3 >
-        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 ){
-            inliner::latch(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0) , info<T1>::template unfold<typename inliner::t1>(arg1) , info<T2>::template unfold<typename inliner::t2>(arg2) , info<T3>::template unfold<typename inliner::t3>(arg3) );
-        }
-        template <class T0 , class T1 , class T2 , class T3 , class T4 >
-        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 ){
-            inliner::latch(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0) , info<T1>::template unfold<typename inliner::t1>(arg1) , info<T2>::template unfold<typename inliner::t2>(arg2) , info<T3>::template unfold<typename inliner::t3>(arg3) , info<T4>::template unfold<typename inliner::t4>(arg4) );
-        }
-        template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 >
-        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 ){
-            inliner::latch(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0) , info<T1>::template unfold<typename inliner::t1>(arg1) , info<T2>::template unfold<typename inliner::t2>(arg2) , info<T3>::template unfold<typename inliner::t3>(arg3) , info<T4>::template unfold<typename inliner::t4>(arg4) , info<T5>::template unfold<typename inliner::t5>(arg5) );
-        }
-        template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 >
-        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 ){
-            inliner::latch(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0) , info<T1>::template unfold<typename inliner::t1>(arg1) , info<T2>::template unfold<typename inliner::t2>(arg2) , info<T3>::template unfold<typename inliner::t3>(arg3) , info<T4>::template unfold<typename inliner::t4>(arg4) , info<T5>::template unfold<typename inliner::t5>(arg5) , info<T6>::template unfold<typename inliner::t6>(arg6) );
-        }
-        template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 , class T7 >
-        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 ){
-            inliner::latch(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0) , info<T1>::template unfold<typename inliner::t1>(arg1) , info<T2>::template unfold<typename inliner::t2>(arg2) , info<T3>::template unfold<typename inliner::t3>(arg3) , info<T4>::template unfold<typename inliner::t4>(arg4) , info<T5>::template unfold<typename inliner::t5>(arg5) , info<T6>::template unfold<typename inliner::t6>(arg6) , info<T7>::template unfold<typename inliner::t7>(arg7) );
-        }
-        template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 , class T7 , class T8 >
-        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 , T8 &arg8 ){
-            inliner::latch(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0) , info<T1>::template unfold<typename inliner::t1>(arg1) , info<T2>::template unfold<typename inliner::t2>(arg2) , info<T3>::template unfold<typename inliner::t3>(arg3) , info<T4>::template unfold<typename inliner::t4>(arg4) , info<T5>::template unfold<typename inliner::t5>(arg5) , info<T6>::template unfold<typename inliner::t6>(arg6) , info<T7>::template unfold<typename inliner::t7>(arg7) , info<T8>::template unfold<typename inliner::t8>(arg8) );
-        }
-        template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 , class T7 , class T8 , class T9 >
-        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 , T8 &arg8 , T9 &arg9 ){
-            inliner::latch(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0) , info<T1>::template unfold<typename inliner::t1>(arg1) , info<T2>::template unfold<typename inliner::t2>(arg2) , info<T3>::template unfold<typename inliner::t3>(arg3) , info<T4>::template unfold<typename inliner::t4>(arg4) , info<T5>::template unfold<typename inliner::t5>(arg5) , info<T6>::template unfold<typename inliner::t6>(arg6) , info<T7>::template unfold<typename inliner::t7>(arg7) , info<T8>::template unfold<typename inliner::t8>(arg8) , info<T9>::template unfold<typename inliner::t9>(arg9) );
-        }
-        template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 , class T7 , class T8 , class T9, class T10 >
-        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 , T8 &arg8 , T9 &arg9, T10 &arg10 ){
-            inliner::latch(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0) , info<T1>::template unfold<typename inliner::t1>(arg1) , info<T2>::template unfold<typename inliner::t2>(arg2) , info<T3>::template unfold<typename inliner::t3>(arg3) , info<T4>::template unfold<typename inliner::t4>(arg4) , info<T5>::template unfold<typename inliner::t5>(arg5) , info<T6>::template unfold<typename inliner::t6>(arg6) , info<T7>::template unfold<typename inliner::t7>(arg7) , info<T8>::template unfold<typename inliner::t8>(arg8) , info<T9>::template unfold<typename inliner::t9>(arg9), info<T10>::template unfold<typename inliner::t10>(arg10) );
-        }
-        template <class T0 , class T1 , class T2 , class T3 , class T4 , class T5 , class T6 , class T7 , class T8 , class T9, class T10, class T11 >
-        static inline void spawn(T0 &arg0 , T1 &arg1 , T2 &arg2 , T3 &arg3 , T4 &arg4 , T5 &arg5 , T6 &arg6 , T7 &arg7 , T8 &arg8 , T9 &arg9, T10 &arg10, T11 &arg11 ){
-            inliner::latch(new kernel(), info<T0>::template unfold<typename inliner::t0>(arg0) , info<T1>::template unfold<typename inliner::t1>(arg1) , info<T2>::template unfold<typename inliner::t2>(arg2) , info<T3>::template unfold<typename inliner::t3>(arg3) , info<T4>::template unfold<typename inliner::t4>(arg4) , info<T5>::template unfold<typename inliner::t5>(arg5) , info<T6>::template unfold<typename inliner::t6>(arg6) , info<T7>::template unfold<typename inliner::t7>(arg7) , info<T8>::template unfold<typename inliner::t8>(arg8) , info<T9>::template unfold<typename inliner::t9>(arg9), info<T10>::template unfold<typename inliner::t10>(arg10), info<T11>::template unfold<typename inliner::t11>(arg11) );
+        template<typename... Args>
+        static inline void spawn(Args&... args){
+            expand_spawn(redi::to_index_tuple<Args...>(), args...);
         }
         #undef inliner
     };
 
-    #define AMBIENT_EXPORT(fn, name)  template<typename... TF> \
-                                      struct name ## _kernel : public ambient::kernel< name ## _kernel<TF...> > { \
-                                          typedef decltype(&fn<TF...>) ftype; \
-                                          template<typename... Args> \
-                                          static void c(Args&&... args){ \
-                                              fn<TF...>(std::forward<Args>(args)...); \
-                                          } \
-                                      }; \
-                                      template<typename... TF, typename... Args> \
-                                      void name(Args&... args){ name ## _kernel<TF...>::spawn(args...); }
+    #define AMBIENT_EXPORT_TEMPLATE(fn, name)  template<typename... TF> \
+                                               struct name ## _kernel : public ambient::kernel< name ## _kernel<TF...> > { \
+                                                   typedef decltype(&fn<TF...>) ftype; \
+                                                   static constexpr ftype c = &fn<TF...>; \
+                                               }; \
+                                               template<typename... TF, typename... Args> \
+                                               void name(Args&... args){ name ## _kernel<TF...>::spawn(args...); }
+
+    #define AMBIENT_EXPORT(fn, name)           struct name ## _kernel : public ambient::kernel< name ## _kernel > { \
+                                                   typedef decltype(&fn) ftype; \
+                                                   static constexpr ftype c = &fn; \
+                                               }; \
+                                               template<typename... Args> \
+                                               void name(Args&... args){ name ## _kernel::spawn(args...); }
 }
 
 #endif

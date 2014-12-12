@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
  *
@@ -76,28 +76,36 @@ namespace measurements {
             this->labels.clear();
             
             typedef typename SymmGroup::subcharge subcharge;
-            if (!rmps || this->is_super_meas || is_bond)
-                return evaluate_with_mpo(mps);
-            
-            int L = mps.size();
-            this->vector_results.reserve(this->vector_results.size() + L);
-            this->labels.reserve(this->labels.size() + L);
-            
-            for (typename Lattice::pos_t p = 0; p < L; ++p) {
-                subcharge type = lattice.get_prop<subcharge>("type", p);
-                typename Matrix::value_type res = 0.;
-                bool evaluated = false;
-                if (site_term[type].n_blocks() > 0) {
-                    MPOTensor<Matrix, SymmGroup> temp;
-                    temp.set(0, 0, site_term[type]);
+            if (!rmps || this->is_super_meas || is_bond) {
+                evaluate_with_mpo(mps);
+            } else {
+                
+                /// compute local reduced density matrices
+                rmps.get().init();
+                
+                std::size_t L = mps.size();
+                this->vector_results.reserve(this->vector_results.size() + L);
+                this->labels.reserve(this->labels.size() + L);
+                
+                parallel::scheduler_balanced scheduler(L);
+                
+                for (typename Lattice::pos_t p = 0; p < L; ++p) {
+                    parallel::guard proc(scheduler(p)); /// scheduling kernels
                     
-                    MPSTensor<Matrix, SymmGroup> vec2 = contraction::site_hamil2(mps[p], rmps.get().left(p), rmps.get().right(p), temp);
-                    res += mps[p].scalar_overlap(vec2);
-                    evaluated = true;
-                }
-                if (evaluated) {
-                    this->vector_results.push_back(res);
-                    this->labels.push_back( lattice.get_prop<std::string>("label", p) );
+                    subcharge type = lattice.get_prop<subcharge>("type", p);
+                    if (site_term[type].n_blocks() > 0) {
+
+                        MPOTensor<Matrix, SymmGroup> temp;
+                        temp.set(0, 0, site_term[type]);
+                        
+                        MPSTensor<Matrix, SymmGroup> vec2
+                        = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(mps[p], rmps.get().left(p), rmps.get().right(p), temp);
+                        
+                        typename MPS<Matrix, SymmGroup>::scalar_type res = mps[p].scalar_overlap(vec2);
+                        
+                        this->vector_results.push_back(res);
+                        this->labels.push_back( lattice.get_prop<std::string>("label", p) );
+                    }
                 }
             }
         }

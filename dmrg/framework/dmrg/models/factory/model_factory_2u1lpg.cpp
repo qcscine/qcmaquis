@@ -27,6 +27,7 @@
 #include "model_factory_symm.h"
 
 #include "dmrg/models/coded/factory_2u1lpg.hpp"
+#include "dmrg/models/continuum/factory_2u1lpg.hpp"
 
 typedef TwoU1LPG grp;
 

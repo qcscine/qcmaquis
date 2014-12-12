@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -33,7 +32,6 @@ namespace ambient { namespace channels { namespace mpi {
 
     class request_impl : public memory::use_bulk_new<request_impl> {
     public:
-        request_impl(){}
         request_impl(void(*impl)(request_impl*), typename channel::scalar_type& v, rank_t target, int tag = 0);
         request_impl(void(*impl)(request_impl*), typename channel::block_type& r, rank_t target, int tag = 0);
         inline bool operator()();

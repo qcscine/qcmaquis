@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -50,6 +49,7 @@ namespace ambient { namespace channels { namespace mpi {
            ~mount();
             std::vector<binary_tree<rank_t>*> trees;
             std::vector<rank_t> circle;
+            int tag_ub;
         };
         static mount& setup(){ 
             static mount m; 
@@ -62,8 +62,9 @@ namespace ambient { namespace channels { namespace mpi {
         collective<block_type>* set(block_type& r);
         collective<scalar_type>* bcast(scalar_type& v, rank_t root);
         collective<scalar_type>* bcast(scalar_type& v);
-        multirank rank;
+        rank_t rank;
         group* world;
+        int tag_ub;
     };
 
 } } }

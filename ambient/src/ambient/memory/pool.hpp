@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -66,12 +65,9 @@ namespace ambient { namespace pool {
         descriptor(size_t e, region_t r = region_t::standard) : extent(e), region(r), persistency(1), crefs(1) {}
 
         void protect(){
-            assert(region != region_t::delegated);
             if(!(persistency++)) region = region_t::standard;
         }
         void weaken(){
-            assert(region != region_t::bulk);
-            assert(region != region_t::delegated);
             if(!(--persistency)) region = region_t::bulk;
         }
         void reuse(descriptor& d){
@@ -110,11 +106,16 @@ namespace ambient { namespace pool {
     static void* malloc(descriptor& d){
         assert(d.region != region_t::delegated);
         if(d.region == region_t::bulk){
-            //if(!data_bulk::open()){ // if(d.extent > AMBIENT_IB*AMBIENT_IB*16) <-- handle it separately
+            #ifdef AMBIENT_USE_DATA_BULK
+            if(!data_bulk::open() || d.extent > AMBIENT_IB*AMBIENT_IB*16){  // <-- handle it separately
                 d.region = region_t::standard;
                 return malloc<standard>(d.extent);
-            //}
-            //return malloc<data_bulk>(d.extent); 
+            }
+            return malloc<data_bulk>(d.extent); 
+            #else
+            d.region = region_t::standard;
+            return malloc<standard>(d.extent);
+            #endif
         } else return malloc<standard>(d.extent);
     }
     static void free(void* ptr, descriptor& d){ 

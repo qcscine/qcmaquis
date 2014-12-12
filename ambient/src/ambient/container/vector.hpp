@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -26,142 +25,24 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTAINER_VECTOR
-#define AMBIENT_CONTAINER_VECTOR
+#ifndef AMBIENT_CONTAINER_VECTOR_HPP
+#define AMBIENT_CONTAINER_VECTOR_HPP
 
-namespace ambient {
+/* The actual implementation of vector is separated into two classes: vector and vector_async.
+ * For the purpose of flexibility they both share the same interface but the limitations have to be noted.
+ *
+ * vector (a high-level wrapper to provide user-space interface to compose async calls):
+ *
+ *    - cached size: unlike capacity, the size of the vector might be changed asynchroneously (invoke measure() to refresh cached value).
+ *    - data-access: discouraged due to performance reasons but is possible if to invoke load() first.
+ *
+ * vector_async (is used for the actual data-access inside async calls):
+ *
+ *    - capacity: can't be changed in async mode (so methods changing the size will fail if it's reached).
+ *    - please check the list of allowed calls in vector_async.h.
+ */
 
-    template<typename T> class vector;
-    namespace detail {
-        template<typename T>
-        void add(vector<T>& a, const vector<T>& b){
-            size_t size = get_length(a)-1;
-            T* a_ = &a[0];
-            const T* b_ = &b[0];
-            for(size_t i = 0; i < size; ++i) a_[i] += b_[i];
-        }
-    }
-
-    AMBIENT_EXPORT(detail::add, add)
-
-    template <typename T>
-    class vector : public ambient::block<T> {
-    public:
-        typedef T value_type;
-        class iterator {
-        public:
-            typedef T value_type;
-            iterator(vector<T>& base) : base(base) {}
-            vector<T>& base;
-        };
-        vector(size_t length, T value) : ambient::block<T>(length, 1) {
-            this->init(value);
-        }
-        iterator begin(){
-            return iterator(*this);
-        }
-        iterator end(){
-            return iterator(*this);
-        }
-        vector& operator += (const vector& rhs){
-            add<T>(*this, rhs);
-            return *this;
-        }
-        value_type& operator[](size_t i){
-            return ambient::delegated(*this).data[ i ];
-        }
-        const value_type& operator[](size_t i) const {
-            return ambient::delegated(*this).data[ i ];
-        }
-    };
-
-
-    template<class InputIterator, class Function>
-    void for_each (InputIterator first, InputIterator last, Function fn){
-        ambient::async([fn](vector<int>& a){ 
-            int* a_ = &a[0];
-            std::for_each(a_, a_+get_length(a)-1, fn);
-        }, first.base);
-    }
-
-    template <class InputIterator, class OutputIterator, class BinaryOperation>
-    void transform (InputIterator first1, InputIterator last1,
-                    InputIterator first2, 
-                    OutputIterator result,
-                    BinaryOperation binary_op)
-    {
-        ambient::async([binary_op](const vector<int>& first1_, const vector<int>& first2_, unbound< vector<int> >& result_){
-            const int* ifirst1 = &first1_[0];
-            const int* ifirst2 = &first2_[0];
-            int* iresult = &result_[0];
-            std::transform(ifirst1, ifirst1+get_length(first1_)-1, ifirst2, iresult, binary_op);
-        }, first1.base, first2.base, result.base);
-    }
-
-    template <class InputIterator, class OutputIterator, class UnaryOperation>
-    void transform (InputIterator first1, InputIterator last1,
-                    OutputIterator result, UnaryOperation op)
-    {
-        ambient::async([op](const vector<int>& first1_, unbound< vector<int> >& result_){
-            const int* ifirst1 = &first1_[0];
-            int* iresult = &result_[0];
-            std::transform(ifirst1, ifirst1+get_length(first1_)-1, iresult, op);
-        }, first1.base, result.base);
-    }
-
-    template<class InputIterator>
-    void sequence (InputIterator first, InputIterator last){
-    }
-
-    template <class ForwardIterator, class T>
-    void fill (ForwardIterator first, ForwardIterator last, const T& val){
-    }
-
-    template <class ForwardIterator, class T>
-    void replace (ForwardIterator first, ForwardIterator last, const T& old_value, const T& new_value){
-    }
-
-    template <class ForwardIterator, class Generator>
-    void generate (ForwardIterator first, ForwardIterator last, Generator gen){
-    }
-
-    template <class InputIterator, class OutputIterator>
-    OutputIterator copy (InputIterator first, InputIterator last, OutputIterator result){
-    }
-
-    template <class ForwardIterator, class T>
-    ForwardIterator remove (ForwardIterator first, ForwardIterator last, const T& val){
-    }
-
-    template <class ForwardIterator>
-    ForwardIterator unique (ForwardIterator first, ForwardIterator last){
-    }
-
-    template <class ForwardIterator, class BinaryPredicate>
-    ForwardIterator unique (ForwardIterator first, ForwardIterator last, BinaryPredicate pred){
-    }
-
-    template <class RandomAccessIterator>
-    void sort (RandomAccessIterator first, RandomAccessIterator last){
-    }
-
-    template <class RandomAccessIterator, class Compare>
-    void sort (RandomAccessIterator first, RandomAccessIterator last, Compare comp){
-    }
-
-    template< class InputIt, class T>
-    T reduce( InputIt first, InputIt last, T init ){
-    }
-
-    template< class InputIt, class T, class BinaryOperation>
-    T reduce( InputIt first, InputIt last, T init, BinaryOperation op ){
-    }
-
-
-    template <class InputIterator, class T>
-    InputIterator find (InputIterator first, InputIterator last, const T& val){
-    }
-
-}
+#include "ambient/container/vector/vector.hpp"
+#include "ambient/container/vector/vector_async.hpp"
 
 #endif

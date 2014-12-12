@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -29,6 +29,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <numeric>
 #include <utility>
 
 #include <boost/unordered_map.hpp>
@@ -113,6 +114,7 @@ public:
     typedef basis_iterator_<SymmGroup> basis_iterator;
     
     Index() : sorted_(true) {}
+    Index(std::size_t s_) : sorted_(true), data_(s_) {}
     
     std::size_t size_of_block(charge c) const
     {
@@ -312,6 +314,8 @@ public:
     
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
+
+#include "dual_index.h"
 
 template<class SymmGroup>
 class ProductBasis

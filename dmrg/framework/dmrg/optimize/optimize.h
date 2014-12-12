@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *
  * 
@@ -45,7 +45,7 @@
 #include "dmrg/utils/results_collector.h"
 #include "dmrg/utils/storage.h"
 #include "dmrg/utils/time_limit_exception.h"
-#include "dmrg/utils/placement.h"
+#include "dmrg/utils/parallel/placement.hpp"
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem
@@ -86,6 +86,7 @@ enum OptimizeDirection { Both, LeftOnly, RightOnly };
 template<class Matrix, class SymmGroup, class Storage>
 class optimizer_base
 {
+    typedef contraction::Engine<Matrix, typename storage::constrained<Matrix>::type, SymmGroup> contr;
 public:
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    MPO<Matrix, SymmGroup> const & mpo_,
@@ -98,10 +99,6 @@ public:
     , stop_callback(stop_callback_)
     {
         std::size_t L = mps.length();
-        #ifdef AMBIENT_TRACKING
-        ambient::overseer::log::region("optimizer_base::optimizer_base");
-        for(int i = 0; i < L; ++i) ambient_track_array(mps, i);
-        #endif
         
         mps.canonize(site);
         for(int i = 0; i < mps.length(); ++i)
@@ -138,25 +135,25 @@ protected:
 
     inline void boundary_left_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        left_[site+1] = contraction::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
+        left_[site+1] = contr::overlap_mpo_left_step(mps[site], mps[site], left_[site], mpo[site]);
         Storage::pin(left_[site+1]);
         
         for (int n = 0; n < northo; ++n)
-            ortho_left_[n][site+1] = contraction::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
+            ortho_left_[n][site+1] = contr::overlap_left_step(mps[site], ortho_mps[n][site], ortho_left_[n][site]);
     }
     
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        right_[site] = contraction::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
+        right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
         Storage::pin(right_[site]);
         
         for (int n = 0; n < northo; ++n)
-            ortho_right_[n][site] = contraction::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
+            ortho_right_[n][site] = contr::overlap_right_step(mps[site], ortho_mps[n][site], ortho_right_[n][site+1]);
     }
 
     void init_left_right(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
-        construct_placements(mpo);
+        parallel::construct_placements(mpo);
         std::size_t L = mps.length();
         
         left_.resize(mpo.length()+1);
@@ -181,9 +178,7 @@ protected:
             Storage::drop(left_[i+1]);
             boundary_left_step(mpo, i);
             Storage::evict(left_[i]);
-            #ifdef USE_AMBIENT
-            ambient::sync(); // to scale down memory
-            #endif
+            parallel::sync(); // to scale down memory
         }
         Storage::evict(left_[site]);
         //tlb.end();
@@ -199,9 +194,7 @@ protected:
             Storage::drop(right_[i]);
             boundary_right_step(mpo, i);
             Storage::evict(right_[i+1]);
-            #ifdef USE_AMBIENT
-            ambient::sync(); // to scale down memory
-            #endif
+            parallel::sync(); // to scale down memory
         }
         Storage::evict(right_[site]);
         //trb.end();

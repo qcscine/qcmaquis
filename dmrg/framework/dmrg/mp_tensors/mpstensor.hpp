@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -35,9 +35,10 @@
 
 #include "utils/traits.hpp"
 
+#include "dmrg/mp_tensors/contractions/non-abelian/gemm.hpp"
 
 // implementation of join functions
-#include "dmrg/mp_tensors/joins.hpp"
+#include "dmrg/mp_tensors/mps_join.h"
 
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup>::MPSTensor(Index<SymmGroup> const & sd,
@@ -231,7 +232,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
             assert(data().left_basis() == U.left_basis());
             
             swap(data(), U);
-            gemm(S, V, U);
+            SU2::gemm(S, V, U);
 
             cur_normalization = Lnorm;
             return U;
@@ -250,14 +251,14 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
     if (cur_normalization == Unorm || cur_normalization == Lnorm) {
         if (method == QR) { //enum QR but LQ decomposition
             make_right_paired();
-            
+
             block_matrix<Matrix, SymmGroup> L, Q;
             lq(data(), L, Q);
             
             swap(data(), Q);
             left_i = data().left_basis();
             assert(left_i == L.right_basis());
-            
+
             cur_normalization = Rnorm;
             return L;
         } else {
@@ -265,14 +266,14 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             
             block_matrix<Matrix, SymmGroup> U, V;
             block_matrix<typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type, SymmGroup> S;
-            
+
             svd(data(), U, V, S);
             
             left_i = V.left_basis();
             assert(data().right_basis() == V.right_basis());
             swap(data(), V);
-            
-            gemm(U, S, V);
+
+            SU2::gemm(U, S, V);
             
             cur_normalization = Rnorm;
             return V;
@@ -297,7 +298,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<OtherMatrix, Symm
     cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;
     make_left_paired();
-    gemm(data(), N, tmp);
+    SU2::gemm(data(), N, tmp);
     replace_left_paired(tmp);
 }
 
@@ -309,7 +310,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<OtherMatrix, SymmG
     cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;
     make_right_paired();
-    gemm(N, data(), tmp);
+    SU2::gemm(N, data(), tmp);
     replace_right_paired(tmp);
 }
 
@@ -374,11 +375,15 @@ MPSTensor<Matrix, SymmGroup>::scalar_overlap(MPSTensor<Matrix, SymmGroup> const 
     common_subset(i1, i2);
     std::vector<scalar_type> vt; vt.reserve(i1.size());
 
+    parallel::scheduler_balanced_iterative scheduler(data());
+
     for (size_t b = 0; b < i1.size(); ++b) {
-        select_proc(ambient::scope::balance(b,i1.size()));
         typename SymmGroup::charge c = i1[b].first;
-        assert( data().has_block(c,c) && rhs.data().has_block(c,c) );
-        vt.push_back(overlap(data()(c,c), rhs.data()(c,c)));
+        size_type l = data().find_block(c, c);
+        size_type r = rhs.data().find_block(c, c);
+        parallel::guard proc(scheduler(l));
+        assert( l != data().n_blocks() && r != rhs.data().n_blocks() );
+        vt.push_back(overlap(data()[l], rhs.data()[r]));
     } // should be reformulated in terms of reduction (todo: Matthias, 30.04.12 / scalar-value types)
 
     return maquis::accumulate(vt.begin(), vt.end(), scalar_type(0.));
@@ -476,7 +481,7 @@ MPSTensor<Matrix, SymmGroup>::operator+=(MPSTensor<Matrix, SymmGroup> const & rh
 
     for (std::size_t i = 0; i < data().n_blocks(); ++i)
     {
-        typename SymmGroup::charge lc = data().left_basis()[i].first, rc = data().right_basis()[i].first;
+        typename SymmGroup::charge lc = data().basis().left_charge(i), rc = data().basis().right_charge(i);
         std::size_t matched_block = rhs.data().find_block(lc,rc);
         if (matched_block < rhs.data().n_blocks()) {
             data()[i] += rhs.data()[matched_block];
@@ -501,13 +506,20 @@ MPSTensor<Matrix, SymmGroup>::operator-=(MPSTensor<Matrix, SymmGroup> const & rh
     
     for (std::size_t i = 0; i < data().n_blocks(); ++i)
     {
-        typename SymmGroup::charge lc = data().left_basis()[i].first, rc = data().right_basis()[i].first;
+        typename SymmGroup::charge lc = data().basis().left_charge(i), rc = data().basis().right_charge(i);
         if (rhs.data().has_block(lc,rc)) {
             data()[i] -= rhs.data()(lc,rc);
         }
     }
     
     return *this;
+}
+
+template<class Matrix, class SymmGroup>
+void MPSTensor<Matrix, SymmGroup>::clear()
+{
+    block_matrix<Matrix, SymmGroup> empty;
+    swap(data(), empty);
 }
 
 template<class Matrix, class SymmGroup>
@@ -578,7 +590,7 @@ bool MPSTensor<Matrix, SymmGroup>::reasonable() const
     {
         for (std::size_t i = 0; i < data().n_blocks(); ++i)
         {
-            if (data().left_basis()[i].first != data().right_basis()[i].first)
+            if (data().basis().left_charge(i) != data().basis().right_charge(i))
                 throw std::runtime_error("particle number is wrong");
         }
     }
@@ -650,10 +662,3 @@ std::size_t MPSTensor<Matrix, SymmGroup>::num_elements() const
 {
     return data().num_elements();
 }
-
-#ifdef USE_AMBIENT
-template<class Matrix, class SymmGroup>
-void MPSTensor<Matrix, SymmGroup>::print_distribution() const {
-    data().print_distribution();
-}
-#endif

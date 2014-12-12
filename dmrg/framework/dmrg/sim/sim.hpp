@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  * 
@@ -88,15 +88,12 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     /// Model initialization
     lat = Lattice(parms);
     model = Model<Matrix, SymmGroup>(lat, parms);
-    mpo = make_mpo(lat, model, parms);
+    mpo = make_mpo(lat, model);
     all_measurements = model.measurements();
     all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
     
     
     /// MPS initialization
-    #ifdef AMBIENT_TRACKING
-    ambient::overseer::log::region("sim::mps_init");
-    #endif
     if (restore) {
         load(chkpfile, mps);
     } else if (!parms["initfile"].empty()) {
@@ -104,9 +101,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         load(parms["initfile"].str(), mps);
     } else {
         mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
-        #ifdef AMBIENT_TRACKING
-        for(int i = 0; i < mps.length(); ++i) ambient_track_array(mps, i);
-        #endif
     }
     
     assert(mps.length() == lat.size());
@@ -140,21 +134,11 @@ template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::checkpoint_simulation(MPS<Matrix, SymmGroup> const& state, status_type const& status)
 {
     if (!dns) {
-        /// create chkp dir
-        #ifdef USE_AMBIENT
-        if (ambient::master() && !boost::filesystem::exists(chkpfile))
-            boost::filesystem::create_directory(chkpfile);
-        #else
-        if (!boost::filesystem::exists(chkpfile))
-            boost::filesystem::create_directory(chkpfile);
-        #endif
         /// save state to chkp dir
         save(chkpfile, state);
         
         /// save status
-        #ifdef USE_AMBIENT
-        if(!ambient::master()) return;
-        #endif
+        if(!parallel::master()) return;
         storage::archive ar(chkpfile+"/props.h5", "w");
         ar["/status"] << status;
     }
@@ -177,13 +161,12 @@ std::string sim<Matrix, SymmGroup>::results_archive_path(status_type const& stat
 template <class Matrix, class SymmGroup>
 void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type & meas)
 {
-    maquis::cout << "Measurements." << std::endl;
     std::for_each(meas.begin(), meas.end(), measure_and_save<Matrix, SymmGroup>(rfile, archive_path, mps));
-    
+
     // TODO: move into special measurement
     std::vector<int> * measure_es_where = NULL;
     entanglement_spectrum_type * spectra = NULL;
-    if (!parms["entanglement_spectra"].empty()) {
+    if (parms.defined("entanglement_spectra")) {
         spectra = new entanglement_spectrum_type();
         measure_es_where = new std::vector<int>();
         *measure_es_where = parms.template get<std::vector<int> >("entanglement_spectra");
@@ -201,11 +184,11 @@ void sim<Matrix, SymmGroup>::measure(std::string archive_path, measurements_type
     {
         storage::archive ar(rfile, "w");
         if (entropies.size() > 0)
-            ar[archive_path + "/Entropy/mean/value"] << entropies;
+            ar[archive_path + "Entropy/mean/value"] << entropies;
         if (renyi2.size() > 0)
-            ar[archive_path + "/Renyi2/mean/value"] << renyi2;
+            ar[archive_path + "Renyi2/mean/value"] << renyi2;
         if (spectra != NULL)
-            ar[archive_path + "/Entanglement Spectra/mean/value"] << *spectra;
+            ar[archive_path + "Entanglement Spectra/mean/value"] << *spectra;
     }
 }
 

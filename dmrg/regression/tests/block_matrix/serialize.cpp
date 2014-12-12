@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -111,6 +111,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( save_load, SymmGroup, test_types )
     
     BOOST_CHECK_EQUAL( ba1.left_basis(),  ba2.left_basis()  );
     BOOST_CHECK_EQUAL( ba1.right_basis(), ba2.right_basis() );
+    BOOST_CHECK_EQUAL( ba1.basis(), ba2.basis() );
     for (std::size_t block=0; block<ba1.n_blocks(); ++block)
         BOOST_CHECK_EQUAL( ba1[block], ba2[block] );
     

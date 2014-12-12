@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -29,70 +28,53 @@
 #ifndef AMBIENT_CONTROLLERS_SSM_BACKBONE
 #define AMBIENT_CONTROLLERS_SSM_BACKBONE
 
-namespace ambient { 
+namespace ambient {
 
-    class backbone {
+    template <class Context>
+    class backbone : public Context {
+    private:
+        typedef typename Context::controller_type controller_type;
+        actor_auto base;
+        ambient::mutex mtx;
+        int tag_ub;
+        int sid;
     public:
-        typedef controllers::ssm::controller controller_type;
-        typedef typename controller_type::model_type model_type;
-
-        struct thread_context {
-            controller_type controller;
-            std::stack<actor*, std::vector<actor*> > stack;
-            struct sid_t {
-                struct divergence_guard {
-                    divergence_guard();
-                   ~divergence_guard();
-                };
-                sid_t() : value(1), inc(1) {}
-                void offset(int offset, int increment);
-                void maximize();
-                int generate();
-                int value;
-                int inc;
-                int max;
-                int min;
-            } sid;
-        };
-
-        mutable std::stack<scope*, std::vector<scope*> > scopes;
-        mutable std::stack<rank_t, std::vector<rank_t> > resources;
-        mutable std::vector<thread_context> thread_context_lane;
-        mutable base_actor base;
-        mutable ambient::mutex mtx;
-
         backbone();
-        thread_context& get_thread_context() const;
-        controller_type& get_controller() const;
         controller_type* provide_controller();
         void revoke_controller(controller_type* c);
-        bool has_nested_actor() const;
-        actor& get_actor() const;
-        void push_actor(actor* s);
-        void pop_actor();
-        scope& get_scope() const;
-        void push_scope(scope* s);
-        void pop_scope();
-        void sync_all();
-        void reset_sid();
+        void sync();
         int  generate_sid();
-        int  get_sid() const;
-        bool tunable() const; 
-        void schedule() const;
-        void intend_read(models::ssm::revision* o) const;
-        void intend_write(models::ssm::revision* o) const;
-        ambient::mutex& get_mutex() const;
+        bool tunable();
+        void schedule();
+        void intend_read(models::ssm::revision* o);
+        void intend_write(models::ssm::revision* o);
+        bool has_nested_actor();
+        void pop_actor();
+        void pop_scope();
+        void push_actor(actor* s);
+        void push_scope(scope* s);
+        controller_type& get_controller();
+        ambient::mutex& get_mutex();
+        actor_auto& get_base();
+        actor& get_actor();
+        scope& get_scope();
+        int get_sid();
     };
+}
 
-    #ifdef AMBIENT_BUILD_LIBRARY
-    backbone selector;
-    void sync(){ selector.sync_all(); }
+namespace ambient {
+    #ifdef AMBIENT_SERIAL_COLLECTION
+    typedef backbone<ambient::context_serial> backbone_type;
     #else
-    extern backbone selector;
+    typedef backbone<ambient::context_mt> backbone_type;
     #endif
 
-    typedef typename backbone::thread_context::sid_t sid_t;
+    #ifdef AMBIENT_BUILD_LIBRARY
+    backbone_type selector;
+    void sync(){ selector.sync(); }
+    #else
+    extern backbone_type selector;
+    #endif
 }
 
 #endif
-

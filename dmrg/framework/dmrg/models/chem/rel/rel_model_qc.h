@@ -40,7 +40,7 @@
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
-#include "dmrg/models/chem/term_maker.h"
+#include "dmrg/models/chem/rel/term_maker.h"
 #include "dmrg/models/chem/rel/rel_chem_detail.h"
 #include "dmrg/models/chem/pg_util.h"
 
@@ -478,21 +478,6 @@ private:
 
     typename SymmGroup::subcharge max_irrep;
 
-    std::vector<op_t> generate_site_specific_ops(op_t const & op) const
-    {
-        PGDecorator<SymmGroup> set_symm;
-        std::vector<op_t> ret;
-        for (typename SymmGroup::subcharge irrep = 0; irrep < max_irrep+1; ++irrep) {
-            //int irrep = lat.get_prop<int>("irrep", site);
-            op_t mod(set_symm(op.left_basis(), irrep), set_symm(op.right_basis(), irrep));
-            for (std::size_t b = 0; b < op.n_blocks(); ++b)
-                mod[b] = op[b];
-
-            ret.push_back(mod);
-        }
-        return ret;
-    }
-
     std::vector<op_t> generate_site_specific_ops(op_t const & op_unbar, op_t const & op_bar) const
     {
         PGDecorator<SymmGroup> set_symm;
@@ -500,7 +485,7 @@ private:
         for (std::size_t site = 0; site < lat.size()/2; ++site) {
             int irrep = lat.get_prop<int>("irrep", site);
             //for (typename SymmGroup::subcharge irrep = 0; irrep < max_irrep + 1; ++irrep) {
-                op_t mod(set_symm(op_unbar.left_basis(), irrep), set_symm(op_unbar.right_basis(), irrep));
+                op_t mod(set_symm(op_unbar.basis(), irrep));
                 for (std::size_t b = 0; b < op_unbar.n_blocks(); ++b)
                     mod[b] = op_unbar[b];
 
@@ -511,7 +496,7 @@ private:
         for (std::size_t site = lat.size()/2; site < lat.size(); ++site) {
             int irrep = lat.get_prop<int>("irrep", site);
             //for (typename SymmGroup::subcharge irrep = 0; irrep < max_irrep + 1; ++irrep) {
-                op_t mod(set_symm(op_bar.left_basis(), irrep), set_symm(op_bar.right_basis(), irrep));
+                op_t mod(set_symm(op_bar.basis(), irrep));
                 for (std::size_t b = 0; b < op_bar.n_blocks(); ++b)
                     mod[b] = op_bar[b];
                 

@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
@@ -28,10 +28,7 @@
 #ifndef STORAGE_ARCHIVE_H
 #define STORAGE_ARCHIVE_H
 
-#ifdef USE_AMBIENT
-#include "ambient/ambient.hpp"
-#endif
-
+#include "dmrg/utils/parallel.hpp"
 #include <boost/utility.hpp>
 #include <alps/hdf5.hpp>
 #include <alps/utility/encode.hpp>
@@ -39,16 +36,12 @@
 namespace storage {
 
     inline std::string once(std::string fp){
-        #ifdef USE_AMBIENT
-        if(!ambient::master() && !ambient::scope::nested()) return fp+"."+std::to_string(ambient::rank());
-        #endif
+        if(!parallel::uniq()) return fp+"."+parallel::rank_str();
         return fp;
     }
 
     inline void uniq(std::string fp){
-        #ifdef USE_AMBIENT
-        if(!ambient::master() && !ambient::scope::nested()) std::remove(once(fp).c_str());
-        #endif
+        if(!parallel::uniq()) std::remove(once(fp).c_str());
     }
 
     class archive : boost::noncopyable {

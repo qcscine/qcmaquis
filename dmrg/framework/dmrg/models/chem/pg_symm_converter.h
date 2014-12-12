@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -37,47 +37,33 @@
 #include "dmrg/models/op_handler.h"
 #include "dmrg/models/chem/pg_util.h"
 
-template <class Matrix, class SymmGroup> class PGSymmetryConverter_impl_;
+// This code will become obsolete, as soon as the point group irreps are added in the model directly.
+template <class Matrix, class SymmGroup, class PGType> class PGSymmetryConverter_impl_;
 
 template <class Matrix, class SymmGroup>
 class PGSymmetryConverter
 {
 public:
-    PGSymmetryConverter(Lattice const & lat) {}
-    void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in) {}
-private:
-};
-
-template <class Matrix>
-class PGSymmetryConverter<Matrix, TwoU1PG>
-{
-public:
     PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
-    void convert_tags_to_symm_tags(MPO<Matrix, TwoU1PG> & mpo_in)
-    {
-        impl_.convert_tags_to_symm_tags(mpo_in);
-    } 
+    void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in)
+	{
+	    impl_.convert_tags_to_symm_tags(mpo_in);
+	}
 private:
-    PGSymmetryConverter_impl_<Matrix, TwoU1PG> impl_;
-};
-
-template <class Matrix>
-class PGSymmetryConverter<Matrix, TwoU1LPG>
-{
-public:
-    PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
-    void convert_tags_to_symm_tags(MPO<Matrix, TwoU1LPG> & mpo_in)
-    {
-        impl_.convert_tags_to_symm_tags(mpo_in);
-    } 
-private:
-    PGSymmetryConverter_impl_<Matrix, TwoU1LPG> impl_;
+    PGSymmetryConverter_impl_<Matrix, SymmGroup, typename symm_traits::PGType<SymmGroup>::type> impl_;
 };
 
 //*******************************************************************
+template <class Matrix, class SymmGroup, class PGType>
+class PGSymmetryConverter_impl_
+{
+public:
+    PGSymmetryConverter_impl_(Lattice const & lat) {}
+    void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in) {}
+};
 
 template <class Matrix, class SymmGroup>
-class PGSymmetryConverter_impl_
+class PGSymmetryConverter_impl_<Matrix, SymmGroup, typename symm_traits::PGat2>
 {
     typedef typename SymmGroup::subcharge subcharge;
 
@@ -92,9 +78,6 @@ public:
         for (pos_t p = 0; p < lat.size(); ++p)
             site_irreps[p] = lat.get_prop<int>("irrep", p);
 
-        std::cout << "site irreps are: ";
-        std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<subcharge>(std::cout, " "));
-        std::cout << std::endl;
         // collect all irreducible representations in a set
         std::set<subcharge> irrep_set;
         for(typename std::vector<subcharge>::const_iterator it=site_irreps.begin(); it != site_irreps.end(); ++it)
@@ -107,7 +90,6 @@ public:
 
     void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in)
     {
-
         alps::numeric::matrix<subcharge> translation_table;
         alps::numeric::matrix<typename Matrix::value_type> translation_table_coeff;
 
@@ -122,13 +104,12 @@ public:
         translation_table_coeff.resize(op_table->size(), highest_irrep+1); 
 
         /*** Create the tag translation table ****/
-        //PGDecorator<SymmGroup> set_symm;
         for (std::size_t i = 0; i < op_table->size(); ++i)
         {
             op_t base_op = (*op_table)[i];
             for(typename std::vector<subcharge>::const_iterator it=irrep_vector.begin(); it != irrep_vector.end(); ++it)
             {
-                op_t modified(set_symm(base_op.left_basis(), *it), set_symm(base_op.right_basis(), *it));
+                op_t modified(set_symm(base_op.basis(), *it));
                 for (std::size_t p = 0; p < modified.n_blocks(); ++p)
                     modified[p] = base_op[p];
 
@@ -139,7 +120,6 @@ public:
         }
 
         typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
-
         
         // TODO: traverse by columns instead of rows
         /*** Perform tag translation to symmetry tags ****/
@@ -170,6 +150,8 @@ public:
 private:
     std::vector<subcharge> irrep_vector; // a list of all irreps present
     std::vector<subcharge> site_irreps;  // irreps of the sites
+
+    PGDecorator<SymmGroup> set_symm;
 };
 
 #endif

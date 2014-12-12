@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *
  * This software is part of the ALPS Applications, published under the ALPS
@@ -88,7 +88,7 @@ void run_eigenstate_sim(BaseParameters parms, bool write_xml, run_type rt)
         /// Build model
         Lattice lattice(parms);
         Model<Matrix, SymmGroup> model(lattice, parms);
-        MPO<Matrix, SymmGroup> mpo = make_mpo(lattice, model, parms);
+        MPO<Matrix, SymmGroup> mpo = make_mpo(lattice, model);
 
         /// Get measurements
         typedef typename Model<Matrix, SymmGroup>::measurements_type measurements_type;

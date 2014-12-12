@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -45,6 +44,7 @@ namespace ambient { namespace controllers { namespace ssm {
     // {{{ revision
 
     inline void set<revision>::spawn(revision& r){
+        if(ambient::selector.threaded()){ meta::spawn(r, meta::type::set); return; }
         set*& transfer = (set*&)r.assist.second;
         if(ambient::selector.get_controller().update(r)) transfer = new set(r);
         *transfer += ambient::which();
@@ -53,7 +53,7 @@ namespace ambient { namespace controllers { namespace ssm {
     inline set<revision>::set(revision& r) : t(r) {
         t.use();
         handle = ambient::selector.get_controller().get_channel().set(t);
-        if(t.generator != NULL) ((functor*)t.generator)->queue(this);
+        if(t.generator != NULL) ((functor*)t.generator.load())->queue(this);
         else ambient::selector.get_controller().queue(this);
     }
     inline void set<revision>::operator += (rank_t rank){

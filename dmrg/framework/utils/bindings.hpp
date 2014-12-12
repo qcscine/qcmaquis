@@ -52,7 +52,7 @@ namespace maquis {
     }
 }
 #else
-#include <ambient/numeric/alps_bindings.hpp>
+#include <ambient/container/numeric/alps_bindings.hpp>
 namespace maquis { 
     namespace bindings {
         #define am_tiles    ambient::numeric::tiles            

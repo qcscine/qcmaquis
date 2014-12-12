@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *                            Bela Bauer <bauerb@comp-phys.org>
  *
@@ -85,8 +85,7 @@ struct SiteProblem
     : left(left_)
     , right(right_)
     , mpo(mpo_)
-    {
-    }
+    { }
     
     Boundary<Matrix, SymmGroup> const & left;
     Boundary<Matrix, SymmGroup> const & right;
@@ -159,12 +158,12 @@ void central_optim(unsigned site, block_matrix<DiagMatrix, SymmGroup> & inv,
     {
         MPSTensor<Matrix, SymmGroup> t = mps[site];
         t.multiply_from_right(inv);
-        newleft = contraction::overlap_mpo_left_step(t, t, left, mpo[site]);
+        newleft = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(t, t, left, mpo[site]);
     }
     {
         MPSTensor<Matrix, SymmGroup> t = mps[site+1];
         t.multiply_from_left(inv);
-        newright = contraction::overlap_mpo_right_step(t, t, right, mpo[site+1]);
+        newright = contraction::Engine<matrix, matrix, grp>::overlap_mpo_right_step(t, t, right, mpo[site+1]);
     }
 }
 
@@ -219,10 +218,10 @@ void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
 
     /// Move boundaries
     if (lr == +1) {
-        if (site < L+1) left[local_site+1] = contraction::overlap_mpo_left_step(mps[site], mps[site], left[local_site], mpo[site]);
+        if (site < L+1) left[local_site+1] = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(mps[site], mps[site], left[local_site], mpo[site]);
     }
     if (lr == -1) {
-        if (site > 0) right[local_site] = contraction::overlap_mpo_right_step(mps[site+1], mps[site+1], right[local_site+1], mpo[site+1]);
+        if (site > 0) right[local_site] = contraction::Engine<matrix, matrix, grp>::overlap_mpo_right_step(mps[site+1], mps[site+1], right[local_site+1], mpo[site+1]);
     }
     
 }
@@ -243,7 +242,7 @@ int main(int argc, char ** argv)
         Lattice lattice(parms);
         Model<matrix, grp> model(lattice, parms);
         
-        MPO<matrix, grp> mpo = make_mpo(lattice, model, parms);
+        MPO<matrix, grp> mpo = make_mpo(lattice, model);
         maquis::cout << "Parsing model done!\n";
         
         /// Initialize & load MPS
@@ -277,7 +276,7 @@ int main(int argc, char ** argv)
             if (rank == nprocs-1) {
                 tmp_left[0] = mps.left_boundary();
                 for (size_t i=0; i<L-1; ++i)
-                    tmp_left[i+1] = contraction::overlap_mpo_left_step(mps[i], mps[i], tmp_left[i], mpo[i]);
+                    tmp_left[i+1] = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(mps[i], mps[i], tmp_left[i], mpo[i]);
                 maquis::cout << "Left boundary done!\n";
             }
             
@@ -286,7 +285,7 @@ int main(int argc, char ** argv)
             if (rank == 0) {
                 tmp_right[L-1] = mps.right_boundary();
                 for (int i=L-2; i>=0; --i)
-                    tmp_right[i] = contraction::overlap_mpo_right_step(mps[i+1], mps[i+1], tmp_right[i+1], mpo[i+1]);
+                    tmp_right[i] = contraction::Engine<matrix, matrix, grp>::overlap_mpo_right_step(mps[i+1], mps[i+1], tmp_right[i+1], mpo[i+1]);
                 maquis::cout << "Right boundary done!\n";
             }
             

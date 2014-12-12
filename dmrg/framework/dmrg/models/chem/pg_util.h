@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -33,16 +33,19 @@
 #include <boost/tokenizer.hpp>
 
 #include "dmrg/block_matrix/indexing.h"
+#include "dmrg/block_matrix/dual_index.h"
 
 #include "dmrg/models/op_handler.h"
 
+// function objects to set point group symmetry in Indices depending on the occupation
+// (do not set irrep if empty or doubly occupied)
 
 // TODO: rename to PGIndexConverter
 template <class SymmGroup>
 class PGDecorator
 {
 public:
-    Index<SymmGroup> operator()(Index<SymmGroup> const & rhs, int irr)
+    DualIndex<SymmGroup> operator()(DualIndex<SymmGroup> const & rhs, int irr)
     {
        return rhs;
     }
@@ -53,50 +56,75 @@ class  PGDecorator<TwoU1PG>
 {
 public:
     typedef TwoU1PG::subcharge subcharge;
-    Index<TwoU1PG> operator()(Index<TwoU1PG> rhs, subcharge irr)
+    DualIndex<TwoU1PG> operator()(DualIndex<TwoU1PG> rhs, subcharge irr)
     {
-        for(Index<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
-            if ( (it->first[0] + it->first[1]) % 2 == 0)
-                it->first[2] = 0;
+        for(DualIndex<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+        {
+            if ( (it->lc[0] + it->lc[1]) % 2 == 0)
+                it->lc[2] = 0;
             else
-                it->first[2] = irr;
+                it->lc[2] = irr;
+
+            if ( (it->rc[0] + it->rc[1]) % 2 == 0)
+                it->rc[2] = 0;
+            else
+                it->rc[2] = irr;
+        }
 
         return rhs;
     }
 };
 
-// Added on 07.07.2014
 template < >
 class  PGDecorator<TwoU1LPG>
 {
 public:
     typedef TwoU1LPG::subcharge subcharge;
-    Index<TwoU1LPG> operator()(Index<TwoU1LPG> rhs, subcharge irr)
+    DualIndex<TwoU1LPG> operator()(DualIndex<TwoU1LPG> rhs, subcharge irr)
     {
-        for(Index<TwoU1LPG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
-            if ( (it->first[0] + it->first[1]) % 2 == 0)
-                it->first[2] = 0;
+        for(DualIndex<TwoU1LPG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+		{
+            if ( (it->lc[0] + it->lc[1]) % 2 == 0)
+                it->lc[2] = 0;
             else
-                it->first[2] = irr;
+                it->lc[2] = irr;
 
+            if ( (it->rc[0] + it->rc[1]) % 2 == 0)
+                it->rc[2] = 0;
+            else
+                it->rc[2] = irr;
+		}
         return rhs;
     }
 };
 
-template <class SymmGroup>
-Index<SymmGroup>
-set_symm(Index<SymmGroup> rhs, typename SymmGroup::subcharge irr) {
-    for(typename Index<SymmGroup>::iterator it = rhs.begin(); it != rhs.end(); ++it)
-        if ( (it->first[0] + it->first[1]) % 2 == 0)
-            it->first[2] = 0;
-        else
-            it->first[2] = irr;
+template < >
+class  PGDecorator<SU2U1PG>
+{
+public:
+    typedef SU2U1PG::subcharge subcharge;
+    DualIndex<SU2U1PG> operator()(DualIndex<SU2U1PG> rhs, subcharge irr)
+    {
+        for(DualIndex<SU2U1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+        {
+            if ( (it->lc[0]) % 2 == 0)
+                it->lc[2] = 0;
+            else
+                it->lc[2] = irr;
 
-    return rhs;
-}
+            if ( (it->rc[0]) % 2 == 0)
+                it->rc[2] = 0;
+            else
+                it->rc[2] = irr;
+        }
+        return rhs;
+    }
+};
 
-template <class SymmGroup>
-class PGCharge
+//////////////////////////////////////////////////
+
+template <class SymmGroup, class PGTag>
+class PGCharge_
 {
 public:
     typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, int irr)
@@ -105,28 +133,25 @@ public:
     }
 };
 
-template < >
-class  PGCharge<TwoU1PG>
+template <class SymmGroup>
+class  PGCharge_<SymmGroup, symm_traits::PGat2>
 {
 public:
-    typedef TwoU1PG::subcharge subcharge;
-    TwoU1PG::charge operator()(TwoU1PG::charge rhs, subcharge irr)
+    typedef typename SymmGroup::subcharge subcharge;
+    typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, subcharge irr)
     {
         rhs[2] = irr;
         return rhs;
     }
 };
 
-// Added on 7.7.2014
-template < >
-class  PGCharge<TwoU1LPG>
+template <class SymmGroup>
+class PGCharge
 {
 public:
-    typedef TwoU1LPG::subcharge subcharge;
-    TwoU1LPG::charge operator()(TwoU1LPG::charge rhs, subcharge irr)
-    {
-        rhs[2] = irr;
-        return rhs;
+    typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, int irr)
+    { 
+        return PGCharge_<SymmGroup, typename symm_traits::PGType<SymmGroup>::type>()(rhs, irr);
     }
 };
 

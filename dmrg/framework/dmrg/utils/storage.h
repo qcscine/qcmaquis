@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
@@ -39,8 +39,8 @@
 #include "utils/timings.h"
 
 #include "dmrg/utils/BaseParameters.h"
-#include "dmrg/utils/tracking.h"
-#include "dmrg/utils/parallel_for.hpp"
+#include "dmrg/utils/parallel/tracking.hpp"
+#include "dmrg/utils/parallel.hpp"
 
 #ifdef HAVE_ALPS_HDF5
 #include "dmrg/utils/archive.h"
@@ -225,6 +225,9 @@ namespace storage {
 
         template<class T> class serializable : public descriptor {
         public: 
+            ~serializable(){
+                std::remove(disk::fp(sid).c_str()); // it will return 1 in case the file does not exist, but we do not care.
+            }
             serializable& operator = (const serializable& rhs){
                 this->join();
                 descriptor::operator=(rhs);
@@ -247,21 +250,10 @@ namespace storage {
             }
             void evict(){
                 if(state == core){
-                    // if(!dumped){ // MD: storage::migrate moves the data without modifying it, evict has to be enforced even in this case otherwise data is loaded in the wrong way
                     state = storing;
                     dumped = true;
-                    #ifdef USE_AMBIENT
-                    ambient::sync();
-                    #endif
+                    parallel::sync();
                     this->thread(new boost::thread(evict_request<T>(disk::fp(sid), (T*)this)));
-                    // }else{
-                    //     if (ambient::master()) printf("DROP instead of evict.\n");
-                    //     state = uncore;
-                    //     #ifdef USE_AMBIENT
-                    //     ambient::sync();
-                    //     #endif
-                    //     drop_request<T>(disk::fp(sid), (T*)this)();
-                    // }
                 }
                 assert(this->state != prefetching); // evict of prefetched
             }
@@ -321,47 +313,27 @@ namespace storage {
     };
 
 #ifdef USE_AMBIENT
-    using ambient::actor_t;
-    template<class Matrix, class SymmGroup> 
-    static void migrate(const MPSTensor<Matrix, SymmGroup>& tc){
-        auto it = ambient::scope::begin();
-        MPSTensor<Matrix, SymmGroup>& t = const_cast<MPSTensor<Matrix, SymmGroup>&>(tc);
-        for(int i = 0; i < t.data().n_blocks(); ++i){
-            select_proc_safe(it); it++;
-            ambient::migrate(t.data()[i]);
-        }
-    }
-    template<class Matrix, class SymmGroup> 
-    static void migrate(const block_matrix<Matrix, SymmGroup>& tc){
-        auto it = ambient::scope::begin();
+    template<class Matrix, class SymmGroup, class Scheduler = parallel::scheduler_nop> 
+    static void migrate(const block_matrix<Matrix, SymmGroup>& tc, const Scheduler& scheduler = Scheduler()){
         block_matrix<Matrix, SymmGroup>& t = const_cast<block_matrix<Matrix, SymmGroup>&>(tc);
         for(int i = 0; i < t.n_blocks(); ++i){
-            select_proc_safe(it); it++;
+            parallel::guard proc(scheduler(i));
             ambient::migrate(t[i]);
         }
     }
-    template<class Matrix, class SymmGroup> 
-    static void hint(const MPSTensor<Matrix, SymmGroup>& t){
-        auto it = ambient::scope::begin();
-        for(int i = 0; i < t.data().n_blocks(); ++i){
-            select_proc_safe(it); it++;
-            ambient::hint(t.data()[i]);
-        }
-    }
-    template<class Matrix, class SymmGroup> 
-    static void hint(const block_matrix<Matrix, SymmGroup>& t){
-        auto it = ambient::scope::begin();
-        for(int i = 0; i < t.n_blocks(); ++i){
-            select_proc_safe(it); it++;
-            ambient::hint(t[i]);
-        }
+    template<class Matrix, class SymmGroup, class Scheduler = parallel::scheduler_nop> 
+    static void migrate(const MPSTensor<Matrix, SymmGroup>& tc, const Scheduler& scheduler = Scheduler()){
+        migrate(tc.data(), scheduler); 
     }
 #else
-    struct actor_t { enum type { common }; };
+    template<typename T, class Scheduler>
+    static void migrate(T& t, const Scheduler& scheduler){ }
+
     template<typename T>
-    static void migrate(T& t){ }
-    template<typename T>
-    static void hint(T& t){ }
+    static void migrate(T& t)
+    {
+        migrate(t, parallel::scheduler_nop());
+    }
 #endif
 
     inline static void setup(BaseParameters& parms){

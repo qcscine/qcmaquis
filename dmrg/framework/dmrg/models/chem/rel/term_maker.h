@@ -1,0 +1,283 @@
+/*****************************************************************************
+ *
+ * ALPS MPS DMRG Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *
+ * 
+ * This software is part of the ALPS Applications, published under the ALPS
+ * Application License; you can use, redistribute it and/or modify it under
+ * the terms of the license, either version 1 or (at your option) any later
+ * version.
+ * 
+ * You should have received a copy of the ALPS Application License along with
+ * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
+ * available from http://alps.comp-phys.org/.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * DEALINGS IN THE SOFTWARE.
+ *
+ *****************************************************************************/
+
+#ifndef QC_TERMMAKER_H
+#define QC_TERMMAKER_H
+
+template <class M, class S>
+struct TermMaker {
+
+    typedef typename Lattice::pos_t pos_t;
+    typedef typename M::value_type value_type;
+    typedef ::term_descriptor<value_type> term_descriptor;
+
+    typedef typename TagHandler<M, S>::tag_type tag_type;
+    typedef typename term_descriptor::value_type pos_op_t;
+    typedef model_impl<M, S> Model;
+
+    static bool compare_tag(pos_op_t p1,
+                            pos_op_t p2)
+    {
+        return boost::tuples::get<0>(p1) < boost::tuples::get<0>(p2);
+    }
+
+    static term_descriptor two_term(bool sign, tag_type fill_op, value_type scale, pos_t i, pos_t j,
+                                     tag_type op1, tag_type op2,
+                                     boost::shared_ptr<TagHandler<M, S> > op_table)
+    {
+        term_descriptor term;
+        term.is_fermionic = sign;
+        term.coeff = scale;
+        term.push_back(boost::make_tuple(i, op1));
+        term.push_back(boost::make_tuple(j, op2));
+        return term;
+    }
+
+    static term_descriptor positional_two_term(Model* model, bool sign, tag_type fill_op, value_type scale, pos_t i, pos_t j,
+                                     tag_type op1, tag_type op2,
+                                     boost::shared_ptr<TagHandler<M, S> > op_table)
+    {
+        term_descriptor term;
+        term.is_fermionic = sign;
+        term.coeff = scale;
+
+        // Ad hoc fix for 20 spinors HF
+        /*
+        if (i == 2 || i == 3 || i == 5)
+            term.coeff *= -1.0;
+        
+        if (j == 2 || j == 3 || j == 5)
+            term.coeff *= -1.0;
+        
+        if (i == 12 || i == 13 || i == 15)
+            term.coeff *= -1.0;
+        
+        if (j == 12 || j == 13 || j == 15)
+            term.coeff *= -1.0;
+        */
+
+
+        //typename op_t::type tmp;
+        std::pair<tag_type, value_type> ptag;
+        if (i < j) {
+            // Use the fill operator from the model
+            fill_op = model->filling_matrix_tag(i);
+            ptag = op_table->get_product_tag(fill_op, op1);
+			
+			//#define DEBUG_OP
+			#ifdef DEBUG_OP
+			maquis::cout << "TERM: (" << i << "," << j << ")\n";
+			maquis::cout << "product fill * op1\n";
+			maquis::cout << "operator tag before fill: " << op1 << std::endl;
+			maquis::cout << "operator tag after fill: " << ptag.first << std::endl;
+			maquis::cout << "operator coeff: " << ptag.second << std::endl;
+			#endif
+			
+            term.push_back(boost::make_tuple(i, op1));
+            term.push_back(boost::make_tuple(j, op2));
+            //maquis::cout << "term: (" << i << "," << j << "); coeff: " << term.coeff << std::endl;
+            //term.coeff *= ptag.second;
+        }
+        else {
+            // Use the fill operator from the model
+            fill_op = model->filling_matrix_tag(j);
+            ptag = op_table->get_product_tag(fill_op, op2);
+			
+			#ifdef DEBUG_OP
+			maquis::cout << "TERM: (" << i << "," << j << ")\n";
+			maquis::cout << "product fill * op2\n";
+			maquis::cout << "operator tag before fill: " << op2 << std::endl;
+			maquis::cout << "operator tag after fill: " << ptag.first << std::endl;
+			maquis::cout << "operator coeff: " << -ptag.second << std::endl;
+			#endif
+			
+            term.push_back(boost::make_tuple(i, op1));
+            term.push_back(boost::make_tuple(j, op2));
+            //term.push_back(boost::make_tuple(j, ptag.first));
+            //term.coeff *= -ptag.second;
+            //term.coeff *= -1.0;
+            //maquis::cout << "term: (" << i << "," << j << "); coeff: " << term.coeff << std::endl;
+        }
+        return term;
+    }
+
+    static term_descriptor three_term(Model* model, tag_type ident, tag_type fill_op,
+                                     value_type scale, pos_t pb, pos_t p1, pos_t p2,
+                                     tag_type opb1, tag_type opb2,
+                                     tag_type op1,  tag_type op2,
+                                     boost::shared_ptr<TagHandler<M, S> > op_table)
+    {
+        term_descriptor term;
+        term.is_fermionic = true;
+        term.coeff = scale;
+
+        tag_type tmp, boson_op;
+        std::pair<tag_type, value_type> ptag1, ptag2;
+
+        if ( (pb>p1 && pb<p2) || (pb>p2 && pb<p1) ) {
+            // if the bosonic operator is in between
+            // the fermionic operators, multiply with fill
+            
+            // Use the fill operator from the model
+            fill_op = model->filling_matrix_tag(pb);
+
+            ptag1 = op_table->get_product_tag(fill_op, opb2);
+            term.coeff *= ptag1.second;
+            ptag2 = op_table->get_product_tag(ptag1.first, opb1);
+            term.coeff *= ptag2.second;
+            boson_op = ptag2.first;
+        }
+        else {
+            ptag1 = op_table->get_product_tag(opb2, opb1);
+            boson_op = ptag1.first;
+            term.coeff *= ptag1.second; 
+        }
+        
+        if (p1 < p2) {
+            // Use the fill operator from the model
+            fill_op = model->filling_matrix_tag(p1);
+            
+            ptag1 = op_table->get_product_tag(fill_op, op1); 
+            op1 = ptag1.first;
+            term.coeff *= ptag1.second;
+        }
+        else {
+            // Use the fill operator from the model
+            fill_op = model->filling_matrix_tag(p2);
+            
+            ptag1 = op_table->get_product_tag(fill_op, op2); 
+            op2 = ptag1.first;
+            term.coeff *= -ptag1.second;
+        }
+
+        std::vector<pos_op_t> sterm;
+        sterm.push_back( boost::make_tuple(pb, boson_op) );
+        sterm.push_back( boost::make_tuple(p1, op1) );
+        sterm.push_back( boost::make_tuple(p2, op2) );
+        std::sort(sterm.begin(), sterm.end(), compare_tag);
+
+        term.push_back(sterm[0]);
+        term.push_back(sterm[1]);
+        term.push_back(sterm[2]);
+
+        //for (int i_ = 0; i_ < term.size(); ++i_)
+        //   maquis::cout << op_table->get_op(term.operator_tag(i_)) << std::endl;
+
+        return term;
+    }
+
+    static term_descriptor four_term(Model* model, tag_type ident, tag_type fill_op,
+                                value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
+                                tag_type op_i, tag_type op_j,
+                                tag_type op_k, tag_type op_l,
+                                boost::shared_ptr<TagHandler<M, S> > op_table)
+    {
+        term_descriptor term;
+        term.is_fermionic = true;
+        term.coeff = scale;
+
+        // Simple O(n^2) algorithm to determine sign of permutation
+        pos_t idx[] = { i,j,k,l };
+        pos_t inv_count=0, n=4;
+        for(pos_t c1 = 0; c1 < n - 1; c1++)
+            for(pos_t c2 = c1+1; c2 < n; c2++)
+                if(idx[c1] > idx[c2]) inv_count++;
+
+        //HARDCODED for test purposes only
+        //pos_t idx[] = { i,j,k,l };
+        //pos_t inv_count=0, n=4;
+        //for(pos_t c1 = 0; c1 < n - 1; c1++) {
+        //    for(pos_t c2 = c1+1; c2 < n; c2++) {
+        //        if(idx[c1] > idx[c2]) {
+        //           if(idx[c1] >= 10 && idx[c2] >= 10) {
+        //               inv_count++;}
+        //           else if(idx[c1] < 10 && idx[c2] < 10) {
+        //               inv_count++;}
+        //        }
+        //    }
+        //}
+
+
+        std::vector<pos_op_t> sterm;
+        sterm.push_back(boost::make_tuple(i, op_i));
+        sterm.push_back(boost::make_tuple(j, op_j));
+        sterm.push_back(boost::make_tuple(k, op_k));
+        sterm.push_back(boost::make_tuple(l, op_l));
+        std::sort(sterm.begin(), sterm.end(), compare_tag);
+
+        std::pair<tag_type, value_type> ptag;
+        // ask the model for the right fill_op
+        fill_op = model->filling_matrix_tag(boost::tuples::get<0>(sterm[0]));
+        //maquis::cout << "sterm[0]: " << boost::tuples::get<0>(sterm[0]) << std::endl;
+
+		//#define DEBUG_OP
+		#ifdef DEBUG_OP
+		maquis::cout << "4-term operator_0 tag before fill: " << boost::tuples::get<1>(sterm[0]) << std::endl;
+		maquis::cout << op_table->get_op(boost::tuples::get<1>(sterm[0])) << std::endl;
+		#endif
+			
+        ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[0]));
+        boost::tuples::get<1>(sterm[0]) = ptag.first;
+        term.coeff *= ptag.second;
+        
+		#ifdef DEBUG_OP
+		maquis::cout << "operator tag after fill: " << ptag.first << std::endl;
+		maquis::cout << op_table->get_op(boost::tuples::get<1>(sterm[0])) << std::endl;
+		#endif
+		
+        // ask the model for the right fill_op
+        fill_op = model->filling_matrix_tag(boost::tuples::get<0>(sterm[2]));
+        //maquis::cout << "sterm[2]: " << boost::tuples::get<0>(sterm[2]) << std::endl;
+
+		#ifdef DEBUG_OP
+		maquis::cout << "4-term operator_2 tag before fill: " << boost::tuples::get<1>(sterm[2]) << std::endl;
+		#endif
+		
+        ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[2]));
+        boost::tuples::get<1>(sterm[2]) = ptag.first;
+        term.coeff *= ptag.second;
+        
+		#ifdef DEBUG_OP
+		maquis::cout << "operator tag after fill: " << ptag.first << std::endl;
+		#endif
+		
+        if (inv_count % 2)
+            term.coeff = -term.coeff;
+
+        term.push_back(sterm[0]);
+        term.push_back(sterm[1]);
+        term.push_back(sterm[2]);
+        term.push_back(sterm[3]);
+        //std::cout << "CREATING " << term << std::endl;
+        //maquis::cout << "LEAVING 4TERM <iklj>: " << "<" << boost::tuples::get<0>(sterm[0]) << "," << boost::tuples::get<0>(sterm[1]) << "," << boost::tuples::get<0>(sterm[2]) << "," << boost::tuples::get<0>(sterm[3]) << ">" << std::endl;
+        //for (int i_ = 0; i_ < term.size(); ++i_)
+        //   maquis::cout << op_table->get_op(term.operator_tag(i_)) << std::endl;
+        return term;
+    }
+};
+
+#endif

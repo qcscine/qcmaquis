@@ -47,6 +47,11 @@ namespace charge_detail {
     template <>
     inline bool physical<TwoU1LPG>(TwoU1LPG::charge c) { return c[0] >= 0 && c[1] >= 0; }
 
+    template <>
+    inline bool physical<SU2U1>(SU2U1::charge c) { return c[1] >= 0; }
+
+    template <>
+    inline bool physical<SU2U1PG>(SU2U1PG::charge c) { return c[1] >= 0; }
 }
 
 template <class SymmGroup>
@@ -75,16 +80,19 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     }
 
 	typename SymmGroup::charge delta;
-	delta[0] = 2; delta[1] = -2;
-	typename SymmGroup::charge max_right = SymmGroup::fuse(right_end, delta);
-	typename SymmGroup::charge min_right = SymmGroup::fuse(right_end, -delta);
+	//delta[0] = 2; delta[1] = -2;
+	//delta[0] = 0; delta[1] = 0;
+	//typename SymmGroup::charge max_right = SymmGroup::fuse(right_end, delta);
+	//typename SymmGroup::charge min_right = SymmGroup::fuse(right_end, -delta);
+	typename SymmGroup::charge max_right = right_end;
+	typename SymmGroup::charge min_right = right_end;
    		
     
     Index<SymmGroup> l_triv, r_triv;
     l_triv.insert( std::make_pair(SymmGroup::IdentityCharge, 1) );
     r_triv.insert( std::make_pair(right_end, 1) );
-    r_triv.insert( std::make_pair(max_right, 1) );
-    r_triv.insert( std::make_pair(min_right, 1) );
+    //r_triv.insert( std::make_pair(max_right, 1) );
+    //r_triv.insert( std::make_pair(min_right, 1) );
     
     std::vector<Index<SymmGroup> > left_allowed(L+1), right_allowed(L+1), allowed(L+1);
     left_allowed[0] = l_triv;

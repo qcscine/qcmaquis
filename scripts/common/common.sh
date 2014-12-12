@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 ## externals ##
 ## HOST
 ## ROOT_DIR
@@ -221,7 +221,7 @@ write_states(){
     ORIG="${CONFIG_DIR}/${CONFIG_NAME}"
     MOD="${CONFIG_DIR}/${CONFIG_NAME}.mod"
     cp $ORIG $MOD # keeping permissions
-    echo "#!/bin/bash -l"                   >  $MOD
+    echo "#!/bin/bash"                      >  $MOD
     echo "STATE=\"$STATE\""                 >> $MOD
     echo "STATE_AMBIENT=\"$STATE_AMBIENT\"" >> $MOD
     echo "STATE_DMRG=\"$STATE_DMRG\""       >> $MOD

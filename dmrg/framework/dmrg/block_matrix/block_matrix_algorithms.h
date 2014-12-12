@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -40,7 +40,7 @@
 #include <boost/lambda/lambda.hpp>
 #include <boost/function.hpp>
 
-#include "dmrg/utils/parallel_for.hpp"
+#include "dmrg/utils/parallel.hpp"
 
 struct truncation_results {
     std::size_t bond_dimension;     // new bond dimension
@@ -58,72 +58,102 @@ struct truncation_results {
     { }
 };
 
+//template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup, class Scheduler = parallel::scheduler_nop>
+template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup, class Scheduler>
+void gemm(block_matrix<Matrix1, SymmGroup> const & A,
+          block_matrix<Matrix2, SymmGroup> const & B,
+          block_matrix<Matrix3, SymmGroup> & C,
+          const Scheduler& scheduler = Scheduler())
+{
+    C.clear();
+    
+    typedef typename SymmGroup::charge charge;
+    Index<SymmGroup> B_left_basis = B.left_basis();
+    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
+        std::size_t matched_block = B_left_basis.position(A.basis().right_charge(k));
+
+        if ( matched_block == B.n_blocks() )
+            continue;
+        
+        std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
+                                               A.basis().left_charge(k), B.basis().right_charge(matched_block));
+
+        parallel::guard proc(scheduler(k));
+        gemm(A[k], B[matched_block], C[new_block]);
+    }
+
+    if(scheduler.propagate()){
+        C.size_index.resize(C.n_blocks()); // propagating A size_index onto C - otherwise might C.index_sizes();
+        for(size_t k = 0; k < A.n_blocks(); ++k){
+            size_t matched_block = B_left_basis.position(A.basis().right_charge(k));
+            if(matched_block != B.n_blocks())
+                C.size_index(C.find_block(A.basis().left_charge(k), B.basis().right_charge(matched_block))) = A.size_index(k);
+        }
+    }
+}
+
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm(block_matrix<Matrix1, SymmGroup> const & A,
           block_matrix<Matrix2, SymmGroup> const & B,
           block_matrix<Matrix3, SymmGroup> & C)
 {
-    C.clear();
-    
-    typedef typename SymmGroup::charge charge;
-    for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
-
-        if ( matched_block == B.left_basis().size() )
-            continue;
-        
-        std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
-                                               A.left_basis()[k].first, B.right_basis()[matched_block].first);
-        gemm(A[k], B[matched_block], C[new_block]);
-    }
+    gemm(A, B, C, parallel::scheduler_nop());
 }
 
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
-          block_matrix<Matrix2, SymmGroup> const & B,
-          block_matrix<Matrix3, SymmGroup> & C)
+                    block_matrix<Matrix2, SymmGroup> const & B,
+                    block_matrix<Matrix3, SymmGroup> & C)
 {
+    parallel::scheduler_size_indexed scheduler(A);
     C.clear();
     
     typedef typename SymmGroup::charge charge;
+    Index<SymmGroup> B_left_basis = B.left_basis();
     for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-        std::size_t matched_block = B.left_basis().position(A.right_basis()[k].first);
+        std::size_t matched_block = B_left_basis.position(A.basis().right_charge(k));
 
-        // Match A.right_basis() with B.left_basis()
-        if ( matched_block == B.left_basis().size() )
+        // Match right basis of A with left basis of B
+        if ( matched_block == B.n_blocks() )
             continue;
 
-        // Also match A.left_basis() with B.left_basis()
-        if ( !B.left_basis().has(A.left_basis()[k].first) )
+        // Also match left basis of A with left basis of B
+        if ( !B_left_basis.has(A.basis().left_charge(k)) )
             continue;
         
         std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[k]), num_cols(B[matched_block])),
-                                               A.left_basis()[k].first, B.right_basis()[matched_block].first);
+                                               A.basis().left_charge(k), B.basis().right_charge(matched_block));
+        
+        parallel::guard proc(scheduler(k));
         gemm(A[k], B[matched_block], C[new_block]);
     }
 }
 
 template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
 void gemm_trim_right(block_matrix<Matrix1, SymmGroup> const & A,
-          block_matrix<Matrix2, SymmGroup> const & B,
-          block_matrix<Matrix3, SymmGroup> & C)
+                     block_matrix<Matrix2, SymmGroup> const & B,
+                     block_matrix<Matrix3, SymmGroup> & C)
 {
+    parallel::scheduler_size_indexed scheduler(B);
     C.clear();
     
     typedef typename SymmGroup::charge charge;
+    Index<SymmGroup> A_right_basis = A.right_basis();
     for (std::size_t k = 0; k < B.n_blocks(); ++k) {
-        std::size_t matched_block = A.right_basis().position(B.left_basis()[k].first);
+        std::size_t matched_block = A_right_basis.position(B.basis().left_charge(k));
 
-        // Match A.right_basis() with B.left_basis()
-        if ( matched_block == A.right_basis().size() )
+        // Match right basis of A with left basis of B
+        if ( matched_block == A.n_blocks() )
             continue;
 
         // Also match A.right_basis() with B.right_basis()
-        if ( !A.right_basis().has(B.right_basis()[k].first) )
+        if ( !A_right_basis.has(B.basis().right_charge(k)) )
             continue;
         
         std::size_t new_block = C.insert_block(new Matrix3(num_rows(A[matched_block]), num_cols(B[k])),
-                                               A.left_basis()[matched_block].first, B.right_basis()[k].first);
+                                               A.basis().left_charge(matched_block), B.basis().right_charge(k));
+        
+        parallel::guard proc(scheduler(k));
         gemm(A[matched_block], B[k], C[new_block]);
     }
 }
@@ -134,6 +164,8 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
          block_matrix<Matrix, SymmGroup> & V,
          block_matrix<DiagMatrix, SymmGroup> & S)
 {
+    parallel::scheduler_balanced scheduler(M);
+
     Index<SymmGroup> r = M.left_basis(), c = M.right_basis(), m = M.left_basis();
     for (std::size_t i = 0; i < M.n_blocks(); ++i)
         m[i].second = std::min(r[i].second, c[i].second);
@@ -143,8 +175,8 @@ void svd(block_matrix<Matrix, SymmGroup> const & M,
     S = block_matrix<DiagMatrix, SymmGroup>(m, m);
     std::size_t loop_max = M.n_blocks();
     
-    omp_for(size_t k, range<size_t>(0,loop_max), {
-        select_proc(ambient::scope::balance(k,loop_max));
+    omp_for(size_t k, parallel::range<size_t>(0,loop_max), {
+        parallel::guard proc(scheduler(k));
         svd(M[k], U[k], V[k], S[k]);
     });
 }
@@ -154,13 +186,14 @@ void heev(block_matrix<Matrix, SymmGroup> const & M,
           block_matrix<Matrix, SymmGroup> & evecs,
           block_matrix<DiagMatrix, SymmGroup> & evals)
 {
+    parallel::scheduler_balanced scheduler(M);
 
-    evecs = block_matrix<Matrix, SymmGroup>(M.left_basis(), M.right_basis());
-    evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
+    evecs = block_matrix<Matrix, SymmGroup>(M.basis());
+    evals = block_matrix<DiagMatrix, SymmGroup>(M.basis());
     std::size_t loop_max = M.n_blocks();
 
-    omp_for(size_t k, range<size_t>(0,loop_max), {
-        select_proc(ambient::scope::balance(k,loop_max));
+    omp_for(size_t k, parallel::range<size_t>(0,loop_max), {
+        parallel::guard proc(scheduler(k));
         heev(M[k], evecs[k], evals[k]);
     });
 }
@@ -173,6 +206,8 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
                 block_matrix<Matrix, SymmGroup> & V,
                 block_matrix<DiagMatrix, SymmGroup> & S)
 {
+    parallel::scheduler_inplace scheduler;
+
     Index<SymmGroup> r = M.left_basis(), c = M.right_basis(), m = M.left_basis();
     for (std::size_t i = 0; i < M.n_blocks(); ++i)
         m[i].second = std::min(r[i].second, c[i].second);
@@ -185,14 +220,14 @@ void svd_merged(block_matrix<Matrix, SymmGroup> const & M,
                              [](const Matrix& m){ merge(m); },
                              [](const Matrix& m){ return (num_rows(m)*num_rows(m)*num_cols(m) +
                                                           2*num_cols(m)*num_cols(m)*num_cols(m)); });
-    ambient::sync();
+    parallel::sync();
 
     std::size_t loop_max = M.n_blocks();
     for(size_t k = 0; k < loop_max; ++k){
-        select_proc(ambient::scope::begin()+ambient::get_owner(M[k]));
+        parallel::guard proc(scheduler(M[k]));
         svd_merged(M[k], U[k], V[k], S[k]);
     }
-    ambient::sync(ambient::mkl_parallel());
+    parallel::sync_mkl_parallel();
 }
 
 template<class Matrix, class DiagMatrix, class SymmGroup>
@@ -200,15 +235,23 @@ void heev_merged(block_matrix<Matrix, SymmGroup> const & M,
                  block_matrix<Matrix, SymmGroup> & evecs,
                  block_matrix<DiagMatrix, SymmGroup> & evals)
 {
+    parallel::scheduler_inplace scheduler;
 
-    evecs = block_matrix<Matrix, SymmGroup>(M.left_basis(), M.right_basis());
-    evals = block_matrix<DiagMatrix, SymmGroup>(M.left_basis(), M.right_basis());
+    evecs = block_matrix<Matrix, SymmGroup>(M.basis());
+    evals = block_matrix<DiagMatrix, SymmGroup>(M.basis());
+
+    ambient::for_each_redist(M.blocks().first, M.blocks().second, 
+                             [](const Matrix& m){ merge(m); },
+                             [](const Matrix& m){ return (num_rows(m)*num_rows(m)*num_cols(m) +
+                                                          2*num_cols(m)*num_cols(m)*num_cols(m)); });
+    parallel::sync();
+
     std::size_t loop_max = M.n_blocks();
-
-    omp_for(size_t k, range<size_t>(0,loop_max), {
-        select_proc(ambient::scope::balance(k,loop_max));
+    for(size_t k = 0; k < loop_max; ++k){
+        parallel::guard proc(scheduler(M[k]));
         heev_merged(M[k], evecs[k], evals[k]);
-    });
+    }
+    parallel::sync_mkl_parallel();
 }
 #endif
 
@@ -234,13 +277,10 @@ void estimate_truncation(block_matrix<DiagMatrix, SymmGroup> const & evals,
     
     typedef std::vector<typename maquis::traits::real_type<value_type>::type > real_vector_t;
     real_vector_t allevals(length);
-#ifdef USE_AMBIENT
-    select_proc(ambient::actor_t::common);
-    for(std::size_t k = 0; k < evals.n_blocks(); ++k){
-        ambient::numeric::migrate(const_cast<DiagMatrix&>(evals[k])[0]);
+    {
+        parallel::guard::serial guard;
+        storage::migrate(evals);
     }
-    ambient::sync();
-#endif
     
     std::size_t position = 0;
     for(std::size_t k = 0; k < evals.n_blocks(); ++k){
@@ -304,39 +344,39 @@ truncation_results svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
        size_t keep = keeps[k];
   
         if (keep == 0) {
-            S.remove_block(S.left_basis()[k].first,
-                           S.right_basis()[k].first);
-            U.remove_block(U.left_basis()[k].first,
-                           U.right_basis()[k].first);
-            V.remove_block(V.left_basis()[k].first,
-                           V.right_basis()[k].first);
+            S.remove_block(S.basis().left_charge(k),
+                           S.basis().right_charge(k));
+            U.remove_block(U.basis().left_charge(k),
+                           U.basis().right_charge(k));
+            V.remove_block(V.basis().left_charge(k),
+                           V.basis().right_charge(k));
   // C- idem heev_truncate          --k; // everything gets shifted, to we have to look into the same k again
         } else {
             #ifdef USE_AMBIENT
-            ambient::numeric::split(S(S.left_basis()[k].first, S.right_basis()[k].first));
-            ambient::numeric::split(U(U.left_basis()[k].first, U.right_basis()[k].first));
-            ambient::numeric::split(V(V.left_basis()[k].first, V.right_basis()[k].first));
+            ambient::numeric::split(S(S.basis().left_charge(k), S.basis().right_charge(k)));
+            ambient::numeric::split(U(U.basis().left_charge(k), U.basis().right_charge(k)));
+            ambient::numeric::split(V(V.basis().left_charge(k), V.basis().right_charge(k)));
             #endif
 
             if (keep >= num_rows(S[k])) continue;
         
-            S.resize_block(S.left_basis()[k].first,
-                           S.right_basis()[k].first,
+            S.resize_block(S.basis().left_charge(k),
+                           S.basis().right_charge(k),
                            keep, keep);
-            U.resize_block(U.left_basis()[k].first,
-                           U.right_basis()[k].first,
-                           U.left_basis()[k].second,
+            U.resize_block(U.basis().left_charge(k),
+                           U.basis().right_charge(k),
+                           U.basis().left_size(k),
                            keep);
-            V.resize_block(V.left_basis()[k].first,
-                           V.right_basis()[k].first,
+            V.resize_block(V.basis().left_charge(k),
+                           V.basis().right_charge(k),
                            keep,
-                           V.right_basis()[k].second);
+                           V.basis().right_size(k));
         }
     }
 
     delete[] keeps;
 
-    std::size_t bond_dimension = S.left_basis().sum_of_sizes();
+    std::size_t bond_dimension = S.basis().sum_of_left_sizes();
     if(verbose){
         maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << bond_dimension << std::endl;
     }
@@ -355,7 +395,7 @@ truncation_results alt_svd_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                     double rel_tol, std::size_t Mmax,
                                     bool verbose = true)
 {
-    assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
+    assert( M.basis().sum_of_left_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
 
     block_matrix<Matrix, SymmGroup> t;
     block_matrix<Matrix, SymmGroup> R;
@@ -405,7 +445,7 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
                                  double cutoff, std::size_t Mmax,
                                  bool verbose = true)
 {
-    assert( M.left_basis().sum_of_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
+    assert( M.basis().sum_of_left_sizes() > 0 && M.right_basis().sum_of_sizes() > 0 );
     #ifdef USE_AMBIENT
     heev_merged(M, evecs, evals);
     #else
@@ -422,32 +462,32 @@ truncation_results heev_truncate(block_matrix<Matrix, SymmGroup> const & M,
         size_t keep = keeps[k];
         
         if (keep == 0) {
-            evals.remove_block(evals.left_basis()[k].first,
-                               evals.right_basis()[k].first);
-            evecs.remove_block(evecs.left_basis()[k].first,
-                               evecs.right_basis()[k].first);
+            evals.remove_block(evals.basis().left_charge(k),
+                               evals.basis().right_charge(k));
+            evecs.remove_block(evecs.basis().left_charge(k),
+                               evecs.basis().right_charge(k));
 //            --k; // everything gets shifted, to we have to look into the same k again
 // C - Tim : I reversed the loop because the new version was incompatible with the keeps array, and created a bug when keeps[k]=0.
         } else {
             #ifdef USE_AMBIENT
-            ambient::numeric::split(evals(evals.left_basis()[k].first, evals.right_basis()[k].first));
-            ambient::numeric::split(evecs(evecs.left_basis()[k].first, evecs.right_basis()[k].first));
+            ambient::numeric::split(evals(evals.basis().left_charge(k), evals.basis().right_charge(k)));
+            ambient::numeric::split(evecs(evecs.basis().left_charge(k), evecs.basis().right_charge(k)));
             #endif
 
             if(keep >= num_rows(evals[k])) continue;
 
-            evals.resize_block(evals.left_basis()[k].first,
-                               evals.right_basis()[k].first,
+            evals.resize_block(evals.basis().left_charge(k),
+                               evals.basis().right_charge(k),
                                keep, keep);
-            evecs.resize_block(evecs.left_basis()[k].first,
-                               evecs.right_basis()[k].first,
-                               evecs.left_basis()[k].second,
+            evecs.resize_block(evecs.basis().left_charge(k),
+                               evecs.basis().right_charge(k),
+                               evecs.basis().left_size(k),
                                keep);
         }
     }
     delete[] keeps;
 
-    std::size_t bond_dimension = evals.left_basis().sum_of_sizes();
+    std::size_t bond_dimension = evals.basis().sum_of_left_sizes();
     if(verbose){
         maquis::cout << "Sum: " << old_basis.sum_of_sizes() << " -> " << bond_dimension << std::endl;
     }
@@ -461,6 +501,8 @@ void qr(block_matrix<Matrix, SymmGroup> const& M,
         block_matrix<Matrix, SymmGroup> & Q,
         block_matrix<Matrix, SymmGroup> & R)
 {
+    parallel::scheduler_balanced scheduler(M);
+
     /* thin QR in each block */
     Index<SymmGroup> m = M.left_basis(), n = M.right_basis(), k = M.right_basis();
     for (size_t i=0; i<k.size(); ++i)
@@ -470,8 +512,8 @@ void qr(block_matrix<Matrix, SymmGroup> const& M,
     R = block_matrix<Matrix, SymmGroup>(k,n);
     std::size_t loop_max = M.n_blocks();
     
-    omp_for(size_t k, range<size_t>(0,loop_max), {
-        select_proc(ambient::scope::balance(k,loop_max));
+    omp_for(size_t k, parallel::range<size_t>(0,loop_max), {
+        parallel::guard proc(scheduler(k));
         qr(M[k], Q[k], R[k]);
     });
     
@@ -485,6 +527,8 @@ void lq(block_matrix<Matrix, SymmGroup> const& M,
         block_matrix<Matrix, SymmGroup> & L,
         block_matrix<Matrix, SymmGroup> & Q)
 {
+    parallel::scheduler_balanced scheduler(M);
+
     /* thin LQ in each block */
     Index<SymmGroup> m = M.left_basis(), n = M.right_basis(), k = M.right_basis();
     for (size_t i=0; i<k.size(); ++i)
@@ -494,8 +538,8 @@ void lq(block_matrix<Matrix, SymmGroup> const& M,
     Q = block_matrix<Matrix, SymmGroup>(k,n);
     std::size_t loop_max = M.n_blocks();
     
-    omp_for(size_t k, range<size_t>(0,loop_max), {
-        select_proc(ambient::scope::balance(k,loop_max));
+    omp_for(size_t k, parallel::range<size_t>(0,loop_max), {
+        parallel::guard proc(scheduler(k));
         lq(M[k], L[k], Q[k]);
     });
     
@@ -509,10 +553,8 @@ block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> t
 { 
     block_matrix<typename maquis::traits::transpose_view<Matrix>::type, SymmGroup> ret; 
     for(size_t k=0; k<m.n_blocks(); ++k) 
-        ret.insert_block(transpose(m[k]), m.right_basis()[k].first, m.left_basis()[k].first);
-#ifdef AMBIENT_TRACKING
-    ambient_track_as(ret, m.label);
-#endif
+        ret.insert_block(transpose(m[k]), m.basis().right_charge(k), m.basis().left_charge(k));
+    if(!m.size_index.empty()) ret.index_sizes();
     return ret; 
 } 
 
@@ -542,8 +584,8 @@ block_matrix<Matrix, SymmGroup> adjoin(block_matrix<Matrix, SymmGroup> const & m
     block_matrix<Matrix, SymmGroup> ret;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
         ret.insert_block(m[k],
-                         -m.left_basis()[k].first,
-                         -m.right_basis()[k].first);
+                         -m.basis().left_charge(k),
+                         -m.basis().right_charge(k));
     return ret;
 }
 
@@ -567,14 +609,14 @@ bool is_hermitian(block_matrix<Matrix, SymmGroup> const & m)
 {
     bool ret = true;
     for (size_t k=0; ret && k < m.n_blocks(); ++k) {
-        if (m.left_basis()[k].second != m.right_basis()[k].second)
+        if (m.basis().left_size(k) != m.basis().right_size(k))
             return false;
-        else if (m.left_basis()[k].first == m.right_basis()[k].first)
+        else if (m.basis().left_charge(k) == m.basis().right_charge(k))
             ret = is_hermitian(m[k]);
-        else if (! m.has_block(m.right_basis()[k].first, m.left_basis()[k].first))
+        else if (! m.has_block(m.basis().right_charge(k), m.basis().left_charge(k)))
             return false;
         else
-            ret = ( m[k] == transpose(conj( m(m.right_basis()[k].first, m.left_basis()[k].first) )) );
+            ret = ( m[k] == transpose(conj( m(m.basis().right_charge(k), m.basis().left_charge(k)) )) );
     }
     return ret;
 }
@@ -664,19 +706,19 @@ void op_kron(Index<SymmGroup> const & phys_A,
 
     for (int i = 0; i < A.n_blocks(); ++i) {
         for (int j = 0; j < B.n_blocks(); ++j) {
-            typename SymmGroup::charge new_right = SymmGroup::fuse(A.right_basis()[i].first, B.right_basis()[j].first);
-            typename SymmGroup::charge new_left = SymmGroup::fuse(A.left_basis()[i].first, B.left_basis()[j].first);
+            typename SymmGroup::charge new_right = SymmGroup::fuse(A.basis().right_charge(i), B.basis().right_charge(j));
+            typename SymmGroup::charge new_left = SymmGroup::fuse(A.basis().left_charge(i), B.basis().left_charge(j));
 
 
-            Matrix2 tmp(pb_left.size(A.left_basis()[i].first, B.left_basis()[j].first),
-                       pb_right.size(A.right_basis()[i].first, B.right_basis()[j].first),
+            Matrix2 tmp(pb_left.size(A.basis().left_charge(i), B.basis().left_charge(j)),
+                       pb_right.size(A.basis().right_charge(i), B.basis().right_charge(j)),
                        0);
 
             maquis::dmrg::detail::op_kron(tmp, B[j], A[i],
-                                          pb_left(A.left_basis()[i].first, B.left_basis()[j].first),
-                                          pb_right(A.right_basis()[i].first, B.right_basis()[j].first),
-                                          A.left_basis()[i].second, B.left_basis()[j].second,
-                                          A.right_basis()[i].second, B.right_basis()[j].second);
+                                          pb_left(A.basis().left_charge(i), B.basis().left_charge(j)),
+                                          pb_right(A.basis().right_charge(i), B.basis().right_charge(j)),
+                                          A.basis().left_size(i), B.basis().left_size(j),
+                                          A.basis().right_size(i), B.basis().right_size(j));
 
             C.match_and_add_block(tmp, new_left, new_right);
         }

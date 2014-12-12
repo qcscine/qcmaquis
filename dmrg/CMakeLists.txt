@@ -31,7 +31,7 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 set(AMBIENT_SOURCES_DIR "../ambient" CACHE STRINGS "Location of the ambient source tree")
 
 set(BUILD_SYMMETRIES "U1;TwoU1;TwoU1PG;TwoU1LPGNONE" CACHE STRINGS "List of
-symmetry to include in the build objects. U1, TwoU1, TwoU1PG, TwoU1LPG, NU1, Z2 and NONE are currently available.")
+symmetry to include in the build objects. U1, TwoU1, TwoU1PG, TwoU1LPG, NU1, Z2, SU2U1, SU2U1PG and NONE are currently available.")
 set(DMRG_NUMSYMM 6 CACHE INT "Maximum number of U1 symmetries.")
 
 option(ENABLE_ALPS_MODELS "Enable binding with ALPS lattices and models" ON)
@@ -64,6 +64,68 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_C_FLAGS_RELEASE " ${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "CMAKE_C_FLAGS_RELEASE: Flags used by the compiler during release builds" FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 message(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
+
+
+######################################################################
+# Symmetries management
+######################################################################
+
+macro(get_symm_suffix RET SYMM)
+  set(${RET} ${SYMM})
+  string(REGEX REPLACE "^U1$" "u1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^TWOU1$" "2u1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^TwoU1$" "2u1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^NU1$"  "nu1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^TWOU1PG$" "2u1pg" ${RET} ${${RET}})
+  string(REGEX REPLACE "^TwoU1PG$" "2u1pg" ${RET} ${${RET}})
+  string(REGEX REPLACE "^NONE$" "none" ${RET} ${${RET}})
+  string(REGEX REPLACE "^Z2$" "Ztwo" ${RET} ${${RET}})
+  string(REGEX REPLACE "^SU2U1$" "su2u1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^SU2U1PG$" "su2u1pg" ${RET} ${${RET}})
+endmacro(get_symm_suffix)
+
+macro(get_symm_group_name RET SYMM)
+  set(${RET} ${SYMM})
+  string(REGEX REPLACE "^U1$" "U1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^TWOU1$" "TwoU1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^TwoU1$" "TwoU1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^NU1$"  "NU1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^TWOU1PG$" "TwoU1PG" ${RET} ${${RET}})
+  string(REGEX REPLACE "^TwoU1PG$" "TwoU1PG" ${RET} ${${RET}})
+  string(REGEX REPLACE "^NONE$" "TrivialGroup" ${RET} ${${RET}})
+  string(REGEX REPLACE "^Z2$" "Ztwo" ${RET} ${${RET}})
+  string(REGEX REPLACE "^SU2U1$" "SU2U1" ${RET} ${${RET}})
+  string(REGEX REPLACE "^SU2U1PG$" "SU2U1PG" ${RET} ${${RET}})
+endmacro(get_symm_group_name)
+
+macro(get_symm_files TYPE RET FILEBASE)
+  if(NOT ${TYPE} STREQUAL "APPEND")
+    set(${RET} "")
+  endif(NOT ${TYPE} STREQUAL "APPEND")
+  foreach(SYMM ${BUILD_SYMMETRIES})
+    get_symm_suffix(SYMM_SUFFIX ${SYMM})
+    string(REPLACE "{SYMM}" ${SYMM_SUFFIX} SYMM_FILE ${FILEBASE})
+    list(APPEND ${RET} ${SYMM_FILE})
+  endforeach(SYMM)
+endmacro(get_symm_files)
+
+macro(configure_symm_file INPUT OUTBASE VARNAME)
+  foreach(SYMM ${BUILD_SYMMETRIES})
+    get_symm_suffix(SYMM_SUFFIX ${SYMM})
+    get_symm_group_name(${VARNAME} ${SYMM})
+    string(REPLACE "{SYMM}" ${SYMM_SUFFIX} SYMM_FILE ${OUTBASE})
+    configure_file(${INPUT} ${SYMM_FILE})
+  endforeach(SYMM)
+endmacro(configure_symm_file)
+
+
+# Adding symmetries definitions
+foreach(SYMM ${BUILD_SYMMETRIES})
+  get_symm_group_name(SYMM_NAME ${SYMM})
+  message(STATUS "Enabling ${SYMM_NAME} symmetry.")
+  list(APPEND DMRG_DEFINITIONS -DHAVE_${SYMM_NAME})
+  set(DMRG_HAS_${SYMM_NAME} TRUE)
+endforeach(SYMM)
 
 
 ######################################################################
@@ -114,6 +176,11 @@ message(STATUS "Boost include: ${MAQUIS_Boost_INCLUDE_DIRS}")
 message(STATUS "Boost libs: ${MAQUIS_Boost_LIBRARIES}")
 message(STATUS "Boost unit_test: ${MAQUIS_Boost_UNIT_TEST_FRAMEWORK_LIBRARY}")
 
+# GSL
+# find GNU Scientific Library if using SU2 Groups
+if((DMRG_HAS_SU2U1) OR (DMRG_HAS_SU2U1PG))
+  find_package(GSL REQUIRED)
+endif()
 
 # BLAS/LAPACK selector
 if(NOT USE_AMBIENT)
@@ -215,8 +282,9 @@ MESSAGE(STATUS "DMRG version: ${DMRG_VERSION}")
 
 set(DMRG_INCLUDE_DIRS ${MAQUIS_Boost_INCLUDE_DIRS})
 set(DMRG_LIBRARY_DIRS ${MAQUIS_Boost_LIBRARY_DIRS})
-set(DMRG_DEFINITIONS)
-set(DMRG_LIBRARIES alps ${MAQUIS_Boost_LIBRARIES} ${HDF5_LIBRARIES})
+#set(DMRG_DEFINITIONS)
+set(DMRG_LIBRARIES alps ${MAQUIS_Boost_LIBRARIES} ${HDF5_LIBRARIES}
+${GSL_LIBRARIES})
 if(USE_AMBIENT)
   list(APPEND DMRG_LIBRARIES ${AMBIENT_LIBRARIES})
 else()

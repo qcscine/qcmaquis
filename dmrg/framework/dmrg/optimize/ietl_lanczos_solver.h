@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -109,7 +109,7 @@ namespace ietl
               MPSTensor<Matrix, SymmGroup> const & x,
               MPSTensor<Matrix, SymmGroup> & y)
     {  
-        y = contraction::site_hamil2(x, H.left, H.right, H.mpo);
+        y = contraction::Engine<Matrix, Matrix, SymmGroup>::site_hamil2(x, H.left, H.right, H.mpo);
         x.make_left_paired();
     }
     

@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Alexandr Kosenkov <alex.kosenkov@gmail.com>
  *                            Timothee Ewart <timothee.ewart@gmail.com>
  * 
@@ -51,9 +51,9 @@ namespace maquis { namespace dmrg { namespace detail {
 
     template <class M>
     inline void reshape_l2b(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in,
-                     size_t in_left_offset, size_t in_phys_offset, 
-                     size_t out_left_offset, size_t out_right_offset,
-                     size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+                            size_t in_left_offset, size_t in_phys_offset, 
+                            size_t out_left_offset, size_t out_right_offset,
+                            size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
         size_t in_y_offset  = in_left_offset + ldim*in_phys_offset;
         size_t out_y_offset = out_left_offset;
@@ -71,9 +71,9 @@ namespace maquis { namespace dmrg { namespace detail {
 
     template <class M>
     inline void reshape_b2l(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in,
-                     size_t in_left_offset, size_t in_right_offset, 
-                     size_t out_left_offset, size_t out_phys_offset,
-                     size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+                            size_t in_left_offset, size_t in_right_offset, 
+                            size_t out_left_offset, size_t out_phys_offset,
+                            size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
         size_t in_y_offset  = in_left_offset;
         size_t out_y_offset = out_left_offset + out_phys_offset*ldim;
@@ -85,6 +85,27 @@ namespace maquis { namespace dmrg { namespace detail {
                            out, out_y_offset, 0, 
                            ldim, rdim);
                 out_y_offset += ldim;
+            }
+            in_y_offset += ldim;
+        }
+    }
+
+    template <class M>
+    inline void reshape_b2r(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in,
+                            size_t in_left_offset, size_t in_right_offset, 
+                            size_t out_right_offset, size_t out_phys_offset,
+                            size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        size_t in_y_offset  = in_left_offset;
+        size_t out_x_offset = out_right_offset + out_phys_offset*rdim;
+
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1){
+            for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+            {
+                copy_block(in, in_y_offset, in_right_offset + rdim*ss2,
+                           out, 0, out_x_offset,
+                           ldim, rdim);
+                out_x_offset += rdim;
             }
             in_y_offset += ldim;
         }
@@ -167,7 +188,7 @@ namespace maquis { namespace dmrg { namespace detail {
                 ambient::numeric::kernels::template round_square<value_type>(set[k][kk], v_ptr);
             }
         }
-        ambient::sync();
+        parallel::sync();
 
         std::vector<double> ret;
         for(size_t k = 0; k < nblocks; ++k)

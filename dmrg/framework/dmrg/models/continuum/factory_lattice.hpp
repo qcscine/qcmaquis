@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -24,6 +24,9 @@
  *
  *****************************************************************************/
 
+#ifndef MAQUIS_DMRG_MODELS_CONTINUUM_FACTORY_LATTICE_H
+#define MAQUIS_DMRG_MODELS_CONTINUUM_FACTORY_LATTICE_H
+
 #include "dmrg/models/continuum/lattice.hpp"
 
 inline boost::shared_ptr<lattice_impl> cont_lattice_factory (BaseParameters & parms)
@@ -40,3 +43,5 @@ inline boost::shared_ptr<lattice_impl> cont_lattice_factory (BaseParameters & pa
         throw std::runtime_error("Don't know this lattice!");
     }
 }
+
+#endif

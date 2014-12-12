@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -52,16 +52,19 @@ using std::endl;
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
 
-#ifdef USE_TWOU1
+#if defined(USE_TWOU1)
 typedef TwoU1 grp;
-#else
-#ifdef USE_NONE
+#elif defined(USE_TWOU1PG)
+typedef TwoU1PG grp;
+#elif defined(USE_SU2U1)
+typedef SU2U1 grp;
+#elif defined(USE_SU2U1PG)
+typedef SU2U1PG grp;
+#elif defined(USE_NONE)
 typedef TrivialGroup grp;
-#else
+#elif defined(USE_U1)
 typedef U1 grp;
 #endif
-#endif
-
 
 int main(int argc, char ** argv)
 {

@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -123,9 +123,10 @@ size_t MPS<Matrix, SymmGroup>::canonization(bool search) const
 template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::normalize_left()
 {
+    parallel::scheduler_balanced scheduler(length());
     canonize(length()-1);
     // now state is: A A A A A A M
-    select_proc(ambient::scope::balance(length()-1,length()));
+    parallel::guard proc(scheduler(length()-1));
     block_matrix<Matrix, SymmGroup> t = (*this)[length()-1].normalize_left(DefaultSolver());
     // now state is: A A A A A A A
     canonized_i = length()-1;
@@ -134,9 +135,10 @@ void MPS<Matrix, SymmGroup>::normalize_left()
 template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::normalize_right()
 {
+    parallel::scheduler_balanced scheduler(length());
     canonize(0);
     // now state is: M B B B B B B
-    select_proc(ambient::scope::balance(0,length()));
+    parallel::guard proc(scheduler(0));
     block_matrix<Matrix, SymmGroup> t = (*this)[0].normalize_right(DefaultSolver());
     // now state is: B B B B B B B
     canonized_i = 0;
@@ -168,6 +170,8 @@ void MPS<Matrix, SymmGroup>::canonize(std::size_t center, DecompMethod method)
 template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2, DecompMethod method)
 {
+    parallel::scheduler_balanced scheduler(length());
+
     size_t tmp_i = canonized_i;
     for (int i = p1; i < std::min(p2, length()); ++i)
     {
@@ -175,11 +179,11 @@ void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2, Decomp
             continue;
         block_matrix<Matrix, SymmGroup> t;
         {
-            select_proc(ambient::scope::balance(i,length()));
+            parallel::guard proc(scheduler(i));
             t = (*this)[i].normalize_left(method);
         }
         if (i < length()-1) {
-            select_proc(ambient::scope::balance(i+1,length()));
+            parallel::guard proc(scheduler(i+1));
             (*this)[i+1].multiply_from_left(t);
             (*this)[i+1].divide_by_scalar((*this)[i+1].scalar_norm());
         }
@@ -196,6 +200,8 @@ void MPS<Matrix, SymmGroup>::move_normalization_l2r(size_t p1, size_t p2, Decomp
 template<class Matrix, class SymmGroup>
 void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, DecompMethod method)
 {
+    parallel::scheduler_balanced scheduler(length());
+
     size_t tmp_i = canonized_i;
     for (int i = p1; i > static_cast<int>(std::max(p2, size_t(0))); --i)
     {
@@ -203,11 +209,11 @@ void MPS<Matrix, SymmGroup>::move_normalization_r2l(size_t p1, size_t p2, Decomp
             continue;
         block_matrix<Matrix, SymmGroup> t;
         {
-            select_proc(ambient::scope::balance(i,length()));
+            parallel::guard proc(scheduler(i));
             t = (*this)[i].normalize_right(method);
         }
         if (i > 0) {
-            select_proc(ambient::scope::balance(i-1,length()));
+            parallel::guard proc(scheduler(i-1));
             (*this)[i-1].multiply_from_right(t);
             (*this)[i-1].divide_by_scalar((*this)[i-1].scalar_norm());
         }
@@ -231,10 +237,10 @@ MPS<Matrix, SymmGroup>::grow_l2r_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
     truncation_results trunc;
     
     boost::tie(new_mps, trunc) =
-    contraction::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
+    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_l2r_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
     
-    (*this)[l+1] = contraction::predict_lanczos_l2r_sweep((*this)[l+1],
-                                                          (*this)[l], new_mps);
+    (*this)[l+1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_l2r_sweep((*this)[l+1],
+                                                    (*this)[l], new_mps);
     (*this)[l] = new_mps;
     return trunc;
 }
@@ -252,9 +258,9 @@ MPS<Matrix, SymmGroup>::grow_r2l_sweep(MPOTensor<Matrix, SymmGroup> const & mpo,
     truncation_results trunc;
     
     boost::tie(new_mps, trunc) =
-    contraction::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
+    contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_new_state_r2l_sweep((*this)[l], mpo, left, right, alpha, cutoff, Mmax);
     
-    (*this)[l-1] = contraction::predict_lanczos_r2l_sweep((*this)[l-1],
+    (*this)[l-1] = contraction::Engine<Matrix, OtherMatrix, SymmGroup>::predict_lanczos_r2l_sweep((*this)[l-1],
                                                           (*this)[l], new_mps);
     (*this)[l] = new_mps;
     return trunc;
@@ -270,6 +276,7 @@ MPS<Matrix, SymmGroup>::left_boundary() const
     for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
        maquis::dmrg::detail::left_right_boundary_init(ret[0][k]);
 
+    ret[0].index_sizes();
     return ret;
 }
 
@@ -287,6 +294,7 @@ MPS<Matrix, SymmGroup>::right_boundary() const
     for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
         maquis::dmrg::detail::left_right_boundary_init(ret[0][k]);
 
+    ret[0].index_sizes();
     return ret;
 }
 
@@ -299,9 +307,9 @@ void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& op, ty
     /// Compute (and check) charge difference
     charge diff = SymmGroup::IdentityCharge;
     if (op.n_blocks() > 0)
-        diff = SymmGroup::fuse(op.right_basis()[0].first, -op.left_basis()[0].first);
+        diff = SymmGroup::fuse(op.basis().right_charge(0), -op.basis().left_charge(0));
     for (size_t n=0; n< op.n_blocks(); ++n) {
-        if ( SymmGroup::fuse(op.right_basis()[n].first, -op.left_basis()[n].first) != diff )
+        if ( SymmGroup::fuse(op.basis().right_charge(n), -op.basis().left_charge(n)) != diff )
             throw std::runtime_error("Operator not allowed. All non-zero blocks have to provide same `diff`.");
     }
     
@@ -340,8 +348,9 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
     /// load tensors
     MPS<Matrix, SymmGroup> tmp(L);
     size_t loop_max = tmp.length();
+    parallel::scheduler_balanced scheduler(loop_max);
     for(size_t k = 0; k < loop_max; ++k){
-        select_proc(ambient::scope::balance(k,loop_max));
+        parallel::guard proc(scheduler(k));
         std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
         storage::archive ar(fname);
         ar["/tensor"] >> tmp[k];
@@ -352,39 +361,33 @@ void load(std::string const& dirname, MPS<Matrix, SymmGroup> & mps)
 template<class Matrix, class SymmGroup>
 void save(std::string const& dirname, MPS<Matrix, SymmGroup> const& mps)
 {
+    /// create chkp dir
+    if(parallel::master() && !boost::filesystem::exists(dirname))
+        boost::filesystem::create_directory(dirname);
+    
+    parallel::scheduler_balanced scheduler(mps.length());
     size_t loop_max = mps.length();
-#ifdef USE_AMBIENT
+
     for(size_t k = 0; k < loop_max; ++k){
-        {
-            select_proc(ambient::scope::balance(k,loop_max));
-            mps[k].make_left_paired();
-        }
-        {
-            select_group(ambient::scope::balance(k,loop_max),1);
-            storage::migrate(mps[k]);
-        }
+        parallel::guard proc(scheduler(k));
+        mps[k].make_left_paired();
+        storage::migrate(mps[k]);
     }
-    ambient::sync();
-#endif
+    parallel::sync();
+
     for(size_t k = 0; k < loop_max; ++k){
-#ifdef USE_AMBIENT
-        select_proc(ambient::scope::balance(k,loop_max));
-        if(!ambient::scope::local()) continue;
-#endif
+        parallel::guard proc(scheduler(k));
+        if(!parallel::local()) continue;
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5.new";
         storage::archive ar(fname, "w");
         ar["/tensor"] << mps[k];
     }
     
-#ifdef USE_AMBIENT
-    ambient::sync(); // be sure that chkp is in valid state before overwriting the old one.
-#endif
+    parallel::sync(); // be sure that chkp is in valid state before overwriting the old one.
     
-    omp_for(size_t k, range<size_t>(0,loop_max), {
-#ifdef USE_AMBIENT
-        select_proc(ambient::scope::balance(k,loop_max));
-        if(!ambient::scope::local()) continue;
-#endif
+    omp_for(size_t k, parallel::range<size_t>(0,loop_max), {
+        parallel::guard proc(scheduler(k));
+        if(!parallel::local()) continue;
         const std::string fname = dirname+"/mps"+boost::lexical_cast<std::string>((size_t)k)+".h5";
         boost::filesystem::rename(fname+".new", fname);
     });

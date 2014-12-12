@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -26,7 +26,7 @@
 
 #ifdef USE_AMBIENT
 #include <ambient/ambient.hpp>
-#include <ambient/numeric/future.hpp>
+#include <ambient/container/future.hpp>
 #endif
 
 #include "dmrg/utils/time_stopper.h"

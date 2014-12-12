@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -94,6 +94,14 @@ namespace dmrg {
         factory_map["Z2"] = ptr_type(new typename TR::template F<Ztwo>::type());
         maquis::cout << "Z2 ";
 #endif
+#ifdef HAVE_SU2U1
+        factory_map["su2u1"] = ptr_type(new typename TR::template F<SU2U1>::type());
+        maquis::cout << "su2u1 ";
+#endif
+#ifdef HAVE_SU2U1PG
+        factory_map["su2u1pg"] = ptr_type(new typename TR::template F<SU2U1PG>::type());
+        maquis::cout << "su2u1pg ";
+#endif
         maquis::cout << std::endl;
         
         
@@ -113,9 +121,8 @@ namespace dmrg {
             return factory_map[symm_name];
         else
             throw std::runtime_error("Don't know this symmetry group. Please, check your compilation flags.");
-#ifdef USE_AMBIENT
-        ambient::sync();
-#endif
+
+        parallel::sync();
         return ptr_type();
     }
 
