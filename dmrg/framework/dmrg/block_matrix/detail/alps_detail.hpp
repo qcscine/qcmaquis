@@ -165,7 +165,7 @@ namespace maquis { namespace dmrg { namespace detail {
             for(size_t rr = 0; rr < rdim; ++rr)
                 for(size_t ll = 0; ll < ldim; ++ll)
                     out(ll, in_right_offset + ss_out*rdim + rr) += 
-                    scale * in(ll, in_right_offset + ss_in*rdim+rr);
+                    scale * in(ll, in_right_offset + ss_in*rdim + rr);
         }
     }
     

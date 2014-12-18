@@ -274,27 +274,6 @@ namespace ts_reduction {
                                                            left_i[l].second, right_i[r].second);
                         }
 
-                        //for (int j = minj; j <= maxj; j+=2)
-                        //{
-                        //    maquis::cout << "    phys_c1, phys_c2 " << phys_c1 << phys_c2
-                        //                 << " access " << in_right_offset << "+" << in_phys_offset*right_i[r].second << "--" << right_i[r].second
-                        //                 << "  " << jl<<jr<<j<<S2<<S1<<jm << "  * ";
-
-                        //    value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
-                        //    coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
-
-                        //    maquis::cout << coupling_coeff << " (phase: " << ((((jl+jr+S1+S2)/2)%2)?-1:1) << ") "
-                        //                 << (in_phys_offset + shift + ((use_offset) ? j/2 : 0))*right_i[r].second << "  ";
-                        //    //std::copy(in_block.elements().first + in_right_offset + in_phys_offset*right_i[r].second,
-                        //    //          in_block.elements().first + in_right_offset + (in_phys_offset+1)*right_i[r].second,
-                        //    //          std::ostream_iterator<value_type>(maquis::cout, " "));
-                        //    maquis::cout << std::endl;
-
-                        //    maquis::dmrg::detail::reduce_r(out_block, in_block, coupling_coeff,
-                        //                                   in_right_offset, in_phys_offset, shift + ((use_offset) ? j/2 : 0),
-                        //                                   physical_i_left[s1].second, physical_i_right[s2].second,
-                        //                                   left_i[l].second, right_i[r].second);
-                        //} // j
                     } // S2
                 } // S1
             } // phys2
