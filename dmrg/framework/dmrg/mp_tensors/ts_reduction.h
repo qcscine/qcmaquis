@@ -174,6 +174,7 @@ namespace ts_reduction {
                 std::copy(m2[b].elements().first, m2[b].elements().second, std::back_inserter(vcopy));
             }
             std::sort(vcopy.begin(), vcopy.end());
+            maquis::cout << "Number of elements: " << vcopy.size() << std::endl;
             std::copy(vcopy.begin(), vcopy.end(), std::ostream_iterator<double>(maquis::cout, ", "));
             maquis::cout << std::endl;
         }
@@ -191,6 +192,7 @@ namespace ts_reduction {
         
         typedef std::size_t size_t;
         typedef typename SymmGroup::charge charge;
+        typedef typename Matrix::value_type value_type;
         
         Index<SymmGroup> phys2_i = physical_i_left*physical_i_right;
         ProductBasis<SymmGroup> phys_pb(physical_i_left, physical_i_right);
@@ -198,44 +200,29 @@ namespace ts_reduction {
                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
                                                              -boost::lambda::_1, boost::lambda::_2));
 
-        Index<SymmGroup> phys_out = phys2_i; // The output phys Index same charges, but only size-1 sectors
-        std::transform(phys_out.begin(), phys_out.end(), phys_out.begin(),
-                       boost::lambda::bind(&std::make_pair<charge, size_t>,
-                       boost::lambda::bind(&std::pair<charge, size_t>::first, boost::lambda::_1), 1) );
+        //std::transform(phys_out.begin(), phys_out.end(), phys_out.begin(),
+        //               boost::lambda::bind(&std::make_pair<charge, size_t>,
+        //               boost::lambda::bind(&std::pair<charge, size_t>::first, boost::lambda::_1), 1) );
         
-        ProductBasis<SymmGroup> out_right(phys_out, right_i,
-                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                              -boost::lambda::_1, boost::lambda::_2));
-
         maquis::cout << "physical_i_left: " << physical_i_left << std::endl;
         maquis::cout << "physical_i_right: " << physical_i_right << std::endl;
         maquis::cout << "left_i: " << left_i << std::endl;
         maquis::cout << "right_i: " << right_i << std::endl;
         maquis::cout << "phys2_i: " << phys2_i << std::endl;
-        maquis::cout << "phys_out: " << phys_out << std::endl << std::endl;
 
         for (size_t block = 0; block < m1.n_blocks(); ++block)
         {
             size_t l = left_i.position(m1.basis().left_charge(block));
             assert(l != left_i.size());
             charge lc = left_i[l].first;
-                  
-            size_t reduced_size=0;
-            for (size_t s = 0; s < phys2_i.size(); ++s)
-            {
-                charge s_charge = phys2_i[s].first;
-                size_t r = right_i.position(SymmGroup::fuse(m1.basis().right_charge(block), s_charge));
-                if(r == right_i.size()) continue;
-                reduced_size += right_i[r].second;
-            }
-            maquis::cout << "lcharge: " << lc << " right_size: " << m1.basis().right_size(block) << " red size " << reduced_size << std::endl;
+            maquis::cout << "lcharge: " << lc << " right_size: " << m1.basis().right_size(block) << std::endl;
 
             charge in_l_charge = lc;
             charge in_r_charge = m1.basis().right_charge(block);
             
-            maquis::cout << "inserting " << left_i[l].second << "x" << reduced_size << " " << in_l_charge << in_r_charge << std::endl;
+            maquis::cout << "inserting " << left_i[l].second << "x" << m1.basis().right_size(block) << " " << in_l_charge << in_r_charge << std::endl;
 
-            size_t o = m2.insert_block(new Matrix(left_i[l].second, reduced_size, 0) , in_l_charge, in_r_charge);
+            size_t o = m2.insert_block(new Matrix(left_i[l].second, m1.basis().right_size(block), 0) , in_l_charge, in_r_charge);
             Matrix const & in_block = m1[block];
             Matrix & out_block = m2[o];
 
@@ -247,9 +234,9 @@ namespace ts_reduction {
                 if(r == right_i.size()) continue;
 
                 size_t in_right_offset  = in_right(s_charge, right_i[r].first);
-                size_t out_right_offset = out_right(s_charge, right_i[r].first);
 
                 for (size_t s1 = 0; s1 < physical_i_left.size(); ++s1)
+                {
                     for (size_t s2 = 0; s2 < physical_i_right.size(); ++s2)
                     {
                         charge phys_c1 = physical_i_left[s1].first, phys_c2 = physical_i_right[s2].first;
@@ -257,39 +244,69 @@ namespace ts_reduction {
                         
                         size_t in_phys_offset = phys_pb(phys_c1, phys_c2);
 
-                        int jl,jm,jr,S1,S2,j;
-                        j = std::abs(s_charge[1]); S1 = std::abs(phys_c1[1]); S2 = std::abs(phys_c2[1]);
-                        jl = std::abs(in_l_charge[1]); jm = std::abs(lc[1] + phys_c1[1]); jr = std::abs(right_i[r].first[1]);
+                        int jl,jm,jr,S1,S2;
+                        S1 = std::abs(phys_c1[1]); S2 = std::abs(phys_c2[1]);
+                        jl = in_l_charge[1]; jm = lc[1] + phys_c1[1]; jr = right_i[r].first[1];
+                        if (jm < 0) continue;
 
-                        typename Matrix::value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
-                        coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
+                        int shift = 0;
+                        if ( (jl == jr) && (jl > 0) && (S1 == 1) && (S2 == 1) ) {
+                            if (phys_c1[1] < 0)
+                               shift = -1; 
 
-                        maquis::cout << "    phys_c1, phys_c2 " << phys_c1 << phys_c2
-                                     << " copy " << in_right_offset << "+" << in_phys_offset*right_i[r].second << "--" << right_i[r].second
-                                     << " to " << out_right_offset << "--" << right_i[r].second
-                                     << "  " << jl<<jr<<j<<S2<<S1<<jm << "  * " << coupling_coeff
-                                     << " (phase: " << ((((jl+jr+S1+S2)/2)%2)?-1:1) << ")" << std::endl;
-
-                        for (size_t ss1 = 0; ss1 < physical_i_left[s1].second; ++ss1)
-                            for (size_t ss2 = 0; ss2 < physical_i_right[s2].second; ++ss2)
-                            {
-                                size_t ss_out = in_phys_offset + ss1*physical_i_right[s2].second + ss2;
-                                for (size_t rr = 0; rr < right_i[r].second; ++rr)
-                                    for (size_t ll = 0; ll < left_i[l].second; ++ll)
-                                        out_block(ss1*left_i[l].second + ll, out_right_offset + ss2*right_i[r].second + rr)
-                                                    += coupling_coeff * in_block(ll, in_right_offset + ss_out*right_i[r].second + rr);
+                            int j = std::abs(S1-S2);
+                            for (int j = std::abs(S1-S2); j <= std::abs(S1+S2); j+=2) {
+                                value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
+                                coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
+                                maquis::dmrg::detail::reduce_r(out_block, in_block, coupling_coeff,
+                                                               in_right_offset, in_phys_offset, shift + j/2,
+                                                               physical_i_left[s1].second, physical_i_right[s2].second,
+                                                               left_i[l].second, right_i[r].second);
                             }
-                    }
-            }
+                        }
+                        else {
+                            int j = std::abs(phys_c1[1] + phys_c2[1]);
+                            value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
+                            coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
+                            maquis::dmrg::detail::reduce_r(out_block, in_block, coupling_coeff,
+                                                           in_right_offset, in_phys_offset, 0,
+                                                           physical_i_left[s1].second, physical_i_right[s2].second,
+                                                           left_i[l].second, right_i[r].second);
+                        }
+
+                        //for (int j = minj; j <= maxj; j+=2)
+                        //{
+                        //    maquis::cout << "    phys_c1, phys_c2 " << phys_c1 << phys_c2
+                        //                 << " access " << in_right_offset << "+" << in_phys_offset*right_i[r].second << "--" << right_i[r].second
+                        //                 << "  " << jl<<jr<<j<<S2<<S1<<jm << "  * ";
+
+                        //    value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
+                        //    coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
+
+                        //    maquis::cout << coupling_coeff << " (phase: " << ((((jl+jr+S1+S2)/2)%2)?-1:1) << ") "
+                        //                 << (in_phys_offset + shift + ((use_offset) ? j/2 : 0))*right_i[r].second << "  ";
+                        //    //std::copy(in_block.elements().first + in_right_offset + in_phys_offset*right_i[r].second,
+                        //    //          in_block.elements().first + in_right_offset + (in_phys_offset+1)*right_i[r].second,
+                        //    //          std::ostream_iterator<value_type>(maquis::cout, " "));
+                        //    maquis::cout << std::endl;
+
+                        //    maquis::dmrg::detail::reduce_r(out_block, in_block, coupling_coeff,
+                        //                                   in_right_offset, in_phys_offset, shift + ((use_offset) ? j/2 : 0),
+                        //                                   physical_i_left[s1].second, physical_i_right[s2].second,
+                        //                                   left_i[l].second, right_i[r].second);
+                        //} // j
+                    } // S2
+                } // S1
+            } // phys2
         } // m1 block
 
         maquis::cout << std::endl;
         print_values<typename Matrix::value_type, SymmGroup> p;
-        p(m1);
+        //p(m1);
         maquis::cout << std::endl;
         p(m2);
 
-        return phys_out;
+        return phys2_i;
     }
     
     /*
