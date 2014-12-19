@@ -161,8 +161,7 @@ MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_he
 {
     make_right_paired();
     block_matrix<Matrix, SymmGroup> tmp;
-    maquis::cout << "original\n" << data_ << std::endl;
-    Index<SymmGroup> phys_out = ts_reduction::reduce_to_right<Matrix, SymmGroup>(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
+    Index<SymmGroup> phys_out = ts_reduction::reduce_to_right(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
     return MPSTensor<Matrix, SymmGroup>(phys_out, left_i, right_i, tmp, RightPaired);
 }
 
@@ -428,9 +427,12 @@ TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator_sh
          //     assert( rhs.data().left_basis() == this->data().left_basis() &&
          // rhs.data().right_basis() == this->data().right_basis() );
     
+    block_matrix<Matrix, SymmGroup> tmp;
+    Index<SymmGroup> phys_out = ts_reduction::unreduce_left(phys_i_left, phys_i_right, left_i, right_i, rhs.data(), tmp);
     left_i = rhs.row_dim();
     right_i = rhs.col_dim();
-    this->data() = rhs.data();
+    phys_i = phys_out;
+    this->data() = tmp;
 
     return *this;
 }
