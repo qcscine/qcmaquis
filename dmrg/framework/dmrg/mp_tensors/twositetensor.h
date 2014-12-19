@@ -99,10 +99,16 @@ public:
     
 private:
     template <class SymmType> class type_helper { };
+
     template <class SymmType>
     MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<SymmType>) const;
 
     MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<symm_traits::SU2Tag>) const;
+
+    template <class SymmType>
+    TwoSiteTensor<Matrix, SymmGroup> & operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<SymmType>);
+
+    TwoSiteTensor<Matrix, SymmGroup> & operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<symm_traits::SU2Tag>);
 
     MultiIndex<SymmGroup> midx;
     set_id left_paired;

@@ -390,6 +390,13 @@ void TwoSiteTensor<Matrix, SymmGroup>::swap_with(TwoSiteTensor<Matrix, SymmGroup
 template<class Matrix, class SymmGroup>
 TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator << (MPSTensor<Matrix, SymmGroup> const & rhs)
 {
+    return operator_shift(rhs, type_helper<typename symm_traits::SymmType<SymmGroup>::type>());
+}
+
+template<class Matrix, class SymmGroup>
+template<class SymmType>
+TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<SymmType>)
+{
     cur_storage = TSLeftPaired;
     rhs.make_left_paired();
 
@@ -405,7 +412,25 @@ TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator <<
     this->data() = rhs.data();
 
     return *this;
-
 }
 
+template<class Matrix, class SymmGroup>
+TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs,
+                                                                                    type_helper<symm_traits::SU2Tag>)
+{
+    cur_storage = TSLeftPaired;
+    rhs.make_left_paired();
 
+    // Precondition: rhs.data() and this->data() have same shape if both are left_paired
+         //     assert( rhs.row_dim() == this->row_dim() &&
+         // rhs.col_dim() == this->col_dim() &&
+         // rhs.site_dim() == this->site_dim() );
+         //     assert( rhs.data().left_basis() == this->data().left_basis() &&
+         // rhs.data().right_basis() == this->data().right_basis() );
+    
+    left_i = rhs.row_dim();
+    right_i = rhs.col_dim();
+    this->data() = rhs.data();
+
+    return *this;
+}
