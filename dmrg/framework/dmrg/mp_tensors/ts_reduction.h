@@ -247,12 +247,11 @@ namespace ts_reduction {
                         jl = lc[1]; jm = lc[1] + phys_c1[1]; jr = right_i[r].first[1];
                         if (jm < 0) continue;
 
-                        int shift = 0;
                         if ( (jl == jr) && (jl > 0) && (S1 == 1) && (S2 == 1) ) {
+                            int shift = 0;
                             if (phys_c1[1] < 0)
                                shift = -1; 
 
-                            int j = std::abs(S1-S2);
                             for (int j = std::abs(S1-S2); j <= std::abs(S1+S2); j+=2) {
                                 value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
                                 coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
@@ -279,9 +278,9 @@ namespace ts_reduction {
 
         maquis::cout << std::endl;
         print_values<typename Matrix::value_type, SymmGroup> p;
-        //p(m1);
+        p(m1);
         maquis::cout << std::endl;
-        p(m2);
+        //p(m2);
 
         return phys2_i;
     }
@@ -335,28 +334,28 @@ namespace ts_reduction {
                         
                         size_t in_phys_offset = phys_pb(phys_c1, phys_c2);
 
-                        int jl,jm,jr,S1,S2;
+                        int jl,j,jr,S1,S2;
                         S1 = std::abs(phys_c1[1]); S2 = std::abs(phys_c2[1]);
-                        jl = left_i[l].first[1]; jm = jl + phys_c1[1]; jr = rc[1];
-                        if (jm < 0) continue;
+                        jl = left_i[l].first[1]; jr = rc[1];
 
-                        int shift = 0;
                         if ( (jl == jr) && (jl > 0) && (S1 == 1) && (S2 == 1) ) {
-                            if (phys_c1[1] < 0)
-                               shift = -1; 
+                            int j = ((phys_c1[1]==1) ? 0 : 2);
+                            int shift = 0;
+                            if (j==0) shift = 1;
 
-                            int j = std::abs(S1-S2);
-                            for (int j = std::abs(S1-S2); j <= std::abs(S1+S2); j+=2) {
+                            for (int jm = std::abs(S1-S2); jm <= std::abs(S1+S2); jm+=2) {
                                 value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
                                 coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
                                 maquis::dmrg::detail::reduce_l(out_block, in_block, coupling_coeff,
-                                                               in_left_offset, in_phys_offset, shift + j/2,
+                                                               in_left_offset, in_phys_offset, shift - jm/2,
                                                                physical_i_left[s1].second, physical_i_right[s2].second,
                                                                left_i[l].second, right_size);
                             }
                         }
                         else {
                             int j = std::abs(phys_c1[1] + phys_c2[1]);
+                            int jm = jl + phys_c1[1];
+                            if (jm < 0) continue;
                             value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
                             coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
                             maquis::dmrg::detail::reduce_l(out_block, in_block, coupling_coeff,

@@ -79,8 +79,9 @@ int main(int argc, char ** argv)
 
         TwoSiteTensor<Matrix, grp> ts(mps[1], mps[2]);        
         MPSTensor<Matrix, grp> mpstensor = ts.make_mps();
-        //mpstensor.make_left_paired();
-        mpstensor.make_right_paired();
+        mpstensor.make_left_paired();
+        //mpstensor.make_right_paired();
+        ts << mpstensor;
         
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
