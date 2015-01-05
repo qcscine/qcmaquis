@@ -28,6 +28,8 @@
 #ifndef ABELIAN_SITE_HAMIL
 #define ABELIAN_SITE_HAMIL
 
+#include "dmrg/mp_tensors/contractions/non-abelian/su2gemm.h"
+
 namespace contraction {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
@@ -41,8 +43,25 @@ namespace contraction {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
+		//DEBUG
+		maquis::cout << "\n*****************ENTERING SITE_HAMIL2*****************\n";
+		maquis::cout << "Left boundary:\n";
+		for (int i = 0; i < left.aux_dim(); i++) {
+			maquis::cout << left[i].basis() << std::endl;
+		}
+		maquis::cout << "Right boundary:\n";
+		for (int i = 0; i < right.aux_dim(); i++) {
+			maquis::cout << right[i].basis() << std::endl;
+		}
+		maquis::cout << "MPSTensor:\n" << ket_tensor.data().basis() << std::endl;
+
         std::vector<block_matrix<Matrix, SymmGroup> > t
-            = common::boundary_times_mps<Matrix, OtherMatrix, SymmGroup, Gemms>(ket_tensor, left, mpo);
+            = common::boundary_times_mps<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(ket_tensor, left, mpo);
+		
+		maquis::cout << "LtB:\n";
+		for (int i = 0; i < t.size(); i++) {
+			maquis::cout << t[i].basis() << std::endl;
+		}
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
                                & left_i = ket_tensor.row_dim(),
@@ -56,6 +75,12 @@ namespace contraction {
         MPSTensor<Matrix, SymmGroup> ret;
         ret.phys_i = ket_tensor.site_dim(); ret.left_i = ket_tensor.row_dim(); ret.right_i = ket_tensor.col_dim();
         index_type loop_max = mpo.col_dim();
+
+		//DEBUG
+		//maquis::cout << "BOUNDARY TIMES MPS\n";
+		//for (int i = 0; i < t.size(); i++) {
+		//	maquis::cout << t[i];
+		//}
 
 #ifdef USE_AMBIENT
         {
@@ -80,14 +105,22 @@ namespace contraction {
         omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
             abelian::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
-            block_matrix<Matrix, SymmGroup> tmp;
-            gemm(contr_grid(0,0), right[b2], tmp);
+			maquis::cout << "CONTRACTION_GRID(" << b2 << ")\n" << contr_grid(0,0);
+			maquis::cout << "RIGHT(" << b2 << ")\n" << right[b2];
+			block_matrix<Matrix, SymmGroup> tmp;
+            ::SU2::gemm(contr_grid(0,0), right[b2], tmp);
             contr_grid(0,0).clear();
+			maquis::cout << "CONT_GRID(" << b2 << ") * RIGHT(" << b2 << ")\n" << tmp;
             parallel_critical
-            for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
-                ret.data().match_and_add_block(tmp[k], tmp.basis().left_charge(k), tmp.basis().right_charge(k));
+            for (std::size_t k = 0; k < tmp.n_blocks(); ++k){ 
+				if(tmp.basis().left_charge(k) == tmp.basis().right_charge(k))
+                	ret.data().match_and_add_block(tmp[k], tmp.basis().left_charge(k), tmp.basis().right_charge(k));
+			}
         });
 #endif
+
+		//DEBUG
+		maquis::cout << "*****************LEAVING SITE_HAMIL2*****************\n\n";
         return ret;
     }
 

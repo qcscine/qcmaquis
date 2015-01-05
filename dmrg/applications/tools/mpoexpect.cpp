@@ -206,7 +206,7 @@ MPO<Matrix, grp> make_mpo_4(int i, int j, int k, int l, std::vector<int> site_ir
         } else if (p==k) {
             op.set(0,0, create_unbarred, 1.0);
         } else if (p==l) {
-            op.set(0,0, destroy_barred_fill, -1.0);
+            op.set(0,0, destroy_barred_fill, 1.0);
         } else if ( (l < p && p < j) || (k < p && p < i) ) {
             if  ( p < site_irreps.size() /2  )
                 op.set(0,0, fill_unbarred, 1.0);
@@ -390,6 +390,58 @@ MPO<Matrix, grp> make_mpo_2(int i, int j, int k, int l, std::vector<int> site_ir
             else
                 op.set(0,0, ident_barred, 1.0);
         }
+        ret[p] = op;
+    }
+    return ret;
+}
+
+template<class Matrix>
+MPO<Matrix, grp> make_onsite(int i, std::vector<int> site_irreps)
+{
+    typedef block_matrix<Matrix, grp> op_t;
+    MPO<Matrix, grp> ret(site_irreps.size());
+    for (int p=0; p<site_irreps.size(); ++p)
+    {
+        typedef tag_detail::tag_type tag_type;
+        typename grp::charge A(0), B(0), C(0);
+        B[0]=1; C[1]=1;
+        B[2] = site_irreps[p];
+        C[2] = site_irreps[p];
+
+        block_matrix<Matrix, grp> ident_unbarred;
+        ident_unbarred.insert_block(Matrix(1,1,1), A, A);
+        ident_unbarred.insert_block(Matrix(1,1,1), B, B);
+
+        block_matrix<Matrix, grp> ident_barred;
+        ident_barred.insert_block(Matrix(1,1,1), A, A);
+        ident_barred.insert_block(Matrix(1,1,1), C, C);
+
+        /***********************************************/
+
+        op_t count_unbarred;
+        count_unbarred.insert_block(Matrix(1,1,1), B, B);
+
+        op_t count_barred;
+        count_barred.insert_block(Matrix(1,1,1), C, C);
+
+        /***********************************************/
+
+        MPOTensor<Matrix, grp> op(1,1);
+        int half_lattice = (site_irreps.size()/2)-1;
+
+        if (p==i) {
+            if (i < site_irreps.size() / 2)
+                op.set(0,0, count_unbarred, 1.0);
+            else
+                op.set(0,0, count_barred, 1.0);
+        }
+        else {
+            if (p < site_irreps.size() / 2)
+                op.set(0,0, ident_unbarred, 1.0);
+            else
+                op.set(0,0, ident_barred, 1.0);
+        }
+
         ret[p] = op;
     }
     return ret;
@@ -668,7 +720,18 @@ int main(int argc, char ** argv)
 
         MPO<matrix,grp> mpo = make_mpo_4<matrix>(2,7,0,5,site_irreps);
         double expectation_value = expval(mps,mpo,false);
+		maquis::cout << std::setprecision(30);
         maquis::cout << "3 8 1 6: " << expectation_value << std::endl;
+
+        mpo = make_mpo_4<matrix>(2,7,0,5,site_irreps);
+        expectation_value = expval_reversed(mps,mpo,false);
+		maquis::cout << std::setprecision(30);
+        maquis::cout << "3 8 1 6: " << expectation_value << std::endl;
+
+        mpo = make_onsite<matrix>(0,site_irreps);
+        expectation_value = expval(mps,mpo,false);
+		maquis::cout << std::setprecision(30);
+        maquis::cout << "on site 0 t00: " << expectation_value << std::endl;
 
         double exp_norm = norm(mps);
         maquis::cout << "norm: " << exp_norm << std::endl;
@@ -677,9 +740,9 @@ int main(int argc, char ** argv)
         //double expectation_value = expval(mps,mpo,false);
         //maquis::cout << "18 2 16 1: " << expectation_value << std::endl;
 
-        //mpo = make_mpo_4<matrix>(6,12,4,9,site_irreps);
+        //mpo = make_mpo_4<matrix>(4,14,3,9,site_irreps);
         //expectation_value = expval(mps,mpo,false);
-        //maquis::cout << "7 13 5 10: " << expectation_value << std::endl;
+        //maquis::cout << "5 15 4 10: " << expectation_value << std::endl;
 
         //mpo = make_mpo_5<matrix>(13,1,4,9,site_irreps);
         //expectation_value = expval(mps,mpo,false);

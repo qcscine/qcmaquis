@@ -30,11 +30,12 @@ create_tools_symm_target("mps_reflect_2u1"  "TWOU1"  "mps_reflect.cpp"  "${DMRG_
 create_tools_symm_target("mps_stats_u1"   "U1"     "mps_stats.cpp"  "${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mps_stats_2u1"  "TWOU1"  "mps_stats.cpp"  "${DMRG_APP_LIBRARIES}")
 
-create_tools_symm_target("mpo_stats_u1"      "U1"      "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mpo_stats_2u1"     "TWOU1"   "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mpo_stats_2u1pg"   "TWOU1PG" "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mpo_stats_su2u1"   "SU2U1"   "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mpo_stats_su2u1pg" "SU2U1PG" "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_u1"      "U1"       "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_2u1"     "TWOU1"    "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_2u1pg"   "TWOU1PG"  "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_2u1lpg"  "TWOU1LPG" "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_su2u1"   "SU2U1"    "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_su2u1pg" "SU2U1PG"  "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 
 create_tools_symm_target("mps_upgrade_u1"   "U1"     "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
@@ -58,11 +59,11 @@ if(DMRG_HAS_TwoU1LPG)
   set_target_properties(mps_print PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1LPG")
 endif(DMRG_HAS_TwoU1LPG)
 
-if(DMRG_HAS_TwoU1LPG)
-  add_executable(twoprdm two_particles_rdm.cpp)
-  target_link_libraries(twoprdm ${DMRG_APP_LIBRARIES})
-  set_target_properties(twoprdm PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1LPG")
-endif(DMRG_HAS_TwoU1LPG)
+#if(DMRG_HAS_TwoU1LPG)
+#  add_executable(mpo_print mps_stats.cpp)
+#  target_link_libraries(mpo_print ${DMRG_APP_LIBRARIES})
+#  set_target_properties(mpo_print PROPERTIES COMPILE_DEFINITIONS "USE_TWOU1LPG")
+#endif(DMRG_HAS_TwoU1LPG)
 
 if(USE_AMBIENT)
   ## enable only if needed, and with a revision < r3578

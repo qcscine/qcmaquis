@@ -70,11 +70,13 @@ int main(int argc, char ** argv)
         std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(std::cout, " "));
         std::cout << std::endl;
 
-        std::cout << "Printing left paired mps:" << std::endl;
+        std::cout << "Printing mps, first left paired and then right paired:" << std::endl;
         for (int i=0; i < L; ++i) {
             std::cout << "################## SITE " << i << " ##################\n" << std::endl;
             MPSTensor<matrix, grp> tmp(mps[i]);
             tmp.make_left_paired();
+            std::cout << tmp;
+            tmp.make_right_paired();
             std::cout << tmp;
         }
 

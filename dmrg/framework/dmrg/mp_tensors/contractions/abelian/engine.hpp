@@ -31,6 +31,7 @@
 
 #include "dmrg/mp_tensors/contractions/abelian/apply_op.hpp"
 #include "dmrg/mp_tensors/contractions/common/common.h"
+#include "dmrg/mp_tensors/contractions/non-abelian/su2gemm.h"
 
 namespace contraction {
 
@@ -124,7 +125,7 @@ namespace contraction {
                           block_matrix<OtherMatrix, SymmGroup> const & left,
                           block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
         {
-            return common::overlap_left_step<Matrix, OtherMatrix, SymmGroup, Gemms>(bra_tensor, ket_tensor, left, localop);
+            return common::overlap_left_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(bra_tensor, ket_tensor, left, localop);
         }
 
         static block_matrix<OtherMatrix, SymmGroup>
@@ -133,7 +134,7 @@ namespace contraction {
                            block_matrix<OtherMatrix, SymmGroup> const & right,
                            block_matrix<OtherMatrix, SymmGroup> * localop = NULL)
         {
-            return common::overlap_right_step<Matrix, OtherMatrix, SymmGroup, Gemms>(bra_tensor, ket_tensor, right, localop);
+            return common::overlap_right_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(bra_tensor, ket_tensor, right, localop);
         }
 
         static Boundary<Matrix, SymmGroup>
@@ -142,7 +143,7 @@ namespace contraction {
                                  MPOTensor<Matrix, SymmGroup> const & mpo,
                                  Index<SymmGroup> const * in_low = NULL)
         {
-            return common::left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemms, lbtm_functor>
+            return common::left_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, lbtm_functor>
                    (mps, left, mpo, in_low);
         }
 
@@ -152,7 +153,7 @@ namespace contraction {
                                   MPOTensor<Matrix, SymmGroup> const & mpo,
                                   Index<SymmGroup> const * in_low = NULL)
         {
-            return common::right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, Gemms, rbtm_functor>
+            return common::right_boundary_tensor_mpo<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>
                    (mps, right, mpo, in_low);
         }
 
@@ -162,7 +163,7 @@ namespace contraction {
                               Boundary<OtherMatrix, SymmGroup> const & left,
                               MPOTensor<Matrix, SymmGroup> const & mpo)
         {
-            return common::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, Gemms, lbtm_functor>
+            return common::overlap_mpo_left_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, lbtm_functor>
                    (bra_tensor, ket_tensor, left, mpo);
         }
 
@@ -172,7 +173,7 @@ namespace contraction {
                                Boundary<OtherMatrix, SymmGroup> const & right,
                                MPOTensor<Matrix, SymmGroup> const & mpo)
         {
-            return common::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, Gemms, rbtm_functor>
+            return common::overlap_mpo_right_step<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>
                    (bra_tensor, ket_tensor, right, mpo);
         }
 
@@ -183,7 +184,7 @@ namespace contraction {
                                     Boundary<OtherMatrix, SymmGroup> const & right,
                                     double alpha, double cutoff, std::size_t Mmax)
         {
-            return common::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, Gemms, lbtm_functor>
+            return common::predict_new_state_l2r_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, lbtm_functor>
                    (mps, mpo, left, right, alpha, cutoff, Mmax);
         }
 
@@ -192,7 +193,7 @@ namespace contraction {
                                   MPSTensor<Matrix, SymmGroup> const & psi,
                                   MPSTensor<Matrix, SymmGroup> const & A)
         {
-            return common::predict_lanczos_l2r_sweep<Matrix, OtherMatrix, SymmGroup, Gemms>(B, psi, A);
+            return common::predict_lanczos_l2r_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(B, psi, A);
         }
 
         static std::pair<MPSTensor<Matrix, SymmGroup>, truncation_results>
@@ -202,7 +203,7 @@ namespace contraction {
                                     Boundary<OtherMatrix, SymmGroup> const & right,
                                     double alpha, double cutoff, std::size_t Mmax)
         {
-            return common::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, Gemms, rbtm_functor>
+            return common::predict_new_state_r2l_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms, rbtm_functor>
                    (mps, mpo, left, right, alpha, cutoff, Mmax);
         }
 
@@ -211,7 +212,7 @@ namespace contraction {
                                   MPSTensor<Matrix, SymmGroup> const & psi,
                                   MPSTensor<Matrix, SymmGroup> const & A)
         {
-            return common::predict_lanczos_r2l_sweep<Matrix, OtherMatrix, SymmGroup, Gemms>(B, psi, A);
+            return common::predict_lanczos_r2l_sweep<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(B, psi, A);
         }
 
         // non-generic method
