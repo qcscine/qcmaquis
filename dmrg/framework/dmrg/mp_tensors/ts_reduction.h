@@ -276,10 +276,10 @@ namespace ts_reduction {
             } // phys2
         } // m1 block
 
-        maquis::cout << std::endl;
-        print_values<typename Matrix::value_type, SymmGroup> p;
-        p(m1);
-        maquis::cout << std::endl;
+        //maquis::cout << std::endl;
+        //print_values<typename Matrix::value_type, SymmGroup> p;
+        //p(m1);
+        //maquis::cout << std::endl;
         //p(m2);
 
         return phys2_i;
