@@ -119,8 +119,6 @@ namespace SU2 {
                         int j  = mc[1], jp  = out_r_charge[1];
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
-                        //typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, left[b1].spin.get(),W.spin.get(),ret.spin.get(), i, two_sp, ip);
-                        typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                         if (std::abs(coupling_coeff) < 1.e-40) continue;
                         coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
 
