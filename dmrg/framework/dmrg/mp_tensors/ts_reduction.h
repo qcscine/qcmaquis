@@ -204,20 +204,20 @@ namespace ts_reduction {
         //               boost::lambda::bind(&std::make_pair<charge, size_t>,
         //               boost::lambda::bind(&std::pair<charge, size_t>::first, boost::lambda::_1), 1) );
         
-        maquis::cout << "physical_i_left: " << physical_i_left << std::endl;
-        maquis::cout << "physical_i_right: " << physical_i_right << std::endl;
-        maquis::cout << "left_i: " << left_i << std::endl;
-        maquis::cout << "right_i: " << right_i << std::endl;
-        maquis::cout << "phys2_i: " << phys2_i << std::endl;
+        //maquis::cout << "physical_i_left: " << physical_i_left << std::endl;
+        //maquis::cout << "physical_i_right: " << physical_i_right << std::endl;
+        //maquis::cout << "left_i: " << left_i << std::endl;
+        //maquis::cout << "right_i: " << right_i << std::endl;
+        //maquis::cout << "phys2_i: " << phys2_i << std::endl;
 
         for (size_t block = 0; block < m1.n_blocks(); ++block)
         {
             charge lc = m1.basis().left_charge(block);
             size_t left_size = m1.basis().left_size(block);
-            maquis::cout << "lcharge: " << lc << " right_size: " << m1.basis().right_size(block) << std::endl;
+            //maquis::cout << "lcharge: " << lc << " right_size: " << m1.basis().right_size(block) << std::endl;
 
             charge in_r_charge = m1.basis().right_charge(block);
-            maquis::cout << "inserting " << left_size << "x" << m1.basis().right_size(block) << " " << lc << in_r_charge << std::endl;
+            //maquis::cout << "inserting " << left_size << "x" << m1.basis().right_size(block) << " " << lc << in_r_charge << std::endl;
 
             size_t o = m2.insert_block(new Matrix(left_size, m1.basis().right_size(block), 0) , lc, in_r_charge);
             Matrix const & in_block = m1[block];
@@ -226,7 +226,7 @@ namespace ts_reduction {
             for (size_t s = 0; s < phys2_i.size(); ++s)
             {
                 charge s_charge = phys2_i[s].first;
-                maquis::cout << "  s_charge: " << s_charge << std::endl;;
+                //maquis::cout << "  s_charge: " << s_charge << std::endl;;
                 size_t r = right_i.position(SymmGroup::fuse(in_r_charge, s_charge));
                 if(r == right_i.size()) continue;
 
@@ -310,7 +310,7 @@ namespace ts_reduction {
 
             charge in_l_charge = m1.basis().left_charge(block);
             
-            maquis::cout << "inserting " << m1.basis().left_size(block) << "x" << right_size << " " << in_l_charge << rc << std::endl;
+            //maquis::cout << "inserting " << m1.basis().left_size(block) << "x" << right_size << " " << in_l_charge << rc << std::endl;
 
             size_t o = m2.insert_block(new Matrix(m1.basis().left_size(block), right_size, 0) , in_l_charge, rc);
             Matrix const & in_block = m1[block];
@@ -319,7 +319,7 @@ namespace ts_reduction {
             for (size_t s = 0; s < phys2_i.size(); ++s)
             {
                 charge s_charge = phys2_i[s].first;
-                maquis::cout << "  s_charge: " << s_charge << std::endl;;
+                //maquis::cout << "  s_charge: " << s_charge << std::endl;;
                 size_t l = left_i.position(SymmGroup::fuse(in_l_charge, -s_charge));
                 if(l == left_i.size()) continue;
 
@@ -369,11 +369,11 @@ namespace ts_reduction {
             } // phys2
         } // m1 block
 
-        maquis::cout << std::endl;
-        print_values<typename Matrix::value_type, SymmGroup> p;
+        //maquis::cout << std::endl;
+        //print_values<typename Matrix::value_type, SymmGroup> p;
         //p(m1);
-        maquis::cout << std::endl;
-        p(m2);
+        //maquis::cout << std::endl;
+        //p(m2);
 
         return phys2_i;
     }
