@@ -115,10 +115,11 @@ namespace SU2 {
                             ret.resize_block(o, out_left_i.size_of_block(out_l_charge), r_size);
                         }
 
-                        int i  = lc[1], ip = out_l_charge[1];
-                        int j  = mc[1], jp = out_r_charge[1];
+                        int i = lc[1], ip = out_l_charge[1];
+                        int j = mc[1], jp = out_r_charge[1];
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
+                        typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                         if (std::abs(coupling_coeff) < 1.e-40) continue;
                         coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
 
