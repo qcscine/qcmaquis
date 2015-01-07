@@ -699,6 +699,51 @@ void op_kron(Index<SymmGroup> const & phys_A,
              block_matrix<Matrix1, SymmGroup> const & B,
              block_matrix<Matrix2, SymmGroup> & C)
 {
+    op_kron_(phys_A, phys_B, A, B, C, typename symm_traits::SymmType<SymmGroup>::type());
+}
+
+template<class Matrix1, class Matrix2, class SymmGroup>
+void op_kron_(Index<SymmGroup> const & phys_A,
+             Index<SymmGroup> const & phys_B,
+             block_matrix<Matrix1, SymmGroup> const & A,
+             block_matrix<Matrix1, SymmGroup> const & B,
+             block_matrix<Matrix2, SymmGroup> & C,
+             typename symm_traits::SymmType<SymmGroup>::type)
+{
+    C = block_matrix<Matrix2, SymmGroup>();
+
+    ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
+    ProductBasis<SymmGroup> const& pb_right = pb_left;
+
+    for (int i = 0; i < A.n_blocks(); ++i) {
+        for (int j = 0; j < B.n_blocks(); ++j) {
+            typename SymmGroup::charge new_right = SymmGroup::fuse(A.basis().right_charge(i), B.basis().right_charge(j));
+            typename SymmGroup::charge new_left = SymmGroup::fuse(A.basis().left_charge(i), B.basis().left_charge(j));
+
+
+            Matrix2 tmp(pb_left.size(A.basis().left_charge(i), B.basis().left_charge(j)),
+                       pb_right.size(A.basis().right_charge(i), B.basis().right_charge(j)),
+                       0);
+
+            maquis::dmrg::detail::op_kron(tmp, B[j], A[i],
+                                          pb_left(A.basis().left_charge(i), B.basis().left_charge(j)),
+                                          pb_right(A.basis().right_charge(i), B.basis().right_charge(j)),
+                                          A.basis().left_size(i), B.basis().left_size(j),
+                                          A.basis().right_size(i), B.basis().right_size(j));
+
+            C.match_and_add_block(tmp, new_left, new_right);
+        }
+    }
+}
+
+template<class Matrix1, class Matrix2, class SymmGroup>
+void op_kron_(Index<SymmGroup> const & phys_A,
+             Index<SymmGroup> const & phys_B,
+             block_matrix<Matrix1, SymmGroup> const & A,
+             block_matrix<Matrix1, SymmGroup> const & B,
+             block_matrix<Matrix2, SymmGroup> & C,
+             symm_traits::SU2Tag)
+{
     C = block_matrix<Matrix2, SymmGroup>();
 
     ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
