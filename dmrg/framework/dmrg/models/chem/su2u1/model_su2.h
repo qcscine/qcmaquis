@@ -408,18 +408,18 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         }
 
         // Hopping term t_ij 
-        else if (k == -1 && l == -1) {
+        //else if (k == -1 && l == -1) {
 
-            // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, ident, std::sqrt(2.)*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill
-            ));
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, ident, std::sqrt(2.)*matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill
-            ));
+        //    // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
+        //    this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+        //        true, ident, std::sqrt(2.)*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill
+        //    ));
+        //    this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+        //        true, ident, std::sqrt(2.)*matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill
+        //    ));
 
-            used_elements[m] += 1;
-        }
+        //    used_elements[m] += 1;
+        //}
 
         // On site Coulomb repulsion V_iiii
         else if ( i==j && j==k && k==l) {
@@ -433,23 +433,23 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         }
 
         // V_ijjj = V_jijj = V_jjij = V_jjji
-        else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
+        //else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
 
-            int same_idx, pos1;
+        //    int same_idx, pos1;
 
-            if      (i==j) { same_idx = i; pos1 = l; }
-            else if (k==l) { same_idx = l; pos1 = i; }
-            else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
+        //    if      (i==j) { same_idx = i; pos1 = l; }
+        //    else if (k==l) { same_idx = l; pos1 = i; }
+        //    else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
 
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, ident,  std::sqrt(2.)*matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill
-            ));
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill
-            ));
+        //    this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+        //        true, ident,  std::sqrt(2.)*matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill
+        //    ));
+        //    this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+        //        true, ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill
+        //    ));
 
-            used_elements[m] += 1;
-        }
+        //    used_elements[m] += 1;
+        //}
 
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
@@ -459,6 +459,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             used_elements[m] += 1;
         }
 
+        /*
         // V_ijij == V_jiji = V_ijji = V_jiij
         else if ( i==k && j==l && i!=j) {
 
@@ -618,6 +619,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             used_elements[m] += 1;
         }
+        */
 
 
     } // matrix_elements for

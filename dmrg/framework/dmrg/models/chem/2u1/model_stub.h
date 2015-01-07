@@ -291,23 +291,23 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
         }
 
         // Hopping term t_ij 
-        else if (k == -1 && l == -1) {
+        //else if (k == -1 && l == -1) {
 
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler)
-            );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], i, j, create_down, destroy_down, tag_handler)
-            );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], j, i, create_up, destroy_up, tag_handler)
-            );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], j, i, create_down, destroy_down, tag_handler)
-            );
+        //    this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+        //        true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler)
+        //    );
+        //    this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+        //        true, fill, matrix_elements[m], i, j, create_down, destroy_down, tag_handler)
+        //    );
+        //    this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+        //        true, fill, matrix_elements[m], j, i, create_up, destroy_up, tag_handler)
+        //    );
+        //    this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+        //        true, fill, matrix_elements[m], j, i, create_down, destroy_down, tag_handler)
+        //    );
 
-            used_elements[m] += 1;
-        }
+        //    used_elements[m] += 1;
+        //}
 
         // On site Coulomb repulsion V_iiii
         else if ( i==j && j==k && k==l) {
@@ -331,6 +331,7 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
             used_elements[m] += 1;
         }
 
+        /*
         // V_ijjj = V_jijj = V_jjij = V_jjji
         else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
 
@@ -511,6 +512,7 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
 
             used_elements[m] += 1;
         }
+        */
 
     } // matrix_elements for
 
