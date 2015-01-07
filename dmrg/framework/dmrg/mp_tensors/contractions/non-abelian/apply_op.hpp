@@ -138,9 +138,33 @@ namespace SU2 {
                         //         << out_left_offset << "(" << T.basis().left_size(t_block) << "x" << r_size << ")|" << out_left_i.size_of_block(out_l_charge)
                         //         << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << " " << coupling_coeff * wblock(0,0) << std::endl;
 
-                        maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
-                                out_left_offset, in_right_offset,
-                                phys_s1, phys_s2, T.basis().left_size(t_block), r_size, coupling_coeff);
+                        //maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
+                        //        out_left_offset, in_right_offset,
+                        //        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, coupling_coeff);
+
+                        typename Matrix::value_type c_eff = coupling_coeff;
+                        size_t ldim = T.basis().left_size(t_block);
+                        for(size_t rr = 0; rr < r_size; ++rr) {
+                            for(size_t ss1 = 0; ss1 < phys_s1; ++ss1) {
+                                for(size_t ss2 = 0; ss2 < phys_s2; ++ss2) {
+                                    if (ss1 == 2 && ss2 == 2)
+                                        c_eff = ::SU2::mod_coupling(j, 2, jp, a,k,ap, i, 2, ip);
+                                    else if (ss1 == 2)
+                                        c_eff = ::SU2::mod_coupling(j, 2, jp, a,k,ap, i, two_sp, ip);
+                                    else if (ss2 == 2)
+                                        c_eff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2, ip);
+                                    else
+                                        c_eff = coupling_coeff;
+
+                                    typename Matrix::value_type alfa_t = wblock(ss1, ss2) * c_eff;
+                                    maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size + rr),
+                                                                        &iblock(0, in_right_offset + ss1*r_size + rr) + ldim, // bugbug
+                                                                        &oblock(out_left_offset + ss2*ldim, rr),
+                                                                        alfa_t);
+                                }
+                            }
+                        }
+
                     }
                 }
             }
