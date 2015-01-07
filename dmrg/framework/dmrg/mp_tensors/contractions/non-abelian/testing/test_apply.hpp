@@ -32,8 +32,6 @@
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 
-#include "dmrg/mp_tensors/contractions/non-abelian/testing/test_coupling.h"
-
 namespace SU2 { // Forward declarations
 
     double mod_coupling(int two_ja, int two_jb, int two_jc,
@@ -145,9 +143,6 @@ namespace SU2 {
                     if (ap != std::abs(ip-jp)) continue;
                     if (ap >= 3) continue;
 
-                    double c0 = ::SU2::S0c(ip,i,j,jp,new_rc[0],lc[0]);
-                    double c1 = ::SU2::S1c(ip,i,j,jp,new_rc[0],lc[0]);
-
                     double coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                     coupling_coeff *= pow(ip+1., 0.5) * pow(j+1., 0.5);
                     coupling_coeff *= pow(i+1., -0.5) * pow(jp+1., -0.5);
@@ -157,8 +152,7 @@ namespace SU2 {
                         std::cout << j << "," << two_s << "," << jp << " | " << a << "," << k << "," << ap << " | "
                                   << i << "," << two_sp << "," << ip << " | " << phys_in << phys_out
                                   << "  " << new_rc[0] << "," << lc[0] << "," << mc[0] << "," << free_rc[0]
-                                  << std::right << std::setw(8) << "cc: " << std::setw(12) << coupling_coeff //<< std::endl;
-                                  << std::setw(12) << ((std::abs(ip-jp) == 0) ? c0 : c1) << std::endl;
+                                  << std::right << std::setw(8) << "cc: " << std::setw(12) << coupling_coeff << std::endl;
                     }
 
                     // T Access
