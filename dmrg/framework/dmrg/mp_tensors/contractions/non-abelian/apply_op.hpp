@@ -65,8 +65,6 @@ namespace SU2 {
             ret.spin = couple(left[b1].spin, W.spin);
             int a = left[b1].spin.get(), k = W.spin.get(), ap = ret.spin.get();
 
-            if (k != W.spin.get()) { maquis::cout << "k " << k << "W.spin.get() " << W.spin.get() << std::endl; }
-
             for (size_t lblock = 0; lblock < left[b1].n_blocks(); ++lblock) {
 
                 charge lc = left[b1].basis().right_charge(lblock); // left comes as left^T !
