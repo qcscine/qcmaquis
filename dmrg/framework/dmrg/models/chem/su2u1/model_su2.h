@@ -408,18 +408,19 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         }
 
         // Hopping term t_ij 
-        //else if (k == -1 && l == -1) {
+        else if (k == -1 && l == -1) {
+            if (std::abs(i-j) != 1) continue;
 
-        //    // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
-        //    this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-        //        true, ident, std::sqrt(2.)*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill
-        //    ));
-        //    this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-        //        true, ident, std::sqrt(2.)*matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill
-        //    ));
+            // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                true, ident, std::sqrt(2.)*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill
+            ));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                true, ident, std::sqrt(2.)*matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill
+            ));
 
-        //    used_elements[m] += 1;
-        //}
+            used_elements[m] += 1;
+        }
 
         // On site Coulomb repulsion V_iiii
         else if ( i==j && j==k && k==l) {

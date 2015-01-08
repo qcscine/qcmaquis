@@ -232,8 +232,16 @@ int main(int argc, char ** argv)
         /*************************************************************/
 
         op_t kronop;
-        op_kron(phys, phys, create_fill_op, destroy_op, kronop) ;
 
+        op_kron(phys, phys, count_op, count_op, kronop) ;
+        maquis::cout << "Kronecker product\n";
+        maquis::cout << kronop << std::endl;
+
+        op_kron(phys, phys, ident_op, create_fill_op, kronop) ;
+        maquis::cout << "Kronecker product\n";
+        maquis::cout << kronop << std::endl;
+
+        op_kron(phys, phys, create_fill_op, destroy_op, kronop) ;
         maquis::cout << "Kronecker product\n";
         maquis::cout << kronop << std::endl;
             

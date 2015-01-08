@@ -33,6 +33,7 @@
 #include "utils/traits.hpp"
 #include "utils/bindings.hpp"
 
+#include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/multi_index.h"
@@ -744,6 +745,7 @@ void op_kron_(Index<SymmGroup> const & phys_A,
              block_matrix<Matrix2, SymmGroup> & C,
              symm_traits::SU2Tag)
 {
+    typedef typename SymmGroup::charge charge;
     C = block_matrix<Matrix2, SymmGroup>();
 
     ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
@@ -751,23 +753,73 @@ void op_kron_(Index<SymmGroup> const & phys_A,
 
     for (int i = 0; i < A.n_blocks(); ++i) {
         for (int j = 0; j < B.n_blocks(); ++j) {
-            typename SymmGroup::charge new_right = SymmGroup::fuse(A.basis().right_charge(i), B.basis().right_charge(j));
-            typename SymmGroup::charge new_left = SymmGroup::fuse(A.basis().left_charge(i), B.basis().left_charge(j));
+            charge  inA = A.basis().left_charge(i);
+            charge outA = A.basis().right_charge(i);
+            charge  inB = B.basis().left_charge(j);
+            charge outB = B.basis().right_charge(j);
 
+            charge new_left = SymmGroup::fuse(inA, inB);
+            charge new_right = SymmGroup::fuse(outA, outB);
 
-            Matrix2 tmp(pb_left.size(A.basis().left_charge(i), B.basis().left_charge(j)),
-                       pb_right.size(A.basis().right_charge(i), B.basis().right_charge(j)),
-                       0);
+            Matrix2 tmp(pb_left.size(inA, inB), pb_right.size(outA, outB), 0);
 
-            maquis::dmrg::detail::op_kron(tmp, B[j], A[i],
-                                          pb_left(A.basis().left_charge(i), B.basis().left_charge(j)),
-                                          pb_right(A.basis().right_charge(i), B.basis().right_charge(j)),
+            std::size_t in_offset = pb_left(inA, inB);
+            std::size_t out_offset = pb_right(outA, outB);
+
+            maquis::dmrg::detail::op_kron(tmp, B[j], A[i], in_offset, out_offset,
                                           A.basis().left_size(i), B.basis().left_size(j),
                                           A.basis().right_size(i), B.basis().right_size(j));
+
+            int j1  = std::abs(inA[1]),  j2  = std::abs(inB[1]),  J = ((in_offset==2) ? 2 : std::abs(inA[1]+inB[1]));
+            int j1p = std::abs(outA[1]), j2p = std::abs(outB[1]), Jp = ((out_offset==2) ? 2 : std::abs(outA[1]+outB[1]));
+            int k1  = A.spin.get(),      k2  = B.spin.get(),      k = std::abs(J-Jp);
+
+            maquis::cout << new_left << new_right << "    " << inA << "×" << inB << " -> " << outA << "×" << outB
+                         << "    " << in_offset << "/" << out_offset << std::endl;
+            maquis::cout << j1 << j2 << J << std::endl
+                         << k1 << k2 << k << std::endl
+                         << j1p<< j2p<< Jp<< std::endl;
+
+
+            typename Matrix2::value_type coupling = SU2::mod_coupling(j1,j2,J,k1,k2,k,j1p,j2p,Jp);
+            tmp *= coupling;
+            maquis::cout << "coupling: " << coupling << std::endl << std::endl;
 
             C.match_and_add_block(tmp, new_left, new_right);
         }
     }
+
+    // Matrix basis coupling coefficient, applies uniformly to whole product
+    int k1 = A.spin.get(), k2 = B.spin.get(), k, j, jp, jpp;
+    if (k1==1 && k2==1)
+    {
+        j = 0; jp = 0; jpp = 1; k = 0;
+    }
+    else if (k1==0 && k2==1)
+    {
+        j = 0; jp = 1; jpp = 0; k = 1;
+    }
+    else if (k1==1 && k2==0)
+    {
+        j = 1; jp = 0; jpp = 0; k = 1;
+    }
+    else
+    {
+        j = 0; jp = 0; jpp = 0; k = 0;
+    }
+
+    maquis::cout << "6j\n";
+    maquis::cout << j << jp << k << std::endl
+                 << k2 << k1  << jpp   << std::endl;
+
+    typename Matrix2::value_type coupling = std::sqrt((jpp+1)*(k+1)) * gsl_sf_coupling_6j(j,jp,k,k2,k1,jpp);
+    coupling = (((j+jp+k1+k2)/2)%2) ? -coupling : coupling;
+    maquis::cout << "6j: " << coupling << std::endl << std::endl;
+    C *= coupling;
+
+    SpinDescriptor<symm_traits::SU2Tag> op_spin(k, jp-j);
+    C.spin = op_spin;
+    maquis::cout << "kron spin: " << C.spin.get() << std::endl;
 }
 
 template<class Matrix, class SymmGroup>
