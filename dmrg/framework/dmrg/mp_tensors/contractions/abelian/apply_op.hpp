@@ -118,7 +118,7 @@ namespace contraction {
             parallel::scheduler_size_indexed scheduler(ret);
 
             for (size_t r = 0; r < right_i.size(); ++r){
-				maquis::cout << "right charge loop " << right_i[r].first << std::endl;
+				//maquis::cout << "right charge loop " << right_i[r].first << std::endl;
                 charge out_r_charge = right_i[r].first;
                 charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);             if(!out_left_i.has(out_l_charge)) continue;
                 size_t r_size = right_i[r].second;
@@ -129,13 +129,13 @@ namespace contraction {
                     charge phys_c2 = W.basis().right_charge(w_block);
 
                     charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_c1);
-					maquis::cout << "in_r_charge " << in_r_charge << std::endl;
+					//maquis::cout << "in_r_charge " << in_r_charge << std::endl;
                     charge in_l_charge = SymmGroup::fuse(in_r_charge, -T_delta);
-					maquis::cout << "in_l_charge " << in_l_charge << std::endl;
+					//maquis::cout << "in_l_charge " << in_l_charge << std::endl;
                     size_t t_block = T.basis().position(in_l_charge, in_r_charge);            if(t_block == T.basis().size()) continue;
 
                     size_t in_right_offset = in_right_pb(phys_c1, out_r_charge);
-					maquis::cout << "in right offset " << in_right_offset << std::endl;
+					//maquis::cout << "in right offset " << in_right_offset << std::endl;
                     size_t out_left_offset = out_left_pb(phys_c2, in_l_charge);
                     size_t phys_s1 = W.basis().left_size(w_block);
                     size_t phys_s2 = W.basis().right_size(w_block);
@@ -174,17 +174,30 @@ namespace contraction {
             block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
-            charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
-            charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+            //charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
+            //charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
 
             for(size_t l = 0; l < left_i.size(); ++l){
-                charge out_l_charge = left_i[l].first;
+				charge out_l_charge = left_i[l].first;
+            	for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block){
+					charge phys_c1 = W.basis().left_charge(w_block);
+					charge in_l_charge = SymmGroup::fuse(out_l_charge, phys_c1);
+					if(!T.left_basis().has(in_l_charge)) continue;
+				for(size_t r = 0; r < T.n_blocks(); ++r){
+					if (!(T.basis().left_charge(r) == in_l_charge)) continue;
+				charge        T_delta = SymmGroup::fuse(T.basis().right_charge(r), -T.basis().left_charge(r));
+            	charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+                
+				//if(operator_delta == SymmGroup::IdentityCharge && T_delta != SymmGroup::IdentityCharge && T.n_blocks() == 1) continue;
+				//charge out_l_charge = left_i[l].first;
                 charge out_r_charge = SymmGroup::fuse(out_l_charge, -total_delta);            if(!out_right_i.has(out_r_charge)) continue;
                 size_t l_size = left_i[l].second;
                 if(ret.find_block(out_l_charge, out_r_charge) == ret.n_blocks())
                     ret.resize_block(ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge), 
                                      l_size, out_right_i.size_of_block(out_r_charge));
             }
+				}
+			}
         }
         ret.index_sizes();
     }
@@ -217,31 +230,69 @@ namespace contraction {
             block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
 
 			//DEBUG
-			maquis::cout << "MPSTensor * RIGHT:\n" << T.basis() << std::endl;
-			maquis::cout << "MPO:\n" << W.basis() << "\n\n";
+			//maquis::cout << "MPSTensor * RIGHT:\n" << T.basis() << std::endl;
+			//maquis::cout << "MPO:\n" << W.basis() << "\n\n";
+			//maquis::cout << "out right i charges " << out_right_i << "\n\n";
 
             // charge deltas are constant for all blocks
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
-            charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
-            charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+			// NOT TRUE ANYMORE!! RIGHT BOUNDARY HAS DIFFERENT DELTAS!!
+            //charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
+            //charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+			
+			//maquis::cout << "out_right_i " << out_right_i << std::endl; 
 
-			maquis::cout << "Loop over left charges:\n";
+			//maquis::cout << "Loop over left charges:\n";
             for (size_t l = 0; l < left_i.size(); ++l){
-            	//charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
-            	//charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
-            	//charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
-				maquis::cout << "Left charge at " << l << "\twith charge " << left_i[l].first << std::endl;
-                charge out_l_charge = left_i[l].first;
-                charge out_r_charge = SymmGroup::fuse(out_l_charge, -total_delta);            if(!out_right_i.has(out_r_charge)) continue;
-                size_t l_size = left_i[l].second;
-                size_t o = ret.find_block(out_l_charge, out_r_charge);
+				//maquis::cout << "Loop over left_i charges...\nleft_i " << left_i[l].first << std::endl;
+				
+				charge out_l_charge = left_i[l].first;
+                
+				for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block){
+					//maquis::cout << "Loop over MPO blocks..." << std::endl;
+					
+					charge phys_c1 = W.basis().left_charge(w_block);
+					charge in_l_charge = SymmGroup::fuse(out_l_charge, phys_c1);
+					//maquis::cout << "phys_c1 " << phys_c1 << "\nin_l_charge " << in_l_charge;
 
-                for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block){
-                    charge phys_c1 = W.basis().left_charge(w_block);
+					if(!T.left_basis().has(in_l_charge)) continue;// {maquis::cout << "\t###BREAK no such 'in_l_charge' in T\n\n\n"; continue;}
+					for (size_t r = 0; r < T.n_blocks(); ++r){
+						//maquis::cout << "\nLooping over T blocks...\nblock " << T.basis().left_charge(r) << T.basis().right_charge(r);
+						
+						if (!(T.basis().left_charge(r) == in_l_charge)) continue;// {maquis::cout << "\t###BREAK wrong block in T\n\n\n"; continue;}
+						//maquis::cout << "\nFound a matching block in T!" << std::endl;
+						charge        T_delta = SymmGroup::fuse(T.basis().right_charge(r), -T.basis().left_charge(r));
+						charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+				
+						//if(operator_delta == SymmGroup::IdentityCharge && T_delta != SymmGroup::IdentityCharge && T.n_blocks() == 1) continue;
+
+
+
+            	//charge        T_delta = SymmGroup::fuse(T.basis().right_charge(r), -T.basis().left_charge(r));
+            	//charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+				//maquis::cout << "T delta " << T_delta << "\ntotal_delta " << total_delta << std::endl;
+				
+                
+				//charge out_l_charge = left_i[l].first;
+                
+				charge out_r_charge = SymmGroup::fuse(out_l_charge, -total_delta);            
+				//maquis::cout << "out_r_charge " << out_r_charge << std::endl; 
+				if(!out_right_i.has(out_r_charge)) continue;
+                size_t l_size = left_i[l].second;
+				//maquis::cout << "size of block of left_i charge " << l_size << std::endl;
+                size_t o = ret.find_block(out_l_charge, out_r_charge);
+				//maquis::cout << "block number o " << o << "\n";
+				//maquis::cout << "# of blocks in ret " << ret.n_blocks() << "\n";
+				//maquis::cout << "ret basis " << ret.basis() << "\n\n";
+
+                //for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block){
+                    //charge phys_c1 = W.basis().left_charge(w_block);
                     charge phys_c2 = W.basis().right_charge(w_block);
 
-                    charge in_l_charge = SymmGroup::fuse(out_l_charge, phys_c1); 
+                    //charge in_l_charge = SymmGroup::fuse(out_l_charge, phys_c1); 
                     charge in_r_charge = SymmGroup::fuse(in_l_charge, T_delta); 
+					//maquis::cout << "in_l_charge " << in_l_charge << std::endl;
+					//maquis::cout << "in_r_charge " << in_r_charge << "\n\n";
                     size_t t_block = T.basis().position(in_l_charge, in_r_charge);            if (t_block == T.basis().size()) continue;
 
                     size_t in_left_offset = in_left_pb(phys_c1, out_l_charge);
@@ -252,13 +303,16 @@ namespace contraction {
                     const Matrix & iblock = T[t_block];
                     Matrix & oblock = ret[o];
 
+					//maquis::cout << "OKOK\n\n";
+
                     parallel::guard proc(scheduler(o));
                     maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
                                                         out_right_offset, in_left_offset,
                                                         phys_s1, phys_s2,
                                                         l_size, T.basis().right_size(t_block), access.scale);
                 }
-            }
+				}
+			}
         }
     }
 
