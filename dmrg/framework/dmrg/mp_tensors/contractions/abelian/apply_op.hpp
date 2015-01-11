@@ -59,22 +59,35 @@ namespace contraction {
             block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
-            charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
-            charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+            //charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
+            //charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
         
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
             for(size_t r = 0; r < right_i.size(); ++r){
                 charge out_r_charge = right_i[r].first;
-                charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);             if(!out_left_i.has(out_l_charge)) continue;
+                for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block){
+				
+                    charge phys_c1 = W.basis().left_charge(w_block);
+                    charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_c1);
+					if(!T.right_basis().has(in_r_charge)) continue;	
+					for (size_t l = 0; l < T.n_blocks(); ++l){
+						if (!(T.basis().right_charge(l) == in_r_charge)) continue;// {maquis::cout << "\t###BREAK wrong block in T\n\n\n"; continue;}
+				
+				charge        T_delta = SymmGroup::fuse(T.basis().right_charge(l), -T.basis().left_charge(l));
+            	charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+
+				charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);             if(!out_left_i.has(out_l_charge)) continue;
                 size_t r_size = right_i[r].second;
                 if(ret.find_block(out_l_charge, out_r_charge) == ret.n_blocks())
                     ret.resize_block(ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge), 
                                      out_left_i.size_of_block(out_l_charge), r_size);
             }
+			}
         }
         contr_grid.index_sizes(b2);
     }
+	}
 
     // SK: New version which generates same output but uses right-paired input.
     //     The charge delta optimization is indepent from the changes needed to
@@ -110,25 +123,46 @@ namespace contraction {
 
             // charge deltas are constant for all blocks
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
-            charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
-            charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+            //charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
+            //charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
         
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
             parallel::guard group(contr_grid.where(b1,b2), contr_grid.granularity);
             parallel::scheduler_size_indexed scheduler(ret);
 
             for (size_t r = 0; r < right_i.size(); ++r){
+
 				//maquis::cout << "right charge loop " << right_i[r].first << std::endl;
                 charge out_r_charge = right_i[r].first;
-                charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);             if(!out_left_i.has(out_l_charge)) continue;
+                
+                for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block){
+				
+                    charge phys_c1 = W.basis().left_charge(w_block);
+                    charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_c1);
+				
+					if(!T.right_basis().has(in_r_charge)) continue;	
+			
+					for (size_t l = 0; l < T.n_blocks(); ++l){
+						//maquis::cout << "\nLooping over T blocks...\nblock " << T.basis().left_charge(r) << T.basis().right_charge(r);
+						
+						if (!(T.basis().right_charge(l) == in_r_charge)) continue;// {maquis::cout << "\t###BREAK wrong block in T\n\n\n"; continue;}
+						//maquis::cout << "\nFound a matching block in T!" << std::endl;
+						charge        T_delta = SymmGroup::fuse(T.basis().right_charge(l), -T.basis().left_charge(l));
+						charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
+				
+						//if(operator_delta == SymmGroup::IdentityCharge && T_delta != SymmGroup::IdentityCharge && T.n_blocks() == 1) continue;
+
+				charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);             if(!out_left_i.has(out_l_charge)) continue;
                 size_t r_size = right_i[r].second;
 
                 size_t o = ret.find_block(out_l_charge, out_r_charge);
-                for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block){
-                    charge phys_c1 = W.basis().left_charge(w_block);
+
+
+                //for (size_t w_block = 0; w_block < W.n_blocks(); ++w_block){
+                    //charge phys_c1 = W.basis().left_charge(w_block);
                     charge phys_c2 = W.basis().right_charge(w_block);
 
-                    charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_c1);
+                    //charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_c1);
 					//maquis::cout << "in_r_charge " << in_r_charge << std::endl;
                     charge in_l_charge = SymmGroup::fuse(in_r_charge, -T_delta);
 					//maquis::cout << "in_l_charge " << in_l_charge << std::endl;
@@ -148,6 +182,7 @@ namespace contraction {
                                                         out_left_offset, in_right_offset,
                                                         phys_s1, phys_s2, T.basis().left_size(t_block), r_size, access.scale);
                 }
+				}
             } // right index block
         } // b1
     }
