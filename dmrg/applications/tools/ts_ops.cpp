@@ -234,15 +234,31 @@ int main(int argc, char ** argv)
         op_t kronop;
 
         op_kron(phys, phys, count_op, count_op, kronop) ;
-        maquis::cout << "Kronecker product\n";
+        maquis::cout << "Kronecker product count * count\n";
         maquis::cout << kronop << std::endl;
 
         op_kron(phys, phys, ident_op, create_fill_op, kronop) ;
-        maquis::cout << "Kronecker product\n";
+        maquis::cout << "Kronecker product I * create_fill\n";
+        maquis::cout << kronop << std::endl;
+
+        op_kron(phys, phys, ident_op, destroy_fill_op, kronop) ;
+        maquis::cout << "Kronecker product I * destroy_fill\n";
+        maquis::cout << kronop << std::endl;
+
+        op_kron(phys, phys, create_op, ident_op, kronop) ;
+        maquis::cout << "Kronecker product create * I\n";
+        maquis::cout << kronop << std::endl;
+
+        op_kron(phys, phys, destroy_op, ident_op, kronop) ;
+        maquis::cout << "Kronecker product destroy * I\n";
         maquis::cout << kronop << std::endl;
 
         op_kron(phys, phys, create_fill_op, destroy_op, kronop) ;
-        maquis::cout << "Kronecker product\n";
+        maquis::cout << "Kronecker product create_fill * destroy\n";
+        maquis::cout << kronop << std::endl;
+
+        op_kron(phys, phys, destroy_fill_op, create_op, kronop) ;
+        maquis::cout << "Kronecker product destroy_fill * create\n";
         maquis::cout << kronop << std::endl;
             
     } catch (std::exception& e) {

@@ -814,12 +814,12 @@ void op_kron_(Index<SymmGroup> const & phys_A,
 
     typename Matrix2::value_type coupling = std::sqrt((jpp+1)*(k+1)) * gsl_sf_coupling_6j(j,jp,k,k2,k1,jpp);
     coupling = (((j+jp+k1+k2)/2)%2) ? -coupling : coupling;
-    maquis::cout << "6j: " << coupling << std::endl << std::endl;
+    maquis::cout << "6j: " << coupling << std::endl;
     C *= coupling;
 
     SpinDescriptor<symm_traits::SU2Tag> op_spin(k, jp-j);
     C.spin = op_spin;
-    maquis::cout << "kron spin: " << C.spin.get() << std::endl;
+    maquis::cout << "kron spin: " << C.spin.get() << ", " << jp-j << std::endl << std::endl;
 }
 
 template<class Matrix, class SymmGroup>
