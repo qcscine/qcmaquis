@@ -47,10 +47,10 @@ namespace SU2 {
                                                              -boost::lambda::_1, boost::lambda::_2));
         for (size_t block = 0; block < m.n_blocks(); ++block)
         {
-            size_t l = left_i.position(m.basis().lc(block));
+            size_t l = left_i.position(m.basis().left_charge(block));
             if(l == left_i.size()) continue;
             charge in_l_charge = left_i[l].first;
-            charge in_r_charge = m.basis().rc(block);
+            charge in_r_charge = m.basis().right_charge(block);
 
             for (size_t s = 0; s < physical_i.size(); ++s)
             {
@@ -86,10 +86,10 @@ namespace SU2 {
                                                              -boost::lambda::_1, boost::lambda::_2));
         for (size_t block = 0; block < m.n_blocks(); ++block)
         {
-            size_t l = left_i.position(m.basis().lc(block));
+            size_t l = left_i.position(m.basis().left_charge(block));
             if(l == left_i.size()) continue;
             charge in_l_charge = left_i[l].first;
-            charge in_r_charge = m.basis().rc(block);
+            charge in_r_charge = m.basis().right_charge(block);
 
             for (size_t s = 0; s < physical_i.size(); ++s)
             {
