@@ -104,8 +104,8 @@ namespace SU2 {
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
                         typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
-                        if (std::abs(coupling_coeff) < 1.e-40) continue;
-                        coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
+                        //if (std::abs(coupling_coeff) < 1.e-40) continue;
+                        //coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
 
                         size_t phys_s1 = W.basis().left_size(w_block);
                         size_t phys_s2 = W.basis().right_size(w_block);
@@ -139,6 +139,8 @@ namespace SU2 {
                                         c_eff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2, ip);
                                     else
                                         c_eff = coupling_coeff;
+
+                                    c_eff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
 
                                     typename Matrix::value_type alfa_t = wblock(ss1, ss2) * c_eff;
                                     maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size + rr),
