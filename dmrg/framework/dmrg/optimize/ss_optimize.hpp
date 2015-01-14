@@ -95,8 +95,20 @@ public:
                 Storage::sync();
             }
         
+			maquis::cout << std::endl;
             maquis::cout << "Sweep " << sweep << ", optimizing site " << site << std::endl;
             
+			//DEBUG
+			//if(sweep ==1){
+			//	for(int jj = 0; jj < left_.size(); ++jj){
+			//		for(int kk = 0; kk < left_[jj].aux_dim(); ++kk){
+			//			right_[jj][kk] = left_[jj][kk];
+			//		}
+			//	}
+			//}
+
+
+
 //            mps[site].make_left_paired();
             
             // MD: some changes needed to re-enable it.
@@ -120,7 +132,17 @@ public:
             assert( left_[site].reasonable() );    // in case something went wrong
             assert( right_[site+1].reasonable() ); // in case something went wrong
             
-            
+            //DEBUG
+			//maquis::cout << "\n### IN SS OPTIMIZER ### \n\n";
+			//maquis::cout << "Left Boundary\n";
+			//for (int ii = 0; ii < left_[site].aux_dim(); ++ii){
+			//	maquis::cout << left_[site][ii].basis() << std::endl;
+			//}
+			//maquis::cout << "Rigth Boundary\n";
+			//for (int ii = 0; ii < right_[site+1].aux_dim(); ++ii){
+			//	maquis::cout << right_[site+1][ii].basis() << std::endl;
+			//}
+
 //            maquis::cout << "My size: " << std::endl;
 //            maquis::cout << "  left_: " << utils::size_of(left_.begin(), left_.end())/1024.0/1024 << std::endl;
 //            maquis::cout << "  right_: " << utils::size_of(right_.begin(), right_.end())/1024.0/1024 << std::endl;
@@ -141,6 +163,23 @@ public:
                                                                     base::ortho_left_[n][site], base::ortho_right_[n][site+1]);
             }
 
+			//DEBUG
+			//if(site == L-1){
+			//	maquis::cout << "\nMPS BEFORE OPT\n" << mps[site] << "LEFT BOUNDARY BEFORE OPT\n";
+			//	for(int ii=0; ii < left_[site].aux_dim(); ++ii){
+			//		maquis::cout << left_[site][ii] << std::endl;
+			//	}
+			//	maquis::cout << "\nRIGHT BOUNDARY BEFORE OPT\n";
+			//	for(int ii=0; ii < right_[site+1].aux_dim(); ++ii){
+			//		maquis::cout << right_[site+1][ii] << std::endl;
+			//	}
+			//}
+
+			maquis::cout << std::endl;
+			//MPSTensor<Matrix,SymmGroup> mps_deb = mps[site];
+			//mps_deb.make_left_paired();
+			//maquis::cout << "\n***MPS TENSOR BEFORE OPTIMIZATION***\n\n" << mps_deb << "******************************\n\n";
+
             if (d == Both ||
                 (d == LeftOnly && lr == -1) ||
                 (d == RightOnly && lr == +1))
@@ -160,12 +199,34 @@ public:
                 mps[site] = res.second;
             }
             
+			//DEBUG
+			//if(site == L-1){	
+			//	maquis::cout << "\nMPS AFTER OPT\n" << mps[site] << "LEFT BOUNDARY AFTER OPT\n";
+			//	for(int ii=0; ii < left_[site].aux_dim(); ++ii){
+			//		maquis::cout << left_[site][ii] << std::endl;
+			//	}
+			//	maquis::cout << "\nRIGHT BOUNDARY AFTER OPT\n";
+			//	for(int ii=0; ii < right_[site+1].aux_dim(); ++ii){
+			//		maquis::cout << right_[site+1][ii] << std::endl;
+			//	}
+			//}
+
+
+			//DEBUG
+			//MPSTensor<Matrix,SymmGroup> mps_deb2 = mps[site];
+			//mps_deb2.make_left_paired();
+			//for(int ii = 0; ii < mps_deb.data().n_blocks(); ++ii){
+			//	mps_deb.data()[ii] = mps_deb.data()[ii] - mps_deb2.data()[ii];
+			//}
+			//maquis::cout << "\n***MPS TENSOR DIFF AFTER OPTIMIZATION***\n\n" << mps_deb << "******************************\n\n";
+
 #ifndef NDEBUG
             // Caution: this is an O(L) operation, so it really should be done only in debug mode
             for (int n = 0; n < base::northo; ++n)
                 maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
 #endif
             
+			maquis::cout.precision(15);
             maquis::cout << "Energy " << lr << " " << res.first << std::endl;
 //            maquis::cout << "Energy check " << maquis::real(expval(mps, mpo)) << std::endl;
             
@@ -185,29 +246,37 @@ public:
             truncation_results trunc;
             
             if (lr == +1) {
-                if (site < L-1) {
+                //if (site < L-1) {
+                if (false) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
                                                site, alpha, cutoff, Mmax);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
+					//DEBUG
+					//maquis::cout << "\n***MPS TENSOR AFTER NORMALIZATION***\n\n" << mps[site] << "******************************\n\n";
                     if (site < L-1)
                         mps[site+1].multiply_from_left(t);
                 }
                 
                 this->boundary_left_step(mpo, site); // creating left_[site+1]
+				//maquis::cout << "LAST LEFT SITE " << left_[site+1][0].basis() << std::endl;
                 if (site != L-1) {
                     Storage::drop(right_[site+1]);
                     Storage::evict(left_[site]);
                 }
             } else if (lr == -1) {
-                if (site > 0) {
+                //if (site > 0) {
+                if (false) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     // Invalid read occurs after this!\n
                     trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
                                                site, alpha, cutoff, Mmax);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
+					//DEBUG
+					//maquis::cout << "\n***MPS TENSOR AFTER NORMALIZATION***\n\n" << mps[site] << "******************************\n\n";
+
                     if (site > 0)
                         mps[site-1].multiply_from_right(t);
                 }
@@ -218,7 +287,7 @@ public:
                     Storage::evict(right_[site+1]);
                 }
             }
-
+		
             iteration_results_["BondDimension"]   << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
             iteration_results_["SmallestEV"]      << trunc.smallest_ev;

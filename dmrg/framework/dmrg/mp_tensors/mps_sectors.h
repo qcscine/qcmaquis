@@ -79,21 +79,21 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
         minimum_total_charge = SymmGroup::fuse(minimum_total_charge, minimum_charges[site_type[i-1]]);
     }
 
-	typename SymmGroup::charge delta;
+	//typename SymmGroup::charge delta;
 	//delta[0] = 2; delta[1] = -2;
-	//delta[0] = 0; delta[1] = 0;
 	//typename SymmGroup::charge max_right = SymmGroup::fuse(right_end, delta);
 	//typename SymmGroup::charge min_right = SymmGroup::fuse(right_end, -delta);
-	typename SymmGroup::charge max_right = right_end;
-	typename SymmGroup::charge min_right = right_end;
+	//typename SymmGroup::charge max_right = right_end;
+	//typename SymmGroup::charge min_right = right_end;
    		
-    
+   
     Index<SymmGroup> l_triv, r_triv;
     l_triv.insert( std::make_pair(SymmGroup::IdentityCharge, 1) );
     r_triv.insert( std::make_pair(right_end, 1) );
-    //r_triv.insert( std::make_pair(max_right, 1) );
+	//r_triv.insert( std::make_pair(max_right, 1) );
     //r_triv.insert( std::make_pair(min_right, 1) );
     
+	maquis::cout << r_triv << std::endl;
     std::vector<Index<SymmGroup> > left_allowed(L+1), right_allowed(L+1), allowed(L+1);
     left_allowed[0] = l_triv;
     right_allowed[L] = r_triv;
@@ -101,12 +101,15 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     typename SymmGroup::charge cmaxi=maximum_total_charge, cmini=minimum_total_charge;
     for (int i = 1; i < L+1; ++i) {
         left_allowed[i] = phys_dims[site_type[i-1]] * left_allowed[i-1];
-        typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
+        
+		typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
         while ( it != left_allowed[i].end() )
         {
-            if (!finitegroup && SymmGroup::fuse(it->first, cmaxi) < min_right)
+            //if (!finitegroup && SymmGroup::fuse(it->first, cmaxi) < min_right)
+            if (!finitegroup && SymmGroup::fuse(it->first, cmaxi) < SymmGroup::IdentityCharge)
                 it = left_allowed[i].erase(it);
-            else if (!finitegroup && SymmGroup::fuse(it->first, cmini) > max_right)
+            //else if (!finitegroup && SymmGroup::fuse(it->first, cmini) > max_right)
+            else if (!finitegroup && SymmGroup::fuse(it->first, cmini) > right_end)
                 it = left_allowed[i].erase(it);
             else if (!finitegroup && !charge_detail::physical<SymmGroup>(it->first))
                 it = left_allowed[i].erase(it);
@@ -117,16 +120,16 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
         }
         cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i-1]]);
         cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i-1]]);
-    }
+	}
     
 	//--- Print left allowed terms ---//
-	std::cout << std::endl;
-	for (int i = 0; i < L+1; ++i)
-	{
-		std::cout << "Left allowed sectors on site: " << i << std::endl;
-		std::cout << left_allowed[i] << std::endl;
-	}
-	std::cout << std::endl;
+	//std::cout << std::endl;
+	//for (int i = 0; i < L+1; ++i)
+	//{
+	//	std::cout << "Left allowed sectors on site: " << i << std::endl;
+	//	std::cout << left_allowed[i] << std::endl;
+	//}
+	//std::cout << std::endl;
 
 
     cmaxi=maximum_total_charge; cmini=minimum_total_charge;
@@ -149,17 +152,14 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
         }
         cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i]]);
         cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i]]);
-        
     }
-    
-	//--- Print left allowed terms ---//
-	std::cout << std::endl;
-	for (int i = L; i > -1; --i)
-	{
-		std::cout << "Right allowed sectors on site: " << i << std::endl;
-		std::cout << right_allowed[i] << std::endl;
-	}
-	std::cout << std::endl;
+	
+	//for (int i = L; i > -1; --i)
+	//{
+	//	std::cout << "Right allowed sectors on site: " << i << std::endl;
+	//	std::cout << right_allowed[i] << std::endl;
+	//}
+	//std::cout << std::endl;
 
     for (int i = 0; i < L+1; ++i) {
         allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
@@ -169,8 +169,8 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                                  left_allowed[i].size_of_block(it->first),
                                  right_allowed[i].size_of_block(it->first));
 
-		std::cout << "Common subset of allowed sectors on site: " << i << std::endl;
-		std::cout << allowed[i] << std::endl;
+		//std::cout << "Common subset of allowed sectors on site: " << i << std::endl;
+		//std::cout << allowed[i] << std::endl;
     }
     
     return allowed;

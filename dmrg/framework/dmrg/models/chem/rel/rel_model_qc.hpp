@@ -104,10 +104,10 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     tag_type dummy;
 
 	// Anticommutation relations!!
-// 	gemm(create_bar_op, fill_bar_op, tmp);
-//     create_bar_op = tmp;
-// 	gemm(fill_bar_op, destroy_bar_op, tmp);
-//     destroy_bar_op = tmp;
+ 	//gemm(fill_unbar_op, destroy_unbar_op, tmp);
+    //destroy_unbar_op = tmp;
+ 	//gemm(fill_bar_op, destroy_bar_op, tmp);
+    //destroy_bar_op = tmp;
 	
     /**********************************************************************/
     /*** Create operator tag table ****************************************/
@@ -156,6 +156,8 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             used_elements[m] += 1;
         }
 
+		#define onsite
+		#ifdef onsite
         // On site energy t_ii
         else if ( i==j && k == -1 && l == -1) {
             {
@@ -173,11 +175,12 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             
             used_elements[m] += 1;
         }
+		#endif
 
         #define hopping
 		#ifdef hopping
         // Hopping term t_ij 
-        else if (k == -1 && l == -1) {
+        else if ( i!=j && k == -1 && l == -1) {
             
             //matrix_elements[m] = 0.0;
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
@@ -205,7 +208,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         
         // V_ijjj & V_jijj & V_jjij & V_jjji
         // This case doesn't exist for the relativistic model!
-        else if ( (i==j && j==k && k!=l) || (i==j && j!=k && j==l) || (i!=j && i==k && k==l) || (i!=j && j==k && k==l) ) {
+        else if ( (i==j && j==k && k!=l) || (i==j && j==l && j!=k) || (i!=j && i==k && k==l) || (i!=j && j==k && k==l) ) {
             used_elements[m] += 1;
         }
         
@@ -409,12 +412,13 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
  		#define all_4_terms
 		#ifdef all_4_terms
         // V_ijkl
-        else if (i!=j && j!=k && k!=l && i!=k && j!=l) {
+        else if (i!=j && j!=k && k!=l && i!=k && j!=l && i!=l) {
             
             if (is_term_allowed(i,j,k,l)) {
 // 				maquis::cout << "4_term" << std::endl;
                 if        (i <  n_pair && j <  n_pair && k <  n_pair && l <  n_pair) {
-                    
+
+					//matrix_elements[m] = 0.0;
 					term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j,
 											create_unbar, create_unbar, destroy_unbar, destroy_unbar);
 											
@@ -424,6 +428,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 				} else if (i <  n_pair && j <  n_pair && k >= n_pair && l >= n_pair) {
                 
                     //matrix_elements[m] = 0.0;
+					//matrix_elements[m] *= 10000.0;
  					term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j,
  											create_unbar, create_bar, destroy_bar, destroy_unbar);
 											
@@ -442,15 +447,24 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 // 											create_bar, create_bar, destroy_unbar, destroy_bar);
                 } else if (i <  n_pair && j >= n_pair && k <  n_pair && l >= n_pair) {
 					
-                    //matrix_elements[m] = 0.0;
- 					term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j,
- 											create_unbar, create_unbar, destroy_bar, destroy_bar);
-											
- 					term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l-n_pair,j-n_pair,
- 											create_bar, create_bar, destroy_unbar, destroy_unbar);
-											
+					//maquis::cout << "##############################################\n";
+					//maquis::cout << "(" << i << "," << j << "," << k << "," << l << ")" << std::endl;
+					//maquis::cout << "(" << i+n_pair << "," << j-n_pair<< "," << k+n_pair << "," << l-n_pair << ")" << std::endl;
+					//if ((i == 2 && j == 5 && k == 0 && l == 6)){ //|| (i == 0 && j == 5 && k == 2 && l == 6) || (i == 0 && j == 6 && k == 2 && l == 5) || (i == 2 && j == 6 && k == 0 && l == 5) ) {
+						//maquis::cout << "(" << i << "," << j << "," << k << "," << l << "): " << 2.0*matrix_elements[m] << std::endl;
+					//matrix_elements[m] *= 10000.0;
+ 					//term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j,
+ 					//						create_unbar, create_unbar, destroy_bar, destroy_bar);
+					//}
+					//if ((i == 2 && j == 4 && k == 1 && l == 6)) { //|| (i == 1 && j == 4 && k == 2 && l == 6) || (i == 1 && j == 6 && k == 2 && l == 4) || (i == 2 && j == 6 && k == 1 && l == 4)) {
+					//	//maquis::cout << "(" << i+n_pair << "," << j-n_pair<< "," << k+n_pair << "," << l-n_pair << "): " << 2.0*matrix_elements[m] << std::endl;	
+					//matrix_elements[m] *= 10000.0;
+ 					//term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i+n_pair,k+n_pair,l-n_pair,j-n_pair,
+ 					//						create_bar, create_bar, destroy_unbar, destroy_unbar);
+					//}
                 } else if (i <  n_pair && j >= n_pair && k >= n_pair && l <  n_pair) {
-                    //matrix_elements[m] = 0.0;
+					
+                    //matrix_elements[m] *= 0.0;
                     term_assistant.add_term(this->terms_, matrix_elements[m],n_pair,i,k,l,j,
  											create_unbar, create_bar, destroy_unbar, destroy_bar);
 											
@@ -487,7 +501,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     std::vector<int>::iterator it_0;
     it_0 = std::find(used_elements.begin(), used_elements.end(), 0);
     maquis::cout << bool(it_0 < used_elements.end()) << std::endl;
-    assert( it_0 == used_elements.end() );
+    //assert( it_0 == used_elements.end() );
 
     term_assistant.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";

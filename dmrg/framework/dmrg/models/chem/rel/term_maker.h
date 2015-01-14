@@ -65,62 +65,24 @@ struct TermMaker {
         term.is_fermionic = sign;
         term.coeff = scale;
 
-        // Ad hoc fix for 20 spinors HF
-        /*
-        if (i == 2 || i == 3 || i == 5)
-            term.coeff *= -1.0;
-        
-        if (j == 2 || j == 3 || j == 5)
-            term.coeff *= -1.0;
-        
-        if (i == 12 || i == 13 || i == 15)
-            term.coeff *= -1.0;
-        
-        if (j == 12 || j == 13 || j == 15)
-            term.coeff *= -1.0;
-        */
-
-
-        //typename op_t::type tmp;
         std::pair<tag_type, value_type> ptag;
         if (i < j) {
             // Use the fill operator from the model
             fill_op = model->filling_matrix_tag(i);
             ptag = op_table->get_product_tag(fill_op, op1);
 			
-			//#define DEBUG_OP
-			#ifdef DEBUG_OP
-			maquis::cout << "TERM: (" << i << "," << j << ")\n";
-			maquis::cout << "product fill * op1\n";
-			maquis::cout << "operator tag before fill: " << op1 << std::endl;
-			maquis::cout << "operator tag after fill: " << ptag.first << std::endl;
-			maquis::cout << "operator coeff: " << ptag.second << std::endl;
-			#endif
-			
-            term.push_back(boost::make_tuple(i, op1));
+            term.push_back(boost::make_tuple(i, ptag.first));
             term.push_back(boost::make_tuple(j, op2));
-            //maquis::cout << "term: (" << i << "," << j << "); coeff: " << term.coeff << std::endl;
-            //term.coeff *= ptag.second;
+            term.coeff *= ptag.second;
         }
         else {
             // Use the fill operator from the model
             fill_op = model->filling_matrix_tag(j);
             ptag = op_table->get_product_tag(fill_op, op2);
 			
-			#ifdef DEBUG_OP
-			maquis::cout << "TERM: (" << i << "," << j << ")\n";
-			maquis::cout << "product fill * op2\n";
-			maquis::cout << "operator tag before fill: " << op2 << std::endl;
-			maquis::cout << "operator tag after fill: " << ptag.first << std::endl;
-			maquis::cout << "operator coeff: " << -ptag.second << std::endl;
-			#endif
-			
             term.push_back(boost::make_tuple(i, op1));
-            term.push_back(boost::make_tuple(j, op2));
-            //term.push_back(boost::make_tuple(j, ptag.first));
-            //term.coeff *= -ptag.second;
-            //term.coeff *= -1.0;
-            //maquis::cout << "term: (" << i << "," << j << "); coeff: " << term.coeff << std::endl;
+            term.push_back(boost::make_tuple(j, ptag.first));
+            term.coeff *= -ptag.second;
         }
         return term;
     }
@@ -207,21 +169,6 @@ struct TermMaker {
             for(pos_t c2 = c1+1; c2 < n; c2++)
                 if(idx[c1] > idx[c2]) inv_count++;
 
-        //HARDCODED for test purposes only
-        //pos_t idx[] = { i,j,k,l };
-        //pos_t inv_count=0, n=4;
-        //for(pos_t c1 = 0; c1 < n - 1; c1++) {
-        //    for(pos_t c2 = c1+1; c2 < n; c2++) {
-        //        if(idx[c1] > idx[c2]) {
-        //           if(idx[c1] >= 10 && idx[c2] >= 10) {
-        //               inv_count++;}
-        //           else if(idx[c1] < 10 && idx[c2] < 10) {
-        //               inv_count++;}
-        //        }
-        //    }
-        //}
-
-
         std::vector<pos_op_t> sterm;
         sterm.push_back(boost::make_tuple(i, op_i));
         sterm.push_back(boost::make_tuple(j, op_j));
@@ -232,39 +179,18 @@ struct TermMaker {
         std::pair<tag_type, value_type> ptag;
         // ask the model for the right fill_op
         fill_op = model->filling_matrix_tag(boost::tuples::get<0>(sterm[0]));
-        //maquis::cout << "sterm[0]: " << boost::tuples::get<0>(sterm[0]) << std::endl;
-
-		//#define DEBUG_OP
-		#ifdef DEBUG_OP
-		maquis::cout << "4-term operator_0 tag before fill: " << boost::tuples::get<1>(sterm[0]) << std::endl;
-		maquis::cout << op_table->get_op(boost::tuples::get<1>(sterm[0])) << std::endl;
-		#endif
 			
         ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[0]));
         boost::tuples::get<1>(sterm[0]) = ptag.first;
         term.coeff *= ptag.second;
         
-		#ifdef DEBUG_OP
-		maquis::cout << "operator tag after fill: " << ptag.first << std::endl;
-		maquis::cout << op_table->get_op(boost::tuples::get<1>(sterm[0])) << std::endl;
-		#endif
-		
         // ask the model for the right fill_op
         fill_op = model->filling_matrix_tag(boost::tuples::get<0>(sterm[2]));
-        //maquis::cout << "sterm[2]: " << boost::tuples::get<0>(sterm[2]) << std::endl;
 
-		#ifdef DEBUG_OP
-		maquis::cout << "4-term operator_2 tag before fill: " << boost::tuples::get<1>(sterm[2]) << std::endl;
-		#endif
-		
         ptag = op_table->get_product_tag(fill_op, boost::tuples::get<1>(sterm[2]));
         boost::tuples::get<1>(sterm[2]) = ptag.first;
         term.coeff *= ptag.second;
         
-		#ifdef DEBUG_OP
-		maquis::cout << "operator tag after fill: " << ptag.first << std::endl;
-		#endif
-		
         if (inv_count % 2)
             term.coeff = -term.coeff;
 
@@ -272,10 +198,7 @@ struct TermMaker {
         term.push_back(sterm[1]);
         term.push_back(sterm[2]);
         term.push_back(sterm[3]);
-        //std::cout << "CREATING " << term << std::endl;
-        //maquis::cout << "LEAVING 4TERM <iklj>: " << "<" << boost::tuples::get<0>(sterm[0]) << "," << boost::tuples::get<0>(sterm[1]) << "," << boost::tuples::get<0>(sterm[2]) << "," << boost::tuples::get<0>(sterm[3]) << ">" << std::endl;
-        //for (int i_ = 0; i_ < term.size(); ++i_)
-        //   maquis::cout << op_table->get_op(term.operator_tag(i_)) << std::endl;
+
         return term;
     }
 };

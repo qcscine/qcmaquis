@@ -80,14 +80,6 @@ MPO<Matrix, grp> make_mpo_5(int i, int j, int k, int l, std::vector<int> site_ir
 
         /***********************************************/
 
-        op_t count_unbarred;
-        count_unbarred.insert_block(Matrix(1,1,1), B, B);
-
-        op_t count_barred;
-        count_barred.insert_block(Matrix(1,1,1), C, C);
-
-        /***********************************************/
-
         op_t create_unbarred;
         create_unbarred.insert_block(Matrix(1,1,1), A, B);
 
@@ -113,14 +105,14 @@ MPO<Matrix, grp> make_mpo_5(int i, int j, int k, int l, std::vector<int> site_ir
         maquis::cout << std::fixed << std::setprecision(10);
         MPOTensor<Matrix, grp> op(1,1);
         if (p==i) {
-            op.set(0,0, create_barred, -1.0);
+            op.set(0,0, create_barred, 1.0);
         } else if (p==j) {
             op.set(0,0, destroy_unbarred_fill, 1.0);
         } else if (p==k) {
-            op.set(0,0, create_unbarred, 1.0);
+            op.set(0,0, create_barred, 1.0);
         } else if (p==l) {
-            op.set(0,0, destroy_barred_fill, 1.0);
-        } else if ( (j < p && p < k) || (l < p && p < i) ) {
+            op.set(0,0, destroy_unbarred, 1.0);
+        } else if ( (j < p && p < l) || (k < p && p < i) ) {
             if (p < site_irreps.size() / 2)
                 op.set(0,0, fill_unbarred, 1.0);
             else
@@ -167,14 +159,6 @@ MPO<Matrix, grp> make_mpo_4(int i, int j, int k, int l, std::vector<int> site_ir
 
         /***********************************************/
 
-        op_t count_unbarred;
-        count_unbarred.insert_block(Matrix(1,1,1), B, B);
-
-        op_t count_barred;
-        count_barred.insert_block(Matrix(1,1,1), C, C);
-
-        /***********************************************/
-
         op_t create_unbarred;
         create_unbarred.insert_block(Matrix(1,1,1), A, B);
 
@@ -200,20 +184,20 @@ MPO<Matrix, grp> make_mpo_4(int i, int j, int k, int l, std::vector<int> site_ir
         maquis::cout << std::fixed << std::setprecision(10);
         MPOTensor<Matrix, grp> op(1,1);
         if (p==i) {
-            op.set(0,0, create_unbarred, 1.0);
+            op.set(0,0, create_barred, 1.0);
         } else if (p==j) {
             op.set(0,0, destroy_barred, 1.0);
         } else if (p==k) {
-            op.set(0,0, create_unbarred, 1.0);
+            op.set(0,0, create_unbarred, -1.0);
         } else if (p==l) {
-            op.set(0,0, destroy_barred_fill, 1.0);
-        } else if ( (l < p && p < j) || (k < p && p < i) ) {
-            if  ( p < site_irreps.size() /2  )
+            op.set(0,0, destroy_unbarred_fill, 1.0);
+        } else if ( (i < p && p < j) || (l < p && p < k) ) {
+            if  ( p < site_irreps.size() / 2  )
                 op.set(0,0, fill_unbarred, 1.0);
             else
                 op.set(0,0, fill_barred, 1.0);
         } else {
-            if ( p < site_irreps.size() < 2 )
+            if ( p < site_irreps.size() / 2 )
                 op.set(0,0, ident_unbarred, 1.0);
             else
                 op.set(0,0, ident_barred, 1.0);
@@ -287,14 +271,14 @@ MPO<Matrix, grp> make_mpo_3(int i, int j, int k, int l, std::vector<int> site_ir
         maquis::cout << std::fixed << std::setprecision(10);
         MPOTensor<Matrix, grp> op(1,1);
         if (p==i) {
-            op.set(0,0, create_barred, -1.0);
-        } else if (p==j) {
-            op.set(0,0, destroy_unbarred, 1.0);
-        } else if (p==k) {
             op.set(0,0, create_barred, 1.0);
+        } else if (p==j) {
+            op.set(0,0, destroy_barred_fill, 1.0);
+        } else if (p==k) {
+            op.set(0,0, create_unbarred, 1.0);
         } else if (p==l) {
             op.set(0,0, destroy_unbarred_fill, 1.0);
-        } else if ( (l < p && p < j) || (k < p && p < i) ) {
+        } else if ( (l < p && p < k) || (j < p && p < i) ) {
             if (p < site_irreps.size() / 2)
                 op.set(0,0, fill_unbarred, 1.0);
             else
@@ -374,12 +358,12 @@ MPO<Matrix, grp> make_mpo_2(int i, int j, int k, int l, std::vector<int> site_ir
         maquis::cout << std::fixed << std::setprecision(10);
         MPOTensor<Matrix, grp> op(1,1);
         if (p==i) {
-            op.set(0,0,count_unbarred, 1.0);
+            op.set(0,0,count_barred, 1.0);
         } else if (p==j) {
-            op.set(0,0, destroy_unbarred, 1.0);
+            op.set(0,0, destroy_barred, 1.0);
         } else if (p==k) {
-            op.set(0,0, create_unbarred, -1.0);
-        } else if ( (j < p && p < k) || (k < p && p < j) ) {
+            op.set(0,0, create_barred, 1.0);
+        } else if ( (j < p && p < i) || (l < p && p < k) ) {
             if (p < site_irreps.size() / 2)
                 op.set(0,0, fill_unbarred, 1.0);
             else
@@ -697,41 +681,56 @@ int main(int argc, char ** argv)
         std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(std::cout, " "));
         std::cout << std::endl;
 
-        //MPO<matrix, grp> mpo = make_1et<matrix>(4,2,site_irreps);
+        //MPO<matrix, grp> mpo = make_1et<matrix>(2,0,site_irreps);
         //double expectation_value = expval(mps, mpo, false);
-        //maquis::cout << "5 3: " << expectation_value << std::endl;
+        //maquis::cout << "4 1: " << expectation_value << std::endl;
 
-        //mpo = make_1et<matrix>(2,4,site_irreps);
+        //mpo = make_1et<matrix>(0,2,site_irreps);
         //expectation_value = expval(mps,mpo,false);
-        //maquis::cout << "3 5: " << expectation_value << std::endl;
+        //maquis::cout << "1 4: " << expectation_value << std::endl;
        
         //mpo = make_mpo_2<matrix>(0,2,1,0,site_irreps);
         //expectation_value = expval(mps,mpo,false);
         //maquis::cout << "1 3 2 1: " << expectation_value << std::endl;
 
-        //MPO<matrix, grp> mpo = make_mpo_2<matrix>(0,3,2,0,site_irreps);
-        //double expectation_value = expval(mps,mpo,false);
-        //maquis::cout << "1 4 3 1: " << expectation_value << std::endl;
+        MPO<matrix,grp> mpo = make_mpo_2<matrix>(13,15,10,13,site_irreps);
+        //MPO<matrix,grp> mpo = make_mpo_3<matrix>(11,10,8,7,site_irreps);
+        //MPO<matrix,grp> mpo = make_mpo_4<matrix>(11,15,8,7,site_irreps);
+        //MPO<matrix,grp> mpo = make_mpo_5<matrix>(11,3,10,7,site_irreps);
 
-        // 4 in 10
-        //MPO<matrix,grp> mpo = make_mpo_3<matrix>(7,2,5,0,site_irreps);
-        //double expectation_value = expval(mps,mpo,false);
-        //maquis::cout << "8 3 6 1: " << expectation_value << std::endl;
+		//for(int p=0; p<mpo.size(); ++p){
+		//	maquis::cout << "######## SITE " << p << " ########\n\n";
+		//	for (int b1 = 0; b1 < mpo[p].row_dim(); ++b1) {
+		//		for (int b2 = 0; b2 < mpo[p].col_dim(); ++b2) {
+		//			if (mpo[p].has(b1, b2)) {
+		//				maquis::cout << "H(" << b1 << "," << b2 << "): " << mpo[p].at(b1,b2).scale << "\n" << mpo[p].at(b1,b2).op.basis() << "\n\n";}
+		//		}
+		//	}	
+		//}
 
-        MPO<matrix,grp> mpo = make_mpo_4<matrix>(2,7,0,5,site_irreps);
-        double expectation_value = expval(mps,mpo,false);
-		maquis::cout << std::setprecision(30);
-        maquis::cout << "3 8 1 6: " << expectation_value << std::endl;
+        double expectation_value = expval_reversed(mps,mpo,false);
+        maquis::cout << "expectation value: " << expectation_value << "\n\n";
 
-        mpo = make_mpo_4<matrix>(2,7,0,5,site_irreps);
-        expectation_value = expval_reversed(mps,mpo,false);
-		maquis::cout << std::setprecision(30);
-        maquis::cout << "3 8 1 6: " << expectation_value << std::endl;
 
-        mpo = make_onsite<matrix>(0,site_irreps);
-        expectation_value = expval(mps,mpo,false);
-		maquis::cout << std::setprecision(30);
-        maquis::cout << "on site 0 t00: " << expectation_value << std::endl;
+        //mpo = make_mpo_4<matrix>(2,5,0,6,site_irreps);
+        //expectation_value = expval_reversed(mps,mpo,false);
+		//maquis::cout << std::setprecision(30);
+        //maquis::cout << "3 6 1 7: " << expectation_value << "\n\n";
+
+        //mpo = make_mpo_5<matrix>(5,0,4,2,site_irreps);
+        //expectation_value = expval(mps,mpo,false);
+		//maquis::cout << std::setprecision(30);
+        //maquis::cout << "6 1 5 3: " << expectation_value << "\n\n";
+
+        //mpo = make_mpo_5<matrix>(5,0,4,2,site_irreps);
+        //expectation_value = expval_reversed(mps,mpo,false);
+		//maquis::cout << std::setprecision(30);
+        //maquis::cout << "6 1 5 3: " << expectation_value << "\n\n";
+
+        //mpo = make_onsite<matrix>(0,site_irreps);
+        //expectation_value = expval(mps,mpo,false);
+		//maquis::cout << std::setprecision(30);
+        //maquis::cout << "on site 0 t00: " << expectation_value << std::endl;
 
         double exp_norm = norm(mps);
         maquis::cout << "norm: " << exp_norm << std::endl;

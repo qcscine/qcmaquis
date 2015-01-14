@@ -31,6 +31,7 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/mp_tensors/reshapes.h"
 #include "dmrg/block_matrix/indexing.h"
+#include "dmrg/mp_tensors/contractions/non-abelian/su2gemm.h"
 
 namespace contraction {
     namespace common {
@@ -196,6 +197,11 @@ namespace contraction {
             typedef typename SymmGroup::charge charge;
             typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
+			//DEBUG
+			//MPSTensor<Matrix, SymmGroup> ket_debug = ket_tensor;
+			//ket_debug.make_right_paired();
+			//maquis::cout << "ket basis right paired:\n" << ket_debug;
+
             MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
             std::vector<block_matrix<Matrix, SymmGroup> > t
                 = boundary_times_mps<Matrix, OtherMatrix, SymmGroup, Gemm>(ket_cpy, left, mpo);
@@ -209,6 +215,12 @@ namespace contraction {
                                             -boost::lambda::_1, boost::lambda::_2));
 
             index_type loop_max = mpo.col_dim();
+
+			//DEBUG
+			//maquis::cout << "boundary times mps:\n"; 
+			//for (int ii = 0; ii < t.size(); ii++) {
+			//	maquis::cout << t[ii].basis() << std::endl;
+			//}
 
             bra_tensor.make_left_paired();
             block_matrix<Matrix, SymmGroup> bra_conj = conjugate(bra_tensor.data());
@@ -233,8 +245,13 @@ namespace contraction {
             omp_for(index_type b2, parallel::range<index_type>(0,loop_max), {
                 ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
                 block_matrix<Matrix, SymmGroup> tmp;
+				//maquis::cout << "Calling lbtm kernel...\n\n";
                 Kernel()(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
-                typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
+				//maquis::cout << "Accessing contraction grid\n" << contr_grid(0,0);
+				//maquis::cout << "Accessing conjugate(bra)\n" << bra_conj.basis() << std::endl;
+                //typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
+				::SU2::gemm(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
+				//maquis::cout << "Left boundary after contraction:\n" << ret[b2].basis() << std::endl;
             });
 
             return ret;
@@ -252,13 +269,41 @@ namespace contraction {
             typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
             parallel::scheduler_permute scheduler(mpo.placement_l, parallel::groups_granularity);
 
+			//DEBUG
+			//MPSTensor<Matrix, SymmGroup> ket_debug = ket_tensor;
+			//ket_debug.make_left_paired();
+			//maquis::cout << "KET TENSOR:\n" << ket_tensor.data().basis() << std::endl;
+
             MPSTensor<Matrix, SymmGroup> ket_cpy = ket_tensor;
             std::vector<block_matrix<Matrix, SymmGroup> > t
                 = mps_times_boundary<Matrix, OtherMatrix, SymmGroup, Gemm>(ket_cpy, right, mpo);
+			
+			//DEBUG
+			//maquis::cout << "MPSTensor * RIGHT:\n"; 
+			//for (int ii = 0; ii < t.size(); ii++) {
+			//	maquis::cout << t[ii].basis() << "\n";
+			//}
+			//maquis::cout << "\n";
 
             Index<SymmGroup> const & left_i = ket_tensor.row_dim();
             Index<SymmGroup> const & right_i = bra_tensor.col_dim();
             Index<SymmGroup> out_right_i = adjoin(ket_tensor.site_dim()) * right_i;
+
+			// eliminate from out_right_i unphysical charges
+			//maquis::cout << "OUT RIGHT I BEFORE REMOVE\n"; 
+			//for (int ii = 0; ii < out_right_i.size(); ii++) {
+			//	maquis::cout << out_right_i[ii].first << std::endl;
+			//}
+			//for (typename Index<SymmGroup>::iterator kk = out_right_i.begin(); kk != out_right_i.end(); ++kk) {
+			//		//maquis::cout << kk->first << std::endl;
+			//		if(kk->first[0] < 0 || kk->first[1] < 0){ out_right_i.erase(kk); --kk;}
+			//}
+			//maquis::cout << "OUT RIGHT I AFTER REMOVE\n"; 
+			//for (int ii = 0; ii < out_right_i.size(); ii++) {
+			//	maquis::cout << out_right_i[ii].first << std::endl;
+			//}
+
+
             ProductBasis<SymmGroup> in_left_pb(ket_tensor.site_dim(), left_i);
             ProductBasis<SymmGroup> out_right_pb(ket_tensor.site_dim(), right_i,
                                                  boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
@@ -285,11 +330,17 @@ namespace contraction {
 
     #else
             omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
+				//maquis::cout << "\n###Calling rbtm kernel...###\n\n";
+				//maquis::cout << "Left basis: " << left_i << "\n\n";
                 Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
-
+				//maquis::cout << "#######out from kernel#######\n\n";
+				//maquis::cout << "CONTR GRID (right paired):\n" << ret[b1].basis() << "\n\n";
+				//maquis::cout << "TRANS(CONJ(BRA)):\n" << transpose(bra_conj).basis() << "\n\n";
                 block_matrix<Matrix, SymmGroup> tmp;
-                typename Gemm::gemm()(ret[b1], transpose(bra_conj), tmp);
+                //typename Gemm::gemm()(ret[b1], transpose(bra_conj), tmp);
+				::SU2::gemm(ret[b1], transpose(bra_conj), tmp);
                 //gemm(ret[b1], transpose(bra_conj), tmp, parallel::scheduler_size_indexed(ret[b1]));
+				//maquis::cout << "Right boundary after contraction:\n" << tmp.basis() << std::endl;
                 swap(ret[b1], tmp);
             });
     #endif

@@ -191,6 +191,7 @@ namespace rel_chem_detail {
     
         }
 
+		/*   Standard model four term
         void add_term(std::vector<term_descriptor> & tagterms,
                       int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
         {
@@ -219,6 +220,7 @@ namespace rel_chem_detail {
                                    op_i, op_k, op_l, op_j, tag_handler) );
             }
         }
+		*/
     
         // 4-terms for the relativistic case
         void add_term(std::vector<term_descriptor> & tagterms, value_type scale, int n_pair,

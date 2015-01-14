@@ -145,6 +145,14 @@ protected:
     inline void boundary_right_step(MPO<Matrix, SymmGroup> const & mpo, int site)
     {
         right_[site] = contr::overlap_mpo_right_step(mps[site], mps[site], right_[site+1], mpo[site]);
+
+		//DEBUG
+		//typename SymmGroup::charge max;
+		//max[0]=4;
+		//if(site == 7){
+		//	right_[site][0].insert_block(Matrix(1,1,1), max, max);
+		//}
+
         Storage::pin(right_[site]);
         
         for (int n = 0; n < northo; ++n)
@@ -183,6 +191,14 @@ protected:
         Storage::evict(left_[site]);
         //tlb.end();
 
+		//DEBUG
+		//for (int i = 0; i <= L; ++i) {	
+		//	maquis::cout << "Site " << i << std::endl;
+		//	for (int j = 0; j < left_[i].aux_dim(); j++) {
+		//		maquis::cout << left_[i][j].basis() << std::endl;
+		//	}
+		//}
+
         maquis::cout << "Boundaries are partially initialized...\n";
         
         //Timer trb("Init right boundaries"); trb.begin();
@@ -190,14 +206,34 @@ protected:
         right_[L] = mps.right_boundary();
         Storage::pin(right_[L]);
 
+		//maquis::cout << "\n********Site 8********\n";
+		//for (int j = 0; j < right_[L].aux_dim(); j++) {
+		//	maquis::cout << right_[L][j].basis() << std::endl;
+		//}
+		//maquis::cout << "\n";
+
         for (int i = L-1; i >= site; --i) {
+			//maquis::cout << "********Site " << i << "********\n";
             Storage::drop(right_[i]);
             boundary_right_step(mpo, i);
             Storage::evict(right_[i+1]);
             parallel::sync(); // to scale down memory
+			//maquis::cout << "Summary of right boundary after right step\n";
+			//for (int j = 0; j < right_[i].aux_dim(); j++) {
+			//	maquis::cout << right_[i][j].basis() << std::endl;
+			//}
+			//maquis::cout << std::endl;
         }
         Storage::evict(right_[site]);
         //trb.end();
+
+		//DEBUG
+		//for (int i = L; i >= 0; --i) {	
+		//	maquis::cout << "Site " << i << std::endl;
+		//	for (int j = 0; j < right_[i].aux_dim(); j++) {
+		//		maquis::cout << right_[i][j].basis() << std::endl;
+		//	}
+		//}
 
         maquis::cout << "Boundaries are fully initialized...\n";
     }

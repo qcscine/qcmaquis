@@ -109,6 +109,32 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
 }
 
 template<class Matrix, class SymmGroup>
+double expval_reversed(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
+              bool verbose = false)
+{
+    parallel::scheduler_balanced scheduler(mps.length());
+    assert(mpo.length() == mps.length());
+    std::size_t L = mps.length();
+    
+    Boundary<Matrix, SymmGroup> right = mps.right_boundary();
+    maquis::cout << "Starting right boundary:\n" << right[0];
+    
+    for(int i = L-1; i >= 0; --i) {
+        maquis::cout << "############# SITE " << i << " #############\n\n";
+        maquis::cout << "Entering overlap_mpo_right_step...\n\n";
+        parallel::guard proc(scheduler(i));
+        if (verbose)
+            maquis::cout << "expval site " << (size_t)i << std::endl;
+        right = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
+        maquis::cout << "Right boundary after contraction:\n";
+        for(int ii=0; ii < right.aux_dim() ; ++ii)
+             maquis::cout << right[ii];
+    }
+    
+    return maquis::real(right[0].trace());
+}
+
+template<class Matrix, class SymmGroup>
 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matrix, SymmGroup> const & mps,
                                                                        MPO<Matrix, SymmGroup> const & mpo)
 {
