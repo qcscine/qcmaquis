@@ -51,8 +51,8 @@ typedef alps::numeric::matrix<double> matrix;
 
 #if defined(USE_TWOU1)
 typedef TwoU1 symm;
-#elif defined(USE_TWOU1LPG)
-typedef TwoU1LPG symm;
+#elif defined(USE_U1LPG)
+typedef U1LPG symm;
 #elif defined(USE_TWOU1PG)
 typedef TwoU1PG symm;
 #elif defined(USE_SU2U1)

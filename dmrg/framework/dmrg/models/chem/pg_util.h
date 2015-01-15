@@ -76,29 +76,6 @@ public:
 };
 
 template < >
-class  PGDecorator<TwoU1LPG>
-{
-public:
-    typedef TwoU1LPG::subcharge subcharge;
-    DualIndex<TwoU1LPG> operator()(DualIndex<TwoU1LPG> rhs, subcharge irr)
-    {
-        for(DualIndex<TwoU1LPG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
-		{
-            if ( (it->lc[0] + it->lc[1]) % 2 == 0)
-                it->lc[2] = 0;
-            else
-                it->lc[2] = irr;
-
-            if ( (it->rc[0] + it->rc[1]) % 2 == 0)
-                it->rc[2] = 0;
-            else
-                it->rc[2] = irr;
-		}
-        return rhs;
-    }
-};
-
-template < >
 class  PGDecorator<U1LPG>
 {
 public:

@@ -55,20 +55,6 @@ namespace rel_chem_detail {
         }
     };
 
-    // added 10.7.2014
-    template <>
-    struct qn_helper<TwoU1LPG>
-    {
-        typename TwoU1LPG::charge total_qn(BaseParameters & parms)
-        {
-            typename TwoU1LPG::charge ret(0);
-            ret[0] = parms["u1_total_charge1"];
-            ret[1] = parms["u1_total_charge2"];
-            ret[2] = parms["irrep_charge"];
-            return ret;
-        }
-    };
-
     template <>
     struct qn_helper<U1LPG>
     {
@@ -341,8 +327,7 @@ namespace rel_chem_detail {
             // Check symmmetry to use the right factor
             double integral_value = 0;
             double scale_factor = 1;
-            if (parms["symmetry"] == "2u1lpg" && parms["MODEL"] == "relativistic_quantum_chemistry") {scale_factor = 0.5;}
-            if (parms["symmetry"] == "u1lpg" && parms["MODEL"] == "relativistic_quantum_chemistry_ts") {scale_factor = 0.5;}
+            if (parms["symmetry"] == "u1lpg" && parms["MODEL"] == "relativistic_quantum_chemistry") {scale_factor = 0.5;}
                 
             while (it != raw.end()) {
                 

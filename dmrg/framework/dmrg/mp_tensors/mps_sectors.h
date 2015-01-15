@@ -45,9 +45,6 @@ namespace charge_detail {
     inline bool physical(typename SymmGroup::charge c) { return true; }
 
     template <>
-    inline bool physical<TwoU1LPG>(TwoU1LPG::charge c) { return c[0] >= 0 && c[1] >= 0; }
-
-    template <>
     inline bool physical<U1LPG>(U1LPG::charge c) { return c[0] >= 0; }
 
     template <>
@@ -126,13 +123,13 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
 	}
     
 	//--- Print left allowed terms ---//
-	std::cout << std::endl;
-	for (int i = 0; i < L+1; ++i)
-	{
-		std::cout << "Left allowed sectors on site: " << i << std::endl;
-		std::cout << left_allowed[i] << std::endl;
-	}
-	std::cout << std::endl;
+	//std::cout << std::endl;
+	//for (int i = 0; i < L+1; ++i)
+	//{
+	//	std::cout << "Left allowed sectors on site: " << i << std::endl;
+	//	std::cout << left_allowed[i] << std::endl;
+	//}
+	//std::cout << std::endl;
 
 
     cmaxi=maximum_total_charge; cmini=minimum_total_charge;
@@ -158,12 +155,12 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
         cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i]]);
     }
 	
-	for (int i = L; i > -1; --i)
-	{
-		std::cout << "Right allowed sectors on site: " << i << std::endl;
-		std::cout << right_allowed[i] << std::endl;
-	}
-	std::cout << std::endl;
+	//for (int i = L; i > -1; --i)
+	//{
+	//	std::cout << "Right allowed sectors on site: " << i << std::endl;
+	//	std::cout << right_allowed[i] << std::endl;
+	//}
+	//std::cout << std::endl;
 
     for (int i = 0; i < L+1; ++i) {
         allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
@@ -173,8 +170,8 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                                  left_allowed[i].size_of_block(it->first),
                                  right_allowed[i].size_of_block(it->first));
 
-		std::cout << "Common subset of allowed sectors on site: " << i << std::endl;
-		std::cout << allowed[i] << std::endl;
+		//std::cout << "Common subset of allowed sectors on site: " << i << std::endl;
+		//std::cout << allowed[i] << std::endl;
     }
     
     return allowed;

@@ -25,6 +25,7 @@
  *****************************************************************************/
 
 #include "dmrg/models/alps/symm_handler.hpp"
+//#include "dmrg/block_matrix/symmetry/nu1lpg.h"
 #include "dmrg/block_matrix/symmetry/u1lpg.h"
 
 // Symmetry dependent implementation

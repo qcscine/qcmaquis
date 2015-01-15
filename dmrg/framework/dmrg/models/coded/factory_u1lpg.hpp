@@ -24,7 +24,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/chem/rel/rel_model_qc_ts.h"
+#include "dmrg/models/chem/rel/rel_model_qc.h"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, U1LPG> {
@@ -33,11 +33,11 @@ struct coded_model_factory<Matrix, U1LPG> {
     {
 		typedef boost::shared_ptr<model_impl<Matrix, U1LPG> > impl_ptr;
 
-        if (parms["MODEL"] == std::string("relativistic_quantum_chemistry_ts")) {
+        if (parms["MODEL"] == std::string("relativistic_quantum_chemistry")) {
             if (parms["LATTICE"] != std::string("spinors"))
-                throw std::runtime_error("Please use \"LATTICE = spinors\" for relativistic_quantum_chemistry_ts\n");
+                throw std::runtime_error("Please use \"LATTICE = spinors\" for relativistic_quantum_chemistry\n");
             
-            return impl_ptr( new rel_qc_model_ts<Matrix, U1LPG>(lattice, parms) );
+            return impl_ptr( new rel_qc_model<Matrix, U1LPG>(lattice, parms) );
         }
 
         else {

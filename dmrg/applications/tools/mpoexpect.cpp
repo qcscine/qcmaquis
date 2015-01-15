@@ -47,7 +47,7 @@ using std::endl;
 
 typedef alps::numeric::matrix<double> matrix;
 
-typedef TwoU1LPG grp;
+typedef U1LPG grp;
 
 template<class Matrix>
 MPO<Matrix, grp> make_mpo_5(int i, int j, int k, int l, std::vector<int> site_irreps)

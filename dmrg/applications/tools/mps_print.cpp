@@ -24,30 +24,16 @@
  *
  *****************************************************************************/
 
-//#include <cmath>
 #include <iostream>
 #include <fstream>
-//#include <iomanip>
-//#include <sys/time.h>
-//#include <sys/stat.h>
-
-//#include <boost/lambda/lambda.hpp>
-
-//using std::cerr;
-
-//#include <alps/numeric/matrix.hpp>
-//#include <alps/numeric/matrix/algorithms.hpp>
 #include "dmrg/block_matrix/detail/alps.hpp"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpstensor.h"
-//#include "dmrg/mp_tensors/mpo.h"
-//#include "dmrg/mp_tensors/boundary.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
-//#include "dmrg/mp_tensors/contractions.h"
 
 typedef alps::numeric::matrix<double> matrix;
 
-typedef TwoU1LPG grp;
+typedef U1LPG grp;
 
 int main(int argc, char ** argv)
 {

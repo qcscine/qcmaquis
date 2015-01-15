@@ -63,6 +63,12 @@ namespace symm_traits {
     };
 
     template <>
+    struct PGType<U1LPG>
+    {
+        typedef PGat1 type;
+    };
+
+    template <>
     struct PGType<TwoU1PG>
     {
         typedef PGat2 type;
@@ -72,18 +78,6 @@ namespace symm_traits {
     struct PGType<SU2U1PG>
     {
         typedef PGat2 type;
-    };
-
-    template <>
-    struct PGType<TwoU1LPG>
-    {
-        typedef PGat2 type;
-    };
-
-    template <>
-    struct PGType<U1LPG>
-    {
-        typedef PGat1 type;
     };
 }
 

@@ -104,10 +104,6 @@ namespace contraction {
             MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
             block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
 
-			//DEBUG
-			//maquis::cout << "Accessing block matrix of transpose(L)--A=\n" << T;
-			//maquis::cout << "Accessing block matrix of MPO\n" << W;
-
             // charge deltas are constant for all blocks
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
             charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
@@ -118,7 +114,6 @@ namespace contraction {
             parallel::scheduler_size_indexed scheduler(ret);
 
             for (size_t r = 0; r < right_i.size(); ++r){
-				//maquis::cout << "right charge loop " << right_i[r].first << std::endl;
                 charge out_r_charge = right_i[r].first;
                 charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);             if(!out_left_i.has(out_l_charge)) continue;
                 size_t r_size = right_i[r].second;
@@ -129,13 +124,10 @@ namespace contraction {
                     charge phys_c2 = W.basis().right_charge(w_block);
 
                     charge in_r_charge = SymmGroup::fuse(out_r_charge, -phys_c1);
-					//maquis::cout << "in_r_charge " << in_r_charge << std::endl;
                     charge in_l_charge = SymmGroup::fuse(in_r_charge, -T_delta);
-					//maquis::cout << "in_l_charge " << in_l_charge << std::endl;
                     size_t t_block = T.basis().position(in_l_charge, in_r_charge);            if(t_block == T.basis().size()) continue;
 
                     size_t in_right_offset = in_right_pb(phys_c1, out_r_charge);
-					//maquis::cout << "in right offset " << in_right_offset << std::endl;
                     size_t out_left_offset = out_left_pb(phys_c2, in_l_charge);
                     size_t phys_s1 = W.basis().left_size(w_block);
                     size_t phys_s2 = W.basis().right_size(w_block);
@@ -216,21 +208,12 @@ namespace contraction {
             MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
             block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
 
-			//DEBUG
-			//maquis::cout << "MPSTensor * RIGHT:\n" << T.basis() << std::endl;
-			//maquis::cout << "MPO:\n" << W.basis() << "\n\n";
-
             // charge deltas are constant for all blocks
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
             charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
             charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
 
-			//maquis::cout << "Loop over left charges:\n";
             for (size_t l = 0; l < left_i.size(); ++l){
-            	//charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
-            	//charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
-            	//charge    total_delta = SymmGroup::fuse(operator_delta, -T_delta);
-				//maquis::cout << "Left charge at " << l << "\twith charge " << left_i[l].first << std::endl;
                 charge out_l_charge = left_i[l].first;
                 charge out_r_charge = SymmGroup::fuse(out_l_charge, -total_delta);            if(!out_right_i.has(out_r_charge)) continue;
                 size_t l_size = left_i[l].second;

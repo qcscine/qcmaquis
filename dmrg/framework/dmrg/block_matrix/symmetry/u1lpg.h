@@ -227,7 +227,7 @@ U1ChargeLPG<S> operator/(U1ChargeLPG<S> const & a, int n)
 }
 
 
-template<class S = int>
+template<class S>
 class U1LPG_tpl
 {
 public:

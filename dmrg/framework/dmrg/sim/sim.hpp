@@ -106,7 +106,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     assert(mps.length() == lat.size());
     maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
     //boost::filesystem::create_directory(initial_mps);
-    save("initial_mps.h5", mps);
+    //save("initial_mps.h5", mps);
     
 }
 
