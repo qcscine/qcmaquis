@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,67 +24,25 @@
  *
  *****************************************************************************/
 
-#ifndef SYMMETRY_TRAITS_H
-#define SYMMETRY_TRAITS_H
+#include "dmrg/models/chem/rel/rel_model_qc_ts.h"
 
-namespace symm_traits {
-
-    class AbelianTag {};
-    class SU2Tag {};
-
-    template <class SymmGroup>
-    struct SymmType
+template<class Matrix>
+struct coded_model_factory<Matrix, U1LPG> {
+    static boost::shared_ptr<model_impl<Matrix, U1LPG> > parse
+    (Lattice const & lattice, BaseParameters & parms)
     {
-        typedef AbelianTag type;
-    };
+		typedef boost::shared_ptr<model_impl<Matrix, U1LPG> > impl_ptr;
 
-    template <>
-    struct SymmType<SU2U1>
-    {
-        typedef SU2Tag type;
-    };
+        if (parms["MODEL"] == std::string("relativistic_quantum_chemistry_ts")) {
+            if (parms["LATTICE"] != std::string("spinors"))
+                throw std::runtime_error("Please use \"LATTICE = spinors\" for relativistic_quantum_chemistry_ts\n");
+            
+            return impl_ptr( new rel_qc_model_ts<Matrix, U1LPG>(lattice, parms) );
+        }
 
-    template <>
-    struct SymmType<SU2U1PG>
-    {
-        typedef SU2Tag type;
-    };
-
-    /////////////////////////////////////
-
-    class NoPG {};
-    class PGat1 {};
-    class PGat2 {};
-
-    template <class SymmGroup>
-    struct PGType
-    {
-        typedef NoPG type;
-    };
-
-    template <>
-    struct PGType<TwoU1PG>
-    {
-        typedef PGat2 type;
-    };
-
-    template <>
-    struct PGType<SU2U1PG>
-    {
-        typedef PGat2 type;
-    };
-
-    template <>
-    struct PGType<TwoU1LPG>
-    {
-        typedef PGat2 type;
-    };
-
-    template <>
-    struct PGType<U1LPG>
-    {
-        typedef PGat1 type;
-    };
-}
-
-#endif
+        else {
+            throw std::runtime_error("Don't know this model!\n");
+            return impl_ptr();
+        }
+    }
+};

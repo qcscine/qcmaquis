@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,67 +24,18 @@
  *
  *****************************************************************************/
 
-#ifndef SYMMETRY_TRAITS_H
-#define SYMMETRY_TRAITS_H
+#include "model_factory_symm.h"
 
-namespace symm_traits {
+#include "dmrg/models/coded/factory_u1lpg.hpp"
+#include "dmrg/models/continuum/factory_u1lpg.hpp"
 
-    class AbelianTag {};
-    class SU2Tag {};
+typedef U1LPG grp;
 
-    template <class SymmGroup>
-    struct SymmType
-    {
-        typedef AbelianTag type;
-    };
-
-    template <>
-    struct SymmType<SU2U1>
-    {
-        typedef SU2Tag type;
-    };
-
-    template <>
-    struct SymmType<SU2U1PG>
-    {
-        typedef SU2Tag type;
-    };
-
-    /////////////////////////////////////
-
-    class NoPG {};
-    class PGat1 {};
-    class PGat2 {};
-
-    template <class SymmGroup>
-    struct PGType
-    {
-        typedef NoPG type;
-    };
-
-    template <>
-    struct PGType<TwoU1PG>
-    {
-        typedef PGat2 type;
-    };
-
-    template <>
-    struct PGType<SU2U1PG>
-    {
-        typedef PGat2 type;
-    };
-
-    template <>
-    struct PGType<TwoU1LPG>
-    {
-        typedef PGat2 type;
-    };
-
-    template <>
-    struct PGType<U1LPG>
-    {
-        typedef PGat1 type;
-    };
-}
-
+#if defined USE_AMBIENT
+impl_model_factory(pmatrix, grp)
+impl_model_factory(cpmatrix, grp)
+#else
+impl_model_factory(matrix, grp)
+impl_model_factory(cmatrix, grp)
 #endif
+

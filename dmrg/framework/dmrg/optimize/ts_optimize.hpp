@@ -153,9 +153,7 @@ public:
             
     	    // Create TwoSite objects
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
-			maquis::cout << "tst\n" << tst << std::endl;
     	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
-			maquis::cout << "twin_mps\n" << twin_mps << std::endl;
             tst.clear();
 
             SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);

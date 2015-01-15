@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2014-2014 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,67 +24,13 @@
  *
  *****************************************************************************/
 
-#ifndef SYMMETRY_TRAITS_H
-#define SYMMETRY_TRAITS_H
-
-namespace symm_traits {
-
-    class AbelianTag {};
-    class SU2Tag {};
-
-    template <class SymmGroup>
-    struct SymmType
+template<class Matrix>
+struct cont_model_factory<Matrix, U1LPG> {
+    static boost::shared_ptr<model_impl<Matrix, U1LPG> > parse
+    (Lattice const & lattice, BaseParameters & parms)
     {
-        typedef AbelianTag type;
-    };
-
-    template <>
-    struct SymmType<SU2U1>
-    {
-        typedef SU2Tag type;
-    };
-
-    template <>
-    struct SymmType<SU2U1PG>
-    {
-        typedef SU2Tag type;
-    };
-
-    /////////////////////////////////////
-
-    class NoPG {};
-    class PGat1 {};
-    class PGat2 {};
-
-    template <class SymmGroup>
-    struct PGType
-    {
-        typedef NoPG type;
-    };
-
-    template <>
-    struct PGType<TwoU1PG>
-    {
-        typedef PGat2 type;
-    };
-
-    template <>
-    struct PGType<SU2U1PG>
-    {
-        typedef PGat2 type;
-    };
-
-    template <>
-    struct PGType<TwoU1LPG>
-    {
-        typedef PGat2 type;
-    };
-
-    template <>
-    struct PGType<U1LPG>
-    {
-        typedef PGat1 type;
-    };
-}
-
-#endif
+        typedef boost::shared_ptr<model_impl<Matrix, U1LPG> > impl_ptr;
+        throw std::runtime_error("Don't know this model for U1LPG SymmGroup!\n");
+        return impl_ptr();
+    }
+};

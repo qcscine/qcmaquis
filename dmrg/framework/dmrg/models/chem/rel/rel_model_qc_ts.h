@@ -64,7 +64,7 @@ class rel_qc_model_ts : public model_impl<Matrix, SymmGroup>
 
 public:
     
-    rel_qc_model(Lattice const & lat_, BaseParameters & parms_);
+    rel_qc_model_ts(Lattice const & lat_, BaseParameters & parms_);
     
     void update(BaseParameters const& p)
     {
@@ -179,14 +179,8 @@ public:
 
 					/// FOR THE TIME BEING NO CHANGES, JUST COMMENT THE INPUT FILE
                     op_vec meas_op;
-                    if (it->value() == "Nunbar")
-                        meas_op = count_unbar_ops;
-                    else if (it->value() == "Nbar")
-                        meas_op = count_bar_ops;
-                    else if (it->value() == "N")
+                    if (it->value() == "N")
                         meas_op = count_ops;
-                    //else if (it->value() == "Nunbar*Nbar" || it->value() == "docc")
-                    //    meas_op = docc_ops;
                     else
                         throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nunbar\" and \"Nbar\"\n");
 
@@ -247,7 +241,7 @@ public:
                 {
                 bond_element meas_operators;
                 meas_operators.push_back( std::make_pair(create_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy__ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
                 half_only = true;
@@ -325,6 +319,20 @@ private:
              count;
 
     typename SymmGroup::subcharge max_irrep;
+	
+	std::vector<op_t> generate_site_specific_ops(op_t const & op) const
+    {
+        PGDecorator<SymmGroup> set_symm;
+        std::vector<op_t> ret;
+        for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
+            op_t mod(set_symm(op.basis(), sc));
+            for (std::size_t b = 0; b < op.n_blocks(); ++b)
+                mod[b] = op[b];
+
+            ret.push_back(mod);
+        }
+        return ret;
+    }
 
 };
 

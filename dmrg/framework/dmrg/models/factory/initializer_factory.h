@@ -56,7 +56,7 @@ namespace detail {
                                                                       typename SymmGroup::charge right_end,
                                                                       std::vector<int> const& site_type)
         {
-            throw std::runtime_error("HF MPS init is available only for TwoU1 or TwoU1(L)PG symmetry group.");
+            throw std::runtime_error("HF MPS init is available only for TwoU1 or (Two)U1(L)PG symmetry group.");
             return typename Model<Matrix,SymmGroup>::initializer_ptr(new default_mps_init<Matrix, SymmGroup>(parms, phys_dims, right_end, site_type));
         }
     };
@@ -88,6 +88,16 @@ namespace detail {
                                                                     std::vector<int> const& site_type)
         {
             return typename Model<Matrix,TwoU1LPG>::initializer_ptr(new hf_mps_init<Matrix, TwoU1LPG>(parms, phys_dims, right_end, site_type));
+        }
+    };
+    template <class Matrix>
+    struct call_hf_init<Matrix, U1LPG> {
+        static typename Model<Matrix,U1LPG>::initializer_ptr call(BaseParameters parms,
+                                                                    std::vector<Index<U1LPG> > const& phys_dims,
+                                                                    U1LPG::charge right_end,
+                                                                    std::vector<int> const& site_type)
+        {
+            return typename Model<Matrix,U1LPG>::initializer_ptr(new hf_mps_init<Matrix, U1LPG>(parms, phys_dims, right_end, site_type));
         }
     };
 }

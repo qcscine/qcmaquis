@@ -29,6 +29,7 @@
 
 #include "dmrg/block_matrix/symmetry/none.h"
 #include "dmrg/block_matrix/symmetry/u1.h"
+#include "dmrg/block_matrix/symmetry/u1lpg.h"
 #include "dmrg/block_matrix/symmetry/2u1.h"
 #include "dmrg/block_matrix/symmetry/nu1.h"
 #include "dmrg/block_matrix/symmetry/nu1pg.h"

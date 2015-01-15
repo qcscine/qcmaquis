@@ -69,6 +69,18 @@ namespace rel_chem_detail {
         }
     };
 
+    template <>
+    struct qn_helper<U1LPG>
+    {
+        typename U1LPG::charge total_qn(BaseParameters & parms)
+        {
+            typename U1LPG::charge ret(0);
+            ret[0] = parms["u1_total_charge"];
+            ret[1] = parms["irrep_charge"];
+            return ret;
+        }
+    };
+
     class IndexTuple : public NU1Charge<4>
     {
     public:
@@ -330,6 +342,7 @@ namespace rel_chem_detail {
             double integral_value = 0;
             double scale_factor = 1;
             if (parms["symmetry"] == "2u1lpg" && parms["MODEL"] == "relativistic_quantum_chemistry") {scale_factor = 0.5;}
+            if (parms["symmetry"] == "u1lpg" && parms["MODEL"] == "relativistic_quantum_chemistry_ts") {scale_factor = 0.5;}
                 
             while (it != raw.end()) {
                 

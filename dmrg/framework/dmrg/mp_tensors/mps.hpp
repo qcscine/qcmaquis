@@ -285,12 +285,13 @@ Boundary<Matrix, SymmGroup>
 MPS<Matrix, SymmGroup>::right_boundary() const
 {
     Index<SymmGroup> i = (*this)[length()-1].col_dim();
+	Boundary<Matrix, SymmGroup> ret(i, i, 1);
 
-    Boundary<Matrix, SymmGroup> ret;
-	ret.resize(1);
-	block_matrix<Matrix, SymmGroup> boundary;
-	
-	boundary.insert_block(Matrix(1,1,1), i[0].first, i[0].first);
+    //Boundary<Matrix, SymmGroup> ret;
+	//ret.resize(1);
+	//block_matrix<Matrix, SymmGroup> boundary;
+	//
+	//boundary.insert_block(Matrix(1,1,1), i[0].first, i[0].first);
 	//boundary.insert_block(Matrix(1,1,1), i[0].first, i[1].first);
 	//boundary.insert_block(Matrix(1,1,1), i[1].first, i[0].first);
 	//boundary.insert_block(Matrix(1,1,1), i[1].first, i[1].first);
@@ -298,7 +299,7 @@ MPS<Matrix, SymmGroup>::right_boundary() const
 	//boundary.insert_block(Matrix(1,1,1), i[2].first, i[1].first);
 	//boundary.insert_block(Matrix(1,1,1), i[2].first, i[2].first);
 	
-	ret[0] = boundary;
+	//ret[0] = boundary;
 
 //    Original
 //    for(typename Index<SymmGroup>::basis_iterator it = i.basis_begin(); !it.end(); ++it)

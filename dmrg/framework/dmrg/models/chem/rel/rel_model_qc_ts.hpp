@@ -64,9 +64,8 @@ rel_qc_model_ts<Matrix, SymmGroup>::rel_qc_model_ts(Lattice const & lat_, BasePa
 	
 	B[1] = 0;
 	
-    op_t create_unbar_op, create_bar_op, destroy_unbar_op, destroy_bar_op,
-         count_unbar_op, count_bar_op, ident_transfer_op, fill_transfer_op,
-         ident_unbar_op, ident_bar_op, fill_unbar_op, fill_bar_op;
+    op_t create_op, destroy_op, count_op, 
+         ident_op, fill_op;
 	
     ident_op.insert_block(Matrix(1, 1, 1), A, A);
     ident_op.insert_block(Matrix(1, 1, 1), B, B);
@@ -125,7 +124,7 @@ rel_qc_model_ts<Matrix, SymmGroup>::rel_qc_model_ts(Lattice const & lat_, BasePa
             
             term_descriptor term;
             term.coeff = matrix_elements[m]*2.0;
-            term.push_back( boost::make_tuple(0, ident_unbar) );
+            term.push_back( boost::make_tuple(0, ident) );
             this->terms_.push_back(term);
 
             used_elements[m] += 1;

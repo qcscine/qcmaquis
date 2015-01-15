@@ -99,6 +99,29 @@ public:
 };
 
 template < >
+class  PGDecorator<U1LPG>
+{
+public:
+    typedef U1LPG::subcharge subcharge;
+    DualIndex<U1LPG> operator()(DualIndex<U1LPG> rhs, subcharge irr)
+    {
+        for(DualIndex<U1LPG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+		{
+            if ( it->lc[0] % 2 == 0)
+                it->lc[1] = 0;
+            else
+                it->lc[1] = irr;
+
+            if ( it->rc[0] % 2 == 0)
+                it->rc[1] = 0;
+            else
+                it->rc[1] = irr;
+		}
+        return rhs;
+    }
+};
+
+template < >
 class  PGDecorator<SU2U1PG>
 {
 public:
@@ -129,6 +152,18 @@ class PGCharge_
 public:
     typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, int irr)
     { 
+        return rhs;
+    }
+};
+
+template <class SymmGroup>
+class  PGCharge_<SymmGroup, symm_traits::PGat1>
+{
+public:
+    typedef typename SymmGroup::subcharge subcharge;
+    typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, subcharge irr)
+    {
+        rhs[1] = irr;
         return rhs;
     }
 };
