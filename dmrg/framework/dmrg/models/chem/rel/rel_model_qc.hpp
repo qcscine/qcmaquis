@@ -34,6 +34,9 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 , parms(parms_)
 , tag_handler(new table_type())
 {
+	// TODO: Ask for the max_irrep to the symmetry class
+	max_irrep = 128;
+	
 	// A -> empty, B -> occupied
     typename SymmGroup::charge A(0), B(0);
     B[0]=1;

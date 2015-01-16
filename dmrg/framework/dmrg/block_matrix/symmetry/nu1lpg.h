@@ -291,6 +291,6 @@ template<int N, class S> const typename NU1LPG<N,S>::charge NU1LPG<N,S>::Identit
 template<int N, class S> const alps::numeric::matrix<S> NU1LPG<N,S>::mult_table = generate_large_mult_table<S>();
 template<int N, class S> const std::vector<S> NU1LPG<N,S>::adjoin_table = generate_adjoin<S>();
 
-//typedef NU1LPG<1> U1LPG;
+typedef NU1LPG<1> U1LPG;
 
 #endif
