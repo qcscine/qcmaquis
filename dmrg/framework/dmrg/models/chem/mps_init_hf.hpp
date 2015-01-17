@@ -72,28 +72,14 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
             size_t sc_input = hf_init[order[i]];
             typename SymmGroup::charge site_charge(0);
 
-            if (sc_input > 4)
+			size_t loc_dim = phys_dims[0].size();
+
+            if (sc_input > loc_dim)
                 throw std::runtime_error(
-                    "The hf_occ format has been changed to: 1=empty, 2=down, 3=up, 4=updown\n (not cumulative anymore)\n"
+                    "The hf occ exceeds local basis dimension\n"
                 );
 
-            switch(sc_input) {
-                case 4:
-                    site_charge = phys_dims[site_types[i]][0].first; // updown
-                    break;
-                case 3:
-                    //site_charge = phys_dims[site_types[i]][1].first; // up
-                    site_charge = phys_dims[site_types[i]][0].first; // up
-                    break;
-                case 2:
-                    //site_charge = phys_dims[site_types[i]][2].first; // down
-                    site_charge = phys_dims[site_types[i]][0].first; // down
-                    break;
-                case 1:
-                    //site_charge = phys_dims[site_types[i]][3].first; // empty
-                    site_charge = phys_dims[site_types[i]][1].first; // empty
-                    break;
-            }
+			site_charge = phys_dims[site_types[i]][loc_dim-sc_input].first;
 
             max_charge = SymmGroup::fuse(max_charge, site_charge);
 

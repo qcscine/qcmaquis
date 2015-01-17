@@ -91,18 +91,12 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     std::size_t L = mps.length();
     
     Boundary<Matrix, SymmGroup> left = mps.left_boundary();
-    maquis::cout << "Starting left boundary:\n" << left[0];
     
     for(size_t i = 0; i < L; ++i) {
-        maquis::cout << "############# SITE " << i << " #############\n\n";
-        maquis::cout << "Entering overlap_mpo_left_step...\n\n";
         parallel::guard proc(scheduler(i));
         if (verbose)
             maquis::cout << "expval site " << (size_t)i << std::endl;
         left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
-        maquis::cout << "Left boundary after contraction:\n";
-        for(int ii=0; ii < left.aux_dim() ; ++ii)
-             maquis::cout << left[ii];
     }
     
     return maquis::real(left[0].trace());
@@ -117,18 +111,12 @@ double expval_reversed(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup
     std::size_t L = mps.length();
     
     Boundary<Matrix, SymmGroup> right = mps.right_boundary();
-    maquis::cout << "Starting right boundary:\n" << right[0];
     
     for(int i = L-1; i >= 0; --i) {
-        maquis::cout << "############# SITE " << i << " #############\n\n";
-        maquis::cout << "Entering overlap_mpo_right_step...\n\n";
         parallel::guard proc(scheduler(i));
         if (verbose)
             maquis::cout << "expval site " << (size_t)i << std::endl;
         right = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
-        maquis::cout << "Right boundary after contraction:\n";
-        for(int ii=0; ii < right.aux_dim() ; ++ii)
-             maquis::cout << right[ii];
     }
     
     return maquis::real(right[0].trace());

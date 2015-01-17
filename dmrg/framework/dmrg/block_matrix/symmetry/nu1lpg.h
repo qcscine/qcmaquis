@@ -41,6 +41,7 @@
 #include <alps/numeric/matrix.hpp>
 
 #include <dmrg/block_matrix/symmetry/nu1pg.h>
+#include <dmrg/block_matrix/symmetry/lpg_tables.h>
 
 template<int N, class S>
 class NU1LPG;
@@ -175,7 +176,10 @@ public:
     typedef S subcharge;
     typedef NU1ChargeLPG<N, S> charge;
     typedef std::vector<charge> charge_v;
-    
+	
+	// TODO: Take it as an input
+	static const std::size_t group = 1;
+
     static const charge IdentityCharge;
     static const bool finite = false;
     static const alps::numeric::matrix<S> mult_table;
@@ -202,8 +206,16 @@ public:
 };
   
 template<class S>
-std::vector<S> generate_adjoin()
+std::vector<S> generate_lpg_adjoin_table(std::size_t group)
 {
+	// TODO: Add all the cases for all symmetry groups
+	switch(group) {
+		case(1):
+			return generate_adjoin_table_Cinf<S>();
+			break;
+	}
+
+	/*
     int num_irreps = 128;
     std::vector<S> adjoin_table(num_irreps);
 
@@ -220,12 +232,20 @@ std::vector<S> generate_adjoin()
         adjoin_table[i] = i + pow(-1,i);
     }
 
-    return adjoin_table;
+    return adjoin_table;*/
 }
   
 template<class S>
-alps::numeric::matrix<S> generate_large_mult_table()
+alps::numeric::matrix<S> generate_lpg_mult_table(std::size_t group)
 {
+	// TODO: Add all the cases for all symmetry groups
+	switch(group) {
+		case(1):
+			return generate_mult_table_Cinf<S>();
+			break;
+	}
+
+
     // ************* TO DO ***************
     // check double group --> insert input param in the function?
     // go in the right case for the double group
@@ -236,7 +256,8 @@ alps::numeric::matrix<S> generate_large_mult_table()
 
     // Cinfv double group mapped to C64
     // inverse and adjoint elements not implemented --> sebastian didn't
-    
+   /*
+
     int num_irreps = 128;
     if(num_irreps/2 % 2 == 1){
         throw std::logic_error("Number of boson and fermion irreps must be even\n");}
@@ -285,11 +306,12 @@ alps::numeric::matrix<S> generate_large_mult_table()
     }
 
     return mult_table;
+*/
 }
 
 template<int N, class S> const typename NU1LPG<N,S>::charge NU1LPG<N,S>::IdentityCharge = typename NU1LPG<N,S>::charge();
-template<int N, class S> const alps::numeric::matrix<S> NU1LPG<N,S>::mult_table = generate_large_mult_table<S>();
-template<int N, class S> const std::vector<S> NU1LPG<N,S>::adjoin_table = generate_adjoin<S>();
+template<int N, class S> const alps::numeric::matrix<S> NU1LPG<N,S>::mult_table = generate_lpg_mult_table<S>(NU1LPG<N,S>::group);
+template<int N, class S> const std::vector<S> NU1LPG<N,S>::adjoin_table = generate_lpg_adjoin_table<S>(NU1LPG<N,S>::group);
 
 typedef NU1LPG<1> U1LPG;
 
