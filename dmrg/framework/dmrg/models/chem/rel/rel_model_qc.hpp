@@ -69,7 +69,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     fill_op.insert_block(Matrix(1, 1, 1), A, A);
     fill_op.insert_block(Matrix(1, 1, -1), B, B);
 	
-    tag_type dummy;
+    //tag_type dummy;
 
     /**********************************************************************/
     /*** Create operator tag table ****************************************/
@@ -88,7 +88,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     /**********************************************************************/
 
     // TODO: change term_assistant input paramters
-    rel_chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, dummy, dummy, tag_handler, this->align, this);
+    rel_chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
     
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
@@ -141,17 +141,17 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         else if ( i!=j && k == -1 && l == -1) {
             
             //matrix_elements[m] = 0.0;
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
-                true, dummy, matrix_elements[m]*2.0, i, j, create, destroy, tag_handler)
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+                true, fill, matrix_elements[m]*2.0, i, j, create, destroy, tag_handler)
             );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
-                true, dummy, matrix_elements[m]*2.0, i + n_pair, j + n_pair, create, destroy, tag_handler)
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term( 
+                true, fill, matrix_elements[m]*2.0, i + n_pair, j + n_pair, create, destroy, tag_handler)
             );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
-                true, dummy, matrix_elements[m]*2.0, j, i, create, destroy, tag_handler)
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term( 
+                true, fill, matrix_elements[m]*2.0, j, i, create, destroy, tag_handler)
             );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(this, 
-                true, dummy, matrix_elements[m]*2.0, j + n_pair, i + n_pair, create, destroy, tag_handler)
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term( 
+                true, fill, matrix_elements[m]*2.0, j + n_pair, i + n_pair, create, destroy, tag_handler)
             );
             
             used_elements[m] += 1;

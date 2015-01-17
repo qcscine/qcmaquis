@@ -28,97 +28,24 @@
 #ifndef REL_QC_CHEM_DETAIL_H
 #define REL_QC_CHEM_DETAIL_H
 
+#include "dmrg/models/chem/util.h"
+
 namespace rel_chem_detail {
+    
+	typedef chem_detail::IndexTuple IndexTuple;
+	typedef chem_detail::TermTuple 	TermTuple;
 
-    template <class SymmGroup>
-    struct qn_helper
-    {
-        typename SymmGroup::charge total_qn(BaseParameters & parms)
-        {
-            typename SymmGroup::charge ret(0);
-            ret[0] = parms["u1_total_charge1"];
-            ret[1] = parms["u1_total_charge2"];
-            return ret;
-        }
-    };
-
-    template <>
-    struct qn_helper<TwoU1PG>
-    {
-        TwoU1PG::charge total_qn(BaseParameters & parms)
-        {
-            TwoU1PG::charge ret(0);
-            ret[0] = parms["u1_total_charge1"];
-            ret[1] = parms["u1_total_charge2"];
-            ret[2] = parms["irrep_charge"];
-            return ret;
-        }
-    };
-
-    template <>
-    struct qn_helper<U1LPG>
-    {
-        typename U1LPG::charge total_qn(BaseParameters & parms)
-        {
-            typename U1LPG::charge ret(0);
-            ret[0] = parms["u1_total_charge"];
-            ret[1] = parms["irrep_charge"];
-            return ret;
-        }
-    };
-
-    class IndexTuple : public NU1Charge<4>
-    {
-    public:
-        IndexTuple() {}
-        IndexTuple(int i, int j, int k, int l) {
-            (*this)[0] = i; (*this)[1] = j; (*this)[2] = k; (*this)[3] = l;
-        }
-    };
-
-    /*
-    inline IndexTuple align(int i, int j, int k, int l) {
-        if (i<j) std::swap(i,j);
-        if (k<l) std::swap(k,l);
-        if (i<k) { std::swap(i,k); std::swap(j,l); }
-        if (i==k && j<l) { std::swap(j,l); }
+	inline chem_detail::IndexTuple align(int i, int j, int k, int l) {
+        //if (i<j) std::swap(i,j);
+        //if (k<l) std::swap(k,l);
+        //if (i<k) { std::swap(i,k); std::swap(j,l); }
+        //if (i==k && j<l) { std::swap(j,l); }
         return IndexTuple(i,j,k,l);
     }
     
     inline IndexTuple align(IndexTuple const & rhs) {
         return align(rhs[0], rhs[1], rhs[2], rhs[3]);
     }
-    */
-
-    inline int sign(IndexTuple const & idx)
-    {
-        int inv_count=0, n=4;
-        for(int c1 = 0; c1 < n - 1; c1++)
-            for(int c2 = c1+1; c2 < n; c2++)
-                if(idx[c1] > idx[c2]) inv_count++;  
-
-        return 1 - 2 * (inv_count % 2);
-    }
-
-    inline std::ostream& operator<<(std::ostream & os, IndexTuple const & c) {
-        os << "<";
-        for (int i = 0; i < 4; ++i) {
-            os << c[i];
-            if (i+1 < 4)
-                os << ",";
-        }
-        os << ">";
-        return os;
-    }
-
-    class TermTuple : public NU1Charge<8>
-    {
-    public:
-        TermTuple() {}
-        TermTuple(IndexTuple const & a, IndexTuple const & b) {
-            for (int i=0; i<4; i++) { (*this)[i] = a[i]; (*this)[i+4] = b[i]; }
-        }
-    };
 
     template <typename M, class S>
     class ChemHelper
@@ -130,10 +57,8 @@ namespace rel_chem_detail {
         typedef Lattice::pos_t pos_t;
 
         ChemHelper(BaseParameters & parms, Lattice const & lat,
-                   tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_,
-                   boost::function<IndexTuple(int, int, int, int)> align_,
-                   model_impl<M, S> * model_) 
-            : ident(ident_), fill(fill_), tag_handler(tag_handler_), align(align_), model(model_)
+                   tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_)
+            : ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
             this->parse_integrals(parms, lat);
 
@@ -179,7 +104,7 @@ namespace rel_chem_detail {
                       value_type scale, int s, int p1, int p2, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j) {
 
             term_descriptor
-            term = TermMaker<M, S>::three_term(model, ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler);
+            term = TermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler);
             TermTuple id(IndexTuple(s,s,p1,p2),IndexTuple(op_i,op_k,op_l,op_j));
             if (three_terms.count(id) == 0) {
                 three_terms[id] = term;
@@ -207,7 +132,7 @@ namespace rel_chem_detail {
                     term = TermMaker<M, S>::four_term(model, ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
                                                    op_i, op_k, op_l, op_j, tag_handler);
                     
-                    term.coeff += value_type(sign(twin)) * coefficients[align(twin[0], twin[1], twin[2], twin[3])];
+                    term.coeff += value_type(chem_detial::sign(twin)) * coefficients[align(twin[0], twin[1], twin[2], twin[3])];
 
                     tagterms.push_back(term);
                 }
@@ -224,64 +149,11 @@ namespace rel_chem_detail {
         void add_term(std::vector<term_descriptor> & tagterms, value_type scale, int n_pair,
                       int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
         {
-            // Collapse terms with identical operators and different scales into one term
-            /*
-            if (op_i == op_k && op_j == op_l) {
-
-                maquis::cout << "collapsing term: " << i << j << k << l << std::endl;
-                // if i>j, we switch l,j to get the related term
-                // if j<i, we have to switch i,k, otherwise we get a forbidden permutation
-                IndexTuple self(i,j,k,l), twin(i,l,k,j);
-                if (i<j) twin = IndexTuple(k,j,i,l);
-
-                if (self > twin) {
-                
-                    //maquis::cout << "adding twin: " << twin << std::endl;
-                    term_descriptor
-                    term = TermMaker<M, S>::four_term(model, ident, fill, scale, i,k,l,j,
-                                                   op_i, op_k, op_l, op_j, tag_handler);
-                    
-                    // Find time-reversed of twin to get the right coefficient
-                    value_type tmp_coeff;
-                    if (twin[0] >= n_pair) {
-                        if (twin[1] < n_pair) {
-                            tmp_coeff = coefficients[align(twin[0]-n_pair, twin[1]+n_pair, twin[2]-n_pair, twin[3]+n_pair)];
-                        } else {
-                            tmp_coeff = coefficients[align(twin[0]-n_pair, twin[1]-n_pair, twin[2]-n_pair, twin[3]-n_pair)];
-                        }
-                    } else {
-                        tmp_coeff = coefficients[align(twin[0], twin[1], twin[2], twin[3])];
-                    }
-                    //maquis::cout << "with coeff: " << tmp_coeff << std::endl << "-----------------\n";
-
-                    //term.coeff += value_type(sign(twin)) * coefficients[align(twin[0], twin[1], twin[2], twin[3])];
-                    term.coeff += value_type(sign(twin)) * tmp_coeff;
-
-                    tagterms.push_back(term);
-                }
-                //else: we already have the term
-            }
-            else*/ {
-                //maquis::cout << "PUSHING " << i << "," << j << "," << k << "," << l << "," << std::endl;
-                tagterms.push_back( TermMaker<M, S>::four_term(model, ident, fill, scale, i,k,l,j,
-                                   op_i, op_k, op_l, op_j, tag_handler) );
-            }
+        	tagterms.push_back( TermMaker<M, S>::four_term(ident, fill, scale, i,k,l,j,
+						op_i, op_k, op_l, op_j, tag_handler) );
         }
 
     private:
-        /*value_type find_time_reversed(IndexTuple twin, int n_pair) {
-            //int ijkl[] = {twin[0],twin[1],twin[2],twin[3]};
-            IndexTuple res;
-            for (int i = 0; i < 4; ++i) {
-                if (twin[i] < n_pair) {
-                    res[i] = twin[i] + n_pair;
-                } else {
-                    res[i] = twin[i] - n_pair;
-                }
-            }
-            return res;
-        }*/
-
         void parse_integrals(BaseParameters & parms, Lattice const & lat) {
 
             // load ordering and determine inverse ordering
@@ -336,14 +208,9 @@ namespace rel_chem_detail {
                     matrix_elements.push_back(scale_factor*integral_value);
                     std::vector<int> tmp;
                     std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
-// 					maquis::cout << "tmp vector:" << std::endl;
-// 					maquis::cout << tmp[0] << ' ' << tmp[1] << ' ' << tmp[2] << ' ' << tmp[3] << ' ' << integral_value << std::endl;
 
                     IndexTuple aligned = align(reorder(tmp[0]), reorder(tmp[1]), reorder(tmp[2]), reorder(tmp[3]));
  
-// 					maquis::cout << "aligned vector:" << std::endl;
-// 					maquis::cout << aligned[0] << ' ' << aligned[1] << ' ' << aligned[2] << ' ' << aligned[3] << ' ' << integral_value << std::endl;
-
                     tmp[0] = aligned[0];
                     tmp[1] = aligned[1];
                     tmp[2] = aligned[2];
@@ -371,8 +238,6 @@ namespace rel_chem_detail {
 
         tag_type ident, fill;
         boost::shared_ptr<TagHandler<M, S> > tag_handler;
-        boost::function<IndexTuple(int, int, int, int)> align;
-        model_impl<M, S> *model;
 
         std::vector<value_type> matrix_elements;
         std::vector<std::vector<int> > idx_;

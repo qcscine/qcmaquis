@@ -40,9 +40,10 @@
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
-#include "dmrg/models/chem/rel/term_maker.h"
+#include "dmrg/models/chem/2u1/term_maker.h"
 #include "dmrg/models/chem/rel/rel_chem_detail.h"
 #include "dmrg/models/chem/pg_util.h"
+#include "dmrg/models/chem/util.h"
 
 template<class Matrix, class SymmGroup>
 class rel_qc_model : public model_impl<Matrix, SymmGroup>
@@ -73,12 +74,6 @@ public:
         return;
     }
     
-    // align function moved here from rel_chem_detail.h
-    static rel_chem_detail::IndexTuple align(int i, int j, int k, int l) {
-        // For the time being (12.06.14) do nothing in the relativistic model
-        return rel_chem_detail::IndexTuple(i,j,k,l);
-    }
-
     Index<SymmGroup> const & phys_dim(size_t type) const
     {
         // type == site for lattice = spinors
@@ -121,7 +116,7 @@ public:
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
     {
-        return rel_chem_detail::qn_helper<SymmGroup>().total_qn(parms_);
+        return chem_detail::qn_helper<SymmGroup>().total_qn(parms_);
     }
 
     tag_type get_operator_tag(std::string const & name, size_t type) const
