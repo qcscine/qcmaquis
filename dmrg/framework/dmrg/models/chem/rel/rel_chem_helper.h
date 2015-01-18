@@ -37,6 +37,8 @@ namespace rel_chem_detail {
     class ChemHelper
     {
     public:
+		typedef chem_detail::TermTuple  TermTuple;
+		typedef chem_detail::IndexTuple  IndexTuple;
         typedef typename M::value_type value_type;
         typedef ::term_descriptor<value_type> term_descriptor;
         typedef typename TagHandler<M, S>::tag_type tag_type;
@@ -47,12 +49,12 @@ namespace rel_chem_detail {
             : ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
 			std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<value_type> > pair_return
-				= parse_integrals<value_type,S>(parms, lat);
-			boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
+				= chem_detail::parse_integrals<value_type,S>(parms, lat);
+			boost::tie(idx_, matrix_elements) = chem_detail::parse_integrals<value_type,S>(parms, lat);
 
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;
-                std::copy(idx_[m].begin(), idx_[m].end(), pos.begin());
+				std::copy(idx_.row(m).first, idx_.row(m).second, pos.begin());
                 coefficients[pos] = matrix_elements[m];
             }
         }
@@ -60,9 +62,7 @@ namespace rel_chem_detail {
         std::vector<value_type> & getMatrixElements() { return matrix_elements; }
         
         int idx(int m, int pos) const {
-            //int tmp = idx_[m][pos];
-            //return tmp >= 0 ? inv_order[tmp] : tmp;
-            return idx_[m][pos];
+            return idx_(m,pos);
         }
 
         void commit_terms(std::vector<term_descriptor> & tagterms) {

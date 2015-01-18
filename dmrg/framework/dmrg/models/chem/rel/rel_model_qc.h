@@ -41,7 +41,7 @@
 #include "dmrg/utils/BaseParameters.h"
 
 #include "dmrg/models/chem/2u1/term_maker.h"
-#include "dmrg/models/chem/rel/rel_chem_detail.h"
+#include "dmrg/models/chem/rel/rel_chem_helper.h"
 #include "dmrg/models/chem/pg_util.h"
 #include "dmrg/models/chem/util.h"
 

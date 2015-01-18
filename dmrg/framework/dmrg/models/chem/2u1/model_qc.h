@@ -75,19 +75,6 @@ public:
         return;
     }
     
-    // align function moved in the model from chem_detail.h
-    static chem_detail::IndexTuple align(int i, int j, int k, int l) {
-        if (i<j) std::swap(i,j);
-        if (k<l) std::swap(k,l);
-        if (i<k) { std::swap(i,k); std::swap(j,l); }
-        if (i==k && j<l) { std::swap(j,l); }
-        return chem_detail::IndexTuple(i,j,k,l);
-    }
-
-    //static chem_detail::IndexTuple align(chem_detail::IndexTuple const & rhs) {
-    //    return align(rhs[0], rhs[1], rhs[2], rhs[3]);
-    //} 
-
     // For this model: site_type == point group irrep
     Index<SymmGroup> const & phys_dim(size_t type) const
     {

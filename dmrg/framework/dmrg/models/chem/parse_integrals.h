@@ -30,7 +30,7 @@
 
 namespace chem_detail {
 
-    template <class T>
+    template <class T, class SymmGroup>
     inline // need inline as this will be compiled in multiple objects and cause linker errors otherwise
     std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<T> >
     parse_integrals(BaseParameters & parms, Lattice const & lat)
@@ -96,7 +96,7 @@ namespace chem_detail {
                 std::vector<int> tmp;
                 std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
 
-                IndexTuple aligned = align(reorderer()(tmp[0], inv_order), reorderer()(tmp[1], inv_order),
+                IndexTuple aligned = align<SymmGroup>(reorderer()(tmp[0], inv_order), reorderer()(tmp[1], inv_order),
                                            reorderer()(tmp[2], inv_order), reorderer()(tmp[3], inv_order));
                 idx_(row, 0) = aligned[0];
                 idx_(row, 1) = aligned[1];
