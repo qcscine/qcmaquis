@@ -33,21 +33,6 @@
 
 namespace rel_chem_detail {
     
-	typedef chem_detail::IndexTuple IndexTuple;
-	typedef chem_detail::TermTuple 	TermTuple;
-
-	inline chem_detail::IndexTuple align(int i, int j, int k, int l) {
-        //if (i<j) std::swap(i,j);
-        //if (k<l) std::swap(k,l);
-        //if (i<k) { std::swap(i,k); std::swap(j,l); }
-        //if (i==k && j<l) { std::swap(j,l); }
-        return IndexTuple(i,j,k,l);
-    }
-    
-    inline IndexTuple align(IndexTuple const & rhs) {
-        return align(rhs[0], rhs[1], rhs[2], rhs[3]);
-    }
-
     template <typename M, class S>
     class ChemHelper
     {
@@ -61,7 +46,9 @@ namespace rel_chem_detail {
                    tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_)
             : ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
-            this->parse_integrals(parms, lat);
+			std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<value_type> > pair_return
+				= parse_integrals<value_type,S>(parms, lat);
+			boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
 
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;
@@ -155,102 +142,17 @@ namespace rel_chem_detail {
         }
 
     private:
-        void parse_integrals(BaseParameters & parms, Lattice const & lat) {
-
-            // load ordering and determine inverse ordering
-            std::vector<pos_t> order(lat.size());
-            if (!parms.is_set("orbital_order"))
-                for (pos_t p = 0; p < lat.size(); ++p)
-                    order[p] = p+1;
-            else
-                order = parms["orbital_order"].template as<std::vector<pos_t> >();
-
-            if (order.size() != lat.size())
-                throw std::runtime_error("orbital_order length is not the same as the number of orbitals\n");
-
-            std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
-            inv_order.resize(order.size());
-            for (int p = 0; p < order.size(); ++p)
-                inv_order[p] = std::distance(order.begin(), std::find(order.begin(), order.end(), p));
-
-            std::copy(order.begin(), order.end(), maquis::ostream_iterator<Lattice::pos_t>(std::cout, " "));
-            maquis::cout << std::endl;
-            std::copy(inv_order.begin(), inv_order.end(), maquis::ostream_iterator<Lattice::pos_t>(maquis::cout, " "));
-            maquis::cout << std::endl;
-
-            // ********************************************************************
-            // *** Parse orbital data *********************************************
-            // ********************************************************************
-
-            std::string integral_file = parms["integral_file"];
-            if (!boost::filesystem::exists(integral_file))
-                throw std::runtime_error("integral_file " + integral_file + " does not exist\n");
-
-            std::ifstream orb_file;
-            orb_file.open(integral_file.c_str());
-            for (int i = 0; i < 4; ++i)
-                orb_file.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-
-            std::vector<double> raw;
-            std::copy(std::istream_iterator<double>(orb_file), std::istream_iterator<double>(),
-                        std::back_inserter(raw));
-
-            std::vector<double>::iterator it = raw.begin();
-            
-            // Check symmmetry to use the right factor
-            //double integral_value = 0;
-            //double scale_factor = 1;
-            //if (parms["symmetry"] == "u1lpg" && parms["MODEL"] == "relativistic_quantum_chemistry") {scale_factor = 0.5;}
-                
-            while (it != raw.end()) {
-                
-                if (std::abs(*it) > parms["integral_cutoff"]){
-                    //integral_value = *it++;
-                    //matrix_elements.push_back(scale_factor*integral_value);
-                    matrix_elements.push_back(*it++);
-                    std::vector<int> tmp;
-                    std::transform(it, it+4, std::back_inserter(tmp), boost::lambda::_1-1);
-
-                    IndexTuple aligned = align(reorder(tmp[0]), reorder(tmp[1]), reorder(tmp[2]), reorder(tmp[3]));
- 
-                    tmp[0] = aligned[0];
-                    tmp[1] = aligned[1];
-                    tmp[2] = aligned[2];
-                    tmp[3] = aligned[3];
-
-                    idx_.push_back(tmp);
-                }
-                else { it++; }
-
-                it += 4;
-            }
-
-            #ifndef NDEBUG
-            for (std::size_t m = 0; m < matrix_elements.size(); ++m)
-            {
-                assert( *std::max_element(idx_[m].begin(), idx_[m].end()) <= lat.size() );
-            }
-            #endif
-            
-        }
-
-        int reorder(int p) {
-            return p >= 0 ? inv_order[p] : p;
-        }
 
         tag_type ident, fill;
         boost::shared_ptr<TagHandler<M, S> > tag_handler;
 
         std::vector<value_type> matrix_elements;
-        std::vector<std::vector<int> > idx_;
-        std::vector<int> order;
-        std::vector<int> inv_order;
+        alps::numeric::matrix<Lattice::pos_t> idx_;
 
         std::map<IndexTuple, value_type> coefficients;
 
         std::map<TermTuple, term_descriptor> three_terms;
         std::map<IndexTuple, term_descriptor> two_terms;
-
     };
 }
 

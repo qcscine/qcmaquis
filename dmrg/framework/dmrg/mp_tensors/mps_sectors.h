@@ -117,8 +117,6 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
 
 
     cmaxi=maximum_total_charge; cmini=minimum_total_charge;
-	maquis::cout << maximum_total_charge << "\t" << minimum_total_charge << "\n";
-
     for (int i = L-1; i >= 0; --i) {
         right_allowed[i] = adjoin(phys_dims[site_type[i]]) * right_allowed[i+1];
        

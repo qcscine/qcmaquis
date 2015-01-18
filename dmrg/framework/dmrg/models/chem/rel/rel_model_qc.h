@@ -91,26 +91,20 @@ public:
 	//FOR THE TIME BEING RETURN ALWAYS TRUE
     bool is_term_allowed(int i, int j, int k, int l)
     {
-		/*
         typename SymmGroup::charge I(0), J(0), K(0), L(0), tmp(0);
         typename SymmGroup::charge charges[] = {I,J,K,L};
         std::size_t site[] = {i, j, k, l};
         for (int ii=0; ii<4; ++ii) {
-            charges[ii][2] = lat.get_prop<int>("irrep", site[ii]);
-            if (site[ii] < lat.size()/2) {charges[ii][0] = 1;}
-            else if (site[ii] >= lat.size()/2) {charges[ii][1] = 1;}
-            else {throw std::runtime_error("integrals parsing failed\n");}
-        if (ii%2 == 0) {
-            tmp = SymmGroup::fuse(tmp,charges[ii]);}
-        else if (ii%2 == 1) {
-            tmp = SymmGroup::fuse(tmp, -charges[ii]);}
-        //maquis::cout << "site: " << site[ii] << " charge: " << charges[ii] << std::endl;
+            charges[ii][1] = lat.get_prop<int>("irrep", site[ii]);
+            charges[ii][0] = 1;
+        	if (ii%2 == 0) {
+            	tmp = SymmGroup::fuse(tmp, charges[ii]);}
+        	else if (ii%2 == 1) {
+            	tmp = SymmGroup::fuse(tmp, -charges[ii]);}
         }
-        //maquis::cout << "(" << i << j << k << l << "): " << tmp << std::endl;
-        if (tmp[0] == 0 && tmp[1] == 0 &&  tmp[2] != 0) {return false;}
+
+        if (tmp[0] == 0 && tmp[1] != 0) {return false;}
         else {return true;}
-		*/
-		return true;
     }
 
 

@@ -271,7 +271,6 @@ public:
     , irreps(L, 0)
     {
         assert (L%2 == 0);
-        // TODO: apply reordering partitioned into 1st and 2nd half
         std::vector<pos_t> order(L);
         if (!model.is_set("orbital_order"))
             for (pos_t p = 0; p < L; ++p)

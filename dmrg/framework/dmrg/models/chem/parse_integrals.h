@@ -28,8 +28,6 @@
 #ifndef QC_CHEM_PARSE_INTEGRALS_H
 #define QC_CHEM_PARSE_INTEGRALS_H
 
-#include "dmrg/models/chem/parse_integrals.h"
-
 namespace chem_detail {
 
     template <class T>
