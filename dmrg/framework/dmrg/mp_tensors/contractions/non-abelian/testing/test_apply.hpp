@@ -36,7 +36,7 @@ namespace SU2 { // Forward declarations
 
     double mod_coupling(int two_ja, int two_jb, int two_jc,
                         int two_jd, int two_je, int two_jf,
-                        int two_jg, int two_jh, int two_ji);
+                        int two_jg, int two_jh, int two_ji, bool debug);
 
     template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
     void gemm(block_matrix<Matrix1, SymmGroup> const & A,

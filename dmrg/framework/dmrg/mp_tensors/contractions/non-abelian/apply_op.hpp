@@ -35,6 +35,17 @@
 namespace contraction {
 namespace SU2 {
 
+    template<class Matrix, class SymmGroup>
+    bool track_it(block_matrix<Matrix, SymmGroup> const & op)
+    {
+        for (std::size_t b = 0; b < op.n_blocks(); ++b)
+        {
+            if (op.basis().left_size(b) != op.basis().right_size(b))
+                return true;
+        }
+        return false;
+    }
+
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel(size_t b2,
                      ContractionGrid<Matrix, SymmGroup>& contr_grid,
@@ -64,6 +75,9 @@ namespace SU2 {
 
             ret.spin = couple(left[b1].spin, W.spin);
             int a = left[b1].spin.get(), k = W.spin.get(), ap = ret.spin.get();
+            bool debug = false;
+            //bool debug = track_it(W);
+            //if (debug && k==0) {maquis::cout << W << std::endl; exit(1); }
 
             for (size_t lblock = 0; lblock < left[b1].n_blocks(); ++lblock) {
 
@@ -103,7 +117,7 @@ namespace SU2 {
                         int j = mc[1], jp = out_r_charge[1];
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
-                        typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
+                        typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip, debug);
                         //if (std::abs(coupling_coeff) < 1.e-40) continue;
                         //coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
 
@@ -132,11 +146,11 @@ namespace SU2 {
                             for(size_t ss1 = 0; ss1 < phys_s1; ++ss1) {
                                 for(size_t ss2 = 0; ss2 < phys_s2; ++ss2) {
                                     if (ss1 == 2 && ss2 == 2)
-                                        c_eff = ::SU2::mod_coupling(j, 2, jp, a,k,ap, i, 2, ip);
+                                        c_eff = ::SU2::mod_coupling(j, 2, jp, a,k,ap, i, 2, ip, debug);
                                     else if (ss1 == 2)
-                                        c_eff = ::SU2::mod_coupling(j, 2, jp, a,k,ap, i, two_sp, ip);
+                                        c_eff = ::SU2::mod_coupling(j, 2, jp, a,k,ap, i, two_sp, ip, debug);
                                     else if (ss2 == 2)
-                                        c_eff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2, ip);
+                                        c_eff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2, ip, debug);
                                     else
                                         c_eff = coupling_coeff;
 

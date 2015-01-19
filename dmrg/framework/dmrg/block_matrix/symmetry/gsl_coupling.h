@@ -37,12 +37,21 @@ namespace SU2 {
     inline
     double mod_coupling(int two_ja, int two_jb, int two_jc,
                         int two_jd, int two_je, int two_jf,
-                        int two_jg, int two_jh, int two_ji)
+                        int two_jg, int two_jh, int two_ji, bool debug = false)
     {
-        return sqrt( (two_jg+1.) * (two_jh+1.) * (two_jc+1.) * (two_jf+1.) ) *
+        double ret = sqrt( (two_jg+1.) * (two_jh+1.) * (two_jc+1.) * (two_jf+1.) ) *
                gsl_sf_coupling_9j(two_ja, two_jb, two_jc,
                                   two_jd, two_je, two_jf,
                                   two_jg, two_jh, two_ji);
+        if (debug)
+        {
+            maquis::cout << two_ja << two_jb << two_jc << std::endl
+                         << two_jd << two_je << two_jf << std::endl
+                         << two_jg << two_jh << two_ji << std::endl;
+            maquis::cout << "9j: " << ret << std::endl << std::endl;
+
+        }
+        return ret;
     }
 }
 
