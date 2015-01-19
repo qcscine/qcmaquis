@@ -110,6 +110,7 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(con
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator+=(block_matrix const & rhs)
 {
+    assert (this->spin.get() == rhs.spin.get());
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
     {
         charge rhs_rc = rhs.basis_[k].lc;
