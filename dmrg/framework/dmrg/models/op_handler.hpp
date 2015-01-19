@@ -180,8 +180,8 @@ typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::ge
     catch(const std::out_of_range& e) {
 
         op_t product;
-        op_t& op1 = (*base::get_operator_table())[t1];
-        op_t& op2 = (*base::get_operator_table())[t2];
+        op_t const& op1 = (*base::get_operator_table())[t1];
+        op_t const& op2 = (*base::get_operator_table())[t2];
 
         op_kron(phys_i1, phys_i2, op1, op2, product);
 
