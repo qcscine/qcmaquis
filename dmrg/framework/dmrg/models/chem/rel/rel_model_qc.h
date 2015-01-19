@@ -88,7 +88,6 @@ public:
         return fill;
     }
 
-	//FOR THE TIME BEING RETURN ALWAYS TRUE
     bool is_term_allowed(int i, int j, int k, int l)
     {
         typename SymmGroup::charge I(0), J(0), K(0), L(0), tmp(0);
@@ -106,7 +105,6 @@ public:
         if (tmp[0] == 0 && tmp[1] != 0) {return false;}
         else {return true;}
     }
-
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
     {
@@ -170,7 +168,7 @@ public:
                     if (it->value() == "N")
                         meas_op = count_ops;
                     else
-                        throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nunbar\" and \"Nbar\"\n");
+                        throw std::runtime_error("Invalid observable\nLocal measurement supported so far is \"N\"\n");
 
                     meas.push_back( new measurements::local<Matrix, SymmGroup>(what.str(1), lat, ident_ops, fill_ops, meas_op) );
                 }
@@ -323,7 +321,6 @@ private:
     }
 
 };
-
 
 #include "dmrg/models/chem/rel/rel_model_qc.hpp"
 

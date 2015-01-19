@@ -37,7 +37,66 @@ typedef alps::numeric::matrix<double> matrix;
 typedef U1LPG grp;
 
 template<class Matrix>
-MPO<Matrix, grp> make_mpo(int i, int j, int k, int l, std::vector<int> site_irreps)
+MPO<Matrix, grp> make_1et(int i, int j, std::vector<int> site_irreps)
+{
+    typedef block_matrix<Matrix, grp> op_t;
+    MPO<Matrix, grp> ret(site_irreps.size());
+	std::vector<int> op_string;
+	op_string.push_back(i); op_string.push_back(j);
+	std::sort(op_string.begin(), op_string.end());
+	for (int p=0; p<site_irreps.size(); ++p)
+    {
+        typedef tag_detail::tag_type tag_type;
+        typename grp::charge A(0), B(0);
+        B[0]=1;
+        B[1] = site_irreps[p];
+
+        op_t ident;
+        ident.insert_block(Matrix(1,1,1), A, A);
+        ident.insert_block(Matrix(1,1,1), B, B);
+
+        op_t fill;
+        fill.insert_block(Matrix(1,1,1), A, A);
+        fill.insert_block(Matrix(1,1,-1), B, B);
+
+        /***********************************************/
+
+        op_t create;
+        create.insert_block(Matrix(1,1,1), A, B);
+
+        op_t destroy;
+        destroy.insert_block(Matrix(1,1,1), B, A);
+
+		op_t count;
+		count.insert_block(Matrix(1,1,1), B, B);
+
+        /***********************************************/
+
+        op_t destroy_fill;
+        destroy_fill.insert_block(Matrix(1,1,-1), B, A);
+
+        /***********************************************/
+
+        maquis::cout << std::fixed << std::setprecision(10);
+        MPOTensor<Matrix, grp> op(1,1);
+		if ( (i == j) && (p == i) )
+			op.set(0,0, count, 1.0);
+		else if ( (i != j) && (p == i) )
+            op.set(0,0, create, 1.0);
+        else if ( (i != j) && (p == j) )
+            op.set(0,0, destroy, 1.0);
+        else if ( (op_string[0] < p && p < op_string[1]) )
+            op.set(0,0, fill, 1.0);
+        else
+            op.set(0,0, ident, 1.0);
+        
+        ret[p] = op;
+    }
+    return ret;
+}
+
+template<class Matrix>
+MPO<Matrix, grp> make_2et(int i, int j, int k, int l, std::vector<int> site_irreps)
 {
     typedef block_matrix<Matrix, grp> op_t;
     MPO<Matrix, grp> ret(site_irreps.size());
@@ -115,11 +174,19 @@ int main(int argc, char ** argv)
         for (int i=0; i < L; ++i)
             site_irreps.push_back(mps[i].site_dim()[0].first[1]);
 
-		int i,j,k,l;
-		maquis::cout << "Enter 2-RDM element: ";
-		std::cin >> i >> j >> k >> l;
+		// 2 RDM
+		//int i,j,k,l;
+		//maquis::cout << "Enter 2-RDM element: ";
+		//std::cin >> i >> j >> k >> l;
+        //MPO<matrix, grp> mpo = make_2et<matrix>(i-1,j-1,k-1,l-1,site_irreps);
+        //double expectation_value = expval(mps, mpo, false);
+        //maquis::cout << "expectation value: " << expectation_value << std::endl;
 
-        MPO<matrix, grp> mpo = make_mpo<matrix>(i-1,j-1,k-1,l-1,site_irreps);
+		// 1 RDM
+		int i,j;
+		maquis::cout << "Enter 1-RDM element: ";
+		std::cin >> i >> j;
+        MPO<matrix, grp> mpo = make_1et<matrix>(i-1,j-1,site_irreps);
         double expectation_value = expval(mps, mpo, false);
         maquis::cout << "expectation value: " << expectation_value << std::endl;
 

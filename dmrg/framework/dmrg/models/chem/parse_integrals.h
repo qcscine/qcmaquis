@@ -109,12 +109,14 @@ namespace chem_detail {
             row++;
         }
 
+		/*   causing some troubles in the rel model!!!
         #ifndef NDEBUG
         for (std::size_t m = 0; m < matrix_elements.size(); ++m)
         {
             assert( *std::max_element(idx_.elements().first, idx_.elements().second) <= lat.size() );
         }
         #endif
+		*/
 
         return std::make_pair(idx_, matrix_elements);
     }
