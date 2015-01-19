@@ -102,7 +102,10 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                     block_matrix<MPSMatrix, SymmGroup> tmp_op;
                     tmp_op = kron_handler.get_op(kron_tag);
                     tmp_op *= (p1.scale * p2.scale);
-                    out_row[b3] += tmp_op;
+                    if (out_row[b3].n_blocks() == 0)
+                        out_row[b3] = tmp_op;
+                    else
+                        out_row[b3] += tmp_op;
                 }
             }
 
