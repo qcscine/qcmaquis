@@ -780,14 +780,14 @@ void op_kron_(Index<SymmGroup> const & phys_A,
     // Spin QN's (Hack)
 
     int k1 = A.spin.get(), k2  = B.spin.get(), k, j, jp, jpp;
-    if (k1==1 && k2==1)
+    if (k1>0 && k2>0)
         j = 0;
-    else if (k1==0 && k2==1)
+    else if (k1==0 && k2>0)
         if (B.spin.action() > 0) j = 0;
-        else j = 1;
-    else if (k1==1 && k2==0)
+        else j = k2;
+    else if (k1>0 && k2==0)
         if (A.spin.action() > 0) j = 0;
-        else j = 1;
+        else j = k1;
     else
         j = 0;
 
