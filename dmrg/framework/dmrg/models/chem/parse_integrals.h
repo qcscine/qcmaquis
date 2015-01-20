@@ -109,7 +109,7 @@ namespace chem_detail {
             row++;
         }
 
-		/*   causing some troubles in the rel model!!!
+		/* causes some troubles in the rel model!!!
         #ifndef NDEBUG
         for (std::size_t m = 0; m < matrix_elements.size(); ++m)
         {
