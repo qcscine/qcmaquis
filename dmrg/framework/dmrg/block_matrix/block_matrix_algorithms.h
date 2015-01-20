@@ -746,13 +746,19 @@ void op_kron_(Index<SymmGroup> const & phys_A,
              symm_traits::SU2Tag)
 {
     typedef typename SymmGroup::charge charge;
-    C = block_matrix<Matrix2, SymmGroup>();
 
+    ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
+    ProductBasis<SymmGroup> const& pb_right = pb_left;
+
+    C = block_matrix<Matrix2, SymmGroup>();
     block_matrix<Matrix1, SymmGroup> A = Ao, B = Bo;
+
+    //*************************************
+    // expand the small identity to the full one (Hack)
 
     if (A.spin.get() == 1 && B.spin.get() == 0)
     {
-        charge cb = B.basis().left_charge(1), cc = B.basis().left_charge(2);
+        charge cb = phys_B[1].first, cc = phys_B[2].first;
         if (!B.has_block(cb,cc))
         {
             B.insert_block(Matrix1(1,1,1), cb, cc);
@@ -761,7 +767,7 @@ void op_kron_(Index<SymmGroup> const & phys_A,
     }
     if (A.spin.get() == 0 && B.spin.get() == 1)
     {
-        charge cb = A.basis().left_charge(1), cc = A.basis().left_charge(2);
+        charge cb = phys_A[1].first, cc = phys_A[2].first;
 
         if (!A.has_block(cb,cc))
         {
@@ -770,8 +776,8 @@ void op_kron_(Index<SymmGroup> const & phys_A,
         }
     }
 
-    ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
-    ProductBasis<SymmGroup> const& pb_right = pb_left;
+    //*************************************
+    // Spin QN's (Hack)
 
     int k1 = A.spin.get(), k2  = B.spin.get(), k, j, jp, jpp;
     if (k1==1 && k2==1)
@@ -791,6 +797,9 @@ void op_kron_(Index<SymmGroup> const & phys_A,
     k = std::abs(spin_j.get() - spin_jp.get());
     jp = spin_jp.get();
     jpp = spin_jpp.get();
+
+    //*************************************
+    // Tensor + Kronecker product
 
     for (int i = 0; i < A.n_blocks(); ++i) {
         for (int j = 0; j < B.n_blocks(); ++j) {
@@ -832,6 +841,7 @@ void op_kron_(Index<SymmGroup> const & phys_A,
         }
     }
 
+    //*************************************
     // Matrix basis coupling coefficient, applies uniformly to whole product
     maquis::cout << "6j\n";
     maquis::cout << j << jp << k << std::endl
@@ -839,12 +849,12 @@ void op_kron_(Index<SymmGroup> const & phys_A,
 
     typename Matrix2::value_type coupling = std::sqrt((jpp+1)*(k+1)) * gsl_sf_coupling_6j(j,jp,k,k2,k1,jpp);
     coupling = (((j+jp+k1+k2)/2)%2) ? -coupling : coupling;
-    maquis::cout << "6j: " << coupling << std::endl;
     C *= coupling;
 
     SpinDescriptor<symm_traits::SU2Tag> op_spin(k, jp-j);
     C.spin = op_spin;
 
+    maquis::cout << "6j: " << coupling << std::endl;
     maquis::cout << "kron spin: " << C.spin.get() << ", " << jp-j << std::endl << std::endl;
     //if (phys_A[1].first[2] != phys_B[1].first[2])
     //{
