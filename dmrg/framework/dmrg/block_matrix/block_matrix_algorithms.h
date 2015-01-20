@@ -773,6 +773,25 @@ void op_kron_(Index<SymmGroup> const & phys_A,
     ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
     ProductBasis<SymmGroup> const& pb_right = pb_left;
 
+    int k1 = A.spin.get(), k2  = B.spin.get(), k, j, jp, jpp;
+    if (k1==1 && k2==1)
+        j = 0;
+    else if (k1==0 && k2==1)
+        if (B.spin.action() > 0) j = 0;
+        else j = 1;
+    else if (k1==1 && k2==0)
+        if (A.spin.action() > 0) j = 0;
+        else j = 1;
+    else
+        j = 0;
+
+    SpinDescriptor<symm_traits::SU2Tag> spin_j(j,0), spin_jp, spin_jpp;
+    spin_jpp = couple(spin_j, A.spin);
+    spin_jp = couple(spin_jpp, B.spin);
+    k = std::abs(spin_j.get() - spin_jp.get());
+    jp = spin_jp.get();
+    jpp = spin_jpp.get();
+
     for (int i = 0; i < A.n_blocks(); ++i) {
         for (int j = 0; j < B.n_blocks(); ++j) {
             charge  inA = A.basis().left_charge(i);
@@ -794,7 +813,6 @@ void op_kron_(Index<SymmGroup> const & phys_A,
 
             int j1  = std::abs(inA[1]),  j2  = std::abs(inB[1]),  J = ((in_offset==2) ? 2 : std::abs(inA[1]+inB[1]));
             int j1p = std::abs(outA[1]), j2p = std::abs(outB[1]), Jp = ((out_offset==2) ? 2 : std::abs(outA[1]+outB[1]));
-            int k1  = A.spin.get(),      k2  = B.spin.get(),      k = std::abs(J-Jp);
 
             // TODO: if k != spin according to MPO matrix basis
             if (k==2) continue;
@@ -815,25 +833,6 @@ void op_kron_(Index<SymmGroup> const & phys_A,
     }
 
     // Matrix basis coupling coefficient, applies uniformly to whole product
-    int k1 = A.spin.get(), k2 = B.spin.get(), k, j, jp, jpp;
-    if (k1==1 && k2==1)
-        j = 0;
-    else if (k1==0 && k2==1)
-        if (B.spin.action() > 0) j = 0;
-        else j = 1;
-    else if (k1==1 && k2==0)
-        if (A.spin.action() > 0) j = 0;
-        else j = 1;
-    else
-        j = 0;
-
-    SpinDescriptor<symm_traits::SU2Tag> spin_j(j,0), spin_jp, spin_jpp;
-    spin_jpp = couple(spin_j, A.spin);
-    spin_jp = couple(spin_jpp, B.spin);
-    k = std::abs(spin_j.get() - spin_jp.get());
-    jp = spin_jp.get();
-    jpp = spin_jpp.get();
-
     maquis::cout << "6j\n";
     maquis::cout << j << jp << k << std::endl
                  << k2 << k1  << jpp   << std::endl;
