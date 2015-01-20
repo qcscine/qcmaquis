@@ -78,6 +78,7 @@ public:
     }
 
     spin_t get() const { return twoS; }
+    spin_t action() const { return twoSaction; }
 
     void clear()
     {

@@ -292,7 +292,6 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
 
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
-            if (std::abs(i-j) != 1) continue;
 
             this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
                 true, fill, matrix_elements[m], i, j, create_up, destroy_up, tag_handler)

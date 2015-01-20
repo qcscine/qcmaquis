@@ -753,14 +753,21 @@ void op_kron_(Index<SymmGroup> const & phys_A,
     if (A.spin.get() == 1 && B.spin.get() == 0)
     {
         charge cb = B.basis().left_charge(1), cc = B.basis().left_charge(2);
-        B.insert_block(Matrix1(1,1,1), cb, cc);
-        B.insert_block(Matrix1(1,1,1), cc, cb);
+        if (!B.has_block(cb,cc))
+        {
+            B.insert_block(Matrix1(1,1,1), cb, cc);
+            B.insert_block(Matrix1(1,1,1), cc, cb);
+        }
     }
     if (A.spin.get() == 0 && B.spin.get() == 1)
     {
         charge cb = A.basis().left_charge(1), cc = A.basis().left_charge(2);
-        A.insert_block(Matrix1(1,1,1), cb, cc);
-        A.insert_block(Matrix1(1,1,1), cc, cb);
+
+        if (!A.has_block(cb,cc))
+        {
+            A.insert_block(Matrix1(1,1,1), cb, cc);
+            A.insert_block(Matrix1(1,1,1), cc, cb);
+        }
     }
 
     ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
@@ -801,7 +808,7 @@ void op_kron_(Index<SymmGroup> const & phys_A,
 
             typename Matrix2::value_type coupling = SU2::mod_coupling(j1,j2,J,k1,k2,k,j1p,j2p,Jp);
             tmp *= coupling;
-            maquis::cout << "coupling: " << coupling << std::endl << std::endl;
+            //maquis::cout << "coupling: " << coupling << std::endl << std::endl;
 
             C.match_and_add_block(tmp, new_left, new_right);
         }
@@ -810,21 +817,22 @@ void op_kron_(Index<SymmGroup> const & phys_A,
     // Matrix basis coupling coefficient, applies uniformly to whole product
     int k1 = A.spin.get(), k2 = B.spin.get(), k, j, jp, jpp;
     if (k1==1 && k2==1)
-    {
-        j = 0; jp = 0; jpp = 1; k = 0;
-    }
+        j = 0;
     else if (k1==0 && k2==1)
-    {
-        j = 0; jp = 1; jpp = 0; k = 1;
-    }
+        if (B.spin.action() > 0) j = 0;
+        else j = 1;
     else if (k1==1 && k2==0)
-    {
-        j = 1; jp = 0; jpp = 0; k = 1;
-    }
+        if (A.spin.action() > 0) j = 0;
+        else j = 1;
     else
-    {
-        j = 0; jp = 0; jpp = 0; k = 0;
-    }
+        j = 0;
+
+    SpinDescriptor<symm_traits::SU2Tag> spin_j(j,0), spin_jp, spin_jpp;
+    spin_jpp = couple(spin_j, A.spin);
+    spin_jp = couple(spin_jpp, B.spin);
+    k = std::abs(spin_j.get() - spin_jp.get());
+    jp = spin_jp.get();
+    jpp = spin_jpp.get();
 
     maquis::cout << "6j\n";
     maquis::cout << j << jp << k << std::endl
@@ -837,8 +845,16 @@ void op_kron_(Index<SymmGroup> const & phys_A,
 
     SpinDescriptor<symm_traits::SU2Tag> op_spin(k, jp-j);
     C.spin = op_spin;
+
     maquis::cout << "kron spin: " << C.spin.get() << ", " << jp-j << std::endl << std::endl;
-    if (k==1) maquis::cout << C << std::endl << std::endl;
+    //if (phys_A[1].first[2] != phys_B[1].first[2])
+    //{
+    //    maquis::cout << phys_A << std::endl;
+    //    maquis::cout << phys_B << std::endl;
+    //    maquis::cout << A << std::endl << std::endl;
+    //    maquis::cout << B << std::endl << std::endl;
+    //    maquis::cout << C << std::endl << std::endl;
+    //}
 }
 
 template<class Matrix, class SymmGroup>
