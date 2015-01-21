@@ -64,11 +64,12 @@ std::ostream & operator << (std::ostream & os, SpinDescriptor<SymmType> rhs) { r
 template <>
 class SpinDescriptor<symm_traits::SU2Tag>
 {
-    typedef int spin_t;
 public:
+    typedef int spin_t;
+
     SpinDescriptor() : twoS(0), twoSaction(0) {}
     SpinDescriptor(spin_t twoS_) : twoS(twoS_), twoSaction(0) {}
-    SpinDescriptor(spin_t twoS_, spin_t twoSaction_) : twoS(twoS_), twoSaction(twoSaction_) {}
+    SpinDescriptor(spin_t twoS_, spin_t twoSaction_, spin_t output = 0) : twoS(twoS_), twoSaction(twoSaction_) {}
 
     SpinDescriptor & operator += (SpinDescriptor rhs)
     {
@@ -79,6 +80,8 @@ public:
 
     spin_t get() const { return twoS; }
     spin_t action() const { return twoSaction; }
+    spin_t input() const { return input_; }
+    spin_t output() const { return output_; }
 
     void clear()
     {
@@ -113,6 +116,8 @@ public:
 private:
     spin_t twoS;
     spin_t twoSaction; // only used for operators in the MPO
+    spin_t input_;
+    spin_t output_;
 };
 
 // Attention: not symmetric

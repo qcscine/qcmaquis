@@ -44,6 +44,7 @@
 #include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/pg_util.h"
 #include "dmrg/models/chem/su2u1/chem_helper_su2.h"
+#include "dmrg/models/chem/su2u1/operator_bundle.h"
 #include "dmrg/models/chem/su2u1/term_maker_su2.h"
 
 template<class Matrix, class SymmGroup>
