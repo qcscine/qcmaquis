@@ -823,9 +823,6 @@ void op_kron_(Index<SymmGroup> const & phys_A,
             int j1  = std::abs(inA[1]),  j2  = std::abs(inB[1]),  J = ((in_offset==2) ? 2 : std::abs(inA[1]+inB[1]));
             int j1p = std::abs(outA[1]), j2p = std::abs(outB[1]), Jp = ((out_offset==2) ? 2 : std::abs(outA[1]+outB[1]));
 
-            // TODO: if k != spin according to MPO matrix basis
-            if (k==2) continue;
-
             //maquis::cout << new_left << new_right << "    " << inA << "×" << inB << " -> " << outA << "×" << outB
             //             << "    " << in_offset << "/" << out_offset << std::endl;
             //maquis::cout << j1 << j2 << J << std::endl
@@ -857,13 +854,14 @@ void op_kron_(Index<SymmGroup> const & phys_A,
     maquis::cout << "6j: " << coupling << std::endl;
     maquis::cout << "kron spin: " << C.spin.get() << ", " << jp-j << std::endl << std::endl;
     //if (phys_A[1].first[2] != phys_B[1].first[2])
-    //{
-    //    maquis::cout << phys_A << std::endl;
-    //    maquis::cout << phys_B << std::endl;
-    //    maquis::cout << A << std::endl << std::endl;
-    //    maquis::cout << B << std::endl << std::endl;
-    //    maquis::cout << C << std::endl << std::endl;
-    //}
+    if (k1 == 2 || k2 == 2)
+    {
+        maquis::cout << phys_A << std::endl;
+        maquis::cout << phys_B << std::endl;
+        maquis::cout << A << std::endl << std::endl;
+        maquis::cout << B << std::endl << std::endl;
+        maquis::cout << C << std::endl << std::endl;
+    }
 }
 
 template<class Matrix, class SymmGroup>
