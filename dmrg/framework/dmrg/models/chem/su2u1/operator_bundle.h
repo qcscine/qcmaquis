@@ -91,8 +91,8 @@
 
     private:
         boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
-        std::map<std::pair<spin_t, spin_t>, tag_type> variants;
-        std::map<std::pair<spin_t, spin_t>, tag_type> fill_variants;
+        std::map<std::pair<spin_t, spin_t>, tag_type, compare_pair<std::pair<spin_t, spin_t> > > variants;
+        std::map<std::pair<spin_t, spin_t>, tag_type, compare_pair<std::pair<spin_t, spin_t> > > fill_variants;
 
         spin_t spin;
         op_t base_op;
