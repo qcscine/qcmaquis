@@ -37,20 +37,6 @@ namespace tag_detail {
 
     enum operator_kind { bosonic, fermionic };
 
-    struct pair_cmp
-    {
-        bool operator()(std::pair<tag_type, tag_type> const & i,
-                        std::pair<tag_type, tag_type> const & j) const
-        {
-            if (i.first < j.first)
-                return true;
-            else if (i.first > j.first)
-                return false;
-            else
-                return i.second < j.second;
-        }
-    };
-
     template <class Matrix, class SymmGroup>
     void remove_empty_blocks(block_matrix<Matrix, SymmGroup> & op)
     {
