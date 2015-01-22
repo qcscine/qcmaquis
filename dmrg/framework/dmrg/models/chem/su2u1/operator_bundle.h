@@ -37,14 +37,18 @@
         typedef typename SpinDescriptor<symm_traits::SU2Tag>:: spin_t spin_t;
         
     public:
-        OperatorBundle_(op_t bop_, op_t bfop_, boost::shared_ptr<TagHandler<Matrix, SymmGroup> > th)
-            : base_op(bop_)
-            , base_fill_op(bfop_)
+        OperatorBundle_(tag_type rt, tag_type rft, boost::shared_ptr<TagHandler<Matrix, SymmGroup> > th)
+            : reference_tag(rt)
+            , reference_fill_tag(rft)
             , tag_handler(th)
-            , spin(base_op.spin.get())
         {
-                 variants[std::make_pair(base_op.spin.input(), base_op.spin.output())] = base_op;
-            fill_variants[std::make_pair(base_fill_op.spin.input(), base_fill_op.spin.output())] = base_fill_op;
+            op_t reference_op = tag_handler->get_op(reference_tag);
+            op_t reference_fill_op = tag_handler->get_op(reference_fill_tag);
+
+            spin = reference_op.spin.get();
+
+                 variants[std::make_pair(reference_op.spin.input(), reference_op.spin.output())] = reference_tag;
+            fill_variants[std::make_pair(reference_fill_op.spin.input(), reference_fill_op.spin.output())] = reference_fill_tag;
         }
 
         tag_type operator()(bool fill, spin_t spin_in, spin_t spin_out)
@@ -77,10 +81,11 @@
 
                 SpinDescriptor<symm_traits::SU2Tag> new_descriptor(spin, spin_in, spin_out);
 
-                op_t new_variant = (fill) ? base_fill_op : base_op;
+                op_t new_variant = (fill) ? tag_handler->get_op(reference_fill_tag) : tag_handler->get_op(reference_tag);
                 new_variant.spin = new_descriptor;
 
-                tag_type new_tag = tag_handler->register_op(new_variant);
+                tag_type new_tag = tag_handler->register_op(new_variant, (tag_handler->is_fermionic(reference_tag))
+                                                                            ? tag_detail::fermionic : tag_detail::bosonic);
 
                 if (fill)
                     fill_variants[std::make_pair(spin_in, spin_out)] = new_tag;                          
@@ -95,8 +100,8 @@
         std::map<std::pair<spin_t, spin_t>, tag_type, compare_pair<std::pair<spin_t, spin_t> > > fill_variants;
 
         spin_t spin;
-        op_t base_op;
-        op_t base_fill_op;
+        tag_type reference_tag;
+        tag_type reference_fill_tag;
     };
 
 #endif

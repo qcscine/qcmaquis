@@ -372,6 +372,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     destroy_pkg.fill_couple_up = destroy_fill;
     destroy_pkg.fill_couple_down = destroy_fill_couple_down;
     /**********************************************************************/
+    OperatorBundle_<Matrix, SymmGroup> creators(create, tag_handler);
+    tag_type create_s1s2 = creators(1, 2);
+
+    /**********************************************************************/
 
     chem_detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, ident, ident, tag_handler);
     alps::numeric::matrix<Lattice::pos_t> idx_ = ta.getIdx();
