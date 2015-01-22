@@ -344,18 +344,8 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     OperatorSpinVariants<Matrix, SymmGroup> destructors(destroy, tag_handler);
     OperatorSpinVariants<Matrix, SymmGroup> destructors_fill(destroy_fill, tag_handler);
 
-    /*************************************************************/
-    typename TermMakerSU2<Matrix, SymmGroup>::OperatorPackage create_pkg, destroy_pkg;
-
-    create_pkg.couple_up = creators(0,1);
-    create_pkg.couple_down = creators(1,0);
-    create_pkg.fill_couple_up = creators_fill(0,1);
-    create_pkg.fill_couple_down = creators_fill(1,0);
-
-    destroy_pkg.couple_up = destructors(0,1);
-    destroy_pkg.couple_down = destructors(1,0);
-    destroy_pkg.fill_couple_up = destructors_fill(0,1);
-    destroy_pkg.fill_couple_down = destructors_fill(1,0);
+    typename TermMakerSU2<Matrix, SymmGroup>::OperatorPackage create_pkg(&creators, &creators_fill)
+                                                            , destroy_pkg(&destructors, &destructors_fill);
     /**********************************************************************/
 
     chem_detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, ident, ident, tag_handler);

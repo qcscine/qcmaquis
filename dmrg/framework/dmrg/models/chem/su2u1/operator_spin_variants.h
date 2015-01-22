@@ -28,8 +28,10 @@
 #ifndef QC_OPERATOR_BUNDLE_SU2_H
 #define QC_OPERATOR_BUNDLE_SU2_H
 
+#include <boost/noncopyable.hpp>
+
     template <class Matrix, class SymmGroup>
-    class OperatorSpinVariants
+    class OperatorSpinVariants : private boost::noncopyable
     {
         // This class manages the different fill / spin_input / spin_output variants of creators and destructors
         typedef typename TagHandler<Matrix, SymmGroup>::tag_type tag_type;
@@ -46,7 +48,7 @@
             variants[std::make_pair(reference_op.spin.input(), reference_op.spin.output())] = reference_tag;
         }
 
-        tag_type operator()(spin_t spin_in, spin_t spin_out)
+        tag_type operator()(spin_t spin_in, spin_t spin_out) const
         {
             try {
 #if defined(__xlC__) || defined(__FCC_VERSION)
@@ -76,7 +78,7 @@
 
     private:
         boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
-        std::map<std::pair<spin_t, spin_t>, tag_type, compare_pair<std::pair<spin_t, spin_t> > > variants;
+        mutable std::map<std::pair<spin_t, spin_t>, tag_type, compare_pair<std::pair<spin_t, spin_t> > > variants;
 
         spin_t spin;
         tag_type reference_tag;
