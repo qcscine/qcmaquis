@@ -37,71 +37,48 @@
         typedef typename SpinDescriptor<symm_traits::SU2Tag>:: spin_t spin_t;
         
     public:
-        OperatorBundle_(tag_type rt, tag_type rft, boost::shared_ptr<TagHandler<Matrix, SymmGroup> > th)
+        OperatorBundle_(tag_type rt, boost::shared_ptr<TagHandler<Matrix, SymmGroup> > th)
             : reference_tag(rt)
-            , reference_fill_tag(rft)
             , tag_handler(th)
         {
             op_t reference_op = tag_handler->get_op(reference_tag);
-            op_t reference_fill_op = tag_handler->get_op(reference_fill_tag);
-
             spin = reference_op.spin.get();
-
-                 variants[std::make_pair(reference_op.spin.input(), reference_op.spin.output())] = reference_tag;
-            fill_variants[std::make_pair(reference_fill_op.spin.input(), reference_fill_op.spin.output())] = reference_fill_tag;
+            variants[std::make_pair(reference_op.spin.input(), reference_op.spin.output())] = reference_tag;
         }
 
-        tag_type operator()(bool fill, spin_t spin_in, spin_t spin_out)
+        tag_type operator()(spin_t spin_in, spin_t spin_out)
         {
             try {
 #if defined(__xlC__) || defined(__FCC_VERSION)
-                if (fill) {
-                    if (fill_variants.count(std::make_pair(spin_in, spin_out)) == 0)
-                        throw std::out_of_range("");
+                if (variants.count(std::make_pair(spin_in, spin_out)) == 0)
+                    throw std::out_of_range("");
 
-                    return fill_variants[std::make_pair(spin_in, spin_out)];
-                }
-                else  {
-                    if (variants.count(std::make_pair(spin_in, spin_out)) == 0)
-                        throw std::out_of_range("");
-
-                    return variants[std::make_pair(spin_in, spin_out)];
-                }
+                return variants[std::make_pair(spin_in, spin_out)];
 #else
-                if (fill)
-                    return fill_variants.at(std::make_pair(spin_in, spin_out));
-                else 
-                    return variants.at(std::make_pair(spin_in, spin_out));
+                return variants.at(std::make_pair(spin_in, spin_out));
 #endif
             }
             catch(const std::out_of_range& e) {
-
                 // triangle condition
                 assert (spin_out >= std::abs(spin_in - spin) && spin_out <= std::abs(spin_in + spin));
 
                 SpinDescriptor<symm_traits::SU2Tag> new_descriptor(spin, spin_in, spin_out);
 
-                op_t new_variant = (fill) ? tag_handler->get_op(reference_fill_tag) : tag_handler->get_op(reference_tag);
+                op_t new_variant = tag_handler->get_op(reference_tag);
                 new_variant.spin = new_descriptor;
 
                 tag_type new_tag = tag_handler->register_op(new_variant, (tag_handler->is_fermionic(reference_tag))
                                                                             ? tag_detail::fermionic : tag_detail::bosonic);
-
-                if (fill)
-                    fill_variants[std::make_pair(spin_in, spin_out)] = new_tag;                          
-                else
-                    variants[std::make_pair(spin_in, spin_out)] = new_tag;                          
+                variants[std::make_pair(spin_in, spin_out)] = new_tag;                          
             }
         }
 
     private:
         boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
         std::map<std::pair<spin_t, spin_t>, tag_type, compare_pair<std::pair<spin_t, spin_t> > > variants;
-        std::map<std::pair<spin_t, spin_t>, tag_type, compare_pair<std::pair<spin_t, spin_t> > > fill_variants;
 
         spin_t spin;
         tag_type reference_tag;
-        tag_type reference_fill_tag;
     };
 
 #endif
