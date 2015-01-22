@@ -28,6 +28,8 @@
 #ifndef QC_TERMMAKER_SU2_H
 #define QC_TERMMAKER_SU2_H
 
+#include "dmrg/models/chem/su2u1/operator_spin_variants.h"
+
 template <class M, class S>
 struct TermMakerSU2 {
 
@@ -38,7 +40,7 @@ struct TermMakerSU2 {
     typedef typename TagHandler<M, S>::tag_type tag_type;
     typedef typename term_descriptor::value_type pos_op_t;
 
-    struct OperatorBundle
+    struct OperatorPackage
     {
         tag_type couple_up;
         tag_type couple_down;
@@ -46,7 +48,7 @@ struct TermMakerSU2 {
         tag_type fill_couple_down;
     };
 
-    typedef boost::tuple<tag_type, OperatorBundle> pos_bundle_t;
+    typedef boost::tuple<tag_type, OperatorPackage> pos_bundle_t;
 
     template <class Tuple>
     static bool compare_tag(Tuple p1,
@@ -125,7 +127,7 @@ struct TermMakerSU2 {
 
     static term_descriptor four_term(tag_type full_ident, int max_two_S,
                                      value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
-                                     OperatorBundle op_i, OperatorBundle op_k)
+                                     OperatorPackage op_i, OperatorPackage op_k)
     {
         using boost::tuples::get;
 

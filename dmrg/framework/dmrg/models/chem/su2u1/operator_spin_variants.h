@@ -29,7 +29,7 @@
 #define QC_OPERATOR_BUNDLE_SU2_H
 
     template <class Matrix, class SymmGroup>
-    class OperatorBundle_
+    class OperatorSpinVariants
     {
         // This class manages the different fill / spin_input / spin_output variants of creators and destructors
         typedef typename TagHandler<Matrix, SymmGroup>::tag_type tag_type;
@@ -37,7 +37,7 @@
         typedef typename SpinDescriptor<symm_traits::SU2Tag>:: spin_t spin_t;
         
     public:
-        OperatorBundle_(tag_type rt, boost::shared_ptr<TagHandler<Matrix, SymmGroup> > th)
+        OperatorSpinVariants(tag_type rt, boost::shared_ptr<TagHandler<Matrix, SymmGroup> > th)
             : reference_tag(rt)
             , tag_handler(th)
         {

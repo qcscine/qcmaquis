@@ -44,7 +44,7 @@
 #include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/pg_util.h"
 #include "dmrg/models/chem/su2u1/chem_helper_su2.h"
-#include "dmrg/models/chem/su2u1/operator_bundle.h"
+#include "dmrg/models/chem/su2u1/operator_spin_variants.h"
 #include "dmrg/models/chem/su2u1/term_maker_su2.h"
 
 template<class Matrix, class SymmGroup>
@@ -339,13 +339,13 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 //#undef PRINT
 
     /**********************************************************************/
-    OperatorBundle_<Matrix, SymmGroup> creators(create, tag_handler);
-    OperatorBundle_<Matrix, SymmGroup> creators_fill(create_fill, tag_handler);
-    OperatorBundle_<Matrix, SymmGroup> destructors(destroy, tag_handler);
-    OperatorBundle_<Matrix, SymmGroup> destructors_fill(destroy_fill, tag_handler);
+    OperatorSpinVariants<Matrix, SymmGroup> creators(create, tag_handler);
+    OperatorSpinVariants<Matrix, SymmGroup> creators_fill(create_fill, tag_handler);
+    OperatorSpinVariants<Matrix, SymmGroup> destructors(destroy, tag_handler);
+    OperatorSpinVariants<Matrix, SymmGroup> destructors_fill(destroy_fill, tag_handler);
 
     /*************************************************************/
-    typename TermMakerSU2<Matrix, SymmGroup>::OperatorBundle create_pkg, destroy_pkg;
+    typename TermMakerSU2<Matrix, SymmGroup>::OperatorPackage create_pkg, destroy_pkg;
 
     create_pkg.couple_up = creators(0,1);
     create_pkg.couple_down = creators(1,0);
