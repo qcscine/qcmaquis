@@ -70,6 +70,7 @@
                 tag_type new_tag = tag_handler->register_op(new_variant, (tag_handler->is_fermionic(reference_tag))
                                                                             ? tag_detail::fermionic : tag_detail::bosonic);
                 variants[std::make_pair(spin_in, spin_out)] = new_tag;                          
+                return new_tag;
             }
         }
 
