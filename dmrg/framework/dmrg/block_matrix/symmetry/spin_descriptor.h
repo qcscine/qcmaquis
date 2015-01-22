@@ -67,28 +67,28 @@ class SpinDescriptor<symm_traits::SU2Tag>
 public:
     typedef int spin_t;
 
-    SpinDescriptor() : twoS(0), twoSaction(0) {}
-    SpinDescriptor(spin_t twoS_) : twoS(twoS_), twoSaction(0) {}
-    SpinDescriptor(spin_t twoS_, spin_t twoSaction_, spin_t output = 0) : twoS(twoS_), twoSaction(twoSaction_) {}
+    SpinDescriptor() : twoS(0), input_(0), output_(0) {}
+    SpinDescriptor(spin_t twoS_) : twoS(twoS_), input_(0), output_(0) {}
+    SpinDescriptor(spin_t twoS_, spin_t in, spin_t out = 0) : twoS(twoS_), input_(in), output_(out) {}
 
     SpinDescriptor & operator += (SpinDescriptor rhs)
     {
         // apply action of operator rhs 
-        twoS += rhs.twoSaction;
+        twoS += rhs.action();
         return *this;
     }
 
     spin_t get() const { return twoS; }
-    spin_t action() const { return twoSaction; }
+    spin_t action() const { return output_ - input_; }
     spin_t input() const { return input_; }
     spin_t output() const { return output_; }
 
     void clear()
     {
-        twoS = 0; twoSaction = 0;
+        twoS = 0; input_ = 0; output_ = 0;
     }
 
-    bool operator==(SpinDescriptor const & rhs) const { return (twoS == rhs.twoS && twoSaction == rhs.twoSaction); }
+    bool operator==(SpinDescriptor const & rhs) const { return (twoS == rhs.twoS && input_ == rhs.input_ && output_ == rhs.output_); }
     bool operator!=(SpinDescriptor const & rhs) const { return !(*this==rhs); }
     friend SpinDescriptor operator-(SpinDescriptor);
     friend std::ostream & operator<<(std::ostream & os, SpinDescriptor);
@@ -97,25 +97,22 @@ public:
     void save(Archive & ar) const
     {
         ar["twoS"] << twoS;
-        ar["twoSaction"] << twoSaction;
     }
 
     template<class Archive>
     void load(Archive & ar)
     {
         ar["twoS"] >> twoS;
-        ar["twoSaction"] >> twoSaction;
     }
 
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & twoS & twoSaction;
+        ar & twoS;
     }
 
 private:
     spin_t twoS;
-    spin_t twoSaction; // only used for operators in the MPO
     spin_t input_;
     spin_t output_;
 };
@@ -128,13 +125,13 @@ inline SpinDescriptor<symm_traits::SU2Tag> couple(SpinDescriptor<symm_traits::SU
 
 inline SpinDescriptor<symm_traits::SU2Tag> operator-(SpinDescriptor<symm_traits::SU2Tag> rhs)
 {
-    rhs.twoSaction = -rhs.twoSaction;
+    std::swap(rhs.input_, rhs.output_);
     return rhs;
 }
 
 inline std::ostream & operator<<(std::ostream & os, SpinDescriptor<symm_traits::SU2Tag> rhs)
 {
-    os << "Spin: " << rhs.get() << ", Spin action: " << rhs.twoSaction;
+    os << "Spin: " << rhs.get() << ", Spin action: " << rhs.action();
     return os;
 }
 

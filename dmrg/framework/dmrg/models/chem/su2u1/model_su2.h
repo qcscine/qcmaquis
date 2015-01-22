@@ -165,11 +165,11 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     C[0] = 1; C[1] = -1; // 1-1
     // D = 00
 
-    SpinDescriptor<symm_traits::SU2Tag> one_half_up(1,1);
-    SpinDescriptor<symm_traits::SU2Tag> one_half_down(1,-1);
-    SpinDescriptor<symm_traits::SU2Tag> one_up(2,2);
-    SpinDescriptor<symm_traits::SU2Tag> one_flat(2,0);
-    SpinDescriptor<symm_traits::SU2Tag> one_down(2,-2);
+    SpinDescriptor<symm_traits::SU2Tag> one_half_up(1,0,1);
+    SpinDescriptor<symm_traits::SU2Tag> one_half_down(1,1,0);
+    SpinDescriptor<symm_traits::SU2Tag> one_up(2,0,2);
+    SpinDescriptor<symm_traits::SU2Tag> one_flat(2,2,2);
+    SpinDescriptor<symm_traits::SU2Tag> one_down(2,2,0);
 
     for (subcharge irr=0; irr <= max_irrep; ++irr)
     {
@@ -434,23 +434,23 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         }
 
         // V_ijjj = V_jijj = V_jjij = V_jjji
-        //else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
+        else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
 
-        //    int same_idx, pos1;
+            int same_idx, pos1;
 
-        //    if      (i==j) { same_idx = i; pos1 = l; }
-        //    else if (k==l) { same_idx = l; pos1 = i; }
-        //    else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
+            if      (i==j) { same_idx = i; pos1 = l; }
+            else if (k==l) { same_idx = l; pos1 = i; }
+            else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
 
-        //    this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-        //        true, ident,  std::sqrt(2.)*matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill
-        //    ));
-        //    this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-        //        true, ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill
-        //    ));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                true, ident,  std::sqrt(2.)*matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill
+            ));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                true, ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill
+            ));
 
-        //    used_elements[m] += 1;
-        //}
+            used_elements[m] += 1;
+        }
 
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
@@ -460,7 +460,6 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             used_elements[m] += 1;
         }
 
-        /*
         // V_ijij == V_jiji = V_ijji = V_jiij
         else if ( i==k && j==l && i!=j) {
 
@@ -620,8 +619,6 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             used_elements[m] += 1;
         }
-        */
-
 
     } // matrix_elements for
 
