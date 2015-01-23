@@ -166,7 +166,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     SpinDescriptor<symm_traits::SU2Tag> one_half_up(1,0,1);
     SpinDescriptor<symm_traits::SU2Tag> one_half_down(1,1,0);
     SpinDescriptor<symm_traits::SU2Tag> one_up(2,0,2);
-    SpinDescriptor<symm_traits::SU2Tag> one_flat(2,2,2);
+    SpinDescriptor<symm_traits::SU2Tag> one_flat(1,2,1);
     SpinDescriptor<symm_traits::SU2Tag> one_down(2,2,0);
 
     for (subcharge irr=0; irr <= max_irrep; ++irr)
@@ -494,7 +494,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             if ( same_idx < std::min(pos1,pos2) )
             {
                 this->terms_.push_back(TM::three_term(
-                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, creators_fill(1,0), destroy, destroy_fill
+                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, creators_fill(2,1), destroy, destructors_fill(2,1)
                 ));
                 ta.add_3term(vec, TM::three_term(
                     ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
@@ -502,7 +502,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
                 this->terms_.push_back(TM::three_term(
                     // note minus sign, because commutation on same_idx is not taken into account
-                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S2, flip_to_S2, create, creators_fill(1,0), destroy, destructors_fill(1,0)
+                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S2, flip_to_S2, create, creators_fill(2,1), destroy, destructors_fill(2,1)
                 ));
                 ta.add_3term(vec, TM::three_term(
                     ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
@@ -511,7 +511,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             else if (same_idx > std::max(pos1,pos2))
             {
                 this->terms_.push_back(TM::three_term(
-                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S0, flip_to_S0, creators(0,1), create_fill, destructors(0,1), destroy_fill
+                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S0, flip_to_S0, creators(1,2), create_fill, destructors(1,2), destroy_fill
                 ));
                 ta.add_3term(vec, TM::three_term(
                     ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
@@ -519,7 +519,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
                 this->terms_.push_back(TM::three_term(
                     // note minus sign, because commutation on same_idx is not taken into account
-                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S0, flip_to_S0, creators(0,1), create_fill, destructors(0,1), destroy_fill
+                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S0, flip_to_S0, creators(1,2), create_fill, destructors(1,2), destroy_fill
                 ));
                 ta.add_3term(vec, TM::three_term(
                     ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
