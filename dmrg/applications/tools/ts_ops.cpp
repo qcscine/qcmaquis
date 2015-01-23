@@ -97,11 +97,11 @@ int main(int argc, char ** argv)
 
         typedef block_matrix<Matrix, grp> op_t;
 
-        SpinDescriptor<symm_traits::SU2Tag> one_half_up(1,1);
-        SpinDescriptor<symm_traits::SU2Tag> one_half_down(1,-1);
-        SpinDescriptor<symm_traits::SU2Tag> one_up(2,2);
-        SpinDescriptor<symm_traits::SU2Tag> one_flat(2,0);
-        SpinDescriptor<symm_traits::SU2Tag> one_down(2,-2);
+        SpinDescriptor<symm_traits::SU2Tag> one_half_up(1,0,1);
+        SpinDescriptor<symm_traits::SU2Tag> one_half_down(1,1,0);
+        SpinDescriptor<symm_traits::SU2Tag> one_up(2,0,2);
+        SpinDescriptor<symm_traits::SU2Tag> one_flat(2,1,1);
+        SpinDescriptor<symm_traits::SU2Tag> one_down(2,2,0);
 
         // cheaper to use this for spin0 tensors, instead of ident_full
         op_t ident_op;
@@ -233,33 +233,33 @@ int main(int argc, char ** argv)
 
         op_t kronop;
 
-        op_kron(phys, phys, count_op, count_op, kronop) ;
-        maquis::cout << "Kronecker product count * count\n";
-        maquis::cout << kronop << std::endl;
+        //op_kron(phys, phys, count_op, count_op, kronop) ;
+        //maquis::cout << "Kronecker product count * count\n";
+        //maquis::cout << kronop << std::endl;
 
-        op_kron(phys, phys, ident_op, create_fill_op, kronop) ;
-        maquis::cout << "Kronecker product I * create_fill\n";
-        maquis::cout << kronop << std::endl;
+        //op_kron(phys, phys, ident_op, create_fill_op, kronop) ;
+        //maquis::cout << "Kronecker product I * create_fill\n";
+        //maquis::cout << kronop << std::endl;
 
-        op_kron(phys, phys, ident_op, destroy_fill_op, kronop) ;
-        maquis::cout << "Kronecker product I * destroy_fill\n";
-        maquis::cout << kronop << std::endl;
+        //op_kron(phys, phys, ident_op, destroy_fill_op, kronop) ;
+        //maquis::cout << "Kronecker product I * destroy_fill\n";
+        //maquis::cout << kronop << std::endl;
 
-        op_kron(phys, phys, create_op, ident_op, kronop) ;
-        maquis::cout << "Kronecker product create * I\n";
-        maquis::cout << kronop << std::endl;
+        //op_kron(phys, phys, create_op, ident_op, kronop) ;
+        //maquis::cout << "Kronecker product create * I\n";
+        //maquis::cout << kronop << std::endl;
 
-        op_kron(phys, phys, destroy_op, ident_op, kronop) ;
-        maquis::cout << "Kronecker product destroy * I\n";
-        maquis::cout << kronop << std::endl;
+        //op_kron(phys, phys, destroy_op, ident_op, kronop) ;
+        //maquis::cout << "Kronecker product destroy * I\n";
+        //maquis::cout << kronop << std::endl;
 
-        op_kron(phys, phys, create_fill_op, destroy_op, kronop) ;
-        maquis::cout << "Kronecker product create_fill * destroy\n";
-        maquis::cout << kronop << std::endl;
+        //op_kron(phys, phys, create_fill_op, destroy_op, kronop) ;
+        //maquis::cout << "Kronecker product create_fill * destroy\n";
+        //maquis::cout << kronop << std::endl;
 
-        op_kron(phys, phys, destroy_fill_op, create_op, kronop) ;
-        maquis::cout << "Kronecker product destroy_fill * create\n";
-        maquis::cout << kronop << std::endl;
+        //op_kron(phys, phys, destroy_fill_op, create_op, kronop) ;
+        //maquis::cout << "Kronecker product destroy_fill * create\n";
+        //maquis::cout << kronop << std::endl;
             
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;

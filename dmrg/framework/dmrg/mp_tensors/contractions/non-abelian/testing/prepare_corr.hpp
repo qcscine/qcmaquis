@@ -58,8 +58,8 @@ namespace SU2 {
     template<class Matrix, class SymmGroup>
     MPO<Matrix, SymmGroup> make_1rdm_term(int i, int j, std::vector<int> site_irreps)
     {
-        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_up(1,1);
-        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_down(1,-1);
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_up(1,0,1);
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_down(1,1,0);
 
         MPO<Matrix, SymmGroup> ret(site_irreps.size());
         for (int p=0; p<site_irreps.size(); ++p)
@@ -120,8 +120,8 @@ namespace SU2 {
     template<class Matrix, class SymmGroup>
     MPO<Matrix, SymmGroup> make_1rdm_termB(int i, int j, std::vector<int> site_irreps)
     {   // represents a cdag_i c_j operator term
-        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_up(1,1);
-        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_down(1,-1);
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_up(1,0,1);
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_down(1,1,0);
 
         MPO<Matrix, SymmGroup> ret(site_irreps.size());
         for (int p=0; p<site_irreps.size(); ++p)
@@ -181,8 +181,8 @@ namespace SU2 {
     template<class Matrix, class SymmGroup>
     MPO<Matrix, SymmGroup> make_2rdm_term(int i, int j, int k, int l, std::vector<int> site_irreps)
     {
-        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_up(1,1);
-        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_down(1,-1);
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_up(1,0,1);
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_half_down(1,1,0);
 
         MPO<Matrix, SymmGroup> ret(site_irreps.size());
         for (int p=0; p<site_irreps.size(); ++p)
@@ -364,8 +364,8 @@ namespace SU2 {
         typedef block_matrix<Matrix, SymmGroup> op_t;
         MPO<Matrix, SymmGroup> ret(site_irreps.size());
 
-        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_up(2,2);
-        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_down(2,-2);
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_up(2,0,2);
+        SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > one_down(2,2,0);
 
         for (int p=0; p<site_irreps.size(); ++p)
         {

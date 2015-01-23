@@ -68,13 +68,14 @@ public:
     typedef int spin_t;
 
     SpinDescriptor() : twoS(0), input_(0), output_(0) {}
-    SpinDescriptor(spin_t twoS_) : twoS(twoS_), input_(0), output_(0) {}
-    SpinDescriptor(spin_t twoS_, spin_t in, spin_t out = 0) : twoS(twoS_), input_(in), output_(out) {}
+    SpinDescriptor(spin_t twoS_, spin_t in, spin_t out) : twoS(twoS_), input_(in), output_(out) {}
 
     SpinDescriptor & operator += (SpinDescriptor rhs)
     {
         // apply action of operator rhs 
         twoS += rhs.action();
+        //assert (output_ == rhs.input_);
+        //output_ = rhs.output_;
         return *this;
     }
 
@@ -131,7 +132,7 @@ inline SpinDescriptor<symm_traits::SU2Tag> operator-(SpinDescriptor<symm_traits:
 
 inline std::ostream & operator<<(std::ostream & os, SpinDescriptor<symm_traits::SU2Tag> rhs)
 {
-    os << "Spin: " << rhs.get() << ", Spin action: " << rhs.action();
+    os << "Spin: " << rhs.get() << ": Spin " << rhs.input() << " -> Spin " << rhs.output() << std::endl;
     return os;
 }
 

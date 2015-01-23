@@ -698,9 +698,12 @@ void op_kron(Index<SymmGroup> const & phys_A,
              Index<SymmGroup> const & phys_B,
              block_matrix<Matrix1, SymmGroup> const & A,
              block_matrix<Matrix1, SymmGroup> const & B,
-             block_matrix<Matrix2, SymmGroup> & C)
+             block_matrix<Matrix2, SymmGroup> & C,
+             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
+             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
+             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin)
 {
-    op_kron_(phys_A, phys_B, A, B, C, typename symm_traits::SymmType<SymmGroup>::type());
+    op_kron_(phys_A, phys_B, A, B, C, lspin, mspin, rspin, typename symm_traits::SymmType<SymmGroup>::type());
 }
 
 template<class Matrix1, class Matrix2, class SymmGroup>
@@ -709,6 +712,9 @@ void op_kron_(Index<SymmGroup> const & phys_A,
              block_matrix<Matrix1, SymmGroup> const & A,
              block_matrix<Matrix1, SymmGroup> const & B,
              block_matrix<Matrix2, SymmGroup> & C,
+             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
+             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
+             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin,
              typename symm_traits::SymmType<SymmGroup>::type)
 {
     C = block_matrix<Matrix2, SymmGroup>();
@@ -739,11 +745,14 @@ void op_kron_(Index<SymmGroup> const & phys_A,
 
 template<class Matrix1, class Matrix2, class SymmGroup>
 void op_kron_(Index<SymmGroup> const & phys_A,
-             Index<SymmGroup> const & phys_B,
-             block_matrix<Matrix1, SymmGroup> const & Ao,
-             block_matrix<Matrix1, SymmGroup> const & Bo,
-             block_matrix<Matrix2, SymmGroup> & C,
-             symm_traits::SU2Tag)
+              Index<SymmGroup> const & phys_B,
+              block_matrix<Matrix1, SymmGroup> const & Ao,
+              block_matrix<Matrix1, SymmGroup> const & Bo,
+              block_matrix<Matrix2, SymmGroup> & C,
+              SpinDescriptor<symm_traits::SU2Tag> lspin,
+              SpinDescriptor<symm_traits::SU2Tag> mspin,
+              SpinDescriptor<symm_traits::SU2Tag> rspin,
+              symm_traits::SU2Tag)
 {
     typedef typename SymmGroup::charge charge;
 
@@ -777,13 +786,33 @@ void op_kron_(Index<SymmGroup> const & phys_A,
     }
 
     //*************************************
-    // Spin QN's
+    // MPO matrix basis spin QN's
 
-    int k1 = A.spin.get(), k2  = B.spin.get(), k, j, jp, jpp;
-    j = A.spin.input();
-    jpp = A.spin.output();
-    jp = B.spin.output();
+    int k1 = A.spin.get(), k2 = B.spin.get(), k, j, jp, jpp;
+    //if (k1>0 && k2>0)
+    //    j = 0;
+    //else if (k1==0 && k2>0)
+    //    if (B.spin.action() > 0) j = 0;
+    //    else j = k2;
+    //else if (k1>0 && k2==0)
+    //    if (A.spin.action() > 0) j = 0;
+    //    else j = k1;
+    //else
+    //    j = 0;
+
+    //SpinDescriptor<symm_traits::SU2Tag> spin_j(j,0,0), spin_jp, spin_jpp;
+    //spin_jpp = couple(spin_j, A.spin);
+    //spin_jp = couple(spin_jpp, B.spin);
+    //k = std::abs(spin_j.get() - spin_jp.get());
+    //jp = spin_jp.get();
+    //jpp = spin_jpp.get();
+    
+    j = lspin.get();
+    jpp = mspin.get();
+    jp = rspin.get();
     k = std::abs(j - jp);
+    if (j==1 && jp == 1 && jpp == 1 && (k1==2 || k2==2))
+        k = 2;
 
     //*************************************
     // Tensor + Kronecker product

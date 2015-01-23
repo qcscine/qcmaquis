@@ -86,7 +86,8 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                     const_term_descriptor<MPSMatrix, SymmGroup> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
                     // Compute the Kronecker product
-                    kron_tag = kron_handler.get_kron_tag(phys_i1, phys_i2, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3));
+                    kron_tag = kron_handler.get_kron_tag(phys_i1, phys_i2, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3),
+                                                         mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
 
                     if (!kron_handler.is_uniform(mpo1.tag_number(b1,b2)) ||
                         !kron_handler.is_uniform(mpo2.tag_number(b2,b3)) ||
@@ -139,8 +140,6 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
             */
         } 
 
-
-
         #ifdef MAQUIS_OPENMP
         #pragma omp critical
         #endif
@@ -148,10 +147,10 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                      << " operators, " << kron_handler.get_kronecker_table()->size() << " tags\n";
 
         using boost::tuples::get;
-        MPOTensor<MPSMatrix, SymmGroup> mpo_big_tag(mpo1.row_dim(), mpo2.col_dim(), prempo, kron_handler.get_kronecker_table());
+        MPOTensor<MPSMatrix, SymmGroup> mpo_big_tag(mpo1.row_dim(), mpo2.col_dim(), prempo, kron_handler.get_kronecker_table(),
+                                                    mpo1.row_spin_dim(), mpo2.col_spin_dim());
 
         return mpo_big_tag;
-
     }
 
     else {
@@ -177,7 +176,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
 
                     const_term_descriptor<MPSMatrix, SymmGroup> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
-                    op_kron(phys_i1, phys_i2, p1.op, p2.op, product);
+                    op_kron(phys_i1, phys_i2, p1.op, p2.op, product, mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
                     product *= (p1.scale * p2.scale);
                     out_row[b3] += product;
                 }
@@ -191,7 +190,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
         } 
 
         using boost::tuples::get;
-        MPOTensor<MPSMatrix, SymmGroup> mpo_big(mpo1.row_dim(), mpo2.col_dim(), prempo, op_table);
+        MPOTensor<MPSMatrix, SymmGroup> mpo_big(mpo1.row_dim(), mpo2.col_dim(), prempo, op_table, mpo1.row_spin_dim(), mpo2.col_spin_dim());
 
         return mpo_big;
     }

@@ -71,9 +71,12 @@ public:
 
 private:
     typedef std::vector<boost::tuple<std::size_t, std::size_t, tag_type, value_type> > prempo_t;
+    typedef SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> spin_desc_t;
+    typedef std::vector<spin_desc_t> spin_index;
     
 public:
-    MPOTensor(index_type = 1, index_type = 1, prempo_t const & = prempo_t(), op_table_ptr = op_table_ptr());
+    MPOTensor(index_type = 1, index_type = 1, prempo_t const & = prempo_t(), op_table_ptr = op_table_ptr(),
+              spin_index const & lspins = spin_index(), spin_index const & rspins = spin_index());
     
     index_type row_dim() const;
     index_type col_dim() const;
@@ -105,6 +108,11 @@ public:
     
     bool has(index_type left_index, index_type right_index) const;
 
+    spin_desc_t left_spin(index_type left_index) const;
+    spin_desc_t right_spin(index_type right_index) const;
+    spin_index const & row_spin_dim() const;
+    spin_index const & col_spin_dim() const;
+
     friend class PGSymmetryConverter_impl_<Matrix, SymmGroup>;
 
     mutable std::vector<int> placement_l;
@@ -113,6 +121,7 @@ public:
     mutable std::vector<int> exceptions_r;
 private:
     index_type left_i, right_i;
+    spin_index left_spins, right_spins;
 
     CSCMatrix col_tags;
     RowIndex row_index;

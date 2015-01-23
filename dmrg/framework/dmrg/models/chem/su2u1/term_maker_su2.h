@@ -155,8 +155,8 @@ struct TermMakerSU2 {
 
         if (max_two_S == 2) {
             term.push_back(boost::make_tuple(get<0>(sterm[0]), get<1>(sterm[0]).fill->operator()(0,1)));
-            term.push_back(boost::make_tuple(get<0>(sterm[1]), get<1>(sterm[1]).pure->operator()(1,2)));
-            term.push_back(boost::make_tuple(get<0>(sterm[2]), get<1>(sterm[2]).fill->operator()(2,1)));
+            term.push_back(boost::make_tuple(get<0>(sterm[1]), get<1>(sterm[1]).pure->operator()(0,1)));
+            term.push_back(boost::make_tuple(get<0>(sterm[2]), get<1>(sterm[2]).fill->operator()(1,0)));
             term.push_back(boost::make_tuple(get<0>(sterm[3]), get<1>(sterm[3]).pure->operator()(1,0)));
         }
         else {

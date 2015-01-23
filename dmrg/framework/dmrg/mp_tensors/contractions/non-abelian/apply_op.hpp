@@ -75,6 +75,7 @@ namespace SU2 {
 
             ret.spin = couple(left[b1].spin, W.spin);
             int a = left[b1].spin.get(), k = W.spin.get(), ap = ret.spin.get();
+            assert(a == mpo.left_spin(b1).get() && ap == mpo.right_spin(b2).get());
             bool debug = false;
             //bool debug = track_it(W);
             //if (debug && k==0) {maquis::cout << W << std::endl; exit(1); }

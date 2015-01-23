@@ -156,8 +156,10 @@ public:
             uniform.push_back(tag_detail::is_uniform(*it));
     }
 
-    tag_type get_kron_tag(Index<SymmGroup> const & phys_i1, Index<SymmGroup> const & phys_i2, tag_type t1, tag_type t2);
-     
+    tag_type get_kron_tag(Index<SymmGroup> const & phys_i1, Index<SymmGroup> const & phys_i2, tag_type t1, tag_type t2,
+                          SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
+                          SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
+                          SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin);
 
     typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i) { return (*kronecker_table)[i]; }
     typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const { return (*kronecker_table)[i]; }

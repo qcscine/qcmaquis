@@ -161,7 +161,10 @@ typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::ge
             Index<SymmGroup> const & phys_i1,
             Index<SymmGroup> const & phys_i2,
             typename OPTable<Matrix, SymmGroup>::tag_type t1,
-            typename OPTable<Matrix, SymmGroup>::tag_type t2)
+            typename OPTable<Matrix, SymmGroup>::tag_type t2,
+            SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
+            SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
+            SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin)
 {
     assert( t1 < base::get_operator_table()->size() && t2 < base::get_operator_table()->size() );
 
@@ -183,7 +186,7 @@ typename OPTable<Matrix, SymmGroup>::tag_type KronHandler<Matrix, SymmGroup>::ge
         op_t const& op1 = (*base::get_operator_table())[t1];
         op_t const& op2 = (*base::get_operator_table())[t2];
 
-        op_kron(phys_i1, phys_i2, op1, op2, product);
+        op_kron(phys_i1, phys_i2, op1, op2, product, lspin, mspin, rspin);
 
         tag_detail::remove_empty_blocks(product);
         

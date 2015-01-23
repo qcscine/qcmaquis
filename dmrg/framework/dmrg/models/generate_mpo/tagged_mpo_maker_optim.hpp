@@ -165,6 +165,9 @@ namespace generate_mpo
             typedef typename index_map::iterator index_iterator;
             index_map left;
             left[trivial_left] = 0;
+
+            typedef SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> spin_desc_t;
+            std::vector<spin_desc_t> left_spins(1);
             
             for (pos_t p = 0; p < length; ++p) {
                 std::vector<tag_block> pre_tensor; pre_tensor.reserve(prempo[p].size());
@@ -193,14 +196,26 @@ namespace generate_mpo
                 }
                 
                 std::pair<index_type, index_type> rcd = rcdim(pre_tensor);
-                if (p == 0)
-                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(1, rcd.second, pre_tensor, tag_handler->get_operator_table()) );
-                else if (p == length - 1)
-                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, 1, pre_tensor, tag_handler->get_operator_table()) );
-                else
-                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, rcd.second, pre_tensor, tag_handler->get_operator_table()) );
 
+                std::vector<spin_desc_t> right_spins(rcd.second); 
+                for (typename std::vector<tag_block>::const_iterator it = pre_tensor.begin(); it != pre_tensor.end(); ++it)
+                {
+                    spin_desc_t out_spin = couple(left_spins[boost::tuples::get<0>(*it)], tag_handler->get_op(boost::tuples::get<2>(*it)).spin);
+                    index_type out_index = boost::tuples::get<1>(*it);
+                    assert(right_spins[out_index].get() == 0 || right_spins[out_index].get() == out_spin.get());
+                    right_spins[out_index] = out_spin;
+                }
+
+                if (p == 0)
+                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(1, rcd.second, pre_tensor, tag_handler->get_operator_table(), left_spins, right_spins) );
+                else if (p == length - 1)
+                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, 1, pre_tensor, tag_handler->get_operator_table(), left_spins, right_spins) );
+                else
+                    mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, rcd.second, pre_tensor, tag_handler->get_operator_table(), left_spins, right_spins) );
+
+                maquis::cout << "MPO Bond: " << rcd.second << std::endl;
                 swap(left, right);
+                swap(left_spins, right_spins);
             }
             
             return mpo;

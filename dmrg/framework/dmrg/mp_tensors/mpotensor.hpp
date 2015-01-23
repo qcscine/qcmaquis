@@ -31,9 +31,13 @@ template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
                                         index_type rd,
                                         prempo_t const & tags,
-                                        op_table_ptr tbl_)
+                                        op_table_ptr tbl_,
+                                        spin_index const & lspins,
+                                        spin_index const & rspins)
 : left_i(ld)
 , right_i(rd)
+, left_spins(lspins)
+, right_spins(rspins)
 , col_tags(ld, rd)
 , operator_table(tbl_)
 {
@@ -97,6 +101,32 @@ bool MPOTensor<Matrix, SymmGroup>::has(index_type left_index,
 {
     assert(left_index < left_i && right_index < right_i);
     return col_tags.find_element(left_index, right_index) != NULL;
+}
+
+template<class Matrix, class SymmGroup>
+typename MPOTensor<Matrix, SymmGroup>::spin_desc_t MPOTensor<Matrix, SymmGroup>::left_spin(index_type left_index) const
+{
+    assert(left_index < left_i);
+    return left_spins[left_index];
+}
+
+template<class Matrix, class SymmGroup>
+typename MPOTensor<Matrix, SymmGroup>::spin_desc_t MPOTensor<Matrix, SymmGroup>::right_spin(index_type right_index) const
+{
+    assert(right_index < right_i);
+    return right_spins[right_index];
+}
+
+template<class Matrix, class SymmGroup>
+typename MPOTensor<Matrix, SymmGroup>::spin_index const & MPOTensor<Matrix, SymmGroup>::row_spin_dim() const
+{
+    return left_spins;
+}
+
+template<class Matrix, class SymmGroup>
+typename MPOTensor<Matrix, SymmGroup>::spin_index const & MPOTensor<Matrix, SymmGroup>::col_spin_dim() const
+{
+    return right_spins;
 }
 
 // warning: this method allows to (indirectly) change the op in the table, all tags pointing to it will

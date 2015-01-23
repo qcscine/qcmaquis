@@ -65,8 +65,8 @@ public:
         C[0] = 1; C[1] = -1; // 1-1
         // D = 00
 
-        SpinDescriptor<typename symm_traits::SymmType<SU2U1>::type> one_half_up(1,1);
-        SpinDescriptor<typename symm_traits::SymmType<SU2U1>::type> one_half_down(1,-1);
+        SpinDescriptor<typename symm_traits::SymmType<SU2U1>::type> one_half_up(1,0,1);
+        SpinDescriptor<typename symm_traits::SymmType<SU2U1>::type> one_half_down(1,1,0);
 
         phys.insert(std::make_pair(A,1));
         phys.insert(std::make_pair(B,1));
