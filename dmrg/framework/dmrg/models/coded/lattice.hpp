@@ -269,9 +269,10 @@ public:
     Spinors (BaseParameters & model)
     : L(model["L"])
     , irreps(L, 0)
+	, order(L, 0)
     {
         assert (L%2 == 0);
-        std::vector<pos_t> order(L);
+        //std::vector<pos_t> order(L);
         if (!model.is_set("orbital_order"))
             for (pos_t p = 0; p < L; ++p)
                 order[p] = p+1;
@@ -340,7 +341,7 @@ public:
         else if (property == "label" && pos.size() == 2)
             return boost::any( bond_label(pos[0], pos[1]) );
         else if (property == "type" && pos.size() == 1)
-            return boost::any (pos[0]);
+            return boost::any ( pos[0] );
         else if (property == "type" && pos.size() == 2)
             return boost::any( 0 );
         else if (property == "irrep" && pos.size() == 1)
@@ -380,6 +381,7 @@ private:
 private:
     int L;
     std::vector<subcharge> irreps;
+	std::vector<pos_t> order;
 };
 
 

@@ -227,13 +227,15 @@ public:
                 {
                 bond_element meas_operators;
                 meas_operators.push_back( std::make_pair(create_ops, true) );
+                meas_operators.push_back( std::make_pair(create_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_ops, true) );
                 meas_operators.push_back( std::make_pair(destroy_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
                 half_only = true;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
-                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
+                meas.push_back( new measurements::Rel_NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions, bra_ckp));
             }
             else if (!name.empty()) {
@@ -286,7 +288,7 @@ public:
                 
                 std::vector<bond_element> synchronous_meas_operators;
                 synchronous_meas_operators.push_back(meas_operators);
-                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
+                meas.push_back( new measurements::Rel_NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions));
             }
         }

@@ -44,6 +44,9 @@ namespace charge_detail {
     template <class SymmGroup>
     inline bool physical(typename SymmGroup::charge c) { return true; }
 
+    //template <>
+    //inline bool physical<U1LPG>(U1LPG::charge c) { return ((c[0] % 2) == 0); }
+
     template <>
     inline bool physical<SU2U1>(SU2U1::charge c) { return c[1] >= 0; }
 
@@ -105,7 +108,7 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
             }
         }
 	}
-    
+
 	//--- Print left allowed terms ---//
 	//std::cout << std::endl;
 	//for (int i = 0; i < L+1; ++i)
@@ -171,9 +174,27 @@ inline std::vector<Index<U1LPG> > allowed_sectors<U1LPG>(std::vector<int> const&
     bool finitegroup = U1LPG::finite;
 	int unbar_counter = 0;
 	int bar_counter = 0;
-	int delta_MK = 1;
-	typename U1LPG::charge max_charge; max_charge[0] = right_end[0]/2 + 3;
-	typename U1LPG::charge min_charge; min_charge[0] = right_end[0]/2 - 2;
+
+	// For the moment only even number of electron supported
+	assert(right_end[0]%2 == 0);
+
+	typename U1LPG::charge max_charge;
+	typename U1LPG::charge min_charge;
+	int delta_MK;
+	// Check number of electrons to set the max/min charges
+	if (right_end[0]/2 > 2) {
+		if (right_end[0]/2 == 3)
+			delta_MK = 0;
+		else
+			delta_MK = 1;
+
+		max_charge[0] = right_end[0]/2 + 3;
+		min_charge[0] = right_end[0]/2 - 2;
+	} else {
+		delta_MK = 0;
+		max_charge = right_end;
+		min_charge = U1LPG::IdentityCharge;
+	}
 
     std::size_t L = site_type.size();
     
@@ -235,9 +256,9 @@ inline std::vector<Index<U1LPG> > allowed_sectors<U1LPG>(std::vector<int> const&
                 it = left_allowed[i].erase(it);
             else if (U1LPG::fuse(it->first, cmini) > max_charge)
                 it = left_allowed[i].erase(it);
-			else if ( U1LPG::fuse(it->first, cunbar) < min_charge)
+			else if (U1LPG::fuse(it->first, cunbar) < min_charge)
 				it = left_allowed[i].erase(it);
-			else if ( U1LPG::fuse(it->first, cbar) < min_charge)
+			else if (U1LPG::fuse(it->first, cbar) < min_charge)
 				it = left_allowed[i].erase(it);
             else {
                 it->second = std::min(Mmax, it->second);
@@ -247,37 +268,69 @@ inline std::vector<Index<U1LPG> > allowed_sectors<U1LPG>(std::vector<int> const&
 	}
     
 	//--- Print left allowed terms ---//
-	std::cout << std::endl;
-	for (int i = 0; i < L+1; ++i)
-	{
-		std::cout << "Left allowed sectors on site: " << i << std::endl;
-		std::cout << left_allowed[i] << std::endl;
-	}
-	std::cout << std::endl;
+	//std::cout << std::endl;
+	//for (int i = 0; i < L+1; ++i)
+	//{
+	//	std::cout << "Left allowed sectors on site: " << i << std::endl;
+	//	std::cout << left_allowed[i] << std::endl;
+	//}
+	//std::cout << std::endl;
 
 
     cmaxi=maximum_total_charge; cmini=minimum_total_charge;
-	maquis::cout << maximum_total_charge << "\t" << minimum_total_charge << "\n";
+    cunbar=maximum_unbarred_charge; cbar=maximum_barred_charge;
+	// Re-initialize max/min charges
+	if (right_end[0]/2 > 2) {
+		if (right_end[0]/2 == 3)
+			delta_MK = 0;
+		else
+			delta_MK = 1;
+
+		max_charge[0] = right_end[0]/2 + 2;
+		min_charge[0] = right_end[0]/2 - 3;
+	} else {
+		delta_MK = 0;
+		max_charge = right_end;
+		min_charge = U1LPG::IdentityCharge;
+	}
 
     for (int i = L-1; i >= 0; --i) {
         right_allowed[i] = adjoin(phys_dims[site_type[i]]) * right_allowed[i+1];
+        cmaxi = U1LPG::fuse(cmaxi, -maximum_charges[site_type[i]]);
+        cmini = U1LPG::fuse(cmini, -minimum_charges[site_type[i]]);
        
+        if (site_type[i] < L/2) {
+			--unbar_counter;
+        	cunbar = U1LPG::fuse(cunbar, -maximum_charges[site_type[i]]);
+		} else {
+			--bar_counter;
+        	cbar   = U1LPG::fuse(cbar, -maximum_charges[site_type[i]]);
+		}
+		if (unbar_counter > 0) {
+			if (bar_counter > 0) {
+				if (delta_MK > 0) {
+					--delta_MK;
+					min_charge[0] = min_charge[0] - 1;
+				}
+			}
+		}
+
         typename Index<U1LPG>::iterator it = right_allowed[i].begin();
         while ( it != right_allowed[i].end() )
         {
-            if (!finitegroup && U1LPG::fuse(it->first, -cmaxi) > U1LPG::IdentityCharge)
+            if (U1LPG::fuse(it->first, -cmaxi) > min_charge)
                 it = right_allowed[i].erase(it);
-            else if (!finitegroup && U1LPG::fuse(it->first, -cmini) < U1LPG::IdentityCharge)
+            else if (U1LPG::fuse(it->first, -cmini) < min_charge)
                 it = right_allowed[i].erase(it);
-            else if (!finitegroup && !charge_detail::physical<U1LPG>(it->first))
+            else if (U1LPG::fuse(it->first, -cunbar) > max_charge)
                 it = right_allowed[i].erase(it);
+			else if (U1LPG::fuse(it->first, -cbar) > max_charge)
+				it = right_allowed[i].erase(it);
             else {
                 it->second = std::min(Mmax, it->second);
                 ++it;
             }
         }
-        cmaxi = U1LPG::fuse(cmaxi, -maximum_charges[site_type[i]]);
-        cmini = U1LPG::fuse(cmini, -minimum_charges[site_type[i]]);
     }
 	
 	//for (int i = L; i > -1; --i)
