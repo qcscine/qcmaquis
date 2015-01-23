@@ -166,7 +166,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     SpinDescriptor<symm_traits::SU2Tag> one_half_up(1,0,1);
     SpinDescriptor<symm_traits::SU2Tag> one_half_down(1,1,0);
     SpinDescriptor<symm_traits::SU2Tag> one_up(2,0,2);
-    SpinDescriptor<symm_traits::SU2Tag> one_flat(1,2,1);
+    SpinDescriptor<symm_traits::SU2Tag> one_flat(2,1,1);
     SpinDescriptor<symm_traits::SU2Tag> one_down(2,2,0);
 
     for (subcharge irr=0; irr <= max_irrep; ++irr)
