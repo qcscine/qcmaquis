@@ -777,26 +777,13 @@ void op_kron_(Index<SymmGroup> const & phys_A,
     }
 
     //*************************************
-    // Spin QN's (Hack)
+    // Spin QN's
 
     int k1 = A.spin.get(), k2  = B.spin.get(), k, j, jp, jpp;
-    if (k1>0 && k2>0)
-        j = 0;
-    else if (k1==0 && k2>0)
-        if (B.spin.action() > 0) j = 0;
-        else j = k2;
-    else if (k1>0 && k2==0)
-        if (A.spin.action() > 0) j = 0;
-        else j = k1;
-    else
-        j = 0;
-
-    SpinDescriptor<symm_traits::SU2Tag> spin_j(j,0), spin_jp, spin_jpp;
-    spin_jpp = couple(spin_j, A.spin);
-    spin_jp = couple(spin_jpp, B.spin);
-    k = std::abs(spin_j.get() - spin_jp.get());
-    jp = spin_jp.get();
-    jpp = spin_jpp.get();
+    j = A.spin.input();
+    jpp = A.spin.output();
+    jp = B.spin.output();
+    k = std::abs(j - jp);
 
     //*************************************
     // Tensor + Kronecker product
@@ -840,28 +827,28 @@ void op_kron_(Index<SymmGroup> const & phys_A,
 
     //*************************************
     // Matrix basis coupling coefficient, applies uniformly to whole product
-    maquis::cout << "6j\n";
-    maquis::cout << j << jp << k << std::endl
-                 << k2 << k1  << jpp   << std::endl;
+    //maquis::cout << "6j\n";
+    //maquis::cout << j << jp << k << std::endl
+    //             << k2 << k1  << jpp   << std::endl;
 
     typename Matrix2::value_type coupling = std::sqrt((jpp+1)*(k+1)) * gsl_sf_coupling_6j(j,jp,k,k2,k1,jpp);
     coupling = (((j+jp+k1+k2)/2)%2) ? -coupling : coupling;
     C *= coupling;
 
-    SpinDescriptor<symm_traits::SU2Tag> op_spin(k, jp-j);
+    SpinDescriptor<symm_traits::SU2Tag> op_spin(k, j, jp);
     C.spin = op_spin;
 
-    maquis::cout << "6j: " << coupling << std::endl;
-    maquis::cout << "kron spin: " << C.spin.get() << ", " << jp-j << std::endl << std::endl;
+    //maquis::cout << "6j: " << coupling << std::endl;
+    //maquis::cout << "kron spin: " << C.spin.get() << ", " << jp-j << std::endl << std::endl;
     //if (phys_A[1].first[2] != phys_B[1].first[2])
-    if (k1 == 2 || k2 == 2)
-    {
-        maquis::cout << phys_A << std::endl;
-        maquis::cout << phys_B << std::endl;
-        maquis::cout << A << std::endl << std::endl;
-        maquis::cout << B << std::endl << std::endl;
-        maquis::cout << C << std::endl << std::endl;
-    }
+    //if (k1 == 2 || k2 == 2)
+    //{
+    //    maquis::cout << phys_A << std::endl;
+    //    maquis::cout << phys_B << std::endl;
+    //    maquis::cout << A << std::endl << std::endl;
+    //    maquis::cout << B << std::endl << std::endl;
+    //    maquis::cout << C << std::endl << std::endl;
+    //}
 }
 
 template<class Matrix, class SymmGroup>
