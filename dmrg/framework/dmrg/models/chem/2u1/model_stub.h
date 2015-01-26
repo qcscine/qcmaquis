@@ -331,7 +331,6 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
             used_elements[m] += 1;
         }
 
-        /*
         // V_ijjj = V_jijj = V_jjij = V_jjji
         else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
 
@@ -512,7 +511,6 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
 
             used_elements[m] += 1;
         }
-        */
 
     } // matrix_elements for
 

@@ -61,7 +61,7 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
         std::sort(tmp_tags.begin(), tmp_tags.end(), MPOTensor_detail::col_cmp<prempo_descriptor>());
 
         for (typename converted_prempo_t::const_iterator it = tmp_tags.begin(); it != tmp_tags.end(); ++it) {
-            col_tags(get<0>(*it), get<1>(*it)) = std::make_pair(get<2>(*it), get<3>(*it));
+            col_tags(get<0>(*it), get<1>(*it)) = internal_value_type(1, std::make_pair(get<2>(*it), get<3>(*it)));
             row_index[get<0>(*it)].insert(get<1>(*it));
         }
     }
@@ -135,12 +135,12 @@ typename MPOTensor<Matrix, SymmGroup>::spin_index const & MPOTensor<Matrix, Symm
 template<class Matrix, class SymmGroup>
 void MPOTensor<Matrix, SymmGroup>::set(index_type li, index_type ri, op_t const & op, value_type scale_){
     if (this->has(li, ri)) {
-        col_tags.find_element(li, ri)->second = scale_;
-        (*operator_table)[col_tags.find_element(li, ri)->first] = op;
+        (*col_tags.find_element(li, ri))[0].second = scale_;
+        (*operator_table)[(*col_tags.find_element(li, ri))[0].first] = op;
     }
     else {
         tag_type new_tag = operator_table->register_op(op);
-        col_tags(li, ri) = internal_value_type(new_tag, scale_);
+        col_tags(li, ri) = internal_value_type(1, std::make_pair(new_tag, scale_));
         row_index[li].insert(ri);
     }
 }
@@ -150,7 +150,7 @@ MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup>
 MPOTensor<Matrix, SymmGroup>::at(index_type left_index, index_type right_index) const {
     assert(this->has(left_index, right_index));
     typename CSCMatrix::value_type const & p = col_tags(left_index, right_index);
-    return MPOTensor_detail::make_const_term_descriptor((*operator_table)[p.first], p.second);
+    return MPOTensor_detail::make_const_term_descriptor((*operator_table)[p[0].first], p[0].second);
 }
 
 // warning: this method allows to (indirectly) change the op in the table, all tags pointing to it will
@@ -162,7 +162,7 @@ MPOTensor<Matrix, SymmGroup>::at(index_type left_index, index_type right_index) 
     if (!this->has(left_index, right_index))
         this->set(left_index, right_index, op_t(), 1.);
     typename CSCMatrix::value_type & p = col_tags(left_index, right_index).ref();
-    return MPOTensor_detail::term_descriptor<Matrix, SymmGroup>((*operator_table)[p.first], p.second);
+    return MPOTensor_detail::term_descriptor<Matrix, SymmGroup>((*operator_table)[p[0].first], p[0].second);
 }
 
 template<class Matrix, class SymmGroup>
@@ -180,7 +180,7 @@ typename MPOTensor<Matrix, SymmGroup>::col_proxy MPOTensor<Matrix, SymmGroup>::c
 template<class Matrix, class SymmGroup>
 typename MPOTensor<Matrix, SymmGroup>::tag_type
 MPOTensor<Matrix, SymmGroup>::tag_number(index_type left_index, index_type right_index) const {
-    return col_tags(left_index, right_index).first;
+    return col_tags(left_index, right_index)[0].first;
 }
 
 template<class Matrix, class SymmGroup>
@@ -188,7 +188,7 @@ void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(const scalar_type& v)
 {
     for (typename CSCMatrix::iterator2 it2 = col_tags.begin2(); it2 != col_tags.end2(); ++it2)
         for (typename CSCMatrix::iterator1 it1 = it2.begin(); it1 != it2.end(); ++it1)
-            it1->second *= v; 
+            (*it1)[0].second *= v; 
 }
 
 template<class Matrix, class SymmGroup>
@@ -196,7 +196,7 @@ void MPOTensor<Matrix, SymmGroup>::divide_by_scalar(const scalar_type& v)
 {
     for (typename CSCMatrix::iterator2 it2 = col_tags.begin2(); it2 != col_tags.end2(); ++it2)
         for (typename CSCMatrix::iterator1 it1 = it2.begin(); it1 != it2.end(); ++it1)
-            it1->second /= v; 
+            (*it1)[0].second /= v; 
 }
 
 template<class Matrix, class SymmGroup>
