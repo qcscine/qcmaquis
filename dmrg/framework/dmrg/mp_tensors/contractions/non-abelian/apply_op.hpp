@@ -69,7 +69,7 @@ namespace SU2 {
             index_type b1 = col_it.index();
 
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
-            MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
+            MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             block_matrix<Matrix, SymmGroup> const & W = access.op;
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
@@ -195,7 +195,7 @@ namespace SU2 {
             index_type b2 = row_it.index();
 
             block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];
-            MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
+            MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             block_matrix<Matrix, SymmGroup> const & W = access.op;
 
             // note minus sign, as we move the boundary to the left

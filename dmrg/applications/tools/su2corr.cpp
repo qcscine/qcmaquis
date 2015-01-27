@@ -40,7 +40,6 @@ using std::endl;
 #include <alps/numeric/matrix/algorithms.hpp>
 #include "dmrg/block_matrix/detail/alps.hpp"
 
-#include "dmrg/mp_tensors/contractions/non-abelian/testing/test_apply.hpp"
 #include "dmrg/mp_tensors/contractions/non-abelian/testing/prepare_corr.hpp"
 #include "dmrg/mp_tensors/contractions.h"
 

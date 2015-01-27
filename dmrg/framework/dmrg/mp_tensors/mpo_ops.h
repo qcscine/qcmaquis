@@ -78,7 +78,7 @@ void follow_and_print_terms(MPO<Matrix, SymmGroup> const& mpo, int p, int b1, in
     ss << s;
     
     if (p > -1) {
-        MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo[p].at(b1,b2);
+        MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo[p].at(b1,b2);
         scale *= access.scale;
         ss << " {" << mpo[p].tag_number(b1,b2) << "}(" << p << ")";
     }
@@ -120,7 +120,7 @@ void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
             assert( ops.size() == out_mpo.length() );
             using boost::tuples::get;
             for (std::size_t t = 0; t < in_mpo.length(); ++t) {
-                MPOTensor_detail::term_descriptor<Matrix, SymmGroup> o = out_mpo[t].at(get<0>(ops[t]), get<1>(ops[t]));
+                MPOTensor_detail::term_descriptor<Matrix, SymmGroup, false> o = out_mpo[t].at(get<0>(ops[t]), get<1>(ops[t]));
                 if (o.op.n_blocks() == 0) {
                     o.op    = get<2>(ops[t]);
                     o.scale = 1.;

@@ -42,7 +42,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                                                  Index<SymmGroup> const & phys_i2,
                                                  bool global_table)
 {
-    using MPOTensor_detail::const_term_descriptor;
+    using MPOTensor_detail::term_descriptor;
 
     assert(mpo1.col_dim() == mpo2.row_dim());
 
@@ -83,7 +83,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                     assert((mpo1.has(b1, b2) && mpo2.has(b2, b3)));
                     tag_type kron_tag;
 
-                    const_term_descriptor<MPSMatrix, SymmGroup> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
+                    term_descriptor<MPSMatrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
                     // Compute the Kronecker product
                     kron_tag = kron_handler.get_kron_tag(phys_i1, phys_i2, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3),
@@ -174,7 +174,7 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                     assert((mpo1.has(b1, b2) && mpo2.has(b2, b3)));
                     block_matrix<MPSMatrix, SymmGroup> product;
 
-                    const_term_descriptor<MPSMatrix, SymmGroup> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
+                    term_descriptor<MPSMatrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
                     op_kron(phys_i1, phys_i2, p1.op, p2.op, product, mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
                     product *= (p1.scale * p2.scale);

@@ -55,7 +55,7 @@ namespace contraction {
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
-            MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
+            MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
@@ -101,7 +101,7 @@ namespace contraction {
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
-            MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
+            MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
 
             // charge deltas are constant for all blocks
@@ -162,7 +162,7 @@ namespace contraction {
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
             block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
-            MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
+            MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
@@ -205,7 +205,7 @@ namespace contraction {
         for (typename row_proxy::const_iterator row_it = row_b1.begin(); row_it != row_b1.end(); ++row_it) {
             index_type b2 = row_it.index();
             block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
-            MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
+            MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
             block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
 
             // charge deltas are constant for all blocks
