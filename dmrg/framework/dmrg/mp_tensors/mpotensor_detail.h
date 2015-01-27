@@ -34,41 +34,33 @@ namespace MPOTensor_detail
 {
     template <class Matrix, class SymmGroup>
     class term_descriptor {
-        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         typedef typename Matrix::value_type value_type;
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+        typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
+        typedef typename MPOTensor<Matrix, SymmGroup>::op_table_ptr op_table_ptr;
     public:
         term_descriptor() {}
-        term_descriptor(op_t & op_, value_type & s_) : op(op_), scale(s_) {}
+        term_descriptor(std::vector<std::pair<tag_type, value_type> > & term_descs, op_table_ptr op_tbl)
+            : op(op_tbl->operator[](term_descs[0].first)), scale(term_descs[0].second) {}
 
         op_t & op;
         value_type & scale;
     };
 
     template <class Matrix, class SymmGroup>
-    term_descriptor<Matrix, SymmGroup> make_term_descriptor(
-        typename term_descriptor<Matrix, SymmGroup>::op_t & op_, typename Matrix::value_type & s_)
-    {
-        return term_descriptor<Matrix, SymmGroup>(op_, s_);
-    }
-
-    template <class Matrix, class SymmGroup>
     class const_term_descriptor {
         typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         typedef typename Matrix::value_type value_type;
+        typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
+        typedef typename MPOTensor<Matrix, SymmGroup>::op_table_ptr op_table_ptr;
     public:
         const_term_descriptor() {}
-        const_term_descriptor(op_t const & op_, value_type s_) : op(op_), scale(s_) {}
+        const_term_descriptor(std::vector<std::pair<tag_type, value_type> > const & term_descs, op_table_ptr op_tbl)
+            : op(op_tbl->operator[](term_descs[0].first)), scale(term_descs[0].second) {}
 
         op_t const & op;
         value_type const scale;
     };
-
-    template <class Matrix, class SymmGroup, typename Scale>
-    const_term_descriptor<Matrix, SymmGroup> make_const_term_descriptor(
-        block_matrix<Matrix, SymmGroup> const & op_, Scale s_)
-    {
-        return const_term_descriptor<Matrix, SymmGroup>(op_, s_);
-    }
 
     template <class ConstIterator>
     class IteratorWrapper
