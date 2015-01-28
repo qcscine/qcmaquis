@@ -27,6 +27,9 @@
 #ifndef MPOTENSOR_DETAIL_H
 #define MPOTENSOR_DETAIL_H
 
+#include <boost/utility.hpp>
+#include <boost/type_traits.hpp>
+
 template<class Matrix, class SymmGroup>
 class MPOTensor;
 
@@ -40,8 +43,30 @@ namespace MPOTensor_detail
     struct const_type<T, true>
     { typedef const T type; };
 
-    template <class Matrix, class SymmGroup, bool Const>
+    template <class Matrix, class SymmGroup, bool Const, typename = void>
     class term_descriptor {
+        typedef typename Matrix::value_type value_type;
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+        typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
+        typedef typename MPOTensor<Matrix, SymmGroup>::op_table_ptr op_table_ptr;
+    public:
+        term_descriptor() {}
+        term_descriptor(typename const_type<std::vector<std::pair<tag_type, value_type> >, Const>::type & term_descs,
+                        op_table_ptr op_tbl)
+            : op(op_tbl->operator[](term_descs[0].first)), scale(term_descs[0].second) {}
+
+        typename const_type<op_t, Const>::type & op;
+        typename const_type<value_type, Const>::type & scale;
+    };
+
+    template <class Matrix, class SymmGroup, bool Const>
+    class term_descriptor<Matrix, SymmGroup, Const,
+                          typename boost::enable_if<
+                                                    typename boost::is_same<typename symm_traits::SymmType<SymmGroup>::type,
+                                                    symm_traits::SU2Tag>::type
+                                                    >::type
+                         >
+    {
         typedef typename Matrix::value_type value_type;
         typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
