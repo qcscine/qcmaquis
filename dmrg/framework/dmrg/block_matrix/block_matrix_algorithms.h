@@ -40,6 +40,8 @@
 
 #include <boost/lambda/lambda.hpp>
 #include <boost/function.hpp>
+#include <boost/utility.hpp>
+#include <boost/type_traits.hpp>
 
 #include "dmrg/utils/parallel.hpp"
 
@@ -703,19 +705,6 @@ void op_kron(Index<SymmGroup> const & phys_A,
              SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
              SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin)
 {
-    op_kron_(phys_A, phys_B, A, B, C, lspin, mspin, rspin);
-}
-
-template<class Matrix1, class Matrix2, class SymmGroup>
-void op_kron_(Index<SymmGroup> const & phys_A,
-             Index<SymmGroup> const & phys_B,
-             block_matrix<Matrix1, SymmGroup> const & A,
-             block_matrix<Matrix1, SymmGroup> const & B,
-             block_matrix<Matrix2, SymmGroup> & C,
-             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
-             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
-             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin)
-{
     C = block_matrix<Matrix2, SymmGroup>();
 
     ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
@@ -743,14 +732,14 @@ void op_kron_(Index<SymmGroup> const & phys_A,
 }
 
 template<class Matrix1, class Matrix2, class SymmGroup>
-void op_kron_(Index<SymmGroup> const & phys_A,
-              Index<SymmGroup> const & phys_B,
-              block_matrix<Matrix1, SymmGroup> const & Ao,
-              block_matrix<Matrix1, SymmGroup> const & Bo,
-              block_matrix<Matrix2, SymmGroup> & C,
-              SpinDescriptor<symm_traits::SU2Tag> lspin,
-              SpinDescriptor<symm_traits::SU2Tag> mspin,
-              SpinDescriptor<symm_traits::SU2Tag> rspin)
+void op_kron(Index<SymmGroup> const & phys_A,
+             Index<SymmGroup> const & phys_B,
+             block_matrix<Matrix1, SymmGroup> const & Ao,
+             block_matrix<Matrix1, SymmGroup> const & Bo,
+             block_matrix<Matrix2, SymmGroup> & C,
+             SpinDescriptor<symm_traits::SU2Tag> lspin,
+             SpinDescriptor<symm_traits::SU2Tag> mspin,
+             SpinDescriptor<symm_traits::SU2Tag> rspin)
 {
     typedef typename SymmGroup::charge charge;
 
