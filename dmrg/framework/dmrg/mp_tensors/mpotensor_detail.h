@@ -53,10 +53,14 @@ namespace MPOTensor_detail
         term_descriptor() {}
         term_descriptor(typename const_type<std::vector<std::pair<tag_type, value_type> >, Const>::type & term_descs,
                         op_table_ptr op_tbl)
-            : op(op_tbl->operator[](term_descs[0].first)), scale(term_descs[0].second) {}
+            : op_(op_tbl->operator[](term_descs[0].first)), scale_(term_descs[0].second) {}
 
-        typename const_type<op_t, Const>::type & op;
-        typename const_type<value_type, Const>::type & scale;
+        typename const_type<op_t, Const>::type & op(std::size_t i=0) { return op_; }
+        typename const_type<value_type, Const>::type & scale(std::size_t i=0) { return scale_; }
+
+    private:
+        typename const_type<op_t, Const>::type & op_;
+        typename const_type<value_type, Const>::type & scale_;
     };
 
     template <class Matrix, class SymmGroup, bool Const>
@@ -74,13 +78,16 @@ namespace MPOTensor_detail
     public:
         term_descriptor() {}
         term_descriptor(typename const_type<std::vector<std::pair<tag_type, value_type> >, Const>::type & term_descs,
-                        op_table_ptr op_tbl)
-            : op(op_tbl->operator[](term_descs[0].first)), scale(term_descs[0].second) {}
+                        op_table_ptr op_tbl_)
+            : operator_table(op_tbl_), term_descriptors(term_descs) {}
 
-        typename const_type<op_t, Const>::type & op;
-        typename const_type<value_type, Const>::type & scale;
+        std::size_t size() const { return term_descriptors.size(); }
+        typename const_type<op_t, Const>::type & op(std::size_t i=0) { return (*operator_table)[term_descriptors[i].first]; }
+        typename const_type<value_type, Const>::type & scale(std::size_t i=0) { return term_descriptors[i].second; }
+    private:
+        typename const_type<std::vector<std::pair<tag_type, value_type> >, Const>::type & term_descriptors;
+        op_table_ptr operator_table;
     };
-
 
     template <class ConstIterator>
     class IteratorWrapper

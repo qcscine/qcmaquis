@@ -70,7 +70,10 @@ namespace SU2 {
 
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
-            block_matrix<Matrix, SymmGroup> const & W = access.op;
+
+        for (std::size_t op_index = 0; op_index < access.size(); ++op_index)
+        {
+            block_matrix<Matrix, SymmGroup> const & W = access.op(op_index);
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
             ret.spin = couple(left[b1].spin, W.spin);
@@ -155,7 +158,7 @@ namespace SU2 {
                                     else
                                         c_eff = coupling_coeff;
 
-                                    c_eff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
+                                    c_eff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
 
                                     typename Matrix::value_type alfa_t = wblock(ss1, ss2) * c_eff;
                                     maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size + rr),
@@ -169,6 +172,7 @@ namespace SU2 {
                     }
                 }
             }
+        } // op_index
         } // b1
     }
 
@@ -196,7 +200,10 @@ namespace SU2 {
 
             block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
-            block_matrix<Matrix, SymmGroup> const & W = access.op;
+
+        for (std::size_t op_index = 0; op_index < access.size(); ++op_index)
+        {
+            block_matrix<Matrix, SymmGroup> const & W = access.op(op_index);
 
             // note minus sign, as we move the boundary to the left
             ret.spin = couple(right[b2].spin, -W.spin);
@@ -242,7 +249,7 @@ namespace SU2 {
 
                         typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                         if (std::abs(coupling_coeff) < 1.e-40) continue;
-                        coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
+                        coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
 
                         size_t phys_s1 = W.basis().left_size(w_block);
                         size_t phys_s2 = W.basis().right_size(w_block);
@@ -265,6 +272,7 @@ namespace SU2 {
                     }
                 }
             }
+        } // op_index
         } // b1
     }
 } // namespace SU2

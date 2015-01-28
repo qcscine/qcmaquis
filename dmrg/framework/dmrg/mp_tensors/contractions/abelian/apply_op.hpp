@@ -56,7 +56,7 @@ namespace contraction {
             index_type b1 = col_it.index();
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
-            block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
             charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
@@ -102,7 +102,7 @@ namespace contraction {
             index_type b1 = col_it.index();
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];                    if(T.n_blocks() == 0) continue;
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
-            block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
             // charge deltas are constant for all blocks
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
@@ -138,7 +138,7 @@ namespace contraction {
                     parallel::guard proc(scheduler(o));
                     maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
                                                         out_left_offset, in_right_offset,
-                                                        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, access.scale);
+                                                        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, access.scale());
                 }
             } // right index block
         } // b1
@@ -163,7 +163,7 @@ namespace contraction {
             index_type b2 = row_it.index();
             block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
-            block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
             charge        T_delta = SymmGroup::fuse(T.basis().right_charge(0), -T.basis().left_charge(0));
@@ -206,7 +206,7 @@ namespace contraction {
             index_type b2 = row_it.index();
             block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];                   if(T.n_blocks() == 0) continue;
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
-            block_matrix<Matrix, SymmGroup> const & W = access.op;                            if(W.n_blocks() == 0) continue;
+            block_matrix<Matrix, SymmGroup> const & W = access.op();                            if(W.n_blocks() == 0) continue;
 
             // charge deltas are constant for all blocks
             charge operator_delta = SymmGroup::fuse(W.basis().right_charge(0), -W.basis().left_charge(0));
@@ -239,7 +239,7 @@ namespace contraction {
                     maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
                                                         out_right_offset, in_left_offset,
                                                         phys_s1, phys_s2,
-                                                        l_size, T.basis().right_size(t_block), access.scale);
+                                                        l_size, T.basis().right_size(t_block), access.scale());
                 }
             }
         }

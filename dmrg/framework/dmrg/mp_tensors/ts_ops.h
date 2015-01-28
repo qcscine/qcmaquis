@@ -97,12 +97,12 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                     }
                     else {
                         uniform_ops[b3].first = kron_tag;
-                        uniform_ops[b3].second = (p1.scale * p2.scale);
+                        uniform_ops[b3].second = (p1.scale() * p2.scale());
                     }
 
                     block_matrix<MPSMatrix, SymmGroup> tmp_op;
                     tmp_op = kron_handler.get_op(kron_tag);
-                    tmp_op *= (p1.scale * p2.scale);
+                    tmp_op *= (p1.scale() * p2.scale());
                     if (out_row[b3].n_blocks() == 0)
                         out_row[b3] = tmp_op;
                     else
@@ -176,8 +176,8 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
 
                     term_descriptor<MPSMatrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
-                    op_kron(phys_i1, phys_i2, p1.op, p2.op, product, mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
-                    product *= (p1.scale * p2.scale);
+                    op_kron(phys_i1, phys_i2, p1.op(), p2.op(), product, mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
+                    product *= (p1.scale() * p2.scale());
                     out_row[b3] += product;
                 }
             }
