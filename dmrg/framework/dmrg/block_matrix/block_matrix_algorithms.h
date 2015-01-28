@@ -703,7 +703,7 @@ void op_kron(Index<SymmGroup> const & phys_A,
              SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
              SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin)
 {
-    op_kron_(phys_A, phys_B, A, B, C, lspin, mspin, rspin, typename symm_traits::SymmType<SymmGroup>::type());
+    op_kron_(phys_A, phys_B, A, B, C, lspin, mspin, rspin);
 }
 
 template<class Matrix1, class Matrix2, class SymmGroup>
@@ -714,8 +714,7 @@ void op_kron_(Index<SymmGroup> const & phys_A,
              block_matrix<Matrix2, SymmGroup> & C,
              SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
              SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
-             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin,
-             typename symm_traits::SymmType<SymmGroup>::type)
+             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin)
 {
     C = block_matrix<Matrix2, SymmGroup>();
 
@@ -751,8 +750,7 @@ void op_kron_(Index<SymmGroup> const & phys_A,
               block_matrix<Matrix2, SymmGroup> & C,
               SpinDescriptor<symm_traits::SU2Tag> lspin,
               SpinDescriptor<symm_traits::SU2Tag> mspin,
-              SpinDescriptor<symm_traits::SU2Tag> rspin,
-              symm_traits::SU2Tag)
+              SpinDescriptor<symm_traits::SU2Tag> rspin)
 {
     typedef typename SymmGroup::charge charge;
 
