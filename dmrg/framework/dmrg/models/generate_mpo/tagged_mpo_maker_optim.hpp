@@ -192,7 +192,8 @@ namespace generate_mpo
                     else if (rr == right.end())
                         boost::tie(rr, boost::tuples::ignore) = right.insert( make_pair(k2, r++) );
                     
-                    pre_tensor.push_back( tag_block(ll->second, rr->second, val.first, val.second) );
+                    index_type rr_dim = (p == length-1) ? 0 : rr->second;
+                    pre_tensor.push_back( tag_block(ll->second, rr_dim, val.first, val.second) );
                 }
                 
                 std::pair<index_type, index_type> rcd = rcdim(pre_tensor);
@@ -254,7 +255,7 @@ namespace generate_mpo
                 int i = 1;
                 mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin);
                 prempo_key_type k2 = trivial_right;
-                insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), detach);
+                insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), attach);
             }
 
             assert(mpo_spin.get() == 0); // H is a spin 0 operator
@@ -306,7 +307,7 @@ namespace generate_mpo
             {
                 int i = 2;
                 mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin);
-                insert_operator(term.position(i), make_pair(k1, trivial_right), prempo_value_type(term.operator_tag(i), 1.), detach);
+                insert_operator(term.position(i), make_pair(k1, trivial_right), prempo_value_type(term.operator_tag(i), 1.), attach);
             }
 
             assert(mpo_spin.get() == 0); // H is a spin 0 operator
@@ -357,7 +358,7 @@ namespace generate_mpo
             {
                 int i = 3;
                 mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin);
-                insert_operator(term.position(i), make_pair(k1, trivial_right), prempo_value_type(term.operator_tag(i), 1.), detach);
+                insert_operator(term.position(i), make_pair(k1, trivial_right), prempo_value_type(term.operator_tag(i), 1.), attach);
             }
 
             assert(mpo_spin.get() == 0); // H is a spin 0 operator

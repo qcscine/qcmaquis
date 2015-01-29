@@ -30,7 +30,7 @@
 template<class Matrix, class SymmGroup>
 MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
                                         index_type rd,
-                                        prempo_t const & tags,
+                                        prempo_t tags,
                                         op_table_ptr tbl_,
                                         spin_index const & lspins,
                                         spin_index const & rspins)
@@ -42,27 +42,25 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
 , operator_table(tbl_)
 {
     using namespace boost::tuples;
-    typedef boost::tuple<index_type, index_type, tag_type, value_type> prempo_descriptor;
-    typedef std::vector<prempo_descriptor> converted_prempo_t;
-
     row_index.resize(ld);
 
     if (tags.size() > 0 && operator_table.get() != NULL) {
-        converted_prempo_t tmp_tags;
-        
-        // copy (due to const &) and convert to index_type
+
+        std::sort(tags.begin(), tags.end(), MPOTensor_detail::col_cmp<typename prempo_t::value_type>());
+
         for (typename prempo_t::const_iterator it = tags.begin(); it != tags.end(); ++it) {
-            index_type row_i = (left_i == 1) ? 0 : index_type(get<0>(*it));
-            index_type col_i = (right_i == 1) ? 0 : index_type(get<1>(*it));
-            tmp_tags.push_back( prempo_descriptor(row_i, col_i, get<2>(*it), get<3>(*it)) );
-        }
-
-
-        std::sort(tmp_tags.begin(), tmp_tags.end(), MPOTensor_detail::col_cmp<prempo_descriptor>());
-
-        for (typename converted_prempo_t::const_iterator it = tmp_tags.begin(); it != tmp_tags.end(); ++it) {
-            col_tags(get<0>(*it), get<1>(*it)) = internal_value_type(1, std::make_pair(get<2>(*it), get<3>(*it)));
-            row_index[get<0>(*it)].insert(get<1>(*it));
+            internal_value_type & element = col_tags(get<0>(*it), get<1>(*it)).ref();
+            if (element.size() == 0)
+            {
+                element = internal_value_type(1, std::make_pair(get<2>(*it), get<3>(*it)));
+                row_index[get<0>(*it)].insert(get<1>(*it));
+            }
+            else {
+                // avoid resize, as that might increase the capacity beyond the new size
+                internal_value_type new_element(element.size() + 1);
+                std::copy(element.begin(), element.end(), new_element.begin());
+                *new_element.rbegin() = std::make_pair(get<2>(*it), get<3>(*it));
+            }
         }
     }
     else {
