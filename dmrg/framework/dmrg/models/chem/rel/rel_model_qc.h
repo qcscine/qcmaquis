@@ -233,7 +233,8 @@ public:
                 meas_operators.push_back( std::make_pair(destroy_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
-                half_only = true;
+				// has to be false if using Rel_NRankRDM
+                half_only = false;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::Rel_NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,

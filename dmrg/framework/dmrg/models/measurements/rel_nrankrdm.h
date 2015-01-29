@@ -247,27 +247,20 @@ namespace measurements {
 							NTermsMPO<Matrix, SymmGroup> rdm_elem(lattice, identities, fillings, ref, phase);
 							MPO<Matrix, SymmGroup> mpo = rdm_elem.create_mpo();
 
-							//for(int jj=0; jj<lattice.size(); ++jj){
-							//	maquis::cout << mpo[jj].at(0,0).op << std::endl;
-							//}
-
-							std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
-							//typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(ket_mps, mpo);
+							//std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
+							typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(ket_mps, mpo);
 							
-							if(dct[0] != 0.0)
-								maquis::cout << std::fixed << std::setprecision(10) << i+1 << " " << j+1 << " " << k+1 << " " << l+1 << "\t" << dct[0] << std::endl;
+							if(dct != 0.0) {
+								//maquis::cout << std::fixed << std::setprecision(10) << i+1 << " " << j+1 << " " << k+1 << " " << l+1 << "\t" << dct << std::endl;
 
-							/*
-							std::vector<std::vector<pos_t> > num_labels = dcorr->numeric_labels();
-							std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-														? measurements::detail::resort_labels(num_labels, order, is_nn) : num_labels );
-							
-                    		this->vector_results.reserve(this->vector_results.size() + dct.size());
-                    		std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
-
-                    		this->labels.reserve(this->labels.size() + dct.size());
-                    		std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
-							*/
+								std::vector<pos_t> label; label.push_back(i); label.push_back(j); label.push_back(k); label.push_back(l);
+								std::vector<std::vector<pos_t> > num_labels;
+								num_labels.push_back(label);
+								std::vector<std::string> lbt = label_strings(lattice, num_labels);
+								
+								this->vector_results.push_back(dct);
+								this->labels.push_back(lbt[0]);
+							} // end if
 						} // i loop
 					} // j loop
 				} // k loop
