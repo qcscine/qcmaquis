@@ -174,7 +174,7 @@ namespace measurements {
 							if (i==k && j==l && i!=j) continue;
 							if (i==k && i!=j && i!=l) continue;
 							if (j==l && j!=i && j!=k) continue;
-							maquis::cout << i << " " << j << " " << k << " " << l << "\n";
+							//maquis::cout << i << " " << j << " " << k << " " << l << "\n";
 
 							op_t_type op_i = std::make_pair(ops[0][0].first[lattice.get_prop<int>("irrep",i)], ops[0][0].second);
 							op_t_type op_j = std::make_pair(ops[0][1].first[lattice.get_prop<int>("irrep",j)], ops[0][1].second);
@@ -189,8 +189,11 @@ namespace measurements {
             					for(pos_t c2 = c1+1; c2 < n; c2++)
                 					if(idx[c1] > idx[c2]) inv_count++;
 
+							// An additional swap needed if j == k
+							if (j==k) inv_count++;
+
 							if (inv_count % 2)
-								int phase = -1;
+								phase = -1;
 
 							if (i==j) {
 								op_t tmp;
@@ -242,19 +245,17 @@ namespace measurements {
 							}
 							
 							NTermsMPO<Matrix, SymmGroup> rdm_elem(lattice, identities, fillings, ref, phase);
-							maquis::cout << "rdm_elem created, ready to create mpo\n\n";
-
 							MPO<Matrix, SymmGroup> mpo = rdm_elem.create_mpo();
 
-							maquis::cout << "mpo created\n\n";
-							for(int jj=0; jj<lattice.size(); ++jj){
-								maquis::cout << mpo[jj].at(0,0).op << std::endl;
-							}
+							//for(int jj=0; jj<lattice.size(); ++jj){
+							//	maquis::cout << mpo[jj].at(0,0).op << std::endl;
+							//}
 
 							std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
 							//typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(ket_mps, mpo);
 							
-							maquis::cout << i << " " << j << " " << k << " " << l << "\t" << dct[0] << std::endl;
+							if(dct[0] != 0.0)
+								maquis::cout << std::fixed << std::setprecision(10) << i+1 << " " << j+1 << " " << k+1 << " " << l+1 << "\t" << dct[0] << std::endl;
 
 							/*
 							std::vector<std::vector<pos_t> > num_labels = dcorr->numeric_labels();

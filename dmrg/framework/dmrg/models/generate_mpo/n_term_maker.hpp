@@ -53,13 +53,14 @@ public:
 	, identities(ident_)
 	, fillings(fill_)
 	{
-		bool trivial_fill = true;
+		bool is_fermionic = false;
 		for (pos_t p = 0; p < lat.size(); ++p){
 			for (pos_t p_op = 0; p_op < op_string.size(); ++p_op) {
 				if (p == op_string[p_op].first) {
-					maquis::cout << "Inserting non-trivial operator at site " << p << std::endl;
-					trivial_fill = (trivial_fill != !op_string[p_op].second.second);
-					if (!trivial_fill) {
+					//maquis::cout << "Inserting non-trivial operator at site " << p << std::endl;
+					is_fermionic = (is_fermionic != op_string[p_op].second.second);
+					//maquis::cout << "Is fermionic? " << is_fermionic << std::endl;
+					if (is_fermionic) {
 						op_t tmp;
 						gemm(fillings[lat.get_prop<int>("irrep",p)], op_string[p_op].second.first, tmp);
 						prempo.insert( std::make_pair(p, tmp));
@@ -69,11 +70,11 @@ public:
 				}
 			}
 			if (prempo.count(p)==0) {
-				maquis::cout << "Inserting fill/identity operator at site " << p << std::endl;
-				if (trivial_fill) {
-					prempo.insert( std::make_pair(p, identities[lat.get_prop<int>("irrep",p)]) );
-				} else {
+				//maquis::cout << "Inserting fill/identity operator at site " << p << std::endl;
+				if (is_fermionic) {
 					prempo.insert( std::make_pair(p, fillings[lat.get_prop<int>("irrep",p)]) );
+				} else {
+					prempo.insert( std::make_pair(p, identities[lat.get_prop<int>("irrep",p)]) );
 				}
 			}
 		}
@@ -82,8 +83,9 @@ public:
 	MPO<Matrix, SymmGroup> create_mpo()
 	{
 		MPO<Matrix, SymmGroup> ret(prempo.size());
-		MPOTensor<Matrix, SymmGroup> op(1,1);
+		//maquis::cout << "prempo size " << prempo.size() << std::endl;
 		for (pos_t p = 0; p < prempo.size(); ++p) {
+			MPOTensor<Matrix, SymmGroup> op(1,1);
 			if (phase < 0) {
 				op.set(0,0, prempo[p], phase*1.0);
 				phase = 1;
@@ -91,7 +93,7 @@ public:
 				op.set(0,0, prempo[p], 1.0);
 			}
 			ret[p] = op;
-			maquis::cout << op.at(0,0).op;
+			//maquis::cout << ret[p].at(0,0).op << ret[p].at(0,0).scale << std::endl;
 		}
 		return ret;
 	}
