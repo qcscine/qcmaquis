@@ -64,43 +64,6 @@ namespace tag_detail {
         }
     }
 
-    template <class Matrix, class SymmGroup>
-    bool is_uniform(block_matrix<Matrix, SymmGroup> const& op)
-    {
-        if (op.n_blocks() == 0)
-            return true;
-
-        typename Matrix::value_type invscale;
-        {
-            parallel::guard::serial guard;
-            storage::migrate(op);
-        }
-        
-        // determine scale of matrices
-        const Matrix& m = op[0];
-        for (int i = 0; i < num_rows(m); i++)
-           for(int j = 0; j < num_cols(m); j++)
-            if (std::abs(m(i,j)) > 1.e-20) {
-                invscale = 1./m(i,j);
-                break;
-            }
-
-        for (typename Matrix::size_type b=0; b < op.n_blocks(); ++b)
-        {
-            const Matrix& m = op[b];
-            for (int i = 0; i < num_rows(m); i++)
-               for(int j = 0; j < num_cols(m); j++)
-            {
-                typename maquis::traits::real_type<typename Matrix::value_type>::type normalized = std::abs(m(i,j) * invscale);
-                // if not 1 and not 0
-                if (std::abs(normalized-1.0) > 1e-15 && std::abs(normalized) > 1e-15)
-                    return false;
-            }
-        }
-
-        return true;
-    }
-
     template <class T>
     bool num_check(T x) {
         if (alps::numeric::isnan(x) || alps::numeric::isinf(x))

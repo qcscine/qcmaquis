@@ -149,12 +149,7 @@ public:
 
     KronHandler(boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_)
     :   base(tbl_)
-      , kronecker_table(new OPTable<Matrix, SymmGroup>())
-    {
-        for (typename OPTable<Matrix, SymmGroup>::iterator it = tbl_->begin();
-             it != tbl_->end(); ++it)
-            uniform.push_back(tag_detail::is_uniform(*it));
-    }
+      , kronecker_table(new OPTable<Matrix, SymmGroup>()) { }
 
     tag_type get_kron_tag(Index<SymmGroup> const & phys_i1, Index<SymmGroup> const & phys_i2, tag_type t1, tag_type t2,
                           SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
@@ -164,8 +159,6 @@ public:
     typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i) { return (*kronecker_table)[i]; }
     typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const { return (*kronecker_table)[i]; }
 
-    bool is_uniform(tag_type t) { return uniform[t]; }
-
     boost::shared_ptr<OPTable<Matrix, SymmGroup> > get_kronecker_table() { return kronecker_table; }
 
     /* Diagnostics *************************************/
@@ -174,7 +167,6 @@ public:
 private:
     boost::shared_ptr<OPTable<Matrix, SymmGroup> > kronecker_table;
     typename base::pair_map_t kron_tags;
-    std::vector<bool> uniform;
 };
 
 
