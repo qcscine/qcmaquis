@@ -246,37 +246,29 @@ public:
             truncation_results trunc;
             
             if (lr == +1) {
-                //if (site < L-1) {
-                if (false) {
+                if (site < L-1) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     trunc = mps.grow_l2r_sweep(mpo[site], left_[site], right_[site+1],
                                                site, alpha, cutoff, Mmax);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_left(DefaultSolver());
-					//DEBUG
-					//maquis::cout << "\n***MPS TENSOR AFTER NORMALIZATION***\n\n" << mps[site] << "******************************\n\n";
                     if (site < L-1)
                         mps[site+1].multiply_from_left(t);
                 }
                 
                 this->boundary_left_step(mpo, site); // creating left_[site+1]
-				//maquis::cout << "LAST LEFT SITE " << left_[site+1][0].basis() << std::endl;
                 if (site != L-1) {
                     Storage::drop(right_[site+1]);
                     Storage::evict(left_[site]);
                 }
             } else if (lr == -1) {
-                //if (site > 0) {
-                if (false) {
+                if (site > 0) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
                     // Invalid read occurs after this!\n
                     trunc = mps.grow_r2l_sweep(mpo[site], left_[site], right_[site+1],
                                                site, alpha, cutoff, Mmax);
                 } else {
                     block_matrix<Matrix, SymmGroup> t = mps[site].normalize_right(DefaultSolver());
-					//DEBUG
-					//maquis::cout << "\n***MPS TENSOR AFTER NORMALIZATION***\n\n" << mps[site] << "******************************\n\n";
-
                     if (site > 0)
                         mps[site-1].multiply_from_right(t);
                 }

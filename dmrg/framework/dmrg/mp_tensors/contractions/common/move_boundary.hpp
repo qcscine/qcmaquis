@@ -235,8 +235,8 @@ namespace contraction {
                 ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
                 block_matrix<Matrix, SymmGroup> tmp;
                 Kernel()(b2, contr_grid, left, t, mpo, ket_cpy.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
-                //typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
-				::SU2::gemm(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
+                typename Gemm::gemm()(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
+				//::SU2::gemm(transpose(contr_grid(0,0)), bra_conj, ret[b2]);
             });
 
             return ret;
@@ -290,8 +290,8 @@ namespace contraction {
             omp_for(index_type b1, parallel::range<index_type>(0,loop_max), {
                 Kernel()(b1, ret[b1], right, t, mpo, ket_cpy.data().basis(), left_i, out_right_i, in_left_pb, out_right_pb);
                 block_matrix<Matrix, SymmGroup> tmp;
-                //typename Gemm::gemm()(ret[b1], transpose(bra_conj), tmp);
-				::SU2::gemm(ret[b1], transpose(bra_conj), tmp);
+                typename Gemm::gemm()(ret[b1], transpose(bra_conj), tmp);
+				//::SU2::gemm(ret[b1], transpose(bra_conj), tmp);
                 swap(ret[b1], tmp);
             });
     #endif

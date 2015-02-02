@@ -122,6 +122,8 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     cmaxi=maximum_total_charge; cmini=minimum_total_charge;
     for (int i = L-1; i >= 0; --i) {
         right_allowed[i] = adjoin(phys_dims[site_type[i]]) * right_allowed[i+1];
+        cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i]]);
+        cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i]]);
        
         typename Index<SymmGroup>::iterator it = right_allowed[i].begin();
         while ( it != right_allowed[i].end() )
@@ -137,8 +139,6 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                 ++it;
             }
         }
-        cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i]]);
-        cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i]]);
     }
 	
 	//for (int i = L; i > -1; --i)
@@ -162,197 +162,5 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     
     return allowed;
 }
-
-/*
-// Specialized template class for u1lpg group used for the relativistic model
-template <>
-inline std::vector<Index<U1LPG> > allowed_sectors<U1LPG>(std::vector<int> const& site_type,
-                                                         std::vector<Index<U1LPG> > const& phys_dims,
-                                                         typename U1LPG::charge right_end,
-                                                         std::size_t Mmax)
-{
-    bool finitegroup = U1LPG::finite;
-	int unbar_counter = 0;
-	int bar_counter = 0;
-
-	// For the moment only even number of electron supported
-	assert(right_end[0]%2 == 0);
-
-	typename U1LPG::charge max_charge;
-	typename U1LPG::charge min_charge;
-	int delta_MK;
-	// Check number of electrons to set the max/min charges
-	if (right_end[0]/2 > 2) {
-		if (right_end[0]/2 == 3)
-			delta_MK = 0;
-		else
-			delta_MK = 1;
-
-		max_charge[0] = right_end[0]/2 + 3;
-		min_charge[0] = right_end[0]/2 - 2;
-	} else {
-		delta_MK = 0;
-		max_charge = right_end;
-		min_charge = U1LPG::IdentityCharge;
-	}
-
-    std::size_t L = site_type.size();
-    
-    std::vector<typename U1LPG::charge> maximum_charges(phys_dims.size()), minimum_charges(phys_dims.size());
-    for (int type=0; type<phys_dims.size(); ++type) {
-        Index<U1LPG> physc = phys_dims[type];
-        physc.sort();
-        maximum_charges[type] = physc.begin()->first;
-        minimum_charges[type] = physc.rbegin()->first;
-        if (minimum_charges[type] > maximum_charges[type]) std::swap(maximum_charges[type], minimum_charges[type]);
-    }
-    
-    typename U1LPG::charge maximum_total_charge=U1LPG::IdentityCharge, minimum_total_charge=U1LPG::IdentityCharge;
-    typename U1LPG::charge maximum_unbarred_charge=U1LPG::IdentityCharge, maximum_barred_charge=U1LPG::IdentityCharge;
-    for (int i = 0; i < L; ++i) {
-        maximum_total_charge = U1LPG::fuse(maximum_total_charge, maximum_charges[site_type[i]]);
-        minimum_total_charge = U1LPG::fuse(minimum_total_charge, minimum_charges[site_type[i]]);
-		if (site_type[i] < L/2)
-			maximum_unbarred_charge = U1LPG::fuse(maximum_unbarred_charge, maximum_charges[site_type[i]]);
-		else
-			maximum_barred_charge = U1LPG::fuse(maximum_barred_charge, maximum_charges[site_type[i]]);
-    }
-
-    Index<U1LPG> l_triv, r_triv;
-    l_triv.insert( std::make_pair(U1LPG::IdentityCharge, 1) );
-    r_triv.insert( std::make_pair(right_end, 1) );
-    
-    std::vector<Index<U1LPG> > left_allowed(L+1), right_allowed(L+1), allowed(L+1);
-    left_allowed[0] = l_triv;
-    right_allowed[L] = r_triv;
-    
-    typename U1LPG::charge cmaxi=maximum_total_charge, cmini=minimum_total_charge;
-    typename U1LPG::charge cunbar=maximum_unbarred_charge, cbar=maximum_barred_charge;
-    for (int i = 1; i < L+1; ++i) {
-        left_allowed[i] = phys_dims[site_type[i-1]] * left_allowed[i-1];
-        cmaxi  = U1LPG::fuse(cmaxi, -maximum_charges[site_type[i-1]]);
-        cmini  = U1LPG::fuse(cmini, -minimum_charges[site_type[i-1]]);
-
-        if (site_type[i-1] < L/2) {
-			++unbar_counter;
-        	cunbar = U1LPG::fuse(cunbar, -maximum_charges[site_type[i-1]]);
-		} else {
-			++bar_counter;
-        	cbar   = U1LPG::fuse(cbar, -maximum_charges[site_type[i-1]]);
-		}
-		if (unbar_counter > 0) {
-			if (bar_counter > 0) {
-				if (delta_MK > 0) {
-					--delta_MK;
-					max_charge[0] = max_charge[0] + 1;
-				}
-			}
-		}
-
-		typename Index<U1LPG>::iterator it = left_allowed[i].begin();
-        while ( it != left_allowed[i].end() )
-        {
-            if (U1LPG::fuse(it->first, cmaxi) < max_charge)
-                it = left_allowed[i].erase(it);
-            else if (U1LPG::fuse(it->first, cmini) > max_charge)
-                it = left_allowed[i].erase(it);
-			else if (U1LPG::fuse(it->first, cunbar) < min_charge)
-				it = left_allowed[i].erase(it);
-			else if (U1LPG::fuse(it->first, cbar) < min_charge)
-				it = left_allowed[i].erase(it);
-            else {
-                it->second = std::min(Mmax, it->second);
-                ++it;
-            }
-        }
-	}
-    
-	//--- Print left allowed terms ---//
-	//std::cout << std::endl;
-	//for (int i = 0; i < L+1; ++i)
-	//{
-	//	std::cout << "Left allowed sectors on site: " << i << std::endl;
-	//	std::cout << left_allowed[i] << std::endl;
-	//}
-	//std::cout << std::endl;
-
-
-    cmaxi=maximum_total_charge; cmini=minimum_total_charge;
-    cunbar=maximum_unbarred_charge; cbar=maximum_barred_charge;
-	// Re-initialize max/min charges
-	if (right_end[0]/2 > 2) {
-		if (right_end[0]/2 == 3)
-			delta_MK = 0;
-		else
-			delta_MK = 1;
-
-		max_charge[0] = right_end[0]/2 + 2;
-		min_charge[0] = right_end[0]/2 - 3;
-	} else {
-		delta_MK = 0;
-		max_charge = right_end;
-		min_charge = U1LPG::IdentityCharge;
-	}
-
-    for (int i = L-1; i >= 0; --i) {
-        right_allowed[i] = adjoin(phys_dims[site_type[i]]) * right_allowed[i+1];
-        cmaxi = U1LPG::fuse(cmaxi, -maximum_charges[site_type[i]]);
-        cmini = U1LPG::fuse(cmini, -minimum_charges[site_type[i]]);
-       
-        if (site_type[i] < L/2) {
-			--unbar_counter;
-        	cunbar = U1LPG::fuse(cunbar, -maximum_charges[site_type[i]]);
-		} else {
-			--bar_counter;
-        	cbar   = U1LPG::fuse(cbar, -maximum_charges[site_type[i]]);
-		}
-		if (unbar_counter > 0) {
-			if (bar_counter > 0) {
-				if (delta_MK > 0) {
-					--delta_MK;
-					min_charge[0] = min_charge[0] - 1;
-				}
-			}
-		}
-
-        typename Index<U1LPG>::iterator it = right_allowed[i].begin();
-        while ( it != right_allowed[i].end() )
-        {
-            if (U1LPG::fuse(it->first, -cmaxi) > min_charge)
-                it = right_allowed[i].erase(it);
-            else if (U1LPG::fuse(it->first, -cmini) < min_charge)
-                it = right_allowed[i].erase(it);
-            else if (U1LPG::fuse(it->first, -cunbar) > max_charge)
-                it = right_allowed[i].erase(it);
-			else if (U1LPG::fuse(it->first, -cbar) > max_charge)
-				it = right_allowed[i].erase(it);
-            else {
-                it->second = std::min(Mmax, it->second);
-                ++it;
-            }
-        }
-    }
-	
-	//for (int i = L; i > -1; --i)
-	//{
-	//	std::cout << "Right allowed sectors on site: " << i << std::endl;
-	//	std::cout << right_allowed[i] << std::endl;
-	//}
-	//std::cout << std::endl;
-
-    for (int i = 0; i < L+1; ++i) {
-        allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
-        for (typename Index<U1LPG>::iterator it = allowed[i].begin();
-            it != allowed[i].end(); ++it)
-            it->second = tri_min(Mmax,
-                                 left_allowed[i].size_of_block(it->first),
-                                 right_allowed[i].size_of_block(it->first));
-
-		//std::cout << "Common subset of allowed sectors on site: " << i << std::endl;
-		//std::cout << allowed[i] << std::endl;
-    }
-    return allowed;
-}
-*/
 
 #endif

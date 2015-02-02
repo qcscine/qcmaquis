@@ -192,10 +192,11 @@ public:
 template<class S>
 std::vector<S> generate_lpg_adjoin_table(std::size_t group)
 {
+	std::vector<S> ret;
 	// TODO: Add all the cases for all symmetry groups
 	switch(group) {
 		case(1):
-			return generate_adjoin_table_Cinf<S>();
+			ret = generate_adjoin_table_Cinf<S>();
 			break;
 	}
 
@@ -217,15 +218,17 @@ std::vector<S> generate_lpg_adjoin_table(std::size_t group)
     }
 
     return adjoin_table;*/
+	return ret;
 }
   
 template<class S>
 alps::numeric::matrix<S> generate_lpg_mult_table(std::size_t group)
 {
+	alps::numeric::matrix<S> ret;
 	// TODO: Add all the cases for all symmetry groups
 	switch(group) {
 		case(1):
-			return generate_mult_table_Cinf<S>();
+			ret = generate_mult_table_Cinf<S>();
 			break;
 	}
 
@@ -291,6 +294,7 @@ alps::numeric::matrix<S> generate_lpg_mult_table(std::size_t group)
 
     return mult_table;
 */
+	return ret;
 }
 
 template<int N, class S> const typename NU1LPG<N,S>::charge NU1LPG<N,S>::IdentityCharge = typename NU1LPG<N,S>::charge();

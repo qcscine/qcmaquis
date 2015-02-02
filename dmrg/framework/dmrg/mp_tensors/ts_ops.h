@@ -137,10 +137,11 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
         } 
 
 
+		// SB: commented out on 01.02.15
+        //#ifdef MAQUIS_OPENMP
+        //#pragma omp critical
+        //#endif
 
-        #ifdef MAQUIS_OPENMP
-        #pragma omp critical
-        #endif
         //maquis::cout << "TSMPOTensor: " << mpo1.row_dim() << "x" << mpo2.col_dim() << ",  " << prempo.size() 
         //             << " operators, " << kron_handler.get_kronecker_table()->size() << " tags\n";
 
