@@ -48,8 +48,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
-        di.init_sectors(mps, parms["init_bond_dimension"], true, 0);
-        //di.init_sectors(mps, parms["init_bond_dimension"], false, 1);
+        di.init_sectors(mps, 5, true, 0);
 
         std::vector<std::size_t> hf_init = parms["hf_occ"];
 
@@ -105,7 +104,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 
         }
 
-        //mps = compression::l2r_compress(mps, 10, 1e-6); 
+        //mps = compression::l2r_compress(mps, Mmax, 1e-6); 
 
         //maquis::cout << "\nMPS AFTER COMPRESSION:\n";
         //for(int i = 0; i < mps.length(); ++i) {

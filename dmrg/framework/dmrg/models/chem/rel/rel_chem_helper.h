@@ -31,27 +31,24 @@
 #include "dmrg/models/chem/util.h"
 #include "dmrg/models/chem/parse_integrals.h"
 
-namespace rel_chem_detail {
+namespace chem_detail {
     
     template <typename M, class S>
-    class ChemHelper
+    class RelChemHelper
     {
     public:
-		typedef chem_detail::TermTuple  TermTuple;
-		typedef chem_detail::IndexTuple  IndexTuple;
         typedef typename M::value_type value_type;
         typedef ::term_descriptor<value_type> term_descriptor;
         typedef typename TagHandler<M, S>::tag_type tag_type;
         typedef Lattice::pos_t pos_t;
 
-        ChemHelper(BaseParameters & parms, Lattice const & lat,
+        RelChemHelper(BaseParameters & parms, Lattice const & lat,
                    tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_)
             : ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
-			std::pair<alps::numeric::matrix<Lattice::pos_t>, std::vector<value_type> > pair_return
-				= chem_detail::parse_integrals<value_type,S>(parms, lat);
-			boost::tie(idx_, matrix_elements) = chem_detail::parse_integrals<value_type,S>(parms, lat);
+			boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
 
+			maquis::cout << *idx_.row(matrix_elements.size()-1).first << std::endl;
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;
 				std::copy(idx_.row(m).first, idx_.row(m).second, pos.begin());

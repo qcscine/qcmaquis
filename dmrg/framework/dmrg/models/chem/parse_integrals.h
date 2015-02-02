@@ -103,20 +103,18 @@ namespace chem_detail {
                 idx_(row, 2) = aligned[2];
                 idx_(row, 3) = aligned[3];
             }
-            else { it++; }
+            else { it++; idx_.remove_rows(row--); }
 
             it += 4;
             row++;
         }
 
-		/* causes some troubles in the rel model!!!
         #ifndef NDEBUG
         for (std::size_t m = 0; m < matrix_elements.size(); ++m)
         {
             assert( *std::max_element(idx_.elements().first, idx_.elements().second) <= lat.size() );
         }
         #endif
-		*/
 
         return std::make_pair(idx_, matrix_elements);
     }

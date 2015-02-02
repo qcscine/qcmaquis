@@ -40,10 +40,11 @@
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
+#include "dmrg/models/chem/util.h"
+#include "dmrg/models/chem/parse_integrals.h"
+#include "dmrg/models/chem/pg_util.h"
 #include "dmrg/models/chem/2u1/term_maker.h"
 #include "dmrg/models/chem/rel/rel_chem_helper.h"
-#include "dmrg/models/chem/pg_util.h"
-#include "dmrg/models/chem/util.h"
 
 template<class Matrix, class SymmGroup>
 class rel_qc_model : public model_impl<Matrix, SymmGroup>

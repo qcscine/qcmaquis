@@ -85,7 +85,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 
     /**********************************************************************/
 
-    rel_chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
+    chem_detail::RelChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
     
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
@@ -104,7 +104,6 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
         if ( i==-1 && j==-1 && k==-1 && l==-1) {
             
             term_descriptor term;
-            //term.coeff = matrix_elements[m]*2.0;
             term.coeff = matrix_elements[m];
             term.push_back( boost::make_tuple(0, ident) );
             this->terms_.push_back(term);
