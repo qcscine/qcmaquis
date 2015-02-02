@@ -51,79 +51,54 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo_shared(MPOTensor<MPOMatrix, Sym
     typedef typename OPTable<MPSMatrix, SymmGroup>::tag_type tag_type;
     typedef typename OPTable<MPSMatrix, SymmGroup>::op_t op_t;
     typedef typename MPSMatrix::value_type value_type;
-    typedef std::map<index_type, op_t> op_map;
-    typedef std::map<index_type, std::pair<tag_type, value_type> > op_scale_map;
     typedef std::vector<boost::tuple<index_type, index_type, tag_type, value_type> > prempo_t;
 
     // Use a separate operator table for every twosite MPO Tensor - too much overhead to globally synchronize
     // a single table
     KronHandler<MPOMatrix, SymmGroup> kron_handler(mpo1.get_operator_table());
-    typename MPOTensor<MPOMatrix, SymmGroup>::op_table_ptr op_table = kron_handler.get_operator_table();
 
     prempo_t prempo;
 
     index_type b1, b2, b3;
-    for (b1=0; b1 < mpo1.row_dim(); ++b1) {
-
-        op_map out_row;
-        std::set<index_type> non_uniform;
-        op_scale_map uniform_ops;
-
-        row_proxy row1 = mpo1.row(b1);
-        for (typename row_proxy::const_iterator it1 = row1.begin(); it1 != row1.end(); ++it1) {
-
-            b2 = it1.index();
-            row_proxy row2 = mpo2.row(b2);
-            for (typename row_proxy::const_iterator it2 = row2.begin(); it2 != row2.end(); ++it2)
-            {
-                b3 = it2.index();
-                assert((mpo1.has(b1, b2) && mpo2.has(b2, b3)));
-                tag_type kron_tag;
-
-                term_descriptor<MPSMatrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
-
-                // Compute the Kronecker product
-                kron_tag = kron_handler.get_kron_tag(phys_i1, phys_i2, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3),
-                                                     mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
-
-                if (!kron_handler.is_uniform(mpo1.tag_number(b1,b2)) ||
-                    !kron_handler.is_uniform(mpo2.tag_number(b2,b3)) ||
-                    uniform_ops.count(b3) > 0)
-                {
-                    non_uniform.insert(b3);
-                }
-                else {
-                    uniform_ops[b3].first = kron_tag;
-                    uniform_ops[b3].second = (p1.scale() * p2.scale());
-                }
-
-                block_matrix<MPSMatrix, SymmGroup> tmp_op;
-                tmp_op = kron_handler.get_op(kron_tag);
-                tmp_op *= (p1.scale() * p2.scale());
-                if (out_row[b3].n_blocks() == 0)
-                    out_row[b3] = tmp_op;
-                else
-                    out_row[b3] += tmp_op;
-            }
-        }
-
+    for (b1 = 0; b1 < mpo1.row_dim(); ++b1) {
         for (b3 = 0; b3 < mpo2.col_dim(); ++b3) {
-            if (non_uniform.count(b3) == 0 && uniform_ops.count(b3) == 0)
-                continue;
 
-            if (non_uniform.count(b3) > 0) {
-                std::pair<tag_type, value_type> scaled_tag;
-                tag_detail::remove_empty_blocks(out_row[b3]);
-                scaled_tag = kron_handler.get_kronecker_table()->checked_register(out_row[b3]);
+            row_proxy row1 = mpo1.row(b1);
+
+            op_t b3_op;
+            std::pair<tag_type, value_type> scaled_tag;
+            std::set<index_type> summands;
+
+            for (typename row_proxy::const_iterator it = row1.begin(); it != row1.end(); ++it)
+                if (mpo2.has(it.index(), b3))
+                    summands.insert(it.index());
+
+            if (summands.size() > 1)
+            {
+                for (typename std::set<index_type>::const_iterator it = summands.begin(); it != summands.end(); ++it) {
+                    index_type b2 = *it; 
+                    term_descriptor<MPSMatrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
+
+                    op_t product;
+                    op_kron(phys_i1, phys_i2, p1.op(), p2.op(), product, mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
+                    b3_op += product * p1.scale() * p2.scale();
+                }
+                tag_detail::remove_empty_blocks(b3_op);
+                scaled_tag = kron_handler.get_kronecker_table()->checked_register(b3_op);
                 prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
-                //tag_type new_tag = kron_handler.get_kronecker_table()->register_op(out_row[b3]);
-                //prempo.push_back(boost::make_tuple(b1, b3, new_tag, 1.0));
             }
-            else {
-                prempo.push_back(boost::make_tuple(b1, b3, uniform_ops[b3].first, uniform_ops[b3].second));
+            else if (summands.size() == 1)
+            {
+                index_type b2 = *summands.begin();
+                term_descriptor<MPSMatrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
+                scaled_tag.first = kron_handler.get_kron_tag(phys_i1, phys_i2, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3),
+                                                             mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
+                scaled_tag.second = p1.scale() * p2.scale();
+                prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
             }
-        }
-    } 
+
+        } // b3
+    } // b1
 
     MPOTensor<MPSMatrix, SymmGroup> mpo_big_tag(mpo1.row_dim(), mpo2.col_dim(), prempo, kron_handler.get_kronecker_table(),
                                                 mpo1.row_spin_dim(), mpo2.col_spin_dim());
@@ -152,45 +127,41 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
     typedef typename OPTable<MPSMatrix, SymmGroup>::tag_type tag_type;
     typedef typename OPTable<MPSMatrix, SymmGroup>::op_t op_t;
     typedef typename MPSMatrix::value_type value_type;
-    typedef std::map<index_type, op_t> op_map;
     typedef std::vector<boost::tuple<index_type, index_type, tag_type, value_type> > prempo_t;
 
     prempo_t prempo;
     typename MPOTensor<MPSMatrix, SymmGroup>::op_table_ptr op_table(new OPTable<MPSMatrix, SymmGroup>);
 
     index_type b1, b2, b3;
-    for (b1=0; b1 < mpo1.row_dim(); ++b1) {
+    for (b1 = 0; b1 < mpo1.row_dim(); ++b1) {
+        for (b3 = 0; b3 < mpo2.col_dim(); ++b3) {
 
-        op_map out_row;
+            row_proxy row1 = mpo1.row(b1);
 
-        row_proxy row1 = mpo1.row(b1);
-        for (typename row_proxy::const_iterator it1 = row1.begin(); it1 != row1.end(); ++it1) {
+            op_t b3_op;
+            std::pair<tag_type, value_type> scaled_tag;
+            bool commit = false;
 
-            b2 = it1.index();
-            row_proxy row2 = mpo2.row(b2);
-            for (typename row_proxy::const_iterator it2 = row2.begin(); it2 != row2.end(); ++it2)
-            {
-                b3 = it2.index();
-                assert((mpo1.has(b1, b2) && mpo2.has(b2, b3)));
-                block_matrix<MPSMatrix, SymmGroup> product;
+            for (typename row_proxy::const_iterator it = row1.begin(); it != row1.end(); ++it) {
+                index_type b2 = it.index();
+                if (mpo2.has(b2, b3))
+                {
+                    commit = true;
+                    term_descriptor<MPSMatrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
-                term_descriptor<MPSMatrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
-
-                op_kron(phys_i1, phys_i2, p1.op(), p2.op(), product, mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
-                product *= (p1.scale() * p2.scale());
-                out_row[b3] += product;
+                    op_t product;
+                    op_kron(phys_i1, phys_i2, p1.op(), p2.op(), product, mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
+                    b3_op += product * p1.scale() * p2.scale();
+                }
             }
-        }
-
-        for (typename op_map::iterator it = out_row.begin(); it != out_row.end(); ++it) {
-            b3 = it->first;
-            tag_type new_tag = op_table->register_op(it->second);
+            if (commit) {
+            tag_detail::remove_empty_blocks(b3_op);
+            tag_type new_tag = op_table->register_op(b3_op);
             prempo.push_back(boost::make_tuple(b1, b3, new_tag, 1.0));
-            //std::pair<tag_type, value_type> scaled_tag;
-            //scaled_tag = op_table->checked_register(it->second);
-            //prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
-        }
-    } 
+            }
+
+        } // b3
+    } // b1
 
     MPOTensor<MPSMatrix, SymmGroup> mpo_big(mpo1.row_dim(), mpo2.col_dim(), prempo, op_table, mpo1.row_spin_dim(), mpo2.col_spin_dim());
 
@@ -208,10 +179,6 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
 {
     std::size_t L_ts = mpo_orig.length() - 1;
     mpo_out.resize(L_ts);
-
-    bool global_table = true;    
-    for (int p=0; p<L_ts && global_table; ++p)
-        global_table = (mpo_orig[p].get_operator_table() == mpo_orig[0].get_operator_table());
 
     omp_for(size_t p, parallel::range<size_t>(0,L_ts), {
         if (mpo_orig[p].get_operator_table() == mpo_orig[p+1].get_operator_table())
