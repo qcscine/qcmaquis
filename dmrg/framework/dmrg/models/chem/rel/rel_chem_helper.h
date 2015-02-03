@@ -48,7 +48,6 @@ namespace chem_detail {
         {
 			boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
 
-			maquis::cout << *idx_.row(matrix_elements.size()-1).first << std::endl;
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;
 				std::copy(idx_.row(m).first, idx_.row(m).second, pos.begin());
