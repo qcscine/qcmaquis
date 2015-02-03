@@ -752,7 +752,7 @@ void op_kron(Index<SymmGroup> const & phys_A,
     //*************************************
     // expand the small identity to the full one (Hack)
 
-    if (A.spin.get() == 1 && B.spin.get() == 0)
+    if (A.spin.get() > 0 && B.spin.get() == 0)
     {
         charge cb = phys_B[1].first, cc = phys_B[2].first;
         if (!B.has_block(cb,cc))
@@ -761,7 +761,7 @@ void op_kron(Index<SymmGroup> const & phys_A,
             B.insert_block(Matrix1(1,1,1), cc, cb);
         }
     }
-    if (A.spin.get() == 0 && B.spin.get() == 1)
+    if (A.spin.get() == 0 && B.spin.get() > 0)
     {
         charge cb = phys_A[1].first, cc = phys_A[2].first;
 
