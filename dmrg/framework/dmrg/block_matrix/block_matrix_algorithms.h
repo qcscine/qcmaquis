@@ -776,23 +776,6 @@ void op_kron(Index<SymmGroup> const & phys_A,
     // MPO matrix basis spin QN's
 
     int k1 = A.spin.get(), k2 = B.spin.get(), k, j, jp, jpp;
-    //if (k1>0 && k2>0)
-    //    j = 0;
-    //else if (k1==0 && k2>0)
-    //    if (B.spin.action() > 0) j = 0;
-    //    else j = k2;
-    //else if (k1>0 && k2==0)
-    //    if (A.spin.action() > 0) j = 0;
-    //    else j = k1;
-    //else
-    //    j = 0;
-
-    //SpinDescriptor<symm_traits::SU2Tag> spin_j(j,0,0), spin_jp, spin_jpp;
-    //spin_jpp = couple(spin_j, A.spin);
-    //spin_jp = couple(spin_jpp, B.spin);
-    //k = std::abs(spin_j.get() - spin_jp.get());
-    //jp = spin_jp.get();
-    //jpp = spin_jpp.get();
     
     j = lspin.get();
     jpp = mspin.get();
