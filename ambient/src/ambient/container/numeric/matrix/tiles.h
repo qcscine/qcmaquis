@@ -37,8 +37,8 @@
 
 namespace ambient { namespace numeric {
 
-    template <class Matrix>
-    class tiles : public ambient::memory::use_fixed_new<tiles<Matrix> > {
+    template <class Matrix, int IB = AMBIENT_IB>
+    class tiles : public ambient::memory::use_fixed_new<tiles<Matrix,IB> > {
     public:
         typedef typename Matrix::value_type  value_type;
         typedef typename Matrix::size_type   size_type;
@@ -47,16 +47,16 @@ namespace ambient { namespace numeric {
         typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::allocator_type allocator_type;
 
-        static tiles<Matrix> identity_matrix(size_type size);
+        static tiles<Matrix,IB> identity_matrix(size_type size);
 
        ~tiles();
         explicit tiles();
         explicit tiles(Matrix* a);
         explicit tiles(size_type rows, size_type cols, value_type init_value = value_type());
-        tiles<subset_view<Matrix> > subset(size_type i, size_type j, size_type mt, size_type nt) const;
+        tiles<subset_view<Matrix>, IB> subset(size_type i, size_type j, size_type mt, size_type nt) const;
         tiles(const tiles& a);
         tiles& operator = (const tiles& rhs);
-        template <class MatrixB> tiles& operator  = (const tiles<MatrixB>& rhs);
+        template <class MatrixB> tiles& operator  = (const tiles<MatrixB,IB>& rhs);
         size_type num_rows() const;
         size_type num_cols() const;
         scalar_type trace() const;
@@ -72,9 +72,9 @@ namespace ambient { namespace numeric {
         size_t addr(size_type i, size_type j) const;
         Matrix& operator[] (size_type k);
         const Matrix& operator[] (size_type k) const;
-        template <class MatrixB> operator tiles<MatrixB> () const;
-        template <class MatrixB> tiles& operator += (const tiles<MatrixB>& rhs);
-        template <class MatrixB> tiles& operator -= (const tiles<MatrixB>& rhs);
+        template <class MatrixB> operator tiles<MatrixB,IB> () const;
+        template <class MatrixB> tiles& operator += (const tiles<MatrixB,IB>& rhs);
+        template <class MatrixB> tiles& operator -= (const tiles<MatrixB,IB>& rhs);
         template <typename T2> tiles& operator *= (const T2& t);
         template <typename T2> tiles& operator /= (const T2& t);
         value_type& operator() (size_type i, size_type j);
@@ -83,13 +83,13 @@ namespace ambient { namespace numeric {
         #ifdef AMBIENT_ALPS_HDF5
         friend void load(alps::hdf5::archive& ar
                          , std::string const& path
-                         , tiles<Matrix>& m
+                         , tiles<Matrix,IB>& m
                          , std::vector<std::size_t> chunk  = std::vector<std::size_t>()
                          , std::vector<std::size_t> offset = std::vector<std::size_t>()
                          )
         {
             std::vector<std::size_t> size(ar.extent(path));
-            tiles<Matrix> r(size[chunk.size()+1], size[chunk.size()]);
+            tiles<Matrix,IB> r(size[chunk.size()+1], size[chunk.size()]);
             m.swap(r);
 
             std::vector<std::size_t> first(alps::hdf5::get_extent(value_type()));
@@ -110,8 +110,8 @@ namespace ambient { namespace numeric {
                 for(int i = 0; i < m.mt; ++i){
                     chunk[chunk_cols_index] = m.tile(i,j).num_cols();
                     chunk[chunk_row_index] = m.tile(i,j).num_rows();
-                    offset[offset_row_index] = i*AMBIENT_IB;
-                    offset[offset_col_index] = j*AMBIENT_IB;
+                    offset[offset_row_index] = i*IB;
+                    offset[offset_col_index] = j*IB;
 
                     if(!ambient::exclusive(m.tile(i,j)))
                     ar.read(path, (typename traits::real_type<value_type>::type *)ambient::naked(m.tile(i,j)), chunk, offset);
@@ -121,7 +121,7 @@ namespace ambient { namespace numeric {
 
         friend void save(alps::hdf5::archive& ar
                          , std::string const& path
-                         , tiles<Matrix> const& m
+                         , tiles<Matrix,IB> const& m
                          , std::vector<std::size_t> size   = std::vector<std::size_t>()
                          , std::vector<std::size_t> chunk  = std::vector<std::size_t>()
                          , std::vector<std::size_t> offset = std::vector<std::size_t>()
@@ -148,8 +148,8 @@ namespace ambient { namespace numeric {
                 for(int i = 0; i < m.mt; ++i){
                     chunk[chunk_cols_index] = m.tile(i,j).num_cols();
                     chunk[chunk_row_index] = m.tile(i,j).num_rows();
-                    offset[offset_row_index] = i*AMBIENT_IB;
-                    offset[offset_col_index] = j*AMBIENT_IB;
+                    offset[offset_row_index] = i*IB;
+                    offset[offset_col_index] = j*IB;
                     
                     using alps::hdf5::detail::get_pointer;
                     assert(ambient::naked(m.tile(i,j)).state == ambient::locality::local);
@@ -167,8 +167,8 @@ namespace ambient { namespace numeric {
         size_type nt;
     };
 
-    template <class Matrix>
-    class tiles<subset_view<Matrix> >{
+    template <class Matrix, int IB>
+    class tiles<subset_view<Matrix>, IB>{
     public:
         typedef typename Matrix::difference_type difference_type;
         typedef typename Matrix::size_type  size_type;
@@ -179,10 +179,10 @@ namespace ambient { namespace numeric {
         const Matrix& tile(size_type i, size_type j) const;
         Matrix& operator[] (size_type k);
         const Matrix& operator[] (size_type k) const;
-        tiles<subset_view<Matrix> > subset(size_type i, size_type j, size_type mt, size_type nt) const;
-        template <class MatrixB> tiles& operator += (const tiles<MatrixB>& rhs);
-        template <class MatrixB> tiles& operator -= (const tiles<MatrixB>& rhs);
-        template <class MatrixB> tiles& operator  = (const tiles<MatrixB>& rhs);
+        tiles<subset_view<Matrix>,IB> subset(size_type i, size_type j, size_type mt, size_type nt) const;
+        template <class MatrixB> tiles& operator += (const tiles<MatrixB,IB>& rhs);
+        template <class MatrixB> tiles& operator -= (const tiles<MatrixB,IB>& rhs);
+        template <class MatrixB> tiles& operator  = (const tiles<MatrixB,IB>& rhs);
         tiles& operator  = (const tiles& rhs);
         std::vector<subset_view<Matrix> > data;
         size_type num_rows() const;
@@ -196,8 +196,8 @@ namespace ambient { namespace numeric {
         size_type nt;
     };
 
-    template <typename T>
-    class tiles<diagonal_matrix<T> > : public ambient::memory::use_fixed_new<tiles<diagonal_matrix<T> > > {
+    template <typename T, int IB>
+    class tiles<diagonal_matrix<T>, IB> : public ambient::memory::use_fixed_new<tiles<diagonal_matrix<T>, IB> > {
     public:
         typedef typename diagonal_matrix<T>::value_type  value_type;
         typedef typename diagonal_matrix<T>::size_type   size_type;
@@ -234,8 +234,8 @@ namespace ambient { namespace numeric {
 
 #ifdef AMBIENT_ALPS_HDF5
 namespace alps { namespace hdf5 {
-    template<class Matrix>
-    struct has_complex_elements<ambient::numeric::tiles<Matrix> >
+    template<class Matrix, int IB>
+    struct has_complex_elements<ambient::numeric::tiles<Matrix,IB> >
     : public has_complex_elements<typename alps::detail::remove_cvr<typename Matrix::value_type>::type>
     {};
 } }

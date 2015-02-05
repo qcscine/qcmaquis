@@ -51,6 +51,7 @@
 #include <algorithm>
 #include <execinfo.h>
 #include <stdexcept>
+#include <type_traits>
 // }}}
 
 #define AMBIENT_IB                    2048

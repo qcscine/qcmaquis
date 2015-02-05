@@ -31,7 +31,8 @@
 #include "ambient/container/numeric/matrix/detail/math.hpp"
 #include "ambient/container/numeric/matrix/detail/utils.hpp"
 #include "ambient/container/numeric/traits.hpp"
-#include "ambient/container/numeric/boost_bindings.hpp"
+#include "ambient/container/numeric/bindings/mkl.hpp"
+#include "ambient/container/numeric/bindings/plasma.hpp"
 
 namespace ambient { namespace numeric { namespace kernels {
     namespace detail {
@@ -41,102 +42,102 @@ namespace ambient { namespace numeric { namespace kernels {
         using ambient::numeric::traits::real_type;
         using ambient::memory::data_bulk;
        
-        template<typename T>
+        template<typename T, typename IB>
         void geqrt(matrix<T>& a, unbound< matrix<T> >& t){
-            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB>(); 
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            helper_plasma<T>::geqrt(a.num_rows(), a.num_cols(), PLASMA_IB,
-                                    a.data(), a.num_rows(),
-                                    t.data(), t.num_rows(),
-                                    tau, work);
+            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value>(); 
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            plasma::lapack<T>::geqrt(a.num_rows(), a.num_cols(), PLASMA_IB,
+                                     a.data(), a.num_rows(),
+                                     t.data(), t.num_rows(),
+                                     tau, work);
             ambient::memory::data_bulk::reuse(tau); 
             ambient::memory::data_bulk::reuse(work); 
         }
        
-        template<typename T, typename TR>
+        template<typename T, typename TR, typename IB>
         void ormqr(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            helper_plasma<T>::ormqr(PlasmaLeft, TR::value, c.num_rows(), c.num_cols(), k, PLASMA_IB,
-                                    a.data(), a.num_rows(),
-                                    t.data(), t.num_rows(),
-                                    c.data(), c.num_rows(),
-                                     work, AMBIENT_IB);
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            plasma::lapack<T>::ormqr(PlasmaLeft, TR::value, c.num_rows(), c.num_cols(), k, PLASMA_IB,
+                                     a.data(), a.num_rows(),
+                                     t.data(), t.num_rows(),
+                                     c.data(), c.num_rows(),
+                                     work, IB::value);
             ambient::memory::data_bulk::reuse(work);
         }
        
-        template<typename T>
+        template<typename T, typename IB>
         void tsqrt(matrix<T>& a1, matrix<T>& a2, unbound< matrix<T> >& t){
-            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB>();
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            helper_plasma<T>::tsqrt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
-                                    a1.data(), a1.num_rows(),
-                                    a2.data(), a2.num_rows(),
-                                    t.data(), t.num_rows(),
-                                    tau, work);
+            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value>();
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            plasma::lapack<T>::tsqrt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
+                                     a1.data(), a1.num_rows(),
+                                     a2.data(), a2.num_rows(),
+                                     t.data(), t.num_rows(),
+                                     tau, work);
             ambient::memory::data_bulk::reuse(tau); 
             ambient::memory::data_bulk::reuse(work); 
         }
        
-        template<typename T, typename TR>
+        template<typename T, typename TR, typename IB>
         void tsmqr(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            helper_plasma<T>::tsmqr(PlasmaLeft, TR::value,
-                                    AMBIENT_IB, a1.num_cols(), a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
-                                    a1.data(), a1.num_rows(),
-                                    a2.data(), a2.num_rows(),
-                                    (T*)v.data(), v.num_rows(), // warning: const v might be modified
-                                    (T*)t.data(), t.num_rows(), // warning: const t might be modified
-                                    work, PLASMA_IB);
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            plasma::lapack<T>::tsmqr(PlasmaLeft, TR::value,
+                                     IB::value, a1.num_cols(), a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
+                                     a1.data(), a1.num_rows(),
+                                     a2.data(), a2.num_rows(),
+                                     (T*)v.data(), v.num_rows(), // warning: const v might be modified
+                                     (T*)t.data(), t.num_rows(), // warning: const t might be modified
+                                     work, PLASMA_IB);
             ambient::memory::data_bulk::reuse(work); 
         }
        
-        template<typename T>
+        template<typename T, typename IB>
         void gelqt(matrix<T>& a, unbound< matrix<T> >& t){
-            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB>();
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            helper_plasma<T>::gelqt(a.num_rows(), a.num_cols(), PLASMA_IB,
-                                    a.data(), a.num_rows(), 
-                                    t.data(),   t.num_rows(),
-                                    tau, work);
+            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value>();
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            plasma::lapack<T>::gelqt(a.num_rows(), a.num_cols(), PLASMA_IB,
+                                     a.data(), a.num_rows(), 
+                                     t.data(),   t.num_rows(),
+                                     tau, work);
             ambient::memory::data_bulk::reuse(tau); 
             ambient::memory::data_bulk::reuse(work); 
         }
        
-        template<typename T, typename TR>
+        template<typename T, typename TR, typename IB>
         void ormlq(const size_t& k, const matrix<T>& a, const matrix<T>& t, matrix<T>& c){
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            helper_plasma<T>::ormlq(PlasmaRight, TR::value,
-                                    c.num_rows(), c.num_cols(), k, PLASMA_IB,
-                                    a.data(), a.num_rows(),
-                                    t.data(), t.num_rows(),
-                                    c.data(), c.num_rows(),
-                                    work, AMBIENT_IB);
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            plasma::lapack<T>::ormlq(PlasmaRight, TR::value,
+                                     c.num_rows(), c.num_cols(), k, PLASMA_IB,
+                                     a.data(), a.num_rows(),
+                                     t.data(), t.num_rows(),
+                                     c.data(), c.num_rows(),
+                                     work, IB::value);
             ambient::memory::data_bulk::reuse(work); 
         }
        
-        template<typename T>
+        template<typename T, typename IB>
         void tslqt(matrix<T>& a1, matrix<T>& a2, unbound< matrix<T> >& t){
-            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB>();
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            helper_plasma<T>::tslqt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
-                                    a1.data(), a1.num_rows(),
-                                    a2.data(), a2.num_rows(),
-                                    t.data(),  t.num_rows(),
-                                    tau, work);
+            T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value>();
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            plasma::lapack<T>::tslqt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
+                                     a1.data(), a1.num_rows(),
+                                     a2.data(), a2.num_rows(),
+                                     t.data(),  t.num_rows(),
+                                     tau, work);
             ambient::memory::data_bulk::reuse(tau); 
             ambient::memory::data_bulk::reuse(work); 
         }
        
-        template<typename T, typename TR>
+        template<typename T, typename TR, typename IB>
         void tsmlq(const size_t& k, matrix<T>& a1, matrix<T>& a2, const matrix<T>& v, const matrix<T>& t){
-            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*AMBIENT_IB*PLASMA_IB>();
-            helper_plasma<T>::tsmlq(PlasmaRight, TR::value,
-                                    a1.num_rows(), AMBIENT_IB, a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
-                                    a1.data(), a1.num_rows(),
-                                    a2.data(), a2.num_rows(),
-                                    (T*)v.data(), v.num_rows(), // warning: const v might be modified
-                                    (T*)t.data(), t.num_rows(), // warning: const t might be modified
-                                    work, AMBIENT_IB);
+            T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
+            plasma::lapack<T>::tsmlq(PlasmaRight, TR::value,
+                                     a1.num_rows(), IB::value, a2.num_rows(), a2.num_cols(), k, PLASMA_IB,
+                                     a1.data(), a1.num_rows(),
+                                     a2.data(), a2.num_rows(),
+                                     (T*)v.data(), v.num_rows(), // warning: const v might be modified
+                                     (T*)t.data(), t.num_rows(), // warning: const t might be modified
+                                     work, IB::value);
             ambient::memory::data_bulk::reuse(work); 
         }
        
@@ -154,9 +155,9 @@ namespace ambient { namespace numeric { namespace kernels {
             int lda = a.num_rows();
             int ldb = b.num_rows();
             int ldc = c.num_rows();
-            static const double alfa(1.0); 
-            static const double beta(1.0);
-            helper_blas<T>::gemm(ViewA::code(), ViewB::code(), &m, &n, &k, &alfa, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+            static const T alfa(1.0); 
+            static const T beta(1.0);
+            mkl::blas<T>::gemm(ViewA::code(), ViewB::code(), &m, &n, &k, &alfa, ad, &lda, bd, &ldb, &beta, cd, &ldc);
         }
        
         template<class ViewA, class ViewB, class ViewC, typename T>
@@ -176,14 +177,14 @@ namespace ambient { namespace numeric { namespace kernels {
             int lda = a.num_rows();
             int ldb = b.num_rows();
             int ldc = c.num_rows();
-            static const double alfa(1.0); 
-            static const double beta(0.0);
-            helper_blas<T>::gemm(ViewA::code(), ViewB::code(), &m, &n, &k, &alfa, ad, &lda, bd, &ldb, &beta, cd, &ldc);
+            static const T alfa(1.0);
+            static const T beta(0.0);
+            mkl::blas<T>::gemm(ViewA::code(), ViewB::code(), &m, &n, &k, &alfa, ad, &lda, bd, &ldb, &beta, cd, &ldc);
         }
             
         template<class ViewB, typename T, typename D>
         void gemm_diagonal_lhs(const matrix<D>& a_diag, const matrix<T>& b, unbound< matrix<T> >& c){
-            if(boost::is_same<ViewB, transpose_view<matrix<T> > >::value){
+            if(std::is_same<ViewB, transpose_view<matrix<T> > >::value){
                 size_t sizex = b.num_cols();
                 int size  = a_diag.num_rows();
                 static const int ONE = 1;
@@ -193,7 +194,7 @@ namespace ambient { namespace numeric { namespace kernels {
                 const D* alfa = a_diag.data();
                 
                 for(int k = 0 ; k < sizex; k++)
-                    helper_blas<T>::axpy(&size, &alfa[k], &bd[k*size], &ONE, &cd[k], &size);// C - check carefully for TE a_diag double, b complex
+                    mkl::blas<T>::axpy(&size, &alfa[k], &bd[k*size], &ONE, &cd[k], &size);// C - check carefully for TE a_diag double, b complex
             }else{
                 int sizey = a_diag.num_rows();
                 int size = b.num_cols();
@@ -203,13 +204,13 @@ namespace ambient { namespace numeric { namespace kernels {
                 const D* alfa = a_diag.data();
                
                 for(int k = 0 ; k < sizey; k++)
-                    helper_blas<T>::axpy(&size, &alfa[k], &bd[k], &sizey, &cd[k], &sizey);
+                    mkl::blas<T>::axpy(&size, &alfa[k], &bd[k], &sizey, &cd[k], &sizey);
             }
         }
             
         template<class ViewA, typename T, typename D>
         void gemm_diagonal_rhs(const matrix<T>& a, const matrix<D>& b_diag, unbound< matrix<T> >& c){
-            if(boost::is_same<ViewA, transpose_view<matrix<T> > >::value){
+            if(std::is_same<ViewA, transpose_view<matrix<T> > >::value){
                 int sizey = b_diag.num_rows();
                 int size = a.num_cols();
                 static const int ONE = 1;
@@ -219,7 +220,7 @@ namespace ambient { namespace numeric { namespace kernels {
                 const D* alfa = b_diag.data();
                 
                 for(int k = 0 ; k < sizey; k++)
-                    helper_blas<T>::axpy(&size, &alfa[k], &ad[k], &sizey, &cd[k*size], &ONE);// C - check carefully for TE b_diag double, b complex
+                    mkl::blas<T>::axpy(&size, &alfa[k], &ad[k], &sizey, &cd[k*size], &ONE);// C - check carefully for TE b_diag double, b complex
             }else{
                 size_t sizex = b_diag.num_rows();
                 int size = a.num_rows(); // for the case of complex
@@ -230,7 +231,7 @@ namespace ambient { namespace numeric { namespace kernels {
                 const D* alfa = b_diag.data();
          
                 for(int k = 0 ; k < sizex; k++)
-                    helper_blas<T>::axpy(&size, &alfa[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
+                    mkl::blas<T>::axpy(&size, &alfa[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
             }
         }
        
@@ -446,7 +447,7 @@ namespace ambient { namespace numeric { namespace kernels {
             size_t size = a.num_rows()*a.num_cols();
             T* ar = a.data();
             for(int i = 0; i < size; ++i)
-                ar[i] = helper_complex<T>::conj(ar[i]);
+                ar[i] = mkl::helper_complex<T>::conj(ar[i]);
         }
        
         template<typename T, class A>
@@ -501,7 +502,7 @@ namespace ambient { namespace numeric { namespace kernels {
             for(size_t i = 0; i < a.num_rows(); ++i)
             for(size_t j = i+1; j < a.num_cols(); ++j){
                 randomize(ad[i+j*lda]);
-                ad[j+i*lda] = helper_complex<T>::conj(ad[i+j*lda]);
+                ad[j+i*lda] = mkl::helper_complex<T>::conj(ad[i+j*lda]);
             }
             for(size_t k = 0; k < a.num_cols(); ++k) 
             randomize_diag(ad[k*lda+k]);
@@ -551,7 +552,7 @@ namespace ambient { namespace numeric { namespace kernels {
             const D* bd = b.data();
             size_t size = a.num_rows();
             for(size_t i = 0; i < size; ++i)
-                ad[i] = helper_cast<T,D>::cast(bd[i]);
+                ad[i] = mkl::helper_cast<T,D>::cast(bd[i]);
         };
        
         template<typename T, class A>
@@ -615,7 +616,19 @@ namespace ambient { namespace numeric { namespace kernels {
             T* ud  = u.data();
             T* vtd = vt.data();
             typename real_type<T>::type* sd  = s.data();
-            helper_lapack<T>::gesvd( "S", "S", &m, &n, (T*)ad, &m, sd, ud, &m, vtd, &k, &wkopt, &lwork, &info ); // warning: const a is modified
+            mkl::lapack<T>::gesvd( "S", "S", &m, &n, (T*)ad, &m, sd, ud, &m, vtd, &k, &wkopt, &lwork, &info ); // warning: const a is modified
+        }
+       
+        template<typename T>
+        void inverse(matrix<T> & a){
+            int info;
+            int m = a.num_rows();
+            int n = a.num_cols();
+            T* ad = a.data(); 
+            int* ipivd = new int[n];
+            mkl::lapack<T>::getrf(&m, &n, ad, &m, ipivd, &info);
+            mkl::lapack<T>::getri(&n, ad, &n, ipivd, &info);
+            delete [] ipivd;
         }
        
         template<typename T>
@@ -628,19 +641,7 @@ namespace ambient { namespace numeric { namespace kernels {
             T* lvd = lv.data();
             T* rvd = rv.data();
             T* sd  = s.data();
-            helper_lapack<T>::geev("N", "V", &n, (T*)ad, &n, sd, lvd, &n, rvd, &n, &wkopt, &lwork, &info); // warning: const a is modified
-        }
-       
-        template<typename T>
-        void inverse(matrix<T> & a){
-            int info;
-            int m = a.num_rows();
-            int n = a.num_cols();
-            T* ad = a.data(); 
-            int* ipivd = new int[n];
-            helper_lapack<T>::getrf(&m, &n, ad, &m, ipivd, &info);
-            helper_lapack<T>::getri(&n, ad, &n, ipivd, &info);
-            delete [] ipivd;
+            mkl::lapack<T>::geev("N", "V", &n, (T*)ad, &n, sd, lvd, &n, rvd, &n, &wkopt, &lwork, &info); // warning: const a is modified
         }
        
         template<typename T>
@@ -652,7 +653,7 @@ namespace ambient { namespace numeric { namespace kernels {
             T* ad = a.data();
             typename real_type<T>::type* wd = w.data();
        
-            helper_lapack<T>::syev("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
+            mkl::lapack<T>::heev("V","U",&m,ad,&m,wd,&wkopt,&lwork,&info);
        
             typename real_type<T>::type s;
             for(int i = 0; i < (int)(m/2); i++){
@@ -709,8 +710,8 @@ namespace ambient { namespace numeric { namespace kernels {
     AMBIENT_EXPORT_TEMPLATE(detail::migrate, migrate)
     AMBIENT_EXPORT_TEMPLATE(detail::hint, hint)
     AMBIENT_EXPORT_TEMPLATE(detail::svd, svd)
-    AMBIENT_EXPORT_TEMPLATE(detail::geev, geev)
     AMBIENT_EXPORT_TEMPLATE(detail::inverse, inverse)
+    AMBIENT_EXPORT_TEMPLATE(detail::geev, geev)
     AMBIENT_EXPORT_TEMPLATE(detail::heev, heev)
     AMBIENT_EXPORT_TEMPLATE(detail::copy_rt, copy_rt)
     AMBIENT_EXPORT_TEMPLATE(detail::copy_lt, copy_lt)

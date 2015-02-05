@@ -101,12 +101,12 @@ namespace ambient { namespace numeric {
         kernels::labrd_update_col<T>(say, sax, sy, sx, tq, d, i);
     }
 
-    template<typename T, class A>
+    template<int IB, typename T, class A>
     inline void labrd_reduce_col(matrix<T,A>& say, const matrix<T,A>& sax, 
                                  matrix<T,A>& sy, const matrix<T,A>& sx, 
                                  int i)
     {
-        kernels::labrd_reduce_col<T>(say, sax, sy, sx, i);
+        kernels::labrd_reduce_col<T, int_type<IB> >(say, sax, sy, sx, i);
     }
 
     template<typename T, class A>
@@ -119,12 +119,12 @@ namespace ambient { namespace numeric {
         kernels::labrd_update_row<T>(say, sax, sy, sx, tp, e, i);
     }
 
-    template<typename T, class A>
+    template<int IB, typename T, class A>
     inline void labrd_reduce_row(const matrix<T,A>& say, matrix<T,A>& sax, 
                                  const matrix<T,A>& sy, matrix<T,A>& sx, 
                                  int i)
     {
-        kernels::labrd_reduce_row<T>(say, sax, sy, sx, i);
+        kernels::labrd_reduce_row<T, int_type<IB> >(say, sax, sy, sx, i);
     }
 
     template<PLASMA_enum UL, size_t OFF, typename T, class A>
@@ -132,9 +132,9 @@ namespace ambient { namespace numeric {
         kernels::laset2<T,ul_type<UL>,int_type<OFF> >(a, alfa);
     }
 
-    template<PLASMA_enum UL, typename T, class A>
+    template<PLASMA_enum UL, int IB, typename T, class A>
     inline void copy_band(const matrix<T,A>& src, matrix<T,A>& dst, size_t dj){
-        kernels::copy_band<T,ul_type<UL> >(src, dst, dj);
+        kernels::copy_band<T,ul_type<UL>, int_type<IB> >(src, dst, dj);
     }
 
     template <int alfa, typename T, class A>

@@ -145,19 +145,6 @@ namespace ambient { namespace numeric {
                          transformable_expr<T, decltype(&op_plus<T>), op_plus>(a, b)
                         ); 
     }
-    #ifdef AMBIENT_LOOSE_FUTURE
-    template<typename T>
-    future<T> operator / (const future<T>& l, const future<T>& r){ 
-        return future<T>(new (ambient::pool::calloc<fixed,sizeof_transformable()>()) 
-                         transformable_expr<T, decltype(&op_div<T>), op_div>(l.desc, r.desc)
-                        ); 
-    }
-    inline future<double> sqrt(const future<double>& f){
-        return future<double>(new (ambient::pool::calloc<fixed,sizeof_transformable()>()) 
-                              transformable_expr<double, decltype(&op_sqrt<double>), op_sqrt>(f.desc)
-                             ); 
-    }
-    #else
     inline double sqrt(const future<double>& f){ 
         return std::sqrt(f.load());
     }
@@ -165,8 +152,6 @@ namespace ambient { namespace numeric {
     T operator / (const future<T>& l, const future<T>& r){
         return (l.load() / r.load());
     }
-    #endif
-
     template<typename T> 
     T operator += (T& a, const future<T>& r){
         return (a += r.load());

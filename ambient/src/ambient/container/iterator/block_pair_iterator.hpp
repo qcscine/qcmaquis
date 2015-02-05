@@ -25,26 +25,36 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTAINER_NUMERIC_MATRIX_DETAIL_MATH
-#define AMBIENT_CONTAINER_NUMERIC_MATRIX_DETAIL_MATH
+#ifndef AMBIENT_CONTAINER_ITERATOR_BLOCK_PAIR_ITERATOR
+#define AMBIENT_CONTAINER_ITERATOR_BLOCK_PAIR_ITERATOR
 
+namespace ambient {
 
-template <int I>
-struct int_type {
-    const static int value = I;
-};
-
-extern "C" {
-
-    int LAPACKE_dbdsdc(int matrix_order, char uplo, char compq, 
-                       int n, double* d, double* e, double* u, 
-                       int ldu, double* vt, int ldvt, double* q, 
-                       int* iq);
-    double       ddot_(const int*, const double*, const int*, 
-                       const double*, const int*);
-    void       dgebd2_(int*, int*, double*, 
-                       int*, double*, double*, 
-                       double*, double*, double*, int*);
+    template<int IB>
+    class block_pair_iterator {
+    public:
+        block_pair_iterator(size_t first, size_t second, size_t size) 
+        : first(first), second(second), lim(first+size){
+            measure_step();
+        }
+        void operator++ (){
+            first  += step;
+            second += step;
+            measure_step();
+        }
+        bool end(){
+            return (first >= lim);
+        }
+        void measure_step(){
+            step = std::min(std::min((IB*__a_ceil((first+1)/IB) - first), 
+                                     (IB*__a_ceil((second+1)/IB) - second)),
+                                     (lim-first));
+        }
+        size_t first;
+        size_t second;
+        size_t step;
+        size_t lim;
+    };
 
 }
 

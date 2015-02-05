@@ -35,23 +35,23 @@
 #endif
 
 // {{{ tiles< subset_view<Matrix> >
-#define size_type typename tiles<subset_view<Matrix> >::size_type
+#define size_type typename tiles<subset_view<Matrix>, IB>::size_type
 
 namespace ambient { namespace numeric {
 
-    template<class Matrix>
-    inline tiles<subset_view<Matrix> > tiles<subset_view<Matrix> >::subset(size_type i, size_type j, size_type mt, size_type nt) const {
+    template<class Matrix, int IB>
+    inline tiles<subset_view<Matrix>, IB> tiles<subset_view<Matrix>, IB>::subset(size_type i, size_type j, size_type mt, size_type nt) const {
         if(mt == 0 || nt == 0){
-            tiles<subset_view<Matrix> > s;
+            tiles<subset_view<Matrix>, IB> s;
             s.mt = s.nt = s.rows = s.cols = 0;
             return s;
         }
 
-        tiles<subset_view<Matrix> > s;
+        tiles<subset_view<Matrix>, IB> s;
         s.data.reserve(mt*nt);
         s.mt = mt; s.nt = nt;
-        s.rows = (mt-1)*AMBIENT_IB + tile(i+mt-1,0).num_rows(); 
-        s.cols = (nt-1)*AMBIENT_IB + tile(0,j+nt-1).num_cols();
+        s.rows = (mt-1)*IB + tile(i+mt-1,0).num_rows(); 
+        s.cols = (nt-1)*IB + tile(0,j+nt-1).num_cols();
 
         for(int jj = j; jj < j + nt; jj++)
         for(int ii = i; ii < i + mt; ii++)
@@ -59,80 +59,80 @@ namespace ambient { namespace numeric {
         return s;
     }
 
-    template<class Matrix>
+    template<class Matrix, int IB>
     template<class MatrixB>
-    inline tiles<subset_view<Matrix> >& tiles<subset_view<Matrix> >::operator += (const tiles<MatrixB>& rhs){
+    inline tiles<subset_view<Matrix>, IB>& tiles<subset_view<Matrix>, IB>::operator += (const tiles<MatrixB, IB>& rhs){
         add_inplace(*this, rhs);
         return *this;
     }
 
-    template<class Matrix>
+    template<class Matrix, int IB>
     template<class MatrixB>
-    inline tiles<subset_view<Matrix> >& tiles<subset_view<Matrix> >::operator -= (const tiles<MatrixB>& rhs){
+    inline tiles<subset_view<Matrix>, IB>& tiles<subset_view<Matrix>, IB>::operator -= (const tiles<MatrixB, IB>& rhs){
         sub_inplace(*this, rhs);
         return *this;
     }
     
-    template<class Matrix>
+    template<class Matrix, int IB>
     template<class MatrixB>
-    inline tiles<subset_view<Matrix> >& tiles<subset_view<Matrix> >::operator = (const tiles<MatrixB>& rhs){
+    inline tiles<subset_view<Matrix>, IB>& tiles<subset_view<Matrix>, IB>::operator = (const tiles<MatrixB, IB>& rhs){
         int size = rhs.data.size();
         for(int i = 0; i < size; i++)
             (*this)[i] = rhs[i];
         return *this;
     }
     
-    template<class Matrix>
-    inline tiles<subset_view<Matrix> >& tiles<subset_view<Matrix> >::operator = (const tiles<subset_view<Matrix> >& rhs){
+    template<class Matrix, int IB>
+    inline tiles<subset_view<Matrix>, IB>& tiles<subset_view<Matrix>, IB>::operator = (const tiles<subset_view<Matrix>, IB>& rhs){
         int size = rhs.data.size();
         for(int i = 0; i < size; i++)
             (*this)[i] = rhs[i];
         return *this;
     }
 
-    template<class Matrix>
-    inline Matrix& tiles<subset_view<Matrix> >::tile(size_type i, size_type j){
+    template<class Matrix, int IB>
+    inline Matrix& tiles<subset_view<Matrix>, IB>::tile(size_type i, size_type j){
         return (Matrix&)this->data[i + mt*j];
     }
 
-    template<class Matrix>
-    inline const Matrix& tiles<subset_view<Matrix> >::tile(size_type i, size_type j) const {
+    template<class Matrix, int IB>
+    inline const Matrix& tiles<subset_view<Matrix>, IB>::tile(size_type i, size_type j) const {
         return (Matrix&)this->data[i + mt*j];
     }
 
-    template<class Matrix>
-    inline Matrix& tiles<subset_view<Matrix> >::operator[](size_type k){
+    template<class Matrix, int IB>
+    inline Matrix& tiles<subset_view<Matrix>, IB>::operator[](size_type k){
         return (Matrix&)this->data[k];
     }
 
-    template<class Matrix>
-    inline const Matrix& tiles<subset_view<Matrix> >::operator[](size_type k) const {
+    template<class Matrix, int IB>
+    inline const Matrix& tiles<subset_view<Matrix>, IB>::operator[](size_type k) const {
         return (Matrix&)this->data[k];
     }
 
-    template<class Matrix>
-    inline size_type tiles<subset_view<Matrix> >::num_rows() const {
+    template<class Matrix, int IB>
+    inline size_type tiles<subset_view<Matrix>, IB>::num_rows() const {
         return this->rows;
     }
 
-    template<class Matrix>
-    inline size_type tiles<subset_view<Matrix> >::num_cols() const {
+    template<class Matrix, int IB>
+    inline size_type tiles<subset_view<Matrix>, IB>::num_cols() const {
         return this->cols;
     }
 
-    template<class Matrix>
-    inline Matrix& tiles<subset_view<Matrix> >::locate(size_type i, size_type j){
-        return this->tile(i/AMBIENT_IB, j/AMBIENT_IB);
+    template<class Matrix, int IB>
+    inline Matrix& tiles<subset_view<Matrix>, IB>::locate(size_type i, size_type j){
+        return this->tile(i/IB, j/IB);
     }
 
-    template<class Matrix>
-    inline const Matrix& tiles<subset_view<Matrix> >::locate(size_type i, size_type j) const {
-        return this->tile(i/AMBIENT_IB, j/AMBIENT_IB);
+    template<class Matrix, int IB>
+    inline const Matrix& tiles<subset_view<Matrix>, IB>::locate(size_type i, size_type j) const {
+        return this->tile(i/IB, j/IB);
     }
 
-    template<class Matrix>
-    inline size_t tiles<subset_view<Matrix> >::addr(size_type i, size_type j) const {
-        return locate(i,j).addr(i % AMBIENT_IB, j % AMBIENT_IB);
+    template<class Matrix, int IB>
+    inline size_t tiles<subset_view<Matrix>, IB>::addr(size_type i, size_type j) const {
+        return locate(i,j).addr(i % IB, j % IB);
     }
 
 } }
@@ -141,65 +141,65 @@ namespace ambient { namespace numeric {
 // }}}
 
 // {{{ tiles< Matrix >
-#define size_type   typename tiles<Matrix>::size_type
-#define value_type  typename tiles<Matrix>::value_type
-#define scalar_type typename tiles<Matrix>::scalar_type
+#define size_type   typename tiles<Matrix,IB>::size_type
+#define value_type  typename tiles<Matrix,IB>::value_type
+#define scalar_type typename tiles<Matrix,IB>::scalar_type
 
 namespace ambient { namespace numeric {
 
-    template <class Matrix>
-    inline tiles<Matrix> tiles<Matrix>::identity_matrix(size_type size){
+    template <class Matrix, int IB>
+    inline tiles<Matrix, IB> tiles<Matrix, IB>::identity_matrix(size_type size){
         tiles t(size, size);
         for(int i = 0; i < t.nt; i++)
             fill_identity(*t.data[i*t.nt + i]);
         return t;
     }
 
-    template <class Matrix>
-    inline tiles<Matrix>::tiles()
+    template <class Matrix, int IB>
+    inline tiles<Matrix, IB>::tiles()
     : rows(0), cols(0), mt(0), nt(0)
     {
     }
 
-    template <class Matrix>
-    inline tiles<Matrix>::tiles(Matrix* a)
-    : rows(a->num_rows()), cols(a->num_cols()), mt(__a_ceil(rows/AMBIENT_IB)), nt(__a_ceil(cols/AMBIENT_IB))
+    template <class Matrix, int IB>
+    inline tiles<Matrix, IB>::tiles(Matrix* a)
+    : rows(a->num_rows()), cols(a->num_cols()), mt(__a_ceil(rows/IB)), nt(__a_ceil(cols/IB))
     {
         this->data.push_back(a);
     }
 
-    template <class Matrix>
-    inline tiles<Matrix>::tiles(size_type rows, size_type cols, value_type init_value)
-    : rows(rows), cols(cols), mt(__a_ceil(rows/AMBIENT_IB)), nt(__a_ceil(cols/AMBIENT_IB))
+    template <class Matrix, int IB>
+    inline tiles<Matrix, IB>::tiles(size_type rows, size_type cols, value_type init_value)
+    : rows(rows), cols(cols), mt(__a_ceil(rows/IB)), nt(__a_ceil(cols/IB))
     {
-        int tailn = __a_mod(cols, AMBIENT_IB);
-        int tailm = __a_mod(rows, AMBIENT_IB);
+        int tailn = __a_mod(cols, IB);
+        int tailm = __a_mod(rows, IB);
         this->data.reserve(mt*nt);
         
         for(int j = 1; j < nt; j++){
-            for(int i = 1; i < mt; i++) 
-                this->data.push_back(new Matrix(AMBIENT_IB, AMBIENT_IB, init_value));
-            this->data.push_back(new Matrix(tailm, AMBIENT_IB, init_value));
+            for(int i = 1; i < mt; i++)
+                this->data.push_back(new Matrix(IB, IB, init_value));
+            this->data.push_back(new Matrix(tailm, IB, init_value));
         }
         for(int i = 1; i < mt; i++) 
-            this->data.push_back(new Matrix(AMBIENT_IB, tailn, init_value));
+            this->data.push_back(new Matrix(IB, tailn, init_value));
         this->data.push_back(new Matrix(tailm, tailn, init_value));
     }
 
-    template <class Matrix>
-    inline tiles<subset_view<Matrix> > tiles<Matrix>::subset(size_type i, size_type j, size_type mt, size_type nt) const {
+    template <class Matrix, int IB>
+    inline tiles<subset_view<Matrix>, IB> tiles<Matrix, IB>::subset(size_type i, size_type j, size_type mt, size_type nt) const {
         if(mt == 0 || nt == 0){
-            tiles<subset_view<Matrix> > s;
+            tiles<subset_view<Matrix>, IB> s;
             s.mt = s.nt = s.rows = s.cols = 0;
             return s;
         }
 
-        tiles<subset_view<Matrix> > s;
+        tiles<subset_view<Matrix>, IB> s;
         s.data.reserve(mt*nt);
         s.mt = mt; 
         s.nt = nt;
-        s.rows = (mt-1)*AMBIENT_IB + tile(i+mt-1,0).num_rows(); 
-        s.cols = (nt-1)*AMBIENT_IB + tile(0,j+nt-1).num_cols();
+        s.rows = (mt-1)*IB + tile(i+mt-1,0).num_rows(); 
+        s.cols = (nt-1)*IB + tile(0,j+nt-1).num_cols();
         for(int jj = j; jj < j + nt; jj++)
         for(int ii = i; ii < i + mt; ii++)
         s.data.push_back(subset_view<Matrix>(tile(ii,jj)));
@@ -207,83 +207,83 @@ namespace ambient { namespace numeric {
         return s;
     }
 
-    template <class Matrix>
-    inline tiles<Matrix>::tiles(const tiles& a)
+    template <class Matrix, int IB>
+    inline tiles<Matrix, IB>::tiles(const tiles& a)
     : rows(a.rows), cols(a.cols), mt(a.mt), nt(a.nt)
     {
         int nb = a.data.size();
         for(int k = 0; k < nb; k++) this->data.push_back(new Matrix(a[k]));
     }
     
-    template <class Matrix>
-    tiles<Matrix>& tiles<Matrix>::operator = (const tiles& rhs){
+    template <class Matrix, int IB>
+    tiles<Matrix, IB>& tiles<Matrix, IB>::operator = (const tiles& rhs){
         tiles c(rhs);
         this->swap(c);
         return *this;
     }
     
-    template<class Matrix>
+    template<class Matrix, int IB>
     template<class MatrixB>
-    inline tiles<Matrix>& tiles<Matrix>::operator = (const tiles<MatrixB>& rhs){
+    inline tiles<Matrix, IB>& tiles<Matrix, IB>::operator = (const tiles<MatrixB, IB>& rhs){
         int size = rhs.data.size();
         for(int i = 0; i < size; i++)
             (*this)[i] = rhs[i];
         return *this;
     }
 
-    template <class Matrix>
-    tiles<Matrix>::~tiles(){
+    template <class Matrix, int IB>
+    tiles<Matrix, IB>::~tiles(){
         int size = this->data.size();
         for(int i = 0; i < size; i++) 
             delete this->data[i];
     }
 
-    template<class Matrix>
-    inline size_type tiles<Matrix>::num_rows() const {
+    template<class Matrix, int IB>
+    inline size_type tiles<Matrix, IB>::num_rows() const {
         return this->rows;
     }
 
-    template<class Matrix>
-    inline size_type tiles<Matrix>::num_cols() const {
+    template<class Matrix, int IB>
+    inline size_type tiles<Matrix, IB>::num_cols() const {
         return this->cols;
     }
 
-    template<class Matrix>
-    inline scalar_type tiles<Matrix>::trace() const {
+    template<class Matrix, int IB>
+    inline scalar_type tiles<Matrix, IB>::trace() const {
         return trace(*this);
     }
 
-    template<class Matrix>
-    inline void tiles<Matrix>::transpose(){
+    template<class Matrix, int IB>
+    inline void tiles<Matrix, IB>::transpose(){
         transpose_inplace(*this);
     }
 
-    template<class Matrix>
-    inline void tiles<Matrix>::conj(){
+    template<class Matrix, int IB>
+    inline void tiles<Matrix, IB>::conj(){
         conj_inplace(*this);
     }
 
-    template<class Matrix>
-    inline bool tiles<Matrix>::empty() const {
+    template<class Matrix, int IB>
+    inline bool tiles<Matrix, IB>::empty() const {
         return (this->rows == 0); 
     }
 
-    template<class Matrix>
-    inline void tiles<Matrix>::swap(tiles& r){
-        std::swap(r.data,      this->data);
-        std::swap(r.rows,      this->rows);
-        std::swap(r.cols,      this->cols);
-        std::swap(r.mt,        this->mt);
-        std::swap(r.nt,        this->nt);
+    template<class Matrix, int IB>
+    inline void tiles<Matrix, IB>::swap(tiles& r){
+        std::swap(r.data, this->data);
+        std::swap(r.rows, this->rows);
+        std::swap(r.cols, this->cols);
+        std::swap(r.mt,   this->mt);
+        std::swap(r.nt,   this->nt);
     }
 
-    template<class Matrix>
-    inline void tiles<Matrix>::resize(size_type m, size_type n){
+    template<class Matrix, int IB>
+    inline void tiles<Matrix, IB>::resize(size_type m, size_type n){
         ambient::numeric::resize(*this, m, n);
     }
 
-    template<class Matrix, class OtherMatrix>
-    bool operator == (const tiles<Matrix>& a, const tiles<OtherMatrix>& b){
+    template<class Matrix, class OtherMatrix, int IB>
+    bool operator == (const tiles<Matrix, IB>& a, const tiles<OtherMatrix, IB>& b){
         bool result = true;
         if(a.data.size() != b.data.size()){
             printf("Blocks are different: %lu against %lu\n", a.data.size(), b.data.size());
@@ -297,47 +297,47 @@ namespace ambient { namespace numeric {
         return result;
     }
 
-    template<class Matrix>
-    inline Matrix& tiles<Matrix>::tile(size_type i, size_type j){
+    template<class Matrix, int IB>
+    inline Matrix& tiles<Matrix, IB>::tile(size_type i, size_type j){
         return (*this)[i + mt*j];
     }
 
-    template<class Matrix>
-    inline const Matrix& tiles<Matrix>::tile(size_type i, size_type j) const {
+    template<class Matrix, int IB>
+    inline const Matrix& tiles<Matrix, IB>::tile(size_type i, size_type j) const {
         return (*this)[i + mt*j];
     }
 
-    template<class Matrix>
-    inline Matrix& tiles<Matrix>::locate(size_type i, size_type j){
-        return this->tile(i/AMBIENT_IB, j/AMBIENT_IB);
+    template<class Matrix, int IB>
+    inline Matrix& tiles<Matrix, IB>::locate(size_type i, size_type j){
+        return this->tile(i/IB, j/IB);
     }
 
-    template<class Matrix>
-    inline const Matrix& tiles<Matrix>::locate(size_type i, size_type j) const {
-        return this->tile(i/AMBIENT_IB, j/AMBIENT_IB);
+    template<class Matrix, int IB>
+    inline const Matrix& tiles<Matrix, IB>::locate(size_type i, size_type j) const {
+        return this->tile(i/IB, j/IB);
     }
 
-    template<class Matrix>
-    inline size_t tiles<Matrix>::addr(size_type i, size_type j) const {
-        return locate(i,j).addr(i % AMBIENT_IB, j % AMBIENT_IB);
+    template<class Matrix, int IB>
+    inline size_t tiles<Matrix, IB>::addr(size_type i, size_type j) const {
+        return locate(i,j).addr(i % IB, j % IB);
     }
 
-    template<class Matrix>
-    inline Matrix& tiles<Matrix>::operator[] (size_type k){
+    template<class Matrix, int IB>
+    inline Matrix& tiles<Matrix, IB>::operator[] (size_type k){
         assert(k < data.size());
         return *this->data[k];
     }
 
-    template<class Matrix>
-    inline const Matrix& tiles<Matrix>::operator[] (size_type k) const {
+    template<class Matrix, int IB>
+    inline const Matrix& tiles<Matrix, IB>::operator[] (size_type k) const {
         assert(k < data.size());
         return *this->data[k];
     }
 
-    template<class Matrix>
+    template<class Matrix, int IB>
     template<class MatrixB>
-    inline tiles<Matrix>::operator tiles<MatrixB> () const {
-        tiles<MatrixB> c;
+    inline tiles<Matrix, IB>::operator tiles<MatrixB, IB> () const {
+        tiles<MatrixB, IB> c;
         std::vector<MatrixB*> data;
         data.reserve(this->mt*this->nt);
         for(int j = 0; j < this->nt; j++)
@@ -351,44 +351,44 @@ namespace ambient { namespace numeric {
         return c;
     }
 
-    template<class Matrix>
+    template<class Matrix, int IB>
     template<class MatrixB>
-    inline tiles<Matrix>& tiles<Matrix>::operator += (const tiles<MatrixB>& rhs){
+    inline tiles<Matrix, IB>& tiles<Matrix, IB>::operator += (const tiles<MatrixB, IB>& rhs){
         add_inplace(*this, rhs);
         return *this;
     }
 
-    template<class Matrix>
+    template<class Matrix, int IB>
     template<class MatrixB>
-    inline tiles<Matrix>& tiles<Matrix>::operator -= (const tiles<MatrixB>& rhs){
+    inline tiles<Matrix, IB>& tiles<Matrix, IB>::operator -= (const tiles<MatrixB, IB>& rhs){
         sub_inplace(*this, rhs);
         return *this;
     }
 
-    template<class Matrix>
+    template<class Matrix, int IB>
     template <typename T2> 
-    inline tiles<Matrix>& tiles<Matrix>::operator *= (const T2& t){
+    inline tiles<Matrix, IB>& tiles<Matrix, IB>::operator *= (const T2& t){
         mul_inplace(*this, t);
         return *this;
     }
 
-    template<class Matrix>
+    template<class Matrix, int IB>
     template <typename T2> 
-    inline tiles<Matrix>& tiles<Matrix>::operator /= (const T2& t){
+    inline tiles<Matrix, IB>& tiles<Matrix, IB>::operator /= (const T2& t){
         div_inplace(*this, t);
         return *this;
     }
 
-    template<class Matrix>
-    inline value_type& tiles<Matrix>::operator() (size_type i, size_type j){
+    template<class Matrix, int IB>
+    inline value_type& tiles<Matrix, IB>::operator() (size_type i, size_type j){
         size_type tiley = this->data[0]->num_rows();
         size_type tilex = this->data[0]->num_cols();
         int mb = __a_ceil(rows/tiley);
         return ambient::load(*this->data[mb*(int)(j/tilex) + (int)(i/tiley)])(i % tiley, j % tilex);
     }
 
-    template<class Matrix>
-    inline const value_type& tiles<Matrix>::operator() (size_type i, size_type j) const {
+    template<class Matrix, int IB>
+    inline const value_type& tiles<Matrix, IB>::operator() (size_type i, size_type j) const {
         size_type tiley = this->data[0]->num_rows();
         size_type tilex = this->data[0]->num_cols();
         int mb = __a_ceil(rows/tiley);
@@ -402,113 +402,113 @@ namespace ambient { namespace numeric {
 #undef scalar_type
 // }}}
 
-// {{{ tiles< diagonal_matrix<T> >
-#define size_type   typename tiles<diagonal_matrix<T> >::size_type
-#define value_type  typename tiles<diagonal_matrix<T> >::value_type
-#define scalar_type typename tiles<diagonal_matrix<T> >::scalar_type
+// {{{ tiles< diagonal_matrix<T>, IB >
+#define size_type   typename tiles<diagonal_matrix<T>, IB>::size_type
+#define value_type  typename tiles<diagonal_matrix<T>, IB>::value_type
+#define scalar_type typename tiles<diagonal_matrix<T>, IB>::scalar_type
 
 namespace ambient { namespace numeric {
 
-    template <typename T>
-    inline tiles<diagonal_matrix<T> > tiles<diagonal_matrix<T> >::identity_matrix(size_type size){
+    template <typename T, int IB>
+    inline tiles<diagonal_matrix<T>, IB> tiles<diagonal_matrix<T>, IB>::identity_matrix(size_type size){
         return tiles(size, size, 1.);
     }
 
-    template <typename T>
-    inline tiles<diagonal_matrix<T> >::tiles()
+    template <typename T, int IB>
+    inline tiles<diagonal_matrix<T>, IB>::tiles()
     : size(0), nt(0)
     {
     }
 
-    template <typename T>
-    inline tiles<diagonal_matrix<T> >::tiles(size_type rows, size_type cols, value_type init_value)
-    : size(rows), nt(__a_ceil(rows/AMBIENT_IB))
+    template <typename T, int IB>
+    inline tiles<diagonal_matrix<T>, IB>::tiles(size_type rows, size_type cols, value_type init_value)
+    : size(rows), nt(__a_ceil(rows/IB))
     {
         assert(rows == cols);
-        int tailm = __a_mod(size, AMBIENT_IB);
+        int tailm = __a_mod(size, IB);
         this->data.reserve(nt);
         
         for(int i = 1; i < nt; i++) 
-            this->data.push_back(new diagonal_matrix<T>(AMBIENT_IB, AMBIENT_IB, init_value));
+            this->data.push_back(new diagonal_matrix<T>(IB, IB, init_value));
         this->data.push_back(new diagonal_matrix<T>(tailm, tailm, init_value));
     }
 
-    template <typename T>
-    inline tiles<diagonal_matrix<T> >::tiles(const tiles& a)
+    template <typename T, int IB>
+    inline tiles<diagonal_matrix<T>, IB>::tiles(const tiles& a)
     : size(a.size), nt(a.nt)
     {
         int nb = a.data.size();
         for(int k = 0; k < nb; k++) this->data.push_back(new diagonal_matrix<T>(a[k]));
     }
     
-    template <typename T>
-    tiles<diagonal_matrix<T> >& tiles<diagonal_matrix<T> >::operator = (const tiles& rhs){
+    template <typename T, int IB>
+    tiles<diagonal_matrix<T>, IB>& tiles<diagonal_matrix<T>, IB>::operator = (const tiles& rhs){
         tiles c(rhs);
         this->swap(c);
         return *this;
     }
 
-    template <typename T>
-    tiles<diagonal_matrix<T> >::~tiles(){
+    template <typename T, int IB>
+    tiles<diagonal_matrix<T>, IB>::~tiles(){
         int size = this->data.size();
         for(int i = 0; i < size; i++) delete this->data[i];
     }
 
-    template<typename T>
-    inline std::pair<const value_type*,const value_type*> tiles<diagonal_matrix<T> >::diagonal() const {
+    template<typename T, int IB>
+    inline std::pair<const value_type*,const value_type*> tiles<diagonal_matrix<T>, IB>::diagonal() const {
         return std::make_pair(this->begin(), this->end());
     }
         
-    template<typename T>
-    inline const value_type* tiles<diagonal_matrix<T> >::begin() const {
+    template<typename T, int IB>
+    inline const value_type* tiles<diagonal_matrix<T>, IB>::begin() const {
         return &(*this)[0][0];
     }
         
-    template<typename T>
-    inline const value_type* tiles<diagonal_matrix<T> >::end() const {
+    template<typename T, int IB>
+    inline const value_type* tiles<diagonal_matrix<T>, IB>::end() const {
         return (&(*this)[0][0] + (*this)[0].num_rows());
     }
 
-    template<typename T>
-    inline size_type tiles<diagonal_matrix<T> >::num_rows() const {
+    template<typename T, int IB>
+    inline size_type tiles<diagonal_matrix<T>, IB>::num_rows() const {
         return this->size;
     }
 
-    template<typename T>
-    inline size_type tiles<diagonal_matrix<T> >::num_cols() const {
+    template<typename T, int IB>
+    inline size_type tiles<diagonal_matrix<T>, IB>::num_cols() const {
         return this->size;
     }
 
-    template<typename T>
-    inline void tiles<diagonal_matrix<T> >::swap(tiles& r){
+    template<typename T, int IB>
+    inline void tiles<diagonal_matrix<T>, IB>::swap(tiles& r){
         std::swap(r.data,   this->data);
         std::swap(r.size,   this->size);
         std::swap(r.nt,     this->nt);
     }
 
-    template<typename T>
-    inline void tiles<diagonal_matrix<T> >::resize(size_type m, size_type n){
+    template<typename T, int IB>
+    inline void tiles<diagonal_matrix<T>, IB>::resize(size_type m, size_type n){
         ambient::numeric::resize(*this, m, n);
     }
 
-    template<typename T>
-    inline diagonal_matrix<T>& tiles<diagonal_matrix<T> >::operator[] (size_type k){
+    template<typename T, int IB>
+    inline diagonal_matrix<T>& tiles<diagonal_matrix<T>, IB>::operator[] (size_type k){
         return *this->data[k];
     }
 
-    template<typename T>
-    inline const diagonal_matrix<T>& tiles<diagonal_matrix<T> >::operator[] (size_type k) const {
+    template<typename T, int IB>
+    inline const diagonal_matrix<T>& tiles<diagonal_matrix<T>, IB>::operator[] (size_type k) const {
         return *this->data[k];
     }
 
-    template<typename T>
-    inline value_type& tiles<diagonal_matrix<T> >::operator() (size_type i, size_type j){
+    template<typename T, int IB>
+    inline value_type& tiles<diagonal_matrix<T>, IB>::operator() (size_type i, size_type j){
         size_type tile = this->data[0]->num_rows();
         return (*this->data[(int)(i/tile)])(i % tile, i % tile);
     }
 
-    template<typename T>
-    inline const value_type& tiles<diagonal_matrix<T> >::operator() (size_type i, size_type j) const {
+    template<typename T, int IB>
+    inline const value_type& tiles<diagonal_matrix<T>, IB>::operator() (size_type i, size_type j) const {
         size_type tile = this->data[0]->num_rows();
         return (*this->data[(int)(i/tile)])(i % tile, i % tile);
     }
