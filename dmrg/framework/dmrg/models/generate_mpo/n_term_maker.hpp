@@ -35,6 +35,40 @@
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 
 template<class Matrix, class SymmGroup>
+class New_NTermsMPO
+{
+	typedef Lattice::pos_t pos_t;
+	typedef block_matrix<Matrix, SymmGroup> op_t;
+	typedef std::pair<pos_t, op_t> pos_op_t;
+
+public:
+	NewNTermsMPO(Lattice const& lat_,
+				 const std::vector<op_t> & ident_,
+				 const std::vector<op_t> & fill_,
+				 std:vector<pos_op_t> const & ops_,
+				 int phase)
+	: lat(lat_)
+	, identites(ident_)
+	, fillings(fill_)
+	, ops(ops_)
+	{
+		// save order before sort
+		
+		std::sort(ops.begin(),ops.end());
+
+		for (pos_t p = 0; p < lat.size(); ++p){
+				
+		}
+	}
+
+private:
+	Lattice const& lat;
+	std::vector<op_t> identities, fillings;
+	std::vector<pos_op_t> ops;
+	std::map<pos_t, op_t> prempo;
+};
+
+template<class Matrix, class SymmGroup>
 class NTermsMPO
 {
 	typedef Lattice::pos_t pos_t;

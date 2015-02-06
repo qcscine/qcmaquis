@@ -51,6 +51,7 @@ namespace measurements {
         typedef Lattice::pos_t pos_t;
 		typedef std::pair<op_t, bool> op_t_type;
         typedef std::vector<pos_t> positions_type;
+		typedef std::pair<pos_t, op_t> pos_op_t;
     
     public:
         Rel_NRankRDM(std::string const& name_, const Lattice & lat,
@@ -175,13 +176,6 @@ namespace measurements {
 							if (i==k && i!=j && i!=l) continue;
 							if (j==l && j!=i && j!=k) continue;
 							//maquis::cout << i << " " << j << " " << k << " " << l << "\n";
-
-							op_t_type op_i = std::make_pair(ops[0][0].first[lattice.get_prop<int>("irrep",i)], ops[0][0].second);
-							op_t_type op_j = std::make_pair(ops[0][1].first[lattice.get_prop<int>("irrep",j)], ops[0][1].second);
-							op_t_type op_k = std::make_pair(ops[0][2].first[lattice.get_prop<int>("irrep",k)], ops[0][2].second);
-							op_t_type op_l = std::make_pair(ops[0][3].first[lattice.get_prop<int>("irrep",l)], ops[0][3].second);
-							std::vector<std::pair<pos_t,op_t_type> > ref;
-					
 							int phase = 1;
 							pos_t idx[] = { i,j,k,l };
 							pos_t inv_count=0, n=4;
@@ -194,6 +188,24 @@ namespace measurements {
 
 							if (inv_count % 2)
 								phase = -1;
+
+							op_t_type op_i = std::make_pair(ops[0][0].first[lattice.get_prop<int>("irrep",i)], ops[0][0].second);
+							op_t_type op_j = std::make_pair(ops[0][1].first[lattice.get_prop<int>("irrep",j)], ops[0][1].second);
+							op_t_type op_k = std::make_pair(ops[0][2].first[lattice.get_prop<int>("irrep",k)], ops[0][2].second);
+							op_t_type op_l = std::make_pair(ops[0][3].first[lattice.get_prop<int>("irrep",l)], ops[0][3].second);
+							std::vector<std::pair<pos_t,op_t_type> > ref;
+					
+							/////// NEW IMPLEMENTATION ///////
+							std::vector<pos_op_t> operator;
+							operator.pusback(std::make_pair(i, ops[0][0].first[lattice.get_prop<int>("irrep",i)]));
+							operator.pusback(std::make_pair(k, ops[0][2].first[lattice.get_prop<int>("irrep",k)]));
+							operator.pusback(std::make_pair(l, ops[0][3].first[lattice.get_prop<int>("irrep",l)]));
+							operator.pusback(std::make_pair(j, ops[0][1].first[lattice.get_prop<int>("irrep",j)]));
+							////// CALL MPO MAKER /////////
+
+
+							//////////////////////////////////
+
 
 							if (i==j) {
 								op_t tmp;
