@@ -33,8 +33,13 @@ template <class SymmType>
 class SpinDescriptor
 {
 public:
+    typedef int spin_t;
+
     void clear() { }
     int get() const { return 0; }
+
+    SpinDescriptor() {}
+    SpinDescriptor(spin_t twoS_, spin_t in, spin_t out) {}
 
     bool operator==(SpinDescriptor const & rhs) const { return true; }
     bool operator!=(SpinDescriptor const & rhs) const { return false; }

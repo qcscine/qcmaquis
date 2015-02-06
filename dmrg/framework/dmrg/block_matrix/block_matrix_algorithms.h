@@ -703,7 +703,9 @@ void op_kron(Index<SymmGroup> const & phys_A,
              block_matrix<Matrix2, SymmGroup> & C,
              SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
              SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
-             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin)
+             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin,
+             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> tspin
+              = SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type>())
 {
     C = block_matrix<Matrix2, SymmGroup>();
 
@@ -739,7 +741,9 @@ void op_kron(Index<SymmGroup> const & phys_A,
              block_matrix<Matrix2, SymmGroup> & C,
              SpinDescriptor<symm_traits::SU2Tag> lspin,
              SpinDescriptor<symm_traits::SU2Tag> mspin,
-             SpinDescriptor<symm_traits::SU2Tag> rspin)
+             SpinDescriptor<symm_traits::SU2Tag> rspin,
+             SpinDescriptor<symm_traits::SU2Tag> target_spin
+              = SpinDescriptor<symm_traits::SU2Tag>(-1,0,0))
 {
     typedef typename SymmGroup::charge charge;
 
@@ -780,7 +784,7 @@ void op_kron(Index<SymmGroup> const & phys_A,
     j = lspin.get();
     jpp = mspin.get();
     jp = rspin.get();
-    k = std::abs(j - jp);
+    k = (target_spin.get() > -1) ? target_spin.get() : std::abs(j - jp);
     if (j==1 && jp == 1 && jpp == 1 && (k1==2 || k2==2))
         k = 2;
 

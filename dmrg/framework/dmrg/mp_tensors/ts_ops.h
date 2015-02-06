@@ -35,7 +35,58 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 
-template<class MPOMatrix, class MPSMatrix, class SymmGroup>
+
+namespace ts_ops_detail
+{
+
+    template <class Integer>
+    std::vector<Integer> allowed_spins(Integer left, Integer right, Integer k1, Integer k2)
+    {
+        std::vector<Integer> operator_spins;
+        for (Integer s = std::abs(k1-k2); s <= std::abs(k1+k2); s+=2)
+            operator_spins.push_back(s);
+
+        // triangle condition for the operator action on input/output spins
+        for (typename std::vector<Integer>::iterator it = operator_spins.begin(); it != operator_spins.end(); ++it)
+            if ( !(right >= std::abs(*it-left)) || !(right <= std::abs(*it+left)) )
+                operator_spins.erase(it--);
+
+        return operator_spins;
+    }
+
+    template <class Integer, class Matrix, class SymmGroup>
+    std::map<SpinDescriptor<symm_traits::SU2Tag>::spin_t, typename OPTable<Matrix, SymmGroup>::op_t>
+    mpo_couple(std::set<Integer> const & summands, Integer b1, Integer b3, Index<SymmGroup> const & phys_i1, Index<SymmGroup> const & phys_i2,
+               MPOTensor<Matrix, SymmGroup> const & mpo1, MPOTensor<Matrix, SymmGroup> const & mpo2)
+    {
+        using MPOTensor_detail::term_descriptor;
+        typedef SpinDescriptor<symm_traits::SU2Tag>::spin_t spin_t;
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+
+        std::map<SpinDescriptor<symm_traits::SU2Tag>::spin_t, typename OPTable<Matrix, SymmGroup>::op_t> ret;
+
+        for (typename std::set<Integer>::const_iterator it = summands.begin(); it != summands.end(); ++it) {
+            Integer b2 = *it;
+            term_descriptor<Matrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
+
+            std::vector<spin_t> op_spins = allowed_spins(mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get(), p1.op().spin.get(), p2.op().spin.get());
+            for (std::vector<spin_t>::const_iterator it = op_spins.begin(); it != op_spins.end(); ++it)
+            {
+                SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> prod_spin(*it, mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get());
+
+                op_t product;
+                op_kron(phys_i1, phys_i2, p1.op(), p2.op(), product, mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3), prod_spin);
+                ::tag_detail::remove_empty_blocks(product);
+                ret[*it] += product * p1.scale() * p2.scale();
+            }
+        }
+
+        return ret;
+    }
+
+} // namespace ts_ops_detail
+
+template <class MPOMatrix, class MPSMatrix, class SymmGroup>
 MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup> const & mpo1,
                                                  MPOTensor<MPOMatrix, SymmGroup> const & mpo2,
                                                  Index<SymmGroup> const & phys_i1,
@@ -48,8 +99,8 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
 
     typedef typename MPOTensor<MPOMatrix, SymmGroup>::index_type index_type;
     typedef typename MPOTensor<MPOMatrix, SymmGroup>::row_proxy row_proxy;
-    typedef typename OPTable<MPSMatrix, SymmGroup>::tag_type tag_type;
-    typedef typename OPTable<MPSMatrix, SymmGroup>::op_t op_t;
+    typedef typename OPTable<MPOMatrix, SymmGroup>::tag_type tag_type;
+    typedef typename OPTable<MPOMatrix, SymmGroup>::op_t op_t;
     typedef typename MPSMatrix::value_type value_type;
     typedef std::vector<boost::tuple<index_type, index_type, tag_type, value_type> > prempo_t;
 
@@ -72,22 +123,32 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
 
             if (summands.size() > 1 || (!shared && summands.size() > 0))
             {
-                for (typename std::set<index_type>::const_iterator it = summands.begin(); it != summands.end(); ++it) {
-                    index_type b2 = *it; 
-                    term_descriptor<MPSMatrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
+                //for (typename std::set<index_type>::const_iterator it = summands.begin(); it != summands.end(); ++it) {
+                //    index_type b2 = *it; 
+                //    term_descriptor<MPOMatrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
-                    op_t product;
-                    op_kron(phys_i1, phys_i2, p1.op(), p2.op(), product, mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
-                    b3_op += product * p1.scale() * p2.scale();
+                //    op_t product;
+                //    op_kron(phys_i1, phys_i2, p1.op(), p2.op(), product, mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
+                //    b3_op += product * p1.scale() * p2.scale();
+                //}
+                //tag_detail::remove_empty_blocks(b3_op);
+                //scaled_tag = kron_handler.get_kronecker_table()->checked_register(b3_op);
+                //prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
+
+                std::map<SpinDescriptor<symm_traits::SU2Tag>::spin_t, op_t> coupled_ops
+                    = ts_ops_detail::mpo_couple(summands, b1, b3, phys_i1, phys_i2, mpo1, mpo2);
+                for (typename std::map<SpinDescriptor<symm_traits::SU2Tag>::spin_t, op_t>::const_iterator it = coupled_ops.begin();
+                        it != coupled_ops.end(); ++it)
+                {
+                    scaled_tag = kron_handler.get_kronecker_table()->checked_register(it->second);
+                    prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
                 }
-                tag_detail::remove_empty_blocks(b3_op);
-                scaled_tag = kron_handler.get_kronecker_table()->checked_register(b3_op);
-                prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
+
             }
             else if (summands.size() == 1)
             {
                 index_type b2 = *summands.begin();
-                term_descriptor<MPSMatrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
+                term_descriptor<MPOMatrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
                 scaled_tag.first = kron_handler.get_kron_tag(phys_i1, phys_i2, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3),
                                                              mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3));
                 scaled_tag.second = p1.scale() * p2.scale();
