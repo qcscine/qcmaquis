@@ -59,10 +59,6 @@ Ambient
 - AMBIENT_MEMPTF_CHECK_BOUNDARIES  
   checks memory boundaries overflow in every memptf call (used for 2D memory copies)  
   [not set]
-                                            
-- AMBIENT_LOOSE_FUTURE  
-  more aggressive lazy evaluation of futures (not safe)  
-  [not set]
 
 
 ### Ambient implementation caveats

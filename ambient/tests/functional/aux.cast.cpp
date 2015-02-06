@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( CAST_C2D, T, test_types) //complex to double only
     pDiagMatrixDouble pBd(T::valuex,T::valuex);
     pDiagMatrixComplex pAc(T::valuex,T::valuex);
 
-    generate(pAd,Rd); // Rd is rand generator static variable inside utilities
+    generate(pAd);
     pAc = cast<pDiagMatrixComplex,pDiagMatrixDouble>(pAd);
     pBd = cast<pDiagMatrixDouble,pDiagMatrixComplex>(pAc);
     BOOST_CHECK(pAd==pBd);

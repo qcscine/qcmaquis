@@ -46,7 +46,7 @@ namespace ambient { namespace numeric {
             return false;
         for (size_t i=0; i < num_rows(a); ++i)
             for(size_t j=0; j < num_cols(a); ++j){
-               if( a(i,j) != ambient::numeric::kernels::helper_complex<T>::conj(a(j,i)) )
+               if( a(i,j) != ambient::numeric::mkl::helper_complex<T>::conj(a(j,i)) )
                    return false;
             }
         return true;
@@ -146,49 +146,44 @@ namespace ambient { namespace numeric {
         evecs.swap(a);
     }
 
-    template<typename T, class A>
-    inline void syev(matrix<T,A>& a, matrix<T,A>& evecs, diagonal_matrix<double>& evals){
-        heev(a, evecs, evals); // should it be syev instead?
-    }
-
-    template<typename T, class A>
+    template<int IB, typename T, class A>
     inline void geqrt(matrix<T,A>& a, matrix<T,A>& t){
-        kernels::template geqrt<T>(a, t);
+        kernels::template geqrt<T, int_type<IB> >(a, t);
     }
 
-    template<PLASMA_enum TR, typename T, class A>
+    template<PLASMA_enum TR, int IB, typename T, class A>
     inline void ormqr(size_t k, const matrix<T,A>& a, const matrix<T,A>& t, matrix<T,A>& c){
-        kernels::template ormqr<T,trans_type<TR> >(k, a, t, c);
+        kernels::template ormqr<T,trans_type<TR>, int_type<IB> >(k, a, t, c);
     }
 
-    template<typename T, class A>
+    template<int IB, typename T, class A>
     inline void tsqrt(matrix<T,A>& a1, matrix<T,A>& a2, matrix<T,A>& t){
-        kernels::template tsqrt<T>(a1, a2, t);
+        kernels::template tsqrt<T, int_type<IB> >(a1, a2, t);
     }
 
-    template<PLASMA_enum TR, typename T, class A>
+    template<PLASMA_enum TR, int IB, typename T, class A>
     inline void tsmqr(size_t k, matrix<T,A>& a1, matrix<T,A>& a2, const matrix<T,A>& v, const matrix<T,A>& t){
-        kernels::template tsmqr<T,trans_type<TR> >(k, a1, a2, v, t);
+        kernels::template tsmqr<T,trans_type<TR>, int_type<IB> >(k, a1, a2, v, t);
     }
 
-    template<typename T, class A>
+    template<int IB, typename T, class A>
     inline void gelqt(matrix<T,A>& a, matrix<T,A>& t){
-        kernels::template gelqt<T>(a, t);
+        kernels::template gelqt<T, int_type<IB> >(a, t);
     }
 
-    template<PLASMA_enum TR, typename T, class A>
+    template<PLASMA_enum TR, int IB, typename T, class A>
     inline void ormlq(size_t k, const matrix<T,A>& a, const matrix<T,A>& t, matrix<T,A>& c){
-        kernels::template ormlq<T,trans_type<TR> >(k, a, t, c);
+        kernels::template ormlq<T,trans_type<TR>, int_type<IB> >(k, a, t, c);
     }
 
-    template<typename T, class A>
+    template<int IB, typename T, class A>
     inline void tslqt(matrix<T,A>& a1, matrix<T,A>& a2, matrix<T,A>& t){
-        kernels::template tslqt<T>(a1, a2, t);
+        kernels::template tslqt<T, int_type<IB> >(a1, a2, t);
     }
 
-    template<PLASMA_enum TR, typename T, class A>
+    template<PLASMA_enum TR, int IB, typename T, class A>
     inline void tsmlq(size_t k, matrix<T,A>& a1, matrix<T,A>& a2, const matrix<T,A>& v, const matrix<T,A>& t){
-        kernels::template tsmlq<T,trans_type<TR> >(k, a1, a2, v, t);
+        kernels::template tsmlq<T,trans_type<TR>, int_type<IB> >(k, a1, a2, v, t);
     }
 
     template<typename T, class A> 

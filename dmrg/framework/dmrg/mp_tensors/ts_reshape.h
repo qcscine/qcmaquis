@@ -136,7 +136,7 @@ namespace ts_reshape {
         for (size_t block = 0; block < m1.n_blocks(); ++block)
         {
             size_t r = right_i.position(m1.basis().right_charge(block));
-            assert(r != right_i.size());
+            if(r == right_i.size()) throw std::runtime_error("m1 matrix inconsistent with right_i.");
 
             for (size_t s1 = 0; s1 < physical_i_left.size(); ++s1)
                 for (size_t s2 = 0; s2 < physical_i_right.size(); ++s2)

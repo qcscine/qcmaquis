@@ -1,6 +1,5 @@
 # Makefile
 SHELL := /bin/bash
-BOOST_INCLUDE_PATH?=/project/h07/boost_1_53_0
 AMBIENT_PATH?=/users/akosenko/maquis2014/src/ambient/src
 AMBIENT_INCLUDE_PATH?=$(AMBIENT_PATH)
 AMBIENT_LIB_PATH?=.
@@ -14,7 +13,6 @@ CXXFLAGS?= $(COMMON)
 
 # Notes:
 # - for alps::hdf5 support include -I$ALPS_INCLUDE_PATH
-# - add -lboost -L$BOOST_LIB_PATH -Wl,-rpath,$BOOST_LIB_PATH if need to link against boost
 # - to change threading selection from auto - define CILK/OMP/SERIAL with AMBIENT_ prefix
 
 .DEFAULT: all
@@ -35,16 +33,16 @@ atomic: libambient.a atomic.cpp
 	$(CXX) atomic.cpp -o atomic $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH)
 
 matrix: libambient.a matrix.cpp
-	$(CXX) matrix.cpp -o matrix $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH) -mkl -I$(BOOST_INCLUDE_PATH)
+	$(CXX) matrix.cpp -o matrix $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH) -mkl
 
 mp_gemm_simple: libambient.a mp_gemm_simple.cpp
-	$(CXX) mp_gemm_simple.cpp -o mp_gemm_simple $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH) -mkl -I$(BOOST_INCLUDE_PATH)
+	$(CXX) mp_gemm_simple.cpp -o mp_gemm_simple $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH) -mkl
 
 mp_gemm_log: libambient.a mp_gemm_log.cpp
-	$(CXX) mp_gemm_log.cpp -o mp_gemm_log $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH) -mkl -I$(BOOST_INCLUDE_PATH)
+	$(CXX) mp_gemm_log.cpp -o mp_gemm_log $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH) -mkl
 
 groups: libambient.a groups.cpp
-	$(CXX) groups.cpp -o groups $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH) -mkl -I$(BOOST_INCLUDE_PATH)
+	$(CXX) groups.cpp -o groups $(CXXFLAGS) -lambient -L$(AMBIENT_LIB_PATH) -I$(AMBIENT_INCLUDE_PATH) -mkl
 
 libambient.a: $(AMBIENT_PATH)/ambient/ambient.cpp
 	$(CXX) -c $(AMBIENT_PATH)/ambient/ambient.cpp $(CXXFLAGS) -I$(AMBIENT_PATH) -o ambient.cpp.o

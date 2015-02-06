@@ -29,20 +29,20 @@
 #define AMBIENT_CONTAINER_NUMERIC_TILES_ALGORITHMS
 
 #include "ambient/container/numeric/matrix/tiles.h"
-#include "ambient/container/iterator/cross_iterator.hpp"
+#include "ambient/container/iterator/block_pair_iterator.hpp"
 #include "ambient/utils/reduce.hpp"
 #include <utility>
 
-#define value_type      typename tiles<Matrix>::value_type
-#define size_type       typename tiles<Matrix>::size_type
-#define real_type       typename tiles<Matrix>::real_type
-#define scalar_type     typename tiles<Matrix>::scalar_type
-#define allocator_type  typename tiles<Matrix>::allocator_type
+#define value_type      typename tiles<Matrix, IB>::value_type
+#define size_type       typename tiles<Matrix, IB>::size_type
+#define real_type       typename tiles<Matrix, IB>::real_type
+#define scalar_type     typename tiles<Matrix, IB>::scalar_type
+#define allocator_type  typename tiles<Matrix, IB>::allocator_type
 
 namespace ambient { namespace numeric {
 
-    template<class Matrix>
-    bool is_hermitian(const tiles<Matrix>& a){
+    template<class Matrix, int IB>
+    bool is_hermitian(const tiles<Matrix, IB>& a){
         if(num_rows(a) != num_cols(a)) return false;
         // return (a == transpose(conj(a))); // short version
 
@@ -53,38 +53,38 @@ namespace ambient { namespace numeric {
         return true;
     }
 
-    template<class Matrix>
-    inline tiles<Matrix> inverse(tiles<Matrix> a){
+    template<class Matrix, int IB>
+    inline tiles<Matrix, IB> inverse(tiles<Matrix, IB> a){
         merge(a); 
         inverse(a[0]);
         split(a);
         return a;
     } 
 
-    template<typename T> //  C - Tim, Alex I changed the name exp to expi due to the exp and a redondancy name
-    inline tiles<diagonal_matrix<T> > expi(const tiles<diagonal_matrix<T> >& a, const T& alfa = 1.){
-        tiles<diagonal_matrix<T> > b(a); 
+    template<typename T, int IB> //  C - Tim, Alex I changed the name exp to expi due to the exp and a redondancy name
+    inline tiles<diagonal_matrix<T>, IB> expi(const tiles<diagonal_matrix<T>, IB>& a, const T& alfa = 1.){
+        tiles<diagonal_matrix<T>, IB> b(a); 
         exp_inplace(b,alfa);
         return b;
     }
 
-    template<class Matrix>
-    inline tiles<Matrix> exp(tiles<Matrix> a, const value_type& alfa = 1.){
-        BOOST_STATIC_ASSERT( boost::is_complex<value_type>::value ); // exp(complex), exp_hermitian(double and complex) : dummy name
+    template<class Matrix, int IB>
+    inline tiles<Matrix, IB> exp(tiles<Matrix, IB> a, const value_type& alfa = 1.){
+        assert((std::is_same<value_type, std::complex<double> >::value) == true);
         assert(num_rows(a) == num_cols(a));
         std::size_t n = num_cols(a);
 
-        tiles<Matrix> Nr(n, n), Nl(n, n);
-        tiles<diagonal_matrix<value_type> > Sv(num_rows(a), num_rows(a)); 
+        tiles<Matrix, IB> Nr(n, n), Nl(n, n);
+        tiles<diagonal_matrix<value_type>, IB> Sv(num_rows(a), num_rows(a)); 
  
         geev(a, Nl, Nr, Sv);        
       
-        tiles<Matrix> Nrinv = inverse(Nr);  
-        tiles<diagonal_matrix<value_type> > S(num_rows(a), num_rows(a)); 
+        tiles<Matrix, IB> Nrinv = inverse(Nr);
+        tiles<diagonal_matrix<value_type>, IB> S(num_rows(a), num_rows(a)); 
 
         S = expi(Sv, alfa); //complex-complex
 
-        tiles<Matrix> tmp(n,n);
+        tiles<Matrix, IB> tmp(n,n);
 
         gemm(Nr, S, tmp);
         gemm(tmp, Nrinv, a);
@@ -92,16 +92,16 @@ namespace ambient { namespace numeric {
         return a;
     }
 
-    template<class Matrix>
-    inline tiles<Matrix> exp_hermitian(tiles<Matrix> a, const value_type& alfa = 1.){
+    template<class Matrix, int IB>
+    inline tiles<Matrix, IB> exp_hermitian(tiles<Matrix, IB> a, const value_type& alfa = 1.){
         assert(num_rows(a) == num_cols(a));
         std::size_t n = num_cols(a);
-        tiles<diagonal_matrix<double> > Sv(n,n);
-        tiles<Matrix> tmp(n,n), N(n,n);
+        tiles<diagonal_matrix<double>, IB> Sv(n,n);
+        tiles<Matrix, IB> tmp(n,n), N(n,n);
    
         heev(a, N, Sv);
 
-        tiles<diagonal_matrix<value_type> > S(n,n), S1(n,n); 
+        tiles<diagonal_matrix<value_type>, IB> S(n,n), S1(n,n); 
 
         for(size_t k = 0; k < Sv.data.size(); ++k)
              ambient::numeric::kernels::template cast_double_complex<value_type,double>(S[k],Sv[k]); //can be complex/double or double/double
@@ -113,60 +113,68 @@ namespace ambient { namespace numeric {
         return a; 
     }
 
-    template<class Matrix>
-    inline void geev(tiles<Matrix> a, tiles<Matrix>& lv, tiles<Matrix>& rv, tiles<diagonal_matrix<value_type> >& s){
+    template<class Matrix, int IB>
+    inline void geev(tiles<Matrix, IB> a, tiles<Matrix, IB>& lv, tiles<Matrix, IB>& rv, tiles<diagonal_matrix<value_type>, IB>& s){
         merge(a); merge(lv); merge(rv); merge(s);
         geev(a[0],lv[0],rv[0],s[0]);
         split(lv); split(rv); split(s);
     }
 
-    template<class Matrix>
-    inline const tiles<Matrix> conj(const tiles<Matrix>& a){
-        tiles<Matrix> b(a); 
+    template<class Matrix, int IB>
+    inline const tiles<Matrix, IB> conj(const tiles<Matrix, IB>& a){
+        tiles<Matrix, IB> b(a); 
         conj_inplace(b);
         return b; 
     }
 
-    template<class Matrix>
-    inline void conj_inplace(tiles<Matrix>& a){
+    template<class Matrix, int IB>
+    inline void conj_inplace(tiles<Matrix, IB>& a){
         int size = a.data.size();
         for(int i = 0; i < size; i++)
             conj_inplace(a[i]);
     }
 
-    template <class MatrixA, class MatrixB>
-    inline void mul_inplace(tiles<MatrixA>& a, const tiles<MatrixB>& rhs){
-        throw std::runtime_error("Error: not tested mul inplace");
+    template <class MatrixA, class MatrixB, int IB>
+    inline void mul_inplace(tiles<MatrixA, IB>& a, const tiles<MatrixB, IB>& rhs){
+        tiles<MatrixA, IB> orig(a);
+        gemm(orig, rhs, a);
     }
 
-    template <class Matrix>
-    inline tiles<Matrix> kron(const tiles<Matrix>& M1, const tiles<Matrix>& M2){
-        throw std::runtime_error("Error: not tested kron");
+    template <class Matrix, int IB>
+    inline tiles<Matrix, IB> kron(const tiles<Matrix, IB>& M1, const tiles<Matrix, IB>& M2){
+        tiles<Matrix, IB> MM(num_rows(M1)*num_rows(M2), num_cols(M1)*num_cols(M2));
+
+        for(int i1 = 0; i1 < num_rows(M1); ++i1)
+        for(int j1 = 0; j1 < num_cols(M1); ++j1)
+        copy_block_s(M2, 0, 0,
+                     MM, i1*num_rows(M2), j1*num_cols(M2),
+                     M1, i1, j1,
+                     num_rows(M2), num_cols(M2));
+        return MM;
     }
  
-    template<class Matrix>
-    inline Matrix* merge(const tiles<subset_view<Matrix> >& a){
+    template<class Matrix, int IB>
+    inline Matrix* merge(const tiles<subset_view<Matrix>, IB>& a){
         Matrix* m = new Matrix(a.rows, a.cols);
 
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
                 const Matrix* src = &a.tile(i,j);
-                copy_block(*src, 0, 0, *m, i*AMBIENT_IB, j*AMBIENT_IB, src->num_rows(), src->num_cols());
+                copy_block(*src, 0, 0, *m, i*IB, j*IB, src->num_rows(), src->num_cols());
             }
         }
         return m;
     }
 
-    template<class Matrix>
-    inline void split(const tiles<transpose_view<Matrix> >& a){
-        printf("SPLIT OF TRANSPOSE VIEW!\n\n\n");
-        if(a.data.size() == 1 && (__a_ceil(a.rows/AMBIENT_IB) != 1 || __a_ceil(a.cols/AMBIENT_IB) != 1)) printf("We have to split but we don't :(\n");
+    template<class Matrix, int IB>
+    inline void split(const tiles<transpose_view<Matrix>, IB>& a){
+        throw std::runtime_error("Error: split of transpose_view");
     }
 
     // {{{ normal merge / split
     
-    template<class Matrix>
-    inline void merge(const tiles<Matrix>& a){
+    template<class Matrix, int IB>
+    inline void merge(const tiles<Matrix, IB>& a){
         if(a.data.size() == 1) return;
 
         std::vector<Matrix*> m; 
@@ -176,29 +184,29 @@ namespace ambient { namespace numeric {
             for(int i = 0; i < a.mt; i++){
                 const Matrix* src = &a.tile(i,j);
                 if(!ambient::weak(*src))
-                copy_block(*src, 0, 0, *m[0], i*AMBIENT_IB, j*AMBIENT_IB, src->num_rows(), src->num_cols());
+                copy_block(*src, 0, 0, *m[0], i*IB, j*IB, src->num_rows(), src->num_cols());
                 delete src;
             }
         }
         std::swap(const_cast<std::vector<Matrix*>&>(a.data), m);
     }
 
-    template<class Matrix>
-    inline void split(const tiles<Matrix>& a){
+    template<class Matrix, int IB>
+    inline void split(const tiles<Matrix, IB>& a){
         if(a.data.size() != 1) return;
         if(a.mt == 1 && a.nt == 1) return;
 
         std::vector<Matrix*> s;
-        int tailm = __a_mod(a.rows, AMBIENT_IB);
-        int tailn = __a_mod(a.cols, AMBIENT_IB);
+        int tailm = __a_mod(a.rows, IB);
+        int tailn = __a_mod(a.cols, IB);
         s.reserve(a.mt*a.nt);
         for(int j = 1; j < a.nt; j++){
             for(int i = 1; i < a.mt; i++) 
-                s.push_back(new Matrix(AMBIENT_IB, AMBIENT_IB));
-            s.push_back(new Matrix(tailm, AMBIENT_IB));
+                s.push_back(new Matrix(IB, IB));
+            s.push_back(new Matrix(tailm, IB));
         }
         for(int i = 1; i < a.mt; i++) 
-            s.push_back(new Matrix(AMBIENT_IB, tailn));
+            s.push_back(new Matrix(IB, tailn));
         s.push_back(new Matrix(tailm, tailn));
 
         const Matrix* src = a.data[0];
@@ -207,7 +215,7 @@ namespace ambient { namespace numeric {
         for(int j = 0; j < a.nt; j++){
             for(int i = 0; i < a.mt; i++){
                 Matrix& dst = *s[i+j*a.mt];
-                copy_block(*src, i*AMBIENT_IB, j*AMBIENT_IB, dst, 0, 0, dst.num_rows(), dst.num_cols());
+                copy_block(*src, i*IB, j*IB, dst, 0, 0, dst.num_rows(), dst.num_cols());
             }
         }
 
@@ -218,8 +226,8 @@ namespace ambient { namespace numeric {
     // }}}
     // {{{ diagonal merge/split
 
-    template<typename T>
-    inline void merge(const tiles<diagonal_matrix<T> >& a){
+    template<typename T, int IB>
+    inline void merge(const tiles<diagonal_matrix<T>, IB>& a){
         if(a.data.size() == 1) return;
 
         std::vector<diagonal_matrix<T> *> m; 
@@ -228,22 +236,22 @@ namespace ambient { namespace numeric {
         for(int i = 0; i < a.nt; i++){
             const diagonal_matrix<T>* src = a.data[i];
             if(!ambient::weak(src->get_data()))
-            copy_block(src->get_data(), 0, 0, m[0]->get_data(), i*AMBIENT_IB, 0, src->num_rows(), 1);
+            copy_block(src->get_data(), 0, 0, m[0]->get_data(), i*IB, 0, src->num_rows(), 1);
             delete src;
         }
         std::swap(const_cast<std::vector<diagonal_matrix<T>*>&>(a.data), m);
     }
 
-    template<typename T>
-    inline void split(const tiles<diagonal_matrix<T> >& a){
+    template<typename T, int IB>
+    inline void split(const tiles<diagonal_matrix<T>, IB>& a){
         if(a.data.size() != 1) return;
         if(a.nt == 1) return;
 
         std::vector<diagonal_matrix<T> *> s;
-        int tailm = __a_mod(a.size, AMBIENT_IB);
+        int tailm = __a_mod(a.size, IB);
         s.reserve(a.nt);
         for(int i = 1; i < a.nt; i++) 
-            s.push_back(new diagonal_matrix<T>(AMBIENT_IB, AMBIENT_IB));
+            s.push_back(new diagonal_matrix<T>(IB, IB));
         s.push_back(new diagonal_matrix<T>(tailm, tailm));
 
         const diagonal_matrix<T>* src = a.data[0];
@@ -251,7 +259,7 @@ namespace ambient { namespace numeric {
         if(!ambient::weak(a[0].get_data()))
         for(int i = 0; i < a.nt; i++){
             diagonal_matrix<T>& dst = *s[i];
-            copy_block(src->get_data(), i*AMBIENT_IB, 0, dst.get_data(), 0, 0, dst.num_rows(), 1);
+            copy_block(src->get_data(), i*IB, 0, dst.get_data(), 0, 0, dst.num_rows(), 1);
         }
 
         delete src;
@@ -260,53 +268,53 @@ namespace ambient { namespace numeric {
 
     // }}}
 
-    template<class MatrixA, class MatrixB>
-    inline void copy_block(const tiles<MatrixB>& in, size_t ii, size_t ij,
-                           tiles<MatrixA>& out, size_t oi, size_t oj, 
+    template<class MatrixA, class MatrixB, int IB>
+    inline void copy_block(const tiles<MatrixB, IB>& in, size_t ii, size_t ij,
+                           tiles<MatrixA, IB>& out, size_t oi, size_t oj, 
                            size_t m, size_t n)
     {
-        for(cross_iterator<AMBIENT_IB> row(oi,ii,m); !row.end(); ++row)
-        for(cross_iterator<AMBIENT_IB> col(oj,ij,n); !col.end(); ++col)
-        copy_block(in.locate(row.second, col.second), row.second%AMBIENT_IB, col.second%AMBIENT_IB,
-                   out.locate(row.first, col.first), row.first%AMBIENT_IB, col.first%AMBIENT_IB, 
+        for(block_pair_iterator<IB> row(oi,ii,m); !row.end(); ++row)
+        for(block_pair_iterator<IB> col(oj,ij,n); !col.end(); ++col)
+        copy_block(in.locate(row.second, col.second), row.second % IB, col.second % IB,
+                   out.locate(row.first, col.first), row.first % IB, col.first % IB,
                    row.step, col.step);
     }
 
-    template<class Matrix>
-    inline void copy_block_s(const tiles<Matrix>& in, size_t ii, size_t ij,
-                             tiles<Matrix>& out, size_t oi, size_t oj, 
-                             const tiles<Matrix>& alfa, size_t ai, size_t aj,
+    template<class Matrix, int IB>
+    inline void copy_block_s(const tiles<Matrix, IB>& in, size_t ii, size_t ij,
+                             tiles<Matrix, IB>& out, size_t oi, size_t oj, 
+                             const tiles<Matrix, IB>& alfa, size_t ai, size_t aj,
                              size_t m, size_t n)
     {
-        const Matrix& factor = alfa.locate(ai, aj); 
-        ai %= AMBIENT_IB; aj %= AMBIENT_IB;
-        for(cross_iterator<AMBIENT_IB> row(oi,ii,m); !row.end(); ++row)
-        for(cross_iterator<AMBIENT_IB> col(oj,ij,n); !col.end(); ++col)
-        copy_block_s(in.locate(row.second, col.second), row.second%AMBIENT_IB, col.second%AMBIENT_IB,
-                     out.locate(row.first, col.first), row.first%AMBIENT_IB, col.first%AMBIENT_IB, 
+        const Matrix& factor = alfa.locate(ai, aj);
+        ai %= IB; aj %= IB;
+        for(block_pair_iterator<IB> row(oi,ii,m); !row.end(); ++row)
+        for(block_pair_iterator<IB> col(oj,ij,n); !col.end(); ++col)
+        copy_block_s(in.locate(row.second, col.second), row.second % IB, col.second % IB,
+                     out.locate(row.first, col.first), row.first % IB, col.first % IB,
                      factor, ai, aj, row.step, col.step);
     }
 
-    template<class Matrix, class MatrixB, class MatrixC>
-    inline void copy_block_sa(const tiles<Matrix>& in, size_t ii, size_t ij,
-                              tiles<MatrixB>& out, size_t oi, size_t oj, 
-                              const tiles<MatrixC>& alfa, size_t ai, size_t aj,
+    template<class Matrix, class MatrixB, class MatrixC, int IB>
+    inline void copy_block_sa(const tiles<Matrix, IB>& in, size_t ii, size_t ij,
+                              tiles<MatrixB, IB>& out, size_t oi, size_t oj, 
+                              const tiles<MatrixC, IB>& alfa, size_t ai, size_t aj,
                               size_t m, size_t n, 
                               value_type alfa_scale)
     {
         const MatrixC& factor = alfa.locate(ai, aj); 
-        ai %= AMBIENT_IB; aj %= AMBIENT_IB;
-        for(cross_iterator<AMBIENT_IB> row(oi,ii,m); !row.end(); ++row)
-        for(cross_iterator<AMBIENT_IB> col(oj,ij,n); !col.end(); ++col)
-        copy_block_sa(in.locate(row.second, col.second), row.second%AMBIENT_IB, col.second%AMBIENT_IB,
-                      out.locate(row.first, col.first), row.first%AMBIENT_IB, col.first%AMBIENT_IB, 
+        ai %= IB; aj %= IB;
+        for(block_pair_iterator<IB> row(oi,ii,m); !row.end(); ++row)
+        for(block_pair_iterator<IB> col(oj,ij,n); !col.end(); ++col)
+        copy_block_sa(in.locate(row.second, col.second), row.second % IB, col.second % IB,
+                      out.locate(row.first, col.first), row.first % IB, col.first % IB,
                       factor, ai, aj, row.step, col.step, alfa_scale);
     }
 
-    template<class MatrixA, class MatrixB, class Matrix>
-    inline void gemm(const tiles<MatrixA>& a, const tiles<MatrixB>& b, tiles<Matrix>& c){
-        size_t a_nt = std::min(a.num_rows(), a.num_cols())/AMBIENT_IB;
-        size_t b_nt = std::min(b.num_rows(), b.num_cols())/AMBIENT_IB;
+    template<class MatrixA, class MatrixB, class Matrix, int IB>
+    inline void gemm(const tiles<MatrixA, IB>& a, const tiles<MatrixB, IB>& b, tiles<Matrix, IB>& c){
+        size_t a_nt = std::min(a.num_rows(), a.num_cols())/IB;
+        size_t b_nt = std::min(b.num_rows(), b.num_cols())/IB;
         size_t nt = 1 << (int)std::log2( std::min(a_nt, b_nt) );
 
         gemm_strassen(a.subset(0, 0, nt, nt),
@@ -332,8 +340,8 @@ namespace ambient { namespace numeric {
         }
     }
 
-    template<class MatrixA, class MatrixB, class Matrix>
-    void gemm_classic(tiles<MatrixA>&& a, tiles<MatrixB>&& b, tiles<Matrix>&& c){
+    template<class MatrixA, class MatrixB, class Matrix, int IB>
+    void gemm_classic(tiles<MatrixA, IB>&& a, tiles<MatrixB, IB>&& b, tiles<Matrix, IB>&& c){
         for(int i = 0; i < c.mt; i++){
             for(int j = 0; j < c.nt; j++){
                 std::vector<Matrix*> ctree; ctree.reserve(a.nt);
@@ -354,18 +362,18 @@ namespace ambient { namespace numeric {
         }
     }
 
-    template<class MatrixA, class MatrixB, class Matrix>
-    void gemm_strassen(tiles<MatrixA>&& a, tiles<MatrixB>&& b, tiles<Matrix>&& c){
+    template<class MatrixA, class MatrixB, class Matrix, int IB>
+    void gemm_strassen(tiles<MatrixA, IB>&& a, tiles<MatrixB, IB>&& b, tiles<Matrix, IB>&& c){
         size_t n  = c.cols/2;
         size_t nt = c.nt/2;
         if(nt){
-            tiles<matrix<value_type,allocator_type> > m1(n, n);
-            tiles<matrix<value_type,allocator_type> > m2(n, n);
-            tiles<matrix<value_type,allocator_type> > m3(n, n);
-            tiles<matrix<value_type,allocator_type> > m4(n, n); m4 = a.subset(0, 0, nt, nt);
-            tiles<matrix<value_type,allocator_type> > m5(n, n); m5 = b.subset(0, 0, nt, nt);
-            tiles<matrix<value_type,allocator_type> > d(n*2, n*2); d = a;
-            tiles<matrix<value_type,allocator_type> > e(n*2, n*2); e = b;
+            tiles<matrix<value_type,allocator_type>, IB> m1(n, n);
+            tiles<matrix<value_type,allocator_type>, IB> m2(n, n);
+            tiles<matrix<value_type,allocator_type>, IB> m3(n, n);
+            tiles<matrix<value_type,allocator_type>, IB> m4(n, n); m4 = a.subset(0, 0, nt, nt);
+            tiles<matrix<value_type,allocator_type>, IB> m5(n, n); m5 = b.subset(0, 0, nt, nt);
+            tiles<matrix<value_type,allocator_type>, IB> d(n*2, n*2); d = a;
+            tiles<matrix<value_type,allocator_type>, IB> e(n*2, n*2); e = b;
 
             d.subset(0,  0,  nt, nt) += a.subset(0,  nt, nt, nt);  e.subset(0,  0,  nt, nt) += b.subset(0,  nt, nt, nt);
             d.subset(0,  nt, nt, nt) -= a.subset(nt, nt, nt, nt);  e.subset(0,  nt, nt, nt) -= b.subset(nt, nt, nt, nt);
@@ -410,8 +418,8 @@ namespace ambient { namespace numeric {
         }
     }
 
-    template<class MatrixA, class Matrix, typename T>
-    inline void gemm(const tiles<MatrixA>& a, const tiles<diagonal_matrix<T> >& b, tiles<Matrix>& c){
+    template<class MatrixA, class Matrix, typename T, int IB>
+    inline void gemm(const tiles<MatrixA, IB>& a, const tiles<diagonal_matrix<T>, IB>& b, tiles<Matrix, IB>& c){
         for(int i = 0; i < c.mt; i++){
             for(int j = 0; j < c.nt; j++){
                 gemm(a.tile(i,j), b[j], c.tile(i,j));
@@ -419,8 +427,8 @@ namespace ambient { namespace numeric {
         }
     }
 
-    template<class MatrixB, class Matrix, typename T>
-    inline void gemm(const tiles<diagonal_matrix<T> >& a, const tiles<MatrixB>& b, tiles<Matrix>& c){
+    template<class MatrixB, class Matrix, typename T, int IB>
+    inline void gemm(const tiles<diagonal_matrix<T>, IB>& a, const tiles<MatrixB, IB>& b, tiles<Matrix, IB>& c){
         for(int i = 0; i < c.mt; i++){
             for(int j = 0; j < c.nt; j++){
                 gemm(a[i], b.tile(i,j), c.tile(i,j));
@@ -428,8 +436,8 @@ namespace ambient { namespace numeric {
         }
     }
 
-    template<class Matrix, class DiagonalMatrix>
-    inline void svd(tiles<Matrix> a, tiles<Matrix>& u, tiles<Matrix>& v, tiles<DiagonalMatrix>& s){
+    template<class Matrix, class DiagonalMatrix, int IB>
+    inline void svd(tiles<Matrix, IB> a, tiles<Matrix, IB>& u, tiles<Matrix, IB>& v, tiles<DiagonalMatrix, IB>& s){
         size_t m = num_rows(a);
         size_t n = num_cols(a);
         size_t k = std::min(m,n);
@@ -442,123 +450,116 @@ namespace ambient { namespace numeric {
         split(u); split(v); split(s);
     }
 
-    template<class Matrix, class DiagonalMatrix>
-    inline void svd_merged(tiles<Matrix> a, tiles<Matrix>& u, tiles<Matrix>& v, tiles<DiagonalMatrix>& s){
+    template<class Matrix, class DiagonalMatrix, int IB>
+    inline void svd_merged(tiles<Matrix, IB> a, tiles<Matrix, IB>& u, tiles<Matrix, IB>& v, tiles<DiagonalMatrix, IB>& s){
         merge(a); merge(u); merge(v); merge(s);
         svd(a[0], u[0], v[0], s[0]);
     }
 
-    template<class Matrix, class DiagonalMatrix>
-    inline void heev(tiles<Matrix> a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
+    template<class Matrix, class DiagonalMatrix, int IB>
+    inline void heev(tiles<Matrix, IB> a, tiles<Matrix, IB>& evecs, tiles<DiagonalMatrix, IB>& evals){
         merge(a); merge(evecs); merge(evals);
         heev(a[0], evecs[0], evals[0]);
         split(evecs); split(evals);
     }
 
-    template<class Matrix, class DiagonalMatrix>
-    inline void heev_merged(tiles<Matrix> a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
+    template<class Matrix, class DiagonalMatrix, int IB>
+    inline void heev_merged(tiles<Matrix, IB> a, tiles<Matrix, IB>& evecs, tiles<DiagonalMatrix, IB>& evals){
         merge(a); merge(evecs); merge(evals);
         heev(a[0], evecs[0], evals[0]);
     }
 
-    template<class Matrix, class DiagonalMatrix>
-    inline void syev(tiles<Matrix> a, tiles<Matrix>& evecs, tiles<DiagonalMatrix>& evals){
-        merge(a); merge(evecs); merge(evals);
-        heev(a[0], evecs[0], evals[0]);
-        split(evecs); split(evals);
-    }
-                
-    template<class Matrix>
-    void orgqr(const tiles<Matrix>&& a, tiles<Matrix>&& q, const tiles<Matrix>&& t){
+    template<class Matrix, int IB>
+    void orgqr(const tiles<Matrix, IB>&& a, tiles<Matrix, IB>&& q, const tiles<Matrix, IB>&& t){
         int k, m, n;
 
         for(k = std::min(a.mt, a.nt)-1; k >= 0; k--){
             for(m = q.mt - 1; m > k; m--)
                 for(n = 0; n < q.nt; n++)
-                    tsmqr<PlasmaNoTrans>(a.tile(m, k).num_cols(), q.tile(k, n), q.tile(m, n), a.tile(m, k), t.tile(m, k));
+                    tsmqr<PlasmaNoTrans, IB>(a.tile(m, k).num_cols(), q.tile(k, n), q.tile(m, n), a.tile(m, k), t.tile(m, k));
             
             for(n = 0; n < q.nt; n++)
-                ormqr<PlasmaNoTrans>(std::min(a.tile(k,k).num_rows(), a.tile(k,k).num_cols()), a.tile(k, k), t.tile(k, k), q.tile(k, n));
+                ormqr<PlasmaNoTrans, IB>(std::min(a.tile(k,k).num_rows(), a.tile(k,k).num_cols()), a.tile(k, k), t.tile(k, k), q.tile(k, n));
         }
     }
 
-    template<class Matrix>
-    void orglq(const tiles<Matrix>&& a, tiles<Matrix>&& q, const tiles<Matrix>&& t){
+    template<class Matrix, int IB>
+    void orglq(const tiles<Matrix, IB>&& a, tiles<Matrix, IB>&& q, const tiles<Matrix, IB>&& t){
         int k, m, n;
 
         for(k = std::min(a.mt, a.nt)-1; k >= 0; k--){
             for(n = q.nt-1; n > k; n--)
                 for(m = 0; m < q.mt; m++)
-                    tsmlq<PlasmaNoTrans>(a.tile(k, n).num_rows(), q.tile(m, k), q.tile(m, n), a.tile(k, n), t.tile(k, n));
+                    tsmlq<PlasmaNoTrans, IB>(a.tile(k, n).num_rows(), q.tile(m, k), q.tile(m, n), a.tile(k, n), t.tile(k, n));
         
             for(m = 0; m < q.mt; m++)
-                ormlq<PlasmaNoTrans>(std::min(a.tile(k,k).num_rows(), a.tile(k,k).num_cols()), a.tile(k, k), t.tile(k, k), q.tile(m, k));
+                ormlq<PlasmaNoTrans, IB>(std::min(a.tile(k,k).num_rows(), a.tile(k,k).num_cols()), a.tile(k, k), t.tile(k, k), q.tile(m, k));
         }
     }
 
-    template<class Matrix>
-    void ormqr(tiles<Matrix>&& a, tiles<Matrix>&& b, tiles<Matrix>&& t){
+    template<class Matrix, int IB>
+    void ormqr(tiles<Matrix, IB>&& a, tiles<Matrix, IB>&& b, tiles<Matrix, IB>&& t){
         int k, m, n;
     
        // PlasmaLeft / trans_helper<value_type>::PlasmaTransValue
         for(k = 0; k < std::min(a.mt, a.nt); k++){
             size_t kmin = std::min(a.tile(k,k).num_rows(), a.tile(k,k).num_cols());
             for(n = 0; n < b.nt; n++){
-                ormqr<trans_helper<value_type>::PlasmaTransValue>(kmin, a.tile(k, k), t.tile(k, k), b.tile(k, n));
+                ormqr<trans_helper<value_type>::PlasmaTransValue, IB>(kmin, a.tile(k, k), t.tile(k, k), b.tile(k, n));
             }
             for(m = k+1; m < b.mt; m++){
                 for(n = 0; n < b.nt; n++)
-                    tsmqr<trans_helper<value_type>::PlasmaTransValue>(kmin, b.tile(k, n), b.tile(m, n), a.tile(m, k), t.tile(m, k));
+                    tsmqr<trans_helper<value_type>::PlasmaTransValue, IB>(kmin, b.tile(k, n), b.tile(m, n), a.tile(m, k), t.tile(m, k));
             }
         }
     }
 
-    template<class Matrix>
-    void ormlq(tiles<Matrix>&& a, tiles<Matrix>&& b, tiles<Matrix>&& t){
+    template<class Matrix, int IB>
+    void ormlq(tiles<Matrix, IB>&& a, tiles<Matrix, IB>&& b, tiles<Matrix, IB>&& t){
         int k, m, n;
         
         for(k = 0; k < std::min(a.mt, a.nt); k++){
             size_t kmin = std::min(a.tile(k,k).num_rows(), a.tile(k,k).num_cols());
             for(m = 0; m < b.mt; m++){
-                ormlq<trans_helper<value_type>::PlasmaTransValue>(kmin, a.tile(k, k), t.tile(k, k), b.tile(m, k));
+                ormlq<trans_helper<value_type>::PlasmaTransValue, IB>(kmin, a.tile(k, k), t.tile(k, k), b.tile(m, k));
             }
             for(n = k+1; n < b.nt; n++){
                 for(m = 0; m < b.mt; m++){
-                    tsmlq<trans_helper<value_type>::PlasmaTransValue>(kmin, b.tile(m, k), b.tile(m, n), a.tile(k, n), t.tile(k, n));
+                    tsmlq<trans_helper<value_type>::PlasmaTransValue, IB>(kmin, b.tile(m, k), b.tile(m, n), a.tile(k, n), t.tile(k, n));
                 }
             }
         }
     }
 
-    template<class Matrix>
-    inline void qr(tiles<Matrix>&& a, tiles<Matrix>&& t){
+    template<class Matrix, int IB>
+    inline void qr(tiles<Matrix, IB>&& a, tiles<Matrix, IB>&& t){
         int k, m, n;
         
         for(k = 0; k < std::min(a.mt, a.nt); k++){
-            geqrt(a.tile(k, k), t.tile(k, k));
+            geqrt<IB>(a.tile(k, k), t.tile(k, k));
         
             for(n = k+1; n < a.nt; n++)
-                ormqr<trans_helper<value_type>::PlasmaTransValue>(a.tile(k,n).num_rows(), a.tile(k, k), t.tile(k, k), a.tile(k, n));
+                ormqr<trans_helper<value_type>::PlasmaTransValue, IB>(a.tile(k,n).num_rows(), a.tile(k, k), t.tile(k, k), a.tile(k, n));
             
             for(m = k+1; m < a.mt; m++){
-                tsqrt(a.tile(k, k), a.tile(m, k), t.tile(m, k));
+                tsqrt<IB>(a.tile(k, k), a.tile(m, k), t.tile(m, k));
         
                 for(n = k+1; n < a.nt; n++)
-                    tsmqr<trans_helper<value_type>::PlasmaTransValue>(AMBIENT_IB, a.tile(k, n), a.tile(m, n), a.tile(m, k), t.tile(m, k));
+                    tsmqr<trans_helper<value_type>::PlasmaTransValue, IB>(IB, a.tile(k, n), a.tile(m, n), a.tile(m, k), t.tile(m, k));
             }
         }
     }
 
 
-    template<class Matrix>
-    inline void qr(tiles<Matrix> a, tiles<Matrix>& q, tiles<Matrix>& r){
+    template<class Matrix, int IB>
+    inline void qr(tiles<Matrix, IB> a, tiles<Matrix, IB>& q, tiles<Matrix, IB>& r){
         int am = num_rows(a);
         int an = num_cols(a);
         int ak = std::min(am,an);
         resize(q, am, an);
         resize(r, ak, an);
         
-        tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
+        tiles<Matrix, IB> t(a.mt*IB, a.nt*IB);
         qr(std::move(a), std::move(t));
         
         // restoring R from A //
@@ -578,34 +579,34 @@ namespace ambient { namespace numeric {
         resize(q, am, ak);
     }
 
-    template<class Matrix>
-    inline void lq(tiles<Matrix>&& a, tiles<Matrix>&& t){
+    template<class Matrix, int IB>
+    inline void lq(tiles<Matrix, IB>&& a, tiles<Matrix, IB>&& t){
         int k, m, n;
         
         for(k = 0; k < std::min(a.mt, a.nt); k++) {
-            gelqt(a.tile(k, k), t.tile(k, k));
+            gelqt<IB>(a.tile(k, k), t.tile(k, k));
         
             for(m = k+1; m < a.mt; m++)
-                ormlq<trans_helper<value_type>::PlasmaTransValue>(a.tile(m, k).num_cols(), a.tile(k, k), t.tile(k, k), a.tile(m, k));
+                ormlq<trans_helper<value_type>::PlasmaTransValue, IB>(a.tile(m, k).num_cols(), a.tile(k, k), t.tile(k, k), a.tile(m, k));
         
             for(n = k+1; n < a.nt; n++){
-                tslqt(a.tile(k, k), a.tile(k, n), t.tile(k, n));
+                tslqt<IB>(a.tile(k, k), a.tile(k, n), t.tile(k, n));
         
                 for(m = k+1; m < a.mt; m++)
-                    tsmlq<trans_helper<value_type>::PlasmaTransValue>(AMBIENT_IB, a.tile(m, k), a.tile(m, n), a.tile(k, n), t.tile(k, n));
+                    tsmlq<trans_helper<value_type>::PlasmaTransValue, IB>(IB, a.tile(m, k), a.tile(m, n), a.tile(k, n), t.tile(k, n));
             }
         }
     }
 
-    template<class Matrix>
-    inline void lq(tiles<Matrix> a, tiles<Matrix>& l, tiles<Matrix>& q){
+    template<class Matrix, int IB>
+    inline void lq(tiles<Matrix, IB> a, tiles<Matrix, IB>& l, tiles<Matrix, IB>& q){
         int am = num_rows(a);
         int an = num_cols(a);
         int ak = std::min(am,an);
         resize(l, am, ak);
         resize(q, am, an); // instead of ak
         
-        tiles<Matrix> t(a.mt*AMBIENT_IB, a.nt*AMBIENT_IB);
+        tiles<Matrix, IB> t(a.mt*IB, a.nt*IB);
         lq(std::move(a), std::move(t));
         
         // restoring L from A //
@@ -625,10 +626,10 @@ namespace ambient { namespace numeric {
         resize(q, ak, an);
     }
 
-    template<class Matrix> 
-    inline void resize(tiles<Matrix>& a, size_t m, size_t n){ 
+    template<class Matrix, int IB>
+    inline void resize(tiles<Matrix, IB>& a, size_t m, size_t n){ 
         if(a.num_rows() == m && a.num_cols() == n) return;
-        tiles<Matrix> r(m, n);
+        tiles<Matrix, IB> r(m, n);
 
         int mb_min = std::min(r.mt, a.mt);
         int nb_min = std::min(r.nt, a.nt);
@@ -638,14 +639,14 @@ namespace ambient { namespace numeric {
                 r.tile(i,j) = a.tile(i,j);
             }
         }
-        size_t margin = AMBIENT_IB;
-        if(r.mt <= a.mt) margin = __a_mod(m, AMBIENT_IB);
+        size_t margin = IB;
+        if(r.mt <= a.mt) margin = __a_mod(m, IB);
         for(int j = 0; j < nb_min; j++){
             Matrix& block = r.tile(mb_min-1,j);
             resize(block, margin, block.num_cols());
         }
-        margin = AMBIENT_IB;
-        if(r.nt <= a.nt) margin = __a_mod(n, AMBIENT_IB);
+        margin = IB;
+        if(r.nt <= a.nt) margin = __a_mod(n, IB);
         for(int i = 0; i < mb_min; i++){
             Matrix& block = r.tile(i,nb_min-1);
             resize(block, block.num_rows(), margin);
@@ -653,28 +654,28 @@ namespace ambient { namespace numeric {
         swap(a, r);
     }
 
-    template<class Matrix> 
-    inline void remove_cols(tiles<Matrix>& a, size_t j, size_t n){
+    template<class Matrix, int IB> 
+    inline void remove_cols(tiles<Matrix, IB>& a, size_t j, size_t n){
         if(n == 0) return;
-        tiles<Matrix> r(a.num_rows(), a.num_cols()-n);
+        tiles<Matrix, IB> r(a.num_rows(), a.num_cols()-n);
         if(j > 0) copy_block(a, 0, 0, r, 0, 0, a.num_rows(), j);
         if(j+n < a.num_cols()) copy_block(a, 0, j+n, r, 0, j, a.num_rows(), a.num_cols()-j-n);
         swap(a, r);
     }
 
-    template<class Matrix> 
-    inline void remove_rows(tiles<Matrix>& a, size_t i, size_t m){
+    template<class Matrix, int IB> 
+    inline void remove_rows(tiles<Matrix, IB>& a, size_t i, size_t m){
         if(m == 0) return;
-        tiles<Matrix> r(a.num_rows()-m, a.num_cols());
+        tiles<Matrix, IB> r(a.num_rows()-m, a.num_cols());
         if(i > 0) copy_block(a, 0, 0, r, 0, 0, i, a.num_cols());
         if(i+m < a.num_rows()) copy_block(a, i+m, 0, r, i, 0, a.num_rows()-i-m, a.num_cols());
         swap(a, r);
     }
 
-    template<typename T> 
-    inline void resize(tiles<diagonal_matrix<T> >& a, size_t m, size_t n){
+    template<typename T, int IB> 
+    inline void resize(tiles<diagonal_matrix<T>, IB>& a, size_t m, size_t n){
         if(a.num_rows() == m) return;
-        tiles<diagonal_matrix<T> > r(m, m);
+        tiles<diagonal_matrix<T>, IB> r(m, m);
 
         int nb_min = std::min(r.nt, a.nt);
         
@@ -682,53 +683,53 @@ namespace ambient { namespace numeric {
             r[i] = a[i];
         }
         if(r.nt > a.nt){
-            resize(r[nb_min-1], AMBIENT_IB, AMBIENT_IB);
+            resize(r[nb_min-1], IB, IB);
         }else{
-            size_t margin = __a_mod(m, AMBIENT_IB);
+            size_t margin = __a_mod(m, IB);
             resize(r[r.nt-1], margin, margin);
         }
         swap(a, r);
     }
 
-    template<typename T> 
-    inline void remove_cols(tiles<diagonal_matrix<T> >& a, size_t j, size_t n){
+    template<typename T, int IB>
+    inline void remove_cols(tiles<diagonal_matrix<T>, IB>& a, size_t j, size_t n){
         if(n == 0) return;
-        tiles<diagonal_matrix<T> > r(a.num_rows()-n, a.num_cols()-n);
+        tiles<diagonal_matrix<T>, IB> r(a.num_rows()-n, a.num_cols()-n);
         if(j > 0) copy_block(a.get_data(), 0, 0, r.get_data(), 0, 0, j, 1);
         if(j+n < a.num_rows()) copy_block(a.get_data(), j+n, 0, r.get_data(), j, 0, a.num_rows()-j-n, 1);
         swap(a, r);
     }
 
-    template<typename T> 
-    inline void remove_rows(tiles<diagonal_matrix<T> >& a, size_t i, size_t m){
+    template<typename T, int IB>
+    inline void remove_rows(tiles<diagonal_matrix<T>, IB>& a, size_t i, size_t m){
         remove_cols(a, i, m);
     }
 
-    template<typename T> 
-    inline void sqrt_inplace(tiles<diagonal_matrix<T> >& a){
+    template<typename T, int IB>
+    inline void sqrt_inplace(tiles<diagonal_matrix<T>, IB>& a){
         int size = a.data.size();
         for(int i = 0; i < size; i++){
             sqrt_inplace(a[i]);
         }
     }
 
-    template<typename T> 
-    inline tiles<diagonal_matrix<T> > sqrt(const tiles<diagonal_matrix<T> >& a){
-        tiles<diagonal_matrix<T> > s(a); 
+    template<typename T, int IB>
+    inline tiles<diagonal_matrix<T>, IB> sqrt(const tiles<diagonal_matrix<T>, IB>& a){
+        tiles<diagonal_matrix<T>, IB> s(a); 
         sqrt_inplace(s);
         return s;
     }
 
-    template<typename T>
-    inline void exp_inplace(tiles<diagonal_matrix<T> >& a, const T& alfa = 1.){
+    template<typename T, int IB>
+    inline void exp_inplace(tiles<diagonal_matrix<T>, IB>& a, const T& alfa = 1.){
         int size = a.data.size();
         for(int i = 0; i < size; i++){
             exp_inplace(a[i], alfa);
         }
     }
 
-    template<class Matrix> 
-    inline scalar_type trace(const tiles<Matrix>& a){
+    template<class Matrix, int IB>
+    inline scalar_type trace(const tiles<Matrix, IB>& a){
         int size = std::min(a.nt, a.mt);
         scalar_type result(0.);
         std::vector<scalar_type> parts;
@@ -739,8 +740,8 @@ namespace ambient { namespace numeric {
         return result;
     }
 
-    template <class Matrix>
-    inline real_type norm_square(const tiles<Matrix>& a){
+    template <class Matrix, int IB>
+    inline real_type norm_square(const tiles<Matrix, IB>& a){
         int size = a.nt*a.mt;
         real_type result(0.);
         std::vector<real_type> parts;
@@ -751,8 +752,8 @@ namespace ambient { namespace numeric {
         return result;
     }
 
-    template <class Matrix>
-    inline scalar_type overlap(const tiles<Matrix>& a, const tiles<Matrix>& b){
+    template <class Matrix, int IB>
+    inline scalar_type overlap(const tiles<Matrix, IB>& a, const tiles<Matrix, IB>& b){
         int size = a.nt*a.mt;
         scalar_type result(0.);
         std::vector<scalar_type> parts;
@@ -763,13 +764,13 @@ namespace ambient { namespace numeric {
         return result;
     }
         
-    template<class Matrix>
-    inline void swap(tiles<Matrix>& x, tiles<Matrix>& y){ 
+    template<class Matrix, int IB>
+    inline void swap(tiles<Matrix, IB>& x, tiles<Matrix, IB>& y){ 
         x.swap(y);                     
     }
 
-    template<class Matrix>
-    inline void transpose_inplace(tiles<Matrix>& a){
+    template<class Matrix, int IB>
+    inline void transpose_inplace(tiles<Matrix, IB>& a){
         std::vector<Matrix*> t;
         t.reserve(a.mt*a.nt);
         for(int i = 0; i < a.mt; i++){
@@ -784,9 +785,9 @@ namespace ambient { namespace numeric {
         std::swap(a.mt,   a.nt);
     }
 
-    template<class Matrix>
-    inline tiles<transpose_view<Matrix> > transpose(const tiles<Matrix>& a){
-        tiles<transpose_view<Matrix> > t;
+    template<class Matrix, int IB>
+    inline tiles<transpose_view<Matrix>, IB> transpose(const tiles<Matrix, IB>& a){
+        tiles<transpose_view<Matrix>, IB> t;
         std::vector<transpose_view<Matrix>*> data;
         data.reserve(a.mt*a.nt);
         for(int i = 0; i < a.mt; i++)
@@ -800,35 +801,30 @@ namespace ambient { namespace numeric {
         return t;
     }
 
-    template<class Matrix>
-    inline void adjoint_inplace(tiles<Matrix>& a){
+    template<class Matrix, int IB>
+    inline void adjoint_inplace(tiles<Matrix, IB>& a){
         transpose_inplace(a);
         conj_inplace(a);
     }
 
-    template<class Matrix>
-    inline const tiles<Matrix> adjoint(const tiles<Matrix>& a){ // change to adjoint_view<Matrix>
-        tiles<Matrix> b(a); 
+    template<class Matrix, int IB>
+    inline const tiles<Matrix, IB> adjoint(const tiles<Matrix, IB>& a){ // change to adjoint_view<Matrix>
+        tiles<Matrix, IB> b(a); 
         transpose_inplace(b);
         conj_inplace(b);
         return b;
     }
 
-    template<class Matrix, class G>
-    inline void generate(tiles<Matrix>& a, G g){
-        generate(a);
-    }
-
-    template<class Matrix>
-    inline void generate(tiles<Matrix>& a){
+    template<class Matrix, int IB>
+    inline void generate(tiles<Matrix, IB>& a){
         int size = a.data.size();
         for(int i = 0; i < size; i++){
             fill_random(a[i]);
         }
     }
 
-    template<class Matrix>
-    inline void generate_hermitian(tiles<Matrix>& a){
+    template<class Matrix, int IB>
+    inline void generate_hermitian(tiles<Matrix, IB>& a){
         assert(num_rows(a) == num_cols(a));
         for(size_t k = 0; k < a.mt; ++k) 
             fill_random_hermitian(a.tile(k,k));
@@ -840,27 +836,24 @@ namespace ambient { namespace numeric {
         }
     }
 
-    template <class MatrixA, class MatrixB>
-    inline void add_inplace(tiles<MatrixA>& lhs, const tiles<MatrixB>& rhs){
+    template <class MatrixA, class MatrixB, int IB>
+    inline void add_inplace(tiles<MatrixA, IB>& lhs, const tiles<MatrixB, IB>& rhs){
         int size = lhs.data.size();
         for(int i = 0; i < size; i++){
             lhs[i] += rhs[i];
         }
     }
 
-    template <class MatrixA, class MatrixB>
-    inline void sub_inplace(tiles<MatrixA>& lhs, const tiles<MatrixB>& rhs){ 
+    template <class MatrixA, class MatrixB, int IB>
+    inline void sub_inplace(tiles<MatrixA, IB>& lhs, const tiles<MatrixB, IB>& rhs){ 
         int size = lhs.data.size();
         for(int i = 0; i < size; i++){
             lhs[i] -= rhs[i];
         }
     }
 
-    template <class Matrix>
-    inline void mul_inplace(tiles<Matrix>& a, const scalar_type& rhs) {
-        #ifdef AMBIENT_LOOSE_FUTURE
-        if(!rhs.valid) rhs.load();
-        #endif
+    template <class Matrix, int IB>
+    inline void mul_inplace(tiles<Matrix, IB>& a, const scalar_type& rhs) {
         if((value_type)rhs == 1.) return; // gcc debug knob + early out
         int size = a.data.size();
         for(int i = 0; i < size; i++){
@@ -868,57 +861,54 @@ namespace ambient { namespace numeric {
         }
     }
 
-    template <class Matrix>
-    inline void div_inplace(tiles<Matrix>& a, const scalar_type& rhs){
-        #ifdef AMBIENT_LOOSE_FUTURE
-        if(!rhs.valid) rhs.load();
-        #endif
+    template <class Matrix, int IB>
+    inline void div_inplace(tiles<Matrix, IB>& a, const scalar_type& rhs){
         if((value_type)rhs == 1.) return; // gcc debug knob + early out
         int size = a.data.size();
         for(int i = 0; i < size; i++)
             a[i] /= rhs;
     }
  
-    template <class Matrix>
-    std::ostream& operator << (std::ostream& o, const tiles<Matrix>& a){
+    template <class Matrix, int IB>
+    std::ostream& operator << (std::ostream& o, const tiles<Matrix, IB>& a){
         int size = a.data.size();
         for(int i = 0; i < size; i++)
             o << a[i];
         return o;
     }
 
-    template <class Matrix> 
-    inline tiles<Matrix> operator + (tiles<Matrix> lhs, const tiles<Matrix>& rhs){ 
+    template <class Matrix, int IB>
+    inline tiles<Matrix, IB> operator + (tiles<Matrix, IB> lhs, const tiles<Matrix, IB>& rhs){ 
         return (lhs += rhs);
     }
 
-    template <class Matrix> 
-    inline tiles<Matrix> operator - (tiles<Matrix> lhs, const tiles<Matrix>& rhs){ 
+    template <class Matrix, int IB>
+    inline tiles<Matrix, IB> operator - (tiles<Matrix, IB> lhs, const tiles<Matrix, IB>& rhs){ 
         return (lhs -= rhs);
     }
 
-    template <class Matrix, class MatrixB>
-    inline tiles<matrix<value_type,allocator_type> > operator * (const tiles<Matrix>& lhs, const tiles<MatrixB>& rhs){
-        tiles<matrix<value_type,allocator_type> > ret(lhs.num_rows(), rhs.num_cols());
+    template <class Matrix, class MatrixB, int IB>
+    inline tiles<matrix<value_type,allocator_type>, IB> operator * (const tiles<Matrix, IB>& lhs, const tiles<MatrixB, IB>& rhs){
+        tiles<matrix<value_type,allocator_type>, IB> ret(lhs.num_rows(), rhs.num_cols());
         gemm(lhs, rhs, ret);
         return ret; 
     }
 
-    template<class Matrix, typename T> 
-    inline const tiles<Matrix> operator * (tiles<Matrix> lhs, const T& rhs){ 
-        return (lhs *= rhs); 
+    template<class Matrix, int IB, typename T>
+    inline const tiles<Matrix, IB> operator * (tiles<Matrix, IB> lhs, const T& rhs){ 
+        return (lhs *= rhs);
     }
 
-    template<class Matrix, typename T> 
-    inline const tiles<Matrix> operator * (const T& lhs, tiles<Matrix> rhs){ 
+    template<class Matrix, int IB, typename T>
+    inline const tiles<Matrix, IB> operator * (const T& lhs, tiles<Matrix, IB> rhs){ 
         return (rhs *= lhs); 
     }
 
-    template<class Matrix> inline size_type num_rows(const tiles<Matrix>& a){ 
+    template<class Matrix, int IB> inline size_type num_rows(const tiles<Matrix, IB>& a){ 
         return a.num_rows();
     }
 
-    template<class Matrix> inline size_type num_cols(const tiles<Matrix>& a){
+    template<class Matrix, int IB> inline size_type num_cols(const tiles<Matrix, IB>& a){
         return a.num_cols();
     }
 
