@@ -227,10 +227,9 @@ public:
                 std::vector<bond_element> synchronous_meas_operators;
                 {
                 bond_element meas_operators;
-				// push 2rdm -- ijkl -- create destroy create destroy
+                meas_operators.push_back( std::make_pair(create_ops, true) );
                 meas_operators.push_back( std::make_pair(create_ops, true) );
                 meas_operators.push_back( std::make_pair(destroy_ops, true) );
-                meas_operators.push_back( std::make_pair(create_ops, true) );
                 meas_operators.push_back( std::make_pair(destroy_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
