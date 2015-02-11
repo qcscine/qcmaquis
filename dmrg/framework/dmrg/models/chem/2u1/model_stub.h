@@ -369,35 +369,33 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
             used_elements[m] += 1;
         }
 
-/*
         // V_ijij == V_jiji = V_ijji = V_jiij
         else if ( i==k && j==l && i!=j) {
 
-            term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, e2d, d2e);
-            term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, d2e, e2d);
-            term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_up, count_up);
-            term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_down, count_down);
+            //term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, e2d, d2e);
+            //term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, d2e, e2d);
+            //term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_up, count_up);
+            //term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, count_down, count_down);
 
-            std::pair<tag_type, value_type> ptag1, ptag2;
+            //std::pair<tag_type, value_type> ptag1, ptag2;
 
-            // Could insert fill operators without changing the result
-            // --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
-            ptag1 = tag_handler->get_product_tag(destroy_down, create_up);
-            ptag2 = tag_handler->get_product_tag(destroy_up, create_down);
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
-            );
+            //// Could insert fill operators without changing the result
+            //// --> -c_j_up * cdag_j_down * c_i_down * cdag_i_up
+            //ptag1 = tag_handler->get_product_tag(destroy_down, create_up);
+            //ptag2 = tag_handler->get_product_tag(destroy_up, create_down);
+            //term_assistant.add_term(
+            //    this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
+            //);
 
-            // --> -c_i_up * cdag_i_down * c_j_down * cdag_j_up
-            ptag1 = tag_handler->get_product_tag(destroy_up, create_down);
-            ptag2 = tag_handler->get_product_tag(destroy_down, create_up);
-            term_assistant.add_term(
-                this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
-            );
+            //// --> -c_i_up * cdag_i_down * c_j_down * cdag_j_up
+            //ptag1 = tag_handler->get_product_tag(destroy_up, create_down);
+            //ptag2 = tag_handler->get_product_tag(destroy_down, create_up);
+            //term_assistant.add_term(
+            //    this->terms_, -matrix_elements[m] * ptag1.second * ptag2.second, i, j, ptag1.first, ptag2.first
+            //);
             
             used_elements[m] += 1;
         }
-*/
 
         // 9987 9877
 
@@ -483,7 +481,6 @@ qc_stub<Matrix, SymmGroup>::qc_stub(Lattice const & lat_, BaseParameters & parms
             used_elements[m] += 1;
         }
 */
-
         // 32 (8x4)-fold degenerate V_ijkl = V_jikl = V_ijlk = V_jilk = V_klij = V_lkij = V_klji = V_lkji * spin
         // V_ijkl -> 24 permutations which fall into 3 equivalence classes of 8 elements (with identical V_ matrix element)
         // coded: 4 index permutations x 4 spin combinations 

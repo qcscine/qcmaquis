@@ -38,11 +38,9 @@ namespace SU2 {
     template<class Matrix, class SymmGroup>
     bool track_it(block_matrix<Matrix, SymmGroup> const & op)
     {
-        for (std::size_t b = 0; b < op.n_blocks(); ++b)
-        {
-            if (op.basis().left_size(b) != op.basis().right_size(b))
-                return true;
-        }
+        if (op.n_blocks() == 1) return true;
+        if (std::abs(op.basis().left_charge(0)[0] - op.basis().right_charge(0)[0]) == 2)
+            return true;
         return false;
     }
 
@@ -81,7 +79,7 @@ namespace SU2 {
             assert(a == mpo.left_spin(b1).get() && ap == mpo.right_spin(b2).get());
             bool debug = false;
             //bool debug = track_it(W);
-            //if (debug && k==0) {maquis::cout << W << std::endl; exit(1); }
+            if (debug) {maquis::cout << W.basis() << std::endl;}
 
             for (size_t lblock = 0; lblock < left[b1].n_blocks(); ++lblock) {
 
@@ -149,14 +147,24 @@ namespace SU2 {
                         for(size_t rr = 0; rr < r_size; ++rr) {
                             for(size_t ss1 = 0; ss1 < phys_s1; ++ss1) {
                                 for(size_t ss2 = 0; ss2 < phys_s2; ++ss2) {
-                                    if (ss1 == 2 && ss2 == 2)
-                                        c_eff = ::SU2::mod_coupling(j, 2, jp, a,k,ap, i, 2, ip, debug);
-                                    else if (ss1 == 2)
-                                        c_eff = ::SU2::mod_coupling(j, 2, jp, a,k,ap, i, two_sp, ip, debug);
-                                    else if (ss2 == 2)
-                                        c_eff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2, ip, debug);
-                                    else
+                                    if (ss1 == 2 && ss2 == 2) {
+                                        int ip_loc = (ip == 0 && k == 2) ? ip : ip;
+                                        int jp_loc = (jp == 0 && k == 2) ? jp : jp;
+                                        c_eff = ::SU2::mod_coupling(j, 2, jp_loc, a,k,ap, i, 2, ip_loc, debug);
+                                    }
+                                    else if (ss1 == 2) {
+                                        // jp ~ out_r_charge ~ phys_in
+                                        int jp_loc = (jp == 0 && k == 2) ? jp : jp;
+                                        c_eff = ::SU2::mod_coupling(j, 2, jp_loc, a,k,ap, i, two_sp, ip, debug);
+                                    }
+                                    else if (ss2 == 2) {
+                                        // ip ~ out_l_charge ~ phys_out
+                                        int ip_loc = (ip == 0 && k == 2) ? ip : ip;
+                                        c_eff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2, ip_loc, debug);
+                                    }
+                                    else {
                                         c_eff = coupling_coeff;
+                                    }
 
                                     c_eff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
 

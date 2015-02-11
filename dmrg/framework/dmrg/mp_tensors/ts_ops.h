@@ -65,19 +65,27 @@ namespace ts_ops_detail
 
         std::map<SpinDescriptor<symm_traits::SU2Tag>::spin_t, typename OPTable<Matrix, SymmGroup>::op_t> ret;
 
-        for (typename std::set<Integer>::const_iterator it = summands.begin(); it != summands.end(); ++it) {
-            Integer b2 = *it;
+        for (typename std::set<Integer>::const_iterator it1 = summands.begin(); it1 != summands.end(); ++it1) {
+            Integer b2 = *it1;
             term_descriptor<Matrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
             std::vector<spin_t> op_spins = allowed_spins(mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get(), p1.op().spin.get(), p2.op().spin.get());
-            for (std::vector<spin_t>::const_iterator it = op_spins.begin(); it != op_spins.end(); ++it)
+            for (std::vector<spin_t>::const_iterator it2 = op_spins.begin(); it2 != op_spins.end(); ++it2)
             {
-                SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> prod_spin(*it, mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get());
+                SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> prod_spin(*it2, mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get());
 
                 op_t product;
                 op_kron(phys_i1, phys_i2, p1.op(), p2.op(), product, mpo1.left_spin(b1), mpo1.right_spin(b2), mpo2.right_spin(b3), prod_spin);
                 ::tag_detail::remove_empty_blocks(product);
-                ret[*it] += product * p1.scale() * p2.scale();
+                ret[*it2] += product * p1.scale() * p2.scale();
+
+                //if (op_spins.size() > 1) {
+                //    maquis::cout << "b1, b2, b3 " << b1 << "," << b2 << "," << b3 << " coupling to Spin: " << *it2
+                //                 << " (" << mpo1.left_spin(b1).get() << " -> " << mpo1.right_spin(b2).get() << " -> "
+                //                 << mpo2.right_spin(b3).get() << ")" << std::endl;
+                //    maquis::cout << p1.op() * p1.scale() << std::endl << p2.op() * p2.scale() << std::endl;
+                //    maquis::cout << "Product\n" << product * p1.scale() * p2.scale();
+                //}
             }
         }
 
@@ -135,6 +143,8 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                 //scaled_tag = kron_handler.get_kronecker_table()->checked_register(b3_op);
                 //prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
 
+                //maquis::cout << b1 << "," << b3 << " ****************************************************\n";
+
                 std::map<SpinDescriptor<symm_traits::SU2Tag>::spin_t, op_t> coupled_ops
                     = ts_ops_detail::mpo_couple(summands, b1, b3, phys_i1, phys_i2, mpo1, mpo2);
                 for (typename std::map<SpinDescriptor<symm_traits::SU2Tag>::spin_t, op_t>::const_iterator it = coupled_ops.begin();
@@ -142,6 +152,10 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                 {
                     scaled_tag = kron_handler.get_kronecker_table()->checked_register(it->second);
                     prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
+                    //if (coupled_ops.size() > 1) {
+                    //    maquis::cout << "SUM| b1, b3 " << b1 << "," << b3 << " Spin: " << it->first << std::endl;
+                    //    maquis::cout << it->second << std::endl;
+                    //}
                 }
 
             }

@@ -733,6 +733,12 @@ void op_kron(Index<SymmGroup> const & phys_A,
     }
 }
 
+namespace ts_ops_detail
+{
+    template <class Integer>
+    std::vector<Integer> allowed_spins(Integer left, Integer right, Integer k1, Integer k2);
+}
+
 template<class Matrix1, class Matrix2, class SymmGroup>
 void op_kron(Index<SymmGroup> const & phys_A,
              Index<SymmGroup> const & phys_B,
@@ -743,7 +749,8 @@ void op_kron(Index<SymmGroup> const & phys_A,
              SpinDescriptor<symm_traits::SU2Tag> mspin,
              SpinDescriptor<symm_traits::SU2Tag> rspin,
              SpinDescriptor<symm_traits::SU2Tag> target_spin
-              = SpinDescriptor<symm_traits::SU2Tag>(-1,0,0))
+              = SpinDescriptor<symm_traits::SU2Tag>(-1,0,0),
+             bool verbose = false)
 {
     typedef typename SymmGroup::charge charge;
 
@@ -784,15 +791,29 @@ void op_kron(Index<SymmGroup> const & phys_A,
     j = lspin.get();
     jpp = mspin.get();
     jp = rspin.get();
-    k = (target_spin.get() > -1) ? target_spin.get() : std::abs(j - jp);
-    if (j==1 && jp == 1 && jpp == 1 && (k1==2 || k2==2))
-        k = 2;
+
+    std::vector<int> product_spins = ts_ops_detail::allowed_spins(j,jp, k1, k2);
+    k = (target_spin.get() > -1) ? target_spin.get() : product_spins[0];
+
+    //if (product_spins.size() == 1)                       assert(product_spins[0] == target_spin.get());
+    if (product_spins.size() == 1 && target_spin.get() > -1)
+        if (product_spins[0] != target_spin.get())
+        {
+            maquis::cout << "prod_spin[0]" << product_spins[0] << " target spin: " << target_spin.get()
+                         << " j,jpp,jp: " << j << jpp << jp << std::endl;
+            maquis::cout << "A\n" << A << std::endl;
+            maquis::cout << "B\n" << B << std::endl;
+            exit(1);
+        }
+
+    if (product_spins.size() > 1)                        assert(target_spin.get() > -1);
+    if (j==1 && jp == 1 && jpp == 1 && (k1==2 || k2==2)) assert (k==2);
 
     //*************************************
     // Tensor + Kronecker product
 
-    for (int i = 0; i < A.n_blocks(); ++i) {
-        for (int j = 0; j < B.n_blocks(); ++j) {
+    for (std::size_t i = 0; i < A.n_blocks(); ++i) {
+        for (std::size_t j = 0; j < B.n_blocks(); ++j) {
             charge  inA = A.basis().left_charge(i);
             charge outA = A.basis().right_charge(i);
             charge  inB = B.basis().left_charge(j);
@@ -830,9 +851,12 @@ void op_kron(Index<SymmGroup> const & phys_A,
 
     //*************************************
     // Matrix basis coupling coefficient, applies uniformly to whole product
-    //maquis::cout << "6j\n";
-    //maquis::cout << j << jp << k << std::endl
-    //             << k2 << k1  << jpp   << std::endl;
+    if (verbose)
+    {
+        maquis::cout << "6j\n";
+        maquis::cout << j << jp << k << std::endl
+                     << k2 << k1  << jpp   << std::endl;
+    }
 
     typename Matrix2::value_type coupling = std::sqrt((jpp+1)*(k+1)) * gsl_sf_coupling_6j(j,jp,k,k2,k1,jpp);
     coupling = (((j+jp+k1+k2)/2)%2) ? -coupling : coupling;
@@ -841,17 +865,20 @@ void op_kron(Index<SymmGroup> const & phys_A,
     SpinDescriptor<symm_traits::SU2Tag> op_spin(k, j, jp);
     C.spin = op_spin;
 
-    //maquis::cout << "6j: " << coupling << std::endl;
-    //maquis::cout << "kron spin: " << C.spin.get() << ", " << jp-j << std::endl << std::endl;
-    //if (phys_A[1].first[2] != phys_B[1].first[2])
-    //if (k1 == 2 || k2 == 2)
-    //{
-    //    maquis::cout << phys_A << std::endl;
-    //    maquis::cout << phys_B << std::endl;
-    //    maquis::cout << A << std::endl << std::endl;
-    //    maquis::cout << B << std::endl << std::endl;
-    //    maquis::cout << C << std::endl << std::endl;
-    //}
+    if (verbose)
+    {
+        maquis::cout << "6j: " << coupling << std::endl;
+        maquis::cout << "kron spin: " << C.spin.get() << ", " << jp-j << std::endl << std::endl;
+        //if (phys_A[1].first[2] != phys_B[1].first[2])
+        //if (k1 == 2 || k2 == 2)
+        //{
+        //    maquis::cout << phys_A << std::endl;
+        //    maquis::cout << phys_B << std::endl;
+        //    maquis::cout << A << std::endl << std::endl;
+        //    maquis::cout << B << std::endl << std::endl;
+        //    maquis::cout << C << std::endl << std::endl;
+        //}
+    }
 }
 
 template<class Matrix, class SymmGroup>
