@@ -265,7 +265,7 @@ public:
                         ++f_ops;
                     }
                     else if (*it2 == "N") {
-                        meas_operators.push_back( std::make_pair(count_ops, true) );
+                        meas_operators.push_back( std::make_pair(count_ops, false) );
                         ++f_ops;
                     }
                     else if (*it2 == "id" || *it2 == "Id") {
