@@ -385,6 +385,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
+            if (std::min(i,j) == 6) continue;
 
             // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
@@ -417,12 +418,12 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             else if (k==l) { same_idx = l; pos1 = i; }
             else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
 
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, ident,  std::sqrt(2.)*matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill
-            ));
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill
-            ));
+            //this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+            //    true, ident,  std::sqrt(2.)*matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill
+            //));
+            //this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+            //    true, ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill
+            //));
 
             used_elements[m] += 1;
         }
@@ -437,9 +438,13 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
         // V_ijij == V_jiji = V_ijji = V_jiij
         else if ( i==k && j==l && i!=j) {
+            if (std::max(i,j) < 3) continue;
+            //if (std::max(i,j) == 6) continue;
+            if (std::max(i,j) == 7) continue;
+            if (std::max(i,j) == 8 && std::min(i,j) != 7) continue;
 
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, e2d, d2e));
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, d2e, e2d));
+            //this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, e2d, d2e));
+            //this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, d2e, e2d));
 
             // here we have spin0--j--spin1--i--spin0
             // the sqrt(3.) counteracts the Clebsch coeff C^{110}_{mrm'} which applies when the spin1 couples back to spin0
@@ -465,16 +470,17 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             std::vector<term_descriptor> & vec = this->terms_;
 
-            ta.add_3term(vec, TM::three_term(ident, std::sqrt(2.)*matrix_elements[m], same_idx, k, l,
-                                             count, count_fill, create, create_fill, destroy, destroy_fill));
-            ta.add_3term(vec, TM::three_term(ident, std::sqrt(2.)*matrix_elements[m], same_idx, l, k,
-                                             count, count_fill, create, create_fill, destroy, destroy_fill));
+            //ta.add_3term(vec, TM::three_term(ident, std::sqrt(2.)*matrix_elements[m], same_idx, k, l,
+            //                                 count, count_fill, create, create_fill, destroy, destroy_fill));
+            //ta.add_3term(vec, TM::three_term(ident, std::sqrt(2.)*matrix_elements[m], same_idx, l, k,
+            //                                 count, count_fill, create, create_fill, destroy, destroy_fill));
 
             used_elements[m] += 1;
         }
 
         // 9887 7371 8727
 
+/*
         // 4-fold degenerate (+spin) V_ijil = V_ijli = V_jiil = V_jili  <--- coded
         //                           V_ilij = V_ilji = V_liij = V_liji
         else if ( ((i==k && j!=l) || j==k || (j==l && i!=k)) && (i!=j && k!=l)) {
@@ -593,6 +599,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             used_elements[m] += 1;
         }
+*/
 
     } // matrix_elements for
 

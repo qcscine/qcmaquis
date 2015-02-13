@@ -80,11 +80,11 @@ namespace ts_ops_detail
                 ret[*it2] += product * p1.scale() * p2.scale();
 
                 //if (op_spins.size() > 1) {
-                //    maquis::cout << "b1, b2, b3 " << b1 << "," << b2 << "," << b3 << " coupling to Spin: " << *it2
-                //                 << " (" << mpo1.left_spin(b1).get() << " -> " << mpo1.right_spin(b2).get() << " -> "
-                //                 << mpo2.right_spin(b3).get() << ")" << std::endl;
-                //    maquis::cout << p1.op() * p1.scale() << std::endl << p2.op() * p2.scale() << std::endl;
-                //    maquis::cout << "Product\n" << product * p1.scale() * p2.scale();
+                    maquis::cout << "b1, b2, b3 " << b1 << "," << b2 << "," << b3 << " coupling to Spin: " << *it2
+                                 << " (" << mpo1.left_spin(b1).get() << " -> " << mpo1.right_spin(b2).get() << " -> "
+                                 << mpo2.right_spin(b3).get() << ")" << std::endl;
+                    maquis::cout << p1.op() * p1.scale() << std::endl << p2.op() * p2.scale() << std::endl;
+                    maquis::cout << "Product\n" << product * p1.scale() * p2.scale();
                 //}
             }
         }
@@ -152,10 +152,10 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
                 {
                     scaled_tag = kron_handler.get_kronecker_table()->checked_register(it->second);
                     prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
-                    //if (coupled_ops.size() > 1) {
-                    //    maquis::cout << "SUM| b1, b3 " << b1 << "," << b3 << " Spin: " << it->first << std::endl;
-                    //    maquis::cout << it->second << std::endl;
-                    //}
+                    if (coupled_ops.size() > 1) {
+                        maquis::cout << "SUM| b1, b3 " << b1 << "," << b3 << " Spin: " << it->first << std::endl;
+                        maquis::cout << it->second << std::endl;
+                    }
                 }
 
             }
