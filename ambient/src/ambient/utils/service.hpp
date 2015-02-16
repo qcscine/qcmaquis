@@ -64,7 +64,7 @@ namespace ambient {
         static fptr_t fptr;
     };
 
-    #ifdef AMBIENT_BUILD_LIBRARY
+    #ifdef AMBIENT_GLOBALS
     mkl_parallel::fptr_t mkl_parallel::fptr = NULL;
     #endif
 

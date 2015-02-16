@@ -59,7 +59,7 @@ elseif(${BLAS_LAPACK_SELECTOR} MATCHES "veclib")
     set(MAQUISLapack_LIBRARIES "/usr/lib/libpthread.dylib")
     set(MAQUISLapack_LINKER_FLAGS "-framework veclib")
   else(APPLE)
-    meassage(FATAL_ERROR "VecLib available only on Mac.")
+    message(FATAL_ERROR "VecLib available only on Mac.")
   endif(APPLE)
   
   
@@ -69,7 +69,7 @@ elseif(${BLAS_LAPACK_SELECTOR} MATCHES "manual")
 else() # auto mode
   find_package(LAPACK)
   if(LAPACK_FOUND)
-    set(MAQUISLapack_LIBRARIES LAPACK_LIBRARIES)
+    set(MAQUISLapack_LIBRARIES ${LAPACK_LIBRARIES})
   endif(LAPACK_FOUND)
   
 endif()

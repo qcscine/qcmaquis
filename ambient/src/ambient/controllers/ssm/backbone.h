@@ -69,7 +69,7 @@ namespace ambient {
     typedef backbone<ambient::context_mt> backbone_type;
     #endif
 
-    #ifdef AMBIENT_BUILD_LIBRARY
+    #ifdef AMBIENT_GLOBALS
     backbone_type selector;
     void sync(){ selector.sync(); }
     #else

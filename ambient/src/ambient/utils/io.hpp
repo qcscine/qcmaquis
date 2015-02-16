@@ -103,7 +103,7 @@ namespace ambient { namespace utils {
 } }
 
 namespace ambient {
-    #ifdef AMBIENT_BUILD_LIBRARY
+    #ifdef AMBIENT_GLOBALS
     utils::mpostream cout;
     utils::mpostream cerr;
     #else

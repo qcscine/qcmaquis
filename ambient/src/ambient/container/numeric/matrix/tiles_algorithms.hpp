@@ -436,6 +436,11 @@ namespace ambient { namespace numeric {
         }
     }
 
+    template<typename T, int IB>
+    inline void gemm(const tiles<diagonal_matrix<T>, IB>& a, const tiles<diagonal_matrix<T>, IB>& b, tiles<diagonal_matrix<T>, IB>& c){
+        for(int i = 0; i < c.nt; i++) gemm(a[i], b[i], c[i]);
+    }
+
     template<class Matrix, class DiagonalMatrix, int IB>
     inline void svd(tiles<Matrix, IB> a, tiles<Matrix, IB>& u, tiles<Matrix, IB>& v, tiles<DiagonalMatrix, IB>& s){
         size_t m = num_rows(a);

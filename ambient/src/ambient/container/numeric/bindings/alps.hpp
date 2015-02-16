@@ -25,18 +25,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef AMBIENT_CONTAINER_NUMERIC_BINDINGS
-#define AMBIENT_CONTAINER_NUMERIC_BINDINGS
+#ifndef AMBIENT_CONTAINER_NUMERIC_BINDINGS_ALPS
+#define AMBIENT_CONTAINER_NUMERIC_BINDINGS_ALPS
+
+#include "ambient/container/numeric/bindings/types.hpp"
 
 namespace ambient { namespace numeric { namespace bindings {
 
     // {{{ overloaded convertion functions
-    template <typename T, typename D, int IB>
-    void convert(ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T>, IB>& pm, const ambient::numeric::tiles<ambient::numeric::diagonal_matrix<D>, IB>& m){
-        for(size_t k = 0; k < m.data.size(); ++k)
-            ambient::numeric::kernels::template cast_double_complex<T,D>(pm[k],m[k]);
-    } 
-
     template <typename T, typename S, template<class M, class SS> class C>
     void convert(std::vector< std::vector<T> >& set, const C<ambient::numeric::diagonal_matrix<T>, S>& m){
         for(size_t k = 0; k < m.n_blocks(); ++k) 
@@ -205,21 +201,6 @@ namespace ambient { namespace numeric { namespace bindings {
         ambient::sync();
     }
     // }}}
-
-    template <typename O, typename I> struct adaptor {};
-
-    template <typename O, typename I> O cast(I const& input){
-       return adaptor<O,I>::convert(input);
-    }
-
-    template <typename T, typename D, int IB>
-    struct adaptor< ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T>, IB>, ambient::numeric::tiles<ambient::numeric::diagonal_matrix<D>, IB> >{
-        static ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T>, IB> convert(const ambient::numeric::tiles<ambient::numeric::diagonal_matrix<D>, IB>& m){
-            ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T>, IB> pm(num_rows(m), num_cols(m));
-            ambient::numeric::bindings::template convert<T,D>(pm, m);
-            return pm;
-        }
-    };
 
     template <typename T, typename S, template<class M, class SS> class C>
     struct adaptor< std::vector< std::vector<T> >, C<ambient::numeric::diagonal_matrix<T>, S> > {

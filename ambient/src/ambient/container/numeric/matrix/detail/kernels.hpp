@@ -234,6 +234,15 @@ namespace ambient { namespace numeric { namespace kernels {
                     mkl::blas<T>::axpy(&size, &alfa[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
             }
         }
+
+        template<typename T>
+        void gemm_diagonal(const matrix<T>& a, const matrix<T>& b, unbound< matrix<T> >& c){
+            const T* ad = a.data();
+            const T* bd = b.data();
+            T* cd = c.data();
+            size_t size = b.num_rows();
+            for(int k = 0 ; k < size; k++) cd[k] = ad[k]*bd[k];
+        }
        
         template<typename T>
         void copy_rt(const matrix<T>& a, unbound< matrix<T> >& t){
@@ -686,6 +695,7 @@ namespace ambient { namespace numeric { namespace kernels {
     AMBIENT_EXPORT_TEMPLATE(detail::gemm_fma, gemm_fma)
     AMBIENT_EXPORT_TEMPLATE(detail::gemm_diagonal_lhs, gemm_diagonal_lhs)
     AMBIENT_EXPORT_TEMPLATE(detail::gemm_diagonal_rhs, gemm_diagonal_rhs)
+    AMBIENT_EXPORT_TEMPLATE(detail::gemm_diagonal, gemm_diagonal)
     AMBIENT_EXPORT_TEMPLATE(detail::trace, trace)
     AMBIENT_EXPORT_TEMPLATE(detail::scalar_norm, scalar_norm)
     AMBIENT_EXPORT_TEMPLATE(detail::overlap, overlap)

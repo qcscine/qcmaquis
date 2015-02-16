@@ -46,10 +46,10 @@ namespace ambient { namespace memory {
     };
 
     struct fixed {
-        // note: singleton_pool contains implicit mutex (critical for gcc)
-        template<size_t S> static void* malloc(){ return std::malloc(S);   } // boost::singleton_pool<fixed,S>::malloc(); 
-        template<size_t S> static void* calloc(){ return std::calloc(1,S); } // boost::singleton_pool<fixed,S>::malloc(); 
-        template<size_t S> static void free(void* ptr){ std::free(ptr);    } // boost::singleton_pool<fixed,S>::free(ptr);
+        // boost::singleton_pool<fixed,S> can be used instead (implicit mutex)
+        template<size_t S> static void* malloc(){ return std::malloc(S);   }
+        template<size_t S> static void* calloc(){ return std::calloc(1,S); }
+        template<size_t S> static void free(void* ptr){ std::free(ptr);    }
     };
 
 } }

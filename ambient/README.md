@@ -36,6 +36,10 @@ Ambient
   manually set the desired threading implementation  
   [compiler dependent]
 
+- AMBIENT_DISABLE_MPI
+  set this define to disable MPI support
+  [not set]
+
 - AMBIENT_MPI_THREADING  
   desired level of MPI threading (note: Ambient calls MPI routines through the main thread)  
   [MPI_THREAD_FUNNELED]

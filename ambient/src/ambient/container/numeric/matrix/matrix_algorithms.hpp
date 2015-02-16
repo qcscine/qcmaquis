@@ -100,23 +100,28 @@ namespace ambient { namespace numeric {
     template<class MatrixViewA, class MatrixViewB, typename T, class A>
     inline void gemm_fma(const MatrixViewA& a, const MatrixViewB& b, matrix<T,A>& c){
         if(ambient::weak(a) || ambient::weak(b)) return;
-        kernels::template gemm_fma<MatrixViewA,MatrixViewB,matrix<T,A>,T>(a, b, c); 
+        kernels::template gemm_fma<MatrixViewA,MatrixViewB,matrix<T,A>,T>(a, b, c);
     }
 
     template<class MatrixViewA, class MatrixViewB, typename T, class A>
     inline void gemm(const MatrixViewA& a, const MatrixViewB& b, matrix<T,A>& c){
         if(ambient::weak(a) || ambient::weak(b)) return;
-        kernels::template gemm<MatrixViewA,MatrixViewB,matrix<T,A>,T>(a, b, c); 
+        kernels::template gemm<MatrixViewA,MatrixViewB,matrix<T,A>,T>(a, b, c);
     }
 
     template<class MatrixViewA, typename T, typename D, class A>
     inline void gemm(const MatrixViewA& a, const diagonal_matrix<D>& b, matrix<T,A>& c){ 
-        kernels::template gemm_diagonal_rhs<MatrixViewA,T,D>(a, b, c); 
+        kernels::template gemm_diagonal_rhs<MatrixViewA,T,D>(a, b, c);
     }
 
     template<class MatrixViewB, typename T, typename D, class A>
     inline void gemm(const diagonal_matrix<D>& a, const MatrixViewB& b, matrix<T,A>& c){ 
-        kernels::template gemm_diagonal_lhs<MatrixViewB,T,D>(a, b, c); 
+        kernels::template gemm_diagonal_lhs<MatrixViewB,T,D>(a, b, c);
+    }
+
+    template<typename T>
+    inline void gemm(const diagonal_matrix<T>& a, const diagonal_matrix<T>& b, diagonal_matrix<T>& c){
+        kernels::template gemm_diagonal<T>(a, b, c);
     }
 
     template<typename T, class A>
