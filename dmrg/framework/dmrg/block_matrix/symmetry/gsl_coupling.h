@@ -45,10 +45,11 @@ namespace SU2 {
                                   two_jg, two_jh, two_ji);
         if (debug)
         {
-            maquis::cout << two_ja << two_jb << two_jc << std::endl
-                         << two_jd << two_je << two_jf << std::endl
-                         << two_jg << two_jh << two_ji << std::endl;
-            maquis::cout << "9j: " << ret << std::endl << std::endl;
+            maquis::cout << "   ";
+            maquis::cout << two_ja << two_jb << two_jc << " "
+                         << two_jd << two_je << two_jf << " "
+                         << two_jg << two_jh << two_ji << "   ";
+            maquis::cout << "9j: " << ret << std::endl;
 
         }
         return ret;

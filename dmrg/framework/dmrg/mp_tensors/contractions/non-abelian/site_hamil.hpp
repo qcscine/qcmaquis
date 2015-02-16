@@ -49,9 +49,11 @@ namespace contraction {
             = common::boundary_times_mps<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(ket_tensor, left, mpo);
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
-                               & left_i = ket_tensor.row_dim(),
-                               & right_i = ket_tensor.col_dim(),
-                                 out_left_i = physical_i * left_i;
+                               & left_i = ket_tensor.row_dim();
+        Index<SymmGroup> right_i = ket_tensor.col_dim(),
+                         out_left_i = physical_i * left_i;
+
+        common_subset(out_left_i, right_i);
         ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
         ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,
                                 boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),

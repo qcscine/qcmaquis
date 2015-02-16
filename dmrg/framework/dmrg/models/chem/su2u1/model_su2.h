@@ -439,9 +439,8 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // V_ijij == V_jiji = V_ijji = V_jiij
         else if ( i==k && j==l && i!=j) {
             if (std::max(i,j) < 3) continue;
-            //if (std::max(i,j) == 6) continue;
-            if (std::max(i,j) == 7) continue;
-            if (std::max(i,j) == 8 && std::min(i,j) != 7) continue;
+            //if (std::max(i,j) == 7) continue;
+            //if (std::max(i,j) == 8 && std::min(i,j) != 7) continue;
 
             //this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, e2d, d2e));
             //this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, d2e, e2d));
