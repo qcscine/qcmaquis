@@ -39,7 +39,7 @@ namespace ambient {
         void** f;
     };
 
-    #ifdef AMBIENT_BUILD_LIBRARY
+    #ifdef AMBIENT_GLOBALS
     void* fence::nptr = NULL;
     #endif
 

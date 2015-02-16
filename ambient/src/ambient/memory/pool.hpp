@@ -46,10 +46,10 @@ namespace ambient { namespace memory {
     };
 
     struct fixed {
-        // note: singleton_pool contains implicit mutex (critical for gcc)
-        template<size_t S> static void* malloc(){ return std::malloc(S);   } // boost::singleton_pool<fixed,S>::malloc(); 
-        template<size_t S> static void* calloc(){ return std::calloc(1,S); } // boost::singleton_pool<fixed,S>::malloc(); 
-        template<size_t S> static void free(void* ptr){ std::free(ptr);    } // boost::singleton_pool<fixed,S>::free(ptr);
+        // boost::singleton_pool<fixed,S> can be used instead (implicit mutex)
+        template<size_t S> static void* malloc(){ return std::malloc(S);   }
+        template<size_t S> static void* calloc(){ return std::calloc(1,S); }
+        template<size_t S> static void free(void* ptr){ std::free(ptr);    }
     };
 
 } }
@@ -107,16 +107,12 @@ namespace ambient { namespace pool {
         assert(d.region != region_t::delegated);
         if(d.region == region_t::bulk){
             #ifdef AMBIENT_USE_DATA_BULK
-            if(!data_bulk::open() || d.extent > AMBIENT_IB*AMBIENT_IB*16){  // <-- handle it separately
-                d.region = region_t::standard;
-                return malloc<standard>(d.extent);
-            }
-            return malloc<data_bulk>(d.extent); 
-            #else
-            d.region = region_t::standard;
-            return malloc<standard>(d.extent);
+            void* ptr = data_bulk::soft_malloc(d.extent);
+            if(ptr) return ptr;
             #endif
-        } else return malloc<standard>(d.extent);
+            d.region = region_t::standard;
+        }
+        return malloc<standard>(d.extent);
     }
     static void free(void* ptr, descriptor& d){ 
         if(ptr == NULL || d.region == region_t::delegated) return;

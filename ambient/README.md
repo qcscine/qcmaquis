@@ -36,6 +36,10 @@ Ambient
   manually set the desired threading implementation  
   [compiler dependent]
 
+- AMBIENT_DISABLE_MPI
+  set this define to disable MPI support
+  [not set]
+
 - AMBIENT_MPI_THREADING  
   desired level of MPI threading (note: Ambient calls MPI routines through the main thread)  
   [MPI_THREAD_FUNNELED]
@@ -58,10 +62,6 @@ Ambient
                                             
 - AMBIENT_MEMPTF_CHECK_BOUNDARIES  
   checks memory boundaries overflow in every memptf call (used for 2D memory copies)  
-  [not set]
-                                            
-- AMBIENT_LOOSE_FUTURE  
-  more aggressive lazy evaluation of futures (not safe)  
   [not set]
 
 

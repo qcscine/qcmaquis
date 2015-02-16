@@ -34,6 +34,11 @@ template<class T, class SymmGroup>
 class block_matrix;
 
 namespace maquis { namespace dmrg { namespace detail {
+
+    template<class Matrix, class Generator>
+    void generate_impl(Matrix & m, Generator g){
+        generate(m, g);
+    }
         
     template<class InputIterator, class OutputIterator, class T>
     void iterator_axpy(InputIterator in1, InputIterator in2,

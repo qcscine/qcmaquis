@@ -30,15 +30,12 @@
 
 namespace ambient { 
 
-    // note: classes below are dervied from boost
-    // and need to be reworked for cilk and openmp
-
     template <typename M>
     class guard {
     private:
         M& mtx;
         guard(const guard &);
-        void operator=(const guard &);
+        void operator= (const guard &);
     public:
         explicit guard(M& nmtx) : mtx(nmtx){ mtx.lock(); }
         ~guard(){ mtx.unlock(); }
@@ -49,37 +46,34 @@ namespace ambient {
         pthread_mutex_t m;
     public:
         mutex(mutex const&) = delete;
-        mutex& operator=(mutex const&) = delete;
+        mutex& operator= (mutex const&) = delete;
 
         mutex(){
             int const res = pthread_mutex_init(&m,NULL);
-            if(res) printf("failed in pthread_mutex_init");
+            assert(res == 0);
         }
        ~mutex(){
             int ret;
             do{ ret = pthread_mutex_destroy(&m);
             } while(ret == EINTR);
         }
-
         void lock(){
             int res;
             do{ res = pthread_mutex_lock(&m);
             }while (res == EINTR);
-            if(res) printf("mutex lock failed");
+            assert(res == 0);
         }
-
         void unlock(){
             int res;
             do{ res = pthread_mutex_unlock(&m);
             } while(res == EINTR);
-            if(res) printf("mutex unlock failed");
+            assert(res == 0);
         }
-
         bool try_lock(){
             int res;
             do{ res = pthread_mutex_trylock(&m);
             } while(res == EINTR);
-            if(res==EBUSY) return false;
+            if(res == EBUSY) return false;
             return !res;
         }
     };

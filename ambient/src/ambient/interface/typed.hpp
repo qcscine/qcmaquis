@@ -287,7 +287,7 @@ namespace ambient {
     };
     template <bool HAS, typename T> struct checked_get_allocator {};
     template <typename T> struct checked_get_allocator<true, T> { typedef typename T::allocator_type type; };
-    template <typename T> struct checked_get_allocator<false, T> { typedef typename ambient::default_allocator<T> type; }; // or T::value_type
+    template <typename T> struct checked_get_allocator<false, T> { typedef typename ambient::default_allocator<typename T::value_type> type; };
     template <typename T> struct get_allocator { typedef typename checked_get_allocator<has_allocator<T>::value, T>::type type; };
 
     template <class T> struct unbound : public T {

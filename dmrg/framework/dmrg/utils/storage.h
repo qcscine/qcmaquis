@@ -69,7 +69,7 @@ namespace storage {
 }
 #ifdef USE_AMBIENT
 namespace ambient { namespace numeric {
-    template <typename Matrix> class tiles;
+    template <typename Matrix, int IB> class tiles;
     template <typename T, class Allocator> class matrix;
 } }
 namespace storage {

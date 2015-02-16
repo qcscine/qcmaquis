@@ -25,5 +25,5 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#define AMBIENT_BUILD_LIBRARY
+#define AMBIENT_GLOBALS
 #include "ambient/ambient.hpp"

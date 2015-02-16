@@ -28,7 +28,7 @@
 #ifndef AMBIENT
 #define AMBIENT
 // {{{ system includes
-#ifndef DISABLE_MPI
+#ifndef AMBIENT_DISABLE_MPI
 #include <mpi.h>
 #endif
 #include <complex>
@@ -51,6 +51,7 @@
 #include <algorithm>
 #include <execinfo.h>
 #include <stdexcept>
+#include <type_traits>
 // }}}
 
 #define AMBIENT_IB                    2048
