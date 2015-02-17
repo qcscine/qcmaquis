@@ -29,6 +29,7 @@
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/mp_tensors/twositetensor.h"
 
 #include "dmrg/mp_tensors/special_mpos.h"
 #include "dmrg/mp_tensors/contractions.h"
@@ -96,6 +97,41 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
         parallel::guard proc(scheduler(i));
         if (verbose)
             maquis::cout << "expval site " << (size_t)i << std::endl;
+        left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+    }
+    
+    return maquis::real(left[0].trace());
+}
+
+template<class Matrix, class SymmGroup>
+double twosite_expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
+                      bool verbose = false)
+{
+    parallel::scheduler_balanced scheduler(mps.length());
+    assert(mpo.length() == mps.length());
+    std::size_t L = mps.length();
+    
+    Boundary<Matrix, SymmGroup> left = mps.left_boundary();
+
+    //for(size_t i = 0; i < L%2; ++i) {
+    //    maquis::cout << "expval site " << i << std::endl;
+    //    left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+    //}
+    
+    for(size_t i = 0; i < L-1; i+=2) {
+        maquis::cout << "expval site " << i << std::endl;
+        parallel::guard proc(scheduler(i));
+
+        TwoSiteTensor<Matrix, SymmGroup> tst(mps[i], mps[i+1]);
+        MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
+
+        MPOTensor<Matrix, SymmGroup> ts_mpo = make_twosite_mpo<Matrix, Matrix>(mpo[i], mpo[i+1], mps[i].site_dim(), mps[i+1].site_dim());
+
+        left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(twin_mps, twin_mps, left, ts_mpo);
+    }
+
+    for(size_t i = L-L%2; i < L; ++i) {
+        maquis::cout << "expval site " << i << std::endl;
         left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
     }
     

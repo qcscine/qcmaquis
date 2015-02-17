@@ -62,7 +62,8 @@ namespace SU2 {
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
 
-        bool debug = (mpo.col_dim() == 1);
+        bool debug = false;
+        //bool debug = (mpo.col_dim() == 1);
         //bool debug = track_it(W);
         if(debug) {
             maquis::cout << "right_i   : " << right_i << std::endl;

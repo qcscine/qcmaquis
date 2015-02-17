@@ -68,6 +68,9 @@ public:
             mpoc.compress(1e-12);
 
         double energy = maquis::real(expval(mps, mpoc));
+        maquis::cout << "SS energy expval: " << energy << std::endl;
+               energy = maquis::real(twosite_expval(mps, mpoc));
+        maquis::cout << "TS energy expval: " << energy << std::endl;
 
         if (parms["MEASURE[Energy]"]) {
             maquis::cout << "Energy: " << maquis::real(expval(mps, mpoc)) << std::endl;
