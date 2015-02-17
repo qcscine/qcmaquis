@@ -202,7 +202,7 @@ namespace measurements {
 								
 								this->vector_results.push_back(dct);
 								this->labels.push_back(lbt[0]);
-							}   // end if
+							} 
 
 						} // i loop
 					} // j loop

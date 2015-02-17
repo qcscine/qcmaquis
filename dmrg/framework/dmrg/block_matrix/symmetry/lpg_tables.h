@@ -33,6 +33,145 @@
 #include <alps/numeric/matrix.hpp>
 
 template<class S>
+std::vector<S> generate_adjoin_table_Ci()
+{
+    int num_irreps = 4;
+    std::vector<S> adjoin_table(num_irreps);
+    adjoin_table.push_back(0);
+    adjoin_table.push_back(1);
+    adjoin_table.push_back(2);
+    adjoin_table.push_back(3);
+
+    return adjoin_table;
+}
+
+template<class S>
+alps::numeric::matrix<S> generate_mult_table_Ci()
+{
+    int num_irreps = 4;
+    alps::numeric::matrix<S> mult_table(num_irreps,num_irreps);
+    mult_table(0,0) = 0;
+    mult_table(0,1) = 1;
+    mult_table(0,2) = 2;
+    mult_table(0,3) = 3;
+    mult_table(1,0) = 1;
+    mult_table(1,1) = 0;
+    mult_table(1,2) = 3;
+    mult_table(1,3) = 2;
+    mult_table(2,0) = 2;
+    mult_table(2,1) = 3;
+    mult_table(2,2) = 0;
+    mult_table(2,3) = 1;
+    mult_table(3,0) = 3;
+    mult_table(3,1) = 2;
+    mult_table(3,2) = 1;
+    mult_table(3,3) = 0;
+
+    return mult_table;
+}
+
+template<class S>
+std::vector<S> generate_adjoin_table_Cs_C2()
+{
+    int num_irreps = 4;
+    std::vector<S> adjoin_table(num_irreps);
+    for(int i = 0; i < num_irreps/2; ++i)
+        adjoin_table[i] = i;
+
+    for(int i = num_irreps/2; i < num_irreps; ++i)
+        adjoin_table[i] = i + pow(-1,i);
+
+    return adjoin_table;
+}
+
+template<class S>
+alps::numeric::matrix<S> generate_mult_table_Cs_C2()
+{
+    int num_irreps = 4;
+    alps::numeric::matrix<S> mult_table(num_irreps,num_irreps);
+    mult_table(0,0) = 0;
+    mult_table(0,1) = 1;
+    mult_table(0,2) = 2;
+    mult_table(0,3) = 3;
+    mult_table(1,0) = 1;
+    mult_table(1,1) = 0;
+    mult_table(1,2) = 3;
+    mult_table(1,3) = 2;
+    mult_table(2,0) = 2;
+    mult_table(2,1) = 3;
+    mult_table(2,2) = 1;
+    mult_table(2,3) = 0;
+    mult_table(3,0) = 3;
+    mult_table(3,1) = 2;
+    mult_table(3,2) = 0;
+    mult_table(3,3) = 1;
+
+    return mult_table;
+}
+
+template<class S>
+std::vector<S> generate_adjoin_table_C2h()
+{
+    int num_irreps = 8;
+    std::vector<S> adjoin_table(num_irreps);
+    for(int i = 0; i < num_irreps/2; ++i)
+        adjoin_table[i] = i;
+
+    for(int i = num_irreps/2; i < num_irreps; ++i)
+        adjoin_table[i] = i + pow(-1,i);
+
+    return adjoin_table;
+}
+
+template<class S>
+alps::numeric::matrix<S> generate_mult_table_C2h()
+{
+    int num_irreps = 8;
+    alps::numeric::matrix<S> mult_table(num_irreps,num_irreps);
+    for(int j = 0; j < num_irreps; ++j) {
+        for(int i = 0; i < num_irreps; ++i) {
+            if(i < 4 && j < 4) {
+                if(i == j)
+                    mult_table(i,j) = 0;
+                else if( (i+j == 2) || (i+j == 6) )
+                    mult_table(i,j) = 1;
+                else if( i+j == 4)
+                    mult_table(i,j) = 3;
+                else
+                    mult_table(i,j) = 2;
+            } else if(i >= 4 && j >= 4) {
+                if(i == j)
+                    mult_table(i,j) = 1;
+                else if( i+j == 12)
+                    mult_table(i,j) = 2;
+                else if( (i+j == 10) || (i+j == 15) )
+                    mult_table(i,j) = 0;
+                else
+                    mult_table(i,j) = 3;
+            } else {
+                if(i+j == 8)
+                    mult_table(i,j) = 7;
+                else if( (i+j == 6) || (i+j == 10) )
+                    mult_table(i,j) = 5;
+                else if( (i+j == 5) || (i+j == 11) )
+                    mult_table(i,j) = 4;
+                else if( (i == 5) && (j == 1) )
+                    mult_table(i,j) = 4;
+                else if( (i == 1) && (j == 5) )
+                    mult_table(i,j) = 4;
+                else if( (i == 2) && (j == 6) )
+                    mult_table(i,j) = 4;
+                else if( (i == 6) && (j == 2) )
+                    mult_table(i,j) = 4;
+                else
+                    mult_table(i,j) = 6;
+            }
+        }
+    }
+    return mult_table;
+}
+
+template<class S>
 std::vector<S> generate_adjoin_table_Cinf()
 {
 	//TODO: num_irreps should be a member of the symmetry class
