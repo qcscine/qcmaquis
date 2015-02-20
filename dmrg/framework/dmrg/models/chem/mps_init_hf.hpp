@@ -38,6 +38,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
                 typename SymmGroup::charge right_end,
                 std::vector<int> const& site_type)
     : parms(parms_)
+    , init_bond_dimension(parms["init_bond_dimension"])
     , phys_dims(phys_dims_)
     , site_types(site_type)
     , di(parms, phys_dims_, right_end, site_type)
@@ -48,7 +49,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
-        di.init_sectors(mps, 5, true, 0);
+        di.init_sectors(mps, init_bond_dimension, true, 0);
 
         std::vector<std::size_t> hf_init = parms["hf_occ"];
 
@@ -114,6 +115,7 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
     }
 
     BaseParameters parms;
+    std::size_t init_bond_dimension;
     std::vector<Index<SymmGroup> > phys_dims;
     std::vector<int> site_types;
     default_mps_init<Matrix, SymmGroup> di;

@@ -110,13 +110,13 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
 	}
 
 	//--- Print left allowed terms ---//
-	//std::cout << std::endl;
+	//maquis::cout << std::endl;
 	//for (int i = 0; i < L+1; ++i)
 	//{
-	//	std::cout << "Left allowed sectors on site: " << i << std::endl;
-	//	std::cout << left_allowed[i] << std::endl;
+	//	maquis::cout << "Left allowed sectors on site: " << i << std::endl;
+	//	maquis::cout << left_allowed[i] << std::endl;
 	//}
-	//std::cout << std::endl;
+	//maquis::cout << std::endl;
 
 
     cmaxi=maximum_total_charge; cmini=minimum_total_charge;
@@ -141,12 +141,13 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
         }
     }
 	
-	//for (int i = L; i > -1; --i)
-	//{
-	//	std::cout << "Right allowed sectors on site: " << i << std::endl;
-	//	std::cout << right_allowed[i] << std::endl;
-	//}
-	//std::cout << std::endl;
+    //--- Print right allowed terms ---//
+	for (int i = L; i > -1; --i)
+	{
+		maquis::cout << "Right allowed sectors on site: " << i << std::endl;
+		maquis::cout << right_allowed[i] << std::endl;
+	}
+	maquis::cout << std::endl;
 
     for (int i = 0; i < L+1; ++i) {
         allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
@@ -156,8 +157,8 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                                  left_allowed[i].size_of_block(it->first),
                                  right_allowed[i].size_of_block(it->first));
 
-		//std::cout << "Common subset of allowed sectors on site: " << i << std::endl;
-		//std::cout << allowed[i] << std::endl;
+		maquis::cout << "Common subset of allowed sectors on site: " << i << std::endl;
+		maquis::cout << allowed[i] << std::endl;
     }
     
     return allowed;

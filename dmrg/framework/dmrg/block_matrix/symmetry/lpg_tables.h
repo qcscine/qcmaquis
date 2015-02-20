@@ -33,14 +33,38 @@
 #include <alps/numeric/matrix.hpp>
 
 template<class S>
+std::vector<S> generate_adjoin_table_C1()
+{
+    int num_irreps = 2;
+    std::vector<S> adjoin_table(num_irreps);
+    adjoin_table[0] = 0;
+    adjoin_table[1] = 1;
+
+    return adjoin_table;
+}
+
+template<class S>
+alps::numeric::matrix<S> generate_mult_table_C1()
+{
+    int num_irreps = 2;
+    alps::numeric::matrix<S> mult_table(num_irreps,num_irreps);
+    mult_table(0,0) = 0;
+    mult_table(0,1) = 1;
+    mult_table(1,0) = 1;
+    mult_table(1,1) = 0;
+
+    return mult_table;
+}
+
+template<class S>
 std::vector<S> generate_adjoin_table_Ci()
 {
     int num_irreps = 4;
     std::vector<S> adjoin_table(num_irreps);
-    adjoin_table.push_back(0);
-    adjoin_table.push_back(1);
-    adjoin_table.push_back(2);
-    adjoin_table.push_back(3);
+    adjoin_table[0] = 0;
+    adjoin_table[1] = 1;
+    adjoin_table[2] = 2;
+    adjoin_table[3] = 3;
 
     return adjoin_table;
 }
@@ -245,6 +269,112 @@ alps::numeric::matrix<S> generate_mult_table_Cinf()
             irrep  = mj2rep[shift+mi];
             jrrep  = mj2rep[shift+mj];
             ijrrep = mj2rep[shift+mij];
+            mult_table(irrep-1,jrrep-1) = ijrrep-1;
+        }
+    }
+
+    return mult_table;
+}
+
+template<class S>
+std::vector<S> generate_adjoin_table_Cinfh()
+{
+	//TODO: num_irreps should be a member of the symmetry class
+	//      accessible from outside
+    int num_irreps = 128;
+    int num_boson_irreps = num_irreps/2;
+    int num_gerade  = num_boson_irreps/2;
+    std::vector<S> adjoin_table(num_irreps);
+
+    // boson irreps
+    adjoin_table[0] = 0;
+    adjoin_table[num_gerade] = num_gerade;
+
+    for (int i = 1; i < num_gerade - 1; ++i) {
+        adjoin_table[i] = i + pow(-1,i+1);
+        adjoin_table[num_gerade + i] = num_gerade + i + pow(-1,i+1);
+    }
+
+    adjoin_table[num_gerade-1] = num_gerade - 1;
+    adjoin_table[num_boson_irreps-1] = num_boson_irreps -1;
+
+    // fermion irreps
+    for (int i = num_boson_irreps; i < num_irreps; ++i) {
+        adjoin_table[i] = i + pow(-1,i);
+    }
+
+    return adjoin_table;
+}
+  
+template<class S>
+alps::numeric::matrix<S> generate_mult_table_Cinfh()
+{
+	//TODO: num_irreps should be a member of the symmetry class
+	//      accessible from outside
+    int num_irreps = 128;
+    int shift = num_irreps/4;
+    int irrep = 0;
+    int mj = 0;
+    alps::numeric::matrix<S> mj2rep(num_irreps/2+1,2);
+    alps::numeric::matrix<S> mult_table(num_irreps,num_irreps);
+
+    for(int ifsym = 0; ifsym < 2; ++ifsym){
+        mj = 0;
+        irrep = irrep + 1;
+        mj2rep(shift+mj,ifsym) = irrep;
+
+        // populate mj2rep vector with boson and fermion irreps
+        for(mj = 2; mj <= num_irreps/4-2; mj+=2){
+            irrep++;
+            mj2rep(shift+mj,ifsym) = irrep;
+            irrep++;
+            mj2rep(shift-mj,ifsym) = irrep;
+        }
+
+        mj = num_irreps/4;
+        irrep++;
+        mj2rep(shift+mj,ifsym) = irrep;
+        mj2rep(shift-mj,ifsym) = irrep;
+    }
+
+    for(int ifsym = 0; ifsym < 2; ++ifsym){
+        for(mj = 1; mj <= num_irreps/4-1; mj+=2){
+            irrep++;
+            mj2rep(shift+mj,ifsym) = irrep;
+            irrep++;
+            mj2rep(shift-mj,ifsym) = irrep;
+        }
+    }
+
+    // build multiplication table
+    int mij = 0;
+    int jrrep = 0;
+    int ijrrep = 0;
+    for(int mi = -num_irreps/4; mi <= num_irreps/4; mi++){
+        for(mj = -num_irreps/4; mj <= num_irreps/4; mj++){
+            mij = mi + mj;
+            if(mij <  -num_irreps/4){mij = mij + num_irreps/2;}
+            if(mij >   num_irreps/4){mij = mij - num_irreps/2;}
+            if(mij == -num_irreps/4){mij = num_irreps/4;}
+
+            irrep  = mj2rep(shift+mi, 1);
+            jrrep  = mj2rep(shift+mj, 1);
+            ijrrep = mj2rep(shift+mij,1);
+            mult_table(irrep-1,jrrep-1) = ijrrep-1;
+
+            irrep  = mj2rep(shift+mi, 2);
+            jrrep  = mj2rep(shift+mj, 1);
+            ijrrep = mj2rep(shift+mij,2);
+            mult_table(irrep-1,jrrep-1) = ijrrep-1;
+
+            irrep  = mj2rep(shift+mi, 1);
+            jrrep  = mj2rep(shift+mj, 2);
+            ijrrep = mj2rep(shift+mij,2);
+            mult_table(irrep-1,jrrep-1) = ijrrep-1;
+
+            irrep  = mj2rep(shift+mi, 2);
+            jrrep  = mj2rep(shift+mj, 2);
+            ijrrep = mj2rep(shift+mij,1);
             mult_table(irrep-1,jrrep-1) = ijrrep-1;
         }
     }
