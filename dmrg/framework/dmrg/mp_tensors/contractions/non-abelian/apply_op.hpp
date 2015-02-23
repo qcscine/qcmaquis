@@ -35,15 +35,6 @@
 namespace contraction {
 namespace SU2 {
 
-    template<class Matrix, class SymmGroup>
-    bool track_it(block_matrix<Matrix, SymmGroup> const & op)
-    {
-        if (op.n_blocks() == 1) return true;
-        if (std::abs(op.basis().left_charge(0)[0] - op.basis().right_charge(0)[0]) == 2)
-            return true;
-        return false;
-    }
-
     template<class Matrix, class OtherMatrix, class SymmGroup>
     void lbtm_kernel(size_t b2,
                      ContractionGrid<Matrix, SymmGroup>& contr_grid,
@@ -62,15 +53,6 @@ namespace SU2 {
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
         typedef typename SymmGroup::charge charge;
 
-        bool debug = false;
-        //bool debug = (mpo.col_dim() == 1);
-        //bool debug = track_it(W);
-        if(debug) {
-            maquis::cout << "right_i   : " << right_i << std::endl;
-            maquis::cout << "out_left_i: " << out_left_i << std::endl;
-            maquis::cout << "ket_basis : " << ket_basis << std::endl << std::endl;
-        }
-
         col_proxy col_b2 = mpo.column(b2);
         for (typename col_proxy::const_iterator col_it = col_b2.begin(); col_it != col_b2.end(); ++col_it) {
             index_type b1 = col_it.index();
@@ -78,17 +60,12 @@ namespace SU2 {
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
             MPOTensor_detail::term_descriptor<Matrix, SymmGroup, true> access = mpo.at(b1,b2);
 
-            if (debug) maquis::cout << "lbtm b1,b2: " << b1 << "," << b2 << std::endl << std::endl;
-
         for (std::size_t op_index = 0; op_index < access.size(); ++op_index)
         {
             block_matrix<Matrix, SymmGroup> const & W = access.op(op_index);
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
-            ret.spin = couple(left[b1].spin, W.spin);
-            int a = left[b1].spin.get(), k = W.spin.get(), ap = ret.spin.get();
-            assert(a == mpo.left_spin(b1).get() && ap == mpo.right_spin(b2).get());
-            if (debug) {maquis::cout << "  WBase: " << W.basis() << std::endl;}
+            int a = mpo.left_spin(b1).get(), k = W.spin.get(), ap = mpo.right_spin(b2).get();
 
             for (size_t lblock = 0; lblock < left[b1].n_blocks(); ++lblock) {
 
@@ -128,9 +105,9 @@ namespace SU2 {
                         int j = mc[1], jp = out_r_charge[1];
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
-                        //typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip, debug);
+                        typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                         //if (std::abs(coupling_coeff) < 1.e-40) continue;
-                        //coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale;
+                        coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
 
                         size_t phys_s1 = W.basis().left_size(w_block);
                         size_t phys_s2 = W.basis().right_size(w_block);
@@ -140,49 +117,32 @@ namespace SU2 {
                         Matrix const & iblock = T[t_block];
                         Matrix & oblock = ret[o];
 
-                        if(debug)
-                        maquis::cout << "    access " << mc << " + " << phys_in<< "|" << out_r_charge << " -- "
-                                 << lc << " + " << phys_out << "|" << out_l_charge
-                                 << " T(" << lc << "," << rc << "): +" << in_right_offset
-                                 << "(" << T.basis().left_size(t_block) << "x" << r_size << ")|" << T.basis().right_size(t_block) << " -> +"
-                                 << out_left_offset << "(" << T.basis().left_size(t_block) << "x" << r_size << ")|" << out_left_i.size_of_block(out_l_charge)
-                                 << std::endl;
-                                 //<< " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << " " << coupling_coeff * wblock(0,0) << std::endl;
-
                         //maquis::dmrg::detail::lb_tensor_mpo(oblock, iblock, wblock,
                         //        out_left_offset, in_right_offset,
                         //        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, coupling_coeff);
 
-                        typename Matrix::value_type c_eff = 555555;//coupling_coeff;
+                        typename Matrix::value_type c_eff = coupling_coeff;
                         size_t ldim = T.basis().left_size(t_block);
                         for(size_t rr = 0; rr < r_size; ++rr) {
                             for(size_t ss1 = 0; ss1 < phys_s1; ++ss1) {
                                 for(size_t ss2 = 0; ss2 < phys_s2; ++ss2) {
                                     if (ss1 == 2 && ss2 == 2) {
-                                        int ip_loc = (ip == 0 && k == 2) ? ip : ip;
-                                        int jp_loc = (jp == 0 && k == 2) ? jp : jp;
-                                        if(debug) maquis::cout << "      " << std::setw(12) << wblock(ss1,ss2);
-                                        c_eff = ::SU2::mod_coupling(j, 2, jp_loc, a,k,ap, i, 2, ip_loc, debug);
+                                        c_eff = ::SU2::mod_coupling(j, 2, jp, a,k,ap, i, 2, ip);
+                                        c_eff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
                                     }
                                     else if (ss1 == 2) {
                                         // jp ~ out_r_charge ~ phys_in
-                                        int jp_loc = (jp == 0 && k == 2) ? jp : jp;
-                                        if(debug) maquis::cout << "      " << std::setw(12) << wblock(ss1,ss2);
-                                        c_eff = ::SU2::mod_coupling(j, 2, jp_loc, a,k,ap, i, two_sp, ip, debug);
+                                        c_eff = ::SU2::mod_coupling(j, 2, jp, a,k,ap, i, two_sp, ip);
+                                        c_eff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
                                     }
                                     else if (ss2 == 2) {
                                         // ip ~ out_l_charge ~ phys_out
-                                        int ip_loc = (ip == 0 && k == 2) ? ip : ip;
-                                        if(debug) maquis::cout << "      " << std::setw(12) << wblock(ss1,ss2);
-                                        c_eff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2, ip_loc, debug);
+                                        c_eff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2, ip);
+                                        c_eff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
                                     }
                                     else {
-                                        if(debug) maquis::cout << "      " << std::setw(12) << wblock(ss1,ss2);
-                                        c_eff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip, debug);
-                                        //c_eff = coupling_coeff;
+                                        c_eff = coupling_coeff;
                                     }
-
-                                    c_eff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
 
                                     typename Matrix::value_type alfa_t = wblock(ss1, ss2) * c_eff;
                                     maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size + rr),
@@ -192,7 +152,6 @@ namespace SU2 {
                                 }
                             }
                         }
-                        if(debug) maquis::cout << "\n    " << ret << std::endl;
 
                     } // wblock
                 } // ket matches
@@ -283,13 +242,6 @@ namespace SU2 {
                         Matrix const & wblock = W[w_block];
                         Matrix const & iblock = T[t_block];
                         Matrix & oblock = ret[o];
-
-                        //maquis::cout << "access " << mc << " - " << phys_out<< "|" << out_r_charge << " -- "
-                        //         << lc << " - " << phys_in << "|" << out_l_charge
-                        //         << " T(" << lc << "," << rc << "): +" << in_left_offset
-                        //         << "(" << l_size << "x" << T.basis().right_size(t_block) << ")|" << T.basis().left_size(t_block) << " -> +"
-                        //         << out_right_offset << "(" << l_size << "x" << T.basis().right_size(t_block) << ")|" << out_right_i.size_of_block(out_r_charge)
-                        //         << " * " << j << two_s << jp << a << k << ap << i << two_sp << ip << " " << coupling_coeff * wblock(0,0) << std::endl;
 
                         maquis::dmrg::detail::rb_tensor_mpo(oblock, iblock, wblock,
                                 out_right_offset, in_left_offset,

@@ -40,11 +40,6 @@ namespace contraction {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
-        //maquis::cout << ket_tensor.row_dim() << std::endl;
-        //maquis::cout << ket_tensor.site_dim() << std::endl;
-        //maquis::cout << ket_tensor.col_dim() << std::endl;
-        //maquis::cout << "sh2 input ket data:\n";
-        //maquis::cout << ket_tensor.data() << std::endl;
         std::vector<block_matrix<Matrix, SymmGroup> > t
             = common::boundary_times_mps<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(ket_tensor, left, mpo);
 
@@ -90,16 +85,6 @@ namespace contraction {
             block_matrix<Matrix, SymmGroup> tmp;
             ::SU2::gemm(contr_grid(0,0), right[b2], tmp);
 
-            //maquis::cout << contr_grid(0,0).left_basis() << std::endl;
-            //maquis::cout << contr_grid(0,0).right_basis() << std::endl;
-            //maquis::cout << "  *\n";
-            //maquis::cout << right[b2].left_basis() << std::endl;
-            //maquis::cout << right[b2].right_basis() << std::endl;
-            //maquis::cout << "  -->\n";
-            //maquis::cout << tmp.left_basis() << std::endl;
-            //maquis::cout << tmp.right_basis() << std::endl << std::endl;
-            //maquis::cout << "-------------------------------------------\n";
-
             contr_grid(0,0).clear();
             parallel_critical
             for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
@@ -107,8 +92,6 @@ namespace contraction {
                 ret.data().match_and_add_block(tmp[k], tmp.basis().left_charge(k), tmp.basis().right_charge(k));
         });
 #endif
-        //maquis::cout << "sh2 output ket data:\n";
-        //maquis::cout << ret.data() << std::endl;
         return ret;
     }
 
