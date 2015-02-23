@@ -83,12 +83,11 @@ namespace contraction {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
             SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
             block_matrix<Matrix, SymmGroup> tmp;
-            ::SU2::gemm(contr_grid(0,0), right[b2], tmp);
+            ::SU2::gemm_trim(contr_grid(0,0), right[b2], tmp);
 
             contr_grid(0,0).clear();
             parallel_critical
             for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
-                if (tmp.basis().left_charge(k) == tmp.basis().right_charge(k))
                 ret.data().match_and_add_block(tmp[k], tmp.basis().left_charge(k), tmp.basis().right_charge(k));
         });
 #endif
