@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2013-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -100,8 +100,8 @@ public:
 
 //////////////////////////////////////////////////
 
-template <class SymmGroup, class PGTag>
-class PGCharge_
+template <class SymmGroup, class = void>
+class PGCharge
 {
 public:
     typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, int irr)
@@ -111,7 +111,7 @@ public:
 };
 
 template <class SymmGroup>
-class  PGCharge_<SymmGroup, symm_traits::PGat2>
+class  PGCharge<SymmGroup, typename boost::enable_if<symm_traits::HasPG<SymmGroup> >::type>
 {
 public:
     typedef typename SymmGroup::subcharge subcharge;
@@ -119,16 +119,6 @@ public:
     {
         rhs[2] = irr;
         return rhs;
-    }
-};
-
-template <class SymmGroup>
-class PGCharge
-{
-public:
-    typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, int irr)
-    { 
-        return PGCharge_<SymmGroup, typename symm_traits::PGType<SymmGroup>::type>()(rhs, irr);
     }
 };
 

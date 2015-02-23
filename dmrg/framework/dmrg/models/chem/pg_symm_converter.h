@@ -41,7 +41,7 @@
 
 template <class Matrix, class SymmGroup> class PGSymmetryConverter_impl_;
 
-template <class Matrix, class SymmGroup>
+template <class Matrix, class SymmGroup, class = void>
 class PGSymmetryConverter
 {
 public:
@@ -50,30 +50,17 @@ public:
 private:
 };
 
-template <class Matrix>
-class PGSymmetryConverter<Matrix, TwoU1PG>
+template <class Matrix, class SymmGroup>
+class PGSymmetryConverter<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasPG<SymmGroup> >::type>
 {
 public:
     PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
-    void convert_tags_to_symm_tags(MPO<Matrix, TwoU1PG> & mpo_in)
+    void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in)
     {
         impl_.convert_tags_to_symm_tags(mpo_in);
     } 
 private:
-    PGSymmetryConverter_impl_<Matrix, TwoU1PG> impl_;
-};
-
-template <class Matrix>
-class PGSymmetryConverter<Matrix, SU2U1PG>
-{
-public:
-    PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
-    void convert_tags_to_symm_tags(MPO<Matrix, SU2U1PG> & mpo_in)
-    {
-        impl_.convert_tags_to_symm_tags(mpo_in);
-    } 
-private:
-    PGSymmetryConverter_impl_<Matrix, SU2U1PG> impl_;
+    PGSymmetryConverter_impl_<Matrix, SymmGroup> impl_;
 };
 
 //*******************************************************************
