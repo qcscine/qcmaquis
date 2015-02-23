@@ -190,8 +190,7 @@ namespace SU2 {
             block_matrix<Matrix, SymmGroup> const & W = access.op(op_index);
 
             // note minus sign, as we move the boundary to the left
-            ret.spin = couple(right[b2].spin, -W.spin);
-            int ap = right[b2].spin.get(), k = W.spin.get(), a = ret.spin.get();
+            int a = mpo.left_spin(b1).get(), k = W.spin.get(), ap = mpo.right_spin(b2).get();
 
             for (size_t ketblock = 0; ketblock < ket_basis.size(); ++ketblock) {
 
