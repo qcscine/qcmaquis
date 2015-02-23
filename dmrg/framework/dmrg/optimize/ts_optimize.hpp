@@ -212,10 +212,6 @@ public:
             double cutoff = this->get_cutoff(sweep);
             std::size_t Mmax = this->get_Mmax(sweep);
             truncation_results trunc;
-
-            maquis::cout << "old rows1: " << mps[site1].row_dim() << std::endl;
-            maquis::cout << "old cols1: " << mps[site1].col_dim() << std::endl;
-            maquis::cout << "old cols2: " << mps[site2].col_dim() << std::endl;
             
     	    if (lr == +1)
     	    {
@@ -308,10 +304,6 @@ public:
                 { parallel::guard proc(scheduler_mps(site1)); storage::migrate(mps[site1]); }
                 { parallel::guard proc(scheduler_mps(site2)); storage::migrate(mps[site2]); }
     	    }
-
-            maquis::cout << "new rows1: " << mps[site1].row_dim() << std::endl;
-            maquis::cout << "new cols1: " << mps[site1].col_dim() << std::endl;
-            maquis::cout << "new cols2: " << mps[site2].col_dim() << std::endl;
             
             iteration_results_["BondDimension"]     << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"]   << trunc.truncated_weight;
