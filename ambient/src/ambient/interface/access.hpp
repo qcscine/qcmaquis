@@ -34,14 +34,36 @@ namespace ambient {
 
     using ambient::models::ssm::revision;
 
+    template<typename V>
+    inline void merge(const V& src, V& dst){
+        assert(dst.ambient_rc.desc->current == NULL);
+        if(weak(src)) return;
+        revision* r = src.ambient_rc.desc->back();
+        dst.ambient_rc.desc->current = r;
+        // do not deallocate or reuse
+        if(!r->valid() && r->state != ambient::locality::remote){
+            assert(r->spec.region != region_t::delegated);
+            r->spec.protect();
+        }
+        assert(!r->valid() || !r->spec.bulked() || ambient::models::ssm::model::remote(r)); // can't rely on bulk memory
+        r->spec.crefs++;
+    }
+
+    template<typename V>
+    inline void swap_with(V& left, V& right){
+        std::swap(left.ambient_rc.desc, right.ambient_rc.desc);
+        left.ambient_after = left.ambient_rc.desc->current;
+        right.ambient_after = right.ambient_rc.desc->current;
+    }
+
     template <typename T> static revision& naked(T& obj){
         return *obj.ambient_rc.desc->current;
     }
 
     template <typename T> static bool exclusive(T& obj){
-        selector.get_controller().touch(obj.ambient_rc.desc);
+        ambient::select().get_controller().touch(obj.ambient_rc.desc);
         revision& c = *obj.ambient_rc.desc->current;
-        if(selector.get_actor().remote()){
+        if(ambient::select().get_actor().remote()){
             c.state = ambient::locality::remote;
             c.owner = ambient::which();
             return true;
@@ -53,7 +75,7 @@ namespace ambient {
     }
 
     template <typename T> static T& load(T& obj){ 
-        selector.get_controller().touch(obj.ambient_rc.desc);
+        ambient::select().get_controller().touch(obj.ambient_rc.desc);
         ambient::sync(); 
         revision& c = *obj.ambient_rc.desc->current;
         assert(c.state == ambient::locality::local || c.state == ambient::locality::common);
@@ -76,7 +98,7 @@ namespace ambient {
         c.embed(get_allocator<T>::type::calloc(c.spec));
     }
 
-    template <typename T> static void revise(unbound< T >& obj){
+    template <typename T> static void revise(volatile T& obj){
         revision& c = *obj.ambient_after; if(c.valid()) return;
         revision& p = *obj.ambient_before;
         if(p.valid() && p.locked_once() && !p.referenced() && c.spec.conserves(p.spec)) c.reuse(p);

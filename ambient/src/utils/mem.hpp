@@ -1,5 +1,5 @@
-#ifndef UTILS_MEM_H
-#define UTILS_MEM_H
+#ifndef UTILS_MEM_HPP
+#define UTILS_MEM_HPP
 
 /* author:  David Robert Nadeau
  * Site:    http://NadeauSoftware.com/

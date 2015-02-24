@@ -28,7 +28,6 @@
 #ifndef AMBIENT_UTILS_TIMINGS
 #define AMBIENT_UTILS_TIMINGS
 #include "ambient/ambient.hpp"
-#include "ambient/utils/io.hpp"
 
 namespace ambient {
 
@@ -76,7 +75,7 @@ namespace ambient {
             return val;
         }
         void report(){
-            if(ambient::master()) std::cout << "R" << ambient::rank() << ": " << name << " " << val << ", count : " << count << "\n";
+            std::cout << "R" << ambient::rank() << ": " << name << " " << val << ", count : " << count << "\n";
         }
         void reset(){
             this->val = 0;

@@ -25,6 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#ifdef AMBIENT_SERIAL_COLLECTION
 #ifndef AMBIENT_CONTROLLERS_SSM_CONTEXT_SERIAL
 #define AMBIENT_CONTROLLERS_SSM_CONTEXT_SERIAL
 
@@ -46,6 +47,9 @@ namespace ambient {
         void join();
         void diverge(int);
     };
+
+    typedef context_serial context;
 }
 
+#endif
 #endif

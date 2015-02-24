@@ -41,13 +41,15 @@ namespace ambient {
             size.set(a.size());
         }
         template<class T, class Allocator>
-        void init_value_vector(unbound< ambient::vector<T,Allocator> >& a, T& value){
-            a.resize(a.cached_size());
-            for(size_t i = 0; i < a.size(); ++i) a[i] = value;
+        void init_value_vector(volatile ambient::vector<T,Allocator>& a, T& value){
+            ambient::vector<T,Allocator>& a_ = const_cast<ambient::vector<T,Allocator>&>(a);
+            a_.resize(a_.cached_size());
+            for(size_t i = 0; i < a_.size(); ++i) a_[i] = value;
         }
         template<class T, class Allocator, class OtherAllocator = Allocator>
-        void copy_vector(unbound< ambient::vector<T,Allocator> >& dst, const ambient::vector<T,OtherAllocator>& src, const size_t& n){
-            for(size_t i = 0; i < n; ++i) dst[i] = src[i];
+        void copy_vector(volatile ambient::vector<T,Allocator>& dst, const ambient::vector<T,OtherAllocator>& src, const size_t& n){
+            ambient::vector<T,Allocator>& dst_ = const_cast<ambient::vector<T,Allocator>&>(dst);
+            for(size_t i = 0; i < n; ++i) dst_[i] = src[i];
         }
         template<typename T, typename Allocator>
         void add(ambient::vector<T,Allocator>& a, const ambient::vector<T,Allocator>& b){

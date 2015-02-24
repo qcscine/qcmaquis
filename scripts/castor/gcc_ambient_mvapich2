@@ -30,8 +30,6 @@ module load cmake
 COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
 COMMON_PLASMA_LIB_DIR="$PLASMA_ROOT/lib"
 COMMON_PLASMA_LIBRARIES="-lplasma -lcoreblas -llapacke -lquark /apps/castor/intel-2013/compiler/lib/intel64/libimf.a /apps/castor/intel-2013/compiler/lib/intel64/libirc.a"
-AMBIENT_FUNCTIONAL_REGRESSION_TESTS=ON
-AMBIENT_PERFORMANCE_REGRESSION_TESTS=ON
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
 

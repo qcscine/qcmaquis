@@ -31,7 +31,7 @@
 namespace ambient {
 
     inline void meminfo(){
-        typedef ambient::numeric::future<double> real_type;
+        typedef ambient::future<double> real_type;
         std::vector<real_type> peaks; peaks.reserve(ambient::scope::size());
         std::vector<real_type> currents; currents.reserve(ambient::scope::size());
        

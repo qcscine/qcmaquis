@@ -29,8 +29,9 @@
 #define UTILS_PARALLEL_UTILS_HPP
 
 #ifdef USE_AMBIENT
+#include "utils/mkl_parallel.hpp"
 #include "ambient/container/future.hpp"
-#include "ambient/utils/meminfo.h"
+#include "ambient/utils/meminfo.hpp"
 #else
 #include "dmrg/utils/proc_status.h"
 #endif

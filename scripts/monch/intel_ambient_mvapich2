@@ -13,7 +13,15 @@ MPI_WRAPPER_VERSION=1.9
 MAQUIS_INSTALL=$ROOT_DIR/_installs/monch/$CONFIG_NAME
 echo $MAQUIS_INSTALL
 
-module load gcc/4.8.1 alps/r7398/intel-14.0.1
+module load gcc/4.8.1
+module load hdf5/1.8.12-intel14.0.1
+module load python/2.7.5-intel-14.0.1
+module load boost/1.54-mvapich-intel
+module load mvapich2/1.9-intel
+module load intel/14.0.1
+module load cmake
+module load alps/r7398/intel-14.0.1
+
 export CC=icc
 export CXX=icpc
 
@@ -28,18 +36,15 @@ export MV2_VBUF_TOTAL_SIZE=24k
 export PATH=${MAQUIS_INSTALL}/bin:${PATH}
 
 COMMON_CMAKE_INSTALL_PREFIX=${MAQUIS_INSTALL}
-
-#COMMON_CMAKE_C_COMPILER=mycc
-#COMMON_CMAKE_CXX_COMPILER=myCC
-#COMMON_MPI_CXX_FOUND=TRUE
 COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
-COMMON_PLASMA_LIB_DIR="$HOME/apps/monch/plasma-intel/lib"
+COMMON_PLASMA_LIB_DIR="/apps/castor/plasma-2.4.6/lib"
+COMMON_ALPS_ROOT_DIR=$ALPS_ROOT
+AMBIENT_AMBIENT_REGRESSION_TESTS=ON
+AMBIENT_AMBIENT_THIRD_PARTY_TESTS=ON
 ## dmrg ##
-DMRG_ALPS_ROOT_DIR=$ALPS_ROOT
 DMRG_ENABLE_OMP=OFF
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
-
 
 source $ROOT_DIR/scripts/common/common.sh 
 execute $*

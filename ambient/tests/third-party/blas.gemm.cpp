@@ -1,4 +1,3 @@
-#define AMBIENT_OMP
 #include "utils/testing.hpp"
 
 TEST_CASE( "Matrix multiplication performance measured", "[blas::gemm]" )

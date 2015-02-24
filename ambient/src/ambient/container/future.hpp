@@ -28,7 +28,7 @@
 #ifndef AMBIENT_CONTAINER_FUTURE_HPP
 #define AMBIENT_CONTAINER_FUTURE_HPP
 
-namespace ambient { namespace numeric {
+namespace ambient {
 
     using namespace ambient::models::ssm;
     using ambient::memory::fixed;
@@ -145,9 +145,6 @@ namespace ambient { namespace numeric {
                          transformable_expr<T, decltype(&op_plus<T>), op_plus>(a, b)
                         ); 
     }
-    inline double sqrt(const future<double>& f){ 
-        return std::sqrt(f.load());
-    }
     template<typename T>
     T operator / (const future<T>& l, const future<T>& r){
         return (l.load() / r.load());
@@ -163,6 +160,19 @@ namespace ambient { namespace numeric {
     template<typename T>
     T operator / (std::complex<double> l, const future<T>& r){
         return (l / r.load());
+    }
+
+    template<class T>
+    std::ostream& operator << (std::ostream& os, const future<T>& obj){
+        os << obj.load();
+        return os;
+    }
+}
+
+namespace ambient { namespace numeric {
+
+    inline double sqrt(const future<double>& f){ 
+        return std::sqrt(f.load());
     }
     template<typename T>
     const future<double>& real(const future<T>& f){

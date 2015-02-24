@@ -28,7 +28,7 @@
 #ifndef AMBIENT_MEMORY_DATA_BULK_HPP
 #define AMBIENT_MEMORY_DATA_BULK_HPP
 
-#include "ambient/utils/mem.h"
+#include "utils/mem.hpp"
 #define FORCE_DROP_CRITERIA 60
 
 namespace ambient { namespace memory {

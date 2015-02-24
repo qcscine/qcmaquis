@@ -95,8 +95,8 @@ namespace maquis {
     };
 
     template<>
-    struct real_type<ambient::numeric::future<std::complex<double> > > {
-        typedef typename ambient::numeric::future<double> type;
+    struct real_type<ambient::future<std::complex<double> > > {
+        typedef typename ambient::future<double> type;
     };
 
     inline double real(double f){
@@ -116,8 +116,8 @@ namespace maquis {
     }
 
     template<typename T>
-    inline const typename real_type<ambient::numeric::future<T> >::type& 
-    real(const ambient::numeric::future<T>& f){
+    inline const typename real_type<ambient::future<T> >::type& 
+    real(const ambient::future<T>& f){
         return ambient::numeric::real(f);
     }
 
@@ -125,7 +125,7 @@ namespace maquis {
              template<class AT> class A,           // allocator 
              template<class TT, class AA> class C> // vector<value_type, allocator>
     inline const C<typename real_type<T>::type, A<typename real_type<T>::type> >
-    real(const C<ambient::numeric::future<T>, A<ambient::numeric::future<T> > >& f){
+    real(const C<ambient::future<T>, A<ambient::future<T> > >& f){
         return ambient::numeric::real(f);
     }
 
@@ -151,13 +151,13 @@ namespace maquis {
         return std::sqrt(arg);
     }
 
-    inline ambient::numeric::future<double> sqrt(const ambient::numeric::future<double>& f){
+    inline ambient::future<double> sqrt(const ambient::future<double>& f){
         return ambient::numeric::sqrt(f);
     }
 
 }
 namespace ietl {
-    inline double real(const ambient::numeric::future<std::complex<double> >& f){
+    inline double real(const ambient::future<std::complex<double> >& f){
         return ambient::numeric::real(f);
     }
 }

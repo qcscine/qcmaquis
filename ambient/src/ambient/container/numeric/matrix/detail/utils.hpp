@@ -70,12 +70,12 @@ namespace ambient {
         #ifdef AMBIENT_MEMPTF_CHECK_BOUNDARIES
         if(ambient::dim(dst).x - dst_p.x < size.x || ambient::dim(dst).y - dst_p.y < size.y ||
            ambient::dim(src).x - src_p.x < size.x || ambient::dim(src).y - src_p.y < size.y){
-            ambient::cout << "Error: invalid memory movement: \n";
-            ambient::cout << "Matrix dst " << ambient::dim(dst).x << "x" << ambient::dim(dst).y << "\n";
-            ambient::cout << "Dest p " << dst_p.x << "x" << dst_p.y << "\n";
-            ambient::cout << "Matrix src " << ambient::dim(src).x << "x" << ambient::dim(src).y << "\n";
-            ambient::cout << "Src p " << src_p.x << "x" << src_p.y << "\n";
-            ambient::cout << "Block size " << size.x << "x" << size.y << "\n";
+            std::cout << "Error: invalid memory movement: \n";
+            std::cout << "Matrix dst " << ambient::dim(dst).x << "x" << ambient::dim(dst).y << "\n";
+            std::cout << "Dest p " << dst_p.x << "x" << dst_p.y << "\n";
+            std::cout << "Matrix src " << ambient::dim(src).x << "x" << ambient::dim(src).y << "\n";
+            std::cout << "Src p " << src_p.x << "x" << src_p.y << "\n";
+            std::cout << "Block size " << size.x << "x" << size.y << "\n";
             ambient::trace();
         }
         #endif

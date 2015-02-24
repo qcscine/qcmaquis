@@ -59,18 +59,19 @@
 #define AMBIENT_DATA_BULK_CHUNK       67108864 // 64 MB
 #define AMBIENT_MPI_THREADING         MPI_THREAD_FUNNELED
 
-#include "ambient/utils/dim2.h"
-#include "ambient/utils/enums.h"
+#include "ambient/utils/dim2.hpp"
 #include "ambient/utils/tree.hpp"
-#include "ambient/utils/fence.hpp"
+#include "ambient/utils/guard_once.hpp"
 #include "ambient/utils/threads.hpp"
 #include "ambient/utils/math.hpp"
 #include "ambient/utils/rank_t.hpp"
+#include "ambient/utils/io.hpp"
 
 #include "ambient/memory/pool.hpp"
 #include "ambient/memory/new.h"
 #include "ambient/memory/allocator.h"
 
+#include "ambient/models/ssm/locality.h"
 #include "ambient/models/ssm/revision.h"
 #include "ambient/models/ssm/history.h"
 #include "ambient/models/ssm/transformable.h"
@@ -98,7 +99,6 @@
 #include "ambient/controllers/ssm/backbone.h"
 
 #include "ambient/utils/auxiliary.hpp"
-#include "ambient/utils/io.hpp"
 
 #include "ambient/memory/new.hpp"
 #include "ambient/memory/allocator.hpp"

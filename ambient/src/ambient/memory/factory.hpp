@@ -65,15 +65,18 @@ namespace ambient { namespace memory {
     public:
         typedef ambient::mutex mutex;
         typedef ambient::guard<mutex> guard;
-
-        static factory& instance(){
-            static factory singleton; return singleton;
-        }
+    private:
+        factory(const factory&) = delete;
+        factory& operator=(const factory&) = delete;
         factory(){
             this->buffers.push_back(std::malloc(S));
             this->counts.push_back(0);
             this->buffer = &this->buffers[0];
             this->reuse_count = 0;
+        }
+    public:
+        static factory& instance(){
+            static factory singleton; return singleton;
         }
         static void* provide(){
             factory& s = instance();
