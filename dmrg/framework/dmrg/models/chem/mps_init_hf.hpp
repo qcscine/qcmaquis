@@ -206,10 +206,12 @@ struct hf_mps_init<Matrix, SymmGroup, typename boost::enable_if< symm_traits::Ha
                         next_bond_charges.insert(SymmGroup::fuse(*it, *it2));
                 }
 
+            #ifndef NDEBUG
             for (typename container_type::const_iterator it = next_bond_charges.begin(); it != next_bond_charges.end(); ++it)
                 maquis::cout << "site " << i << " activating sector " << *it << std::endl;
 
             maquis::cout << std::endl;
+            #endif
 
             for (typename container_type::const_iterator it = next_bond_charges.begin(); it != next_bond_charges.end(); ++it)
             {
