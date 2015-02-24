@@ -39,34 +39,16 @@
 
 // This code will become obsolete, as soon as the point group irreps are added in the model directly.
 
-template <class Matrix, class SymmGroup> class PGSymmetryConverter_impl_;
-
 template <class Matrix, class SymmGroup, class = void>
 class PGSymmetryConverter
 {
 public:
     PGSymmetryConverter(Lattice const & lat) {}
     void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in) {}
-private:
 };
 
 template <class Matrix, class SymmGroup>
 class PGSymmetryConverter<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasPG<SymmGroup> >::type>
-{
-public:
-    PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
-    void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in)
-    {
-        impl_.convert_tags_to_symm_tags(mpo_in);
-    } 
-private:
-    PGSymmetryConverter_impl_<Matrix, SymmGroup> impl_;
-};
-
-//*******************************************************************
-
-template <class Matrix, class SymmGroup>
-class PGSymmetryConverter_impl_
 {
     typedef typename SymmGroup::subcharge subcharge;
 
@@ -75,7 +57,7 @@ class PGSymmetryConverter_impl_
     typedef Lattice::pos_t pos_t;
 
 public:
-    PGSymmetryConverter_impl_(Lattice const & lat)
+    PGSymmetryConverter(Lattice const & lat)
         : site_irreps(lat.size())
     {
         for (pos_t p = 0; p < lat.size(); ++p)

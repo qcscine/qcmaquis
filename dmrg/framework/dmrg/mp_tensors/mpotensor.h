@@ -40,8 +40,7 @@
 #include "dmrg/models/op_handler.h"
 #include "dmrg/mp_tensors/mpotensor_detail.h"
 
-
-template <class Matrix, class SymmGroup> class PGSymmetryConverter_impl_;
+template <class Matrix, class SymmGroup, class Dummy> class PGSymmetryConverter;
 
 template<class Matrix, class SymmGroup>
 class MPOTensor
@@ -113,7 +112,7 @@ public:
     spin_index const & row_spin_dim() const;
     spin_index const & col_spin_dim() const;
 
-    friend class PGSymmetryConverter_impl_<Matrix, SymmGroup>;
+    friend class PGSymmetryConverter<Matrix, SymmGroup, void>;
 
     mutable std::vector<int> placement_l;
     mutable std::vector<int> placement_r;
