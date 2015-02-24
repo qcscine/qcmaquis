@@ -1,4 +1,4 @@
-compile_with_ambient()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AMBIENT_CXX_FLAGS} ${AMBIENT_THREADING_FLAGS}")
 
 add_executable( transpose   transpose.cpp )
 add_executable( resize      resize.cpp    )

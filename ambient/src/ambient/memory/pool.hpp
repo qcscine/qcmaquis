@@ -29,8 +29,9 @@
 #define AMBIENT_MEMORY_POOL
 
 #include <sys/mman.h>
-#include "ambient/utils/mutex.hpp"
+#include "ambient/utils/threads/mutex.hpp"
 #include "ambient/memory/factory.hpp"
+#include "ambient/memory/types.h"
 #include "ambient/memory/region.hpp"
 #include "ambient/memory/data_bulk.h"
 #include "ambient/memory/instr_bulk.h"

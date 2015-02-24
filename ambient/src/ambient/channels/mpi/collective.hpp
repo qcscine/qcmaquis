@@ -53,12 +53,12 @@ namespace ambient { namespace channels { namespace mpi {
             states[rank] = true;
             if(states.back()){
                 for(int i = this->tags.size(); i <= ambient::num_procs(); i++)
-                    this->tags.push_back(ambient::selector.generate_sid());
+                    this->tags.push_back(ambient::select().generate_sid());
                 for(int i = 0; i < ambient::num_procs(); i++)
                     this->states[i] = true;
             }else{
                 if(rank == ambient::rank()) this->self = tree.size();
-                this->tags.push_back(ambient::selector.get_sid());
+                this->tags.push_back(ambient::select().get_sid());
                 this->tree.push_back(rank);
             }
         }
@@ -69,7 +69,7 @@ namespace ambient { namespace channels { namespace mpi {
     }
 
     inline bool collective<typename channel::block_type>::test(){
-        if(this->guard.once()){
+        if(this->once()){
             if(states.back()){
                 this->size = ambient::num_procs();
                 this->list = &channel::setup().circle[root];
@@ -87,11 +87,11 @@ namespace ambient { namespace channels { namespace mpi {
     : bcast<typename channel::scalar_type>(v, root) {
         tags.reserve(ambient::num_procs()+1);
         for(int i = 0; i <= ambient::num_procs(); i++)
-            this->tags.push_back(ambient::selector.generate_sid());
+            this->tags.push_back(ambient::select().generate_sid());
     }
 
     inline bool collective<typename channel::scalar_type>::test(){
-        if(guard.once()){
+        if(this->once()){
             this->size = ambient::num_procs();
             this->list = &channel::setup().circle[root];
             this->self = (size + ambient::rank() - root) % size;
