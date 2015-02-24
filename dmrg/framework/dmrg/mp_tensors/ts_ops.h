@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
+ *               2013-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -35,163 +35,74 @@
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
 
-template<class MPOMatrix, class MPSMatrix, class SymmGroup>
+template <class MPOMatrix, class MPSMatrix, class SymmGroup>
 MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup> const & mpo1,
                                                  MPOTensor<MPOMatrix, SymmGroup> const & mpo2,
                                                  Index<SymmGroup> const & phys_i1,
-                                                 Index<SymmGroup> const & phys_i2,
-                                                 bool global_table)
+                                                 Index<SymmGroup> const & phys_i2)
 {
     using MPOTensor_detail::const_term_descriptor;
-
+    using boost::tuples::get;
     assert(mpo1.col_dim() == mpo2.row_dim());
+    bool shared = (mpo1.get_operator_table() == mpo2.get_operator_table());
 
     typedef typename MPOTensor<MPOMatrix, SymmGroup>::index_type index_type;
     typedef typename MPOTensor<MPOMatrix, SymmGroup>::row_proxy row_proxy;
-    typedef typename MPOTensor<MPOMatrix, SymmGroup>::col_proxy col_proxy;
-    typedef typename OPTable<MPSMatrix, SymmGroup>::tag_type tag_type;
-    typedef typename OPTable<MPSMatrix, SymmGroup>::op_t op_t;
+    typedef typename OPTable<MPOMatrix, SymmGroup>::tag_type tag_type;
+    typedef typename OPTable<MPOMatrix, SymmGroup>::op_t op_t;
     typedef typename MPSMatrix::value_type value_type;
-    typedef std::map<index_type, op_t> op_map;
-    typedef std::map<index_type, std::pair<tag_type, value_type> > op_scale_map;
     typedef std::vector<boost::tuple<index_type, index_type, tag_type, value_type> > prempo_t;
 
+    KronHandler<MPOMatrix, SymmGroup> kron_handler(mpo1.get_operator_table());
+    prempo_t prempo;
 
-    if (global_table) {
-        // Use a separate operator table for every twosite MPO Tensor - too much overhead to globally synchronize
-        // a single table
-        KronHandler<MPOMatrix, SymmGroup> kron_handler(mpo1.get_operator_table());
-        typename MPOTensor<MPOMatrix, SymmGroup>::op_table_ptr op_table = kron_handler.get_operator_table();
-
-        prempo_t prempo;
-
-        index_type b1, b2, b3;
-        for (b1=0; b1 < mpo1.row_dim(); ++b1) {
-
-            op_map out_row;
-            std::set<index_type> non_uniform;
-            op_scale_map uniform_ops;
+    index_type b1, b2, b3;
+    for (b1 = 0; b1 < mpo1.row_dim(); ++b1) {
+        for (b3 = 0; b3 < mpo2.col_dim(); ++b3) {
 
             row_proxy row1 = mpo1.row(b1);
-            for (typename row_proxy::const_iterator it1 = row1.begin(); it1 != row1.end(); ++it1) {
 
-                b2 = it1.index();
-                row_proxy row2 = mpo2.row(b2);
-                for (typename row_proxy::const_iterator it2 = row2.begin(); it2 != row2.end(); ++it2)
-                {
-                    b3 = it2.index();
-                    assert((mpo1.has(b1, b2) && mpo2.has(b2, b3)));
-                    tag_type kron_tag;
+            op_t b3_op;
+            std::pair<tag_type, value_type> scaled_tag;
+            std::set<index_type> summands;
 
-                    const_term_descriptor<MPSMatrix, SymmGroup> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
+            for (typename row_proxy::const_iterator it = row1.begin(); it != row1.end(); ++it)
+                if (mpo2.has(it.index(), b3))
+                    summands.insert(it.index());
 
-                    // Compute the Kronecker product
-                    kron_tag = kron_handler.get_kron_tag(phys_i1, phys_i2, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3));
+            if (summands.size() > 1 || (!shared && summands.size() > 0))
+            {
+                for (typename std::set<index_type>::const_iterator it = summands.begin(); it != summands.end(); ++it) {
+                    index_type b2 = *it; 
+                    const_term_descriptor<MPOMatrix, SymmGroup> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
-                    if (!kron_handler.is_uniform(mpo1.tag_number(b1,b2)) ||
-                        !kron_handler.is_uniform(mpo2.tag_number(b2,b3)) ||
-                        uniform_ops.count(b3) > 0)
-                    {
-                        non_uniform.insert(b3);
-                    }
-                    else {
-                        uniform_ops[b3].first = kron_tag;
-                        uniform_ops[b3].second = (p1.scale * p2.scale);
-                    }
-
-                    block_matrix<MPSMatrix, SymmGroup> tmp_op;
-                    tmp_op = kron_handler.get_op(kron_tag);
-                    tmp_op *= (p1.scale * p2.scale);
-                    out_row[b3] += tmp_op;
+                    op_t product;
+                    op_kron(phys_i1, phys_i2, p1.op, p2.op, product);
+                    b3_op += product * p1.scale * p2.scale;
                 }
-            }
-
-            for (b3 = 0; b3 < mpo2.col_dim(); ++b3) {
-                if (non_uniform.count(b3) == 0 && uniform_ops.count(b3) == 0)
-                    continue;
-
-                if (non_uniform.count(b3) > 0) {
-                    std::pair<tag_type, value_type> scaled_tag;
-                    tag_detail::remove_empty_blocks(out_row[b3]);
-                    scaled_tag = kron_handler.get_kronecker_table()->checked_register(out_row[b3]);
-                    prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
-                    //tag_type new_tag = kron_handler.get_kronecker_table()->register_op(out_row[b3]);
-                    //prempo.push_back(boost::make_tuple(b1, b3, new_tag, 1.0));
-                }
-                else {
-                    prempo.push_back(boost::make_tuple(b1, b3, uniform_ops[b3].first, uniform_ops[b3].second));
-                }
-            }
-
-            /*
-            #ifdef MAQUIS_OPENMP
-            #pragma omp critical
-            #endif
-            for (typename op_map::iterator it = out_row.begin(); it != out_row.end(); ++it) {
-                b3 = it->first;
-                op_t & tmp = it->second;
-                std::pair<tag_type, value_type> scaled_tag = kron_handler.get_kronecker_table()->checked_register(tmp);
+                tag_detail::remove_empty_blocks(b3_op);
+                scaled_tag = kron_handler.get_kronecker_table()->checked_register(b3_op);
                 prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
             }
-            */
-        } 
-
-
-
-        #ifdef MAQUIS_OPENMP
-        #pragma omp critical
-        #endif
-        maquis::cout << "TSMPOTensor: " << mpo1.row_dim() << "x" << mpo2.col_dim() << ",  " << prempo.size() 
-                     << " operators, " << kron_handler.get_kronecker_table()->size() << " tags\n";
-
-        using boost::tuples::get;
-        MPOTensor<MPSMatrix, SymmGroup> mpo_big_tag(mpo1.row_dim(), mpo2.col_dim(), prempo, kron_handler.get_kronecker_table());
-
-        return mpo_big_tag;
-
-    }
-
-    else {
-        prempo_t prempo;
-
-        typename MPOTensor<MPSMatrix, SymmGroup>::op_table_ptr op_table(new OPTable<MPSMatrix, SymmGroup>);
-
-        index_type b1, b2, b3;
-        for (b1=0; b1 < mpo1.row_dim(); ++b1) {
-
-            op_map out_row;
-
-            row_proxy row1 = mpo1.row(b1);
-            for (typename row_proxy::const_iterator it1 = row1.begin(); it1 != row1.end(); ++it1) {
-
-                b2 = it1.index();
-                row_proxy row2 = mpo2.row(b2);
-                for (typename row_proxy::const_iterator it2 = row2.begin(); it2 != row2.end(); ++it2)
-                {
-                    b3 = it2.index();
-                    assert((mpo1.has(b1, b2) && mpo2.has(b2, b3)));
-                    block_matrix<MPSMatrix, SymmGroup> product;
-
-                    const_term_descriptor<MPSMatrix, SymmGroup> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
-
-                    op_kron(phys_i1, phys_i2, p1.op, p2.op, product);
-                    product *= (p1.scale * p2.scale);
-                    out_row[b3] += product;
-                }
+            else if (summands.size() == 1)
+            {
+                index_type b2 = *summands.begin();
+                const_term_descriptor<MPOMatrix, SymmGroup> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
+                scaled_tag.first = kron_handler.get_kron_tag(phys_i1, phys_i2, mpo1.tag_number(b1,b2), mpo2.tag_number(b2,b3));
+                scaled_tag.second = p1.scale * p2.scale;
+                prempo.push_back(boost::make_tuple(b1, b3, scaled_tag.first, scaled_tag.second));
             }
 
-            for (typename op_map::iterator it = out_row.begin(); it != out_row.end(); ++it) {
-                b3 = it->first;
-                tag_type new_tag = op_table->register_op(it->second);
-                prempo.push_back(boost::make_tuple(b1, b3, new_tag, 1.0));
-            }
-        } 
+        } // b3
+    } // b1
 
-        using boost::tuples::get;
-        MPOTensor<MPSMatrix, SymmGroup> mpo_big(mpo1.row_dim(), mpo2.col_dim(), prempo, op_table);
-
-        return mpo_big;
-    }
+    MPOTensor<MPSMatrix, SymmGroup> mpo_big_tag(mpo1.row_dim(), mpo2.col_dim(), prempo, kron_handler.get_kronecker_table());
+    #ifdef MAQUIS_OPENMP
+    #pragma omp critical
+    #endif
+    maquis::cout << "TSMPOTensor: " << mpo1.row_dim() << "x" << mpo2.col_dim() << ",  " << prempo.size() 
+                 << " operators, " << kron_handler.get_kronecker_table()->size() << " tags\n";
+    return mpo_big_tag;
 }
 
 template<class MPOMatrix, class MPSMatrix, class SymmGroup>
@@ -201,13 +112,8 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
     std::size_t L_ts = mpo_orig.length() - 1;
     mpo_out.resize(L_ts);
 
-    bool global_table = true;    
-    for (int p=0; p<L_ts && global_table; ++p)
-        global_table = (mpo_orig[p].get_operator_table() == mpo_orig[0].get_operator_table());
-
     omp_for(size_t p, parallel::range<size_t>(0,L_ts), {
-        mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1],
-                                                            mps[p].site_dim(), mps[p+1].site_dim(), global_table);
+        mpo_out[p] = make_twosite_mpo<MPOMatrix, MPSMatrix>(mpo_orig[p], mpo_orig[p+1], mps[p].site_dim(), mps[p+1].site_dim());
     });
         
     std::size_t ntags=0;
@@ -215,7 +121,6 @@ void make_ts_cache_mpo(MPO<MPOMatrix, SymmGroup> const & mpo_orig,
         ntags += mpo_out[p].get_operator_table()->size();
     }
     maquis::cout << "Total number of tags: " << ntags << std::endl;
-
 }
 
 #endif
