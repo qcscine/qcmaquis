@@ -30,7 +30,7 @@ namespace ambient { namespace controllers { namespace ssm {
     inline void meta::spawn(revision& r, type t){
         meta* m = new meta(r, ambient::which(), t);
         if(t == type::get) r.generator = m;
-        ambient::selector.delay_transfer(m);
+        ambient::select().delay_transfer(m);
     }
     inline meta::meta(revision& r, rank_t w, type t)
     : r(r), which(w), t(t)

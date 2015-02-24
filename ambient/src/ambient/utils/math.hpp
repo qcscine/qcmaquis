@@ -30,11 +30,6 @@
 
 #define __a_ceil(x) (((double)x-(int)x) == 0 ? (int)x : (int)x+1)
 
-inline size_t __a_mod_modern(size_t size, size_t tile){
-    size_t mask[2] = {(size & (tile-1)), tile}; 
-    return mask[!mask[0]];
-}
-
 inline size_t __a_mod(size_t size, size_t tile){
     size_t m = size % tile;
     if(m == 0) m = tile;

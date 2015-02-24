@@ -25,11 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "ambient/utils/io.hpp"
-#include "ambient/utils/timings.hpp"
-#include "ambient/utils/overseer.hpp"
-#include "ambient/utils/service.hpp"
-#include "ambient/utils/mem.h"
+#include "utils/mem.hpp"
 
 namespace ambient { namespace controllers { namespace ssm {
 

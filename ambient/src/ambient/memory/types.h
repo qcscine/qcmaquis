@@ -25,5 +25,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#define AMBIENT_GLOBALS
-#include "ambient/ambient.hpp"
+#ifndef AMBIENT_MEMORY_TYPES
+#define AMBIENT_MEMORY_TYPES
+
+namespace ambient {
+    enum class region_t { bulk, standard, delegated };
+}
+
+#endif

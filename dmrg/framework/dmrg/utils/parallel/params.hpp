@@ -54,7 +54,7 @@ namespace parallel {
         groups_granularity = !isset("DMRG_GROUPS_GRANULARITY") ? 1 
                            : getint("DMRG_GROUPS_GRANULARITY");
 
-        ambient::cout << "Groups granularity: " << groups_granularity << "\n";
+        std::cout << "Groups granularity: " << groups_granularity << "\n";
     }
     inline bool parameters::isset(const char* env){
         return (std::getenv( env ) != NULL);

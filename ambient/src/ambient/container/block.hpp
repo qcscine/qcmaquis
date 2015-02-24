@@ -33,10 +33,11 @@ namespace ambient {
     template<typename T> class block;
     namespace detail { 
         template<typename T>
-        void fill_value(unbound< block<T> >& a, T& value){
-            size_t size = get_square_dim(a);
-            T* a_ = a.data();
-            for(size_t i = 0; i < size; ++i) a_[i] = value;
+        void fill_value(volatile block<T>& a, T& value){
+            block<T>& a_ = const_cast<block<T>&>(a);
+            size_t size = get_square_dim(a_);
+            T* ad = a_.data();
+            for(size_t i = 0; i < size; ++i) ad[i] = value;
         }
     }
 
@@ -59,10 +60,10 @@ namespace ambient {
         const value_type& operator()(size_t i, size_t j) const {
             return ambient::delegated(*this).data[ j*this->lda() + i ];
         }
-        value_type* data(){
+        value_type* data() volatile {
             return ambient::delegated(*this).data;
         }
-        const value_type* data() const {
+        const value_type* data() const volatile {
             return ambient::delegated(*this).data;
         }
     AMBIENT_DELEGATE

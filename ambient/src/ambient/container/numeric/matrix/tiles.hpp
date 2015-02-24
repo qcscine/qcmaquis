@@ -30,9 +30,6 @@
 
 #include "ambient/container/numeric/matrix/tiles.h"
 #include "ambient/container/numeric/matrix/tiles_algorithms.hpp"
-#ifdef AMBIENT_NUMERIC_EXPERIMENTAL
-#include "ambient/container/numeric/matrix/tiles_algorithms_experimental.hpp"
-#endif
 
 // {{{ tiles< subset_view<Matrix> >
 #define size_type typename tiles<subset_view<Matrix>, IB>::size_type

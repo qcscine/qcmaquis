@@ -1,5 +1,6 @@
 #include "ambient/ambient.hpp"
 #include "ambient/container/numeric/matrix.hpp"
+#include "utils/timings.hpp"
 
 #define N AMBIENT_IB*4 
 
@@ -19,7 +20,7 @@ int main(){
         ambient::numeric::fill_random(b.tile(i,j));
     }
 
-    ambient::timer t1("gemm"); t1.begin(); ambient::cout << "gemm (" << N << ")\n";
+    ambient::timer t1("gemm"); t1.begin(); std::cout << "gemm (" << N << ")\n";
 
     for(int k = 0; k < a.nt; k++)
     for(int j = 0; j < c.nt; j++)

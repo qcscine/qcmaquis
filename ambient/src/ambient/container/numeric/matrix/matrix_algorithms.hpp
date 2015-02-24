@@ -334,7 +334,7 @@ namespace ambient { namespace numeric {
                     num_cols(a), num_rows(a), num_cols(b), num_rows(b));
             return false;
         }
-        ambient::numeric::future<bool> ret(true);
+        ambient::future<bool> ret(true);
         kernels::template validation<T>(a, b, ret);
         return (bool)ret;
     }
@@ -347,7 +347,7 @@ namespace ambient { namespace numeric {
             return false;
         }
         transpose_inplace(a);
-        ambient::numeric::future<bool> ret(true);
+        ambient::future<bool> ret(true);
         kernels::template validation<T>(a, b, ret);
         return (bool)ret;
     }
@@ -359,7 +359,7 @@ namespace ambient { namespace numeric {
                     num_cols(a), num_rows(a), num_cols(b), num_rows(b));
             return false;
         }
-        ambient::numeric::future<bool> ret(true);
+        ambient::future<bool> ret(true);
         kernels::template validation<T>(a, b, ret);
         return (bool)ret;
     }
@@ -372,7 +372,7 @@ namespace ambient { namespace numeric {
             for(size_type j=0; j < a.num_cols(); ++j){
                 std::cout << a(i,j) << " ";
             }
-            ambient::cout << "\n";
+            std::cout << "\n";
         }
         return o;
     }
