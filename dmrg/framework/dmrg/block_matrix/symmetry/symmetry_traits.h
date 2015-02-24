@@ -37,22 +37,13 @@ namespace symm_traits {
     class SU2Tag {};
 
     template <class SymmGroup>
-    struct SymmType
-    {
-        typedef AbelianTag type;
-    };
+    struct SymmType { typedef AbelianTag type; };
 
     template <>
-    struct SymmType<SU2U1>
-    {
-        typedef SU2Tag type;
-    };
+    struct SymmType<SU2U1> { typedef SU2Tag type; };
 
     template <>
-    struct SymmType<SU2U1PG>
-    {
-        typedef SU2Tag type;
-    };
+    struct SymmType<SU2U1PG> { typedef SU2Tag type; };
 
     template <class SymmGroup> 
     struct HasSU2 : public boost::false_type {};
