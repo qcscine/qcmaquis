@@ -36,12 +36,10 @@ class MPOTensor;
 namespace MPOTensor_detail
 {
     template <class T, bool C>
-    struct const_type
-    { typedef T type; };
+    struct const_type { typedef T type; };
 
     template <class T>
-    struct const_type<T, true>
-    { typedef const T type; };
+    struct const_type<T, true> { typedef const T type; };
 
     template <class Matrix, class SymmGroup, bool Const, typename = void>
     class term_descriptor {
@@ -64,12 +62,7 @@ namespace MPOTensor_detail
     };
 
     template <class Matrix, class SymmGroup, bool Const>
-    class term_descriptor<Matrix, SymmGroup, Const,
-                          typename boost::enable_if<
-                                                    typename boost::is_same<typename symm_traits::SymmType<SymmGroup>::type,
-                                                    symm_traits::SU2Tag>::type
-                                                    >::type
-                         >
+    class term_descriptor<Matrix, SymmGroup, Const, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type >
     {
         typedef typename Matrix::value_type value_type;
         typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
