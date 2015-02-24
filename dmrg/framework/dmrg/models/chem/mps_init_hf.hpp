@@ -133,18 +133,19 @@ template<class Matrix, class SymmGroup>
 struct hf_mps_init<Matrix, SymmGroup, typename boost::enable_if< symm_traits::HasSU2<SymmGroup> >::type>
         : public mps_initializer<Matrix, SymmGroup>
 {
+    typedef Lattice::pos_t pos_t;
+    typedef std::size_t size_t;
+    typedef typename SymmGroup::charge charge;
+    typedef std::set<charge> container_type;
+
     hf_mps_init(BaseParameters parms_,
                 std::vector<Index<SymmGroup> > const& phys_dims_,
-                typename SymmGroup::charge right_end,
-                std::vector<int> const& site_type)
+                charge right_end, std::vector<int> const& site_type)
     : parms(parms_)
     , phys_dims(phys_dims_)
     , site_types(site_type)
     , di(parms, phys_dims_, right_end, site_type)
     {}
-
-    typedef Lattice::pos_t pos_t;
-    typedef std::size_t size_t;
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
@@ -164,54 +165,74 @@ struct hf_mps_init<Matrix, SymmGroup, typename boost::enable_if< symm_traits::Ha
         if (hf_init.size() != mps.length())
             throw std::runtime_error("HF occupation vector length != MPS length\n");
 
-        typename SymmGroup::charge max_charge = SymmGroup::IdentityCharge;
+        container_type bond_charges;
+        bond_charges.insert(SymmGroup::IdentityCharge);
         for (pos_t i = 0; i < mps.length(); ++i)
         {
             mps[i].multiply_by_scalar(0.0);
 
             size_t sc_input = hf_init[order[i]];
-            typename SymmGroup::charge site_charge(0);
+            container_type site_charges;
 
             if (sc_input > 4)
                 throw std::runtime_error(
                     "The hf_occ format has been changed to: 1=empty, 2=down, 3=up, 4=updown\n (not cumulative anymore)\n"
                 );
+            if (phys_dims[site_types[i]].size() != 4) throw std::runtime_error("HF init expects 4 states per orbital\n");
 
             switch(sc_input) {
                 case 4:
-                    site_charge = phys_dims[site_types[i]][0].first; // updown
+                    site_charges.insert(phys_dims[site_types[i]][0].first); // doubly-occ
                     break;
                 case 3:
-                    site_charge = phys_dims[site_types[i]][1].first; // up
+                    site_charges.insert(phys_dims[site_types[i]][1].first); // singly-occ
+                    site_charges.insert(phys_dims[site_types[i]][2].first); // singly-occ
                     break;
                 case 2:
-                    site_charge = phys_dims[site_types[i]][2].first; // down
+                    site_charges.insert(phys_dims[site_types[i]][1].first); // singly-occ
+                    site_charges.insert(phys_dims[site_types[i]][2].first); // singly-occ
                     break;
                 case 1:
-                    site_charge = phys_dims[site_types[i]][3].first; // empty
+                    site_charges.insert(phys_dims[site_types[i]][3].first); // empty
                     break;
             }
 
-            max_charge = SymmGroup::fuse(max_charge, site_charge);
+            container_type next_bond_charges;
+            for (typename container_type::const_iterator it = bond_charges.begin(); it != bond_charges.end(); ++it)
+                for (typename container_type::const_iterator it2 = site_charges.begin(); it2 != site_charges.end(); ++it2)
+                {
+                    charge sector = SymmGroup::fuse(*it, *it2);
+                    if (mps[i].col_dim().has(sector))
+                        next_bond_charges.insert(SymmGroup::fuse(*it, *it2));
+                }
 
-            // Set largest charge sector = all 1
-            size_t max_pos = mps[i].data().left_basis().position(max_charge);
-            if (max_pos >= mps[i].data().n_blocks()) {
-                maquis::cout << "ERROR: Symmetry block " << max_charge << " not found\n";
-                maquis::cout << "site " << i << ", site_charge " << site_charge << ", cumulated_charge "
-                         << max_charge << ", block_pos: "
-                         << max_pos << ", number of blocks: " << mps[i].data().n_blocks() << std::endl;
+            for (typename container_type::const_iterator it = next_bond_charges.begin(); it != next_bond_charges.end(); ++it)
+                maquis::cout << "site " << i << " activating sector " << *it << std::endl;
 
-                maquis::cout << "This error occurs if the specified HF determinant is not in the same symmetry sector as the target state\n";
-                exit(1);
+            maquis::cout << std::endl;
+
+            for (typename container_type::const_iterator it = next_bond_charges.begin(); it != next_bond_charges.end(); ++it)
+            {
+                charge max_charge = *it;
+                size_t max_pos = mps[i].data().left_basis().position(max_charge);
+                if (max_pos >= mps[i].data().n_blocks()) {
+                    maquis::cout << "ERROR: Symmetry block " << max_charge << " not found\n";
+                    maquis::cout << "site " << i << ", cumulated_charge "
+                             << max_charge << ", block_pos: "
+                             << max_pos << ", number of blocks: " << mps[i].data().n_blocks() << std::endl;
+
+                    maquis::cout << "This error occurs if the specified HF determinant is not in the same symmetry sector as the target state\n";
+                    exit(1);
+                }
+                Matrix & mfirst = mps[i].data()[max_pos];
+                size_t nrow = mfirst.num_rows();
+                size_t ncol = mfirst.num_cols();
+                // Set current charge sector = all 1
+                mps[i].data()[max_pos] = Matrix(nrow, ncol, 1.);
             }
-            Matrix & mfirst = mps[i].data()[max_pos];
-            size_t nrow = mfirst.num_rows();
-            size_t ncol = mfirst.num_cols();
-            mps[i].data()[max_pos] = Matrix(nrow, ncol, 1.);
 
             mps[i].multiply_by_scalar(1. / mps[i].scalar_norm());
-
+            std::swap(next_bond_charges, bond_charges);
         }
     }
 
