@@ -37,6 +37,12 @@ namespace maquis { namespace dmrg { namespace detail {
 
     using ambient::numeric::tiles;
 
+
+    template <class M, class Generator>
+    void generate_impl(ambient::numeric::tiles<M>& m, Generator g){
+        ambient::numeric::generate(m); // ignoring generator as not thread-safe
+    }
+
     template <typename M>
     inline void op_kron(ambient::numeric::tiles<M>& out, const ambient::numeric::tiles<M>& in, const ambient::numeric::tiles<M>& alfa,
                         size_t out_y_offset, size_t out_x_offset, 

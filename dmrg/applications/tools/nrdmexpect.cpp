@@ -36,16 +36,19 @@ using std::cerr;
 using std::cout;
 using std::endl;
 
-#include <alps/numeric/matrix.hpp>
-#include <alps/numeric/matrix/algorithms.hpp>
+#ifdef USE_AMBIENT
+#include "dmrg/block_matrix/detail/ambient.hpp"
+typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
+#else
 #include "dmrg/block_matrix/detail/alps.hpp"
+typedef alps::numeric::matrix<double> matrix;
+#endif
+
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/mp_tensors/boundary.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/contractions.h"
-
-typedef alps::numeric::matrix<double> matrix;
 
 typedef TwoU1PG grp;
 

@@ -25,6 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef AMBIENT_SERIAL_COLLECTION
 #ifndef AMBIENT_CONTROLLERS_SSM_CONTEXT_MT
 #define AMBIENT_CONTROLLERS_SSM_CONTEXT_MT
 
@@ -60,6 +61,9 @@ namespace ambient {
         std::vector<thread_context> thread_context_lane;
         divergence_guard* threaded_region;
     };
+
+    typedef context_mt context;
 }
 
+#endif
 #endif

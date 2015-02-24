@@ -30,10 +30,10 @@ namespace ambient { namespace controllers { namespace ssm {
     // {{{ transformable
 
     inline void get<transformable>::spawn(transformable& t){
-        ambient::selector.get_controller().queue(new get(t));
+        ambient::select().get_controller().queue(new get(t));
     }
     inline get<transformable>::get(transformable& t){
-        handle = ambient::selector.get_controller().get_channel().bcast(t, ambient::which());
+        handle = ambient::select().get_controller().get_channel().bcast(t, ambient::which());
     }
     inline bool get<transformable>::ready(){
         return handle->test();
@@ -44,14 +44,14 @@ namespace ambient { namespace controllers { namespace ssm {
     // {{{ revision
 
     inline void get<revision>::spawn(revision& r){
-        if(ambient::selector.threaded()){ meta::spawn(r, meta::type::get); return; }
+        if(ambient::select().threaded()){ meta::spawn(r, meta::type::get); return; }
         get*& transfer = (get*&)r.assist.second;
-        if(ambient::selector.get_controller().update(r)) transfer = new get(r);
+        if(ambient::select().get_controller().update(r)) transfer = new get(r);
         *transfer += ambient::which();
-        ambient::selector.generate_sid();
+        ambient::select().generate_sid();
     }
     inline get<revision>::get(revision& r) : t(r) {
-        handle = ambient::selector.get_controller().get_channel().get(t);
+        handle = ambient::select().get_controller().get_channel().get(t);
         t.invalidate();
     }
     inline void get<revision>::operator += (rank_t rank){
@@ -60,14 +60,14 @@ namespace ambient { namespace controllers { namespace ssm {
             t.use();
             t.generator = this;
             t.embed(ambient::pool::malloc<data_bulk>(t.spec)); 
-            ambient::selector.get_controller().queue(this);
+            ambient::select().get_controller().queue(this);
         }
     }
     inline bool get<revision>::ready(){
         return handle->test();
     }
     inline void get<revision>::invoke(){
-        ambient::selector.get_controller().squeeze(&t);
+        ambient::select().get_controller().squeeze(&t);
         t.release();
         t.complete();
     }

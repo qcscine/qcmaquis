@@ -43,7 +43,7 @@ namespace ambient { namespace channels { namespace mpi {
         int size;
         rank_t* list;
         request impl; 
-        fence guard;
+        guard_once once;
     };
 
     template<class T> class collective {};

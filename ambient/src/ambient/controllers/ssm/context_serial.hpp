@@ -25,13 +25,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#ifdef AMBIENT_SERIAL_COLLECTION
 #ifndef AMBIENT_CONTROLLERS_SSM_CONTEXT_SERIAL_HPP
 #define AMBIENT_CONTROLLERS_SSM_CONTEXT_SERIAL_HPP
 
 namespace ambient { 
 
-    inline void context_serial::init(actor* base){
-        actors.push(base);
+    inline void context_serial::init(actor* base_actor){
+        actors.push(base_actor);
     }
 
     inline void context_serial::sync(){
@@ -61,4 +62,5 @@ namespace ambient {
 
 }
 
+#endif
 #endif

@@ -32,13 +32,8 @@
 
 namespace parallel {
     
-#ifdef USE_AMBIENT
-    using ambient::cout;
-    using ambient::cerr;
-#else
     using std::cout;
     using std::cerr;
-#endif
 
 }
 

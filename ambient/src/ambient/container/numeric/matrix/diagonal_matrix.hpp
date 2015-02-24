@@ -120,14 +120,6 @@ namespace ambient { namespace numeric {
     }
 
     template<typename T>
-    inline diagonal_matrix< std::complex<T> > exp(const diagonal_matrix<T>& a, const std::complex<T>& alfa){
-        throw std::runtime_error("Error: not tested exp");
-        diagonal_matrix< std::complex<T> > e(num_rows(a), num_rows(a));
-        //kernels::exp_diagonal_rc<T>(e, a, alfa);
-        return e;
-    }
-
-    template<typename T>
     inline diagonal_matrix<T> exp(diagonal_matrix<T> a, const T& alfa = 1.){
         exp_inplace(a, alfa);
         return a;

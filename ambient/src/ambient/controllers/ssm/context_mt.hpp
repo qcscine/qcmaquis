@@ -25,6 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef AMBIENT_SERIAL_COLLECTION
 #ifndef AMBIENT_CONTROLLERS_SSM_CONTEXT_MT_HPP
 #define AMBIENT_CONTROLLERS_SSM_CONTEXT_MT_HPP
 
@@ -35,8 +36,8 @@ namespace ambient {
     {
     }
 
-    inline void context_mt::init(actor* base){
-        for(thread_context& k : thread_context_lane) k.actors.push(base);
+    inline void context_mt::init(actor* base_actor){
+        for(thread_context& k : thread_context_lane) k.actors.push(base_actor);
     }
 
     inline typename context_mt::thread_context& context_mt::get(){
@@ -73,7 +74,7 @@ namespace ambient {
             k.actors.push(thread_context_lane[0].actors.top());
             k.scopes.push(thread_context_lane[0].scopes.top());
         }
-        if(selector.has_nested_actor())
+        if(ambient::select().has_nested_actor())
         for(auto& k : thread_context_lane){
             k.actors.push(new actor(*thread_context_lane[0].actors.top()));
             k.actors.top()->controller = &k.controller;
@@ -82,7 +83,7 @@ namespace ambient {
 
     inline void context_mt::join(){
         threaded_region = NULL;
-        if(selector.has_nested_actor())
+        if(ambient::select().has_nested_actor())
         for(auto& k : thread_context_lane){
             k.actors.top()->dry = true; // avoiding destructor
             delete k.actors.top(); k.actors.pop();
@@ -98,12 +99,12 @@ namespace ambient {
     }
 
     inline context_mt::divergence_guard::divergence_guard(size_t length) : transfers(length) {
-        selector.fork(this);
+        ambient::select().fork(this);
     }
     inline context_mt::divergence_guard::~divergence_guard(){
-        selector.join();
+        ambient::select().join();
         for(auto& transfers_part : transfers) for(auto& transfer : transfers_part){
-            if(!selector.has_nested_actor()) selector.get_base().set(transfer->which);
+            if(!ambient::select().has_nested_actor()) ambient::select().get_base_actor().set(transfer->which);
             if(transfer->t == controllers::ssm::meta::type::set)
                 controllers::ssm::set<models::ssm::revision>::spawn(transfer->r);
             else
@@ -116,4 +117,5 @@ namespace ambient {
     }
 }
 
+#endif
 #endif

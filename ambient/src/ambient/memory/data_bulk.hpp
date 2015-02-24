@@ -28,7 +28,7 @@
 #ifndef AMBIENT_MEMORY_DATA_BULK_HPP
 #define AMBIENT_MEMORY_DATA_BULK_HPP
 
-#include "ambient/utils/mem.h"
+#include "utils/mem.hpp"
 #define FORCE_DROP_CRITERIA 60
 
 namespace ambient { namespace memory {
@@ -40,14 +40,19 @@ namespace ambient { namespace memory {
     inline data_bulk::data_bulk(){
         this->reuse_enabled = ambient::isset("AMBIENT_BULK_REUSE") ? true : false; 
         this->reset_enabled = ambient::isset("AMBIENT_FORCE_BULK_DEALLOCATION") ? true : false; 
-        this->limit = (ambient::isset("AMBIENT_BULK_LIMIT") ? ambient::getint("AMBIENT_BULK_LIMIT") : FORCE_DROP_CRITERIA) * 
-                      ((double)getRSSLimit() / AMBIENT_DATA_BULK_CHUNK / 100);
+        this->soft_limit = (ambient::isset("AMBIENT_BULK_LIMIT") ? ambient::getint("AMBIENT_BULK_LIMIT") : FORCE_DROP_CRITERIA) * 
+                           ((double)getRSSLimit() / AMBIENT_DATA_BULK_CHUNK / 100);
     }
 
     template<size_t S> void* data_bulk::malloc()         { return instance().memory.malloc(S);     }
                 inline void* data_bulk::malloc(size_t s) { return instance().memory.malloc(s);     }
     template<size_t S> void* data_bulk::calloc()         { void* m = malloc<S>(); memset(m, 0, S); return m; }
                 inline void* data_bulk::calloc(size_t s) { void* m = malloc(s);   memset(m, 0, s); return m; }
+
+    inline void* data_bulk::soft_malloc(size_t s){
+        if(instance().soft_limit < factory<AMBIENT_DATA_BULK_CHUNK>::size() || s > AMBIENT_IB*AMBIENT_IB*16) return NULL;
+        return malloc(s);
+    }
 
     inline void data_bulk::reuse(void* ptr){
         if(instance().reuse_enabled) factory<AMBIENT_DATA_BULK_CHUNK>::reuse(ptr); 
@@ -65,10 +70,6 @@ namespace ambient { namespace memory {
 
     inline region_t data_bulk::signature(){
         return region_t::bulk;
-    }
-
-    inline bool data_bulk::open(){
-        return instance().limit > factory<AMBIENT_DATA_BULK_CHUNK>::size();
     }
 
 } }

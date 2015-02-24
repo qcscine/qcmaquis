@@ -146,7 +146,7 @@ int main(int argc, char ** argv)
         TwoSiteTensor<matrix, grp> tst(mps[site], mps[site+1]);
         MPSTensor<matrix, grp> twin_mps = tst.make_mps();
         tst.clear();
-        MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim(), mps[site+1].site_dim(), true);
+        MPOTensor<matrix, grp> ts_mpo = make_twosite_mpo<matrix,matrix>(mpo[site], mpo[site+1], mps[site].site_dim(), mps[site+1].site_dim());
         if(lr == +1){
             ts_mpo.placement_l = mpo[site].placement_l;
             ts_mpo.placement_r = parallel::get_right_placement(ts_mpo, mpo[site].placement_l, mpo[site+1].placement_r);

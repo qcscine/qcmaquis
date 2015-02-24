@@ -30,11 +30,15 @@
 
 namespace ambient { namespace memory {
 
-    struct data_bulk {
+    class data_bulk {
+        data_bulk(const data_bulk&) = delete;
+        data_bulk& operator=(const data_bulk&) = delete;
         data_bulk();
+    public:
         static data_bulk& instance();
         template<size_t S> static void* malloc();
                            static void* malloc(size_t s);
+                           static void* soft_malloc(size_t s);
         template<size_t S> static void* calloc();
                            static void* calloc(size_t s);
                            static void reuse(void* ptr);
@@ -43,12 +47,11 @@ namespace ambient { namespace memory {
 
         static void drop();
         static region_t signature();
-        static bool open();
     private:
         region<AMBIENT_DATA_BULK_CHUNK, factory<AMBIENT_DATA_BULK_CHUNK> > memory;
         bool reuse_enabled;
         bool reset_enabled;
-        size_t limit;
+        size_t soft_limit;
     };
 
 } }

@@ -28,88 +28,28 @@
 #ifndef AMBIENT_IO
 #define AMBIENT_IO
 
-namespace ambient { 
-    namespace numeric {
-        template<typename T> class future;
-    }
-    bool verbose();
-}
-
 namespace ambient { namespace utils {
 
-    class ostream {
+    class funneled_io {
     public:
-        std::fstream nullio;
-        ostream() : nullio("/dev/null") { }
-
-        template<class T>
-        ostream& operator<<(ambient::numeric::future<T> const & obj){
-            std::cout << obj.load();
-            return *this;
+        funneled_io() : nullio("/dev/null"), latch(NULL) { }
+       ~funneled_io(){
+            disable();
         }
-
-        template<class T>
-        ostream& operator<<(T const & obj){
-            std::cout << obj;
-            return *this;
+        void enable(){
+            latch = std::cout.rdbuf();
+            std::cout.rdbuf(nullio.rdbuf());
         }
-
-        ostream& operator<<(std::ostream& (*pf)(std::ostream&)){
-            std::cout << pf;
-            return *this;
+        void disable(){
+            if(!latch) return;
+            std::cout.rdbuf(latch);
+            latch = NULL;
         }
-
-        void precision(int p){
-            std::cout.precision(p);
-        }
-
-        void flush(){
-            std::cout.flush();
-        }
-    };
-
-    class mpostream {
-    public:
-        std::fstream nullio;
-        mpostream() : nullio("/dev/null") { }
-
-        template<class T>
-        mpostream& operator<<(ambient::numeric::future<T> const & obj){
-            if(ambient::verbose()) std::cout << obj.load();
-            else nullio << obj.load();
-            return *this;
-        }
-
-        template<class T>
-        mpostream& operator<<(T const & obj){
-            if(ambient::verbose()) std::cout << obj;
-            return *this;
-        }
-
-        mpostream& operator<<(std::ostream& (*pf)(std::ostream&)){
-            if(ambient::verbose()) std::cout << pf;
-            return *this;
-        }
-
-        void precision(int p){
-            if(ambient::verbose()) std::cout.precision(p);
-        }
-
-        void flush(){
-            if(ambient::verbose()) std::cout.flush();
-        }
+    private:
+        std::ofstream nullio;
+        std::streambuf* latch;
     };
 
 } }
-
-namespace ambient {
-    #ifdef AMBIENT_BUILD_LIBRARY
-    utils::mpostream cout;
-    utils::mpostream cerr;
-    #else
-    extern utils::mpostream cout;
-    extern utils::mpostream cerr;
-    #endif
-}
 
 #endif
