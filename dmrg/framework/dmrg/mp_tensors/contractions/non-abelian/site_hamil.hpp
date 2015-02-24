@@ -31,7 +31,7 @@ namespace contraction {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     MPSTensor<Matrix, SymmGroup>
-    EngineBackEnd<Matrix, OtherMatrix, SymmGroup, SymmTraits::SU2Tag>::
+    EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_traits::SU2Tag>::
     site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,

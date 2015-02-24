@@ -39,47 +39,16 @@
 
 // This code will become obsolete, as soon as the point group irreps are added in the model directly.
 
-template <class Matrix, class SymmGroup> class PGSymmetryConverter_impl_;
-
-template <class Matrix, class SymmGroup>
+template <class Matrix, class SymmGroup, class = void>
 class PGSymmetryConverter
 {
 public:
     PGSymmetryConverter(Lattice const & lat) {}
     void convert_tags_to_symm_tags(MPO<Matrix, SymmGroup> & mpo_in) {}
-private:
 };
-
-template <class Matrix>
-class PGSymmetryConverter<Matrix, TwoU1PG>
-{
-public:
-    PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
-    void convert_tags_to_symm_tags(MPO<Matrix, TwoU1PG> & mpo_in)
-    {
-        impl_.convert_tags_to_symm_tags(mpo_in);
-    } 
-private:
-    PGSymmetryConverter_impl_<Matrix, TwoU1PG> impl_;
-};
-
-template <class Matrix>
-class PGSymmetryConverter<Matrix, SU2U1PG>
-{
-public:
-    PGSymmetryConverter(Lattice const & lat) : impl_(lat) {}
-    void convert_tags_to_symm_tags(MPO<Matrix, SU2U1PG> & mpo_in)
-    {
-        impl_.convert_tags_to_symm_tags(mpo_in);
-    } 
-private:
-    PGSymmetryConverter_impl_<Matrix, SU2U1PG> impl_;
-};
-
-//*******************************************************************
 
 template <class Matrix, class SymmGroup>
-class PGSymmetryConverter_impl_
+class PGSymmetryConverter<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasPG<SymmGroup> >::type>
 {
     typedef typename SymmGroup::subcharge subcharge;
 
@@ -88,7 +57,7 @@ class PGSymmetryConverter_impl_
     typedef Lattice::pos_t pos_t;
 
 public:
-    PGSymmetryConverter_impl_(Lattice const & lat)
+    PGSymmetryConverter(Lattice const & lat)
         : site_irreps(lat.size())
     {
         for (pos_t p = 0; p < lat.size(); ++p)
@@ -126,6 +95,7 @@ public:
             for(typename std::vector<subcharge>::const_iterator it=irrep_vector.begin(); it != irrep_vector.end(); ++it)
             {
                 op_t modified(set_symm(base_op.basis(), *it));
+
                 for (std::size_t p = 0; p < modified.n_blocks(); ++p)
                     modified[p] = base_op[p];
 
@@ -157,7 +127,8 @@ public:
 
                     // replace 'base_tag' with a tag corresponding to the same operator, but with the symmetry
                     // irreducible representation of site 'i', which is site_irreps[i]
-                    mpo_in[i].col_tags(b1, b2) = typename MPOTensor<Matrix, SymmGroup>::internal_value_type(symm_tag, access.second * coeff);
+                    mpo_in[i].col_tags(b1, b2)
+                        = typename MPOTensor<Matrix, SymmGroup>::internal_value_type(symm_tag, access.second * coeff);
                 }
             }
         }

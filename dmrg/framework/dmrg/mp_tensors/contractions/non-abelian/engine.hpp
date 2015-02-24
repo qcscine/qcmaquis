@@ -40,7 +40,7 @@
 namespace contraction {
 
     template <class Matrix, class OtherMatrix, class SymmGroup>
-    class EngineBackEnd<Matrix, OtherMatrix, SymmGroup, SymmTraits::SU2Tag>
+    class EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_traits::SU2Tag>
     {
     public:
 

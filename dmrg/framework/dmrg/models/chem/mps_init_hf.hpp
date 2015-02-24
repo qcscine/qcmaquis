@@ -30,7 +30,7 @@
 
 #include "dmrg/mp_tensors/compression.h"
 
-template<class Matrix, class SymmGroup>
+template<class Matrix, class SymmGroup, class = void>
 struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
 {
     hf_mps_init(BaseParameters parms_,
@@ -103,7 +103,6 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
                          << max_pos << ", number of blocks: " << mps[i].data().n_blocks() << std::endl;
 
                 maquis::cout << "This error occurs if the specified HF determinant is not in the same symmetry sector as the target state\n";
-                //maquis::cout << mps[i].data().left_basis() << std::endl;
                 exit(1);
             }
             Matrix & mfirst = mps[i].data()[max_pos];
@@ -122,6 +121,98 @@ struct hf_mps_init : public mps_initializer<Matrix, SymmGroup>
         //    maquis::cout << "mps[" << i << "]:\n" << mps[i] << std::endl;
         //    maquis::cout << mps[i].scalar_norm() << std::endl;
         //}
+    }
+
+    BaseParameters parms;
+    std::vector<Index<SymmGroup> > phys_dims;
+    std::vector<int> site_types;
+    default_mps_init<Matrix, SymmGroup> di;
+};
+
+template<class Matrix, class SymmGroup>
+struct hf_mps_init<Matrix, SymmGroup, typename boost::enable_if< symm_traits::HasSU2<SymmGroup> >::type>
+        : public mps_initializer<Matrix, SymmGroup>
+{
+    hf_mps_init(BaseParameters parms_,
+                std::vector<Index<SymmGroup> > const& phys_dims_,
+                typename SymmGroup::charge right_end,
+                std::vector<int> const& site_type)
+    : parms(parms_)
+    , phys_dims(phys_dims_)
+    , site_types(site_type)
+    , di(parms, phys_dims_, right_end, site_type)
+    {}
+
+    typedef Lattice::pos_t pos_t;
+    typedef std::size_t size_t;
+
+    void operator()(MPS<Matrix, SymmGroup> & mps)
+    {
+        di.init_sectors(mps, 5, true, 0);
+
+        std::vector<std::size_t> hf_init = parms["hf_occ"];
+
+        std::vector<pos_t> order(mps.length());
+        if (!parms.is_set("orbital_order"))
+            for (pos_t p = 0; p < mps.length(); ++p)
+                order[p] = p+1;
+        else
+            order = parms["orbital_order"].template as<std::vector<pos_t> >();
+
+        std::transform(order.begin(), order.end(), order.begin(), boost::lambda::_1-1);
+
+        if (hf_init.size() != mps.length())
+            throw std::runtime_error("HF occupation vector length != MPS length\n");
+
+        typename SymmGroup::charge max_charge = SymmGroup::IdentityCharge;
+        for (pos_t i = 0; i < mps.length(); ++i)
+        {
+            mps[i].multiply_by_scalar(0.0);
+
+            size_t sc_input = hf_init[order[i]];
+            typename SymmGroup::charge site_charge(0);
+
+            if (sc_input > 4)
+                throw std::runtime_error(
+                    "The hf_occ format has been changed to: 1=empty, 2=down, 3=up, 4=updown\n (not cumulative anymore)\n"
+                );
+
+            switch(sc_input) {
+                case 4:
+                    site_charge = phys_dims[site_types[i]][0].first; // updown
+                    break;
+                case 3:
+                    site_charge = phys_dims[site_types[i]][1].first; // up
+                    break;
+                case 2:
+                    site_charge = phys_dims[site_types[i]][2].first; // down
+                    break;
+                case 1:
+                    site_charge = phys_dims[site_types[i]][3].first; // empty
+                    break;
+            }
+
+            max_charge = SymmGroup::fuse(max_charge, site_charge);
+
+            // Set largest charge sector = all 1
+            size_t max_pos = mps[i].data().left_basis().position(max_charge);
+            if (max_pos >= mps[i].data().n_blocks()) {
+                maquis::cout << "ERROR: Symmetry block " << max_charge << " not found\n";
+                maquis::cout << "site " << i << ", site_charge " << site_charge << ", cumulated_charge "
+                         << max_charge << ", block_pos: "
+                         << max_pos << ", number of blocks: " << mps[i].data().n_blocks() << std::endl;
+
+                maquis::cout << "This error occurs if the specified HF determinant is not in the same symmetry sector as the target state\n";
+                exit(1);
+            }
+            Matrix & mfirst = mps[i].data()[max_pos];
+            size_t nrow = mfirst.num_rows();
+            size_t ncol = mfirst.num_cols();
+            mps[i].data()[max_pos] = Matrix(nrow, ncol, 1.);
+
+            mps[i].multiply_by_scalar(1. / mps[i].scalar_norm());
+
+        }
     }
 
     BaseParameters parms;

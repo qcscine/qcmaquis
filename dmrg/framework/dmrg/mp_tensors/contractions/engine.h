@@ -39,7 +39,7 @@ namespace contraction {
     template <class Matrix, class OtherMatrix, class SymmGroup>
     class Engine
     {
-        typedef typename SymmTraits::SymmType<SymmGroup>::type symm_type_t;
+        typedef typename symm_traits::SymmType<SymmGroup>::type symm_type_t;
 
     public:
         Engine() {}

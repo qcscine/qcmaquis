@@ -32,7 +32,7 @@ namespace contraction {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     MPSTensor<Matrix, SymmGroup>
-    EngineBackEnd<Matrix, OtherMatrix, SymmGroup, SymmTraits::AbelianTag>::
+    EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_traits::AbelianTag>::
     site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,
