@@ -40,7 +40,7 @@
 namespace contraction {
 
     template <class Matrix, class OtherMatrix, class SymmGroup>
-    class EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_traits::SU2Tag>
+    class Engine<Matrix, OtherMatrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type >
     {
     public:
 
