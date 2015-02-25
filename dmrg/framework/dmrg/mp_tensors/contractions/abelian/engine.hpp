@@ -29,13 +29,16 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include "dmrg/mp_tensors/mpstensor.h"
+#include "dmrg/mp_tensors/mpotensor.h"
+
 #include "dmrg/mp_tensors/contractions/abelian/apply_op.hpp"
 #include "dmrg/mp_tensors/contractions/common/common.h"
 
 namespace contraction {
 
-    template <class Matrix, class OtherMatrix, class SymmGroup>
-    class EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_traits::AbelianTag>
+    template <class Matrix, class OtherMatrix, class SymmGroup, class SymmType = void>
+    class Engine
     {
         // abelian functors
 
