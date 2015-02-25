@@ -44,7 +44,6 @@
 #include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/pg_util.h"
 #include "dmrg/models/chem/su2u1/chem_helper_su2.h"
-#include "dmrg/models/chem/su2u1/operator_spin_variants.h"
 #include "dmrg/models/chem/su2u1/term_maker_su2.h"
 
 template<class Matrix, class SymmGroup>
@@ -122,6 +121,8 @@ private:
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     tag_type create_fill, create, destroy_fill, destroy,
+             create_fill_couple_down, destroy_fill_couple_down,
+             create_couple_up, destroy_couple_up,
              create_fill_count, create_count, destroy_fill_count, destroy_count,
              count, docc, e2d, d2e, flip_S0, flip_to_S2, flip_to_S0,
              ident, ident_full, fill, count_fill;
@@ -236,6 +237,20 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     /*************************************************************/
 
+    op_t create_fill_couple_down_op = create_fill_op;
+    create_fill_couple_down_op.spin = one_half_down;
+
+    op_t destroy_fill_couple_down_op = destroy_fill_op;
+    destroy_fill_couple_down_op.spin = one_half_down;
+
+    op_t create_couple_up_op = create_op;
+    create_couple_up_op.spin = one_half_up;
+
+    op_t destroy_couple_up_op = destroy_op;
+    destroy_couple_up_op.spin = one_half_up;
+
+    /*************************************************************/
+
     op_t create_fill_count_op;
     create_fill_count_op.spin = one_half_up;
     create_fill_count_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
@@ -307,6 +322,11 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     REGISTER(destroy_fill, tag_detail::fermionic)
     REGISTER(destroy,      tag_detail::fermionic)
 
+    REGISTER(create_fill_couple_down,  tag_detail::fermionic)
+    REGISTER(destroy_fill_couple_down,  tag_detail::fermionic)
+    REGISTER(create_couple_up,  tag_detail::fermionic)
+    REGISTER(destroy_couple_up,  tag_detail::fermionic)
+
     REGISTER(create_fill_count,  tag_detail::fermionic)
     REGISTER(create_count,       tag_detail::fermionic)
     REGISTER(destroy_fill_count, tag_detail::fermionic)
@@ -338,14 +358,18 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 //    PRINT(d2e)
 //#undef PRINT
 
-    /**********************************************************************/
-    OperatorSpinVariants<Matrix, SymmGroup> creators(create, tag_handler);
-    OperatorSpinVariants<Matrix, SymmGroup> creators_fill(create_fill, tag_handler);
-    OperatorSpinVariants<Matrix, SymmGroup> destructors(destroy, tag_handler);
-    OperatorSpinVariants<Matrix, SymmGroup> destructors_fill(destroy_fill, tag_handler);
+    /*************************************************************/
+    typename TermMakerSU2<Matrix, SymmGroup>::OperatorBundle create_pkg, destroy_pkg;
 
-    typename TermMakerSU2<Matrix, SymmGroup>::OperatorPackage create_pkg(&creators, &creators_fill)
-                                                            , destroy_pkg(&destructors, &destructors_fill);
+    create_pkg.couple_up = create_couple_up;
+    create_pkg.couple_down = create;
+    create_pkg.fill_couple_up = create_fill;
+    create_pkg.fill_couple_down = create_fill_couple_down;
+
+    destroy_pkg.couple_up = destroy_couple_up;
+    destroy_pkg.couple_down = destroy;
+    destroy_pkg.fill_couple_up = destroy_fill;
+    destroy_pkg.fill_couple_down = destroy_fill_couple_down;
     /**********************************************************************/
 
     chem_detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, ident, ident, tag_handler);
@@ -488,12 +512,13 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             std::vector<term_descriptor> & vec = this->terms_;
 
             // Note: need minus because of clebsch gordan coeff from two destructors or two creators
-            vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill)); vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill));
+            vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill));
+            vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill));
 
             if ( same_idx < std::min(pos1,pos2) )
             {
                 this->terms_.push_back(TM::three_term(
-                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, creators_fill(2,1), destroy, destructors_fill(2,1)
+                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill
                 ));
                 ta.add_3term(vec, TM::three_term(
                     ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
@@ -501,7 +526,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
                 this->terms_.push_back(TM::three_term(
                     // note minus sign, because commutation on same_idx is not taken into account
-                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S2, flip_to_S2, create, creators_fill(2,1), destroy, destructors_fill(2,1)
+                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill_couple_down
                 ));
                 ta.add_3term(vec, TM::three_term(
                     ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
@@ -510,7 +535,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             else if (same_idx > std::max(pos1,pos2))
             {
                 this->terms_.push_back(TM::three_term(
-                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S0, flip_to_S0, creators(1,2), create_fill, destructors(1,2), destroy_fill
+                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill
                 ));
                 ta.add_3term(vec, TM::three_term(
                     ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
@@ -518,7 +543,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
                 this->terms_.push_back(TM::three_term(
                     // note minus sign, because commutation on same_idx is not taken into account
-                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S0, flip_to_S0, creators(1,2), create_fill, destructors(1,2), destroy_fill
+                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill
                 ));
                 ta.add_3term(vec, TM::three_term(
                     ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill

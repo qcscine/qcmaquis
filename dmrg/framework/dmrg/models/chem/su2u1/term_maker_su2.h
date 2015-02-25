@@ -28,8 +28,6 @@
 #ifndef QC_TERMMAKER_SU2_H
 #define QC_TERMMAKER_SU2_H
 
-#include "dmrg/models/chem/su2u1/operator_spin_variants.h"
-
 template <class M, class S>
 struct TermMakerSU2 {
 
@@ -40,19 +38,19 @@ struct TermMakerSU2 {
     typedef typename TagHandler<M, S>::tag_type tag_type;
     typedef typename term_descriptor::value_type pos_op_t;
 
-    class OperatorPackage
+    struct OperatorBundle
     {
-    public:
-        OperatorPackage(OperatorSpinVariants<M, S> * p,
-                        OperatorSpinVariants<M, S> * f) : pure(p), fill(f) {}
-        OperatorSpinVariants<M, S> * pure; 
-        OperatorSpinVariants<M, S> * fill; 
+        tag_type couple_up;
+        tag_type couple_down;
+        tag_type fill_couple_up;
+        tag_type fill_couple_down;
     };
 
-    typedef boost::tuple<tag_type, OperatorPackage> pos_bundle_t;
+    typedef boost::tuple<tag_type, OperatorBundle> pos_bundle_t;
 
     template <class Tuple>
-    static bool compare_tag(Tuple p1, Tuple p2)
+    static bool compare_tag(Tuple p1,
+                            Tuple p2)
     {
         return boost::tuples::get<0>(p1) < boost::tuples::get<0>(p2);
     }
@@ -127,7 +125,7 @@ struct TermMakerSU2 {
 
     static term_descriptor four_term(tag_type full_ident, int max_two_S,
                                      value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
-                                     OperatorPackage & op_i, OperatorPackage & op_k)
+                                     OperatorBundle op_i, OperatorBundle op_k)
     {
         using boost::tuples::get;
 
@@ -154,16 +152,16 @@ struct TermMakerSU2 {
         std::sort(sterm.begin(), sterm.end(), compare_tag<pos_bundle_t>);
 
         if (max_two_S == 2) {
-            term.push_back(boost::make_tuple(get<0>(sterm[0]), get<1>(sterm[0]).fill->operator()(0,1)));
-            term.push_back(boost::make_tuple(get<0>(sterm[1]), get<1>(sterm[1]).pure->operator()(0,1)));
-            term.push_back(boost::make_tuple(get<0>(sterm[2]), get<1>(sterm[2]).fill->operator()(1,0)));
-            term.push_back(boost::make_tuple(get<0>(sterm[3]), get<1>(sterm[3]).pure->operator()(1,0)));
+            term.push_back(boost::make_tuple(get<0>(sterm[0]), get<1>(sterm[0]).fill_couple_up));
+            term.push_back(boost::make_tuple(get<0>(sterm[1]), get<1>(sterm[1]).couple_up));
+            term.push_back(boost::make_tuple(get<0>(sterm[2]), get<1>(sterm[2]).fill_couple_down));
+            term.push_back(boost::make_tuple(get<0>(sterm[3]), get<1>(sterm[3]).couple_down));
         }
         else {
-            term.push_back(boost::make_tuple(get<0>(sterm[0]), get<1>(sterm[0]).fill->operator()(0,1)));
-            term.push_back(boost::make_tuple(get<0>(sterm[1]), get<1>(sterm[1]).pure->operator()(1,0)));
-            term.push_back(boost::make_tuple(get<0>(sterm[2]), get<1>(sterm[2]).fill->operator()(0,1)));
-            term.push_back(boost::make_tuple(get<0>(sterm[3]), get<1>(sterm[3]).pure->operator()(1,0)));
+            term.push_back(boost::make_tuple(get<0>(sterm[0]), get<1>(sterm[0]).fill_couple_up));
+            term.push_back(boost::make_tuple(get<0>(sterm[1]), get<1>(sterm[1]).couple_down));
+            term.push_back(boost::make_tuple(get<0>(sterm[2]), get<1>(sterm[2]).fill_couple_up));
+            term.push_back(boost::make_tuple(get<0>(sterm[3]), get<1>(sterm[3]).couple_down));
         }
 
         return term;
