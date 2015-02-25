@@ -2,7 +2,7 @@
 #include "ambient/container/numeric/matrix.hpp"
 #include "utils/timings.hpp"
 
-#define N AMBIENT_IB*4 
+#define N AMBIENT_DEFAULT_IB*4 
 
 ambient::scope::const_iterator where(int i, int j){
     static int nq = ambient::scope::size();
