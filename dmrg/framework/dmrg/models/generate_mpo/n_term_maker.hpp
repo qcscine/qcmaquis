@@ -35,107 +35,84 @@
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 
 template<class Matrix, class SymmGroup>
-class New_NTermsMPO
+class NTermsMPO
 {
 	typedef Lattice::pos_t pos_t;
 	typedef block_matrix<Matrix, SymmGroup> op_t;
 	typedef std::pair<pos_t, op_t> pos_op_t;
 
 public:
-	NewNTermsMPO(Lattice const& lat_,
+	NTermsMPO(Lattice const& lat_,
 				 const std::vector<op_t> & ident_,
 				 const std::vector<op_t> & fill_,
-				 std:vector<pos_op_t> const & ops_,
-				 int phase)
+				 std::vector<pos_op_t> const & ops_,
+				 const int & phase)
 	: lat(lat_)
-	, identites(ident_)
+	, identities(ident_)
 	, fillings(fill_)
 	, ops(ops_)
 	{
-		// save order before sort
-		
-		std::sort(ops.begin(),ops.end());
+		// Assuming all operators passed are fermionic!!
+		bool trivial_fill=true;
+		std::sort(ops.begin(),ops.end(), boost::bind(&pos_op_t::first, _1) < 
+										 boost::bind(&pos_op_t::first, _2));
 
 		for (pos_t p = 0; p < lat.size(); ++p){
-				
-		}
-	}
-
-private:
-	Lattice const& lat;
-	std::vector<op_t> identities, fillings;
-	std::vector<pos_op_t> ops;
-	std::map<pos_t, op_t> prempo;
-};
-
-template<class Matrix, class SymmGroup>
-class NTermsMPO
-{
-	typedef Lattice::pos_t pos_t;
-	typedef block_matrix<Matrix, SymmGroup> op_t;
-	typedef std::pair<op_t, bool> op_t_type;
-	typedef std::pair<pos_t, op_t_type> pos_op_pair;
-
-public:
-	NTermsMPO(Lattice const& lat_,
-				const std::vector<op_t> & ident_,
-				const std::vector<op_t> & fill_,
-				std::vector<pos_op_pair> const & op_string,
-				const int & phase_)
-	: lat(lat_)
-	, phase(phase_)
-	, identities(ident_)
-	, fillings(fill_)
-	{
-		bool is_fermionic = false;
-		for (pos_t p = 0; p < lat.size(); ++p){
-			for (pos_t p_op = 0; p_op < op_string.size(); ++p_op) {
-				if (p == op_string[p_op].first) {
-					//maquis::cout << "Inserting non-trivial operator at site " << p << std::endl;
-					is_fermionic = (is_fermionic != op_string[p_op].second.second);
-					//maquis::cout << "Is fermionic? " << is_fermionic << std::endl;
-					if (is_fermionic) {
+			for (typename std::vector<pos_op_t>::iterator it = ops.begin(); it != ops.end(); ++it) {
+				if (p == it->first) {
+					if (prempo.count(p) > 0) {
+						//if operator already present, multiply with it
 						op_t tmp;
-						gemm(fillings[lat.get_prop<int>("irrep",p)], op_string[p_op].second.first, tmp);
-						prempo.insert( std::make_pair(p, tmp));
+						if (trivial_fill) {
+							op_t tmp1;
+							gemm(fillings[lat.get_prop<int>("irrep",p)], it->second, tmp1);
+							gemm(tmp1, prempo[p], tmp);
+						} else {
+							gemm(it->second, prempo[p], tmp);
+						}
+						prempo.erase(p);
+						prempo.insert( std::make_pair(p, tmp) );
 					} else {
-						prempo.insert( std::make_pair(p, op_string[p_op].second.first) );
+						//else add operator to prempo
+						if (trivial_fill) {
+							op_t tmp;
+							gemm(fillings[lat.get_prop<int>("irrep",p)], it->second, tmp);
+							prempo.insert( std::make_pair(p, tmp) );
+						} else {
+							prempo.insert( *it );
+						}
 					}
+					trivial_fill = !trivial_fill;
+					it = ops.erase(ops.begin());
+					--it;
 				}
 			}
-			if (prempo.count(p)==0) {
-				//maquis::cout << "Inserting fill/identity operator at site " << p << std::endl;
-				if (is_fermionic) {
-					prempo.insert( std::make_pair(p, fillings[lat.get_prop<int>("irrep",p)]) );
-				} else {
+			if (prempo.count(p) == 0) {
+				if (trivial_fill) {
 					prempo.insert( std::make_pair(p, identities[lat.get_prop<int>("irrep",p)]) );
+				} else {
+					prempo.insert( std::make_pair(p, fillings[lat.get_prop<int>("irrep",p)]) );
 				}
 			}
 		}
+		// Apply the phase to the first element
+		prempo.begin()->second*=phase;
 	}
 
 	MPO<Matrix, SymmGroup> create_mpo()
 	{
 		MPO<Matrix, SymmGroup> ret(prempo.size());
-		//maquis::cout << "prempo size " << prempo.size() << std::endl;
 		for (pos_t p = 0; p < prempo.size(); ++p) {
 			MPOTensor<Matrix, SymmGroup> op(1,1);
-			if (phase < 0) {
-				op.set(0,0, prempo[p], phase*1.0);
-				phase = 1;
-			} else {
-				op.set(0,0, prempo[p], 1.0);
-			}
+			op.set(0,0, prempo[p], 1.0);
 			ret[p] = op;
-			//maquis::cout << ret[p].at(0,0).op << ret[p].at(0,0).scale << std::endl;
 		}
 		return ret;
 	}
-
 private:
 	Lattice const& lat;
-	int phase;
 	std::vector<op_t> identities, fillings;
+	std::vector<pos_op_t> ops;
 	std::map<pos_t, op_t> prempo;
 };
 

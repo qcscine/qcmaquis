@@ -166,105 +166,35 @@ namespace measurements {
 				for (pos_t k = 0; k < lattice.size(); ++k){
 					for (pos_t j = 0; j < lattice.size(); ++j){
 						for (pos_t i = 0; i < lattice.size(); ++i){
-							// Cycle loop if unphysical
-							if (i==j && j==k && k==l) continue;
-							if (i==j && j==k && k!=l) continue;
-							if (i==j && j==l && j!=k) continue;
-							if (i!=j && i==k && k==l) continue;
-							if (i!=j && j==k && k==l) continue;
-							if (i==k && j==l && i!=j) continue;
-							if (i==k && i!=j && i!=l) continue;
-							if (j==l && j!=i && j!=k) continue;
-							//maquis::cout << i << " " << j << " " << k << " " << l << "\n";
-							int phase = 1;
-							pos_t idx[] = { i,j,k,l };
+
+							pos_t idx[] = { i,k,l,j };
 							pos_t inv_count=0, n=4;
         					for(pos_t c1 = 0; c1 < n - 1; c1++)
             					for(pos_t c2 = c1+1; c2 < n; c2++)
                 					if(idx[c1] > idx[c2]) inv_count++;
 
-							// An additional swap needed if j == k
-							if (j==k) inv_count++;
-
+							int phase = 1;
 							if (inv_count % 2)
 								phase = -1;
 
-							op_t_type op_i = std::make_pair(ops[0][0].first[lattice.get_prop<int>("irrep",i)], ops[0][0].second);
-							op_t_type op_j = std::make_pair(ops[0][1].first[lattice.get_prop<int>("irrep",j)], ops[0][1].second);
-							op_t_type op_k = std::make_pair(ops[0][2].first[lattice.get_prop<int>("irrep",k)], ops[0][2].second);
-							op_t_type op_l = std::make_pair(ops[0][3].first[lattice.get_prop<int>("irrep",l)], ops[0][3].second);
-							std::vector<std::pair<pos_t,op_t_type> > ref;
-					
-							/////// NEW IMPLEMENTATION ///////
-							std::vector<pos_op_t> operator;
-							operator.pusback(std::make_pair(i, ops[0][0].first[lattice.get_prop<int>("irrep",i)]));
-							operator.pusback(std::make_pair(k, ops[0][2].first[lattice.get_prop<int>("irrep",k)]));
-							operator.pusback(std::make_pair(l, ops[0][3].first[lattice.get_prop<int>("irrep",l)]));
-							operator.pusback(std::make_pair(j, ops[0][1].first[lattice.get_prop<int>("irrep",j)]));
+							std::vector<pos_op_t> op_string;
+							op_string.push_back( std::make_pair(i, ops[0][0].first[lattice.get_prop<int>("irrep",i)]));
+							op_string.push_back( std::make_pair(k, ops[0][1].first[lattice.get_prop<int>("irrep",k)]));
+							op_string.push_back( std::make_pair(l, ops[0][2].first[lattice.get_prop<int>("irrep",l)]));
+							op_string.push_back( std::make_pair(j, ops[0][3].first[lattice.get_prop<int>("irrep",j)]));
+
 							////// CALL MPO MAKER /////////
-
-
-							//////////////////////////////////
-
-
-							if (i==j) {
-								op_t tmp;
-								gemm(op_j.first, op_i.first, tmp);
-								op_t_type op_ij = std::make_pair(tmp, op_i.second != op_j.second);
-								ref.push_back( std::make_pair(i,op_ij) );
-								if (k==l) {
-									op_t tmp;
-									gemm(op_l.first, op_k.first, tmp);
-									op_t_type op_kl = std::make_pair(tmp, op_k.second != op_l.second);
-									ref.push_back( std::make_pair(k,op_kl) );
-								} else {
-									ref.push_back( std::make_pair(k,op_k) );
-									ref.push_back( std::make_pair(l,op_l) );
-								}
-							} else if (i==l) {
-								op_t tmp;
-								gemm(op_l.first, op_i.first, tmp);
-								op_t_type op_il = std::make_pair(tmp, op_i.second != op_l.second);
-								ref.push_back( std::make_pair(i,op_il) );
-								if (k==j) {
-									op_t tmp;
-									gemm(op_j.first, op_k.first, tmp);
-									op_t_type op_kj = std::make_pair(tmp, op_k.second != op_j.second);
-									ref.push_back( std::make_pair(k,op_kj) );
-								} else {
-									ref.push_back( std::make_pair(k,op_k) );
-									ref.push_back( std::make_pair(j,op_j) );
-								}
-							} else if (j==k) {
-								op_t tmp;
-								gemm(op_j.first, op_k.first, tmp);
-								op_t_type op_kj = std::make_pair(tmp, op_k.second != op_j.second);
-								ref.push_back( std::make_pair(k,op_kj) );
-								ref.push_back( std::make_pair(i,op_i ) );
-								ref.push_back( std::make_pair(l,op_l ) );
-							} else if (k==l) {
-								op_t tmp;
-								gemm(op_l.first, op_k.first, tmp);
-								op_t_type op_kl = std::make_pair(tmp, op_k.second != op_l.second);
-								ref.push_back( std::make_pair(k,op_kl) );
-								ref.push_back( std::make_pair(i,op_i ) );
-								ref.push_back( std::make_pair(j,op_j ) );
-							} else {
-								ref.push_back( std::make_pair(i,op_i) );
-								ref.push_back( std::make_pair(j,op_j) );
-								ref.push_back( std::make_pair(k,op_k) );
-								ref.push_back( std::make_pair(l,op_l) );
-							}
-							
-							NTermsMPO<Matrix, SymmGroup> rdm_elem(lattice, identities, fillings, ref, phase);
+							NTermsMPO<Matrix, SymmGroup> rdm_elem(lattice, identities, fillings, op_string, phase);
 							MPO<Matrix, SymmGroup> mpo = rdm_elem.create_mpo();
+							//////////////////////////////////
 
 							//std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
 							typename MPS<Matrix, SymmGroup>::scalar_type dct = expval(ket_mps, mpo);
 							
 							if(dct != 0.0) {
-								//maquis::cout << std::fixed << std::setprecision(10) << i+1 << " " << j+1 << " " << k+1 << " " << l+1 << "\t" << dct << std::endl;
-
+								maquis::cout << std::fixed << std::setprecision(10) << i+1 << " " << j+1 << " " << k+1 << " " << l+1 << "\t" << dct << std::endl;
+							
+							
 								std::vector<pos_t> label; label.push_back(i); label.push_back(j); label.push_back(k); label.push_back(l);
 								std::vector<std::vector<pos_t> > num_labels;
 								num_labels.push_back(label);
@@ -272,7 +202,8 @@ namespace measurements {
 								
 								this->vector_results.push_back(dct);
 								this->labels.push_back(lbt[0]);
-							} // end if
+							} 
+
 						} // i loop
 					} // j loop
 				} // k loop
@@ -285,7 +216,6 @@ namespace measurements {
         op_vec identities, fillings;
         std::vector<bond_element> ops;
         bool half_only, is_nn;
-
         std::string bra_ckp;
     };
 }
