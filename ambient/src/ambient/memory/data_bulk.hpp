@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -50,7 +50,7 @@ namespace ambient { namespace memory {
                 inline void* data_bulk::calloc(size_t s) { void* m = malloc(s);   memset(m, 0, s); return m; }
 
     inline void* data_bulk::soft_malloc(size_t s){
-        if(instance().soft_limit < factory<AMBIENT_DATA_BULK_CHUNK>::size() || s > AMBIENT_IB*AMBIENT_IB*16) return NULL;
+        if(instance().soft_limit < factory<AMBIENT_DATA_BULK_CHUNK>::size() || s > AMBIENT_DATA_BULK_CHUNK) return NULL;
         return malloc(s);
     }
 

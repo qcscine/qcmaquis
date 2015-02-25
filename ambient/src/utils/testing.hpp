@@ -75,7 +75,7 @@ namespace ambient { namespace utils {
         char** argv;
     };
 
-    struct measurement : scenario<AMBIENT_IB> {
+    struct measurement : scenario<AMBIENT_DEFAULT_IB> {
         typedef ambient::async_timer timer;
     };
     struct gflops {

@@ -25,7 +25,7 @@ Ambient
 
 - [AMBIENT_CILK, AMBIENT_OMP, AMBIENT_SERIAL]  
   manually set the desired threading implementation  
-  [compiler dependent]
+  [auto]
 
 - AMBIENT_DISABLE_MPI
   set this define to disable MPI support
@@ -35,8 +35,8 @@ Ambient
   desired level of MPI threading (note: Ambient calls MPI routines through the main thread)  
   [MPI_THREAD_FUNNELED]
                                             
-- AMBIENT_IB  
-  Ambient internal block-size (also used as default partition/tile size)  
+- AMBIENT_DEFAULT_IB  
+  Default blocking factor (partition/tile default size)
   [2048]
                                             
 - AMBIENT_INSTR_BULK_CHUNK  
@@ -50,11 +50,6 @@ Ambient
 - AMBIENT_SERIAL_COLLECTION  
   enable to make operations collection not thread-safe  
   [not set]
-                                            
-- AMBIENT_MEMPTF_CHECK_BOUNDARIES  
-  checks memory boundaries overflow in every memptf call (used for 2D memory copies)  
-  [not set]
-
 
 ### Implementation caveats
 

@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -32,7 +32,7 @@
 
 namespace ambient {
 
-    template <class Vector, int IB = AMBIENT_IB>
+    template <class Vector, int IB = AMBIENT_DEFAULT_IB>
     class partitioned_vector : public ambient::memory::use_fixed_new<partitioned_vector<Vector,IB> > {
     public:
         typedef typename Vector::value_type value_type;
