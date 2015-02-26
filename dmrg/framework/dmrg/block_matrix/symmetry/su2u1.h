@@ -47,8 +47,8 @@ public:
 
     subcharge particleNumber(charge rhs) { return rhs[0]; }
 
-    subcharge & spin(charge & rhs) { return rhs[1]; }
-    subcharge const & spin(charge const & rhs) { return rhs[1]; }
+    static subcharge & spin(charge & rhs) { return rhs[1]; }
+    static subcharge const & spin(charge const & rhs) { return rhs[1]; }
 
     static charge fuse(charge a, charge b)
     {

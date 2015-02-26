@@ -141,4 +141,20 @@ inline std::ostream & operator<<(std::ostream & os, SpinDescriptor<symm_traits::
     return os;
 }
 
+
+// This function only works if we are dealing with spin 1/2 particles
+// In this case we can map the product spin 1 to 1-1×11 and spin 0 to 11×1-1
+
+template <class SymmGroup>
+typename SymmGroup::subcharge productSpin(typename SymmGroup::charge a, typename SymmGroup::charge b)
+{
+    typename SymmGroup::subcharge spin_a = SymmGroup::spin(a);
+    typename SymmGroup::subcharge spin_b = SymmGroup::spin(b);
+
+    if (spin_a == -1 && spin_b == 1)
+        return 2;
+    else
+        return std::abs(spin_a + spin_b);
+}
+
 #endif
