@@ -41,7 +41,7 @@
 // (do not set irrep if empty or doubly occupied)
 
 // TODO: rename to PGIndexConverter
-template <class SymmGroup>
+template <class SymmGroup, class = void>
 class PGDecorator
 {
 public:
@@ -51,54 +51,31 @@ public:
     }
 };
 
-template < >
-class  PGDecorator<TwoU1PG>
+template <class SymmGroup>
+class  PGDecorator<SymmGroup, typename boost::enable_if<symm_traits::HasPG<SymmGroup> >::type>
 {
 public:
-    typedef TwoU1PG::subcharge subcharge;
-    DualIndex<TwoU1PG> operator()(DualIndex<TwoU1PG> rhs, subcharge irr)
+    typedef typename SymmGroup::subcharge subcharge;
+    typedef typename SymmGroup::charge charge;
+
+    DualIndex<SymmGroup> operator()(DualIndex<SymmGroup> rhs, subcharge irr)
     {
-        for(DualIndex<TwoU1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+        for(typename DualIndex<SymmGroup>::iterator it = rhs.begin(); it != rhs.end(); ++it)
         {
-            if ( (it->lc[0] + it->lc[1]) % 2 == 0)
-                it->lc[2] = 0;
-            else
-                it->lc[2] = irr;
-
-            if ( (it->rc[0] + it->rc[1]) % 2 == 0)
-                it->rc[2] = 0;
-            else
-                it->rc[2] = irr;
-        }
-
-        return rhs;
-    }
-};
-
-template < >
-class  PGDecorator<SU2U1PG>
-{
-public:
-    typedef SU2U1PG::subcharge subcharge;
-    DualIndex<SU2U1PG> operator()(DualIndex<SU2U1PG> rhs, subcharge irr)
-    {
-        for(DualIndex<SU2U1PG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
-        {
-            if ( (it->lc[0]) % 2 == 0)
-                it->lc[2] = 0;
-            else
-                it->lc[2] = irr;
-
-            if ( (it->rc[0]) % 2 == 0)
-                it->rc[2] = 0;
-            else
-                it->rc[2] = irr;
+            modify(it->lc, irr);
+            modify(it->rc, irr);
         }
         return rhs;
     }
-};
 
-//////////////////////////////////////////////////
+    static void modify(charge & rhs, subcharge irr)
+    {
+        if ( (SymmGroup::particleNumber(rhs)) % 2 == 0)
+            SymmGroup::irrep(rhs) = 0;
+        else
+            SymmGroup::irrep(rhs) = irr;
+    }
+};
 
 template <class SymmGroup, class = void>
 class PGCharge
@@ -117,7 +94,7 @@ public:
     typedef typename SymmGroup::subcharge subcharge;
     typename SymmGroup::charge operator()(typename SymmGroup::charge rhs, subcharge irr)
     {
-        rhs[2] = irr;
+        SymmGroup::irrep(rhs) = irr;
         return rhs;
     }
 };
