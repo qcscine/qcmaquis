@@ -105,9 +105,16 @@ namespace SU2 {
                         int j = mc[1], jp = out_r_charge[1];
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
-                        typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
+                        //typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
                         //if (std::abs(coupling_coeff) < 1.e-40) continue;
-                        coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
+                        //coupling_coeff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
+
+                        typename Matrix::value_type prefactor = sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
+                        typename Matrix::value_type couplings[4];
+                        couplings[0] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
+                        couplings[1] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, two_sp, ip);
+                        couplings[2] = prefactor * ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2,      ip);
+                        couplings[3] = prefactor * ::SU2::mod_coupling(j, 2,     jp, a,k,ap, i, 2,      ip);
 
                         size_t phys_s1 = W.basis().left_size(w_block);
                         size_t phys_s2 = W.basis().right_size(w_block);
@@ -121,30 +128,16 @@ namespace SU2 {
                         //        out_left_offset, in_right_offset,
                         //        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, coupling_coeff);
 
-                        typename Matrix::value_type c_eff = coupling_coeff;
                         size_t ldim = T.basis().left_size(t_block);
                         for(size_t rr = 0; rr < r_size; ++rr) {
                             for(size_t ss1 = 0; ss1 < phys_s1; ++ss1) {
                                 for(size_t ss2 = 0; ss2 < phys_s2; ++ss2) {
-                                    if (ss1 == 2 && ss2 == 2) {
-                                        c_eff = ::SU2::mod_coupling(j, 2, jp, a,k,ap, i, 2, ip);
-                                        c_eff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
-                                    }
-                                    else if (ss1 == 2) {
-                                        // jp ~ out_r_charge ~ phys_in
-                                        c_eff = ::SU2::mod_coupling(j, 2, jp, a,k,ap, i, two_sp, ip);
-                                        c_eff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
-                                    }
-                                    else if (ss2 == 2) {
-                                        // ip ~ out_l_charge ~ phys_out
-                                        c_eff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, 2, ip);
-                                        c_eff *= sqrt((ip+1.)*(j+1.)/((i+1.)*(jp+1.))) * access.scale(op_index);
-                                    }
-                                    else {
-                                        c_eff = coupling_coeff;
-                                    }
+                                    int casenr = 0;
+                                    if (ss1 == 2 && ss2 == 2) casenr = 3;
+                                    else if (ss1 == 2) casenr = 1;
+                                    else if (ss2 == 2) casenr = 2;
 
-                                    typename Matrix::value_type alfa_t = wblock(ss1, ss2) * c_eff;
+                                    typename Matrix::value_type alfa_t = wblock(ss1, ss2) * couplings[casenr];
                                     maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size + rr),
                                                                         &iblock(0, in_right_offset + ss1*r_size + rr) + ldim, // bugbug
                                                                         &oblock(out_left_offset + ss2*ldim, rr),
