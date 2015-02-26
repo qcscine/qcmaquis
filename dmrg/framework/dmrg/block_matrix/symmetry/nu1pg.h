@@ -32,8 +32,6 @@
 #include <vector>
 #include <list>
 
-#include <boost/mpl/accumulate.hpp>
-
 #include <boost/lexical_cast.hpp>
 #include <boost/functional/hash.hpp>
 
