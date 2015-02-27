@@ -38,7 +38,6 @@ namespace SU2 {
     {
         typedef typename SymmGroup::charge charge;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
-        typedef typename Index<SymmGroup>::const_iterator ci;
 
         C.clear();
         assert(B.basis().is_sorted());
@@ -61,13 +60,42 @@ namespace SU2 {
     }
 
     template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
+    void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
+                        block_matrix<Matrix2, SymmGroup> const & B,
+                        block_matrix<Matrix3, SymmGroup> & C)
+    {
+        typedef typename SymmGroup::charge charge;
+        typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
+
+        C.clear();
+        assert(B.basis().is_sorted());
+
+        const_iterator BBbegin = B.basis().begin();
+        for (std::size_t k = 0; k < A.n_blocks(); ++k) {
+
+            //if (!B.basis().left_has(A.basis().left_charge(k))) continue;
+
+            std::pair<const_iterator, const_iterator>
+              er = std::equal_range(BBbegin, B.basis().end(),
+                dual_index_detail::QnBlock<SymmGroup>(A.basis().right_charge(k), SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
+
+            for (const_iterator it = er.first; it != er.second; ++it)
+            {
+                std::size_t matched_block = std::distance(BBbegin, it);
+                Matrix3 tmp(num_rows(A[k]), num_cols(B[matched_block]));
+                gemm(A[k], B[matched_block], tmp);
+                C.match_and_add_block(tmp, A.basis().left_charge(k), B.basis().right_charge(matched_block));
+            }
+        }
+    }
+
+    template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
     void gemm_trim(block_matrix<Matrix1, SymmGroup> const & A,
                    block_matrix<Matrix2, SymmGroup> const & B,
                    block_matrix<Matrix3, SymmGroup> & C)
     {
         typedef typename SymmGroup::charge charge;
         typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
-        typedef typename Index<SymmGroup>::const_iterator ci;
 
         C.clear();
         assert(B.basis().is_sorted());

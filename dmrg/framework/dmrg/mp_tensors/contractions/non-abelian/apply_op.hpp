@@ -72,6 +72,8 @@ namespace SU2 {
                 charge lc = left[b1].basis().right_charge(lblock); // left comes as left^T !
                 charge mc = left[b1].basis().left_charge(lblock);
 
+                if (!ket_basis.left_has(lc)) continue;
+
                 std::pair<const_iterator, const_iterator>
                   er = std::equal_range(ket_basis.begin(), ket_basis.end(),
                     dual_index_detail::QnBlock<SymmGroup>(mc, SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
@@ -91,7 +93,7 @@ namespace SU2 {
                         if (!right_i.has(out_r_charge)) continue;
 
                         charge out_l_charge = SymmGroup::fuse(lc, phys_out);
-                        if (!right_i.has(out_l_charge) || !out_left_i.has(out_l_charge)) continue;
+                        if (!right_i.has(out_l_charge)) continue; // can also probe out_left_i, but right_i has the same charges
 
                         size_t r_size = right_i.size_of_block(out_r_charge);
 
@@ -131,11 +133,13 @@ namespace SU2 {
                         size_t ldim = T.basis().left_size(t_block);
                         for(size_t rr = 0; rr < r_size; ++rr) {
                             for(size_t ss1 = 0; ss1 < phys_s1; ++ss1) {
+                                bool spin_in_1 = ( (ss1 == 2) || (ss1 == 1 && SymmGroup::spin(phys_in) == 0 && phys_in[2] != 0) );
                                 for(size_t ss2 = 0; ss2 < phys_s2; ++ss2) {
+                                    bool spin_out_1 = ( (ss2 == 2) || (ss2 == 1 && SymmGroup::spin(phys_out) == 0 && phys_out[2] != 0) );
                                     int casenr = 0;
-                                    if (ss1 == 2 && ss2 == 2) casenr = 3;
-                                    else if (ss1 == 2) casenr = 1;
-                                    else if (ss2 == 2) casenr = 2;
+                                    if (spin_in_1 && spin_out_1) casenr = 3;
+                                    else if (spin_in_1) casenr = 1;
+                                    else if (spin_out_1) casenr = 2;
 
                                     typename Matrix::value_type alfa_t = wblock(ss1, ss2) * couplings[casenr];
                                     maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size + rr),
