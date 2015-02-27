@@ -73,7 +73,7 @@ namespace SU2 {
         const_iterator BBbegin = B.basis().begin();
         for (std::size_t k = 0; k < A.n_blocks(); ++k) {
 
-            //if (!B.basis().left_has(A.basis().left_charge(k))) continue;
+            if (!B.basis().left_has(A.basis().left_charge(k))) continue;
 
             std::pair<const_iterator, const_iterator>
               er = std::equal_range(BBbegin, B.basis().end(),
