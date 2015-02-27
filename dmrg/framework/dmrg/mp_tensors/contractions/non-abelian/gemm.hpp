@@ -42,19 +42,21 @@ namespace SU2 {
         C.clear();
         assert(B.basis().is_sorted());
 
-        const_iterator BBbegin = B.basis().begin();
+        const_iterator B_begin = B.basis().begin();
+        const_iterator B_end = B.basis().end();
         for (std::size_t k = 0; k < A.n_blocks(); ++k) {
 
-            std::pair<const_iterator, const_iterator>
-              er = std::equal_range(BBbegin, B.basis().end(),
-                dual_index_detail::QnBlock<SymmGroup>(A.basis().right_charge(k), SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
+            charge ar = A.basis().right_charge(k);
+            const_iterator it = std::lower_bound(B_begin, B_end,
+                                                 dual_index_detail::QnBlock<SymmGroup>(ar, SymmGroup::IdentityCharge, 0, 0),
+                                                 dual_index_detail::gt_row<SymmGroup>());
 
-            for (const_iterator it = er.first; it != er.second; ++it)
+            for ( ; it != B_end && it->lc == ar; ++it)
             {
-                std::size_t matched_block = std::distance(BBbegin, it);
-                Matrix3 tmp(num_rows(A[k]), num_cols(B[matched_block]));
+                std::size_t matched_block = std::distance(B_begin, it);
+                Matrix3 tmp(num_rows(A[k]), it->rs);
                 gemm(A[k], B[matched_block], tmp);
-                C.match_and_add_block(tmp, A.basis().left_charge(k), B.basis().right_charge(matched_block));
+                C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
             }
         }
     }
@@ -70,21 +72,23 @@ namespace SU2 {
         C.clear();
         assert(B.basis().is_sorted());
 
-        const_iterator BBbegin = B.basis().begin();
+        const_iterator B_begin = B.basis().begin();
+        const_iterator B_end = B.basis().end();
         for (std::size_t k = 0; k < A.n_blocks(); ++k) {
 
             if (!B.basis().left_has(A.basis().left_charge(k))) continue;
 
-            std::pair<const_iterator, const_iterator>
-              er = std::equal_range(BBbegin, B.basis().end(),
-                dual_index_detail::QnBlock<SymmGroup>(A.basis().right_charge(k), SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
+            charge ar = A.basis().right_charge(k);
+            const_iterator it = std::lower_bound(B_begin, B_end,
+                                                 dual_index_detail::QnBlock<SymmGroup>(ar, SymmGroup::IdentityCharge, 0, 0),
+                                                 dual_index_detail::gt_row<SymmGroup>());
 
-            for (const_iterator it = er.first; it != er.second; ++it)
+            for ( ; it != B_end && it->lc == ar; ++it)
             {
-                std::size_t matched_block = std::distance(BBbegin, it);
-                Matrix3 tmp(num_rows(A[k]), num_cols(B[matched_block]));
+                std::size_t matched_block = std::distance(B_begin, it);
+                Matrix3 tmp(num_rows(A[k]), it->rs);
                 gemm(A[k], B[matched_block], tmp);
-                C.match_and_add_block(tmp, A.basis().left_charge(k), B.basis().right_charge(matched_block));
+                C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
             }
         }
     }
@@ -100,20 +104,22 @@ namespace SU2 {
         C.clear();
         assert(B.basis().is_sorted());
 
-        const_iterator BBbegin = B.basis().begin();
+        const_iterator B_begin = B.basis().begin();
+        const_iterator B_end = B.basis().end();
         for (std::size_t k = 0; k < A.n_blocks(); ++k) {
 
-            std::pair<const_iterator, const_iterator>
-              er = std::equal_range(BBbegin, B.basis().end(),
-                dual_index_detail::QnBlock<SymmGroup>(A.basis().right_charge(k), SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
+            charge ar = A.basis().right_charge(k);
+            const_iterator it = std::lower_bound(B_begin, B_end,
+                                                 dual_index_detail::QnBlock<SymmGroup>(ar, SymmGroup::IdentityCharge, 0, 0),
+                                                 dual_index_detail::gt_row<SymmGroup>());
 
-            for (const_iterator it = er.first; it != er.second; ++it)
+            for ( ; it != B_end && it->lc == ar; ++it)
             {
-                std::size_t matched_block = std::distance(BBbegin, it);
-                if (A.basis().left_charge(k) != B.basis().right_charge(matched_block)) continue;
-                Matrix3 tmp(num_rows(A[k]), num_cols(B[matched_block]));
+                std::size_t matched_block = std::distance(B_begin, it);
+                if (A.basis().left_charge(k) != it->rc) continue;
+                Matrix3 tmp(num_rows(A[k]), it->rs);
                 gemm(A[k], B[matched_block], tmp);
-                C.match_and_add_block(tmp, A.basis().left_charge(k), B.basis().right_charge(matched_block));
+                C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
             }
         }
     }

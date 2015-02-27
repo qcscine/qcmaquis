@@ -72,16 +72,15 @@ namespace SU2 {
                 charge lc = left[b1].basis().right_charge(lblock); // left comes as left^T !
                 charge mc = left[b1].basis().left_charge(lblock);
 
-                if (!ket_basis.left_has(lc)) continue;
+                if (!ket_basis.left_has(lc)) continue; // ket_basis needs to be left_paired
 
-                std::pair<const_iterator, const_iterator>
-                  er = std::equal_range(ket_basis.begin(), ket_basis.end(),
-                    dual_index_detail::QnBlock<SymmGroup>(mc, SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
+                const_iterator it = std::lower_bound(ket_basis.begin(), ket_basis.end(),
+                                                     dual_index_detail::QnBlock<SymmGroup>(mc, SymmGroup::IdentityCharge, 0, 0),
+                                                     dual_index_detail::gt_row<SymmGroup>());
 
-                for (const_iterator it = er.first; it != er.second; ++it)
+                for ( ; it != ket_basis.end() && it->lc == mc; ++it)
                 {
-                    size_t matched_block = std::distance(ket_basis.begin(), it);
-                    charge rc = ket_basis[matched_block].rc;
+                    charge rc = it->rc;
                     size_t t_block = T.basis().position(lc, rc); // t_block != lblock in general
 
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
@@ -186,7 +185,6 @@ namespace SU2 {
         {
             block_matrix<Matrix, SymmGroup> const & W = access.op(op_index);
 
-            // note minus sign, as we move the boundary to the left
             int a = mpo.left_spin(b1).get(), k = W.spin.get(), ap = mpo.right_spin(b2).get();
 
             for (size_t ketblock = 0; ketblock < ket_basis.size(); ++ketblock) {
@@ -194,14 +192,13 @@ namespace SU2 {
                 charge lc = ket_basis[ketblock].lc;
                 charge mc = ket_basis[ketblock].rc;
 
-                std::pair<const_iterator, const_iterator>
-                  er = std::equal_range(right[b2].basis().begin(), right[b2].basis().end(),
-                    dual_index_detail::QnBlock<SymmGroup>(mc, SymmGroup::IdentityCharge, 0, 0), dual_index_detail::gt_row<SymmGroup>());
+                const_iterator it = std::lower_bound(right[b2].basis().begin(), right[b2].basis().end(),
+                                                     dual_index_detail::QnBlock<SymmGroup>(mc, SymmGroup::IdentityCharge, 0, 0),
+                                                     dual_index_detail::gt_row<SymmGroup>());
 
-                for (const_iterator it = er.first; it != er.second; ++it)
+                for ( ; it != right[b2].basis().end() && it->lc == mc; ++it)
                 {
-                    size_t matched_block = std::distance(right[b2].basis().begin(), it);
-                    charge rc = right[b2].basis()[matched_block].rc;
+                    charge rc = it->rc;
                     size_t t_block = T.basis().position(lc, rc); // t_block != ketblock in general
 
                     for (size_t w_block = 0; w_block < W.basis().size(); ++w_block)
@@ -213,7 +210,7 @@ namespace SU2 {
                         if (!left_i.has(out_l_charge)) continue;
 
                         charge out_r_charge = SymmGroup::fuse(rc, -phys_out);
-                        if (!left_i.has(out_r_charge) || !out_right_i.has(out_r_charge)) continue;
+                        if (!left_i.has(out_r_charge)) continue;
 
                         size_t l_size = left_i.size_of_block(out_l_charge);
 
