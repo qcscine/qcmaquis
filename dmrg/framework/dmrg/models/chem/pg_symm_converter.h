@@ -122,14 +122,18 @@ public:
 
                     // access the mpo tensor at (b1, b2)
                     typename MPOTensor<Matrix, SymmGroup>::internal_value_type access = mpo_in[i].col_tags(b1, b2);
-                    tag_type base_tag = access[0].first;
-                    tag_type symm_tag = translation_table(base_tag, site_irreps[i]);
-                    typename Matrix::value_type coeff = translation_table_coeff(base_tag, site_irreps[i]);
+                    typename MPOTensor<Matrix, SymmGroup>::internal_value_type modified(access.size());
+                    for (std::size_t k = 0; k < access.size(); ++k)
+                    {
+                        tag_type base_tag = access[k].first;
+                        tag_type symm_tag = translation_table(base_tag, site_irreps[i]);
+                        typename Matrix::value_type coeff = translation_table_coeff(base_tag, site_irreps[i]);
+                        modified[k] = std::make_pair(symm_tag, coeff * access[k].second);
+                    }
 
                     // replace 'base_tag' with a tag corresponding to the same operator, but with the symmetry
                     // irreducible representation of site 'i', which is site_irreps[i]
-                    mpo_in[i].col_tags(b1, b2)
-                        = typename MPOTensor<Matrix, SymmGroup>::internal_value_type(1, std::make_pair(symm_tag, access[0].second * coeff));
+                    mpo_in[i].col_tags(b1, b2) = modified;
                 }
             }
         }
