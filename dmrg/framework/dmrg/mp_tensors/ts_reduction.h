@@ -26,7 +26,6 @@
 
 #include <vector>
 #include <utility>
-#include <alps/numeric/real.hpp>
 
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 #include "dmrg/mp_tensors/mpstensor.h"
@@ -60,12 +59,12 @@ namespace ts_reduction {
     }
     
     template<class Matrix, class SymmGroup>
-    Index<SymmGroup> reduce_to_right(Index<SymmGroup> const & physical_i_left,
-                                     Index<SymmGroup> const & physical_i_right,
-                                     Index<SymmGroup> const & left_i,
-                                     Index<SymmGroup> const & right_i,
-                                     block_matrix<Matrix, SymmGroup> const & m1,
-                                     block_matrix<Matrix, SymmGroup> & m2)
+    Index<SymmGroup> reduce_right(Index<SymmGroup> const & physical_i_left,
+                                  Index<SymmGroup> const & physical_i_right,
+                                  Index<SymmGroup> const & left_i,
+                                  Index<SymmGroup> const & right_i,
+                                  block_matrix<Matrix, SymmGroup> const & m1,
+                                  block_matrix<Matrix, SymmGroup> & m2)
     {
         m2 = block_matrix<Matrix, SymmGroup>();
         
@@ -124,6 +123,21 @@ namespace ts_reduction {
 
                         if ( (jl == jr) && (jl > 0) && (S1 == 1) && (S2 == 1) ) {
                             size_t base_offset = (SymmGroup::spin(phys_c1) == 1) ? in_phys_offset : in_phys_offset - 1; 
+
+                            //  MPS right_paired layout                 |    <2,0> MPS sector: (c1×c2)    |             this is a dense matrix 
+                            //                                          right_size, r_charge = lc + phys_charge              ↓
+                            // lc (jl)   -> |---------------------------    ^    ----^--------^-------^------------------------------------|   
+                            // left_size -> | (onsite charges > <2,0>)  | 20x00 | 11x1-1 | 1-1x11 | 00x20 |   (onsite charges < <2,0>)     |
+                            //              |---------------------------------------A---------B--------------------------------------------|
+                            //
+                            //               in_right_offset----------->
+                            //                                         > in_phys_offsets (values 0 to 3 max), multiply by left_size
+                            //                                         --------> base_offset (for recoupling A and B)
+                            //                                         ------------------>
+                            //                                         -------------------------->
+                            //                                      
+                            //                                  A_reduced(spin = 0) = 6j(..) * A(jm = jl+1) + 6j(..) * B(jm = jl-1)
+                            //                                  B_reduced(spin = 1) = 6j(..) * A(jm = jl+1) + 6j(..) * B(jm = jl-1)
 
                             for (spin_t j = std::abs(S1-S2); j <= std::abs(S1+S2); j+=2) {
                                 size_t out_phys_offset = base_offset + j/2;
@@ -209,6 +223,21 @@ namespace ts_reduction {
                         if ( (jl == jr) && (jl > 0) && (S1 == 1) && (S2 == 1) ) {
                             spin_t j = (SymmGroup::spin(phys_c1) == 1) ? 0 : 2;
                             size_t base_offset = (j==0) ? in_phys_offset : in_phys_offset - 1;
+
+                            //  MPS left_paired layout (rotate -90°)     |    <2,0> MPS sector: (c1×c2)    |           this is a dense matrix 
+                            //                                           left_size                                        ↓
+                            //               |---------------------------    ^    ----^--------^-------^------------------------------------|   
+                            // right_size -> | (onsite charges > <2,0>)  | 20x00 | 11x1-1 | 1-1x11 | 00x20 |   (onsite charges < <2,0>)     |
+                            //               |-------------------------------------A(S=0)---B(S=1)------------------------------------------|
+                            //
+                            //                 in_left_offset----------->
+                            //                                           > in_phys_offsets (values 0 to 3 max), multiply by left_size
+                            //                                           --------> base_offset (for recoupling A and B)
+                            //                                           ------------------>
+                            //                                           -------------------------->
+                            //                                      
+                            //                                  A_unreduced(jm = jl+1) = 6j(..) * A(S=0) + 6j(..) * B(S=2)
+                            //                                  B_unreduced(jm = jl-1) = 6j(..) * A(S=0) + 6j(..) * B(S=2)
 
                             for (spin_t jm = jl - 1; jm <= jl + 1; jm+=2) {
                                 size_t out_phys_offset = (jm == jl - 1) ? base_offset + 1 : base_offset;
