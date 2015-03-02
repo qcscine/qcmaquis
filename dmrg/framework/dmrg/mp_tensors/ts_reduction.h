@@ -57,12 +57,6 @@ namespace ts_reduction {
                 maquis::cout << std::endl;
             }
         };
-
-        template <typename T>
-        std::size_t out_phys_offset(T j, T jl, T jm)
-        {
-            return 0;
-        }
     }
     
     template<class Matrix, class SymmGroup>
