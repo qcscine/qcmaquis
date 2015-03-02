@@ -48,7 +48,7 @@ namespace ambient {
             std::cout << "ambient: size of data bulk chunks: "      << AMBIENT_DATA_BULK_CHUNK        << "\n";
             if(ambient::isset("AMBIENT_BULK_LIMIT")) std::cout << "ambient: max share of data bulk: " << ambient::getint("AMBIENT_BULK_LIMIT") << "%\n";
             if(ambient::isset("AMBIENT_BULK_REUSE")) std::cout << "ambient: enabled bulk garbage collection\n";
-            if(ambient::isset("AMBIENT_FORCE_BULK_DEALLOCATION")) std::cout << "ambient: enabled bulk deallocation\n";
+            if(ambient::isset("AMBIENT_BULK_FORCE_FREE")) std::cout << "ambient: enabled bulk deallocation\n";
             #ifdef MPI_VERSION
             std::cout << "ambient: maximum tag value: "             << tag_ub                         << "\n";
             std::cout << "ambient: number of procs: "               << num_procs                      << "\n";

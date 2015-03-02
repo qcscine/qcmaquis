@@ -39,7 +39,7 @@ namespace ambient { namespace memory {
 
     inline data_bulk::data_bulk(){
         this->reuse_enabled = ambient::isset("AMBIENT_BULK_REUSE") ? true : false; 
-        this->reset_enabled = ambient::isset("AMBIENT_FORCE_BULK_DEALLOCATION") ? true : false; 
+        this->reset_enabled = ambient::isset("AMBIENT_BULK_FORCE_FREE") ? true : false; 
         this->soft_limit = (ambient::isset("AMBIENT_BULK_LIMIT") ? ambient::getint("AMBIENT_BULK_LIMIT") : FORCE_DROP_CRITERIA) * 
                            ((double)getRSSLimit() / AMBIENT_DATA_BULK_CHUNK / 100);
     }

@@ -30,6 +30,7 @@
 
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
+#define AMBIENT_CILK
 #define AMBIENT_THREADING_TAGLINE "using cilk"
 #define AMBIENT_NUM_THREADS __cilkrts_get_nworkers()
 #define AMBIENT_THREAD_ID __cilkrts_get_worker_number()
