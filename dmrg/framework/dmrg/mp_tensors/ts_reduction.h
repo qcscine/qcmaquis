@@ -132,7 +132,7 @@ namespace ts_reduction {
                             size_t shift = (SymmGroup::spin(phys_c1) < 0) ? -1 : 0; 
 
                             for (spin_t j = std::abs(S1-S2); j <= std::abs(S1+S2); j+=2) {
-                                value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
+                                value_type coupling_coeff = std::sqrt((j+1) * (jm+1)) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
                                 coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
                                 maquis::dmrg::detail::reduce_r(out_block, in_block, coupling_coeff,
                                                                in_right_offset, in_phys_offset, shift + j/2,
@@ -142,7 +142,7 @@ namespace ts_reduction {
                         }
                         else {
                             spin_t j = std::abs(SymmGroup::spin(phys_c1) + SymmGroup::spin(phys_c2));
-                            value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
+                            value_type coupling_coeff = std::sqrt((j+1) * (jm+1)) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
                             coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
                             maquis::dmrg::detail::reduce_r(out_block, in_block, coupling_coeff,
                                                            in_right_offset, in_phys_offset, 0,
@@ -213,14 +213,14 @@ namespace ts_reduction {
 
                         if ( (jl == jr) && (jl > 0) && (S1 == 1) && (S2 == 1) ) {
                             spin_t j = (SymmGroup::spin(phys_c1) == 1) ? 0 : 2;
-                            size_t shift = (j==0) ? 1 : 0;
+                            size_t base_offset = (j==0) ? in_phys_offset : in_phys_offset - 1;
 
                             for (spin_t jm = jl - 1; jm <= jl + 1; jm+=2) {
-                                size_t cback = jm - jl + 1;
-                                value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
+                                size_t out_phys_offset = (jm == jl - 1) ? base_offset + 1 : base_offset;
+                                value_type coupling_coeff = std::sqrt((j+1) * (jm+1)) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
                                 coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
                                 maquis::dmrg::detail::reduce_l(out_block, in_block, coupling_coeff,
-                                                               in_left_offset, in_phys_offset, shift - cback/2,
+                                                               in_left_offset, in_phys_offset, out_phys_offset,
                                                                physical_i_left[s1].second, physical_i_right[s2].second,
                                                                left_i[l].second, right_size);
                             }
@@ -229,10 +229,10 @@ namespace ts_reduction {
                             spin_t j = std::abs(SymmGroup::spin(phys_c1) + SymmGroup::spin(phys_c2));
                             spin_t jm = jl + SymmGroup::spin(phys_c1);
                             if (jm < 0) continue;
-                            value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
+                            value_type coupling_coeff = std::sqrt((j+1) * (jm+1)) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
                             coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
                             maquis::dmrg::detail::reduce_l(out_block, in_block, coupling_coeff,
-                                                           in_left_offset, in_phys_offset, 0,
+                                                           in_left_offset, in_phys_offset, in_phys_offset,
                                                            physical_i_left[s1].second, physical_i_right[s2].second,
                                                            left_i[l].second, right_size);
                         }
