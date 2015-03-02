@@ -34,27 +34,36 @@
 
 namespace ts_reduction {
     
-    template <class T, class SymmGroup>
-    struct print_values
-    {
-        void operator()(block_matrix<alps::numeric::matrix<T>, SymmGroup> const & m2) {}
-    };
+    namespace detail {
 
-    template <class SymmGroup>
-    struct print_values<double, SymmGroup>
-    {
-        void operator()(block_matrix<alps::numeric::matrix<double>, SymmGroup> const & m2) {
-            std::vector<double> vcopy;
-            for(int b = 0; b < m2.n_blocks(); ++b)
-            {
-                std::copy(m2[b].elements().first, m2[b].elements().second, std::back_inserter(vcopy));
+        template <class T, class SymmGroup>
+        struct print_values
+        {
+            void operator()(block_matrix<alps::numeric::matrix<T>, SymmGroup> const & m2) {}
+        };
+
+        template <class SymmGroup>
+        struct print_values<double, SymmGroup>
+        {
+            void operator()(block_matrix<alps::numeric::matrix<double>, SymmGroup> const & m2) {
+                std::vector<double> vcopy;
+                for(int b = 0; b < m2.n_blocks(); ++b)
+                {
+                    std::copy(m2[b].elements().first, m2[b].elements().second, std::back_inserter(vcopy));
+                }
+                std::sort(vcopy.begin(), vcopy.end());
+                maquis::cout << "Number of elements: " << vcopy.size() << std::endl;
+                std::copy(vcopy.begin(), vcopy.end(), std::ostream_iterator<double>(maquis::cout, ", "));
+                maquis::cout << std::endl;
             }
-            std::sort(vcopy.begin(), vcopy.end());
-            maquis::cout << "Number of elements: " << vcopy.size() << std::endl;
-            std::copy(vcopy.begin(), vcopy.end(), std::ostream_iterator<double>(maquis::cout, ", "));
-            maquis::cout << std::endl;
+        };
+
+        template <typename T>
+        std::size_t out_phys_offset(T j, T jl, T, jm)
+        {
+            return 0;
         }
-    };
+    }
     
     template<class Matrix, class SymmGroup>
     Index<SymmGroup> reduce_to_right(Index<SymmGroup> const & physical_i_left,
@@ -67,6 +76,7 @@ namespace ts_reduction {
         m2 = block_matrix<Matrix, SymmGroup>();
         
         typedef std::size_t size_t;
+        typedef int spin_t;
         typedef typename SymmGroup::charge charge;
         typedef typename Matrix::value_type value_type;
         
@@ -109,17 +119,19 @@ namespace ts_reduction {
                         
                         size_t in_phys_offset = phys_pb(phys_c1, phys_c2);
 
-                        int jl,jm,jr,S1,S2;
-                        S1 = std::abs(phys_c1[1]); S2 = std::abs(phys_c2[1]);
-                        jl = lc[1]; jm = lc[1] + phys_c1[1]; jr = right_i[r].first[1];
+                        spin_t jl,jm,jr,S1,S2;
+                        S1 = std::abs(SymmGroup::spin(phys_c1));
+                        S2 = std::abs(SymmGroup::spin(phys_c2));
+                        jl = SymmGroup::spin(lc);
+                        jm = SymmGroup::spin(lc) + SymmGroup::spin(phys_c1);
+                        jr = SymmGroup::spin(right_i[r].first);
+
                         if (jm < 0) continue;
 
                         if ( (jl == jr) && (jl > 0) && (S1 == 1) && (S2 == 1) ) {
-                            int shift = 0;
-                            if (phys_c1[1] < 0)
-                               shift = -1; 
+                            size_t shift = (SymmGroup::spin(phys_c1) < 0) ? -1 : 0; 
 
-                            for (int j = std::abs(S1-S2); j <= std::abs(S1+S2); j+=2) {
+                            for (spin_t j = std::abs(S1-S2); j <= std::abs(S1+S2); j+=2) {
                                 value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
                                 coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
                                 maquis::dmrg::detail::reduce_r(out_block, in_block, coupling_coeff,
@@ -129,7 +141,7 @@ namespace ts_reduction {
                             }
                         }
                         else {
-                            int j = std::abs(phys_c1[1] + phys_c2[1]);
+                            spin_t j = std::abs(SymmGroup::spin(phys_c1) + SymmGroup::spin(phys_c2));
                             value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
                             coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
                             maquis::dmrg::detail::reduce_r(out_block, in_block, coupling_coeff,
@@ -157,6 +169,7 @@ namespace ts_reduction {
         m2 = block_matrix<Matrix, SymmGroup>();
         
         typedef std::size_t size_t;
+        typedef int spin_t;
         typedef typename SymmGroup::charge charge;
         typedef typename Matrix::value_type value_type;
         
@@ -192,27 +205,29 @@ namespace ts_reduction {
                         
                         size_t in_phys_offset = phys_pb(phys_c1, phys_c2);
 
-                        int jl,j,jr,S1,S2;
-                        S1 = std::abs(phys_c1[1]); S2 = std::abs(phys_c2[1]);
-                        jl = left_i[l].first[1]; jr = rc[1];
+                        spin_t jl,j,jr,S1,S2;
+                        S1 = std::abs(SymmGroup::spin(phys_c1));
+                        S2 = std::abs(SymmGroup::spin(phys_c2));
+                        jl = SymmGroup::spin(left_i[l].first);
+                        jr = SymmGroup::spin(rc);
 
                         if ( (jl == jr) && (jl > 0) && (S1 == 1) && (S2 == 1) ) {
-                            int j = ((phys_c1[1]==1) ? 0 : 2);
-                            int shift = 0;
-                            if (j==0) shift = 1;
+                            spin_t j = (in_phys_offset == 1) ? 0 : 2;
+                            size_t shift = (j==0) ? 1 : 0;
 
-                            for (int jm = jl - 1; jm <= jl + 1; jm+=2) {
+                            for (spin_t jm = jl - 1; jm <= jl + 1; jm+=2) {
+                                size_t cback = jm - jl + 1;
                                 value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
                                 coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
                                 maquis::dmrg::detail::reduce_l(out_block, in_block, coupling_coeff,
-                                                               in_left_offset, in_phys_offset, shift - jm/2,
+                                                               in_left_offset, in_phys_offset, shift - cback/2,
                                                                physical_i_left[s1].second, physical_i_right[s2].second,
                                                                left_i[l].second, right_size);
                             }
                         }
                         else {
-                            int j = std::abs(phys_c1[1] + phys_c2[1]);
-                            int jm = jl + phys_c1[1];
+                            spin_t j = std::abs(SymmGroup::spin(phys_c1) + SymmGroup::spin(phys_c2));
+                            spin_t jm = jl + SymmGroup::spin(phys_c1);
                             if (jm < 0) continue;
                             value_type coupling_coeff = std::sqrt(j+1) * std::sqrt(jm+1) * gsl_sf_coupling_6j(jl,jr,j,S2,S1,jm);
                             coupling_coeff = (((jl+jr+S1+S2)/2)%2) ? -coupling_coeff : coupling_coeff;
