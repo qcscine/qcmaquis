@@ -176,14 +176,14 @@ namespace maquis { namespace dmrg { namespace detail {
 
     template <typename T, class A>
     void reduce_l(alps::numeric::matrix<T,A>& out, const alps::numeric::matrix<T,A>& in, T scale,
-                  size_t in_left_offset, size_t in_phys_offset, size_t out_phys_shift,
+                  size_t in_left_offset, size_t in_phys_offset, size_t out_phys_offset,
                   size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
     {
         for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
         for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
         {
-            size_t ss_in  = in_phys_offset + ss1*sdim2 + ss2;
-            size_t ss_out = in_phys_offset + ss1*sdim2 + ss2 + out_phys_shift;
+            size_t ss_in  =  in_phys_offset + ss1*sdim2 + ss2;
+            size_t ss_out = out_phys_offset + ss1*sdim2 + ss2;
             for(size_t rr = 0; rr < rdim; ++rr)
                 for(size_t ll = 0; ll < ldim; ++ll)
                     out(in_left_offset + ss_out*ldim + ll, rr) += 
