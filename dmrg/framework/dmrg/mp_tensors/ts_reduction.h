@@ -59,7 +59,7 @@ namespace ts_reduction {
         };
 
         template <typename T>
-        std::size_t out_phys_offset(T j, T jl, T, jm)
+        std::size_t out_phys_offset(T j, T jl, T jm)
         {
             return 0;
         }
@@ -212,7 +212,7 @@ namespace ts_reduction {
                         jr = SymmGroup::spin(rc);
 
                         if ( (jl == jr) && (jl > 0) && (S1 == 1) && (S2 == 1) ) {
-                            spin_t j = (in_phys_offset == 1) ? 0 : 2;
+                            spin_t j = (SymmGroup::spin(phys_c1) == 1) ? 0 : 2;
                             size_t shift = (j==0) ? 1 : 0;
 
                             for (spin_t jm = jl - 1; jm <= jl + 1; jm+=2) {
