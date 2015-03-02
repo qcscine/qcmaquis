@@ -98,17 +98,17 @@ public:
     template<class Archive> void save(Archive & ar) const;
     
 private:
-    template <class SymmType> class type_helper { };
+    template <bool SU2> class type_helper { };
 
-    template <class SymmType>
-    MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<SymmType>) const;
+    template <bool SU2>
+    MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<SU2>) const;
 
-    MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<symm_traits::SU2Tag>) const;
+    MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<true>) const;
 
-    template <class SymmType>
-    TwoSiteTensor<Matrix, SymmGroup> & operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<SymmType>);
+    template <bool SU2>
+    TwoSiteTensor<Matrix, SymmGroup> & operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<SU2>);
 
-    TwoSiteTensor<Matrix, SymmGroup> & operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<symm_traits::SU2Tag>);
+    TwoSiteTensor<Matrix, SymmGroup> & operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<true>);
 
     MultiIndex<SymmGroup> midx;
     set_id left_paired;

@@ -145,19 +145,19 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired() const
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps() const
 {
-    return make_mps_(type_helper<typename symm_traits::SymmType<SymmGroup>::type>());
+    return make_mps_(type_helper<symm_traits::HasSU2<SymmGroup>::value>());
 }
 
 template<class Matrix, class SymmGroup>
-template<class SymmType>
-MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_helper<SymmType>) const
+template<bool SU2>
+MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_helper<SU2>) const
 {
     make_right_paired();
     return MPSTensor<Matrix, SymmGroup>(phys_i, left_i, right_i, data_, RightPaired);
 }
 
 template<class Matrix, class SymmGroup>
-MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_helper<symm_traits::SU2Tag>) const
+MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_helper<true>) const
 {
     make_right_paired();
     block_matrix<Matrix, SymmGroup> tmp;
@@ -389,12 +389,12 @@ void TwoSiteTensor<Matrix, SymmGroup>::swap_with(TwoSiteTensor<Matrix, SymmGroup
 template<class Matrix, class SymmGroup>
 TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator << (MPSTensor<Matrix, SymmGroup> const & rhs)
 {
-    return operator_shift(rhs, type_helper<typename symm_traits::SymmType<SymmGroup>::type>());
+    return operator_shift(rhs, type_helper<symm_traits::HasSU2<SymmGroup>::value>());
 }
 
 template<class Matrix, class SymmGroup>
-template<class SymmType>
-TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<SymmType>)
+template<bool SU2>
+TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<SU2>)
 {
     cur_storage = TSLeftPaired;
     rhs.make_left_paired();
@@ -415,17 +415,12 @@ TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator_sh
 
 template<class Matrix, class SymmGroup>
 TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs,
-                                                                                    type_helper<symm_traits::SU2Tag>)
+                                                                                    type_helper<true>)
 {
     cur_storage = TSLeftPaired;
     rhs.make_left_paired();
 
-    // Precondition: rhs.data() and this->data() have same shape if both are left_paired
-         //     assert( rhs.row_dim() == this->row_dim() &&
-         // rhs.col_dim() == this->col_dim() &&
-         // rhs.site_dim() == this->site_dim() );
-         //     assert( rhs.data().left_basis() == this->data().left_basis() &&
-         // rhs.data().right_basis() == this->data().right_basis() );
+    // Precondition: see above
     
     block_matrix<Matrix, SymmGroup> tmp;
     Index<SymmGroup> phys_out = ts_reduction::unreduce_left(phys_i_left, phys_i_right, left_i, right_i, rhs.data(), tmp);
