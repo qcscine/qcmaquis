@@ -38,6 +38,7 @@
 #include <utility>
 
 #include "ts_reshape.h"
+#include "ts_reduction.h"
 
 template<class Matrix, class SymmGroup>
 TwoSiteTensor<Matrix, SymmGroup>::TwoSiteTensor(MPSTensor<Matrix, SymmGroup> const & mps1,
@@ -144,8 +145,24 @@ void TwoSiteTensor<Matrix, SymmGroup>::make_right_paired() const
 template<class Matrix, class SymmGroup>
 MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps() const
 {
+    return make_mps_(type_helper<symm_traits::HasSU2<SymmGroup>::value>());
+}
+
+template<class Matrix, class SymmGroup>
+template<bool SU2>
+MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_helper<SU2>) const
+{
     make_right_paired();
     return MPSTensor<Matrix, SymmGroup>(phys_i, left_i, right_i, data_, RightPaired);
+}
+
+template<class Matrix, class SymmGroup>
+MPSTensor<Matrix, SymmGroup> TwoSiteTensor<Matrix, SymmGroup>::make_mps_(type_helper<true>) const
+{
+    make_right_paired();
+    block_matrix<Matrix, SymmGroup> tmp;
+    Index<SymmGroup> phys_out = ts_reduction::reduce_right(phys_i_left, phys_i_right, left_i, right_i, data_, tmp);
+    return MPSTensor<Matrix, SymmGroup>(phys_out, left_i, right_i, tmp, RightPaired);
 }
 
 template<class Matrix, class SymmGroup>
@@ -372,6 +389,13 @@ void TwoSiteTensor<Matrix, SymmGroup>::swap_with(TwoSiteTensor<Matrix, SymmGroup
 template<class Matrix, class SymmGroup>
 TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator << (MPSTensor<Matrix, SymmGroup> const & rhs)
 {
+    return operator_shift(rhs, type_helper<symm_traits::HasSU2<SymmGroup>::value>());
+}
+
+template<class Matrix, class SymmGroup>
+template<bool SU2>
+TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<SU2>)
+{
     cur_storage = TSLeftPaired;
     rhs.make_left_paired();
 
@@ -387,7 +411,23 @@ TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator <<
     this->data() = rhs.data();
 
     return *this;
-
 }
 
+template<class Matrix, class SymmGroup>
+TwoSiteTensor<Matrix, SymmGroup> & TwoSiteTensor<Matrix, SymmGroup>::operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs,
+                                                                                    type_helper<true>)
+{
+    cur_storage = TSLeftPaired;
+    rhs.make_left_paired();
 
+    // Precondition: see above
+    
+    block_matrix<Matrix, SymmGroup> tmp;
+    Index<SymmGroup> phys_out = ts_reduction::unreduce_left(phys_i_left, phys_i_right, left_i, right_i, rhs.data(), tmp);
+    left_i = rhs.row_dim();
+    right_i = rhs.col_dim();
+    phys_i = phys_out;
+    this->data() = tmp;
+
+    return *this;
+}

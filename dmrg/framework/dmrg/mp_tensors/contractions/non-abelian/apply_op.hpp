@@ -28,23 +28,9 @@
 #define CONTRACTIONS_SU2_APPLY_OP_HPP
 
 #include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
-#include "dmrg/mp_tensors/contractions/non-abelian/gsl_coupling.h"
-
-namespace SU2 {
-
-    inline
-    double mod_coupling(int two_ja, int two_jb, int two_jc,
-                        int two_jd, int two_je, int two_jf,
-                        int two_jg, int two_jh, int two_ji)
-    {
-        return sqrt( (two_jg+1.) * (two_jh+1.) * (two_jc+1.) * (two_jf+1.) ) *
-               gsl_sf_coupling_9j(two_ja, two_jb, two_jc,
-                                  two_jd, two_je, two_jf,
-                                  two_jg, two_jh, two_ji);
-    }
-}
 
 namespace contraction {
 namespace SU2 {
