@@ -142,12 +142,12 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
     }
 	
     //--- Print right allowed terms ---//
-	for (int i = L; i > -1; --i)
-	{
-		maquis::cout << "Right allowed sectors on site: " << i << std::endl;
-		maquis::cout << right_allowed[i] << std::endl;
-	}
-	maquis::cout << std::endl;
+	//for (int i = L; i > -1; --i)
+	//{
+	//	maquis::cout << "Right allowed sectors on site: " << i << std::endl;
+	//	maquis::cout << right_allowed[i] << std::endl;
+	//}
+	//maquis::cout << std::endl;
 
     for (int i = 0; i < L+1; ++i) {
         allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
@@ -157,8 +157,8 @@ inline std::vector<Index<SymmGroup> > allowed_sectors(std::vector<int> const& si
                                  left_allowed[i].size_of_block(it->first),
                                  right_allowed[i].size_of_block(it->first));
 
-		maquis::cout << "Common subset of allowed sectors on site: " << i << std::endl;
-		maquis::cout << allowed[i] << std::endl;
+		//maquis::cout << "Common subset of allowed sectors on site: " << i << std::endl;
+		//maquis::cout << allowed[i] << std::endl;
     }
     
     return allowed;
