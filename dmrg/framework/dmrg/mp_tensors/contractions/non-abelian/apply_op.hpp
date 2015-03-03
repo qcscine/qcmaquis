@@ -29,6 +29,7 @@
 
 #include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 #include "dmrg/block_matrix/block_matrix.h"
+#include "dmrg/block_matrix/symmetry/gsl_coupling.h"
 #include "dmrg/mp_tensors/mpstensor.h"
 #include "dmrg/mp_tensors/mpotensor.h"
 

@@ -27,8 +27,23 @@
 
 #ifndef AMBIENT
 #define AMBIENT
+
+#ifndef AMBIENT_DEFAULT_IB
+#define AMBIENT_DEFAULT_IB           2048
+#endif
+#ifndef AMBIENT_INSTR_BULK_CHUNK
+#define AMBIENT_INSTR_BULK_CHUNK     16777216 // 16 MB
+#endif
+#ifndef AMBIENT_DATA_BULK_CHUNK
+#define AMBIENT_DATA_BULK_CHUNK      67108864 // 64 MB
+#endif
+#ifndef AMBIENT_MPI
+#define AMBIENT_MPI                  MPI_THREAD_FUNNELED
+#endif
+#define MPI_DISABLE -1
+
 // {{{ system includes
-#ifndef AMBIENT_DISABLE_MPI
+#if AMBIENT_MPI != MPI_DISABLE
 #include <mpi.h>
 #endif
 #include <complex>
@@ -53,19 +68,6 @@
 #include <stdexcept>
 #include <type_traits>
 // }}}
-
-#ifndef AMBIENT_DEFAULT_IB
-#define AMBIENT_DEFAULT_IB           2048
-#endif
-#ifndef AMBIENT_INSTR_BULK_CHUNK
-#define AMBIENT_INSTR_BULK_CHUNK     16777216 // 16 MB
-#endif
-#ifndef AMBIENT_DATA_BULK_CHUNK
-#define AMBIENT_DATA_BULK_CHUNK      67108864 // 64 MB
-#endif
-#ifndef AMBIENT_MPI_THREADING
-#define AMBIENT_MPI_THREADING        MPI_THREAD_FUNNELED
-#endif
 
 #include "ambient/utils/dim2.hpp"
 #include "ambient/utils/tree.hpp"
