@@ -34,11 +34,14 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/functional/hash.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/array.hpp>
 
 #include <alps/numeric/matrix.hpp>
+
+#include <dmrg/utils/BaseParameters.h>
 
 #include <dmrg/block_matrix/symmetry/nu1pg.h>
 #include <dmrg/block_matrix/symmetry/lpg_tables.h>
@@ -156,18 +159,19 @@ NU1ChargeLPG<N, S> operator/(NU1ChargeLPG<N, S> const & a, int n)
 template<int N, class S = int>
 class NU1LPG
 {
+    template<class G, int A, int B> friend struct tpl_arith_;
 public:
     typedef S subcharge;
     typedef NU1ChargeLPG<N, S> charge;
     typedef std::vector<charge> charge_v;
-	
-	// TODO: Take it as an input
-	static const std::size_t group = 1;
-
+private:
+    static alps::numeric::matrix<S> mult_table;
+    static std::vector<S> adjoin_table;
+    static std::size_t group_id;
+    static subcharge max_irrep;
+public:	
     static const charge IdentityCharge;
     static const bool finite = false;
-    static const alps::numeric::matrix<S> mult_table;
-    static const std::vector<S> adjoin_table;
 
     static subcharge adjoin(subcharge I)
     {
@@ -187,119 +191,102 @@ public:
             ret = fuse(ret, v[i]);
         return ret;
     }
-};
-  
-template<class S>
-std::vector<S> generate_lpg_adjoin_table(std::size_t group)
-{
-	std::vector<S> ret;
-	// TODO: Add all the cases for all symmetry groups
-	switch(group) {
-		case(1):
-			ret = generate_adjoin_table_Cinf<S>();
-			break;
-	}
 
-	/*
-    int num_irreps = 128;
-    std::vector<S> adjoin_table(num_irreps);
+    static void initialize_dg_tables(BaseParameters & parms)
+    {
+        // open integral_file
+        std::string integral_file = parms["integral_file"];
+        std::ifstream integral_stream;
+        integral_stream.open(integral_file.c_str());
+        // get first line of integral_file
+        std::string line;
+        std::getline(integral_stream, line);
+        // split it
+        std::vector<std::string> split_line;
+        boost::split(split_line, line, boost::is_any_of("="));
+        std::string grp_str = *(--split_line.end());
+        // isolate group number and read it
+        boost::erase_all(grp_str,",");
+        std::istringstream iss(grp_str);
+        iss >> group_id;
+        // close integral_file
+        integral_stream.close();
 
-    // boson irreps
-    adjoin_table[0] = 0;
-    adjoin_table[63] = 63;
-
-    for (int i = 1; i < num_irreps/2 - 1; ++i) {
-        adjoin_table[i] = i + pow(-1,i+1);
-    }
-
-    // fermion irreps
-    for (int i = num_irreps/2; i < num_irreps; ++i) {
-        adjoin_table[i] = i + pow(-1,i);
-    }
-
-    return adjoin_table;*/
-	return ret;
-}
-  
-template<class S>
-alps::numeric::matrix<S> generate_lpg_mult_table(std::size_t group)
-{
-	alps::numeric::matrix<S> ret;
-	// TODO: Add all the cases for all symmetry groups
-	switch(group) {
-		case(1):
-			ret = generate_mult_table_Cinf<S>();
-			break;
-	}
-
-
-    // ************* TO DO ***************
-    // check double group --> insert input param in the function?
-    // go in the right case for the double group
-    // initialize variables:
-    // number of irreps, mult table, inverse and adjoints elements?,
-    //
-    // ***********************************
-
-    // Cinfv double group mapped to C64
-    // inverse and adjoint elements not implemented --> sebastian didn't
-   /*
-
-    int num_irreps = 128;
-    if(num_irreps/2 % 2 == 1){
-        throw std::logic_error("Number of boson and fermion irreps must be even\n");}
-    int shift = num_irreps/2;
-    int irrep = 1;
-    int mj = 0;
-    std::vector<S> mj2rep(num_irreps+1);
-    alps::numeric::matrix<S> mult_table(num_irreps,num_irreps);
-    mj2rep[shift+mj] = irrep;
-    
-    // populate mj2rep vector with boson and fermion irreps
-    for(mj = 2; mj <= num_irreps/2-2; mj+=2){
-        irrep++;
-        mj2rep[shift+mj] = irrep;
-        irrep++;
-        mj2rep[shift-mj] = irrep;
-    }
-
-    mj = num_irreps/2;
-    irrep++;
-    mj2rep[shift+mj] = irrep;
-    mj2rep[shift-mj] = irrep;
-
-    for(mj = 1; mj <= num_irreps/2-1; mj+=2){
-        irrep++;
-        mj2rep[shift+mj] = irrep;
-        irrep++;
-        mj2rep[shift-mj] = irrep;
-    }
-
-    // build multiplication table
-    int mij = 0;
-    int jrrep = 0;
-    int ijrrep = 0;
-    for(int mi = -num_irreps/2; mi <= num_irreps/2; mi++){
-        for(mj = -num_irreps/2; mj <= num_irreps/2; mj++){
-            mij = mi + mj;
-            if(mij <  -num_irreps/2){mij = mij + num_irreps;}
-            if(mij >   num_irreps/2){mij = mij - num_irreps;}
-            if(mij == -num_irreps/2){mij = num_irreps/2;}
-            irrep  = mj2rep[shift+mi];
-            jrrep  = mj2rep[shift+mj];
-            ijrrep = mj2rep[shift+mij];
-            mult_table(irrep-1,jrrep-1) = ijrrep-1;
+        // set up multiplication table according to group_id (same numbering as in Dirac)
+        switch(group_id) {
+            // C2h, D2h
+            case 4:
+                max_irrep    = 8;
+                mult_table   = generate_mult_table_C2h<S>(max_irrep);
+                adjoin_table = generate_adjoin_table_C2h<S>(max_irrep);
+                break;
+            // C2, D2, C2v, Cs
+            case 5:
+                max_irrep    = 4;
+                mult_table   = generate_mult_table_Cs_C2<S>(max_irrep);
+                adjoin_table = generate_adjoin_table_Cs_C2<S>(max_irrep);
+                break;
+            // Cs --> group_ID = 5
+            case 6:
+                throw std::runtime_error("Double group Cs has ID = 5\n");
+            // Ci
+            case 7:
+                max_irrep    = 4;
+                mult_table   = generate_mult_table_Ci<S>(max_irrep);
+                adjoin_table = generate_adjoin_table_Ci<S>(max_irrep);
+                break;
+            // C1
+            case 8:
+                max_irrep    = 4;
+                mult_table   = generate_mult_table_C1<S>(max_irrep);
+                adjoin_table = generate_adjoin_table_C1<S>(max_irrep);
+                break;
+            // D2h spinfree
+            case 9:
+                throw std::runtime_error("D2h spinfree not implemented yet!\n");
+            // Cinfv (C2v + lin. symmetry) --> mapped to C32
+            case 10:
+                max_irrep    = 128;
+                mult_table   = generate_mult_table_C32<S>(max_irrep);
+                adjoin_table = generate_adjoin_table_C32<S>(max_irrep);
+                break;
+            // Dinfh (D2h + lin. symmetry) --> mapped to C16h
+            case 11:
+                max_irrep    = 128;
+                mult_table   = generate_mult_table_C16h<S>(max_irrep);
+                adjoin_table = generate_adjoin_table_C16h<S>(max_irrep);
+                break;
+            default:
+                throw std::runtime_error("Double group not known!\nAvailable double groups are C1, Ci, C2h, D2h, C2, D2, C2v, Cs, Cinfv, Dinfh.\n");
         }
     }
 
-    return mult_table;
-*/
-	return ret;
+    static subcharge const get_max_irrep()
+    {
+        return max_irrep;
+    }
+
+    template<S> friend std::vector<S> default_dg_adjoin_table();
+    template<S> friend alps::numeric::matrix<S> default_dg_mult_table();
+};
+  
+template<class S>
+std::vector<S> default_dg_adjoin_table()
+{
+	return std::vector<S>();
+}
+  
+template<class S>
+alps::numeric::matrix<S> default_dg_mult_table()
+{
+    return alps::numeric::matrix<S>();
 }
 
 template<int N, class S> const typename NU1LPG<N,S>::charge NU1LPG<N,S>::IdentityCharge = typename NU1LPG<N,S>::charge();
-template<int N, class S> const alps::numeric::matrix<S> NU1LPG<N,S>::mult_table = generate_lpg_mult_table<S>(NU1LPG<N,S>::group);
-template<int N, class S> const std::vector<S> NU1LPG<N,S>::adjoin_table = generate_lpg_adjoin_table<S>(NU1LPG<N,S>::group);
+template<int N, class S> alps::numeric::matrix<S> NU1LPG<N,S>::mult_table = default_dg_mult_table<S>();
+template<int N, class S> std::vector<S> NU1LPG<N,S>::adjoin_table = default_dg_adjoin_table<S>();
+template<int N, class S> std::size_t NU1LPG<N,S>::group_id = 0;
+template<int N, class S> typename NU1LPG<N,S>::subcharge NU1LPG<N,S>::max_irrep = 0;
 
 typedef NU1LPG<1> U1LPG;
 

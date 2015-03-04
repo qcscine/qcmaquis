@@ -103,7 +103,7 @@ public:
             	tmp = SymmGroup::fuse(tmp, -charges[ii]);}
         }
 
-        if (tmp[0] == 0 && tmp[1] != 0) {return false;}
+        if (tmp[0] == 0 && tmp[1] != parms["irrep_charge"]) {return false;}
         else {return true;}
     }
 
@@ -308,13 +308,11 @@ private:
              create, destroy,
              count;
 
-    typename SymmGroup::subcharge max_irrep;
-	
 	std::vector<op_t> generate_site_specific_ops(op_t const & op) const
     {
         PGDecorator<SymmGroup> set_symm;
         std::vector<op_t> ret;
-        for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
+        for (typename SymmGroup::subcharge sc=0; sc < SymmGroup::get_max_irrep()+1; ++sc) {
             op_t mod(set_symm(op.basis(), sc));
             for (std::size_t b = 0; b < op.n_blocks(); ++b)
                 mod[b] = op[b];

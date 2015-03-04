@@ -117,7 +117,7 @@ namespace chem_detail {
             assert( *std::max_element(idx_.elements().first, idx_.elements().second) <= lat.size() );
         }
         #endif
-
+        
         return std::make_pair(idx_, matrix_elements);
     }
 

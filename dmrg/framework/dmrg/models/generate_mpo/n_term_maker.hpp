@@ -52,7 +52,7 @@ public:
 	, fillings(fill_)
 	, ops(ops_)
 	{
-		// Assuming all operators passed are fermionic!!
+		// Assuming all operators are fermionic!!
 		bool trivial_fill=true;
 		std::sort(ops.begin(),ops.end(), boost::bind(&pos_op_t::first, _1) < 
 										 boost::bind(&pos_op_t::first, _2));

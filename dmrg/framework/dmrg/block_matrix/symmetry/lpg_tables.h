@@ -33,9 +33,8 @@
 #include <alps/numeric/matrix.hpp>
 
 template<class S>
-std::vector<S> generate_adjoin_table_C1()
+std::vector<S> generate_adjoin_table_C1(S const & num_irreps)
 {
-    int num_irreps = 2;
     std::vector<S> adjoin_table(num_irreps);
     adjoin_table[0] = 0;
     adjoin_table[1] = 1;
@@ -44,9 +43,8 @@ std::vector<S> generate_adjoin_table_C1()
 }
 
 template<class S>
-alps::numeric::matrix<S> generate_mult_table_C1()
+alps::numeric::matrix<S> generate_mult_table_C1(S const & num_irreps)
 {
-    int num_irreps = 2;
     alps::numeric::matrix<S> mult_table(num_irreps,num_irreps);
     mult_table(0,0) = 0;
     mult_table(0,1) = 1;
@@ -57,9 +55,8 @@ alps::numeric::matrix<S> generate_mult_table_C1()
 }
 
 template<class S>
-std::vector<S> generate_adjoin_table_Ci()
+std::vector<S> generate_adjoin_table_Ci(S const & num_irreps)
 {
-    int num_irreps = 4;
     std::vector<S> adjoin_table(num_irreps);
     adjoin_table[0] = 0;
     adjoin_table[1] = 1;
@@ -70,9 +67,8 @@ std::vector<S> generate_adjoin_table_Ci()
 }
 
 template<class S>
-alps::numeric::matrix<S> generate_mult_table_Ci()
+alps::numeric::matrix<S> generate_mult_table_Ci(S const & num_irreps)
 {
-    int num_irreps = 4;
     alps::numeric::matrix<S> mult_table(num_irreps,num_irreps);
     mult_table(0,0) = 0;
     mult_table(0,1) = 1;
@@ -95,9 +91,8 @@ alps::numeric::matrix<S> generate_mult_table_Ci()
 }
 
 template<class S>
-std::vector<S> generate_adjoin_table_Cs_C2()
+std::vector<S> generate_adjoin_table_Cs_C2(S const & num_irreps)
 {
-    int num_irreps = 4;
     std::vector<S> adjoin_table(num_irreps);
     for(int i = 0; i < num_irreps/2; ++i)
         adjoin_table[i] = i;
@@ -109,9 +104,8 @@ std::vector<S> generate_adjoin_table_Cs_C2()
 }
 
 template<class S>
-alps::numeric::matrix<S> generate_mult_table_Cs_C2()
+alps::numeric::matrix<S> generate_mult_table_Cs_C2(S const & num_irreps)
 {
-    int num_irreps = 4;
     alps::numeric::matrix<S> mult_table(num_irreps,num_irreps);
     mult_table(0,0) = 0;
     mult_table(0,1) = 1;
@@ -134,9 +128,8 @@ alps::numeric::matrix<S> generate_mult_table_Cs_C2()
 }
 
 template<class S>
-std::vector<S> generate_adjoin_table_C2h()
+std::vector<S> generate_adjoin_table_C2h(S const & num_irreps)
 {
-    int num_irreps = 8;
     std::vector<S> adjoin_table(num_irreps);
     for(int i = 0; i < num_irreps/2; ++i)
         adjoin_table[i] = i;
@@ -148,9 +141,8 @@ std::vector<S> generate_adjoin_table_C2h()
 }
 
 template<class S>
-alps::numeric::matrix<S> generate_mult_table_C2h()
+alps::numeric::matrix<S> generate_mult_table_C2h(S const & num_irreps)
 {
-    int num_irreps = 8;
     alps::numeric::matrix<S> mult_table(num_irreps,num_irreps);
     for(int j = 0; j < num_irreps; ++j) {
         for(int i = 0; i < num_irreps; ++i) {
@@ -196,12 +188,8 @@ alps::numeric::matrix<S> generate_mult_table_C2h()
 }
 
 template<class S>
-std::vector<S> generate_adjoin_table_Cinf()
+std::vector<S> generate_adjoin_table_C32(S const & num_irreps)
 {
-	//TODO: num_irreps should be a member of the symmetry class
-	//      accessible from outside
-    int num_irreps = 128;
-
     std::vector<S> adjoin_table(num_irreps);
 
     // boson irreps
@@ -221,14 +209,9 @@ std::vector<S> generate_adjoin_table_Cinf()
 }
   
 template<class S>
-alps::numeric::matrix<S> generate_mult_table_Cinf()
+alps::numeric::matrix<S> generate_mult_table_C32(S const & num_irreps)
 {
-	//TODO: num_irreps should be a member of the symmetry class
-	//      accessible from outside
-    int num_irreps = 128;
-    
-	if(num_irreps/2 % 2 == 1){
-        throw std::logic_error("Number of boson and fermion irreps must be even\n");}
+    maquis::cout << num_irreps << std::endl;
     int shift = num_irreps/2;
     int irrep = 1;
     int mj = 0;
@@ -277,11 +260,8 @@ alps::numeric::matrix<S> generate_mult_table_Cinf()
 }
 
 template<class S>
-std::vector<S> generate_adjoin_table_Cinfh()
+std::vector<S> generate_adjoin_table_C16h(S const & num_irreps)
 {
-	//TODO: num_irreps should be a member of the symmetry class
-	//      accessible from outside
-    int num_irreps = 128;
     int num_boson_irreps = num_irreps/2;
     int num_gerade  = num_boson_irreps/2;
     std::vector<S> adjoin_table(num_irreps);
@@ -307,11 +287,8 @@ std::vector<S> generate_adjoin_table_Cinfh()
 }
   
 template<class S>
-alps::numeric::matrix<S> generate_mult_table_Cinfh()
+alps::numeric::matrix<S> generate_mult_table_C16h(S const & num_irreps)
 {
-	//TODO: num_irreps should be a member of the symmetry class
-	//      accessible from outside
-    int num_irreps = 128;
     int shift = num_irreps/4;
     int irrep = 0;
     int mj = 0;
