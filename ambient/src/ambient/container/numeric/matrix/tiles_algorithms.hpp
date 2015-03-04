@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -434,6 +434,11 @@ namespace ambient { namespace numeric {
                 gemm(a[i], b.tile(i,j), c.tile(i,j));
             }
         }
+    }
+
+    template<typename T, int IB>
+    inline void gemm(const tiles<diagonal_matrix<T>, IB>& a, const tiles<diagonal_matrix<T>, IB>& b, tiles<diagonal_matrix<T>, IB>& c){
+        for(int i = 0; i < c.nt; i++) gemm(a[i], b[i], c[i]);
     }
 
     template<class Matrix, class DiagonalMatrix, int IB>

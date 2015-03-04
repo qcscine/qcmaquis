@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -27,8 +27,23 @@
 
 #ifndef AMBIENT
 #define AMBIENT
+
+#ifndef AMBIENT_DEFAULT_IB
+#define AMBIENT_DEFAULT_IB           2048
+#endif
+#ifndef AMBIENT_INSTR_BULK_CHUNK
+#define AMBIENT_INSTR_BULK_CHUNK     16777216 // 16 MB
+#endif
+#ifndef AMBIENT_DATA_BULK_CHUNK
+#define AMBIENT_DATA_BULK_CHUNK      67108864 // 64 MB
+#endif
+#ifndef AMBIENT_MPI
+#define AMBIENT_MPI                  MPI_THREAD_FUNNELED
+#endif
+#define MPI_DISABLE -1
+
 // {{{ system includes
-#ifndef DISABLE_MPI
+#if AMBIENT_MPI != MPI_DISABLE
 #include <mpi.h>
 #endif
 #include <complex>
@@ -54,23 +69,19 @@
 #include <type_traits>
 // }}}
 
-#define AMBIENT_IB                    2048
-#define AMBIENT_INSTR_BULK_CHUNK      16777216 // 16 MB
-#define AMBIENT_DATA_BULK_CHUNK       67108864 // 64 MB
-#define AMBIENT_MPI_THREADING         MPI_THREAD_FUNNELED
-
-#include "ambient/utils/dim2.h"
-#include "ambient/utils/enums.h"
+#include "ambient/utils/dim2.hpp"
 #include "ambient/utils/tree.hpp"
-#include "ambient/utils/fence.hpp"
+#include "ambient/utils/guard_once.hpp"
 #include "ambient/utils/threads.hpp"
 #include "ambient/utils/math.hpp"
 #include "ambient/utils/rank_t.hpp"
+#include "ambient/utils/io.hpp"
 
 #include "ambient/memory/pool.hpp"
 #include "ambient/memory/new.h"
 #include "ambient/memory/allocator.h"
 
+#include "ambient/models/ssm/locality.h"
 #include "ambient/models/ssm/revision.h"
 #include "ambient/models/ssm/history.h"
 #include "ambient/models/ssm/transformable.h"
@@ -98,7 +109,6 @@
 #include "ambient/controllers/ssm/backbone.h"
 
 #include "ambient/utils/auxiliary.hpp"
-#include "ambient/utils/io.hpp"
 
 #include "ambient/memory/new.hpp"
 #include "ambient/memory/allocator.hpp"

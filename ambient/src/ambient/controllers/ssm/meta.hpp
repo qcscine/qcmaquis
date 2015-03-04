@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -30,7 +30,7 @@ namespace ambient { namespace controllers { namespace ssm {
     inline void meta::spawn(revision& r, type t){
         meta* m = new meta(r, ambient::which(), t);
         if(t == type::get) r.generator = m;
-        ambient::selector.delay_transfer(m);
+        ambient::select().delay_transfer(m);
     }
     inline meta::meta(revision& r, rank_t w, type t)
     : r(r), which(w), t(t)

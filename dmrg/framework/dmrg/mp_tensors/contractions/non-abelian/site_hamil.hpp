@@ -31,7 +31,7 @@ namespace contraction {
 
     template<class Matrix, class OtherMatrix, class SymmGroup>
     MPSTensor<Matrix, SymmGroup>
-    EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_traits::SU2Tag>::
+    Engine<Matrix, OtherMatrix, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type>::
     site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,
@@ -40,11 +40,6 @@ namespace contraction {
         typedef typename SymmGroup::charge charge;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
 
-        //maquis::cout << ket_tensor.row_dim() << std::endl;
-        //maquis::cout << ket_tensor.site_dim() << std::endl;
-        //maquis::cout << ket_tensor.col_dim() << std::endl;
-        //maquis::cout << "sh2 input ket data:\n";
-        //maquis::cout << ket_tensor.data() << std::endl;
         std::vector<block_matrix<Matrix, SymmGroup> > t
             = common::boundary_times_mps<Matrix, OtherMatrix, SymmGroup, ::SU2::SU2Gemms>(ket_tensor, left, mpo);
 
@@ -86,27 +81,14 @@ namespace contraction {
             ContractionGrid<Matrix, SymmGroup> contr_grid(mpo, 0, 0);
             SU2::lbtm_kernel(b2, contr_grid, left, t, mpo, ket_tensor.data().basis(), right_i, out_left_i, in_right_pb, out_left_pb);
             block_matrix<Matrix, SymmGroup> tmp;
-            ::SU2::gemm(contr_grid(0,0), right[b2], tmp);
-
-            //maquis::cout << contr_grid(0,0).left_basis() << std::endl;
-            //maquis::cout << contr_grid(0,0).right_basis() << std::endl;
-            //maquis::cout << "  *\n";
-            //maquis::cout << right[b2].left_basis() << std::endl;
-            //maquis::cout << right[b2].right_basis() << std::endl;
-            //maquis::cout << "  -->\n";
-            //maquis::cout << tmp.left_basis() << std::endl;
-            //maquis::cout << tmp.right_basis() << std::endl << std::endl;
-            //maquis::cout << "-------------------------------------------\n";
+            ::SU2::gemm_trim(contr_grid(0,0), right[b2], tmp);
 
             contr_grid(0,0).clear();
             parallel_critical
             for (std::size_t k = 0; k < tmp.n_blocks(); ++k)
-                if (tmp.basis().left_charge(k) == tmp.basis().right_charge(k))
                 ret.data().match_and_add_block(tmp[k], tmp.basis().left_charge(k), tmp.basis().right_charge(k));
         });
 #endif
-        //maquis::cout << "sh2 output ket data:\n";
-        //maquis::cout << ret.data() << std::endl;
         return ret;
     }
 

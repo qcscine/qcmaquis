@@ -107,6 +107,21 @@ namespace dual_index_detail
         typename SymmGroup::charge c1_;
         typename SymmGroup::charge c2_;
     };
+
+    template<class SymmGroup>
+    class is_first_equal_row
+    {
+    public:
+        is_first_equal_row(typename SymmGroup::charge c1) : c1_(c1) { }
+
+        bool operator()(QnBlock<SymmGroup> const & x) const
+        {
+            return x.lc == c1_;
+        }
+
+    private:
+        typename SymmGroup::charge c1_;
+    };
 }
 
 namespace boost { namespace serialization {
@@ -171,6 +186,18 @@ public:
         else
             return std::find_if(data_.begin(), data_.end(),
                                 dual_index_detail::is_first_equal<SymmGroup>(row,col)) != data_.end();
+    }
+
+    bool left_has(charge row) const
+    {
+        if (sorted_) {
+            const_iterator it = std::lower_bound(data_.begin(), data_.end(), dual_index_detail::QnBlock<SymmGroup>(row,SymmGroup::IdentityCharge,0,0),
+                                                 dual_index_detail::gt_row<SymmGroup>());
+            return (it != data_.end() && row == it->lc);
+        }
+        else
+            return std::find_if(data_.begin(), data_.end(),
+                                dual_index_detail::is_first_equal_row<SymmGroup>(row)) != data_.end();
     }
 
     bool is_sorted() const { return sorted_; }

@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -30,8 +30,11 @@
 
 namespace ambient { namespace memory {
 
-    struct data_bulk {
+    class data_bulk {
+        data_bulk(const data_bulk&) = delete;
+        data_bulk& operator=(const data_bulk&) = delete;
         data_bulk();
+    public:
         static data_bulk& instance();
         template<size_t S> static void* malloc();
                            static void* malloc(size_t s);

@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -31,10 +31,10 @@
 namespace ambient {
 
         inline bool scope::nested(){
-            return selector.has_nested_actor();
+            return ambient::select().has_nested_actor();
         }
         inline bool scope::local(){
-            return selector.get_actor().local();
+            return ambient::select().get_actor().local();
         }
         inline scope::const_iterator scope::balance(int k, int max_k){
             int capacity = scope::size();
@@ -50,7 +50,7 @@ namespace ambient {
             return scope::begin() + granularity * (s[k] % (scope::size() / granularity));
         }
         inline scope& scope::top(){
-            return selector.get_scope();
+            return ambient::select().get_scope();
         }
         inline scope::const_iterator scope::begin(){
             return top().provision.begin();
@@ -62,16 +62,19 @@ namespace ambient {
             return top().provision.size();
         }
         inline scope::~scope(){
-            selector.pop_scope();
+            ambient::select().pop_scope();
         }
         inline scope::scope(const_iterator first, const_iterator last){
             for(const_iterator it = first; it != last; it++) provision.push_back(*it);
-            selector.push_scope(this);
+            ambient::select().push_scope(this);
         }
         inline scope::scope(const_iterator first, size_t size){
             const_iterator last = first + std::min(ambient::scope::size(),size);
             for(const_iterator it = first; it != last; it++) provision.push_back(*it);
-            selector.push_scope(this);
+            ambient::select().push_scope(this);
+        }
+        inline scope::scope(size_t np){
+            for(int i = 0; i < np; i++) provision.push_back(i);
         }
 }
 

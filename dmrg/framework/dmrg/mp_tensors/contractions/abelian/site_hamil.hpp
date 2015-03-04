@@ -30,9 +30,9 @@
 
 namespace contraction {
 
-    template<class Matrix, class OtherMatrix, class SymmGroup>
+    template<class Matrix, class OtherMatrix, class SymmGroup, class SymmType>
     MPSTensor<Matrix, SymmGroup>
-    EngineBackEnd<Matrix, OtherMatrix, SymmGroup, symm_traits::AbelianTag>::
+    Engine<Matrix, OtherMatrix, SymmGroup, SymmType>::
     site_hamil2(MPSTensor<Matrix, SymmGroup> ket_tensor,
                 Boundary<OtherMatrix, SymmGroup> const & left,
                 Boundary<OtherMatrix, SymmGroup> const & right,
@@ -45,9 +45,10 @@ namespace contraction {
             = common::boundary_times_mps<Matrix, OtherMatrix, SymmGroup, Gemms>(ket_tensor, left, mpo);
 
         Index<SymmGroup> const & physical_i = ket_tensor.site_dim(),
-                               & left_i = ket_tensor.row_dim(),
-                               & right_i = ket_tensor.col_dim(),
-                                 out_left_i = physical_i * left_i;
+                               & left_i = ket_tensor.row_dim();
+        Index<SymmGroup> right_i = ket_tensor.col_dim(),
+                         out_left_i = physical_i * left_i;
+        common_subset(out_left_i, right_i);
         ProductBasis<SymmGroup> out_left_pb(physical_i, left_i);
         ProductBasis<SymmGroup> in_right_pb(physical_i, right_i,
                                 boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),

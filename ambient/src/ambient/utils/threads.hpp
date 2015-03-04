@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -28,18 +28,21 @@
 #ifndef AMBIENT_UTILS_THREADS
 #define AMBIENT_UTILS_THREADS
 
+#define CILK    1
+#define OPENMP  2
+
 // default: select threading if icc/gcc
-#if !defined(AMBIENT_CILK) && !defined(AMBIENT_OMP) && !defined(AMBIENT_SERIAL)
+#if !defined(AMBIENT_THREADING)
 #if defined __INTEL_COMPILER
-#define AMBIENT_CILK
+#define AMBIENT_THREADING CILK
 #elif defined __GNUC__
-#define AMBIENT_OMP
+#define AMBIENT_THREADING OPENMP
 #endif
 #endif
 
-#ifdef AMBIENT_CILK
+#if AMBIENT_THREADING == CILK
 #include "ambient/utils/threads/cilk.hpp"
-#elif defined(AMBIENT_OMP)
+#elif AMBIENT_THREADING == OPENMP
 #include "ambient/utils/threads/openmp.hpp"
 #else
 #include "ambient/utils/threads/serial.hpp"

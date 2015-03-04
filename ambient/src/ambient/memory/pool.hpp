@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -29,8 +29,9 @@
 #define AMBIENT_MEMORY_POOL
 
 #include <sys/mman.h>
-#include "ambient/utils/mutex.hpp"
+#include "ambient/utils/threads/mutex.hpp"
 #include "ambient/memory/factory.hpp"
+#include "ambient/memory/types.h"
 #include "ambient/memory/region.hpp"
 #include "ambient/memory/data_bulk.h"
 #include "ambient/memory/instr_bulk.h"
@@ -46,10 +47,10 @@ namespace ambient { namespace memory {
     };
 
     struct fixed {
-        // note: singleton_pool contains implicit mutex (critical for gcc)
-        template<size_t S> static void* malloc(){ return std::malloc(S);   } // boost::singleton_pool<fixed,S>::malloc(); 
-        template<size_t S> static void* calloc(){ return std::calloc(1,S); } // boost::singleton_pool<fixed,S>::malloc(); 
-        template<size_t S> static void free(void* ptr){ std::free(ptr);    } // boost::singleton_pool<fixed,S>::free(ptr);
+        // boost::singleton_pool<fixed,S> can be used instead (implicit mutex)
+        template<size_t S> static void* malloc(){ return std::malloc(S);   }
+        template<size_t S> static void* calloc(){ return std::calloc(1,S); }
+        template<size_t S> static void free(void* ptr){ std::free(ptr);    }
     };
 
 } }

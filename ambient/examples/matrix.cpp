@@ -1,5 +1,7 @@
 #include "ambient/ambient.hpp"
 #include "ambient/container/numeric/matrix.hpp"
+#include "utils/timings.hpp"
+#include "utils/mkl_parallel.hpp"
 
 int main(){
     using namespace ambient;
@@ -17,16 +19,16 @@ int main(){
     generate(pA);
     generate(pB);
 
-    timer t1("tiled gemm"); t1.begin(); cout << "tiled gemm...\n"; 
+    timer t1("tiled gemm"); t1.begin(); std::cout << "tiled gemm...\n"; 
     gemm(pA, pB, pC); 
     t1.end();
 
-    merge(pA); merge(pB); merge(pC_orig); timer t2("single block gemm"); t2.begin(); cout << "single block gemm...\n"; 
+    merge(pA); merge(pB); merge(pC_orig); timer t2("single block gemm"); t2.begin(); std::cout << "single block gemm...\n"; 
     gemm(pA[0], pB[0], pC_orig[0]);
     ambient::sync(mkl_parallel());
     t2.end(); split(pA); split(pB); split(pC_orig);
 
-    if(pC == pC_orig) cout << "\n";
+    if(pC == pC_orig) std::cout << "\n";
     return 0;
 }
 

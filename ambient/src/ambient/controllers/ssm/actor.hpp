@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -32,25 +32,25 @@ namespace ambient {
 
     inline actor::~actor(){
         if(dry) return;
-        selector.revoke_controller(this->controller);
-        selector.pop_actor();
+        ambient::select().revoke_controller(this->controller);
+        ambient::select().pop_actor();
     }
     inline actor::actor(actor_t t) : type(actor_t::common), dry(true) {
         if(t != actor_t::common) throw std::runtime_error("Error: unknown scope type!");
-        if(selector.has_nested_actor()){
-            if(selector.get_actor().type == actor_t::common) return;
+        if(ambient::select().has_nested_actor()){
+            if(ambient::select().get_actor().type == actor_t::common) return;
             throw std::runtime_error("Error: common actor inside other actor type!");
         }
-        this->rank = selector.get_controller().get_shared_rank();
+        this->rank = ambient::select().get_controller().get_shared_rank();
         this->state = ambient::locality::common;
-        this->controller = selector.provide_controller();
-        selector.push_actor(this);
+        this->controller = ambient::select().provide_controller();
+        ambient::select().push_actor(this);
         this->dry = false;
     }
     inline actor::actor(scope::const_iterator it) : type(actor_t::single), dry(true) {
-        if(ambient::selector.has_nested_actor()) return;
-        this->controller = selector.provide_controller();
-        selector.push_actor(this); 
+        if(ambient::select().has_nested_actor()) return;
+        this->controller = ambient::select().provide_controller();
+        ambient::select().push_actor(this); 
         this->round = this->controller->get_num_procs();
         this->rank = (*it) % this->round;
         this->state = (this->rank == controller->get_rank()) ? ambient::locality::local : ambient::locality::remote;
@@ -70,8 +70,8 @@ namespace ambient {
     }
 
 
-    inline actor_auto::actor_auto(){
-        this->controller = selector.provide_controller();
+    inline actor_auto::actor_auto(controller_type* c){
+        this->controller = c;
         this->controller->reserve();
         this->round = controller->get_num_procs();
         this->scores.resize(round, 0);

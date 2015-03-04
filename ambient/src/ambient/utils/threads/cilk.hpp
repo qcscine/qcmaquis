@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -30,6 +30,7 @@
 
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
+#define AMBIENT_CILK
 #define AMBIENT_THREADING_TAGLINE "using cilk"
 #define AMBIENT_NUM_THREADS __cilkrts_get_nworkers()
 #define AMBIENT_THREAD_ID __cilkrts_get_worker_number()

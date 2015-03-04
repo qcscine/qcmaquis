@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -61,12 +61,12 @@ namespace ambient {
 
     namespace detail {
         template<class T, class Allocator, class OtherAllocator = Allocator>
-        void copy_atomic(unbound< ambient::atomic<T,Allocator> >& dst, const ambient::atomic<T,OtherAllocator>& src){
-            dst.set(src.get());
+        void copy_atomic(volatile ambient::atomic<T,Allocator>& dst, const ambient::atomic<T,OtherAllocator>& src){
+            const_cast<ambient::atomic<T,Allocator>&>(dst).set(src.get());
         }
         template<class T, class Allocator>
-        void init_value_atomic(unbound< ambient::atomic<T,Allocator> >& a, T value){
-            a.set(value);
+        void init_value_atomic(volatile ambient::atomic<T,Allocator>& a, T value){
+            const_cast<ambient::atomic<T,Allocator>&>(a).set(value);
         }
     }
 

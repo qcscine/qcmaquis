@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -28,7 +28,7 @@
 #ifndef AMBIENT_INTERFACE_KERNEL_INLINER
 #define AMBIENT_INTERFACE_KERNEL_INLINER
 
-#include "ambient/utils/index_tuple.h"
+#include "utils/index_tuple.h"
 
 namespace ambient {
 
@@ -104,11 +104,11 @@ namespace ambient {
         static const int arity = sizeof...(TF);
 
         static inline void latch(functor* o, TF&... args){
-            if(selector.tunable())              { expand_score<0>(args...); selector.schedule(); }
-            if(selector.get_actor().remote())   { expand_modify_remote<0>(args...); return; }
-            else if(selector.get_actor().local()) expand_modify_local<0>(o, args...);
-            else                                  expand_modify<0>(o, args...);
-            expand_pin<0,TF...>(o) || selector.get_controller().queue(o);
+            if(ambient::select().tunable())              { expand_score<0>(args...); ambient::select().schedule(); }
+            if(ambient::select().get_actor().remote())   { expand_modify_remote<0>(args...); return; }
+            else if(ambient::select().get_actor().local()) expand_modify_local<0>(o, args...);
+            else                                           expand_modify<0>(o, args...);
+            expand_pin<0,TF...>(o) || ambient::select().get_controller().queue(o);
         }
         static inline void cleanup(functor* o){
             expand_deallocate<0,TF...>(o);

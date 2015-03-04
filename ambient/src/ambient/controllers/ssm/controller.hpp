@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -25,11 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "ambient/utils/io.hpp"
-#include "ambient/utils/timings.hpp"
-#include "ambient/utils/overseer.hpp"
-#include "ambient/utils/service.hpp"
-#include "ambient/utils/mem.h"
+#include "utils/mem.hpp"
 
 namespace ambient { namespace controllers { namespace ssm {
 

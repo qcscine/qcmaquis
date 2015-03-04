@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -28,9 +28,7 @@
 #ifndef AMBIENT_INTERFACE_KERNEL
 #define AMBIENT_INTERFACE_KERNEL
 
-#include "ambient/utils/timings.hpp"
-#include "ambient/utils/index_tuple.h"
-
+#include "utils/index_tuple.h"
 #include "ambient/interface/kernel_inliner.hpp"
 
 namespace ambient {

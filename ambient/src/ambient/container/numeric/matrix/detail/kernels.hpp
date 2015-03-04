@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -37,18 +37,18 @@
 namespace ambient { namespace numeric { namespace kernels {
     namespace detail {
 
-        using ambient::unbound;
         using ambient::numeric::matrix;
         using ambient::numeric::traits::real_type;
         using ambient::memory::data_bulk;
        
         template<typename T, typename IB>
-        void geqrt(matrix<T>& a, unbound< matrix<T> >& t){
+        void geqrt(matrix<T>& a, volatile matrix<T>& t){
+            matrix<T>& t_ = const_cast<matrix<T>&>(t);
             T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value>(); 
             T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
             plasma::lapack<T>::geqrt(a.num_rows(), a.num_cols(), PLASMA_IB,
                                      a.data(), a.num_rows(),
-                                     t.data(), t.num_rows(),
+                                     t_.data(), t_.num_rows(),
                                      tau, work);
             ambient::memory::data_bulk::reuse(tau); 
             ambient::memory::data_bulk::reuse(work); 
@@ -66,13 +66,14 @@ namespace ambient { namespace numeric { namespace kernels {
         }
        
         template<typename T, typename IB>
-        void tsqrt(matrix<T>& a1, matrix<T>& a2, unbound< matrix<T> >& t){
+        void tsqrt(matrix<T>& a1, matrix<T>& a2, volatile matrix<T>& t){
+            matrix<T>& t_ = const_cast<matrix<T>&>(t);
             T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value>();
             T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
             plasma::lapack<T>::tsqrt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
                                      a1.data(), a1.num_rows(),
                                      a2.data(), a2.num_rows(),
-                                     t.data(), t.num_rows(),
+                                     t_.data(), t_.num_rows(),
                                      tau, work);
             ambient::memory::data_bulk::reuse(tau); 
             ambient::memory::data_bulk::reuse(work); 
@@ -92,12 +93,13 @@ namespace ambient { namespace numeric { namespace kernels {
         }
        
         template<typename T, typename IB>
-        void gelqt(matrix<T>& a, unbound< matrix<T> >& t){
+        void gelqt(matrix<T>& a, volatile matrix<T>& t){
+            matrix<T>& t_ = const_cast<matrix<T>&>(t);
             T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value>();
             T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
             plasma::lapack<T>::gelqt(a.num_rows(), a.num_cols(), PLASMA_IB,
                                      a.data(), a.num_rows(), 
-                                     t.data(),   t.num_rows(),
+                                     t_.data(), t_.num_rows(),
                                      tau, work);
             ambient::memory::data_bulk::reuse(tau); 
             ambient::memory::data_bulk::reuse(work); 
@@ -116,13 +118,14 @@ namespace ambient { namespace numeric { namespace kernels {
         }
        
         template<typename T, typename IB>
-        void tslqt(matrix<T>& a1, matrix<T>& a2, unbound< matrix<T> >& t){
+        void tslqt(matrix<T>& a1, matrix<T>& a2, volatile matrix<T>& t){
+            matrix<T>& t_ = const_cast<matrix<T>&>(t);
             T* tau  = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value>();
             T* work = (T*)ambient::pool::malloc<data_bulk,sizeof(T)*IB::value*PLASMA_IB>();
             plasma::lapack<T>::tslqt(a2.num_rows(), a2.num_cols(), PLASMA_IB,
                                      a1.data(), a1.num_rows(),
                                      a2.data(), a2.num_rows(),
-                                     t.data(),  t.num_rows(),
+                                     t_.data(), t_.num_rows(),
                                      tau, work);
             ambient::memory::data_bulk::reuse(tau); 
             ambient::memory::data_bulk::reuse(work); 
@@ -163,34 +166,36 @@ namespace ambient { namespace numeric { namespace kernels {
         template<class ViewA, class ViewB, class ViewC, typename T>
         void gemm(const matrix<T,typename ViewA::allocator_type>& a, 
                   const matrix<T,typename ViewB::allocator_type>& b, 
-                  unbound< matrix<T,typename ViewC::allocator_type> >& c){
+                  volatile matrix<T,typename ViewC::allocator_type>& c){
+            matrix<T,typename ViewC::allocator_type>& c_ = const_cast<matrix<T,typename ViewC::allocator_type>&>(c);
             if(!a.ambient_before->valid() || !b.ambient_before->valid()){
-                memset(c.data(), 0, ambient::extent(c)); 
+                memset(c_.data(), 0, ambient::extent(c_)); 
                 return;
             }
             const T* ad = a.data();
             const T* bd = b.data();
-            T* cd = c.data();
+            T* cd = c_.data();
             int m = ViewA::rows(a);
             int k = ViewA::cols(a);
             int n = ViewB::cols(b);
             int lda = a.num_rows();
             int ldb = b.num_rows();
-            int ldc = c.num_rows();
+            int ldc = c_.num_rows();
             static const T alfa(1.0);
             static const T beta(0.0);
             mkl::blas<T>::gemm(ViewA::code(), ViewB::code(), &m, &n, &k, &alfa, ad, &lda, bd, &ldb, &beta, cd, &ldc);
         }
             
         template<class ViewB, typename T, typename D>
-        void gemm_diagonal_lhs(const matrix<D>& a_diag, const matrix<T>& b, unbound< matrix<T> >& c){
+        void gemm_diagonal_lhs(const matrix<D>& a_diag, const matrix<T>& b, volatile matrix<T>& c){
+            matrix<T>& c_ = const_cast<matrix<T>&>(c);
             if(std::is_same<ViewB, transpose_view<matrix<T> > >::value){
                 size_t sizex = b.num_cols();
                 int size  = a_diag.num_rows();
                 static const int ONE = 1;
                 const T* bd = b.data();
-                T* cd = c.data();
-                memset(cd, 0, ambient::extent(c)); 
+                T* cd = c_.data();
+                memset(cd, 0, ambient::extent(c_)); 
                 const D* alfa = a_diag.data();
                 
                 for(int k = 0 ; k < sizex; k++)
@@ -199,8 +204,8 @@ namespace ambient { namespace numeric { namespace kernels {
                 int sizey = a_diag.num_rows();
                 int size = b.num_cols();
                 const T* bd = b.data();
-                T* cd = c.data();
-                memset(cd, 0, ambient::extent(c)); 
+                T* cd = c_.data();
+                memset(cd, 0, ambient::extent(c_)); 
                 const D* alfa = a_diag.data();
                
                 for(int k = 0 ; k < sizey; k++)
@@ -209,14 +214,15 @@ namespace ambient { namespace numeric { namespace kernels {
         }
             
         template<class ViewA, typename T, typename D>
-        void gemm_diagonal_rhs(const matrix<T>& a, const matrix<D>& b_diag, unbound< matrix<T> >& c){
+        void gemm_diagonal_rhs(const matrix<T>& a, const matrix<D>& b_diag, volatile matrix<T>& c){
+            matrix<T>& c_ = const_cast<matrix<T>&>(c);
             if(std::is_same<ViewA, transpose_view<matrix<T> > >::value){
                 int sizey = b_diag.num_rows();
                 int size = a.num_cols();
                 static const int ONE = 1;
                 const T* ad = a.data();
-                T* cd = c.data();
-                memset(cd, 0, ambient::extent(c)); 
+                T* cd = c_.data();
+                memset(cd, 0, ambient::extent(c_)); 
                 const D* alfa = b_diag.data();
                 
                 for(int k = 0 ; k < sizey; k++)
@@ -226,23 +232,33 @@ namespace ambient { namespace numeric { namespace kernels {
                 int size = a.num_rows(); // for the case of complex
                 static const int ONE = 1;
                 const T* ad = a.data();
-                T* cd = c.data();
-                memset(cd, 0, ambient::extent(c)); 
+                T* cd = c_.data();
+                memset(cd, 0, ambient::extent(c_)); 
                 const D* alfa = b_diag.data();
          
                 for(int k = 0 ; k < sizex; k++)
                     mkl::blas<T>::axpy(&size, &alfa[k], &ad[k*size], &ONE, &cd[k*size], &ONE);
             }
         }
+
+        template<typename T>
+        void gemm_diagonal(const matrix<T>& a, const matrix<T>& b, volatile matrix<T>& c){
+            const T* ad = a.data();
+            const T* bd = b.data();
+            T* cd = c.data();
+            size_t size = b.num_rows();
+            for(int k = 0 ; k < size; k++) cd[k] = ad[k]*bd[k];
+        }
        
         template<typename T>
-        void copy_rt(const matrix<T>& a, unbound< matrix<T> >& t){
+        void copy_rt(const matrix<T>& a, volatile matrix<T>& t){
+            matrix<T>& t_ = const_cast<matrix<T>&>(t);
             const T* ad  = a.data();
-            T* td  = t.data();
-            memset(td, 0, ambient::extent(t)); 
+            T* td  = t_.data();
+            memset(td, 0, ambient::extent(t_)); 
             size_t sda = a.num_cols();
             size_t lda = a.num_rows();
-            size_t ldt = t.num_rows();
+            size_t ldt = t_.num_rows();
        
             for(int j = 0; j < sda; ++j)
             for(int i = 0; i <= j && i < ldt; ++i)
@@ -250,13 +266,14 @@ namespace ambient { namespace numeric { namespace kernels {
         }
        
         template<typename T>
-        void copy_lt(const matrix<T>& a, unbound< matrix<T> >& t){
+        void copy_lt(const matrix<T>& a, volatile matrix<T>& t){
+            matrix<T>& t_ = const_cast<matrix<T>&>(t);
             const T* ad  = a.data();
-            T* td  = t.data();
-            memset(td, 0, ambient::extent(t)); 
-            size_t sdt = t.num_cols();
+            T* td  = t_.data();
+            memset(td, 0, ambient::extent(t_)); 
+            size_t sdt = t_.num_cols();
             size_t lda = a.num_rows();
-            size_t ldt = t.num_rows();
+            size_t ldt = t_.num_rows();
        
             for(int j = 0; j < sdt; ++j)
             for(int i = j; i < lda; ++i)
@@ -291,21 +308,21 @@ namespace ambient { namespace numeric { namespace kernels {
        
         template<class A1, class A2, typename T>
         void copy_block_unbound(const matrix<T,A1>& src, const size_t& si, const size_t& sj,
-                                unbound< matrix<T,A2> >& dst, const size_t& di, const size_t& dj, 
+                                volatile matrix<T,A2>& dst, const size_t& di, const size_t& dj, 
                                 const size_t& m, const size_t& n)
         {
             T* dd = dst.data();
-            detail::copy_block<A1,A2,T>(src, si, sj, dst, di, dj, m, n);
+            detail::copy_block<A1,A2,T>(src, si, sj, const_cast<matrix<T,A2>&>(dst), di, dj, m, n);
         }
        
         template<typename T>
         void copy_block_s_unbound(const matrix<T>& src, const size_t& si, const size_t& sj,
-                                  unbound< matrix<T> >& dst, const size_t& di, const size_t& dj, 
+                                  volatile matrix<T>& dst, const size_t& di, const size_t& dj, 
                                   const matrix<T>& alfa, const size_t& ai, const size_t& aj,
                                   const size_t& m, const size_t& n)
         {
             T* dd = dst.data();
-            detail::copy_block_s(src, si, sj, dst, di, dj, alfa, ai, aj, m, n);
+            detail::copy_block_s(src, si, sj, const_cast<matrix<T>&>(dst), di, dj, alfa, ai, aj, m, n);
         }
        
         template<class A1, class A2, class A3, typename T>
@@ -430,7 +447,7 @@ namespace ambient { namespace numeric { namespace kernels {
         }
        
         template<typename T, class A>
-        void transpose_out(const matrix<T,A>& a, unbound< matrix<T,A> >& t){
+        void transpose_out(const matrix<T,A>& a, volatile matrix<T,A>& t){
             const T* od = a.data();
             T* td = t.data();
             int m = a.num_rows();
@@ -451,19 +468,21 @@ namespace ambient { namespace numeric { namespace kernels {
         }
        
         template<typename T, class A>
-        void resize(unbound< matrix<T,A> >& r, const matrix<T,A>& a, const size_t& m, const size_t& n){
-            T* dd = r.data(); 
-            if(m*n != ambient::get_square_dim(r)) memset(dd, 0, ambient::extent(r)); 
-            ambient::memptf<T, ambient::memcpy>(dd, r.num_rows(), dim2(0,0),
+        void resize(volatile matrix<T,A>& r, const matrix<T,A>& a, const size_t& m, const size_t& n){
+            matrix<T,A>& r_ = const_cast<matrix<T,A>&>(r);
+            T* dd = r_.data(); 
+            if(m*n != ambient::get_square_dim(r_)) memset(dd, 0, ambient::extent(r_)); 
+            ambient::memptf<T, ambient::memcpy>(dd, r_.num_rows(), dim2(0,0),
                                                 a.data(), a.num_rows(), dim2(0,0), dim2(n, m)); 
         }
             
         template<typename T>
-        void init_identity(unbound< matrix<T> >& a){
-            size_t n = a.num_cols();
-            size_t m = a.num_rows();
-            T* ad = a.data();
-            memset(ad, 0, ambient::extent(a)); 
+        void init_identity(volatile matrix<T>& a){
+            matrix<T>& a_ = const_cast<matrix<T>&>(a);
+            size_t n = a_.num_cols();
+            size_t m = a_.num_rows();
+            T* ad = a_.data();
+            memset(ad, 0, ambient::extent(a_)); 
        
             size_t sizex = std::min(m,n); // respecting borders
             for(size_t jj = 0; jj < sizex; ++jj) ad[jj + m*jj] = 1.;
@@ -488,30 +507,33 @@ namespace ambient { namespace numeric { namespace kernels {
         }
        
         template<typename T>
-        void init_random(unbound< matrix<T> >& a){
-            size_t size = ambient::get_square_dim(a);
-            T* ad = a.data();
+        void init_random(volatile matrix<T>& a){
+            matrix<T>& a_ = const_cast<matrix<T>&>(a);
+            size_t size = ambient::get_square_dim(a_);
+            T* ad = a_.data();
             for(size_t i = 0; i < size; ++i) randomize(ad[i]);
         }
 
         template<typename T>
-        void init_random_hermitian(unbound< matrix<T> >& a){
-            size_t lda = a.num_rows();
-            T* ad = a.data();
+        void init_random_hermitian(volatile matrix<T>& a){
+            matrix<T>& a_ = const_cast<matrix<T>&>(a);
+            size_t lda = a_.num_rows();
+            T* ad = a_.data();
 
-            for(size_t i = 0; i < a.num_rows(); ++i)
-            for(size_t j = i+1; j < a.num_cols(); ++j){
+            for(size_t i = 0; i < a_.num_rows(); ++i)
+            for(size_t j = i+1; j < a_.num_cols(); ++j){
                 randomize(ad[i+j*lda]);
                 ad[j+i*lda] = mkl::helper_complex<T>::conj(ad[i+j*lda]);
             }
-            for(size_t k = 0; k < a.num_cols(); ++k) 
+            for(size_t k = 0; k < a_.num_cols(); ++k) 
             randomize_diag(ad[k*lda+k]);
         }
 
         template<typename T, class A>
-        void init_value(unbound< matrix<T,A> >& a, const T& value){
-            size_t size = ambient::get_square_dim(a);
-            T* ad = a.data();
+        void init_value(volatile matrix<T,A>& a, const T& value){
+            matrix<T>& a_ = const_cast<matrix<T>&>(a);
+            size_t size = ambient::get_square_dim(a_);
+            T* ad = a_.data();
             for(size_t i = 0; i < size; ++i) ad[i] = value; // not a memset due to complex
         }
             
@@ -532,13 +554,13 @@ namespace ambient { namespace numeric { namespace kernels {
         }
             
         template<typename T>
-        void cast_from_vector(const std::vector<T>*& ac, unbound< matrix<T> >& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
+        void cast_from_vector(const std::vector<T>*& ac, volatile matrix<T>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
             T* ad = a.data();
             for(int j = 0; j < n; ++j) std::memcpy((void*)&ad[j*m],(void*)&(*ac)[offset + j*lda], m*sizeof(T));
         }
        
         template<typename T1, typename T2>
-        void cast_from_vector_t(const std::vector<T1>*& ac, unbound< matrix<T2> >& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
+        void cast_from_vector_t(const std::vector<T1>*& ac, volatile matrix<T2>& a, const size_t& m, const size_t& n, const size_t& lda, const size_t& offset){
             T2* ad = a.data();
             const T1* sd = &(*ac)[offset];
             for(int j = 0; j < n; ++j) 
@@ -547,10 +569,11 @@ namespace ambient { namespace numeric { namespace kernels {
         }
        
         template<typename T, typename D>
-        void cast_double_complex(unbound< matrix<T> >& a, const matrix<D>& b){
-            T* ad = a.data();
+        void cast_double_complex(volatile matrix<T>& a, const matrix<D>& b){
+            matrix<T>& a_ = const_cast<matrix<T>&>(a);
+            T* ad = a_.data();
             const D* bd = b.data();
-            size_t size = a.num_rows();
+            size_t size = a_.num_rows();
             for(size_t i = 0; i < size; ++i)
                 ad[i] = mkl::helper_cast<T,D>::cast(bd[i]);
         };
@@ -605,7 +628,7 @@ namespace ambient { namespace numeric { namespace kernels {
         }
        
         template<typename T>
-        void svd(const matrix<T>& a, unbound< matrix<T> >& u, unbound< matrix<T> >& vt, unbound< matrix<typename real_type<T>::type> >& s){
+        void svd(const matrix<T>& a, volatile matrix<T>& u, volatile matrix<T>& vt, volatile matrix<typename real_type<T>::type>& s){
             int m = a.num_rows();
             int n = a.num_cols();
             int k = std::min(m,n);
@@ -632,7 +655,7 @@ namespace ambient { namespace numeric { namespace kernels {
         }
        
         template<typename T>
-        void geev(const matrix<T>& a, unbound< matrix<T> >& lv, unbound< matrix<T> >& rv, unbound< matrix<T> >& s){
+        void geev(const matrix<T>& a, volatile matrix<T>& lv, volatile matrix<T>& rv, volatile matrix<T>& s){
             int n = a.num_cols();
             int info;
             int lwork = -1;
@@ -686,6 +709,7 @@ namespace ambient { namespace numeric { namespace kernels {
     AMBIENT_EXPORT_TEMPLATE(detail::gemm_fma, gemm_fma)
     AMBIENT_EXPORT_TEMPLATE(detail::gemm_diagonal_lhs, gemm_diagonal_lhs)
     AMBIENT_EXPORT_TEMPLATE(detail::gemm_diagonal_rhs, gemm_diagonal_rhs)
+    AMBIENT_EXPORT_TEMPLATE(detail::gemm_diagonal, gemm_diagonal)
     AMBIENT_EXPORT_TEMPLATE(detail::trace, trace)
     AMBIENT_EXPORT_TEMPLATE(detail::scalar_norm, scalar_norm)
     AMBIENT_EXPORT_TEMPLATE(detail::overlap, overlap)

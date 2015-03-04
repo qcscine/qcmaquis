@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -25,6 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#ifdef AMBIENT_SERIAL_COLLECTION
 #ifndef AMBIENT_CONTROLLERS_SSM_CONTEXT_SERIAL
 #define AMBIENT_CONTROLLERS_SSM_CONTEXT_SERIAL
 
@@ -46,6 +47,9 @@ namespace ambient {
         void join();
         void diverge(int);
     };
+
+    typedef context_serial context;
 }
 
+#endif
 #endif

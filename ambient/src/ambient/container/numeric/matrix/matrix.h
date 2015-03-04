@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -40,8 +40,8 @@ namespace ambient { namespace numeric {
         typedef size_t size_type;
         typedef Allocator allocator_type;
         typedef size_t difference_type;
-        typedef typename ambient::numeric::future<double> real_type;
-        typedef typename ambient::numeric::future<T> scalar_type;
+        typedef typename ambient::future<double> real_type;
+        typedef typename ambient::future<T> scalar_type;
 
         explicit matrix();
         explicit matrix(size_type rows, size_type cols, value_type init_value = value_type()); 
@@ -71,8 +71,8 @@ namespace ambient { namespace numeric {
         template <typename T2> matrix& operator /= (const T2& t);
         value_type& operator() (size_type i, size_type j);
         const value_type& operator() (size_type i, size_type j) const;
-        value_type* data();
-        const value_type* data() const;
+        value_type* data() volatile;
+        const value_type* data() const volatile;
         static const char* code();
     };
 
@@ -118,5 +118,20 @@ namespace ambient { namespace numeric {
     };
 
 } }
+
+namespace ambient {
+
+    template <class Matrix>
+    struct info < const numeric::transpose_view<Matrix> > {
+        typedef const numeric::transpose_view<Matrix> type;
+        template <typename U> static const Matrix& unfold(type& folded){ return *(const Matrix*)&folded; }
+    };
+
+    template <class Matrix>
+    struct info < numeric::transpose_view<Matrix> > {
+        typedef numeric::transpose_view<Matrix> type;
+        template <typename U> static Matrix& unfold(type& folded){ return *(Matrix*)&folded; }
+    };
+}
 
 #endif

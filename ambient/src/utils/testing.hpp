@@ -1,94 +1,101 @@
 #ifndef TESTING_TOOLS
 #define TESTING_TOOLS
 
-#include <mpi.h>
-#include <omp.h>
-#include <boost/test/included/unit_test.hpp>
-#include <boost/test/test_case_template.hpp>
-#include <boost/mpl/list.hpp>
-#include <boost/random.hpp>
-#include <boost/static_assert.hpp> 
-
+#include "ambient/ambient.hpp"
+#include "ambient/container/numeric/matrix.hpp"
+#ifdef AMBIENT_ALPS
 #include "alps/numeric/matrix.hpp"
 #include "alps/numeric/diagonal_matrix.hpp"
 #include "alps/numeric/matrix/algorithms.hpp"
-#include "ambient/container/numeric/matrix.hpp"
 #include "ambient/container/numeric/bindings/alps.hpp"
+#endif
+#include "ambient/container/numeric/bindings/types.hpp"
 
-#define BOOST_CLOSE (double)1/0xF4240
+#define CATCH_CONFIG_MAIN
+#include "utils/catch.hpp"
+#include "utils/timings.hpp"
 
-template <int n, int m, typename T, int t>
-struct input{
-   BOOST_STATIC_ASSERT(n > 0 && m > 0);
-   typedef T value_type;
-   enum {valuex = n};
-   enum {valuey = m};
-   enum {valuet = t};
-};
+#define TOLERANCE (double)1/0xF4240
+#define REQUIRE_CLOSE(a,b) REQUIRE(ambient::utils::require_close(a,b,TOLERANCE))
 
-struct caveats{
-    caveats(){ srand48(1); srand(1); }
-    ~caveats(){}
-};
+#define TEST_IB 256
+#define TEST_M TEST_IB
+#define TEST_N TEST_IB
 
-BOOST_GLOBAL_FIXTURE( caveats );
+namespace ambient { namespace utils {
 
-struct random {
-    random(){};
-    double operator()(){return drand48();} 
-    int IntRd(){return rand();}
-} Rd;
+    struct random {
+        random(){};
+        double operator()(){return drand48();} 
+        int IntRd(){return rand();}
+    } Rd;
+
+    template<typename T>
+    bool require_close(T left, T right, double tolerance){
+        auto safe_div = [](double a, double b){
+            if(a == 0 || (b > 1 && a < b*std::numeric_limits<double>::epsilon())) return (double)0;
+            if(b < 1 && a > b*std::numeric_limits<double>::max()) return std::numeric_limits<double>::max();
+            return a / b;
+        };
+        double d = std::abs(left - right);
+        double l = safe_div(d, std::abs(left));
+        double r = safe_div(d, std::abs(right));
+        return std::max(l,r) <= tolerance;
+    }
+
+    template<size_t P>
+    struct scenario {
+        scenario(int argc = 0, char** argv = NULL) : argc(argc), argv(argv) 
+        {
+        }
+        size_t num_threads(){
+            return have_input(1) ? atoi(argv[1]) : 1;
+        }
+        size_t num_cols(){
+            return have_input(2) ? atoi(argv[2]) : P;
+        }
+
+        size_t num_rows(){
+            return have_input(3) ? atoi(argv[3]) : num_cols();
+        }
+        template<class FLOPS>
+        void report(FLOPS flops, double time){
+               std::cout << "-------------------------\n"
+                         << " Time     " << time                                << "\n"
+                         << " GFlops   " << flops(num_cols(), num_rows(), time) << "\n" 
+                         << " Threads: " << num_threads()                       << "\n"
+                         << " Matrix:  " << num_rows() << "x" << num_cols()     << "\n"
+                         << "-------------------------\n";
+        }
+    private:
+        bool have_input(size_t field){
+            return ((argc > field) ? true : false);
+        }
+        int argc;
+        char** argv;
+    };
+
+    struct measurement : scenario<AMBIENT_DEFAULT_IB> {
+        typedef ambient::async_timer timer;
+    };
+    struct gflops {
+        static double gemm(size_t x, size_t y, double time){
+            return 2*(double)x*(double)y*(double)y/(time*1.0e9);
+        };
+    };
+
+} }
 
 
-void Boost_check_close_adapter(double a, double b){ 
-    BOOST_CHECK_CLOSE(a, b, BOOST_CLOSE); 
-};
+template<class T> using matrix = ambient::numeric::tiles<ambient::numeric::matrix<T> >;
+template<class T> using diagonal = ambient::numeric::tiles<ambient::numeric::diagonal_matrix<T> >;
 
-void Boost_check_close_adapter(std::complex<double> a, std::complex<double> b){ 
-    BOOST_CHECK_CLOSE(a.real(), b.real(), BOOST_CLOSE); 
-    BOOST_CHECK_CLOSE(a.imag(), b.imag(), BOOST_CLOSE); 
-};
-
-
-bool have_input(size_t field){
-    return ((boost::unit_test::framework::master_test_suite().argc > field) ? true : false);
-}
-
-template<typename T>
-size_t get_input_threads(){
-    size_t threads = T::valuet;
-    if(have_input(1)) threads = atoi(boost::unit_test::framework::master_test_suite().argv[1]);
-    return threads;
-}
-
-template<typename T>
-size_t get_input_x(){
-    size_t dim = T::valuex;
-    if(have_input(2)) dim = atoi(boost::unit_test::framework::master_test_suite().argv[2]);
-    return dim;
-}
-
-template<typename T>
-size_t get_input_y(){
-    size_t dim = T::valuey;
-    if(have_input(3)) dim = atoi(boost::unit_test::framework::master_test_suite().argv[3]);
-    else if(have_input(2)) dim = atoi(boost::unit_test::framework::master_test_suite().argv[2]);
-    return dim;
-}
-
-template<class TIMER>
-void report(const TIMER& a, double(*gflops)(size_t, size_t, double), size_t x, size_t y, size_t nthreads){
-       std::cout << "-------------------------\n"
-                 << " Time     " << a.get_time()               << "\n"
-                 << " GFlops   " << gflops(x,y,a.get_time())   << "\n" 
-                 << " Threads: " << nthreads                   << "\n"
-                 << " Matrix:  " << y << "x" << x              << "\n"
-                 << "-------------------------\n";
-}
-
-double GFlopsGemm(size_t x, size_t y, double time){
-    return 2*(double)x*(double)y*(double)y/(time*1.0e9);
-};
+#ifdef AMBIENT_ALPS
+template<class T> using matrix_ = alps::numeric::matrix<T>;
+template<class T> using diagonal_ = alps::numeric::diagonal_matrix<T>;
+#endif
 
 using namespace ambient::numeric::bindings;
+using ambient::utils::measurement;
+using ambient::utils::gflops;
 #endif

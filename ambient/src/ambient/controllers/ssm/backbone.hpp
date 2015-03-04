@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -30,103 +30,90 @@
 
 namespace ambient { 
 
-        template<class Context>
-        backbone<Context>::backbone() : sid(1) {
-            this->init(&base);
-            if(ambient::isset("AMBIENT_VERBOSE")){
-                ambient::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE      << ")\n";
-                if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) ambient::cout << "ambient: selective threading (mkl)\n";
-                ambient::cout << "ambient: size of instr bulk chunks: "     << AMBIENT_INSTR_BULK_CHUNK       << "\n";
-                ambient::cout << "ambient: size of data bulk chunks: "      << AMBIENT_DATA_BULK_CHUNK        << "\n";
-                if(ambient::isset("AMBIENT_BULK_LIMIT")) ambient::cout << "ambient: max share of data bulk: " << ambient::getint("AMBIENT_BULK_LIMIT") << "%\n";
-                if(ambient::isset("AMBIENT_BULK_REUSE")) ambient::cout << "ambient: enabled bulk garbage collection\n";
-                if(ambient::isset("AMBIENT_FORCE_BULK_DEALLOCATION")) ambient::cout << "ambient: enabled bulk deallocation\n";
-                #ifdef MPI_VERSION
-                ambient::cout << "ambient: maximum tag value: "             << ambient::get_tag_ub()          << "\n";
-                ambient::cout << "ambient: number of procs: "               << ambient::num_procs()           << "\n";
-                #endif
-                ambient::cout << "ambient: number of threads: "             << ambient::num_threads()         << "\n";
-                ambient::cout << "\n";
-            }
-            if(ambient::isset("AMBIENT_MKL_NUM_THREADS")) mkl_parallel();
-            std::vector<int> procs; for(int i = 0; i < ambient::num_procs(); i++) procs.push_back(i);
-            ambient::scope* global = new ambient::scope(procs.begin(), procs.end());
-            tag_ub = ambient::get_tag_ub();
+        inline backbone::~backbone(){
+            delete this->base_actor;
         }
-        template<class Context>
-        int backbone<Context>::generate_sid(){
+        inline backbone::backbone() : sid(1) {
+            this->base_actor = new actor_auto(provide_controller());
+            context::init(base_actor);
+            this->tag_ub = get_controller().get_tag_ub();
+            this->num_procs = get_controller().get_num_procs();
+            this->push_scope(new ambient::scope(num_procs));
+            if(!get_controller().verbose()) this->io_guard.enable();
+            if(ambient::isset("AMBIENT_VERBOSE")) this->info();
+        }
+        inline void backbone::info(){
+            std::cout << "ambient: initialized ("                   << AMBIENT_THREADING_TAGLINE      << ")\n";
+            std::cout << "ambient: size of instr bulk chunks: "     << AMBIENT_INSTR_BULK_CHUNK       << "\n";
+            std::cout << "ambient: size of data bulk chunks: "      << AMBIENT_DATA_BULK_CHUNK        << "\n";
+            if(ambient::isset("AMBIENT_BULK_LIMIT")) std::cout << "ambient: max share of data bulk: " << ambient::getint("AMBIENT_BULK_LIMIT") << "%\n";
+            if(ambient::isset("AMBIENT_BULK_REUSE")) std::cout << "ambient: enabled bulk garbage collection\n";
+            if(ambient::isset("AMBIENT_BULK_FORCE_FREE")) std::cout << "ambient: enabled bulk deallocation\n";
+            #ifdef MPI_VERSION
+            std::cout << "ambient: maximum tag value: "             << tag_ub                         << "\n";
+            std::cout << "ambient: number of procs: "               << num_procs                      << "\n";
+            #endif
+            std::cout << "ambient: number of threads: "             << ambient::num_threads()         << "\n";
+            std::cout << "\n";
+        }
+        inline int backbone::generate_sid(){
             return (++sid %= tag_ub);
         }
-        template<class Context>
-        int backbone<Context>::get_sid(){
+        inline int backbone::get_sid(){
             return sid;
         }
-        template<class Context>
-        typename backbone<Context>::controller_type& backbone<Context>::get_controller(){
-            return *get_actor().controller; // caution: != Context::get().controller
+        inline int backbone::get_num_procs(){
+            return num_procs;
         }
-        template<class Context>
-        void backbone<Context>::revoke_controller(controller_type* c){
+        inline typename backbone::controller_type& backbone::get_controller(){
+            return *get_actor().controller; // caution: != context::get().controller
         }
-        template<class Context>
-        bool backbone<Context>::has_nested_actor(){
-            return (&get_actor() != &this->base);
+        inline void backbone::revoke_controller(controller_type* c){
         }
-        template<class Context>
-        typename backbone<Context>::controller_type* backbone<Context>::provide_controller(){
-            return &Context::get().controller;
+        inline bool backbone::has_nested_actor(){
+            return (&get_actor() != this->base_actor);
         }
-        template<class Context>
-        void backbone<Context>::sync(){
-            Context::sync();
+        inline typename backbone::controller_type* backbone::provide_controller(){
+            return &context::get().controller;
+        }
+        inline void backbone::sync(){
+            context::sync();
             memory::data_bulk::drop();
         }
-        template<class Context>
-        actor& backbone<Context>::get_actor(){
-            return *Context::get().actors.top();
+        inline actor& backbone::get_actor(){
+            return *context::get().actors.top();
         }
-        template<class Context>
-        actor_auto& backbone<Context>::get_base(){
-            return this->base;
+        inline actor_auto& backbone::get_base_actor(){
+            return *this->base_actor;
         }
-        template<class Context>
-        void backbone<Context>::pop_actor(){
-            Context::get().actors.pop();
+        inline void backbone::pop_actor(){
+            context::get().actors.pop();
         }
-        template<class Context>
-        void backbone<Context>::push_actor(actor* s){
-            Context::get().actors.push(s);
+        inline void backbone::push_actor(actor* s){
+            context::get().actors.push(s);
         }
-        template<class Context>
-        scope& backbone<Context>::get_scope(){
-            return *Context::get().scopes.top();
+        inline scope& backbone::get_scope(){
+            return *context::get().scopes.top();
         }
-        template<class Context>
-        void backbone<Context>::pop_scope(){
-            Context::get().scopes.pop();
+        inline void backbone::pop_scope(){
+            context::get().scopes.pop();
         }
-        template<class Context>
-        void backbone<Context>::push_scope(scope* s){
-            Context::get().scopes.push(s);
+        inline void backbone::push_scope(scope* s){
+            context::get().scopes.push(s);
         }
-        template<class Context>
-        bool backbone<Context>::tunable(){
+        inline bool backbone::tunable(){
             return (!get_controller().is_serial() && !has_nested_actor());
         }
-        template<class Context>
-        void backbone<Context>::intend_read(models::ssm::revision* r){
-            base.intend_read(r); 
+        inline void backbone::intend_read(models::ssm::revision* r){
+            base_actor->intend_read(r); 
         }
-        template<class Context>
-        void backbone<Context>::intend_write(models::ssm::revision* r){
-            base.intend_write(r); 
+        inline void backbone::intend_write(models::ssm::revision* r){
+            base_actor->intend_write(r); 
         }
-        template<class Context>
-        void backbone<Context>::schedule(){
-            base.schedule();
+        inline void backbone::schedule(){
+            base_actor->schedule();
         }
-        template<class Context>
-        ambient::mutex& backbone<Context>::get_mutex(){
+        inline ambient::mutex& backbone::get_mutex(){
             return mtx;
         }
 }

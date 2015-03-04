@@ -157,6 +157,41 @@ namespace maquis { namespace dmrg { namespace detail {
                     right(ll, right_offset + ss*rdim+rr) = left(left_offset + ss*ldim+ll, rr);
     }
     
+    template <typename T, class A>
+    void reduce_r(alps::numeric::matrix<T,A>& out, const alps::numeric::matrix<T,A>& in, T scale,
+                  size_t in_right_offset, size_t in_phys_offset, size_t out_phys_offset,
+                  size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
+        for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+        {
+            size_t ss_in  =  in_phys_offset + ss1*sdim2 + ss2;
+            size_t ss_out = out_phys_offset + ss1*sdim2 + ss2;
+            iterator_axpy(&in(0, in_right_offset + ss_in*rdim),
+                          &in(0, in_right_offset + ss_in*rdim) + ldim*rdim,
+                          &out(0, in_right_offset + ss_out*rdim),
+                          scale);
+        }
+    }
+
+    template <typename T, class A>
+    void reduce_l(alps::numeric::matrix<T,A>& out, const alps::numeric::matrix<T,A>& in, T scale,
+                  size_t in_left_offset, size_t in_phys_offset, size_t out_phys_offset,
+                  size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
+        for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+        {
+            size_t ss_in  =  in_phys_offset + ss1*sdim2 + ss2;
+            size_t ss_out = out_phys_offset + ss1*sdim2 + ss2;
+            for(size_t rr = 0; rr < rdim; ++rr)
+                iterator_axpy(&in(in_left_offset + ss_in*ldim, rr),
+                              &in(in_left_offset + ss_in*ldim, rr) + ldim,
+                              &out(in_left_offset + ss_out*ldim, rr),
+                              scale);
+        }
+    }
+    
     template <typename T1, class A1,
               typename T2, class A2,
               typename T3, class A3>
@@ -169,7 +204,7 @@ namespace maquis { namespace dmrg { namespace detail {
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
                     T3 alfa_t = alfa(ss1, ss2) * alfa_scale;
                     iterator_axpy(&in(0, in_offset + ss1*rdim + rr),
-                                  &in(0, in_offset + ss1*rdim + rr) + ldim, // bugbug
+                                  &in(0, in_offset + ss1*rdim + rr) + ldim,
                                   &out(out_offset + ss2*ldim, rr),
                                   alfa_t);
                 }

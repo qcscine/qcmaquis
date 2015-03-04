@@ -45,6 +45,11 @@ public:
     static const charge IdentityCharge;
     static const bool finite = false;
 
+    subcharge particleNumber(charge rhs) { return rhs[0]; }
+
+    static subcharge & spin(charge & rhs) { return rhs[1]; }
+    static subcharge const & spin(charge const & rhs) { return rhs[1]; }
+
     static charge fuse(charge a, charge b)
     {
         return a+b;
@@ -78,6 +83,14 @@ public:
 
     static const charge IdentityCharge;
     static const bool finite = false;
+
+    static subcharge particleNumber(charge rhs) { return rhs[0]; }
+
+    static subcharge & spin(charge & rhs) { return rhs[1]; }
+    static subcharge const & spin(charge const & rhs) { return rhs[1]; }
+
+    static subcharge & irrep(charge & rhs) { return rhs[2]; }
+    static subcharge const & irrep(charge const & rhs) { return rhs[2]; }
 
     static charge fuse(charge a, charge b)
     {

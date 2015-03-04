@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -36,9 +36,9 @@ namespace ambient {
     template<class InputIterator, class Function>
     void threaded_for_each(InputIterator first, InputIterator last, Function fn){
         int dist = last-first;
-        ambient::backbone_type::divergence_guard g(dist);
+        ambient::backbone::divergence_guard g(dist);
         AMBIENT_PARALLEL_FOR(int i = 0; i < dist; i++){
-            ambient::selector.diverge(i);
+            ambient::select().diverge(i);
             fn(dereference(first+i));
         }
     }

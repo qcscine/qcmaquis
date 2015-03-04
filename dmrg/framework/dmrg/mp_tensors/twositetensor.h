@@ -98,6 +98,18 @@ public:
     template<class Archive> void save(Archive & ar) const;
     
 private:
+    template <bool SU2> class type_helper { };
+
+    template <bool SU2>
+    MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<SU2>) const;
+
+    MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<true>) const;
+
+    template <bool SU2>
+    TwoSiteTensor<Matrix, SymmGroup> & operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<SU2>);
+
+    TwoSiteTensor<Matrix, SymmGroup> & operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<true>);
+
     MultiIndex<SymmGroup> midx;
     set_id left_paired;
     set_id right_paired;

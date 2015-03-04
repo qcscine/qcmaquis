@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -30,6 +30,8 @@
 
 namespace ambient {
 
+    enum class actor_t { base, common, single };
+
     class actor {
     protected:
         typedef models::ssm::model model_type;
@@ -55,7 +57,8 @@ namespace ambient {
     class actor_auto : public actor {
     public:
         typedef typename actor::model_type model_type;
-        actor_auto();
+        typedef controllers::ssm::controller controller_type;
+        actor_auto(controller_type* c);
         void set(rank_t r);
         void set(scope::const_iterator it);
         void schedule();

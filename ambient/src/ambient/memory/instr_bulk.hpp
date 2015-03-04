@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -30,8 +30,8 @@
 
 namespace ambient { namespace memory {
 
-        template<size_t S> void* instr_bulk::malloc()         { return ambient::selector.get_controller().memory.malloc(S); }
-                   inline  void* instr_bulk::malloc(size_t s) { return ambient::selector.get_controller().memory.malloc(s); }
+        template<size_t S> void* instr_bulk::malloc()         { return ambient::select().get_controller().memory.malloc(S); }
+                   inline  void* instr_bulk::malloc(size_t s) { return ambient::select().get_controller().memory.malloc(s); }
 
 } }
 
