@@ -25,8 +25,8 @@
  *
  *****************************************************************************/
 
-#ifndef LPG_TABLES_H
-#define LPG_TABLES_H
+#ifndef DG_TABLES_H
+#define DG_TABLES_H
 
 #include <cmath>
 #include <vector>
@@ -211,7 +211,6 @@ std::vector<S> generate_adjoin_table_C32(S const & num_irreps)
 template<class S>
 alps::numeric::matrix<S> generate_mult_table_C32(S const & num_irreps)
 {
-    maquis::cout << num_irreps << std::endl;
     int shift = num_irreps/2;
     int irrep = 1;
     int mj = 0;

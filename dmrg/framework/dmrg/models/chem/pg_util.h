@@ -76,13 +76,13 @@ public:
 };
 
 template < >
-class  PGDecorator<U1LPG>
+class  PGDecorator<U1DG>
 {
 public:
-    typedef U1LPG::subcharge subcharge;
-    DualIndex<U1LPG> operator()(DualIndex<U1LPG> rhs, subcharge irr)
+    typedef U1DG::subcharge subcharge;
+    DualIndex<U1DG> operator()(DualIndex<U1DG> rhs, subcharge irr)
     {
-        for(DualIndex<U1LPG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
+        for(DualIndex<U1DG>::iterator it = rhs.begin(); it != rhs.end(); ++it)
 		{
             if ( it->lc[0] % 2 == 0)
                 it->lc[1] = 0;

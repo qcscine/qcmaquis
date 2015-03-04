@@ -63,7 +63,7 @@ namespace symm_traits {
     };
 
     template <>
-    struct PGType<U1LPG>
+    struct PGType<U1DG>
     {
         typedef PGat1 type;
     };

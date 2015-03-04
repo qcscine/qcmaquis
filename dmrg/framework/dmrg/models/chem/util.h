@@ -56,11 +56,11 @@ namespace chem_detail {
     };
 
     template <>
-    struct qn_helper<U1LPG>
+    struct qn_helper<U1DG>
     {
-        U1LPG::charge total_qn(BaseParameters & parms)
+        U1DG::charge total_qn(BaseParameters & parms)
         {
-            U1LPG::charge ret(0);
+            U1DG::charge ret(0);
             ret[0] = parms["u1_total_charge"];
             ret[1] = parms["irrep_charge"];
             return ret;
@@ -86,7 +86,7 @@ namespace chem_detail {
     }
     
 	template <>
-    inline IndexTuple align<U1LPG>(int i, int j, int k, int l) {
+    inline IndexTuple align<U1DG>(int i, int j, int k, int l) {
         return IndexTuple(i,j,k,l);
     }
     

@@ -33,7 +33,7 @@
 
 typedef alps::numeric::matrix<double> matrix;
 
-typedef U1LPG grp;
+typedef U1DG grp;
 
 int main(int argc, char ** argv)
 {

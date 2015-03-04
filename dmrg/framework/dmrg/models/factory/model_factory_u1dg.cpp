@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,25 +24,18 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/chem/rel/rel_model_qc.h"
+#include "model_factory_symm.h"
 
-template<class Matrix>
-struct coded_model_factory<Matrix, U1LPG> {
-    static boost::shared_ptr<model_impl<Matrix, U1LPG> > parse
-    (Lattice const & lattice, BaseParameters & parms)
-    {
-		typedef boost::shared_ptr<model_impl<Matrix, U1LPG> > impl_ptr;
+#include "dmrg/models/coded/factory_u1dg.hpp"
+#include "dmrg/models/continuum/factory_u1dg.hpp"
 
-        if (parms["MODEL"] == std::string("relativistic_quantum_chemistry")) {
-            if (parms["LATTICE"] != std::string("spinors"))
-                throw std::runtime_error("Please use \"LATTICE = spinors\" for relativistic_quantum_chemistry\n");
-            
-            return impl_ptr( new rel_qc_model<Matrix, U1LPG>(lattice, parms) );
-        }
+typedef U1DG grp;
 
-        else {
-            throw std::runtime_error("Don't know this model!\n");
-            return impl_ptr();
-        }
-    }
-};
+#if defined USE_AMBIENT
+impl_model_factory(pmatrix, grp)
+impl_model_factory(cpmatrix, grp)
+#else
+impl_model_factory(matrix, grp)
+impl_model_factory(cmatrix, grp)
+#endif
+

@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -24,18 +24,13 @@
  *
  *****************************************************************************/
 
-#include "model_factory_symm.h"
-
-#include "dmrg/models/coded/factory_u1lpg.hpp"
-#include "dmrg/models/continuum/factory_u1lpg.hpp"
-
-typedef U1LPG grp;
-
-#if defined USE_AMBIENT
-impl_model_factory(pmatrix, grp)
-impl_model_factory(cpmatrix, grp)
-#else
-impl_model_factory(matrix, grp)
-impl_model_factory(cmatrix, grp)
-#endif
-
+template<class Matrix>
+struct cont_model_factory<Matrix, U1DG> {
+    static boost::shared_ptr<model_impl<Matrix, U1DG> > parse
+    (Lattice const & lattice, BaseParameters & parms)
+    {
+        typedef boost::shared_ptr<model_impl<Matrix, U1DG> > impl_ptr;
+        throw std::runtime_error("Don't know this model for U1DG SymmGroup!\n");
+        return impl_ptr();
+    }
+};

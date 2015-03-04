@@ -81,13 +81,13 @@ namespace detail {
         }
     };
     template <class Matrix>
-    struct call_hf_init<Matrix, U1LPG> {
-        static typename Model<Matrix,U1LPG>::initializer_ptr call(BaseParameters parms,
-                                                                    std::vector<Index<U1LPG> > const& phys_dims,
-                                                                    U1LPG::charge right_end,
+    struct call_hf_init<Matrix, U1DG> {
+        static typename Model<Matrix,U1DG>::initializer_ptr call(BaseParameters parms,
+                                                                    std::vector<Index<U1DG> > const& phys_dims,
+                                                                    U1DG::charge right_end,
                                                                     std::vector<int> const& site_type)
         {
-            return typename Model<Matrix,U1LPG>::initializer_ptr(new hf_mps_init<Matrix, U1LPG>(parms, phys_dims, right_end, site_type));
+            return typename Model<Matrix,U1DG>::initializer_ptr(new hf_mps_init<Matrix, U1DG>(parms, phys_dims, right_end, site_type));
         }
     };
 }

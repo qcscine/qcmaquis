@@ -34,7 +34,7 @@
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 
 typedef alps::numeric::matrix<double> matrix;
-typedef U1LPG grp;
+typedef U1DG grp;
 
 template<class Matrix>
 MPO<Matrix, grp> make_1et(int i, int j, std::vector<int> site_irreps)

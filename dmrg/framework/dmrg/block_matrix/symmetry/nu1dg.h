@@ -25,8 +25,8 @@
  *
  *****************************************************************************/
 
-#ifndef SYMMETRY_NU1LPG_H
-#define SYMMETRY_NU1LPG_H
+#ifndef SYMMETRY_NU1DG_H
+#define SYMMETRY_NU1DG_H
 
 #include "utils/io.hpp"
 #include <vector>
@@ -44,19 +44,19 @@
 #include <dmrg/utils/BaseParameters.h>
 
 #include <dmrg/block_matrix/symmetry/nu1pg.h>
-#include <dmrg/block_matrix/symmetry/lpg_tables.h>
+#include <dmrg/block_matrix/symmetry/dg_tables.h>
 
 template<int N, class S>
-class NU1LPG;
+class NU1DG;
 
 template<int N, class S>
-class NU1ChargeLPG : public NU1ChargePG<N, S>
+class NU1ChargeDG : public NU1ChargePG<N, S>
 {
     typedef NU1ChargePG<N, S> base;
 
 public:
-    NU1ChargeLPG(S init = 0) : base(init) {}
-    NU1ChargeLPG(boost::array<S, N> const & rhs) : base(rhs) {}
+    NU1ChargeDG(S init = 0) : base(init) {}
+    NU1ChargeDG(boost::array<S, N> const & rhs) : base(rhs) {}
 
     S * begin() { return base::begin(); }
     S * end() { return base::end(); }
@@ -89,17 +89,17 @@ public:
 
 namespace boost {
     template <int N, class S>
-    class hash<NU1ChargeLPG<N, S> >{
+    class hash<NU1ChargeDG<N, S> >{
         public :
-            size_t operator()(NU1ChargeLPG<N, S> const &Charge ) const {
+            size_t operator()(NU1ChargeDG<N, S> const &Charge ) const {
                 return hash<NU1ChargePG<N, S> >()(Charge);
             }
     };
 
     template <int N, class S>
-    class hash<std::pair<NU1ChargeLPG<N, S>, NU1ChargeLPG<N, S> > >{
+    class hash<std::pair<NU1ChargeDG<N, S>, NU1ChargeDG<N, S> > >{
         public :
-            size_t operator()(std::pair<NU1ChargeLPG<N, S>, NU1ChargeLPG<N, S> > const &Pair_of_charge ) const {
+            size_t operator()(std::pair<NU1ChargeDG<N, S>, NU1ChargeDG<N, S> > const &Pair_of_charge ) const {
                 return hash<std::pair<NU1ChargePG<N, S>, NU1ChargePG<N, S> > >()(Pair_of_charge);
             }
     };
@@ -107,62 +107,62 @@ namespace boost {
 }
 
 template<int N, class S>
-inline bool operator<(NU1ChargeLPG<N, S> const & a, NU1ChargeLPG<N, S> const & b)
+inline bool operator<(NU1ChargeDG<N, S> const & a, NU1ChargeDG<N, S> const & b)
 {
     return tpl_ops_pg_<N, 0>().operator_lt(a.begin(), b.begin());
 }
 
 template<int N, class S>
-inline bool operator>(NU1ChargeLPG<N, S> const & a, NU1ChargeLPG<N, S> const & b)
+inline bool operator>(NU1ChargeDG<N, S> const & a, NU1ChargeDG<N, S> const & b)
 {
     return tpl_ops_pg_<N, 0>().operator_gt(a.begin(), b.begin());
 }
 
 template<int N, class S>
-inline bool operator==(NU1ChargeLPG<N, S> const & a, NU1ChargeLPG<N, S> const & b)
+inline bool operator==(NU1ChargeDG<N, S> const & a, NU1ChargeDG<N, S> const & b)
 {
     return tpl_ops_pg_<N, 0>().operator_eq(a.begin(), b.begin());
 }
 
 template<int N, class S>
-inline bool operator!=(NU1ChargeLPG<N, S> const & a, NU1ChargeLPG<N, S> const & b)
+inline bool operator!=(NU1ChargeDG<N, S> const & a, NU1ChargeDG<N, S> const & b)
 {
     return !(a==b);
 }
 
 template<int N, class S>
-NU1ChargeLPG<N, S> operator+(NU1ChargeLPG<N, S> const & a,
-                       NU1ChargeLPG<N, S> const & b)
+NU1ChargeDG<N, S> operator+(NU1ChargeDG<N, S> const & a,
+                       NU1ChargeDG<N, S> const & b)
 {
-    NU1ChargeLPG<N, S> ret;
-    tpl_arith_<NU1LPG<N, S>, N, 0>().operator_plus(a.begin(), b.begin(), ret.begin());
+    NU1ChargeDG<N, S> ret;
+    tpl_arith_<NU1DG<N, S>, N, 0>().operator_plus(a.begin(), b.begin(), ret.begin());
     return ret;
 }
 
 
 template<int N, class S>
-NU1ChargeLPG<N, S> operator-(NU1ChargeLPG<N, S> const & rhs)
+NU1ChargeDG<N, S> operator-(NU1ChargeDG<N, S> const & rhs)
 {
-    NU1ChargeLPG<N, S> ret;
-    tpl_arith_<NU1LPG<N,S>, N, 0>().operator_uminus(rhs.begin(), ret.begin());
+    NU1ChargeDG<N, S> ret;
+    tpl_arith_<NU1DG<N,S>, N, 0>().operator_uminus(rhs.begin(), ret.begin());
     return ret;
 }
 
 template<int N, class S>
-NU1ChargeLPG<N, S> operator/(NU1ChargeLPG<N, S> const & a, int n)
+NU1ChargeDG<N, S> operator/(NU1ChargeDG<N, S> const & a, int n)
 {
-    NU1ChargeLPG<N, S> ret;
-    tpl_arith_<NU1LPG<N,S>, N, 0>().operator_div(a.begin(), ret.begin(), n);
+    NU1ChargeDG<N, S> ret;
+    tpl_arith_<NU1DG<N,S>, N, 0>().operator_div(a.begin(), ret.begin(), n);
     return ret;
 }
 
 template<int N, class S = int>
-class NU1LPG
+class NU1DG
 {
     template<class G, int A, int B> friend struct tpl_arith_;
 public:
     typedef S subcharge;
-    typedef NU1ChargeLPG<N, S> charge;
+    typedef NU1ChargeDG<N, S> charge;
     typedef std::vector<charge> charge_v;
 private:
     static alps::numeric::matrix<S> mult_table;
@@ -282,12 +282,12 @@ alps::numeric::matrix<S> default_dg_mult_table()
     return alps::numeric::matrix<S>();
 }
 
-template<int N, class S> const typename NU1LPG<N,S>::charge NU1LPG<N,S>::IdentityCharge = typename NU1LPG<N,S>::charge();
-template<int N, class S> alps::numeric::matrix<S> NU1LPG<N,S>::mult_table = default_dg_mult_table<S>();
-template<int N, class S> std::vector<S> NU1LPG<N,S>::adjoin_table = default_dg_adjoin_table<S>();
-template<int N, class S> std::size_t NU1LPG<N,S>::group_id = 0;
-template<int N, class S> typename NU1LPG<N,S>::subcharge NU1LPG<N,S>::max_irrep = 0;
+template<int N, class S> const typename NU1DG<N,S>::charge NU1DG<N,S>::IdentityCharge = typename NU1DG<N,S>::charge();
+template<int N, class S> alps::numeric::matrix<S> NU1DG<N,S>::mult_table = default_dg_mult_table<S>();
+template<int N, class S> std::vector<S> NU1DG<N,S>::adjoin_table = default_dg_adjoin_table<S>();
+template<int N, class S> std::size_t NU1DG<N,S>::group_id = 0;
+template<int N, class S> typename NU1DG<N,S>::subcharge NU1DG<N,S>::max_irrep = 0;
 
-typedef NU1LPG<1> U1LPG;
+typedef NU1DG<1> U1DG;
 
 #endif

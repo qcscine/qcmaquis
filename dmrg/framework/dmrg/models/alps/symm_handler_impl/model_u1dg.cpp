@@ -25,18 +25,17 @@
  *****************************************************************************/
 
 #include "dmrg/models/alps/symm_handler.hpp"
-#include "dmrg/block_matrix/symmetry/nu1lpg.h"
-//#include "dmrg/block_matrix/symmetry/u1lpg.h"
+#include "dmrg/block_matrix/symmetry/nu1dg.h"
 
 // Symmetry dependent implementation
 
-// U1LPG Symmetry
+// U1DG Symmetry
 template <>
-U1LPG::charge state_to_charge<U1LPG>(alps::site_state<short> const & state, alps::SiteBasisDescriptor<short> const& b,
+U1DG::charge state_to_charge<U1DG>(alps::site_state<short> const & state, alps::SiteBasisDescriptor<short> const& b,
                                      std::map<std::string, int> const& all_conserved_qn)
 {
     typedef std::map<std::string, int> qn_map_type;
-    U1LPG::charge c = U1LPG::IdentityCharge;
+    U1DG::charge c = U1DG::IdentityCharge;
     for (alps::SiteBasisDescriptor<short>::const_iterator it = b.begin(); it != b.end(); ++it) {
         qn_map_type::const_iterator match = all_conserved_qn.find(it->name());
         if (match != all_conserved_qn.end())
@@ -46,12 +45,12 @@ U1LPG::charge state_to_charge<U1LPG>(alps::site_state<short> const & state, alps
 }
 
 template <>
-U1LPG::charge init_charge<U1LPG> (const alps::Parameters& parms, std::map<std::string, int> const& all_conserved_qn)
+U1DG::charge init_charge<U1DG> (const alps::Parameters& parms, std::map<std::string, int> const& all_conserved_qn)
 {
     typedef std::map<std::string, int> qn_map_type;
     assert(all_conserved_qn.size() == 2);
 
-    U1LPG::charge c = U1LPG::IdentityCharge;
+    U1DG::charge c = U1DG::IdentityCharge;
     for (qn_map_type::const_iterator it=all_conserved_qn.begin(); it!=all_conserved_qn.end(); ++it) {
         alps::half_integer<short> tmp = alps::evaluate<double>(static_cast<std::string>(parms[it->first+"_total"]), parms);
         c[it->second] = detail::to_integer(tmp);

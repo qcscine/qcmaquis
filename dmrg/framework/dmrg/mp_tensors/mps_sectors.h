@@ -45,7 +45,7 @@ namespace charge_detail {
     inline bool physical(typename SymmGroup::charge c) { return true; }
 
     //template <>
-    //inline bool physical<U1LPG>(U1LPG::charge c) { return ((c[0] % 2) == 0); }
+    //inline bool physical<U1DG>(U1DG::charge c) { return ((c[0] % 2) == 0); }
 
     template <>
     inline bool physical<SU2U1>(SU2U1::charge c) { return c[1] >= 0; }
