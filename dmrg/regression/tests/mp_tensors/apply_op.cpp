@@ -252,7 +252,7 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
 //    std::cout << "ident is:\n" << ident << std::endl;
     for (int p=0; p<mps.size(); ++p) {
         generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, id_vec, id_vec);
-        generate_mpo::Operator_Term<matrix, SymmGroup> term;
+        generate_mpo::OperatorTerm<matrix, SymmGroup> term;
         term.operators.push_back( std::make_pair(p, op) );
         term.fill_operator = ident;
         mpom.add_term(term);
@@ -274,7 +274,7 @@ double measure_ops(MPS<matrix, SymmGroup> const& mps,
     boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
     Lattice lattice(lat_ptr);
     generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, id_vec, id_vec);
-    generate_mpo::Operator_Term<matrix, SymmGroup> term;
+    generate_mpo::OperatorTerm<matrix, SymmGroup> term;
     block_matrix<matrix, SymmGroup> tmp;
     gemm(fill, op1, tmp);
 

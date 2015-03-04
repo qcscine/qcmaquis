@@ -95,7 +95,7 @@ namespace generate_mpo
     {
         typedef typename Matrix::value_type scale_type;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-        typedef block_matrix<Matrix, SymmGroup> op_t;
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
 
         typedef Lattice::pos_t pos_t;
         typedef typename OperatorTagTerm<Matrix, SymmGroup>::tag_type tag_type;

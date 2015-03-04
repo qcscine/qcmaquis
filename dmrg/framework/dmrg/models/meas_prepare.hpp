@@ -32,13 +32,13 @@
 #include "dmrg/models/generate_mpo.hpp"
 
 namespace meas_prepare {
-    
+
     template<class Matrix, class SymmGroup>
     std::map<std::string, MPO<Matrix,SymmGroup> >
     local(const Lattice & lat,
-          std::vector<block_matrix<Matrix, SymmGroup> > const & identities,
-          std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
-          std::vector<std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> > const & ops)
+          std::vector<typename OPTable<Matrix, SymmGroup>::op_t> const & identities,
+          std::vector<typename OPTable<Matrix, SymmGroup>::op_t> const & fillings,
+          std::vector<std::pair<std::vector<typename OPTable<Matrix, SymmGroup>::op_t>, bool> > const & ops)
 	{
         std::map<std::string, MPO<Matrix,SymmGroup> > mpos;
         
@@ -83,9 +83,9 @@ namespace meas_prepare {
 	template<class Matrix, class SymmGroup>
 	MPO<Matrix, SymmGroup>
     average(const Lattice & lat,
-            std::vector<block_matrix<Matrix, SymmGroup> > const & identities,
-            std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
-            std::vector<std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> > const & ops)
+            std::vector<typename OPTable<Matrix, SymmGroup>::op_t> const & identities,
+            std::vector<typename OPTable<Matrix, SymmGroup>::op_t> const & fillings,
+            std::vector<std::pair<std::vector<typename OPTable<Matrix, SymmGroup>::op_t>, bool> > const & ops)
 	{
         generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat, identities, fillings);
         

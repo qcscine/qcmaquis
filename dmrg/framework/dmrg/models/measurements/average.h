@@ -37,9 +37,10 @@ namespace measurements {
     
     template <class Matrix, class SymmGroup>
     class average : public measurement<Matrix, SymmGroup> {
-        typedef  measurement<Matrix, SymmGroup> base;
+        typedef measurement<Matrix, SymmGroup> base;
+        typedef typename base::op_t op_t;
         typedef generate_mpo::MPOMaker<Matrix, SymmGroup> generator;
-        typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
+        typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
     public:
         

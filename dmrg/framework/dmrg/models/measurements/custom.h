@@ -35,13 +35,14 @@ namespace measurements {
     
     template <class Matrix, class SymmGroup>
     class custom : public measurement<Matrix, SymmGroup> {
-        typedef  measurement<Matrix, SymmGroup> base;
+        typedef measurement<Matrix, SymmGroup> base;
+        typedef typename base::op_t op_t;
     public:
         custom(std::string const& name_,
                const Lattice & lat,
-               std::vector<block_matrix<Matrix, SymmGroup> > const & identities,
-               std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
-               std::vector< std::vector< std::pair<int, block_matrix<Matrix, SymmGroup> > > > const & ops)
+               std::vector<op_t> const & identities,
+               std::vector<op_t> const & fillings,
+               std::vector< std::vector< std::pair<int, op_t> > > const & ops)
         : base(name_)
         {
             generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat, identities, fillings);

@@ -281,9 +281,9 @@ public:
             term.name = "Density";
             term.type = mterm_t::DMOverlap;
             term.mps_ident = mps_ident;
-            std::vector<std::pair<block_matrix<Matrix, U1>, bool> > ops(1, std::make_pair(psi_tag_handler->get_op(psi_count), false));
+            std::vector<std::pair<op_t, bool> > ops(1, std::make_pair(psi_tag_handler->get_op(psi_count), false));
             
-            MPO<Matrix, U1> mpo = meas_prepare::average(lat, psi_ident_op, psi_ident_op, ops);
+            MPO<Matrix, U1> mpo = meas_prepare::average<Matrix, SymmGroup>(lat, psi_ident_op, psi_ident_op, ops);
             term.overlaps_mps.push_back( mpo_to_smps_group(mpo, psi_phys, allowed_blocks) );
             
             meas.add_term(term);
@@ -294,10 +294,10 @@ public:
             term.name = "Local density";
             term.type = mterm_t::DMOverlap;
             term.mps_ident = mps_ident;
-            std::vector<std::pair<block_matrix<Matrix, U1>, bool> > ops(1, std::make_pair(psi_tag_handler->get_op(psi_count), false));
+            std::vector<std::pair<op_t, bool> > ops(1, std::make_pair(psi_tag_handler->get_op(psi_count), false));
             
             std::pair<std::vector<MPO<Matrix, U1> >, std::vector<std::string> > tmeas;
-            tmeas = meas_prepare::local(lat, psi_ident_op, psi_ident_op, ops);
+            tmeas = meas_prepare::local<Matrix, SymmGroup>(lat, psi_ident_op, psi_ident_op, ops);
             std::swap(tmeas.second, term.labels);
             
             term.overlaps_mps.reserve(tmeas.first.size());

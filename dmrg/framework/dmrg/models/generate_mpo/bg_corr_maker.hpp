@@ -33,15 +33,15 @@ namespace generate_mpo
 {
     
     template <class Matrix, class SymmGroup>
-    std::vector<std::pair<Lattice::pos_t, std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> > >
+    std::vector<std::pair<Lattice::pos_t, std::pair<std::vector<typename OPTable<Matrix, SymmGroup>::op_t>, bool> > >
     arrange_operators(std::vector<Lattice::pos_t> const & positions,
-                      std::vector<std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> > const & operators)
+                      std::vector<std::pair<std::vector<typename OPTable<Matrix, SymmGroup>::op_t>, bool> > const & operators)
 
     {
         // input: list of positions and operators
         // output: list of (position, operator)-pairs, sorted, unique positions with operators multiplied
         typedef Lattice::pos_t pos_t;
-        typedef block_matrix<Matrix, SymmGroup> op_t;
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         typedef std::pair<std::vector<op_t>, bool> site_ops_t;
         typedef std::pair<pos_t, site_ops_t> pos_op_t;
 
@@ -88,8 +88,8 @@ namespace generate_mpo
         typedef typename base::block block;
         typedef boost::tuple<size_t, size_t, string> tag;
 
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         typedef Lattice::pos_t pos_t;
-        typedef block_matrix<Matrix, SymmGroup> op_t;
         typedef std::pair<std::vector<op_t>, bool> site_ops_t;
         typedef std::pair<pos_t, site_ops_t> pos_op_t;
         
@@ -132,7 +132,7 @@ namespace generate_mpo
             labels.resize(lat.size() - *ref.rbegin() - 1 + (int)incl_diag);
 
             // Handle operators on identical positions
-            std::vector<pos_op_t> pos_ops = arrange_operators(ref, ops);
+            std::vector<pos_op_t> pos_ops = arrange_operators<Matrix, SymmGroup>(ref, ops);
 
             for (int i=0; i < ref.size()-1; ++i)
                 for (int j=0; j < pos_ops.size(); ++j)

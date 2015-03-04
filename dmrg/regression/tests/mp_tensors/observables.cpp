@@ -60,7 +60,7 @@ double measure_local_expval(MPS<matrix, SymmGroup> const & mps, block_matrix<mat
     Lattice lattice(lat_ptr);
     
     generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, op_vec(1,ident), op_vec(1,ident));
-    generate_mpo::Operator_Term<matrix, SymmGroup> term;
+    generate_mpo::OperatorTerm<matrix, SymmGroup> term;
     term.operators.push_back( std::make_pair(pos, op) );
     term.fill_operator = ident;
     mpom.add_term(term);

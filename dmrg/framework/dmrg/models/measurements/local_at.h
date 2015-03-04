@@ -36,8 +36,9 @@ namespace measurements {
     template <class Matrix, class SymmGroup>
     class local_at : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
+        typedef typename base::op_t op_t;
         typedef Lattice::pos_t pos_t;
-        typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
+        typedef std::vector<op_t> op_vec;
         typedef std::vector<std::vector<pos_t> > positions_type;
 
     public:
@@ -74,10 +75,9 @@ namespace measurements {
                 for (std::size_t i=0; i<ops.size(); ++i) {
                     pos_t pos = positions[p][i];
                     
-                    block_matrix<Matrix, SymmGroup> const& fill  = fillings[lattice.get_prop<int>("type", pos)];
-                    block_matrix<Matrix, SymmGroup> const& op    = ops[i].first[lattice.get_prop<int>("type", pos)];
+                    op_t const& fill  = fillings[lattice.get_prop<int>("type", pos)];
+                    op_t const& op    = ops[i].first[lattice.get_prop<int>("type", pos)];
                     
-                    typedef block_matrix<Matrix, SymmGroup> op_t;
                     op_t tmp;
                     if (!with_sign && ops[i].second) gemm(fill, op, tmp);
                     else                             tmp = op;
@@ -87,8 +87,8 @@ namespace measurements {
                     with_sign = (ops[i].second) ? !with_sign : with_sign;
                     if (i != ops.size()-1)
                         for (; pos<positions[p][i+1]; ++pos) {
-                            block_matrix<Matrix, SymmGroup> const& fill  = fillings[lattice.get_prop<int>("type", pos)];
-                            block_matrix<Matrix, SymmGroup> const& ident = identities[lattice.get_prop<int>("type", pos)];
+                            op_t const& fill  = fillings[lattice.get_prop<int>("type", pos)];
+                            op_t const& ident = identities[lattice.get_prop<int>("type", pos)];
                             hterm.operators.push_back( std::make_pair(pos, (with_sign) ? fill : ident) );
                         }
                 }

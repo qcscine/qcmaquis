@@ -115,7 +115,7 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> const& bra, MPS<matrix,
     std::vector<double> meas(bra.length());
     for (size_t p=0; p<bra.length(); ++p) {
         generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, op_vec(1,ident),op_vec(1,ident));
-        generate_mpo::Operator_Term<matrix, SymmGroup> term;
+        generate_mpo::OperatorTerm<matrix, SymmGroup> term;
         term.operators.push_back( std::make_pair(p, op) );
         term.fill_operator = ident;
         mpom.add_term(term);

@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE( test )
             int p = dmrg_random::uniform() * L;
             
             generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, ids_vec, ids_vec);
-            generate_mpo::Operator_Term<matrix, SymmGroup> term;
+            generate_mpo::OperatorTerm<matrix, SymmGroup> term;
             term.operators.push_back( std::make_pair(p, op) );
             term.fill_operator = ident;
             mpom.add_term(term);
@@ -133,14 +133,14 @@ BOOST_AUTO_TEST_CASE( test )
         generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, ids_vec, ids_vec);
         for (int p=0; p<L-1; ++p) {
             {
-                generate_mpo::Operator_Term<matrix, SymmGroup> term;
+                generate_mpo::OperatorTerm<matrix, SymmGroup> term;
                 term.operators.push_back( std::make_pair(p, -1.*op1) );
                 term.operators.push_back( std::make_pair(p+1, op2) );
                 term.fill_operator = ident;
                 mpom.add_term(term);
             }
             {
-                generate_mpo::Operator_Term<matrix, SymmGroup> term;
+                generate_mpo::OperatorTerm<matrix, SymmGroup> term;
                 term.operators.push_back( std::make_pair(p, -1.*op2) );
                 term.operators.push_back( std::make_pair(p+1, op1) );
                 term.fill_operator = ident;
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE( test )
             int p = dmrg_random::uniform() * L;
             
             generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, ids_vec, ids_vec);
-            generate_mpo::Operator_Term<matrix, SymmGroup> term;
+            generate_mpo::OperatorTerm<matrix, SymmGroup> term;
             term.operators.push_back( std::make_pair(p, op) );
             term.fill_operator = ident;
             mpom.add_term(term);

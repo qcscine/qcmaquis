@@ -111,8 +111,8 @@ namespace generate_mpo
 	template<class Matrix, class SymmGroup>
 	struct OperatorTerm
 	{
-		typedef block_matrix<Matrix, SymmGroup> op_t;
-        typedef typename Lattice::pos_t pos_t;
+		typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+        typedef Lattice::pos_t pos_t;
 		typedef std::pair<pos_t, op_t> op_pair_t;
         
 		std::vector<op_pair_t> operators;
