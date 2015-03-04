@@ -98,8 +98,8 @@ namespace generate_mpo
         typedef block_matrix<Matrix, SymmGroup> op_t;
 
         typedef Lattice::pos_t pos_t;
-        typedef typename Operator_Tag_Term<Matrix, SymmGroup>::tag_type tag_type;
-        typedef typename Operator_Tag_Term<Matrix, SymmGroup>::op_pair_t pos_op_type;
+        typedef typename OperatorTagTerm<Matrix, SymmGroup>::tag_type tag_type;
+        typedef typename OperatorTagTerm<Matrix, SymmGroup>::op_pair_t pos_op_type;
         typedef boost::tuple<std::size_t, std::size_t, tag_type, scale_type> tag_block;
         
         typedef ::term_descriptor<typename Matrix::value_type> term_descriptor;

@@ -54,7 +54,7 @@ namespace measurements {
             
             for (std::size_t p = 0; p < lattice.size(); ++p)
             {
-                generate_mpo::Operator_Term<Matrix, SymmGroup> term;
+                generate_mpo::OperatorTerm<Matrix, SymmGroup> term;
                 term.operators.push_back( std::make_pair(p, ops[lattice.get_prop<int>("type", p)]) );
                 mpom.add_term(term);
             }
@@ -74,14 +74,14 @@ namespace measurements {
             
             for (std::size_t i = 0; i < ops.size(); ++i) {
                 for (std::size_t p = 0; p < lattice.size(); ++p) {
-                    generate_mpo::Operator_Term<Matrix, SymmGroup> term;
+                    generate_mpo::OperatorTerm<Matrix, SymmGroup> term;
                     term.operators.push_back( std::make_pair(p, ops[i][0].first[lattice.get_prop<int>("type", p)]) );
                     term.with_sign = ops[i][0].second;
                     std::vector<Lattice::pos_t> neighs = lattice.forward(p);
                     for (typename std::vector<Lattice::pos_t>::const_iterator hopto = neighs.begin();
                          hopto != neighs.end(); ++hopto)
                     {
-                        generate_mpo::Operator_Term<Matrix, SymmGroup> term2(term);
+                        generate_mpo::OperatorTerm<Matrix, SymmGroup> term2(term);
                         term2.operators.push_back( std::make_pair(*hopto, ops[i][1].first[lattice.get_prop<int>("type", p)]) );
                         mpom.add_term(term2);
                     }

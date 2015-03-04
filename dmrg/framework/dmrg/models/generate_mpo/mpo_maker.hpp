@@ -75,7 +75,7 @@ namespace generate_mpo
             }
         }
         
-        void add_term(Operator_Term<Matrix, SymmGroup> const & term)
+        void add_term(OperatorTerm<Matrix, SymmGroup> const & term)
         {
             // TODO: removed const&, because of sorting (non-const operation)
             std::vector<std::pair<typename Lattice::pos_t, op_t> > ops = term.operators;

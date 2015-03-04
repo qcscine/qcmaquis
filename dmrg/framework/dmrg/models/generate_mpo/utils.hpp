@@ -42,7 +42,7 @@
 namespace generate_mpo
 {
 	template<class Matrix, class SymmGroup>
-	struct Operator_Tag_Term
+	struct OperatorTagTerm
 	{
 		typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
         typedef typename Lattice::pos_t pos_t;
@@ -53,7 +53,7 @@ namespace generate_mpo
         typename Matrix::value_type scale;
         bool with_sign;
         
-        Operator_Tag_Term() : scale(1.), with_sign(false) {}
+        OperatorTagTerm() : scale(1.), with_sign(false) {}
         
         void canonical_order() // TODO: check and fix for fermions
         {
@@ -62,14 +62,14 @@ namespace generate_mpo
                       boost::bind(&op_pair_t::first, _2));
         }
         
-        bool operator< (Operator_Tag_Term const & rhs) const
+        bool operator< (OperatorTagTerm const & rhs) const
         {
             if (operators[0].first == rhs.operators[0].first)
                 return operators.size() >= rhs.operators.size();
             return operators[0].first < rhs.operators[0].first;
         }
         
-        bool site_match (Operator_Tag_Term const & rhs) const
+        bool site_match (OperatorTagTerm const & rhs) const
         {
             if (operators.size() == rhs.operators.size())
             {
@@ -89,14 +89,14 @@ namespace generate_mpo
             
         }
         
-        bool overlap (Operator_Tag_Term const & rhs) const
+        bool overlap (OperatorTagTerm const & rhs) const
         {
         	return !( (operators.rbegin()->first < rhs.operators.begin()->first) || (rhs.operators.rbegin()->first < operators.begin()->first) );
         }
 	};
     
     template<class Matrix, class SymmGroup>
-    std::ostream & operator<< (std::ostream & os, Operator_Tag_Term<Matrix, SymmGroup> const& op)
+    std::ostream & operator<< (std::ostream & os, OperatorTagTerm<Matrix, SymmGroup> const& op)
     {
         os << "fill: " << op.fill_operator << std::endl;
         os << "sign: " << op.with_sign << std::endl;
@@ -109,7 +109,7 @@ namespace generate_mpo
     }
     
 	template<class Matrix, class SymmGroup>
-	struct Operator_Term
+	struct OperatorTerm
 	{
 		typedef block_matrix<Matrix, SymmGroup> op_t;
         typedef typename Lattice::pos_t pos_t;
@@ -119,7 +119,7 @@ namespace generate_mpo
 		op_t fill_operator;
         bool with_sign;
         
-        Operator_Term() : with_sign(false) {}
+        OperatorTerm() : with_sign(false) {}
         
         void canonical_order() // TODO: check and fix for fermions
         {
@@ -128,14 +128,14 @@ namespace generate_mpo
                       boost::bind(&op_pair_t::first, _2));
         }
         
-        bool operator< (Operator_Term const & rhs) const
+        bool operator< (OperatorTerm const & rhs) const
         {
             if (operators[0].first == rhs.operators[0].first)
                 return operators.size() >= rhs.operators.size();
             return operators[0].first < rhs.operators[0].first;
         }
 
-        bool site_match (Operator_Term const & rhs) const
+        bool site_match (OperatorTerm const & rhs) const
         {
             if (operators.size() == rhs.operators.size())
             {
@@ -155,7 +155,7 @@ namespace generate_mpo
                 
         }
         
-        bool overlap (Operator_Term const & rhs) const
+        bool overlap (OperatorTerm const & rhs) const
         {
         	return !( (operators.rbegin()->first < rhs.operators.begin()->first) || (rhs.operators.rbegin()->first < operators.begin()->first) );
         }

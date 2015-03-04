@@ -68,7 +68,7 @@ namespace measurements {
                         throw std::runtime_error("measure_local_at requires i1<i2<...<in.");
                 
                 generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lattice, identities, fillings);
-                generate_mpo::Operator_Term<Matrix, SymmGroup> hterm;
+                generate_mpo::OperatorTerm<Matrix, SymmGroup> hterm;
                 
                 bool with_sign = false;
                 for (std::size_t i=0; i<ops.size(); ++i) {

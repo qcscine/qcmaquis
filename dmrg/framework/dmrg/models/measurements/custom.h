@@ -47,7 +47,7 @@ namespace measurements {
             generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(lat, identities, fillings);
             
             for (int k = 0; k < ops.size(); ++k) {
-                generate_mpo::Operator_Term<Matrix, SymmGroup> term;
+                generate_mpo::OperatorTerm<Matrix, SymmGroup> term;
                 term.operators = ops[k];
                 term.with_sign = true;
                 mpom.add_term(term);
