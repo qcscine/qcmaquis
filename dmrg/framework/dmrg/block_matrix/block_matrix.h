@@ -47,6 +47,7 @@ class block_matrix
 private:
     typedef typename SymmGroup::charge charge;
 public:
+    typedef Matrix matrix_type;
     typedef typename Matrix::size_type size_type;
     typedef typename Matrix::value_type value_type;
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
