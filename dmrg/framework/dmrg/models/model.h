@@ -35,7 +35,7 @@
 #include "dmrg/models/op_handler.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/block_matrix/block_matrix.h"
-
+#include "dmrg/block_matrix/site_operator.h"
 
 #include <boost/shared_ptr.hpp>
 

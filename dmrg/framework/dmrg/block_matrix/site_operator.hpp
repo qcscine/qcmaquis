@@ -1,0 +1,336 @@
+/*****************************************************************************
+ *
+ * ALPS MPS DMRG Project
+ *
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ * 
+ * This software is part of the ALPS Applications, published under the ALPS
+ * Application License; you can use, redistribute it and/or modify it under
+ * the terms of the license, either version 1 or (at your option) any later
+ * version.
+ * 
+ * You should have received a copy of the ALPS Application License along with
+ * the ALPS Applications; see the file LICENSE.txt. If not, the license is also
+ * available from http://alps.comp-phys.org/.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+ * FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
+ * SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
+ * FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+ * DEALINGS IN THE SOFTWARE.
+ *
+ *****************************************************************************/
+
+#include "utils/function_objects.h"
+#include "utils/bindings.hpp"
+
+#include <boost/serialization/serialization.hpp>
+
+template<class Matrix, class SymmGroup>
+SiteOperator<Matrix, SymmGroup>::SiteOperator() 
+{
+}
+
+template<class Matrix, class SymmGroup>
+SiteOperator<Matrix, SymmGroup>::SiteOperator(Index<SymmGroup> const & rows,
+                                              Index<SymmGroup> const & cols) : bm_(rows, cols)
+{
+}
+
+template<class Matrix, class SymmGroup>
+SiteOperator<Matrix, SymmGroup>::SiteOperator(DualIndex<SymmGroup> const & basis)
+: bm_(basis)
+{
+}
+
+template<class Matrix, class SymmGroup>
+SiteOperator<Matrix, SymmGroup>::SiteOperator(SiteOperator const& rhs)
+: bm_(rhs.bm_)
+{
+}
+
+template<class Matrix, class SymmGroup>
+template <class OtherMatrix>
+SiteOperator<Matrix, SymmGroup>::SiteOperator(SiteOperator<OtherMatrix,SymmGroup> const& rhs)
+: bm_(rhs.bm_)
+{
+}
+
+template<class Matrix, class SymmGroup>
+SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator=(SiteOperator rhs)
+{
+    swap(*this, rhs);
+    return *this;
+}
+
+template<class Matrix, class SymmGroup>
+template<class OtherMatrix>
+SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator=(const SiteOperator<OtherMatrix, SymmGroup> & rhs)
+{
+    block_matrix<Matrix, SymmGroup> cpy = rhs.bm_;
+    swap(bm_, cpy);
+    return *this;
+}
+
+template<class Matrix, class SymmGroup>
+SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator+=(SiteOperator const & rhs)
+{
+    bm_ += rhs.bm_;
+    return *this;
+}
+
+template<class Matrix, class SymmGroup>
+SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator-=(SiteOperator const & rhs)
+{
+    bm_ -= rhs.bm_;
+    return *this;
+}
+
+template<class Matrix, class SymmGroup>
+typename SiteOperator<Matrix, SymmGroup>::size_type SiteOperator<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1, charge c2)
+{
+    return bm_.insert_block(mtx, c1, c2);  
+}
+
+template<class Matrix, class SymmGroup>
+typename SiteOperator<Matrix, SymmGroup>::size_type SiteOperator<Matrix, SymmGroup>::insert_block(Matrix * mtx, charge c1, charge c2)
+{
+    return bm_.insert_block(mtx, c1, c2);  
+}
+
+template<class Matrix, class SymmGroup>
+Index<SymmGroup> SiteOperator<Matrix, SymmGroup>::left_basis() const
+{ 
+    return bm_.left_basis();
+}
+
+template<class Matrix, class SymmGroup>
+Index<SymmGroup> SiteOperator<Matrix, SymmGroup>::right_basis() const
+{
+    return bm_.right_basis();
+}
+
+template<class Matrix, class SymmGroup>
+DualIndex<SymmGroup> const & SiteOperator<Matrix, SymmGroup>::basis() const { return bm_.basis(); }
+
+template<class Matrix, class SymmGroup>
+typename Matrix::size_type SiteOperator<Matrix, SymmGroup>::n_blocks() const { return bm_.n_blocks(); }
+
+template<class Matrix, class SymmGroup>
+std::string SiteOperator<Matrix, SymmGroup>::description() const
+{
+    return bm_.description();
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::shift_basis(typename SiteOperator<Matrix, SymmGroup>::charge diff)
+{
+    bm_.basis().shift(diff);
+}
+
+template<class Matrix, class SymmGroup>
+Matrix & SiteOperator<Matrix, SymmGroup>::operator[](size_type c) { return bm_[c]; }
+
+template<class Matrix, class SymmGroup>
+Matrix const & SiteOperator<Matrix, SymmGroup>::operator[](size_type c) const { return bm_[c]; }
+
+template<class Matrix, class SymmGroup>
+typename SiteOperator<Matrix, SymmGroup>::size_type SiteOperator<Matrix, SymmGroup>::find_block(charge r, charge c) const
+{
+    return bm_.find_block(r,c);
+}
+
+template<class Matrix, class SymmGroup>
+bool SiteOperator<Matrix, SymmGroup>::has_block(charge r, charge c) const
+{
+    return bm_.has_block(r,c);
+}
+
+template<class Matrix, class SymmGroup>
+bool SiteOperator<Matrix, SymmGroup>::has_block(std::pair<charge, size_type> const & r,
+                                                std::pair<charge, size_type> const & c) const
+{
+    return has_block(r.first, c.first);
+}
+
+template<class Matrix, class SymmGroup>
+typename Matrix::value_type & SiteOperator<Matrix, SymmGroup>::operator()(std::pair<charge, size_type> const & r,
+                                                                          std::pair<charge, size_type> const & c)
+{
+    return bm_(r.first, c.first, r.second, c.second);
+}
+
+template<class Matrix, class SymmGroup>
+typename Matrix::value_type const & SiteOperator<Matrix, SymmGroup>::operator()(std::pair<charge, size_type> const & r,
+                                                                                std::pair<charge, size_type> const & c) const
+{
+    return bm_(r.first, c.first, r.second, c.second);
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::index_iter(int i, int max) const
+{
+    bm_.index_iter(i, max);
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::index_sizes() const
+{
+    bm_.index_sizes();
+}
+
+template<class Matrix, class SymmGroup>
+SiteOperator<Matrix, SymmGroup> const & SiteOperator<Matrix, SymmGroup>::operator*=(const scalar_type& v)
+{
+    bm_ *= v;
+    return *this;
+}
+
+template<class Matrix, class SymmGroup>
+SiteOperator<Matrix, SymmGroup> const & SiteOperator<Matrix, SymmGroup>::operator/=(const scalar_type& v)
+{
+    bm_ /= v;
+    return *this;
+}
+
+
+template<class Matrix, class SymmGroup>
+typename SiteOperator<Matrix, SymmGroup>::scalar_type SiteOperator<Matrix, SymmGroup>::trace() const
+{
+    return bm_.trace();
+}
+
+template<class Matrix, class SymmGroup>
+typename SiteOperator<Matrix, SymmGroup>::real_type SiteOperator<Matrix, SymmGroup>::norm() const
+{
+    return bm_.norm();
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::transpose_inplace()
+{
+    bm_.transpose_inplace();
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::conjugate_inplace()
+{
+    bm_.conjugate_inplace();
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::adjoint_inplace()
+{
+    bm_.adjoint_inplace();
+}
+
+template<class Matrix, class SymmGroup>
+template<class Generator>
+void SiteOperator<Matrix, SymmGroup>::generate(Generator g)
+{
+    bm_.generate(g);
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::clear()
+{
+    bm_.clear();
+}
+
+template<class Matrix, class SymmGroup>
+std::ostream& operator<<(std::ostream& os, SiteOperator<Matrix, SymmGroup> const & m)
+{
+    os << m;
+    return os;
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::match_and_add_block(Matrix const & mtx, charge c1, charge c2)
+{
+    bm_.match_and_add_block(mtx, c1, c2);
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::resize_block(charge r, charge c,
+                                                   size_type new_r, size_type new_c,
+                                                   bool pretend)
+{
+    bm_.resize_block(r, c, new_r, new_c, pretend);
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::resize_block(size_type pos,
+                                                   size_type new_r, size_type new_c,
+                                                   bool pretend)
+{
+    bm_.resize_block(pos, new_r, new_c, pretend);
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::remove_block(charge r, charge c)
+{
+    bm_.remove_block(r,c);
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::remove_block(std::size_t which)
+{
+    bm_.remove_block(which);
+}
+
+template<class Matrix, class SymmGroup>
+template<class Archive>
+void SiteOperator<Matrix, SymmGroup>::load(Archive & ar)
+{
+    ar["bm_"] >> bm_;
+}
+
+template<class Matrix, class SymmGroup>
+template<class Archive>
+void SiteOperator<Matrix, SymmGroup>::save(Archive & ar) const
+{
+    ar["bm_"] << bm_;
+}
+
+template<class Matrix, class SymmGroup>
+template <class Archive>
+void SiteOperator<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
+{
+    ar & bm_;
+}
+
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::reserve(charge c1, charge c2,
+                                              std::size_t r, std::size_t c)
+{
+    bm_.reserve(c1, c2, r, c);
+}
+
+template<class Matrix, class SymmGroup>
+inline void SiteOperator<Matrix, SymmGroup>::reserve_pos(charge c1, charge c2,
+                                                         std::size_t ri, std::size_t ci)
+{
+    bm_.reserve_pos(c1, c2, ri, ci);
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::allocate_blocks()
+{
+    bm_.allocate_blocks();
+}
+
+template<class Matrix, class SymmGroup>
+bool SiteOperator<Matrix, SymmGroup>::reasonable() const
+{
+    return bm_.reasonable();
+}
+
+template<class Matrix, class SymmGroup>
+std::size_t SiteOperator<Matrix, SymmGroup>::num_elements() const
+{
+    return bm_.num_elements();
+}

@@ -36,6 +36,8 @@
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
+#include "dmrg/block_matrix/site_operator.h"
+#include "dmrg/block_matrix/site_operator_algorithms.h"
 
 #include "dmrg/models/tag_detail.h"
 
