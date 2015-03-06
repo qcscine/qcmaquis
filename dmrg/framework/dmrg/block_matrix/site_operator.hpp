@@ -197,11 +197,11 @@ SiteOperator<Matrix, SymmGroup> const & SiteOperator<Matrix, SymmGroup>::operato
 }
 
 
-template<class Matrix, class SymmGroup>
-typename SiteOperator<Matrix, SymmGroup>::scalar_type SiteOperator<Matrix, SymmGroup>::trace() const
-{
-    return bm_.trace();
-}
+//template<class Matrix, class SymmGroup>
+//typename SiteOperator<Matrix, SymmGroup>::scalar_type SiteOperator<Matrix, SymmGroup>::trace() const
+//{
+//    return bm_.trace();
+//}
 
 template<class Matrix, class SymmGroup>
 typename SiteOperator<Matrix, SymmGroup>::real_type SiteOperator<Matrix, SymmGroup>::norm() const
@@ -215,11 +215,11 @@ void SiteOperator<Matrix, SymmGroup>::transpose_inplace()
     bm_.transpose_inplace();
 }
 
-template<class Matrix, class SymmGroup>
-void SiteOperator<Matrix, SymmGroup>::conjugate_inplace()
-{
-    bm_.conjugate_inplace();
-}
+//template<class Matrix, class SymmGroup>
+//void SiteOperator<Matrix, SymmGroup>::conjugate_inplace()
+//{
+//    bm_.conjugate_inplace();
+//}
 
 template<class Matrix, class SymmGroup>
 void SiteOperator<Matrix, SymmGroup>::adjoint_inplace()
@@ -227,12 +227,12 @@ void SiteOperator<Matrix, SymmGroup>::adjoint_inplace()
     bm_.adjoint_inplace();
 }
 
-template<class Matrix, class SymmGroup>
-template<class Generator>
-void SiteOperator<Matrix, SymmGroup>::generate(Generator g)
-{
-    bm_.generate(g);
-}
+//template<class Matrix, class SymmGroup>
+//template<class Generator>
+//void SiteOperator<Matrix, SymmGroup>::generate(Generator g)
+//{
+//    bm_.generate(g);
+//}
 
 template<class Matrix, class SymmGroup>
 void SiteOperator<Matrix, SymmGroup>::clear()

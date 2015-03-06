@@ -595,14 +595,6 @@ void generate(block_matrix<Matrix, SymmGroup> & m, Generator & g)
     m.generate(g);
 }
 
-//template<class Matrix, class SymmGroup>
-//block_matrix<Matrix, SymmGroup> identity_matrix(Index<SymmGroup> const & size)
-//{
-//    block_matrix<Matrix, SymmGroup> ret(size, size);
-//    for (std::size_t k = 0; k < ret.n_blocks(); ++k)
-//        ret[k] = Matrix::identity_matrix(size[k].second);
-//    return ret;
-//}
 template<class BlockMatrix, class SymmGroup>
 BlockMatrix identity_matrix(Index<SymmGroup> const & size)
 {
@@ -610,24 +602,6 @@ BlockMatrix identity_matrix(Index<SymmGroup> const & size)
     BlockMatrix ret(size, size);
     for (std::size_t k = 0; k < ret.n_blocks(); ++k)
         ret[k] = Matrix::identity_matrix(size[k].second);
-    return ret;
-}
-
-
-template<class Matrix, class SymmGroup>
-bool is_hermitian(block_matrix<Matrix, SymmGroup> const & m)
-{
-    bool ret = true;
-    for (size_t k=0; ret && k < m.n_blocks(); ++k) {
-        if (m.basis().left_size(k) != m.basis().right_size(k))
-            return false;
-        else if (m.basis().left_charge(k) == m.basis().right_charge(k))
-            ret = is_hermitian(m[k]);
-        else if (! m.has_block(m.basis().right_charge(k), m.basis().left_charge(k)))
-            return false;
-        else
-            ret = ( m[k] == transpose(conj( m(m.basis().right_charge(k), m.basis().left_charge(k)) )) );
-    }
     return ret;
 }
 
@@ -655,132 +629,5 @@ block_matrix<Matrix, SymmGroup> sqrt(block_matrix<Matrix, SymmGroup>  m)
 //    
 //    return res;
 //}
-
-template <class Matrix, class SymmGroup, class A>
-block_matrix<Matrix, SymmGroup> op_exp_hermitian(Index<SymmGroup> const & phys,
-                                                 block_matrix<Matrix, SymmGroup> M,
-                                                 A const & alpha = 1.)
-{
-    for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++)
-        if (M.has_block(it_c->first, it_c->first))
-            M(it_c->first, it_c->first) = exp_hermitian(M(it_c->first, it_c->first), alpha);
-        else
-            M.insert_block(Matrix::identity_matrix(phys.size_of_block(it_c->first)),
-                           it_c->first, it_c->first);
-    return M;
-}
-
-namespace detail {
-    
-    template <class Matrix>
-    typename boost::enable_if<boost::is_complex<typename Matrix::value_type>, Matrix>::type
-    exp_dispatcher(Matrix const& m, typename Matrix::value_type const& alpha)
-    {
-        return exp(m, alpha);
-    }
-
-    template <class Matrix>
-    typename boost::disable_if<boost::is_complex<typename Matrix::value_type>, Matrix>::type
-    exp_dispatcher(Matrix const& m, typename Matrix::value_type const& alpha)
-    {
-        throw std::runtime_error("Exponential of non-hermitian real matrices not implemented!");
-        return Matrix();
-    }
-}
-
-template <class Matrix, class SymmGroup, class A>
-block_matrix<Matrix, SymmGroup> op_exp(Index<SymmGroup> const & phys,
-                                       block_matrix<Matrix, SymmGroup> M,
-                                       A const & alpha = 1.)
-{
-    for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++)
-        if (M.has_block(it_c->first, it_c->first))
-            M(it_c->first, it_c->first) = detail::exp_dispatcher(M(it_c->first, it_c->first), alpha);
-        else
-            M.insert_block(Matrix::identity_matrix(phys.size_of_block(it_c->first)),
-                           it_c->first, it_c->first);
-    return M;
-}
-
-template<class Matrix1, class Matrix2, class SymmGroup>
-void op_kron(Index<SymmGroup> const & phys_A,
-             Index<SymmGroup> const & phys_B,
-             block_matrix<Matrix1, SymmGroup> const & A,
-             block_matrix<Matrix1, SymmGroup> const & B,
-             block_matrix<Matrix2, SymmGroup> & C)
-{
-    C = block_matrix<Matrix2, SymmGroup>();
-
-    ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
-    ProductBasis<SymmGroup> const& pb_right = pb_left;
-
-    for (int i = 0; i < A.n_blocks(); ++i) {
-        for (int j = 0; j < B.n_blocks(); ++j) {
-            typename SymmGroup::charge new_right = SymmGroup::fuse(A.basis().right_charge(i), B.basis().right_charge(j));
-            typename SymmGroup::charge new_left = SymmGroup::fuse(A.basis().left_charge(i), B.basis().left_charge(j));
-
-
-            Matrix2 tmp(pb_left.size(A.basis().left_charge(i), B.basis().left_charge(j)),
-                       pb_right.size(A.basis().right_charge(i), B.basis().right_charge(j)),
-                       0);
-
-            maquis::dmrg::detail::op_kron(tmp, B[j], A[i],
-                                          pb_left(A.basis().left_charge(i), B.basis().left_charge(j)),
-                                          pb_right(A.basis().right_charge(i), B.basis().right_charge(j)),
-                                          A.basis().left_size(i), B.basis().left_size(j),
-                                          A.basis().right_size(i), B.basis().right_size(j));
-
-            C.match_and_add_block(tmp, new_left, new_right);
-        }
-    }
-}
-
-template<class Matrix, class SymmGroup>
-void op_kron_long(MultiIndex<SymmGroup> const & midx,
-                  typename MultiIndex<SymmGroup>::set_id s,
-                  block_matrix<Matrix, SymmGroup> const & A,
-                  block_matrix<Matrix, SymmGroup> const & B,
-                  block_matrix<Matrix, SymmGroup> const & F,
-                  std::size_t dist,
-                  block_matrix<Matrix, SymmGroup> & C)
-{
-    assert( midx.size() == 2*(dist+1) );
-    C = block_matrix<Matrix, SymmGroup>();
-    
-    for (size_t run=0; run<2; ++run) {
-        
-        if (run == 1)
-            C.allocate_blocks();
-        
-        for (index_product_iterator<SymmGroup> it = midx.begin();
-             it != midx.end(); ++it)
-        {
-            bool has_block = A.has_block((*it)[0].first, (*it)[1].first);
-            has_block = has_block && B.has_block((*it)[2*dist].first, (*it)[2*dist+1].first);
-            for (size_t i=1; has_block && i<dist; ++i)
-                has_block = F.has_block((*it)[2*i].first, (*it)[2*i+1].first);
-            
-            if (!has_block)
-                continue;
-            
-            typename Matrix::value_type val = A((*it)[0], (*it)[1]) * B((*it)[2*dist], (*it)[2*dist+1]);
-            for (size_t i=1; i<dist; ++i)
-                val *= F((*it)[2*i], (*it)[2*i+1]);
-            
-            if (val != 0.) {
-                typename MultiIndex<SymmGroup>::coord_t coord_l, coord_r;
-                boost::tie(coord_l, coord_r) = midx.get_coords(s, *it);
-                if (run == 0)
-                    C.reserve(coord_l.first, coord_r.first,
-                              midx.left_size(s, coord_l.first), midx.right_size(s, coord_r.first));
-                else
-                    C(coord_l, coord_r) += val;
-                
-            }
-        }
-        
-    }
-    
-}
 
 #endif

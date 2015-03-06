@@ -102,14 +102,10 @@ public:
     void index_iter(int i, int max) const;
     void index_sizes() const;
     
-    scalar_type trace() const;
     real_type norm() const;
     void transpose_inplace();
-    void conjugate_inplace();
     void adjoint_inplace();
     void clear();
-    template<class Generator>
-    void generate(Generator g);
 
     void match_and_add_block(Matrix const &, charge, charge);
     
