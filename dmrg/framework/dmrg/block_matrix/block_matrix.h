@@ -40,6 +40,15 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
+template<class Matrix, class SymmGroup> class SiteOperator;
+
+template<class Matrix, class SymmGroup>
+struct operator_selector
+{
+    typedef SiteOperator<Matrix, SymmGroup> type;
+    //typedef block_matrix<Matrix, SymmGroup> type;
+};
+
 template<class Matrix, class SymmGroup>
 class block_matrix
 {

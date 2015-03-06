@@ -54,8 +54,8 @@ typedef alps::numeric::matrix<double> matrix;
 
 BOOST_AUTO_TEST_CASE( test )
 {
-    
-    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef std::vector<op_t> op_vec;
     int Nrep = 6;
     int M = 50;
     int L = 16;
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE( test )
     phys.insert(std::make_pair(2, 1));
     SymmGroup::charge initc = L/2;
     
-    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
+    op_t ident = identity_matrix<op_t>(phys);
     op_vec ids_vec(1,ident);
 
     default_mps_init<matrix, SymmGroup> initializer(parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE( test )
     }
     
     { // measure density (at some positions)
-        block_matrix<matrix, SymmGroup> op;
+        op_t op;
         op.insert_block(matrix(1,1,1), 1,1);
         op.insert_block(matrix(1,1,2), 2,2);
         
@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE( test )
     }
 
     { // measure bond terms
-        block_matrix<matrix, SymmGroup> op1, op2;
+        op_t op1, op2;
         op1.insert_block(matrix(1,1,1), 0,1);
         op1.insert_block(matrix(1,1,sqrt(2)), 1,2);
         op2.insert_block(matrix(1,1,1), 1,0);
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE( test )
     }
 
     { // measure using canonization
-        block_matrix<matrix, SymmGroup> op;
+        op_t op;
         op.insert_block(matrix(1,1,1), 1,1);
         op.insert_block(matrix(1,1,2), 2,2);
         

@@ -160,14 +160,14 @@ template<class Matrix, class SymmGroup>
 typename Matrix::value_type & SiteOperator<Matrix, SymmGroup>::operator()(std::pair<charge, size_type> const & r,
                                                                           std::pair<charge, size_type> const & c)
 {
-    return bm_(r.first, c.first, r.second, c.second);
+    return bm_(r, c);
 }
 
 template<class Matrix, class SymmGroup>
 typename Matrix::value_type const & SiteOperator<Matrix, SymmGroup>::operator()(std::pair<charge, size_type> const & r,
                                                                                 std::pair<charge, size_type> const & c) const
 {
-    return bm_(r.first, c.first, r.second, c.second);
+    return bm_(r, c);
 }
 
 template<class Matrix, class SymmGroup>
@@ -243,7 +243,11 @@ void SiteOperator<Matrix, SymmGroup>::clear()
 template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, SiteOperator<Matrix, SymmGroup> const & m)
 {
-    os << m;
+    os << "Basis: " << m.basis() << std::endl;
+    for (std::size_t k = 0; k < m.n_blocks(); ++k)
+        os << "Block (" << m.basis()[k].lc << "," << m.basis()[k].rc
+           << "):\n" << m[k] << std::endl;
+    os << std::endl;
     return os;
 }
 

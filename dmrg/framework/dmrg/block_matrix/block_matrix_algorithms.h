@@ -595,14 +595,24 @@ void generate(block_matrix<Matrix, SymmGroup> & m, Generator & g)
     m.generate(g);
 }
 
-template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> identity_matrix(Index<SymmGroup> const & size)
+//template<class Matrix, class SymmGroup>
+//block_matrix<Matrix, SymmGroup> identity_matrix(Index<SymmGroup> const & size)
+//{
+//    block_matrix<Matrix, SymmGroup> ret(size, size);
+//    for (std::size_t k = 0; k < ret.n_blocks(); ++k)
+//        ret[k] = Matrix::identity_matrix(size[k].second);
+//    return ret;
+//}
+template<class BlockMatrix, class SymmGroup>
+BlockMatrix identity_matrix(Index<SymmGroup> const & size)
 {
-    block_matrix<Matrix, SymmGroup> ret(size, size);
+    typedef typename BlockMatrix::matrix_type Matrix;
+    BlockMatrix ret(size, size);
     for (std::size_t k = 0; k < ret.n_blocks(); ++k)
         ret[k] = Matrix::identity_matrix(size[k].second);
     return ret;
 }
+
 
 template<class Matrix, class SymmGroup>
 bool is_hermitian(block_matrix<Matrix, SymmGroup> const & m)

@@ -81,7 +81,6 @@ void gemm(SiteOperator<Matrix1, SymmGroup> const & A,
     gemm(A, B, C, parallel::scheduler_nop());
 }
 
-/*
 template<class Matrix, class DiagMatrix, class SymmGroup>
 void svd(SiteOperator<Matrix, SymmGroup> const & M,
          SiteOperator<Matrix, SymmGroup> & U,
@@ -104,7 +103,6 @@ void svd(SiteOperator<Matrix, SymmGroup> const & M,
         svd(M[k], U[k], V[k], S[k]);
     });
 }
-*/
 
 /*
 template<class Matrix, class DiagMatrix, class SymmGroup>
@@ -524,15 +522,6 @@ void generate(SiteOperator<Matrix, SymmGroup> & m, Generator & g)
     m.generate(g);
 }
 
-//template<class Matrix, class SymmGroup>
-//SiteOperator<Matrix, SymmGroup> identity_matrix(Index<SymmGroup> const & size)
-//{
-//    SiteOperator<Matrix, SymmGroup> ret(size, size);
-//    for (std::size_t k = 0; k < ret.n_blocks(); ++k)
-//        ret[k] = Matrix::identity_matrix(size[k].second);
-//    return ret;
-//}
-
 template<class Matrix, class SymmGroup>
 bool is_hermitian(SiteOperator<Matrix, SymmGroup> const & m)
 {
@@ -550,7 +539,6 @@ bool is_hermitian(SiteOperator<Matrix, SymmGroup> const & m)
     return ret;
 }
 
-/*
 template<class Matrix, class SymmGroup>
 SiteOperator<Matrix, SymmGroup> sqrt(SiteOperator<Matrix, SymmGroup>  m)
 {
@@ -574,23 +562,38 @@ SiteOperator<Matrix, SymmGroup> op_exp_hermitian(Index<SymmGroup> const & phys,
     return M;
 }
 
-namespace detail {
-    
-    template <class Matrix>
-    typename boost::enable_if<boost::is_complex<typename Matrix::value_type>, Matrix>::type
-    exp_dispatcher(Matrix const& m, typename Matrix::value_type const& alpha)
-    {
-        return exp(m, alpha);
-    }
-
-    template <class Matrix>
-    typename boost::disable_if<boost::is_complex<typename Matrix::value_type>, Matrix>::type
-    exp_dispatcher(Matrix const& m, typename Matrix::value_type const& alpha)
-    {
-        throw std::runtime_error("Exponential of non-hermitian real matrices not implemented!");
-        return Matrix();
-    }
+template <class OutOp, class Matrix, class SymmGroup, class A>
+OutOp op_exp_hermitian(Index<SymmGroup> const & phys,
+                       SiteOperator<Matrix, SymmGroup> const & M,
+                       A const & alpha = 1.)
+{
+    OutOp ret(M.basis());
+    for (typename Index<SymmGroup>::const_iterator it_c = phys.begin(); it_c != phys.end(); it_c++)
+        if (M.has_block(it_c->first, it_c->first))
+            ret(it_c->first, it_c->first) = exp_hermitian(M(it_c->first, it_c->first), alpha);
+        else
+            ret.insert_block(Matrix::identity_matrix(phys.size_of_block(it_c->first)),
+                           it_c->first, it_c->first);
+    return ret;
 }
+
+//namespace detail {
+//    
+//    template <class Matrix>
+//    typename boost::enable_if<boost::is_complex<typename Matrix::value_type>, Matrix>::type
+//    exp_dispatcher(Matrix const& m, typename Matrix::value_type const& alpha)
+//    {
+//        return exp(m, alpha);
+//    }
+//
+//    template <class Matrix>
+//    typename boost::disable_if<boost::is_complex<typename Matrix::value_type>, Matrix>::type
+//    exp_dispatcher(Matrix const& m, typename Matrix::value_type const& alpha)
+//    {
+//        throw std::runtime_error("Exponential of non-hermitian real matrices not implemented!");
+//        return Matrix();
+//    }
+//}
 
 template <class Matrix, class SymmGroup, class A>
 SiteOperator<Matrix, SymmGroup> op_exp(Index<SymmGroup> const & phys,
@@ -605,7 +608,6 @@ SiteOperator<Matrix, SymmGroup> op_exp(Index<SymmGroup> const & phys,
                            it_c->first, it_c->first);
     return M;
 }
-*/
 
 template<class Matrix1, class Matrix2, class SymmGroup>
 void op_kron(Index<SymmGroup> const & phys_A,

@@ -34,9 +34,9 @@ namespace MPOTensor_detail
 {
     template <class Matrix, class SymmGroup>
     class term_descriptor {
-        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         typedef typename Matrix::value_type value_type;
     public:
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         term_descriptor() {}
         term_descriptor(op_t & op_, value_type & s_) : op(op_), scale(s_) {}
 
@@ -53,9 +53,9 @@ namespace MPOTensor_detail
 
     template <class Matrix, class SymmGroup>
     class const_term_descriptor {
-        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         typedef typename Matrix::value_type value_type;
     public:
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         const_term_descriptor() {}
         const_term_descriptor(op_t const & op_, value_type s_) : op(op_), scale(s_) {}
 
@@ -65,7 +65,7 @@ namespace MPOTensor_detail
 
     template <class Matrix, class SymmGroup, typename Scale>
     const_term_descriptor<Matrix, SymmGroup> make_const_term_descriptor(
-        block_matrix<Matrix, SymmGroup> const & op_, Scale s_)
+        typename const_term_descriptor<Matrix, SymmGroup>::op_t const & op_, Scale s_)
     {
         return const_term_descriptor<Matrix, SymmGroup>(op_, s_);
     }
