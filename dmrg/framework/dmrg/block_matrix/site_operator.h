@@ -148,8 +148,8 @@ public:
     
     bool reasonable() const;
     
-    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > & spin() { return bm_.spin; }
-    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > const & spin() const { return bm_.spin; }
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > & spin() { return bm_.spin(); }
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > const & spin() const { return bm_.spin(); }
     
 private:
     block_matrix<Matrix, SymmGroup> bm_;

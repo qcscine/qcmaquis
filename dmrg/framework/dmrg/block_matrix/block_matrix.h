@@ -145,7 +145,7 @@ public:
         swap(x.basis_, y.basis_);
         swap(x.size_index, y.size_index);
         swap(x.iter_index, y.iter_index);
-        std::swap(x.spin, y.spin);
+        std::swap(x.spin_, y.spin_);
     }
 
     Matrix const & operator()(charge r, charge c) const
@@ -172,9 +172,11 @@ public:
     
     bool reasonable() const;
 
-    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > spin;
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > & spin() { return spin_; }
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > const & spin() const { return spin_; }
     
 private:
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > spin_;
     DualIndex<SymmGroup> basis_;
     boost::ptr_vector<Matrix> data_;
 };    
@@ -214,7 +216,7 @@ block_matrix<Matrix, SymmGroup> operator-(block_matrix<Matrix,SymmGroup> b1, blo
 template<class Matrix, class SymmGroup>
 bool shape_equal(block_matrix<Matrix, SymmGroup> const & a, block_matrix<Matrix, SymmGroup> const & b)
 {
-    return (a.basis() == b.basis() && a.spin == b.spin);
+    return (a.basis() == b.basis() && a.spin_ == b.spin_);
 }
 
 template<class Matrix, class SymmGroup>

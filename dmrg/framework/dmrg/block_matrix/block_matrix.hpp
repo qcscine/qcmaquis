@@ -67,7 +67,7 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix const& rhs)
 , data_(rhs.data_)
 , size_index(rhs.size_index)
 , iter_index(rhs.iter_index)
-, spin(rhs.spin)
+, spin_(rhs.spin_)
 {
 }
 
@@ -77,7 +77,7 @@ block_matrix<Matrix, SymmGroup>::block_matrix(block_matrix<OtherMatrix,SymmGroup
 : basis_(rhs.basis())
 , size_index(rhs.size_index)
 , iter_index(rhs.iter_index)
-, spin(rhs.spin)
+, spin_(rhs.spin())
 {
     data_.reserve(rhs.n_blocks());
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
@@ -95,7 +95,7 @@ template<class Matrix, class SymmGroup>
 template<class OtherMatrix>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(const block_matrix<OtherMatrix, SymmGroup> & rhs)
 {
-    spin = rhs.spin;
+    spin_ = rhs.spin_;
     basis_ = rhs.basis_;
     size_index = rhs.size_index;
     iter_index = rhs.iter_index;
@@ -110,8 +110,8 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator=(con
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator+=(block_matrix const & rhs)
 {
-    assert (spin.get() == rhs.spin.get() || n_blocks() == 0 || rhs.n_blocks() == 0);
-    if (n_blocks() == 0) spin = rhs.spin;
+    assert (spin_.get() == rhs.spin_.get() || n_blocks() == 0 || rhs.n_blocks() == 0);
+    if (n_blocks() == 0) spin_ = rhs.spin_;
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
     {
         charge rhs_rc = rhs.basis_[k].lc;
@@ -127,8 +127,8 @@ block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator+=(bl
 template<class Matrix, class SymmGroup>
 block_matrix<Matrix, SymmGroup> & block_matrix<Matrix, SymmGroup>::operator-=(block_matrix const & rhs)
 {
-    assert (spin.get() == rhs.spin.get() || n_blocks() == 0 || rhs.n_blocks() == 0);
-    if (n_blocks() == 0) spin = rhs.spin();
+    assert (spin_.get() == rhs.spin_.get() || n_blocks() == 0 || rhs.n_blocks() == 0);
+    if (n_blocks() == 0) spin_ = rhs.spin_();
     for (size_type k = 0; k < rhs.n_blocks(); ++k)
     {
         charge rhs_rc = rhs.basis_[k].lc;
@@ -354,13 +354,13 @@ void block_matrix<Matrix, SymmGroup>::clear()
 {
     data_.clear();
     basis_ = DualIndex<SymmGroup>();
-    spin.clear();
+    spin_.clear();
 }
 
 template<class Matrix, class SymmGroup>
 std::ostream& operator<<(std::ostream& os, block_matrix<Matrix, SymmGroup> const & m)
 {
-    os << "Basis: " << m.basis() << m.spin << std::endl;
+    os << "Basis: " << m.basis() << m.spin() << std::endl;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
         os << "Block (" << m.basis()[k].lc << "," << m.basis()[k].rc
            << "):\n" << m[k] << std::endl;
@@ -446,7 +446,7 @@ void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
     Index<SymmGroup> r_, c_;
     ar["rows_"] >> r_;
     ar["cols_"] >> c_;
-    //ar["spin"] >> spin;
+    //ar["spin_"] >> spin_;
 
     basis_.resize(r_.size());
     for (std::size_t s = 0; s < r_.size(); ++s)
@@ -480,7 +480,7 @@ void block_matrix<Matrix, SymmGroup>::save(Archive & ar) const
     Index<SymmGroup> c_ = right_basis();
     ar["rows_"] << r_;
     ar["cols_"] << c_;
-    //ar["spin"] << spin;
+    //ar["spin_"] << spin_;
 
     std::vector<Matrix> tmp(data_.begin(), data_.end());
     ar["data_"] << tmp;
@@ -490,7 +490,7 @@ template<class Matrix, class SymmGroup>
 template <class Archive>
 void block_matrix<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
 {
-    //ar & basis_ & spin & data_;
+    //ar & basis_ & spin_ & data_;
     ar & basis_ & data_;
 }
 
