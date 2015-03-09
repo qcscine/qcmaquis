@@ -201,7 +201,6 @@ SiteOperator<Matrix, SymmGroup> const & SiteOperator<Matrix, SymmGroup>::operato
     return *this;
 }
 
-
 template<class Matrix, class SymmGroup>
 typename SiteOperator<Matrix, SymmGroup>::real_type SiteOperator<Matrix, SymmGroup>::norm() const
 {
@@ -272,19 +271,6 @@ void SiteOperator<Matrix, SymmGroup>::remove_block(std::size_t which)
     bm_.remove_block(which);
 }
 
-template<class Matrix, class SymmGroup>
-template<class Archive>
-void SiteOperator<Matrix, SymmGroup>::load(Archive & ar)
-{
-    ar["bm_"] >> bm_;
-}
-
-template<class Matrix, class SymmGroup>
-template<class Archive>
-void SiteOperator<Matrix, SymmGroup>::save(Archive & ar) const
-{
-    ar["bm_"] << bm_;
-}
 
 template<class Matrix, class SymmGroup>
 template <class Archive>
