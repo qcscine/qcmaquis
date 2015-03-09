@@ -44,14 +44,6 @@ public:
     bool operator==(SpinDescriptor const & rhs) const { return true; }
     bool operator!=(SpinDescriptor const & rhs) const { return false; }
 
-    //template<class Archive>
-    //void save(Archive & ar) const
-    //{}
-
-    //template<class Archive>
-    //void load(Archive & ar)
-    //{}
-
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {}
@@ -94,18 +86,6 @@ public:
     bool operator!=(SpinDescriptor const & rhs) const { return !(*this==rhs); }
     friend SpinDescriptor operator-(SpinDescriptor);
     friend std::ostream & operator<<(std::ostream & os, SpinDescriptor);
-
-    //template<class Archive>
-    //void save(Archive & ar) const
-    //{
-    //    ar["twoS"] << twoS;
-    //}
-
-    //template<class Archive>
-    //void load(Archive & ar)
-    //{
-    //    ar["twoS"] >> twoS;
-    //}
 
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)
