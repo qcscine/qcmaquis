@@ -83,7 +83,7 @@ namespace tag_detail {
             storage::migrate(reference);
             storage::migrate(sample);
         }
-        if (reference.basis() != sample.basis())
+        if (!shape_equal(reference, sample))
             return std::make_pair(false, 0.);
 
         if (sample.n_blocks() == 0)

@@ -187,6 +187,11 @@ SiteOperator<Matrix, SymmGroup> operator-(SiteOperator<Matrix,SymmGroup> b1, Sit
     return b1;
 }
 
+template<class Matrix, class SymmGroup>
+bool shape_equal(SiteOperator<Matrix, SymmGroup> const & a, SiteOperator<Matrix, SymmGroup> const & b)
+{
+    return (a.basis() == b.basis() && a.spin() == b.spin());
+}
 
 template<class Matrix, class SymmGroup>
 std::size_t size_of(SiteOperator<Matrix, SymmGroup> const & m)

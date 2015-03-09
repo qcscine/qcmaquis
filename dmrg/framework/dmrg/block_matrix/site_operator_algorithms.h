@@ -182,11 +182,14 @@ void op_kron(Index<SymmGroup> const & phys_A,
              SiteOperator<Matrix1, SymmGroup> const & A,
              SiteOperator<Matrix1, SymmGroup> const & B,
              SiteOperator<Matrix2, SymmGroup> & C,
-             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin,
-             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin,
-             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin,
+             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> lspin
+           = SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type>(),
+             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> mspin
+           = SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type>(),
+             SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> rspin
+           = SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type>(),
              SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> tspin
-              = SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type>())
+           = SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type>())
 {
     C = SiteOperator<Matrix2, SymmGroup>();
 
