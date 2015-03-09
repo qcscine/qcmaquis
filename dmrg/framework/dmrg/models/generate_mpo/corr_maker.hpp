@@ -77,7 +77,7 @@ namespace generate_mpo
         typedef typename base::block block; 
         typedef Lattice::pos_t pos_t;
         typedef tag_detail::tag_type tag_type;
-        typedef block_matrix<Matrix, SymmGroup> op_t;
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         typedef boost::tuple<size_t, size_t, string> tag;
         
     public:
@@ -234,7 +234,7 @@ namespace generate_mpo
         typedef typename base::block block; 
         typedef tag_detail::tag_type tag_type;
         typedef Lattice::pos_t pos_t;
-        typedef block_matrix<Matrix, SymmGroup> op_t;
+        typedef typename OPTable<Matrix,SymmGroup>::op_t op_t;
         typedef boost::tuple<size_t, size_t, string> tag;
 
     public:

@@ -53,6 +53,7 @@ template<class Matrix, class SymmGroup>
 class measurement {
 public:
     typedef typename Matrix::value_type value_type;
+    typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
     
     measurement(std::string const& n="")
     : cast_to_real(true), is_super_meas(false), name_(n), eigenstate(0)
@@ -174,15 +175,16 @@ std::ostream& operator<<(std::ostream& os, measurement<Matrix, SymmGroup> const&
 
 /// UTILITIES
 
-template<class Matrix, class SymmGroup>
-bool is_hermitian_meas(std::vector<block_matrix<Matrix, SymmGroup> > const & ops)
+template<class BlockMatrix>
+bool is_hermitian_meas(std::vector<BlockMatrix> const & ops)
 {
     return all_true(ops.begin(), ops.end(),
-                    boost::bind(static_cast<bool (*)(block_matrix<Matrix, SymmGroup> const&)>(&is_hermitian), _1));
+                    boost::bind(static_cast<bool (*)(BlockMatrix const&)>(&is_hermitian), _1));
+    return true;
 }
 
-template<class Matrix, class SymmGroup>
-bool is_hermitian_meas(std::vector<std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> > const & ops)
+template<class BlockMatrix>
+bool is_hermitian_meas(std::vector<std::pair<std::vector<BlockMatrix>, bool> > const & ops)
 {
     bool is_herm = true;
     for (int i=0; i<ops.size() && is_herm; ++i)

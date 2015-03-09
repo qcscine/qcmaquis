@@ -45,19 +45,14 @@ namespace generate_mpo
     template<class Matrix, class SymmGroup>
     class MPOMaker
     {
-        typedef block_matrix<Matrix, SymmGroup> op_t;
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         typedef boost::tuple<size_t, size_t, op_t> block;
-        typedef vector<
-        pair<
-        block_matrix<Matrix, SymmGroup>,
-        block_matrix<Matrix, SymmGroup>
-        >
-        > op_pairs;
+        typedef vector< pair<op_t, op_t> > op_pairs;
         
     public:
         MPOMaker(Lattice const& lat_,
-                 const std::vector<block_matrix<Matrix, SymmGroup> > & ident_,
-                 const std::vector<block_matrix<Matrix, SymmGroup> > & fill_)
+                 const std::vector<op_t> & ident_,
+                 const std::vector<op_t> & fill_)
         : lat(lat_)
         , length(lat.size())
         , identities(ident_)
@@ -75,7 +70,7 @@ namespace generate_mpo
             }
         }
         
-        void add_term(Operator_Term<Matrix, SymmGroup> const & term)
+        void add_term(OperatorTerm<Matrix, SymmGroup> const & term)
         {
             // TODO: removed const&, because of sorting (non-const operation)
             std::vector<std::pair<typename Lattice::pos_t, op_t> > ops = term.operators;
@@ -138,7 +133,7 @@ namespace generate_mpo
     private:
         Lattice const& lat;
         std::size_t length;
-        std::vector<block_matrix<Matrix, SymmGroup> > identities, fillings;
+        std::vector<op_t> identities, fillings;
         vector<set<size_t> > used_dims;
         vector<vector<block> > prempo;
         std::map<std::size_t, op_t> site_terms;

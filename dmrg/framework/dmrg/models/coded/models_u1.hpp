@@ -443,7 +443,7 @@ public:
     
     measurements_type measurements () const
     {
-        typedef std::vector<block_matrix<Matrix, U1> > op_vec;
+        typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
         
         measurements_type meas;
@@ -602,7 +602,7 @@ public:
     
     measurements_type measurements () const
     {
-        typedef std::vector<block_matrix<Matrix, U1> > op_vec;
+        typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
         
         measurements_type meas;

@@ -37,22 +37,21 @@ namespace tag_detail {
 
     enum operator_kind { bosonic, fermionic };
 
-    template <class Matrix, class SymmGroup>
-    void remove_empty_blocks(block_matrix<Matrix, SymmGroup> & op)
+    template <class BlockMatrix>
+    void remove_empty_blocks(BlockMatrix & op)
     {
         {
             parallel::guard::serial guard;
             storage::migrate(op);
         }
 
-        for (typename Matrix::size_type b=0; b < op.n_blocks(); ++b)
+        for (typename BlockMatrix::size_type b=0; b < op.n_blocks(); ++b)
         {
             bool only_zero = true;
-            const Matrix& m = op[b];
-            for (int i = 0; i < num_rows(m); i++)
-               for(int j = 0; j < num_cols(m); j++)
+            for (int i = 0; i < num_rows(op[b]); i++)
+               for(int j = 0; j < num_cols(op[b]); j++)
             {
-                if (alps::numeric::is_nonzero(m(i,j))) {
+                if (alps::numeric::is_nonzero(op[b](i,j))) {
                     only_zero = false;
                     break;
                 }
@@ -73,18 +72,18 @@ namespace tag_detail {
 
     inline bool num_check(std::complex<double> x) { return true; }
 
-    template <class Matrix, class SymmGroup>
-    std::pair<bool, typename Matrix::value_type>
-    equal(block_matrix<Matrix, SymmGroup> const& reference,
-          block_matrix<Matrix, SymmGroup> const& sample)
+    template <class BlockMatrix>
+    std::pair<bool, typename BlockMatrix::matrix_type::value_type>
+    equal(BlockMatrix const& reference,
+          BlockMatrix const& sample)
     {
+        typedef typename BlockMatrix::matrix_type Matrix;
         {
             parallel::guard::serial guard;
             storage::migrate(reference);
             storage::migrate(sample);
         }
-
-        if (!shape_equal(reference, sample))
+        if (reference.basis() != sample.basis())
             return std::make_pair(false, 0.);
 
         if (sample.n_blocks() == 0)

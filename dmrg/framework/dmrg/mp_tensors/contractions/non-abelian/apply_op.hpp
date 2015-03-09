@@ -62,10 +62,10 @@ namespace SU2 {
 
         for (std::size_t op_index = 0; op_index < access.size(); ++op_index)
         {
-            block_matrix<Matrix, SymmGroup> const & W = access.op(op_index);
+            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(op_index);
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
-            int a = mpo.left_spin(b1).get(), k = W.spin.get(), ap = mpo.right_spin(b2).get();
+            int a = mpo.left_spin(b1).get(), k = W.spin().get(), ap = mpo.right_spin(b2).get();
 
             for (size_t lblock = 0; lblock < left[b1].n_blocks(); ++lblock) {
 
@@ -183,9 +183,8 @@ namespace SU2 {
 
         for (std::size_t op_index = 0; op_index < access.size(); ++op_index)
         {
-            block_matrix<Matrix, SymmGroup> const & W = access.op(op_index);
-
-            int a = mpo.left_spin(b1).get(), k = W.spin.get(), ap = mpo.right_spin(b2).get();
+            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op(op_index);
+            int a = mpo.left_spin(b1).get(), k = W.spin().get(), ap = mpo.right_spin(b2).get();
 
             for (size_t ketblock = 0; ketblock < ket_basis.size(); ++ketblock) {
 

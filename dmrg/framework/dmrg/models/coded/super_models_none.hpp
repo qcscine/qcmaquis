@@ -273,8 +273,8 @@ std::vector< std::pair<Op,Op> > decompose_bond_super(const Matrix& bondop, const
         right.insert_block(tmp, C, C);
     }
     
-    std::vector<Op> leftops  = reshape_right_to_list(phys, left);
-    std::vector<Op> rightops = reshape_left_to_list (phys, right);
+    std::vector<Op> leftops  = reshape_right_to_list<Op>(phys, left);
+    std::vector<Op> rightops = reshape_left_to_list <Op>(phys, right);
     assert(leftops.size() == rightops.size());
     
     // discard terms with no weight
@@ -608,13 +608,13 @@ public:
     {
         TrivialGroup::charge C = TrivialGroup::IdentityCharge;
         
-        op_t ident_psi = identity_matrix<Matrix>(phys_psi);
+        op_t ident_psi = identity_matrix<op_t>(phys_psi);
         op_t count_psi, create_psi, destroy_psi;
         count_psi.insert_block(mcount, C, C);
         create_psi.insert_block(transpose(mcreate), C, C);
         destroy_psi.insert_block(transpose(mdestroy), C, C);
         
-        typedef std::vector<block_matrix<Matrix, TrivialGroup> > op_vec;
+        typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
         
         measurements_type meas;

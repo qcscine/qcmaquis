@@ -32,8 +32,8 @@
 #include "dmrg/mp_tensors/mpotensor.h"
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/multi_index.h"
-#include "dmrg/block_matrix/block_matrix.h"
-#include "dmrg/block_matrix/block_matrix_algorithms.h"
+#include "dmrg/block_matrix/site_operator.h"
+#include "dmrg/block_matrix/site_operator_algorithms.h"
 
 
 namespace ts_ops_detail
@@ -68,7 +68,7 @@ namespace ts_ops_detail
             Integer b2 = *it1;
             term_descriptor<Matrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
-            std::vector<spin_t> op_spins = allowed_spins(mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get(), p1.op().spin.get(), p2.op().spin.get());
+            std::vector<spin_t> op_spins = allowed_spins(mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get(), p1.op().spin().get(), p2.op().spin().get());
             for (std::vector<spin_t>::const_iterator it2 = op_spins.begin(); it2 != op_spins.end(); ++it2)
             {
                 SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> prod_spin(*it2, mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get());
