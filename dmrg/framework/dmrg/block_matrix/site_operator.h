@@ -122,7 +122,7 @@ public:
     
     friend void swap(SiteOperator & x, SiteOperator & y)
     {
-        //std::swap(x.spin, y.spin);
+        std::swap(x.spin_, y.spin_);
         swap(x.bm_, y.bm_);
     }
 
@@ -148,10 +148,11 @@ public:
     
     bool reasonable() const;
     
-    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > & spin() { return bm_.spin(); }
-    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > const & spin() const { return bm_.spin(); }
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > & spin() { return spin_; }
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > const & spin() const { return spin_; }
     
 private:
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > spin_;
     block_matrix<Matrix, SymmGroup> bm_;
 };    
 

@@ -48,14 +48,14 @@ SiteOperator<Matrix, SymmGroup>::SiteOperator(DualIndex<SymmGroup> const & basis
 
 template<class Matrix, class SymmGroup>
 SiteOperator<Matrix, SymmGroup>::SiteOperator(SiteOperator const& rhs)
-: bm_(rhs.bm_)//, spin(rhs.spin)
+: bm_(rhs.bm_), spin_(rhs.spin_)
 {
 }
 
 template<class Matrix, class SymmGroup>
 template <class OtherMatrix>
 SiteOperator<Matrix, SymmGroup>::SiteOperator(SiteOperator<OtherMatrix,SymmGroup> const& rhs)
-: bm_(rhs.bm_)//, spin(rhs.spin)
+: bm_(rhs.bm_), spin_(rhs.spin_)
 {
 }
 
@@ -72,15 +72,15 @@ SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator=(con
 {
     block_matrix<Matrix, SymmGroup> cpy = rhs.bm_;
     swap(bm_, cpy);
-    //spin = rhs.spin;
+    spin_ = rhs.spin();
     return *this;
 }
 
 template<class Matrix, class SymmGroup>
 SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator+=(SiteOperator const & rhs)
 {
-    //assert (spin.get() == rhs.spin.get() || n_blocks() == 0 || rhs.n_blocks() == 0);
-    //if (n_blocks() == 0) spin = rhs.spin;
+    assert (spin_.get() == rhs.spin().get() || n_blocks() == 0 || rhs.n_blocks() == 0);
+    if (n_blocks() == 0) spin_ = rhs.spin();
     bm_ += rhs.bm_;
     return *this;
 }
@@ -88,8 +88,8 @@ SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator+=(Si
 template<class Matrix, class SymmGroup>
 SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator-=(SiteOperator const & rhs)
 {
-    //assert (spin.get() == rhs.spin.get() || n_blocks() == 0 || rhs.n_blocks() == 0);
-    //if (n_blocks() == 0) spin = rhs.spin;
+    assert (spin_.get() == rhs.spin().get() || n_blocks() == 0 || rhs.n_blocks() == 0);
+    if (n_blocks() == 0) spin_ = rhs.spin();
     bm_ -= rhs.bm_;
     return *this;
 }
