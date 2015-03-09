@@ -57,7 +57,7 @@ std::ostream& operator<< (std::ostream& os, std::vector<double> const& v){
     return os;
 }
 
-std::vector<double> measure_local(MPS<matrix, SymmGroup> & mps, block_matrix<matrix, SymmGroup> const & op)
+std::vector<double> measure_local(MPS<matrix, SymmGroup> & mps, typename operator_selector<matrix, SymmGroup>::type const & op)
 {
     std::vector<double> meas(mps.length());
     for (size_t p=0; p<mps.length(); ++p) {
@@ -105,10 +105,12 @@ typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & bra,
 }
 
 std::vector<double> measure_local(MPS<matrix, SymmGroup> const& bra, MPS<matrix, SymmGroup> const& ket,
-                                  block_matrix<matrix, SymmGroup> const & op, block_matrix<matrix, SymmGroup> const & ident)
+                                  typename operator_selector<matrix, SymmGroup>::type const & op,
+                                  typename operator_selector<matrix, SymmGroup>::type const & ident)
 {
     assert(bra.length() == ket.length());
-    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef std::vector<op_t> op_vec;
     boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(bra.length()));
     Lattice lattice(lat_ptr);
     
@@ -154,8 +156,8 @@ MPS<matrix, SymmGroup> state_mps(std::vector<std::pair<SymmGroup::charge, size_t
 }
 
 void run_test_bosons(int L, Index<SymmGroup> const& phys,
-                     block_matrix<matrix, SymmGroup> const & ident,
-                     block_matrix<matrix, SymmGroup> const & densop,
+                     typename operator_selector<matrix, SymmGroup>::type const & ident,
+                     typename operator_selector<matrix, SymmGroup>::type const & densop,
                      MPS<matrix,SymmGroup> & mps1, MPS<matrix,SymmGroup> & mps2,
                      bool verbose=false)
 {
@@ -233,6 +235,7 @@ void test_bosons(std::vector<std::pair<SymmGroup::charge, size_t> > const& b1,
                  int M,
                  bool verbose = false)
 {
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
     assert(b1.size() == b2.size());
     int L = b1.size();
     
@@ -243,11 +246,11 @@ void test_bosons(std::vector<std::pair<SymmGroup::charge, size_t> > const& b1,
     phys.insert(std::make_pair(2, 1));
     SymmGroup::charge initc = L/2;
     
-    block_matrix<matrix, SymmGroup> densop;
+    op_t densop;
     densop.insert_block(matrix(1,1,1), 1,1);
     densop.insert_block(matrix(1,1,2), 2,2);
     
-    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
+    op_t ident = identity_matrix<op_t>(phys);
     
     MPS<matrix,SymmGroup> mps1 = state_mps(b1, phys);
     MPS<matrix,SymmGroup> mps2 = state_mps(b2, phys);
@@ -305,6 +308,7 @@ BOOST_AUTO_TEST_CASE( join_same_mps_cmp_dens )
 
 BOOST_AUTO_TEST_CASE( join_semirnd_mps_cmp_dens )
 {
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
     std::cout << std::endl << std::endl << "*** join_semirnd_mps_cmp_dens ***" << std::endl;
     int M = 10;
     int L = 4;
@@ -322,11 +326,11 @@ BOOST_AUTO_TEST_CASE( join_semirnd_mps_cmp_dens )
     phys.insert(std::make_pair(2, 1));
     SymmGroup::charge initc = L/2;
     
-    block_matrix<matrix, SymmGroup> densop;
+    op_t densop;
     densop.insert_block(matrix(1,1,1), 1,1);
     densop.insert_block(matrix(1,1,2), 2,2);
     
-    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
+    op_t ident = identity_matrix<op_t>(phys);
     
     parms.set("max_bond_dimension", M);
     default_mps_init<matrix, SymmGroup> initializer(parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
@@ -340,6 +344,7 @@ BOOST_AUTO_TEST_CASE( join_semirnd_mps_cmp_dens )
 
 BOOST_AUTO_TEST_CASE( join_rnd_mps_cmp_dens )
 {
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
     std::cout << std::endl << std::endl << "*** join_rnd_mps_cmp_dens ***" << std::endl;
     
     int Nmps = 4;
@@ -355,11 +360,11 @@ BOOST_AUTO_TEST_CASE( join_rnd_mps_cmp_dens )
     phys.insert(std::make_pair(2, 1));
     SymmGroup::charge initc = L/2;
     
-    block_matrix<matrix, SymmGroup> densop;
+    op_t densop;
     densop.insert_block(matrix(1,1,1), 1,1);
     densop.insert_block(matrix(1,1,2), 2,2);
     
-    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
+    op_t ident = identity_matrix<op_t>(phys);
     
     parms.set("max_bond_dimension", M);
     default_mps_init<matrix, SymmGroup> initializer(parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));

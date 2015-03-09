@@ -61,9 +61,11 @@ typedef boost::tuple<charge, size_t> local_state;
 
 
 std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
-                                  block_matrix<matrix, SymmGroup> const& ident, block_matrix<matrix, SymmGroup> const& op)
+                                  typename operator_selector<matrix, SymmGroup>::type const& ident,
+                                  typename operator_selector<matrix, SymmGroup>::type const& op)
 {
-    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef std::vector<op_t> op_vec;
     boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
     Lattice lattice(lat_ptr);
 
@@ -83,9 +85,10 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
 }
 
 std::vector<double> measure_local_multi(MPS<matrix, SymmGroup> const& mps,
-                                        block_matrix<matrix, SymmGroup> const& ident, block_matrix<matrix, SymmGroup> const& op)
+                                        typename operator_selector<matrix, SymmGroup>::type const& ident,
+                                        typename operator_selector<matrix, SymmGroup>::type const& op)
 {
-    typedef block_matrix<matrix, SymmGroup> op_t;
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
     typedef std::vector<op_t> op_vec;
     std::vector<std::pair<op_vec, bool> > ops(1, std::make_pair(op_vec(1,op), false));
 
@@ -106,6 +109,7 @@ std::vector<double> measure_local_multi(MPS<matrix, SymmGroup> const& mps,
 
 BOOST_AUTO_TEST_CASE( density_trivial_init )
 {
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
     maquis::cout << std::endl << "** TESTING density_trivial_init **" << std::endl;
     int L = 7;
     
@@ -153,8 +157,8 @@ BOOST_AUTO_TEST_CASE( density_trivial_init )
     std::cout << "norm = " << nn << std::endl;
     
     /// operators for meas
-    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys_psi);
-    block_matrix<matrix, SymmGroup> densop;
+    op_t ident = identity_matrix<op_t>(phys_psi);
+    op_t densop;
     {
         matrix tmp(Nmax+1, Nmax+1, 0.);
         for (int i=1; i<Nmax+1; ++i) tmp(i,i) = i;
@@ -173,6 +177,7 @@ BOOST_AUTO_TEST_CASE( density_trivial_init )
 
 BOOST_AUTO_TEST_CASE( density_join_init )
 {
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
     maquis::cout << std::endl << "** TESTING density_join_init **" << std::endl;
     int L = 7;
     
@@ -215,8 +220,8 @@ BOOST_AUTO_TEST_CASE( density_join_init )
     std::cout << "norm = " << nn << std::endl;
 
     /// operators for meas
-    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys_psi);
-    block_matrix<matrix, SymmGroup> densop;
+    op_t ident = identity_matrix<op_t>(phys_psi);
+    op_t densop;
     {
         matrix tmp(Nmax+1, Nmax+1, 0.);
         for (int i=1; i<Nmax+1; ++i) tmp(i,i) = i;
@@ -234,6 +239,7 @@ BOOST_AUTO_TEST_CASE( density_join_init )
 
 BOOST_AUTO_TEST_CASE( density_coherent_init )
 {
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
     maquis::cout << std::endl << "** TESTING density_coherent_init **" << std::endl;
     
     using std::sqrt;
@@ -258,8 +264,8 @@ BOOST_AUTO_TEST_CASE( density_coherent_init )
     std::cout << "norm = " << nn << std::endl;
 
     /// operators for meas
-    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys_psi);
-    block_matrix<matrix, SymmGroup> densop;
+    op_t ident = identity_matrix<op_t>(phys_psi);
+    op_t densop;
     {
         matrix tmp(Nmax+1, Nmax+1, 0.);
         for (int i=1; i<Nmax+1; ++i) tmp(i,i) = i;
@@ -280,6 +286,7 @@ BOOST_AUTO_TEST_CASE( density_coherent_init )
 
 BOOST_AUTO_TEST_CASE( density_random_init )
 {
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
     maquis::cout << std::endl << "** TESTING density_random_init **" << std::endl;
     
     int L = 6;
@@ -305,8 +312,8 @@ BOOST_AUTO_TEST_CASE( density_random_init )
     std::cout << "norm = " << nn << std::endl;
     
     /// operators for meas
-    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys_psi);
-    block_matrix<matrix, SymmGroup> densop;
+    op_t ident = identity_matrix<op_t>(phys_psi);
+    op_t densop;
     {
         matrix tmp(Nmax+1, Nmax+1, 0.);
         for (int i=1; i<Nmax+1; ++i) tmp(i,i) = i;

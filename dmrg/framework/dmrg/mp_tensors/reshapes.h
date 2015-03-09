@@ -491,12 +491,13 @@ block_matrix<Matrix, SymmGroup> reshape_2site_op (Index<SymmGroup> const & phys1
     return ret;
 }
 
-template<class Matrix, class SymmGroup>
-std::vector<block_matrix<Matrix, SymmGroup> > reshape_right_to_list (Index<SymmGroup> const & phys,
-                                                                     block_matrix<Matrix, SymmGroup> const & A)
+template<class Op, class Op2, class SymmGroup>
+//std::vector<Op> reshape_right_to_list (Index<SymmGroup> const & phys, block_matrix<typename Op::matrix_type, SymmGroup> const & A)
+std::vector<Op> reshape_right_to_list (Index<SymmGroup> const & phys, Op2 const & A)
 {
+    typedef typename Op::matrix_type Matrix;
     typedef typename SymmGroup::charge charge;
-    std::vector<block_matrix<Matrix, SymmGroup> > ret;
+    std::vector<Op> ret;
     
     Index<SymmGroup> aux_i = A.right_basis();
     ProductBasis<SymmGroup> pb(phys, adjoin(phys));
@@ -504,7 +505,7 @@ std::vector<block_matrix<Matrix, SymmGroup> > reshape_right_to_list (Index<SymmG
     typedef typename Index<SymmGroup>::basis_iterator bi_t;
     for (bi_t b = aux_i.basis_begin(); !b.end(); ++b)
     {
-    	block_matrix<Matrix, SymmGroup> Ai;
+    	Op Ai;
         for (bi_t s1 = phys.basis_begin(); !s1.end(); ++s1)
             for (bi_t s2 = phys.basis_begin(); !s2.end(); ++s2)
             {                    
@@ -555,12 +556,13 @@ std::vector<block_matrix<Matrix, SymmGroup> > reshape_right_to_list (Index<SymmG
     return ret;
 }
 
-template<class Matrix, class SymmGroup>
-std::vector<block_matrix<Matrix, SymmGroup> > reshape_left_to_list (Index<SymmGroup> const & phys,
-                                                                    block_matrix<Matrix, SymmGroup> const & A)
+template<class Op, class Op2, class SymmGroup>
+//std::vector<Op> reshape_left_to_list (Index<SymmGroup> const & phys, block_matrix<typename Op::matrix_type, SymmGroup> const & A)
+std::vector<Op> reshape_left_to_list (Index<SymmGroup> const & phys, Op2 const & A)
 {
+    typedef typename Op::matrix_type Matrix;
 	typedef typename SymmGroup::charge charge;
-	std::vector<block_matrix<Matrix, SymmGroup> > ret;
+	std::vector<Op> ret;
 
 	Index<SymmGroup> aux_i = A.left_basis();
 	ProductBasis<SymmGroup> pb(phys, adjoin(phys));
@@ -568,7 +570,7 @@ std::vector<block_matrix<Matrix, SymmGroup> > reshape_left_to_list (Index<SymmGr
 	typedef typename Index<SymmGroup>::basis_iterator bi_t;
 	for (bi_t b = aux_i.basis_begin(); !b.end(); ++b)
 	{
-		block_matrix<Matrix, SymmGroup> Ai;
+		Op Ai;
 		for (bi_t s1 = phys.basis_begin(); !s1.end(); ++s1)
 			for (bi_t s2 = phys.basis_begin(); !s2.end(); ++s2)
 			{

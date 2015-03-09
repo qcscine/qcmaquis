@@ -36,15 +36,17 @@
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
+#include "dmrg/block_matrix/site_operator.h"
+#include "dmrg/block_matrix/site_operator_algorithms.h"
 
 #include "dmrg/models/tag_detail.h"
 
 template <class Matrix, class SymmGroup>
-class OPTable : public std::vector<block_matrix<Matrix, SymmGroup> >
+class OPTable : public std::vector<typename operator_selector<Matrix, SymmGroup>::type>
 {
 public:
     typedef tag_detail::tag_type tag_type;
-    typedef block_matrix<Matrix, SymmGroup> op_t;
+    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
 
 private:
     typedef typename Matrix::value_type mvalue_type;

@@ -62,6 +62,7 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
     typedef typename SymmGroup::charge charge;
     typedef boost::unordered_map<size_t,std::pair<charge,size_t> > bond_charge_map;
     typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
+    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
     
     MPS<Matrix, SymmGroup> mps(mpo.size());
     
@@ -99,7 +100,7 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
                     size_t l_size = left_i[left_i.position(l_charge)].second;
                     
                     typename Matrix::value_type scale = mpo[i].at(b1, b2).scale;
-                    block_matrix<Matrix, SymmGroup> const& in_block = mpo[i].at(b1, b2).op;
+                    op_t const& in_block = mpo[i].at(b1, b2).op;
                     for (size_t n=0; n<in_block.n_blocks(); ++n)
                     {
                         charge s1_charge; size_t size1;
@@ -159,8 +160,7 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
         
         right_i = out_block.right_basis();
         
-        mps[i] = MPSTensor<Matrix, SymmGroup>(phys2_i, left_i, right_i,
-                                              out_block, LeftPaired);
+        mps[i] = MPSTensor<Matrix, SymmGroup>(phys2_i, left_i, right_i, out_block, LeftPaired);
         std::swap(left_i, right_i);
         std::swap(left_map, right_map);
         right_map.clear();
@@ -195,6 +195,7 @@ template <class Matrix, class InSymm>
 MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matrix, InSymm> const& mpo, Index<InSymm> const& phys_i,
                                                                        std::vector<Index<typename grouped_symmetry<InSymm>::type> > const& allowed)
 {
+    typedef typename operator_selector<Matrix, InSymm>::type op_t;
     typedef typename grouped_symmetry<InSymm>::type OutSymm;
     typedef typename InSymm::charge in_charge;
     typedef typename OutSymm::charge out_charge;
@@ -213,7 +214,7 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matri
     for (int i=0; i<mpo.size(); ++i) {
         ProductBasis<OutSymm> left_out(phys2_i, left_i);
         
-        block_matrix<Matrix, OutSymm> out_block;
+        block_matrix<Matrix, InSymm> out_block;
             //for (size_t b1=0; b1<mpo[i].row_dim(); ++b1)
             //{
             //    for (size_t b2=0; b2<mpo[i].col_dim(); ++b2)
@@ -235,7 +236,7 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matri
                         size_t     ll       = b1;
                         
                         typename Matrix::value_type scale = mpo[i].at(b1, b2).scale;
-                        block_matrix<Matrix, InSymm> const& in_block = mpo[i].at(b1, b2).op;
+                        op_t const& in_block = mpo[i].at(b1, b2).op;
                         for (size_t n=0; n<in_block.n_blocks(); ++n)
                         {
                             in_charge s1_charge; size_t size1;

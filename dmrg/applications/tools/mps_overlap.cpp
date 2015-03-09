@@ -124,7 +124,7 @@ int main(int argc, char ** argv)
         }
         
         if (false) {
-            block_matrix<Matrix, grp> ident;
+            typename operator_selector<Matrix, grp>::type ident;
             for (int i=0; i<mps1.site_dim(0).size(); ++i)
                 ident.insert_block(Matrix::identity_matrix(mps1.site_dim(0)[i].second),
                                    mps1.site_dim(0)[i].first, mps1.site_dim(0)[i].first);
