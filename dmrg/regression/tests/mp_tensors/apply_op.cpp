@@ -241,10 +241,11 @@ struct U1DegSystem {
 
 template <class SymmGroup>
 std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
-                                  block_matrix<matrix, SymmGroup> const& ident,
-                                  block_matrix<matrix, SymmGroup> const& op)
+                                  typename operator_selector<matrix, SymmGroup>::type const& ident,
+                                  typename operator_selector<matrix, SymmGroup>::type const& op)
 {
-    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef std::vector<op_t> op_vec;
     op_vec id_vec(1, ident);
     std::vector<double> vals(mps.size());
     boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
@@ -252,7 +253,7 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
 //    std::cout << "ident is:\n" << ident << std::endl;
     for (int p=0; p<mps.size(); ++p) {
         generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, id_vec, id_vec);
-        generate_mpo::Operator_Term<matrix, SymmGroup> term;
+        generate_mpo::OperatorTerm<matrix, SymmGroup> term;
         term.operators.push_back( std::make_pair(p, op) );
         term.fill_operator = ident;
         mpom.add_term(term);
@@ -265,17 +266,19 @@ std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
 
 template <class SymmGroup>
 double measure_ops(MPS<matrix, SymmGroup> const& mps,
-                                block_matrix<matrix, SymmGroup> const& ident, block_matrix<matrix, SymmGroup> const& fill,
-                                block_matrix<matrix, SymmGroup> const& op1, size_t pos1,
-                                block_matrix<matrix, SymmGroup> const& op2, size_t pos2)
+                                typename operator_selector<matrix, SymmGroup>::type const& ident,
+                                typename operator_selector<matrix, SymmGroup>::type const& fill,
+                                typename operator_selector<matrix, SymmGroup>::type const& op1, size_t pos1,
+                                typename operator_selector<matrix, SymmGroup>::type const& op2, size_t pos2)
 {
-    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef std::vector<op_t> op_vec;
     op_vec id_vec(1, ident);
     boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
     Lattice lattice(lat_ptr);
     generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, id_vec, id_vec);
-    generate_mpo::Operator_Term<matrix, SymmGroup> term;
-    block_matrix<matrix, SymmGroup> tmp;
+    generate_mpo::OperatorTerm<matrix, SymmGroup> term;
+    op_t tmp;
     gemm(fill, op1, tmp);
 
     term.operators.push_back( std::make_pair(pos1, tmp) );
@@ -299,14 +302,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dens_meas, ML, test_systems )
 {
     typedef typename ML::grp grp;
     typedef typename grp::charge charge;
+    typedef typename operator_selector<matrix, grp>::type op_t;
     
     DmrgParameters parms = ML::parms();
     
     Lattice lat(parms);
     Model<matrix,grp> model(lat, parms);
     
-    block_matrix<matrix, grp> ident = model.identity_matrix();
-    block_matrix<matrix, grp> fill  = model.filling_matrix();
+    op_t ident = model.identity_matrix();
+    op_t fill  = model.filling_matrix();
 
     Index<grp> phys = model.phys_dim();
     std::cout << "phys: " << phys << std::endl;
@@ -317,9 +321,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( dens_meas, ML, test_systems )
     
     
     for (int i=0; i<ML::dens_ops().size(); ++i) {
-        block_matrix<matrix, grp> dens   = model.get_operator( ML::dens_ops()[i] );
-        block_matrix<matrix, grp> raise  = model.get_operator( ML::raising_ops()[i] );
-        block_matrix<matrix, grp> lower  = model.get_operator( ML::lowering_ops()[i] );
+        op_t dens   = model.get_operator( ML::dens_ops()[i] );
+        op_t raise  = model.get_operator( ML::raising_ops()[i] );
+        op_t lower  = model.get_operator( ML::lowering_ops()[i] );
         
         std::vector<double> meas1 = measure_local(mps, ident, dens);
         
@@ -343,14 +347,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( obdm_meas, ML, test_systems )
 {
     typedef typename ML::grp grp;
     typedef typename grp::charge charge;
+    typedef typename operator_selector<matrix, grp>::type op_t;
     
     DmrgParameters parms = ML::parms();
     
     Lattice lat(parms);
     Model<matrix,grp> model(lat, parms);
     
-    block_matrix<matrix, grp> ident = model.identity_matrix();
-    block_matrix<matrix, grp> fill  = model.filling_matrix();
+    op_t ident = model.identity_matrix();
+    op_t fill  = model.filling_matrix();
     
     Index<grp> phys = model.phys_dim();
     std::cout << "phys: " << phys << std::endl;
@@ -359,9 +364,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( obdm_meas, ML, test_systems )
     MPS<matrix, grp> mps(lat.size(), initializer);
     
     for (int i=0; i<ML::dens_ops().size(); ++i) {
-        block_matrix<matrix, grp> dens   = model.get_operator( ML::dens_ops()[i] );
-        block_matrix<matrix, grp> raise  = model.get_operator( ML::raising_ops()[i] );
-        block_matrix<matrix, grp> lower  = model.get_operator( ML::lowering_ops()[i] );
+        op_t dens   = model.get_operator( ML::dens_ops()[i] );
+        op_t raise  = model.get_operator( ML::raising_ops()[i] );
+        op_t lower  = model.get_operator( ML::lowering_ops()[i] );
         
         std::vector<double> meas1 = measure_local(mps, ident, dens);
         
@@ -392,5 +397,3 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( obdm_meas, ML, test_systems )
         }
     }
 }
-
-

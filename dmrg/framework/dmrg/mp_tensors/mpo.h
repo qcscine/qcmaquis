@@ -336,7 +336,7 @@ private:
                                                                std::make_pair(rc, visited_c_basis[rc]));
                         
                         if (std::abs(val) > 1e-40) {
-                            block_matrix<Matrix, SymmGroup> block;
+                            typename operator_selector<Matrix, SymmGroup>::type block;
                             charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             if ( (*this)[p].has(r,c) )
                                 block = (*this)[p].at(r,c).op();
@@ -376,7 +376,7 @@ private:
                                                                 std::make_pair(rc, outc));
                         
                         if (std::abs(val) > 1e-40) {
-                            block_matrix<Matrix, SymmGroup> block;
+                            typename operator_selector<Matrix, SymmGroup>::type block;
                             charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             if ( (*this)[p+1].has(r,c) )
                                 block = (*this)[p+1].at(r,c).op();

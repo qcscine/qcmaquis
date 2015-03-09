@@ -99,8 +99,9 @@ public:
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;
     
-    void apply(block_matrix<Matrix, SymmGroup> const&, size_type);
-    void apply(block_matrix<Matrix, SymmGroup> const&, block_matrix<Matrix, SymmGroup> const&, size_type);
+    void apply(typename operator_selector<Matrix, SymmGroup>::type const&, size_type);
+    void apply(typename operator_selector<Matrix, SymmGroup>::type const&,
+               typename operator_selector<Matrix, SymmGroup>::type const&, size_type);
     
     friend void swap(MPS& a, MPS& b)
     {

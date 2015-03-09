@@ -95,11 +95,11 @@ namespace generate_mpo
     {
         typedef typename Matrix::value_type scale_type;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-        typedef block_matrix<Matrix, SymmGroup> op_t;
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
 
         typedef Lattice::pos_t pos_t;
-        typedef typename Operator_Tag_Term<Matrix, SymmGroup>::tag_type tag_type;
-        typedef typename Operator_Tag_Term<Matrix, SymmGroup>::op_pair_t pos_op_type;
+        typedef typename OperatorTagTerm<Matrix, SymmGroup>::tag_type tag_type;
+        typedef typename OperatorTagTerm<Matrix, SymmGroup>::op_pair_t pos_op_type;
         typedef boost::tuple<std::size_t, std::size_t, tag_type, scale_type> tag_block;
         
         typedef ::term_descriptor<typename Matrix::value_type> term_descriptor;
@@ -201,7 +201,7 @@ namespace generate_mpo
                 std::vector<spin_desc_t> right_spins(rcd.second); 
                 for (typename std::vector<tag_block>::const_iterator it = pre_tensor.begin(); it != pre_tensor.end(); ++it)
                 {
-                    spin_desc_t out_spin = couple(left_spins[boost::tuples::get<0>(*it)], tag_handler->get_op(boost::tuples::get<2>(*it)).spin);
+                    spin_desc_t out_spin = couple(left_spins[boost::tuples::get<0>(*it)], tag_handler->get_op(boost::tuples::get<2>(*it)).spin());
                     index_type out_index = boost::tuples::get<1>(*it);
                     assert(right_spins[out_index].get() == 0 || right_spins[out_index].get() == out_spin.get());
                     right_spins[out_index] = out_spin;
@@ -242,7 +242,7 @@ namespace generate_mpo
             prempo_key_type k1 = trivial_left;
             {
                 int i = 0;
-                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin);
+                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
                 prempo_key_type k2;
                 k2.pos_op.push_back(to_pair(term[i+1]));
                 k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
@@ -253,7 +253,7 @@ namespace generate_mpo
             insert_filling(term.position(0)+1, term.position(1), k1, trivial_fill, (mpo_spin.get() > 1) ? term.full_identity : -1);
             {
                 int i = 1;
-                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin);
+                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
                 prempo_key_type k2 = trivial_right;
                 insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), attach);
             }
@@ -280,7 +280,7 @@ namespace generate_mpo
             /// op_0
             {
                 int i = 0;
-                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin);
+                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
                 prempo_key_type k2;
                 k2.pos_op.push_back(to_pair(term[i])); // k2: applied operator
                 k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), attach);
@@ -293,7 +293,7 @@ namespace generate_mpo
             /// op_1
             {
                 int i = 1;
-                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin);
+                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
                 prempo_key_type k2;
                 k2.pos_op.push_back(to_pair(term[i+1])); // k2: future operators
                 k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
@@ -306,7 +306,7 @@ namespace generate_mpo
             /// op_2
             {
                 int i = 2;
-                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin);
+                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
                 insert_operator(term.position(i), make_pair(k1, trivial_right), prempo_value_type(term.operator_tag(i), 1.), attach);
             }
 
@@ -331,7 +331,7 @@ namespace generate_mpo
             
             /// op_0, op_1
             for (int i = 0; i < 2; ++i) {
-                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin);
+                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
                 ops_left.push_back(to_pair(term[i])); prempo_key_type k2(ops_left);
                 k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), 1.), attach);
                 
@@ -343,7 +343,7 @@ namespace generate_mpo
             /// op_2
             {
                 int i = 2;
-                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin);
+                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
                 prempo_key_type k2;
                 k2.pos_op.push_back(to_pair(term[3]));
                 k1 = insert_operator(term.position(i), make_pair(k1, k2), prempo_value_type(term.operator_tag(i), term.coeff), detach);
@@ -357,7 +357,7 @@ namespace generate_mpo
             /// op_3
             {
                 int i = 3;
-                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin);
+                mpo_spin = couple(mpo_spin, (tag_handler->get_op(term.operator_tag(i))).spin());
                 insert_operator(term.position(i), make_pair(k1, trivial_right), prempo_value_type(term.operator_tag(i), 1.), attach);
             }
 

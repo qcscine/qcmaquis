@@ -44,14 +44,6 @@ public:
     bool operator==(SpinDescriptor const & rhs) const { return true; }
     bool operator!=(SpinDescriptor const & rhs) const { return false; }
 
-    template<class Archive>
-    void save(Archive & ar) const
-    {}
-
-    template<class Archive>
-    void load(Archive & ar)
-    {}
-
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {}
@@ -72,55 +64,38 @@ class SpinDescriptor<symm_traits::SU2Tag>
 public:
     typedef int spin_t;
 
-    SpinDescriptor() : twoS(0), input_(0), output_(0) {}
-    SpinDescriptor(spin_t twoS_, spin_t in, spin_t out) : twoS(twoS_), input_(in), output_(out) {}
+    SpinDescriptor() : twoS(0), diff_(0) {}
+    SpinDescriptor(spin_t twoS_, spin_t in, spin_t out) : twoS(twoS_), diff_(out-in) {}
 
     SpinDescriptor & operator += (SpinDescriptor rhs)
     {
         // apply action of operator rhs 
         twoS += rhs.action();
-        //assert (output_ == rhs.input_);
-        //output_ = rhs.output_;
         return *this;
     }
 
     spin_t get() const { return twoS; }
-    spin_t action() const { return output_ - input_; }
-    spin_t input() const { return input_; }
-    spin_t output() const { return output_; }
+    spin_t action() const { return diff_; }
 
     void clear()
     {
-        twoS = 0; input_ = 0; output_ = 0;
+        twoS = 0; diff_ = 0;
     }
 
-    bool operator==(SpinDescriptor const & rhs) const { return (twoS == rhs.twoS && input_ == rhs.input_ && output_ == rhs.output_); }
+    bool operator==(SpinDescriptor const & rhs) const { return (twoS == rhs.twoS && diff_ == rhs.diff_); }
     bool operator!=(SpinDescriptor const & rhs) const { return !(*this==rhs); }
     friend SpinDescriptor operator-(SpinDescriptor);
     friend std::ostream & operator<<(std::ostream & os, SpinDescriptor);
 
-    template<class Archive>
-    void save(Archive & ar) const
-    {
-        ar["twoS"] << twoS;
-    }
-
-    template<class Archive>
-    void load(Archive & ar)
-    {
-        ar["twoS"] >> twoS;
-    }
-
     template <class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & twoS;
+        ar & twoS & diff_;
     }
 
 private:
     spin_t twoS;
-    spin_t input_;
-    spin_t output_;
+    spin_t diff_;
 };
 
 // Attention: not symmetric
@@ -131,13 +106,13 @@ inline SpinDescriptor<symm_traits::SU2Tag> couple(SpinDescriptor<symm_traits::SU
 
 inline SpinDescriptor<symm_traits::SU2Tag> operator-(SpinDescriptor<symm_traits::SU2Tag> rhs)
 {
-    std::swap(rhs.input_, rhs.output_);
+    rhs.diff_ = -rhs.diff_;
     return rhs;
 }
 
 inline std::ostream & operator<<(std::ostream & os, SpinDescriptor<symm_traits::SU2Tag> rhs)
 {
-    os << "Spin: " << rhs.get() << ": Spin " << rhs.input() << " -> Spin " << rhs.output() << std::endl;
+    os << "Spin: " << rhs.get() << ", delta: " << rhs.action() << std::endl;
     return os;
 }
 

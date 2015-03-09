@@ -208,28 +208,28 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     /*************************************************************/
 
     op_t create_fill_op;
-    create_fill_op.spin = one_half_up;
+    create_fill_op.spin() = one_half_up;
     create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
     create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
     create_fill_op.insert_block(Matrix(1,1,1), D, B);
     create_fill_op.insert_block(Matrix(1,1,1), D, C);
 
     op_t destroy_op;
-    destroy_op.spin = one_half_down;
+    destroy_op.spin() = one_half_down;
     destroy_op.insert_block(Matrix(1,1,1), A, B);
     destroy_op.insert_block(Matrix(1,1,1), A, C);
     destroy_op.insert_block(Matrix(1,1,sqrt(2.)), B, D);
     destroy_op.insert_block(Matrix(1,1,sqrt(2.)), C, D);
 
     op_t destroy_fill_op;
-    destroy_fill_op.spin = one_half_up;
+    destroy_fill_op.spin() = one_half_up;
     destroy_fill_op.insert_block(Matrix(1,1,1), A, B);
     destroy_fill_op.insert_block(Matrix(1,1,1), A, C);
     destroy_fill_op.insert_block(Matrix(1,1,-sqrt(2.)), B, D);
     destroy_fill_op.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
 
     op_t create_op;
-    create_op.spin = one_half_down;
+    create_op.spin() = one_half_down;
     create_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
     create_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
     create_op.insert_block(Matrix(1,1,-1), D, B);
@@ -238,36 +238,36 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     /*************************************************************/
 
     op_t create_fill_couple_down_op = create_fill_op;
-    create_fill_couple_down_op.spin = one_half_down;
+    create_fill_couple_down_op.spin() = one_half_down;
 
     op_t destroy_fill_couple_down_op = destroy_fill_op;
-    destroy_fill_couple_down_op.spin = one_half_down;
+    destroy_fill_couple_down_op.spin() = one_half_down;
 
     op_t create_couple_up_op = create_op;
-    create_couple_up_op.spin = one_half_up;
+    create_couple_up_op.spin() = one_half_up;
 
     op_t destroy_couple_up_op = destroy_op;
-    destroy_couple_up_op.spin = one_half_up;
+    destroy_couple_up_op.spin() = one_half_up;
 
     /*************************************************************/
 
     op_t create_fill_count_op;
-    create_fill_count_op.spin = one_half_up;
+    create_fill_count_op.spin() = one_half_up;
     create_fill_count_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
     create_fill_count_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
 
     op_t destroy_count_op;
-    destroy_count_op.spin = one_half_down;
+    destroy_count_op.spin() = one_half_down;
     destroy_count_op.insert_block(Matrix(1,1,1), A, B);
     destroy_count_op.insert_block(Matrix(1,1,1), A, C);
 
     op_t destroy_fill_count_op;
-    destroy_fill_count_op.spin = one_half_up;
+    destroy_fill_count_op.spin() = one_half_up;
     destroy_fill_count_op.insert_block(Matrix(1,1,1), A, B);
     destroy_fill_count_op.insert_block(Matrix(1,1,1), A, C);
 
     op_t create_count_op;
-    create_count_op.spin = one_half_down;
+    create_count_op.spin() = one_half_down;
     create_count_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
     create_count_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
 
@@ -295,17 +295,17 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     count_fill_op.insert_block(Matrix(1,1,-1), C, B);
 
     op_t flip_to_S2_op;
-    flip_to_S2_op.spin = one_up;
+    flip_to_S2_op.spin() = one_up;
     flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2)), B, B);
     flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)), C, C);
     flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)),  B, C);
     flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)),  C, B);
 
     op_t flip_to_S0_op = flip_to_S2_op;
-    flip_to_S0_op.spin = one_down;
+    flip_to_S0_op.spin() = one_down;
 
     op_t flip_S0_op = flip_to_S2_op;
-    flip_S0_op.spin = one_flat;
+    flip_S0_op.spin() = one_flat;
 
     /**********************************************************************/
     /*** Create operator tag table ****************************************/

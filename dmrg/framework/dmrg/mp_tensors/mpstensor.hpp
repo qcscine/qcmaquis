@@ -238,7 +238,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
             return U;
         }
     }
-    return identity_matrix<Matrix>(data().right_basis());
+    return identity_matrix<block_matrix<Matrix, SymmGroup>, SymmGroup>(data().right_basis());
 }
 
 template<class Matrix, class SymmGroup>
@@ -279,7 +279,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             return V;
         }
     }
-    return identity_matrix<Matrix>(data().left_basis());
+    return identity_matrix<block_matrix<Matrix, SymmGroup>, SymmGroup>(data().left_basis());
 }
 
 template<class Matrix, class SymmGroup>

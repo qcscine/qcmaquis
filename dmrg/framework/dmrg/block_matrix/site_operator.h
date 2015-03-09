@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
+ *               2015-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,8 +24,8 @@
  *
  *****************************************************************************/
 
-#ifndef BLOCK_MATRIX_H
-#define BLOCK_MATRIX_H
+#ifndef SITE_OPERATOR_H
+#define SITE_OPERATOR_H
 
 #include <sstream>
 #include <algorithm>
@@ -34,24 +34,10 @@
 #include "dmrg/block_matrix/indexing.h"
 #include "dmrg/block_matrix/symmetry.h"
 
-#include "utils/timings.h"
-#include "utils/traits.hpp"
-#include "dmrg/utils/storage.h"
-
-#include <boost/ptr_container/ptr_vector.hpp>
-
-template<class Matrix, class SymmGroup> class SiteOperator;
-
 template<class Matrix, class SymmGroup>
-struct operator_selector
+class SiteOperator
 {
-    typedef SiteOperator<Matrix, SymmGroup> type;
-};
-
-template<class Matrix, class SymmGroup>
-class block_matrix
-{
-    friend class block_matrix<typename storage::constrained<Matrix>::type, SymmGroup>;
+    friend class SiteOperator<typename storage::constrained<Matrix>::type, SymmGroup>;
 private:
     typedef typename SymmGroup::charge charge;
 public:
@@ -63,21 +49,21 @@ public:
     typedef typename boost::ptr_vector<Matrix>::iterator block_iterator;
     typedef typename boost::ptr_vector<Matrix>::const_iterator const_block_iterator;
    
-    block_matrix();
+    SiteOperator();
 
-    block_matrix(Index<SymmGroup> const & rows,
+    SiteOperator(Index<SymmGroup> const & rows,
                  Index<SymmGroup> const & cols);
 
-    block_matrix(DualIndex<SymmGroup> const & basis);
+    SiteOperator(DualIndex<SymmGroup> const & basis);
     
-    block_matrix(block_matrix const&);
+    SiteOperator(SiteOperator const&);
 
     template <class OtherMatrix>
-    block_matrix(block_matrix<OtherMatrix,SymmGroup> const&);
+    SiteOperator(SiteOperator<OtherMatrix,SymmGroup> const&);
 
-    block_matrix& operator=(block_matrix rhs);
+    SiteOperator& operator=(SiteOperator rhs);
     template<class OtherMatrix>
-    block_matrix& operator=(const block_matrix<OtherMatrix, SymmGroup>& rhs);
+    SiteOperator& operator=(const SiteOperator<OtherMatrix, SymmGroup>& rhs);
 
     Index<SymmGroup> left_basis() const;
     Index<SymmGroup> right_basis() const;
@@ -94,10 +80,10 @@ public:
                                     std::pair<charge, size_type> const & c);
     value_type const &   operator()(std::pair<charge, size_type> const & r,
                                     std::pair<charge, size_type> const & c) const;
-    block_matrix &       operator+=(block_matrix const & rhs);
-    block_matrix &       operator-=(block_matrix const & rhs);
-    block_matrix const & operator*=(const scalar_type& v);
-    block_matrix const & operator/=(const scalar_type& v);
+    SiteOperator &       operator+=(SiteOperator const & rhs);
+    SiteOperator &       operator-=(SiteOperator const & rhs);
+    SiteOperator const & operator*=(const scalar_type& v);
+    SiteOperator const & operator/=(const scalar_type& v);
 
     size_type n_blocks() const;
     size_type find_block(charge r, charge c) const;
@@ -116,14 +102,10 @@ public:
     void index_iter(int i, int max) const;
     void index_sizes() const;
     
-    scalar_type trace() const;
     real_type norm() const;
     void transpose_inplace();
-    void conjugate_inplace();
     void adjoint_inplace();
     void clear();
-    template<class Generator>
-    void generate(Generator g);
 
     void match_and_add_block(Matrix const &, charge, charge);
     
@@ -138,28 +120,24 @@ public:
                       size_type new_r, size_type new_c,
                       bool pretend = false);
     
-    friend void swap(block_matrix & x, block_matrix & y)
+    friend void swap(SiteOperator & x, SiteOperator & y)
     {
-        swap(x.data_, y.data_);
-        swap(x.basis_, y.basis_);
-        swap(x.size_index, y.size_index);
-        swap(x.iter_index, y.iter_index);
+        std::swap(x.spin_, y.spin_);
+        swap(x.bm_, y.bm_);
     }
 
     Matrix const & operator()(charge r, charge c) const
     {
-        assert( has_block(r, c) );
-        return data_[basis_.position(r,c)];
+        return bm_(r, c);
     }
     
     Matrix & operator()(charge r, charge c)
     {
-        assert( has_block(r, c) );
-        return data_[basis_.position(r,c)];
+        return bm_(r, c);
     }
     
     std::pair<const_block_iterator,const_block_iterator> blocks() const {
-        return std::make_pair(data_.begin(), data_.end());
+        return bm_.blocks();
     }
     
     template<class Archive> void load(Archive & ar);
@@ -170,56 +148,56 @@ public:
     
     bool reasonable() const;
     
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > & spin() { return spin_; }
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > const & spin() const { return spin_; }
+    
 private:
-    DualIndex<SymmGroup> basis_;
-    boost::ptr_vector<Matrix> data_;
+    SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > spin_;
+    block_matrix<Matrix, SymmGroup> bm_;
 };    
 
-#include "dmrg/block_matrix/block_matrix.hpp"
+#include "dmrg/block_matrix/site_operator.hpp"
+
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> operator*(const typename block_matrix<Matrix,SymmGroup>::scalar_type& v,
-                                          block_matrix<Matrix, SymmGroup> bm)
+SiteOperator<Matrix, SymmGroup> operator*(const typename SiteOperator<Matrix,SymmGroup>::scalar_type& v,
+                                          SiteOperator<Matrix, SymmGroup> bm)
 {
     bm *= v;
     return bm;
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> operator*(block_matrix<Matrix, SymmGroup> bm,
-                                          const typename block_matrix<Matrix,SymmGroup>::scalar_type& v)
+SiteOperator<Matrix, SymmGroup> operator*(SiteOperator<Matrix, SymmGroup> bm,
+                                          const typename SiteOperator<Matrix,SymmGroup>::scalar_type& v)
 {
     bm *= v;
     return bm;
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> operator+(block_matrix<Matrix,SymmGroup> b1, block_matrix<Matrix, SymmGroup> const& b2)
+SiteOperator<Matrix, SymmGroup> operator+(SiteOperator<Matrix,SymmGroup> b1, SiteOperator<Matrix, SymmGroup> const& b2)
 {
     b1 += b2;
     return b1;
 }
 
 template<class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> operator-(block_matrix<Matrix,SymmGroup> b1, block_matrix<Matrix, SymmGroup> const& b2)
+SiteOperator<Matrix, SymmGroup> operator-(SiteOperator<Matrix,SymmGroup> b1, SiteOperator<Matrix, SymmGroup> const& b2)
 {
     b1 -= b2;
     return b1;
 }
 
-
 template<class Matrix, class SymmGroup>
-bool shape_equal(block_matrix<Matrix, SymmGroup> const & a, block_matrix<Matrix, SymmGroup> const & b)
+bool shape_equal(SiteOperator<Matrix, SymmGroup> const & a, SiteOperator<Matrix, SymmGroup> const & b)
 {
-    return (a.basis() == b.basis());
+    return (a.basis() == b.basis() && a.spin() == b.spin());
 }
 
 template<class Matrix, class SymmGroup>
-std::size_t size_of(block_matrix<Matrix, SymmGroup> const & m)
+std::size_t size_of(SiteOperator<Matrix, SymmGroup> const & m)
 {
-    size_t r = 0;
-    for (size_t i = 0; i < m.n_blocks(); ++i)
-        r += size_of(m[i]);
-    return r;
+    return size_of(m);
 }
 
 

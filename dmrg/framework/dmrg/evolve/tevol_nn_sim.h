@@ -39,7 +39,8 @@
 template<class Matrix, class SymmGroup>
 struct trotter_gate {
     typedef std::vector<long> idx_t;
-    typedef std::vector<block_matrix<Matrix, SymmGroup> > vgates_t;
+    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
+    typedef std::vector<op_t> vgates_t;
     
     std::size_t pfirst;
 	idx_t idx;
@@ -47,7 +48,7 @@ struct trotter_gate {
     
     trotter_gate(std::size_t L) : idx(L, -1) { }
     
-    void add_term(std::size_t p, block_matrix<Matrix, SymmGroup> const & block)
+    void add_term(std::size_t p, op_t const & block)
     {
         assert(idx[p] == -1);
         vgates.push_back(block);
@@ -83,6 +84,7 @@ inline std::ostream& operator<< (std::ostream& os, tevol_order_tag o)
 // ******   SIMULATION CLASS   ******
 template <class Matrix, class SymmGroup>
 class nearest_neighbors_evolver {
+    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
 public:
     nearest_neighbors_evolver(DmrgParameters * parms_, MPS<Matrix, SymmGroup> * mps_,
                               Lattice const& lattice_, Model<Matrix, SymmGroup> const& model_,
@@ -287,7 +289,7 @@ private:
     void evolve_l2r(std::size_t gate_index)
     {
         std::size_t L = mps->length();
-        std::vector<block_matrix<Matrix, SymmGroup> > const & ops = Uterms[gate_index].vgates;
+        std::vector<op_t> const & ops = Uterms[gate_index].vgates;
         std::vector<long> const & idx = Uterms[gate_index].idx;
         int pfirst = Uterms[gate_index].pfirst;
         std::size_t Mmax=(*parms)["max_bond_dimension"];
@@ -310,9 +312,9 @@ private:
                 block_matrix<Matrix, SymmGroup> v0, v1;
                 gemm(constmps[p].data(), constmps[p+1].data(), v0); // outer product of two sites
                 
-                v1 = contraction::multiply_with_twosite(v0, ops[idx[p]],
-                                                        constmps[p].row_dim(), constmps[p+1].col_dim(),
-                                                        constmps[p].site_dim());
+                v1 = contraction::multiply_with_twosite<Matrix>(v0, ops[idx[p]],
+                                                                constmps[p].row_dim(), constmps[p+1].col_dim(),
+                                                                constmps[p].site_dim());
                 truncation_results trunc = compression::replace_two_sites_l2r(*mps, Mmax, cutoff, v1, p);
                 iteration_results_["BondDimension"]     << trunc.bond_dimension;
                 iteration_results_["TruncatedWeight"]   << trunc.truncated_weight;
@@ -329,7 +331,7 @@ private:
     void evolve_r2l(std::size_t gate_index)
     {
         std::size_t L = mps->length();
-        std::vector<block_matrix<Matrix, SymmGroup> > const & ops = Uterms[gate_index].vgates;
+        std::vector<op_t> const & ops = Uterms[gate_index].vgates;
         std::vector<long> const & idx = Uterms[gate_index].idx;
         int pfirst = Uterms[gate_index].pfirst;
         std::size_t Mmax=(*parms)["max_bond_dimension"];
@@ -352,9 +354,9 @@ private:
                 block_matrix<Matrix, SymmGroup> v0, v1;
                 gemm(constmps[p].data(), constmps[p+1].data(), v0); // outer product of two sites
                 
-                v1 = contraction::multiply_with_twosite(v0, ops[idx[p]],
-                                                        constmps[p].row_dim(), constmps[p+1].col_dim(),
-                                                        constmps[p].site_dim());
+                v1 = contraction::multiply_with_twosite<Matrix>(v0, ops[idx[p]],
+                                                                constmps[p].row_dim(), constmps[p+1].col_dim(),
+                                                                constmps[p].site_dim());
                 truncation_results trunc = compression::replace_two_sites_r2l(*mps, Mmax, cutoff, v1, p);
                 iteration_results_["BondDimension"]     << trunc.bond_dimension;
                 iteration_results_["TruncatedWeight"]   << trunc.truncated_weight;
@@ -380,7 +382,7 @@ private:
     results_collector iteration_results_;
     
 	tevol_order_tag trotter_order;
-    std::vector<block_matrix<Matrix, SymmGroup> > block_terms;
+    std::vector<op_t> block_terms;
     std::vector<std::pair<std::size_t,double> > gates_coeff;
     std::vector<trotter_gate<Matrix, SymmGroup> > Uterms;
     std::vector<std::size_t> Useq; // trivial sequence

@@ -53,6 +53,7 @@ namespace storage {
 template<class Matrix, class SymmGroup> class Boundary;
 template<class Matrix, class SymmGroup> class MPSTensor;
 template<class Matrix, class SymmGroup> class block_matrix;
+template<class Matrix, class SymmGroup> class SiteOperator;
 
 namespace alps { namespace numeric {
     template <typename T, typename MemoryBlock> class matrix;
@@ -316,6 +317,14 @@ namespace storage {
     template<class Matrix, class SymmGroup, class Scheduler = parallel::scheduler_nop> 
     static void migrate(const block_matrix<Matrix, SymmGroup>& tc, const Scheduler& scheduler = Scheduler()){
         block_matrix<Matrix, SymmGroup>& t = const_cast<block_matrix<Matrix, SymmGroup>&>(tc);
+        for(int i = 0; i < t.n_blocks(); ++i){
+            parallel::guard proc(scheduler(i));
+            ambient::migrate(t[i]);
+        }
+    }
+    template<class Matrix, class SymmGroup, class Scheduler = parallel::scheduler_nop> 
+    static void migrate(const SiteOperator<Matrix, SymmGroup>& tc, const Scheduler& scheduler = Scheduler()){
+        SiteOperator<Matrix, SymmGroup>& t = const_cast<SiteOperator<Matrix, SymmGroup>&>(tc);
         for(int i = 0; i < t.n_blocks(); ++i){
             parallel::guard proc(scheduler(i));
             ambient::migrate(t[i]);
