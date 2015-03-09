@@ -139,9 +139,6 @@ public:
         return bm_.blocks();
     }
     
-    template<class Archive> void load(Archive & ar);
-    template<class Archive> void save(Archive & ar) const;
-    
     template <class Archive>
     inline void serialize(Archive & ar, const unsigned int version);
     
