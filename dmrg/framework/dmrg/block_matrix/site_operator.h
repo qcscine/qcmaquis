@@ -197,5 +197,40 @@ std::size_t size_of(SiteOperator<Matrix, SymmGroup> const & m)
     return size_of(m);
 }
 
+namespace sparse_detail {
+
+    template <class T, class SymmGroup, typename = void>
+    struct Entry {
+
+        std::size_t row, col;
+        T coefficient;
+    };
+
+    template <class T, class SymmGroup>
+    struct Entry<T, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type> {
+
+        typename SymmGroup::subcharge row_spin, col_spin;
+        std::size_t row, col;
+        T coefficient;
+    };
+
+} // namespace sparse detail
+
+template<class Matrix, class SymmGroup>
+class SparseOperator
+{
+private:
+    typedef typename Matrix::value_type float_type;
+    typedef typename sparse_detail::Entry<float_type, SymmGroup> value_type;
+
+public:
+    SparseOperator(SiteOperator<Matrix, SymmGroup> const & bm) : basis_(bm.basis())
+    {
+    }
+
+private:
+    DualIndex<SymmGroup> basis_;
+    std::vector<value_type> data_;
+};
 
 #endif
