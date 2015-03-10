@@ -200,17 +200,26 @@ std::size_t size_of(SiteOperator<Matrix, SymmGroup> const & m)
 namespace sparse_detail {
 
     template <class T, class SymmGroup, typename = void>
-    struct Entry {
+    class Entry {
+    public:
 
         std::size_t row, col;
         T coefficient;
     };
 
     template <class T, class SymmGroup>
-    struct Entry<T, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type> {
+    class Entry<T, SymmGroup, typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type> {
+    public:
+        typedef typename SymmGroup::subcharge subcharge;
 
-        typename SymmGroup::subcharge row_spin, col_spin;
+        Entry();
+        Entry(std::size_t r, std::size_t c, subcharge rspin, subcharge cspin)
+        : row(r), col(c), row_spin(rspin), col_spin(cspin)
+        {
+        }
+
         std::size_t row, col;
+        subcharge row_spin, col_spin;
         T coefficient;
     };
 
@@ -221,15 +230,34 @@ class SparseOperator
 {
 private:
     typedef typename Matrix::value_type float_type;
-    typedef typename sparse_detail::Entry<float_type, SymmGroup> value_type;
 
 public:
-    SparseOperator(SiteOperator<Matrix, SymmGroup> const & bm) : basis_(bm.basis())
+    typedef sparse_detail::Entry<float_type, SymmGroup> value_type;
+    typedef typename std::vector<value_type>::const_iterator const_iterator;
+
+    SparseOperator() {}
+
+    SparseOperator(SiteOperator<Matrix, SymmGroup> const & bm)
     {
+        update(bm);
+    }
+
+    void update(SiteOperator<Matrix, SymmGroup> const & bm)
+    {
+        basis_ = bm.basis();
+        blocks_ = std::vector<const_iterator>(basis_.size());
+        
+        const_iterator it = data_.begin();
+        for(std::size_t b = 0; b < bm.n_blocks(); ++b)
+        {
+            blocks_[b] = it;
+            
+        }
     }
 
 private:
     DualIndex<SymmGroup> basis_;
+    std::vector<const_iterator> blocks_;
     std::vector<value_type> data_;
 };
 
