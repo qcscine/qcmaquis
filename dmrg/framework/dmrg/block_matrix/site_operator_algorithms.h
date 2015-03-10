@@ -300,8 +300,8 @@ void op_kron(Index<SymmGroup> const & phys_A,
                                           A.basis().left_size(i), B.basis().left_size(j),
                                           A.basis().right_size(i), B.basis().right_size(j));
 
-            int j1  = std::abs(inA[1]),  j2  = std::abs(inB[1]),  J = productSpin<SymmGroup>(inA, inB);
-            int j1p = std::abs(outA[1]), j2p = std::abs(outB[1]), Jp = productSpin<SymmGroup>(outA, outB);
+            int j1  = std::abs(SymmGroup::spin(inA)),  j2  = std::abs(SymmGroup::spin(inB)),  J = productSpin<SymmGroup>(inA, inB);
+            int j1p = std::abs(SymmGroup::spin(outA)), j2p = std::abs(SymmGroup::spin(outB)), Jp = productSpin<SymmGroup>(outA, outB);
 
             typename Matrix2::value_type coupling = SU2::mod_coupling(j1,j2,J,k1,k2,k,j1p,j2p,Jp);
             tmp *= coupling;

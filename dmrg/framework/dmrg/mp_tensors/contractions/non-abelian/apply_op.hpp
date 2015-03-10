@@ -102,8 +102,8 @@ namespace SU2 {
                             ret.resize_block(o, out_left_i.size_of_block(out_l_charge), r_size);
                         }
 
-                        int i = lc[1], ip = out_l_charge[1];
-                        int j = mc[1], jp = out_r_charge[1];
+                        int i = SymmGroup::spin(lc), ip = SymmGroup::spin(out_l_charge);
+                        int j = SymmGroup::spin(mc), jp = SymmGroup::spin(out_r_charge);
                         int two_sp = std::abs(i - ip), two_s  = std::abs(j - jp);
 
                         //typename Matrix::value_type coupling_coeff = ::SU2::mod_coupling(j, two_s, jp, a,k,ap, i, two_sp, ip);
