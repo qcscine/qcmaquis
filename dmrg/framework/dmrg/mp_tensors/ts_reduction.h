@@ -69,7 +69,7 @@ namespace ts_reduction {
         m2 = block_matrix<Matrix, SymmGroup>();
         
         typedef std::size_t size_t;
-        typedef int spin_t;
+        typedef typename SymmGroup::subcharge spin_t;
         typedef typename SymmGroup::charge charge;
         typedef typename Matrix::value_type value_type;
         
@@ -178,7 +178,7 @@ namespace ts_reduction {
         m2 = block_matrix<Matrix, SymmGroup>();
         
         typedef std::size_t size_t;
-        typedef int spin_t;
+        typedef typename SymmGroup::subcharge spin_t;
         typedef typename SymmGroup::charge charge;
         typedef typename Matrix::value_type value_type;
         
