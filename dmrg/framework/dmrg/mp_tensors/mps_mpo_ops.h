@@ -358,7 +358,7 @@ void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<typename operator_sel
         maquis::cout << "k2 = " << k2 << std::endl;
         assert( k0 > 0 ); // not always the case!!!
         
-        op_t rescale = identity_matrix<typename operator_selector<Matrix, SymmGroup>::type, SymmGroup>(phys);
+        op_t rescale = identity_matrix<typename operator_selector<Matrix, SymmGroup>::type>(phys);
         rescale(empty, empty) *= std::sqrt(k0);
         rescale(up, up) *= std::sqrt(k1);
         rescale(down, down) *= std::sqrt(k2);

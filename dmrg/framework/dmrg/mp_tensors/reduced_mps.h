@@ -58,7 +58,7 @@ public:
             for (int i = 1; i < L; ++i) {
                 {
                     MPOTensor<Matrix, SymmGroup> ident;
-                    ident.set(0, 0, identity_matrix<op_t, SymmGroup>(mps[L-i].site_dim()));
+                    ident.set(0, 0, identity_matrix<op_t>(mps[L-i].site_dim()));
                     
                     {
                         parallel::guard proc(scheduler(L-i));
@@ -68,7 +68,7 @@ public:
                 }
                 {
                     MPOTensor<Matrix, SymmGroup> ident;
-                    ident.set(0, 0, identity_matrix<op_t, SymmGroup>(mps[i-1].site_dim()));
+                    ident.set(0, 0, identity_matrix<op_t>(mps[i-1].site_dim()));
                     {
                         parallel::guard proc(scheduler(i-1));
                         left_[i] = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps[i-1], mps[i-1], left_[i-1], ident);
