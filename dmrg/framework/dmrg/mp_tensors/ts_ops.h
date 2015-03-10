@@ -54,22 +54,22 @@ namespace ts_ops_detail
     }
 
     template <class Integer, class Matrix, class SymmGroup>
-    std::map<SpinDescriptor<symm_traits::SU2Tag>::spin_t, typename OPTable<Matrix, SymmGroup>::op_t>
+    std::map<typename SymmGroup::subcharge, typename OPTable<Matrix, SymmGroup>::op_t>
     mpo_couple(std::set<Integer> const & summands, Integer b1, Integer b3, Index<SymmGroup> const & phys_i1, Index<SymmGroup> const & phys_i2,
                MPOTensor<Matrix, SymmGroup> const & mpo1, MPOTensor<Matrix, SymmGroup> const & mpo2)
     {
         using MPOTensor_detail::term_descriptor;
-        typedef SpinDescriptor<symm_traits::SU2Tag>::spin_t spin_t;
+        typedef typename SymmGroup::subcharge spin_t;
         typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
 
-        std::map<SpinDescriptor<symm_traits::SU2Tag>::spin_t, typename OPTable<Matrix, SymmGroup>::op_t> ret;
+        std::map<spin_t, typename OPTable<Matrix, SymmGroup>::op_t> ret;
 
         for (typename std::set<Integer>::const_iterator it1 = summands.begin(); it1 != summands.end(); ++it1) {
             Integer b2 = *it1;
             term_descriptor<Matrix, SymmGroup, true> p1 = mpo1.at(b1,b2), p2 = mpo2.at(b2,b3);
 
             std::vector<spin_t> op_spins = allowed_spins(mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get(), p1.op().spin().get(), p2.op().spin().get());
-            for (std::vector<spin_t>::const_iterator it2 = op_spins.begin(); it2 != op_spins.end(); ++it2)
+            for (typename std::vector<spin_t>::const_iterator it2 = op_spins.begin(); it2 != op_spins.end(); ++it2)
             {
                 SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> prod_spin(*it2, mpo1.left_spin(b1).get(), mpo2.right_spin(b3).get());
 
@@ -122,10 +122,10 @@ MPOTensor<MPSMatrix, SymmGroup> make_twosite_mpo(MPOTensor<MPOMatrix, SymmGroup>
 
             if (summands.size() > 1 || (!shared && summands.size() > 0))
             {
-                std::map<SpinDescriptor<symm_traits::SU2Tag>::spin_t, op_t> coupled_ops
+                std::map<typename SymmGroup::subcharge, op_t> coupled_ops
                     = ts_ops_detail::mpo_couple(summands, b1, b3, phys_i1, phys_i2, mpo1, mpo2);
 
-                for (typename std::map<SpinDescriptor<symm_traits::SU2Tag>::spin_t, op_t>::const_iterator it = coupled_ops.begin();
+                for (typename std::map<typename SymmGroup::subcharge, op_t>::const_iterator it = coupled_ops.begin();
                         it != coupled_ops.end(); ++it)
                 {
                     scaled_tag = kron_handler.get_kronecker_table()->checked_register(it->second);
