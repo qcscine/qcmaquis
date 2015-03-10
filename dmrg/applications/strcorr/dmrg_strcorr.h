@@ -47,7 +47,7 @@ typedef alps::numeric::matrix<double> matrix;
 
 class StrCorr {
 public:
-    typedef block_matrix<matrix, U1> op_t;
+    typedef typename operator_selector<matrix, U1>::type op_t;
     
     StrCorr(DmrgParameters & parms_)
     : parms(parms_)
