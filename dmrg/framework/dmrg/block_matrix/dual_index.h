@@ -220,12 +220,6 @@ public:
         }
     }
     
-    void insert(std::size_t position, std::pair<charge, std::size_t> const & x)
-    {
-        data_.insert(data_.begin() + position, x);
-        sorted_ = false;
-    }
-    
     void shift(charge diff)
     {
         for (std::size_t k = 0; k < data_.size(); ++k)
