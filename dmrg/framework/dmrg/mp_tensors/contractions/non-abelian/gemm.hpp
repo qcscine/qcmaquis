@@ -47,9 +47,7 @@ namespace SU2 {
         for (std::size_t k = 0; k < A.n_blocks(); ++k) {
 
             charge ar = A.basis().right_charge(k);
-            const_iterator it = std::lower_bound(B_begin, B_end,
-                                                 dual_index_detail::QnBlock<SymmGroup>(ar, SymmGroup::IdentityCharge, 0, 0),
-                                                 dual_index_detail::gt_row<SymmGroup>());
+            const_iterator it = B.basis().left_lower_bound(ar);
 
             for ( ; it != B_end && it->lc == ar; ++it)
             {
@@ -79,9 +77,7 @@ namespace SU2 {
             if (!B.basis().left_has(A.basis().left_charge(k))) continue;
 
             charge ar = A.basis().right_charge(k);
-            const_iterator it = std::lower_bound(B_begin, B_end,
-                                                 dual_index_detail::QnBlock<SymmGroup>(ar, SymmGroup::IdentityCharge, 0, 0),
-                                                 dual_index_detail::gt_row<SymmGroup>());
+            const_iterator it = B.basis().left_lower_bound(ar);
 
             for ( ; it != B_end && it->lc == ar; ++it)
             {
@@ -109,9 +105,7 @@ namespace SU2 {
         for (std::size_t k = 0; k < A.n_blocks(); ++k) {
 
             charge ar = A.basis().right_charge(k);
-            const_iterator it = std::lower_bound(B_begin, B_end,
-                                                 dual_index_detail::QnBlock<SymmGroup>(ar, SymmGroup::IdentityCharge, 0, 0),
-                                                 dual_index_detail::gt_row<SymmGroup>());
+            const_iterator it = B.basis().left_lower_bound(ar);
 
             for ( ; it != B_end && it->lc == ar; ++it)
             {
