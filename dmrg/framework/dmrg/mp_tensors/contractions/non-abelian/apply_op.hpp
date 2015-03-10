@@ -74,10 +74,7 @@ namespace SU2 {
 
                 if (!ket_basis.left_has(lc)) continue; // ket_basis needs to be left_paired
 
-                const_iterator it = std::lower_bound(ket_basis.begin(), ket_basis.end(),
-                                                     dual_index_detail::QnBlock<SymmGroup>(mc, SymmGroup::IdentityCharge, 0, 0),
-                                                     dual_index_detail::gt_row<SymmGroup>());
-
+                const_iterator it = ket_basis.left_lower_bound(mc);
                 for ( ; it != ket_basis.end() && it->lc == mc; ++it)
                 {
                     charge rc = it->rc;
@@ -191,10 +188,7 @@ namespace SU2 {
                 charge lc = ket_basis[ketblock].lc;
                 charge mc = ket_basis[ketblock].rc;
 
-                const_iterator it = std::lower_bound(right[b2].basis().begin(), right[b2].basis().end(),
-                                                     dual_index_detail::QnBlock<SymmGroup>(mc, SymmGroup::IdentityCharge, 0, 0),
-                                                     dual_index_detail::gt_row<SymmGroup>());
-
+                const_iterator it = right[b2].basis().left_lower_bound(mc);
                 for ( ; it != right[b2].basis().end() && it->lc == mc; ++it)
                 {
                     charge rc = it->rc;
