@@ -100,6 +100,8 @@ public:
                 for (std::size_t p = 0; p < modified.n_blocks(); ++p)
                     modified[p] = base_op[p];
 
+                modified.update_sparse();
+
                 std::pair<tag_type, typename Matrix::value_type> symm_tag = symm_handler.checked_register(modified, tag_detail::bosonic);
                 translation_table(i, *it) = symm_tag.first;
                 translation_table_coeff(i, *it) = symm_tag.second;
