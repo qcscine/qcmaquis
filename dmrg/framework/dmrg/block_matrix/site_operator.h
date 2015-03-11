@@ -61,6 +61,9 @@ public:
     
     SiteOperator(SiteOperator const&);
 
+    SiteOperator(block_matrix<Matrix, SymmGroup> const&, 
+                 typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type const &);
+
     template <class OtherMatrix>
     SiteOperator(SiteOperator<OtherMatrix,SymmGroup> const&);
 
@@ -127,6 +130,7 @@ public:
     {
         std::swap(x.spin_, y.spin_);
         swap(x.bm_, y.bm_);
+        swap(x.sparse_op, y.sparse_op);
     }
 
     Matrix const & operator()(charge r, charge c) const

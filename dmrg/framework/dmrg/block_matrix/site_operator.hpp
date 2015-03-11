@@ -48,14 +48,21 @@ SiteOperator<Matrix, SymmGroup>::SiteOperator(DualIndex<SymmGroup> const & basis
 
 template<class Matrix, class SymmGroup>
 SiteOperator<Matrix, SymmGroup>::SiteOperator(SiteOperator const& rhs)
-: bm_(rhs.bm_), spin_(rhs.spin_)
+: bm_(rhs.bm_), spin_(rhs.spin_), sparse_op(rhs.sparse_op)
 {
 }
 
 template<class Matrix, class SymmGroup>
 template <class OtherMatrix>
 SiteOperator<Matrix, SymmGroup>::SiteOperator(SiteOperator<OtherMatrix,SymmGroup> const& rhs)
-: bm_(rhs.bm_), spin_(rhs.spin_)
+: bm_(rhs.bm_), spin_(rhs.spin_), sparse_op(rhs.sparse_op)
+{
+}
+
+template<class Matrix, class SymmGroup>
+SiteOperator<Matrix, SymmGroup>::SiteOperator(block_matrix<Matrix,SymmGroup> const& rhs,
+                                              typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type const& sb)
+: bm_(rhs), sparse_op(rhs, sb)
 {
 }
 
@@ -71,6 +78,7 @@ template<class OtherMatrix>
 SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator=(const SiteOperator<OtherMatrix, SymmGroup> & rhs)
 {
     block_matrix<Matrix, SymmGroup> cpy = rhs.bm_;
+    sparse_op = rhs.sparse_op;
     swap(bm_, cpy);
     spin_ = rhs.spin();
     return *this;

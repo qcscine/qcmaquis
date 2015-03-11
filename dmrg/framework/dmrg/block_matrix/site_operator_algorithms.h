@@ -242,7 +242,6 @@ void op_kron(Index<SymmGroup> const & phys_A,
     ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
     ProductBasis<SymmGroup> const& pb_right = pb_left;
 
-    C = SiteOperator<Matrix2, SymmGroup>();
     SiteOperator<Matrix1, SymmGroup> A = Ao, B = Bo;
 
     //*************************************
@@ -286,6 +285,7 @@ void op_kron(Index<SymmGroup> const & phys_A,
     typedef std::pair<charge, charge> charge_pair;
     std::map<charge_pair, std::pair<std::vector<subcharge>, std::vector<subcharge> >, compare_pair<charge_pair> > basis_spins;
 
+    block_matrix<Matrix2, SymmGroup> blocks;
     for (std::size_t i = 0; i < A.n_blocks(); ++i) {
         for (std::size_t j = 0; j < B.n_blocks(); ++j) {
             charge  inA = A.basis().left_charge(i);
@@ -311,7 +311,7 @@ void op_kron(Index<SymmGroup> const & phys_A,
             typename Matrix2::value_type coupling = SU2::mod_coupling(j1,j2,J,k1,k2,k,j1p,j2p,Jp);
             tmp *= coupling;
 
-            C.match_and_add_block(tmp, new_left, new_right);
+            blocks.match_and_add_block(tmp, new_left, new_right);
             // record the spin information
             basis_spins[std::make_pair(new_left, new_right)].first.resize(num_rows(tmp));
             basis_spins[std::make_pair(new_left, new_right)].first[in_offset] = J;
@@ -328,6 +328,8 @@ void op_kron(Index<SymmGroup> const & phys_A,
     C *= coupling;
 
     SpinDescriptor<symm_traits::SU2Tag> op_spin(k, j, jp);
+
+    C = SiteOperator<Matrix2, SymmGroup>(blocks, basis_spins);
     C.spin() = op_spin;
 }
 
