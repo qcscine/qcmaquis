@@ -236,6 +236,8 @@ void op_kron(Index<SymmGroup> const & phys_A,
               = SpinDescriptor<symm_traits::SU2Tag>(-1,0,0))
 {
     typedef typename SymmGroup::charge charge;
+    typedef typename SymmGroup::subcharge subcharge;
+    typedef typename Matrix2::value_type value_type;
 
     ProductBasis<SymmGroup> pb_left(phys_A, phys_B);
     ProductBasis<SymmGroup> const& pb_right = pb_left;
@@ -281,6 +283,9 @@ void op_kron(Index<SymmGroup> const & phys_A,
     //*************************************
     // Tensor + Kronecker product
 
+    typedef std::pair<charge, charge> charge_pair;
+    std::map<charge_pair, std::pair<std::vector<subcharge>, std::vector<subcharge> >, compare_pair<charge_pair> > basis_spins;
+
     for (std::size_t i = 0; i < A.n_blocks(); ++i) {
         for (std::size_t j = 0; j < B.n_blocks(); ++j) {
             charge  inA = A.basis().left_charge(i);
@@ -307,6 +312,11 @@ void op_kron(Index<SymmGroup> const & phys_A,
             tmp *= coupling;
 
             C.match_and_add_block(tmp, new_left, new_right);
+            // record the spin information
+            basis_spins[std::make_pair(new_left, new_right)].first.resize(num_rows(tmp));
+            basis_spins[std::make_pair(new_left, new_right)].first[in_offset] = J;
+            basis_spins[std::make_pair(new_left, new_right)].second.resize(num_cols(tmp));
+            basis_spins[std::make_pair(new_left, new_right)].second[out_offset] = Jp;
         }
     }
 

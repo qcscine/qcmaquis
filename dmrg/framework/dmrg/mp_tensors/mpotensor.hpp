@@ -63,6 +63,8 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
                 std::swap(element, new_element);
             }
         }
+        for (std::size_t i = 0; i < operator_table->size(); ++i)
+            operator_table->operator[](i).update_sparse();
     }
     else {
         // Initialize a private operator table
