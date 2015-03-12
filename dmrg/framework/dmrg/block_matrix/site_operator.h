@@ -153,6 +153,7 @@ public:
     bool reasonable() const;
 
     void update_sparse() { sparse_op.update(bm_); }
+    SparseOperator<Matrix, SymmGroup, void> const & get_sparse() { return sparse_op; }
     
     SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > & spin() { return spin_; }
     SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > const & spin() const { return spin_; }

@@ -136,11 +136,16 @@ public:
         update(bm);
     }
 
+    std::pair<iterator, iterator> block(std::size_t b) const
+    {
+        return std::make_pair(blocks_[b], blocks_[b+1]);
+    }
+
     void update(block_matrix<Matrix, SymmGroup> const & bm)
     {
-        assert(spin_basis.size() == bm.n_blocks);
+        assert(spin_basis.size() == bm.n_blocks());
 
-        blocks_ = std::vector<iterator>(bm.n_blocks());
+        blocks_ = std::vector<iterator>(bm.n_blocks() + 1);
         
         iterator it = data_.begin();
         for(std::size_t b = 0; b < bm.n_blocks(); ++b)
@@ -153,6 +158,8 @@ public:
                 if (bm[b](ss1,ss2) != float_type())
                     data_.insert(it++, value_type(ss1, ss2, left_spins[ss1], right_spins[ss2], bm[b](ss1,ss2)));
         }
+
+        blocks_[bm.n_blocks()] = data_.end();
     }
 
 private:

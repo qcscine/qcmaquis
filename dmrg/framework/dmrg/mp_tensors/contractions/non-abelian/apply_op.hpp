@@ -126,6 +126,9 @@ namespace SU2 {
                         //        out_left_offset, in_right_offset,
                         //        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, coupling_coeff);
 
+                        typedef typename SparseOperator<Matrix, SymmGroup>::iterator block_iterator;
+                        std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
+
                         size_t ldim = T.basis().left_size(t_block);
                         for(size_t rr = 0; rr < r_size; ++rr) {
                             for(size_t ss1 = 0; ss1 < phys_s1; ++ss1) {
