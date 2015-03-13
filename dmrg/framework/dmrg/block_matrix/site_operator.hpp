@@ -125,12 +125,6 @@ std::string SiteOperator<Matrix, SymmGroup>::description() const
     return bm_.description();
 }
 
-//template<class Matrix, class SymmGroup>
-//void SiteOperator<Matrix, SymmGroup>::shift_basis(typename SiteOperator<Matrix, SymmGroup>::charge diff)
-//{
-//    bm_.basis().shift(diff);
-//}
-
 template<class Matrix, class SymmGroup>
 Matrix & SiteOperator<Matrix, SymmGroup>::operator[](size_type c) { return bm_[c]; }
 
