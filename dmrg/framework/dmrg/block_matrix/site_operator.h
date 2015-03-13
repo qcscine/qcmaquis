@@ -43,6 +43,7 @@ class SiteOperator
     friend class SiteOperator<typename storage::constrained<Matrix>::type, SymmGroup>;
 private:
     typedef typename SymmGroup::charge charge;
+    typedef typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type spin_basis_type;
 public:
     typedef Matrix matrix_type;
     typedef typename Matrix::size_type size_type;
@@ -61,8 +62,7 @@ public:
     
     SiteOperator(SiteOperator const&);
 
-    SiteOperator(block_matrix<Matrix, SymmGroup> const&, 
-                 typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type const &);
+    SiteOperator(block_matrix<Matrix, SymmGroup> const&, spin_basis_type const &);
 
     template <class OtherMatrix>
     SiteOperator(SiteOperator<OtherMatrix,SymmGroup> const&);
@@ -153,13 +153,14 @@ public:
     bool reasonable() const;
 
     void update_sparse() { sparse_op.update(bm_); }
-    SparseOperator<Matrix, SymmGroup, void> const & get_sparse() { return sparse_op; }
+    SparseOperator<Matrix, SymmGroup, void> const & get_sparse() const { return sparse_op; }
     
     SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > & spin() { return spin_; }
     SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > const & spin() const { return spin_; }
     
 private:
     SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > spin_;
+    spin_basis_type spin_basis;
     block_matrix<Matrix, SymmGroup> bm_;
     SparseOperator<Matrix, SymmGroup, void> sparse_op;
 };    

@@ -62,7 +62,7 @@ SiteOperator<Matrix, SymmGroup>::SiteOperator(SiteOperator<OtherMatrix,SymmGroup
 template<class Matrix, class SymmGroup>
 SiteOperator<Matrix, SymmGroup>::SiteOperator(block_matrix<Matrix,SymmGroup> const& rhs,
                                               typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type const& sb)
-: bm_(rhs), sparse_op(rhs, sb)
+: spin_basis(sb), bm_(rhs), sparse_op(rhs, sb)
 {
 }
 

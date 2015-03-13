@@ -120,6 +120,7 @@ private:
 public:
     typedef sparse_detail::Entry<float_type, SymmGroup> value_type;
     typedef typename std::vector<value_type>::iterator iterator;
+    typedef typename std::vector<value_type>::const_iterator const_iterator;
     typedef std::map<charge_pair, std::pair<std::vector<subcharge>, std::vector<subcharge> >, compare_pair<charge_pair> > spin_basis_type;
 
 
@@ -136,7 +137,7 @@ public:
         update(bm);
     }
 
-    std::pair<iterator, iterator> block(std::size_t b) const
+    std::pair<const_iterator, const_iterator> block(std::size_t b) const
     {
         return std::make_pair(blocks_[b], blocks_[b+1]);
     }
