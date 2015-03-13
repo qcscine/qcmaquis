@@ -306,3 +306,35 @@ std::size_t SiteOperator<Matrix, SymmGroup>::num_elements() const
 {
     return bm_.num_elements();
 }
+
+namespace SiteOperator_detail {
+
+    template <class Matrix, class SymmGroup>
+    typename boost::disable_if<symm_traits::HasSU2<SymmGroup> >::type
+    check_spin_basis(block_matrix<Matrix, SymmGroup> const & bm,
+                     typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type &)
+    {
+    } 
+
+    template <class Matrix, class SymmGroup>
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type
+    check_spin_basis(block_matrix<Matrix, SymmGroup> const & bm,
+                     typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type & spin_basis)
+    {
+        if (spin_basis.size() != bm.n_blocks())
+        for(std::size_t b = 0; b < bm.n_blocks(); ++b)
+            if (spin_basis.count(std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))) == 0)
+                spin_basis[std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))]
+                    = std::make_pair(std::vector<typename SymmGroup::subcharge>(num_rows(bm[b]), SymmGroup::spin(bm.basis().left_charge(b))),
+                                     std::vector<typename SymmGroup::subcharge>(num_cols(bm[b]), SymmGroup::spin(bm.basis().right_charge(b)))
+                                     );
+    } 
+
+}
+
+template<class Matrix, class SymmGroup>
+void SiteOperator<Matrix, SymmGroup>::update_sparse()
+{
+    SiteOperator_detail::check_spin_basis(bm_, spin_basis);
+    sparse_op.update(bm_, spin_basis);
+}

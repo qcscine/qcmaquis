@@ -88,8 +88,7 @@ public:
 
     void update(block_matrix<Matrix, SymmGroup> const & bm, spin_basis_type const & sb)
     {
-        basis_ = bm.basis();
-        blocks_ = std::vector<iterator>(basis_.size());
+        blocks_ = std::vector<iterator>(bm.n_blocks());
         
         iterator it = data_.begin();
         for(std::size_t b = 0; b < bm.n_blocks(); ++b)
@@ -103,7 +102,6 @@ public:
     }
 
 private:
-    DualIndex<SymmGroup> basis_;
     std::vector<iterator> blocks_;
     std::vector<value_type> data_;
 };
@@ -164,14 +162,6 @@ public:
     }
 
 private:
-    //void set_spin_basis(block_matrix<Matrix, SymmGroup> const & bm)
-    //{
-    //    for(std::size_t b = 0; b < bm.n_blocks(); ++b)
-    //        spin_basis[std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))]
-    //            = std::make_pair(std::vector<subcharge>(num_rows(bm[b]), SymmGroup::spin(bm.basis().left_charge(b))),
-    //                             std::vector<subcharge>(num_cols(bm[b]), SymmGroup::spin(bm.basis().right_charge(b)))
-    //                            );
-    //} 
 
     std::vector<iterator> blocks_;
     std::vector<value_type> data_;
