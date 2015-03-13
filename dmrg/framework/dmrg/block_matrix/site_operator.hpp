@@ -66,17 +66,44 @@ SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator=(con
 {
     block_matrix<Matrix, SymmGroup> cpy = rhs.bm_;
     sparse_op = rhs.sparse_op;
+    spin_basis = rhs.spin_basis;
     swap(bm_, cpy);
     spin_ = rhs.spin();
     return *this;
+}
+
+namespace SiteOperator_detail
+{
+
+    template <class Matrix, class SymmGroup>
+    typename boost::disable_if<symm_traits::HasSU2<SymmGroup> >::type
+    extend_spin_basis(typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type & spin_basis,
+                      typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type const & rhs)
+    {
+    } 
+
+    template <class Matrix, class SymmGroup>
+    typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type
+    extend_spin_basis(typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type & spin_basis,
+                      typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type const & rhs)
+    {
+        for (typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type::const_iterator it = rhs.begin(); it != rhs.end(); ++it)
+            spin_basis[it->first] = it->second;
+    } 
+    
 }
 
 template<class Matrix, class SymmGroup>
 SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator+=(SiteOperator const & rhs)
 {
     assert (spin_.get() == rhs.spin().get() || n_blocks() == 0 || rhs.n_blocks() == 0);
+
     if (n_blocks() == 0) spin_ = rhs.spin();
+
     bm_ += rhs.bm_;
+
+    SiteOperator_detail::extend_spin_basis<Matrix, SymmGroup>(spin_basis, rhs.spin_basis);
+
     return *this;
 }
 
@@ -84,8 +111,13 @@ template<class Matrix, class SymmGroup>
 SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator-=(SiteOperator const & rhs)
 {
     assert (spin_.get() == rhs.spin().get() || n_blocks() == 0 || rhs.n_blocks() == 0);
+
     if (n_blocks() == 0) spin_ = rhs.spin();
+
     bm_ -= rhs.bm_;
+
+    SiteOperator_detail::extend_spin_basis<Matrix, SymmGroup>(spin_basis, rhs.spin_basis);
+
     return *this;
 }
 
