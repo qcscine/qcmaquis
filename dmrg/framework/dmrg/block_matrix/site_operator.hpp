@@ -125,11 +125,11 @@ std::string SiteOperator<Matrix, SymmGroup>::description() const
     return bm_.description();
 }
 
-template<class Matrix, class SymmGroup>
-void SiteOperator<Matrix, SymmGroup>::shift_basis(typename SiteOperator<Matrix, SymmGroup>::charge diff)
-{
-    bm_.basis().shift(diff);
-}
+//template<class Matrix, class SymmGroup>
+//void SiteOperator<Matrix, SymmGroup>::shift_basis(typename SiteOperator<Matrix, SymmGroup>::charge diff)
+//{
+//    bm_.basis().shift(diff);
+//}
 
 template<class Matrix, class SymmGroup>
 Matrix & SiteOperator<Matrix, SymmGroup>::operator[](size_type c) { return bm_[c]; }
@@ -168,18 +168,6 @@ typename Matrix::value_type const & SiteOperator<Matrix, SymmGroup>::operator()(
                                                                                 std::pair<charge, size_type> const & c) const
 {
     return bm_(r, c);
-}
-
-template<class Matrix, class SymmGroup>
-void SiteOperator<Matrix, SymmGroup>::index_iter(int i, int max) const
-{
-    bm_.index_iter(i, max);
-}
-
-template<class Matrix, class SymmGroup>
-void SiteOperator<Matrix, SymmGroup>::index_sizes() const
-{
-    bm_.index_sizes();
 }
 
 template<class Matrix, class SymmGroup>
@@ -272,39 +260,6 @@ template <class Archive>
 void SiteOperator<Matrix, SymmGroup>::serialize(Archive & ar, const unsigned int version)
 {
     ar & bm_;
-}
-
-
-template<class Matrix, class SymmGroup>
-void SiteOperator<Matrix, SymmGroup>::reserve(charge c1, charge c2,
-                                              std::size_t r, std::size_t c)
-{
-    bm_.reserve(c1, c2, r, c);
-}
-
-template<class Matrix, class SymmGroup>
-inline void SiteOperator<Matrix, SymmGroup>::reserve_pos(charge c1, charge c2,
-                                                         std::size_t ri, std::size_t ci)
-{
-    bm_.reserve_pos(c1, c2, ri, ci);
-}
-
-template<class Matrix, class SymmGroup>
-void SiteOperator<Matrix, SymmGroup>::allocate_blocks()
-{
-    bm_.allocate_blocks();
-}
-
-template<class Matrix, class SymmGroup>
-bool SiteOperator<Matrix, SymmGroup>::reasonable() const
-{
-    return bm_.reasonable();
-}
-
-template<class Matrix, class SymmGroup>
-std::size_t SiteOperator<Matrix, SymmGroup>::num_elements() const
-{
-    return bm_.num_elements();
 }
 
 namespace SiteOperator_detail {

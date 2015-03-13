@@ -70,10 +70,7 @@ public:
     Index<SymmGroup> right_basis() const;
     DualIndex<SymmGroup> const & basis() const;
 
-    void shift_basis(charge diff);
-
     std::string description() const;
-    std::size_t num_elements() const;
     
     Matrix &             operator[](size_type c);
     Matrix const &       operator[](size_type c) const;
@@ -100,9 +97,6 @@ public:
     mutable typename parallel::scheduler_balanced_iterative::index iter_index;
     mutable typename parallel::scheduler_size_indexed::index size_index;
 
-    void index_iter(int i, int max) const;
-    void index_sizes() const;
-    
     real_type norm() const;
     void transpose_inplace();
     void adjoint_inplace();
@@ -146,8 +140,6 @@ public:
     template <class Archive>
     inline void serialize(Archive & ar, const unsigned int version);
     
-    bool reasonable() const;
-
     void update_sparse();
     SparseOperator<Matrix, SymmGroup, void> const & get_sparse() const { return sparse_op; }
     
