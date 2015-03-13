@@ -331,6 +331,16 @@ void op_kron(Index<SymmGroup> const & phys_A,
 
     C = SiteOperator<Matrix2, SymmGroup>(blocks, basis_spins);
     C.spin() = op_spin;
+
+    SiteOperator<Matrix2, SymmGroup> C2(blocks, basis_spins);
+    typedef typename SparseOperator<Matrix2, SymmGroup>::const_iterator block_iterator;
+    for (int b = 0; b < C2.n_blocks(); ++b) {
+        std::pair<block_iterator, block_iterator> blocks = C2.get_sparse().block(b);
+        for( ; blocks.first != blocks.second; ++blocks.first)
+        {
+            maquis::cout << blocks.first->row << "," << blocks.first->col << ": " << blocks.first->coefficient << std::endl;
+        }
+    }
 }
 
 
