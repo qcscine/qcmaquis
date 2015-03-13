@@ -126,6 +126,7 @@ public:
         std::swap(x.spin_, y.spin_);
         swap(x.bm_, y.bm_);
         swap(x.sparse_op, y.sparse_op);
+        std::swap(x.spin_basis, y.spin_basis);
     }
 
     Matrix const & operator()(charge r, charge c) const
@@ -147,7 +148,7 @@ public:
     
     bool reasonable() const;
 
-    void update_sparse() { sparse_op.update(bm_); }
+    void update_sparse() { sparse_op.update(bm_, spin_basis); }
     SparseOperator<Matrix, SymmGroup, void> const & get_sparse() const { return sparse_op; }
     
     SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type > & spin() { return spin_; }

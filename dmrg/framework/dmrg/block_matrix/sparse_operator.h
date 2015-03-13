@@ -86,7 +86,7 @@ public:
         update(bm);
     }
 
-    void update(block_matrix<Matrix, SymmGroup> const & bm)
+    void update(block_matrix<Matrix, SymmGroup> const & bm, spin_basis_type const & sb)
     {
         basis_ = bm.basis();
         blocks_ = std::vector<iterator>(basis_.size());
@@ -126,15 +126,9 @@ public:
 
     SparseOperator() {}
 
-    SparseOperator(block_matrix<Matrix, SymmGroup> const & bm)
+    SparseOperator(block_matrix<Matrix, SymmGroup> const & bm, spin_basis_type const & sb)
     {
-        set_spin_basis(bm);
-        update(bm);
-    }
-
-    SparseOperator(block_matrix<Matrix, SymmGroup> const & bm, spin_basis_type const & sb) : spin_basis(sb)
-    {
-        update(bm);
+        update(bm, sb);
     }
 
     std::pair<const_iterator, const_iterator> block(std::size_t b) const
@@ -142,7 +136,7 @@ public:
         return std::make_pair(blocks_[b], blocks_[b+1]);
     }
 
-    void update(block_matrix<Matrix, SymmGroup> const & bm)
+    void update(block_matrix<Matrix, SymmGroup> const & bm, spin_basis_type const & spin_basis)
     {
         assert(spin_basis.size() == bm.n_blocks());
 
@@ -152,8 +146,8 @@ public:
         for(std::size_t b = 0; b < bm.n_blocks(); ++b)
         {
             blocks_[b] = it;
-            std::vector<subcharge> const & left_spins = spin_basis[std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))].first;
-            std::vector<subcharge> const & right_spins = spin_basis[std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))].second;
+            std::vector<subcharge> const & left_spins = spin_basis.at(std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))).first;
+            std::vector<subcharge> const & right_spins = spin_basis.at(std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))).second;
             for (std::size_t ss1 = 0; ss1 < num_rows(bm[b]); ++ss1)
             for (std::size_t ss2 = 0; ss2 < num_cols(bm[b]); ++ss2)
                 if (bm[b](ss1,ss2) != float_type())
@@ -163,17 +157,22 @@ public:
         blocks_[bm.n_blocks()] = data_.end();
     }
 
-private:
-    void set_spin_basis(block_matrix<Matrix, SymmGroup> const & bm)
+    friend void swap(SparseOperator & x, SparseOperator & y)
     {
-        for(std::size_t b = 0; b < bm.n_blocks(); ++b)
-            spin_basis[std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))]
-                = std::make_pair(std::vector<subcharge>(num_rows(bm[b]), SymmGroup::spin(bm.basis().left_charge(b))),
-                                 std::vector<subcharge>(num_cols(bm[b]), SymmGroup::spin(bm.basis().right_charge(b)))
-                                );
-    } 
+        swap(x.blocks_, y.blocks_);        
+        swap(x.data_, y.data_);        
+    }
 
-    spin_basis_type spin_basis;
+private:
+    //void set_spin_basis(block_matrix<Matrix, SymmGroup> const & bm)
+    //{
+    //    for(std::size_t b = 0; b < bm.n_blocks(); ++b)
+    //        spin_basis[std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))]
+    //            = std::make_pair(std::vector<subcharge>(num_rows(bm[b]), SymmGroup::spin(bm.basis().left_charge(b))),
+    //                             std::vector<subcharge>(num_cols(bm[b]), SymmGroup::spin(bm.basis().right_charge(b)))
+    //                            );
+    //} 
+
     std::vector<iterator> blocks_;
     std::vector<value_type> data_;
 };
