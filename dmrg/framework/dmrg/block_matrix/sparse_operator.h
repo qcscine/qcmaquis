@@ -89,6 +89,7 @@ public:
     void update(block_matrix<Matrix, SymmGroup> const & bm, spin_basis_type const & sb)
     {
         blocks_ = std::vector<iterator>(bm.n_blocks());
+        maquis::cout << "updateing non-SU2" << std::endl;
         
         iterator it = data_.begin();
         for(std::size_t b = 0; b < bm.n_blocks(); ++b)
@@ -136,27 +137,37 @@ public:
 
     void update(block_matrix<Matrix, SymmGroup> const & bm, spin_basis_type const & spin_basis)
     {
-        assert(spin_basis.size() == bm.n_blocks());
+        assert(spin_basis.size() >= bm.n_blocks());
+        //if(spin_basis.size() != bm.n_blocks())
+        //{
+        //    maquis::cout << bm << std::endl;
+        //    maquis::cout << bm.n_blocks() << "  " << spin_basis.size() << std::endl;
+        //    for (typename spin_basis_type::const_iterator it = spin_basis.begin(); it != spin_basis.end(); ++it)
+        //    {
+        //        maquis::cout << it->first.first << it->first.second << "\t" << it->second.first.size() << " " << it->second.second.size() << std::endl;
+        //    }
+        //    exit(1); 
+        //}
 
         blocks_ = std::vector<iterator>(bm.n_blocks() + 1);
-        maquis::cout << "updateing" << std::endl;
+        //maquis::cout << "updating\n" << bm << std::endl;
         
         iterator it = data_.begin();
         for(std::size_t b = 0; b < bm.n_blocks(); ++b)
         {
-            maquis::cout << "update block " << b << std::endl;
+            //maquis::cout << "update block " << b << std::endl;
             blocks_[b] = it;
             std::vector<subcharge> const & left_spins = spin_basis.at(std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))).first;
             std::vector<subcharge> const & right_spins = spin_basis.at(std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))).second;
-            for (std::size_t ss1 = 0; ss1 < num_rows(bm[b]); ++ss1)
-            for (std::size_t ss2 = 0; ss2 < num_cols(bm[b]); ++ss2)
-                if (bm[b](ss1,ss2) != float_type()) {
-                    data_.insert(it++, value_type(ss1, ss2, left_spins[ss1], right_spins[ss2], bm[b](ss1,ss2)));
-                    maquis::cout << "Inserting " << bm[b](ss1,ss2) << std::endl;
-                }
-                else {
-                    maquis::cout << "Not inserting " << bm[b](ss1,ss2) << std::endl;
-                }
+            //for (std::size_t ss1 = 0; ss1 < num_rows(bm[b]); ++ss1)
+            //for (std::size_t ss2 = 0; ss2 < num_cols(bm[b]); ++ss2)
+            //    if (bm[b](ss1,ss2) != float_type()) {
+            //        data_.insert(it++, value_type(ss1, ss2, left_spins[ss1], right_spins[ss2], bm[b](ss1,ss2)));
+            //        maquis::cout << "Inserting " << bm[b](ss1,ss2) << std::endl;
+            //    }
+            //    else {
+            //        maquis::cout << "Not inserting " << bm[b](ss1,ss2) << std::endl;
+            //    }
         }
 
         blocks_[bm.n_blocks()] = data_.end();
