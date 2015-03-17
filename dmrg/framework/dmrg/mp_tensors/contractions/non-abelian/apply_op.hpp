@@ -126,8 +126,6 @@ namespace SU2 {
                         //        out_left_offset, in_right_offset,
                         //        phys_s1, phys_s2, T.basis().left_size(t_block), r_size, coupling_coeff);
 
-                        //maquis::cout << "----\n" << W[w_block] << std::endl;
-
                         typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
                         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
