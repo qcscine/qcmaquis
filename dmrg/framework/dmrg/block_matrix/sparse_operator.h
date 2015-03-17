@@ -89,7 +89,6 @@ public:
     void update(block_matrix<Matrix, SymmGroup> const & bm, spin_basis_type const & sb)
     {
         blocks_ = std::vector<iterator>(bm.n_blocks());
-        maquis::cout << "updateing non-SU2" << std::endl;
         
         iterator it = data_.begin();
         for(std::size_t b = 0; b < bm.n_blocks(); ++b)
@@ -132,7 +131,7 @@ public:
 
     std::pair<const_iterator, const_iterator> block(std::size_t b) const
     {
-        return std::make_pair(blocks_[b], blocks_[b+1]);
+        return std::make_pair(data_.begin() + blocks_[b], data_.begin() + blocks_[b+1]);
     }
 
     void update(block_matrix<Matrix, SymmGroup> const & bm, spin_basis_type const & spin_basis)
@@ -149,28 +148,30 @@ public:
         //    exit(1); 
         //}
 
-        blocks_ = std::vector<iterator>(bm.n_blocks() + 1);
-        //maquis::cout << "updating\n" << bm << std::endl;
+        blocks_ = std::vector<int>(bm.n_blocks() + 1);
+        data_ = std::vector<value_type>();
         
-        iterator it = data_.begin();
+        int entry_counter = 0;
         for(std::size_t b = 0; b < bm.n_blocks(); ++b)
         {
-            //maquis::cout << "update block " << b << std::endl;
-            blocks_[b] = it;
+            blocks_[b] = entry_counter;
             std::vector<subcharge> const & left_spins = spin_basis.at(std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))).first;
             std::vector<subcharge> const & right_spins = spin_basis.at(std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))).second;
-            //for (std::size_t ss1 = 0; ss1 < num_rows(bm[b]); ++ss1)
-            //for (std::size_t ss2 = 0; ss2 < num_cols(bm[b]); ++ss2)
-            //    if (bm[b](ss1,ss2) != float_type()) {
-            //        data_.insert(it++, value_type(ss1, ss2, left_spins[ss1], right_spins[ss2], bm[b](ss1,ss2)));
-            //        maquis::cout << "Inserting " << bm[b](ss1,ss2) << std::endl;
-            //    }
-            //    else {
-            //        maquis::cout << "Not inserting " << bm[b](ss1,ss2) << std::endl;
-            //    }
+            for (std::size_t ss1 = 0; ss1 < num_rows(bm[b]); ++ss1)
+            for (std::size_t ss2 = 0; ss2 < num_cols(bm[b]); ++ss2)
+                if (bm[b](ss1,ss2) != float_type()) {
+                    //data_.push_back(value_type(ss1, ss2, left_spins[ss1], right_spins[ss2], bm[b](ss1,ss2)));
+                    data_.push_back(value_type(ss1, ss2, left_spins.at(ss1), right_spins.at(ss2), bm[b](ss1,ss2)));
+                    ++entry_counter;
+                }
         }
 
-        blocks_[bm.n_blocks()] = data_.end();
+        blocks_[bm.n_blocks()] = data_.size();
+
+        //maquis::cout << "data_.size() " << data_.size() << std::endl;
+        //for (int b = 0; b < blocks_.size(); ++b) {
+        //    maquis::cout << "block_["<<b<<"] -> " << blocks_[b] << std::endl;
+        //}
     }
 
     friend void swap(SparseOperator & x, SparseOperator & y)
@@ -181,7 +182,7 @@ public:
 
 private:
 
-    std::vector<iterator> blocks_;
+    std::vector<int> blocks_;
     std::vector<value_type> data_;
 };
 

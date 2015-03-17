@@ -317,6 +317,15 @@ void op_kron(Index<SymmGroup> const & phys_A,
             basis_spins[std::make_pair(new_left, new_right)].first[in_offset] = J;
             basis_spins[std::make_pair(new_left, new_right)].second.resize(num_cols(tmp));
             basis_spins[std::make_pair(new_left, new_right)].second[out_offset] = Jp;
+
+            //int ss1 = in_offset;
+            //int ss2 = out_offset;
+            //bool spin_in_1 = ( (ss1 == 2) || (ss1 == 1 && SymmGroup::spin(new_left) == 0 && new_left[2] != 0) );
+            //bool spin_out_1 = ( (ss2 == 2) || (ss2 == 1 && SymmGroup::spin(new_right) == 0 && new_right[2] != 0) );
+            //if (spin_in_1) assert(J==2);
+            //if (spin_out_1) assert(Jp==2);
+            //if (ss1 == 2) assert(J==2);
+            //if (ss2 == 2) assert(Jp==2);
         }
     }
 
@@ -330,6 +339,15 @@ void op_kron(Index<SymmGroup> const & phys_A,
     SpinDescriptor<symm_traits::SU2Tag> op_spin(k, j, jp);
     C = SiteOperator<Matrix2, SymmGroup>(blocks, basis_spins);
     C.spin() = op_spin;
+
+    //typedef typename SparseOperator<Matrix2, SymmGroup>::const_iterator block_iterator;
+    //for (int b = 0; b < C.n_blocks(); ++b) {
+    //    std::pair<block_iterator, block_iterator> blocks = C.get_sparse().block(b);
+    //    for( ; blocks.first != blocks.second; ++blocks.first)
+    //    {
+    //        maquis::cout << "B " << blocks.first->row << "," << blocks.first->col << ": " << blocks.first->coefficient << std::endl;
+    //    }
+    //}
 }
 
 

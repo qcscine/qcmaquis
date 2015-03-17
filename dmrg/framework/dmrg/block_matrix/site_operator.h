@@ -123,6 +123,15 @@ public:
         std::swap(x.spin_basis, y.spin_basis);
     }
 
+    //template <class Matrix_, class SymmGroup_>
+    //friend std::ostream& operator<<(std::ostream& os, SiteOperator<Matrix_, SymmGroup_> const & m);
+    template <class Matrix_, class SymmGroup_>
+    friend std::ostream& operator<<(typename boost::disable_if<symm_traits::HasSU2<SymmGroup_>, std::ostream&>::type os,
+                                    SiteOperator<Matrix_, SymmGroup_> const & m);
+    template <class Matrix_, class SymmGroup_>
+    friend std::ostream& operator<<(typename boost::enable_if<symm_traits::HasSU2<SymmGroup_>, std::ostream&>::type os,
+                                    SiteOperator<Matrix_, SymmGroup_> const & m);
+
     Matrix const & operator()(charge r, charge c) const
     {
         return bm_(r, c);
