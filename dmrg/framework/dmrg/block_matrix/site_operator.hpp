@@ -246,7 +246,7 @@ template<class Matrix, class SymmGroup>
 void SiteOperator<Matrix, SymmGroup>::clear()
 {
     bm_.clear();
-    spin.clear();
+    spin_.clear();
 }
 
 template<class Matrix, class SymmGroup>

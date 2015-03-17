@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
+ *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -50,7 +50,32 @@ namespace chem_detail {
             TwoU1PG::charge ret(0);
             ret[0] = parms["u1_total_charge1"];
             ret[1] = parms["u1_total_charge2"];
-            ret[2] = parms["irrep_charge"];
+            ret[2] = parms["irrep"];
+            return ret;
+        }
+    };
+
+    template <>
+    struct qn_helper<SU2U1>
+    {
+        TwoU1PG::charge total_qn(BaseParameters & parms)
+        {
+            TwoU1PG::charge ret(0);
+            ret[0] = parms["nelec"];
+            ret[1] = parms["spin"];
+            return ret;
+        }
+    };
+
+    template <>
+    struct qn_helper<SU2U1PG>
+    {
+        TwoU1PG::charge total_qn(BaseParameters & parms)
+        {
+            TwoU1PG::charge ret(0);
+            ret[0] = parms["nelec"];
+            ret[1] = parms["spin"];
+            ret[2] = parms["irrep"];
             return ret;
         }
     };
