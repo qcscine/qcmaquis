@@ -128,22 +128,11 @@ namespace SU2 {
 
                         //maquis::cout << "----\n" << W[w_block] << std::endl;
 
-                        //typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
-                        //std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
-                        //for( ; blocks.first != blocks.second; ++blocks.first)
-                        //{
-                        //    maquis::cout << blocks.first->row << "," << blocks.first->col << ": " << blocks.first->coefficient << std::endl;
-                        //}
-
                         typedef typename SparseOperator<Matrix, SymmGroup>::const_iterator block_iterator;
                         std::pair<block_iterator, block_iterator> blocks = W.get_sparse().block(w_block);
 
                         size_t ldim = T.basis().left_size(t_block);
                         for(size_t rr = 0; rr < r_size; ++rr) {
-
-                            //typedef typename Matrix::value_type value_type;
-                            //Matrix alpha1(phys_s1, phys_s2);
-                            //Matrix alpha2(phys_s1, phys_s2);
                             for( block_iterator it = blocks.first; it != blocks.second; ++it)
                             {
                                 std::size_t ss1 = it->row;
@@ -155,75 +144,12 @@ namespace SU2 {
                                 else if (rspin == 2) casenr = 1;
                                 else if (cspin == 2) casenr = 2;
 
-                                //bool spin_in_1 = ( (ss1 == 2) || (ss1 == 1 && SymmGroup::spin(phys_in) == 0 && phys_in[2] != 0) );
-                                //bool spin_out_1 = ( (ss2 == 2) || (ss2 == 1 && SymmGroup::spin(phys_out) == 0 && phys_out[2] != 0) );
-
-                                //    std::size_t casenr2 = 0;
-                                //    if (spin_in_1 && spin_out_1) casenr2 = 3;
-                                //    else if (spin_in_1) casenr2 = 1;
-                                //    else if (spin_out_1) casenr2 = 2;
-                                //    if (casenr != casenr2)
-                                //    {
-                                //        maquis::cout << W << std::endl;
-                                //        maquis::cout << wblock << std::endl;
-                                //        maquis::cout << "wblock: " << w_block << ", rspin, cspin" << rspin << "," << cspin
-                                //                     << "  in1, in2 " << spin_in_1 << "," << spin_out_1 <<"\n";
-                                //        exit(1);
-                                //    }
-
-                                //if (spin_in_1) assert(rspin==2);
-                                //else {if(rspin!=SymmGroup::spin(phys_in)) maquis::cout << "rspin " << rspin << " in " << SymmGroup::spin(phys_in) <<"\n"; }
-                                //if (spin_out_1) assert(cspin==2);
-                                //else {if(cspin!=SymmGroup::spin(phys_out)) maquis::cout << "rspin " << cspin << " in " << SymmGroup::spin(phys_out) <<"\n"; }
-                                //typename Matrix::value_type alfa_t1 = it->coefficient * couplings[casenr];
-                                //alpha1(ss1,ss2) = alfa_t1;
-                                //typename Matrix::value_type alfa_t2 = wblock(ss1, ss2) * couplings[casenr2];
-                                //if ( std::abs(alfa_t1-alfa_t2) > 1e-40 )
-                                //{
-                                //        maquis::cout << W << std::endl;
-                                //        maquis::cout << wblock << std::endl;
-                                //        maquis::cout << "wblock: " << w_block << ", rspin,cspin " << rspin << "," << cspin
-                                //                     << "  in1,in2 " << spin_in_1 << "," << spin_out_1 <<"\n";
-                                //        maquis::cout << "a1,a2 " << alfa_t1 << " " << alfa_t2 << std::endl;
-                                //        exit(1);
-                                //}
-
                                 typename Matrix::value_type alfa_t = it->coefficient * couplings[casenr];
                                 maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size + rr),
                                                                     &iblock(0, in_right_offset + ss1*r_size + rr) + ldim, // bugbug
                                                                     &oblock(out_left_offset + ss2*ldim, rr),
                                                                     alfa_t);
                             }
-
-                            //for(size_t ss1 = 0; ss1 < phys_s1; ++ss1) {
-                            //    bool spin_in_1 = ( (ss1 == 2) || (ss1 == 1 && SymmGroup::spin(phys_in) == 0 && phys_in[2] != 0) );
-                            //    for(size_t ss2 = 0; ss2 < phys_s2; ++ss2) {
-                            //        bool spin_out_1 = ( (ss2 == 2) || (ss2 == 1 && SymmGroup::spin(phys_out) == 0 && phys_out[2] != 0) );
-                            //        int casenr = 0;
-                            //        if (spin_in_1 && spin_out_1) casenr = 3;
-                            //        else if (spin_in_1) casenr = 1;
-                            //        else if (spin_out_1) casenr = 2;
-
-                            //        typename Matrix::value_type alfa_t = wblock(ss1, ss2) * couplings[casenr];
-                            //        alpha2(ss1, ss2) = alfa_t;
-                            //        maquis::dmrg::detail::iterator_axpy(&iblock(0, in_right_offset + ss1*r_size + rr),
-                            //                                            &iblock(0, in_right_offset + ss1*r_size + rr) + ldim, // bugbug
-                            //                                            &oblock(out_left_offset + ss2*ldim, rr),
-                            //                                            alfa_t);
-                            //    }
-                            //}
-
-            
-                            //for(size_t ss1 = 0; ss1 < phys_s1; ++ss1)
-                            //for(size_t ss2 = 0; ss2 < phys_s2; ++ss2)
-                            //    if ( std::abs(alpha1(ss1,ss2)-alpha2(ss1,ss2)) > 1e-40 )
-                            //    {
-                            //        maquis::cout << W << "wblock " << w_block << std::endl;
-                            //        maquis::cout << "ss1,ss2 " << ss1 << "," << ss2 << std::endl;
-                            //        maquis::cout << alpha1(ss1,ss2) << " vs. " << alpha2(ss1,ss2) << std::endl;
-                            //        exit(1);
-                            //    }
-
                         }
 
                     } // wblock

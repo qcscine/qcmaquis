@@ -76,7 +76,6 @@ namespace SiteOperator_detail
 {
 
     template <class Matrix, class SymmGroup>
-    //typename boost::disable_if<symm_traits::HasSU2<SymmGroup>, bool>::type
     typename boost::disable_if<symm_traits::HasSU2<SymmGroup> >::type
     extend_spin_basis(typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type & spin_basis,
                       typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type const & rhs)
@@ -84,29 +83,16 @@ namespace SiteOperator_detail
     } 
 
     template <class Matrix, class SymmGroup>
-    //typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, bool>::type
     typename boost::enable_if<symm_traits::HasSU2<SymmGroup> >::type
     extend_spin_basis(typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type & spin_basis,
                       typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type const & rhs)
     {
-        //bool ret = false;
         for (typename SparseOperator<Matrix, SymmGroup, void>::spin_basis_type::const_iterator it = rhs.begin(); it != rhs.end(); ++it)
         {
             std::vector<int>        & sbr = spin_basis[it->first].first;
             std::vector<int>        & sbl = spin_basis[it->first].second;
             std::vector<int> const & rhsr = it->second.first;
             std::vector<int> const & rhsl = it->second.second;
-
-            //if(spin_basis.count(it->first) != 0)
-            //    if(spin_basis[it->first].first != it->second.first || spin_basis[it->first].second != it->second.second)
-            //    {
-            //        maquis::cout << it->first.first << it->first.second << std::endl;
-            //        std::copy(sbr.begin(), sbr.end(), std::ostream_iterator<int>(std::cout, " ")); maquis::cout << std::endl; 
-            //        std::copy(sbl.begin(), sbl.end(), std::ostream_iterator<int>(std::cout, " ")); maquis::cout << std::endl;
-            //        std::copy(rhsr.begin(), rhsr.end(), std::ostream_iterator<int>(std::cout, " ")); maquis::cout << std::endl;
-            //        std::copy(rhsl.begin(), rhsl.end(), std::ostream_iterator<int>(std::cout, " ")); maquis::cout << std::endl;
-            //        ret = true;
-            //    }
 
             sbr.resize(std::max(sbr.size(), rhsr.size()));
             sbl.resize(std::max(sbl.size(), rhsl.size()));
@@ -119,7 +105,6 @@ namespace SiteOperator_detail
                 if(rhsl[i] != 0)
                     sbl[i] = rhsl[i];
         }
-        //return ret; 
     } 
 }
 
@@ -127,13 +112,6 @@ template<class Matrix, class SymmGroup>
 SiteOperator<Matrix, SymmGroup> & SiteOperator<Matrix, SymmGroup>::operator+=(SiteOperator const & rhs)
 {
     assert (spin_.get() == rhs.spin().get() || n_blocks() == 0 || rhs.n_blocks() == 0);
-
-    //bool err = SiteOperator_detail::extend_spin_basis<Matrix, SymmGroup>(spin_basis, rhs.spin_basis);
-    //if (err)
-    //{
-    //    maquis::cout << "Added\n" << *this << "and\n" << rhs << std::endl;
-    //    exit(1);
-    //}
 
     if (n_blocks() == 0) spin_ = rhs.spin();
     bm_ += rhs.bm_;
