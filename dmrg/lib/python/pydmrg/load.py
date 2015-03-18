@@ -42,12 +42,10 @@ def ReadMeasurements(ar, measurements, path, props):
 def ReadDMRGSweeps(ar, measurements, props, path='/simulation', selector=None):
     ret = []
     for sweep_name in ar.list_children(path):
-        if sweep_name == 'iteration':  ## new iterarion format
+        if sweep_name == 'iteration':  ## new iteration format
             # add sweeps in order
             sweeps = sorted(map(int, ar.list_children(path+'/iteration')))
-            #for sweep_num in ar.list_children(path+'/iteration'):
             for sweep in sweeps:
-                #sweep = int(sweep_num)
                 sweep_num = str(sweep)
                 ret_sweep = []
                 p_sweep = path+'/iteration/'+sweep_num
