@@ -32,7 +32,7 @@
 # Usage: trunc.py h5-result-file
 
 import pyalps
-import h5props
+import pydmrg
 import numpy as np
 import sys
 import numpy as np
@@ -43,17 +43,16 @@ import plotutil
 
 def plot(fname):
 
-    ret = h5props.LoadDMRGSweeps([fname],['TruncatedWeight'])
+    ret = pydmrg.LoadDMRGSweeps([fname],['TruncatedWeight'])
 
     sweeps = []
     for sw in ret[0]:
         sweeps += list(sw[0].y)
-        #print "number of values in sweep", len(sw[0].y)
 
     print "total number of values in sweep", len(sweeps)
 
     # Get length of 1 sweep
-    props = h5props.loadProperties(fname)
+    props = ret[0][0][0].props
     L = props['L']
     swl = 2*(L-1)
 

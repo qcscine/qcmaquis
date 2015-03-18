@@ -34,8 +34,6 @@
 
 
 import pyalps
-import pyalps.hdf5 as h5
-#import h5props as h5p
 import pydmrg
 import sys 
 import numpy as np
@@ -44,24 +42,17 @@ import pyalps.plot
 import plotutil
 
 def plot(fname):
-    ret = []
-    #try:
-    #    ret = pydmrg.LoadDMRGSweeps([fname],['Energy'])
-    #except:
-    #    print 'Could not load energy'
-    #    sys.exit(1)
 
     ret = pydmrg.LoadDMRGSweeps([fname],['Energy'])
 
     sweeps = []
     for sw in ret[0]:
         sweeps += list(sw[0].y)
-        #print "number of values in sweep", len(sw[0].y)
 
     print "total number of sweep values", len(sweeps)
     print sweeps
-    #props = h5p.loadProperties(fname)
-    L = ret[0][0][0].props['L']
+    props = ret[0][0][0].props
+    L = props['L']
     print "L", L
     swl = 2*(L-1)
     xdata = np.arange(len(sweeps))/swl
