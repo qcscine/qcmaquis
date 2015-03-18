@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -56,6 +56,7 @@ public:
     
     T coeff;
     bool is_fermionic;
+    tag_type full_identity;
     term_descriptor() : coeff(1.), is_fermionic(false) { }
     
     pos_type position(size_type i) const     { return boost::get<0>((*this)[i]); }

@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -47,6 +46,9 @@ namespace ambient {
         scope(const_iterator first, const_iterator last);
         scope(const_iterator first, size_t size);
         container provision;
+    private:
+        friend class backbone;
+        scope(size_t np);
     };
 
 }

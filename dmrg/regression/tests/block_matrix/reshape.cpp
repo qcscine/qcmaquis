@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -67,7 +67,7 @@ std::vector<double> density(MPS<Matrix, SymmGroup> const & mps, block_matrix<Mat
     
     for (int p=0; p<mps.length(); p++) {
         generate_mpo::MPOMaker<Matrix, SymmGroup> mpom(mps.length(), ident);
-        generate_mpo::Operator_Term<Matrix, SymmGroup> term;
+        generate_mpo::OperatorTerm<Matrix, SymmGroup> term;
         term.operators.push_back( std::make_pair(p, dens_op) );
         term.fill_operator = ident;
         mpom.add_term(term);

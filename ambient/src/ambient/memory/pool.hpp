@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -30,8 +29,9 @@
 #define AMBIENT_MEMORY_POOL
 
 #include <sys/mman.h>
-#include "ambient/utils/mutex.hpp"
+#include "ambient/utils/threads/mutex.hpp"
 #include "ambient/memory/factory.hpp"
+#include "ambient/memory/types.h"
 #include "ambient/memory/region.hpp"
 #include "ambient/memory/data_bulk.h"
 #include "ambient/memory/instr_bulk.h"
@@ -47,10 +47,10 @@ namespace ambient { namespace memory {
     };
 
     struct fixed {
-        // note: singleton_pool contains implicit mutex (critical for gcc)
-        template<size_t S> static void* malloc(){ return std::malloc(S);   } // boost::singleton_pool<fixed,S>::malloc(); 
-        template<size_t S> static void* calloc(){ return std::calloc(1,S); } // boost::singleton_pool<fixed,S>::malloc(); 
-        template<size_t S> static void free(void* ptr){ std::free(ptr);    } // boost::singleton_pool<fixed,S>::free(ptr);
+        // boost::singleton_pool<fixed,S> can be used instead (implicit mutex)
+        template<size_t S> static void* malloc(){ return std::malloc(S);   }
+        template<size_t S> static void* calloc(){ return std::calloc(1,S); }
+        template<size_t S> static void free(void* ptr){ std::free(ptr);    }
     };
 
 } }
@@ -66,12 +66,9 @@ namespace ambient { namespace pool {
         descriptor(size_t e, region_t r = region_t::standard) : extent(e), region(r), persistency(1), crefs(1) {}
 
         void protect(){
-            assert(region != region_t::delegated);
             if(!(persistency++)) region = region_t::standard;
         }
         void weaken(){
-            assert(region != region_t::bulk);
-            assert(region != region_t::delegated);
             if(!(--persistency)) region = region_t::bulk;
         }
         void reuse(descriptor& d){
@@ -110,12 +107,13 @@ namespace ambient { namespace pool {
     static void* malloc(descriptor& d){
         assert(d.region != region_t::delegated);
         if(d.region == region_t::bulk){
-            //if(!data_bulk::open()){ // if(d.extent > AMBIENT_IB*AMBIENT_IB*16) <-- handle it separately
-                d.region = region_t::standard;
-                return malloc<standard>(d.extent);
-            //}
-            //return malloc<data_bulk>(d.extent); 
-        } else return malloc<standard>(d.extent);
+            #ifdef AMBIENT_USE_DATA_BULK
+            void* ptr = data_bulk::soft_malloc(d.extent);
+            if(ptr) return ptr;
+            #endif
+            d.region = region_t::standard;
+        }
+        return malloc<standard>(d.extent);
     }
     static void free(void* ptr, descriptor& d){ 
         if(ptr == NULL || d.region == region_t::delegated) return;

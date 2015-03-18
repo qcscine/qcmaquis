@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -228,6 +228,7 @@ void test_none()
 {
     typedef TrivialGroup SymmGroup;
     typedef OPTable<matrix, SymmGroup>::tag_type tag_type;
+    typedef operator_selector<matrix, SymmGroup>::type op_t;
     maquis::cout << "TESTING NONE SYMMETRY" << std::endl;
     
     SymmGroup::charge C = SymmGroup::IdentityCharge;
@@ -235,9 +236,9 @@ void test_none()
     Index<SymmGroup> phys;
     phys.insert(std::make_pair(C, 2));
     
-    block_matrix<matrix, SymmGroup> op1, op2, op3;
+    op_t op1, op2, op3;
     
-    op1 = identity_matrix<matrix>(phys);
+    op1 = identity_matrix<op_t>(phys);
     std::cout << "Operator 1:" << std::endl << op1;
     
     {
@@ -265,15 +266,16 @@ void test_u1()
 {
     typedef U1 SymmGroup;
     typedef OPTable<matrix, SymmGroup>::tag_type tag_type;
+    typedef operator_selector<matrix, SymmGroup>::type op_t;
     maquis::cout << "TESTING U1 SYMMETRY" << std::endl;
     
     Index<SymmGroup> phys;
     phys.insert(std::make_pair(0, 1));
     phys.insert(std::make_pair(1, 2));
     
-    block_matrix<matrix, SymmGroup> op1, op2, op3;
+    op_t op1, op2, op3;
     
-    op1 = identity_matrix<matrix>(phys);
+    op1 = identity_matrix<op_t>(phys);
     std::cout << "Operator 1:" << std::endl << op1;
     
     {

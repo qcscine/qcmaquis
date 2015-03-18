@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -30,11 +29,6 @@
 #define AMBIENT_UTILS_MATH
 
 #define __a_ceil(x) (((double)x-(int)x) == 0 ? (int)x : (int)x+1)
-
-inline size_t __a_mod_modern(size_t size, size_t tile){
-    size_t mask[2] = {(size & (tile-1)), tile}; 
-    return mask[!mask[0]];
-}
 
 inline size_t __a_mod(size_t size, size_t tile){
     size_t m = size % tile;

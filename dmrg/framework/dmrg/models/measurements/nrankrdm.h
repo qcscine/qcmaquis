@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
  *               2014-2014    Sebastian Keller <sebkelle@phys.ethz.ch>
@@ -44,7 +44,8 @@ namespace measurements {
     template <class Matrix, class SymmGroup>
     class NRankRDM : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
-        typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
+        typedef typename base::op_t op_t;
+        typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
         typedef Lattice::pos_t pos_t;
         typedef std::vector<pos_t> positions_type;

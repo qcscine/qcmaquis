@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 
 ## locations ##
 SCRIPT="$BENCHMARK_SCRIPTS_DIR/common.sh"

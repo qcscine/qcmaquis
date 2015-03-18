@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -31,14 +31,12 @@
 #include "dmrg/models/lattice.h"
 #include "dmrg/models/model.h"
 
-inline Lattice_ptr cont_lattice_factory (BaseParameters &);
-
 template<class Matrix, class SymmGroup>
 struct cont_model_factory {
-    static typename model_traits<Matrix, SymmGroup>::model_ptr
-    parse (Lattice const &, BaseParameters &);
+    static boost::shared_ptr<model_impl<Matrix, SymmGroup> >
+    parse(Lattice const &, BaseParameters &);
 };
-    
-#include "factory_lat.hpp"
+
+#include "factory_lattice.hpp"
 
 #endif

@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -51,25 +51,21 @@ namespace tag_detail {
         }
     };
 
-    template <class Matrix, class SymmGroup>
-    void remove_empty_blocks(block_matrix<Matrix, SymmGroup> & op)
+    template <class BlockMatrix>
+    void remove_empty_blocks(BlockMatrix & op)
     {
-        #ifdef USE_AMBIENT
         {
-            select_proc(ambient::actor_t::common);
-            for(int i = 0; i < op.n_blocks(); ++i) ambient::migrate(op[i]);
-            ambient::sync();
+            parallel::guard::serial guard;
+            storage::migrate(op);
         }
-        #endif
 
-        for (typename Matrix::size_type b=0; b < op.n_blocks(); ++b)
+        for (typename BlockMatrix::size_type b=0; b < op.n_blocks(); ++b)
         {
             bool only_zero = true;
-            const Matrix& m = op[b];
-            for (int i = 0; i < num_rows(m); i++)
-               for(int j = 0; j < num_cols(m); j++)
+            for (int i = 0; i < num_rows(op[b]); i++)
+               for(int j = 0; j < num_cols(op[b]); j++)
             {
-                if (alps::numeric::is_nonzero(m(i,j))) {
+                if (alps::numeric::is_nonzero(op[b](i,j))) {
                     only_zero = false;
                     break;
                 }
@@ -81,46 +77,6 @@ namespace tag_detail {
         }
     }
 
-    template <class Matrix, class SymmGroup>
-    bool is_uniform(block_matrix<Matrix, SymmGroup> const& op)
-    {
-        if (op.n_blocks() == 0)
-            return true;
-
-        typename Matrix::value_type invscale;
-        #ifdef USE_AMBIENT
-        {
-            select_proc(ambient::actor_t::common);
-            for(int i = 0; i < op.n_blocks(); ++i) ambient::migrate(op[i]);
-            ambient::sync();
-        }
-        #endif
-        
-        // determine scale of matrices
-        const Matrix& m = op[0];
-        for (int i = 0; i < num_rows(m); i++)
-           for(int j = 0; j < num_cols(m); j++)
-            if (std::abs(m(i,j)) > 1.e-20) {
-                invscale = 1./m(i,j);
-                break;
-            }
-
-        for (typename Matrix::size_type b=0; b < op.n_blocks(); ++b)
-        {
-            const Matrix& m = op[b];
-            for (int i = 0; i < num_rows(m); i++)
-               for(int j = 0; j < num_cols(m); j++)
-            {
-                typename maquis::traits::real_type<typename Matrix::value_type>::type normalized = std::abs(m(i,j) * invscale);
-                // if not 1 and not 0
-                if (std::abs(normalized-1.0) > 1e-15 && normalized > 1e-15)
-                    return false;
-            }
-        }
-
-        return true;
-    }
-
     template <class T>
     bool num_check(T x) {
         if (alps::numeric::isnan(x) || alps::numeric::isinf(x))
@@ -130,20 +86,18 @@ namespace tag_detail {
 
     inline bool num_check(std::complex<double> x) { return true; }
 
-    template <class Matrix, class SymmGroup>
-    std::pair<bool, typename Matrix::value_type>
-    equal(block_matrix<Matrix, SymmGroup> const& reference,
-          block_matrix<Matrix, SymmGroup> const& sample)
+    template <class BlockMatrix>
+    std::pair<bool, typename BlockMatrix::matrix_type::value_type>
+    equal(BlockMatrix const& reference,
+          BlockMatrix const& sample)
     {
-        #ifdef USE_AMBIENT
+        typedef typename BlockMatrix::matrix_type Matrix;
         {
-            select_proc(ambient::actor_t::common);
-            for(int i = 0; i < reference.n_blocks(); ++i) ambient::migrate(reference[i]);
-            for(int i = 0; i < sample.n_blocks(); ++i) ambient::migrate(sample[i]);
-            ambient::sync();
+            parallel::guard::serial guard;
+            storage::migrate(reference);
+            storage::migrate(sample);
         }
-        #endif
-        if (reference.left_basis() != sample.left_basis() || reference.right_basis() != sample.right_basis())
+        if (reference.basis() != sample.basis())
             return std::make_pair(false, 0.);
 
         if (sample.n_blocks() == 0)

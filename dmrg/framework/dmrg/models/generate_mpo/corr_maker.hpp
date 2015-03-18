@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -77,7 +77,7 @@ namespace generate_mpo
         typedef typename base::block block; 
         typedef Lattice::pos_t pos_t;
         typedef tag_detail::tag_type tag_type;
-        typedef block_matrix<Matrix, SymmGroup> op_t;
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         typedef boost::tuple<size_t, size_t, string> tag;
         
     public:
@@ -234,7 +234,7 @@ namespace generate_mpo
         typedef typename base::block block; 
         typedef tag_detail::tag_type tag_type;
         typedef Lattice::pos_t pos_t;
-        typedef block_matrix<Matrix, SymmGroup> op_t;
+        typedef typename OPTable<Matrix,SymmGroup>::op_t op_t;
         typedef boost::tuple<size_t, size_t, string> tag;
 
     public:

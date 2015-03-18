@@ -1,6 +1,6 @@
 #include "ambient/ambient.hpp"
 #include "ambient/utils/math.hpp"
-#include "ambient/utils/timings.hpp"
+#include "utils/timings.hpp"
 #define IB 256
 
 template<typename T> class stencil;
@@ -13,14 +13,15 @@ namespace detail {
     // u[i,j]' = u[i,j] + dt*D*(u(i,j+1) + u(i,j-1) + u(i+1,j) + u(i-1,j) - 4*u(i,j)) / (dr * dr)
 
     template<typename T>
-    void partial_init_value(unbound< block<T> >& a, T& value, 
+    void partial_init_value(volatile block<T>& a, T& value, 
                             double& posi, double& posj, 
                             double& dr, double& bound)
     {
-        size_t m = get_dim(a).y;
-        size_t n = get_dim(a).x;
-        T* a_ = &a(0,0); 
-        memset(a_, 0, ambient::extent(a)); 
+        block<T>& av = const_cast<block<T>&>(a);
+        size_t m = get_dim(av).y;
+        size_t n = get_dim(av).x;
+        T* a_ = av.data(); 
+        memset(a_, 0, ambient::extent(av)); 
         for(size_t i = 0; i < m; ++i)
         for(size_t j = 0; j < n; ++j){
            if(std::fabs(posi+i*dr) < bound && 
@@ -35,11 +36,11 @@ namespace detail {
                                   const block<T>& bottom,
                                   double*& res)
     {
-        const T* a_ = &a(0,0);
-        const T* l  = &left(0,0);
-        const T* r  = &right(0,0);
-        const T* t  = &top(0,0);
-        const T* b  = &bottom(0,0);
+        const T* a_ = a.data();
+        const T* l  = left.data();
+        const T* r  = right.data();
+        const T* t  = top.data();
+        const T* b  = bottom.data();
 
         double summ = 0.;
         size_t n = get_dim(a).x;
@@ -63,11 +64,11 @@ namespace detail {
                                           double& dr, double*& res)
     {
 
-        const T* a_ = &a(0,0);
-        const T* l  = &left(0,0);
-        const T* r  = &right(0,0);
-        const T* t  = &top(0,0);
-        const T* b  = &bottom(0,0);
+        const T* a_ = a.data();
+        const T* l  = left.data();
+        const T* r  = right.data();
+        const T* t  = top.data();
+        const T* b  = bottom.data();
 
         double summ = 0.;
         size_t n = get_dim(a).x;
@@ -87,22 +88,22 @@ namespace detail {
         *res = summ;
     }
     template<typename T>
-    void evolve(unbound< stencil<T> >& s_, const stencil<T>& s,
-                                           const border<T>& top, 
-                                           const border<T>& right,
-                                           const border<T>& bottom,
-                                           const border<T>& left, 
-                                           double& fac)
+    void evolve(volatile stencil<T>& s_, const stencil<T>& s,
+                                         const border<T>& top, 
+                                         const border<T>& right,
+                                         const border<T>& bottom,
+                                         const border<T>& left, 
+                                         double& fac)
     {
         size_t ind;
         size_t m = get_dim(s).y;
         size_t n = get_dim(s).x;
-        T* u_ = &s_(0,0);
-        const T* u  = &s(0,0);
-        const T* t  = &top(0,0);
-        const T* r  = &right(0,0);
-        const T* b  = &bottom(0,0);
-        const T* l  = &left(0,0);
+        T* u_ = s_.data();
+        const T* u  = s.data();
+        const T* t  = top.data();
+        const T* r  = right.data();
+        const T* b  = bottom.data();
+        const T* l  = left.data();
 
         ind = (n-1)*m;     u_[ind] = u[ind] + fac*(u[ind+1] + t[n]     + r[0]     + u[ind-m] - 4*u[ind]);
         ind = m-1;         u_[ind] = u[ind] + fac*(b[1]     + u[ind-1] + u[ind+m] + l[ind]   - 4*u[ind]);
@@ -131,50 +132,50 @@ namespace detail {
     }
 
     template<typename T>
-    void contract_border_top(unbound< border<T> >& top_, const border<T>& left,
-                                                         const border<T>& top,
-                                                         const border<T>& right,
-                                                         const stencil<T>& s,
-                                                         const border<T>& ln_top,
-                                                         const border<T>& tn_bottom,
-                                                         const border<T>& rn_top,
-                                                         double& fac)
+    void contract_border_top(volatile border<T>& top_, const border<T>& left,
+                                                       const border<T>& top,
+                                                       const border<T>& right,
+                                                       const stencil<T>& s,
+                                                       const border<T>& ln_top,
+                                                       const border<T>& tn_bottom,
+                                                       const border<T>& rn_top,
+                                                       double& fac)
     {
-        size_t n = get_dim(top_).x-1;
+        size_t n = get_dim(const_cast<border<T>&>(top_)).x-1;
         size_t m = get_dim(s).y;
-        T* t_ = &top_(0,0);
-        const T* t  = &top(0,0);
-        const T* l  = &left(0,0);
-        const T* r  = &right(0,0);
-        const T* x  = &s(0,0);
-        const T* lt = &ln_top(0,0);
-        const T* tb = &tn_bottom(0,0);
-        const T* rt = &rn_top(0,0);
+        T* t_ = top_.data();
+        const T* t  = top.data();
+        const T* l  = left.data();
+        const T* r  = right.data();
+        const T* x  = s.data();
+        const T* lt = ln_top.data();
+        const T* tb = tn_bottom.data();
+        const T* rt = rn_top.data();
                                    t_[0] = t[0] + fac*(t[1] + lt[get_dim(ln_top).x-1] + l[0] + tb[0] - 4*t[0]);
         for(int j = 1; j < n; j++) t_[j] = t[j] + fac*(t[j+1] + t[j-1] + x[(j-1)*m] + tb[j] - 4*t[j]);
                                    t_[n] = t[n] + fac*(rt[0] + t[n-1] + r[0] + tb[n] - 4*t[n]);
     }
 
     template<typename T>
-    void contract_border_bottom(unbound< border<T> >& bottom_, const border<T>& left, 
-                                                               const border<T>& bottom, 
-                                                               const border<T>& right,
-                                                               const stencil<T>& s,
-                                                               const border<T>& ln_bottom, 
-                                                               const border<T>& bn_top,
-                                                               const border<T>& rn_bottom,
-                                                               double& fac)
+    void contract_border_bottom(volatile border<T>& bottom_, const border<T>& left, 
+                                                             const border<T>& bottom, 
+                                                             const border<T>& right,
+                                                             const stencil<T>& s,
+                                                             const border<T>& ln_bottom, 
+                                                             const border<T>& bn_top,
+                                                             const border<T>& rn_bottom,
+                                                             double& fac)
     {
-        size_t n = get_dim(bottom_).x-1;
+        size_t n = get_dim(const_cast<border<T>&>(bottom_)).x-1;
         size_t m = get_dim(s).y;
-        T* b_ = &bottom_(0,0);
-        const T* b  = &bottom(0,0);
-        const T* l  = &left(0,0);
-        const T* r  = &right(0,0);
-        const T* x  = &s(0,0);
-        const T* lb = &ln_bottom(0,0);
-        const T* bt = &bn_top(0,0);
-        const T* rb = &rn_bottom(0,0);
+        T* b_ = bottom_.data();
+        const T* b  = bottom.data();
+        const T* l  = left.data();
+        const T* r  = right.data();
+        const T* x  = s.data();
+        const T* lb = ln_bottom.data();
+        const T* bt = bn_top.data();
+        const T* rb = rn_bottom.data();
 
                                    b_[0] = b[0] + fac*(b[1] + lb[get_dim(ln_bottom).x-1] + bt[0] + l[m-1] - 4*b[0]);
         for(int j = 1; j < n; j++) b_[j] = b[j] + fac*(b[j+1] + b[j-1] + bt[j] + x[j*m-1] - 4*b[j]);
@@ -182,20 +183,20 @@ namespace detail {
     }
 
     template<typename T>
-    void contract_border_left(unbound< border<T> >& left_, const border<T>& top, 
-                                                           const border<T>& left, 
-                                                           const border<T>& bottom,
-                                                           const stencil<T>& s,
-                                                           const border<T>& ln_right,
-                                                           double& fac)
+    void contract_border_left(volatile border<T>& left_, const border<T>& top, 
+                                                         const border<T>& left, 
+                                                         const border<T>& bottom,
+                                                         const stencil<T>& s,
+                                                         const border<T>& ln_right,
+                                                         double& fac)
     {
-        size_t m = get_dim(left_).y-1;
-        T* l_ = &left_(0,0);
-        const T* l  = &left(0,0);
-        const T* t  = &top(0,0);
-        const T* b  = &bottom(0,0);
-        const T* x  = &s(0,0);
-        const T* lr = &ln_right(0,0);
+        size_t m = get_dim(const_cast<border<T>&>(left_)).y-1;
+        T* l_ = left_.data();
+        const T* l  = left.data();
+        const T* t  = top.data();
+        const T* b  = bottom.data();
+        const T* x  = s.data();
+        const T* lr = ln_right.data();
 
                                    l_[0] = l[0] + fac*(lr[0] + x[0] + t[0] + l[1] - 4*l[0]);
         for(int i = 1; i < m; i++) l_[i] = l[i] + fac*(lr[i] + x[i] + l[i-1] + l[i+1] - 4*l[i]);
@@ -203,21 +204,21 @@ namespace detail {
     }
 
     template<typename T>
-    void contract_border_right(unbound< border<T> >& right_, const border<T>& top,
-                                                             const border<T>& right,
-                                                             const border<T>& bottom,
-                                                             const stencil<T>&  s,
-                                                             const border<T>& rn_left,
-                                                             double& fac)
+    void contract_border_right(volatile border<T>& right_, const border<T>& top,
+                                                           const border<T>& right,
+                                                           const border<T>& bottom,
+                                                           const stencil<T>&  s,
+                                                           const border<T>& rn_left,
+                                                           double& fac)
     {
-        size_t m = get_dim(right_).y-1;
+        size_t m = get_dim(const_cast<border<T>&>(right_)).y-1;
         size_t n = get_dim(s).x;
-        T* r_ = &right_(0,0);
-        const T* r  = &right(0,0);
-        const T* t  = &top(0,0);
-        const T* b  = &bottom(0,0);
-        const T* x  = &s(0,0) + (m+1)*(n-1);
-        const T* rl = &rn_left(0,0);
+        T* r_ = right_.data();
+        const T* r  = right.data();
+        const T* t  = top.data();
+        const T* b  = bottom.data();
+        const T* x  = s.data() + (m+1)*(n-1);
+        const T* rl = rn_left.data();
 
                                    r_[0] = r[0] + fac*(x[0] + rl[0] + t[n+1] + r[1] - 4*r[0]);
         for(int i = 1; i < m; i++) r_[i] = r[i] + fac*(x[i] + rl[i] + r[i-1] + r[i+1] - 4*r[i]);
@@ -226,14 +227,14 @@ namespace detail {
 
 }
 
-AMBIENT_EXPORT(detail::partial_init_value, partial_init_value)
-AMBIENT_EXPORT(detail::reduce, reduce)
-AMBIENT_EXPORT(detail::reduce_moment, reduce_moment)
-AMBIENT_EXPORT(detail::evolve, evolve)
-AMBIENT_EXPORT(detail::contract_border_top, contract_border_top)
-AMBIENT_EXPORT(detail::contract_border_bottom, contract_border_bottom)
-AMBIENT_EXPORT(detail::contract_border_left, contract_border_left)
-AMBIENT_EXPORT(detail::contract_border_right, contract_border_right)
+AMBIENT_EXPORT_TEMPLATE(detail::partial_init_value, partial_init_value)
+AMBIENT_EXPORT_TEMPLATE(detail::reduce, reduce)
+AMBIENT_EXPORT_TEMPLATE(detail::reduce_moment, reduce_moment)
+AMBIENT_EXPORT_TEMPLATE(detail::evolve, evolve)
+AMBIENT_EXPORT_TEMPLATE(detail::contract_border_top, contract_border_top)
+AMBIENT_EXPORT_TEMPLATE(detail::contract_border_bottom, contract_border_bottom)
+AMBIENT_EXPORT_TEMPLATE(detail::contract_border_left, contract_border_left)
+AMBIENT_EXPORT_TEMPLATE(detail::contract_border_right, contract_border_right)
 
 template<typename T>
 void partial_init(ambient::block<T>& b, T value, double posi, double posj, double dr, double bound){
@@ -459,7 +460,7 @@ int main(int argc, char* argv[]){
     double rmax = 1;
     double rmin = -1;
     size_t N = 1 << std::stoul(argv[1]);
-    ambient::cout << "Domain: " << N << "\n";
+    std::cout << "Domain: " << N << "\n";
     size_t max_steps = 40;
     Diffusion2D task(D, rmax, rmin, N);
 
@@ -470,8 +471,8 @@ int main(int argc, char* argv[]){
     time.end();
     {
         ambient::actor select(ambient::scope::begin());
-        ambient::cout << "getting results... ";
-        ambient::cout << task.get_size() << '\t' << task.get_moment() << std::endl;
+        std::cout << "getting results... ";
+        std::cout << task.get_size() << '\t' << task.get_moment() << std::endl;
     }
     return 0;
 }

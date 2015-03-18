@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -115,22 +115,22 @@ std::vector<std::vector<term_descriptor<T> > > separate_hamil_terms(std::vector<
 }
 
 
-template <class Matrix, class SymmGroup>
-block_matrix<Matrix, SymmGroup> term2block(typename Matrix::value_type const& scale,
-                                           block_matrix<Matrix, SymmGroup> const & op1, Index<SymmGroup> const & phys1_i,
-                                           block_matrix<Matrix, SymmGroup> const & op2, Index<SymmGroup> const & phys2_i)
+template <class BlockMatrix, class SymmGroup>
+BlockMatrix term2block(typename BlockMatrix::value_type const& scale,
+                       BlockMatrix const & op1, Index<SymmGroup> const & phys1_i,
+                       BlockMatrix const & op2, Index<SymmGroup> const & phys2_i)
 {
-    block_matrix<Matrix, SymmGroup> bond_op;
+    BlockMatrix bond_op;
     op_kron(phys1_i, phys2_i, op1, op2, bond_op);
     bond_op *= scale;
     return bond_op;
 }
 
 template <class Matrix, class SymmGroup>
-std::vector<block_matrix<Matrix, SymmGroup> > hamil_to_blocks(Lattice const& lat, Model<Matrix, SymmGroup> const& model)
+std::vector<typename operator_selector<Matrix, SymmGroup>::type> hamil_to_blocks(Lattice const& lat, Model<Matrix, SymmGroup> const& model)
 {
     std::size_t L = lat.size();
-    std::vector<block_matrix<Matrix, SymmGroup> > ret_blocks(L-1);
+    std::vector<typename operator_selector<Matrix, SymmGroup>::type> ret_blocks(L-1);
     
     typename Model<Matrix, SymmGroup>::table_ptr tag_handler = model.operators_table();
     
@@ -169,7 +169,7 @@ std::vector<block_matrix<Matrix, SymmGroup> > hamil_to_blocks(Lattice const& lat
 
 template <class Matrix, class SymmGroup>
 class exp_mpo_maker {
-    typedef block_matrix<Matrix, SymmGroup> op_t;
+    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
     
     typedef term_descriptor<typename Matrix::value_type> term_t;
     typedef OPTable<Matrix, SymmGroup> op_table_t;
@@ -271,36 +271,39 @@ private:
     void exp_and_split(op_t const& bond_op, typename Matrix::value_type const & alpha,
                        std::vector<op_t> & left_ops, std::vector<op_t> &  right_ops) const
     {
-        op_t bond_exp;
-        bond_exp = op_exp_hermitian(phys1*phys2, bond_op, alpha);
+        block_matrix<Matrix, SymmGroup> bond_exp;
+        bond_exp = op_exp_hermitian<block_matrix<Matrix, SymmGroup> >(phys1*phys2, bond_op, alpha);
         bond_exp = reshape_2site_op(phys1, phys2, bond_exp);
         typedef typename alps::numeric::associated_real_diagonal_matrix<Matrix>::type diag_matrix;
         block_matrix<Matrix, SymmGroup> U, V, left, right;
         block_matrix<diag_matrix, SymmGroup> S, Ssqrt;
+        //op_t U, V, left, right;
+        //typename operator_selector<diag_matrix, SymmGroup>::type S, Ssqrt;
         svd(bond_exp, U, V, S);
         Ssqrt = sqrt(S);
         gemm(U, Ssqrt, left);
         gemm(Ssqrt, V, right);
         
 #ifdef USE_AMBIENT
-        select_proc(ambient::actor_t::common);
-        for(std::size_t k = 0; k < S.n_blocks(); ++k){
-            ambient::numeric::merge(S[k]);
-            ambient::numeric::touch(S[k][0]);
+        {
+            parallel::guard::serial guard;
+            for(std::size_t k = 0; k < S.n_blocks(); ++k){
+                ambient::numeric::merge(S[k]);
+                ambient::numeric::touch(S[k][0]);
+            }
         }
-        ambient::sync();
 #endif
         for(std::size_t k = 0; k < S.n_blocks(); ++k){
             int keep = std::find_if(S[k].diagonal().first, S[k].diagonal().second, boost::lambda::_1 < 1e-10)-S[k].diagonal().first;
             
-            left.resize_block(left.left_basis()[k].first, left.right_basis()[k].first,
-                              left.left_basis()[k].second, keep);
-            right.resize_block(right.left_basis()[k].first, right.right_basis()[k].first,
-                               keep, right.right_basis()[k].second);
+            left.resize_block(left.basis().left_charge(k), left.basis().right_charge(k),
+                              left.basis().left_size(k), keep);
+            right.resize_block(right.basis().left_charge(k), right.basis().right_charge(k),
+                               keep, right.basis().right_size(k));
         }
         
-        left_ops  = reshape_right_to_list(phys1, left);
-        right_ops = reshape_left_to_list(phys2, right);
+        left_ops  = reshape_right_to_list<op_t>(phys1, left);
+        right_ops = reshape_left_to_list<op_t>(phys2, right);
         assert(left_ops.size() == right_ops.size());
     }
     

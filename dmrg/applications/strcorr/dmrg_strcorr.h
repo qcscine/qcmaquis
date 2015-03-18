@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -47,7 +47,7 @@ typedef alps::numeric::matrix<double> matrix;
 
 class StrCorr {
 public:
-    typedef block_matrix<matrix, U1> op_t;
+    typedef typename operator_selector<matrix, U1>::type op_t;
     
     StrCorr(DmrgParameters & parms_)
     : parms(parms_)

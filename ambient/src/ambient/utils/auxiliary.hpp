@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -33,8 +32,10 @@ namespace ambient {
 
     using ambient::models::ssm::revision;
 
-    void sync();
-    
+    inline void sync(){
+        ambient::select().sync();
+    }
+
     template<typename T> 
     void sync(const T& t){ 
         ambient::sync(); 
@@ -49,11 +50,15 @@ namespace ambient {
     }
 
     inline int num_procs(){
-        return selector.get_controller().get_num_procs();
+        return ambient::select().get_num_procs();
+    }
+
+    inline int get_tag_ub(){
+        return ambient::select().get_controller().get_tag_ub();
     }
 
     inline rank_t rank(){
-        return selector.get_controller().get_rank();
+        return ambient::select().get_controller().get_rank();
     }
 
     inline bool master(){
@@ -61,38 +66,17 @@ namespace ambient {
     }
 
     inline bool verbose(){ 
-        return selector.get_controller().verbose();
-    }
-
-    inline void meminfo(){
-        selector.get_controller().meminfo(); 
+        return ambient::select().get_controller().verbose();
     }
 
     template<typename T>
     inline void destroy(T* o){ 
-        selector.get_controller().collect(o); 
+        ambient::select().get_controller().collect(o); 
     }
 
     template<typename V>
     inline bool weak(const V& obj){
         return obj.ambient_rc.desc->weak();
-    }
-
-    template<typename V>
-    inline void merge(const V& src, V& dst){
-        assert(dst.ambient_rc.desc->current == NULL);
-        if(weak(src)) return;
-        revision* r = src.ambient_rc.desc->back();
-        dst.ambient_rc.desc->current = r;
-        // do not deallocate or reuse
-        if(!r->valid()) r->spec.protect();
-        assert(!r->valid() || !r->spec.bulked() || ambient::models::ssm::model::remote(r)); // can't rely on bulk memory
-        r->spec.crefs++;
-    }
-
-    template<typename V>
-    inline void swap_with(V& left, V& right){
-        std::swap(left.ambient_rc.desc, right.ambient_rc.desc);
     }
 
     template<typename V>
@@ -120,12 +104,17 @@ namespace ambient {
         return o.ambient_rc.desc->current->owner;
     }
 
+    template<typename V>
+    inline bool locked_once(const V& o){
+        return o.ambient_before->locked_once();
+    }
+
     inline rank_t which(){
-        return ambient::selector.get_actor().which();
+        return ambient::select().get_actor().which();
     }
 
     inline actor& get_actor(){
-        return ambient::selector.get_actor();
+        return ambient::select().get_actor();
     }
 
 }

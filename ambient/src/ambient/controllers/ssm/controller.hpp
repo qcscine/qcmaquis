@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -26,11 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include "ambient/utils/io.hpp"
-#include "ambient/utils/timings.hpp"
-#include "ambient/utils/overseer.hpp"
-#include "ambient/utils/service.hpp"
-#include "ambient/utils/mem.h"
+#include "utils/mem.hpp"
 
 namespace ambient { namespace controllers { namespace ssm {
 
@@ -143,8 +138,12 @@ namespace ambient { namespace controllers { namespace ssm {
         model.add_revision<L>(o, g);
     }
 
+    inline int controller::get_tag_ub() const {
+        return channel.tag_ub;
+    }
+
     inline rank_t controller::get_rank() const {
-        return channel.rank();
+        return channel.rank;
     }
 
     inline rank_t controller::get_shared_rank() const {
@@ -161,17 +160,6 @@ namespace ambient { namespace controllers { namespace ssm {
 
     inline void controller::fence() const {
         channel.barrier();
-    }
-
-    inline void controller::meminfo() const {
-        double current_size = (double)getCurrentRSS();
-        double peak_size = (double)getPeakRSS();
-        double avail_size = (double)getRSSLimit();
-        for(int i = 0; i < get_num_procs(); i++){
-            if(get_rank() == i)
-                printf("R%d: current: %.2f%%; peak: %.2f%%\n", i, (current_size/avail_size)*100, (peak_size/avail_size)*100);
-            fence();
-        }
     }
 
     inline void controller::check_mem() const {

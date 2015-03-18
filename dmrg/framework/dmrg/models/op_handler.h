@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -36,15 +36,17 @@
 
 #include "dmrg/block_matrix/block_matrix.h"
 #include "dmrg/block_matrix/block_matrix_algorithms.h"
+#include "dmrg/block_matrix/site_operator.h"
+#include "dmrg/block_matrix/site_operator_algorithms.h"
 
 #include "dmrg/models/tag_detail.h"
 
 template <class Matrix, class SymmGroup>
-class OPTable : public std::vector<block_matrix<Matrix, SymmGroup> >
+class OPTable : public std::vector<typename operator_selector<Matrix, SymmGroup>::type>
 {
 public:
     typedef tag_detail::tag_type tag_type;
-    typedef block_matrix<Matrix, SymmGroup> op_t;
+    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
 
 private:
     typedef typename Matrix::value_type mvalue_type;
@@ -157,20 +159,12 @@ public:
 
     KronHandler(boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_)
     :   base(tbl_)
-      , kronecker_table(new OPTable<Matrix, SymmGroup>())
-    {
-        for (typename OPTable<Matrix, SymmGroup>::iterator it = tbl_->begin();
-             it != tbl_->end(); ++it)
-            uniform.push_back(tag_detail::is_uniform(*it));
-    }
+      , kronecker_table(new OPTable<Matrix, SymmGroup>()) {}
 
     tag_type get_kron_tag(Index<SymmGroup> const & phys_i1, Index<SymmGroup> const & phys_i2, tag_type t1, tag_type t2);
      
-
     typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i) { return (*kronecker_table)[i]; }
     typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const { return (*kronecker_table)[i]; }
-
-    bool is_uniform(tag_type t) { return uniform[t]; }
 
     boost::shared_ptr<OPTable<Matrix, SymmGroup> > get_kronecker_table() { return kronecker_table; }
 
@@ -180,7 +174,6 @@ public:
 private:
     boost::shared_ptr<OPTable<Matrix, SymmGroup> > kronecker_table;
     typename base::pair_map_t kron_tags;
-    std::vector<bool> uniform;
 };
 
 

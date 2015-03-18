@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -49,35 +49,26 @@ namespace detail {
 //        }
 //    };
     
-    template <class Matrix, class SymmGroup>
+    template <class Matrix, class SymmGroup, class = void>
     struct call_hf_init {
         static typename Model<Matrix,SymmGroup>::initializer_ptr call(BaseParameters parms,
                                                                       std::vector<Index<SymmGroup> > const& phys_dims,
                                                                       typename SymmGroup::charge right_end,
                                                                       std::vector<int> const& site_type)
         {
-            throw std::runtime_error("HF MPS init is available only for TwoU1 or TwoU1PG symmetry group.");
+            throw std::runtime_error("No HF MPS init available for this symmetry group.");
             return typename Model<Matrix,SymmGroup>::initializer_ptr(new default_mps_init<Matrix, SymmGroup>(parms, phys_dims, right_end, site_type));
         }
     };
-    template <class Matrix>
-    struct call_hf_init<Matrix, TwoU1> {
-        static typename Model<Matrix,TwoU1>::initializer_ptr call(BaseParameters parms,
-                                                                  std::vector<Index<TwoU1> > const& phys_dims,
-                                                                  TwoU1::charge right_end,
-                                                                  std::vector<int> const& site_type)
+
+    template <class Matrix, class SymmGroup>
+    struct call_hf_init<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasChemModel<SymmGroup> >::type> {
+        static typename Model<Matrix,SymmGroup>::initializer_ptr call(BaseParameters parms,
+                                                                      std::vector<Index<SymmGroup> > const& phys_dims,
+                                                                      typename SymmGroup::charge right_end,
+                                                                      std::vector<int> const& site_type)
         {
-            return typename Model<Matrix,TwoU1>::initializer_ptr(new hf_mps_init<Matrix, TwoU1>(parms, phys_dims, right_end, site_type));
-        }
-    };
-    template <class Matrix>
-    struct call_hf_init<Matrix, TwoU1PG> {
-        static typename Model<Matrix,TwoU1PG>::initializer_ptr call(BaseParameters parms,
-                                                                    std::vector<Index<TwoU1PG> > const& phys_dims,
-                                                                    TwoU1PG::charge right_end,
-                                                                    std::vector<int> const& site_type)
-        {
-            return typename Model<Matrix,TwoU1PG>::initializer_ptr(new hf_mps_init<Matrix, TwoU1PG>(parms, phys_dims, right_end, site_type));
+            return typename Model<Matrix,SymmGroup>::initializer_ptr(new hf_mps_init<Matrix, SymmGroup>(parms, phys_dims, right_end, site_type));
         }
     };
 }
@@ -142,7 +133,6 @@ model_impl<Matrix,SymmGroup>::initializer(Lattice const& lat, BaseParameters & p
         throw std::runtime_error("Don't know this initial state.");
         return initializer_ptr();
     }
-
 }
 
 #endif

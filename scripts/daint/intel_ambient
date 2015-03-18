@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 STATE="void"
 STATE_AMBIENT="void"
 STATE_DMRG="build"
@@ -16,7 +16,7 @@ if [[ -z "$MAQUIS_ONCE" ]]
 then
     export MAQUIS_ONCE=true
     module switch PrgEnv-cray PrgEnv-intel
-    module load intel/14.0.2.144
+    module unload cray-libsci
     module load cmake
 
     export PLASMA_ROOT=$MYAPPS/plasma
@@ -29,6 +29,7 @@ then
     export MPICH_MAX_THREAD_SAFETY=funneled
     
     export PATH=${MAQUIS_INSTALL}/bin:${PATH}
+    export PYTHONPATH=$ALPS_ROOT/lib:${HOME}/code/pylibs:$PYTHONPATH
 
     alias sync_maquis_deps='rsync -aut /project/s512/install.bkp/daint/apps/intel_14_0_2/ $MYAPPS'
 fi
@@ -40,6 +41,7 @@ COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
 COMMON_PLASMA_LIB_DIR="$PLASMA_ROOT/lib"
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
+DMRG_REGRESSION_PERFORMANCE_TESTS=ON
 
 source $ROOT_DIR/scripts/common/common.sh 
 execute $*

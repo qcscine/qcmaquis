@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -26,6 +26,7 @@
 
 #include "dmrg/utils/archive.h"
 #include "dmrg/utils/logger.h"
+#include "dmrg/utils/parallel/params.hpp"
 #include "utils.hpp"
 #include "random.hpp"
 
@@ -38,4 +39,10 @@ dmrg_random::engine_t dmrg_random::engine = dmrg_random::engine_t(42);
 // Init logger
 namespace storage {
     Logger<storage::archive> log;
+}
+
+// Init parallel params 
+namespace parallel {
+    parameters& params = parameters::instance();
+    int groups_granularity;
 }

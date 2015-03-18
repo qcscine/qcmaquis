@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 STATE="void"
 STATE_AMBIENT="build"
 STATE_DMRG="build"
@@ -21,6 +21,7 @@ export MV2_VBUF_POOL_SIZE=8192
 export MV2_VBUF_SECONDARY_POOL_SIZE=1024
 export MV2_VBUF_TOTAL_SIZE=24k
 
+source /etc/profile.d/modules.sh
 module load ${COMPILER}/${COMPILER_VERSION}
 module load ${MPI_WRAPPER}/${MPI_WRAPPER_VERSION}
 module load hdf5/1.8.9-gcc
@@ -29,8 +30,6 @@ module load cmake
 COMMON_BLAS_LAPACK_SELECTOR="mkl_parallel"
 COMMON_PLASMA_LIB_DIR="$PLASMA_ROOT/lib"
 COMMON_PLASMA_LIBRARIES="-lplasma -lcoreblas -llapacke -lquark /apps/castor/intel-2013/compiler/lib/intel64/libimf.a /apps/castor/intel-2013/compiler/lib/intel64/libirc.a"
-AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=ON
-AMBIENT_ENABLE_REGRESSION_PERFORMANCE=ON
 DMRG_BUILD_AMBIENT=ON
 DMRG_USE_AMBIENT=ON
 

@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -52,7 +51,7 @@ namespace ambient { namespace models { namespace ssm {
         bool valid() const;
         bool referenced() const;
 
-        void* generator;
+        std::atomic<void*> generator;
         void* data;
         rank_t owner;
         std::atomic<int> users;

@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  *                            Timothee Ewart <timothee.ewart@gmail.com>
@@ -34,6 +34,11 @@ template<class T, class SymmGroup>
 class block_matrix;
 
 namespace maquis { namespace dmrg { namespace detail {
+
+    template<class Matrix, class Generator>
+    void generate_impl(Matrix & m, Generator g){
+        generate(m, g);
+    }
         
     template<class InputIterator, class OutputIterator, class T>
     void iterator_axpy(InputIterator in1, InputIterator in2,
@@ -109,6 +114,23 @@ namespace maquis { namespace dmrg { namespace detail {
         }
     }
     
+    template <typename T, class A>
+    void reshape_b2r(alps::numeric::matrix<T,A>& out, const alps::numeric::matrix<T,A>& in,
+                     size_t in_left_offset, size_t in_right_offset, 
+                     size_t out_right_offset, size_t out_phys_offset,
+                     size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
+        for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+        {
+            size_t ss_out = out_phys_offset + ss1*sdim2 + ss2;
+            for(size_t rr = 0; rr < rdim; ++rr)
+                for(size_t ll = 0; ll < ldim; ++ll)
+                    out(ll, out_right_offset + ss_out*rdim + rr) = 
+                    in(in_left_offset + ss1*ldim+ll, in_right_offset + ss2*rdim+rr);
+        }
+    }
+
     template <typename T, class A1, class A2>
     void reshape_r2l(alps::numeric::matrix<T,A1>& left, const alps::numeric::matrix<T,A2>& right,
                      size_t left_offset, size_t right_offset, 
@@ -135,6 +157,41 @@ namespace maquis { namespace dmrg { namespace detail {
                     right(ll, right_offset + ss*rdim+rr) = left(left_offset + ss*ldim+ll, rr);
     }
     
+    template <typename T, class A>
+    void reduce_r(alps::numeric::matrix<T,A>& out, const alps::numeric::matrix<T,A>& in, T scale,
+                  size_t in_right_offset, size_t in_phys_offset, size_t out_phys_offset,
+                  size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
+        for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+        {
+            size_t ss_in  =  in_phys_offset + ss1*sdim2 + ss2;
+            size_t ss_out = out_phys_offset + ss1*sdim2 + ss2;
+            iterator_axpy(&in(0, in_right_offset + ss_in*rdim),
+                          &in(0, in_right_offset + ss_in*rdim) + ldim*rdim,
+                          &out(0, in_right_offset + ss_out*rdim),
+                          scale);
+        }
+    }
+
+    template <typename T, class A>
+    void reduce_l(alps::numeric::matrix<T,A>& out, const alps::numeric::matrix<T,A>& in, T scale,
+                  size_t in_left_offset, size_t in_phys_offset, size_t out_phys_offset,
+                  size_t sdim1, size_t sdim2, size_t ldim, size_t rdim)
+    {
+        for(size_t ss1 = 0; ss1 < sdim1; ++ss1)
+        for(size_t ss2 = 0; ss2 < sdim2; ++ss2)
+        {
+            size_t ss_in  =  in_phys_offset + ss1*sdim2 + ss2;
+            size_t ss_out = out_phys_offset + ss1*sdim2 + ss2;
+            for(size_t rr = 0; rr < rdim; ++rr)
+                iterator_axpy(&in(in_left_offset + ss_in*ldim, rr),
+                              &in(in_left_offset + ss_in*ldim, rr) + ldim,
+                              &out(in_left_offset + ss_out*ldim, rr),
+                              scale);
+        }
+    }
+    
     template <typename T1, class A1,
               typename T2, class A2,
               typename T3, class A3>
@@ -147,7 +204,7 @@ namespace maquis { namespace dmrg { namespace detail {
                 for(size_t ss2 = 0; ss2 < sdim2; ++ss2) {
                     T3 alfa_t = alfa(ss1, ss2) * alfa_scale;
                     iterator_axpy(&in(0, in_offset + ss1*rdim + rr),
-                                  &in(0, in_offset + ss1*rdim + rr) + ldim, // bugbug
+                                  &in(0, in_offset + ss1*rdim + rr) + ldim,
                                   &out(out_offset + ss2*ldim, rr),
                                   alfa_t);
                 }

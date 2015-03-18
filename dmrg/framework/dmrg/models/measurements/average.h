@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
  *
@@ -37,9 +37,10 @@ namespace measurements {
     
     template <class Matrix, class SymmGroup>
     class average : public measurement<Matrix, SymmGroup> {
-        typedef  measurement<Matrix, SymmGroup> base;
+        typedef measurement<Matrix, SymmGroup> base;
+        typedef typename base::op_t op_t;
         typedef generate_mpo::MPOMaker<Matrix, SymmGroup> generator;
-        typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
+        typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
     public:
         
@@ -54,7 +55,7 @@ namespace measurements {
             
             for (std::size_t p = 0; p < lattice.size(); ++p)
             {
-                generate_mpo::Operator_Term<Matrix, SymmGroup> term;
+                generate_mpo::OperatorTerm<Matrix, SymmGroup> term;
                 term.operators.push_back( std::make_pair(p, ops[lattice.get_prop<int>("type", p)]) );
                 mpom.add_term(term);
             }
@@ -74,14 +75,14 @@ namespace measurements {
             
             for (std::size_t i = 0; i < ops.size(); ++i) {
                 for (std::size_t p = 0; p < lattice.size(); ++p) {
-                    generate_mpo::Operator_Term<Matrix, SymmGroup> term;
+                    generate_mpo::OperatorTerm<Matrix, SymmGroup> term;
                     term.operators.push_back( std::make_pair(p, ops[i][0].first[lattice.get_prop<int>("type", p)]) );
                     term.with_sign = ops[i][0].second;
                     std::vector<Lattice::pos_t> neighs = lattice.forward(p);
                     for (typename std::vector<Lattice::pos_t>::const_iterator hopto = neighs.begin();
                          hopto != neighs.end(); ++hopto)
                     {
-                        generate_mpo::Operator_Term<Matrix, SymmGroup> term2(term);
+                        generate_mpo::OperatorTerm<Matrix, SymmGroup> term2(term);
                         term2.operators.push_back( std::make_pair(*hopto, ops[i][1].first[lattice.get_prop<int>("type", p)]) );
                         mpom.add_term(term2);
                     }

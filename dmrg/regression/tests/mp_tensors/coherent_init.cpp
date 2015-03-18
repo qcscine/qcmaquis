@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -56,16 +56,18 @@ typedef alps::numeric::matrix<double> matrix;
 
 template <class SymmGroup>
 std::vector<double> measure_local(MPS<matrix, SymmGroup> const& mps,
-                                  block_matrix<matrix, SymmGroup> const& ident, block_matrix<matrix, SymmGroup> const& op)
+                                  typename operator_selector<matrix, SymmGroup>::type const& ident,
+                                  typename operator_selector<matrix, SymmGroup>::type const& op)
 {
-    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef std::vector<op_t> op_vec;
     boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
     Lattice lattice(lat_ptr);
 
     std::vector<double> vals(mps.size());
     for (int p=0; p<mps.size(); ++p) {
         generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, op_vec(1,ident),op_vec(1,ident));
-        generate_mpo::Operator_Term<matrix, SymmGroup> term;
+        generate_mpo::OperatorTerm<matrix, SymmGroup> term;
         term.operators.push_back( std::make_pair(p, op) );
         term.fill_operator = ident;
         mpom.add_term(term);
@@ -84,6 +86,7 @@ BOOST_AUTO_TEST_CASE( manual_superposition )
     typedef TrivialGroup SymmGroup;
     typedef SymmGroup::charge charge;
     typedef boost::tuple<charge, size_t, double> local_state;
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
     
     using std::exp; using std::sqrt; using std::pow;
     using boost::math::factorial;
@@ -168,8 +171,8 @@ BOOST_AUTO_TEST_CASE( manual_superposition )
     std::cout << "norm = " << nn << std::endl;
     
     /// operators for meas
-    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
-    block_matrix<matrix, SymmGroup> densop;
+    op_t ident = identity_matrix<op_t>(phys);
+    op_t densop;
     {
         matrix tmp(Nmax+1, Nmax+1, 0.);
         for (int i=1; i<=Nmax; ++i) tmp(i,i) = i;
@@ -196,6 +199,7 @@ BOOST_AUTO_TEST_CASE( coherent_init_L2Nmax2 )
     typedef TrivialGroup SymmGroup;
     typedef SymmGroup::charge charge;
     typedef boost::tuple<charge, size_t, double> local_state;
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
     using std::sqrt;
     
     int L = 2;
@@ -217,8 +221,8 @@ BOOST_AUTO_TEST_CASE( coherent_init_L2Nmax2 )
     std::cout << "norm = " << nn << std::endl;
     
     /// operators for meas
-    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
-    block_matrix<matrix, SymmGroup> densop;
+    op_t ident = identity_matrix<op_t>(phys);
+    op_t densop;
     {
         matrix tmp(Nmax+1, Nmax+1, 0.);
         for (int i=1; i<Nmax+1; ++i) tmp(i,i) = i;
@@ -243,6 +247,7 @@ BOOST_AUTO_TEST_CASE( coherent_init_Nmax2 )
     typedef TrivialGroup SymmGroup;
     typedef SymmGroup::charge charge;
     typedef boost::tuple<charge, size_t, double> local_state;
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
     using std::sqrt;
     
     int L = 4;
@@ -266,8 +271,8 @@ BOOST_AUTO_TEST_CASE( coherent_init_Nmax2 )
     std::cout << "norm = " << nn << std::endl;
     
     /// operators for meas
-    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
-    block_matrix<matrix, SymmGroup> densop;
+    op_t ident = identity_matrix<op_t>(phys);
+    op_t densop;
     {
         matrix tmp(Nmax+1, Nmax+1, 0.);
         for (int i=1; i<Nmax+1; ++i) tmp(i,i) = i;

@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -64,7 +64,7 @@ public:
     void sweep(int sweep, OptimizeDirection d = Both)
     {
         boost::chrono::high_resolution_clock::time_point sweep_now = boost::chrono::high_resolution_clock::now();
-        
+
         iteration_results_.clear();
         
         std::size_t L = mps.length();
@@ -94,7 +94,7 @@ public:
                 maquis::cout << "Syncing storage" << std::endl;
                 Storage::sync();
             }
-            
+        
             maquis::cout << "Sweep " << sweep << ", optimizing site " << site << std::endl;
             
 //            mps[site].make_left_paired();
@@ -111,12 +111,11 @@ public:
 //                }
 //            }
             
-            
             Storage::fetch(left_[site]);
             Storage::fetch(right_[site+1]);
             
-            if (lr == +1) Storage::prefetch(left_[site+1]);
-            else          Storage::prefetch(right_[site]);
+            if (lr == +1 && site+2 <= L) Storage::prefetch(right_[site+2]);
+            if (lr == -1 && site > 0)    Storage::prefetch(left_[site-1]);
             
             assert( left_[site].reasonable() );    // in case something went wrong
             assert( right_[site+1].reasonable() ); // in case something went wrong
@@ -196,9 +195,11 @@ public:
                         mps[site+1].multiply_from_left(t);
                 }
                 
-                
-                Storage::drop(left_[site+1]); // left_[site+1] is outdated
                 this->boundary_left_step(mpo, site); // creating left_[site+1]
+                if (site != L-1) {
+                    Storage::drop(right_[site+1]);
+                    Storage::evict(left_[site]);
+                }
             } else if (lr == -1) {
                 if (site > 0) {
                     maquis::cout << "Growing, alpha = " << alpha << std::endl;
@@ -211,13 +212,12 @@ public:
                         mps[site-1].multiply_from_right(t);
                 }
                 
-                
-                Storage::drop(right_[site]); // right_[site] is outdated
                 this->boundary_right_step(mpo, site); // creating right_[site]
+                if (site > 0) {
+                    Storage::drop(left_[site]);
+                    Storage::evict(right_[site+1]);
+                }
             }
-            
-        	Storage::evict(left_[site]); // move to out of core currently used boundary
-        	Storage::evict(right_[site+1]); // move to out of core currently used boundary
 
             iteration_results_["BondDimension"]   << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"] << trunc.truncated_weight;

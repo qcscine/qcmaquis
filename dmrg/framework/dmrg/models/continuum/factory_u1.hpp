@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -24,22 +24,27 @@
  *
  *****************************************************************************/
 
+#ifndef MAQUIS_DMRG_MODELS_CONTINUUM_FACTORY_U1
+#define MAQUIS_DMRG_MODELS_CONTINUUM_FACTORY_U1
+
 #include "dmrg/models/continuum/models_u1.hpp"
-#include "dmrg/models/continuum/super_models_u1.hpp"
+//#include "dmrg/models/continuum/super_models_u1.hpp"
 
 template<class Matrix>
 struct cont_model_factory<Matrix, U1> {
-    static typename model_traits<Matrix, U1>::model_ptr parse
-    (Lattice const & lattice, BaseParameters & model)
+    static boost::shared_ptr<model_impl<Matrix, U1> > parse
+    (Lattice const& lattice, BaseParameters & parms)
     {
-        std::string model_str = model.is_set("model") ? "model" : "MODEL";
-        if (model[model_str] == std::string("optical_lattice"))
-            return typename model_traits<Matrix, U1>::model_ptr( new OpticalLattice<Matrix>(lattice, model) );
-        else if (model[model_str] == std::string("optical_lattice_dm"))
-            return typename model_traits<Matrix, U1>::model_ptr( new DMOpticalLattice<Matrix>(lattice, model) );
+        typedef boost::shared_ptr<model_impl<Matrix, U1> > impl_ptr;
+        if (parms["MODEL"] == std::string("optical_lattice") || parms["MODEL"] == std::string("optical lattice"))
+            return impl_ptr( new OpticalLattice<Matrix>(lattice, parms) );
+//        else if (parms["MODEL"] == std::string("optical_lattice_dm"))
+//            return impl_ptr( new DMOpticalLattice<Matrix>(lattice, parms) );
         else {
             throw std::runtime_error("Don't know this model!");
-            return typename model_traits<Matrix, U1>::model_ptr();
+            return impl_ptr();
         }
     }
 };
+
+#endif

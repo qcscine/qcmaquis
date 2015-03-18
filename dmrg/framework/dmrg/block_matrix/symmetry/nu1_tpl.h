@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -272,6 +272,8 @@ public:
     
     static const charge IdentityCharge;
     static const bool finite = false;
+
+    static subcharge particleNumber(charge rhs) { return std::accumulate(rhs.begin(), rhs.end(), 0); }
 
     static charge fuse(charge a, charge b)
     {

@@ -53,16 +53,27 @@ class extrapolator(object):
             self.xdata = np.concatenate ( (self.xdata, [q.props[self.xname]]) )
             self.ydata = np.column_stack( (self.ydata, qy) )
     
-    def fit_at(self, x, y, degree, xval, num_points=None):
-        if num_points is None:
-            fit_parms = polyfit(x, y, degree)
-        else:
-            fit_parms = polyfit(x[:num_points], y[:num_points], degree)
+    def fit_at(self, x, y, degree, xval, num_points=None, verbose=False):
+        xfit = x
+        yfit = y
+        if num_points is not None:
+            xfit = x[:num_points]
+            yfit = y[:num_points]
+        fit_parms, residuals, rank, singular_values, rcond = np.polyfit(xfit, yfit, degree, full=True)
+        
         
         val = xval*0.
         for deg in range(0,degree+1):
             val += fit_parms[deg] * xval**(degree-deg)
         
+        if verbose:
+            # fit values, and mean
+            yhat = np.polyval(fit_parms, xfit) # or [p(z) for z in x]
+            ybar = np.sum(yfit)/len(yfit)    # or sum(y)/len(y)
+            ssreg = np.sum((yhat-ybar)**2)   # or sum([ (yihat - ybar)**2 for yihat in yhat])
+            sstot = np.sum((yfit - ybar)**2) # or sum([ (yi - ybar)**2 for yi in y])
+            R2 = ssreg / sstot
+            print 'deg=%s num_points=%s : R^2 = %s' % (degree, num_points, R2)
         return val
     
     def evaluate(self, xval=0, degree=1, num_points=None):
@@ -74,7 +85,7 @@ class extrapolator(object):
         
         return q
     
-    def fit_data(self, xval=0, degree=1, ii=0, num_points=None):
+    def fit_data(self, xval=0, degree=1, ii=0, num_points=None, verbose=False):
         q = pyalps.DataSet()
         q.props = deepcopy(self.props)
         q.x = self.xdata
@@ -84,8 +95,8 @@ class extrapolator(object):
         
         q.props['fitting_degree']     = degree
         q.props['fitting_num_points'] = num_points
-        q.props['fitted_x']     = xval
-        q.props['fitted_value'] = self.fit_at(x=q.x, y=q.y, degree=degree, xval=xval, num_points=num_points)
+        q.props['fitted_x']           = xval
+        q.props['fitted_value'] = self.fit_at(x=q.x, y=q.y, degree=degree, xval=xval, num_points=num_points, verbose=verbose)
         
         return q
     

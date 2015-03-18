@@ -31,6 +31,54 @@
 
 namespace generate_mpo
 {
+    
+    template <class Matrix, class SymmGroup>
+    std::vector<std::pair<Lattice::pos_t, std::pair<std::vector<typename OPTable<Matrix, SymmGroup>::op_t>, bool> > >
+    arrange_operators(std::vector<Lattice::pos_t> const & positions,
+                      std::vector<std::pair<std::vector<typename OPTable<Matrix, SymmGroup>::op_t>, bool> > const & operators)
+
+    {
+        // input: list of positions and operators
+        // output: list of (position, operator)-pairs, sorted, unique positions with operators multiplied
+        typedef Lattice::pos_t pos_t;
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+        typedef std::pair<std::vector<op_t>, bool> site_ops_t;
+        typedef std::pair<pos_t, site_ops_t> pos_op_t;
+
+        std::vector<pos_op_t> pos_ops;
+        // arrange position / operators in pairs
+        std::transform(positions.begin(), positions.end()-1, operators.begin(), std::back_inserter(pos_ops),
+        std::make_pair<pos_t const&, site_ops_t const&>);
+                       // boost::bind(static_cast<pos_op_t(*)(pos_t const&, site_ops_t const&)>
+                       // (std::make_pair<pos_t, site_ops_t>), boost::lambda::_1, boost::lambda::_2));
+
+        std::stable_sort(pos_ops.begin(), pos_ops.end(), compare<pos_op_t>);
+
+        for (size_t opnr = 0; opnr < pos_ops.size(); )
+        {
+            site_ops_t product = pos_ops[opnr].second;
+            size_t range_end = opnr+1;
+
+            // while the next operator is still on the same site
+            while (range_end < pos_ops.size() && pos_ops[range_end].first == pos_ops[opnr].first) {
+                // multiply operators for all irreps (types)
+                for (size_t type=0; type < pos_ops[opnr].second.first.size(); ++type) {
+                    op_t tmp;
+                    gemm(pos_ops[range_end].second.first[type], product.first[type], tmp);
+                    product.first[type] = tmp;
+                }
+                // set the fermion or boson for the product operator
+                product.second = (pos_ops[range_end].second.second != product.second);
+                range_end++;
+            }
+            for (size_t r=opnr; r < range_end; ++r)
+                pos_ops[r].second = product;
+
+            opnr = range_end;
+        }
+        return pos_ops;
+    }
+
     template<class Matrix, class SymmGroup>
     class BgCorrMaker : public CorrMakerBase<Matrix, SymmGroup>
     {
@@ -38,15 +86,18 @@ namespace generate_mpo
         typedef tag_detail::tag_type tag_type;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
         typedef typename base::block block;
-        typedef block_matrix<Matrix, SymmGroup> op_t;
         typedef boost::tuple<size_t, size_t, string> tag;
+
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
         typedef Lattice::pos_t pos_t;
+        typedef std::pair<std::vector<op_t>, bool> site_ops_t;
+        typedef std::pair<pos_t, site_ops_t> pos_op_t;
         
     public:
         BgCorrMaker(Lattice const& lat_,
                   const std::vector<op_t> & ident_,
                   const std::vector<op_t> & fill_,
-                  std::vector<std::pair<std::vector<op_t>, bool> > const & ops,
+                  std::vector<site_ops_t> const & ops,
                   std::vector<pos_t> const & ref,
                   bool idiag = false)
         : lat(lat_)
@@ -76,21 +127,22 @@ namespace generate_mpo
             if(ref.size() != ops.size()-1)
                 throw std::runtime_error("CorrMaker was called with wrong number of fixed operator positions\n");
 
-            // Check for identical background operator positions
-            // TODO: fix if bg > 2
-            if (ref.size() > 2 && ref[0] == ref[1]) {
-                for (int type=0; type < ops[0].first.size(); ++type){
-                    op_t product;
-                    gemm(ops[1].first[type], ops[0].first[type], product);
-                    op_tags[0][type] = tag_handler.register_op(product, ops[1].second != ops[0].second
-                                                               ? tag_detail::fermionic : tag_detail::bosonic);
-                    op_tags[1][type] = op_tags[0][type];
-                }
-            }
-
             std::copy(ref.begin(), ref.end()-1, std::back_inserter(background_pos));
             phase = set_base_phase(ref);
             labels.resize(lat.size() - *ref.rbegin() - 1 + (int)incl_diag);
+
+            // Handle operators on identical positions
+            std::vector<pos_op_t> pos_ops = arrange_operators<Matrix, SymmGroup>(ref, ops);
+
+            for (int i=0; i < ref.size()-1; ++i)
+                for (int j=0; j < pos_ops.size(); ++j)
+                {
+                    if (ref[i] == pos_ops[j].first)
+                        for (size_t type=0; type < ops[0].first.size(); ++type)
+                            op_tags[i][type] = tag_handler.register_op(pos_ops[j].second.first[type],
+                                                                       pos_ops[j].second.second ? tag_detail::fermionic : tag_detail::bosonic);
+                    break;
+                }
 
             make_prempo(*ref.rbegin());
         }

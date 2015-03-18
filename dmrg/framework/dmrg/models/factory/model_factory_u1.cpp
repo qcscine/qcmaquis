@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -27,7 +27,7 @@
 #include "model_factory_symm.h"
 
 #include "dmrg/models/coded/factory_u1.hpp"
-//#include "dmrg/models/continuum/factory_u1.hpp"
+#include "dmrg/models/continuum/factory_u1.hpp"
 
 typedef U1 grp;
 

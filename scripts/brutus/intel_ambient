@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 STATE="void"
 STATE_AMBIENT="void"
 STATE_DMRG="configure"
@@ -35,8 +35,6 @@ COMMON_PLASMA_LIB_DIR="$HOME/opt/plasma-intel/lib"
 AMBIENT_ALPS_ROOT_DIR=$ALPS_ROOT
 AMBIENT_SCALAPACK_LIBRARY="-lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64"
 AMBIENT_PLASMA_LIBRARIES="-lplasma -lcoreblas -llapacke -lquark"
-AMBIENT_ENABLE_REGRESSION_PERFORMANCE=OFF
-AMBIENT_ENABLE_REGRESSION_FUNCTIONAL=ON
 ## dmrg ##
 DMRG_ALPS_ROOT_DIR=$ALPS_ROOT
 DMRG_ENABLE_OMP=OFF

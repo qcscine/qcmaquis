@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -24,7 +24,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/chem/model_qc.h"
+#include "dmrg/models/chem/2u1/model_qc.h"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, TwoU1PG> {
@@ -33,14 +33,14 @@ struct coded_model_factory<Matrix, TwoU1PG> {
     {
         typedef boost::shared_ptr<model_impl<Matrix, TwoU1PG> > impl_ptr;
         if (parms["MODEL"] == std::string("quantum_chemistry")) {
-            if (parms["LATTICE"] == std::string("quantum_chemistry"))
+            if (parms["LATTICE"] != std::string("orbitals"))
                 throw std::runtime_error("Please use \"LATTICE = orbitals\" for quantum_chemistry\n");
 
             return impl_ptr( new qc_model<Matrix, TwoU1PG>(lattice, parms) );
         }
 
         else {
-            throw std::runtime_error("Don't know this model!\n");
+            throw std::runtime_error("Don't know this model: " + parms.get<std::string>("MODEL") + "\n");
             return impl_ptr();
         }
     }

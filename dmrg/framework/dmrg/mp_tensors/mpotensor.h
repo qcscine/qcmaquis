@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
@@ -41,7 +41,7 @@
 #include "dmrg/mp_tensors/mpotensor_detail.h"
 
 
-template <class Matrix, class SymmGroup> class PGSymmetryConverter;
+template <class Matrix, class SymmGroup, class Dummy> class PGSymmetryConverter;
 
 template<class Matrix, class SymmGroup>
 class MPOTensor
@@ -105,7 +105,7 @@ public:
     
     bool has(index_type left_index, index_type right_index) const;
 
-    friend class PGSymmetryConverter<Matrix, SymmGroup>;
+    friend class PGSymmetryConverter<Matrix, SymmGroup, void>;
 
     mutable std::vector<int> placement_l;
     mutable std::vector<int> placement_r;

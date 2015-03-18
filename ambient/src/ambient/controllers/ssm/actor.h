@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -31,6 +30,8 @@
 
 namespace ambient {
 
+    enum class actor_t { base, common, single };
+
     class actor {
     protected:
         typedef models::ssm::model model_type;
@@ -53,10 +54,11 @@ namespace ambient {
         controller_type* controller;
     };
 
-    class base_actor : public actor {
+    class actor_auto : public actor {
     public:
         typedef typename actor::model_type model_type;
-        base_actor();
+        typedef controllers::ssm::controller controller_type;
+        actor_auto(controller_type* c);
         void set(rank_t r);
         void set(scope::const_iterator it);
         void schedule();

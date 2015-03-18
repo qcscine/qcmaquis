@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -25,7 +25,7 @@
  *****************************************************************************/
 
 #include "dmrg/models/coded/models_2u1.hpp"
-#include "dmrg/models/chem/model_qc.h"
+#include "dmrg/models/chem/2u1/model_qc.h"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, TwoU1> {
@@ -35,8 +35,8 @@ struct coded_model_factory<Matrix, TwoU1> {
         typedef boost::shared_ptr<model_impl<Matrix, TwoU1> > impl_ptr;
         if (parms["MODEL"] == std::string("fermion Hubbard"))
             return impl_ptr( new FermiHubbardTwoU1<Matrix>(lattice, parms) );
-        else
-            if (parms["MODEL"] == std::string("quantum_chemistry"))
+
+        else if (parms["MODEL"] == std::string("quantum_chemistry"))
             return impl_ptr( new qc_model<Matrix, TwoU1>(lattice, parms) );
 
         else {

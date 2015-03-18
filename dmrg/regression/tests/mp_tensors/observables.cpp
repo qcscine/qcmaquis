@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -52,15 +52,16 @@ using std::endl;
 typedef U1 SymmGroup;
 typedef alps::numeric::matrix<double> matrix;
 
-double measure_local_expval(MPS<matrix, SymmGroup> const & mps, block_matrix<matrix, SymmGroup> const & ident,
-                            block_matrix<matrix, SymmGroup> const & op, size_t pos)
+double measure_local_expval(MPS<matrix, SymmGroup> const & mps, typename operator_selector<matrix, SymmGroup>::type const & ident,
+                            typename operator_selector<matrix, SymmGroup>::type const & op, size_t pos)
 {
-    typedef std::vector<block_matrix<matrix, SymmGroup> > op_vec;
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef std::vector<op_t> op_vec;
     boost::shared_ptr<lattice_impl> lat_ptr(new ChainLattice(mps.length()));
     Lattice lattice(lat_ptr);
     
     generate_mpo::MPOMaker<matrix, SymmGroup> mpom(lattice, op_vec(1,ident), op_vec(1,ident));
-    generate_mpo::Operator_Term<matrix, SymmGroup> term;
+    generate_mpo::OperatorTerm<matrix, SymmGroup> term;
     term.operators.push_back( std::make_pair(pos, op) );
     term.fill_operator = ident;
     mpom.add_term(term);
@@ -70,7 +71,7 @@ double measure_local_expval(MPS<matrix, SymmGroup> const & mps, block_matrix<mat
 }
 
 double measure_local_overlap(MPS<matrix, SymmGroup> const & mps,
-                             block_matrix<matrix, SymmGroup> const & op, size_t pos)
+                             typename operator_selector<matrix, SymmGroup>::type const & op, size_t pos)
 {
     // asuming mps is canonized at site pos!
     return mps[pos].scalar_overlap(contraction::local_op(mps[pos], op));
@@ -98,6 +99,8 @@ double measure_local_trace_2(MPS<matrix, SymmGroup> const & mps,
 
 BOOST_AUTO_TEST_CASE( obs_bosons_nmax2 )
 {
+    typedef typename operator_selector<matrix, SymmGroup>::type op_t;
+    typedef block_matrix<matrix, SymmGroup> bm_t;
     
     int Nrep = 8;
     int M = 20;
@@ -113,11 +116,14 @@ BOOST_AUTO_TEST_CASE( obs_bosons_nmax2 )
     phys.insert(std::make_pair(2, 1));
     SymmGroup::charge initc = L/2;
     
-    block_matrix<matrix, SymmGroup> densop;
+    op_t densop;
     densop.insert_block(matrix(1,1,1), 1,1);
     densop.insert_block(matrix(1,1,2), 2,2);
-    
-    block_matrix<matrix, SymmGroup> ident = identity_matrix<matrix>(phys);
+    op_t ident = identity_matrix<op_t>(phys);
+
+    bm_t densop_bm;
+    densop_bm.insert_block(matrix(1,1,1), 1,1);
+    densop_bm.insert_block(matrix(1,1,2), 2,2);
     
     default_mps_init<matrix, SymmGroup> initializer(parms, std::vector<Index<SymmGroup> >(1, phys), initc, std::vector<int>(L,0));
     
@@ -134,8 +140,8 @@ BOOST_AUTO_TEST_CASE( obs_bosons_nmax2 )
             double meas[4];
             meas[0] = measure_local_expval(mps, ident, densop, p);
             meas[1] = measure_local_overlap(mps, densop, p);
-            meas[2] = measure_local_trace(mps, densop, p);
-            meas[3] = measure_local_trace_2(mps, densop, p);
+            meas[2] = measure_local_trace(mps, densop_bm, p);
+            meas[3] = measure_local_trace_2(mps, densop_bm, p);
             
             for (int i=1; i<4; ++i)
                 BOOST_CHECK_CLOSE(meas[0], meas[i], 1e-8 );

@@ -1,16 +1,16 @@
 #include "ambient/ambient.hpp"
-#include "ambient/numeric/matrix.hpp"
+#include "ambient/container/numeric/matrix.hpp"
 
 template<class Matrix>
 void fill(std::vector<Matrix>& left, std::vector<Matrix>& right, std::vector<Matrix>& res, 
           size_t x, size_t y, size_t length)
 {
-    ambient::cout << "scope size: " << ambient::scope::size() << "\n"; 
+    std::cout << "scope size: " << ambient::scope::size() << "\n"; 
     auto it = ambient::scope::begin();
     for(int i = 0; i < length; i++){
         if(it == ambient::scope::end()) it = ambient::scope::begin();
         ambient::actor proc(it++); 
-        ambient::cout << "executing fill on " << ambient::which() << "\n"; 
+        std::cout << "executing fill on " << ambient::which() << "\n"; 
 
         left.push_back(Matrix(y,x));
         right.push_back(Matrix(y,x));
@@ -29,7 +29,7 @@ void mul(std::vector<Matrix>& left, std::vector<Matrix>& right, std::vector<Matr
     for(int i = 0; i < left.size(); i++){
         if(it == ambient::scope::end()) it = ambient::scope::begin();
         ambient::actor proc(it++);
-        ambient::cout << "executing gemm on " << ambient::which() << "\n"; 
+        std::cout << "executing gemm on " << ambient::which() << "\n"; 
 
         gemm(left[i], right[i], res[i]);
     }
@@ -47,7 +47,7 @@ int main(){
     right_first.reserve(length);  right_second.reserve(length);
     res_first.reserve(length);    res_second.reserve(length);
     
-    ambient::cout << "fill...\n"; 
+    std::cout << "fill...\n"; 
     {
         ambient::scope scopeA(ambient::scope::begin(), ambient::scope::begin()+2);
         fill(left_first, right_first, res_first, x, y, length);
@@ -57,7 +57,7 @@ int main(){
         fill(left_second, right_second, res_second, x, y, length);
     }
     ambient::sync();
-    ambient::cout << "gemm...\n"; 
+    std::cout << "gemm...\n"; 
     {
         ambient::scope scopeA(ambient::scope::begin(), ambient::scope::begin()+2);
         mul(left_first, right_first, res_first);
@@ -68,7 +68,7 @@ int main(){
     }
     ambient::sync();
 
-    ambient::cout << "Done.\n";
+    std::cout << "Done.\n";
     return 0;
 }
 

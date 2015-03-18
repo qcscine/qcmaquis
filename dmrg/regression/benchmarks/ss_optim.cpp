@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  *                            Bela Bauer <bauerb@comp-phys.org>
  * 
@@ -44,6 +44,7 @@
 #include "dmrg/models/generate_mpo.hpp"
 
 #include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/contractions.h"
 
 #include "dmrg/optimize/ietl_lanczos_solver.h"
 #include "dmrg/optimize/ietl_jacobi_davidson.h"
@@ -92,10 +93,9 @@ int main(int argc, char ** argv)
         Lattice lattice(parms);
         Model<matrix, grp> model(lattice, parms);
         
-        MPO<matrix, grp> mpo = make_mpo(lattice, model, parms);
+        MPO<matrix, grp> mpo = make_mpo(lattice, model);
         tim_model.end();
-        
-        
+
         /// Initialize & load MPS
         tim_load.begin();
         int L = lattice.size();
@@ -124,14 +124,14 @@ int main(int argc, char ** argv)
         tim_l_boundary.begin();
         Boundary<matrix, grp> left = mps.left_boundary();
         for (size_t i=0; i<site; ++i)
-            left = contraction::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
+            left = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
         tim_l_boundary.end();
         
         /// Compute right boundary
         tim_r_boundary.begin();
         Boundary<matrix, grp> right = mps.right_boundary();
         for (int i=L-1; i>site; --i)
-            right = contraction::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
+            right = contraction::Engine<matrix, matrix, grp>::overlap_mpo_right_step(mps[i], mps[i], right, mpo[i]);
         tim_r_boundary.end();
 
 

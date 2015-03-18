@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  * 
@@ -95,11 +95,11 @@ namespace generate_mpo
     {
         typedef typename Matrix::value_type scale_type;
         typedef typename MPOTensor<Matrix, SymmGroup>::index_type index_type;
-        typedef block_matrix<Matrix, SymmGroup> op_t;
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
 
         typedef Lattice::pos_t pos_t;
-        typedef typename Operator_Tag_Term<Matrix, SymmGroup>::tag_type tag_type;
-        typedef typename Operator_Tag_Term<Matrix, SymmGroup>::op_pair_t pos_op_type;
+        typedef typename OperatorTagTerm<Matrix, SymmGroup>::tag_type tag_type;
+        typedef typename OperatorTagTerm<Matrix, SymmGroup>::op_pair_t pos_op_type;
         typedef boost::tuple<std::size_t, std::size_t, tag_type, scale_type> tag_block;
         
         typedef ::term_descriptor<typename Matrix::value_type> term_descriptor;

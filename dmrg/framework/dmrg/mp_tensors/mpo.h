@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -93,12 +93,12 @@ private:
                         continue;
                     for (size_t b = 0; b < (*this)[p-1].at(r, c).op.n_blocks(); ++b) {
                         charge_diffs.insert(SymmGroup::fuse(bond_index_charges[p-1][r],
-                                                            SymmGroup::fuse((*this)[p-1].at(r,c).op.left_basis()[b].first,
-                                                                            -(*this)[p-1].at(r,c).op.right_basis()[b].first)));
+                                                            SymmGroup::fuse((*this)[p-1].at(r,c).op.basis().left_charge(b),
+                                                                            -(*this)[p-1].at(r,c).op.basis().right_charge(b))));
 //                        maquis::cout << r << " " << c << std::endl;
 //                        maquis::cout << bond_index_charges[p-1][r] << std::endl;
-//                        maquis::cout << (*this)[p-1](r,c).left_basis()[b].first << std::endl;
-//                        maquis::cout << (*this)[p-1](r,c).right_basis()[b].first << std::endl;
+//                        maquis::cout << (*this)[p-1](r,c).basis().left_charge(b) << std::endl;
+//                        maquis::cout << (*this)[p-1](r,c).basis().right_charge(b) << std::endl;
 //                        std::copy(charge_diffs.begin(), charge_diffs.end(),
 //                                  std::ostream_iterator<typename SymmGroup::charge>(maquis::cout, " "));
 //                        maquis::cout << std::endl << std::endl;
@@ -140,10 +140,12 @@ private:
             {
                 if (!(*this)[p].has(r,c))
                     continue;
-                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.left_basis().size(); ++cs) {
-                    std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
-                    if (! phys_i.has(sector.first))
-                        phys_i.insert(sector);
+                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.basis().size(); ++cs) {
+                    //std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
+                    typename DualIndex<SymmGroup>::value_type sector = (*this)[p].at(r, c).op.basis()[cs];
+                    //if (! phys_i.has(sector.first))
+                    if (! phys_i.has(sector.lc))
+                        phys_i.insert(std::make_pair(sector.lc, sector.ls));
                 }
             }
         
@@ -175,7 +177,8 @@ private:
                         if (! (*this)[p].at(r,c).op.has_block(phys_i[ls].first, phys_i[rs].first) )
                             continue;                       
                         
-                        std::size_t cs = (*this)[p].at(r, c).op.left_basis().position(phys_i[ls].first);
+                        //std::size_t cs = (*this)[p].at(r, c).op.left_basis().position(phys_i[ls].first);
+                        std::size_t cs = (*this)[p].at(r, c).op.basis().position(phys_i[ls].first, phys_i[rs].first);
                         
                         assert( lc == rc );
                         assert( outr < left_i.size_of_block(lc) );
@@ -212,10 +215,13 @@ private:
             {
                 if (!(*this)[p].has(r,c))
                     continue;
-                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.left_basis().size(); ++cs) {
-                    std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
-                    if (! phys_i.has(sector.first))
-                        phys_i.insert(sector);
+                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.basis().size(); ++cs) {
+                    //std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
+                    typename DualIndex<SymmGroup>::value_type sector = (*this)[p].at(r, c).op.basis()[cs];
+                    //if (! phys_i.has(sector.first))
+                    if (! phys_i.has(sector.lc))
+                        //phys_i.insert(sector);
+                        phys_i.insert(std::make_pair(sector.lc, sector.ls));
                 }
             }
         
@@ -247,7 +253,8 @@ private:
                         if (! (*this)[p].at(r, c).op.has_block(phys_i[ls].first, phys_i[rs].first) )
                             continue;
                         
-                        std::size_t cs = (*this)[p].at(r, c).op.left_basis().position(phys_i[ls].first);
+                        //std::size_t cs = (*this)[p].at(r, c).op.left_basis().position(phys_i[ls].first);
+                        std::size_t cs = (*this)[p].at(r, c).op.basis().position(phys_i[ls].first, phys_i[rs].first);
                         
                         assert( lc == rc );
                         assert( outc < right_i.size_of_block(rc) );
@@ -284,10 +291,13 @@ private:
         for (size_t r = 0; r < (*this)[p].row_dim(); ++r)
             for (size_t c = 0; c < (*this)[p].col_dim(); ++c)
             {
-                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.left_basis().size(); ++cs) {
-                    std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
-                    if (! phys_i.has(sector.first))
-                        phys_i.insert(sector);
+                for (size_t cs = 0; cs < (*this)[p].at(r, c).op.basis().size(); ++cs) {
+                    //std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
+                    typename DualIndex<SymmGroup>::value_type sector = (*this)[p].at(r, c).op.basis()[cs];
+                    //if (! phys_i.has(sector.first))
+                    if (! phys_i.has(sector.lc))
+                        //phys_i.insert(sector);
+                        phys_i.insert(std::make_pair(sector.lc, sector.ls));
                 }
             }
         
@@ -296,7 +306,8 @@ private:
         {
             std::size_t count = 0;
             bond_index_charges[p+1].clear();
-            for (typename Index<SymmGroup>::basis_iterator it = left.right_basis().basis_begin();
+            Index<SymmGroup> left_right_basis_cp = left.right_basis();
+            for (typename Index<SymmGroup>::basis_iterator it = left_right_basis_cp.basis_begin();
                  !it.end(); ++it)
                 bond_index_charges[p+1][count++] = (*it).first;
         }
@@ -325,7 +336,7 @@ private:
                                                                std::make_pair(rc, visited_c_basis[rc]));
                         
                         if (std::abs(val) > 1e-40) {
-                            block_matrix<Matrix, SymmGroup> block;
+                            typename operator_selector<Matrix, SymmGroup>::type block;
                             charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             if ( (*this)[p].has(r,c) )
                                 block = (*this)[p].at(r,c).op;
@@ -365,7 +376,7 @@ private:
                                                                 std::make_pair(rc, outc));
                         
                         if (std::abs(val) > 1e-40) {
-                            block_matrix<Matrix, SymmGroup> block;
+                            typename operator_selector<Matrix, SymmGroup>::type block;
                             charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             if ( (*this)[p+1].has(r,c) )
                                 block = (*this)[p+1].at(r,c).op;

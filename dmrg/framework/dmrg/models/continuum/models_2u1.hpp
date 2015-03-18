@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  * 
@@ -35,99 +35,237 @@
 
 /* ****************** FERMIONIC OPTICAL LATTICE (with symmetry) */
 template<class Matrix>
-class FermiOpticalLattice : public Model<Matrix, TwoU1> {
-    typedef Hamiltonian<Matrix, TwoU1> ham;        
-    typedef typename ham::hamterm_t hamterm_t;        
-    typedef Measurement_Term<Matrix, TwoU1> mterm_t;
-    typedef typename ham::op_t op_t;
+class FermiOpticalLattice : public model_impl<Matrix, TwoU1>
+{
 public:
-    FermiOpticalLattice (const Lattice& lat_, BaseParameters & model_)
+    typedef model_impl<Matrix, TwoU1> base;
+    
+    typedef typename base::table_type table_type;
+    typedef typename base::table_ptr table_ptr;
+    typedef typename base::tag_type tag_type;
+    
+    typedef typename base::term_descriptor term_descriptor;
+    typedef typename base::terms_type terms_type;
+    typedef typename base::op_t op_t;
+    typedef typename base::measurements_type measurements_type;
+    
+    typedef typename Matrix::value_type value_type;
+    
+    FermiOpticalLattice(const Lattice& lat_, BaseParameters & parms_)
     : lat(lat_)
-    , model(model_)
-    , none(_(0,0))
-    , up(_(1,0))
-    , down(_(0,1))
-    , updown(_(1,1))
+    , parms(parms_)
+    , tag_handler(new TagHandler<Matrix, TwoU1>())
     {
-        phys.insert(std::make_pair(none, 1));
-        phys.insert(std::make_pair(up, 1));
-        phys.insert(std::make_pair(down, 1));
-        phys.insert(std::make_pair(updown, 1));
+        TwoU1::charge A(0), B(0), C(0), D(1);
+        B[0]=1; C[1]=1;
+        phys.insert(std::make_pair(A, 1));
+        phys.insert(std::make_pair(B, 1));
+        phys.insert(std::make_pair(C, 1));
+        phys.insert(std::make_pair(D, 1));
         
-        ident.insert_block(Matrix(1, 1, 1), none, none);
-        ident.insert_block(Matrix(1, 1, 1), up, up);
-        ident.insert_block(Matrix(1, 1, 1), down, down);
-        ident.insert_block(Matrix(1, 1, 1), updown, updown);
+        op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
+        count_up_op, count_down_op, count_op, doubly_occ_op,
+        fill_op, ident_op;
         
-        count.insert_block(Matrix(1, 1, 1), up, up);
-        count.insert_block(Matrix(1, 1, 1), down, down);
-        count.insert_block(Matrix(1, 1, 2), updown, updown);
+        ident_op.insert_block(Matrix(1, 1, 1), A, A);
+        ident_op.insert_block(Matrix(1, 1, 1), B, B);
+        ident_op.insert_block(Matrix(1, 1, 1), C, C);
+        ident_op.insert_block(Matrix(1, 1, 1), D, D);
         
-        count_up.insert_block(Matrix(1, 1, 1), up, up);
-        count_down.insert_block(Matrix(1, 1, 1), down, down);
-        count_up.insert_block(Matrix(1, 1, 1), updown, updown);
-        count_down.insert_block(Matrix(1, 1, 1), updown, updown);
+        create_up_op.insert_block(Matrix(1, 1, 1), A, B);
+        create_up_op.insert_block(Matrix(1, 1, 1), C, D);
+        create_down_op.insert_block(Matrix(1, 1, 1), A, C);
+        create_down_op.insert_block(Matrix(1, 1, 1), B, D);
         
-        sign_up.insert_block(Matrix(1, 1, 1), none, none);
-        sign_up.insert_block(Matrix(1, 1, -1), up, up);
-        sign_up.insert_block(Matrix(1, 1, 1), down, down);
-        sign_up.insert_block(Matrix(1, 1, 1), updown, updown);
-        sign_down.insert_block(Matrix(1, 1, 1), none, none);
-        sign_down.insert_block(Matrix(1, 1, 1), up, up);
-        sign_down.insert_block(Matrix(1, 1, -1), down, down);
-        sign_down.insert_block(Matrix(1, 1, 1), updown, updown);
+        destroy_up_op.insert_block(Matrix(1, 1, 1), B, A);
+        destroy_up_op.insert_block(Matrix(1, 1, 1), D, C);
+        destroy_down_op.insert_block(Matrix(1, 1, 1), C, A);
+        destroy_down_op.insert_block(Matrix(1, 1, 1), D, B);
         
-        create_up.insert_block(Matrix(1, 1, 1), none, up);
-        create_up.insert_block(Matrix(1, 1, 1), down, updown);
-        create_down.insert_block(Matrix(1, 1, 1), none, down);
-        create_down.insert_block(Matrix(1, 1, 1), up, updown);
+        count_up_op.insert_block(Matrix(1, 1, 1), B, B);
+        count_up_op.insert_block(Matrix(1, 1, 1), D, D);
+        count_down_op.insert_block(Matrix(1, 1, 1), C, C);
+        count_down_op.insert_block(Matrix(1, 1, 1), D, D);
+        count_op.insert_block(Matrix(1, 1, 1), B, B);
+        count_op.insert_block(Matrix(1, 1, 1), C, C);
+        count_op.insert_block(Matrix(1, 1, 2), D, D);
         
-        destroy_up.insert_block(Matrix(1, 1, 1), up, none);
-        destroy_up.insert_block(Matrix(1, 1, 1), updown, down);
-        destroy_down.insert_block(Matrix(1, 1, 1), down, none);
-        destroy_down.insert_block(Matrix(1, 1, 1), updown, up);
+        doubly_occ_op.insert_block(Matrix(1, 1, 1), D, D);
         
-        doubly_occ.insert_block(Matrix(1, 1, 1), updown, updown);
+        fill_op.insert_block(Matrix(1, 1, 1), A, A);
+        fill_op.insert_block(Matrix(1, 1, -1), B, B);
+        fill_op.insert_block(Matrix(1, 1, -1), C, C);
+        fill_op.insert_block(Matrix(1, 1, 1), D, D);
+        
+        op_t tmp;
+        
+        gemm(fill_op, create_down_op, tmp);
+        create_down_op = tmp;
+        gemm(destroy_down_op, fill_op, tmp);
+        destroy_down_op = tmp;
+        
+        /**********************************************************************/
+        /*** Create operator tag table ****************************************/
+        /**********************************************************************/
+        
+#define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
+        
+        REGISTER(ident,        tag_detail::bosonic)
+        REGISTER(fill,         tag_detail::bosonic)
+        REGISTER(create_up,    tag_detail::fermionic)
+        REGISTER(create_down,  tag_detail::fermionic)
+        REGISTER(destroy_up,   tag_detail::fermionic)
+        REGISTER(destroy_down, tag_detail::fermionic)
+        REGISTER(count_up,     tag_detail::bosonic)
+        REGISTER(count_down,   tag_detail::bosonic)
+        REGISTER(count,        tag_detail::bosonic)
+        REGISTER(doubly_occ,   tag_detail::bosonic)
+        
+#undef REGISTER
+        /**********************************************************************/
+        
+        generate_terms();
     }
     
-    Index<TwoU1> get_phys() const
+    void update(BaseParameters const& p)
+    {
+        parms << p;
+        generate_terms();
+        return;
+    }
+    
+    Index<TwoU1> const & phys_dim(size_t type) const
     {
         return phys;
     }
-
-    Hamiltonian<Matrix, TwoU1> H () const
+    
+    measurements_type measurements () const
     {
-        std::vector<hamterm_t> terms;
-        for (int p=0; p<lat.size(); ++p)
-        {
-            std::vector<int> neighs = lat.all(p);
-            // normal, b0, b1:
-            // (nothing)
+        typedef std::vector<op_t> op_vec;
+        typedef std::vector<std::pair<op_vec, bool> > bond_element;
+        
+        std::size_t ntypes = lat.maximum_vertex_type()+1;
+        
+        measurements_type meas;
+        
+        if (parms["MEASURE[Density]"]) {
+            meas.push_back( new measurements::average<Matrix, TwoU1>("Density up", lat,
+                                                                     op_vec(ntypes,this->identity_matrix(0)),
+                                                                     op_vec(ntypes,this->filling_matrix(0)),
+                                                                     op_vec(ntypes,tag_handler->get_op(count_up))) );
+        }
+        if (parms["MEASURE[Density]"]) {
+            meas.push_back( new measurements::average<Matrix, TwoU1>("Density down", lat,
+                                                                     op_vec(ntypes,this->identity_matrix(0)),
+                                                                     op_vec(ntypes,this->filling_matrix(0)),
+                                                                     op_vec(ntypes,tag_handler->get_op(count_down))) );
+        }
+        
+        if (parms["MEASURE[Local density]"]) {
+            meas.push_back( new measurements::local<Matrix, TwoU1>("Local density up", lat,
+                                                                   op_vec(ntypes,this->identity_matrix(0)),
+                                                                   op_vec(ntypes,this->filling_matrix(0)),
+                                                                   op_vec(ntypes,tag_handler->get_op(count_up))) );
+        }
+        if (parms["MEASURE[Local density]"]) {
+            meas.push_back( new measurements::local<Matrix, TwoU1>("Local density down", lat,
+                                                                   op_vec(ntypes,this->identity_matrix(0)),
+                                                                   op_vec(ntypes,this->filling_matrix(0)),
+                                                                   op_vec(ntypes,tag_handler->get_op(count_down))) );
+        }
+        
+        if (parms["MEASURE[Onebody density matrix]"]) {
+            bond_element ops;
+            ops.push_back( std::make_pair(op_vec(ntypes,tag_handler->get_op(create_up)), true) );
+            ops.push_back( std::make_pair(op_vec(ntypes,tag_handler->get_op(destroy_up)), true) );
+            meas.push_back( new measurements::correlations<Matrix, TwoU1>("Onebody density matrix up", lat,
+                                                                          op_vec(ntypes,this->identity_matrix(0)),
+                                                                          op_vec(ntypes,this->filling_matrix(0)),
+                                                                          ops, false, false) );
+        }
+        if (parms["MEASURE[Onebody density matrix]"]) {
+            bond_element ops;
+            ops.push_back( std::make_pair(op_vec(ntypes,tag_handler->get_op(create_down)), true) );
+            ops.push_back( std::make_pair(op_vec(ntypes,tag_handler->get_op(destroy_down)), true) );
+            meas.push_back( new measurements::correlations<Matrix, TwoU1>("Onebody density matrix down", lat,
+                                                                          op_vec(ntypes,this->identity_matrix(0)),
+                                                                          op_vec(ntypes,this->filling_matrix(0)),
+                                                                          ops, false, false) );
+        }
+        
+        return meas;
+    }
+    
+    tag_type identity_matrix_tag(size_t type) const
+    {
+        return ident;
+    }
+    tag_type filling_matrix_tag(size_t type) const
+    {
+        return fill;
+    }
+    typename TwoU1::charge total_quantum_numbers(BaseParameters & parms) const
+    {
+        typename TwoU1::charge ret(0);
+        ret[0] = static_cast<int>(parms["Nup_total"]);
+        ret[1] = static_cast<int>(parms["Ndown_total"]);
+        return ret;
+    }
+    
+    tag_type get_operator_tag(std::string const & name, size_t type) const
+    {
+        if (name == "create_up")
+            return create_up;
+        else if (name == "create_down")
+            return create_down;
+        else if (name == "destroy_up")
+            return destroy_up;
+        else if (name == "destroy_down")
+            return destroy_down;
+        else if (name == "count_up")
+            return count_up;
+        else if (name == "count_down")
+            return count_down;
+        else if (name == "doubly_occ")
+            return doubly_occ;
+        else
+            throw std::runtime_error("Operator not valid for this model.");
+        return 0;
+    }
+    
+    table_ptr operators_table() const
+    {
+        return tag_handler;
+    }
+    
+private:
+    void generate_terms() {
+        this->terms_.clear();
+        
+        value_type k  = parms["k"];
+        value_type c  = parms["c"];
+        value_type V0 = parms["V0"];
+        value_type V1 = parms["V1"];
+        value_type V2 = parms["V2"];
+        value_type w  = parms["omega"];
+        value_type shift = parms["shift"];
+        
+        
+        std::pair<tag_type, value_type> ptag;
+        for (int p=0; p<lat.size(); ++p) {
+            int hopto = p+1;
+            std::vector<int> neighs = lat.forward(p);
+
+            double x = lat.get_prop<double>("x", p);
             
-            // b2:
-            //                if (lat.get_prop<bool>("at_open_left_boundary", p))
-            //                    neighs.push_back(p+2);
-            //                if (lat.get_prop<bool>("at_open_right_boundary", p))
-            //                    neighs.push_back(p-2);
+            value_type exp_potential = V0*std::pow( std::cos(k*x), 2 );
+            exp_potential += ( -V1*std::pow( std::cos(k*x),    2 )
+                               +V2*std::pow( std::cos(2.*k*x), 2 ) );
+            exp_potential += w*w/2. * std::pow(x - shift, 2 );
             
-            
-            // optical lattice
-            double exp_potential = model["V0"]*std::pow( std::cos(model["k"]*lat.get_prop<double>("x", p)), 2 );
-            // harmonic oscillator
-            exp_potential += model["omega"]/2.*std::pow(lat.get_prop<double>("x",p) - model["shift"], 2 );
-            
-            //              double dx = std::min(lat.get_prop<double>("dx", p, p+1), lat.get_prop<double>("dx", p-1, p));
-            double dx2, dx1 = lat.get_prop<double>("dx", p, neighs[0]);
-            if (neighs.size() == 1 && lat.get_prop<bool>("at_open_left_boundary", p))
-                dx2 = lat.get_prop<double>("dx", p, p-1);
-            else if (neighs.size() == 1 && lat.get_prop<bool>("at_open_right_boundary", p))
-                dx2 = lat.get_prop<double>("dx", p, p+1);
-            else
-                dx2 = lat.get_prop<double>("dx", p, neighs[1]);
-            
-            //                double dx0 = (std::abs(dx1) + std::abs(dx2)) / 2.;
-            //                dx0 = std::min(std::abs(dx1), std::abs(dx2));
-            
+            // MD: simplified version with uniform spacing
+            double dx1 = lat.get_prop<double>("dx", p, hopto);
+            double dx2 = -dx1;
             double dx0 = lat.get_prop<double>("dx", p);
             
             // Psi''(x) = coeff1 * Psi(x+dx1) + coeff0 * Psi(x) + coeff2 * Psi(x+dx2)
@@ -135,162 +273,99 @@ public:
             double coeff2 = 2. / (dx2*dx2 - dx1*dx2);
             double coeff0 = -(coeff1 + coeff2);
             
-            if (lat.get_prop<bool>("at_open_boundary", p)) {
-                //                    dx0 = std::min(std::abs(dx1),std::abs(dx2));
-                // b0, b2:
-                // (nothing)
-                
-                // normal:
-                //                    coeff0 = -1./(dx0*dx0);
-                
-                // b1:
-                //                    coeff0 = -coeff1;
-            }
             
-            double U = 2. * model["c"] / dx0;
-            double mu = exp_potential - model["mu"];
-            mu += -coeff0 * model["h"];
+            value_type U = c / dx0;
+            value_type mu = exp_potential - double(parms["mu"]);
+            mu += -coeff0 * parms["h"];
+            
+            value_type ti = coeff1 * parms["h"];
+
             
 #ifndef NDEBUG
-            maquis::cout << "U = " << U << ", mu = " << mu << ", t = " << coeff1 * model["h"] << std::endl;
+            maquis::cout << "U = " << U << ", mu = " << mu << ", t = " << ti << std::endl;
 #endif
             
-            /*
-             if (!lat.get_prop<bool>("at_open_boundary", p) && equal_grid)
-             mu += 2 * model["h"] / (dx*dx);
-             else if (lat.get_prop<bool>("at_open_boundary", p) && equal_grid)
-             mu += model["h"] / (dx*dx);
-             else if (!lat.get_prop<bool>("at_open_boundary", p) && !equal_grid)
-             mu += model["h"] / (dx*dx);
-             else if (lat.get_prop<bool>("at_open_right_boundary", p))
-             mu += 2./3. * model["h"] / (dx*dx);
-             else if (lat.get_prop<bool>("at_open_left_boundary", p))
-             mu += 1./3. * model["h"] / (dx*dx);
-             */
             
-            op_t site_op = mu*count_up;
-            site_op += mu*count_down;
-            site_op += U*doubly_occ;
-            
-            { // site term
-                hamterm_t term;
-                term.with_sign = false;
-                term.fill_operator = ident;
-                term.operators.push_back( std::make_pair(p, site_op) );
-                terms.push_back(term);
+            { // U term
+                term_descriptor term;
+                term.coeff = U;
+                term.push_back( boost::make_tuple(p, doubly_occ) );
+                this->terms_.push_back(term);
             }
-            
-            for (int n=0; n<neighs.size(); ++n) { // hopping
-                
-                double t;
-                /*
-                 // if (equal_grid || lat.get_prop<bool>("at_open_boundary", p))
-                 if (equal_grid)
-                 t = model["h"] / (dx*dx);
-                 else if (lat.get_prop<double>("dx", p, neighs[n]) == dx)
-                 t = 2./3. * model["h"] / (dx*dx);
-                 else if (lat.get_prop<double>("dx", p, neighs[n]) == 2*dx)
-                 t = 1./3. * model["h"] / (dx*dx);
-                 else
-                 throw std::runtime_error("I don't know the Laplacian operator in this kind of lattice!");
-                 */
-                if (lat.get_prop<double>("dx", p, neighs[n]) == dx1)
-                    t = coeff1 * model["h"];
-                else
-                    t = coeff2 * model["h"];
-                
-                {
-                    hamterm_t term;
-                    term.with_sign = true;
-                    term.fill_operator = sign_up;
-                    term.operators.push_back( std::make_pair(p, -t*create_up) );
-                    term.operators.push_back( std::make_pair(neighs[n], destroy_up) );
-                    terms.push_back(term);
+
+            { // mu term
+                term_descriptor term;
+                term.coeff = mu;
+                term.push_back( boost::make_tuple(p, count) );
+                this->terms_.push_back(term);
+            }
+
+            if (hopto < lat.size()) {
+                { // t*cdag_up*c_up
+                    term_descriptor term;
+                    term.is_fermionic = true;
+                    term.coeff = -ti;
+                    
+                    ptag = tag_handler->get_product_tag(fill, create_up); // Note inverse notation because of notation in operator.
+                    term.coeff *= ptag.second;
+                    
+                    term.push_back( boost::make_tuple(p, ptag.first) );
+                    term.push_back( boost::make_tuple(hopto, destroy_up) );
+                    this->terms_.push_back(term);
                 }
-                {
-                    hamterm_t term;
-                    term.with_sign = true;
-                    term.fill_operator = sign_down;
-                    term.operators.push_back( std::make_pair(p, -t*create_down) );
-                    term.operators.push_back( std::make_pair(neighs[n], destroy_down) );
-                    terms.push_back(term);
+                { // t*c_up*cdag_up
+                    term_descriptor term;
+                    term.is_fermionic = true;
+                    term.coeff = -ti;
+                    
+                    ptag = tag_handler->get_product_tag(fill, destroy_up); // Note inverse notation because of notation in operator.
+                    term.coeff *= -ptag.second; // Note minus because of anti-commutation
+                    
+                    term.push_back( boost::make_tuple(p, ptag.first) );
+                    term.push_back( boost::make_tuple(hopto, create_up) );
+                    this->terms_.push_back(term);
+                }
+                { // t*cdag_down*c_down
+                    term_descriptor term;
+                    term.is_fermionic = true;
+                    term.coeff = -ti;
+                    
+                    ptag = tag_handler->get_product_tag(fill, create_down); // Note inverse notation because of notation in operator.
+                    term.coeff *= ptag.second;
+                    
+                    term.push_back( boost::make_tuple(p, ptag.first) );
+                    term.push_back( boost::make_tuple(hopto, destroy_down) );
+                    this->terms_.push_back(term);
+                }
+                { // t*c_down*cdag_down
+                    term_descriptor term;
+                    term.is_fermionic = true;
+                    term.coeff = -ti;
+                    
+                    ptag = tag_handler->get_product_tag(fill, destroy_down); // Note inverse notation because of notation in operator.
+                    term.coeff *= -ptag.second; // Note minus because of anti-commutation
+                    
+                    term.push_back( boost::make_tuple(p, ptag.first) );
+                    term.push_back( boost::make_tuple(hopto, create_down) );
+                    this->terms_.push_back(term);
                 }
             }
-        }
-        
-        return ham(phys, ident, terms);
-    }
-    
-    Measurements<Matrix, TwoU1> measurements () const
-    {
-        Measurements<Matrix, TwoU1> meas;
-        meas.set_identity(ident);
-        
-        if (model["MEASURE_CONTINUUM[Density]"]) {
-            mterm_t term;
-            term.fill_operator = ident;
-            term.name = "Density";
-            term.type = mterm_t::Average;
-            term.operators.push_back( std::make_pair(count, false) );
-            
-            meas.add_term(term);
-        }
-        if (model["MEASURE_CONTINUUM[Local density]"]) {
-            mterm_t term;
-            term.fill_operator = ident;
-            term.name = "Local density up";
-            term.type = mterm_t::Local;
-            term.operators.push_back( std::make_pair(count_up, false) );
-            
-            meas.add_term(term);
-        }
-        if (model["MEASURE_CONTINUUM[Local density]"]) {
-            mterm_t term;
-            term.fill_operator = ident;
-            term.name = "Local density down";
-            term.type = mterm_t::Local;
-            term.operators.push_back( std::make_pair(count_down, false) );
-            
-            meas.add_term(term);
         }
 
-        if (model["MEASURE_CONTINUUM[Onebody density matrix]"]) {
-            mterm_t term;
-            term.fill_operator = sign_up;
-            term.name = "Onebody density matrix up";
-            term.type = mterm_t::HalfCorrelation;
-            term.operators.push_back( std::make_pair(create_up, true) );
-            term.operators.push_back( std::make_pair(destroy_up, true) );
-            
-            meas.add_term(term);
-        }
-        if (model["MEASURE_CONTINUUM[Onebody density matrix]"]) {
-            mterm_t term;
-            term.fill_operator = sign_down;
-            term.name = "Onebody density matrix down";
-            term.type = mterm_t::HalfCorrelation;
-            term.operators.push_back( std::make_pair(create_down, true) );
-            term.operators.push_back( std::make_pair(destroy_down, true) );
-            
-            meas.add_term(term);
-        }
-
-        return meas;
     }
     
-private:
-    const Lattice & lat;
-    BaseParameters & model;
     
-    op_t ident;
-    op_t create_up, destroy_up;
-    op_t create_down, destroy_down;
-    op_t count, doubly_occ;
-    op_t count_up, count_down;
-    op_t sign_up, sign_down;
     Index<TwoU1> phys;
     
-    TwoU1::charge none, up, down, updown;
+    Lattice const & lat;
+    BaseParameters & parms;
+    
+    boost::shared_ptr<TagHandler<Matrix, TwoU1> > tag_handler;
+    tag_type create_up, create_down, destroy_up, destroy_down,
+    count_up, count_down, count, doubly_occ,
+    ident, fill;
+    
 };
+
 
 #endif

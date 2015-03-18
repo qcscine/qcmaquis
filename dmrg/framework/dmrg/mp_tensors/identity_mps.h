@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -34,7 +34,7 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> identity_dm_mps(std::size_t
                                                                      std::vector<Index<typename grouped_symmetry<InSymm>::type> > const& allowed)
 {
     MPOTensor<Matrix, InSymm> t(1,1);
-    t.set(0, 0, identity_matrix<Matrix>(phys_psi));
+    t.set(0, 0, identity_matrix<typename operator_selector<Matrix, SymmGroup>::type>(phys_psi));
 
     MPO<Matrix, InSymm> mpo(L, t);
     return mpo_to_smps_group(mpo, phys_psi, allowed);

@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -28,8 +27,23 @@
 
 #ifndef AMBIENT
 #define AMBIENT
+
+#ifndef AMBIENT_DEFAULT_IB
+#define AMBIENT_DEFAULT_IB           2048
+#endif
+#ifndef AMBIENT_INSTR_BULK_CHUNK
+#define AMBIENT_INSTR_BULK_CHUNK     16777216 // 16 MB
+#endif
+#ifndef AMBIENT_DATA_BULK_CHUNK
+#define AMBIENT_DATA_BULK_CHUNK      67108864 // 64 MB
+#endif
+#ifndef AMBIENT_MPI
+#define AMBIENT_MPI                  MPI_THREAD_FUNNELED
+#endif
+#define MPI_DISABLE -1
+
 // {{{ system includes
-#ifndef DISABLE_MPI
+#if AMBIENT_MPI != MPI_DISABLE
 #include <mpi.h>
 #endif
 #include <complex>
@@ -52,27 +66,22 @@
 #include <algorithm>
 #include <execinfo.h>
 #include <stdexcept>
+#include <type_traits>
 // }}}
 
-#define AMBIENT_IB                    2048
-#define AMBIENT_INSTR_BULK_CHUNK      16777216 // 16 MB
-#define AMBIENT_DATA_BULK_CHUNK       67108864 // 64 MB
-#define AMBIENT_MAX_SID               2097152  // Cray MPI
-#define AMBIENT_MPI_THREADING         MPI_THREAD_FUNNELED
-#define AMBIENT_MASTER_RANK           0
-
-#include "ambient/utils/dim2.h"
-#include "ambient/utils/enums.h"
+#include "ambient/utils/dim2.hpp"
 #include "ambient/utils/tree.hpp"
-#include "ambient/utils/fence.hpp"
-#include "ambient/utils/enable_threading.hpp"
+#include "ambient/utils/guard_once.hpp"
+#include "ambient/utils/threads.hpp"
 #include "ambient/utils/math.hpp"
 #include "ambient/utils/rank_t.hpp"
+#include "ambient/utils/io.hpp"
 
 #include "ambient/memory/pool.hpp"
 #include "ambient/memory/new.h"
 #include "ambient/memory/allocator.h"
 
+#include "ambient/models/ssm/locality.h"
 #include "ambient/models/ssm/revision.h"
 #include "ambient/models/ssm/history.h"
 #include "ambient/models/ssm/transformable.h"
@@ -80,7 +89,6 @@
 
 #ifdef MPI_VERSION
 #include "ambient/channels/mpi/group.h"
-#include "ambient/channels/mpi/multirank.h"
 #include "ambient/channels/mpi/channel.h"
 #include "ambient/channels/mpi/request.h"
 #include "ambient/channels/mpi/collective.h"
@@ -91,14 +99,16 @@
 #include "ambient/controllers/ssm/functor.h"
 #include "ambient/controllers/ssm/collector.h"
 #include "ambient/controllers/ssm/controller.h"
+#include "ambient/controllers/ssm/meta.h"
 #include "ambient/controllers/ssm/get.h"
 #include "ambient/controllers/ssm/set.h"
 #include "ambient/controllers/ssm/scope.h"
 #include "ambient/controllers/ssm/actor.h"
+#include "ambient/controllers/ssm/context_mt.h"
+#include "ambient/controllers/ssm/context_serial.h"
 #include "ambient/controllers/ssm/backbone.h"
 
 #include "ambient/utils/auxiliary.hpp"
-#include "ambient/utils/io.hpp"
 
 #include "ambient/memory/new.hpp"
 #include "ambient/memory/allocator.hpp"
@@ -112,25 +122,26 @@
 
 #ifdef MPI_VERSION
 #include "ambient/channels/mpi/group.hpp"
-#include "ambient/channels/mpi/multirank.hpp"
 #include "ambient/channels/mpi/channel.hpp"
 #include "ambient/channels/mpi/request.hpp"
 #include "ambient/channels/mpi/collective.hpp"
 #endif
 
+#include "ambient/controllers/ssm/meta.hpp"
 #include "ambient/controllers/ssm/get.hpp"
 #include "ambient/controllers/ssm/set.hpp"
 #include "ambient/controllers/ssm/collector.hpp"
 #include "ambient/controllers/ssm/controller.hpp"
 #include "ambient/controllers/ssm/scope.hpp"
 #include "ambient/controllers/ssm/actor.hpp"
+#include "ambient/controllers/ssm/context_mt.hpp"
+#include "ambient/controllers/ssm/context_serial.hpp"
 #include "ambient/controllers/ssm/backbone.hpp"
 
 #include "ambient/interface/typed.hpp"
 #include "ambient/interface/kernel.hpp"
 #include "ambient/interface/access.hpp"
 #include "ambient/interface/lambda.hpp"
-#include "ambient/interface/algorithms.hpp"
 
 #include "ambient/container/proxy.hpp"
 #include "ambient/container/block.hpp"

@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Sebastian Keller <sebkelleb@phys.ethz.ch>
  * 
@@ -292,10 +292,15 @@ public:
     typedef S subcharge;
     typedef NU1ChargePG<N, S> charge;
     typedef std::vector<charge> charge_v;
-    
+
     static const charge IdentityCharge;
     static const bool finite = false;
     static const alps::numeric::matrix<S> mult_table;
+
+    static subcharge particleNumber(charge rhs) { return std::accumulate(rhs.begin(), &rhs[N], 0); }
+
+    static subcharge & irrep(charge & rhs) { return rhs[N]; }
+    static subcharge const & irrep(charge const & rhs) { return rhs[N]; }
 
     static charge fuse(charge a, charge b)
     {

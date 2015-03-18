@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2012 by Alexandr Kosenkov <alex.kosenkov@gmail.com>
  *                            Timothee Ewart <timothee.ewart@gmail.com>
  * 
@@ -28,8 +28,9 @@
 #ifndef MAQUIS_BLOCK_MATRIX_DETAIL_AMBIENT_HPP
 #define MAQUIS_BLOCK_MATRIX_DETAIL_AMBIENT_HPP
 
-#include <ambient/numeric/enable_alps_hdf5.hpp>
-#include <ambient/numeric/matrix.hpp>
+#include <ambient/container/numeric/enable_alps_hdf5.hpp>
+#include <ambient/container/numeric/matrix.hpp>
+#include "dmrg/utils/parallel.hpp"
 #include "dmrg/block_matrix/detail/ambient_detail.hpp"
 #include "dmrg/block_matrix/detail/alps.hpp"
 #include "utils/traits.hpp"

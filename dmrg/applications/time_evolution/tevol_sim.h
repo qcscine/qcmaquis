@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -102,7 +102,7 @@ public:
                     chkp_each    = parms["chkp_each"];
                     update_each  = parms["update_each"];
                     model.update(parms);
-                    mpo = make_mpo(lat, model, parms);
+                    mpo = make_mpo(lat, model);
                     evolver = TimeEvolver(&parms, &mps, lat, model, sweep);
                 }
             } else if (sweep == nsweeps_img) {

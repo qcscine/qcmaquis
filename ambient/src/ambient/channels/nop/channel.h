@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -33,13 +32,6 @@
 
 namespace ambient { namespace channels { namespace nop {
 
-    class multirank {
-    public:
-        rank_t operator()() const { return 0; }
-        rank_t left_neighbor() const { return 0; }
-        rank_t right_neighbor() const { return 0; }
-    };
-
     template<class T> struct collective {
         bool test(){ return true; }
         void operator += (rank_t rank){}
@@ -57,7 +49,8 @@ namespace ambient { namespace channels { namespace nop {
         collective<block_type>* set(block_type& r){ return NULL; }
         collective<scalar_type>* bcast(scalar_type& v, rank_t root){ return NULL; }
         collective<scalar_type>* bcast(scalar_type& v){ return NULL; }
-        multirank rank;
+        static constexpr rank_t rank = 0;
+        static constexpr int tag_ub = 1;
     };
 
 } } }

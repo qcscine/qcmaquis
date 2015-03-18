@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2013-2013 by Bela Bauer <bauerb@phys.ethz.ch>
  *                            Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
@@ -120,7 +120,7 @@ MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup>
 MPOTensor<Matrix, SymmGroup>::at(index_type left_index, index_type right_index) const {
     assert(this->has(left_index, right_index));
     typename CSCMatrix::value_type const & p = col_tags(left_index, right_index);
-    return MPOTensor_detail::make_const_term_descriptor((*operator_table)[p.first], p.second);
+    return MPOTensor_detail::make_const_term_descriptor<Matrix, SymmGroup>((*operator_table)[p.first], p.second);
 }
 
 // warning: this method allows to (indirectly) change the op in the table, all tags pointing to it will

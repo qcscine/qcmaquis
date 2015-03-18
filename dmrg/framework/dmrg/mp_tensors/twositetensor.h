@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *                            Michele Dolfi <dolfim@phys.ethz.ch>
  * 
@@ -80,10 +80,13 @@ public:
     split_mps_r2l(std::size_t Mmax, double cutoff) const;
     
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-    predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left, MPOTensor<Matrix, SymmGroup> const& mpo);
+    predict_split_l2r(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& left,
+                      MPOTensor<Matrix, SymmGroup> const& mpo);
     boost::tuple<MPSTensor<Matrix, SymmGroup>, MPSTensor<Matrix, SymmGroup>, truncation_results>
-    predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right, MPOTensor<Matrix, SymmGroup> const& mpo);
+    predict_split_r2l(std::size_t Mmax, double cutoff, double alpha, Boundary<Matrix, SymmGroup> const& right,
+                      MPOTensor<Matrix, SymmGroup> const& mpo);
     
+    void clear();
     void swap_with(TwoSiteTensor & b);
 
     friend void swap(TwoSiteTensor & a, TwoSiteTensor & b)
@@ -95,6 +98,18 @@ public:
     template<class Archive> void save(Archive & ar) const;
     
 private:
+    template <bool SU2> class type_helper { };
+
+    template <bool SU2>
+    MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<SU2>) const;
+
+    MPSTensor<Matrix, SymmGroup> make_mps_(type_helper<true>) const;
+
+    template <bool SU2>
+    TwoSiteTensor<Matrix, SymmGroup> & operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<SU2>);
+
+    TwoSiteTensor<Matrix, SymmGroup> & operator_shift(MPSTensor<Matrix, SymmGroup> const & rhs, type_helper<true>);
+
     MultiIndex<SymmGroup> midx;
     set_id left_paired;
     set_id right_paired;

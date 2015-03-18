@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -25,7 +25,7 @@
  *****************************************************************************/
 
 #include "dmrg/models/coded/models_u1.hpp"
-//#include "dmrg/models/coded/models_bela.hpp"
+#include "dmrg/models/coded/models_bela.hpp"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, U1> {
@@ -43,8 +43,8 @@ struct coded_model_factory<Matrix, U1> {
 //            return impl_ptr( new FermiHubbardU1<Matrix>(lattice, parms) );
         else if (parms["MODEL"] == std::string("FreeFermions"))
             return impl_ptr( new FreeFermions<Matrix>(lattice, parms["t"]) );
-//        else if (parms["MODEL"] == std::string("bela_chiral"))
-//            return impl_ptr( new Chiral<Matrix>(lattice, parms) );
+        else if (parms["MODEL"] == std::string("bela_chiral_ext"))
+            return impl_ptr( new Chiral_ext<Matrix>(lattice, parms) );
         else {
             throw std::runtime_error("Don't know this model!");
             return impl_ptr();

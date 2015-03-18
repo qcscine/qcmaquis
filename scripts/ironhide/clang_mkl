@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 STATE="configure"
 STATE_AMBIENT="build"
 STATE_DMRG="build"

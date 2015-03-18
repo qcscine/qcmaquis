@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  *               2011-2013    Michele Dolfi <dolfim@phys.ethz.ch>
  *
@@ -71,7 +71,8 @@ namespace measurements {
         public:
             typedef Lattice::pos_t pos_t;
             typedef std::size_t size_t;
-            typedef std::pair<std::vector<block_matrix<Matrix, SymmGroup> >, bool> inner_t;
+            typedef typename measurement<Matrix, SymmGroup>::op_t op_t;
+            typedef std::pair<std::vector<op_t>, bool> inner_t;
             typedef std::vector<inner_t> value_t;
             CorrPermutator (value_t const & ops, bool is_nn)
             {
@@ -130,8 +131,9 @@ namespace measurements {
     template <class Matrix, class SymmGroup>
     class correlations : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
+        typedef typename base::op_t op_t;
         typedef Lattice::pos_t pos_t;
-        typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
+        typedef std::vector<op_t> op_vec;
         typedef std::vector<pos_t> positions_type;
     
     public:

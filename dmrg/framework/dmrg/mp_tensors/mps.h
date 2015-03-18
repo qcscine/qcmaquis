@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -99,8 +99,9 @@ public:
     Boundary<Matrix, SymmGroup> left_boundary() const;
     Boundary<Matrix, SymmGroup> right_boundary() const;
     
-    void apply(block_matrix<Matrix, SymmGroup> const&, size_type);
-    void apply(block_matrix<Matrix, SymmGroup> const&, block_matrix<Matrix, SymmGroup> const&, size_type);
+    void apply(typename operator_selector<Matrix, SymmGroup>::type const&, size_type);
+    void apply(typename operator_selector<Matrix, SymmGroup>::type const&,
+               typename operator_selector<Matrix, SymmGroup>::type const&, size_type);
     
     friend void swap(MPS& a, MPS& b)
     {

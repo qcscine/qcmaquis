@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -42,15 +41,19 @@ namespace ambient { namespace memory {
         this->raw.push_back(o);
     }
 
-    inline void collector::push_back(revision* o){
-        if(!o->valid()) o->spec.weaken();
-        o->spec.crefs--;
-        if(!o->referenced()){ // squeeze
-            if(o->valid() && !o->locked() && o->spec.region == ambient::region_t::standard){
-                ambient::pool::free(o->data, o->spec); // artifacts or last one
-                o->spec.region = ambient::region_t::delegated;
+    inline void collector::push_back(revision* r){
+        if(!r->valid() && r->state != ambient::locality::remote){
+            assert(r->spec.region != region_t::bulk);
+            assert(r->spec.region != region_t::delegated);
+            r->spec.weaken();
+        }
+        r->spec.crefs--;
+        if(!r->referenced()){ // squeeze
+            if(r->valid() && !r->locked() && r->spec.region == ambient::region_t::standard){
+                ambient::pool::free(r->data, r->spec); // artifacts or last one
+                r->spec.region = ambient::region_t::delegated;
             }
-            this->rev.push_back(o);
+            this->rev.push_back(r);
         }
     }
 

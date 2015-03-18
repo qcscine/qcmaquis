@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -40,6 +40,15 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
+template<class Matrix, class SymmGroup> class SiteOperator;
+
+template<class Matrix, class SymmGroup>
+struct operator_selector
+{
+    typedef SiteOperator<Matrix, SymmGroup> type;
+    //typedef block_matrix<Matrix, SymmGroup> type;
+};
+
 template<class Matrix, class SymmGroup>
 class block_matrix
 {
@@ -47,6 +56,7 @@ class block_matrix
 private:
     typedef typename SymmGroup::charge charge;
 public:
+    typedef Matrix matrix_type;
     typedef typename Matrix::size_type size_type;
     typedef typename Matrix::value_type value_type;
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;
@@ -56,8 +66,10 @@ public:
    
     block_matrix();
 
-    block_matrix(Index<SymmGroup> rows,
-                 Index<SymmGroup> cols);
+    block_matrix(Index<SymmGroup> const & rows,
+                 Index<SymmGroup> const & cols);
+
+    block_matrix(DualIndex<SymmGroup> const & basis);
     
     block_matrix(block_matrix const&);
 
@@ -68,19 +80,14 @@ public:
     template<class OtherMatrix>
     block_matrix& operator=(const block_matrix<OtherMatrix, SymmGroup>& rhs);
 
-    Index<SymmGroup> const & left_basis() const;
-    Index<SymmGroup> const & right_basis() const;
+    Index<SymmGroup> left_basis() const;
+    Index<SymmGroup> right_basis() const;
+    DualIndex<SymmGroup> const & basis() const;
 
     void shift_basis(charge diff);
 
-//  Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
-//  block_matrix(charge rc, charge cc, Matrix& m);
-
     std::string description() const;
     std::size_t num_elements() const;
-    #ifdef USE_AMBIENT
-    void print_distribution() const;
-    #endif
     
     Matrix &             operator[](size_type c);
     Matrix const &       operator[](size_type c) const;
@@ -104,9 +111,11 @@ public:
     void remove_block(charge r, charge c);
     void remove_block(std::size_t which);
 
-// Remove by Tim 06/08/2012, presently not used in any DMRG/TE code
-//  void remove_rows_from_block(size_type block, size_type r, size_type k = 1);
-//  void remove_cols_from_block(size_type block, size_type r, size_type k = 1);
+    mutable typename parallel::scheduler_balanced_iterative::index iter_index;
+    mutable typename parallel::scheduler_size_indexed::index size_index;
+
+    void index_iter(int i, int max) const;
+    void index_sizes() const;
     
     scalar_type trace() const;
     real_type norm() const;
@@ -133,26 +142,21 @@ public:
     friend void swap(block_matrix & x, block_matrix & y)
     {
         swap(x.data_, y.data_);
-        swap(x.rows_, y.rows_);
-        swap(x.cols_, y.cols_);
-#ifdef AMBIENT_TRACKING
-        ambient_track_as(x, x.label);
-        ambient_track_as(y, y.label);
-#endif
+        swap(x.basis_, y.basis_);
+        swap(x.size_index, y.size_index);
+        swap(x.iter_index, y.iter_index);
     }
 
     Matrix const & operator()(charge r, charge c) const
     {
         assert( has_block(r, c) );
-        assert( rows_.position(r) == cols_.position(c) );
-        return data_[rows_.position(r)];
+        return data_[basis_.position(r,c)];
     }
     
     Matrix & operator()(charge r, charge c)
     {
         assert( has_block(r, c) );
-        assert( rows_.position(r) == cols_.position(c) );
-        return data_[rows_.position(r)];
+        return data_[basis_.position(r,c)];
     }
     
     std::pair<const_block_iterator,const_block_iterator> blocks() const {
@@ -167,11 +171,8 @@ public:
     
     bool reasonable() const;
     
-#ifdef AMBIENT_TRACKING
-    std::string label;
-#endif
 private:
-    Index<SymmGroup> rows_, cols_;
+    DualIndex<SymmGroup> basis_;
     boost::ptr_vector<Matrix> data_;
 };    
 

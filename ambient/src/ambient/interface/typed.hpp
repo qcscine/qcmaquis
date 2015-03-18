@@ -1,7 +1,6 @@
 /*
- * Ambient Project
- *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
+ * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
  * obtaining a copy of the software and accompanying documentation covered by
@@ -31,13 +30,8 @@
 
 #define EXTRACT(var) T* var = (T*)m->arguments[arg];
 
-namespace ambient { namespace numeric {
-    template <class T, class Allocator> class matrix;
-    template <class T> class transpose_view;
-    template <class T> class diagonal_matrix;
-} }
-
 namespace ambient {
+    template<typename T> class future;
     template<typename T> class default_allocator;
     using ambient::controllers::ssm::functor;
     using ambient::models::ssm::history;
@@ -58,6 +52,7 @@ namespace ambient {
         template<size_t arg> static void modify_local(T& obj, functor* m){
             m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj);
         }
+        static constexpr bool ReferenceOnly = false;
     };
     template <typename T> struct singular_inplace_info : public singular_info<T> {
         template<size_t arg> static T& revised(functor* m){ return *(T*)&m->arguments[arg]; }
@@ -70,16 +65,17 @@ namespace ambient {
             EXTRACT(o); o->desc->generator = NULL;
         }
         template<size_t arg> static void modify_remote(T& obj){ 
-            selector.get_controller().rsync(obj.desc);
+            ambient::select().get_controller().rsync(obj.desc);
         }
         template<size_t arg> static void modify_local(const T& obj, functor* m){ 
             obj.desc->generator = m;
-            selector.get_controller().lsync(obj.desc);
+            ambient::select().get_controller().lsync(obj.desc);
             m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.desc);
         }
         template<size_t arg> static void modify(const T& obj, functor* m){ 
             m->arguments[arg] = (void*)new(ambient::pool::malloc<instr_bulk,T>()) T(obj.desc);
         }
+        static constexpr bool ReferenceOnly = true;
     };
     template <typename T> struct read_future_info : public future_info<T> {
         template<size_t arg> static void deallocate(functor* m){ }
@@ -98,66 +94,70 @@ namespace ambient {
             revision& current = *o->ambient_after;
             current.complete();
             current.release();
-            selector.get_controller().squeeze(&parent);
+            ambient::select().get_controller().squeeze(&parent);
             parent.release();
         }
         template<size_t arg>
         static void modify_remote(T& obj){
             decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
-            selector.get_controller().touch(o);
+            ambient::select().get_controller().touch(o);
             if(o->back()->owner != ambient::which())
-                selector.get_controller().rsync(o->back());
-            selector.get_controller().collect(o->back());
-            selector.get_controller().add_revision<ambient::locality::remote>(o, ambient::which()); 
+                ambient::select().get_controller().rsync(o->back());
+            ambient::select().get_controller().collect(o->back());
+            ambient::select().get_controller().add_revision<ambient::locality::remote>(o, ambient::which()); 
         }
         template<size_t arg>
         static void modify_local(T& obj, functor* m){
             decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
-            selector.get_controller().touch(o);
+            ambient::select().get_controller().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); 
             m->arguments[arg] = (void*)var;
-            selector.get_controller().lsync(o->back());
-            selector.get_controller().use_revision(o);
-            selector.get_controller().collect(o->back());
+            ambient::select().get_controller().lsync(o->back());
+            ambient::select().get_controller().use_revision(o);
 
             var->ambient_before = o->current;
-            selector.get_controller().add_revision<ambient::locality::local>(o, m); 
-            selector.get_controller().use_revision(o);
+            if(o->current->generator != m){
+                ambient::select().get_controller().collect(o->back());
+                ambient::select().get_controller().add_revision<ambient::locality::local>(o, m);
+            }
+            ambient::select().get_controller().use_revision(o);
             var->ambient_after = o->current;
         }
         template<size_t arg>
         static void modify(T& obj, functor* m){
             decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
-            selector.get_controller().touch(o);
+            ambient::select().get_controller().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
-            selector.get_controller().sync(o->back());
-            selector.get_controller().use_revision(o);
-            selector.get_controller().collect(o->back());
+            ambient::select().get_controller().sync(o->back());
+            ambient::select().get_controller().use_revision(o);
 
             var->ambient_before = o->current;
-            selector.get_controller().add_revision<ambient::locality::common>(o, m); 
-            selector.get_controller().use_revision(o);
+            if(o->current->generator != m){
+                ambient::select().get_controller().collect(o->back());
+                ambient::select().get_controller().add_revision<ambient::locality::common>(o, m); 
+            }
+            ambient::select().get_controller().use_revision(o);
             var->ambient_after = o->current;
         }
         template<size_t arg>
         static T& revised(functor* m){ 
-            EXTRACT(o); revise(*o);
+            EXTRACT(o); revise(*o); transform(*o);
             return *o;
         }
         template<size_t arg> 
         static bool pin(functor* m){ 
             EXTRACT(o);
             revision& r = *o->ambient_before;
-            if(r.generator != NULL){
-                ((functor*)r.generator)->queue(m);
+            if(r.generator != NULL && r.generator != m){
+                ((functor*)r.generator.load())->queue(m);
                 return true;
             }
             return false;
         }
         template<size_t arg> 
         static void score(T& obj){
-            selector.intend_read(obj.ambient_rc.desc->back());
-            selector.intend_write(obj.ambient_rc.desc->back());
+            ambient::select().intend_read(obj.ambient_rc.desc->back());
+            ambient::select().intend_write(obj.ambient_rc.desc->back());
         }
         template<size_t arg> 
         static bool ready(functor* m){
@@ -166,6 +166,7 @@ namespace ambient {
             if(r.generator == NULL || r.generator == m) return true;
             return false;
         }
+        static constexpr bool ReferenceOnly = true;
     };
     // }}}
     // {{{ compile-time type info: only read/write iteratable derived types
@@ -174,42 +175,42 @@ namespace ambient {
         template<size_t arg> static void deallocate(functor* m){
             EXTRACT(o);
             revision& r = *o->ambient_before;
-            selector.get_controller().squeeze(&r);
+            ambient::select().get_controller().squeeze(&r);
             r.release();
         }
         template<size_t arg> static void modify_remote(T& obj){
             decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
-            selector.get_controller().touch(o);
+            ambient::select().get_controller().touch(o);
             if(o->back()->owner != ambient::which())
-                selector.get_controller().rsync(o->back());
+                ambient::select().get_controller().rsync(o->back());
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
             decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
-            selector.get_controller().touch(o);
+            ambient::select().get_controller().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             var->ambient_before = var->ambient_after = o->current;
-            selector.get_controller().lsync(o->back());
-            selector.get_controller().use_revision(o);
+            ambient::select().get_controller().lsync(o->back());
+            ambient::select().get_controller().use_revision(o);
         }
         template<size_t arg> static void modify(T& obj, functor* m){
             decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
-            selector.get_controller().touch(o);
+            ambient::select().get_controller().touch(o);
             T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
             var->ambient_before = var->ambient_after = o->current;
-            selector.get_controller().sync(o->back());
-            selector.get_controller().use_revision(o);
+            ambient::select().get_controller().sync(o->back());
+            ambient::select().get_controller().use_revision(o);
         }
         template<size_t arg> 
         static void score(T& obj){
-            selector.intend_read(obj.ambient_rc.desc->back());
+            ambient::select().intend_read(obj.ambient_rc.desc->back());
         }
         template<size_t arg> 
         static bool pin(functor* m){ 
             EXTRACT(o);
             revision& r = *o->ambient_before;
             if(r.generator != NULL){
-                ambient::guard<ambient::mutex> g(selector.get_mutex());
-                ((functor*)r.generator)->queue(m);
+                ambient::guard<ambient::mutex> g(ambient::select().get_mutex());
+                ((functor*)r.generator.load())->queue(m);
                 return true;
             }
             return false;
@@ -218,48 +219,55 @@ namespace ambient {
     template <typename T> struct write_iteratable_info : public iteratable_info<T> {
         template<size_t arg> static void modify_remote(T& obj){
             decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
-            selector.get_controller().touch(o);
-            selector.get_controller().collect(o->back());
-            selector.get_controller().add_revision<ambient::locality::remote>(o, ambient::which()); 
+            ambient::select().get_controller().touch(o);
+            ambient::select().get_controller().collect(o->back());
+            ambient::select().get_controller().add_revision<ambient::locality::remote>(o, ambient::which()); 
         }
         template<size_t arg> static void modify_local(T& obj, functor* m){
             decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
-            selector.get_controller().touch(o);
-            T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
+            ambient::select().get_controller().touch(o);
+            T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, (void*)&obj, sizeof(T)); m->arguments[arg] = (void*)var;
 
-            selector.get_controller().use_revision(o);
-            selector.get_controller().collect(o->back());
+            ambient::select().get_controller().use_revision(o);
+            ambient::select().get_controller().collect(o->back());
 
             var->ambient_before = o->current;
-            selector.get_controller().add_revision<ambient::locality::local>(o, m); 
-            selector.get_controller().use_revision(o);
+            ambient::select().get_controller().add_revision<ambient::locality::local>(o, m); 
+            ambient::select().get_controller().use_revision(o);
             var->ambient_after = o->current;
         }
         template<size_t arg> static void modify(T& obj, functor* m){
             decltype(obj.ambient_rc.desc) o = obj.ambient_rc.desc;
-            selector.get_controller().touch(o);
-            T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, &obj, sizeof(T)); m->arguments[arg] = (void*)var;
-            selector.get_controller().use_revision(o);
-            selector.get_controller().collect(o->back());
+            ambient::select().get_controller().touch(o);
+            T* var = (T*)ambient::pool::malloc<instr_bulk,T>(); memcpy((void*)var, (void*)&obj, sizeof(T)); m->arguments[arg] = (void*)var;
+            ambient::select().get_controller().use_revision(o);
+            ambient::select().get_controller().collect(o->back());
 
             var->ambient_before = o->current;
-            selector.get_controller().add_revision<ambient::locality::common>(o, m); 
-            selector.get_controller().use_revision(o);
+            ambient::select().get_controller().add_revision<ambient::locality::common>(o, m); 
+            ambient::select().get_controller().use_revision(o);
             var->ambient_after = o->current;
         }
         template<size_t arg> static bool pin(functor* m){ return false; }
         template<size_t arg> static void score(T& obj) {               
-            selector.intend_write(obj.ambient_rc.desc->back());
+            ambient::select().intend_write(obj.ambient_rc.desc->back());
         }
         template<size_t arg> static bool ready (functor* m){ return true;  }
     };
     // }}}
 
     // {{{ compile-time type info: specialization for forwarded types
-    using ambient::numeric::future;
-    using ambient::numeric::matrix;
-    using ambient::numeric::diagonal_matrix;
-    using ambient::numeric::transpose_view;
+
+    template <typename T>
+    struct is_polymorphic {
+        template <typename T1> static typename T1::async_type test(int);
+        template <typename>    static void test(...);
+        enum { value = !std::is_void<decltype(test<T>(0))>::value };
+    };
+    template <bool HAS, typename T> struct checked_get_async_type { typedef int type; };
+    template <typename T> struct checked_get_async_type<true, T>  { typedef typename T::async_type type; };
+    template <typename T> struct get_async_type { typedef typename checked_get_async_type<is_polymorphic<T>::value, T>::type type; };
+
 
     template <typename T>
     struct has_allocator {
@@ -269,12 +277,8 @@ namespace ambient {
     };
     template <bool HAS, typename T> struct checked_get_allocator {};
     template <typename T> struct checked_get_allocator<true, T> { typedef typename T::allocator_type type; };
-    template <typename T> struct checked_get_allocator<false, T> { typedef typename ambient::default_allocator<T> type; }; // or T::value_type
+    template <typename T> struct checked_get_allocator<false, T> { typedef typename ambient::default_allocator<typename T::value_type> type; };
     template <typename T> struct get_allocator { typedef typename checked_get_allocator<has_allocator<T>::value, T>::type type; };
-
-    template <class T> struct unbound : public T {
-        typedef typename get_allocator<T>::type allocator_type;
-    };
 
     template<typename T> struct has_versioning {
         template<std::size_t V> struct valuekeeper {};
@@ -294,7 +298,7 @@ namespace ambient {
 
     template <typename T>
     struct info {
-        typedef typename       versioned_info<has_versioning<T>::value,T>::type typed;
+        typedef typename versioned_info<has_versioning<T>::value,T>::type typed;
         template <typename U> static U& unfold(T& naked){ return *static_cast<U*>(&naked); }
     };
     template <typename T>
@@ -303,11 +307,10 @@ namespace ambient {
         template <typename U> static const T& unfold(const T& naked){ return naked; }
     };
 
-    template <>
-    struct info < size_t > {
-        typedef size_t type;
-        typedef singular_inplace_info<type> typed; 
-        template <typename U> static type& unfold(type& naked){ return naked; }
+    template <typename T>
+    struct info <volatile T> {
+        typedef write_iteratable_info<volatile T> typed;
+        template <typename U> static volatile T& unfold(volatile T& naked){ return naked; }
     };
 
     template <typename S>
@@ -324,34 +327,10 @@ namespace ambient {
         template <typename U> static type& unfold(type& folded){ return folded.unfold(); }
     };
 
-    template <typename S>
-    struct info < diagonal_matrix<S> > {
-        typedef diagonal_matrix<S> type;
-        template <typename U> static U& unfold(type& folded){ return *static_cast<U*>(&folded.get_data()); }
-    };
-
-    template <typename S>
-    struct info < const diagonal_matrix<S> > {
-        typedef const diagonal_matrix<S> type;
-        template <typename U> static const matrix<S, ambient::default_allocator<S> >& unfold(type& folded){ return folded.get_data(); }
-    };
-
-    template <class Matrix>
-    struct info < const transpose_view<Matrix> > {
-        typedef const transpose_view<Matrix> type;
-        template <typename U> static const Matrix& unfold(type& folded){ return *(const Matrix*)&folded; }
-    };
-
-    template <class Matrix>
-    struct info < transpose_view<Matrix> > {
-        typedef transpose_view<Matrix> type;
-        template <typename U> static Matrix& unfold(type& folded){ return *(Matrix*)&folded; }
-    };
-
-    template <typename T>
-    struct info < unbound<T> > {
-        typedef unbound<T> type;
-        typedef write_iteratable_info< type > typed; 
+    template <>
+    struct info < size_t > {
+        typedef size_t type;
+        typedef singular_inplace_info<type> typed; 
         template <typename U> static type& unfold(type& naked){ return naked; }
     };
 
@@ -367,17 +346,19 @@ namespace ambient {
                                         struct ambient_desc {                                                                                       \
                                             typedef ambient::history rc_type;                                                                        \
                                             typedef ambient_type_structure mapping;                                                                   \
-                                            ambient_desc(size_t n = sizeof(mapping)){ desc = new rc_type(ambient::dim2(1,1), n); }                     \
-                                            ambient_desc(size_t n, size_t ts){ desc = new rc_type(ambient::dim2(1,n),ts); }                             \
-                                            ambient_desc(size_t m, size_t n, size_t ts){ desc = new rc_type(ambient::dim2(n,m),ts); }                    \
-                                            template<typename U> ambient_desc(const U& other):desc(other.desc){ }                                         \
-                                            ambient_desc(rc_type* desc):desc(desc){ }                                                                      \
-                                           ~ambient_desc(){ if(!ambient_destructor_disabled){ if(desc->weak()) delete desc; else ambient::destroy(desc); }} \
-                                            rc_type* desc;                                                                                                   \
-                                        } ambient_rc;                                                                                                         \
+                                            ambient_desc(){ }                                                                                          \
+                                            ambient_desc(size_t ts){ desc = new rc_type(ambient::dim2(1,1), ts); }                                      \
+                                            ambient_desc(size_t n, size_t ts){ desc = new rc_type(ambient::dim2(1,n),ts); }                              \
+                                            ambient_desc(size_t m, size_t n, size_t ts){ desc = new rc_type(ambient::dim2(n,m),ts); }                     \
+                                            template<typename U> ambient_desc(const U& other):desc(other.desc){ }                                          \
+                                            ambient_desc(rc_type* desc):desc(desc){ }                                                                       \
+                                           ~ambient_desc(){ if(!ambient_destructor_disabled){ if(desc->weak()) delete desc; else ambient::destroy(desc); }}  \
+                                            rc_type* desc;                                                                                                    \
+                                        } ambient_rc;                                                                                                          \
                                         struct ambient_type_structure { __VA_ARGS__ };
 
-    #define AMBIENT_ALLOC(N, TYPE_SIZE)       ambient_rc(N, TYPE_SIZE)
+    #define AMBIENT_ALLOC(BYTES)              ambient_rc(BYTES)
+    #define AMBIENT_ALLOC_1D(N, TYPE_SIZE)    ambient_rc(N, TYPE_SIZE)
     #define AMBIENT_ALLOC_2D(M, N, TYPE_SIZE) ambient_rc(M, N, TYPE_SIZE)
     #define AMBIENT_VAR_LENGTH 1
 }

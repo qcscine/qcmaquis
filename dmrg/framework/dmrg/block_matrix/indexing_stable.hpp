@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
  *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -29,6 +29,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <numeric>
 #include <utility>
 
 #include <boost/unordered_map.hpp>
@@ -113,6 +114,7 @@ public:
     typedef basis_iterator_<SymmGroup> basis_iterator;
     
     Index() : sorted_(true) {}
+    Index(std::size_t s_) : sorted_(true), data_(s_) {}
     
     std::size_t size_of_block(charge c) const
     {
@@ -141,7 +143,7 @@ public:
         return std::distance(data_.begin(), match);
     }
 
-    std::size_t position(std::pair<charge, std::size_t> x) const
+    std::size_t position(value_type x) const
     {
         assert( has(x.first) );
         assert( x.second < size_of_block(x.first) );
@@ -166,7 +168,7 @@ public:
         sorted_ = true;
     }
     
-    std::size_t insert(std::pair<charge, std::size_t> const & x)
+    std::size_t insert(value_type const & x)
     {
         if (sorted_) {
             std::size_t d = destination(x.first);
@@ -178,7 +180,7 @@ public:
         }
     }
     
-    void insert(std::size_t position, std::pair<charge, std::size_t> const & x)
+    void insert(std::size_t position, value_type const & x)
     {
         data_.insert(data_.begin() + position, x);
         sorted_ = false;
@@ -266,7 +268,7 @@ private:
     data_type data_;
     bool sorted_;
     
-    void push_back(std::pair<charge, std::size_t> const & x){
+    void push_back(value_type const & x){
         data_.push_back(x);
     }
     
@@ -312,6 +314,8 @@ public:
     
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
+
+#include "dual_index.h"
 
 template<class SymmGroup>
 class ProductBasis
