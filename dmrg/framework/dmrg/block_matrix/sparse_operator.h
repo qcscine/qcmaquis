@@ -94,8 +94,6 @@ public:
 
     void update(block_matrix<Matrix, SymmGroup> const & bm, spin_basis_type const & sb)
     {
-        assert(spin_basis.size() >= bm.n_blocks());
-
         blocks_ = std::vector<int>(bm.n_blocks() + 1);
         data_ = std::vector<value_type>();
         
