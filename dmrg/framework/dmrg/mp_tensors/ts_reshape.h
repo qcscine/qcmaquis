@@ -309,5 +309,76 @@ namespace ts_reshape {
         }
         
     }
-    
+
+    template<class Matrix, class SymmGroup>
+    void reshape_both_to_physright(Index<SymmGroup> const & physical_i_left,
+                                   Index<SymmGroup> const & physical_i_right,
+                                   Index<SymmGroup> const & left_i,
+                                   Index<SymmGroup> const & right_i,
+                                   block_matrix<Matrix, SymmGroup> const & m1,
+                                   block_matrix<Matrix, SymmGroup> & m2)
+    {
+        
+        m2 = block_matrix<Matrix, SymmGroup>();
+        
+        typedef std::size_t size_t;
+        typedef typename SymmGroup::charge charge;
+        
+        ProductBasis<SymmGroup> in_left(physical_i_left, left_i);
+        ProductBasis<SymmGroup> in_right(physical_i_right, right_i,
+                                         boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                             -boost::lambda::_1, boost::lambda::_2));
+        ProductBasis<SymmGroup> out_left(left_i, right_i,
+                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                              boost::lambda::_1, -boost::lambda::_2));
+        ProductBasis<SymmGroup> out_right(physical_i_left, physical_i_right,
+                                          boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
+                                                              -boost::lambda::_1, -boost::lambda::_2));
+        
+        for (size_t block = 0; block < m1.n_blocks(); ++block)
+        {
+            for (size_t s1 = 0; s1 < physical_i_left.size(); ++s1)
+            {
+                size_t l = left_i.position(SymmGroup::fuse(m1.basis().left_charge(block),
+                                                           -physical_i_left[s1].first));
+                if(l == left_i.size()) continue;
+                
+                for (size_t s2 = 0; s2 < physical_i_right.size(); ++s2)
+                {
+                    size_t r = right_i.position(SymmGroup::fuse(m1.basis().right_charge(block),
+                                                                physical_i_right[s2].first));
+                    if(r == right_i.size()) continue;
+                    
+                    {
+                        charge s_charge = SymmGroup::fuse(physical_i_left[s1].first, physical_i_right[s2].first);
+                        
+                        charge out_l_charge = SymmGroup::fuse(left_i[l].first, -right_i[r].first);
+                        charge out_r_charge = -s_charge;
+                        
+                        size_t outb = m2.find_block(out_l_charge, out_r_charge);
+                        if (outb == m2.n_blocks())
+                            outb = m2.insert_block(new Matrix(out_left.size(out_l_charge), out_right.size(out_r_charge), 0),
+                                                   out_l_charge, out_r_charge);
+                        
+                        size_t in_left_offset = in_left(physical_i_left[s1].first, left_i[l].first);
+                        size_t in_right_offset = in_right(physical_i_right[s2].first, right_i[r].first);
+                        size_t out_left_offset = out_left(left_i[l].first, right_i[r].first);
+                        size_t out_right_offset = out_right(physical_i_left[s1].first, physical_i_right[s2].first);
+                        
+                        //Matrix const & in_block = m1(in_l_charge, in_r_charge);
+                        Matrix const & in_block = m1[block];
+                        Matrix & out_block = m2[outb];
+                        
+                        for (size_t ss1 = 0; ss1 < physical_i_left[s1].second; ++ss1)
+                            for (size_t ss2 = 0; ss2 < physical_i_right[s2].second; ++ss2)
+                                for (size_t rr = 0; rr < right_i[r].second; ++rr)
+                                    for (size_t ll = 0; ll < left_i[l].second; ++ll)
+                                        out_block(out_left_offset + rr*left_i[l].second+ll, out_right_offset + ss2*physical_i_left[s1].second + ss1) = in_block(in_left_offset + ss1*left_i[l].second+ll, in_right_offset + ss2*right_i[r].second+rr);
+                    }
+                }
+            }
+        }
+        
+    }
+
 } // namespace ts_reshape
