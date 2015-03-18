@@ -72,6 +72,7 @@ private:
 public:
     typedef sparse_detail::Entry<float_type, SymmGroup> value_type;
     typedef typename std::vector<value_type>::iterator iterator;
+    typedef typename std::vector<value_type>::const_iterator const_iterator;
     typedef int spin_basis_type;
 
     SparseOperator() {}
@@ -86,23 +87,36 @@ public:
         update(bm);
     }
 
+    std::pair<const_iterator, const_iterator> block(std::size_t b) const
+    {
+        return std::make_pair(data_.begin() + blocks_[b], data_.begin() + blocks_[b+1]);
+    }
+
     void update(block_matrix<Matrix, SymmGroup> const & bm, spin_basis_type const & sb)
     {
-        blocks_ = std::vector<iterator>(bm.n_blocks());
+        assert(spin_basis.size() >= bm.n_blocks());
+
+        blocks_ = std::vector<int>(bm.n_blocks() + 1);
+        data_ = std::vector<value_type>();
         
-        iterator it = data_.begin();
+        int entry_counter = 0;
         for(std::size_t b = 0; b < bm.n_blocks(); ++b)
         {
-            blocks_[b] = it;
+            blocks_[b] = entry_counter;
             for (std::size_t ss1 = 0; ss1 < num_rows(bm[b]); ++ss1)
             for (std::size_t ss2 = 0; ss2 < num_cols(bm[b]); ++ss2)
-                if (bm[b](ss1,ss2) != float_type())
-                    data_.insert(it++, value_type(ss1,ss2,bm[b](ss1,ss2)));
+                if (bm[b](ss1,ss2) != float_type()) {
+                    data_.push_back(value_type(ss1, ss2, bm[b](ss1,ss2)));
+                    //data_.push_back(value_type(ss1, ss2, left_spins.at(ss1), right_spins.at(ss2), bm[b](ss1,ss2)));
+                    ++entry_counter;
+                }
         }
+
+        blocks_[bm.n_blocks()] = data_.size();
     }
 
 private:
-    std::vector<iterator> blocks_;
+    std::vector<int> blocks_;
     std::vector<value_type> data_;
 };
 
@@ -137,16 +151,6 @@ public:
     void update(block_matrix<Matrix, SymmGroup> const & bm, spin_basis_type const & spin_basis)
     {
         assert(spin_basis.size() >= bm.n_blocks());
-        //if(spin_basis.size() != bm.n_blocks())
-        //{
-        //    maquis::cout << bm << std::endl;
-        //    maquis::cout << bm.n_blocks() << "  " << spin_basis.size() << std::endl;
-        //    for (typename spin_basis_type::const_iterator it = spin_basis.begin(); it != spin_basis.end(); ++it)
-        //    {
-        //        maquis::cout << it->first.first << it->first.second << "\t" << it->second.first.size() << " " << it->second.second.size() << std::endl;
-        //    }
-        //    exit(1); 
-        //}
 
         blocks_ = std::vector<int>(bm.n_blocks() + 1);
         data_ = std::vector<value_type>();
@@ -160,18 +164,13 @@ public:
             for (std::size_t ss1 = 0; ss1 < num_rows(bm[b]); ++ss1)
             for (std::size_t ss2 = 0; ss2 < num_cols(bm[b]); ++ss2)
                 if (bm[b](ss1,ss2) != float_type()) {
-                    //data_.push_back(value_type(ss1, ss2, left_spins[ss1], right_spins[ss2], bm[b](ss1,ss2)));
-                    data_.push_back(value_type(ss1, ss2, left_spins.at(ss1), right_spins.at(ss2), bm[b](ss1,ss2)));
+                    data_.push_back(value_type(ss1, ss2, left_spins[ss1], right_spins[ss2], bm[b](ss1,ss2)));
+                    //data_.push_back(value_type(ss1, ss2, left_spins.at(ss1), right_spins.at(ss2), bm[b](ss1,ss2)));
                     ++entry_counter;
                 }
         }
 
         blocks_[bm.n_blocks()] = data_.size();
-
-        //maquis::cout << "data_.size() " << data_.size() << std::endl;
-        //for (int b = 0; b < blocks_.size(); ++b) {
-        //    maquis::cout << "block_["<<b<<"] -> " << blocks_[b] << std::endl;
-        //}
     }
 
     friend void swap(SparseOperator & x, SparseOperator & y)
