@@ -56,6 +56,7 @@ public:
     
     T coeff;
     bool is_fermionic;
+    tag_type full_identity;
     term_descriptor() : coeff(1.), is_fermionic(false) { }
     
     pos_type position(size_type i) const     { return boost::get<0>((*this)[i]); }
