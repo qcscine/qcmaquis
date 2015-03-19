@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -29,6 +29,7 @@
 #define AMBIENT_UTILS_THREADS_OPENMP
 
 #include <omp.h>
+#define AMBIENT_OMP
 #define AMBIENT_THREADING_TAGLINE "using openmp"
 #define AMBIENT_THREAD_ID omp_get_thread_num()
 #define AMBIENT_PRAGMA(a) _Pragma( #a )

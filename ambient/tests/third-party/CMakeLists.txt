@@ -16,7 +16,7 @@ message(STATUS "Boost include: ${MAQUIS_Boost_INCLUDE_DIRS}")
 message(STATUS "Boost libs: ${MAQUIS_Boost_LIBRARIES}")
 
 find_package(OpenMP REQUIRED)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AMBIENT_CXX_FLAGS} -DAMBIENT_OMP ${OpenMP_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${AMBIENT_CXX_FLAGS} -DAMBIENT_THREADING=OPENMP ${OpenMP_CXX_FLAGS} ${AMBIENT_MPI_FLAGS}")
 
 ########################################################################
 #

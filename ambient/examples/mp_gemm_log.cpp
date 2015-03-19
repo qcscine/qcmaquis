@@ -3,7 +3,7 @@
 #include "utils/timings.hpp"
 
 #define GRAN 2
-#define N AMBIENT_IB*GRAN*2
+#define N AMBIENT_DEFAULT_IB*GRAN*2
 
 namespace ambient { namespace numeric {
 

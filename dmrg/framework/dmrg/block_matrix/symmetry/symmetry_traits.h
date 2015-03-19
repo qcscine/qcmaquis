@@ -27,51 +27,55 @@
 #ifndef SYMMETRY_TRAITS_H
 #define SYMMETRY_TRAITS_H
 
-namespace SymmTraits {
+#include <boost/type_traits.hpp>
+
+namespace symm_traits {
+
+    // abelian vs. non-abelian
 
     class AbelianTag {};
     class SU2Tag {};
 
     template <class SymmGroup>
-    struct SymmType
-    {
-        typedef AbelianTag type;
-    };
+    struct SymmType { typedef AbelianTag type; };
 
     template <>
-    struct SymmType<SU2U1>
-    {
-        typedef SU2Tag type;
-    };
+    struct SymmType<SU2U1> { typedef SU2Tag type; };
 
     template <>
-    struct SymmType<SU2U1PG>
-    {
-        typedef SU2Tag type;
-    };
+    struct SymmType<SU2U1PG> { typedef SU2Tag type; };
 
-    /////////////////////////////////////
+    template <class SymmGroup> 
+    struct HasSU2 : public boost::false_type {};
 
-    class NoPG {};
-    class PGat2 {};
+    template <>
+    struct HasSU2<SU2U1> : public boost::true_type {};
+    template <>
+    struct HasSU2<SU2U1PG> : public boost::true_type {};
+
+    // point group vs. no point group
 
     template <class SymmGroup>
-    struct PGType
-    {
-        typedef NoPG type;
-    };
+    struct HasPG : public boost::false_type {}; 
 
     template <>
-    struct PGType<TwoU1PG>
-    {
-        typedef PGat2 type;
-    };
+    struct HasPG<TwoU1PG> : public boost::true_type {};
+    template <>
+    struct HasPG<SU2U1PG> : public boost::true_type {};
+
+    // chemistry model implemented or not
+
+    template <class SymmGroup>
+    struct HasChemModel : public boost::false_type {};
 
     template <>
-    struct PGType<SU2U1PG>
-    {
-        typedef PGat2 type;
-    };
+    struct HasChemModel<TwoU1> : public boost::true_type {};
+    template <>
+    struct HasChemModel<TwoU1PG> : public boost::true_type {};
+    template <>
+    struct HasChemModel<SU2U1> : public boost::true_type {};
+    template <>
+    struct HasChemModel<SU2U1PG> : public boost::true_type {};
 
 }
 

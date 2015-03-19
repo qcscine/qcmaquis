@@ -47,7 +47,7 @@ block_matrix<Matrix, SymmGroup>::block_matrix(Index<SymmGroup> const & rows,
 
     basis_.resize(rows.size());
     for (size_type k = 0; k < rows.size(); ++k)
-        basis_[k] = dual_index_detail::QnBlock<SymmGroup>(rows[k].first, cols[k].first, rows[k].second, cols[k].second);
+        basis_[k] = typename DualIndex<SymmGroup>::value_type(rows[k].first, cols[k].first, rows[k].second, cols[k].second);
 
     for (size_type k = 0; k < rows.size(); ++k)
         data_.push_back(new Matrix(basis_[k].ls, basis_[k].rs));
@@ -138,7 +138,7 @@ template<class Matrix, class SymmGroup>
 typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGroup>::insert_block(Matrix const & mtx, charge c1, charge c2)
 {
     assert( !has_block(c1, c2) );
-    size_type i1 = basis_.insert(dual_index_detail::QnBlock<SymmGroup>(c1, c2, num_rows(mtx), num_cols(mtx)));
+    size_type i1 = basis_.insert(typename DualIndex<SymmGroup>::value_type(c1, c2, num_rows(mtx), num_cols(mtx)));
     Matrix* block = new Matrix(mtx);
     data_.insert(data_.begin() + i1, block);
     size_index.insert(i1, (data_.size()-1));
@@ -150,7 +150,7 @@ template<class Matrix, class SymmGroup>
 typename block_matrix<Matrix, SymmGroup>::size_type block_matrix<Matrix, SymmGroup>::insert_block(Matrix * mtx, charge c1, charge c2)
 {
     assert( !has_block(c1, c2) );
-    size_type i1 = basis_.insert(dual_index_detail::QnBlock<SymmGroup>(c1, c2, num_rows(*mtx), num_cols(*mtx)));
+    size_type i1 = basis_.insert(typename DualIndex<SymmGroup>::value_type(c1, c2, num_rows(*mtx), num_cols(*mtx)));
     data_.insert(data_.begin() + i1, mtx);
     size_index.insert(i1, (data_.size()-1));
     
@@ -441,7 +441,7 @@ void block_matrix<Matrix, SymmGroup>::load(Archive & ar)
 
     basis_.resize(r_.size());
     for (std::size_t s = 0; s < r_.size(); ++s)
-        basis_[s] = dual_index_detail::QnBlock<SymmGroup>(r_[s].first, c_[s].first, r_[s].second, c_[s].second);
+        basis_[s] = typename DualIndex<SymmGroup>::value_type(r_[s].first, c_[s].first, r_[s].second, c_[s].second);
 
     data_.clear();
     if (alps::is_complex<typename Matrix::value_type>() && !ar.is_complex("data_"))
@@ -500,7 +500,7 @@ void block_matrix<Matrix, SymmGroup>::reserve(charge c1, charge c2,
         
         assert(basis_.size() == data_.size());
         
-        size_type i1 = basis_.insert(dual_index_detail::QnBlock<SymmGroup>(c1, c2, r, c));
+        size_type i1 = basis_.insert(typename DualIndex<SymmGroup>::value_type(c1, c2, r, c));
         Matrix* block = new Matrix(1,1);
         data_.insert(data_.begin() + i1, block); 
     }

@@ -43,8 +43,8 @@
 #include "dmrg/models/chem/util.h"
 #include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/pg_util.h"
-#include "dmrg/models/chem/2u1/term_maker.h"
-#include "dmrg/models/chem/2u1/chem_helper.h"
+#include "dmrg/models/chem/su2u1/chem_helper_su2.h"
+#include "dmrg/models/chem/su2u1/term_maker_su2.h"
 
 template<class Matrix, class SymmGroup>
 class qc_su2 : public model_impl<Matrix, SymmGroup>
@@ -86,7 +86,7 @@ public:
     }
     tag_type filling_matrix_tag(size_t type) const
     {
-        return fill_cdagc;
+        return fill;
     }
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
@@ -120,9 +120,12 @@ private:
     std::vector<Index<SymmGroup> > phys_indices;
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
-    tag_type create_head, create_tail, destroy_head, destroy_tail,
-             count, docc, e2d, d2e, flip,
-             ident, fill_cdagc, fill_ccdag, count_fill_cdagc, count_fill_ccdag;
+    tag_type create_fill, create, destroy_fill, destroy,
+             create_fill_couple_down, destroy_fill_couple_down,
+             create_couple_up, destroy_couple_up,
+             create_fill_count, create_count, destroy_fill_count, destroy_count,
+             count, docc, e2d, d2e, flip_S0, flip_to_S2, flip_to_S0,
+             ident, ident_full, fill, count_fill;
 
     typename SymmGroup::subcharge max_irrep;
 
@@ -172,51 +175,85 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         phys_indices.push_back(phys);
     }
 
+    // cheaper to use this for spin0 tensors, instead of ident_full
     op_t ident_op;
     ident_op.insert_block(Matrix(1,1,1), A, A);
     ident_op.insert_block(Matrix(1,1,1), B, B);
     ident_op.insert_block(Matrix(1,1,1), C, C);
     ident_op.insert_block(Matrix(1,1,1), D, D);
 
-    op_t fill_ccdag_op;
-    fill_ccdag_op.insert_block(Matrix(1,1,1),  A, A);
-    fill_ccdag_op.insert_block(Matrix(1,1,1),  D, D);
-    fill_ccdag_op.insert_block(Matrix(1,1,-1), B, B);
-    fill_ccdag_op.insert_block(Matrix(1,1,-1), C, C);
-    fill_ccdag_op.insert_block(Matrix(1,1,1),  B, C);
-    fill_ccdag_op.insert_block(Matrix(1,1,1),  C, B);
+    // apply if spin > 0
+    op_t ident_full_op;
+    ident_full_op.insert_block(Matrix(1,1,1), A, A);
+    ident_full_op.insert_block(Matrix(1,1,1), D, D);
+    ident_full_op.insert_block(Matrix(1,1,1), B, B);
+    ident_full_op.insert_block(Matrix(1,1,1), C, C);
+    ident_full_op.insert_block(Matrix(1,1,1), B, C);
+    ident_full_op.insert_block(Matrix(1,1,1), C, B);
 
-    op_t fill_cdagc_op;
-    fill_cdagc_op.insert_block(Matrix(1,1,1),  A, A);
-    fill_cdagc_op.insert_block(Matrix(1,1,1),  D, D);
-    fill_cdagc_op.insert_block(Matrix(1,1,-1), B, B);
-    fill_cdagc_op.insert_block(Matrix(1,1,-1), C, C);
-    fill_cdagc_op.insert_block(Matrix(1,1,-1), B, C);
-    fill_cdagc_op.insert_block(Matrix(1,1,-1), C, B);
+    op_t fill_op;
+    fill_op.insert_block(Matrix(1,1,1),  A, A);
+    fill_op.insert_block(Matrix(1,1,1),  D, D);
+    fill_op.insert_block(Matrix(1,1,-1), B, B);
+    fill_op.insert_block(Matrix(1,1,-1), C, C);
+    fill_op.insert_block(Matrix(1,1,-1), B, C);
+    fill_op.insert_block(Matrix(1,1,-1), C, B);
 
-    op_t create_tail_op;
-    create_tail_op.insert_block(Matrix(1,1,-2.), B, A);
-    create_tail_op.insert_block(Matrix(1,1,2.), C, A);
-    create_tail_op.insert_block(Matrix(1,1,-sqrt(2.)), D, B);
-    create_tail_op.insert_block(Matrix(1,1,sqrt(2.)), D, C);
+    /*************************************************************/
 
-    op_t destroy_tail_op;
-    destroy_tail_op.insert_block(Matrix(1,1,1), A, B);
-    destroy_tail_op.insert_block(Matrix(1,1,-1), A, C);
-    destroy_tail_op.insert_block(Matrix(1,1,sqrt(2.)), B, D);
-    destroy_tail_op.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
+    op_t create_fill_op;
+    create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
+    create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
+    create_fill_op.insert_block(Matrix(1,1,1), D, B);
+    create_fill_op.insert_block(Matrix(1,1,1), D, C);
 
-    op_t create_head_op;
-    create_head_op.insert_block(Matrix(1,1,2.), B, A);
-    create_head_op.insert_block(Matrix(1,1,2.), C, A);
-    create_head_op.insert_block(Matrix(1,1,sqrt(2.)), D, B);
-    create_head_op.insert_block(Matrix(1,1,sqrt(2.)), D, C);
+    op_t destroy_op;
+    destroy_op.insert_block(Matrix(1,1,1), A, B);
+    destroy_op.insert_block(Matrix(1,1,1), A, C);
+    destroy_op.insert_block(Matrix(1,1,sqrt(2.)), B, D);
+    destroy_op.insert_block(Matrix(1,1,sqrt(2.)), C, D);
 
-    op_t destroy_head_op;
-    destroy_head_op.insert_block(Matrix(1,1,1), A, B);
-    destroy_head_op.insert_block(Matrix(1,1,1), A, C);
-    destroy_head_op.insert_block(Matrix(1,1,sqrt(2.)), B, D);
-    destroy_head_op.insert_block(Matrix(1,1,sqrt(2.)), C, D);
+    op_t destroy_fill_op;
+    destroy_fill_op.insert_block(Matrix(1,1,1), A, B);
+    destroy_fill_op.insert_block(Matrix(1,1,1), A, C);
+    destroy_fill_op.insert_block(Matrix(1,1,-sqrt(2.)), B, D);
+    destroy_fill_op.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
+
+    op_t create_op;
+    create_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
+    create_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
+    create_op.insert_block(Matrix(1,1,-1), D, B);
+    create_op.insert_block(Matrix(1,1,-1), D, C);
+
+    /*************************************************************/
+
+    op_t create_fill_couple_down_op = create_fill_op;
+
+    op_t destroy_fill_couple_down_op = destroy_fill_op;
+
+    op_t create_couple_up_op = create_op;
+
+    op_t destroy_couple_up_op = destroy_op;
+
+    /*************************************************************/
+
+    op_t create_fill_count_op;
+    create_fill_count_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
+    create_fill_count_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
+
+    op_t destroy_count_op;
+    destroy_count_op.insert_block(Matrix(1,1,1), A, B);
+    destroy_count_op.insert_block(Matrix(1,1,1), A, C);
+
+    op_t destroy_fill_count_op;
+    destroy_fill_count_op.insert_block(Matrix(1,1,1), A, B);
+    destroy_fill_count_op.insert_block(Matrix(1,1,1), A, C);
+
+    op_t create_count_op;
+    create_count_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
+    create_count_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
+
+    /*************************************************************/
 
     op_t count_op;
     count_op.insert_block(Matrix(1,1,2), A, A);
@@ -232,26 +269,22 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     op_t d2e_op;
     d2e_op.insert_block(Matrix(1,1,1), A, D);
 
-    op_t count_fill_cdagc_op;
-    count_fill_cdagc_op.insert_block(Matrix(1,1,2),  A, A);
-    count_fill_cdagc_op.insert_block(Matrix(1,1,-1), B, B);
-    count_fill_cdagc_op.insert_block(Matrix(1,1,-1), C, C);
-    count_fill_cdagc_op.insert_block(Matrix(1,1,-1), B, C);
-    count_fill_cdagc_op.insert_block(Matrix(1,1,-1), C, B);
+    op_t count_fill_op;
+    count_fill_op.insert_block(Matrix(1,1,2),  A, A);
+    count_fill_op.insert_block(Matrix(1,1,-1), B, B);
+    count_fill_op.insert_block(Matrix(1,1,-1), C, C);
+    count_fill_op.insert_block(Matrix(1,1,-1), B, C);
+    count_fill_op.insert_block(Matrix(1,1,-1), C, B);
 
-    op_t count_fill_ccdag_op;
-    count_fill_ccdag_op.insert_block(Matrix(1,1,2),  A, A);
-    count_fill_ccdag_op.insert_block(Matrix(1,1,-1), B, B);
-    count_fill_ccdag_op.insert_block(Matrix(1,1,-1), C, C);
-    count_fill_ccdag_op.insert_block(Matrix(1,1,1),  B, C);
-    count_fill_ccdag_op.insert_block(Matrix(1,1,1),  C, B);
+    op_t flip_to_S2_op;
+    flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2)), B, B);
+    flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)), C, C);
+    flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)),  B, C);
+    flip_to_S2_op.insert_block(Matrix(1,1,std::sqrt(3./2.)),  C, B);
 
-    op_t flip_op;
-    flip_op.insert_block(Matrix(1,1,1), A, A);
-    flip_op.insert_block(Matrix(1,1,1), B, B);
-    flip_op.insert_block(Matrix(1,1,1), C, C);
-    //flip_op.insert_block(Matrix(1,1,-1),  B, C);
-    //flip_op.insert_block(Matrix(1,1,-1),  C, B);
+    op_t flip_to_S0_op = flip_to_S2_op;
+
+    op_t flip_S0_op = flip_to_S2_op;
 
     /**********************************************************************/
     /*** Create operator tag table ****************************************/
@@ -260,49 +293,75 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
 
     REGISTER(ident,        tag_detail::bosonic)
-    REGISTER(fill_ccdag,   tag_detail::bosonic)
-    REGISTER(fill_cdagc,   tag_detail::fermionic)
-    REGISTER(create_head,  tag_detail::fermionic)
-    REGISTER(create_tail,  tag_detail::fermionic)
-    REGISTER(destroy_head, tag_detail::fermionic)
-    REGISTER(destroy_tail, tag_detail::bosonic)
+    REGISTER(ident_full,   tag_detail::bosonic)
+    REGISTER(fill,         tag_detail::bosonic)
+
+    REGISTER(create_fill,  tag_detail::fermionic)
+    REGISTER(create,       tag_detail::fermionic)
+    REGISTER(destroy_fill, tag_detail::fermionic)
+    REGISTER(destroy,      tag_detail::fermionic)
+
+    REGISTER(create_fill_couple_down,  tag_detail::fermionic)
+    REGISTER(destroy_fill_couple_down,  tag_detail::fermionic)
+    REGISTER(create_couple_up,  tag_detail::fermionic)
+    REGISTER(destroy_couple_up,  tag_detail::fermionic)
+
+    REGISTER(create_fill_count,  tag_detail::fermionic)
+    REGISTER(create_count,       tag_detail::fermionic)
+    REGISTER(destroy_fill_count, tag_detail::fermionic)
+    REGISTER(destroy_count,      tag_detail::fermionic)
+
     REGISTER(count,        tag_detail::bosonic)
     REGISTER(docc,         tag_detail::bosonic)
     REGISTER(e2d,          tag_detail::bosonic)
     REGISTER(d2e,          tag_detail::bosonic)
-    REGISTER(flip,         tag_detail::bosonic)
-    REGISTER(count_fill_cdagc,         tag_detail::bosonic)
-    REGISTER(count_fill_ccdag,         tag_detail::bosonic)
+    REGISTER(flip_S0,      tag_detail::bosonic)
+    REGISTER(flip_to_S2,   tag_detail::bosonic)
+    REGISTER(flip_to_S0,   tag_detail::bosonic)
+    REGISTER(count_fill,   tag_detail::bosonic)
 
 #undef REGISTER
+
+//#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
+//    PRINT(ident)
+//    PRINT(ident_full)
+//    PRINT(fill)
+//    PRINT(create_fill)
+//    PRINT(create)
+//    PRINT(destroy_fill)
+//    PRINT(destroy)
+//    PRINT(count)
+//    PRINT(count_fill)
+//    PRINT(docc)
+//    PRINT(e2d)
+//    PRINT(d2e)
+//#undef PRINT
+
+    /*************************************************************/
+    typename TermMakerSU2<Matrix, SymmGroup>::OperatorBundle create_pkg, destroy_pkg;
+
+    create_pkg.couple_up = create_couple_up;
+    create_pkg.couple_down = create;
+    create_pkg.fill_couple_up = create_fill;
+    create_pkg.fill_couple_down = create_fill_couple_down;
+
+    destroy_pkg.couple_up = destroy_couple_up;
+    destroy_pkg.couple_down = destroy;
+    destroy_pkg.fill_couple_up = destroy_fill;
+    destroy_pkg.fill_couple_down = destroy_fill_couple_down;
     /**********************************************************************/
 
-#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
-    PRINT(ident)
-    PRINT(fill_ccdag)
-    PRINT(fill_cdagc)
-    PRINT(count_fill_ccdag)
-    PRINT(count_fill_cdagc)
-    PRINT(create_head)
-    PRINT(create_tail)
-    PRINT(destroy_head)
-    PRINT(destroy_tail)
-    PRINT(count)
-    PRINT(docc)
-    PRINT(e2d)
-    PRINT(d2e)
-#undef PRINT
-
-    chem_detail::ChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, ident, tag_handler);
-    std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
+    chem_detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, ident, ident, tag_handler);
+    alps::numeric::matrix<Lattice::pos_t> idx_ = ta.getIdx();
+    std::vector<value_type> matrix_elements = ta.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
  
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
-        int i = term_assistant.idx(m, 0);
-        int j = term_assistant.idx(m, 1);
-        int k = term_assistant.idx(m, 2);
-        int l = term_assistant.idx(m, 3);
+        int i = idx_(m, 0);
+        int j = idx_(m, 1);
+        int k = idx_(m, 2);
+        int l = idx_(m, 3);
 
         // Core electrons energy
         if ( i==-1 && j==-1 && k==-1 && l==-1) {
@@ -317,12 +376,11 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
         // On site energy t_ii
         else if ( i==j && k == -1 && l == -1) {
-            {
-                term_descriptor term;
-                term.coeff = matrix_elements[m];
-                term.push_back( boost::make_tuple(i, count));
-                this->terms_.push_back(term);
-            }
+
+            term_descriptor term;
+            term.coeff = matrix_elements[m];
+            term.push_back( boost::make_tuple(i, count));
+            this->terms_.push_back(term);
 
             used_elements[m] += 1;
             continue;
@@ -330,43 +388,14 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
         // Hopping term t_ij 
         else if (k == -1 && l == -1) {
-            int start = std::min(i,j), end = std::max(i,j);
-            {
-                term_descriptor term;
-                term.is_fermionic = true;
-                term.coeff = matrix_elements[m];
 
-                for (int fs=0; fs < start; ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(start, create_head) );
-
-                for (int fs = start+1; fs < end; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill_cdagc) );
-                term.push_back( boost::make_tuple(end, destroy_head) );
-
-                for (int fs = end+1; fs < lat.size(); ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-
-                this->terms_.push_back(term);
-            }
-            {
-                term_descriptor term;
-                term.is_fermionic = true;
-                term.coeff = matrix_elements[m];
-
-                for (int fs=0; fs < start; ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(start, destroy_tail) );
-
-                for (int fs = start+1; fs < end; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill_ccdag) );
-                term.push_back( boost::make_tuple(end, create_tail) );
-
-                for (int fs = end+1; fs < lat.size(); ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-
-                this->terms_.push_back(term);
-            }
+            // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                true, ident, std::sqrt(2.)*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill
+            ));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                true, ident, std::sqrt(2.)*matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill
+            ));
 
             used_elements[m] += 1;
         }
@@ -382,10 +411,29 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             used_elements[m] += 1;
         }
 
+        // V_ijjj = V_jijj = V_jjij = V_jjji
+        else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
+
+            int same_idx, pos1;
+
+            if      (i==j) { same_idx = i; pos1 = l; }
+            else if (k==l) { same_idx = l; pos1 = i; }
+            else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
+
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                true, ident,  std::sqrt(2.)*matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill
+            ));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                true, ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill
+            ));
+
+            used_elements[m] += 1;
+        }
+
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
 
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count, count);
+            ta.add_2term(this->terms_, TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, k, count, count));
 
             used_elements[m] += 1;
         }
@@ -393,10 +441,16 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // V_ijij == V_jiji = V_ijji = V_jiij
         else if ( i==k && j==l && i!=j) {
 
-            term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, e2d, d2e);
-            term_assistant.add_term(this->terms_,  matrix_elements[m], i, j, d2e, e2d);
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, e2d, d2e));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, d2e, e2d));
 
-            //term_assistant.add_term(this->terms_, -matrix_elements[m], i, j, flip, flip);
+            // here we have spin0--j--spin1--i--spin0
+            // the sqrt(3.) counteracts the Clebsch coeff C^{110}_{mrm'} which applies when the spin1 couples back to spin0
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                false, ident_full, std::sqrt(3.) * matrix_elements[m], i, j, flip_to_S0, flip_to_S2, flip_to_S0, flip_to_S2
+            ));
+
+            ta.add_2term(this->terms_, TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, -0.5 * matrix_elements[m], i, j, count, count));
 
             used_elements[m] += 1;
         }
@@ -406,114 +460,147 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // 8 (4x2)-fold degenerate V_iilk == V_iikl = V_lkii = V_klii  <--- coded
         //                         V_ijkk == V_jikk = V_kkij = V_kkji  <--- contained above
         else if ( (i==j && j!=k && k!=l) || (k==l && i!=j && j!=k)) {
+            typedef TermMakerSU2<Matrix, SymmGroup> TM;
 
             int same_idx;
             if (i==j) { same_idx = i; }
             if (k==l) { same_idx = k; k = i; l = j; }
 
-            //if ( same_idx > k || same_idx > l) continue;
-            //
-            //int start = std::min(std::min(k,l), same_idx), end = std::max(std::max(k,l), same_idx);
-            //int start = same_idx, mid = std::min(k,l), end = std::max(k,l);
-            //{
-            //    term_descriptor term;
-            //    term.is_fermionic = true;
-            //    term.coeff = matrix_elements[m];
+            std::vector<term_descriptor> & vec = this->terms_;
 
-            //    for (int fs=0; fs < start; ++fs)
-            //        term.push_back( boost::make_tuple(fs, ident) );
-            //    term.push_back( boost::make_tuple(start, count) );
+            ta.add_3term(vec, TM::three_term(ident, std::sqrt(2.)*matrix_elements[m], same_idx, k, l,
+                                             count, count_fill, create, create_fill, destroy, destroy_fill));
+            ta.add_3term(vec, TM::three_term(ident, std::sqrt(2.)*matrix_elements[m], same_idx, l, k,
+                                             count, count_fill, create, create_fill, destroy, destroy_fill));
 
-            //    for (int fs = start+1; fs < mid; ++fs)
-            //        term.push_back( boost::make_tuple(fs, ident) );
-            //    term.push_back( boost::make_tuple(mid, create_head) );
+            used_elements[m] += 1;
+        }
 
-            //    for (int fs = mid+1; fs < end; ++fs)
-            //        term.push_back( boost::make_tuple(fs, fill_cdagc) );
-            //    term.push_back( boost::make_tuple(end, destroy_head) );
+        // 9887 7371 8727
 
-            //    for (int fs = end+1; fs < lat.size(); ++fs)
-            //        term.push_back( boost::make_tuple(fs, ident) );
+        // 4-fold degenerate (+spin) V_ijil = V_ijli = V_jiil = V_jili  <--- coded
+        //                           V_ilij = V_ilji = V_liij = V_liji
+        else if ( ((i==k && j!=l) || j==k || (j==l && i!=k)) && (i!=j && k!=l)) {
+            typedef TermMakerSU2<Matrix, SymmGroup> TM;
 
-            //    this->terms_.push_back(term);
-            //}
-            //{
-            //    term_descriptor term;
-            //    term.is_fermionic = true;
-            //    term.coeff = matrix_elements[m];
+            int same_idx, pos1, pos2;
+            if (i==k) { same_idx = i; pos1 = l; pos2 = j; }
+            if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
+            if (j==l) { same_idx = j; pos1 = k; pos2 = i; }
 
-            //    for (int fs=0; fs < start; ++fs)
-            //        term.push_back( boost::make_tuple(fs, ident) );
-            //    term.push_back( boost::make_tuple(start, count) );
+            std::vector<term_descriptor> & vec = this->terms_;
 
-            //    for (int fs = start+1; fs < mid; ++fs)
-            //        term.push_back( boost::make_tuple(fs, ident) );
-            //    term.push_back( boost::make_tuple(mid, destroy_tail) );
+            // Note: need minus because of clebsch gordan coeff from two destructors or two creators
+            vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill));
+            vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill));
 
-            //    for (int fs = mid+1; fs < end; ++fs)
-            //        term.push_back( boost::make_tuple(fs, fill_ccdag) );
-            //    term.push_back( boost::make_tuple(end, create_tail) );
-
-            //    for (int fs = end+1; fs < lat.size(); ++fs)
-            //        term.push_back( boost::make_tuple(fs, ident) );
-
-            //    this->terms_.push_back(term);
-            //}
-
-            int start = std::min(k,l), mid = same_idx, end = std::max(k,l);
-            if (!(same_idx > start && same_idx < end)) continue;
-
+            if ( same_idx < std::min(pos1,pos2) )
             {
-                term_descriptor term;
-                term.is_fermionic = true;
-                term.coeff = matrix_elements[m];
+                this->terms_.push_back(TM::three_term(
+                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill
+                ));
+                ta.add_3term(vec, TM::three_term(
+                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
+                ));
 
-                for (int fs=0; fs < start; ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(start, create_head) );
-
-                for (int fs = start+1; fs < mid; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill_cdagc) );
-                term.push_back( boost::make_tuple(mid, count_fill_cdagc) );
-
-                for (int fs = mid+1; fs < end; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill_cdagc) );
-                term.push_back( boost::make_tuple(end, destroy_head) );
-
-                for (int fs = end+1; fs < lat.size(); ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-
-                this->terms_.push_back(term);
+                this->terms_.push_back(TM::three_term(
+                    // note minus sign, because commutation on same_idx is not taken into account
+                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill_couple_down
+                ));
+                ta.add_3term(vec, TM::three_term(
+                    ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
+                ));
             }
+            else if (same_idx > std::max(pos1,pos2))
             {
-                term_descriptor term;
-                term.is_fermionic = true;
-                term.coeff = matrix_elements[m];
+                this->terms_.push_back(TM::three_term(
+                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill
+                ));
+                ta.add_3term(vec, TM::three_term(
+                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
+                ));
 
-                for (int fs=0; fs < start; ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-                term.push_back( boost::make_tuple(start, destroy_tail) );
-
-                for (int fs = start+1; fs < mid; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill_ccdag) );
-                term.push_back( boost::make_tuple(mid, count_fill_ccdag) );
-
-                for (int fs = mid+1; fs < end; ++fs)
-                    term.push_back( boost::make_tuple(fs, fill_ccdag) );
-                term.push_back( boost::make_tuple(end, create_tail) );
-
-                for (int fs = end+1; fs < lat.size(); ++fs)
-                    term.push_back( boost::make_tuple(fs, ident) );
-
-                this->terms_.push_back(term);
+                this->terms_.push_back(TM::three_term(
+                    // note minus sign, because commutation on same_idx is not taken into account
+                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill
+                ));
+                ta.add_3term(vec, TM::three_term(
+                    ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
+                ));
             }
+            else
+            {
+                this->terms_.push_back(TM::three_term(
+                    ident,      std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill
+                ));
+                ta.add_3term(vec, TM::three_term(
+                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count_fill, count_fill, create, create_fill, destroy, destroy_fill
+                ));
+
+                this->terms_.push_back(TM::three_term(
+                    ident,     -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill
+                ));
+                ta.add_3term(vec, TM::three_term(
+                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count_fill, count_fill, create, create_fill, destroy, destroy_fill
+                ));
+            }
+
+            used_elements[m] += 1;
+        }
+
+        // 32 (8x4)-fold degenerate V_ijkl = V_jikl = V_ijlk = V_jilk = V_klij = V_lkij = V_klji = V_lkji * spin
+        // V_ijkl -> 24 permutations which fall into 3 equivalence classes of 8 elements (with identical V_ matrix element)
+        // coded: 4 index permutations which generate all Sz spins
+        else if (i!=j && j!=k && k!=l && i!=k && j!=l) {
+            typedef TermMakerSU2<Matrix, SymmGroup> TM;
+            std::vector<term_descriptor> & vec = this->terms_;
+
+            // These 3 cases produce different S_z spin patterns, which differ along with different index permutations
+            // As in standard notation of the Hamiltonian, the first two positions get a creator, the last two a destructor
+
+            if (k > l && l > j) // eg V_4132
+            { // generates up|up|up|up, up|down|down|up, down|up|up|down, down|down|down|down
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
+
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
+
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
+
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
+            }
+            else if (k > j && j > l) // eg V_4231
+            { // generates up|up|up|up, up|down|up|down, down|up|down|up, down|down|down|down
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident,      1,               -matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
+
+                ta.add_4term(vec, TM::four_term(ident_full, 2,  std::sqrt(3.)*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
+
+                ta.add_4term(vec, TM::four_term(ident_full, 2,  std::sqrt(3.)*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
+
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident,      1,               -matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
+            }
+            else if (j > k && k > l) // eg V_4321
+            { // generates up|up|up|up, up|up|down|down, down|down|up|up, down|down|down|down
+                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
+            }
+            else { throw std::runtime_error("unexpected index arrangment in V_ijkl term\n"); }
 
             used_elements[m] += 1;
         }
 
     } // matrix_elements for
 
-    term_assistant.commit_terms(this->terms_);
+    ta.commit_terms(this->terms_);
     maquis::cout << "The hamiltonian will contain " << this->terms_.size() << " terms\n";
 }
 

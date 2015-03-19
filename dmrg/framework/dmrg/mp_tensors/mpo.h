@@ -142,7 +142,7 @@ private:
                     continue;
                 for (size_t cs = 0; cs < (*this)[p].at(r, c).op.basis().size(); ++cs) {
                     //std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
-                    dual_index_detail::QnBlock<SymmGroup> sector = (*this)[p].at(r, c).op.basis()[cs];
+                    typename DualIndex<SymmGroup>::value_type sector = (*this)[p].at(r, c).op.basis()[cs];
                     //if (! phys_i.has(sector.first))
                     if (! phys_i.has(sector.lc))
                         phys_i.insert(std::make_pair(sector.lc, sector.ls));
@@ -217,7 +217,7 @@ private:
                     continue;
                 for (size_t cs = 0; cs < (*this)[p].at(r, c).op.basis().size(); ++cs) {
                     //std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
-                    dual_index_detail::QnBlock<SymmGroup> sector = (*this)[p].at(r, c).op.basis()[cs];
+                    typename DualIndex<SymmGroup>::value_type sector = (*this)[p].at(r, c).op.basis()[cs];
                     //if (! phys_i.has(sector.first))
                     if (! phys_i.has(sector.lc))
                         //phys_i.insert(sector);
@@ -293,7 +293,7 @@ private:
             {
                 for (size_t cs = 0; cs < (*this)[p].at(r, c).op.basis().size(); ++cs) {
                     //std::pair<charge, size_t> sector = (*this)[p].at(r, c).op.left_basis()[cs];
-                    dual_index_detail::QnBlock<SymmGroup> sector = (*this)[p].at(r, c).op.basis()[cs];
+                    typename DualIndex<SymmGroup>::value_type sector = (*this)[p].at(r, c).op.basis()[cs];
                     //if (! phys_i.has(sector.first))
                     if (! phys_i.has(sector.lc))
                         //phys_i.insert(sector);
@@ -336,7 +336,7 @@ private:
                                                                std::make_pair(rc, visited_c_basis[rc]));
                         
                         if (std::abs(val) > 1e-40) {
-                            block_matrix<Matrix, SymmGroup> block;
+                            typename operator_selector<Matrix, SymmGroup>::type block;
                             charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             if ( (*this)[p].has(r,c) )
                                 block = (*this)[p].at(r,c).op;
@@ -376,7 +376,7 @@ private:
                                                                 std::make_pair(rc, outc));
                         
                         if (std::abs(val) > 1e-40) {
-                            block_matrix<Matrix, SymmGroup> block;
+                            typename operator_selector<Matrix, SymmGroup>::type block;
                             charge blc = phys_i[ls].first, brc = phys_i[rs].first;
                             if ( (*this)[p+1].has(r,c) )
                                 block = (*this)[p+1].at(r,c).op;

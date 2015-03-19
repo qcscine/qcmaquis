@@ -107,6 +107,21 @@ namespace dual_index_detail
         typename SymmGroup::charge c1_;
         typename SymmGroup::charge c2_;
     };
+
+    template<class SymmGroup>
+    class is_first_equal_row
+    {
+    public:
+        is_first_equal_row(typename SymmGroup::charge c1) : c1_(c1) { }
+
+        bool operator()(QnBlock<SymmGroup> const & x) const
+        {
+            return x.lc == c1_;
+        }
+
+    private:
+        typename SymmGroup::charge c1_;
+    };
 }
 
 namespace boost { namespace serialization {
@@ -143,11 +158,11 @@ public:
     DualIndex() : sorted_(true) {}
     
     std::size_t left_block_size(charge r, charge c) const {
-        std::size_t pos = position(dual_index_detail::QnBlock<SymmGroup>(r,c,0,0));
+        std::size_t pos = position(value_type(r,c,0,0));
         return (*this)[pos].ls;
     }
     std::size_t right_block_size(charge r, charge c) const {
-        std::size_t pos = position(dual_index_detail::QnBlock<SymmGroup>(r,c,0,0));
+        std::size_t pos = position(value_type(r,c,0,0));
         return (*this)[pos].rs;
     }
     
@@ -155,7 +170,7 @@ public:
     {
         const_iterator match;
         if (sorted_)
-            match = std::lower_bound(data_.begin(), data_.end(), dual_index_detail::QnBlock<SymmGroup>(row,col,0,0), dual_index_detail::gt<SymmGroup>());
+            match = std::lower_bound(data_.begin(), data_.end(), value_type(row,col,0,0), dual_index_detail::gt<SymmGroup>());
         else
             match = std::find_if(data_.begin(), data_.end(), dual_index_detail::is_first_equal<SymmGroup>(row,col));
         
@@ -167,10 +182,28 @@ public:
     bool has(charge row, charge col) const
     {
         if (sorted_)
-            return std::binary_search(data_.begin(), data_.end(), dual_index_detail::QnBlock<SymmGroup>(row,col,0,0), dual_index_detail::gt<SymmGroup>());
+            return std::binary_search(data_.begin(), data_.end(), value_type(row,col,0,0), dual_index_detail::gt<SymmGroup>());
         else
             return std::find_if(data_.begin(), data_.end(),
                                 dual_index_detail::is_first_equal<SymmGroup>(row,col)) != data_.end();
+    }
+
+    const_iterator left_lower_bound(charge row) const
+    {
+        if (sorted_) {
+            const_iterator it = std::lower_bound(data_.begin(), data_.end(), value_type(row,SymmGroup::IdentityCharge,0,0),
+                                                 dual_index_detail::gt_row<SymmGroup>());
+            return it;
+        }
+        else
+            return std::find_if(data_.begin(), data_.end(),
+                                dual_index_detail::is_first_equal_row<SymmGroup>(row));
+    }
+
+    bool left_has(charge row) const
+    {
+        const_iterator it = left_lower_bound(row);
+        return (it != data_.end() && row == it->lc);
     }
 
     bool is_sorted() const { return sorted_; }
@@ -191,12 +224,6 @@ public:
             push_back(x);
             return data_.size()-1;
         }
-    }
-    
-    void insert(std::size_t position, std::pair<charge, std::size_t> const & x)
-    {
-        data_.insert(data_.begin() + position, x);
-        sorted_ = false;
     }
     
     void shift(charge diff)
@@ -228,7 +255,7 @@ public:
     {
         return std::accumulate(data_.begin(), data_.end(), 0,
                                boost::lambda::_1
-                               + boost::lambda::bind(&dual_index_detail::QnBlock<SymmGroup>::ls, boost::lambda::_2)
+                               + boost::lambda::bind(&value_type::ls, boost::lambda::_2)
                               );
     }
 

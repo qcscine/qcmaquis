@@ -109,7 +109,7 @@ private:
 
 
 struct corr_measurement {
-    typedef block_matrix<matrix, grp> op_t;
+    typedef operator_selector<matrix, grp>::type op_t;
     
     std::string name;
     std::vector<std::vector<op_t> > ops;
@@ -121,14 +121,15 @@ void measure_correlation(Range const& range,
                          MPS<Matrix, SymmGroup> const & bra,
                          MPS<Matrix, SymmGroup> const & ket,
                          Lattice const & lattice,
-                         std::vector<block_matrix<Matrix, SymmGroup> > const & identities,
-                         std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
+                         std::vector<typename operator_selector<Matrix, SymmGroup>::type> const & identities,
+                         std::vector<typename operator_selector<Matrix, SymmGroup>::type> const & fillings,
                          corr_measurement const & meas,
                          std::vector<Boundary<Matrix,SymmGroup> > const & left,
                          std::vector<Boundary<Matrix,SymmGroup> > const & right,
                          std::vector<typename Matrix::value_type>& dc,
                          std::vector<std::string>& labels)
 {
+    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
     std::size_t L = lattice.size();
     assert( range.extent() == L-1 );
     
@@ -144,7 +145,7 @@ void measure_correlation(Range const& range,
         mpo_signed_ops[i].resize(ntypes);
         for (int type=0; type<ntypes; ++type) {
             mpo_ops[i][type] = MPOTensor<Matrix, SymmGroup>(1,1);
-            block_matrix<Matrix, SymmGroup> tmp;
+            op_t tmp;
             gemm(fillings[type], meas.ops[i][type], tmp);
             mpo_ops[i][type].set(0, 0, meas.ops[i][type]);
             mpo_signed_ops[i][type].set(0, 0, tmp);
@@ -225,7 +226,7 @@ int main(int argc, char ** argv)
         maquis::cout.precision(10);
         
         typedef matrix::value_type value_type;
-        typedef block_matrix<matrix, grp> op_t;
+        typedef operator_selector<matrix, grp>::type op_t;
         typedef Model<matrix, grp>::table_ptr table_ptr;
         typedef Model<matrix, grp>::tag_type tag_type;
         
@@ -326,7 +327,7 @@ int main(int argc, char ** argv)
             MPOTensor<matrix, grp> mpo_ident(1,1);
             left[0] = make_left_boundary(mps, mps);
             for (int p=0; p<L; ++p) {
-                mpo_ident.set(0,0, identity_matrix<matrix>(mps[p].site_dim()) );
+                mpo_ident.set(0,0, identity_matrix<op_t>(mps[p].site_dim()) );
                 left[p+1] = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(mps[p], mps[p], left[p], mpo_ident);
             }
         }

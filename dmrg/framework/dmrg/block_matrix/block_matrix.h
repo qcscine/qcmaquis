@@ -40,6 +40,15 @@
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
+template<class Matrix, class SymmGroup> class SiteOperator;
+
+template<class Matrix, class SymmGroup>
+struct operator_selector
+{
+    typedef SiteOperator<Matrix, SymmGroup> type;
+    //typedef block_matrix<Matrix, SymmGroup> type;
+};
+
 template<class Matrix, class SymmGroup>
 class block_matrix
 {
@@ -47,6 +56,7 @@ class block_matrix
 private:
     typedef typename SymmGroup::charge charge;
 public:
+    typedef Matrix matrix_type;
     typedef typename Matrix::size_type size_type;
     typedef typename Matrix::value_type value_type;
     typedef typename maquis::traits::scalar_type<Matrix>::type scalar_type;

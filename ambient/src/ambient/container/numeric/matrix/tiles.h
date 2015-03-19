@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -37,7 +37,7 @@
 
 namespace ambient { namespace numeric {
 
-    template <class Matrix, int IB = AMBIENT_IB>
+    template <class Matrix, int IB = AMBIENT_DEFAULT_IB>
     class tiles : public ambient::memory::use_fixed_new<tiles<Matrix,IB> > {
     public:
         typedef typename Matrix::value_type  value_type;

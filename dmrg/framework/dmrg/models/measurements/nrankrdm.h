@@ -44,7 +44,8 @@ namespace measurements {
     template <class Matrix, class SymmGroup>
     class NRankRDM : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
-        typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
+        typedef typename base::op_t op_t;
+        typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
         typedef Lattice::pos_t pos_t;
         typedef std::vector<pos_t> positions_type;

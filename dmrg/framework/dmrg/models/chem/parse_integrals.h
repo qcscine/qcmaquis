@@ -105,7 +105,7 @@ namespace chem_detail {
                 idx_(row, 2) = aligned[2];
                 idx_(row, 3) = aligned[3];
             }
-            else { it++; }
+            else { it++; idx_.remove_rows(row--); }
 
             it += 4;
             row++;

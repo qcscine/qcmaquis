@@ -35,7 +35,7 @@
 #include "dmrg/models/op_handler.h"
 #include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/block_matrix/block_matrix.h"
-
+#include "dmrg/block_matrix/site_operator.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -54,7 +54,7 @@ public:
 
     typedef ::term_descriptor<typename Matrix::value_type> term_descriptor;
     typedef typename std::vector<term_descriptor> terms_type;
-    typedef block_matrix<Matrix, SymmGroup> op_t;
+    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
     typedef boost::ptr_vector<measurement<Matrix, SymmGroup> > measurements_type;
     
     typedef std::size_t size_t;

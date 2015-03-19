@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -39,8 +39,8 @@ namespace ambient { namespace channels { namespace mpi {
 
     inline channel::mount::mount(){
         int *ub, flag, np, level, zero = 0;
-        MPI_Init_thread(&zero, NULL, AMBIENT_MPI_THREADING, &level); 
-        if(level != AMBIENT_MPI_THREADING) throw std::runtime_error("Error: Wrong threading level");
+        MPI_Init_thread(&zero, NULL, AMBIENT_MPI, &level); 
+        if(level != AMBIENT_MPI) throw std::runtime_error("Error: Wrong threading level");
         MPI_Comm_size(MPI_COMM_WORLD, &np);
         MPI_Attr_get(MPI_COMM_WORLD, MPI_TAG_UB, &ub, &flag);
         this->tag_ub = flag ? *ub : 32767;

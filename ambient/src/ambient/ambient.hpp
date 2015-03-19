@@ -1,5 +1,5 @@
 /*
- * Copyright Institute for Theoretical Physics, ETH Zurich 2014.
+ * Copyright Institute for Theoretical Physics, ETH Zurich 2015.
  * Distributed under the Boost Software License, Version 1.0.
  *
  * Permission is hereby granted, free of charge, to any person or organization
@@ -27,8 +27,23 @@
 
 #ifndef AMBIENT
 #define AMBIENT
+
+#ifndef AMBIENT_DEFAULT_IB
+#define AMBIENT_DEFAULT_IB           2048
+#endif
+#ifndef AMBIENT_INSTR_BULK_CHUNK
+#define AMBIENT_INSTR_BULK_CHUNK     16777216 // 16 MB
+#endif
+#ifndef AMBIENT_DATA_BULK_CHUNK
+#define AMBIENT_DATA_BULK_CHUNK      67108864 // 64 MB
+#endif
+#ifndef AMBIENT_MPI
+#define AMBIENT_MPI                  MPI_THREAD_FUNNELED
+#endif
+#define MPI_DISABLE -1
+
 // {{{ system includes
-#ifndef AMBIENT_DISABLE_MPI
+#if AMBIENT_MPI != MPI_DISABLE
 #include <mpi.h>
 #endif
 #include <complex>
@@ -53,11 +68,6 @@
 #include <stdexcept>
 #include <type_traits>
 // }}}
-
-#define AMBIENT_IB                    2048
-#define AMBIENT_INSTR_BULK_CHUNK      16777216 // 16 MB
-#define AMBIENT_DATA_BULK_CHUNK       67108864 // 64 MB
-#define AMBIENT_MPI_THREADING         MPI_THREAD_FUNNELED
 
 #include "ambient/utils/dim2.hpp"
 #include "ambient/utils/tree.hpp"

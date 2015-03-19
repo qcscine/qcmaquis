@@ -31,7 +31,18 @@
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/block_matrix/grouped_symmetry.h"
 
-#include <boost/function.hpp>
+
+namespace detail {
+    /// This functor is needed because boost::function<> f = boost::lambda::bind()
+    /// fails with Boost 1.57.0 and Clang compilers.
+    template <class SymmGroup>
+    struct phys_fuse_functor {
+        typedef typename SymmGroup::charge charge;
+        charge operator()(charge a, charge b) {
+            return SymmGroup::fuse(a, -b);
+        }
+    };
+}
 
 /*
  * Building Super MPS from an MPO object
@@ -62,11 +73,11 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
     typedef typename SymmGroup::charge charge;
     typedef boost::unordered_map<size_t,std::pair<charge,size_t> > bond_charge_map;
     typedef typename MPOTensor<Matrix, SymmGroup>::row_proxy row_proxy;
+    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
     
     MPS<Matrix, SymmGroup> mps(mpo.size());
     
-    boost::function<charge (charge, charge)> phys_fuse = boost::lambda::bind(static_cast<charge(*)(charge, charge)>(SymmGroup::fuse),
-                                                                             boost::lambda::_1, -boost::lambda::_2);
+    detail::phys_fuse_functor<SymmGroup> phys_fuse;
     
     Index<SymmGroup> phys2_i = phys_i*adjoin(phys_i);
     ProductBasis<SymmGroup> phys_prod(phys_i, phys_i, phys_fuse);
@@ -99,7 +110,7 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
                     size_t l_size = left_i[left_i.position(l_charge)].second;
                     
                     typename Matrix::value_type scale = mpo[i].at(b1, b2).scale;
-                    block_matrix<Matrix, SymmGroup> const& in_block = mpo[i].at(b1, b2).op;
+                    op_t const& in_block = mpo[i].at(b1, b2).op;
                     for (size_t n=0; n<in_block.n_blocks(); ++n)
                     {
                         charge s1_charge; size_t size1;
@@ -159,8 +170,7 @@ MPS<Matrix, SymmGroup> mpo_to_smps(MPO<Matrix, SymmGroup> const& mpo, Index<Symm
         
         right_i = out_block.right_basis();
         
-        mps[i] = MPSTensor<Matrix, SymmGroup>(phys2_i, left_i, right_i,
-                                              out_block, LeftPaired);
+        mps[i] = MPSTensor<Matrix, SymmGroup>(phys2_i, left_i, right_i, out_block, LeftPaired);
         std::swap(left_i, right_i);
         std::swap(left_map, right_map);
         right_map.clear();
@@ -195,6 +205,7 @@ template <class Matrix, class InSymm>
 MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matrix, InSymm> const& mpo, Index<InSymm> const& phys_i,
                                                                        std::vector<Index<typename grouped_symmetry<InSymm>::type> > const& allowed)
 {
+    typedef typename operator_selector<Matrix, InSymm>::type op_t;
     typedef typename grouped_symmetry<InSymm>::type OutSymm;
     typedef typename InSymm::charge in_charge;
     typedef typename OutSymm::charge out_charge;
@@ -235,7 +246,7 @@ MPS<Matrix, typename grouped_symmetry<InSymm>::type> mpo_to_smps_group(MPO<Matri
                         size_t     ll       = b1;
                         
                         typename Matrix::value_type scale = mpo[i].at(b1, b2).scale;
-                        block_matrix<Matrix, InSymm> const& in_block = mpo[i].at(b1, b2).op;
+                        op_t const& in_block = mpo[i].at(b1, b2).op;
                         for (size_t n=0; n<in_block.n_blocks(); ++n)
                         {
                             in_charge s1_charge; size_t size1;
