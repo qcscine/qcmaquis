@@ -316,21 +316,18 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 
             std::pair<tag_type, value_type> ptag;
 
-            ptag = tag_handler->get_product_tag(create_up, fill);
+            // create_s * create_s' or destroy_s * destroy_s' technically have a fill operator in between, but it doesnt have an influence
             term_assistant.add_term(
-                this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_down , destroy_down, destroy_up
+                this->terms_, matrix_elements[m], same_idx, pos1, pos2, create_up, create_down , destroy_down, destroy_up
             );
-            ptag = tag_handler->get_product_tag(create_down, fill);
             term_assistant.add_term(
-                this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, create_up   , destroy_up  , destroy_down
+                this->terms_, matrix_elements[m], same_idx, pos1, pos2, create_down, create_up   , destroy_up  , destroy_down
             );
-            ptag = tag_handler->get_product_tag(destroy_down, fill);
             term_assistant.add_term(
-                this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_up  , create_up   , create_down
+                this->terms_, matrix_elements[m], same_idx, pos1, pos2, destroy_down, destroy_up  , create_up   , create_down
             );
-            ptag = tag_handler->get_product_tag(destroy_up, fill);
             term_assistant.add_term(
-                this->terms_, matrix_elements[m]*ptag.second, same_idx, pos1, pos2, ptag.first, destroy_down, create_down , create_up
+                this->terms_, matrix_elements[m], same_idx, pos1, pos2, destroy_up, destroy_down, create_down , create_up
             );
 
             term_assistant.add_term(
