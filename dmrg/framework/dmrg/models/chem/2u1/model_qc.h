@@ -82,11 +82,11 @@ public:
     }
     tag_type identity_matrix_tag(size_t type) const
     {
-        return ident;
+        return ident[type];
     }
     tag_type filling_matrix_tag(size_t type) const
     {
-        return fill;
+        return fill[type];
     }
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
@@ -97,23 +97,23 @@ public:
     tag_type get_operator_tag(std::string const & name, size_t type) const
     {
         if (name == "create_up")
-            return create_up;
+            return create_up[type];
         else if (name == "create_down")
-            return create_down;
+            return create_down[type];
         else if (name == "destroy_up")
-            return destroy_up;
+            return destroy_up[type];
         else if (name == "destroy_down")
-            return destroy_down;
+            return destroy_down[type];
         else if (name == "count_up")
-            return count_up;
+            return count_up[type];
         else if (name == "count_down")
-            return count_down;
+            return count_down[type];
         else if (name == "e2d")
-            return e2d;
+            return e2d[type];
         else if (name == "d2e")
-            return d2e;
+            return d2e[type];
         else if (name == "docc")
-            return docc;
+            return docc[type];
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
@@ -134,17 +134,17 @@ public:
              create_up_count_down_op, create_down_count_up_op, destroy_up_count_down_op, destroy_down_count_up_op,
              ident_op, fill_op;
 
-        ident_op = tag_handler->get_op(ident);
-        fill_op = tag_handler->get_op(fill);
-        create_up_op = tag_handler->get_op(create_up);
-        create_down_op = tag_handler->get_op(create_down);
-        destroy_up_op = tag_handler->get_op(destroy_up);
-        destroy_down_op = tag_handler->get_op(destroy_down);
-        count_up_op = tag_handler->get_op(count_up);
-        count_down_op = tag_handler->get_op(count_down);
-        e2d_op = tag_handler->get_op(e2d);
-        d2e_op = tag_handler->get_op(d2e);
-        docc_op = tag_handler->get_op(docc);
+        ident_op = tag_handler->get_op(ident[0]);
+        fill_op = tag_handler->get_op(fill[0]);
+        create_up_op = tag_handler->get_op(create_up[0]);
+        create_down_op = tag_handler->get_op(create_down[0]);
+        destroy_up_op = tag_handler->get_op(destroy_up[0]);
+        destroy_down_op = tag_handler->get_op(destroy_down[0]);
+        count_up_op = tag_handler->get_op(count_up[0]);
+        count_down_op = tag_handler->get_op(count_down[0]);
+        e2d_op = tag_handler->get_op(e2d[0]);
+        d2e_op = tag_handler->get_op(d2e[0]);
+        docc_op = tag_handler->get_op(docc[0]);
 
         gemm(destroy_down_op, create_up_op, swap_d2u_op); // S_plus
         gemm(destroy_up_op, create_down_op, swap_u2d_op); // S_minus
@@ -399,9 +399,10 @@ private:
     std::vector<Index<SymmGroup> > phys_indices;
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
-    tag_type ident, fill,
-             create_up, create_down, destroy_up, destroy_down,
-             count_up, count_down, count_up_down, docc, e2d, d2e;
+    // Need a vector to store operators corresponding to different irreps
+    std::vector<tag_type> ident, fill,
+                          create_up, create_down, destroy_up, destroy_down,
+                          count_up, count_down, count_up_down, docc, e2d, d2e;
 
     typename SymmGroup::subcharge max_irrep;
 
@@ -419,6 +420,17 @@ private:
         return ret;
     }
 
+    std::vector<tag_type> register_site_specific(std::vector<op_t> const & ops, tag_detail::operator_kind kind)
+    {
+        std::vector<tag_type> ret;
+        for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
+            tag_type newtag = tag_handler->register_op(ops[sc], kind);
+            assert( newtag < tag_handler->size() );
+            ret.push_back(newtag);
+        }
+
+        return ret;
+    }
 };
 
 
