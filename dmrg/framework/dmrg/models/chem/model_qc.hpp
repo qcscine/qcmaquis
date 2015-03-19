@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
+ *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -34,6 +34,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 , parms(parms_)
 , tag_handler(new table_type())
 {
+    typedef typename SymmGroup::subcharge subcharge;
     // find the highest irreducible representation number 
     // used to generate ops for all irreps 0..max_irrep
     max_irrep = 0;
@@ -44,14 +45,19 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     typename SymmGroup::charge A(0), B(0), C(0), D(1);
     B[0]=1; C[1]=1;
 
-    // Site adaptation needed
-    phys.insert(std::make_pair(A, 1));
-    phys.insert(std::make_pair(B, 1));
-    phys.insert(std::make_pair(C, 1));
-    phys.insert(std::make_pair(D, 1));
+    for (subcharge irr=0; irr <= max_irrep; ++irr)
+    {
+        Index<SymmGroup> phys;
+        phys.insert(std::make_pair(A, 1));
+        phys.insert(std::make_pair(PGCharge<SymmGroup>()(B, irr), 1));
+        phys.insert(std::make_pair(PGCharge<SymmGroup>()(C, irr), 1));
+        phys.insert(std::make_pair(D, 1));
+
+        phys_indices.push_back(phys);
+    }
 
     op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
-         count_up_op, count_down_op, docc_op, e2d_op, d2e_op,
+         count_up_op, count_down_op, count_up_down_op, docc_op, e2d_op, d2e_op,
          ident_op, fill_op;
 
     ident_op.insert_block(Matrix(1, 1, 1), A, A);
@@ -74,6 +80,10 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
 
     count_down_op.insert_block(Matrix(1, 1, 1), C, C);
     count_down_op.insert_block(Matrix(1, 1, 1), D, D);
+
+    count_up_down_op.insert_block(Matrix(1, 1, 1), B, B);
+    count_up_down_op.insert_block(Matrix(1, 1, 1), C, C);
+    count_up_down_op.insert_block(Matrix(1, 1, 2), D, D);
 
     docc_op.insert_block(Matrix(1, 1, 1), D, D);
 
@@ -113,7 +123,6 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     /*** Create operator tag table ****************************************/
     /**********************************************************************/
 
-    //#define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
     #define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
 
     REGISTER(ident,        tag_detail::bosonic)
@@ -127,6 +136,7 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
     REGISTER(e2d,          tag_detail::bosonic)
     REGISTER(d2e,          tag_detail::bosonic)
     REGISTER(docc,         tag_detail::bosonic)
+    REGISTER(count_up_down,         tag_detail::bosonic)
 
     #undef REGISTER
     /**********************************************************************/
@@ -248,10 +258,11 @@ qc_model<Matrix, SymmGroup>::qc_model(Lattice const & lat_, BaseParameters & par
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
 
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_up);
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_down);
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_up);
-            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_down);
+            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_up);
+            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up, count_down);
+            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_up);
+            //term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_down, count_down);
+            term_assistant.add_term(this->terms_, matrix_elements[m], i, k, count_up_down, count_up_down);
 
             used_elements[m] += 1;
         }

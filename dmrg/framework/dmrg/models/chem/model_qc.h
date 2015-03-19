@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * 
@@ -40,9 +40,11 @@
 #include "dmrg/models/measurements.h"
 #include "dmrg/utils/BaseParameters.h"
 
-#include "dmrg/models/chem/term_maker.h"
-#include "dmrg/models/chem/chem_detail.h"
+#include "dmrg/models/chem/util.h"
+#include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/pg_util.h"
+#include "dmrg/models/chem/2u1/term_maker.h"
+#include "dmrg/models/chem/2u1/chem_helper.h"
 
 template<class Matrix, class SymmGroup>
 class qc_model : public model_impl<Matrix, SymmGroup>
@@ -73,9 +75,10 @@ public:
         return;
     }
     
+    // For this model: site_type == point group irrep
     Index<SymmGroup> const & phys_dim(size_t type) const
     {
-        return phys;
+        return phys_indices[type];
     }
     tag_type identity_matrix_tag(size_t type) const
     {
@@ -177,7 +180,7 @@ public:
 
         measurements_type meas;
 
-        typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
+        typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
         {
             boost::regex expression("^MEASURE_LOCAL\\[(.*)]$");
@@ -393,13 +396,13 @@ public:
 private:
     Lattice const & lat;
     BaseParameters & parms;
-    Index<SymmGroup> phys;
+    std::vector<Index<SymmGroup> > phys_indices;
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
     // Need a vector to store operators corresponding to different irreps
     std::vector<tag_type> ident, fill,
                           create_up, create_down, destroy_up, destroy_down,
-                          count_up, count_down, docc, e2d, d2e;
+                          count_up, count_down, count_up_down, docc, e2d, d2e;
 
     typename SymmGroup::subcharge max_irrep;
 
@@ -408,7 +411,7 @@ private:
         PGDecorator<SymmGroup> set_symm;
         std::vector<op_t> ret;
         for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
-            op_t mod(set_symm(op.left_basis(), sc), set_symm(op.right_basis(), sc));
+            op_t mod(set_symm(op.basis(), sc));
             for (std::size_t b = 0; b < op.n_blocks(); ++b)
                 mod[b] = op[b];
 
@@ -431,6 +434,6 @@ private:
 };
 
 
-#include "dmrg/models/chem/model_qc.hpp"
+#include "dmrg/models/chem/2u1/model_qc.hpp"
 
 #endif
