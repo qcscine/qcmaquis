@@ -424,9 +424,10 @@ private:
     {
         std::vector<tag_type> ret;
         for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
-            tag_type newtag = tag_handler->register_op(ops[sc], kind);
-            assert( newtag < tag_handler->size() );
-            ret.push_back(newtag);
+            std::pair<tag_type, value_type> newtag = tag_handler->checked_register(ops[sc], kind);
+            assert( newtag.first < tag_handler->size() );
+            assert( std::abs(newtag.second - value_type(1.)) == value_type() );
+            ret.push_back(newtag.first);
         }
 
         return ret;
