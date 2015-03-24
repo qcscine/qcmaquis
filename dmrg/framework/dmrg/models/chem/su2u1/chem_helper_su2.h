@@ -66,11 +66,11 @@ namespace chem_detail {
                     it != two_terms.end(); ++it)
                 tagterms.push_back(it->second);
 
-            for (typename std::map<ThreeTuplePair, term_descriptor>::const_iterator it = three_terms.begin();
+            for (typename std::map<SixTuple, term_descriptor>::const_iterator it = three_terms.begin();
                     it != three_terms.end(); ++it)
                 tagterms.push_back(it->second);
 
-            for (typename std::map<FourTuplePair, term_descriptor>::const_iterator it = four_terms.begin();
+            for (typename std::map<EightTuple, term_descriptor>::const_iterator it = four_terms.begin();
                     it != four_terms.end(); ++it)
                 tagterms.push_back(it->second);
         }
@@ -89,9 +89,8 @@ namespace chem_detail {
 
         void add_3term(std::vector<term_descriptor> & tagterms, term_descriptor term)
         {        
-            ThreeTuple pos(term.position(0), term.position(1), term.position(2));
-            ThreeTuple ops(term.operator_tag(0), term.operator_tag(1), term.operator_tag(2));
-            ThreeTuplePair id(pos,ops);
+            SixTuple id(term.position(0), term.position(1), term.position(2),
+                        term.operator_tag(0), term.operator_tag(1), term.operator_tag(2));
             if (three_terms.count(id) == 0 ) {
                 three_terms[id] = term;
             }
@@ -103,7 +102,7 @@ namespace chem_detail {
         {
             IndexTuple pos(term.position(0), term.position(1), term.position(2), term.position(3));
             IndexTuple ops(term.operator_tag(0), term.operator_tag(1), term.operator_tag(2), term.operator_tag(3));
-            FourTuplePair id(pos,ops);
+            EightTuple id(pos,ops);
             if (four_terms.count(id) == 0 ) {
                 four_terms[id] = term;
             }
@@ -122,8 +121,8 @@ namespace chem_detail {
         std::map<IndexTuple, value_type> coefficients;
 
         std::map<IndexTuple, term_descriptor> two_terms;
-        std::map<ThreeTuplePair, term_descriptor> three_terms;
-        std::map<FourTuplePair, term_descriptor> four_terms;
+        std::map<SixTuple, term_descriptor> three_terms;
+        std::map<EightTuple, term_descriptor> four_terms;
     };
 }
 

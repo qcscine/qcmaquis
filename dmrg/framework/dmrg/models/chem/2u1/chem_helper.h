@@ -66,7 +66,7 @@ namespace chem_detail {
                     it != two_terms.end(); ++it)
                 tagterms.push_back(it->second);
 
-            for (typename std::map<ThreeTuplePair, term_descriptor>::const_iterator it = three_terms.begin();
+            for (typename std::map<SixTuple, term_descriptor>::const_iterator it = three_terms.begin();
                     it != three_terms.end(); ++it)
                 tagterms.push_back(it->second);
         }
@@ -116,21 +116,11 @@ namespace chem_detail {
                       std::vector<tag_type> const & op_i, std::vector<tag_type> const & op_k,
                       std::vector<tag_type> const & op_l, std::vector<tag_type> const & op_j)
         {
-            using boost::tuples::get;
             term_descriptor
             term = TermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler, lat);
 
-            //ThreeTuplePair id(ThreeTuple(s, p1, p2),
-            //                  ThreeTuple(
-            //                  op_i[lat.get_prop<typename S::subcharge>("type", s)],
-            //                  op_l[lat.get_prop<typename S::subcharge>("type", p1)],
-            //                  op_j[lat.get_prop<typename S::subcharge>("type", p2)]));
-
-            ThreeTuplePair id(ThreeTuple(get<0>(term[0]), get<0>(term[1]), get<0>(term[2])),
-                               ThreeTuple(
-                               get<1>(term[0]),
-                               get<1>(term[1]),
-                               get<1>(term[2])));
+            SixTuple id(term.position(0), term.position(1), term.position(2),
+                        term.operator_tag(0), term.operator_tag(1), term.operator_tag(2));
 
             if (three_terms.count(id) == 0) {
                 three_terms[id] = term;
@@ -184,7 +174,7 @@ namespace chem_detail {
 
         std::map<IndexTuple, value_type> coefficients;
 
-        std::map<ThreeTuplePair, term_descriptor> three_terms;
+        std::map<SixTuple, term_descriptor> three_terms;
         std::map<IndexTuple, term_descriptor> two_terms;
     };
 }

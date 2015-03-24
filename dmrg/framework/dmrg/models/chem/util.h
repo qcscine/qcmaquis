@@ -55,15 +55,6 @@ namespace chem_detail {
         }
     };
 
-    class ThreeTuple : public NU1Charge<3>
-    {
-    public:
-        ThreeTuple() {}
-        ThreeTuple(int i, int j, int k) {
-            (*this)[0] = i; (*this)[1] = j; (*this)[2] = k;
-        }
-    };
-
     class IndexTuple : public NU1Charge<4>
     {
     public:
@@ -106,20 +97,25 @@ namespace chem_detail {
         return os;
     }
 
-    class ThreeTuplePair : public NU1Charge<6>
+    class SixTuple : public NU1Charge<6>
     {
     public:
-        ThreeTuplePair() {}
-        ThreeTuplePair(ThreeTuple const & a, ThreeTuple const & b) {
-            for (int i=0; i<3; i++) { (*this)[i] = a[i]; (*this)[i+3] = b[i]; }
+        SixTuple() {}
+        SixTuple(int t0, int t1, int t2, int t3, int t4, int t5) {
+            (*this)[0] = t0;
+            (*this)[1] = t1;
+            (*this)[2] = t2;
+            (*this)[3] = t3;
+            (*this)[4] = t4;
+            (*this)[5] = t5;
         }
     };
 
-    class FourTuplePair : public NU1Charge<8>
+    class EightTuple : public NU1Charge<8>
     {
     public:
-        FourTuplePair() {}
-        FourTuplePair(IndexTuple const & a, IndexTuple const & b) {
+        EightTuple() {}
+        EightTuple(IndexTuple const & a, IndexTuple const & b) {
             for (int i=0; i<4; i++) { (*this)[i] = a[i]; (*this)[i+4] = b[i]; }
         }
     };
