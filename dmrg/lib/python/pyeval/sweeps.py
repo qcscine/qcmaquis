@@ -54,7 +54,7 @@ def plot(fname):
     props = ret[0][0][0].props
     L = props['L']
     print "L", L
-    swl = 2*(L-1)
+    swl = 2.0*(L-1)
     xdata = np.arange(len(sweeps))/swl
     ydata = np.array(sweeps)
   
