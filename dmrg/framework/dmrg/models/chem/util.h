@@ -58,9 +58,9 @@ namespace chem_detail {
     template <>
     struct qn_helper<SU2U1>
     {
-        TwoU1PG::charge total_qn(BaseParameters & parms)
+        SU2U1::charge total_qn(BaseParameters & parms)
         {
-            TwoU1PG::charge ret(0);
+            SU2U1::charge ret(0);
             ret[0] = parms["nelec"];
             ret[1] = parms["spin"];
             return ret;
@@ -70,9 +70,9 @@ namespace chem_detail {
     template <>
     struct qn_helper<SU2U1PG>
     {
-        TwoU1PG::charge total_qn(BaseParameters & parms)
+        SU2U1PG::charge total_qn(BaseParameters & parms)
         {
-            TwoU1PG::charge ret(0);
+            SU2U1PG::charge ret(0);
             ret[0] = parms["nelec"];
             ret[1] = parms["spin"];
             ret[2] = parms["irrep"];

@@ -90,28 +90,28 @@ public:
         /*************************************************************/
 
         op_t create_fill_op;
-        create_fill_op.spin = one_half_up;
+        create_fill_op.spin() = one_half_up;
         create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
         create_fill_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
         create_fill_op.insert_block(Matrix(1,1,1), D, B);
         create_fill_op.insert_block(Matrix(1,1,1), D, C);
 
         op_t destroy_op;
-        destroy_op.spin = one_half_down;
+        destroy_op.spin() = one_half_down;
         destroy_op.insert_block(Matrix(1,1,1), A, B);
         destroy_op.insert_block(Matrix(1,1,1), A, C);
         destroy_op.insert_block(Matrix(1,1,sqrt(2.)), B, D);
         destroy_op.insert_block(Matrix(1,1,sqrt(2.)), C, D);
 
         op_t destroy_fill_op;
-        destroy_fill_op.spin = one_half_up;
+        destroy_fill_op.spin() = one_half_up;
         destroy_fill_op.insert_block(Matrix(1,1,1), A, B);
         destroy_fill_op.insert_block(Matrix(1,1,1), A, C);
         destroy_fill_op.insert_block(Matrix(1,1,-sqrt(2.)), B, D);
         destroy_fill_op.insert_block(Matrix(1,1,-sqrt(2.)), C, D);
 
         op_t create_op;
-        create_op.spin = one_half_down;
+        create_op.spin() = one_half_down;
         create_op.insert_block(Matrix(1,1,sqrt(2.)), B, A);
         create_op.insert_block(Matrix(1,1,sqrt(2.)), C, A);
         create_op.insert_block(Matrix(1,1,-1), D, B);
@@ -131,7 +131,7 @@ public:
         /*** Create operator tag table ****************************************/
         /**********************************************************************/
         
-#define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
+        #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
         
         REGISTER(identity,     tag_detail::bosonic)
         REGISTER(fill,         tag_detail::bosonic)
@@ -142,7 +142,7 @@ public:
         REGISTER(count,        tag_detail::bosonic)
         REGISTER(doubly_occ,   tag_detail::bosonic)
         
-#undef REGISTER
+        #undef REGISTER
         /**********************************************************************/
 
         struct TM {
@@ -151,7 +151,6 @@ public:
             {
                 term_descriptor term;
                 term.is_fermionic = sign;
-                term.full_identity = full_ident;
                 term.coeff = scale;
 
                 tag_type op1_use = (i<j) ? op1_fill : op2_fill;
@@ -166,7 +165,6 @@ public:
                 return term;
             }
         };
-        /**********************************************************************/
         
         value_type U = parms["U"];
         std::pair<tag_type, value_type> ptag;
@@ -295,6 +293,8 @@ public:
             return count;
         else if (name == "doubly_occ")
             return doubly_occ;
+        else if (name == "ident_full")
+            return identity;
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
