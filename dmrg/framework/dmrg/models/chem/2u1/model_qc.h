@@ -210,6 +210,8 @@ public:
         boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
         boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
+        boost::regex expression_oneptdm("^MEASURE_ONEPTDM(.*)$");
+        boost::regex expression_transition_oneptdm("^MEASURE_TRANSITION_ONEPTDM(.*)$");
         boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
         boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
         boost::regex expression_threeptdm("^THREEPTDM(.*)$");
@@ -290,6 +292,50 @@ public:
                 meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
+                half_only = true;
+                nearest_neighbors_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
+                                                                              half_only, nearest_neighbors_only, positions, bra_ckp));
+            }
+            else if (boost::regex_match(lhs, what, expression_oneptdm) ||
+                    boost::regex_match(lhs, what, expression_transition_oneptdm)) {
+
+                maquis::cout << "matched oneptdm measurement with lhs = " << lhs << std::endl;
+                std::string bra_ckp("");
+                if(lhs == "MEASURE_TRANSITION_ONEPTDM"){
+                    name = "transition_oneptdm";
+                    bra_ckp = it->value();
+                }
+                else
+                    name = "oneptdm";
+                maquis::cout << "Added 1pdm for measuring: name == "<< name <<"\n";
+
+                std::vector<bond_element> synchronous_meas_operators;
+//               {
+//               bond_element meas_operators;
+//               meas_operators.push_back( std::make_pair(create_up_ops, true) );
+//               meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+//               synchronous_meas_operators.push_back(meas_operators);
+//               }
+                {
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+                }
+//              {
+//              bond_element meas_operators;
+//              meas_operators.push_back( std::make_pair(create_down_ops, true) );
+//              meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+//              synchronous_meas_operators.push_back(meas_operators);
+//              }
+//              {
+//              bond_element meas_operators;
+//              meas_operators.push_back( std::make_pair(create_up_ops, true) );
+//              meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+//              synchronous_meas_operators.push_back(meas_operators);
+//              }
                 half_only = true;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
