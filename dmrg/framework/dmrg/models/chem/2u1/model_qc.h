@@ -209,8 +209,14 @@ public:
         boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
         boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_oneptdm("^MEASURE_ONEPTDM(.*)$");
-        boost::regex expression_transition_oneptdm("^MEASURE_TRANSITION_ONEPTDM(.*)$");
+        boost::regex expression_oneptdm_up("^MEASURE_ONEPTDM_UP(.*)$");
+        boost::regex expression_transition_oneptdm_up("^MEASURE_TRANSITION_ONEPTDM_UP(.*)$");
+        boost::regex expression_oneptdm_dn("^MEASURE_ONEPTDM_DN(.*)$");
+        boost::regex expression_transition_oneptdm_dn("^MEASURE_TRANSITION_ONEPTDM_DN(.*)$");
+        boost::regex expression_oneptdm_updn("^MEASURE_ONEPTDM_UPDN(.*)$");
+        boost::regex expression_transition_oneptdm_updn("^MEASURE_TRANSITION_ONEPTDM_UPDN(.*)$");
+        boost::regex expression_oneptdm_dnup("^MEASURE_ONEPTDM_DNUP(.*)$");
+        boost::regex expression_transition_oneptdm_dnup("^MEASURE_TRANSITION_ONEPTDM_DNUP(.*)$");
         boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
         boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
         boost::regex expression_threeptdm("^THREEPTDM(.*)$");
@@ -297,44 +303,104 @@ public:
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions, bra_ckp));
             }
-            else if (boost::regex_match(lhs, what, expression_oneptdm) ||
-                    boost::regex_match(lhs, what, expression_transition_oneptdm)) {
+            else if (boost::regex_match(lhs, what, expression_oneptdm_up) ||
+                    boost::regex_match(lhs, what, expression_transition_oneptdm_up)) {
 
-                maquis::cout << "matched oneptdm measurement with lhs = " << lhs << std::endl;
+                maquis::cout << "matched oneptdm_up measurement with lhs = " << lhs << std::endl;
                 std::string bra_ckp("");
-                if(lhs == "MEASURE_TRANSITION_ONEPTDM"){
-                    name = "transition_oneptdm";
+                if(lhs == "MEASURE_TRANSITION_ONEPTDM_UP"){
+                    name = "transition_oneptdm_up";
                     bra_ckp = it->value();
                 }
                 else
-                    name = "oneptdm";
-                maquis::cout << "Added 1pdm for measuring: name == "<< name <<"\n";
+                    name = "oneptdm_up";
+                maquis::cout << "Added 1pdm_up for measuring: name == "<< name <<"\n";
 
                 std::vector<bond_element> synchronous_meas_operators;
-//               {
-//               bond_element meas_operators;
-//               meas_operators.push_back( std::make_pair(create_up_ops, true) );
-//               meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
-//               synchronous_meas_operators.push_back(meas_operators);
-//               }
+                {
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+                }
+                half_only = true;
+                nearest_neighbors_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
+                                                                              half_only, nearest_neighbors_only, positions, bra_ckp));
+            }
+            else if (boost::regex_match(lhs, what, expression_oneptdm_dn) ||
+                    boost::regex_match(lhs, what, expression_transition_oneptdm_dn)) {
+
+                maquis::cout << "matched oneptdm_dn measurement with lhs = " << lhs << std::endl;
+                std::string bra_ckp("");
+                if(lhs == "MEASURE_TRANSITION_ONEPTDM_DN"){
+                    name = "transition_oneptdm_dn";
+                    bra_ckp = it->value();
+                }
+                else
+                    name = "oneptdm_dn";
+                maquis::cout << "Added 1pdm_dn for measuring: name == "<< name <<"\n";
+
+                std::vector<bond_element> synchronous_meas_operators;
                 {
                 bond_element meas_operators;
                 meas_operators.push_back( std::make_pair(create_down_ops, true) );
                 meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
-//              {
-//              bond_element meas_operators;
-//              meas_operators.push_back( std::make_pair(create_down_ops, true) );
-//              meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
-//              synchronous_meas_operators.push_back(meas_operators);
-//              }
-//              {
-//              bond_element meas_operators;
-//              meas_operators.push_back( std::make_pair(create_up_ops, true) );
-//              meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
-//              synchronous_meas_operators.push_back(meas_operators);
-//              }
+                half_only = true;
+                nearest_neighbors_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
+                                                                              half_only, nearest_neighbors_only, positions, bra_ckp));
+            }
+            else if (boost::regex_match(lhs, what, expression_oneptdm_updn) ||
+                    boost::regex_match(lhs, what, expression_transition_oneptdm_updn)) {
+
+                maquis::cout << "matched oneptdm_updn measurement with lhs = " << lhs << std::endl;
+                std::string bra_ckp("");
+                if(lhs == "MEASURE_TRANSITION_ONEPTDM_UPDN"){
+                    name = "transition_oneptdm_updn";
+                    bra_ckp = it->value();
+                }
+                else
+                    name = "oneptdm_updn";
+                maquis::cout << "Added 1pdm_updn for measuring: name == "<< name <<"\n";
+
+                std::vector<bond_element> synchronous_meas_operators;
+                {
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+                }
+                half_only = true;
+                nearest_neighbors_only = false;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
+                                                                              half_only, nearest_neighbors_only, positions, bra_ckp));
+            }
+            else if (boost::regex_match(lhs, what, expression_oneptdm_dnup) ||
+                    boost::regex_match(lhs, what, expression_transition_oneptdm_dnup)) {
+
+                maquis::cout << "matched oneptdm_dnup measurement with lhs = " << lhs << std::endl;
+                std::string bra_ckp("");
+                if(lhs == "MEASURE_TRANSITION_ONEPTDM_DNUP"){
+                    name = "transition_oneptdm_dnup";
+                    bra_ckp = it->value();
+                }
+                else
+                    name = "oneptdm_dnup";
+                maquis::cout << "Added 1pdm_dnup for measuring: name == "<< name <<"\n";
+
+                std::vector<bond_element> synchronous_meas_operators;
+                {
+                bond_element meas_operators;
+                meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                synchronous_meas_operators.push_back(meas_operators);
+                }
                 half_only = true;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
