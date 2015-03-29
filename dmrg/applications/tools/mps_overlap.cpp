@@ -119,8 +119,10 @@ int main(int argc, char ** argv)
         load(argv[2], mps2);
         
         if (true) {
-            std::cout << "<mps1 | mps2> = " << overlap(mps1, mps2) << std::endl;
+            std::cout << "<mps1 | mps2> = "                        << std::endl;
+            std::cout                       << overlap(mps1, mps2) << std::endl;
             std::cout << "<mps2 | mps1> = " << overlap(mps2, mps1) << std::endl;
+            std::cout                       << overlap(mps2, mps1) << std::endl;
         }
         
         if (false) {
