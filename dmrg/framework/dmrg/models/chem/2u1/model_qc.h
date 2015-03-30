@@ -254,7 +254,6 @@ public:
             if (boost::regex_match(lhs, what, expression_twoptdm) ||
                     boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
-                maquis::cout << "matched twoptdm measurement with lhs = " << lhs << std::endl;
                 std::string bra_ckp("");
                 if(lhs == "MEASURE_TRANSITION_TWOPTDM"){
                     name = "transition_twoptdm";
@@ -306,7 +305,6 @@ public:
             else if (boost::regex_match(lhs, what, expression_oneptdm_up) ||
                     boost::regex_match(lhs, what, expression_transition_oneptdm_up)) {
 
-                maquis::cout << "matched oneptdm_up measurement with lhs = " << lhs << std::endl;
                 std::string bra_ckp("");
                 if(lhs == "MEASURE_TRANSITION_ONEPTDM_UP"){
                     name = "transition_oneptdm_up";
@@ -332,7 +330,6 @@ public:
             else if (boost::regex_match(lhs, what, expression_oneptdm_dn) ||
                     boost::regex_match(lhs, what, expression_transition_oneptdm_dn)) {
 
-                maquis::cout << "matched oneptdm_dn measurement with lhs = " << lhs << std::endl;
                 std::string bra_ckp("");
                 if(lhs == "MEASURE_TRANSITION_ONEPTDM_DN"){
                     name = "transition_oneptdm_dn";
@@ -358,10 +355,8 @@ public:
             else if (boost::regex_match(lhs, what, expression_oneptdm_un) ||
                     boost::regex_match(lhs, what, expression_transition_oneptdm_un)) {
 
-                maquis::cout << "matched oneptdm_un measurement with lhs = " << lhs << std::endl;
                 std::string bra_ckp("");
                 if(lhs == "MEASURE_TRANSITION_ONEPTDM_UN"){
-                    maquis::cout << "here i am: name == "<< name <<"\n";
                     name = "transition_oneptdm_un";
                     bra_ckp = it->value();
                 }
@@ -385,7 +380,6 @@ public:
             else if (boost::regex_match(lhs, what, expression_oneptdm_du) ||
                     boost::regex_match(lhs, what, expression_transition_oneptdm_du)) {
 
-                maquis::cout << "matched oneptdm_dnup measurement with lhs = " << lhs << std::endl;
                 std::string bra_ckp("");
                 if(lhs == "MEASURE_TRANSITION_ONEPTDM_DU"){
                     name = "transition_oneptdm_du";
