@@ -47,9 +47,9 @@ MPO<Matrix, SymmGroup> make_mpo(Lattice const& lat, Model<Matrix, SymmGroup> con
     
     generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(lat, model);
     MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
-
-    PGSymmetryConverter<Matrix, SymmGroup> symm_conv(lat);
-    symm_conv.convert_tags_to_symm_tags(mpo);
+    
+    //PGSymmetryConverter<Matrix, SymmGroup> symm_conv( parse_symm<SymmGroup>(lat.size(), parms) );
+    //symm_conv.convert_tags_to_symm_tags(mpo);
     
     return mpo;
 }
