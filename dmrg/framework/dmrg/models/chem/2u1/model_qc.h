@@ -213,10 +213,10 @@ public:
         boost::regex expression_transition_oneptdm_up("^MEASURE_TRANSITION_ONEPTDM_UP(.*)$");
         boost::regex expression_oneptdm_dn("^MEASURE_ONEPTDM_DN(.*)$");
         boost::regex expression_transition_oneptdm_dn("^MEASURE_TRANSITION_ONEPTDM_DN(.*)$");
-        boost::regex expression_oneptdm_updn("^MEASURE_ONEPTDM_UPDN(.*)$");
-        boost::regex expression_transition_oneptdm_updn("^MEASURE_TRANSITION_ONEPTDM_UPDN(.*)$");
-        boost::regex expression_oneptdm_dnup("^MEASURE_ONEPTDM_DNUP(.*)$");
-        boost::regex expression_transition_oneptdm_dnup("^MEASURE_TRANSITION_ONEPTDM_DNUP(.*)$");
+        boost::regex expression_oneptdm_un("^MEASURE_ONEPTDM_UN(.*)$");
+        boost::regex expression_transition_oneptdm_un("^MEASURE_TRANSITION_ONEPTDM_UN(.*)$");
+        boost::regex expression_oneptdm_du("^MEASURE_ONEPTDM_DU(.*)$");
+        boost::regex expression_transition_oneptdm_du("^MEASURE_TRANSITION_ONEPTDM_DU(.*)$");
         boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
         boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
         boost::regex expression_threeptdm("^THREEPTDM(.*)$");
@@ -355,18 +355,19 @@ public:
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions, bra_ckp));
             }
-            else if (boost::regex_match(lhs, what, expression_oneptdm_updn) ||
-                    boost::regex_match(lhs, what, expression_transition_oneptdm_updn)) {
+            else if (boost::regex_match(lhs, what, expression_oneptdm_un) ||
+                    boost::regex_match(lhs, what, expression_transition_oneptdm_un)) {
 
-                maquis::cout << "matched oneptdm_updn measurement with lhs = " << lhs << std::endl;
+                maquis::cout << "matched oneptdm_un measurement with lhs = " << lhs << std::endl;
                 std::string bra_ckp("");
-                if(lhs == "MEASURE_TRANSITION_ONEPTDM_UPDN"){
-                    name = "transition_oneptdm_updn";
+                if(lhs == "MEASURE_TRANSITION_ONEPTDM_UN"){
+                    maquis::cout << "here i am: name == "<< name <<"\n";
+                    name = "transition_oneptdm_un";
                     bra_ckp = it->value();
                 }
                 else
-                    name = "oneptdm_updn";
-                maquis::cout << "Added 1pdm_updn for measuring: name == "<< name <<"\n";
+                    name = "oneptdm_un";
+                maquis::cout << "Added 1pdm_un for measuring: name == "<< name <<"\n";
 
                 std::vector<bond_element> synchronous_meas_operators;
                 {
@@ -381,18 +382,18 @@ public:
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions, bra_ckp));
             }
-            else if (boost::regex_match(lhs, what, expression_oneptdm_dnup) ||
-                    boost::regex_match(lhs, what, expression_transition_oneptdm_dnup)) {
+            else if (boost::regex_match(lhs, what, expression_oneptdm_du) ||
+                    boost::regex_match(lhs, what, expression_transition_oneptdm_du)) {
 
                 maquis::cout << "matched oneptdm_dnup measurement with lhs = " << lhs << std::endl;
                 std::string bra_ckp("");
-                if(lhs == "MEASURE_TRANSITION_ONEPTDM_DNUP"){
-                    name = "transition_oneptdm_dnup";
+                if(lhs == "MEASURE_TRANSITION_ONEPTDM_DU"){
+                    name = "transition_oneptdm_du";
                     bra_ckp = it->value();
                 }
                 else
-                    name = "oneptdm_dnup";
-                maquis::cout << "Added 1pdm_dnup for measuring: name == "<< name <<"\n";
+                    name = "oneptdm_du";
+                maquis::cout << "Added 1pdm_du for measuring: name == "<< name <<"\n";
 
                 std::vector<bond_element> synchronous_meas_operators;
                 {
