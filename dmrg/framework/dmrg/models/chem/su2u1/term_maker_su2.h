@@ -36,6 +36,7 @@ struct TermMakerSU2 {
     typedef ::term_descriptor<value_type> term_descriptor;
 
     typedef typename TagHandler<M, S>::tag_type tag_type;
+    typedef std::vector<tag_type> tag_vec;
     typedef typename term_descriptor::value_type pos_op_t;
 
     struct OperatorBundle
@@ -55,49 +56,49 @@ struct TermMakerSU2 {
         return boost::tuples::get<0>(p1) < boost::tuples::get<0>(p2);
     }
 
-    static term_descriptor two_term(bool sign, tag_type full_ident, value_type scale, pos_t i, pos_t j,
-                                     tag_type op1, tag_type op2)
+    static term_descriptor two_term(bool sign, tag_vec full_ident, value_type scale, pos_t i, pos_t j,
+                                    tag_vec op1, tag_vec op2)
     {
         term_descriptor term;
         term.is_fermionic = sign;
-        term.full_identity = full_ident;
+        term.full_identity = full_ident[0];
         term.coeff = scale;
-        term.push_back(boost::make_tuple(i, op1));
-        term.push_back(boost::make_tuple(j, op2));
+        term.push_back(boost::make_tuple(i, op1[0]));
+        term.push_back(boost::make_tuple(j, op2[0]));
         return term;
     }
 
-    static term_descriptor positional_two_term(bool sign, tag_type full_ident, value_type scale, pos_t i, pos_t j,
-                                     tag_type op1, tag_type op1_fill, tag_type op2, tag_type op2_fill)
+    static term_descriptor positional_two_term(bool sign, tag_vec full_ident, value_type scale, pos_t i, pos_t j,
+                                     tag_vec op1, tag_vec op1_fill, tag_vec op2, tag_vec op2_fill)
     {
         term_descriptor term;
         term.is_fermionic = sign;
-        term.full_identity = full_ident;
+        term.full_identity = full_ident[0];
         term.coeff = scale;
 
-        tag_type op1_use = (i<j) ? op1_fill : op2_fill;
-        tag_type op2_use = (i<j) ? op2 : op1;
+        tag_vec op1_use = (i<j) ? op1_fill : op2_fill;
+        tag_vec op2_use = (i<j) ? op2 : op1;
         if (j<i && sign) term.coeff = -term.coeff;
 
-        int start = std::min(i,j), end = std::max(i,j);
-        term.push_back( boost::make_tuple(start, op1_use) );
+        pos_t start = std::min(i,j), end = std::max(i,j);
+        term.push_back( boost::make_tuple(start, op1_use[0]) );
 
-        term.push_back( boost::make_tuple(end, op2_use) );
+        term.push_back( boost::make_tuple(end, op2_use[0]) );
 
         return term;
     }
 
-    static term_descriptor three_term(tag_type full_ident,
+    static term_descriptor three_term(tag_vec full_ident,
                                       value_type scale, pos_t pb, pos_t p1, pos_t p2,
-                                      tag_type boson_op, tag_type boson_op_fill,
-                                      tag_type op1, tag_type op1_fill, tag_type op2, tag_type op2_fill)
+                                      tag_vec boson_op, tag_vec boson_op_fill,
+                                      tag_vec op1, tag_vec op1_fill, tag_vec op2, tag_vec op2_fill)
     {
         term_descriptor term;
         term.is_fermionic = true;
         term.coeff = scale;
-        term.full_identity = full_ident;
+        term.full_identity = full_ident[0];
 
-        tag_type boson_op_use, op1_use, op2_use;
+        tag_vec boson_op_use, op1_use, op2_use;
 
         op1_use = (p1<p2) ? op1_fill : op2_fill;
         op2_use = (p1<p2) ? op2 : op1;
@@ -113,9 +114,10 @@ struct TermMakerSU2 {
 
         if (p2<p1) term.coeff = -term.coeff;
 
-        term.push_back( boost::make_tuple(pb, boson_op_use) );
-        term.push_back( boost::make_tuple(std::min(p1,p2), op1_use) );
-        term.push_back( boost::make_tuple(std::max(p1,p2), op2_use) );
+        pos_t start = std::min(p1,p2), end = std::max(p1,p2);
+        term.push_back( boost::make_tuple(pb, boson_op_use[0]) );
+        term.push_back( boost::make_tuple(start, op1_use[0]) );
+        term.push_back( boost::make_tuple(end, op2_use[0]) );
 
         // sort the terms w.r. to position
         term.canonical_order();
@@ -123,7 +125,7 @@ struct TermMakerSU2 {
         return term;
     }
 
-    static term_descriptor four_term(tag_type full_ident, int max_two_S,
+    static term_descriptor four_term(tag_vec full_ident, int max_two_S,
                                      value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
                                      OperatorBundle op_i, OperatorBundle op_k)
     {
@@ -131,7 +133,7 @@ struct TermMakerSU2 {
 
         term_descriptor term;
         term.is_fermionic = true;
-        term.full_identity = full_ident;
+        term.full_identity = full_ident[0];
         term.coeff = scale;
 
         // Simple O(n^2) algorithm to determine sign of permutation
