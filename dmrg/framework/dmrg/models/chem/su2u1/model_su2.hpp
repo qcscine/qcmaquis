@@ -196,7 +196,41 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     /*** Create operator tag table ****************************************/
     /**********************************************************************/
 
-#define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
+    #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
+
+    GENERATE_SITE_SPECIFIC(ident_op)
+    GENERATE_SITE_SPECIFIC(ident_full_op)
+    GENERATE_SITE_SPECIFIC(fill_op)
+
+    GENERATE_SITE_SPECIFIC(create_fill_op)
+    GENERATE_SITE_SPECIFIC(create_op)
+    GENERATE_SITE_SPECIFIC(destroy_fill_op)
+    GENERATE_SITE_SPECIFIC(destroy_op)
+
+    GENERATE_SITE_SPECIFIC(create_fill_couple_down_op)
+    GENERATE_SITE_SPECIFIC(destroy_fill_couple_down_op)
+    GENERATE_SITE_SPECIFIC(create_couple_up_op)
+    GENERATE_SITE_SPECIFIC(destroy_couple_up_op)
+
+    GENERATE_SITE_SPECIFIC(create_fill_count_op)
+    GENERATE_SITE_SPECIFIC(create_count_op)
+    GENERATE_SITE_SPECIFIC(destroy_fill_count_op)
+    GENERATE_SITE_SPECIFIC(destroy_count_op)
+
+    GENERATE_SITE_SPECIFIC(count_op)
+    GENERATE_SITE_SPECIFIC(docc_op)
+    GENERATE_SITE_SPECIFIC(e2d_op)
+    GENERATE_SITE_SPECIFIC(d2e_op)
+    GENERATE_SITE_SPECIFIC(flip_S0_op)
+    GENERATE_SITE_SPECIFIC(flip_to_S2_op)
+    GENERATE_SITE_SPECIFIC(flip_to_S0_op)
+    GENERATE_SITE_SPECIFIC(count_fill_op)
+
+    /**********************************************************************/
+    /*** Create operator tag table ****************************************/
+    /**********************************************************************/
+
+    #define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
 
     REGISTER(ident,        tag_detail::bosonic)
     REGISTER(ident_full,   tag_detail::bosonic)
@@ -226,7 +260,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     REGISTER(flip_to_S0,   tag_detail::bosonic)
     REGISTER(count_fill,   tag_detail::bosonic)
 
-#undef REGISTER
+    #undef REGISTER
 
 //#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
 //    PRINT(ident)
@@ -257,7 +291,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     destroy_pkg.fill_couple_down = destroy_fill_couple_down;
     /**********************************************************************/
 
-    chem_detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, ident, ident, tag_handler);
+    chem_detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, tag_handler);
     alps::numeric::matrix<Lattice::pos_t> idx_ = ta.getIdx();
     std::vector<value_type> matrix_elements = ta.getMatrixElements();
 
