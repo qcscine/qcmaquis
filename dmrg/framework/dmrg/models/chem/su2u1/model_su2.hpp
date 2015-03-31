@@ -230,7 +230,8 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     /*** Create operator tag table ****************************************/
     /**********************************************************************/
 
-    #define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
+    //#define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
+    #define REGISTER(op, kind) op.resize(1); op[0] = tag_handler->register_op(op ## _ops[0], kind);
 
     REGISTER(ident,        tag_detail::bosonic)
     REGISTER(ident_full,   tag_detail::bosonic)
@@ -280,15 +281,15 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     /*************************************************************/
     typename TermMakerSU2<Matrix, SymmGroup>::OperatorBundle create_pkg, destroy_pkg;
 
-    create_pkg.couple_up = create_couple_up;
-    create_pkg.couple_down = create;
-    create_pkg.fill_couple_up = create_fill;
-    create_pkg.fill_couple_down = create_fill_couple_down;
+    create_pkg.couple_up = create_couple_up[0];
+    create_pkg.couple_down = create[0];
+    create_pkg.fill_couple_up = create_fill[0];
+    create_pkg.fill_couple_down = create_fill_couple_down[0];
 
-    destroy_pkg.couple_up = destroy_couple_up;
-    destroy_pkg.couple_down = destroy;
-    destroy_pkg.fill_couple_up = destroy_fill;
-    destroy_pkg.fill_couple_down = destroy_fill_couple_down;
+    destroy_pkg.couple_up = destroy_couple_up[0];
+    destroy_pkg.couple_down = destroy[0];
+    destroy_pkg.fill_couple_up = destroy_fill[0];
+    destroy_pkg.fill_couple_down = destroy_fill_couple_down[0];
     /**********************************************************************/
 
     chem_detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, tag_handler);
@@ -308,7 +309,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back( boost::make_tuple(0, ident) );
+            term.push_back( boost::make_tuple(0, ident[0]) );
             this->terms_.push_back(term);
             
             used_elements[m] += 1;
@@ -319,7 +320,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back( boost::make_tuple(i, count));
+            term.push_back( boost::make_tuple(i, count[0]));
             this->terms_.push_back(term);
 
             used_elements[m] += 1;
@@ -345,7 +346,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back(boost::make_tuple(i, docc));
+            term.push_back(boost::make_tuple(i, docc[0]));
             this->terms_.push_back(term);
 
             used_elements[m] += 1;
