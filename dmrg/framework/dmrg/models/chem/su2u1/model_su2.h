@@ -82,11 +82,11 @@ public:
     }
     tag_type identity_matrix_tag(size_t type) const
     {
-        return ident[type];
+        return ident[0];
     }
     tag_type filling_matrix_tag(size_t type) const
     {
-        return fill[type];
+        return fill[0];
     }
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
@@ -97,9 +97,9 @@ public:
     tag_type get_operator_tag(std::string const & name, size_t type) const
     {
         if (name == "docc")
-            return docc[type];
+            return docc[0];
         else if (name == "ident_full")
-            return ident_full[type];
+            return ident_full[0];
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
