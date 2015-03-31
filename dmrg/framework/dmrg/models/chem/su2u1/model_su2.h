@@ -137,6 +137,7 @@ private:
         std::vector<op_t> ret;
         for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
             op_t mod(set_symm(op.basis(), sc));
+            mod.spin() = op.spin();
             for (std::size_t b = 0; b < op.n_blocks(); ++b)
                 mod[b] = op[b];
 
