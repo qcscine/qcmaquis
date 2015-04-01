@@ -2,8 +2,9 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
+ *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2015-2015 by Stefano Battaglia <stefabat@ethz.ch>
  *
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -43,7 +44,7 @@
 #include "dmrg/models/chem/util.h"
 #include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/pg_util.h"
-#include "dmrg/models/chem/2u1/term_maker.h"
+#include "dmrg/models/chem/rel/rel_term_maker.h"
 #include "dmrg/models/chem/rel/rel_chem_helper.h"
 
 template<class Matrix, class SymmGroup>

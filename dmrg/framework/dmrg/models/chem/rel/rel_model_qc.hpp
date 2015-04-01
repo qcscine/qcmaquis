@@ -2,8 +2,9 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
+ *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2015-2015 by Stefano Battaglia <stefabat@ethz.ch>
  *
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -129,10 +130,10 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 		#ifdef hopping
         // Hopping term t_ij 
         else if ( i!=j && k == -1 && l == -1) {
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+            this->terms_.push_back(RelTermMaker<Matrix, SymmGroup>::positional_two_term(
                 true, fill, matrix_elements[m], i, j, create, destroy, tag_handler)
             );
-            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term( 
+            this->terms_.push_back(RelTermMaker<Matrix, SymmGroup>::positional_two_term( 
                 true, fill, matrix_elements[m], j, i, create, destroy, tag_handler)
             );
             used_elements[m] += 1;
