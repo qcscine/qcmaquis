@@ -33,26 +33,31 @@
 import sys
 import os
 import subprocess
+from argparse import ArgumentParser
+
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib import rcParams
+from matplotlib import rc
+#from matplotlib import rcParams
 
-import plotutil
-import pyalps.plot
 import extrapolate_base
 
 
 #rcParams['text.usetex'] = True
-font = {'family' : 'normal',
-        'weight' : 'bold',
-        'size'   : 15}
-matplotlib.rc('font', **font)
+#font = {'family' : 'normal',
+#        'weight' : 'bold',
+#        'size'   : 15}
+#matplotlib.rc('font', **font)
 #rcParams.update({'figure.autolayout': True})
- 
-def plot(flist):
 
-    extr = extrapolate_base.energy2y(flist)
+rc('axes', unicode_minus=False) # supposed to eliminate Glyph warning, but doesn't work for TeX
+rc('font', **{'family':'serif','serif':['ComputerModernRoman'],'size':18})
+rc('text', usetex=True)
+ 
+def plot(flist, sweepnr=None):
+
+    extr = extrapolate_base.energy2y(flist, sweepnr)
     xdata = extr.xdata()[1:]
     ydata = extr.ydata()[1:]
 
@@ -66,29 +71,42 @@ def plot(flist):
     ax = fig.add_subplot(111)
     dots = plt.plot(xdata, ydata, 'o', xf, yf, '-')
 
-    #plt.ticklabel_format(style='sci', axis='x', scilimits=(3,4), useOffset=False)
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(3,4), useOffset=False)
     xfmt = plt.ScalarFormatter(useOffset=False, useMathText=True)
     xfmt.set_scientific(True)
     ax.yaxis.set_major_formatter(xfmt)
     
-    plt.xlabel('truncation error $\\varepsilon$')
-    plt.ylabel('Energy [Hartree]')
+    plt.xlabel(r'\textbf{truncation error} $\varepsilon$')
+    plt.ylabel(r'\textbf{Energy [Hartree]}')
+    #plt.xlabel('truncation error $\\varepsilon$')
+    #plt.ylabel('Energy [Hartree]')
     fig.subplots_adjust(left=0.2)
-    plt.legend()
 
     def autolabel(xd,yd,labels):
         # attach some text labels
-        shift = (max(yd) - min(yd)) * 0.04
+        yshift = (max(yd) - min(yd)) * 0.05
+        xshift = (max(xd) - min(xd)) * 0.2
         for x,y,l in zip(xd, yd, labels):
-            item = ax.text(x, y + shift, 'm=%d'%l,
-                        ha='center', va='bottom')
-            item.set_fontsize(12)
+            item = ax.text(x - xshift, y, '$m=%d$'%l,
+                        ha='right', va='center')
+            item.set_fontsize(18)
 
     autolabel(xdata, ydata, extr.m())
+
+    # add the extrapolated energy to the plot"
+    ext_note = ax.text(0 + (max(xf)-min(xf)) * 0.05, fit(0),
+                       'extrapolation:\n$%.6f$'%fit(0), ha='left', va='center')
+    # position below is yaxis 
+    #ext_note = ax.text(0, fit(0), '$%.6f$'%fit(0), ha='right', va='top')
+
     plt.savefig('e.svg')
 
 
 
 if __name__=='__main__':
-    files = sys.argv[1:]
-    plot(files)
+    parser = ArgumentParser(description='extrapolate DMRG results to zero truncation error')
+    parser.add_argument('files', nargs='+', help="files to be loaded")
+    parser.add_argument('-s', '--sweep', default=None, type=int, help="analyze at specific sweep")
+    args=parser.parse_args()
+
+    plot(args.files, args.sweep)

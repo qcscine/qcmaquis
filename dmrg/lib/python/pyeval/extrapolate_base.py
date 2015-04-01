@@ -39,37 +39,38 @@ import pydmrg
 
 class extrapolator(object):
 
-    def __init__(self, flist, what):
+    def __init__(self, flist, what = ['Energy'], sweepnr = None):
         self.extflag = True
         self.flist = flist
 
-        print "fitting", self.flist
+        print "files:", self.flist
 
         truncs = pydmrg.LoadDMRGSweeps(self.flist, ['TruncatedWeight'])
+
+        if sweepnr is None:
+            sweepnr = min([len(f) - 1 for f in truncs])
+
+        print "extrapolating data at sweep", sweepnr
+
+        props = truncs[0][0][0].props
+
         # TODO : find out why _xdata survives even if derived class is deleted
         # load truncated weights
         self._xdata = []
         for d in truncs:
-            if len(d[-1][0].y) < 50:
-                print "\nWARNING: less than 50 truncations recorded in last sweep\n"
-                if len(d[-2][0].y) > len(d[-1][0].y):
-                    self._xdata.append( max(d[-2][0].y))
-                    print len(d[-2][0].y), "truncations in selected sweep"
-                else:
-                    self._xdata.append( max(d[-1][0].y) )
-                    print len(d[-1][0].y), "truncations in selected sweep"
-                #    raise RuntimeError("Sweep truncation data too cripled")
-            else:
-                self._xdata.append( max(d[-1][0].y) )
+            if len(d[sweepnr][0].y) != 2 * (props['L'] - 1):
+                print "\nWARNING: data in sweep", sweepnr, "incomplete\n"
+
+            self._xdata.append( max(d[sweepnr][0].y) )
 
         # load energies and bond dimensions
         self._ydata = []
         self._m = []
-        energs = pydmrg.LoadDMRGSweeps(flist, ['Energy'])
+        energs = pydmrg.LoadDMRGSweeps(flist, what)
         for f in energs:
             # get min energy from last sweep
-            self._ydata.append(min(f[-1][0].y))
-            self._m.append(int(f[-1][0].props['max_bond_dimension'] + 0.5))
+            self._ydata.append(min(f[sweepnr][0].y))
+            self._m.append(int(f[sweepnr][0].props['max_bond_dimension'] + 0.5))
 
         self._xdata.sort()
         self._ydata.sort()
@@ -118,8 +119,8 @@ class extrapolator(object):
     _xdata, _ydata = [], []
 
 class energy2y(extrapolator):
-    def __init__(self, flist):
-        super(energy2y, self).__init__(flist, ['Energy'])
+    def __init__(self, flist, sweepnr = None):
+        super(energy2y, self).__init__(flist, ['Energy'], sweepnr)
     
     def get(self, fdata):
         return fdata[0].y[0]
