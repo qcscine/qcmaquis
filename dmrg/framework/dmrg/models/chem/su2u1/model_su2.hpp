@@ -230,8 +230,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     /*** Create operator tag table ****************************************/
     /**********************************************************************/
 
-    //#define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
-    #define REGISTER(op, kind) op.resize(1); op[0] = tag_handler->register_op(op ## _ops[0], kind);
+    #define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
 
     REGISTER(ident,        tag_detail::bosonic)
     REGISTER(ident_full,   tag_detail::bosonic)
