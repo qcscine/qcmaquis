@@ -173,28 +173,28 @@ struct tpl_ops_pg_
     }
 };
 
-template<int N, int I>
+template<class G, int N, int I>
 struct tpl_arith_
 {
     template<typename T>
     void operator_plus(T const * a, T const * b, T * c) const
     {
         c[I] = a[I] + b[I];
-        tpl_arith_<N, I+1>().operator_plus(a, b, c);
+        tpl_arith_<G, N, I+1>().operator_plus(a, b, c);
     }
     
     template<typename T>
     void operator_uminus(T const * a, T * b) const
     {
         b[I] = -a[I];
-        tpl_arith_<N, I+1>().operator_uminus(a, b);
+        tpl_arith_<G, N, I+1>().operator_uminus(a, b);
     }
 
     template<typename T>
     void operator_div(T const * a, T * b, int n) const
     {
         b[I] = a[I]/n;
-        tpl_arith_<N, I+1>().operator_div(a, b, n);
+        tpl_arith_<G, N, I+1>().operator_div(a, b, n);
     }
 
 };
@@ -212,22 +212,18 @@ struct tpl_ops_pg_<N, N>
     bool operator_eq(T const * a, T const * b) const { return a[N] == b[N]; }
 };
 
-template<int N>
-struct tpl_arith_<N, N>
+template<class G, int N>
+struct tpl_arith_<G, N, N>
 {
     template<typename T>
     void operator_plus(T const * a, T const * b, T * ret) const
     {
-#ifndef NDEBUG
-        if (a[N] > 7 || b[N] > 7 || a[N] < 0 || b[N] < 0)
-            maquis::cout << "a , b are: " << a[N] << ", " << b[N] << std::endl;
-#endif
-        ret[N] = NU1PG<N, int>::mult_table(a[N], b[N]);
+        ret[N] = G::mult_table(a[N], b[N]);
     }
 
     
     template<typename T>
-    void operator_uminus(T const * a, T * b) const { b[N] = a[N]; }
+    void operator_uminus(T const * a, T * b) const { b[N] = G::adjoin(a[N]); }
 
     template<typename T>
     void operator_div(T const *, T *, int) const { }
@@ -262,7 +258,7 @@ NU1ChargePG<N, S> operator+(NU1ChargePG<N, S> const & a,
                        NU1ChargePG<N, S> const & b)
 {
     NU1ChargePG<N, S> ret;
-    tpl_arith_<N, 0>().operator_plus(a.begin(), b.begin(), ret.begin());
+    tpl_arith_<NU1PG<N, S>, N, 0>().operator_plus(a.begin(), b.begin(), ret.begin());
     return ret;
 }
 
@@ -270,7 +266,7 @@ template<int N, class S>
 NU1ChargePG<N, S> operator-(NU1ChargePG<N, S> const & rhs)
 {
     NU1ChargePG<N, S> ret;
-    tpl_arith_<N, 0>().operator_uminus(rhs.begin(), ret.begin());
+    tpl_arith_<NU1PG<N,S>, N, 0>().operator_uminus(rhs.begin(), ret.begin());
     return ret;
 }
 
@@ -278,11 +274,12 @@ template<int N, class S>
 NU1ChargePG<N, S> operator/(NU1ChargePG<N, S> const & a, int n)
 {
     NU1ChargePG<N, S> ret;
-    tpl_arith_<N, 0>().operator_div(a.begin(), ret.begin(), n);
+    tpl_arith_<NU1PG<N,S>, N, 0>().operator_div(a.begin(), ret.begin(), n);
     return ret;
 }
-template<int N, class S>
-NU1ChargePG<N, S> operator/(int n, NU1ChargePG<N, S> const & a) { return a/n; }
+// not needed as of June 2014
+//template<class G, int N, class S>
+//NU1ChargePG<N, S> operator/(int n, NU1ChargePG<N, S> const & a) { return a/n; }
 
 
 template<int N, class S = int>
@@ -307,6 +304,11 @@ public:
         return a+b;
     }
     
+    static subcharge adjoin(subcharge I)
+    {
+        return I;
+    }
+
     template<int R> static charge fuse(boost::array<charge, R> const & v)
     {
         charge ret = v[0];

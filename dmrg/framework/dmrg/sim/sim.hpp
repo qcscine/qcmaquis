@@ -104,8 +104,10 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     }
     
     assert(mps.length() == lat.size());
+    // DEBUG
+	//save("initial_mps.h5", mps);
+
     maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
-    
 }
 
 template <class Matrix, class SymmGroup>

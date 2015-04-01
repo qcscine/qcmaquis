@@ -350,7 +350,7 @@ private:
             {
                 charge pc = f(it1->first, it2->first);
                 keys_vals_[std::make_pair(it1->first, it2->first)] = size_[pc]; 	
-          //    keys_vals_.insert(std::make_pair(std::make_pair(it1->first, it2->first),size_[pc])); 	
+                //keys_vals_.insert(std::make_pair(std::make_pair(it1->first, it2->first),size_[pc])); 	
                 size_[pc] += it1->second * it2->second;
             }
     }
@@ -360,7 +360,7 @@ public:
     {
         typedef typename boost::unordered_map<std::pair<charge, charge>, size_t>::const_iterator match_type;
         match_type match = keys_vals_.find(std::make_pair(a,b));
-        assert( match != keys_vals_.end() );
+		assert( match != keys_vals_.end() );
         return match->second;
     }
     
@@ -369,7 +369,7 @@ public:
         assert(size_.count(pc) > 0);
         return size_[pc];
     }
-    
+
     // for the moment let's avoid the default template argument (C++11)
     inline size_t size(charge a, charge b) const
     {

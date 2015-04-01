@@ -155,6 +155,7 @@ public:
     	    TwoSiteTensor<Matrix, SymmGroup> tst(mps[site1], mps[site2]);
     	    MPSTensor<Matrix, SymmGroup> twin_mps = tst.make_mps();
             tst.clear();
+
             SiteProblem<Matrix, SymmGroup> sp(left_[site1], right_[site2+1], ts_cache_mpo[site1]);
             
             /// Compute orthogonal vectors
@@ -196,6 +197,8 @@ public:
                 maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
 #endif
 
+            // OUTPUT PRECISION
+            maquis::cout.precision(15);
             maquis::cout << "Energy " << lr << " " << res.first << std::endl;
             iteration_results_["Energy"] << res.first;
             
