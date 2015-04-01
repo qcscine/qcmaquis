@@ -226,10 +226,6 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     GENERATE_SITE_SPECIFIC(flip_to_S0_op)
     GENERATE_SITE_SPECIFIC(count_fill_op)
 
-    /**********************************************************************/
-    /*** Create operator tag table ****************************************/
-    /**********************************************************************/
-
     #define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
 
     REGISTER(ident,        tag_detail::bosonic)
