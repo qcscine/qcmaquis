@@ -409,9 +409,9 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             std::vector<term_descriptor> & vec = this->terms_;
 
             ta.add_3term(vec, TM::three_term(ident, std::sqrt(2.)*matrix_elements[m], same_idx, k, l,
-                                             count, count_fill, create, create_fill, destroy, destroy_fill));
+                                             count, count_fill, create, create_fill, destroy, destroy_fill, lat));
             ta.add_3term(vec, TM::three_term(ident, std::sqrt(2.)*matrix_elements[m], same_idx, l, k,
-                                             count, count_fill, create, create_fill, destroy, destroy_fill));
+                                             count, count_fill, create, create_fill, destroy, destroy_fill, lat));
 
             used_elements[m] += 1;
         }
@@ -431,57 +431,57 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             std::vector<term_descriptor> & vec = this->terms_;
 
             // Note: need minus because of clebsch gordan coeff from two destructors or two creators
-            vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill));
-            vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill));
+            vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill, lat));
+            vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill, lat));
 
             if ( same_idx < std::min(pos1,pos2) )
             {
                 this->terms_.push_back(TM::three_term(
-                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill
+                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill, lat
                 ));
                 ta.add_3term(vec, TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
+                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill, lat
                 ));
 
                 this->terms_.push_back(TM::three_term(
                     // note minus sign, because commutation on same_idx is not taken into account
-                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill_couple_down
+                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill_couple_down, lat
                 ));
                 ta.add_3term(vec, TM::three_term(
-                    ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
+                    ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill, lat
                 ));
             }
             else if (same_idx > std::max(pos1,pos2))
             {
                 this->terms_.push_back(TM::three_term(
-                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill
+                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill, lat
                 ));
                 ta.add_3term(vec, TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
+                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill, lat
                 ));
 
                 this->terms_.push_back(TM::three_term(
                     // note minus sign, because commutation on same_idx is not taken into account
-                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill
+                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill, lat
                 ));
                 ta.add_3term(vec, TM::three_term(
-                    ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
+                    ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill, lat
                 ));
             }
             else
             {
                 this->terms_.push_back(TM::three_term(
-                    ident,      std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill
+                    ident,      std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill, lat
                 ));
                 ta.add_3term(vec, TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count_fill, count_fill, create, create_fill, destroy, destroy_fill
+                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count_fill, count_fill, create, create_fill, destroy, destroy_fill, lat
                 ));
 
                 this->terms_.push_back(TM::three_term(
-                    ident,     -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill
+                    ident,     -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill, lat
                 ));
                 ta.add_3term(vec, TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count_fill, count_fill, create, create_fill, destroy, destroy_fill
+                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count_fill, count_fill, create, create_fill, destroy, destroy_fill, lat
                 ));
             }
 

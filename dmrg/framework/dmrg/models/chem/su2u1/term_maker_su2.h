@@ -91,7 +91,7 @@ struct TermMakerSU2 {
     static term_descriptor three_term(tag_vec full_ident,
                                       value_type scale, pos_t pb, pos_t p1, pos_t p2,
                                       tag_vec boson_op, tag_vec boson_op_fill,
-                                      tag_vec op1, tag_vec op1_fill, tag_vec op2, tag_vec op2_fill)
+                                      tag_vec op1, tag_vec op1_fill, tag_vec op2, tag_vec op2_fill, Lattice const & lat)
     {
         term_descriptor term;
         term.is_fermionic = true;
@@ -114,9 +114,9 @@ struct TermMakerSU2 {
         if (p2<p1) term.coeff = -term.coeff;
 
         pos_t start = std::min(p1,p2), end = std::max(p1,p2);
-        term.push_back( boost::make_tuple(pb, boson_op_use[0]) );
-        term.push_back( boost::make_tuple(start, op1_use[0]) );
-        term.push_back( boost::make_tuple(end, op2_use[0]) );
+        term.push_back( boost::make_tuple(pb, boson_op_use[lat.get_prop<sc>("type", pb)]) );
+        term.push_back( boost::make_tuple(start, op1_use[lat.get_prop<sc>("type", start)]) );
+        term.push_back( boost::make_tuple(end, op2_use[lat.get_prop<sc>("type", end)]) );
 
         // sort the terms w.r. to position
         term.canonical_order();
