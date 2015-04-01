@@ -103,7 +103,7 @@ public:
             	tmp = SymmGroup::fuse(tmp, -charges[ii]);}
         }
 
-        if (tmp[0] == 0 && tmp[1] != parms["irrep_charge"]) {return false;}
+        if (tmp[0] == 0 && tmp[1] != parms["irrep"]) {return false;}
         else {return true;}
     }
 
