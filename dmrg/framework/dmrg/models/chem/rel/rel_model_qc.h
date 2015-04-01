@@ -156,7 +156,7 @@ public:
         
         measurements_type meas;
 
-        typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
+        typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
         {
             boost::regex expression("^MEASURE_LOCAL\\[(.*)]$");
