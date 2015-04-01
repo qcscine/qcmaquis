@@ -39,6 +39,8 @@ struct TermMakerSU2 {
     typedef std::vector<tag_type> tag_vec;
     typedef typename term_descriptor::value_type pos_op_t;
 
+    typedef typename S::subcharge sc;
+
     struct OperatorBundle
     {
         tag_type couple_up;
@@ -57,18 +59,18 @@ struct TermMakerSU2 {
     }
 
     static term_descriptor two_term(bool sign, tag_vec full_ident, value_type scale, pos_t i, pos_t j,
-                                    tag_vec op1, tag_vec op2)
+                                    tag_vec op1, tag_vec op2, Lattice const & lat)
     {
         term_descriptor term;
         term.is_fermionic = sign;
         term.coeff = scale;
-        term.push_back(boost::make_tuple(i, op1[0]));
-        term.push_back(boost::make_tuple(j, op2[0]));
+        term.push_back(boost::make_tuple(i, op1[lat.get_prop<sc>("type", i)]));
+        term.push_back(boost::make_tuple(j, op2[lat.get_prop<sc>("type", j)]));
         return term;
     }
 
     static term_descriptor positional_two_term(bool sign, tag_vec full_ident, value_type scale, pos_t i, pos_t j,
-                                     tag_vec op1, tag_vec op1_fill, tag_vec op2, tag_vec op2_fill)
+                                     tag_vec op1, tag_vec op1_fill, tag_vec op2, tag_vec op2_fill, Lattice const & lat)
     {
         term_descriptor term;
         term.is_fermionic = sign;
@@ -79,9 +81,9 @@ struct TermMakerSU2 {
         if (j<i && sign) term.coeff = -term.coeff;
 
         pos_t start = std::min(i,j), end = std::max(i,j);
-        term.push_back( boost::make_tuple(start, op1_use[0]) );
+        term.push_back( boost::make_tuple(start, op1_use[lat.get_prop<sc>("type", start)]) );
 
-        term.push_back( boost::make_tuple(end, op2_use[0]) );
+        term.push_back( boost::make_tuple(end, op2_use[lat.get_prop<sc>("type", end)]) );
 
         return term;
     }
