@@ -70,7 +70,7 @@ typedef NU1 grp;
 #include "utils/timings.h"
 
 struct corr_measurement {
-    typedef block_matrix<matrix, grp> op_t;
+    typedef operator_selector<matrix, grp>::type op_t;
     
     std::string name;
     std::vector<op_t> op1, op2;
@@ -81,13 +81,14 @@ template<class Matrix, class SymmGroup>
 void measure_correlation(MPS<Matrix, SymmGroup> const & bra,
                          MPS<Matrix, SymmGroup> const & ket,
                          Lattice const & lattice,
-                         std::vector<block_matrix<Matrix, SymmGroup> > const & fillings,
+                         std::vector<typename operator_selector<Matrix, SymmGroup>::type> const & fillings,
                          corr_measurement const & ops,
                          std::vector<Boundary<Matrix,SymmGroup> > const & left,
                          std::vector<Boundary<Matrix,SymmGroup> > const & right,
                          std::vector<typename Matrix::value_type>& dc,
                          std::vector<std::string>& labels)
 {
+    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
     std::size_t L = lattice.size();
     
     MPOTensor<Matrix, SymmGroup> mpo_fill(1,1), mpo_op1(1,1), mpo_op2(1,1);
@@ -100,7 +101,7 @@ void measure_correlation(MPS<Matrix, SymmGroup> const & bra,
         
         {
             int type = lattice.get_prop<int>("type", p);
-            block_matrix<Matrix, SymmGroup> tmp;
+            op_t tmp;
             gemm(fillings[type], ops.op1[type], tmp);
             mpo_op1.set(0,0, tmp);
         }
@@ -151,7 +152,7 @@ int main(int argc, char ** argv)
         maquis::cout.precision(10);
         
         typedef matrix::value_type value_type;
-        typedef block_matrix<matrix, grp> op_t;
+        typedef operator_selector<matrix, grp>::type op_t;
         typedef Model<matrix, grp>::table_ptr table_ptr;
         typedef Model<matrix, grp>::tag_type tag_type;
         
@@ -241,7 +242,7 @@ int main(int argc, char ** argv)
             MPOTensor<matrix, grp> mpo_ident(1,1);
             left[0] = make_left_boundary(mps, mps);
             for (int p=0; p<L; ++p) {
-                mpo_ident.set(0,0, identity_matrix<matrix>(mps[p].site_dim()) );
+                mpo_ident.set(0,0, identity_matrix<op_t>(mps[p].site_dim()) );
                 left[p+1] = contraction::Engine<matrix, matrix, grp>::overlap_mpo_left_step(mps[p], mps[p], left[p], mpo_ident);
             }
         }

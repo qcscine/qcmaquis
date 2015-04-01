@@ -59,7 +59,7 @@ namespace SU2 {
 
             block_matrix<Matrix, SymmGroup> const & T = left_mult_mps[b1];
             MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
-            block_matrix<Matrix, SymmGroup> const & W = access.op;
+            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op;
             block_matrix<Matrix, SymmGroup>& ret = contr_grid(b1,b2);
 
             for (size_t lblock = 0; lblock < left[b1].n_blocks(); ++lblock) {
@@ -155,7 +155,7 @@ namespace SU2 {
 
             block_matrix<Matrix, SymmGroup> const & T = right_mult_mps[b2];
             MPOTensor_detail::const_term_descriptor<Matrix, SymmGroup> access = mpo.at(b1,b2);
-            block_matrix<Matrix, SymmGroup> const & W = access.op;
+            typename operator_selector<Matrix, SymmGroup>::type const & W = access.op;
 
             for (size_t ketblock = 0; ketblock < ket_basis.size(); ++ketblock) {
 

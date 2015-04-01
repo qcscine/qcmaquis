@@ -141,7 +141,7 @@ public:
     
     measurements_type measurements () const
     {
-        typedef std::vector<block_matrix<Matrix, TwoU1> > op_vec;
+        typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
         
         std::size_t ntypes = lat.maximum_vertex_type()+1;

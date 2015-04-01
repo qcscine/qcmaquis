@@ -38,8 +38,9 @@ namespace measurements {
     template <class Matrix, class SymmGroup>
     class local : public measurement<Matrix, SymmGroup> {
         typedef measurement<Matrix, SymmGroup> base;
+        typedef typename base::op_t op_t;
         typedef generate_mpo::MPOMaker<Matrix, SymmGroup> generator;
-        typedef std::vector<block_matrix<Matrix, SymmGroup> > op_vec;
+        typedef std::vector<op_t> op_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
     public:
         
@@ -129,7 +130,7 @@ namespace measurements {
             /// collect results from all mpo terms
             for (typename std::vector<bond_element>::const_iterator it = mpo_terms.begin(); it != mpo_terms.end(); ++it) {
                 typedef std::map<std::string, MPO<Matrix, SymmGroup> > mpo_map;
-                mpo_map mpos = meas_prepare::local(lattice, identities, fillings, *it);
+                mpo_map mpos = meas_prepare::local<Matrix, SymmGroup>(lattice, identities, fillings, *it);
                 
                 /// measure the value at each site / bond
                 for (typename mpo_map::const_iterator mit = mpos.begin(); mit != mpos.end(); ++mit) {

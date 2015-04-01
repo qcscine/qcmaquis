@@ -295,7 +295,7 @@ MPS<Matrix, SymmGroup>::right_boundary() const
 }
 
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& op, typename MPS<Matrix, SymmGroup>::size_type p)
+void MPS<Matrix, SymmGroup>::apply(typename operator_selector<Matrix, SymmGroup>::type const& op, typename MPS<Matrix, SymmGroup>::size_type p)
 {
     typedef typename SymmGroup::charge charge;
     using std::size_t;
@@ -319,7 +319,8 @@ void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& op, ty
 }
 
 template<class Matrix, class SymmGroup>
-void MPS<Matrix, SymmGroup>::apply(block_matrix<Matrix, SymmGroup> const& fill, block_matrix<Matrix, SymmGroup> const& op, typename MPS<Matrix, SymmGroup>::size_type p)
+void MPS<Matrix, SymmGroup>::apply(typename operator_selector<Matrix, SymmGroup>::type const& fill,
+                                   typename operator_selector<Matrix, SymmGroup>::type const& op, typename MPS<Matrix, SymmGroup>::size_type p)
 {
     for (size_t i=0; i<p; ++i) {
         (*this)[i] = contraction::multiply_with_op((*this)[i], fill);

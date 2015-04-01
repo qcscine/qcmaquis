@@ -133,7 +133,7 @@ void central_optim(unsigned site, block_matrix<DiagMatrix, SymmGroup> & inv,
     mps[site].multiply_from_right(inv);
     TwoSiteTensor<Matrix, SymmGroup> tst(mps[site], mps[site+1]);
     MPSTensor<Matrix, SymmGroup> ts_mps = tst.make_mps();
-    MPOTensor<Matrix, SymmGroup> ts_mpo = make_twosite_mpo<Matrix,Matrix>(mpo[site], mpo[site+1], mps[site].site_dim(), mps[site+1].site_dim(), true);
+    MPOTensor<Matrix, SymmGroup> ts_mpo = make_twosite_mpo<Matrix,Matrix>(mpo[site], mpo[site+1], mps[site].site_dim(), mps[site+1].site_dim());
     maquis::cout << "Two site obj done!\n";
     
     
@@ -178,7 +178,7 @@ void dmrg_optim(unsigned site, unsigned local_site, int lr, int L,
     /// Create TwoSite objects
     TwoSiteTensor<Matrix, SymmGroup> tst(mps[site], mps[site+1]);
     MPSTensor<Matrix, SymmGroup> ts_mps = tst.make_mps();
-    MPOTensor<Matrix, SymmGroup> ts_mpo = make_twosite_mpo<Matrix,Matrix>(mpo[site], mpo[site+1], mps[site].site_dim(), mps[site+1].site_dim(), true);
+    MPOTensor<Matrix, SymmGroup> ts_mpo = make_twosite_mpo<Matrix,Matrix>(mpo[site], mpo[site+1], mps[site].site_dim(), mps[site+1].site_dim());
     maquis::cout << "Two site obj done!\n";
     
     
@@ -319,7 +319,7 @@ int main(int argc, char ** argv)
         int nsweeps = parms["nsweeps"];
         
         typedef alps::numeric::associated_real_diagonal_matrix<matrix>::type dmt;
-        block_matrix<dmt, grp> inv = identity_matrix<dmt>(mps[end-1].col_dim());
+        block_matrix<dmt, grp> inv = identity_matrix<block_matrix<dmt,grp> >(mps[end-1].col_dim());
         for (int sweep = 0; sweep < nsweeps; ++sweep) {
             
             if (rank > 0 && rank < nprocs-1) {

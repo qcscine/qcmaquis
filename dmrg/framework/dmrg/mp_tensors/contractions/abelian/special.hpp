@@ -64,7 +64,7 @@ namespace contraction {
     template<class Matrix, class SymmGroup>
     block_matrix<Matrix, SymmGroup>
     multiply_with_twosite(block_matrix<Matrix, SymmGroup> const & vec,
-                          block_matrix<Matrix, SymmGroup> const & op,
+                          typename operator_selector<Matrix, SymmGroup>::type const & op,
                           Index<SymmGroup> const & left_i,
                           Index<SymmGroup> const & right_i,
                           Index<SymmGroup> const & phys_i)
@@ -131,7 +131,7 @@ namespace contraction {
     
     template<class Matrix, class SymmGroup>
     MPSTensor<Matrix, SymmGroup>
-    multiply_with_op(MPSTensor<Matrix, SymmGroup> const & mps, block_matrix<Matrix, SymmGroup> const & op)
+    multiply_with_op(MPSTensor<Matrix, SymmGroup> const & mps, typename operator_selector<Matrix, SymmGroup>::type const & op)
     {
         typedef typename SymmGroup::charge charge;
         
@@ -219,9 +219,10 @@ namespace contraction {
     template<class Matrix, class SymmGroup>
     MPSTensor<Matrix, SymmGroup>
     local_op(MPSTensor<Matrix, SymmGroup> const & mps,
-             block_matrix<Matrix, SymmGroup> const & op)
+             typename operator_selector<Matrix, SymmGroup>::type const & op)
     {
         typedef typename SymmGroup::charge charge;
+        typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
         
         mps.make_left_paired();
         block_matrix<Matrix, SymmGroup> const & vec = mps.data();

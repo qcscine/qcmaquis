@@ -330,8 +330,11 @@ typename MPS<Matrix, SymmGroup>::scalar_type dm_trace(MPS<Matrix, SymmGroup> con
 
 // Specific to Fermi-Hubbard on a Ladder!!
 template<class Matrix, class SymmGroup>
-void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<block_matrix<Matrix, SymmGroup> > const & dens_ops, std::vector<std::vector<double> > const & dens)
+void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<typename operator_selector<Matrix, SymmGroup>::type> const & dens_ops,
+                 std::vector<std::vector<double> > const & dens)
 {
+    typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
+
     assert( mps.size() == dens[0].size() );
     assert( dens_ops.size() == dens.size() );
     size_t L = mps.size();
@@ -340,8 +343,6 @@ void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<block_matrix<Matrix, 
     mps.canonize(0);
     for (int p=0; p<L; ++p)
     {
-        
-
         Index<SymmGroup> phys = mps[p].site_dim();
         typename SymmGroup::charge empty, up, down, updown;
         empty[0]  = 0;  empty[1]  = 0;
@@ -377,7 +378,7 @@ void fix_density(MPS<Matrix, SymmGroup> & mps, std::vector<block_matrix<Matrix, 
         maquis::cout << "k2 = " << k2 << std::endl;
         assert( k0 > 0 ); // not always the case!!!
         
-        block_matrix<Matrix, SymmGroup> rescale = identity_matrix<Matrix>(phys);
+        op_t rescale = identity_matrix<typename operator_selector<Matrix, SymmGroup>::type>(phys);
         rescale(empty, empty) *= std::sqrt(k0);
         rescale(up, up) *= std::sqrt(k1);
         rescale(down, down) *= std::sqrt(k2);

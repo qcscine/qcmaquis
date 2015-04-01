@@ -31,7 +31,7 @@
 #include "mpotensor.h"
 
 template<class Matrix, class SymmGroup>
-std::string identify_op(block_matrix<Matrix, SymmGroup> const & m)
+std::string identify_op(typename operator_selector<Matrix, SymmGroup>::type const & m)
 {
     if (m.n_blocks() == 2)
         return "I";
@@ -101,7 +101,7 @@ void follow_and_print_terms(MPO<Matrix, SymmGroup> const& mpo, int p, int b1, in
 template<class Matrix, class SymmGroup>
 void cleanup_mpo_(MPO<Matrix, SymmGroup> const & in_mpo,
                   MPO<Matrix, SymmGroup> & out_mpo,
-                  std::vector<boost::tuple<int, int, block_matrix<Matrix, SymmGroup> > > & ops,
+                  std::vector<boost::tuple<int, int, typename operator_selector<Matrix, SymmGroup>::type > > & ops,
                   int p, int start)
 {
     for (std::size_t k = 0; k < in_mpo[p].col_dim(); ++k)
@@ -137,7 +137,7 @@ MPO<Matrix, SymmGroup> cleanup_mpo(MPO<Matrix, SymmGroup> const & mpo)
     for (std::size_t p = 0; p < ret.length(); ++p)
         ret[p] = MPOTensor<Matrix, SymmGroup>(mpo[p].row_dim(), mpo[p].col_dim());
     
-    std::vector<boost::tuple<int, int, block_matrix<Matrix, SymmGroup> > > prempo(mpo.length());
+    std::vector<boost::tuple<int, int, typename operator_selector<Matrix, SymmGroup>::type > > prempo(mpo.length());
     cleanup_mpo_(mpo, ret, prempo, 0, 0);
     return ret;
 }
@@ -176,7 +176,7 @@ square_mpo(MPO<Matrix, SymmGroup> const & mpo)
                         assert(inp.has(r1, c1));
                         assert(inp.has(r2, c2));
                         
-                        block_matrix<Matrix, SymmGroup> t;
+                        typename operator_selector<Matrix, SymmGroup>::type t;
                         gemm(inp.at(r1, c1).op, inp.at(r2, c2).op, t);
                         if (t.n_blocks() > 0)
                             ret.set(r1*inp.row_dim()+r2, c1*inp.col_dim()+c2, 
