@@ -82,11 +82,11 @@ public:
     }
     tag_type identity_matrix_tag(size_t type) const
     {
-        return ident;
+        return ident[type];
     }
     tag_type filling_matrix_tag(size_t type) const
     {
-        return fill;
+        return fill[type];
     }
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
@@ -97,7 +97,9 @@ public:
     tag_type get_operator_tag(std::string const & name, size_t type) const
     {
         if (name == "docc")
-            return docc;
+            return docc[type];
+        else if (name == "ident_full")
+            return ident_full[type];
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
@@ -120,12 +122,12 @@ private:
     std::vector<Index<SymmGroup> > phys_indices;
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
-    tag_type create_fill, create, destroy_fill, destroy,
-             create_fill_couple_down, destroy_fill_couple_down,
-             create_couple_up, destroy_couple_up,
-             create_fill_count, create_count, destroy_fill_count, destroy_count,
-             count, docc, e2d, d2e, flip_S0, flip_to_S2, flip_to_S0,
-             ident, ident_full, fill, count_fill;
+    std::vector<tag_type> create_fill, create, destroy_fill, destroy,
+                          create_fill_couple_down, destroy_fill_couple_down,
+                          create_couple_up, destroy_couple_up,
+                          create_fill_count, create_count, destroy_fill_count, destroy_count,
+                          count, docc, e2d, d2e, flip_S0, flip_to_S2, flip_to_S0,
+                          ident, ident_full, fill, count_fill;
 
     typename SymmGroup::subcharge max_irrep;
 
@@ -134,12 +136,27 @@ private:
         PGDecorator<SymmGroup> set_symm;
         std::vector<op_t> ret;
         for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
-            op_t mod(set_symm(op.left_basis(), sc), set_symm(op.right_basis(), sc));
+            op_t mod(set_symm(op.basis(), sc));
+            mod.spin() = op.spin();
             for (std::size_t b = 0; b < op.n_blocks(); ++b)
                 mod[b] = op[b];
 
             ret.push_back(mod);
-        } return ret;
+        }
+        return ret;
+    }
+
+    std::vector<tag_type> register_site_specific(std::vector<op_t> const & ops, tag_detail::operator_kind kind)
+    {
+        std::vector<tag_type> ret;
+        for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
+            std::pair<tag_type, value_type> newtag = tag_handler->checked_register(ops[sc], kind);
+            assert( newtag.first < tag_handler->size() );
+            assert( std::abs(newtag.second - value_type(1.)) == value_type() );
+            ret.push_back(newtag.first);
+        }
+
+        return ret;
     }
 
 };

@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
+ *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -196,7 +196,37 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     /*** Create operator tag table ****************************************/
     /**********************************************************************/
 
-#define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
+    #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
+
+    GENERATE_SITE_SPECIFIC(ident_op)
+    GENERATE_SITE_SPECIFIC(ident_full_op)
+    GENERATE_SITE_SPECIFIC(fill_op)
+
+    GENERATE_SITE_SPECIFIC(create_fill_op)
+    GENERATE_SITE_SPECIFIC(create_op)
+    GENERATE_SITE_SPECIFIC(destroy_fill_op)
+    GENERATE_SITE_SPECIFIC(destroy_op)
+
+    GENERATE_SITE_SPECIFIC(create_fill_couple_down_op)
+    GENERATE_SITE_SPECIFIC(destroy_fill_couple_down_op)
+    GENERATE_SITE_SPECIFIC(create_couple_up_op)
+    GENERATE_SITE_SPECIFIC(destroy_couple_up_op)
+
+    GENERATE_SITE_SPECIFIC(create_fill_count_op)
+    GENERATE_SITE_SPECIFIC(create_count_op)
+    GENERATE_SITE_SPECIFIC(destroy_fill_count_op)
+    GENERATE_SITE_SPECIFIC(destroy_count_op)
+
+    GENERATE_SITE_SPECIFIC(count_op)
+    GENERATE_SITE_SPECIFIC(docc_op)
+    GENERATE_SITE_SPECIFIC(e2d_op)
+    GENERATE_SITE_SPECIFIC(d2e_op)
+    GENERATE_SITE_SPECIFIC(flip_S0_op)
+    GENERATE_SITE_SPECIFIC(flip_to_S2_op)
+    GENERATE_SITE_SPECIFIC(flip_to_S0_op)
+    GENERATE_SITE_SPECIFIC(count_fill_op)
+
+    #define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
 
     REGISTER(ident,        tag_detail::bosonic)
     REGISTER(ident_full,   tag_detail::bosonic)
@@ -226,7 +256,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     REGISTER(flip_to_S0,   tag_detail::bosonic)
     REGISTER(count_fill,   tag_detail::bosonic)
 
-#undef REGISTER
+    #undef REGISTER
 
 //#define PRINT(op) maquis::cout << #op << "\t" << op << std::endl;
 //    PRINT(ident)
@@ -257,7 +287,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     destroy_pkg.fill_couple_down = destroy_fill_couple_down;
     /**********************************************************************/
 
-    chem_detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, ident, ident, tag_handler);
+    chem_detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, tag_handler);
     alps::numeric::matrix<Lattice::pos_t> idx_ = ta.getIdx();
     std::vector<value_type> matrix_elements = ta.getMatrixElements();
 
@@ -274,7 +304,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back( boost::make_tuple(0, ident) );
+            term.push_back( boost::make_tuple(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]) );
             this->terms_.push_back(term);
             
             used_elements[m] += 1;
@@ -285,7 +315,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back( boost::make_tuple(i, count));
+            term.push_back( boost::make_tuple(i, count[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
             this->terms_.push_back(term);
 
             used_elements[m] += 1;
@@ -297,10 +327,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, ident, std::sqrt(2.)*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill
+                true, ident, std::sqrt(2.)*matrix_elements[m],i,j,create, create_fill, destroy, destroy_fill, lat
             ));
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, ident, std::sqrt(2.)*matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill
+                true, ident, std::sqrt(2.)*matrix_elements[m],j,i,create, create_fill, destroy, destroy_fill, lat
             ));
 
             used_elements[m] += 1;
@@ -311,7 +341,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back(boost::make_tuple(i, docc));
+            term.push_back(boost::make_tuple(i, docc[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
             this->terms_.push_back(term);
 
             used_elements[m] += 1;
@@ -327,10 +357,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
 
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, ident,  std::sqrt(2.)*matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill
+                true, ident,  std::sqrt(2.)*matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill, lat
             ));
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill
+                true, ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill, lat
             ));
 
             used_elements[m] += 1;
@@ -339,7 +369,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
 
-            ta.add_2term(this->terms_, TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, k, count, count));
+            ta.add_2term(this->terms_, TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, k, count, count, lat));
 
             used_elements[m] += 1;
         }
@@ -347,16 +377,16 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // V_ijij == V_jiji = V_ijji = V_jiij
         else if ( i==k && j==l && i!=j) {
 
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, e2d, d2e));
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, d2e, e2d));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, e2d, d2e, lat));
+            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, d2e, e2d, lat));
 
             // here we have spin0--j--spin1--i--spin0
             // the sqrt(3.) counteracts the Clebsch coeff C^{110}_{mrm'} which applies when the spin1 couples back to spin0
             this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                false, ident_full, std::sqrt(3.) * matrix_elements[m], i, j, flip_to_S0, flip_to_S2, flip_to_S0, flip_to_S2
+                false, ident_full, std::sqrt(3.) * matrix_elements[m], i, j, flip_to_S0, flip_to_S2, flip_to_S0, flip_to_S2, lat
             ));
 
-            ta.add_2term(this->terms_, TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, -0.5 * matrix_elements[m], i, j, count, count));
+            ta.add_2term(this->terms_, TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, -0.5 * matrix_elements[m], i, j, count, count, lat));
 
             used_elements[m] += 1;
         }
@@ -375,9 +405,9 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             std::vector<term_descriptor> & vec = this->terms_;
 
             ta.add_3term(vec, TM::three_term(ident, std::sqrt(2.)*matrix_elements[m], same_idx, k, l,
-                                             count, count_fill, create, create_fill, destroy, destroy_fill));
+                                             count, count_fill, create, create_fill, destroy, destroy_fill, lat));
             ta.add_3term(vec, TM::three_term(ident, std::sqrt(2.)*matrix_elements[m], same_idx, l, k,
-                                             count, count_fill, create, create_fill, destroy, destroy_fill));
+                                             count, count_fill, create, create_fill, destroy, destroy_fill, lat));
 
             used_elements[m] += 1;
         }
@@ -397,57 +427,57 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             std::vector<term_descriptor> & vec = this->terms_;
 
             // Note: need minus because of clebsch gordan coeff from two destructors or two creators
-            vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill));
-            vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill));
+            vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill, lat));
+            vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill, lat));
 
             if ( same_idx < std::min(pos1,pos2) )
             {
                 this->terms_.push_back(TM::three_term(
-                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill
+                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill, lat
                 ));
                 ta.add_3term(vec, TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
+                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill, lat
                 ));
 
                 this->terms_.push_back(TM::three_term(
                     // note minus sign, because commutation on same_idx is not taken into account
-                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill_couple_down
+                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill_couple_down, lat
                 ));
                 ta.add_3term(vec, TM::three_term(
-                    ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
+                    ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill, lat
                 ));
             }
             else if (same_idx > std::max(pos1,pos2))
             {
                 this->terms_.push_back(TM::three_term(
-                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill
+                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill, lat
                 ));
                 ta.add_3term(vec, TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill
+                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill, lat
                 ));
 
                 this->terms_.push_back(TM::three_term(
                     // note minus sign, because commutation on same_idx is not taken into account
-                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill
+                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill, lat
                 ));
                 ta.add_3term(vec, TM::three_term(
-                    ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill
+                    ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill, lat
                 ));
             }
             else
             {
                 this->terms_.push_back(TM::three_term(
-                    ident,      std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill
+                    ident,      std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill, lat
                 ));
                 ta.add_3term(vec, TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count_fill, count_fill, create, create_fill, destroy, destroy_fill
+                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count_fill, count_fill, create, create_fill, destroy, destroy_fill, lat
                 ));
 
                 this->terms_.push_back(TM::three_term(
-                    ident,     -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill
+                    ident,     -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill, lat
                 ));
                 ta.add_3term(vec, TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count_fill, count_fill, create, create_fill, destroy, destroy_fill
+                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count_fill, count_fill, create, create_fill, destroy, destroy_fill, lat
                 ));
             }
 
@@ -466,38 +496,38 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             if (k > l && l > j) // eg V_4132
             { // generates up|up|up|up, up|down|down|up, down|up|up|down, down|down|down|down
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
 
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
 
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
 
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
             }
             else if (k > j && j > l) // eg V_4231
             { // generates up|up|up|up, up|down|up|down, down|up|down|up, down|down|down|down
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,               -matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,               -matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
 
-                ta.add_4term(vec, TM::four_term(ident_full, 2,  std::sqrt(3.)*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2,  std::sqrt(3.)*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
 
-                ta.add_4term(vec, TM::four_term(ident_full, 2,  std::sqrt(3.)*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2,  std::sqrt(3.)*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
 
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,               -matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,               -matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
             }
             else if (j > k && k > l) // eg V_4321
             { // generates up|up|up|up, up|up|down|down, down|down|up|up, down|down|down|down
-                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
             }
             else { throw std::runtime_error("unexpected index arrangment in V_ijkl term\n"); }
 
