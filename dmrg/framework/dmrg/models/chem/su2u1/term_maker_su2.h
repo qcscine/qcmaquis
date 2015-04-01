@@ -49,7 +49,7 @@ struct TermMakerSU2 {
         tag_vec fill_couple_down;
     };
 
-    typedef boost::tuple<tag_type, OperatorBundle> pos_bundle_t;
+    typedef boost::tuple<pos_t, OperatorBundle> pos_bundle_t;
 
     template <class Tuple>
     static bool compare_tag(Tuple p1,
