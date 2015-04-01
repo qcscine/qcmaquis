@@ -43,10 +43,10 @@ struct TermMakerSU2 {
 
     struct OperatorBundle
     {
-        tag_type couple_up;
-        tag_type couple_down;
-        tag_type fill_couple_up;
-        tag_type fill_couple_down;
+        tag_vec couple_up;
+        tag_vec couple_down;
+        tag_vec fill_couple_up;
+        tag_vec fill_couple_down;
     };
 
     typedef boost::tuple<tag_type, OperatorBundle> pos_bundle_t;
@@ -126,9 +126,10 @@ struct TermMakerSU2 {
 
     static term_descriptor four_term(tag_vec full_ident, int max_two_S,
                                      value_type scale, pos_t i, pos_t j, pos_t k, pos_t l,
-                                     OperatorBundle op_i, OperatorBundle op_k)
+                                     OperatorBundle op_i, OperatorBundle op_k, Lattice const & lat)
     {
         using boost::tuples::get;
+        using boost::make_tuple;
 
         term_descriptor term;
         term.is_fermionic = true;
@@ -145,23 +146,23 @@ struct TermMakerSU2 {
             term.coeff = -term.coeff;
 
         std::vector<pos_bundle_t> sterm;
-        sterm.push_back(boost::make_tuple(i, op_i));
-        sterm.push_back(boost::make_tuple(j, op_i));
-        sterm.push_back(boost::make_tuple(k, op_k));
-        sterm.push_back(boost::make_tuple(l, op_k));
+        sterm.push_back(make_tuple(i, op_i));
+        sterm.push_back(make_tuple(j, op_i));
+        sterm.push_back(make_tuple(k, op_k));
+        sterm.push_back(make_tuple(l, op_k));
         std::sort(sterm.begin(), sterm.end(), compare_tag<pos_bundle_t>);
 
         if (max_two_S == 2) {
-            term.push_back(boost::make_tuple(get<0>(sterm[0]), get<1>(sterm[0]).fill_couple_up));
-            term.push_back(boost::make_tuple(get<0>(sterm[1]), get<1>(sterm[1]).couple_up));
-            term.push_back(boost::make_tuple(get<0>(sterm[2]), get<1>(sterm[2]).fill_couple_down));
-            term.push_back(boost::make_tuple(get<0>(sterm[3]), get<1>(sterm[3]).couple_down));
+            term.push_back(make_tuple(get<0>(sterm[0]), get<1>(sterm[0]).fill_couple_up[lat.get_prop<sc>("type", get<0>(sterm[0]))]));
+            term.push_back(make_tuple(get<0>(sterm[1]), get<1>(sterm[1]).couple_up[lat.get_prop<sc>("type", get<0>(sterm[1]))]));
+            term.push_back(make_tuple(get<0>(sterm[2]), get<1>(sterm[2]).fill_couple_down[lat.get_prop<sc>("type", get<0>(sterm[2]))]));
+            term.push_back(make_tuple(get<0>(sterm[3]), get<1>(sterm[3]).couple_down[lat.get_prop<sc>("type", get<0>(sterm[3]))]));
         }
         else {
-            term.push_back(boost::make_tuple(get<0>(sterm[0]), get<1>(sterm[0]).fill_couple_up));
-            term.push_back(boost::make_tuple(get<0>(sterm[1]), get<1>(sterm[1]).couple_down));
-            term.push_back(boost::make_tuple(get<0>(sterm[2]), get<1>(sterm[2]).fill_couple_up));
-            term.push_back(boost::make_tuple(get<0>(sterm[3]), get<1>(sterm[3]).couple_down));
+            term.push_back(make_tuple(get<0>(sterm[0]), get<1>(sterm[0]).fill_couple_up[lat.get_prop<sc>("type", get<0>(sterm[0]))]));
+            term.push_back(make_tuple(get<0>(sterm[1]), get<1>(sterm[1]).couple_down[lat.get_prop<sc>("type", get<0>(sterm[1]))]));
+            term.push_back(make_tuple(get<0>(sterm[2]), get<1>(sterm[2]).fill_couple_up[lat.get_prop<sc>("type", get<0>(sterm[2]))]));
+            term.push_back(make_tuple(get<0>(sterm[3]), get<1>(sterm[3]).couple_down[lat.get_prop<sc>("type", get<0>(sterm[3]))]));
         }
 
         return term;

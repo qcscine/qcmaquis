@@ -280,15 +280,15 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     /*************************************************************/
     typename TermMakerSU2<Matrix, SymmGroup>::OperatorBundle create_pkg, destroy_pkg;
 
-    create_pkg.couple_up = create_couple_up[0];
-    create_pkg.couple_down = create[0];
-    create_pkg.fill_couple_up = create_fill[0];
-    create_pkg.fill_couple_down = create_fill_couple_down[0];
+    create_pkg.couple_up = create_couple_up;
+    create_pkg.couple_down = create;
+    create_pkg.fill_couple_up = create_fill;
+    create_pkg.fill_couple_down = create_fill_couple_down;
 
-    destroy_pkg.couple_up = destroy_couple_up[0];
-    destroy_pkg.couple_down = destroy[0];
-    destroy_pkg.fill_couple_up = destroy_fill[0];
-    destroy_pkg.fill_couple_down = destroy_fill_couple_down[0];
+    destroy_pkg.couple_up = destroy_couple_up;
+    destroy_pkg.couple_down = destroy;
+    destroy_pkg.fill_couple_up = destroy_fill;
+    destroy_pkg.fill_couple_down = destroy_fill_couple_down;
     /**********************************************************************/
 
     chem_detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, tag_handler);
@@ -500,38 +500,38 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             if (k > l && l > j) // eg V_4132
             { // generates up|up|up|up, up|down|down|up, down|up|up|down, down|down|down|down
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
 
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
 
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
 
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
             }
             else if (k > j && j > l) // eg V_4231
             { // generates up|up|up|up, up|down|up|down, down|up|down|up, down|down|down|down
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,               -matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,               -matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
 
-                ta.add_4term(vec, TM::four_term(ident_full, 2,  std::sqrt(3.)*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2,  std::sqrt(3.)*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
 
-                ta.add_4term(vec, TM::four_term(ident_full, 2,  std::sqrt(3.)*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2,  std::sqrt(3.)*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
 
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident,      1,               -matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident,      1,               -matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
             }
             else if (j > k && k > l) // eg V_4321
             { // generates up|up|up|up, up|up|down|down, down|down|up|up, down|down|down|down
-                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg));
-                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg));
+                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
+                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
             }
             else { throw std::runtime_error("unexpected index arrangment in V_ijkl term\n"); }
 
