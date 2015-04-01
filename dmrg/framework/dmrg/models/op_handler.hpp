@@ -111,14 +111,21 @@ TagHandler<Matrix, SymmGroup>::get_product_tag(const typename
         op_t& op1 = (*operator_table)[t1];
         op_t& op2 = (*operator_table)[t2];
 
-        gemm(op1, op2, product);
+		gemm(op1, op2, product);
+// 		#define DEBUG_gemm
+		#ifdef DEBUG_gemm
+		maquis::cout << "op1: \n" << op1;
+		maquis::cout << "op2: \n" << op2;
+		maquis::cout << "gemm(op1,op2): \n" << product;
+		#endif
+        
         tag_detail::operator_kind prod_kind = tag_detail::bosonic;
         if (sign_table[t1] != sign_table[t2])
             prod_kind = tag_detail::fermionic;
 
         std::pair<tag_type, value_type> ret = this->checked_register(product, prod_kind);
         product_tags[std::make_pair(t1, t2)] = ret;
-        return ret;
+		return ret;
     }
 }
 

@@ -62,6 +62,8 @@ namespace symm_traits {
     struct HasPG<TwoU1PG> : public boost::true_type {};
     template <>
     struct HasPG<SU2U1PG> : public boost::true_type {};
+    template <>
+    struct HasPG<U1DG> : public boost::true_type {};
 
     // chemistry model implemented or not
 
@@ -76,6 +78,8 @@ namespace symm_traits {
     struct HasChemModel<SU2U1> : public boost::true_type {};
     template <>
     struct HasChemModel<SU2U1PG> : public boost::true_type {};
+    template <>
+    struct HasChemModel<U1DG> : public boost::true_type {};
 
 }
 
