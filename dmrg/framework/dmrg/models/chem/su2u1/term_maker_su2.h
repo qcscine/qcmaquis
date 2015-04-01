@@ -61,7 +61,6 @@ struct TermMakerSU2 {
     {
         term_descriptor term;
         term.is_fermionic = sign;
-        term.full_identity = full_ident[0];
         term.coeff = scale;
         term.push_back(boost::make_tuple(i, op1[0]));
         term.push_back(boost::make_tuple(j, op2[0]));
@@ -73,7 +72,6 @@ struct TermMakerSU2 {
     {
         term_descriptor term;
         term.is_fermionic = sign;
-        term.full_identity = full_ident[0];
         term.coeff = scale;
 
         tag_vec op1_use = (i<j) ? op1_fill : op2_fill;
@@ -96,7 +94,6 @@ struct TermMakerSU2 {
         term_descriptor term;
         term.is_fermionic = true;
         term.coeff = scale;
-        term.full_identity = full_ident[0];
 
         tag_vec boson_op_use, op1_use, op2_use;
 
@@ -133,7 +130,6 @@ struct TermMakerSU2 {
 
         term_descriptor term;
         term.is_fermionic = true;
-        term.full_identity = full_ident[0];
         term.coeff = scale;
 
         // Simple O(n^2) algorithm to determine sign of permutation
