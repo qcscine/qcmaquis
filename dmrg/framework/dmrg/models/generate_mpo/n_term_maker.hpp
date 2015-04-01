@@ -38,7 +38,7 @@ template<class Matrix, class SymmGroup>
 class NTermsMPO
 {
 	typedef Lattice::pos_t pos_t;
-	typedef block_matrix<Matrix, SymmGroup> op_t;
+	typedef typename operator_selector<Matrix, SymmGroup>::type op_t;
 	typedef std::pair<pos_t, op_t> pos_op_t;
 
 public:

@@ -39,7 +39,7 @@ typedef U1DG grp;
 template<class Matrix>
 MPO<Matrix, grp> make_1et(int i, int j, std::vector<int> site_irreps)
 {
-    typedef block_matrix<Matrix, grp> op_t;
+    typedef typename operator_selector<Matrix, grp>::type op_t;
     MPO<Matrix, grp> ret(site_irreps.size());
 	std::vector<int> op_string;
 	op_string.push_back(i); op_string.push_back(j);

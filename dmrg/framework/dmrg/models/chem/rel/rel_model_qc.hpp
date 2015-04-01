@@ -35,7 +35,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 , tag_handler(new table_type())
 {
     // Initialize double group tables
-    SymmGroup::initialize_dg_tables(parms);
+    SymmGroup::initialize_dg_table(parms);
 	
 	// A -> empty, B -> occupied
     typename SymmGroup::charge A(0), B(0);
