@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
+ *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -308,7 +308,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back( boost::make_tuple(0, ident[0]) );
+            term.push_back( boost::make_tuple(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]) );
             this->terms_.push_back(term);
             
             used_elements[m] += 1;
@@ -319,7 +319,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back( boost::make_tuple(i, count[0]));
+            term.push_back( boost::make_tuple(i, count[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
             this->terms_.push_back(term);
 
             used_elements[m] += 1;
@@ -345,7 +345,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back(boost::make_tuple(i, docc[0]));
+            term.push_back(boost::make_tuple(i, docc[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
             this->terms_.push_back(term);
 
             used_elements[m] += 1;
