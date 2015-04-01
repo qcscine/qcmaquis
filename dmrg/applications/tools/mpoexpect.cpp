@@ -48,7 +48,7 @@ MPO<Matrix, grp> make_1et(int i, int j, std::vector<int> site_irreps)
     {
         typedef tag_detail::tag_type tag_type;
         typename grp::charge A(0), B(0);
-        B[0]=1;
+        B[0] = 1;
         B[1] = site_irreps[p];
 
         op_t ident;
@@ -79,17 +79,30 @@ MPO<Matrix, grp> make_1et(int i, int j, std::vector<int> site_irreps)
 
         maquis::cout << std::fixed << std::setprecision(10);
         MPOTensor<Matrix, grp> op(1,1);
-		if ( (i == j) && (p == i) )
+		if ( (i == j) && (p == i) ) {
+            maquis::cout << "Inserting count at " << p+1 << std::endl;
 			op.set(0,0, count, 1.0);
-		else if ( (i != j) && (p == i) )
+        }
+		else if ( (i != j) && (p == i) ) {
+            maquis::cout << "Inserting create at " << p+1 << std::endl;
             op.set(0,0, create, 1.0);
-        else if ( (i != j) && (p == j) )
+        }
+        else if ( (i < j) && (p == j) ) {
+            maquis::cout << "Inserting destroy at " << p+1 << std::endl;
             op.set(0,0, destroy, 1.0);
-        else if ( (op_string[0] < p && p < op_string[1]) )
+        }
+        else if ( (i > j) && (p == j) ) {
+            maquis::cout << "Inserting destroy_fill at " << p+1 << std::endl;
+            op.set(0,0, destroy_fill, -1.0);
+        }
+        else if ( (op_string[0] < p && p < op_string[1]) ) {
+            maquis::cout << "Inserting fill at " << p+1 << std::endl;
             op.set(0,0, fill, 1.0);
-        else
+        }
+        else {
+            maquis::cout << "Inserting identity at " << p+1 << std::endl;
             op.set(0,0, ident, 1.0);
-        
+        }
         ret[p] = op;
     }
     return ret;
@@ -107,7 +120,7 @@ MPO<Matrix, grp> make_2et(int i, int j, int k, int l, std::vector<int> site_irre
     {
         typedef tag_detail::tag_type tag_type;
         typename grp::charge A(0), B(0);
-        B[0]=1;
+        B[0] = 1;
         B[1] = site_irreps[p];
 
         op_t ident;
@@ -165,6 +178,9 @@ int main(int argc, char ** argv)
             return 1;
         }
         //cout.precision(5);
+
+        grp::set_dg_id(10);
+        grp::set_dg_table();
 
         MPS<matrix, grp> mps;
         load(argv[1], mps);

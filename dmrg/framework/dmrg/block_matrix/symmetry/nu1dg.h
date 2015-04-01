@@ -196,7 +196,7 @@ public:
         return ret;
     }
 
-    static void initialize_dg_tables(BaseParameters & parms)
+    static void initialize_dg_table(BaseParameters & parms)
     {
         // open integral_file
         std::string integral_file = parms["integral_file"];
@@ -216,6 +216,14 @@ public:
         // close integral_file
         integral_stream.close();
 
+        set_dg_table();
+    }
+
+    static void set_dg_id(std::size_t group){
+        group_id = group;
+    }
+
+    static void set_dg_table(){
         // set up multiplication table according to group_id (same numbering as in Dirac)
         switch(group_id) {
             // C2h, D2h
