@@ -79,7 +79,7 @@ namespace chem_detail {
                       value_type scale, int p1, int p2, tag_type op_1, tag_type op_2) {
 
             term_descriptor
-            term = TermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler);
+            term = RelTermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler);
             IndexTuple id(p1, p2, op_1, op_2);
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
@@ -92,7 +92,7 @@ namespace chem_detail {
                       value_type scale, int s, int p1, int p2, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j) {
 
             term_descriptor
-            term = TermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler);
+            term = RelTermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler);
             TermTuple id(IndexTuple(s,s,p1,p2),IndexTuple(op_i,op_k,op_l,op_j));
             if (three_terms.count(id) == 0) {
                 three_terms[id] = term;
@@ -105,7 +105,7 @@ namespace chem_detail {
                       int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
         {
 			term_descriptor
-			term = TermMaker<M, S>::four_term(ident, fill, scale, i, k, l, j, op_i, op_k, op_l, op_j, tag_handler);
+			term = RelTermMaker<M, S>::four_term(ident, fill, scale, i, k, l, j, op_i, op_k, op_l, op_j, tag_handler);
 			if (i<k) std::swap(i,k);
 			if (j<l) std::swap(j,l);
 			TermTuple id(IndexTuple(i,k,l,j),IndexTuple(op_i,op_k,op_l,op_j));

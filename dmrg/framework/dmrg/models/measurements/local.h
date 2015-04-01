@@ -93,7 +93,7 @@ namespace measurements {
                 for (typename Lattice::pos_t p = 0; p < L; ++p) {
                     parallel::guard proc(scheduler(p)); /// scheduling kernels
                     
-                    subcharge type = lattice.get_prop<subcharge>("irrep", p);
+                    subcharge type = lattice.get_prop<subcharge>("type", p);
                     if (site_term[type].n_blocks() > 0) {
 
                         MPOTensor<Matrix, SymmGroup> temp;
