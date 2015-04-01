@@ -38,7 +38,6 @@ namespace chem_detail {
     public:
         typedef typename M::value_type value_type;
         typedef ::term_descriptor<value_type> term_descriptor;
-        typedef typename TagHandler<M, S>::tag_type tag_type;
         typedef Lattice::pos_t pos_t;
 
         ChemHelperSU2(BaseParameters & parms, Lattice const & lat, boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
