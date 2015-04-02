@@ -309,9 +309,12 @@ public:
                 if(lhs == "MEASURE_TRANSITION_ONEPTDM_UP"){
                     name = "transition_oneptdm_up";
                     bra_ckp = it->value();
+                    half_only = false;
                 }
-                else
+                else{
                     name = "oneptdm_up";
+                    half_only = true;
+                }
                 maquis::cout << "Added 1pdm_up for measuring: name == "<< name <<"\n";
 
                 std::vector<bond_element> synchronous_meas_operators;
@@ -321,7 +324,6 @@ public:
                 meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
-                half_only = false;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
@@ -334,9 +336,12 @@ public:
                 if(lhs == "MEASURE_TRANSITION_ONEPTDM_DN"){
                     name = "transition_oneptdm_dn";
                     bra_ckp = it->value();
+                    half_only = false;
                 }
-                else
+                else{
                     name = "oneptdm_dn";
+                    half_only = true;
+                }
                 maquis::cout << "Added 1pdm_dn for measuring: name == "<< name <<"\n";
 
                 std::vector<bond_element> synchronous_meas_operators;
@@ -346,7 +351,6 @@ public:
                 meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
-                half_only = false;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
@@ -359,9 +363,12 @@ public:
                 if(lhs == "MEASURE_TRANSITION_ONEPTDM_UN"){
                     name = "transition_oneptdm_un";
                     bra_ckp = it->value();
+                    half_only = false;
                 }
-                else
+                else{
                     name = "oneptdm_un";
+                    half_only = true;
+                }
                 maquis::cout << "Added 1pdm_un for measuring: name == "<< name <<"\n";
 
                 std::vector<bond_element> synchronous_meas_operators;
@@ -371,7 +378,6 @@ public:
                 meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
-                half_only = false;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
@@ -384,9 +390,12 @@ public:
                 if(lhs == "MEASURE_TRANSITION_ONEPTDM_DU"){
                     name = "transition_oneptdm_du";
                     bra_ckp = it->value();
+                    half_only = false;
                 }
-                else
+                else{
                     name = "oneptdm_du";
+                    half_only = true;
+                }
                 maquis::cout << "Added 1pdm_du for measuring: name == "<< name <<"\n";
 
                 std::vector<bond_element> synchronous_meas_operators;
@@ -396,7 +405,6 @@ public:
                 meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
-                half_only = false;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,

@@ -89,22 +89,18 @@ namespace measurements {
             }
 
             if (ops[0].size() == 2){
-//              TODO: use the more general CorrPermutator...
-                maquis::cout << "  half_only " << half_only << std::endl;
                 if(half_only)
                     measure_correlation(bra_mps, ket_mps, ops);
                 else{
-			  measure_correlation(bra_mps, ket_mps, ops);
-//////              swap(ops[0][0],ops[0][1]);
-//////		  measure_correlation(bra_mps, ket_mps, ops);
+			  //measure_correlation(bra_mps, ket_mps, ops);
+                    //swap(ops[0][0],ops[0][1]);
+      		  //measure_correlation(bra_mps, ket_mps, ops);
                     detail::CorrPermutator<Matrix, SymmGroup> perm(ops[0], is_nn);
                     for (int i=0; i<perm.size(); ++i) {
-                       maquis::cout << "  measure (after swap) permutation run == " << i << std::endl;
                        std::vector<bond_element> perm_ops;
                        perm_ops.push_back(perm[i]);
                        measure_correlation(bra_mps, ket_mps, perm_ops, perm.order(i));
                     }
-
                 }
             }
             else if (ops[0].size() == 4)
@@ -139,9 +135,9 @@ namespace measurements {
             #endif
             for (std::size_t i = 0; i < positions_first.size(); ++i) {
                 pos_t p = positions_first[i];
-                //#ifndef NDEBUG
+                #ifndef NDEBUG
                 maquis::cout << "  site " << p << std::endl;
-                //#endif
+                #endif
                 
                 maker_ptr dcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings,
                                                                                  ops[0], std::vector<pos_t>(1, p)));
