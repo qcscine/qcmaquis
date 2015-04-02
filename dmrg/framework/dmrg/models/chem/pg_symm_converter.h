@@ -61,7 +61,7 @@ public:
         : site_irreps(lat.size())
     {
         for (pos_t p = 0; p < lat.size(); ++p)
-            site_irreps[p] = lat.get_prop<int>("irrep", p);
+            site_irreps[p] = lat.get_prop<int>("type", p);
 
         // collect all irreducible representations in a set
         std::set<subcharge> irrep_set;

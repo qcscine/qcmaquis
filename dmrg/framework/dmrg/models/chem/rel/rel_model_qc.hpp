@@ -35,7 +35,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 , parms(parms_)
 , tag_handler(new table_type())
 {
-    // Initialize double group tables
+    // Initialize double group table
     SymmGroup::initialize_dg_table(parms);
 	
 	// A -> empty, B -> occupied
@@ -43,16 +43,14 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     B[0]=1;
 
     // create physical indices
-    phys_indices.resize(lat.size());
-    for (std::size_t site = 0; site < lat.size(); ++site)
+    phys_indices.resize(SymmGroup::get_max_irrep());
+    for (std::size_t irrep = 0; irrep < SymmGroup::get_max_irrep(); ++irrep)
     {
-        // Set double group
-        int dg = lat.get_prop<int>("irrep", site);
         Index<SymmGroup> loc;
-        B[1] = dg;
+        B[1] = irrep;
         loc.insert(std::make_pair(A, 1));
         loc.insert(std::make_pair(B, 1));
-        phys_indices[site] = loc;
+        phys_indices[irrep] = loc;
     }
 	
     op_t create_op, destroy_op, count_op, 

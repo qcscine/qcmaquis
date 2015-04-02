@@ -96,7 +96,7 @@ public:
         typename SymmGroup::charge charges[] = {I,J,K,L};
         std::size_t site[] = {i, j, k, l};
         for (int ii=0; ii<4; ++ii) {
-            charges[ii][1] = lat.get_prop<int>("irrep", site[ii]);
+            charges[ii][1] = lat.get_prop<int>("type", site[ii]);
             charges[ii][0] = 1;
         	if (ii%2 == 0) {
             	tmp = SymmGroup::fuse(tmp, charges[ii]);}
@@ -104,7 +104,7 @@ public:
             	tmp = SymmGroup::fuse(tmp, -charges[ii]);}
         }
 
-        if (tmp[0] == 0 && tmp[1] != parms["irrep"]) {return false;}
+        if (tmp[0] == 0 && tmp[1] != parms["type"]) {return false;}
         else {return true;}
     }
 
