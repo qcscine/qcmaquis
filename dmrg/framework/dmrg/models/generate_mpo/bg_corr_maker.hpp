@@ -192,7 +192,7 @@ namespace generate_mpo
             for(pos_t p = 0; p < start; ++p)
                 start_sign = insert_filling(0, 0, p, start_sign);
 
-            bool current_sign = insert_operator(0, 0, start, (*(op_tags.rbegin()+1))[lat.get_prop<int>("irrep", start)], start_sign);
+            bool current_sign = insert_operator(0, 0, start, (*(op_tags.rbegin()+1))[lat.get_prop<int>("type", start)], start_sign);
 
             for(pos_t branch = start+1; branch < lat.size(); ++branch)
             {
@@ -200,7 +200,7 @@ namespace generate_mpo
                 if (branch > start+1)
                     current_sign = insert_filling(0, 0, branch-1, current_sign);
                 bool branch_sign = insert_operator(0, branch_index, branch,
-                                                   (*op_tags.rbegin())[lat.get_prop<int>("irrep", branch)], current_sign);
+                                                   (*op_tags.rbegin())[lat.get_prop<int>("type", branch)], current_sign);
                 for(pos_t p2 = branch+1; p2 < lat.size(); ++p2)
                     branch_sign = insert_filling(branch_index, branch_index, p2, branch_sign);
 
@@ -214,8 +214,8 @@ namespace generate_mpo
                 tag_type op_tag;
                 typename Matrix::value_type scale;
                 size_t branch_index = lat.size() - start - 1;
-			    boost::tie(op_tag, scale) = tag_handler.get_product_tag((*op_tags.rbegin())[lat.get_prop<int>("irrep", start)],
-                                                                        (*(op_tags.rbegin()+1))[lat.get_prop<int>("irrep", start)]);
+			    boost::tie(op_tag, scale) = tag_handler.get_product_tag((*op_tags.rbegin())[lat.get_prop<int>("type", start)],
+                                                                        (*(op_tags.rbegin()+1))[lat.get_prop<int>("type", start)]);
 
                 bool branch_sign = insert_operator(0, branch_index, start, op_tag, start_sign, scale);
                 for(pos_t p2 = start+1; p2 < lat.size(); ++p2)
@@ -233,13 +233,13 @@ namespace generate_mpo
             std::vector<pos_t>::const_iterator it = std::find(background_pos.begin(), background_pos.end(), p);
             if( it != background_pos.end() ) {
                 int bg_index = it - background_pos.begin();
-                return insert_operator_(b1, b2, p, op_tags[bg_index][lat.get_prop<int>("irrep", p)], sign_in);
+                return insert_operator_(b1, b2, p, op_tags[bg_index][lat.get_prop<int>("type", p)], sign_in);
             }
 
             if (sign_in)
-            prempo[p].push_back(boost::make_tuple(b1, b2, fillings[lat.get_prop<int>("irrep", p)], 1.));
+            prempo[p].push_back(boost::make_tuple(b1, b2, fillings[lat.get_prop<int>("type", p)], 1.));
             else
-            prempo[p].push_back(boost::make_tuple(b1, b2, identities[lat.get_prop<int>("irrep", p)], 1.));
+            prempo[p].push_back(boost::make_tuple(b1, b2, identities[lat.get_prop<int>("type", p)], 1.));
             return sign_in;
         }
 
@@ -254,7 +254,7 @@ namespace generate_mpo
                 tag_type op_tag;
 
                 // multiply op with background operator
-			    boost::tie(op_tag, scale) = tag_handler.get_product_tag(opt, op_tags[bg_index][lat.get_prop<int>("irrep", p)]);
+			    boost::tie(op_tag, scale) = tag_handler.get_product_tag(opt, op_tags[bg_index][lat.get_prop<int>("type", p)]);
 
                 return insert_operator_(b1, b2, p, op_tag, sign_in, scale * scale_in);
             }
@@ -272,7 +272,7 @@ namespace generate_mpo
 
             bool sign_out = (sign_in != tag_handler.is_fermionic(op));
             typename Matrix::value_type scale_loc = 1.;
-            tag_type fill = fillings[lat.get_prop<int>("irrep", p)];
+            tag_type fill = fillings[lat.get_prop<int>("type", p)];
             if (sign_out)
 			    boost::tie(op, scale_loc) = tag_handler.get_product_tag(fill, op);
 
