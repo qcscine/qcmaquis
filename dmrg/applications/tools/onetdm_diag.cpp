@@ -45,9 +45,14 @@ typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
 typedef alps::numeric::matrix<double> matrix;
 #endif
 
+#include "dmrg/block_matrix/indexing.h"
+#include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
 #include "dmrg/models/model.h"
 #include "dmrg/models/generate_mpo.hpp"
+#include "dmrg/mp_tensors/contractions.h"
+#include "dmrg/mp_tensors/mps_mpo_ops.h"
+#include "dmrg/mp_tensors/mpo_ops.h"
 
 #if defined(USE_TWOU1)
 typedef TwoU1 symm;
@@ -70,28 +75,27 @@ typedef U1 symm;
 int main(int argc, char ** argv)
 {
     try {
+        if (argc != 4) {
+            std::cout << "Usage: " << argv[0] << " dmrg-input <mps1.h5> <mps2.h5>" << std::endl;
+            return 1;
+        }
+        // load bra and ket MPS
+        MPS<matrix, symm> mps1, mps2;
+        load(argv[2], mps1);
+        load(argv[3], mps2);
+
         DmrgOptions opt(argc, argv);
         if (!opt.valid) return 0;
         DmrgParameters parms = opt.parms;
         
-        maquis::cout.precision(10);
+        maquis::cout.precision(15);
         
         /// Parsing model
         Lattice lattice = Lattice(parms);
         Model<matrix, symm> model = Model<matrix, symm>(lattice, parms);
         
-        MPO<matrix, symm> mpo = make_mpo(lattice, model);
+        //MPO<matrix, symm> mpo = make_mpo(lattice, model);
         
-        for (int p = 0; p < lattice.size(); ++p) {
-            std::ofstream ofs(std::string("mpo_stats."+boost::lexical_cast<std::string>(p)+".dat").c_str());
-            for (int b1 = 0; b1 < mpo[p].row_dim(); ++b1) {
-                for (int b2 = 0; b2 < mpo[p].col_dim(); ++b2) {
-                    if (mpo[p].has(b1, b2)) ofs << mpo[p].tag_number(b1,b2) << " ";
-                    else ofs << ". ";
-                }
-                ofs << std::endl;
-            }
-        }
         
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
