@@ -95,7 +95,6 @@ public:
                 Storage::sync();
             }
         
-			maquis::cout << std::endl;
             maquis::cout << "Sweep " << sweep << ", optimizing site " << site << std::endl;
             
 //            mps[site].make_left_paired();
@@ -120,6 +119,7 @@ public:
             
             assert( left_[site].reasonable() );    // in case something went wrong
             assert( right_[site+1].reasonable() ); // in case something went wrong
+            
             
 //            maquis::cout << "My size: " << std::endl;
 //            maquis::cout << "  left_: " << utils::size_of(left_.begin(), left_.end())/1024.0/1024 << std::endl;
@@ -166,9 +166,12 @@ public:
                 maquis::cout << "MPS overlap: " << overlap(mps, base::ortho_mps[n]) << std::endl;
 #endif
             
-			maquis::cout.precision(15);
-            maquis::cout << "Energy " << lr << " " << res.first << std::endl;
-//            maquis::cout << "Energy check " << maquis::real(expval(mps, mpo)) << std::endl;
+            {
+                int prec = maquis::cout.precision();
+                maquis::cout.precision(15);
+                maquis::cout << "Energy " << lr << " " << res.first << std::endl;
+                maquis::cout.precision(prec);
+            }
             
             iteration_results_["Energy"] << res.first;
             
@@ -219,7 +222,7 @@ public:
                     Storage::evict(right_[site+1]);
                 }
             }
-		
+
             iteration_results_["BondDimension"]   << trunc.bond_dimension;
             iteration_results_["TruncatedWeight"] << trunc.truncated_weight;
             iteration_results_["SmallestEV"]      << trunc.smallest_ev;
