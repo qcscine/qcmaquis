@@ -321,7 +321,7 @@ public:
                 meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
-                half_only = true;
+                half_only = false;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
@@ -346,7 +346,7 @@ public:
                 meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
-                half_only = true;
+                half_only = false;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
@@ -371,7 +371,7 @@ public:
                 meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
-                half_only = true;
+                half_only = false;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
@@ -396,7 +396,7 @@ public:
                 meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
-                half_only = true;
+                half_only = false;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
