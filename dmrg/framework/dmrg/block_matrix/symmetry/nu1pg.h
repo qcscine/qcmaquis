@@ -277,9 +277,6 @@ NU1ChargePG<N, S> operator/(NU1ChargePG<N, S> const & a, int n)
     tpl_arith_<NU1PG<N,S>, N, 0>().operator_div(a.begin(), ret.begin(), n);
     return ret;
 }
-// not needed as of June 2014
-//template<class G, int N, class S>
-//NU1ChargePG<N, S> operator/(int n, NU1ChargePG<N, S> const & a) { return a/n; }
 
 
 template<int N, class S = int>
