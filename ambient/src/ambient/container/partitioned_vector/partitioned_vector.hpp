@@ -115,10 +115,10 @@ namespace ambient {
         int tail = std::min(r.partition(nb_min-1).size(), this->partition(nb_min-1).size());
         
         for(int k = 0; k < nb_min; k++){
-            r.partition(k) = a.partition(k);
+            r.partition(k) = this->partition(k);
         }
         r.partition(nb_min-1).resize(tail);
-        swap(a, r);
+        this->swap(r);
     }
         
     template<class Vector, int IB>

@@ -76,7 +76,7 @@ namespace ambient { namespace detail {
     class bitonic_sort {
     public:
         typedef typename InputIterator::container_type container_type;
-        typedef block_tuple_iterator<container_type, container_type> blocked_tuple_iterator;
+        typedef block_tuple_iterator<InputIterator, InputIterator> blocked_tuple_iterator;
         typedef block_iterator<container_type> blocked_iterator;
         typedef typename blocked_iterator::block_type block_type;
         typedef typename block_type::iterator block_type_iterator;
