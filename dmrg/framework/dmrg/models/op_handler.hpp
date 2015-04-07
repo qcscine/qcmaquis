@@ -59,7 +59,10 @@ OPTable<Matrix, SymmGroup>::checked_register(op_t const& sample)
 template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::register_op(const op_t & op_, tag_detail::operator_kind kind) {
     sign_table.push_back(kind);
-    return operator_table->register_op(op_);
+    tag_type ret = operator_table->register_op(op_);
+    assert(sign_table.size() == operator_table->size());
+    assert(ret < operator_table->size());
+    return ret;
 }
 
 /*
@@ -91,6 +94,7 @@ TagHandler<Matrix, SymmGroup>::get_product_tag(const typename
                                                      OPTable<Matrix, SymmGroup>::tag_type t2)
 {
     assert( t1 < operator_table->size() && t2 < operator_table->size() );
+    assert( operator_table->size() == sign_table.size());
 
     // return tag of product, if already there
     try {
@@ -118,8 +122,26 @@ TagHandler<Matrix, SymmGroup>::get_product_tag(const typename
 
         std::pair<tag_type, value_type> ret = this->checked_register(product, prod_kind);
         product_tags[std::make_pair(t1, t2)] = ret;
+        assert( operator_table->size() == sign_table.size());
+        assert( ret.first < operator_table->size() );
         return ret;
     }
+}
+
+template <class Matrix, class SymmGroup>
+std::pair<std::vector<typename OPTable<Matrix, SymmGroup>::tag_type>, std::vector<typename TagHandler<Matrix,SymmGroup>::value_type> >
+TagHandler<Matrix, SymmGroup>::get_product_tags(std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ops1,
+                                               std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ops2)
+{
+    assert(ops1.size() == ops2.size());
+    std::pair<std::vector<tag_type>, std::vector<value_type> >ret;
+    for (typename SymmGroup::subcharge sc=0; sc < ops1.size(); ++sc) {
+        std::pair<tag_type, value_type> ptag = this->get_product_tag(ops1[sc], ops2[sc]);
+        ret.first.push_back(ptag.first);
+        ret.second.push_back(ptag.second);
+    }
+
+    return ret;
 }
 
 // * Diagnostics *************************************
