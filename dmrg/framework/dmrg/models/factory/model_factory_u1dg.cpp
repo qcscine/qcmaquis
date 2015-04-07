@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
+ *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,20 +24,18 @@
  *
  *****************************************************************************/
 
-#ifndef SYMMETRY_H
-#define SYMMETRY_H
+#include "model_factory_symm.h"
 
-#include "dmrg/block_matrix/symmetry/none.h"
-#include "dmrg/block_matrix/symmetry/u1.h"
-#include "dmrg/block_matrix/symmetry/2u1.h"
-#include "dmrg/block_matrix/symmetry/nu1.h"
-#include "dmrg/block_matrix/symmetry/nu1pg.h"
-#include "dmrg/block_matrix/symmetry/nu1dg.h"
-#include "dmrg/block_matrix/symmetry/z2.h"
-#include "dmrg/block_matrix/symmetry/zq.h"
-#include "dmrg/block_matrix/symmetry/su2u1.h"
+#include "dmrg/models/coded/factory_u1dg.hpp"
+#include "dmrg/models/continuum/factory_u1dg.hpp"
 
-#include "dmrg/block_matrix/symmetry/symmetry_traits.h"
-#include "dmrg/block_matrix/symmetry/spin_descriptor.h"
+typedef U1DG grp;
 
+#if defined USE_AMBIENT
+impl_model_factory(pmatrix, grp)
+impl_model_factory(cpmatrix, grp)
+#else
+impl_model_factory(matrix, grp)
+impl_model_factory(cmatrix, grp)
 #endif
+

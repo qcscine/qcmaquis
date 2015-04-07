@@ -46,7 +46,7 @@ namespace chem_detail {
                    , boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
             : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
-            boost::tie(idx_, matrix_elements) = parse_integrals<value_type>(parms, lat);
+            boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
 
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;
@@ -145,17 +145,17 @@ namespace chem_detail {
                 if (self > twin) {
                 
                     term_descriptor
-                    term = TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
+                    term = TermMaker<M, S>::four_term(ident, fill, coefficients[align<S>(i,j,k,l)], i,k,l,j,
                                                    op_i, op_k, op_l, op_j, tag_handler, lat);
 
-                    term.coeff += value_type(sign(twin)) * coefficients[align(twin)];
+                    term.coeff += value_type(sign(twin)) * coefficients[align<S>(twin)];
 
                     tagterms.push_back(term);
                 }
                 //else: we already have the term
             }
             else {
-                tagterms.push_back( TermMaker<M, S>::four_term(ident, fill, coefficients[align(i,j,k,l)], i,k,l,j,
+                tagterms.push_back( TermMaker<M, S>::four_term(ident, fill, coefficients[align<S>(i,j,k,l)], i,k,l,j,
                                    op_i, op_k, op_l, op_j, tag_handler, lat) );
             }
         }

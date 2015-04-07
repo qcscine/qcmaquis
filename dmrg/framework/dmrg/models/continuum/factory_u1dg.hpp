@@ -3,7 +3,7 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
- *               2011-2011 by Bela Bauer <bauerb@phys.ethz.ch>
+ *               2011-2011 by Michele Dolfi <dolfim@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -24,20 +24,13 @@
  *
  *****************************************************************************/
 
-#ifndef SYMMETRY_H
-#define SYMMETRY_H
-
-#include "dmrg/block_matrix/symmetry/none.h"
-#include "dmrg/block_matrix/symmetry/u1.h"
-#include "dmrg/block_matrix/symmetry/2u1.h"
-#include "dmrg/block_matrix/symmetry/nu1.h"
-#include "dmrg/block_matrix/symmetry/nu1pg.h"
-#include "dmrg/block_matrix/symmetry/nu1dg.h"
-#include "dmrg/block_matrix/symmetry/z2.h"
-#include "dmrg/block_matrix/symmetry/zq.h"
-#include "dmrg/block_matrix/symmetry/su2u1.h"
-
-#include "dmrg/block_matrix/symmetry/symmetry_traits.h"
-#include "dmrg/block_matrix/symmetry/spin_descriptor.h"
-
-#endif
+template<class Matrix>
+struct cont_model_factory<Matrix, U1DG> {
+    static boost::shared_ptr<model_impl<Matrix, U1DG> > parse
+    (Lattice const & lattice, BaseParameters & parms)
+    {
+        typedef boost::shared_ptr<model_impl<Matrix, U1DG> > impl_ptr;
+        throw std::runtime_error("Don't know this model for U1DG SymmGroup!\n");
+        return impl_ptr();
+    }
+};
