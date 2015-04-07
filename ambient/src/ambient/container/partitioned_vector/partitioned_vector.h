@@ -28,7 +28,7 @@
 #ifndef AMBIENT_CONTAINER_PARTITIONED_VECTOR_PARTITIONED_VECTOR_H
 #define AMBIENT_CONTAINER_PARTITIONED_VECTOR_PARTITIONED_VECTOR_H
 
-#include "ambient/container/iterator/associated_iterator.hpp">
+#include "ambient/container/iterator/associated_iterator.hpp"
 
 namespace ambient {
 
