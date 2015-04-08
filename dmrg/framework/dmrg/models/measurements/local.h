@@ -78,8 +78,10 @@ namespace measurements {
             
             typedef typename SymmGroup::subcharge subcharge;
             if (!rmps || this->is_super_meas || is_bond) {
+                std::cout << "here i am for local mpo..." << std::endl;
                 evaluate_with_mpo(mps);
             } else {
+                std::cout << "here i am for local..." << std::endl;
                 
                 /// compute local reduced density matrices
                 rmps.get().init();
@@ -94,6 +96,7 @@ namespace measurements {
                     parallel::guard proc(scheduler(p)); /// scheduling kernels
                     
                     subcharge type = lattice.get_prop<subcharge>("type", p);
+                    std::cout << "site_term[type]..." << site_term[type] << std::endl;
                     if (site_term[type].n_blocks() > 0) {
 
                         MPOTensor<Matrix, SymmGroup> temp;

@@ -114,6 +114,10 @@ public:
             return d2e[type];
         else if (name == "docc")
             return docc[type];
+        else if (name == "d2u")
+            return d2u[type];
+        else if (name == "u2d")
+            return u2d[type];
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
@@ -585,7 +589,8 @@ private:
     // Need a vector to store operators corresponding to different irreps
     std::vector<tag_type> ident, fill,
                           create_up, create_down, destroy_up, destroy_down,
-                          count_up, count_down, count_up_down, docc, e2d, d2e;
+                          count_up, count_down, count_up_down, docc, e2d, d2e,
+                          d2u, u2d;
 
     typename SymmGroup::subcharge max_irrep;
 
