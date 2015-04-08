@@ -186,9 +186,9 @@ namespace chem_detail {
         while (it != raw.end()) {
 
             // create complex number
-            T integral_value;
-            integral_value.real(*it++);
-            integral_value.imag(*it++);
+            double re = *it++;
+            double im = *it++;
+            T integral_value(re, im);
 
             //DEBUG
             //maquis::cout << integral_value.real() << " " << integral_value.imag() << std::endl;
