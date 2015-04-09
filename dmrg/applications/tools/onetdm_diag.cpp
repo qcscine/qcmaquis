@@ -138,6 +138,21 @@ int main(int argc, char ** argv)
         //  c+down cup
         for (int i = 0; i < 4; ++i){
               
+            if (i == 0){
+               measurement = "count_up_1TDM";
+            }
+            else if (i == 1){
+               measurement = "count_down_1TDM";
+            }
+            else if (i == 2){
+               measurement = "u2d_1TDM";
+            }
+            else if (i == 3){
+               measurement = "d2u_1TDM";
+            }
+            else
+               throw std::runtime_error("Invalid observable\n");
+
             vector_results.clear();
             labels.clear();
             vector_results.reserve(vector_results.size() + L);
@@ -147,24 +162,19 @@ int main(int argc, char ** argv)
 
             for (std::size_t p = 0; p < L; ++p)
             {
-
                 int type = lattice.get_prop<int>("type", p);
 
                 if (i == 0){
                    meas_op[type] = tag_handler->get_op(model.get_operator_tag("count_up", type));
-                   measurement = "count_up_1TDM";
                 }
                 else if (i == 1){
                    meas_op[type] = tag_handler->get_op(model.get_operator_tag("count_down", type));
-                   measurement = "count_down_1TDM";
                 }
                 else if (i == 2){
                    meas_op[type] = tag_handler->get_op(model.get_operator_tag("u2d", type));
-                   measurement = "u2d_1TDM";
                 }
                 else if (i == 3){
                    meas_op[type] = tag_handler->get_op(model.get_operator_tag("d2u", type));
-                   measurement = "d2u_1TDM";
                 }
                 else
                    throw std::runtime_error("Invalid observable\n");
@@ -181,29 +191,24 @@ int main(int argc, char ** argv)
                    mpom.add_term(term);
                     
                    mpos[ lattice.get_prop<std::string>("label", p) ] = mpom.create_mpo();
-                }
-
-                std::cout << "label for site p " << p << ": "<< lattice.get_prop<std::string>("label", p)  << std::endl;
-                typedef std::map<std::string, MPO<matrix, symm> > mpo_map;
-                for (typename mpo_map::const_iterator mit = mpos.begin(); mit != mpos.end(); ++mit) {
-                     typename result_type::iterator match = res.find(mit->first);
-                     if (match == res.end())
-                        boost::tie(match, boost::tuples::ignore) = res.insert( std::make_pair(mit->first, 0.) );
-
-                        //match->second += multi_expval(mps1, mps2, mit->second);
-                        std::vector<typename MPS<matrix, symm>::scalar_type> dct = multi_expval(mps1, mps2, mit->second);
-                        std::vector<std::string> lbt;
-                        lbt.push_back( lattice.get_prop<std::string>("label", p) );
-                        std::cout << "value at site p " << p << ": " << dct[0] << std::endl;
-                        /// FIXME: this will not work if we would measure at each site in one shot...
-                        //vector_results.push_back(dct[0]);
-                        //labels.push_back( lattice.get_prop<std::string>("label", p) );
-                        {
-                           std::copy(dct.begin(), dct.end(), std::back_inserter(vector_results));
-                           std::copy(lbt.begin(), lbt.end(), std::back_inserter(labels));
-                        }
+                   std::cout << "label for site p " << p << ": "<< lattice.get_prop<std::string>("label", p)  << std::endl;
                 }
             }
+            typedef std::map<std::string, MPO<matrix, symm> > mpo_map;
+            for (typename mpo_map::const_iterator mit = mpos.begin(); mit != mpos.end(); ++mit) {
+                 typename result_type::iterator match = res.find(mit->first);
+                 if (match == res.end())
+                     boost::tie(match, boost::tuples::ignore) = res.insert( std::make_pair(mit->first, 0.) );
+
+                     std::vector<typename MPS<matrix, symm>::scalar_type> dct = multi_expval(mps1, mps2, mit->second);
+                     std::vector<std::string> lbt;
+                     std::cout << "values " << mit->first << ": " << dct[0] << std::endl;
+                     lbt.push_back( mit->first);
+                     {
+                        std::copy(dct.begin(), dct.end(), std::back_inserter(vector_results));
+                        std::copy(lbt.begin(), lbt.end(), std::back_inserter(labels));
+                     }
+                }
             // save the data...
             {
                  alps::hdf5::archive oh5(parms["resultfile"].str(), "w");
