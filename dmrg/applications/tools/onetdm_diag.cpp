@@ -76,15 +76,6 @@ typedef U1 symm;
 #include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
 
-struct corr_measurement {
-    typedef operator_selector<matrix, symm>::type op_t;
-    
-    std::string name;
-    std::vector<op_t> op1;
-    bool fermionic;
-};
-
-
 int main(int argc, char ** argv)
 {
     try {
@@ -103,7 +94,6 @@ int main(int argc, char ** argv)
         typedef Model<matrix, symm>::table_ptr table_ptr;
         typedef Model<matrix, symm>::tag_type tag_type;
         typedef std::vector<op_t> op_vec;
-        typedef std::vector<std::pair<op_vec, bool> > bond_element;
         
         typedef typename matrix::value_type value_type;
         value_type result;
@@ -140,41 +130,59 @@ int main(int argc, char ** argv)
         op_vec meas_op;
         meas_op.resize(ntypes);
 
-        std::map<std::string, MPO<matrix, symm> > mpos;
+        std::string measurement;
+        /// we need to measure the following local ops: 
+        //  c+up cup
+        //  c+down cdown
+        //  c+up cdown
+        //  c+down cup
         for (int i = 0; i < 4; ++i){
               
-            // we need to measure the local ops: c+up cup, c+down cdown, c+up cdown, c+down cup
+            vector_results.clear();
+            labels.clear();
+            vector_results.reserve(vector_results.size() + L);
+            labels.reserve(labels.size() + L);
+
+            std::map<std::string, MPO<matrix, symm> > mpos;
+
             for (std::size_t p = 0; p < L; ++p)
             {
 
-                vector_results.clear();
-                labels.clear();
-                vector_results.reserve(vector_results.size() + L);
-                labels.reserve(labels.size() + L);
-
                 int type = lattice.get_prop<int>("type", p);
 
-                if (i == 0)
+                if (i == 0){
                    meas_op[type] = tag_handler->get_op(model.get_operator_tag("count_up", type));
-                else if (i == 1)
+                   measurement = "count_up_1TDM";
+                }
+                else if (i == 1){
                    meas_op[type] = tag_handler->get_op(model.get_operator_tag("count_down", type));
-                else if (i == 2)
+                   measurement = "count_down_1TDM";
+                }
+                else if (i == 2){
                    meas_op[type] = tag_handler->get_op(model.get_operator_tag("u2d", type));
-                else if (i == 3)
+                   measurement = "u2d_1TDM";
+                }
+                else if (i == 3){
                    meas_op[type] = tag_handler->get_op(model.get_operator_tag("d2u", type));
+                   measurement = "d2u_1TDM";
+                }
                 else
                    throw std::runtime_error("Invalid observable\n");
 
                 std::cout << "number of blocks for operator at site " << p << ": "<< meas_op[type].n_blocks() << std::endl;
-                // generate MPOs
-                generate_mpo::MPOMaker<matrix, symm> mpom(lattice, identities, fillings);
-                generate_mpo::OperatorTerm<matrix, symm> term;
-                term.operators.push_back( std::make_pair(p, meas_op[type]) );
-                mpom.add_term(term);
-                    
-                mpos[ lattice.get_prop<std::string>("label", p) ] = mpom.create_mpo();
 
-                //vector_results.push_back(val);
+                // generate MPO
+                if (meas_op[type].n_blocks() > 0) {
+
+
+                   generate_mpo::MPOMaker<matrix, symm> mpom(lattice, identities, fillings);
+                   generate_mpo::OperatorTerm<matrix, symm> term;
+                   term.operators.push_back( std::make_pair(p, meas_op[type]) );
+                   mpom.add_term(term);
+                    
+                   mpos[ lattice.get_prop<std::string>("label", p) ] = mpom.create_mpo();
+                }
+
                 std::cout << "label for site p " << p << ": "<< lattice.get_prop<std::string>("label", p)  << std::endl;
                 typedef std::map<std::string, MPO<matrix, symm> > mpo_map;
                 for (typename mpo_map::const_iterator mit = mpos.begin(); mit != mpos.end(); ++mit) {
@@ -184,16 +192,24 @@ int main(int argc, char ** argv)
 
                         //match->second += multi_expval(mps1, mps2, mit->second);
                         std::vector<typename MPS<matrix, symm>::scalar_type> dct = multi_expval(mps1, mps2, mit->second);
+                        std::vector<std::string> lbt;
+                        lbt.push_back( lattice.get_prop<std::string>("label", p) );
                         std::cout << "value at site p " << p << ": " << dct[0] << std::endl;
+                        /// FIXME: this will not work if we would measure at each site in one shot...
+                        //vector_results.push_back(dct[0]);
+                        //labels.push_back( lattice.get_prop<std::string>("label", p) );
+                        {
+                           std::copy(dct.begin(), dct.end(), std::back_inserter(vector_results));
+                           std::copy(lbt.begin(), lbt.end(), std::back_inserter(labels));
+                        }
                 }
-                //labels.push_back( lattice.get_prop<std::string>("label", p) );
-             }
-             // save the data...
-             {
+            }
+            // save the data...
+            {
                  alps::hdf5::archive oh5(parms["resultfile"].str(), "w");
-                 oh5["/spectrum/results/1-TDM diagonal/mean/value"] << vector_results;
-                 oh5["/spectrum/results/1-TDM diagonal/labels"] << labels;
-             }
+                 oh5["/spectrum/results/" + measurement + "/mean/value"] << vector_results;
+                 oh5["/spectrum/results/" + measurement + "/labels"] << labels;
+            }
         }
         
     } catch (std::exception& e) {
