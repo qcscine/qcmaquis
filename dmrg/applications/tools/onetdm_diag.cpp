@@ -95,22 +95,17 @@ int main(int argc, char ** argv)
         typedef Model<matrix, symm>::tag_type tag_type;
         typedef std::vector<op_t> op_vec;
         
-        typedef typename matrix::value_type value_type;
-        value_type result;
         std::vector<typename MPS<matrix, symm>::scalar_type> vector_results;
-        typedef std::map<std::string, typename matrix::value_type> result_type;
-        result_type res;
         std::vector<std::string> labels;
 
-        
         /// Parsing model
         Lattice lattice = Lattice(parms);
         Model<matrix, symm> model = Model<matrix, symm>(lattice, parms);
+        // types are point group irreps...
         int ntypes = lattice.maximum_vertex_type()+1;
         table_ptr tag_handler = model.operators_table();
 
-        // types are point group irreps...
-        std::cout << "ntypes " << ntypes << std::endl;
+        //std::cout << "ntypes " << ntypes << std::endl;
 
         maquis::cout.precision(15);
         std::size_t L = lattice.size();
@@ -127,10 +122,11 @@ int main(int argc, char ** argv)
             fillings[type]   = model.filling_matrix(type);
         }
 
-        op_vec meas_op;
-        meas_op.resize(ntypes);
 
         std::string measurement;
+        std::string op_name;
+        op_vec meas_op;
+        meas_op.resize(ntypes);
         /// we need to measure the following local ops: 
         //  c+up cup
         //  c+down cdown
@@ -138,48 +134,37 @@ int main(int argc, char ** argv)
         //  c+down cup
         for (int i = 0; i < 4; ++i){
               
+            /// make sure all previous results/labels are wiped out
+            labels.clear();
+            vector_results.clear();
+
             if (i == 0){
                measurement = "count_up_1TDM";
+               op_name     = "count_up";
             }
             else if (i == 1){
                measurement = "count_down_1TDM";
+               op_name     = "count_down";
             }
             else if (i == 2){
                measurement = "u2d_1TDM";
+               op_name     = "u2d";
             }
             else if (i == 3){
                measurement = "d2u_1TDM";
+               op_name     = "d2u";
             }
             else
                throw std::runtime_error("Invalid observable\n");
 
-            vector_results.clear();
-            labels.clear();
-            vector_results.reserve(vector_results.size() + L);
-            labels.reserve(labels.size() + L);
 
+            /// TODO: the following part can be taken out as a separate function
             std::map<std::string, MPO<matrix, symm> > mpos;
-
             for (std::size_t p = 0; p < L; ++p)
             {
                 int type = lattice.get_prop<int>("type", p);
-
-                if (i == 0){
-                   meas_op[type] = tag_handler->get_op(model.get_operator_tag("count_up", type));
-                }
-                else if (i == 1){
-                   meas_op[type] = tag_handler->get_op(model.get_operator_tag("count_down", type));
-                }
-                else if (i == 2){
-                   meas_op[type] = tag_handler->get_op(model.get_operator_tag("u2d", type));
-                }
-                else if (i == 3){
-                   meas_op[type] = tag_handler->get_op(model.get_operator_tag("d2u", type));
-                }
-                else
-                   throw std::runtime_error("Invalid observable\n");
-
-                std::cout << "number of blocks for operator at site " << p << ": "<< meas_op[type].n_blocks() << std::endl;
+                meas_op[type] = tag_handler->get_op(model.get_operator_tag(op_name, type));
+                //std::cout << "number of blocks for operator at site " << p << ": "<< meas_op[type].n_blocks() << std::endl;
 
                 // generate MPO
                 if (meas_op[type].n_blocks() > 0) {
@@ -191,30 +176,41 @@ int main(int argc, char ** argv)
                    mpom.add_term(term);
                     
                    mpos[ lattice.get_prop<std::string>("label", p) ] = mpom.create_mpo();
-                   std::cout << "label for site p " << p << ": "<< lattice.get_prop<std::string>("label", p)  << std::endl;
+                   //std::cout << "label for site p " << p << ": "<< lattice.get_prop<std::string>("label", p)  << std::endl;
                 }
             }
+            /// end of TODO
+
             typedef std::map<std::string, MPO<matrix, symm> > mpo_map;
+            typedef std::map<std::string, typename matrix::value_type> result_type;
+            result_type res;
+
             for (typename mpo_map::const_iterator mit = mpos.begin(); mit != mpos.end(); ++mit) {
                  typename result_type::iterator match = res.find(mit->first);
                  if (match == res.end())
                      boost::tie(match, boost::tuples::ignore) = res.insert( std::make_pair(mit->first, 0.) );
 
                      std::vector<typename MPS<matrix, symm>::scalar_type> dct = multi_expval(mps1, mps2, mit->second);
-                     std::vector<std::string> lbt;
-                     std::cout << "values " << mit->first << ": " << dct[0] << std::endl;
-                     lbt.push_back( mit->first);
-                     {
-                        std::copy(dct.begin(), dct.end(), std::back_inserter(vector_results));
-                        std::copy(lbt.begin(), lbt.end(), std::back_inserter(labels));
-                     }
-                }
-            // save the data...
-            {
-                 alps::hdf5::archive oh5(parms["resultfile"].str(), "w");
-                 oh5["/spectrum/results/" + measurement + "/mean/value"] << vector_results;
-                 oh5["/spectrum/results/" + measurement + "/labels"] << labels;
+                     match->second = dct[0];
             }
+
+            /// copy results to base and save the data
+            vector_results.reserve(vector_results.size() + res.size());
+            labels.reserve(labels.size() + res.size());
+            for (typename result_type::const_iterator it = res.begin(); it != res.end(); ++it) {
+
+                /// debug print
+                std::cout << "indices:" << it->first << it->first << " --> value: " <<  it->second << std::endl;
+
+                labels.push_back(it->first);
+                vector_results.push_back(it->second);
+            }
+
+            std::cout << "saving data for measurement " << measurement << " amount of data: " << vector_results.size() << std::endl;
+
+            alps::hdf5::archive oh5(parms["resultfile"].str(), "w");
+            oh5["/spectrum/results/" + measurement + "/mean/value"] << vector_results;
+            oh5["/spectrum/results/" + measurement + "/labels"] << labels;
         }
         
     } catch (std::exception& e) {
