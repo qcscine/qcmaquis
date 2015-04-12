@@ -72,11 +72,13 @@ template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::value_type const & TagHandler<Matrix, SymmGroup>::get_op(tag_type i) const { return (*operator_table)[i]; }
 
 template <class Matrix, class SymmGroup>
-std::vector<typename OPTable<Matrix, SymmGroup>::value_type> TagHandler<Matrix, SymmGroup>::get_ops(std::vector<tag_type> const & i) const
+std::vector<typename OPTable<Matrix, SymmGroup>::value_type> TagHandler<Matrix, SymmGroup>::get_ops(std::vector<tag_type> const & tags) const
 {
-    std::vector<typename OPTable<Matrix, SymmGroup>::value_type> ret(i.size());
-    for (int k = 0; k < i.size(); ++k)
-        ret[k] = (*operator_table)[i[k]];
+    std::vector<typename OPTable<Matrix, SymmGroup>::value_type> ret(tags.size());
+    for (int k = 0; k < tags.size(); ++k)
+        ret[k] = (*operator_table)[tags[k]];
+
+    return ret;
 }
 
 /*
