@@ -52,7 +52,7 @@ import extrapolate_base
 #rcParams.update({'figure.autolayout': True})
 
 rc('axes', unicode_minus=False) # supposed to eliminate Glyph warning, but doesn't work for TeX
-rc('font', **{'family':'serif','serif':['ComputerModernRoman'],'size':18})
+rc('font', **{'family':'serif','serif':['ComputerModernRoman'],'size':20})
 rc('text', usetex=True)
  
 def plot(flist, sweepnr=None):
@@ -87,14 +87,16 @@ def plot(flist, sweepnr=None):
         yshift = (max(yd) - min(yd)) * 0.05
         xshift = (max(xd) - min(xd)) * 0.2
         for x,y,l in zip(xd, yd, labels):
-            item = ax.text(x - xshift, y, '$m=%d$'%l,
-                        ha='right', va='center')
+            #item = ax.text(x - xshift, y, '$m=%d$'%l,
+            #            ha='right', va='center')
+            item = ax.text(x, y, '$m=%d$'%l,
+                        ha='center', va='bottom')
             item.set_fontsize(18)
 
     autolabel(xdata, ydata, extr.m())
 
     # add the extrapolated energy to the plot"
-    ext_note = ax.text(0 + (max(xf)-min(xf)) * 0.05, fit(0),
+    ext_note = ax.text(max(xf)/2.0 + (max(xf)-min(xf)) * 0.05, fit(0),
                        'extrapolation:\n$%.6f$'%fit(0), ha='left', va='center')
     # position below is yaxis 
     #ext_note = ax.text(0, fit(0), '$%.6f$'%fit(0), ha='right', va='top')
