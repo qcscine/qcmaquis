@@ -67,8 +67,10 @@ public:
         if (parms["use_compressed"])
             mpoc.compress(1e-12);
 
+        double energy;
+
         if (parms["MEASURE[Energy]"]) {
-            double energy = maquis::real(expval(mps, mpoc));
+            energy = maquis::real(expval(mps, mpoc));
             maquis::cout << "Energy: " << energy << std::endl;
             {
                 storage::archive ar(rfile, "w");
@@ -80,6 +82,7 @@ public:
             MPO<Matrix, SymmGroup> mpo2 = square_mpo(mpoc);
             mpo2.compress(1e-12);
             
+            if (!parms["MEASURE[Energy]"]) energy = maquis::real(expval(mps, mpoc));
             double energy2 = maquis::real(expval(mps, mpo2, true));
             
             maquis::cout << "Energy^2: " << energy2 << std::endl;
