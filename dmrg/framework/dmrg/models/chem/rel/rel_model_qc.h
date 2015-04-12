@@ -3,7 +3,8 @@
  * ALPS MPS DMRG Project
  *
  * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
- *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2012-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
+ *               2015-2015 by Stefano Battaglia <stefabat@ethz.ch>
  *
  * 
  * This software is part of the ALPS Applications, published under the ALPS
@@ -25,8 +26,8 @@
  *
  *****************************************************************************/
 
-#ifndef QC_HAMILTONIANS_H
-#define QC_HAMILTONIANS_H
+#ifndef REL_QC_MODEL_H
+#define REL_QC_MODEL_H
 
 #include <cmath>
 #include <sstream>
@@ -43,11 +44,11 @@
 #include "dmrg/models/chem/util.h"
 #include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/pg_util.h"
-#include "dmrg/models/chem/2u1/term_maker.h"
-#include "dmrg/models/chem/2u1/chem_helper.h"
+#include "dmrg/models/chem/rel/rel_term_maker.h"
+#include "dmrg/models/chem/rel/rel_chem_helper.h"
 
 template<class Matrix, class SymmGroup>
-class qc_model : public model_impl<Matrix, SymmGroup>
+class rel_qc_model : public model_impl<Matrix, SymmGroup>
 {
     typedef model_impl<Matrix, SymmGroup> base;
     
@@ -66,7 +67,7 @@ class qc_model : public model_impl<Matrix, SymmGroup>
 
 public:
     
-    qc_model(Lattice const & lat_, BaseParameters & parms_);
+    rel_qc_model(Lattice const & lat_, BaseParameters & parms_);
     
     void update(BaseParameters const& p)
     {
@@ -75,18 +76,36 @@ public:
         return;
     }
     
-    // For this model: site_type == point group irrep
     Index<SymmGroup> const & phys_dim(size_t type) const
     {
+        // type == site for lattice = spinors
         return phys_indices[type];
     }
     tag_type identity_matrix_tag(size_t type) const
     {
-        return ident[type];
+        return ident;
     }
     tag_type filling_matrix_tag(size_t type) const
     {
-        return fill[type];
+        return fill;
+    }
+
+    bool is_term_allowed(int i, int j, int k, int l)
+    {
+        typename SymmGroup::charge I(0), J(0), K(0), L(0), tmp(0);
+        typename SymmGroup::charge charges[] = {I,J,K,L};
+        std::size_t site[] = {i, j, k, l};
+        for (int ii=0; ii<4; ++ii) {
+            charges[ii][1] = lat.get_prop<int>("irrep", site[ii]);
+            charges[ii][0] = 1;
+        	if (ii%2 == 0) {
+            	tmp = SymmGroup::fuse(tmp, charges[ii]);}
+        	else if (ii%2 == 1) {
+            	tmp = SymmGroup::fuse(tmp, -charges[ii]);}
+        }
+
+        if (tmp[0] == 0 && tmp[1] != parms["irrep"]) {return false;}
+        else {return true;}
     }
 
     typename SymmGroup::charge total_quantum_numbers(BaseParameters & parms_) const
@@ -96,24 +115,12 @@ public:
 
     tag_type get_operator_tag(std::string const & name, size_t type) const
     {
-        if (name == "create_up")
-            return create_up[type];
-        else if (name == "create_down")
-            return create_down[type];
-        else if (name == "destroy_up")
-            return destroy_up[type];
-        else if (name == "destroy_down")
-            return destroy_down[type];
-        else if (name == "count_up")
-            return count_up[type];
-        else if (name == "count_down")
-            return count_down[type];
-        else if (name == "e2d")
-            return e2d[type];
-        else if (name == "d2e")
-            return d2e[type];
-        else if (name == "docc")
-            return docc[type];
+        if (name == "create")
+            return create;
+        else if (name == "destroy")
+            return destroy;
+        else if (name == "count")
+            return count;
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
@@ -128,56 +135,26 @@ public:
     {
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 
-        op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
-             count_up_op, count_down_op, docc_op, e2d_op, d2e_op,
-             swap_d2u_op, swap_u2d_op,
-             create_up_count_down_op, create_down_count_up_op, destroy_up_count_down_op, destroy_down_count_up_op,
+        op_t create_op, destroy_op, count_op,
              ident_op, fill_op;
 
-        ident_op = tag_handler->get_op(ident[0]);
-        fill_op = tag_handler->get_op(fill[0]);
-        create_up_op = tag_handler->get_op(create_up[0]);
-        create_down_op = tag_handler->get_op(create_down[0]);
-        destroy_up_op = tag_handler->get_op(destroy_up[0]);
-        destroy_down_op = tag_handler->get_op(destroy_down[0]);
-        count_up_op = tag_handler->get_op(count_up[0]);
-        count_down_op = tag_handler->get_op(count_down[0]);
-        e2d_op = tag_handler->get_op(e2d[0]);
-        d2e_op = tag_handler->get_op(d2e[0]);
-        docc_op = tag_handler->get_op(docc[0]);
-
-        gemm(destroy_down_op, create_up_op, swap_d2u_op); // S_plus
-        gemm(destroy_up_op, create_down_op, swap_u2d_op); // S_minus
-
-        gemm(count_down_op, create_up_op, create_up_count_down_op);
-        gemm(count_up_op, create_down_op, create_down_count_up_op);
-        gemm(count_down_op, destroy_up_op, destroy_up_count_down_op);
-        gemm(count_up_op, destroy_down_op, destroy_down_count_up_op);
+        ident_op = tag_handler->get_op(ident);
+        fill_op = tag_handler->get_op(fill);
+        create_op = tag_handler->get_op(create);
+        destroy_op = tag_handler->get_op(destroy);
+        count_op = tag_handler->get_op(count);
 
         #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
 
         GENERATE_SITE_SPECIFIC(ident_op)
         GENERATE_SITE_SPECIFIC(fill_op)
-        GENERATE_SITE_SPECIFIC(create_up_op)
-        GENERATE_SITE_SPECIFIC(create_down_op)
-        GENERATE_SITE_SPECIFIC(destroy_up_op)
-        GENERATE_SITE_SPECIFIC(destroy_down_op)
-        GENERATE_SITE_SPECIFIC(count_up_op)
-        GENERATE_SITE_SPECIFIC(count_down_op)
-
-        GENERATE_SITE_SPECIFIC(e2d_op)
-        GENERATE_SITE_SPECIFIC(d2e_op)
-        GENERATE_SITE_SPECIFIC(docc_op)
-
-        GENERATE_SITE_SPECIFIC(swap_d2u_op)
-        GENERATE_SITE_SPECIFIC(swap_u2d_op)
-        GENERATE_SITE_SPECIFIC(create_up_count_down_op)
-        GENERATE_SITE_SPECIFIC(create_down_count_up_op)
-        GENERATE_SITE_SPECIFIC(destroy_up_count_down_op)
-        GENERATE_SITE_SPECIFIC(destroy_down_count_up_op)
+        GENERATE_SITE_SPECIFIC(create_op)
+        GENERATE_SITE_SPECIFIC(destroy_op)
+        GENERATE_SITE_SPECIFIC(count_op)
 
         #undef GENERATE_SITE_SPECIFIC
 
+        
         measurements_type meas;
 
         typedef std::vector<op_t> op_vec;
@@ -190,14 +167,10 @@ public:
                 if (boost::regex_match(lhs, what, expression)) {
 
                     op_vec meas_op;
-                    if (it->value() == "Nup")
-                        meas_op = count_up_ops;
-                    else if (it->value() == "Ndown")
-                        meas_op = count_down_ops;
-                    else if (it->value() == "Nup*Ndown" || it->value() == "docc")
-                        meas_op = docc_ops;
+                    if (it->value() == "N")
+                        meas_op = count_ops;
                     else
-                        throw std::runtime_error("Invalid observable\nLocal measurements supported so far are \"Nup\" and \"Ndown\"\n");
+                        throw std::runtime_error("Invalid observable\nLocal measurement supported so far is \"N\"\n");
 
                     meas.push_back( new measurements::local<Matrix, SymmGroup>(what.str(1), lat, ident_ops, fill_ops, meas_op) );
                 }
@@ -255,40 +228,17 @@ public:
                 std::vector<bond_element> synchronous_meas_operators;
                 {
                 bond_element meas_operators;
-                meas_operators.push_back( std::make_pair(create_up_ops, true) );
-                meas_operators.push_back( std::make_pair(create_up_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                meas_operators.push_back( std::make_pair(create_ops, true) );
+                meas_operators.push_back( std::make_pair(create_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_ops, true) );
+                meas_operators.push_back( std::make_pair(destroy_ops, true) );
                 synchronous_meas_operators.push_back(meas_operators);
                 }
-                {
-                bond_element meas_operators;
-                meas_operators.push_back( std::make_pair(create_up_ops, true) );
-                meas_operators.push_back( std::make_pair(create_down_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
-                synchronous_meas_operators.push_back(meas_operators);
-                }
-                {
-                bond_element meas_operators;
-                meas_operators.push_back( std::make_pair(create_down_ops, true) );
-                meas_operators.push_back( std::make_pair(create_up_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
-                synchronous_meas_operators.push_back(meas_operators);
-                }
-                {
-                bond_element meas_operators;
-                meas_operators.push_back( std::make_pair(create_down_ops, true) );
-                meas_operators.push_back( std::make_pair(create_down_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
-                synchronous_meas_operators.push_back(meas_operators);
-                }
-                half_only = true;
+				// has to be false if using Rel_NRankRDM
+                half_only = false;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
-                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
+                meas.push_back( new measurements::Rel_NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions, bra_ckp));
             }
             else if (!name.empty()) {
@@ -307,64 +257,20 @@ public:
                      it2 != corr_tokens.end();
                      it2++)
                 {
-                    if (*it2 == "c_up") {
-                        meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                    if (*it2 == "c_dag") {
+                        meas_operators.push_back( std::make_pair(create_ops, true) );
                         ++f_ops;
                     }
-                    else if (*it2 == "c_down") {
-                        meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+                    else if (*it2 == "c") {
+                        meas_operators.push_back( std::make_pair(destroy_ops, true) );
                         ++f_ops;
                     }
-                    else if (*it2 == "cdag_up") {
-                        meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                    else if (*it2 == "N") {
+                        meas_operators.push_back( std::make_pair(count_ops, false) );
                         ++f_ops;
                     }
-                    else if (*it2 == "cdag_down") {
-                        meas_operators.push_back( std::make_pair(create_down_ops, true) );
-                        ++f_ops;
-                    }
-
                     else if (*it2 == "id" || *it2 == "Id") {
                         meas_operators.push_back( std::make_pair(ident_ops, false) );
-                    }
-                    else if (*it2 == "Nup") {
-                        meas_operators.push_back( std::make_pair(count_up_ops, false) );
-                    }
-                    else if (*it2 == "Ndown") {
-                        meas_operators.push_back( std::make_pair(count_down_ops, false) );
-                    }
-                    else if (*it2 == "docc" || *it2 == "Nup*Ndown") {
-                        meas_operators.push_back( std::make_pair(docc_ops, false) );
-                    }
-                    else if (*it2 == "cdag_up*c_down" || *it2 == "splus") {
-                        meas_operators.push_back( std::make_pair(swap_d2u_ops, false) );
-                    }
-                    else if (*it2 == "cdag_down*c_up" || *it2 == "sminus") {
-                        meas_operators.push_back( std::make_pair(swap_u2d_ops, false) );
-                    }
-
-                    else if (*it2 == "cdag_up*cdag_down") {
-                        meas_operators.push_back( std::make_pair(e2d_ops, false) );
-                    }
-                    else if (*it2 == "c_up*c_down") {
-                        meas_operators.push_back( std::make_pair(d2e_ops, false) );
-                    }
-
-                    else if (*it2 == "cdag_up*Ndown") {
-                        meas_operators.push_back( std::make_pair(create_up_count_down_ops, true) );
-                        ++f_ops;
-                    }
-                    else if (*it2 == "cdag_down*Nup") {
-                        meas_operators.push_back( std::make_pair(create_down_count_up_ops, true) );
-                        ++f_ops;
-                    }
-                    else if (*it2 == "c_up*Ndown") {
-                        meas_operators.push_back( std::make_pair(destroy_up_count_down_ops, true) );
-                        ++f_ops;
-                    }
-                    else if (*it2 == "c_down*Nup") {
-                        meas_operators.push_back( std::make_pair(destroy_down_count_up_ops, true) );
-                        ++f_ops;
                     }
                     else
                         throw std::runtime_error("Unrecognized operator in correlation measurement: " 
@@ -385,7 +291,7 @@ public:
                 
                 std::vector<bond_element> synchronous_meas_operators;
                 synchronous_meas_operators.push_back(meas_operators);
-                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
+                meas.push_back( new measurements::Rel_NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
                                                                               half_only, nearest_neighbors_only, positions));
             }
         }
@@ -399,18 +305,15 @@ private:
     std::vector<Index<SymmGroup> > phys_indices;
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
-    // Need a vector to store operators corresponding to different irreps
-    std::vector<tag_type> ident, fill,
-                          create_up, create_down, destroy_up, destroy_down,
-                          count_up, count_down, count_up_down, docc, e2d, d2e;
+    tag_type ident, fill,
+             create, destroy,
+             count;
 
-    typename SymmGroup::subcharge max_irrep;
-
-    std::vector<op_t> generate_site_specific_ops(op_t const & op) const
+	std::vector<op_t> generate_site_specific_ops(op_t const & op) const
     {
         PGDecorator<SymmGroup> set_symm;
         std::vector<op_t> ret;
-        for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
+        for (typename SymmGroup::subcharge sc=0; sc < SymmGroup::get_max_irrep()+1; ++sc) {
             op_t mod(set_symm(op.basis(), sc));
             for (std::size_t b = 0; b < op.n_blocks(); ++b)
                 mod[b] = op[b];
@@ -420,21 +323,8 @@ private:
         return ret;
     }
 
-    std::vector<tag_type> register_site_specific(std::vector<op_t> const & ops, tag_detail::operator_kind kind)
-    {
-        std::vector<tag_type> ret;
-        for (typename SymmGroup::subcharge sc=0; sc < max_irrep+1; ++sc) {
-            std::pair<tag_type, value_type> newtag = tag_handler->checked_register(ops[sc], kind);
-            assert( newtag.first < tag_handler->size() );
-            assert( std::abs(newtag.second - value_type(1.)) == value_type() );
-            ret.push_back(newtag.first);
-        }
-
-        return ret;
-    }
 };
 
-
-#include "dmrg/models/chem/2u1/model_qc.hpp"
+#include "dmrg/models/chem/rel/rel_model_qc.hpp"
 
 #endif

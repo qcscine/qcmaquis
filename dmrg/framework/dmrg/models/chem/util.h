@@ -50,7 +50,19 @@ namespace chem_detail {
             TwoU1PG::charge ret(0);
             ret[0] = parms["u1_total_charge1"];
             ret[1] = parms["u1_total_charge2"];
-            ret[2] = parms["irrep_charge"];
+            ret[2] = parms["irrep"];
+            return ret;
+        }
+    };
+
+    template <>
+    struct qn_helper<U1DG>
+    {
+        U1DG::charge total_qn(BaseParameters & parms)
+        {
+            U1DG::charge ret(0);
+            ret[0] = parms["u1_total_charge"];
+            ret[1] = parms["irrep"];
             return ret;
         }
     };
@@ -64,6 +76,7 @@ namespace chem_detail {
         }
     };
 
+	template <class SymmGroup>
     inline IndexTuple align(int i, int j, int k, int l) {
         if (i<j) std::swap(i,j);
         if (k<l) std::swap(k,l);
@@ -72,8 +85,14 @@ namespace chem_detail {
         return IndexTuple(i,j,k,l);
     }
     
+	template <>
+    inline IndexTuple align<U1DG>(int i, int j, int k, int l) {
+        return IndexTuple(i,j,k,l);
+    }
+    
+	template <class SymmGroup>
     inline IndexTuple align(IndexTuple const & rhs) {
-        return align(rhs[0], rhs[1], rhs[2], rhs[3]);
+        return align<SymmGroup>(rhs[0], rhs[1], rhs[2], rhs[3]);
     }
 
     inline int sign(IndexTuple const & idx)
@@ -97,11 +116,25 @@ namespace chem_detail {
         return os;
     }
 
-    class TermTuple : public NU1Charge<8>
+    class SixTuple : public NU1Charge<6>
     {
     public:
-        TermTuple() {}
-        TermTuple(IndexTuple const & a, IndexTuple const & b) {
+        SixTuple() {}
+        SixTuple(int t0, int t1, int t2, int t3, int t4, int t5) {
+            (*this)[0] = t0;
+            (*this)[1] = t1;
+            (*this)[2] = t2;
+            (*this)[3] = t3;
+            (*this)[4] = t4;
+            (*this)[5] = t5;
+        }
+    };
+
+    class EightTuple : public NU1Charge<8>
+    {
+    public:
+        EightTuple() {}
+        EightTuple(IndexTuple const & a, IndexTuple const & b) {
             for (int i=0; i<4; i++) { (*this)[i] = a[i]; (*this)[i+4] = b[i]; }
         }
     };

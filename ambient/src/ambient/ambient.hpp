@@ -67,6 +67,7 @@
 #include <execinfo.h>
 #include <stdexcept>
 #include <type_traits>
+#include <functional>
 // }}}
 
 #include "ambient/utils/dim2.hpp"

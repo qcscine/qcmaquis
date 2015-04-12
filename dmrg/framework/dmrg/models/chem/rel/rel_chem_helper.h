@@ -2,7 +2,7 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2014 Institute for Theoretical Physics, ETH Zurich
+ * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
  *               2012-2013 by Sebastian Keller <sebkelle@phys.ethz.ch>
  *
  * 
@@ -25,15 +25,16 @@
  *
  *****************************************************************************/
 
-#ifndef QC_CHEM_HELPER_H
-#define QC_CHEM_HELPER_H
+#ifndef REL_QC_CHEM_DETAIL_H
+#define REL_QC_CHEM_DETAIL_H
 
+#include "dmrg/models/chem/util.h"
 #include "dmrg/models/chem/parse_integrals.h"
 
 namespace chem_detail {
-
+    
     template <typename M, class S>
-    class ChemHelperSU2
+    class RelChemHelper
     {
     public:
         typedef typename M::value_type value_type;
@@ -41,21 +42,20 @@ namespace chem_detail {
         typedef typename TagHandler<M, S>::tag_type tag_type;
         typedef Lattice::pos_t pos_t;
 
-        ChemHelperSU2(BaseParameters & parms, Lattice const & lat,
-                   tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_) 
+        RelChemHelper(BaseParameters & parms, Lattice const & lat,
+                   tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_)
             : ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
-            boost::tie(idx_, matrix_elements) = parse_integrals<value_type, S>(parms, lat);
+			boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
 
             for (std::size_t m=0; m < matrix_elements.size(); ++m) {
                 IndexTuple pos;
-                std::copy(idx_.row(m).first, idx_.row(m).second, pos.begin());
+				std::copy(idx_.row(m).first, idx_.row(m).second, pos.begin());
                 coefficients[pos] = matrix_elements[m];
             }
         }
 
-        std::vector<value_type> const & getMatrixElements() const { return matrix_elements; }
-        alps::numeric::matrix<Lattice::pos_t> const & getIdx() const { return idx_; }
+        std::vector<value_type> & getMatrixElements() { return matrix_elements; }
         
         int idx(int m, int pos) const {
             return idx_(m,pos);
@@ -75,11 +75,12 @@ namespace chem_detail {
                 tagterms.push_back(it->second);
         }
 
-        // Collapse terms with identical operators and different scales into one term
+        void add_term(std::vector<term_descriptor> & tagterms,
+                      value_type scale, int p1, int p2, tag_type op_1, tag_type op_2) {
 
-        void add_2term(std::vector<term_descriptor> & tagterms, term_descriptor term)
-        {
-            IndexTuple id(term.position(0), term.position(1), term.operator_tag(0), term.operator_tag(1));
+            term_descriptor
+            term = RelTermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler);
+            IndexTuple id(p1, p2, op_1, op_2);
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
             }
@@ -87,29 +88,35 @@ namespace chem_detail {
                 two_terms[id].coeff += term.coeff;
         }
 
-        void add_3term(std::vector<term_descriptor> & tagterms, term_descriptor term)
-        {        
+        void add_term(std::vector<term_descriptor> & tagterms,
+                      value_type scale, int s, int p1, int p2, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j) {
+
+            term_descriptor
+            term = RelTermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler);
             SixTuple id(term.position(0), term.position(1), term.position(2),
                         term.operator_tag(0), term.operator_tag(1), term.operator_tag(2));
-            if (three_terms.count(id) == 0 ) {
+            if (three_terms.count(id) == 0) {
                 three_terms[id] = term;
             }
-            else
+            else 
                 three_terms[id].coeff += term.coeff;
         }
 
-        void add_4term(std::vector<term_descriptor> & tagterms, term_descriptor term)
+        void add_term(std::vector<term_descriptor> & tagterms, value_type scale, 
+                      int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
         {
-            IndexTuple pos(term.position(0), term.position(1), term.position(2), term.position(3));
-            IndexTuple ops(term.operator_tag(0), term.operator_tag(1), term.operator_tag(2), term.operator_tag(3));
-            EightTuple id(pos,ops);
-            if (four_terms.count(id) == 0 ) {
-                four_terms[id] = term;
-            }
-            else
-                four_terms[id].coeff += term.coeff;
+			term_descriptor
+			term = RelTermMaker<M, S>::four_term(ident, fill, scale, i, k, l, j, op_i, op_k, op_l, op_j, tag_handler);
+			if (i<k) std::swap(i,k);
+			if (j<l) std::swap(j,l);
+			EightTuple id(IndexTuple(i,k,l,j),IndexTuple(op_i,op_k,op_l,op_j));
+			if (four_terms.count(id) == 0) {
+				four_terms[id] = term;
+			}
+			else 
+				four_terms[id].coeff += term.coeff;
         }
-    
+
     private:
 
         tag_type ident, fill;
@@ -120,9 +127,9 @@ namespace chem_detail {
 
         std::map<IndexTuple, value_type> coefficients;
 
-        std::map<IndexTuple, term_descriptor> two_terms;
-        std::map<SixTuple, term_descriptor> three_terms;
         std::map<EightTuple, term_descriptor> four_terms;
+        std::map<SixTuple, term_descriptor> three_terms;
+        std::map<IndexTuple, term_descriptor> two_terms;
     };
 }
 
