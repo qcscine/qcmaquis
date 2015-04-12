@@ -68,7 +68,8 @@ public:
             mpoc.compress(1e-12);
 
         if (parms["MEASURE[Energy]"]) {
-            maquis::cout << "Energy: " << maquis::real(expval(mps, mpoc)) << std::endl;
+            double energy = maquis::real(expval(mps, mpoc));
+            maquis::cout << "Energy: " << energy << std::endl;
             {
                 storage::archive ar(rfile, "w");
                 ar["/spectrum/results/Energy/mean/value"] << std::vector<double>(1, energy);
