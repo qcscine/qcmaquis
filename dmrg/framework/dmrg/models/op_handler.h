@@ -114,8 +114,10 @@ public:
     }
 */
 
-    typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i) { return (*operator_table)[i]; }
-    typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const { return (*operator_table)[i]; }
+    typename OPTable<Matrix, SymmGroup>::value_type & get_op(tag_type i);
+    typename OPTable<Matrix, SymmGroup>::value_type const & get_op(tag_type i) const;
+
+    std::vector<typename OPTable<Matrix, SymmGroup>::value_type> get_ops(std::vector<tag_type> const & i) const;
 
     bool is_fermionic (tag_type query_tag) const {
         if (query_tag >= sign_table.size()) maquis::cout << "query_tag " << query_tag << std::endl;

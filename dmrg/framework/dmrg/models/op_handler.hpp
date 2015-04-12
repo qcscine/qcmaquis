@@ -65,6 +65,20 @@ typename OPTable<Matrix, SymmGroup>::tag_type TagHandler<Matrix, SymmGroup>::reg
     return ret;
 }
 
+template <class Matrix, class SymmGroup>
+typename OPTable<Matrix, SymmGroup>::value_type & TagHandler<Matrix, SymmGroup>::get_op(tag_type i) { return (*operator_table)[i]; }
+
+template <class Matrix, class SymmGroup>
+typename OPTable<Matrix, SymmGroup>::value_type const & TagHandler<Matrix, SymmGroup>::get_op(tag_type i) const { return (*operator_table)[i]; }
+
+template <class Matrix, class SymmGroup>
+std::vector<typename OPTable<Matrix, SymmGroup>::value_type> TagHandler<Matrix, SymmGroup>::get_ops(std::vector<tag_type> const & i) const
+{
+    std::vector<typename OPTable<Matrix, SymmGroup>::value_type> ret(i.size());
+    for (int k = 0; k < i.size(); ++k)
+        ret[k] = (*operator_table)[i[k]];
+}
+
 /*
 template <class Matrix, class SymmGroup>
 std::pair<typename OPTable<Matrix, SymmGroup>::tag_type, typename OPTable<Matrix, SymmGroup>::value_type> TagHandler<Matrix, SymmGroup>::checked_register(op_t & sample) {
