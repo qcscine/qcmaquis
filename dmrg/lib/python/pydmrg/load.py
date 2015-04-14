@@ -17,6 +17,9 @@ from copy import deepcopy
 
 def ReadMeasurements(ar, measurements, path, props):
     ret = []
+    if measurements is None:
+        measurements = ar.list_children(path)
+
     for meas in measurements:
         if meas in ar.list_children(path):
             try:
@@ -39,9 +42,11 @@ def ReadMeasurements(ar, measurements, path, props):
 def ReadDMRGSweeps(ar, measurements, props, path='/simulation', selector=None):
     ret = []
     for sweep_name in ar.list_children(path):
-        if sweep_name == 'iteration':  ## new iterarion format
-            for sweep_num in ar.list_children(path+'/iteration'):
-                sweep = int(sweep_num)
+        if sweep_name == 'iteration':  ## new iteration format
+            # add sweeps in order
+            sweeps = sorted(map(int, ar.list_children(path+'/iteration')))
+            for sweep in sweeps:
+                sweep_num = str(sweep)
                 ret_sweep = []
                 p_sweep = path+'/iteration/'+sweep_num
                 props_sweep = deepcopy(props)
@@ -75,7 +80,7 @@ def ReadDMRGSweeps(ar, measurements, props, path='/simulation', selector=None):
                     ret.append(tmp)
     return ret
 
-def LoadDMRGSweeps(files, what, selector=None):
+def LoadDMRGSweeps(files, what=None, selector=None):
     """ loads measurements in each DMRG iteration from HDF5 result files
         
         The parameters are:
