@@ -178,10 +178,10 @@ namespace measurements {
 								phase = -1;
 
 							std::vector<pos_op_t> op_string;
-							op_string.push_back( std::make_pair(i, ops[0][0].first[lattice.get_prop<int>("irrep",i)]));
-							op_string.push_back( std::make_pair(k, ops[0][1].first[lattice.get_prop<int>("irrep",k)]));
-							op_string.push_back( std::make_pair(l, ops[0][2].first[lattice.get_prop<int>("irrep",l)]));
-							op_string.push_back( std::make_pair(j, ops[0][3].first[lattice.get_prop<int>("irrep",j)]));
+							op_string.push_back( std::make_pair(i, ops[0][0].first[lattice.get_prop<int>("type",i)]));
+							op_string.push_back( std::make_pair(k, ops[0][1].first[lattice.get_prop<int>("type",k)]));
+							op_string.push_back( std::make_pair(l, ops[0][2].first[lattice.get_prop<int>("type",l)]));
+							op_string.push_back( std::make_pair(j, ops[0][3].first[lattice.get_prop<int>("type",j)]));
 
 							////// CALL MPO MAKER /////////
 							NTermsMPO<Matrix, SymmGroup> rdm_elem(lattice, identities, fillings, op_string, phase);
