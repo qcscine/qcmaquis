@@ -125,7 +125,7 @@ namespace generate_mpo
         {
             for (size_t p = 0; p < length-1; ++p)
                 prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(model.identity_matrix_tag(lat.get_prop<int>("type",p)), 1.);
-			
+            
             typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
             std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
         }
@@ -168,7 +168,7 @@ namespace generate_mpo
             
             for (pos_t p = 0; p < length; ++p) {
                 std::vector<tag_block> pre_tensor; pre_tensor.reserve(prempo[p].size());
-
+                
                 index_map right;
                 index_type r = 2;
                 for (typename prempo_map_type::const_iterator it = prempo[p].begin();
@@ -214,8 +214,6 @@ namespace generate_mpo
             /// retrieve the actual operator from the tag table
             // TODO implement plus operation
             op_t current_op = tag_handler->get_op(term.operator_tag(0));
-
-			//maquis::cout << term.coeff << std::endl;
             current_op *= term.coeff;
             site_terms[term.position(0)] += current_op;
         }
@@ -223,7 +221,7 @@ namespace generate_mpo
         void add_2term(term_descriptor const& term)
         {
             assert(term.size() == 2);
-
+            
             prempo_key_type k1 = trivial_left;
             {
                 int i = 0;
@@ -310,8 +308,6 @@ namespace generate_mpo
                     nferm -= 1;
                 bool trivial_fill = (nferm % 2 == 0);
                 insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill);
-                //maquis::cout << "ADDING op_" << i << " at site " << term.position(i) << " with tag " << term.operator_tag(i) << std::endl;
-                //maquis::cout << "INSERTING fill from " << term.position(i)+1 << " to " << term.position(i+1) << ". Trivial fill? " << trivial_fill << std::endl;
             }
             /// op_2
             {
@@ -324,16 +320,12 @@ namespace generate_mpo
                     nferm -= 1;
                 bool trivial_fill = (nferm % 2 == 0);
                 insert_filling(term.position(i)+1, term.position(i+1), k1, trivial_fill);
-                //maquis::cout << "ADDING op_" << i << " at site " << term.position(i) << " with tag " << term.operator_tag(i) << std::endl;
-                //maquis::cout << "INSERTING fill from " << term.position(i)+1 << " to " << term.position(i+1) << ". Trivial fill? " << trivial_fill << std::endl;
             }
 
             /// op_3
             {
                 int i = 3;
                 insert_operator(term.position(i), make_pair(k1, trivial_right), prempo_value_type(term.operator_tag(i), 1.), detach);
-                //maquis::cout << "ADDING op_" << i << " at site " << term.position(i) << " with tag " << term.operator_tag(i)  << std::endl;
-				//maquis::cout << "Coeff: " << term.coeff << std::endl << std::endl;
             }
         }
 
@@ -375,7 +367,6 @@ namespace generate_mpo
 		{
 			for (; i < j; ++i) {
                 tag_type op = (trivial_fill) ? model.identity_matrix_tag(lat.get_prop<int>("type",i)) : model.filling_matrix_tag(lat.get_prop<int>("type",i));
-				
 				std::pair<typename prempo_map_type::iterator,bool> ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
 				if (!ret.second && ret.first->second.first != op)
 					throw std::runtime_error("Pre-existing term at site "+boost::lexical_cast<std::string>(i)
@@ -427,8 +418,6 @@ namespace generate_mpo
             /// fill with ident until the end
             bool trivial_fill = true;
             insert_filling(leftmost_right+1, length, trivial_right, trivial_fill);
-            //DEBUG
-            //maquis::cout << "i: " << leftmost_right+1 << " j: " << length << std::endl;
 
             finalized = true;
         }

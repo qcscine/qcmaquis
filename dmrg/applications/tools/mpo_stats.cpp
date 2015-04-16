@@ -85,17 +85,11 @@ int main(int argc, char ** argv)
         MPO<matrix, symm> mpo = make_mpo(lattice, model);
         
         for (int p = 0; p < lattice.size(); ++p) {
-			maquis::cout << "######## SITE " << p << " ########\n\n";
             std::ofstream ofs(std::string("mpo_stats."+boost::lexical_cast<std::string>(p)+".dat").c_str());
             for (int b1 = 0; b1 < mpo[p].row_dim(); ++b1) {
                 for (int b2 = 0; b2 < mpo[p].col_dim(); ++b2) {
-                    if (mpo[p].has(b1, b2)) {
-						ofs << mpo[p].tag_number(b1,b2) << " ";
-						maquis::cout << "H(" << b1 << "," << b2 << "): " << mpo[p].at(b1,b2).scale << "\n" << mpo[p].at(b1,b2).op.basis() << "\n\n";
-					}
-					else {
-						ofs << ". ";
-					}
+                    if (mpo[p].has(b1, b2)) ofs << mpo[p].tag_number(b1,b2) << " ";
+                    else ofs << ". ";
                 }
                 ofs << std::endl;
             }

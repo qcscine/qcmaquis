@@ -40,8 +40,8 @@ namespace ambient {
         block_iterator(base_iterator first, base_iterator last) 
         : base(first) 
         {
-            position = first-base.get_container().begin();
-            limit = last-base.get_container().begin();
+            position = first-base.get_container().cbegin();
+            limit = last-base.get_container().cbegin();
             measure_step();
         }
         void operator++ (){
@@ -58,7 +58,7 @@ namespace ambient {
             return position - (base - base.get_container().cbegin());
         }
         bool operator != (base_iterator it){
-            return (position != it-base.get_container().begin());
+            return (position != it-base.get_container().cbegin());
         }
         block_type& operator* (){
             return locate(position);

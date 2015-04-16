@@ -82,9 +82,9 @@ namespace ambient {
                    OtherInputIterator begin2, OutputIterator result,
                    BinaryOperation binary_op)
     {
-        typedef block_tuple_iterator<typename InputIterator::container_type,
-                                     typename OtherInputIterator::container_type,
-                                     typename OutputIterator::container_type> iterator;
+        typedef block_tuple_iterator<InputIterator,
+                                     OtherInputIterator,
+                                     OutputIterator> iterator;
 
         for(iterator bit(begin1,begin2,result,end1-begin1); bit != end1; ++bit){
             ambient::async([binary_op](const typename iterator::template get_block_type<0>& block1, size_t first1, size_t second1,
@@ -102,8 +102,8 @@ namespace ambient {
     void transform(InputIterator begin, InputIterator end,
                    OutputIterator result, UnaryOperation op)
     {
-        typedef block_tuple_iterator<typename InputIterator::container_type,
-                                     typename OutputIterator::container_type> iterator;
+        typedef block_tuple_iterator<InputIterator,
+                                     OutputIterator> iterator;
 
         for(iterator bit(begin,result,end-begin); bit != end; ++bit){
             ambient::async([op](const typename iterator::template get_block_type<0>& block1, size_t first1, size_t second1,
@@ -117,8 +117,8 @@ namespace ambient {
 
     template <class InputIterator, class OutputIterator>
     OutputIterator copy(InputIterator begin, InputIterator end, OutputIterator result){
-        typedef block_tuple_iterator<typename InputIterator::container_type,
-                                     typename OutputIterator::container_type> iterator;
+        typedef block_tuple_iterator<InputIterator,
+                                     OutputIterator> iterator;
 
         for(iterator bit(begin,result,end-begin); bit != end; ++bit){
             ambient::async([](const typename iterator::template get_block_type<0>& block1, size_t first1, size_t second1,

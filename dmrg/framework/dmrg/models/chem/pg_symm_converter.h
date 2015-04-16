@@ -48,7 +48,7 @@ public:
 };
 
 template <class Matrix, class SymmGroup>
-class PGSymmetryConverter<Matrix, SymmGroup, typename boost::enable_if<symm_traits::HasPG<SymmGroup> >::type>
+class PGSymmetryConverter<Matrix, SymmGroup, typename boost::enable_if<boost::is_same<SymmGroup, U1DG> >::type>
 {
     typedef typename SymmGroup::subcharge subcharge;
 

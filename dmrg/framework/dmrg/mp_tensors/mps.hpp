@@ -285,7 +285,7 @@ Boundary<Matrix, SymmGroup>
 MPS<Matrix, SymmGroup>::right_boundary() const
 {
     Index<SymmGroup> i = (*this)[length()-1].col_dim();
-	Boundary<Matrix, SymmGroup> ret(i, i, 1);
+    Boundary<Matrix, SymmGroup> ret(i, i, 1);
 
     for(std::size_t k(0); k < ret[0].n_blocks(); ++k)
         maquis::dmrg::detail::left_right_boundary_init(ret[0][k]);
