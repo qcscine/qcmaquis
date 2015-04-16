@@ -65,7 +65,7 @@ public:
 						op_t tmp;
 						if (trivial_fill) {
 							op_t tmp1;
-							gemm(fillings[lat.get_prop<int>("irrep",p)], it->second, tmp1);
+							gemm(fillings[lat.get_prop<int>("type",p)], it->second, tmp1);
 							gemm(tmp1, prempo[p], tmp);
 						} else {
 							gemm(it->second, prempo[p], tmp);
@@ -76,7 +76,7 @@ public:
 						//else add operator to prempo
 						if (trivial_fill) {
 							op_t tmp;
-							gemm(fillings[lat.get_prop<int>("irrep",p)], it->second, tmp);
+							gemm(fillings[lat.get_prop<int>("type",p)], it->second, tmp);
 							prempo.insert( std::make_pair(p, tmp) );
 						} else {
 							prempo.insert( *it );
@@ -89,9 +89,9 @@ public:
 			}
 			if (prempo.count(p) == 0) {
 				if (trivial_fill) {
-					prempo.insert( std::make_pair(p, identities[lat.get_prop<int>("irrep",p)]) );
+					prempo.insert( std::make_pair(p, identities[lat.get_prop<int>("type",p)]) );
 				} else {
-					prempo.insert( std::make_pair(p, fillings[lat.get_prop<int>("irrep",p)]) );
+					prempo.insert( std::make_pair(p, fillings[lat.get_prop<int>("type",p)]) );
 				}
 			}
 		}
