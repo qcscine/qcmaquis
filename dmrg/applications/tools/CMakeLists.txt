@@ -34,12 +34,12 @@ create_tools_symm_target("mps_join_u1"   "U1"     "mps_join.cpp"  "${DMRG_APP_LI
 create_tools_symm_target("mps_stats_u1"   "U1"     "mps_stats.cpp"  "${DMRG_APP_LIBRARIES}")
 create_tools_symm_target("mps_stats_2u1"  "TWOU1"  "mps_stats.cpp"  "${DMRG_APP_LIBRARIES}")
 
-create_tools_symm_target("mpo_stats_u1"      "U1"       "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mpo_stats_2u1"     "TWOU1"    "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mpo_stats_2u1pg"   "TWOU1PG"  "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mpo_stats_u1dg"    "U1DG"     "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mpo_stats_su2u1"   "SU2U1"    "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-create_tools_symm_target("mpo_stats_su2u1pg" "SU2U1PG"  "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_u1"      "U1"      "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_2u1"     "TWOU1"   "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_2u1pg"   "TWOU1PG" "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_u1df"    "U1DG"    "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_su2u1"   "SU2U1"   "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("mpo_stats_su2u1pg" "SU2U1PG" "mpo_stats.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
 
 create_tools_symm_target("mps_upgrade_u1"   "U1"     "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
@@ -47,18 +47,6 @@ create_tools_symm_target("mps_upgrade_2u1"  "TWOU1"  "mps_upgrade.cpp"  "${DMRG_
 create_tools_symm_target("mps_upgrade_none" "NONE"   "mps_upgrade.cpp"  "${DMRG_APP_LIBRARIES}")
 
 create_tools_symm_target("nrdmexpect_2u1pg"   "TWOU1PG" "nrdmexpect.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
-
-if(DMRG_HAS_U1DG)
-  add_executable(expval_u1dg mpoexpect.cpp)
-  target_link_libraries(expval_u1dg ${DMRG_APP_LIBRARIES})
-  set_target_properties(expval_u1dg PROPERTIES COMPILE_DEFINITIONS "USE_U1DG")
-endif(DMRG_HAS_U1DG)
-
-if(DMRG_HAS_U1DG)
-  add_executable(mps_print mps_print.cpp)
-  target_link_libraries(mps_print ${DMRG_APP_LIBRARIES})
-  set_target_properties(mps_print PROPERTIES COMPILE_DEFINITIONS "USE_U1DG")
-endif(DMRG_HAS_U1DG)
 
 if(USE_AMBIENT)
   ## enable only if needed, and with a revision < r3578

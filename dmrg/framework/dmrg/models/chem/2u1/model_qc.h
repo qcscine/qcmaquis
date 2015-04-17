@@ -134,40 +134,26 @@ public:
              create_up_count_down_op, create_down_count_up_op, destroy_up_count_down_op, destroy_down_count_up_op,
              ident_op, fill_op;
 
-        ident_op = tag_handler->get_op(ident[0]);
-        fill_op = tag_handler->get_op(fill[0]);
-        create_up_op = tag_handler->get_op(create_up[0]);
-        create_down_op = tag_handler->get_op(create_down[0]);
-        destroy_up_op = tag_handler->get_op(destroy_up[0]);
-        destroy_down_op = tag_handler->get_op(destroy_down[0]);
-        count_up_op = tag_handler->get_op(count_up[0]);
-        count_down_op = tag_handler->get_op(count_down[0]);
-        e2d_op = tag_handler->get_op(e2d[0]);
-        d2e_op = tag_handler->get_op(d2e[0]);
-        docc_op = tag_handler->get_op(docc[0]);
+        std::vector<op_t> ident_ops = tag_handler->get_ops(ident);
+        std::vector<op_t> fill_ops = tag_handler->get_ops(fill);
+        std::vector<op_t> create_up_ops = tag_handler->get_ops(create_up);
+        std::vector<op_t> create_down_ops = tag_handler->get_ops(create_down);
+        std::vector<op_t> destroy_up_ops = tag_handler->get_ops(destroy_up);
+        std::vector<op_t> destroy_down_ops = tag_handler->get_ops(destroy_down);
+        std::vector<op_t> count_up_ops = tag_handler->get_ops(count_up);
+        std::vector<op_t> count_down_ops = tag_handler->get_ops(count_down);
+        std::vector<op_t> e2d_ops = tag_handler->get_ops(e2d);
+        std::vector<op_t> d2e_ops = tag_handler->get_ops(d2e);
+        std::vector<op_t> docc_ops = tag_handler->get_ops(docc);
 
         gemm(destroy_down_op, create_up_op, swap_d2u_op); // S_plus
         gemm(destroy_up_op, create_down_op, swap_u2d_op); // S_minus
-
         gemm(count_down_op, create_up_op, create_up_count_down_op);
         gemm(count_up_op, create_down_op, create_down_count_up_op);
         gemm(count_down_op, destroy_up_op, destroy_up_count_down_op);
         gemm(count_up_op, destroy_down_op, destroy_down_count_up_op);
 
         #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
-
-        GENERATE_SITE_SPECIFIC(ident_op)
-        GENERATE_SITE_SPECIFIC(fill_op)
-        GENERATE_SITE_SPECIFIC(create_up_op)
-        GENERATE_SITE_SPECIFIC(create_down_op)
-        GENERATE_SITE_SPECIFIC(destroy_up_op)
-        GENERATE_SITE_SPECIFIC(destroy_down_op)
-        GENERATE_SITE_SPECIFIC(count_up_op)
-        GENERATE_SITE_SPECIFIC(count_down_op)
-
-        GENERATE_SITE_SPECIFIC(e2d_op)
-        GENERATE_SITE_SPECIFIC(d2e_op)
-        GENERATE_SITE_SPECIFIC(docc_op)
 
         GENERATE_SITE_SPECIFIC(swap_d2u_op)
         GENERATE_SITE_SPECIFIC(swap_u2d_op)
