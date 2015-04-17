@@ -128,11 +128,12 @@ public:
     {
         typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 
-        op_t create_up_op, create_down_op, destroy_up_op, destroy_down_op,
-             count_up_op, count_down_op, docc_op, e2d_op, d2e_op,
-             swap_d2u_op, swap_u2d_op,
-             create_up_count_down_op, create_down_count_up_op, destroy_up_count_down_op, destroy_down_count_up_op,
-             ident_op, fill_op;
+        std::vector<tag_type> swap_d2u              = (tag_handler->get_product_tags(destroy_down, create_up)).first;
+        std::vector<tag_type> swap_u2d              = (tag_handler->get_product_tags(destroy_up, create_down)).first;
+        std::vector<tag_type> create_up_count_down  = (tag_handler->get_product_tags(count_down, create_up)  ).first;
+        std::vector<tag_type> create_down_count_up  = (tag_handler->get_product_tags(count_up, create_down)  ).first;
+        std::vector<tag_type> destroy_up_count_down = (tag_handler->get_product_tags(count_down, destroy_up) ).first;
+        std::vector<tag_type> destroy_down_count_up = (tag_handler->get_product_tags(count_up, destroy_down) ).first;
 
         std::vector<op_t> ident_ops = tag_handler->get_ops(ident);
         std::vector<op_t> fill_ops = tag_handler->get_ops(fill);
@@ -145,24 +146,12 @@ public:
         std::vector<op_t> e2d_ops = tag_handler->get_ops(e2d);
         std::vector<op_t> d2e_ops = tag_handler->get_ops(d2e);
         std::vector<op_t> docc_ops = tag_handler->get_ops(docc);
-
-        gemm(destroy_down_op, create_up_op, swap_d2u_op); // S_plus
-        gemm(destroy_up_op, create_down_op, swap_u2d_op); // S_minus
-        gemm(count_down_op, create_up_op, create_up_count_down_op);
-        gemm(count_up_op, create_down_op, create_down_count_up_op);
-        gemm(count_down_op, destroy_up_op, destroy_up_count_down_op);
-        gemm(count_up_op, destroy_down_op, destroy_down_count_up_op);
-
-        #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
-
-        GENERATE_SITE_SPECIFIC(swap_d2u_op)
-        GENERATE_SITE_SPECIFIC(swap_u2d_op)
-        GENERATE_SITE_SPECIFIC(create_up_count_down_op)
-        GENERATE_SITE_SPECIFIC(create_down_count_up_op)
-        GENERATE_SITE_SPECIFIC(destroy_up_count_down_op)
-        GENERATE_SITE_SPECIFIC(destroy_down_count_up_op)
-
-        #undef GENERATE_SITE_SPECIFIC
+        std::vector<op_t> swap_d2u_ops = tag_handler->get_ops(swap_d2u);
+        std::vector<op_t> swap_u2d_ops = tag_handler->get_ops(swap_u2d);
+        std::vector<op_t> create_up_count_down_ops = tag_handler->get_ops(create_up_count_down);
+        std::vector<op_t> create_down_count_up_ops = tag_handler->get_ops(create_down_count_up);
+        std::vector<op_t> destroy_up_count_down_ops = tag_handler->get_ops(destroy_up_count_down);
+        std::vector<op_t> destroy_down_count_up_ops = tag_handler->get_ops(destroy_down_count_up);
 
         measurements_type meas;
 
