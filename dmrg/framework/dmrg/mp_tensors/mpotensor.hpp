@@ -58,8 +58,8 @@ MPOTensor<Matrix, SymmGroup>::MPOTensor(index_type ld,
             else {
                 // avoid resize, as that might increase the capacity beyond the new size
                 internal_value_type new_element(element.size() + 1);
-                std::copy(element.begin(), element.end(), new_element.begin());
-                *new_element.rbegin() = std::make_pair(get<2>(*it), get<3>(*it));
+                std::copy(element.begin(), element.end(), new_element.begin()+1);
+                *new_element.begin() = std::make_pair(get<2>(*it), get<3>(*it));
                 std::swap(element, new_element);
             }
         }
