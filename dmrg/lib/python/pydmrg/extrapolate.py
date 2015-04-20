@@ -23,12 +23,14 @@ class extrapolator(object):
         self.obsx  = []
         self.ydata = np.empty((0,0))
         self.xdata = np.empty(0)
+        self.bonddims = np.empty(0)
         
         self.init_data(sets)
         self.xdata = np.array(self.xdata)
         self.ydata = np.array(self.ydata)
         
         order = np.argsort(self.xdata)
+        self.bonddims = self.bonddims[order]
         self.xdata = self.xdata[order]
         for i in range(len(self.ydata)):
             self.ydata[i] = self.ydata[i][order]
@@ -50,6 +52,7 @@ class extrapolator(object):
             elif not np.all(abs(self.obsx-q.x) < 1e-8):
                 raise Exception("Observable `x` values don't match!")
             
+            self.bonddims = np.concatenate ( (self.bonddims, [q.props['max_bond_dimension']]) )
             self.xdata = np.concatenate ( (self.xdata, [q.props[self.xname]]) )
             self.ydata = np.column_stack( (self.ydata, qy) )
     
@@ -59,6 +62,9 @@ class extrapolator(object):
         if num_points is not None:
             xfit = x[:num_points]
             yfit = y[:num_points]
+        if len(xfit) < degree+1:
+            print 'WARNING:', 'Extrapolation not possible.', 'len() < degree+1, len={}, degree={}'.format(len(xfit), degree)
+            return xval*0. + np.nan
         fit_parms, residuals, rank, singular_values, rcond = np.polyfit(xfit, yfit, degree, full=True)
         
         
@@ -96,6 +102,7 @@ class extrapolator(object):
         q.props['fitting_degree']     = degree
         q.props['fitting_num_points'] = num_points
         q.props['fitted_x']           = xval
+        q.props['fitted_bonddims']    = deepcopy(self.bonddims)
         q.props['fitted_value'] = self.fit_at(x=q.x, y=q.y, degree=degree, xval=xval, num_points=num_points, verbose=verbose)
         
         return q
