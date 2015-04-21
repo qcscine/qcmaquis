@@ -38,7 +38,6 @@
 #include "dmrg/mp_tensors/mps_sectors.h"
 #include "dmrg/mp_tensors/compression.h"
 #include "dmrg/mp_tensors/state_mps.h"
-#include "dmrg/models/chem/pg_util.h"
 
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"

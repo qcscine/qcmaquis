@@ -39,14 +39,15 @@
 
 #include "dmrg/utils/DmrgParameters.h"
 
-#include "dmrg/block_matrix/indexing.h"
 #include "dmrg/mp_tensors/mps.h"
+#include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/mp_tensors/mpo.h"
+#include "dmrg/models/generate_mpo.hpp"
+
 #include "dmrg/mp_tensors/twositetensor.h"
 #include "dmrg/mp_tensors/contractions.h"
 #include "dmrg/mp_tensors/mps_mpo_ops.h"
 #include "dmrg/mp_tensors/mpo_ops.h"
-#include "dmrg/mp_tensors/mps_initializers.h"
 
 #include "dmrg/utils/random.hpp"
 #include "dmrg/utils/time_stopper.h"
