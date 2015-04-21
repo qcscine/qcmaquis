@@ -34,6 +34,8 @@
 #include <boost/shared_ptr.hpp>
 
 #include "dmrg/block_matrix/indexing.h"
+
+#include "dmrg/models/lattice.h"
 #include "dmrg/models/op_handler.h"
 #include "dmrg/models/chem/pg_util.h"
 
