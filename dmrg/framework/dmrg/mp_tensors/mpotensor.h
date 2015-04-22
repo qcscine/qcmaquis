@@ -69,7 +69,6 @@ public:
     typedef MPOTensor_detail::row_proxy<typename RowIndex::value_type::const_iterator> row_proxy;
     typedef boost::numeric::ublas::matrix_column<const CSCMatrix> col_proxy;
 
-private:
     typedef std::vector<boost::tuple<std::size_t, std::size_t, tag_type, value_type> > prempo_t;
     
 public:
