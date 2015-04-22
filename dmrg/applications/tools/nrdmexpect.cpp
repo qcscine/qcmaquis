@@ -2,8 +2,8 @@
  *
  * ALPS MPS DMRG Project
  *
- * Copyright (C) 2013 Institute for Theoretical Physics, ETH Zurich
- *               2011-2013 by Michele Dolfi <dolfim@phys.ethz.ch>
+ * Copyright (C) 2015 Institute for Theoretical Physics, ETH Zurich
+ *               2015-2015 by Sebastian Keller <sebkelle@phys.ethz.ch>
  * 
  * This software is part of the ALPS Applications, published under the ALPS
  * Application License; you can use, redistribute it and/or modify it under
@@ -23,14 +23,15 @@
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
-
+#ifdef USE_AMBIENT
+#include <mpi.h>
+#endif
 #include <cmath>
+#include <iterator>
 #include <iostream>
-#include <iomanip>
+#include <fstream>
 #include <sys/time.h>
 #include <sys/stat.h>
-
-#include <boost/lambda/lambda.hpp>
 
 using std::cerr;
 using std::cout;
@@ -44,221 +45,78 @@ typedef ambient::numeric::tiles<ambient::numeric::matrix<double> > matrix;
 typedef alps::numeric::matrix<double> matrix;
 #endif
 
-#include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/mpo.h"
-#include "dmrg/mp_tensors/boundary.h"
-#include "dmrg/mp_tensors/mps_mpo_ops.h"
-#include "dmrg/mp_tensors/contractions.h"
+#include "dmrg/models/model.h"
+#include "dmrg/models/generate_mpo.hpp"
 
-typedef TwoU1PG grp;
+#if defined(USE_TWOU1)
+typedef TwoU1 symm;
+#elif defined(USE_U1DG)
+typedef U1DG symm;
+#elif defined(USE_TWOU1PG)
+typedef TwoU1PG symm;
+#elif defined(USE_SU2U1)
+typedef SU2U1 symm;
+#elif defined(USE_SU2U1PG)
+typedef SU2U1PG symm;
+#elif defined(USE_NONE)
+typedef TrivialGroup symm;
+#elif defined(USE_U1)
+typedef U1 symm;
+#endif
 
-template<class Matrix>
-MPO<Matrix, TwoU1PG> make_2rdm_term(int i, int j, int k, int l, std::vector<int> site_irreps)
-{
-    typedef typename operator_selector<Matrix, TwoU1PG>::type op_t;
-    MPO<Matrix, TwoU1PG> ret(site_irreps.size());
-    for (int p=0; p<site_irreps.size(); ++p)
-    {
-        typedef tag_detail::tag_type tag_type;
-        typename TwoU1PG::charge A(0), B(0), C(0), D(0);
-        A[0] = 1; A[1] = 1;
-        B[0] = 1; C[1] = 1;
-        B[2] = site_irreps[p];
-        C[2] = site_irreps[p];
-
-        op_t ident;
-        ident.insert_block(Matrix(1,1,1), A, A);
-        ident.insert_block(Matrix(1,1,1), B, B);
-        ident.insert_block(Matrix(1,1,1), C, C);
-        ident.insert_block(Matrix(1,1,1), D, D);
-
-        op_t fill;
-        fill.insert_block(Matrix(1,1,1), A, A);
-        fill.insert_block(Matrix(1,1,-1), B, B);
-        fill.insert_block(Matrix(1,1,-1), C, C);
-        fill.insert_block(Matrix(1,1,1), D, D);
-
-        op_t doubly_occupied;
-        doubly_occupied.insert_block(Matrix(1,1,1), A, A);
-
-        op_t create_up;
-        create_up.insert_block(Matrix(1,1,1), C, A);
-        create_up.insert_block(Matrix(1,1,1), D, B);
-        op_t create_up_fill;
-        create_up_fill.insert_block(Matrix(1,1,-1), C, A);
-        create_up_fill.insert_block(Matrix(1,1,1), D, B);
-
-        op_t create_down;
-        create_down.insert_block(Matrix(1,1,-1), B, A);
-        create_down.insert_block(Matrix(1,1,1), D, C);
-        op_t create_down_fill;
-        create_down_fill.insert_block(Matrix(1,1,1), B, A);
-        create_down_fill.insert_block(Matrix(1,1,1), D, C);
-
-        op_t destroy_up;
-        destroy_up.insert_block(Matrix(1,1,1), A, C);
-        destroy_up.insert_block(Matrix(1,1,1), B, D);
-        op_t destroy_up_fill;
-        destroy_up_fill.insert_block(Matrix(1,1,1), A, C);
-        destroy_up_fill.insert_block(Matrix(1,1,-1), B, D);
-
-        op_t destroy_down;
-        destroy_down.insert_block(Matrix(1,1,-1), A, B);
-        destroy_down.insert_block(Matrix(1,1,1), C, D);
-        op_t destroy_down_fill;
-        destroy_down_fill.insert_block(Matrix(1,1,-1), A, B);
-        destroy_down_fill.insert_block(Matrix(1,1,-1), C, D);
-
-        MPOTensor<Matrix, TwoU1PG> op(1,1);
-        if (p==i) {
-            op = MPOTensor<Matrix, TwoU1PG>(1,4);
-            op.set(0,0, create_up_fill, 1.0);
-            op.set(0,1, create_up_fill, 1.0);
-            op.set(0,2, create_down_fill, 1.0);
-            op.set(0,3, create_down_fill, 1.0);
-        }
-        else if (p==j) {
-            op = MPOTensor<Matrix, TwoU1PG>(4,4);
-            op.set(0,0, create_up, 1.0);
-            op.set(1,1, create_down, 1.0);
-            op.set(2,2, create_up, 1.0);
-            op.set(3,3, create_down, 1.0);
-        }
-        else if (p==k) {
-            op = MPOTensor<Matrix, TwoU1PG>(4,4);
-            op.set(0,0, destroy_up_fill, 1.0);
-            op.set(1,1, destroy_down_fill, 1.0);
-            op.set(2,2, destroy_up_fill, 1.0);
-            op.set(3,3, destroy_down_fill, 1.0);
-        }
-        else if (p==l) {
-            op = MPOTensor<Matrix, TwoU1PG>(4,1);
-            op.set(0,0, destroy_up, 1.0);
-            op.set(1,0, destroy_up, 1.0);
-            op.set(2,0, destroy_down, 1.0);
-            op.set(3,0, destroy_down, 1.0);
-        }
-        else if ((i < p && p < j) || (k < p && p < l)) {
-            // position is in between first or second pair of operators -> push fill
-            std::cout << "i am here for fill: " << i <<j << k << l << p << std::endl;
-            op = MPOTensor<Matrix, TwoU1PG>(4,4);
-            op.set(0,0, fill, 1.0);
-            op.set(1,1, fill, 1.0);
-            op.set(2,2, fill, 1.0);
-            op.set(3,3, fill, 1.0);
-        }
-        else
-            op.set(0,0, ident, 1.0);
-
-        ret[p] = op;
-    }
-    return ret;
-}
-
-
-template<class Matrix>
-MPO<Matrix, TwoU1PG> make_diagonal_2rdm_term(int i, std::vector<int> site_irreps)
-{
-    typedef typename operator_selector<Matrix, TwoU1PG>::type op_t;
-    MPO<Matrix, TwoU1PG> ret(site_irreps.size());
-    for (int p=0; p<site_irreps.size(); ++p)
-    {
-        typedef tag_detail::tag_type tag_type;
-        typename TwoU1PG::charge A(0), B(0), C(0), D(0);
-        A[0] = 1; A[1] = 1;
-        B[0] = 1; C[1] = 1;
-        B[2] = site_irreps[p];
-        C[2] = site_irreps[p];
-
-        op_t ident;
-        ident.insert_block(Matrix(1,1,1), A, A);
-        ident.insert_block(Matrix(1,1,1), B, B);
-        ident.insert_block(Matrix(1,1,1), C, C);
-        ident.insert_block(Matrix(1,1,1), D, D);
-
-        op_t fill;
-        fill.insert_block(Matrix(1,1,1), A, A);
-        fill.insert_block(Matrix(1,1,-1), B, B);
-        fill.insert_block(Matrix(1,1,-1), C, C);
-        fill.insert_block(Matrix(1,1,1), D, D);
-
-        op_t doubly_occupied;
-        doubly_occupied.insert_block(Matrix(1,1,1.0), A, A);
-
-        op_t create_up;
-        create_up.insert_block(Matrix(1,1,1), C, A);
-        create_up.insert_block(Matrix(1,1,1), D, B);
-        op_t create_up_fill;
-        create_up_fill.insert_block(Matrix(1,1,-1), C, A);
-        create_up_fill.insert_block(Matrix(1,1,1), D, B);
-
-        op_t create_down;
-        create_down.insert_block(Matrix(1,1,-1), B, A);
-        create_down.insert_block(Matrix(1,1,1), D, C);
-        op_t create_down_fill;
-        create_down_fill.insert_block(Matrix(1,1,1), B, A);
-        create_down_fill.insert_block(Matrix(1,1,1), D, C);
-
-        op_t destroy_up;
-        destroy_up.insert_block(Matrix(1,1,1), A, C);
-        destroy_up.insert_block(Matrix(1,1,1), B, D);
-        op_t destroy_up_fill;
-        destroy_up_fill.insert_block(Matrix(1,1,1), A, C);
-        destroy_up_fill.insert_block(Matrix(1,1,-1), B, D);
-
-        op_t destroy_down;
-        destroy_down.insert_block(Matrix(1,1,-1), A, B);
-        destroy_down.insert_block(Matrix(1,1,1), C, D);
-        op_t destroy_down_fill;
-        destroy_down_fill.insert_block(Matrix(1,1,-1), A, B);
-        destroy_down_fill.insert_block(Matrix(1,1,-1), C, D);
-
-        MPOTensor<Matrix, TwoU1PG> op(1,1);
-        if (p==i) {
-            op.set(0,0, doubly_occupied, 2.0);
-        }
-        else
-            op.set(0,0, ident, 1.0);
-
-        ret[p] = op;
-    }
-    return ret;
-}
+#include "dmrg/utils/DmrgOptions.h"
+#include "dmrg/utils/DmrgParameters.h"
 
 int main(int argc, char ** argv)
 {
     try {
-        if (argc < 2) {
-            std::cout << "Usage: " << argv[0] << " <mps.h5>" << std::endl;
-            return 1;
-        }
-        //cout.precision(5);
+        DmrgOptions opt(argc, argv);
+        if (!opt.valid) return 0;
+        DmrgParameters parms = opt.parms;
+        
+        maquis::cout.precision(10);
+        
+        /// Parsing model
+        Lattice lattice = Lattice(parms);
+        Model<matrix, symm> model = Model<matrix, symm>(lattice, parms);
+        boost::shared_ptr<TagHandler<matrix, symm> > tag_handler = model.operators_table();
 
-        MPS<matrix, grp> mps;
-        load(argv[1], mps);
-        size_t L = mps.size();
+        // load state
+        MPS<matrix, symm> mps;
+        std::string wvf = parms["chkpfile"];
+        load(wvf, mps);
 
-        std::vector<int> site_irreps;
-        for (int i=0; i < L; ++i)
-            site_irreps.push_back(mps[i].site_dim()[1].first[2]);
+        int pos_[4] = {0, 1, 2, 3};
+        std::vector<int> pos(pos_, pos_ + 4);
 
-        std::cout << "site irreps: ";
-        std::copy(site_irreps.begin(), site_irreps.end(), std::ostream_iterator<int>(std::cout, " "));
-        std::cout << std::endl;
+        typedef typename operator_selector<matrix, symm>::type op_t;
+        typedef typename OPTable<matrix, symm>::tag_type tag_type;
 
-        int i=0;
-        int j=2;
-        int k=3;
-        int l=5;
+        tag_type op1 = model.get_operator_tag("create_down", lattice.get_prop<symm::subcharge>("type", pos[0]));
+        tag_type op2 = model.get_operator_tag("create_down", lattice.get_prop<symm::subcharge>("type", pos[1]));
+        tag_type op3 = model.get_operator_tag("destroy_down", lattice.get_prop<symm::subcharge>("type", pos[2]));
+        tag_type op4 = model.get_operator_tag("destroy_down", lattice.get_prop<symm::subcharge>("type", pos[3]));
 
-        MPO<matrix, grp> mpo = make_2rdm_term<matrix>(i,j,k,l, site_irreps);
-        double expectation_value = expval(mps, mpo);
-        maquis::cout << "expectation value for (" << i << j << k << l << "): " << expectation_value << std::endl;
+        tag_type ops_[4] = {op1, op2, op3, op4};
+        std::vector<tag_type> ops(ops_, ops_ + 4);
 
-        mpo = make_diagonal_2rdm_term<matrix>(4, site_irreps);
-        expectation_value = expval(mps, mpo);
-        maquis::cout << "expectation value for (" << 0 << 0 << 0 << 0 << "): " << expectation_value << std::endl;
+        //term_descriptor<double> term = arrange_operators(tag_handler, pos, ops);
+        term_descriptor<double> term = generate_mpo::arrange_operators(tag_handler, pos, ops);
+        maquis::cout << term << std::endl;
+        for (int i=0; i<term.size(); ++i)
+            maquis::cout << tag_handler->get_op(term.operator_tag(i));
 
+        std::vector<tag_type> identities, fillings;
+        identities.push_back(model.identity_matrix_tag(0));
+        identities.push_back(model.identity_matrix_tag(1));
+        fillings.push_back(model.filling_matrix_tag(0));
+        fillings.push_back(model.filling_matrix_tag(1));
+
+        MPO<matrix, symm> mpo = generate_mpo::make_1D_mpo(term, identities, fillings, tag_handler, lattice);
+        double value = expval(mps, mpo);
+        maquis::cout << "Expval is: " << value << std::endl; 
+        
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
         return 1;
