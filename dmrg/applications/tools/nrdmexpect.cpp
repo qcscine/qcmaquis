@@ -101,8 +101,7 @@ int main(int argc, char ** argv)
         tag_type ops_[4] = {op1, op2, op3, op4};
         std::vector<tag_type> ops(ops_, ops_ + 4);
 
-        //term_descriptor<double> term = arrange_operators(tag_handler, pos, ops);
-        term_descriptor<double> term = generate_mpo::arrange_operators(tag_handler, pos, ops);
+        term_descriptor<double> term = generate_mpo::arrange_operators(pos, ops, tag_handler);
         maquis::cout << term << std::endl;
         for (int i=0; i<term.size(); ++i)
             maquis::cout << tag_handler->get_op(term.operator_tag(i));
@@ -113,7 +112,7 @@ int main(int argc, char ** argv)
         fillings.push_back(model.filling_matrix_tag(0));
         fillings.push_back(model.filling_matrix_tag(1));
 
-        MPO<matrix, symm> mpo = generate_mpo::make_1D_mpo(term, identities, fillings, tag_handler, lattice);
+        MPO<matrix, symm> mpo = generate_mpo::make_1D_mpo(pos, ops, identities, fillings, tag_handler, lattice);
         double value = expval(mps, mpo);
         maquis::cout << "Expval is: " << value << std::endl; 
         

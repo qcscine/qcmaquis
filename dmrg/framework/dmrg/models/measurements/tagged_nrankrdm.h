@@ -195,17 +195,9 @@ namespace measurements {
                             operators[2] = operator_terms[synop][2][lattice.get_prop<typename SymmGroup::subcharge>("type", p3)];
                             operators[3] = operator_terms[synop][3][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
                             
-                            term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
-                            MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(term, identities, fillings, tag_handler, lattice);
-                            //value += expval(bra_mps, ket_mps, mpo);
+                            //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
+                            MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler, lattice);
                             value += expval(ket_mps, mpo);
-                            #ifdef MAQUIS_OPENMP
-                            #pragma omp critical
-                            #endif
-                            {
-                            maquis::cout << p1 << p2 << p3 << p4 << " " << value << std::endl;
-                            maquis::cout << term << std::endl;
-                            }
                         }
 
                         dct.push_back(value);

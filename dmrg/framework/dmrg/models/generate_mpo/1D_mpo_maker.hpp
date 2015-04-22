@@ -31,9 +31,9 @@ namespace generate_mpo
 {
     template <class Matrix, class SymmGroup>
     term_descriptor<typename Matrix::value_type>
-    arrange_operators(boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler,
-                      std::vector<Lattice::pos_t> const & positions,
-                      std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & operators)
+    arrange_operators(std::vector<Lattice::pos_t> const & positions,
+                      std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & operators,
+                      boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler)
     {
         // input: list of positions and operators
         // output: list of (position, operator)-pairs, sorted, unique positions with operators multiplied
@@ -101,11 +101,11 @@ namespace generate_mpo
 
     template<class Matrix, class SymmGroup>
     MPO<Matrix, SymmGroup>
-    make_1D_mpo(term_descriptor<typename Matrix::value_type> term,
-                std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> ident,
-                std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> fill,
-                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler,
-                Lattice const & lat)
+    sign_and_fill(term_descriptor<typename Matrix::value_type> term,
+                  std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ident,
+                  std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & fill,
+                  boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler,
+                  Lattice const & lat)
     {
         // after arrange operators, expand term to the full site-list
 
@@ -163,6 +163,20 @@ namespace generate_mpo
         ret[term.position(0)].multiply_by_scalar(term.coeff);
         return ret;
     }
+
+    template<class Matrix, class SymmGroup>
+    MPO<Matrix, SymmGroup>
+    make_1D_mpo(std::vector<Lattice::pos_t> const & positions,
+                std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & operators,
+                std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & ident,
+                std::vector<typename OPTable<Matrix, SymmGroup>::tag_type> const & fill,
+                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler,
+                Lattice const & lat)
+    {
+        term_descriptor<typename Matrix::value_type> term = arrange_operators(positions, operators, tag_handler);
+        return sign_and_fill(term, ident, fill, tag_handler, lat);
+    }
+
 }
 
 #endif
