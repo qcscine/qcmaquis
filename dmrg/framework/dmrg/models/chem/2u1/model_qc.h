@@ -156,7 +156,9 @@ public:
         measurements_type meas;
 
         typedef std::vector<op_t> op_vec;
+        typedef std::vector<tag_type> tag_vec;
         typedef std::vector<std::pair<op_vec, bool> > bond_element;
+        typedef std::vector<tag_vec> bond_tag_element;
         {
             boost::regex expression("^MEASURE_LOCAL\\[(.*)]$");
             boost::smatch what;
@@ -227,44 +229,44 @@ public:
                 else
                     name = "twoptdm";
 
-                std::vector<bond_element> synchronous_meas_operators;
+                std::vector<bond_tag_element> synchronous_meas_operators;
                 {
-                bond_element meas_operators;
-                meas_operators.push_back( std::make_pair(create_up_ops, true) );
-                meas_operators.push_back( std::make_pair(create_up_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
-                synchronous_meas_operators.push_back(meas_operators);
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(meas_operators);
                 }
                 {
-                bond_element meas_operators;
-                meas_operators.push_back( std::make_pair(create_up_ops, true) );
-                meas_operators.push_back( std::make_pair(create_down_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
-                synchronous_meas_operators.push_back(meas_operators);
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(meas_operators);
                 }
                 {
-                bond_element meas_operators;
-                meas_operators.push_back( std::make_pair(create_down_ops, true) );
-                meas_operators.push_back( std::make_pair(create_up_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
-                synchronous_meas_operators.push_back(meas_operators);
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(meas_operators);
                 }
                 {
-                bond_element meas_operators;
-                meas_operators.push_back( std::make_pair(create_down_ops, true) );
-                meas_operators.push_back( std::make_pair(create_down_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
-                meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
-                synchronous_meas_operators.push_back(meas_operators);
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(meas_operators);
                 }
                 half_only = true;
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
-                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
-                                                                              half_only, nearest_neighbors_only, positions, bra_ckp));
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                                                                                    half_only, nearest_neighbors_only, positions, bra_ckp));
             }
             else if (!name.empty()) {
 
