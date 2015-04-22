@@ -195,18 +195,6 @@ namespace measurements {
                             operators[2] = operator_terms[synop][2][lattice.get_prop<typename SymmGroup::subcharge>("type", p3)];
                             operators[3] = operator_terms[synop][3][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
                             
-                            std::copy(operator_terms[synop][0].begin(), operator_terms[synop][0].end(), std::ostream_iterator<unsigned>(std::cout, " "));
-                            maquis::cout << std::endl;
-                            std::copy(operator_terms[synop][1].begin(), operator_terms[synop][1].end(), std::ostream_iterator<unsigned>(std::cout, " "));
-                            maquis::cout << std::endl;
-                            std::copy(operator_terms[synop][2].begin(), operator_terms[synop][2].end(), std::ostream_iterator<unsigned>(std::cout, " "));
-                            maquis::cout << std::endl;
-                            std::copy(operator_terms[synop][3].begin(), operator_terms[synop][3].end(), std::ostream_iterator<unsigned>(std::cout, " "));
-                            maquis::cout << std::endl;
-
-                            std::copy(operators.begin(), operators.end(), std::ostream_iterator<unsigned>(std::cout, " "));
-                            maquis::cout << std::endl;
-
                             term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
                             MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(term, identities, fillings, tag_handler, lattice);
                             //value += expval(bra_mps, ket_mps, mpo);
@@ -239,39 +227,6 @@ namespace measurements {
                         this->labels.reserve(this->labels.size() + dct.size());
                         std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
                     }
-
-                    //maker_ptr dcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings, ops[0], ref, true));
-                    //MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
-                    //std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
-
-                    //// Loop over operator terms that are measured synchronously and added together
-                    //// Used e.g. for the four spin combos of the 2-RDM
-                    //for (std::size_t synop = 1; synop < ops.size(); ++synop) {
-                    //    maker_ptr syndcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings, ops[synop], ref, true));
-
-                    //    // measure
-                    //    MPO<Matrix, SymmGroup> synmpo = syndcorr->create_mpo();
-                    //    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> syndct = multi_expval(bra_mps, ket_mps, synmpo);
-
-                    //    // add synchronous terms
-                    //    std::transform(syndct.begin(), syndct.end(), dct.begin(), dct.begin(),
-                    //                   std::plus<typename MPS<Matrix, SymmGroup>::scalar_type>());
-                    //}
-                    //
-                    //std::vector<std::vector<pos_t> > num_labels = dcorr->numeric_labels();
-                    //std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                    //                            ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
-                    //// save results and labels
-                    //#ifdef MAQUIS_OPENMP
-                    //#pragma omp critical
-                    //#endif
-                    //{
-                    //this->vector_results.reserve(this->vector_results.size() + dct.size());
-                    //std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
-
-                    //this->labels.reserve(this->labels.size() + dct.size());
-                    //std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
-                    //}
                 }
             }
         }
