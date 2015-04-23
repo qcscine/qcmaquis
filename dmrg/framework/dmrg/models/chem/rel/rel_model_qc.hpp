@@ -99,10 +99,6 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
     
-    for(int ii=0; ii < lat.size(); ++ii){
-        maquis::cout << lat.get_prop<typename SymmGroup::subcharge>("type", 0) << std::endl;
-    }
-
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         int i = term_assistant.idx(m, 0);
         int j = term_assistant.idx(m, 1);
