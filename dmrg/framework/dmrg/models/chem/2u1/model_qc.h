@@ -174,7 +174,9 @@ public:
         boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
         boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
+        boost::regex expression_threeptdm("^MEASURE_THREEPTDM(.*)$");
         boost::smatch what;
+
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
             std::string lhs = it->key();
 
@@ -204,6 +206,7 @@ public:
                 half_only = true;
                 nearest_neighbors_only = true;
             }
+
             if (boost::regex_match(lhs, what, expression_twoptdm) ||
                     boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
@@ -253,6 +256,59 @@ public:
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
             }
+
+            else if (boost::regex_match(lhs, what, expression_threeptdm)) {
+
+                std::string bra_ckp("");
+                name = "threeptdm";
+
+                std::vector<bond_tag_element> synchronous_meas_operators;
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(meas_operators);
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(meas_operators);
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(meas_operators);
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(meas_operators);
+                }
+                half_only = true;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                                                                                    half_only, positions, bra_ckp));
+            }
+
             else if (!name.empty()) {
 
                 int f_ops = 0;

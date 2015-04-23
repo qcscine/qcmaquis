@@ -67,7 +67,6 @@ namespace measurements {
         , identities(identities_)
         , fillings(fillings_)
         , operator_terms(ops_)
-        , half_only(half_only_)
         , bra_ckp(ckp_)
         {
             pos_t extent = operator_terms.size() > 2 ? lattice.size() : lattice.size()-1;
@@ -95,9 +94,12 @@ namespace measurements {
             if (operator_terms[0].size() == 2)
                 measure_correlation(bra_mps, ket_mps);
             else if (operator_terms[0].size() == 4)
-              measure_2rdm(bra_mps, ket_mps);
+                measure_2rdm(bra_mps, ket_mps);
+            else if (operator_terms[0].size() == 6)
+                measure_3rdm(bra_mps, ket_mps);
             else
-                throw std::runtime_error("correlation measurements at the moment supported with 2 and 4 operators");
+                throw std::runtime_error("correlation measurements at the moment supported with 2, 4 and 6 operators, size is "
+                                          + boost::lexical_cast<std::string>(operator_terms[0].size()));
         }
         
     protected:
@@ -142,7 +144,7 @@ namespace measurements {
                 }
 
                 std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                                            ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
+                                            ? detail::resort_labels(num_labels, order, false) : num_labels );
                 // save results and labels
                 #ifdef MAQUIS_OPENMP
                 #pragma omp critical
@@ -211,7 +213,75 @@ namespace measurements {
                     }
 
                     std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                                                ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
+                                                ? detail::resort_labels(num_labels, order, false) : num_labels );
+
+                    // save results and labels
+                    #ifdef MAQUIS_OPENMP
+                    #pragma omp critical
+                    #endif
+                    {
+                        this->vector_results.reserve(this->vector_results.size() + dct.size());
+                        std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
+
+                        this->labels.reserve(this->labels.size() + dct.size());
+                        std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+                    }
+                }
+            }
+        }
+
+        void measure_3rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
+                          MPS<Matrix, SymmGroup> const & ket_mps,
+                          std::vector<pos_t> const & order = std::vector<pos_t>())
+        {
+            // Test if a separate bra state has been specified bool bra_neq_ket = (dummy_bra_mps.length() > 0);
+            bool bra_neq_ket = (dummy_bra_mps.length() > 0);
+            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+
+            #ifdef MAQUIS_OPENMP
+            #pragma omp parallel for collapse(3)
+            #endif
+            for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
+            for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
+            for (pos_t p3 = 0; p3 < lattice.size(); ++p3)
+            for (pos_t p4 = 0; p4 < lattice.size(); ++p4)
+            {
+                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+
+                for (pos_t p5 = 0; p5 < lattice.size(); ++p5)
+                { 
+                    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
+                    std::vector<std::vector<pos_t> > num_labels;
+
+                    for (pos_t p6 = 0; p6 < lattice.size(); ++p6)
+                    { 
+                        pos_t pos_[6] = {p1, p2, p3, p4, p5, p6};
+                        std::vector<pos_t> positions(pos_, pos_ + 6);
+
+                        // Loop over operator terms that are measured synchronously and added together
+                        // Used e.g. for the four spin combos of the 2-RDM
+                        typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
+                        for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
+
+                            tag_vec operators(6);
+                            operators[0] = operator_terms[synop][0][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
+                            operators[1] = operator_terms[synop][1][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
+                            operators[2] = operator_terms[synop][2][lattice.get_prop<typename SymmGroup::subcharge>("type", p3)];
+                            operators[3] = operator_terms[synop][3][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
+                            operators[4] = operator_terms[synop][4][lattice.get_prop<typename SymmGroup::subcharge>("type", p5)];
+                            operators[5] = operator_terms[synop][5][lattice.get_prop<typename SymmGroup::subcharge>("type", p6)];
+                            
+                            //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
+                            MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
+                            value += expval(bra_mps, ket_mps, mpo);
+                        }
+
+                        dct.push_back(value);
+                        num_labels.push_back(positions);
+                    }
+
+                    std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
+                                                ? detail::resort_labels(num_labels, order, false) : num_labels );
 
                     // save results and labels
                     #ifdef MAQUIS_OPENMP
@@ -234,7 +304,6 @@ namespace measurements {
         positions_type positions_first;
         tag_vec identities, fillings;
         std::vector<bond_term> operator_terms;
-        bool half_only, is_nn;
 
         std::string bra_ckp;
     };
