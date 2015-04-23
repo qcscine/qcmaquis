@@ -103,22 +103,6 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
 }
 
 template<class Matrix, class SymmGroup>
-std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matrix, SymmGroup> const & mps,
-                                                                       MPO<Matrix, SymmGroup> const & mpo)
-{
-    assert(mpo.length() == mps.length());
-    std::size_t L = mps.length();
-    
-    Boundary<Matrix, SymmGroup> left = mps.left_boundary();
-    
-    for (int i = 0; i < L; ++i) {
-        left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
-    }
-    
-    return left.traces();
-}
-
-template<class Matrix, class SymmGroup>
 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matrix, SymmGroup> const & bra,
                                                                        MPS<Matrix, SymmGroup> const & ket,
                                                                        MPO<Matrix, SymmGroup> const & mpo)
@@ -133,6 +117,13 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matri
         left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(bra[i], ket[i], left, mpo[i]);
     
     return left.traces();
+}
+
+template<class Matrix, class SymmGroup>
+std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matrix, SymmGroup> const & mps,
+                                                                       MPO<Matrix, SymmGroup> const & mpo)
+{
+    return multi_expval(mps, mps, mpo);
 }
 
 template<class Matrix, class SymmGroup>
