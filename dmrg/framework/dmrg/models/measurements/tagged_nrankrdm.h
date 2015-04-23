@@ -140,7 +140,6 @@ namespace measurements {
 
                     dct.push_back(value);
                     num_labels.push_back(positions);
-
                 }
 
                 std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)

@@ -104,10 +104,8 @@ std::pair<typename OPTable<Matrix, SymmGroup>::tag_type, typename OPTable<Matrix
 template <class Matrix, class SymmGroup>
 std::pair<typename OPTable<Matrix, SymmGroup>::tag_type,
           typename TagHandler<Matrix,SymmGroup>::value_type>
-TagHandler<Matrix, SymmGroup>::get_product_tag(const typename
-                                                     OPTable<Matrix, SymmGroup>::tag_type t1,
-                                                     const typename
-                                                     OPTable<Matrix, SymmGroup>::tag_type t2)
+TagHandler<Matrix, SymmGroup>::get_product_tag(const typename OPTable<Matrix, SymmGroup>::tag_type t1,
+                                               const typename OPTable<Matrix, SymmGroup>::tag_type t2)
 {
     assert( t1 < operator_table->size() && t2 < operator_table->size() );
     assert( operator_table->size() == sign_table.size());
