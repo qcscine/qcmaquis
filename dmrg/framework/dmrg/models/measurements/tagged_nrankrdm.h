@@ -58,8 +58,7 @@ namespace measurements {
         TaggedNRankRDM(std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
                        tag_vec const & identities_, tag_vec const & fillings_, std::vector<bond_term> const& ops_,
-                       bool half_only_, bool nearest_neighbors_only,
-                       positions_type const& positions_ = positions_type(),
+                       bool half_only_, positions_type const& positions_ = positions_type(),
                        std::string const& ckp_ = std::string(""))
         : base(name_)
         , lattice(lat)
@@ -69,7 +68,6 @@ namespace measurements {
         , fillings(fillings_)
         , operator_terms(ops_)
         , half_only(half_only_)
-        , is_nn(nearest_neighbors_only)
         , bra_ckp(ckp_)
         {
             pos_t extent = operator_terms.size() > 2 ? lattice.size() : lattice.size()-1;
@@ -94,12 +92,12 @@ namespace measurements {
                     throw std::runtime_error("The bra checkpoint file " + bra_ckp + " was not found\n");
             }
 
-            //if (ops[0].size() == 2)
-            //    measure_correlation(bra_mps, ket_mps, ops);
-            //else if (ops[0].size() == 4)
-                measure_2rdm(bra_mps, ket_mps);
-            //else
-            //    throw std::runtime_error("correlation measurements at the moment supported with 2 and 4 operators");
+            if (operator_terms[0].size() == 2)
+                measure_correlation(bra_mps, ket_mps);
+            else if (operator_terms[0].size() == 4)
+              measure_2rdm(bra_mps, ket_mps);
+            else
+                throw std::runtime_error("correlation measurements at the moment supported with 2 and 4 operators");
         }
         
     protected:
@@ -110,47 +108,56 @@ namespace measurements {
             return new TaggedNRankRDM(*this);
         }
         
-        //void measure_correlation(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
-        //                         MPS<Matrix, SymmGroup> const & ket_mps,
-        //                         std::vector<bond_element> const & ops,
-        //                         std::vector<pos_t> const & order = std::vector<pos_t>())
-        //{
-        //    // Test if a separate bra state has been specified
-        //    bool bra_neq_ket = (dummy_bra_mps.length() > 0);
-        //    MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
+        void measure_correlation(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
+                                 MPS<Matrix, SymmGroup> const & ket_mps,
+                                 std::vector<pos_t> const & order = std::vector<pos_t>())
+        {
+            // Test if a separate bra state has been specified
+            bool bra_neq_ket = (dummy_bra_mps.length() > 0);
+            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
-        //    // TODO: test with ambient in due time
-        //    #ifdef MAQUIS_OPENMP
-        //    #pragma omp parallel for
-        //    #endif
-        //    for (std::size_t i = 0; i < positions_first.size(); ++i) {
-        //        pos_t p = positions_first[i];
-        //        #ifndef NDEBUG
-        //        maquis::cout << "  site " << p << std::endl;
-        //        #endif
-        //        
-        //        maker_ptr dcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings,
-        //                                                                         ops[0], std::vector<pos_t>(1, p)));
-        //        // measure
-        //        MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
-        //        std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
-        //        
-        //        std::vector<std::vector<pos_t> > num_labels = dcorr->numeric_labels();
-        //        std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-        //                                    ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
-        //        // save results and labels
-        //        #ifdef MAQUIS_OPENMP
-        //        #pragma omp critical
-        //        #endif
-        //        {
-        //        this->vector_results.reserve(this->vector_results.size() + dct.size());
-        //        std::copy(dct.begin(), dct.end(), std::back_inserter(this->vector_results));
+            // TODO: test with ambient in due time
+            #ifdef MAQUIS_OPENMP
+            #pragma omp parallel for
+            #endif
+            for (std::size_t i = 0; i < positions_first.size(); ++i) {
+                pos_t p1 = positions_first[i];
 
-        //        this->labels.reserve(this->labels.size() + dct.size());
-        //        std::copy(lbt.begin(), lbt.end(), std::back_inserter(this->labels));
-        //        }
-        //    }
-        //}
+                std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
+                std::vector<std::vector<pos_t> > num_labels;
+                for (pos_t p2 = p1; p2 < lattice.size(); ++p2)
+                { 
+                    pos_t pos_[2] = {p1, p2};
+                    std::vector<pos_t> positions(pos_, pos_ + 2);
+
+                    tag_vec operators(2);
+                    operators[0] = operator_terms[0][0][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
+                    operators[1] = operator_terms[0][1][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
+                    
+                    //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
+                    MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler, lattice);
+                    typename MPS<Matrix, SymmGroup>::scalar_type value = expval(ket_mps, mpo);
+
+                    dct.push_back(value);
+                    num_labels.push_back(positions);
+
+                }
+
+                std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
+                                            ? detail::resort_labels(num_labels, order, is_nn) : num_labels );
+                // save results and labels
+                #ifdef MAQUIS_OPENMP
+                #pragma omp critical
+                #endif
+                {
+                    this->vector_results.reserve(this->vector_results.size() + dct.size());
+                    std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
+
+                    this->labels.reserve(this->labels.size() + dct.size());
+                    std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+                }
+            }
+        }
 
         void measure_2rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
                           MPS<Matrix, SymmGroup> const & ket_mps,
@@ -201,8 +208,7 @@ namespace measurements {
                         }
 
                         dct.push_back(value);
-                        pos_t label[4] = {p1, p2, p3, p4};
-                        num_labels.push_back(std::vector<pos_t>(label, label + 4));
+                        num_labels.push_back(positions);
                     }
 
                     std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)

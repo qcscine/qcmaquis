@@ -266,7 +266,7 @@ public:
                 nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
-                                                                                    half_only, nearest_neighbors_only, positions, bra_ckp));
+                                                                                    half_only, positions, bra_ckp));
             }
             else if (!name.empty()) {
 
