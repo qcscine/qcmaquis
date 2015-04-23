@@ -275,6 +275,16 @@ public:
                 }
                 {
                     bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(meas_operators);
+                }
+                {
+                    bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_down);
@@ -291,16 +301,6 @@ public:
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_up);
-                    synchronous_meas_operators.push_back(meas_operators);
-                }
-                {
-                    bond_tag_element meas_operators;
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(create_down);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
-                    meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(meas_operators);
                 }
                 half_only = true;

@@ -239,11 +239,16 @@ namespace measurements {
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for collapse(3)
+            #pragma omp parallel for collapse(2)
             #endif
             for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
             for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
             for (pos_t p3 = 0; p3 < lattice.size(); ++p3)
+            // third index must be different if p1 == p2 
+            if(p1 == p2){
+                if(p1 == p3)
+                    continue;
+            }
             for (pos_t p4 = 0; p4 < lattice.size(); ++p4)
             {
                 boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
@@ -255,6 +260,11 @@ namespace measurements {
 
                     for (pos_t p6 = 0; p6 < lattice.size(); ++p6)
                     { 
+                        // sixth index must be different if p4 == p5 
+                        if(p4 == p5){
+                           if(p4 == p6)
+                              continue;
+                        }
                         pos_t pos_[6] = {p1, p2, p3, p4, p5, p6};
                         std::vector<pos_t> positions(pos_, pos_ + 6);
 
