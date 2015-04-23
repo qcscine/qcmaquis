@@ -27,8 +27,6 @@
 #ifndef GENERATE_MPO_H
 #define GENERATE_MPO_H
 
-#include "dmrg/models/chem/pg_symm_converter.h"
-
 #include "dmrg/models/generate_mpo/mpo_maker.hpp"
 #include "dmrg/models/generate_mpo/tagged_mpo_maker_optim.hpp"
 #include "dmrg/models/generate_mpo/corr_maker.hpp"
@@ -42,9 +40,6 @@ MPO<Matrix, SymmGroup> make_mpo(Lattice const& lat, Model<Matrix, SymmGroup> con
     generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpom(lat, model);
     MPO<Matrix, SymmGroup> mpo = mpom.create_mpo();
 
-    //PGSymmetryConverter<Matrix, SymmGroup> symm_conv(lat);
-    //symm_conv.convert_tags_to_symm_tags(mpo);
-    
     return mpo;
 }
 
