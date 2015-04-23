@@ -35,7 +35,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 , parms(parms_)
 , tag_handler(new table_type())
 {
-    // Initialize double group tables
+    // Initialize double group table
     SymmGroup::initialize_dg_table(parms);
 	
 	// A -> empty, B -> occupied
@@ -43,16 +43,14 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     B[0]=1;
 
     // create physical indices
-    phys_indices.resize(lat.size());
-    for (std::size_t site = 0; site < lat.size(); ++site)
+    //phys_indices.resize(SymmGroup::get_max_irrep());
+    for (std::size_t irrep = 0; irrep < SymmGroup::get_max_irrep()+1; ++irrep)
     {
-        // Set double group
-        int dg = lat.get_prop<int>("irrep", site);
-        Index<SymmGroup> loc;
-        B[1] = dg;
-        loc.insert(std::make_pair(A, 1));
-        loc.insert(std::make_pair(B, 1));
-        phys_indices[site] = loc;
+        Index<SymmGroup> phys;
+        phys.insert(std::make_pair(A, 1));
+        phys.insert(std::make_pair(PGCharge<SymmGroup>()(B, irrep),1));
+
+        phys_indices.push_back(phys);
     }
 	
     op_t create_op, destroy_op, count_op, 
@@ -69,12 +67,22 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 
     fill_op.insert_block(Matrix(1, 1, 1), A, A);
     fill_op.insert_block(Matrix(1, 1, -1), B, B);
-	
+
+    #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
+    
+    GENERATE_SITE_SPECIFIC(ident_op)
+    GENERATE_SITE_SPECIFIC(fill_op)
+    GENERATE_SITE_SPECIFIC(create_op)
+    GENERATE_SITE_SPECIFIC(destroy_op)
+    GENERATE_SITE_SPECIFIC(count_op)
+    
+    #undef GENERATE_SITE_SPECIFIC
+        
     /**********************************************************************/
     /*** Create operator tag table ****************************************/
     /**********************************************************************/
 
-    #define REGISTER(op, kind) op = tag_handler->register_op(op ## _op, kind);
+    #define REGISTER(op, kind) op = this->register_site_specific(op ## _ops, kind);
 
     REGISTER(ident,    tag_detail::bosonic)
     REGISTER(fill,     tag_detail::bosonic)
@@ -87,14 +95,10 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     /**********************************************************************/
 
     chem_detail::RelChemHelper<Matrix, SymmGroup> term_assistant(parms, lat, ident, fill, tag_handler);
-    
     std::vector<value_type> & matrix_elements = term_assistant.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
     
-    // TODO: move it up
-    int n_pair = lat.size()/2;
-
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         int i = term_assistant.idx(m, 0);
         int j = term_assistant.idx(m, 1);
@@ -106,7 +110,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             
             term_descriptor term;
             term.coeff = matrix_elements[m];
-            term.push_back( boost::make_tuple(0, ident) );
+            term.push_back( boost::make_tuple(0, ident[lat.get_prop<typename SymmGroup::subcharge>("type", 0)]) );
             this->terms_.push_back(term);
 
             used_elements[m] += 1;
@@ -119,7 +123,7 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
             {
                 term_descriptor term;
                 term.coeff = matrix_elements[m];
-                term.push_back( boost::make_tuple(i, count));
+                term.push_back( boost::make_tuple(i, count[lat.get_prop<typename SymmGroup::subcharge>("type", i)]));
                 this->terms_.push_back(term);
             }
             used_elements[m] += 1;
@@ -130,11 +134,11 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
 		#ifdef hopping
         // Hopping term t_ij 
         else if ( i!=j && k == -1 && l == -1) {
-            this->terms_.push_back(RelTermMaker<Matrix, SymmGroup>::positional_two_term(
-                true, fill, matrix_elements[m], i, j, create, destroy, tag_handler)
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term(
+                true, fill, matrix_elements[m], i, j, create, destroy, tag_handler, lat)
             );
-            this->terms_.push_back(RelTermMaker<Matrix, SymmGroup>::positional_two_term( 
-                true, fill, matrix_elements[m], j, i, create, destroy, tag_handler)
+            this->terms_.push_back(TermMaker<Matrix, SymmGroup>::positional_two_term( 
+                true, fill, matrix_elements[m], j, i, create, destroy, tag_handler, lat)
             );
             used_elements[m] += 1;
         }
@@ -234,7 +238,6 @@ rel_qc_model<Matrix, SymmGroup>::rel_qc_model(Lattice const & lat_, BaseParamete
     // make sure all elements have been used
     std::vector<int>::iterator it_0;
     it_0 = std::find(used_elements.begin(), used_elements.end(), 0);
-    maquis::cout << bool(it_0 < used_elements.end()) << std::endl;
     assert( it_0 == used_elements.end() );
 
     term_assistant.commit_terms(this->terms_);

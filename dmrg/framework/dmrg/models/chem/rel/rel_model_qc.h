@@ -44,7 +44,7 @@
 #include "dmrg/models/chem/util.h"
 #include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/pg_util.h"
-#include "dmrg/models/chem/rel/rel_term_maker.h"
+#include "dmrg/models/chem/2u1/term_maker.h"
 #include "dmrg/models/chem/rel/rel_chem_helper.h"
 
 template<class Matrix, class SymmGroup>
@@ -83,11 +83,11 @@ public:
     }
     tag_type identity_matrix_tag(size_t type) const
     {
-        return ident;
+        return ident[type];
     }
     tag_type filling_matrix_tag(size_t type) const
     {
-        return fill;
+        return fill[type];
     }
 
     bool is_term_allowed(int i, int j, int k, int l)
@@ -96,7 +96,7 @@ public:
         typename SymmGroup::charge charges[] = {I,J,K,L};
         std::size_t site[] = {i, j, k, l};
         for (int ii=0; ii<4; ++ii) {
-            charges[ii][1] = lat.get_prop<int>("irrep", site[ii]);
+            charges[ii][1] = lat.get_prop<int>("type", site[ii]);
             charges[ii][0] = 1;
         	if (ii%2 == 0) {
             	tmp = SymmGroup::fuse(tmp, charges[ii]);}
@@ -104,7 +104,7 @@ public:
             	tmp = SymmGroup::fuse(tmp, -charges[ii]);}
         }
 
-        if (tmp[0] == 0 && tmp[1] != parms["irrep"]) {return false;}
+        if (tmp[0] == 0 && tmp[1] != parms["type"]) {return false;}
         else {return true;}
     }
 
@@ -116,11 +116,11 @@ public:
     tag_type get_operator_tag(std::string const & name, size_t type) const
     {
         if (name == "create")
-            return create;
+            return create[type];
         else if (name == "destroy")
-            return destroy;
+            return destroy[type];
         else if (name == "count")
-            return count;
+            return count[type];
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
@@ -138,11 +138,11 @@ public:
         op_t create_op, destroy_op, count_op,
              ident_op, fill_op;
 
-        ident_op = tag_handler->get_op(ident);
-        fill_op = tag_handler->get_op(fill);
-        create_op = tag_handler->get_op(create);
-        destroy_op = tag_handler->get_op(destroy);
-        count_op = tag_handler->get_op(count);
+        ident_op = tag_handler->get_op(ident[0]);
+        fill_op = tag_handler->get_op(fill[0]);
+        create_op = tag_handler->get_op(create[0]);
+        destroy_op = tag_handler->get_op(destroy[0]);
+        count_op = tag_handler->get_op(count[0]);
 
         #define GENERATE_SITE_SPECIFIC(opname) std::vector<op_t> opname ## s = this->generate_site_specific_ops(opname);
 
@@ -153,7 +153,6 @@ public:
         GENERATE_SITE_SPECIFIC(count_op)
 
         #undef GENERATE_SITE_SPECIFIC
-
         
         measurements_type meas;
 
@@ -305,9 +304,7 @@ private:
     std::vector<Index<SymmGroup> > phys_indices;
 
     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler;
-    tag_type ident, fill,
-             create, destroy,
-             count;
+    std::vector<tag_type> ident, fill, create, destroy, count;
 
 	std::vector<op_t> generate_site_specific_ops(op_t const & op) const
     {
@@ -322,6 +319,20 @@ private:
         }
         return ret;
     }
+
+    std::vector<tag_type> register_site_specific(std::vector<op_t> const & ops, tag_detail::operator_kind kind)
+    {
+        std::vector<tag_type> ret;
+        for (typename SymmGroup::subcharge sc=0; sc < SymmGroup::get_max_irrep()+1; ++sc) {
+            std::pair<tag_type, value_type> newtag = tag_handler->checked_register(ops[sc], kind);
+            assert( newtag.first < tag_handler->size() );
+            assert( std::abs(newtag.second - value_type(1.)) == value_type() );
+            ret.push_back(newtag.first);
+        }
+
+        return ret;
+    }
+
 
 };
 
