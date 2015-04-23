@@ -101,7 +101,6 @@ namespace measurements {
         }
         
     protected:
-        typedef boost::shared_ptr<generate_mpo::CorrMakerBase<Matrix, SymmGroup> > maker_ptr;
 
         measurement<Matrix, SymmGroup>* do_clone() const
         {
@@ -116,12 +115,12 @@ namespace measurements {
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
-            // TODO: test with ambient in due time
             #ifdef MAQUIS_OPENMP
             #pragma omp parallel for
             #endif
             for (std::size_t i = 0; i < positions_first.size(); ++i) {
                 pos_t p1 = positions_first[i];
+                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
@@ -135,7 +134,7 @@ namespace measurements {
                     operators[1] = operator_terms[0][1][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
                     
                     //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
-                    MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler, lattice);
+                    MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
                     typename MPS<Matrix, SymmGroup>::scalar_type value = expval(ket_mps, mpo);
 
                     dct.push_back(value);
@@ -166,13 +165,14 @@ namespace measurements {
             bool bra_neq_ket = (dummy_bra_mps.length() > 0);
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
-            // TODO: test with ambient in due time
             #ifdef MAQUIS_OPENMP
             #pragma omp parallel for collapse(1)
             #endif
             for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
             for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
             {
+                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+
                 // Permutation symmetry for bra == ket: ijkl == jilk == klji == lkji
                 pos_t subref = std::min(p1, p2);
 
@@ -202,7 +202,7 @@ namespace measurements {
                             operators[3] = operator_terms[synop][3][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
                             
                             //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
-                            MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler, lattice);
+                            MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
                             value += expval(ket_mps, mpo);
                         }
 

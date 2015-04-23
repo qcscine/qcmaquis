@@ -29,6 +29,14 @@
 #define MAQUIS_DMRG_MODELS_OP_HANDLER_HPP
 
 template <class Matrix, class SymmGroup>
+TagHandler<Matrix, SymmGroup>::TagHandler(TagHandler const & rhs)
+    : operator_table(new OPTable<Matrix, SymmGroup>(*rhs.operator_table))
+    , sign_table(rhs.sign_table)
+    , product_tags(rhs.product_tags)
+{
+}
+
+template <class Matrix, class SymmGroup>
 typename OPTable<Matrix, SymmGroup>::tag_type
 OPTable<Matrix, SymmGroup>::register_op(op_t const & op_)
 {
