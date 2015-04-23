@@ -137,21 +137,9 @@ public:
 
         std::vector<op_t> ident_ops = tag_handler->get_ops(ident);
         std::vector<op_t> fill_ops = tag_handler->get_ops(fill);
-        std::vector<op_t> create_up_ops = tag_handler->get_ops(create_up);
-        std::vector<op_t> create_down_ops = tag_handler->get_ops(create_down);
-        std::vector<op_t> destroy_up_ops = tag_handler->get_ops(destroy_up);
-        std::vector<op_t> destroy_down_ops = tag_handler->get_ops(destroy_down);
         std::vector<op_t> count_up_ops = tag_handler->get_ops(count_up);
         std::vector<op_t> count_down_ops = tag_handler->get_ops(count_down);
-        std::vector<op_t> e2d_ops = tag_handler->get_ops(e2d);
-        std::vector<op_t> d2e_ops = tag_handler->get_ops(d2e);
         std::vector<op_t> docc_ops = tag_handler->get_ops(docc);
-        std::vector<op_t> swap_d2u_ops = tag_handler->get_ops(swap_d2u);
-        std::vector<op_t> swap_u2d_ops = tag_handler->get_ops(swap_u2d);
-        std::vector<op_t> create_up_count_down_ops = tag_handler->get_ops(create_up_count_down);
-        std::vector<op_t> create_down_count_up_ops = tag_handler->get_ops(create_down_count_up);
-        std::vector<op_t> destroy_up_count_down_ops = tag_handler->get_ops(destroy_up_count_down);
-        std::vector<op_t> destroy_down_count_up_ops = tag_handler->get_ops(destroy_down_count_up);
 
         measurements_type meas;
 
@@ -263,7 +251,6 @@ public:
                     synchronous_meas_operators.push_back(meas_operators);
                 }
                 half_only = true;
-                nearest_neighbors_only = false;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
@@ -271,7 +258,7 @@ public:
             else if (!name.empty()) {
 
                 int f_ops = 0;
-                bond_element meas_operators;
+                bond_tag_element meas_operators;
                 
                 /// split op1:op2:...@p1,p2,p3,... into {op1:op2:...}, {p1,p2,p3,...}
                 std::vector<std::string> value_split;
@@ -285,62 +272,62 @@ public:
                      it2++)
                 {
                     if (*it2 == "c_up") {
-                        meas_operators.push_back( std::make_pair(destroy_up_ops, true) );
+                        meas_operators.push_back(destroy_up);
                         ++f_ops;
                     }
                     else if (*it2 == "c_down") {
-                        meas_operators.push_back( std::make_pair(destroy_down_ops, true) );
+                        meas_operators.push_back(destroy_down);
                         ++f_ops;
                     }
                     else if (*it2 == "cdag_up") {
-                        meas_operators.push_back( std::make_pair(create_up_ops, true) );
+                        meas_operators.push_back(create_up);
                         ++f_ops;
                     }
                     else if (*it2 == "cdag_down") {
-                        meas_operators.push_back( std::make_pair(create_down_ops, true) );
+                        meas_operators.push_back(create_down);
                         ++f_ops;
                     }
 
                     else if (*it2 == "id" || *it2 == "Id") {
-                        meas_operators.push_back( std::make_pair(ident_ops, false) );
+                        meas_operators.push_back(ident);
                     }
                     else if (*it2 == "Nup") {
-                        meas_operators.push_back( std::make_pair(count_up_ops, false) );
+                        meas_operators.push_back(count_up);
                     }
                     else if (*it2 == "Ndown") {
-                        meas_operators.push_back( std::make_pair(count_down_ops, false) );
+                        meas_operators.push_back(count_down);
                     }
                     else if (*it2 == "docc" || *it2 == "Nup*Ndown") {
-                        meas_operators.push_back( std::make_pair(docc_ops, false) );
+                        meas_operators.push_back(docc);
                     }
                     else if (*it2 == "cdag_up*c_down" || *it2 == "splus") {
-                        meas_operators.push_back( std::make_pair(swap_d2u_ops, false) );
+                        meas_operators.push_back(swap_d2u);
                     }
                     else if (*it2 == "cdag_down*c_up" || *it2 == "sminus") {
-                        meas_operators.push_back( std::make_pair(swap_u2d_ops, false) );
+                        meas_operators.push_back(swap_u2d);
                     }
 
                     else if (*it2 == "cdag_up*cdag_down") {
-                        meas_operators.push_back( std::make_pair(e2d_ops, false) );
+                        meas_operators.push_back(e2d);
                     }
                     else if (*it2 == "c_up*c_down") {
-                        meas_operators.push_back( std::make_pair(d2e_ops, false) );
+                        meas_operators.push_back(d2e);
                     }
 
                     else if (*it2 == "cdag_up*Ndown") {
-                        meas_operators.push_back( std::make_pair(create_up_count_down_ops, true) );
+                        meas_operators.push_back(create_up_count_down);
                         ++f_ops;
                     }
                     else if (*it2 == "cdag_down*Nup") {
-                        meas_operators.push_back( std::make_pair(create_down_count_up_ops, true) );
+                        meas_operators.push_back(create_down_count_up);
                         ++f_ops;
                     }
                     else if (*it2 == "c_up*Ndown") {
-                        meas_operators.push_back( std::make_pair(destroy_up_count_down_ops, true) );
+                        meas_operators.push_back(destroy_up_count_down);
                         ++f_ops;
                     }
                     else if (*it2 == "c_down*Nup") {
-                        meas_operators.push_back( std::make_pair(destroy_down_count_up_ops, true) );
+                        meas_operators.push_back(destroy_down_count_up);
                         ++f_ops;
                     }
                     else
@@ -360,10 +347,10 @@ public:
                                    static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<pos_t, std::string>));
                 }
                 
-                std::vector<bond_element> synchronous_meas_operators;
+                std::vector<bond_tag_element> synchronous_meas_operators;
                 synchronous_meas_operators.push_back(meas_operators);
-                meas.push_back( new measurements::NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
-                                                                              half_only, nearest_neighbors_only, positions));
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                                                                                    half_only, positions));
             }
         }
         }

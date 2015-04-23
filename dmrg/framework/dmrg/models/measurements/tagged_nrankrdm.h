@@ -125,7 +125,7 @@ namespace measurements {
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
-                for (pos_t p2 = p1; p2 < lattice.size(); ++p2)
+                for (pos_t p2 = p1+1; p2 < lattice.size(); ++p2)
                 { 
                     pos_t pos_[2] = {p1, p2};
                     std::vector<pos_t> positions(pos_, pos_ + 2);
