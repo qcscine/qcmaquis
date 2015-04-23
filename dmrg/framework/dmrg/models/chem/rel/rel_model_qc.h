@@ -241,9 +241,10 @@ public:
                                                                               half_only, nearest_neighbors_only, positions, bra_ckp));
             }
             else if (!name.empty()) {
+                typedef std::vector<std::vector<tag_type> > bond_tag_element;
 
                 int f_ops = 0;
-                bond_element meas_operators;
+                bond_tag_element meas_operators;
                 
                 /// split op1:op2:...@p1,p2,p3,... into {op1:op2:...}, {p1,p2,p3,...}
                 std::vector<std::string> value_split;
@@ -257,19 +258,19 @@ public:
                      it2++)
                 {
                     if (*it2 == "c_dag") {
-                        meas_operators.push_back( std::make_pair(create_ops, true) );
+                        meas_operators.push_back(create);
                         ++f_ops;
                     }
                     else if (*it2 == "c") {
-                        meas_operators.push_back( std::make_pair(destroy_ops, true) );
+                        meas_operators.push_back(destroy);
                         ++f_ops;
                     }
                     else if (*it2 == "N") {
-                        meas_operators.push_back( std::make_pair(count_ops, false) );
+                        meas_operators.push_back(count);
                         ++f_ops;
                     }
                     else if (*it2 == "id" || *it2 == "Id") {
-                        meas_operators.push_back( std::make_pair(ident_ops, false) );
+                        meas_operators.push_back(ident);
                     }
                     else
                         throw std::runtime_error("Unrecognized operator in correlation measurement: " 
@@ -288,10 +289,10 @@ public:
                                    static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<pos_t, std::string>));
                 }
                 
-                std::vector<bond_element> synchronous_meas_operators;
+                std::vector<bond_tag_element> synchronous_meas_operators;
                 synchronous_meas_operators.push_back(meas_operators);
-                meas.push_back( new measurements::Rel_NRankRDM<Matrix, SymmGroup>(name, lat, ident_ops, fill_ops, synchronous_meas_operators,
-                                                                              half_only, nearest_neighbors_only, positions));
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                                                                                    half_only, positions));
             }
         }
         }
