@@ -143,9 +143,7 @@ public:
 
         measurements_type meas;
 
-        typedef std::vector<op_t> op_vec;
         typedef std::vector<tag_type> tag_vec;
-        typedef std::vector<std::pair<op_vec, bool> > bond_element;
         typedef std::vector<tag_vec> bond_tag_element;
         {
             boost::regex expression("^MEASURE_LOCAL\\[(.*)]$");
@@ -154,7 +152,7 @@ public:
                 std::string lhs = it->key();
                 if (boost::regex_match(lhs, what, expression)) {
 
-                    op_vec meas_op;
+                    std::vector<op_t> meas_op;
                     if (it->value() == "Nup")
                         meas_op = count_up_ops;
                     else if (it->value() == "Ndown")
