@@ -82,24 +82,54 @@ double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const &
     }
 }
 
+namespace mps_mpo_detail {
+
+    template<class Matrix, class SymmGroup>
+    Boundary<Matrix, SymmGroup>
+    mixed_left_boundary(MPS<Matrix, SymmGroup> const & bra, MPS<Matrix, SymmGroup> const & ket)
+    {
+        assert(ket.length() == bra.length());
+        Index<SymmGroup> i = ket[0].row_dim();
+        Index<SymmGroup> j = bra[0].row_dim();
+        Boundary<Matrix, SymmGroup> ret(i, j, 1);
+
+        for(typename Index<SymmGroup>::basis_iterator it1 = i.basis_begin(); !it1.end(); ++it1)
+            for(typename Index<SymmGroup>::basis_iterator it2 = j.basis_begin(); !it2.end(); ++it2)
+                ret[0](*it1, *it2) = 1;
+
+        return ret;
+    }
+}
+
+template<class Matrix, class SymmGroup>
+typename Matrix::value_type expval(MPS<Matrix, SymmGroup> const & bra,
+              MPS<Matrix, SymmGroup> const & ket,
+              MPO<Matrix, SymmGroup> const & mpo,
+              bool verbose = false)
+{
+    parallel::scheduler_balanced scheduler(bra.length());
+    assert(mpo.length() == bra.length() && bra.length() == ket.length());
+    std::size_t L = bra.length();
+
+    Boundary<Matrix, SymmGroup> left = mps_mpo_detail::mixed_left_boundary(bra, ket);
+
+    for (int i = 0; i < L; ++i) {
+        parallel::guard proc(scheduler(i));
+        if (verbose)
+            std::cout << "expval site " << i << std::endl;
+        left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(bra[i], ket[i], left, mpo[i]);
+    }
+
+    // MD: if bra and ket are different, result might be complex!
+    return left.traces()[0];
+}
+
+
 template<class Matrix, class SymmGroup>
 double expval(MPS<Matrix, SymmGroup> const & mps, MPO<Matrix, SymmGroup> const & mpo,
               bool verbose = false)
 {
-    parallel::scheduler_balanced scheduler(mps.length());
-    assert(mpo.length() == mps.length());
-    std::size_t L = mps.length();
-    
-    Boundary<Matrix, SymmGroup> left = mps.left_boundary();
-    
-    for(size_t i = 0; i < L; ++i) {
-        parallel::guard proc(scheduler(i));
-        if (verbose)
-            maquis::cout << "expval site " << (size_t)i << std::endl;
-        left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(mps[i], mps[i], left, mpo[i]);
-    }
-    
-    return maquis::real(left[0].trace());
+    return maquis::real(expval(mps, mps, mpo, verbose));
 }
 
 template<class Matrix, class SymmGroup>
@@ -111,7 +141,8 @@ std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> multi_expval(MPS<Matri
     assert(mpo.length() == bra.length());
     std::size_t L = bra.length();
     
-    Boundary<Matrix, SymmGroup> left = make_left_boundary(bra, ket);
+    //Boundary<Matrix, SymmGroup> left = make_left_boundary(bra, ket);
+    Boundary<Matrix, SymmGroup> left = mps_mpo_detail::mixed_left_boundary(bra, ket);
     
     for (int i = 0; i < L; ++i)
         left = contraction::Engine<Matrix, Matrix, SymmGroup>::overlap_mpo_left_step(bra[i], ket[i], left, mpo[i]);
