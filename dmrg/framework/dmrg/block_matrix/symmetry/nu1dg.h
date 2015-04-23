@@ -256,17 +256,17 @@ public:
             // D2h spinfree
             case 9:
                 throw std::runtime_error("D2h spinfree not implemented yet!\n");
-            // Cinfv (C2v + lin. symmetry) --> mapped to C32
+            // Cinfv (C2v + lin. symmetry) --> mapped to C64
             case 10:
                 max_irrep    = 128;
-                mult_table   = generate_mult_table_C32<S>(max_irrep);
-                adjoin_table = generate_adjoin_table_C32<S>(max_irrep);
+                mult_table   = generate_mult_table_C64<S>(max_irrep);
+                adjoin_table = generate_adjoin_table_C64<S>(max_irrep);
                 break;
-            // Dinfh (D2h + lin. symmetry) --> mapped to C16h
+            // Dinfh (D2h + lin. symmetry) --> mapped to C32h
             case 11:
                 max_irrep    = 128;
-                mult_table   = generate_mult_table_C16h<S>(max_irrep);
-                adjoin_table = generate_adjoin_table_C16h<S>(max_irrep);
+                mult_table   = generate_mult_table_C32h<S>(max_irrep);
+                adjoin_table = generate_adjoin_table_C32h<S>(max_irrep);
                 break;
             default:
                 throw std::runtime_error("Double group not known!\nAvailable double groups are C1, Ci, C2h, D2h, C2, D2, C2v, Cs, Cinfv, Dinfh.\n");

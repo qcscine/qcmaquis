@@ -188,7 +188,7 @@ alps::numeric::matrix<S> generate_mult_table_C2h(S const & num_irreps)
 }
 
 template<class S>
-std::vector<S> generate_adjoin_table_C32(S const & num_irreps)
+std::vector<S> generate_adjoin_table_C64(S const & num_irreps)
 {
     std::vector<S> adjoin_table(num_irreps);
 
@@ -209,7 +209,7 @@ std::vector<S> generate_adjoin_table_C32(S const & num_irreps)
 }
   
 template<class S>
-alps::numeric::matrix<S> generate_mult_table_C32(S const & num_irreps)
+alps::numeric::matrix<S> generate_mult_table_C64(S const & num_irreps)
 {
     int shift = num_irreps/2;
     int irrep = 1;
@@ -259,7 +259,7 @@ alps::numeric::matrix<S> generate_mult_table_C32(S const & num_irreps)
 }
 
 template<class S>
-std::vector<S> generate_adjoin_table_C16h(S const & num_irreps)
+std::vector<S> generate_adjoin_table_C32h(S const & num_irreps)
 {
     int num_boson_irreps = num_irreps/2;
     int num_gerade  = num_boson_irreps/2;
@@ -286,7 +286,7 @@ std::vector<S> generate_adjoin_table_C16h(S const & num_irreps)
 }
   
 template<class S>
-alps::numeric::matrix<S> generate_mult_table_C16h(S const & num_irreps)
+alps::numeric::matrix<S> generate_mult_table_C32h(S const & num_irreps)
 {
     int shift = num_irreps/4;
     int irrep = 0;
