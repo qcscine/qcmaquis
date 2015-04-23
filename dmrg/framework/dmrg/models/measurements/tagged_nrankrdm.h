@@ -175,10 +175,10 @@ namespace measurements {
             {
                 boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
-                // Permutation symmetry for bra == ket: ijkl == jilk == klji == lkji
+                // Permutation symmetry for bra == ket: pqrs == rspq == qpsr == srqp
                 pos_t subref = std::min(p1, p2);
 
-                // if bra != ket, pertmutation symmetry is only ijkl == jilk
+                // if bra != ket, pertmutation symmetry is only pqrs == qpsr
                 if (bra_neq_ket)
                     pos_t subref = 0;
 
