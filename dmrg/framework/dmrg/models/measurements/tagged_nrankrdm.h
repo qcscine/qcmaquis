@@ -245,10 +245,9 @@ namespace measurements {
             for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
             for (pos_t p3 = 0; p3 < lattice.size(); ++p3)
             {
-                if(p1 == p2){
-                    if(p1 == p3)
-                        continue;
-                }
+                if(p1 == p2 && p1 == p3)
+                    continue;
+
                 for (pos_t p4 = 0; p4 < lattice.size(); ++p4)
                 {
                     boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
@@ -261,10 +260,9 @@ namespace measurements {
                         for (pos_t p6 = 0; p6 < lattice.size(); ++p6)
                         { 
                             // sixth index must be different if p4 == p5 
-                            if(p4 == p5){
-                               if(p4 == p6)
+                            if(p4 == p5 && p4 == p6)
                                   continue;
-                            }
+
                             pos_t pos_[6] = {p1, p2, p3, p4, p5, p6};
                             std::vector<pos_t> positions(pos_, pos_ + 6);
 
