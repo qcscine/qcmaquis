@@ -161,6 +161,6 @@ private:
 
 };
 
-#include "dmrg/models/chem/su2u1/model_su2.hpp"
+#include "dmrg/models/chem/su2u1/model.hpp"
 
 #endif
