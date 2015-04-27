@@ -29,6 +29,55 @@
 
 namespace generate_mpo
 {
+    // currently not used
+    template <class Matrix, class SymmGroup>
+    std::vector<std::pair<Lattice::pos_t, std::pair<std::vector<typename OPTable<Matrix, SymmGroup>::op_t>, bool> > >
+    arrange_operators(std::vector<Lattice::pos_t> const & positions,
+                      std::vector<std::pair<std::vector<typename OPTable<Matrix, SymmGroup>::op_t>, bool> > const & operators)
+
+    {
+        // input: list of positions and operators
+        // output: list of (position, operator)-pairs, sorted, unique positions with operators multiplied
+        typedef Lattice::pos_t pos_t;
+        typedef typename OPTable<Matrix, SymmGroup>::op_t op_t;
+        typedef std::pair<std::vector<op_t>, bool> site_ops_t;
+        typedef std::pair<pos_t, site_ops_t> pos_op_t;
+
+        std::vector<pos_op_t> pos_ops;
+        // arrange position / operators in pairs
+        std::transform(positions.begin(), positions.end()-1, operators.begin(), std::back_inserter(pos_ops),
+        std::make_pair<pos_t const&, site_ops_t const&>);
+                       // boost::bind(static_cast<pos_op_t(*)(pos_t const&, site_ops_t const&)>
+                       // (std::make_pair<pos_t, site_ops_t>), boost::lambda::_1, boost::lambda::_2));
+
+        std::stable_sort(pos_ops.begin(), pos_ops.end(), compare<pos_op_t>);
+
+        for (size_t opnr = 0; opnr < pos_ops.size(); )
+        {
+            site_ops_t product = pos_ops[opnr].second;
+            size_t range_end = opnr+1;
+
+            // while the next operator is still on the same site
+            while (range_end < pos_ops.size() && pos_ops[range_end].first == pos_ops[opnr].first) {
+                // multiply operators for all irreps (types)
+                for (size_t type=0; type < pos_ops[opnr].second.first.size(); ++type) {
+                    op_t tmp;
+                    gemm(pos_ops[range_end].second.first[type], product.first[type], tmp);
+                    product.first[type] = tmp;
+                }
+                // set the fermion or boson for the product operator
+                product.second = (pos_ops[range_end].second.second != product.second);
+                range_end++;
+            }
+            for (size_t r=opnr; r < range_end; ++r)
+                pos_ops[r].second = product;
+
+            opnr = range_end;
+        }
+        return pos_ops;
+    }
+
+
     template <class Matrix, class SymmGroup>
     term_descriptor<typename Matrix::value_type>
     arrange_operators(std::vector<Lattice::pos_t> const & positions,
