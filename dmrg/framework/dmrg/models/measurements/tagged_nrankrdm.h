@@ -269,6 +269,7 @@ namespace measurements {
                             // Loop over operator terms that are measured synchronously and added together
                             // Used e.g. for the four spin combos of the 2-RDM
                             typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
+                            typename MPS<Matrix, SymmGroup>::scalar_type iszero = 0;
                             for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
 
                                 tag_vec operators(6);
@@ -282,7 +283,52 @@ namespace measurements {
                                 //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
                                 MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
                                 value += expval(bra_mps, ket_mps, mpo);
+
+                                if(synop > 1){
+                                    pos_t pos_local_[6] = {p1, p3, p2, p4, p6, p5};
+                                    std::vector<pos_t> positions_local(pos_local_, pos_local_ + 6);
+                                    operators[0] = operator_terms[synop][0][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
+                                    operators[1] = operator_terms[synop][1][lattice.get_prop<typename SymmGroup::subcharge>("type", p3)];
+                                    operators[2] = operator_terms[synop][2][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
+                                    operators[3] = operator_terms[synop][3][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
+                                    operators[4] = operator_terms[synop][4][lattice.get_prop<typename SymmGroup::subcharge>("type", p6)];
+                                    operators[5] = operator_terms[synop][5][lattice.get_prop<typename SymmGroup::subcharge>("type", p5)];
+                                    //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
+                                    MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions_local, operators, identities, fillings, tag_handler_local, lattice);
+                                    value += expval(bra_mps, ket_mps, mpo);
+                                }
+
+                                if(synop == 2){
+                                    pos_t pos_local_[6] = {p2, p3, p1, p5, p6, p4};
+                                    std::vector<pos_t> positions_local(pos_local_, pos_local_ + 6);
+                                    operators[0] = operator_terms[synop][0][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
+                                    operators[1] = operator_terms[synop][1][lattice.get_prop<typename SymmGroup::subcharge>("type", p3)];
+                                    operators[2] = operator_terms[synop][2][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
+                                    operators[3] = operator_terms[synop][3][lattice.get_prop<typename SymmGroup::subcharge>("type", p5)];
+                                    operators[4] = operator_terms[synop][4][lattice.get_prop<typename SymmGroup::subcharge>("type", p6)];
+                                    operators[5] = operator_terms[synop][5][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
+                                    //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
+                                    MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions_local, operators, identities, fillings, tag_handler_local, lattice);
+                                    value += expval(bra_mps, ket_mps, mpo);
+                                }
+                                else if(synop == 3){
+                                    pos_t pos_local_[6] = {p3, p2, p1, p6, p5, p4};
+                                    std::vector<pos_t> positions_local(pos_local_, pos_local_ + 6);
+                                    operators[0] = operator_terms[synop][0][lattice.get_prop<typename SymmGroup::subcharge>("type", p3)];
+                                    operators[1] = operator_terms[synop][1][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
+                                    operators[2] = operator_terms[synop][2][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
+                                    operators[3] = operator_terms[synop][3][lattice.get_prop<typename SymmGroup::subcharge>("type", p6)];
+                                    operators[4] = operator_terms[synop][4][lattice.get_prop<typename SymmGroup::subcharge>("type", p5)];
+                                    operators[5] = operator_terms[synop][5][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
+                                    //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
+                                    MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions_local, operators, identities, fillings, tag_handler_local, lattice);
+                                    value += expval(bra_mps, ket_mps, mpo);
+                                }
+
                             }
+                            //if(value > iszero){
+                                 maquis::cout << " " << p1 << " " << p2 << " " << p3 << " " << p4 << " " << p5 << " " << p6 << " " << "   " << value << std::endl;
+                            //}
 
                             dct.push_back(value);
                             num_labels.push_back(positions);
