@@ -112,7 +112,47 @@ public:
     
     measurements_type measurements () const
     {
+        typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+
         measurements_type meas;
+
+        typedef std::vector<tag_type> tag_vec;
+        typedef std::vector<tag_vec> bond_element;
+
+        boost::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
+        boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
+        boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
+        boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
+        boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
+        boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
+        boost::regex expression_threeptdm("^MEASURE_THREEPTDM(.*)$");
+        boost::smatch what;
+
+        for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
+            std::string lhs = it->key();
+
+            std::string name, value;
+            if (boost::regex_match(lhs, what, expression_twoptdm) ||
+                boost::regex_match(lhs, what, expression_transition_twoptdm)) {
+
+                name = "twoptdm";
+
+                std::vector<bond_element> synchronous_meas_operators;
+                {
+                    bond_element meas_operators;
+                    meas_operators.push_back(create_fill);
+                    meas_operators.push_back(create);
+                    meas_operators.push_back(destroy_fill);
+                    meas_operators.push_back(destroy);
+                    synchronous_meas_operators.push_back(meas_operators);
+                }
+
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                                                                                    false, positions, ""));
+            }
+        }
+
         return meas;
     }
 
