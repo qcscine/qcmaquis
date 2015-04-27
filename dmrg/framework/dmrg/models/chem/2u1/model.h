@@ -453,6 +453,6 @@ private:
 };
 
 
-#include "dmrg/models/chem/2u1/model_qc.hpp"
+#include "dmrg/models/chem/2u1/model.hpp"
 
 #endif

@@ -24,7 +24,7 @@
  *
  *****************************************************************************/
 
-#include "dmrg/models/chem/rel/rel_model_qc.h"
+#include "dmrg/models/chem/rel/model.h"
 
 template<class Matrix>
 struct coded_model_factory<Matrix, U1DG> {
