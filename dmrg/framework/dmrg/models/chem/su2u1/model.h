@@ -147,9 +147,10 @@ public:
                     synchronous_meas_operators.push_back(meas_operators);
                 }
 
+                std::string bra_ckp("");
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
-                                                                                    false, positions, ""));
+                                                                                    false, positions, bra_ckp));
             }
         }
 
