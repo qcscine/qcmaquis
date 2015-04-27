@@ -43,6 +43,13 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
     storage::setup(parms);
     dmrg_random::engine.seed(parms["seed"]);
     
+    /// Model initialization
+    lat = Lattice(parms);
+    model = Model<Matrix, SymmGroup>(lat, parms);
+    mpo = make_mpo(lat, model);
+    all_measurements = model.measurements();
+    all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
+    
     {
         boost::filesystem::path p(chkpfile);
         if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
@@ -57,7 +64,9 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
                 
                 if (init_site == -1)
                     ++init_sweep;
-                
+
+                model.check_restore_compatible(parms, ar_in);
+
                 maquis::cout << "Restoring state." << std::endl;
                 maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
                 restore = true;
@@ -83,16 +92,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
-    
-    
-    /// Model initialization
-    lat = Lattice(parms);
-    model = Model<Matrix, SymmGroup>(lat, parms);
-    mpo = make_mpo(lat, model);
-    all_measurements = model.measurements();
-    all_measurements << overlap_measurements<Matrix, SymmGroup>(parms);
-    
-    
+
     /// MPS initialization
     if (restore) {
         load(chkpfile, mps);

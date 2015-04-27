@@ -41,6 +41,7 @@
 #include "dmrg/utils/BaseParameters.h"
 
 #include "dmrg/models/chem/util.h"
+#include "dmrg/models/chem/checks.h"
 #include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/pg_util.h"
 #include "dmrg/models/chem/su2u1/chem_helper.h"
@@ -106,6 +107,11 @@ public:
     table_ptr operators_table() const
     {
         return tag_handler;
+    }
+
+    void check_restore_compatible(BaseParameters & parms, storage::archive & ar) const
+    {
+        chem_detail::RestoreCheck<SymmGroup>()(parms, ar);
     }
     
     measurements_type measurements () const
