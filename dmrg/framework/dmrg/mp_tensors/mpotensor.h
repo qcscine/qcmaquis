@@ -40,7 +40,6 @@
 #include "dmrg/models/op_handler.h"
 #include "dmrg/mp_tensors/mpotensor_detail.h"
 
-template <class Matrix, class SymmGroup, class Dummy> class PGSymmetryConverter;
 
 template<class Matrix, class SymmGroup>
 class MPOTensor
@@ -68,7 +67,6 @@ public:
     typedef MPOTensor_detail::row_proxy<typename RowIndex::value_type::const_iterator> row_proxy;
     typedef boost::numeric::ublas::matrix_column<const CSCMatrix> col_proxy;
 
-private:
     typedef std::vector<boost::tuple<std::size_t, std::size_t, tag_type, value_type> > prempo_t;
     typedef SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> spin_desc_t;
     typedef std::vector<spin_desc_t> spin_index;
@@ -111,8 +109,6 @@ public:
     spin_desc_t right_spin(index_type right_index) const;
     spin_index const & row_spin_dim() const;
     spin_index const & col_spin_dim() const;
-
-    friend class PGSymmetryConverter<Matrix, SymmGroup, void>;
 
     mutable std::vector<int> placement_l;
     mutable std::vector<int> placement_r;

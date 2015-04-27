@@ -28,7 +28,6 @@
 #ifndef REL_QC_CHEM_DETAIL_H
 #define REL_QC_CHEM_DETAIL_H
 
-#include "dmrg/models/chem/util.h"
 #include "dmrg/models/chem/parse_integrals.h"
 
 namespace chem_detail {
@@ -42,9 +41,10 @@ namespace chem_detail {
         typedef typename TagHandler<M, S>::tag_type tag_type;
         typedef Lattice::pos_t pos_t;
 
-        RelChemHelper(BaseParameters & parms, Lattice const & lat,
-                   tag_type ident_, tag_type fill_, boost::shared_ptr<TagHandler<M, S> > tag_handler_)
-            : ident(ident_), fill(fill_), tag_handler(tag_handler_)
+        RelChemHelper(BaseParameters & parms, Lattice const & lat_,
+                   std::vector<tag_type> const & ident_, std::vector<tag_type> const & fill_,
+                   boost::shared_ptr<TagHandler<M, S> > tag_handler_)
+            : lat(lat_), ident(ident_), fill(fill_), tag_handler(tag_handler_)
         {
 			boost::tie(idx_, matrix_elements) = parse_integrals<value_type,S>(parms, lat);
 
@@ -76,11 +76,12 @@ namespace chem_detail {
         }
 
         void add_term(std::vector<term_descriptor> & tagterms,
-                      value_type scale, int p1, int p2, tag_type op_1, tag_type op_2) {
+                      value_type scale, int p1, int p2, std::vector<tag_type> const & op_1, std::vector<tag_type> const & op_2) {
 
             term_descriptor
-            term = RelTermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler);
-            IndexTuple id(p1, p2, op_1, op_2);
+            term = TermMaker<M, S>::two_term(false, ident, scale, p1, p2, op_1, op_2, tag_handler, lat);
+            IndexTuple id(p1, p2, op_1[lat.get_prop<typename S::subcharge>("type", p1)],
+                                  op_2[lat.get_prop<typename S::subcharge>("type", p2)]);
             if (two_terms.count(id) == 0) {
                 two_terms[id] = term;
             }
@@ -89,10 +90,12 @@ namespace chem_detail {
         }
 
         void add_term(std::vector<term_descriptor> & tagterms,
-                      value_type scale, int s, int p1, int p2, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j) {
-
+                      value_type scale, int s, int p1, int p2, 
+                      std::vector<tag_type> const & op_i, std::vector<tag_type> const & op_k,
+                      std::vector<tag_type> const & op_l, std::vector<tag_type> const & op_j) 
+        {
             term_descriptor
-            term = RelTermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler);
+            term = TermMaker<M, S>::three_term(ident, fill, scale, s, p1, p2, op_i, op_k, op_l, op_j, tag_handler, lat);
             SixTuple id(term.position(0), term.position(1), term.position(2),
                         term.operator_tag(0), term.operator_tag(1), term.operator_tag(2));
             if (three_terms.count(id) == 0) {
@@ -103,13 +106,18 @@ namespace chem_detail {
         }
 
         void add_term(std::vector<term_descriptor> & tagterms, value_type scale, 
-                      int i, int k, int l, int j, tag_type op_i, tag_type op_k, tag_type op_l, tag_type op_j)
+                      int i, int k, int l, int j,
+                      std::vector<tag_type> const & op_i, std::vector<tag_type> const & op_k,
+                      std::vector<tag_type> const & op_l, std::vector<tag_type> const & op_j)
         {
 			term_descriptor
-			term = RelTermMaker<M, S>::four_term(ident, fill, scale, i, k, l, j, op_i, op_k, op_l, op_j, tag_handler);
+			term = TermMaker<M, S>::four_term(ident, fill, scale, i, k, l, j, op_i, op_k, op_l, op_j, tag_handler, lat);
 			if (i<k) std::swap(i,k);
 			if (j<l) std::swap(j,l);
-			EightTuple id(IndexTuple(i,k,l,j),IndexTuple(op_i,op_k,op_l,op_j));
+			EightTuple id(IndexTuple(i,k,l,j),IndexTuple(op_i[lat.get_prop<typename S::subcharge>("type",i)],
+                                                         op_k[lat.get_prop<typename S::subcharge>("type",k)],
+                                                         op_l[lat.get_prop<typename S::subcharge>("type",l)],
+                                                         op_j[lat.get_prop<typename S::subcharge>("type",j)]));
 			if (four_terms.count(id) == 0) {
 				four_terms[id] = term;
 			}
@@ -119,8 +127,10 @@ namespace chem_detail {
 
     private:
 
-        tag_type ident, fill;
+        std::vector<tag_type> const & ident;
+        std::vector<tag_type> const & fill;
         boost::shared_ptr<TagHandler<M, S> > tag_handler;
+        Lattice const & lat;
 
         std::vector<value_type> matrix_elements;
         alps::numeric::matrix<Lattice::pos_t> idx_;

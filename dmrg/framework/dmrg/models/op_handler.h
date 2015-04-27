@@ -77,6 +77,8 @@ public:
     TagHandler(boost::shared_ptr<OPTable<Matrix, SymmGroup> > tbl_) :
         operator_table(tbl_)
         { }
+
+    TagHandler(TagHandler const & a);
     
     tag_type register_op(const op_t & op_, tag_detail::operator_kind kind);
 

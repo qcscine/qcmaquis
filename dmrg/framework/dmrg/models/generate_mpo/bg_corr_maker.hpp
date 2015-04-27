@@ -31,7 +31,6 @@
 
 namespace generate_mpo
 {
-    
     template <class Matrix, class SymmGroup>
     std::vector<std::pair<Lattice::pos_t, std::pair<std::vector<typename OPTable<Matrix, SymmGroup>::op_t>, bool> > >
     arrange_operators(std::vector<Lattice::pos_t> const & positions,
@@ -78,7 +77,7 @@ namespace generate_mpo
         }
         return pos_ops;
     }
-
+    
     template<class Matrix, class SymmGroup>
     class BgCorrMaker : public CorrMakerBase<Matrix, SymmGroup>
     {
