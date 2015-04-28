@@ -40,38 +40,42 @@
 
 namespace measurements_details {
 
-template <class SymmGroup, class = void>
-class checkpg
-{
-public:
-
-    bool operator()(std::vector<Lattice::pos_t> const & positions, 
-                    const Lattice & lattice)
+    template <class SymmGroup, class = void>
+    class checkpg
     {
-        return true;
-    }
-};
+    public:
 
-template <class SymmGroup>
-class checkpg<SymmGroup, typename boost::enable_if<symm_traits::HasPG<SymmGroup> >::type>
-{
-public:
-    typedef typename SymmGroup::subcharge subcharge;
-    bool operator()(std::vector<Lattice::pos_t> const & positions, 
-                    const Lattice & lattice)
-    {
-        subcharge prod = 0;   
-
-        for (std::size_t mypos = 0; mypos < positions.size(); ++mypos) {
-            prod = SymmGroup::mult_table(prod, lattice.get_prop<subcharge>("type", positions[mypos]));
-        }
-
-        if(prod != 0)
-            return false;
-        else
+        bool operator()(std::vector<Lattice::pos_t> const & positions, 
+                        const Lattice & lattice)
+        {
             return true;
-    }
-};
+        }
+    };
+
+    template <class SymmGroup>
+    class checkpg<SymmGroup, typename boost::enable_if<symm_traits::HasPG<SymmGroup> >::type>
+    {
+    public:
+        typedef typename SymmGroup::charge charge;
+        typedef typename SymmGroup::subcharge subcharge;
+
+        bool operator()(std::vector<Lattice::pos_t> const & positions, 
+                        const Lattice & lattice)
+        {
+            charge product = SymmGroup::IdentityCharge;
+
+            for (std::size_t mypos = 0; mypos < positions.size(); ++mypos) {
+                charge local = SymmGroup::IdentityCharge;
+                SymmGroup::irrep(local) = lattice.get_prop<subcharge>("type", positions[mypos]);
+                product = SymmGroup::fuse(product, local);
+            }
+
+            if(SymmGroup::irrep(product) != 0)
+                return false;
+            else
+                return true;
+        }
+    };
 
 }
 
@@ -323,7 +327,6 @@ namespace measurements {
                             // Loop over operator terms that are measured synchronously and added together
                             // Used e.g. for the spin combos of the 3-RDM
                             typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-                            typename MPS<Matrix, SymmGroup>::scalar_type iszero = 0;
                             for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
 
                                 tag_vec operators(6);
@@ -340,7 +343,11 @@ namespace measurements {
 
                             }
                             // debug print
-                            maquis::cout << " " << p1+1 << " " << p2+1 << " " << p3+1 << " " << p4+1 << " " << p5+1 << " " << p6+1 << " " << "   " << value << std::endl;
+                            if (std::abs(value) > 0)
+                            {
+                                std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
+                                maquis::cout << " " << value << std::endl;
+                            }
 
                             dct.push_back(value);
                             num_labels.push_back(positions);
