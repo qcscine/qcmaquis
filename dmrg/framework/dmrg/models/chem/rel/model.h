@@ -247,7 +247,9 @@ public:
                                                                               half_only, nearest_neighbors_only, positions, bra_ckp));
             }
             else if (!name.empty()) {
-                typedef std::vector<std::vector<tag_type> > bond_tag_element;
+                typedef std::vector<tag_type> tag_vec;
+                typedef std::vector<tag_vec> bond_tag_element;
+                typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
 
                 int f_ops = 0;
                 bond_tag_element meas_operators;
@@ -295,8 +297,8 @@ public:
                                    static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<pos_t, std::string>));
                 }
                 
-                std::vector<bond_tag_element> synchronous_meas_operators;
-                synchronous_meas_operators.push_back(meas_operators);
+                std::vector<scaled_bond_element> synchronous_meas_operators;
+                synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions));
             }
