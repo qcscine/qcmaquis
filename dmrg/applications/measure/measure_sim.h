@@ -43,7 +43,6 @@ template <class Matrix, class SymmGroup>
 class measure_sim : public sim<Matrix, SymmGroup> {
     
     typedef sim<Matrix, SymmGroup> base;
-    typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
     
     using base::mps;
     using base::mpo;

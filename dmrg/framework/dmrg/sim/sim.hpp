@@ -54,7 +54,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         boost::filesystem::path p(chkpfile);
         if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
         {
-            storage::archive ar_in(chkpfile+"/props.h5");
+            storage::archive ar_in(chkpfile+"/props.h5", "r");
             if (ar_in.is_scalar("/status/sweep"))
             {
                 ar_in["/status/sweep"] >> init_sweep;
@@ -65,8 +65,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
                 if (init_site == -1)
                     ++init_sweep;
 
-                model.check_restore_compatible(parms, ar_in);
-
                 maquis::cout << "Restoring state." << std::endl;
                 maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
                 restore = true;
@@ -75,7 +73,13 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
             }
         }
     }
-    
+
+    // perform some safety checks on the state to load
+    if (restore)
+    {
+        storage::archive ar_in(chkpfile+"/props.h5", "r");
+        model.check_restore_compatible(parms, ar_in);
+    }
     
     {
         storage::archive ar(rfile, "w");
@@ -83,6 +87,8 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
+
+    // overwrite the old paramters in the wafefunction with the new ones
     if (!dns)
     {
         if (!boost::filesystem::exists(chkpfile))
