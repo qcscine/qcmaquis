@@ -41,6 +41,7 @@
 #include "dmrg/utils/BaseParameters.h"
 
 #include "dmrg/models/chem/util.h"
+#include "dmrg/models/chem/checks.h"
 #include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/pg_util.h"
 #include "dmrg/models/chem/2u1/term_maker.h"
@@ -123,6 +124,11 @@ public:
     {
         return tag_handler;
     }
+
+    void check_restore_compatible(BaseParameters & parms, storage::archive & ar) const
+    {
+        chem_detail::RestoreCheck<SymmGroup>()(parms, ar);
+    }
     
     measurements_type measurements () const
     {
@@ -145,6 +151,7 @@ public:
 
         typedef std::vector<tag_type> tag_vec;
         typedef std::vector<tag_vec> bond_tag_element;
+        typedef std::pair<std::vector<tag_vec>, value_type> scaled_bond_element;
         {
             boost::regex expression("^MEASURE_LOCAL\\[(.*)]$");
             boost::smatch what;
@@ -218,14 +225,14 @@ public:
                 else
                     name = "twoptdm";
 
-                std::vector<bond_tag_element> synchronous_meas_operators;
+                std::vector<scaled_bond_element> synchronous_meas_operators;
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
-                    synchronous_meas_operators.push_back(meas_operators);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 {
                     bond_tag_element meas_operators;
@@ -233,7 +240,7 @@ public:
                     meas_operators.push_back(create_down);
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_up);
-                    synchronous_meas_operators.push_back(meas_operators);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 {
                     bond_tag_element meas_operators;
@@ -241,7 +248,7 @@ public:
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_down);
-                    synchronous_meas_operators.push_back(meas_operators);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 {
                     bond_tag_element meas_operators;
@@ -249,7 +256,7 @@ public:
                     meas_operators.push_back(create_down);
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_down);
-                    synchronous_meas_operators.push_back(meas_operators);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 half_only = true;
                 std::vector<pos_t> positions;
@@ -262,7 +269,7 @@ public:
                 std::string bra_ckp("");
                 name = "threeptdm";
 
-                std::vector<bond_tag_element> synchronous_meas_operators;
+                std::vector<scaled_bond_element> synchronous_meas_operators;
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
@@ -271,7 +278,7 @@ public:
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
-                    synchronous_meas_operators.push_back(meas_operators);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 {
                     bond_tag_element meas_operators;
@@ -281,7 +288,7 @@ public:
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_down);
-                    synchronous_meas_operators.push_back(meas_operators);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 {
                     bond_tag_element meas_operators;
@@ -291,7 +298,7 @@ public:
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_down);
-                    synchronous_meas_operators.push_back(meas_operators);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 {
                     bond_tag_element meas_operators;
@@ -301,7 +308,47 @@ public:
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_up);
-                    synchronous_meas_operators.push_back(meas_operators);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                 half_only = true;
                 std::vector<pos_t> positions;
@@ -401,8 +448,8 @@ public:
                                    static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<pos_t, std::string>));
                 }
                 
-                std::vector<bond_tag_element> synchronous_meas_operators;
-                synchronous_meas_operators.push_back(meas_operators);
+                std::vector<scaled_bond_element> synchronous_meas_operators;
+                synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions));
             }
