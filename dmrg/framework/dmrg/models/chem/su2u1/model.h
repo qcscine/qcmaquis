@@ -124,6 +124,7 @@ public:
 
         typedef std::vector<tag_type> tag_vec;
         typedef std::vector<tag_vec> bond_element;
+        typedef std::pair<bond_element, value_type> scaled_bond_element;
 
         boost::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
         boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
@@ -143,14 +144,14 @@ public:
 
                 name = "twoptdm";
 
-                std::vector<bond_element> synchronous_meas_operators;
+                std::vector<scaled_bond_element> synchronous_meas_operators;
                 {
                     bond_element meas_operators;
                     meas_operators.push_back(create_fill);
                     meas_operators.push_back(create);
                     meas_operators.push_back(destroy_fill);
                     meas_operators.push_back(destroy);
-                    synchronous_meas_operators.push_back(meas_operators);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
 
                 std::string bra_ckp("");
