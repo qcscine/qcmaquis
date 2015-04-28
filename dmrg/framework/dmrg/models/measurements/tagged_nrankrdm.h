@@ -323,6 +323,7 @@ namespace measurements {
                             // Loop over operator terms that are measured synchronously and added together
                             // Used e.g. for the spin combos of the 3-RDM
                             typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
+                            typename MPS<Matrix, SymmGroup>::scalar_type iszero = 0;
                             for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
 
                                 tag_vec operators(6);
@@ -332,7 +333,7 @@ namespace measurements {
                                 operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
                                 operators[4] = operator_terms[synop].first[4][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[4])];
                                 operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
-                                //
+
                                 //term_descriptor term = generate_mp.firsto::arrange_operators(tag_handler, positions, operators);
                                 MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
                                 value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);

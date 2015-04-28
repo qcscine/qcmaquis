@@ -80,6 +80,8 @@ public:
     virtual table_ptr operators_table() const=0;
     
     virtual initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const;
+
+    virtual void check_restore_compatible(BaseParameters & parms, storage::archive & ar_in) const {}
     
 protected:
     terms_type terms_;
@@ -137,6 +139,8 @@ public:
     table_ptr operators_table() const { return impl_->operators_table(); }
     
     initializer_ptr initializer(Lattice const& lat, BaseParameters & parms) const { return impl_->initializer(lat, parms); }
+
+    void check_restore_compatible(BaseParameters & parms, storage::archive & ar_in) const { impl_->check_restore_compatible(parms, ar_in); }
 
 private:
     impl_ptr impl_;

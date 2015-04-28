@@ -91,12 +91,10 @@ namespace measurements {
                     throw std::runtime_error("The bra checkpoint file " + bra_ckp + " was not found\n");
             }
 
-            if (ops[0].size() == 2)
-                measure_correlation(bra_mps, ket_mps, ops);
-            else if (ops[0].size() == 4)
+            if (ops[0].size() == 4)
                 measure_2rdm(bra_mps, ket_mps, ops);
             else
-                throw std::runtime_error("correlation measurements at the moment supported with 2 and 4 operators");
+                throw std::runtime_error("rel_nrankrdm correlation measurements at the moment supported with 4 operators");
         }
         
     protected:
@@ -107,48 +105,6 @@ namespace measurements {
             return new Rel_NRankRDM(*this);
         }
         
-        void measure_correlation(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
-                                 MPS<Matrix, SymmGroup> const & ket_mps,
-                                 std::vector<bond_element> const & ops,
-                                 std::vector<pos_t> const & order = std::vector<pos_t>())
-        {
-            // Test if a separate bra state has been specified
-            bool bra_neq_ket = (dummy_bra_mps.length() > 0);
-            MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
-
-            // TODO: test with ambient in due time
-            #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for
-            #endif
-            for (std::size_t i = 0; i < positions_first.size(); ++i) {
-                pos_t p = positions_first[i];
-                #ifndef NDEBUG
-                maquis::cout << "  site " << p << std::endl;
-                #endif
-                
-                maker_ptr dcorr(new generate_mpo::BgCorrMaker<Matrix, SymmGroup>(lattice, identities, fillings,
-                                                                                 ops[0], std::vector<pos_t>(1, p)));
-                // measure
-                MPO<Matrix, SymmGroup> mpo = dcorr->create_mpo();
-                std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct = multi_expval(bra_mps, ket_mps, mpo);
-                
-                std::vector<std::vector<pos_t> > num_labels = dcorr->numeric_labels();
-                std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                                            ? measurements::detail::resort_labels(num_labels, order, is_nn) : num_labels );
-                // save results and labels
-                #ifdef MAQUIS_OPENMP
-                #pragma omp critical
-                #endif
-                {
-                this->vector_results.reserve(this->vector_results.size() + dct.size());
-                std::copy(dct.begin(), dct.end(), std::back_inserter(this->vector_results));
-
-                this->labels.reserve(this->labels.size() + dct.size());
-                std::copy(lbt.begin(), lbt.end(), std::back_inserter(this->labels));
-                }
-            }
-        }
-
         void measure_2rdm(MPS<Matrix, SymmGroup> const & dummy_bra_mps,
                           MPS<Matrix, SymmGroup> const & ket_mps,
                           std::vector<bond_element> const & ops,

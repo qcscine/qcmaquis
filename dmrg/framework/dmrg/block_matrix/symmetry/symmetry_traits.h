@@ -45,6 +45,24 @@ namespace symm_traits {
     template <>
     struct SymmType<SU2U1PG> { typedef SU2Tag type; };
 
+
+
+    template <class SymmGroup> 
+    struct HasU1 : public boost::false_type {};
+
+    template <>
+    struct HasU1<U1DG> : public boost::true_type {};
+
+
+    template <class SymmGroup> 
+    struct Has2U1 : public boost::false_type {};
+
+    template <>
+    struct Has2U1<TwoU1> : public boost::true_type {};
+    template <>
+    struct Has2U1<TwoU1PG> : public boost::true_type {};
+
+
     template <class SymmGroup> 
     struct HasSU2 : public boost::false_type {};
 

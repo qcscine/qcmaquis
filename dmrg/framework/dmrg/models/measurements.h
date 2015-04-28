@@ -31,7 +31,6 @@
 #include "dmrg/models/measurements/local.h"
 #include "dmrg/models/measurements/local_at.h"
 #include "dmrg/models/measurements/correlations.h"
-#include "dmrg/models/measurements/nrankrdm.h"
 #include "dmrg/models/measurements/tagged_nrankrdm.h"
 #include "dmrg/models/measurements/rel_nrankrdm.h"
 #include "dmrg/models/measurements/custom.h"

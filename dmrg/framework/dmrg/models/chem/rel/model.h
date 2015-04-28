@@ -42,10 +42,11 @@
 #include "dmrg/utils/BaseParameters.h"
 
 #include "dmrg/models/chem/util.h"
+#include "dmrg/models/chem/checks.h"
 #include "dmrg/models/chem/parse_integrals.h"
 #include "dmrg/models/chem/pg_util.h"
 #include "dmrg/models/chem/2u1/term_maker.h"
-#include "dmrg/models/chem/rel/rel_chem_helper.h"
+#include "dmrg/models/chem/rel/chem_helper.h"
 
 template<class Matrix, class SymmGroup>
 class rel_qc_model : public model_impl<Matrix, SymmGroup>
@@ -129,6 +130,11 @@ public:
     table_ptr operators_table() const
     {
         return tag_handler;
+    }
+
+    void check_restore_compatible(BaseParameters & parms, storage::archive & ar) const
+    {
+        chem_detail::RestoreCheck<SymmGroup>()(parms, ar);
     }
     
     measurements_type measurements () const
@@ -339,6 +345,6 @@ private:
 
 };
 
-#include "dmrg/models/chem/rel/rel_model_qc.hpp"
+#include "dmrg/models/chem/rel/model.hpp"
 
 #endif
