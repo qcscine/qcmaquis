@@ -91,7 +91,6 @@ public:
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    MPO<Matrix, SymmGroup> const & mpo_,
                    BaseParameters & parms_,
-                   Model<Matrix, SymmGroup> const & model,
                    boost::function<bool ()> stop_callback_,
                    int site=0)
     : mps(mps_)
@@ -118,14 +117,6 @@ public:
         boost::split(files, files_, boost::is_any_of(", "));
         for (int n = 0; n < northo; ++n) {
             maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
-
-            // update filename
-            { storage::archive ar(files[n]+"/props.h5", "w");
-              ar["/parameters/chkpfile"] << files[n]; }
-
-            storage::archive ar_in(files[n]+"/props.h5", "r");
-            model.check_restore_compatible(parms, ar_in);
-
             load(files[n], ortho_mps[n]);
             maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
         }

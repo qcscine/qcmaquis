@@ -44,6 +44,7 @@ template <class Matrix, class SymmGroup>
 class mg_meas_sim : public sim<Matrix, SymmGroup> {
     
     typedef sim<Matrix, SymmGroup> base;
+    typedef optimizer_base<Matrix, SymmGroup, storage::disk> opt_base_t;
     typedef typename base::status_type status_type;
 
     enum measure_t {sweep_measure, mg_measure};

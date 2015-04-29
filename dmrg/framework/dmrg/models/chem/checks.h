@@ -40,12 +40,10 @@ namespace chem_detail {
     {
         void operator()(BaseParameters & parms, storage::archive & ar)
         {
-            std::string file; ar["/parameters/chkpfile"] >> file;
-
             int iref;
             ar["/parameters/irrep"] >> iref;
             if( iref != parms["irrep"])
-                throw std::runtime_error("The existing checkpoint file " + file + " has the wrong irrep\n");
+                throw std::runtime_error("The existing checkpoint file has the wrong irrep\n");
         }
     };
 
@@ -59,17 +57,15 @@ namespace chem_detail {
     {
         bool operator()(BaseParameters & parms, storage::archive & ar)
         {
-            std::string file; ar["/parameters/chkpfile"] >> file;
-
             int spin;
             ar["/parameters/spin"] >> spin;
             if( spin != parms["spin"])
-                throw std::runtime_error("The existing checkpoint file " + file + " has the wrong spin\n");
+                throw std::runtime_error("The existing checkpoint file has the wrong spin\n");
 
             int nelec;
             ar["/parameters/nelec"] >> nelec;
             if( nelec != parms["nelec"])
-                throw std::runtime_error("The existing checkpoint file " + file + " has a wrong number of electrons\n");
+                throw std::runtime_error("The existing checkpoint file has a wrong number of electrons\n");
         }
     };
 
@@ -83,17 +79,15 @@ namespace chem_detail {
     {
         bool operator()(BaseParameters & parms, storage::archive & ar)
         {
-            std::string file; ar["/parameters/chkpfile"] >> file;
-
             int u1;
             ar["/parameters/u1_total_charge1"] >> u1;
             if( u1 != parms["u1_total_charge1"])
-                throw std::runtime_error("The existing checkpoint file " + file + " has the wrong number of alpha-electrons\n");
+                throw std::runtime_error("The existing checkpoint file has the wrong number of alpha-electrons\n");
 
             int u2;
             ar["/parameters/u1_total_charge2"] >> u2;
             if( u2 != parms["u1_total_charge2"])
-                throw std::runtime_error("The existing checkpoint file " + file + " has a wrong number of beta-electrons\n");
+                throw std::runtime_error("The existing checkpoint file has a wrong number of beta-electrons\n");
         }
     };
 
@@ -107,12 +101,10 @@ namespace chem_detail {
     {
         bool operator()(BaseParameters & parms, storage::archive & ar)
         {
-            std::string file; ar["/parameters/chkpfile"] >> file;
-
             int u1;
             ar["/parameters/u1_total_charge"] >> u1;
             if( u1 != parms["u1_total_charge"])
-                throw std::runtime_error("The existing checkpoint file " + file + " has the wrong number of electrons\n");
+                throw std::runtime_error("The existing checkpoint file has the wrong number of electrons\n");
         }
     };
 
@@ -121,13 +113,11 @@ namespace chem_detail {
     {
         void operator()(BaseParameters & parms, storage::archive & ar)
         {
-            std::string file; ar["/parameters/chkpfile"] >> file;
-
             std::string sym;
             ar["/parameters/symmetry"] >> sym;
             if (sym != parms["symmetry"])
             {
-                throw std::runtime_error("The existing checkpoint file " + file + " has wrong symmetry group " + sym + "\n");
+                throw std::runtime_error("The existing checkpoint file has wrong symmetry group " + sym + "\n");
             }
 
             check_irrep<SymmGroup>()(parms, ar);
