@@ -52,6 +52,7 @@
 #include "dmrg/utils/random.hpp"
 #include "dmrg/utils/time_stopper.h"
 #include "utils/timings.h"
+#include "dmrg/utils/checks.hpp"
 
 #include "dmrg/models/lattice.h"
 #include "dmrg/models/model.h"

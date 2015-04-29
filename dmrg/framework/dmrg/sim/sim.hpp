@@ -65,8 +65,6 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
                 if (init_site == -1)
                     ++init_sweep;
 
-                model.check_restore_compatible(parms, ar_in);
-
                 maquis::cout << "Restoring state." << std::endl;
                 maquis::cout << "Will start again at site " << init_site << " in sweep " << init_sweep << std::endl;
                 restore = true;
@@ -75,8 +73,28 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
             }
         }
     }
+
+    /// MPS initialization
+    if (restore) {
+
+        maquis::checks::symmetry_check(parms, chkpfile);
+        load(chkpfile, mps);
+        maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
+
+    } else if (!parms["initfile"].empty()) {
+        maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
+
+        maquis::checks::symmetry_check(parms, parms["initfile"].str());
+        load(parms["initfile"].str(), mps);
+        maquis::checks::right_end_check(parms["initfile"].str(), mps, model.total_quantum_numbers(parms));
+
+    } else {
+        mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
+    }
+
+    assert(mps.length() == lat.size());
     
-    
+    /// Update parameters - after checks have passed
     {
         storage::archive ar(rfile, "w");
         
@@ -92,20 +110,8 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
-
-    /// MPS initialization
-    if (restore) {
-        load(chkpfile, mps);
-    } else if (!parms["initfile"].empty()) {
-        maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
-        load(parms["initfile"].str(), mps);
-    } else {
-        mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
-    }
     
-    assert(mps.length() == lat.size());
     maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
-    
 }
 
 template <class Matrix, class SymmGroup>
