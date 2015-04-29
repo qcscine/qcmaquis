@@ -46,6 +46,7 @@
 #include "dmrg/utils/storage.h"
 #include "dmrg/utils/time_limit_exception.h"
 #include "dmrg/utils/parallel/placement.hpp"
+#include "dmrg/utils/checks.hpp"
 
 template<class Matrix, class SymmGroup>
 struct SiteProblem
@@ -91,7 +92,6 @@ public:
     optimizer_base(MPS<Matrix, SymmGroup> & mps_,
                    MPO<Matrix, SymmGroup> const & mpo_,
                    BaseParameters & parms_,
-                   Model<Matrix, SymmGroup> const & model,
                    boost::function<bool ()> stop_callback_,
                    int site=0)
     : mps(mps_)
@@ -108,7 +108,6 @@ public:
         northo = parms_["n_ortho_states"];
         maquis::cout << "Expecting " << northo << " states to orthogonalize to." << std::endl;
 
-        //if (northo > 0 && parms_["ortho_states"]=="")
         if (northo > 0 && !parms_.is_set("ortho_states"))
             throw std::runtime_error("Parameter \"ortho_states\" is not set\n");
 
@@ -119,14 +118,10 @@ public:
         for (int n = 0; n < northo; ++n) {
             maquis::cout << "Loading ortho state " << n << " from " << files[n] << std::endl;
 
-            // update filename
-            { storage::archive ar(files[n]+"/props.h5", "w");
-              ar["/parameters/chkpfile"] << files[n]; }
-
-            storage::archive ar_in(files[n]+"/props.h5", "r");
-            model.check_restore_compatible(parms, ar_in);
-
+            maquis::checks::symmetry_check(parms, files[n]);
             load(files[n], ortho_mps[n]);
+            maquis::checks::right_end_check(files[n], ortho_mps[n], mps[mps.length()-1].col_dim()[0].first);
+
             maquis::cout << "Right end: " << ortho_mps[n][mps.length()-1].col_dim() << std::endl;
         }
         

@@ -54,7 +54,7 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         boost::filesystem::path p(chkpfile);
         if (boost::filesystem::exists(p) && boost::filesystem::exists(p / "mps0.h5"))
         {
-            storage::archive ar_in(chkpfile+"/props.h5", "r");
+            storage::archive ar_in(chkpfile+"/props.h5");
             if (ar_in.is_scalar("/status/sweep"))
             {
                 ar_in["/status/sweep"] >> init_sweep;
@@ -74,21 +74,33 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         }
     }
 
-    // perform some safety checks on the state to load
-    if (restore)
-    {
-        storage::archive ar_in(chkpfile+"/props.h5", "r");
-        model.check_restore_compatible(parms, ar_in);
+    /// MPS initialization
+    if (restore) {
+
+        maquis::checks::symmetry_check(parms, chkpfile);
+        load(chkpfile, mps);
+        maquis::checks::right_end_check(chkpfile, mps, model.total_quantum_numbers(parms));
+
+    } else if (!parms["initfile"].empty()) {
+        maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
+
+        maquis::checks::symmetry_check(parms, parms["initfile"].str());
+        load(parms["initfile"].str(), mps);
+        maquis::checks::right_end_check(parms["initfile"].str(), mps, model.total_quantum_numbers(parms));
+
+    } else {
+        mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
     }
+
+    assert(mps.length() == lat.size());
     
+    /// Update parameters - after checks have passed
     {
         storage::archive ar(rfile, "w");
         
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
-
-    // overwrite the old paramters in the wafefunction with the new ones
     if (!dns)
     {
         if (!boost::filesystem::exists(chkpfile))
@@ -98,20 +110,8 @@ sim<Matrix, SymmGroup>::sim(DmrgParameters const & parms_)
         ar["/parameters"] << parms;
         ar["/version"] << DMRG_VERSION_STRING;
     }
-
-    /// MPS initialization
-    if (restore) {
-        load(chkpfile, mps);
-    } else if (!parms["initfile"].empty()) {
-        maquis::cout << "Loading init state from " << parms["initfile"] << std::endl;
-        load(parms["initfile"].str(), mps);
-    } else {
-        mps = MPS<Matrix, SymmGroup>(lat.size(), *(model.initializer(lat, parms)));
-    }
     
-    assert(mps.length() == lat.size());
     maquis::cout << "MPS initialization has finished...\n"; // MPS restored now
-    
 }
 
 template <class Matrix, class SymmGroup>
