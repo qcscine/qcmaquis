@@ -169,11 +169,11 @@ public:
             {
                 int prec = maquis::cout.precision();
                 maquis::cout.precision(15);
-                maquis::cout << "Energy " << lr << " " << res.first << std::endl;
+                maquis::cout << "Energy " << lr << " " << res.first + mpo.getCoreEnergy()<< std::endl;
                 maquis::cout.precision(prec);
             }
             
-            iteration_results_["Energy"] << res.first;
+            iteration_results_["Energy"] << res.first + mpo.getCoreEnergy();
             
             double alpha;
             int ngs = parms.template get<int>("ngrowsweeps"), nms = parms.template get<int>("nmainsweeps");
