@@ -198,13 +198,13 @@ private:
         if (parms["optimization"] == "singlesite")
         {
             optimizer.reset( new ss_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mpoc, parms, base::model, stop_callback, init_sweep, init_site) );
+                            (mps, mpoc, parms, stop_callback, init_sweep, init_site) );
         }
         
         else if(parms["optimization"] == "twosite")
         {
             optimizer.reset( new ts_optimize<Matrix, SymmGroup, storage::disk>
-                            (mps, mpoc, parms, base::model, stop_callback, init_sweep, init_site) );
+                            (mps, mpoc, parms, stop_callback, init_sweep, init_site) );
         }
         else {
             throw std::runtime_error("Don't know this optimizer");

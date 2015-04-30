@@ -53,10 +53,9 @@ public:
     ts_optimize(MPS<Matrix, SymmGroup> & mps_,
                 MPO<Matrix, SymmGroup> const & mpo_,
                 BaseParameters & parms_,
-                Model<Matrix, SymmGroup> const & model,
                 boost::function<bool ()> stop_callback_,
                 int initial_site_ = 0)
-    : base(mps_, mpo_, parms_, model, stop_callback_, to_site(mps_.length(), initial_site_))
+    : base(mps_, mpo_, parms_, stop_callback_, to_site(mps_.length(), initial_site_))
     , initial_site((initial_site_ < 0) ? 0 : initial_site_)
     {
         parallel::guard::serial guard;
@@ -200,10 +199,10 @@ public:
             {
                 int prec = maquis::cout.precision();
                 maquis::cout.precision(15);
-                maquis::cout << "Energy " << lr << " " << res.first << std::endl;
+                maquis::cout << "Energy " << lr << " " << res.first + mpo.getCoreEnergy() << std::endl;
                 maquis::cout.precision(prec);
             }
-            iteration_results_["Energy"] << res.first;
+            iteration_results_["Energy"] << res.first + mpo.getCoreEnergy();
             
             
             double alpha;

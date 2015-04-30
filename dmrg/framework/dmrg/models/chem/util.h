@@ -67,6 +67,32 @@ namespace chem_detail {
         }
     };
 
+    template <>
+    struct qn_helper<SU2U1>
+    {
+        SU2U1::charge total_qn(BaseParameters & parms)
+        {
+            SU2U1::charge ret(0);
+            ret[0] = parms["nelec"];
+            ret[1] = parms["spin"];
+            return ret;
+        }
+    };
+
+    template <>
+    struct qn_helper<SU2U1PG>
+    {
+        SU2U1PG::charge total_qn(BaseParameters & parms)
+        {
+            SU2U1PG::charge ret(0);
+            ret[0] = parms["nelec"];
+            ret[1] = parms["spin"];
+            ret[2] = parms["irrep"];
+            return ret;
+        }
+    };
+
+
     class IndexTuple : public NU1Charge<4>
     {
     public:
