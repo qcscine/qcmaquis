@@ -45,8 +45,8 @@ namespace measurements_details {
     {
     public:
 
-        bool operator()(std::vector<Lattice::pos_t> const & positions, 
-                        const Lattice & lattice)
+        template <class Integer, class Matrix>
+        bool operator()(std::vector<Integer> const & operators, boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler) 
         {
             return true;
         }
@@ -59,21 +59,22 @@ namespace measurements_details {
         typedef typename SymmGroup::charge charge;
         typedef typename SymmGroup::subcharge subcharge;
 
-        bool operator()(std::vector<Lattice::pos_t> const & positions, 
-                        const Lattice & lattice)
+        template <class Integer, class Matrix>
+        bool operator()(std::vector<Integer> const & operators, boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler) 
         {
-            charge product = SymmGroup::IdentityCharge;
+            typedef typename TagHandler<Matrix, SymmGroup>::op_t op_t;
 
-            for (std::size_t mypos = 0; mypos < positions.size(); ++mypos) {
-                charge local = SymmGroup::IdentityCharge;
-                SymmGroup::irrep(local) = lattice.get_prop<subcharge>("type", positions[mypos]);
-                product = SymmGroup::fuse(product, local);
+            op_t product = tag_handler->get_op(operators[0]);
+            for (std::size_t p = 1; p < operators.size(); ++p) {
+                op_t tmp;
+                gemm(product, tag_handler->get_op(operators[p]), tmp);
+                swap(tmp, product);
             }
 
-            if(SymmGroup::irrep(product) != 0)
-                return false;
-            else
+            if(product.left_basis() == product.right_basis())
                 return true;
+            else
+                return false;
         }
     };
 
@@ -176,13 +177,13 @@ namespace measurements {
                     pos_t pos_[2] = {p1, p2};
                     std::vector<pos_t> positions(pos_, pos_ + 2);
 
-                    // check if term is allowed by symmetry
-                    if(not measurements_details::checkpg<SymmGroup>()(positions, lattice))
-                           continue;
-
                     tag_vec operators(2);
                     operators[0] = operator_terms[0].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
                     operators[1] = operator_terms[0].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
+
+                    // check if term is allowed by symmetry
+                    if(not measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local))
+                           continue;
                     
                     //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
                     MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
@@ -241,10 +242,6 @@ namespace measurements {
                         pos_t pos_[4] = {p1, p2, p3, p4};
                         std::vector<pos_t> positions(pos_, pos_ + 4);
 
-                        // check if term is allowed by symmetry
-                        if(not measurements_details::checkpg<SymmGroup>()(positions, lattice))
-                               continue;
-
                         // Loop over operator terms that are measured synchronously and added together
                         // Used e.g. for the four spin combos of the 2-RDM
                         typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
@@ -255,6 +252,10 @@ namespace measurements {
                             operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
                             operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", p3)];
                             operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
+
+                            // check if term is allowed by symmetry
+                            if(not measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local))
+                                   continue;
                             
                             //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
                             MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
@@ -320,10 +321,6 @@ namespace measurements {
                             pos_t pos_[6] = {p1, p2, p3, p4, p5, p6};
                             std::vector<pos_t> positions(pos_, pos_ + 6);
 
-                            // check if term is allowed by symmetry
-                            if(not measurements_details::checkpg<SymmGroup>()(positions, lattice))
-                                  continue;
-
                             // Loop over operator terms that are measured synchronously and added together
                             // Used e.g. for the spin combos of the 3-RDM
                             typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
@@ -336,6 +333,10 @@ namespace measurements {
                                 operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
                                 operators[4] = operator_terms[synop].first[4][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[4])];
                                 operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
+
+                                // check if term is allowed by symmetry
+                                if(not measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local))
+                                      continue;
 
                                 //term_descriptor term = generate_mp.firsto::arrange_operators(tag_handler, positions, operators);
                                 MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
