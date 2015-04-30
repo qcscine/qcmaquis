@@ -35,7 +35,6 @@ def assemble_halfcorr(diag, triang):
        triang: upper triangle, sequential reversed rows"""
 
     L = len(diag)
-    assert((L-1)*L/2 == len(triang.y[0]))
 
     ret = np.zeros((L,L))
 
@@ -48,15 +47,6 @@ def assemble_halfcorr(diag, triang):
         j = lab[1]
         ret[i,j] = val
         ret[j,i] = val
-
-    # set upper triangle
-    #offset = 0
-    #for i in range(L):
-    #    for j,s in zip(range(i+1,L), reversed(range(offset, offset + L-1-i))):
-    #        ret[i,j] = triang[s]
-    #        ret[j,i] = triang[s]
-
-    #    offset += L-1-i
 
     return ret
 
