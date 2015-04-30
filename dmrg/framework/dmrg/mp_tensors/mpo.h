@@ -420,6 +420,12 @@ public:
     {
         throw std::runtime_error("MPO compression for SU2 not implemented\n");
     }
+
+    void setCoreEnergy(typename Matrix::value_type e) { core_energy = e; }
+    typename Matrix::value_type getCoreEnergy() const { return core_energy; }
+
+private:
+    typename Matrix::value_type core_energy;
 };
 
 #endif
