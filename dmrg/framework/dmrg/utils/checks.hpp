@@ -31,16 +31,29 @@
 #include "dmrg/utils/DmrgParameters.h"
 #include "dmrg/mp_tensors/mps.h"
 
+std::string guess_alps_symmetry(BaseParameters & parms);
+
 namespace maquis {
 namespace checks {
 
     inline void symmetry_check(BaseParameters & parms, std::string chkpfile)
     {
-        std::string sym;
         storage::archive ar_in(chkpfile+"/props.h5");
-        ar_in["/parameters/symmetry"] >> sym;
-        if (sym != parms["symmetry"])
-            throw std::runtime_error("The existing checkpoint file " + chkpfile +  " has the wrong symmetry group " + sym + "\n");
+        BaseParameters chkp_parms;
+        ar_in["/parameters"] >> chkp_parms;
+
+        std::string chkp_sym, parm_sym;
+        if (chkp_parms.defined("symmetry")) {
+            chkp_sym = chkp_parms["symmetry"].str();
+            parm_sym = parms["symmetry"].str();
+        }
+        else {
+            chkp_sym = guess_alps_symmetry(chkp_parms);
+            parm_sym = guess_alps_symmetry(parms);
+        }
+
+        if (chkp_sym != parm_sym)
+            throw std::runtime_error("The existing checkpoint file " + chkpfile +  " has the wrong symmetry group " + chkp_sym + "\n");
     }
 
     template <class Matrix, class SymmGroup>

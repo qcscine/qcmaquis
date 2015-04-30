@@ -42,6 +42,7 @@ public:
     
     MPO(std::size_t L, elem_type elem = elem_type())
     : std::vector<elem_type>(L, elem)
+    , core_energy(0)
     { }
     
     std::size_t length() const { return this->size(); }
@@ -70,10 +71,14 @@ public:
             maquis::cout << bond_indices[p+1].sum_of_sizes() << std::endl;
         }
     }
+
+    void setCoreEnergy(typename Matrix::value_type e) { core_energy = e; }
+    typename Matrix::value_type getCoreEnergy() const { return core_energy; }
     
 private:
     std::vector<std::map<std::size_t, typename SymmGroup::charge> > bond_index_charges;
     std::vector<Index<SymmGroup> > bond_indices;
+    typename Matrix::value_type core_energy;
     
     void calc_charges()
     {

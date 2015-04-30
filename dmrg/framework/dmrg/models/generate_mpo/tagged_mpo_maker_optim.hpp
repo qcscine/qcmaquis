@@ -51,9 +51,6 @@ namespace generate_mpo
         
         template <typename pos_t, typename tag_type, typename index_type>
         struct prempo_key {
-//            typedef Lattice::pos_t pos_t;
-//            typedef tag_detail::tag_type tag_type;
-//            typedef unsigned index_type;
             typedef std::pair<pos_t, tag_type> pos_op_type;
             enum kind_type {trivial_left, bulk, bulk_no_merge, trivial_right};
             
@@ -122,6 +119,7 @@ namespace generate_mpo
         , trivial_right(prempo_key_type::trivial_right)
         , leftmost_right(length)
         , finalized(false)
+        , core_energy(0.)
         {
             for (size_t p = 0; p < length-1; ++p)
                 prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(model.identity_matrix_tag(lat.get_prop<int>("type",p)), 1.);
@@ -219,6 +217,7 @@ namespace generate_mpo
                 swap(left_spins, right_spins);
             }
             
+            mpo.setCoreEnergy(core_energy);
             return mpo;
         }
         
@@ -227,11 +226,16 @@ namespace generate_mpo
         {
             assert(term.size() == 1);
             
-            /// retrieve the actual operator from the tag table
-            // TODO implement plus operation
-            op_t current_op = tag_handler->get_op(term.operator_tag(0));
-            current_op *= term.coeff;
-            site_terms[term.position(0)] += current_op;
+            /// Due to numerical instability: treat the core energy separately
+            if (term.operator_tag(0) == model.identity_matrix_tag(term.position(0)))
+                core_energy += term.coeff;
+
+            else {
+                /// retrieve the actual operator from the tag table
+                op_t current_op = tag_handler->get_op(term.operator_tag(0));
+                current_op *= term.coeff;
+                site_terms[term.position(0)] += current_op;
+            }
         }
         
         void add_2term(term_descriptor const& term)
@@ -473,6 +477,7 @@ namespace generate_mpo
         
         pos_t leftmost_right;
         bool finalized;
+        scale_type core_energy;
     };
 
 }
