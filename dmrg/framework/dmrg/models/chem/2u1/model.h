@@ -176,6 +176,7 @@ public:
         boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
         boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
         boost::regex expression_threeptdm("^MEASURE_THREEPTDM(.*)$");
+        boost::regex expression_transition_threeptdm("^MEASURE_TRANSITION_THREEPTDM(.*)$");
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -258,10 +259,16 @@ public:
                                                                                     half_only, positions, bra_ckp));
             }
 
-            else if (boost::regex_match(lhs, what, expression_threeptdm)) {
+            else if (boost::regex_match(lhs, what, expression_threeptdm) || 
+                     boost::regex_match(lhs, what, expression_transition_threeptdm)) {
 
                 std::string bra_ckp("");
-                name = "threeptdm";
+                if(lhs == "MEASURE_TRANSITION_THREEPTDM"){
+                    name = "transition_threeptdm";
+                    bra_ckp = it->value();
+                }
+                else
+                    name = "threeptdm";
 
                 std::vector<scaled_bond_element> synchronous_meas_operators;
                 {
