@@ -299,8 +299,7 @@ namespace measurements {
             {
                 pos_t subref = std::min(p1, p2);
 
-                //for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
-                for (pos_t p3 = 0; p3 < lattice.size(); ++p3)
+                for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
                 {
                     if(p1 == p2 && p1 == p3)
                         continue;
@@ -310,15 +309,12 @@ namespace measurements {
                         boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
                         for (pos_t p5 = 0; p5 < lattice.size(); ++p5)
-                        //for (pos_t p5 = 0; p5 <= p4; ++p5)
-                        //for (pos_t p5 = p4; p5 < lattice.size(); ++p5)
                         { 
                             std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                             std::vector<std::vector<pos_t> > num_labels;
 
-                            //pos_t subsubref = std::min(p4, p5);
-                            //for (pos_t p6 = subsubref; p6 < lattice.size(); ++p6)
-                            for (pos_t p6 = 0; p6 < lattice.size(); ++p6)
+                            pos_t subsubref = std::min(p4, p5);
+                            for (pos_t p6 = subsubref; p6 < lattice.size(); ++p6)
                             { 
                                 // sixth index must be different if p4 == p5 
                                 if(p4 == p5 && p4 == p6)
