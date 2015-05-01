@@ -339,10 +339,6 @@ namespace measurements {
                                     pos_t pos_[6] = {p1, p2, p3, p4, p5, p6};
                                     std::vector<pos_t> positions(pos_, pos_ + 6);
 
-                                    // check if term is allowed by symmetry
-                                    if(not measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local))
-                                          continue;
-
                                     // Loop over operator terms that are measured synchronously and added together
                                     // Used e.g. for the spin combos of the 3-RDM
                                     typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
@@ -355,6 +351,10 @@ namespace measurements {
                                         operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
                                         operators[4] = operator_terms[synop].first[4][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[4])];
                                         operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
+
+                                        // check if term is allowed by symmetry
+                                        if(not measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local))
+                                             continue;
 
                                         //term_descriptor term = generate_mp.firsto::arrange_operators(tag_handler, positions, operators);
                                         MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
