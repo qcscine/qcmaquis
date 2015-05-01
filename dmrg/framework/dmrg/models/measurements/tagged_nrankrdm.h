@@ -340,7 +340,7 @@ namespace measurements {
                                     std::vector<pos_t> positions(pos_, pos_ + 6);
 
                                     // check if term is allowed by symmetry
-                                    if(not measurements_details::checkpg<SymmGroup>()(positions, lattice))
+                                    if(not measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local))
                                           continue;
 
                                     // Loop over operator terms that are measured synchronously and added together
