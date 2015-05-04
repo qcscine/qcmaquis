@@ -163,10 +163,14 @@ namespace generate_mpo
         typedef term_descriptor<typename Matrix::value_type> term_descriptor;
         typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
         typename MPOTensor<Matrix, SymmGroup>::prempo_t prempo;
+        typedef SpinDescriptor<typename symm_traits::SymmType<SymmGroup>::type> spin_desc_t;
 
         using boost::tuples::get;
 
         MPO<Matrix, SymmGroup> ret(lat.size());
+
+        std::vector<spin_desc_t> left_spins(1);
+        left_spins[0] = spin_desc_t();
 
         bool carry_sign = false;
         for (pos_t p = 0; p < lat.size(); ++p)
@@ -190,20 +194,24 @@ namespace generate_mpo
                 // update the phase
                 if (tag_handler->is_fermionic(product)) carry_sign = !carry_sign;
 
+                std::vector<spin_desc_t> right_spins(1);
+                right_spins[0] = couple(left_spins[0], tag_handler->get_op(product).spin());
+
                 prempo.push_back(boost::make_tuple(0,0, product, 1.));
-                ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table()); 
+                ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table(), left_spins, right_spins); 
+                std::swap(left_spins, right_spins);
             }
 
             else if (carry_sign) // if no
             {
                 prempo.push_back(boost::make_tuple(0,0, fill[lat.get_prop<sc>("type", p)], 1.));
-                ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table()); 
+                ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table(), left_spins, left_spins); 
             }
 
             else
             {
                 prempo.push_back(boost::make_tuple(0,0, ident[lat.get_prop<sc>("type", p)], 1.));
-                ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table()); 
+                ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table(), left_spins, left_spins); 
             }
 
         }
