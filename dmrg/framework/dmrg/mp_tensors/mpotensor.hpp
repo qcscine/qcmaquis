@@ -107,14 +107,14 @@ bool MPOTensor<Matrix, SymmGroup>::has(index_type left_index,
 template<class Matrix, class SymmGroup>
 typename MPOTensor<Matrix, SymmGroup>::spin_desc_t MPOTensor<Matrix, SymmGroup>::left_spin(index_type left_index) const
 {
-    assert(left_index < left_i);
+    assert(left_index < left_spins.size());
     return left_spins[left_index];
 }
 
 template<class Matrix, class SymmGroup>
 typename MPOTensor<Matrix, SymmGroup>::spin_desc_t MPOTensor<Matrix, SymmGroup>::right_spin(index_type right_index) const
 {
-    assert(right_index < right_i);
+    assert(right_index < right_spins.size());
     return right_spins[right_index];
 }
 
