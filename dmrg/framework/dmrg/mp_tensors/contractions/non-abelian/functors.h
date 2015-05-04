@@ -40,7 +40,7 @@ namespace SU2 {
                         block_matrix<Matrix2, SymmGroup> const & B,
                         block_matrix<Matrix3, SymmGroup> & C)
         {
-            SU2::gemm(A,B,C);
+            gemm(A,B,C);
         }
     };
 
