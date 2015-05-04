@@ -32,34 +32,6 @@
 namespace SU2 {
 
     template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
-    void gemm(block_matrix<Matrix1, SymmGroup> const & A,
-              block_matrix<Matrix2, SymmGroup> const & B,
-              block_matrix<Matrix3, SymmGroup> & C)
-    {
-        typedef typename SymmGroup::charge charge;
-        typedef typename DualIndex<SymmGroup>::const_iterator const_iterator;
-
-        C.clear();
-        assert(B.basis().is_sorted());
-
-        const_iterator B_begin = B.basis().begin();
-        const_iterator B_end = B.basis().end();
-        for (std::size_t k = 0; k < A.n_blocks(); ++k) {
-
-            charge ar = A.basis().right_charge(k);
-            const_iterator it = B.basis().left_lower_bound(ar);
-
-            for ( ; it != B_end && it->lc == ar; ++it)
-            {
-                std::size_t matched_block = std::distance(B_begin, it);
-                Matrix3 tmp(num_rows(A[k]), it->rs);
-                gemm(A[k], B[matched_block], tmp);
-                C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
-            }
-        }
-    }
-
-    template<class Matrix1, class Matrix2, class Matrix3, class SymmGroup>
     void gemm_trim_left(block_matrix<Matrix1, SymmGroup> const & A,
                         block_matrix<Matrix2, SymmGroup> const & B,
                         block_matrix<Matrix3, SymmGroup> & C)

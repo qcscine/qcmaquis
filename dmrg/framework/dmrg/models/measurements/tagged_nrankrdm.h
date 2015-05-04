@@ -71,10 +71,14 @@ namespace measurements_details {
                 swap(tmp, product);
             }
 
-            if(product.left_basis() == product.right_basis())
+            if(product.basis().size() > 0)
+                for (std::size_t p = 0; p < product.basis().size(); ++p) {
+                    if (product.basis().left_charge(p) != product.basis().right_charge(p))
+                        return false;
+                }
                 return true;
-            else
-                return false;
+            
+            return false;
         }
     };
 

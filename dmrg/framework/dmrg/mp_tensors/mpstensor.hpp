@@ -232,7 +232,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_left(DecompMethod method,
             assert(data().left_basis() == U.left_basis());
             
             swap(data(), U);
-            SU2::gemm(S, V, U);
+            gemm(S, V, U);
 
             cur_normalization = Lnorm;
             return U;
@@ -273,7 +273,7 @@ MPSTensor<Matrix, SymmGroup>::normalize_right(DecompMethod method,
             assert(data().right_basis() == V.right_basis());
             swap(data(), V);
 
-            SU2::gemm(U, S, V);
+            gemm(U, S, V);
             
             cur_normalization = Rnorm;
             return V;
@@ -298,7 +298,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_right(block_matrix<OtherMatrix, Symm
     cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;
     make_left_paired();
-    SU2::gemm(data(), N, tmp);
+    gemm(data(), N, tmp);
     replace_left_paired(tmp);
 }
 
@@ -310,7 +310,7 @@ MPSTensor<Matrix, SymmGroup>::multiply_from_left(block_matrix<OtherMatrix, SymmG
     cur_normalization = Unorm;
     block_matrix<Matrix, SymmGroup> tmp;
     make_right_paired();
-    SU2::gemm(N, data(), tmp);
+    gemm(N, data(), tmp);
     replace_right_paired(tmp);
 }
 
