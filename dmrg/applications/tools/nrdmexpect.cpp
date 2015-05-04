@@ -93,9 +93,9 @@ int main(int argc, char ** argv)
         typedef typename operator_selector<matrix, symm>::type op_t;
         typedef typename OPTable<matrix, symm>::tag_type tag_type;
 
-        tag_type op1 = model.get_operator_tag("create_down", lattice.get_prop<symm::subcharge>("type", pos[0]));
-        tag_type op2 = model.get_operator_tag("create_down", lattice.get_prop<symm::subcharge>("type", pos[1]));
-        tag_type op3 = model.get_operator_tag("destroy_down", lattice.get_prop<symm::subcharge>("type", pos[2]));
+        tag_type op1 = model.get_operator_tag("create_fill", lattice.get_prop<symm::subcharge>("type", pos[0]));
+        tag_type op2 = model.get_operator_tag("create_couple_up", lattice.get_prop<symm::subcharge>("type", pos[1]));
+        tag_type op3 = model.get_operator_tag("destroy_fill_couple_down", lattice.get_prop<symm::subcharge>("type", pos[2]));
         tag_type op4 = model.get_operator_tag("destroy_down", lattice.get_prop<symm::subcharge>("type", pos[3]));
 
         tag_type ops_[4] = {op1, op2, op3, op4};

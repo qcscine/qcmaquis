@@ -125,7 +125,7 @@ public:
         else if (name == "docc")
             return docc[type];
         else
-            throw std::runtime_error("Operator not valid for this model.");
+            throw std::runtime_error("Operator not valid for this model: " + name);
         return 0;
                           //create_fill, create, destroy_fill, destroy,
                           //create_fill_couple_down, destroy_fill_couple_down,
