@@ -96,13 +96,43 @@ public:
 
     tag_type get_operator_tag(std::string const & name, size_t type) const
     {
-        if (name == "docc")
-            return docc[type];
-        else if (name == "ident_full")
+        if (name == "ident_full")
             return ident_full[type];
+
+        else if (name == "create")
+            return create[type];
+        else if (name == "create_fill")
+            return create_fill[type];
+        else if (name == "create_couple_up")
+            return create_couple_up[type];
+        else if (name == "create_fill_couple_down")
+            return create_fill_couple_down[type];
+
+        else if (name == "destroy")
+            return destroy[type];
+        else if (name == "destroy_fill")
+            return destroy_fill[type];
+        else if (name == "destroy_couple_up")
+            return destroy_couple_up[type];
+        else if (name == "destroy_fill_couple_down")
+            return destroy_fill_couple_down[type];
+
+        else if (name == "count")
+            return count[type];
+        else if (name == "count_fill")
+            return count_fill[type];
+
+        else if (name == "docc")
+            return docc[type];
         else
             throw std::runtime_error("Operator not valid for this model.");
         return 0;
+                          //create_fill, create, destroy_fill, destroy,
+                          //create_fill_couple_down, destroy_fill_couple_down,
+                          //create_couple_up, destroy_couple_up,
+                          //create_fill_count, create_count, destroy_fill_count, destroy_count,
+                          //count, docc, e2d, d2e, flip_S0, flip_to_S2, flip_to_S0,
+                          //ident, ident_full, fill, count_fill;
     }
 
     table_ptr operators_table() const
