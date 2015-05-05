@@ -38,56 +38,6 @@
 #include "dmrg/models/measurement.h"
 #include <dmrg/block_matrix/symmetry/nu1pg.h>
 
-/*
-namespace measurements_details {
-
-    template <class SymmGroup, class = void>
-    class checkpg
-    {
-    public:
-
-        template <class Integer, class Matrix>
-        bool operator()(std::vector<Integer> const & operators, boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler) 
-        {
-            return true;
-        }
-    };
-
-    template <class SymmGroup>
-    class checkpg<SymmGroup, typename boost::enable_if<symm_traits::HasPG<SymmGroup> >::type>
-    {
-    public:
-        typedef typename SymmGroup::charge charge;
-        typedef typename SymmGroup::subcharge subcharge;
-
-        template <class Integer, class Matrix>
-        bool operator()(std::vector<Integer> const & operators, boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler) 
-        {
-            typedef typename TagHandler<Matrix, SymmGroup>::op_t op_t;
-
-            op_t product = tag_handler->get_op(operators[0]);
-            for (std::size_t p = 1; p < operators.size(); ++p) {
-                op_t tmp;
-                gemm(product, tag_handler->get_op(operators[p]), tmp);
-                swap(tmp, product);
-            }
-
-            maquis::cout << " product.basis().size() --> " << product.basis().size() << std::endl;
-
-            if(product.basis().size() > 0)
-                for (std::size_t p = 0; p < product.basis().size(); ++p) {
-                    maquis::cout << " product.basis().left()/right --> " << product.basis().left_charge(p) << product.basis().right_charge(p) << std::endl;
-                    if (product.basis().left_charge(p) != product.basis().right_charge(p))
-                        return false;
-                }
-                return true;
-            return false;
-        }
-    };
-
-}
-*/
-
 namespace measurements_details {
 
     template <class symm, class = void>
@@ -112,28 +62,26 @@ namespace measurements_details {
         //typedef typename Model<Matrix, SymmGroup>::term_descriptor term_descriptor;
 
         template <class matrix>
-        bool operator()(term_descriptor<typename matrix::value_type> const & term, boost::shared_ptr<TagHandler<matrix, symm> > tag_handler) 
+        bool operator()(term_descriptor<typename matrix::value_type> const & term,
+				boost::shared_ptr<TagHandler<matrix, symm> > tag_handler,
+				Lattice const & lat) 
         {
             typedef typename TagHandler<matrix, symm>::op_t op_t;
 
-//          maquis::cout <<  "number of terms..." << term.size() << std::endl; 
-            op_t product = tag_handler->get_op(term.operator_tag(0));
-            for (std::size_t p = 1; p < term.size(); ++p) {
-                op_t tmp2 = tag_handler->get_op(term.operator_tag(p));
-                op_t tmp;
-                gemm(product, tmp2, tmp);
-                swap(tmp, product);
-//              maquis::cout << "  checkpg prod " << product << std::endl;
+		charge acc = symm::IdentityCharge;
+            for (std::size_t p = 0; p < term.size(); ++p) {
+		    charge local = symm::IdentityCharge;
+		    if (tag_handler->is_fermionic(term.operator_tag(p)))
+		        symm::irrep(local) = lat.get_prop<subcharge>("type", term.position(p));
+		    acc = symm::fuse(acc, local);
             }
 
-            //maquis::cout << "checkpg prod " << product << std::endl;
+		if (acc == symm::IdentityCharge)
+            	return true;
+		//else
+	//		maquis::cout << "accumulated charge is " << acc << std::endl;
 
-            if(product.basis().size() > 0)
-                for (std::size_t p = 0; p < product.basis().size(); ++p)
-                    if (product.basis().left_charge(p) == product.basis().right_charge(p))
-                        return true;
-            maquis::cout << "checkpg return false " << product << std::endl;
-            return false;
+		return false;
         }
     };
 
@@ -231,6 +179,7 @@ namespace measurements {
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
+                bool measured = false;
                 for (pos_t p2 = p1+1; p2 < lattice.size(); ++p2)
                 { 
                     pos_t pos_[2] = {p1, p2};
@@ -242,15 +191,18 @@ namespace measurements {
 
                     // check if term is allowed by symmetry
                     term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                    if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local))
+                    if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
                           continue;
+                    measured = true;
                     
-                    //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
                     MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
                     typename MPS<Matrix, SymmGroup>::scalar_type value = operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
 
-                    dct.push_back(value);
-                    num_labels.push_back(positions);
+                    if(measured)
+                    {
+                         dct.push_back(value);
+                         num_labels.push_back(positions);
+                    }
                 }
 
                 std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
@@ -306,6 +258,7 @@ namespace measurements {
                         // Loop over operator terms that are measured synchronously and added together
                         // Used e.g. for the four spin combos of the 2-RDM
                         typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
+                        bool measured = false;
                         for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
 
                             tag_vec operators(4);
@@ -316,22 +269,19 @@ namespace measurements {
 
                             // check if term is allowed by symmetry
                             term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                            if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local))
+                            if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
                                   continue;
+
+                            measured = true;
                             
-                            //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
                             MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
                             value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
                         }
-                        // debug print
-                        //if (std::abs(value) > 0)
+                        if(measured)
                         {
-                            std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
-                            maquis::cout << " " << value << std::endl;
+                             dct.push_back(value);
+                             num_labels.push_back(positions);
                         }
-
-                        dct.push_back(value);
-                        num_labels.push_back(positions);
                     }
 
                     std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
@@ -394,6 +344,7 @@ namespace measurements {
                             // Loop over operator terms that are measured synchronously and added together
                             // Used e.g. for the spin combos of the 3-RDM
                             typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
+                            bool measured = false;
                             for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
 
                                 tag_vec operators(6);
@@ -408,23 +359,25 @@ namespace measurements {
 
                                 // check if term is allowed by symmetry
                                 term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                                if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local))
+                                if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
                                      continue;
+                                measured = true;
 
-                                //term_descriptor term = generate_mp.firsto::arrange_operators(tag_handler, positions, operators);
                                 MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
                                 value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
 
                             }
                             // debug print
-                            if (std::abs(value) > 0)
+                            //if (std::abs(value) > 0)
+                            //{
+                            //    std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
+                            //    maquis::cout << " " << value << std::endl;
+                            //}
+                            if(measured)
                             {
-                                std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
-                                maquis::cout << " " << value << std::endl;
+                                 dct.push_back(value);
+                                 num_labels.push_back(positions);
                             }
- 
-                            dct.push_back(value);
-                            num_labels.push_back(positions);
                         }
 
                         std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
