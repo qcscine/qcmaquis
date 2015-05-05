@@ -116,13 +116,9 @@ namespace measurements_details {
             //maquis::cout << " product.basis().size() final --> " << product.basis().size() << std::endl;
 
             if(product.basis().size() > 0)
-                for (std::size_t p = 0; p < product.basis().size(); ++p) {
-                maquis::cout << " product.basis().left/right() check --> " << product.basis().left_charge(p) << product.basis().right_charge(p) << std::endl;
-                    if (product.basis().left_charge(p) != product.basis().right_charge(p))
-                        return false;
-                maquis::cout << " done checking... returning true" << std::endl;
-                }
-                return true;
+                for (std::size_t p = 0; p < product.basis().size(); ++p)
+                    if (product.basis().left_charge(p) == product.basis().right_charge(p))
+                        return true;
             return false;
         }
     };
