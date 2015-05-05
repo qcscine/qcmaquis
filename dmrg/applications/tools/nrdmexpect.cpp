@@ -90,8 +90,8 @@ int main(int argc, char ** argv)
         int pos_[4] = {0, 1, 2, 3};
         std::vector<int> pos(pos_, pos_ + 4);
 
-        typedef typename operator_selector<matrix, symm>::type op_t;
-        typedef typename OPTable<matrix, symm>::tag_type tag_type;
+        typedef operator_selector<matrix, symm>::type op_t;
+        typedef OPTable<matrix, symm>::tag_type tag_type;
 
         tag_type op1 = model.get_operator_tag("create_fill", lattice.get_prop<symm::subcharge>("type", pos[0]));
         tag_type op2 = model.get_operator_tag("create_couple_up", lattice.get_prop<symm::subcharge>("type", pos[1]));
