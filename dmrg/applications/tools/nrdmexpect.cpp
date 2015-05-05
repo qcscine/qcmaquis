@@ -68,6 +68,67 @@ typedef U1 symm;
 #include "dmrg/utils/DmrgOptions.h"
 #include "dmrg/utils/DmrgParameters.h"
 
+
+namespace measurements_details {
+
+    template <class symm, class = void>
+    class checkpg
+    {
+    public:
+
+        template <class matrix>
+        bool operator()(term_descriptor<double> const & term, boost::shared_ptr<TagHandler<matrix, symm> > tag_handler) 
+        {
+            return true;
+        }
+    };
+
+    template <class symm>
+    class checkpg<symm, typename boost::enable_if<symm_traits::HasPG<symm> >::type>
+    {
+    public:
+        typedef typename symm::charge charge;
+        typedef typename symm::subcharge subcharge;
+
+        template <class matrix>
+        bool operator()(term_descriptor<double> const & term, boost::shared_ptr<TagHandler<matrix, symm> > tag_handler) 
+        {
+            typedef typename TagHandler<matrix, symm>::op_t op_t;
+
+            maquis::cout <<  "number of terms..." << term.size() << std::endl; 
+            op_t product = tag_handler->get_op(term.operator_tag(0));
+            //maquis::cout << " product.basis().size() start --> " << product.basis().size() << std::endl;
+            //maquis::cout << " product.basis().left/right() start --> " << product.basis().left_charge(0) << product.basis().right_charge(0) << std::endl;
+            for (std::size_t p = 1; p < term.size(); ++p) {
+                op_t tmp2 = tag_handler->get_op(term.operator_tag(p));
+                //maquis::cout << " product.basis().size() current op --> " << tmp2.basis().size() << std::endl;
+                //maquis::cout << " product.basis().left/right() current op  --> " << tmp2.basis().left_charge(0) << tmp2.basis().right_charge(0) << std::endl;
+                op_t tmp;
+                gemm(product, tmp2, tmp);
+                swap(tmp, product);
+                maquis::cout << "  checkpg prod " << product << std::endl;
+                //maquis::cout << " product.basis().size() after gemm  --> " << product.basis().size() << std::endl;
+                //if(product.basis().size() > 0)
+                 //   maquis::cout << " product.basis().left/right() after gemm  --> " << product.basis().left_charge(0) << product.basis().right_charge(0) << std::endl;
+            }
+
+            maquis::cout << "checkpg prod " << product << std::endl;
+            //maquis::cout << " product.basis().size() final --> " << product.basis().size() << std::endl;
+
+            if(product.basis().size() > 0)
+                for (std::size_t p = 0; p < product.basis().size(); ++p) {
+                maquis::cout << " product.basis().left/right() check --> " << product.basis().left_charge(p) << product.basis().right_charge(p) << std::endl;
+                    if (product.basis().left_charge(p) != product.basis().right_charge(p))
+                        return false;
+                maquis::cout << " done checking... returning true" << std::endl;
+                }
+                return true;
+            return false;
+        }
+    };
+
+}
+
 int main(int argc, char ** argv)
 {
     try {
@@ -87,19 +148,32 @@ int main(int argc, char ** argv)
         std::string wvf = parms["chkpfile"];
         load(wvf, mps);
 
-        int pos_[4] = {0, 1, 2, 3};
-        std::vector<int> pos(pos_, pos_ + 4);
+        //int pos_[4] = {0, 1, 4, 5};
+        //std::vector<int> pos(pos_, pos_ + 4);
+        int pos_[6] = {0, 0, 2, 0, 0, 2};
+        std::vector<int> pos(pos_, pos_ + 6);
 
         typedef typename operator_selector<matrix, symm>::type op_t;
         typedef typename OPTable<matrix, symm>::tag_type tag_type;
 
-        tag_type op1 = model.get_operator_tag("create_down", lattice.get_prop<symm::subcharge>("type", pos[0]));
-        tag_type op2 = model.get_operator_tag("create_down", lattice.get_prop<symm::subcharge>("type", pos[1]));
-        tag_type op3 = model.get_operator_tag("destroy_down", lattice.get_prop<symm::subcharge>("type", pos[2]));
-        tag_type op4 = model.get_operator_tag("destroy_down", lattice.get_prop<symm::subcharge>("type", pos[3]));
+        //tag_type op1 = model.get_operator_tag("create_down", lattice.get_prop<symm::subcharge>("type",  pos[0]));
+        //tag_type op2 = model.get_operator_tag("create_down", lattice.get_prop<symm::subcharge>("type",  pos[1]));
+        //tag_type op3 = model.get_operator_tag("destroy_down", lattice.get_prop<symm::subcharge>("type", pos[2]));
+        //tag_type op4 = model.get_operator_tag("destroy_down", lattice.get_prop<symm::subcharge>("type", pos[3]));
+        
+        //tag_type ops_[4] = {op1, op2, op3, op4};
+        //std::vector<tag_type> ops(ops_, ops_ + 4);
+          
 
-        tag_type ops_[4] = {op1, op2, op3, op4};
-        std::vector<tag_type> ops(ops_, ops_ + 4);
+          tag_type op1 = model.get_operator_tag("create_up", lattice.get_prop<symm::subcharge>("type",  pos[0]));
+          tag_type op2 = model.get_operator_tag("create_down", lattice.get_prop<symm::subcharge>("type",  pos[1]));
+          tag_type op3 = model.get_operator_tag("create_up", lattice.get_prop<symm::subcharge>("type",  pos[2]));
+          tag_type op4 = model.get_operator_tag("destroy_up", lattice.get_prop<symm::subcharge>("type", pos[3]));
+          tag_type op5 = model.get_operator_tag("destroy_down", lattice.get_prop<symm::subcharge>("type", pos[4]));
+          tag_type op6 = model.get_operator_tag("destroy_up", lattice.get_prop<symm::subcharge>("type", pos[5]));
+
+          tag_type ops_[6] = {op1, op2, op3, op4, op5, op6};
+          std::vector<tag_type> ops(ops_, ops_ + 6);
 
         term_descriptor<double> term = generate_mpo::arrange_operators(pos, ops, tag_handler);
         maquis::cout << term << std::endl;
@@ -111,6 +185,11 @@ int main(int argc, char ** argv)
         identities.push_back(model.identity_matrix_tag(1));
         fillings.push_back(model.filling_matrix_tag(0));
         fillings.push_back(model.filling_matrix_tag(1));
+
+        // check if term is allowed by symmetry
+        if(not measurements_details::checkpg<symm>()(term, tag_handler))
+               maquis::cout << "term 0 by symmetry" << std::endl;
+
 
         MPO<matrix, symm> mpo = generate_mpo::make_1D_mpo(pos, ops, identities, fillings, tag_handler, lattice);
         double value = expval(mps, mpo);
