@@ -36,6 +36,8 @@ namespace ambient { namespace channels { namespace mpi {
     public:
         void dispatch();
         bcast(T& o, rank_t root) : object(o), root(root), self(0) {}
+    private:
+        template<class C> friend class collective;
         T& object;
         std::vector<int,allocator> tags;
         rank_t root;
@@ -57,6 +59,7 @@ namespace ambient { namespace channels { namespace mpi {
         void operator += (rank_t rank);
         bool involved();
         bool test();
+    private:
         std::vector<bool,allocator> states;
         std::vector<rank_t,allocator> tree;
     };

@@ -73,9 +73,10 @@ namespace ambient {
         }
         size_t first;
         size_t second;
+        size_t step;
+    private:
         size_t position;
         size_t limit;
-        size_t step;
         base_iterator base;
     };
 

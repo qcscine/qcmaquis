@@ -92,6 +92,7 @@ namespace ambient { namespace numeric {
         template<class M> static size_t cols(const M& a);
         static const char* code();
         operator Matrix& () const { return *(Matrix*)m; }
+    private:
         const Matrix* m;
     };
 

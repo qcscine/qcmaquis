@@ -76,12 +76,14 @@ namespace ambient { namespace controllers { namespace ssm {
         bool is_serial() const;
 
         memory_type memory;
-    public:
+    private:
         model_type model;
         channel_type channel;
         std::vector< functor* > stack_m;
         std::vector< functor* > stack_s;
+    public:
         std::vector< functor* >* chains;
+    private:
         std::vector< functor* >* mirror;
         ambient::memory::collector garbage;
     };

@@ -132,8 +132,10 @@ namespace ambient {
 
         template <class Archive> void load(Archive & ar, const unsigned int version = 0){ }
         template <class Archive> void save(Archive & ar, const unsigned int version = 0) const { }
-    public:
+    private:
+        template <typename F> friend class future;
         mutable bool valid;
+    public:
         mutable transformable* desc;
     };
 

@@ -347,12 +347,6 @@ namespace measurements {
                                 value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
 
                             }
-                            // debug print
-                            if (std::abs(value) > 0)
-                            {
-                                std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
-                                maquis::cout << " " << value << std::endl;
-                            }
 
                             dct.push_back(value);
                             num_labels.push_back(positions);

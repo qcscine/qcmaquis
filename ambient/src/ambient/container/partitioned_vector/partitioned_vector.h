@@ -52,6 +52,7 @@ namespace ambient {
         partitioned_vector& operator = (const partitioned_vector& rhs);
         template <class OtherVector, int OtherIB> partitioned_vector& operator = (const partitioned_vector<OtherVector,OtherIB>& rhs);
         size_type size() const;
+        size_type num_parts() const;
         bool empty() const;
         void swap(partitioned_vector& r);
         void resize(size_type n); 
@@ -67,7 +68,7 @@ namespace ambient {
         const_iterator cbegin() const;
         const_iterator cend() const;
         void normalize();
-    public:
+    private:
         std::vector<Vector*> data;
         size_type length;
         size_type nt;

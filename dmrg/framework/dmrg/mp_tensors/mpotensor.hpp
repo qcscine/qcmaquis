@@ -189,7 +189,7 @@ template<class T>
 void pprint(T val) { maquis::cout << val.first << std::endl; }
 
 template<class Matrix, class SymmGroup>
-void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(const scalar_type& v)
+void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(value_type v)
 {
     for (typename CSCMatrix::iterator2 it2 = col_tags.begin2(); it2 != col_tags.end2(); ++it2)
         for (typename CSCMatrix::iterator1 it1 = it2.begin(); it1 != it2.end(); ++it1)
@@ -197,7 +197,7 @@ void MPOTensor<Matrix, SymmGroup>::multiply_by_scalar(const scalar_type& v)
 }
 
 template<class Matrix, class SymmGroup>
-void MPOTensor<Matrix, SymmGroup>::divide_by_scalar(const scalar_type& v)
+void MPOTensor<Matrix, SymmGroup>::divide_by_scalar(value_type v)
 {
     for (typename CSCMatrix::iterator2 it2 = col_tags.begin2(); it2 != col_tags.end2(); ++it2)
         for (typename CSCMatrix::iterator1 it1 = it2.begin(); it1 != it2.end(); ++it1)

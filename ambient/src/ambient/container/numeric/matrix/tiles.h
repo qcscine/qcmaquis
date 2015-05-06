@@ -59,6 +59,7 @@ namespace ambient { namespace numeric {
         template <class MatrixB> tiles& operator  = (const tiles<MatrixB,IB>& rhs);
         size_type num_rows() const;
         size_type num_cols() const;
+        size_type num_tiles() const;
         scalar_type trace() const;
         void transpose();
         void conj();
@@ -184,12 +185,14 @@ namespace ambient { namespace numeric {
         template <class MatrixB> tiles& operator -= (const tiles<MatrixB,IB>& rhs);
         template <class MatrixB> tiles& operator  = (const tiles<MatrixB,IB>& rhs);
         tiles& operator  = (const tiles& rhs);
-        std::vector<subset_view<Matrix> > data;
         size_type num_rows() const;
         size_type num_cols() const;
+        size_type num_tiles() const;
         Matrix& locate(size_type i, size_type j);
         const Matrix& locate(size_type i, size_type j) const;
         size_t addr(size_type i, size_type j) const;
+    public:
+        std::vector<subset_view<Matrix> > data;
         size_type rows;
         size_type cols;
         size_type mt;
@@ -218,6 +221,7 @@ namespace ambient { namespace numeric {
         const value_type* end() const; // actual only for merged case
         size_type num_rows() const;
         size_type num_cols() const;
+        size_type num_tiles() const;
         void swap(tiles& r);
         void resize(size_type m, size_type n); 
         diagonal_matrix<T>& operator[] (size_type k);
