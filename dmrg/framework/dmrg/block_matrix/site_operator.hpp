@@ -265,6 +265,7 @@ template<class Matrix, class SymmGroup>
 std::ostream& operator<<(typename boost::enable_if<symm_traits::HasSU2<SymmGroup>, std::ostream&>::type os, SiteOperator<Matrix, SymmGroup> const & m)
 {
     os << "Basis: " << m.basis() << std::endl;
+    os << m.spin() << std::endl;
     for (std::size_t k = 0; k < m.n_blocks(); ++k)
     {
         os << "Block (" << m.basis()[k].lc << "," << m.basis()[k].rc

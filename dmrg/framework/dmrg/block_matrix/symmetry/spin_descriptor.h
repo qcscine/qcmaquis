@@ -67,13 +67,6 @@ public:
     SpinDescriptor() : twoS(0), diff_(0) {}
     SpinDescriptor(spin_t twoS_, spin_t in, spin_t out) : twoS(twoS_), diff_(out-in) {}
 
-    SpinDescriptor & operator += (SpinDescriptor rhs)
-    {
-        // apply action of operator rhs 
-        twoS += rhs.action();
-        return *this;
-    }
-
     spin_t get() const { return twoS; }
     spin_t action() const { return diff_; }
 
@@ -82,8 +75,17 @@ public:
         twoS = 0; diff_ = 0;
     }
 
+    SpinDescriptor & couple (SpinDescriptor rhs)
+    {
+        // apply action of operator rhs 
+        twoS += rhs.action();
+        //diff_ += rhs.action();
+        return *this;
+    }
+
     bool operator==(SpinDescriptor const & rhs) const { return (twoS == rhs.twoS && diff_ == rhs.diff_); }
     bool operator!=(SpinDescriptor const & rhs) const { return !(*this==rhs); }
+
     friend SpinDescriptor operator-(SpinDescriptor);
     friend std::ostream & operator<<(std::ostream & os, SpinDescriptor);
 
@@ -101,7 +103,7 @@ private:
 // Attention: not symmetric
 inline SpinDescriptor<symm_traits::SU2Tag> couple(SpinDescriptor<symm_traits::SU2Tag> a, SpinDescriptor<symm_traits::SU2Tag> b)
 {
-    return a += b;
+    return a.couple(b);
 }
 
 inline SpinDescriptor<symm_traits::SU2Tag> operator-(SpinDescriptor<symm_traits::SU2Tag> rhs)
@@ -112,7 +114,7 @@ inline SpinDescriptor<symm_traits::SU2Tag> operator-(SpinDescriptor<symm_traits:
 
 inline std::ostream & operator<<(std::ostream & os, SpinDescriptor<symm_traits::SU2Tag> rhs)
 {
-    os << "Spin: " << rhs.get() << ", delta: " << rhs.action() << std::endl;
+    os << "Spin: " << rhs.get() << ", delta: " << rhs.action();
     return os;
 }
 
