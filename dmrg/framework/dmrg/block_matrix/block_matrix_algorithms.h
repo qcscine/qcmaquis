@@ -81,6 +81,8 @@ void gemm(block_matrix<Matrix1, SymmGroup> const & A,
         {
             std::size_t matched_block = std::distance(B_begin, it);
             Matrix3 tmp(num_rows(A[k]), it->rs);
+
+            parallel::guard proc(scheduler(k));
             gemm(A[k], B[matched_block], tmp);
             C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
         }
