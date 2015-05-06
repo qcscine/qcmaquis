@@ -177,6 +177,7 @@ public:
         boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
         boost::regex expression_threeptdm("^MEASURE_THREEPTDM(.*)$");
         boost::regex expression_transition_threeptdm("^MEASURE_TRANSITION_THREEPTDM(.*)$");
+        boost::regex expression_fourptdm("^MEASURE_FOURPTDM(.*)$");
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -346,6 +347,123 @@ public:
                     meas_operators.push_back(create_up);
                     meas_operators.push_back(create_down);
                     meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                half_only = true;
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                                                                                    half_only, positions, bra_ckp));
+            }
+
+            else if (boost::regex_match(lhs, what, expression_fourptdm)) {
+
+                // NOTE: we will not need a transition 4-RDM for DMRG-based PT2
+                // stknecht - may 2015
+
+                std::string bra_ckp("");
+                //if(lhs == "MEASURE_TRANSITION_THREEPTDM"){
+                //    name = "transition_threeptdm";
+                //    bra_ckp = it->value();
+                //}
+                //else
+                //    name = "threeptdm";
+                name = "fourptdm";
+
+                std::vector<scaled_bond_element> synchronous_meas_operators;
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_down);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_up);
+                    meas_operators.push_back(destroy_down);
+                    meas_operators.push_back(destroy_up);
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                }
+                {
+                    bond_tag_element meas_operators;
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_up);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(create_down);
+                    meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_down);
