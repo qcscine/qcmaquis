@@ -45,6 +45,9 @@ namespace ambient {
         bool local()  const;
         bool common() const;
         rank_t which()  const;
+        friend class context_mt;
+        friend class backbone;
+    protected:
         actor_t type;
         bool dry;
         int factor;

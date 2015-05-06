@@ -56,6 +56,7 @@ namespace ambient { namespace memory {
         size_t size(){
             return (buffer - &buffers[0]);
         }
+    private:
         std::vector<void*> buffers;
         void** buffer;
     };
@@ -145,6 +146,7 @@ namespace ambient { namespace memory {
         static size_t reserved(){
             return instance().counts.size();
         }
+    private:
         mutex mtx;
         std::vector<long int> counts;
         std::vector<void*> buffers;
