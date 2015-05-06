@@ -97,8 +97,8 @@ public:
     tag_type tag_number(index_type left_index, index_type right_index) const;
     op_table_ptr get_operator_table() const;
 
-    void multiply_by_scalar(const scalar_type&);
-    void divide_by_scalar(const scalar_type&);
+    void multiply_by_scalar(value_type);
+    void divide_by_scalar(value_type);
     
     bool has(index_type left_index, index_type right_index) const;
 
