@@ -45,8 +45,8 @@ namespace ambient {
        ~scope();
         scope(const_iterator first, const_iterator last);
         scope(const_iterator first, size_t size);
-        container provision;
     private:
+        container provision;
         friend class backbone;
         scope(size_t np);
     };

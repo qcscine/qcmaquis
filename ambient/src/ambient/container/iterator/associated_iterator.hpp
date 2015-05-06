@@ -62,6 +62,9 @@ namespace ambient {
             return *container;
         }
         size_t position;
+    private:
+        template<typename T>
+        friend bool operator == (const associated_iterator<T>& lhs, const associated_iterator<T>& rhs);
         container_type* container;
     };
 

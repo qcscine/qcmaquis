@@ -32,7 +32,7 @@ namespace ambient {
 
     template<class Matrix, int IB>
     inline void touch(const numeric::tiles<Matrix, IB>& a){
-        int size = a.data.size();
+        int size = a.num_tiles();
         for(int i = 0; i < size; i++){
             touch(a[i]);
         }
@@ -41,7 +41,7 @@ namespace ambient {
     template<class Matrix, int IB>
     inline void migrate(const numeric::tiles<Matrix, IB>& a){
         numeric::tiles<Matrix, IB>& m = const_cast<numeric::tiles<Matrix, IB>&>(a);
-        int size = m.data.size();
+        int size = m.num_tiles();
         for(int i = 0; i < size; i++){
             migrate(m[i]);
         }
@@ -49,7 +49,7 @@ namespace ambient {
 
     template<class Matrix, int IB>
     inline void hint(const numeric::tiles<Matrix, IB>& a){
-        int size = a.data.size();
+        int size = a.num_tiles();
         for(int i = 0; i < size; i++){
             hint(a[i]);
         }

@@ -122,9 +122,10 @@ namespace ambient {
 
         size_t first[arity];
         size_t second[arity];
+        size_t step;
+    private:
         size_t position[arity];
         size_t limit;
-        size_t step;
     };
 
 }
