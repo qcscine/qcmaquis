@@ -167,7 +167,7 @@ int main(int argc, char ** argv)
 
         MPO<matrix, symm> mpo = rdm1(model, lattice);
 
-        double value = left_mpo_overlaps(mps, mpo)[mps.length()][0].trace();
+        double value = expval(mps, mpo);
         maquis::cout << "norm is: " << norm(mps) << std::endl; 
         maquis::cout << "Expval is: " << value << std::endl; 
         
