@@ -513,9 +513,11 @@ namespace measurements {
                                      pos_t pos_f_[5] = {pcontr, p5, p6, p7, p8};
                                      std::vector<pos_t> positions_f(pos_f_, pos_f_ + 5);
                                      // debug print
+                                     pos_t pos_f_print_[5] = {pcontr-1, p5, p6, p7, p8};
+                                     std::vector<pos_t> positions_f_print(pos_f_print_, pos_f_print_ + 5);
                                      //if (std::abs(value) > 0)
                                      {
-                                         std::transform(positions_f.begin(), positions_f.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
+                                         std::transform(positions_f_print.begin(), positions_f_print.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
                                          maquis::cout << " " << value << std::endl;
                                      }
                                      
