@@ -162,7 +162,6 @@ namespace generate_mpo
         typedef Lattice::pos_t pos_t;
         typedef term_descriptor<typename Matrix::value_type> term_descriptor;
         typedef typename OPTable<Matrix, SymmGroup>::tag_type tag_type;
-        typename MPOTensor<Matrix, SymmGroup>::prempo_t prempo;
 
         using boost::tuples::get;
 
@@ -171,6 +170,8 @@ namespace generate_mpo
         bool carry_sign = false;
         for (pos_t p = 0; p < lat.size(); ++p)
         {
+            typename MPOTensor<Matrix, SymmGroup>::prempo_t prempo;
+
             // check if there is a non-trivial operator on site p
             typename term_descriptor::const_iterator
                 it = std::find_if(term.begin(), term.end(),
