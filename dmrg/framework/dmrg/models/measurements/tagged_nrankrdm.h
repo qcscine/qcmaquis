@@ -91,10 +91,10 @@ namespace measurements_details {
     T get_indx_contr(std::vector<T> const & positions)
     {
         T contr_indx;
-        return (((positions[0]-1)*positions[0]*(positions[0]+1)*(positions[0]+2))/24
-               +((positions[1]-1)*positions[1]*(positions[1]+1))/6
-               +((positions[2]-1)*positions[2])/2
-               +  positions[3]
+        return (((positions[0]+1-1)*(positions[0]+1)*(positions[0]+1+1)*(positions[0]+1+2))/24
+               +((positions[1]+1-1)*(positions[1]+1)*(positions[1]+1+1))/6
+               +((positions[2]+1-1)*(positions[2]+1))/2
+               +  positions[3]+1
                );
     };
 }
@@ -429,13 +429,6 @@ namespace measurements {
             #ifdef MAQUIS_OPENMP
             #pragma omp parallel for collapse(1)
             #endif
-            //for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
-            //for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
-            //for (pos_t p3 = 0; p3 < lattice.size(); ++p3)
-            //for (pos_t p4 = 0; p4 < lattice.size(); ++p4)
-            //for (pos_t p5 = 0; p5 < lattice.size(); ++p5)
-            //for (pos_t p6 = 0; p6 < lattice.size(); ++p6)
-            //for (pos_t p7 = 0; p7 < lattice.size(); ++p7)
             for (pos_t p1 = 0; p1 < 3; ++p1)
             for (pos_t p2 = 0; p2 < 3; ++p2)
             for (pos_t p3 = 0; p3 < 3; ++p3)
@@ -492,14 +485,11 @@ namespace measurements {
                                      operators[6] = operator_terms[synop].first[6][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[6])];
                                      operators[7] = operator_terms[synop].first[7][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[7])];
 
-                                     //maquis::cout << " point group check: term is allowed? --> " << measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local) << std::endl;
-
                                      // check if term is allowed by symmetry
                                      term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
                                      if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
                                           continue;
                                      measured = true;
-                                     //maquis::cout << " measured is " << measured << std::endl;
 
                                      MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
                                      local_value = expval(bra_mps, ket_mps, mpo);
@@ -517,8 +507,9 @@ namespace measurements {
                                  }
                                  if(measured)
                                  {
-                                     pos_t pcontr = measurements_details::get_indx_contr<pos_t>(positions);
                                      // defines position vector for contracted spin-free 4-RDM element
+                                     pos_t pcontr = measurements_details::get_indx_contr<pos_t>(positions);
+
                                      pos_t pos_f_[5] = {pcontr, p5, p6, p7, p8};
                                      std::vector<pos_t> positions_f(pos_f_, pos_f_ + 5);
                                      // debug print
