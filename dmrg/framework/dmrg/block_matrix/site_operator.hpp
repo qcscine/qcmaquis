@@ -345,8 +345,8 @@ namespace SiteOperator_detail {
         for(std::size_t b = 0; b < bm.n_blocks(); ++b)
             if (spin_basis.count(std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))) == 0)
                 spin_basis[std::make_pair(bm.basis().left_charge(b), bm.basis().right_charge(b))]
-                    = std::make_pair(std::vector<typename SymmGroup::subcharge>(num_rows(bm[b]), SymmGroup::spin(bm.basis().left_charge(b))),
-                                     std::vector<typename SymmGroup::subcharge>(num_cols(bm[b]), SymmGroup::spin(bm.basis().right_charge(b)))
+                    = std::make_pair(std::vector<typename SymmGroup::subcharge>(num_rows(bm[b]), std::abs(SymmGroup::spin(bm.basis().left_charge(b)))),
+                                     std::vector<typename SymmGroup::subcharge>(num_cols(bm[b]), std::abs(SymmGroup::spin(bm.basis().right_charge(b))))
                                      );
     } 
 
