@@ -79,16 +79,16 @@ MPO<matrix, symm> rdm2(Model<matrix, symm> const & model, Lattice const & lattic
         std::vector<int> pos(pos_, pos_ + 4);
 
         // A
-        tag_type op1 = model.get_operator_tag("create_fill", lattice.get_prop<symm::subcharge>("type", pos[0]));
-        tag_type op2 = model.get_operator_tag("create_couple_up", lattice.get_prop<symm::subcharge>("type", pos[1]));
-        tag_type op3 = model.get_operator_tag("destroy_fill_couple_down", lattice.get_prop<symm::subcharge>("type", pos[2]));
-        tag_type op4 = model.get_operator_tag("destroy", lattice.get_prop<symm::subcharge>("type", pos[3]));
+        //tag_type op1 = model.get_operator_tag("create_fill", lattice.get_prop<symm::subcharge>("type", pos[0]));
+        //tag_type op2 = model.get_operator_tag("create_couple_up", lattice.get_prop<symm::subcharge>("type", pos[1]));
+        //tag_type op3 = model.get_operator_tag("destroy_fill_couple_down", lattice.get_prop<symm::subcharge>("type", pos[2]));
+        //tag_type op4 = model.get_operator_tag("destroy", lattice.get_prop<symm::subcharge>("type", pos[3]));
 
         // B
-        //tag_type op1 = model.get_operator_tag("create_fill", lattice.get_prop<symm::subcharge>("type", pos[0]));
-        //tag_type op2 = model.get_operator_tag("create", lattice.get_prop<symm::subcharge>("type", pos[1]));
-        //tag_type op3 = model.get_operator_tag("destroy_fill", lattice.get_prop<symm::subcharge>("type", pos[2]));
-        //tag_type op4 = model.get_operator_tag("destroy", lattice.get_prop<symm::subcharge>("type", pos[3]));
+        tag_type op1 = model.get_operator_tag("create_fill", lattice.get_prop<symm::subcharge>("type", pos[0]));
+        tag_type op2 = model.get_operator_tag("create", lattice.get_prop<symm::subcharge>("type", pos[1]));
+        tag_type op3 = model.get_operator_tag("destroy_fill", lattice.get_prop<symm::subcharge>("type", pos[2]));
+        tag_type op4 = model.get_operator_tag("destroy", lattice.get_prop<symm::subcharge>("type", pos[3]));
 
         tag_type ops_[4] = {op1, op2, op3, op4};
         std::vector<tag_type> ops(ops_, ops_ + 4);
@@ -165,10 +165,9 @@ int main(int argc, char ** argv)
         std::string wvf = parms["chkpfile"];
         load(wvf, mps);
 
-        MPO<matrix, symm> mpo = rdm1(model, lattice);
+        MPO<matrix, symm> mpo = rdm2(model, lattice);
 
         double value = expval(mps, mpo);
-        maquis::cout << "norm is: " << norm(mps) << std::endl; 
         maquis::cout << "Expval is: " << value << std::endl; 
         
     } catch (std::exception& e) {
