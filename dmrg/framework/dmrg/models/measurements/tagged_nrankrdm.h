@@ -436,23 +436,23 @@ namespace measurements {
             //for (pos_t p5 = 0; p5 < lattice.size(); ++p5)
             //for (pos_t p6 = 0; p6 < lattice.size(); ++p6)
             //for (pos_t p7 = 0; p7 < lattice.size(); ++p7)
-            for (pos_t p1 = 0; p1 < 2; ++p1)
-            for (pos_t p2 = 0; p2 < 2; ++p2)
-            for (pos_t p3 = 0; p3 < 2; ++p3)
+            for (pos_t p1 = 0; p1 < 3; ++p1)
+            for (pos_t p2 = 0; p2 < 3; ++p2)
+            for (pos_t p3 = 0; p3 < 3; ++p3)
             { 
                  // third index must be different if p1 == p2 
                  if(p1 == p2 && p3 == p1)
                       continue;
                  
-                 for (pos_t p4 = 0; p4 < 2; ++p4)
+                 for (pos_t p4 = 0; p4 < 3; ++p4)
                  {
                      // fourth index must be different if p1 == p2 or p1 == p3 or p2 == p3
                      if((p1 == p2 && p4 == p1) || (p1 == p3 && p4 == p1) || (p2 == p3 && p4 == p2))
                          continue;
 
-                     for (pos_t p5 = 0; p5 < 2; ++p5)
-                     for (pos_t p6 = 0; p6 < 2; ++p6)
-                     for (pos_t p7 = 0; p7 < 2; ++p7)
+                     for (pos_t p5 = 0; p5 < 3; ++p5)
+                     for (pos_t p6 = 0; p6 < 3; ++p6)
+                     for (pos_t p7 = 0; p7 < 3; ++p7)
                      {
                          // seventh index must be different if p5 == p6
                          if(p5 == p6 && p7 == p5)
@@ -465,7 +465,7 @@ namespace measurements {
                              std::vector<std::vector<pos_t> > num_labels;
 
                              //for (pos_t p8 = 0; p8 < lattice.size(); ++p8)
-                             for (pos_t p8 = 0; p8 < 2; ++p8)
+                             for (pos_t p8 = 0; p8 < 3; ++p8)
                              {
                                  // eighth index must be different if p5 == p6 or p5 == p7 or p6 == p7
                                  if((p5 == p6 && p8 == p5) || (p5 == p7 && p8 == p5) || (p6 == p7 && p8 == p6))
@@ -521,6 +521,12 @@ namespace measurements {
                                      // defines position vector for contracted spin-free 4-RDM element
                                      pos_t pos_f_[5] = {pcontr, p5, p6, p7, p8};
                                      std::vector<pos_t> positions_f(pos_f_, pos_f_ + 5);
+                                     // debug print
+                                     //if (std::abs(value) > 0)
+                                     {
+                                         std::transform(positions_f.begin(), positions_f.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
+                                         maquis::cout << " " << value << std::endl;
+                                     }
                                      
                                      dct.push_back(value);
                                      num_labels.push_back(positions_f);
