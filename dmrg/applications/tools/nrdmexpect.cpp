@@ -116,18 +116,21 @@ MPO<matrix, symm> rdm1(Model<matrix, symm> const & model, Lattice const & lattic
 
         boost::shared_ptr<TagHandler<matrix, symm> > tag_handler = model.operators_table();
 
-        const int nterm = 1;
-        int pos_[nterm] = {0};
+        const int nterm = 2;
+        int pos_[nterm] = {0, 2};
         std::vector<int> pos(pos_, pos_ + nterm);
 
         // A
-        //tag_type op1 = model.get_operator_tag("create_fill", lattice.get_prop<symm::subcharge>("type", pos[0]));
-        tag_type op1 = model.identity_matrix_tag(lattice.get_prop<symm::subcharge>("type", pos[0]));
+        //tag_type op1 = model.identity_matrix_tag(lattice.get_prop<symm::subcharge>("type", pos[0]));
+
+        tag_type op1 = model.get_operator_tag("create_fill", lattice.get_prop<symm::subcharge>("type", pos[0]));
+        tag_type op2 = model.get_operator_tag("destroy", lattice.get_prop<symm::subcharge>("type", pos[1]));
+
         //tag_type op2 = model.get_operator_tag("create_couple_up", lattice.get_prop<symm::subcharge>("type", pos[1]));
         //tag_type op3 = model.get_operator_tag("destroy_fill_couple_down", lattice.get_prop<symm::subcharge>("type", pos[2]));
         //tag_type op4 = model.get_operator_tag("destroy", lattice.get_prop<symm::subcharge>("type", pos[3]));
 
-        tag_type ops_[nterm] = {op1};
+        tag_type ops_[nterm] = {op1, op2};
         std::vector<tag_type> ops(ops_, ops_ + nterm);
 
         term_descriptor<double> term = generate_mpo::arrange_operators(pos, ops, tag_handler);
