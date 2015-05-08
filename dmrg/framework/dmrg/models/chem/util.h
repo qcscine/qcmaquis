@@ -163,6 +163,13 @@ namespace chem_detail {
             for (int i=0; i<4; i++) { (*this)[i] = a[i]; (*this)[i+4] = b[i]; }
         }
     };
+
+    template <class T>
+    void append(std::vector<T> & target, std::vector<T> const & source)
+    {
+        std::copy(source.begin(), source.end(), std::back_inserter(target));
+    }
+
 }
 
 #endif

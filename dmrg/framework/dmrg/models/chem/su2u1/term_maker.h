@@ -169,4 +169,50 @@ struct TermMakerSU2 {
     }
 };
 
+template <class M, class S>
+struct SpinSumSU2 {
+
+    typedef typename Lattice::pos_t pos_t;
+    typedef typename M::value_type value_type;
+    typedef ::term_descriptor<value_type> term_descriptor;
+
+    typedef typename TagHandler<M, S>::tag_type tag_type;
+    typedef std::vector<tag_type> tag_vec;
+
+    typedef TermMakerSU2<M, S> TM;
+    typedef typename TM::OperatorBundle OperatorBundle;
+
+    static std::vector<term_descriptor> 
+    four_term(tag_vec const & ident, tag_vec const & ident_full, value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
+              OperatorBundle const & create_pkg, OperatorBundle const & destroy_pkg, Lattice const & lat)
+    {
+        std::vector<term_descriptor> ret;
+
+        // These 3 cases produce different S_z spin patterns, which differ along with different index permutations
+        // As in standard notation of the Hamiltonian, the first two positions get a creator, the last two a destructor
+
+        chem_detail::IndexTuple key = chem_detail::align<S>(i,j,k,l);
+        pos_t i_ = key[0], j_ = key[1], k_ = key[2], l_ = key[3];
+
+        if (k_ > l_ && l_ > j_) // eg V_4132
+        { // generates up|up|up|up + up|down|down|up + down|up|up|down + down|down|down|down
+            ret.push_back(TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_element, i,k,l,j, create_pkg, destroy_pkg, lat));
+            ret.push_back(TM::four_term(ident,      1,                matrix_element, i,k,l,j, create_pkg, destroy_pkg, lat));
+        }
+        else if (k_ > j_ && j_ > l_) // eg V_4231
+        { // generates up|up|up|up + up|down|up|down + down|up|down|up + down|down|down|down
+            ret.push_back(TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_element, i,k,l,j, create_pkg, destroy_pkg, lat));
+            ret.push_back(TM::four_term(ident,      1,               -matrix_element, i,k,l,j, create_pkg, destroy_pkg, lat));
+        }
+        else if (j_ > k_ && k_ > l_) // eg V_4321
+        { // generates up|up|up|up + up|up|down|down + down|down|up|up + down|down|down|down
+            ret.push_back(TM::four_term(ident, 1, 2.*matrix_element, i,k,l,j, create_pkg, destroy_pkg, lat));
+        }
+        else { throw std::runtime_error("unexpected index arrangment in V_ijkl term\n"); }
+
+        return ret;
+    }
+
+};
+
 #endif

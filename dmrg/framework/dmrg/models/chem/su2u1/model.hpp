@@ -488,48 +488,28 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // V_ijkl -> 24 permutations which fall into 3 equivalence classes of 8 elements (with identical V_ matrix element)
         // coded: 4 index permutations which generate all Sz spins
         else if (i!=j && j!=k && k!=l && i!=k && j!=l) {
-            typedef TermMakerSU2<Matrix, SymmGroup> TM;
+
+            using boost::lambda::_1;
+            using boost::bind;
+            using chem_detail::ChemHelperSU2;
+            using chem_detail::append;
+
+            typedef SpinSumSU2<Matrix, SymmGroup> SSUM;
+            typedef std::vector<term_descriptor>  term_vec;
+
             std::vector<term_descriptor> & vec = this->terms_;
 
-            // These 3 cases produce different S_z spin patterns, which differ along with different index permutations
-            // As in standard notation of the Hamiltonian, the first two positions get a creator, the last two a destructor
+            // add terms for the four possible permutations
+            // the terms per permutation correspond to
+            // c^dag_{p1, sigma} c^dag_{p2, sigma'} c_{p3, sigma'} d_{p4, sigma}, summed over sigma and sigma'
 
-            if (k > l && l > j) // eg V_4132
-            { // generates up|up|up|up, up|down|down|up, down|up|up|down, down|down|down|down
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
+            term_vec terms;
+            append(terms, SSUM::four_term(ident, ident_full, matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
+            append(terms, SSUM::four_term(ident, ident_full, matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
+            append(terms, SSUM::four_term(ident, ident_full, matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
+            append(terms, SSUM::four_term(ident, ident_full, matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
 
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
-
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
-
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
-            }
-            else if (k > j && j > l) // eg V_4231
-            { // generates up|up|up|up, up|down|up|down, down|up|down|up, down|down|down|down
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
-                ta.add_4term(vec, TM::four_term(ident,      1,               -matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
-
-                ta.add_4term(vec, TM::four_term(ident_full, 2,  std::sqrt(3.)*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
-
-                ta.add_4term(vec, TM::four_term(ident_full, 2,  std::sqrt(3.)*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
-                ta.add_4term(vec, TM::four_term(ident,      1,                matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
-
-                ta.add_4term(vec, TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
-                ta.add_4term(vec, TM::four_term(ident,      1,               -matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
-            }
-            else if (j > k && k > l) // eg V_4321
-            { // generates up|up|up|up, up|up|down|down, down|down|up|up, down|down|down|down
-                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
-                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
-                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
-                ta.add_4term(vec, TM::four_term(ident, 1, 2.*matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
-            }
-            else { throw std::runtime_error("unexpected index arrangment in V_ijkl term\n"); }
+            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_4term, ta, vec, _1));
 
             used_elements[m] += 1;
         }
