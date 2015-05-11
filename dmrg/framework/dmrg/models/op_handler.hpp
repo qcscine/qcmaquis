@@ -142,6 +142,9 @@ TagHandler<Matrix, SymmGroup>::get_product_tag(const typename OPTable<Matrix, Sy
         if (sign_table[t1] != sign_table[t2])
             prod_kind = tag_detail::fermionic;
 
+        // set the product spin descriptor
+        product.spin() = couple(get_op(t2).spin(), get_op(t1).spin());
+
         std::pair<tag_type, value_type> ret = this->checked_register(product, prod_kind);
         product_tags[std::make_pair(t1, t2)] = ret;
         assert( operator_table->size() == sign_table.size());
