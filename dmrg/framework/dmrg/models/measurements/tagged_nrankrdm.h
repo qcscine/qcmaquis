@@ -114,11 +114,11 @@ namespace measurements_details {
             for (int i=4; i<8; ++i) positions_rhs.push_back(positions[i]); 
 
             // reverse sorting to ensure maximum norm 
-            std::reverse(positions_lhs.begin(),positions_lhs.end());
-            std::reverse(positions_rhs.begin(),positions_rhs.end());
+            std::sort(positions_lhs.begin(), positions_lhs.end(), std::greater<T>());
+            std::sort(positions_rhs.begin(), positions_rhs.end(), std::greater<T>());
 
             // print out content:
-            maquis::cout << "lhs pos..  "  << std::endl;
+            /*maquis::cout << "lhs pos..  "  << std::endl;
             for (typename std::vector<T>::iterator it=positions_lhs.begin(); it!=positions_lhs.end(); ++it)
                      std::cout << ' ' << *it;
                      std::cout << '\n';
@@ -126,6 +126,7 @@ namespace measurements_details {
             for (typename std::vector<T>::iterator it=positions_rhs.begin(); it!=positions_rhs.end(); ++it)
                      std::cout << ' ' << *it;
                      std::cout << '\n';
+            */
 
             //maquis::cout << "rhs pos..  "  << positions_rhs[0] << positions_rhs[1] << positions_rhs[2] << positions_rhs[3] << std::endl;
 
@@ -140,7 +141,7 @@ namespace measurements_details {
                    +  positions_rhs[3]+1
                    );
          
-            maquis::cout << "lhs norm "  << norm_lhs << " <--> rhs norm " << norm_rhs << std::endl;
+            //maquis::cout << "lhs norm "  << norm_lhs << " <--> rhs norm " << norm_rhs << std::endl;
 
             if(norm_rhs > norm_lhs)
                 return true;
@@ -478,7 +479,7 @@ namespace measurements {
             #ifdef MAQUIS_OPENMP
             #pragma omp parallel for collapse(1)
             #endif
-            for (pos_t p1 = 0; p1 < 3; ++p1)
+            for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
             for (pos_t p2 = 0; p2 < p1+1; ++p2)
             for (pos_t p3 = 0; p3 < p2+1; ++p3)
             { 
@@ -552,12 +553,14 @@ namespace measurements {
 
 
                                  }
+                                 //
                                  // debug print
-                                 if (std::abs(value) > 0)
-                                 {
-                                     std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
-                                     maquis::cout << " " << value << std::endl;
-                                 }
+                                 //if (std::abs(value) > 0)
+                                 //{
+                                 //    std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
+                                 //    maquis::cout << " " << value << std::endl;
+                                 //}
+                                 //
                                  if(measured)
                                  {
                                      // defines position vector for contracted spin-free 4-RDM element
@@ -566,13 +569,13 @@ namespace measurements {
                                      pos_t pos_f_[5] = {pcontr, p5, p6, p7, p8};
                                      std::vector<pos_t> positions_f(pos_f_, pos_f_ + 5);
                                      // debug print
-                                     /* pos_t pos_f_print_[5] = {pcontr-1, p5, p6, p7, p8};
-                                     //std::vector<pos_t> positions_f_print(pos_f_print_, pos_f_print_ + 5);
-                                     //if (std::abs(value) > 0)
-                                     //{
+                                     pos_t pos_f_print_[5] = {pcontr-1, p5, p6, p7, p8};
+                                     std::vector<pos_t> positions_f_print(pos_f_print_, pos_f_print_ + 5);
+                                     if (std::abs(value) > 0)
+                                     {
                                          std::transform(positions_f_print.begin(), positions_f_print.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
                                          maquis::cout << " " << value << std::endl;
-                                     } */
+                                     }
                                      
                                      dct.push_back(value);
                                      num_labels.push_back(positions_f);
