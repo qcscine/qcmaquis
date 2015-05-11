@@ -97,6 +97,41 @@ namespace measurements_details {
                +  positions[3]+1
                );
     };
+
+    template <class T>
+    class compare_norm
+    {
+    public:
+        bool operator()(std::vector<T> const & positions)
+        {
+            T pos_lhs_[4] = {positions[0], positions[1], positions[2], positions[3]};
+            T pos_rhs_[4] = {positions[4], positions[5], positions[6], positions[7]};
+            std::vector<T> positions_lhs(pos_lhs_, pos_lhs_ + 4);
+            std::vector<T> positions_rhs(pos_rhs_, pos_rhs_ + 4);
+
+           // reverse sorting to ensure maximum norm 
+           std::reverse(positions_lhs.begin(),positions_lhs.end());
+           std::reverse(positions_rhs.begin(),positions_rhs.end());
+
+            T norm_lhs = (((positions_lhs[0]+1-1)*(positions_lhs[0]+1)*(positions_lhs[0]+1+1)*(positions_lhs[0]+1+2))/24
+                   +((positions_lhs[1]+1-1)*(positions_lhs[1]+1)*(positions_lhs[1]+1+1))/6
+                   +((positions_lhs[2]+1-1)*(positions_lhs[2]+1))/2
+                   +  positions_lhs[3]+1
+                   );
+            T norm_rhs = (((positions_rhs[0]+1-1)*(positions_rhs[0]+1)*(positions_rhs[0]+1+1)*(positions_rhs[0]+1+2))/24
+                   +((positions_rhs[1]+1-1)*(positions_rhs[1]+1)*(positions_rhs[1]+1+1))/6
+                   +((positions_rhs[2]+1-1)*(positions_rhs[2]+1))/2
+                   +  positions_rhs[3]+1
+                   );
+         
+//            maquis::cout << "lhs norm "  << norm_lhs << " <--> rhs norm " << norm_rhs << std::endl;
+
+            if(norm_rhs > norm_lhs)
+                return true;
+
+            return false;
+        }
+    };
 }
 
 namespace measurements {
@@ -441,9 +476,9 @@ namespace measurements {
                      if((p1 == p2 && p4 == p1) || (p1 == p3 && p4 == p1) || (p2 == p3 && p4 == p2))
                          continue;
 
-                     for (pos_t p5 = 0; p5 < 3; ++p5)
-                     for (pos_t p6 = 0; p6 < 3; ++p6)
-                     for (pos_t p7 = 0; p7 < 3; ++p7)
+                     for (pos_t p5 = 0; p5 < p1+1; ++p5)
+                     for (pos_t p6 = 0; p6 < p1+1; ++p6)
+                     for (pos_t p7 = 0; p7 < p1+1; ++p7)
                      {
                          // seventh index must be different if p5 == p6
                          if(p5 == p6 && p7 == p5)
@@ -456,7 +491,7 @@ namespace measurements {
                              std::vector<std::vector<pos_t> > num_labels;
 
                              //for (pos_t p8 = 0; p8 < lattice.size(); ++p8)
-                             for (pos_t p8 = 0; p8 < 3; ++p8)
+                             for (pos_t p8 = 0; p8 < p1+1; ++p8)
                              {
                                  // eighth index must be different if p5 == p6 or p5 == p7 or p6 == p7
                                  if((p5 == p6 && p8 == p5) || (p5 == p7 && p8 == p5) || (p6 == p7 && p8 == p6))
@@ -465,6 +500,10 @@ namespace measurements {
                                  // defines position vector for spin-free 4-RDM element
                                  pos_t pos_[8] = {p1, p2, p3, p4, p5, p6, p7, p8};
                                  std::vector<pos_t> positions(pos_, pos_ + 8);
+
+                                 // check norm of lhs and rhs - skip if norm of rhs > lhs
+                                 if(measurements_details::compare_norm<pos_t>()(positions))
+                                     continue;
 
                                  // Loop over operator terms that are measured synchronously and added together
                                  // Used e.g. for the spin combos of the 3-RDM
@@ -491,14 +530,14 @@ namespace measurements {
 
                                      MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
                                      local_value = expval(bra_mps, ket_mps, mpo);
-                                     maquis::cout << " local value is ... " << local_value << std::endl;
+                                     //maquis::cout << " local value is ... " << local_value << std::endl;
                                      //value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
                                      value += operator_terms[synop].second * local_value;
 
 
                                  }
                                  // debug print
-                                 //if (std::abs(value) > 0)
+                                 if (std::abs(value) > 0)
                                  {
                                      std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
                                      maquis::cout << " " << value << std::endl;
@@ -511,13 +550,13 @@ namespace measurements {
                                      pos_t pos_f_[5] = {pcontr, p5, p6, p7, p8};
                                      std::vector<pos_t> positions_f(pos_f_, pos_f_ + 5);
                                      // debug print
-                                     pos_t pos_f_print_[5] = {pcontr-1, p5, p6, p7, p8};
-                                     std::vector<pos_t> positions_f_print(pos_f_print_, pos_f_print_ + 5);
+                                     /* pos_t pos_f_print_[5] = {pcontr-1, p5, p6, p7, p8};
+                                     //std::vector<pos_t> positions_f_print(pos_f_print_, pos_f_print_ + 5);
                                      //if (std::abs(value) > 0)
-                                     {
+                                     //{
                                          std::transform(positions_f_print.begin(), positions_f_print.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
                                          maquis::cout << " " << value << std::endl;
-                                     }
+                                     } */
                                      
                                      dct.push_back(value);
                                      num_labels.push_back(positions_f);
