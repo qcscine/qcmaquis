@@ -58,6 +58,19 @@ struct TermMakerSU2 {
         return boost::tuples::get<0>(p1) < boost::tuples::get<0>(p2);
     }
 
+    template <class I>
+    static bool sgn(I i, I j, I k, I l)
+    {
+        // Simple O(n^2) algorithm to determine sign of permutation
+        I idx[] = { i,j,k,l };
+        I inv_count=0, n=4;
+        for(I c1 = 0; c1 < n - 1; c1++)
+            for(I c2 = c1+1; c2 < n; c2++)
+                if(idx[c1] > idx[c2]) inv_count++;
+    
+        return (inv_count % 2 != 0);
+    }
+
     static term_descriptor two_term(bool sign, tag_vec full_ident, value_type scale, pos_t i, pos_t j,
                                     tag_vec op1, tag_vec op2, Lattice const & lat)
     {
@@ -135,14 +148,7 @@ struct TermMakerSU2 {
         term.is_fermionic = true;
         term.coeff = scale;
 
-        // Simple O(n^2) algorithm to determine sign of permutation
-        pos_t idx[] = { i,j,k,l };
-        pos_t inv_count=0, n=4;
-        for(pos_t c1 = 0; c1 < n - 1; c1++)
-            for(pos_t c2 = c1+1; c2 < n; c2++)
-                if(idx[c1] > idx[c2]) inv_count++;
-
-        if (inv_count % 2)
+        if (sgn(i,j,k,l))
             term.coeff = -term.coeff;
 
         std::vector<pos_bundle_t> sterm;
@@ -265,16 +271,22 @@ struct SpinSumSU2 {
 
         if (k_ > l_ && l_ > j_) // eg V_4132
         { // generates up|up|up|up + up|down|down|up + down|up|up|down + down|down|down|down
+
             ret.push_back(TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_element, i,k,l,j, create_pkg, destroy_pkg, lat));
             ret.push_back(TM::four_term(ident,      1,                matrix_element, i,k,l,j, create_pkg, destroy_pkg, lat));
         }
         else if (k_ > j_ && j_ > l_) // eg V_4231
         { // generates up|up|up|up + up|down|up|down + down|up|down|up + down|down|down|down
-            ret.push_back(TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_element, i,k,l,j, create_pkg, destroy_pkg, lat));
-            ret.push_back(TM::four_term(ident,      1,               -matrix_element, i,k,l,j, create_pkg, destroy_pkg, lat));
+
+            value_type local_element = matrix_element;
+            if (TM::sgn(i,k,l,j)) local_element = -matrix_element;
+
+            ret.push_back(TM::four_term(ident_full, 2, std::sqrt(3.)*local_element, i,k,l,j, create_pkg, destroy_pkg, lat));
+            ret.push_back(TM::four_term(ident,      1,               local_element, i,k,l,j, create_pkg, destroy_pkg, lat));
         }
         else if (j_ > k_ && k_ > l_) // eg V_4321
         { // generates up|up|up|up + up|up|down|down + down|down|up|up + down|down|down|down
+
             ret.push_back(TM::four_term(ident, 1, 2.*matrix_element, i,k,l,j, create_pkg, destroy_pkg, lat));
         }
         else { throw std::runtime_error("unexpected index arrangment in V_ijkl term\n"); }

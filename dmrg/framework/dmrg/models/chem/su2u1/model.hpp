@@ -523,7 +523,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
             // add terms for the four possible permutations
             // the terms per permutation correspond to
-            // c^dag_{p1, sigma} c^dag_{p2, sigma'} c_{p3, sigma'} d_{p4, sigma}, summed over sigma and sigma'
+            // \sum_{sigma, sigma'} c^dag_{p1, sigma} c^dag_{p2, sigma'} c_{p3, sigma'} c_{p4, sigma}
 
             term_vec terms;
             append(terms, SSUM::four_term(ident, ident_full, matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
@@ -531,7 +531,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             append(terms, SSUM::four_term(ident, ident_full, matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
             append(terms, SSUM::four_term(ident, ident_full, matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
 
-            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_4term, ta, vec, _1));
+            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_4term, &ta, vec, _1));
 
             used_elements[m] += 1;
         }
