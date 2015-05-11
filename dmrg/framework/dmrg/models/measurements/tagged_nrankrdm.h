@@ -104,14 +104,30 @@ namespace measurements_details {
     public:
         bool operator()(std::vector<T> const & positions)
         {
-            T pos_lhs_[4] = {positions[0], positions[1], positions[2], positions[3]};
-            T pos_rhs_[4] = {positions[4], positions[5], positions[6], positions[7]};
-            std::vector<T> positions_lhs(pos_lhs_, pos_lhs_ + 4);
-            std::vector<T> positions_rhs(pos_rhs_, pos_rhs_ + 4);
+//          T pos_lhs_[4] = {positions[0], positions[1], positions[2], positions[3]};
+//          T pos_rhs_[4] = {positions[4], positions[5], positions[6], positions[7]};
+            std::vector<T> positions_lhs;
+            std::vector<T> positions_rhs;
 
-           // reverse sorting to ensure maximum norm 
-           std::reverse(positions_lhs.begin(),positions_lhs.end());
-           std::reverse(positions_rhs.begin(),positions_rhs.end());
+            // set positions:
+            for (int i=0; i<4; ++i) positions_lhs.push_back(positions[i]); 
+            for (int i=4; i<8; ++i) positions_rhs.push_back(positions[i]); 
+
+            // reverse sorting to ensure maximum norm 
+            std::reverse(positions_lhs.begin(),positions_lhs.end());
+            std::reverse(positions_rhs.begin(),positions_rhs.end());
+
+            // print out content:
+            maquis::cout << "lhs pos..  "  << std::endl;
+            for (typename std::vector<T>::iterator it=positions_lhs.begin(); it!=positions_lhs.end(); ++it)
+                     std::cout << ' ' << *it;
+                     std::cout << '\n';
+            maquis::cout << "rhs pos..  "  << std::endl;
+            for (typename std::vector<T>::iterator it=positions_rhs.begin(); it!=positions_rhs.end(); ++it)
+                     std::cout << ' ' << *it;
+                     std::cout << '\n';
+
+            //maquis::cout << "rhs pos..  "  << positions_rhs[0] << positions_rhs[1] << positions_rhs[2] << positions_rhs[3] << std::endl;
 
             T norm_lhs = (((positions_lhs[0]+1-1)*(positions_lhs[0]+1)*(positions_lhs[0]+1+1)*(positions_lhs[0]+1+2))/24
                    +((positions_lhs[1]+1-1)*(positions_lhs[1]+1)*(positions_lhs[1]+1+1))/6
@@ -124,7 +140,7 @@ namespace measurements_details {
                    +  positions_rhs[3]+1
                    );
          
-//            maquis::cout << "lhs norm "  << norm_lhs << " <--> rhs norm " << norm_rhs << std::endl;
+            maquis::cout << "lhs norm "  << norm_lhs << " <--> rhs norm " << norm_rhs << std::endl;
 
             if(norm_rhs > norm_lhs)
                 return true;
