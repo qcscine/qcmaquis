@@ -419,6 +419,28 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         else if ( ((i==k && j!=l) || j==k || (j==l && i!=k)) && (i!=j && k!=l)) {
             typedef TermMakerSU2<Matrix, SymmGroup> TM;
 
+            //using boost::lambda::_1;
+            //using boost::bind;
+            //using chem_detail::ChemHelperSU2;
+            //using chem_detail::append;
+
+            //typedef SpinSumSU2<Matrix, SymmGroup> SSUM;
+            //typedef std::vector<term_descriptor>  term_vec;
+
+            //std::vector<term_descriptor> & vec = this->terms_;
+
+            //// add terms for the four possible permutations
+            //// the terms per permutation correspond to
+            //// c^dag_{p1, sigma} c^dag_{p2, sigma'} c_{p3, sigma'} d_{p4, sigma}, summed over sigma and sigma'
+
+            //term_vec terms;
+            //append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], i,k,l,j, flip_to_S2, flip_to_S0, flip_S0, count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
+            //append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], i,l,k,j, flip_to_S2, flip_to_S0, flip_S0, count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
+            //append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], j,k,l,i, flip_to_S2, flip_to_S0, flip_S0, count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
+            //append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], j,l,k,i, flip_to_S2, flip_to_S0, flip_S0, count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
+
+            //std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_3term, ta, vec, _1));
+
             int same_idx, pos1, pos2;
             if (i==k) { same_idx = i; pos1 = l; pos2 = j; }
             if (j==k) { same_idx = j; pos1 = l; pos2 = i; }

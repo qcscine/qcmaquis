@@ -183,6 +183,75 @@ struct SpinSumSU2 {
     typedef typename TM::OperatorBundle OperatorBundle;
 
     static std::vector<term_descriptor> 
+    three_term(tag_vec const & ident, tag_vec const & ident_full, value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
+               tag_vec const & flip_to_S2, tag_vec const & flip_to_S0, tag_vec const & flip_S0, tag_vec const & count, tag_vec const & count_fill, tag_vec const & e2d, tag_vec const & d2e,
+               OperatorBundle const & create_pkg, OperatorBundle const & destroy_pkg, Lattice const & lat)
+    {
+        tag_vec const & create_couple_up         = create_pkg.couple_up         ; 
+        tag_vec const & create                   = create_pkg.couple_down       ; 
+        tag_vec const & create_fill              = create_pkg.fill_couple_up    ; 
+        tag_vec const & create_fill_couple_down  = create_pkg.fill_couple_down  ; 
+
+        tag_vec const & destroy_couple_up        = destroy_pkg.couple_up        ; 
+        tag_vec const & destroy                  = destroy_pkg.couple_down      ; 
+        tag_vec const & destroy_fill             = destroy_pkg.fill_couple_up   ; 
+        tag_vec const & destroy_fill_couple_down = destroy_pkg.fill_couple_down ; 
+
+        std::vector<term_descriptor> ret;
+
+        int same_idx, pos1, pos2;
+
+        if (i==k)
+        {
+            same_idx = i; pos1 = l; pos2 = j;
+            ret.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill, lat));
+        }
+
+        if (j==l)
+        {
+            same_idx = j; pos1 = k; pos2 = i;
+            ret.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill, lat));
+        }
+
+        if (j==k)
+        {
+            same_idx = j; pos1 = l; pos2 = i;
+
+            if ( same_idx < std::min(pos1,pos2) )
+            {
+                ret.push_back(TM::three_term(
+                    ident_full, std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill, lat
+                    //ident_full, std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create_pkg.couple_down, create.fill_couple_down, destroy_pkg.couple_down, destroy_pkg.fill_couple_down, lat
+                ));
+                ret.push_back(TM::three_term(
+                    ident, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, count, count, create_pkg.couple_down, create_pkg.fill_couple_up, destroy_pkg.couple_down, destroy_pkg.fill_couple_up, lat
+                ));
+            }
+            else if (same_idx > std::max(pos1,pos2))
+            {
+                ret.push_back(TM::three_term(
+                    ident_full, std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill, lat
+                    //ident_full, std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S0, flip_to_S0, create_pkg.couple_up, create.fill_couple_down, destroy_pkg.couple_up, destroy_pkg.fill_couple_up, lat
+                ));
+                ret.push_back(TM::three_term(
+                    ident, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill, lat
+                ));
+            }
+            else
+            {
+                ret.push_back(TM::three_term(
+                    ident,      std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill, lat
+                ));
+                ret.push_back(TM::three_term(
+                    ident, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, count_fill, count_fill, create, create_fill, destroy, destroy_fill, lat
+                ));
+            }
+        }
+
+        return ret;
+    }
+
+    static std::vector<term_descriptor> 
     four_term(tag_vec const & ident, tag_vec const & ident_full, value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
               OperatorBundle const & create_pkg, OperatorBundle const & destroy_pkg, Lattice const & lat)
     {
