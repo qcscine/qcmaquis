@@ -47,7 +47,7 @@ namespace measurements_details {
 
         //typedef typename Model<Matrix, SymmGroup>::term_descriptor term_descriptor;
         template <class matrix>
-        bool operator()(term_descriptor<typename matrix::value_type> const & term, boost::shared_ptr<TagHandler<matrix, symm> > tag_handler) 
+        bool operator()(term_descriptor<typename matrix::value_type> const & term, boost::shared_ptr<TagHandler<matrix, symm> > tag_handler, Lattice const & lat) 
         {
             return true;
         }
@@ -104,8 +104,6 @@ namespace measurements_details {
     public:
         bool operator()(std::vector<T> const & positions)
         {
-//          T pos_lhs_[4] = {positions[0], positions[1], positions[2], positions[3]};
-//          T pos_rhs_[4] = {positions[4], positions[5], positions[6], positions[7]};
             std::vector<T> positions_lhs;
             std::vector<T> positions_rhs;
 
@@ -116,19 +114,6 @@ namespace measurements_details {
             // reverse sorting to ensure maximum norm 
             std::sort(positions_lhs.begin(), positions_lhs.end(), std::greater<T>());
             std::sort(positions_rhs.begin(), positions_rhs.end(), std::greater<T>());
-
-            // print out content:
-            /*maquis::cout << "lhs pos..  "  << std::endl;
-            for (typename std::vector<T>::iterator it=positions_lhs.begin(); it!=positions_lhs.end(); ++it)
-                     std::cout << ' ' << *it;
-                     std::cout << '\n';
-            maquis::cout << "rhs pos..  "  << std::endl;
-            for (typename std::vector<T>::iterator it=positions_rhs.begin(); it!=positions_rhs.end(); ++it)
-                     std::cout << ' ' << *it;
-                     std::cout << '\n';
-            */
-
-            //maquis::cout << "rhs pos..  "  << positions_rhs[0] << positions_rhs[1] << positions_rhs[2] << positions_rhs[3] << std::endl;
 
             T norm_lhs = (((positions_lhs[0]+1-1)*(positions_lhs[0]+1)*(positions_lhs[0]+1+1)*(positions_lhs[0]+1+2))/24
                    +((positions_lhs[1]+1-1)*(positions_lhs[1]+1)*(positions_lhs[1]+1+1))/6
@@ -385,83 +370,86 @@ namespace measurements {
             #endif
             for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
             for (pos_t p2 = 0; p2 < p1+1; ++p2)
-            for (pos_t p3 = std::min(p1, p2); p3 < lattice.size(); ++p3)
             {
-                if(p1 == p2 && p1 == p3)
-                    continue;
+                boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
 
-                for (pos_t p4 = ((bra_neq_ket) ? 0 : std::min(p1, p2)); p4 < lattice.size(); ++p4)
+                for (pos_t p3 = std::min(p1, p2); p3 < lattice.size(); ++p3)
                 {
-                    boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+                    if(p1 == p2 && p1 == p3)
+                        continue;
 
-                    for (pos_t p5 = ((bra_neq_ket) ? 0 : std::min(p1, p2)); p5 < lattice.size(); ++p5)
-                    { 
-                        std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
-                        std::vector<std::vector<pos_t> > num_labels;
-
-                        for (pos_t p6 = std::min(p4, p5); p6 < lattice.size(); ++p6)
-                        {
-                            // sixth index must be different if p4 == p5 
-                            if(p4 == p5 && p4 == p6)
-                                  continue;
-
-                            // defines position vector for spin-free 3-RDM element
-                            pos_t pos_[6] = {p1, p2, p3, p4, p5, p6};
-                            std::vector<pos_t> positions(pos_, pos_ + 6);
-
-                            // Loop over operator terms that are measured synchronously and added together
-                            // Used e.g. for the spin combos of the 3-RDM
-                            typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-                            bool measured = false;
-                            for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
-
-                                tag_vec operators(6);
-                                operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[0])];
-                                operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[1])];
-                                operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[2])];
-                                operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
-                                operators[4] = operator_terms[synop].first[4][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[4])];
-                                operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
-
-                                //maquis::cout << " point group check: term is allowed? --> " << measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local) << std::endl;
-
-                                // check if term is allowed by symmetry
-                                term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                                if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                                     continue;
-                                measured = true;
-
-                                //MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
-                                MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                                value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
-
-                            }
-                            // debug print
-                            //if (std::abs(value) > 0)
-                            //{
-                            //    std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
-                            //    maquis::cout << " " << value << std::endl;
-                            //}
-                            if(measured)
+                    for (pos_t p4 = ((bra_neq_ket) ? 0 : std::min(p1, p2)); p4 < lattice.size(); ++p4)
+                    {
+    
+                        for (pos_t p5 = ((bra_neq_ket) ? 0 : std::min(p1, p2)); p5 < lattice.size(); ++p5)
+                        { 
+                            std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
+                            std::vector<std::vector<pos_t> > num_labels;
+    
+                            for (pos_t p6 = std::min(p4, p5); p6 < lattice.size(); ++p6)
                             {
-                                 dct.push_back(value);
-                                 num_labels.push_back(positions);
+                                // sixth index must be different if p4 == p5 
+                                if(p4 == p5 && p4 == p6)
+                                      continue;
+    
+                                // defines position vector for spin-free 3-RDM element
+                                pos_t pos_[6] = {p1, p2, p3, p4, p5, p6};
+                                std::vector<pos_t> positions(pos_, pos_ + 6);
+    
+                                // Loop over operator terms that are measured synchronously and added together
+                                // Used e.g. for the spin combos of the 3-RDM
+                                typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
+                                bool measured = false;
+                                for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
+    
+                                    tag_vec operators(6);
+                                    operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[0])];
+                                    operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[1])];
+                                    operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[2])];
+                                    operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
+                                    operators[4] = operator_terms[synop].first[4][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[4])];
+                                    operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
+    
+                                    //maquis::cout << " point group check: term is allowed? --> " << measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local) << std::endl;
+    
+                                    // check if term is allowed by symmetry
+                                    term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
+                                    if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                                         continue;
+                                    measured = true;
+    
+                                    //MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
+                                    MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
+                                value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
+    
+                                }
+                                // debug print
+                                //if (std::abs(value) > 0)
+                                //{
+                                //    std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
+                                //    maquis::cout << " " << value << std::endl;
+                                //}
+                                if(measured)
+                                {
+                                     dct.push_back(value);
+                                     num_labels.push_back(positions);
+                                }
                             }
-                        }
+    
+                            std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
+                                                        ? detail::resort_labels(num_labels, order, false) : num_labels );
 
-                        std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                                                    ? detail::resort_labels(num_labels, order, false) : num_labels );
+                            // save results and labels
+                            #ifdef MAQUIS_OPENMP
+                            #pragma omp critical
+                            #endif
+                            {
+                                this->vector_results.reserve(this->vector_results.size() + dct.size());
+                                std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
 
-                        // save results and labels
-                        #ifdef MAQUIS_OPENMP
-                        #pragma omp critical
-                        #endif
-                        {
-                            this->vector_results.reserve(this->vector_results.size() + dct.size());
-                            std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
-
-                            this->labels.reserve(this->labels.size() + dct.size());
-                            std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+                                this->labels.reserve(this->labels.size() + dct.size());
+                                std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+                            }
                         }
                     }
                 }
@@ -481,123 +469,126 @@ namespace measurements {
             #endif
             for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
             for (pos_t p2 = 0; p2 < p1+1; ++p2)
-            for (pos_t p3 = 0; p3 < p2+1; ++p3)
-            { 
-                 // third index must be different if p1 == p2 
-                 if(p1 == p2 && p3 == p1)
-                      continue;
-                 
-                 for (pos_t p4 = 0; p4 < p3+1; ++p4)
-                 {
-                     // fourth index must be different if p1 == p2 or p1 == p3 or p2 == p3
-                     if((p1 == p2 && p4 == p1) || (p1 == p3 && p4 == p1) || (p2 == p3 && p4 == p2))
-                         continue;
+            {
+                 boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+                 MPS<Matrix, SymmGroup> const & ket_mps_local = ket_mps;
 
-                     for (pos_t p5 = 0; p5 < p1+1; ++p5)
-                     for (pos_t p6 = 0; p6 < p1+1; ++p6)
-                     for (pos_t p7 = 0; p7 < p1+1; ++p7)
-                     {
-                         // seventh index must be different if p5 == p6
-                         if(p5 == p6 && p7 == p5)
-                         continue;
+                 for (pos_t p3 = 0; p3 < p2+1; ++p3)
+                 { 
+                      // third index must be different if p1 == p2 
+                      if(p1 == p2 && p3 == p1)
+                           continue;
+                      
+                      for (pos_t p4 = 0; p4 < p3+1; ++p4)
+                      {
+                          // fourth index must be different if p1 == p2 or p1 == p3 or p2 == p3
+                          if((p1 == p2 && p4 == p1) || (p1 == p3 && p4 == p1) || (p2 == p3 && p4 == p2))
+                              continue;
 
-                         boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+                          for (pos_t p5 = 0; p5 < p1+1; ++p5)
+                          for (pos_t p6 = 0; p6 < p1+1; ++p6)
+                          for (pos_t p7 = 0; p7 < p1+1; ++p7)
+                          {
+                              // seventh index must be different if p5 == p6
+                              if(p5 == p6 && p7 == p5)
+                              continue;
 
-                         { 
-                             std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
-                             std::vector<std::vector<pos_t> > num_labels;
 
-                             //for (pos_t p8 = 0; p8 < lattice.size(); ++p8)
-                             for (pos_t p8 = 0; p8 < p1+1; ++p8)
-                             {
-                                 // eighth index must be different if p5 == p6 or p5 == p7 or p6 == p7
-                                 if((p5 == p6 && p8 == p5) || (p5 == p7 && p8 == p5) || (p6 == p7 && p8 == p6))
-                                     continue;
+                              { 
+                                  std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
+                                  std::vector<std::vector<pos_t> > num_labels;
 
-                                 // defines position vector for spin-free 4-RDM element
-                                 pos_t pos_[8] = {p1, p2, p3, p4, p5, p6, p7, p8};
-                                 std::vector<pos_t> positions(pos_, pos_ + 8);
-
-                                 // check norm of lhs and rhs - skip if norm of rhs > lhs
-                                 if(measurements_details::compare_norm<pos_t>()(positions))
-                                     continue;
-
-                                 // Loop over operator terms that are measured synchronously and added together
-                                 // Used e.g. for the spin combos of the 3-RDM
-                                 typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-                                 typename MPS<Matrix, SymmGroup>::scalar_type local_value = 0;
-                                 bool measured = false;
-                                 for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
-
-                                     tag_vec operators(8);
-                                     operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[0])];
-                                     operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[1])];
-                                     operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[2])];
-                                     operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
-                                     operators[4] = operator_terms[synop].first[4][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[4])];
-                                     operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
-                                     operators[6] = operator_terms[synop].first[6][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[6])];
-                                     operators[7] = operator_terms[synop].first[7][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[7])];
-
-                                     // check if term is allowed by symmetry
-                                     term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
-                                     if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                                  for (pos_t p8 = 0; p8 < p1+1; ++p8)
+                                  {
+                                      // eighth index must be different if p5 == p6 or p5 == p7 or p6 == p7
+                                      if((p5 == p6 && p8 == p5) || (p5 == p7 && p8 == p5) || (p6 == p7 && p8 == p6))
                                           continue;
-                                     measured = true;
+     
+                                      // defines position vector for spin-free 4-RDM element
+                                      pos_t pos_[8] = {p1, p2, p3, p4, p5, p6, p7, p8};
+                                      std::vector<pos_t> positions(pos_, pos_ + 8);
 
-                                     MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                                     local_value = expval(bra_mps, ket_mps, mpo);
-                                     //maquis::cout << " local value is ... " << local_value << std::endl;
-                                     //value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
-                                     value += operator_terms[synop].second * local_value;
+                                      // check norm of lhs and rhs - skip if norm of rhs > lhs
+                                      if(measurements_details::compare_norm<pos_t>()(positions))
+                                          continue;
 
+                                      // Loop over operator terms that are measured synchronously and added together
+                                      // Used e.g. for the spin combos of the 3-RDM
+                                      typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
+                                      typename MPS<Matrix, SymmGroup>::scalar_type local_value = 0;
+                                      bool measured = false;
+                                      for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
+     
+                                          tag_vec operators(8);
+                                          operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[0])];
+                                          operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[1])];
+                                          operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[2])];
+                                          operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[3])];
+                                          operators[4] = operator_terms[synop].first[4][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[4])];
+                                          operators[5] = operator_terms[synop].first[5][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[5])];
+                                          operators[6] = operator_terms[synop].first[6][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[6])];
+                                          operators[7] = operator_terms[synop].first[7][lattice.get_prop<typename SymmGroup::subcharge>("type", positions[7])];
+     
+                                          // check if term is allowed by symmetry
+                                          term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
+                                          if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
+                                               continue;
+                                          measured = true;
+     
+                                          MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
+                                          local_value = expval(ket_mps_local, ket_mps_local, mpo);
+                                          maquis::cout << "synop term " << synop+1 << "--> local value: " << local_value << std::endl;
+                                          //value += operator_terms[synop].second * expval(ket_mps_local, ket_mps_local, mpo);
+                                          value += operator_terms[synop].second * local_value;
+     
+     
+                                      }
+                                      //
+                                      // debug print
+                                      //if (std::abs(value) > 0)
+                                      //{
+                                      //    std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
+                                      //    maquis::cout << " " << value << std::endl;
+                                      //}
+                                      //
+                                      if(measured)
+                                      {
+                                          // defines position vector for contracted spin-free 4-RDM element
+                                          pos_t pcontr = measurements_details::get_indx_contr<pos_t>(positions);
+     
+                                          pos_t pos_f_[5] = {pcontr, p5, p6, p7, p8};
+                                          std::vector<pos_t> positions_f(pos_f_, pos_f_ + 5);
+                                          // debug print
+                                          pos_t pos_f_print_[5] = {pcontr-1, p5, p6, p7, p8};
+                                          std::vector<pos_t> positions_f_print(pos_f_print_, pos_f_print_ + 5);
+                                          if (std::abs(value) > 0)
+                                          {
+                                              std::transform(positions_f_print.begin(), positions_f_print.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
+                                              maquis::cout << " " << value << std::endl;
+                                          }
+                                          
+                                          dct.push_back(value);
+                                          num_labels.push_back(positions_f);
+                                      }
+                                  }
 
-                                 }
-                                 //
-                                 // debug print
-                                 //if (std::abs(value) > 0)
-                                 //{
-                                 //    std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
-                                 //    maquis::cout << " " << value << std::endl;
-                                 //}
-                                 //
-                                 if(measured)
-                                 {
-                                     // defines position vector for contracted spin-free 4-RDM element
-                                     pos_t pcontr = measurements_details::get_indx_contr<pos_t>(positions);
-
-                                     pos_t pos_f_[5] = {pcontr, p5, p6, p7, p8};
-                                     std::vector<pos_t> positions_f(pos_f_, pos_f_ + 5);
-                                     // debug print
-                                     pos_t pos_f_print_[5] = {pcontr-1, p5, p6, p7, p8};
-                                     std::vector<pos_t> positions_f_print(pos_f_print_, pos_f_print_ + 5);
-                                     if (std::abs(value) > 0)
-                                     {
-                                         std::transform(positions_f_print.begin(), positions_f_print.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
-                                         maquis::cout << " " << value << std::endl;
-                                     }
-                                     
-                                     dct.push_back(value);
-                                     num_labels.push_back(positions_f);
-                                 }
-                             }
-
-                             std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                                                         ? detail::resort_labels(num_labels, order, false) : num_labels );
-
-                             // save results and labels
-                             #ifdef MAQUIS_OPENMP
-                             #pragma omp critical
-                             #endif
-                             {
-                                 this->vector_results.reserve(this->vector_results.size() + dct.size());
-                                 std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
-
-                                 this->labels.reserve(this->labels.size() + dct.size());
-                                 std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
-                             }
-                         }
-                     }
+                                  std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
+                                                              ? detail::resort_labels(num_labels, order, false) : num_labels );
+     
+                                  // save results and labels
+                                  #ifdef MAQUIS_OPENMP
+                                  #pragma omp critical
+                                  #endif
+                                  {
+                                      this->vector_results.reserve(this->vector_results.size() + dct.size());
+                                      std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
+     
+                                      this->labels.reserve(this->labels.size() + dct.size());
+                                      std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+                                  }
+                              }
+                          }
+                      }
                  }
              }
          }
