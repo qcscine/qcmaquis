@@ -434,99 +434,16 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             // c^dag_{p1, sigma} c^dag_{p2, sigma'} c_{p3, sigma'} d_{p4, sigma}, summed over sigma and sigma'
 
             term_vec terms;
-            maquis::cout << "adding 3-term " << i << j << k << l << std::endl;
-            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], i,k,l,j, flip_to_S2, flip_to_S0, flip_S0, count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
-            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], i,l,k,j, flip_to_S2, flip_to_S0, flip_S0, count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
-            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], j,k,l,i, flip_to_S2, flip_to_S0, flip_S0, count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
-            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], j,l,k,i, flip_to_S2, flip_to_S0, flip_S0, count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
+            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], i,k,l,j, flip_to_S2, flip_to_S0, flip_S0,
+                                           count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
+            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], i,l,k,j, flip_to_S2, flip_to_S0, flip_S0,
+                                           count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
+            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], j,k,l,i, flip_to_S2, flip_to_S0, flip_S0,
+                                           count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
+            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], j,l,k,i, flip_to_S2, flip_to_S0, flip_S0,
+                                           count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
 
             std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_3term, &ta, vec, _1));
-/*
-            maquis::cout << "adding 3-term " << i << j << k << l << std::endl;
-            int same_idx, pos1, pos2;
-            if (i==k) { same_idx = i; pos1 = l; pos2 = j; }
-            if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
-            if (j==l) { same_idx = j; pos1 = k; pos2 = i; }
-
-            std::vector<term_descriptor> & vec = this->terms_;
-
-            // Note: need minus because of clebsch gordan coeff from two destructors or two creators
-            maquis::cout << "  1  ";
-            //vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill, lat));
-            ta.add_3term(vec, TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill, lat));
-            maquis::cout << "  2  ";
-            //vec.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill, lat));
-            ta.add_3term(vec, TM::three_term(ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill, lat));
-
-            if ( same_idx < std::min(pos1,pos2) )
-            {
-                maquis::cout << "  3A ";
-                //this->terms_.push_back(TM::three_term(
-                ta.add_3term(vec, TM::three_term(
-                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill, lat
-                ));
-                maquis::cout << "  3a ";
-                ta.add_3term(vec, TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill, lat
-                ));
-
-                maquis::cout << "  3A ";
-                //this->terms_.push_back(TM::three_term(
-                ta.add_3term(vec, TM::three_term(
-                    // note minus sign, because commutation on same_idx is not taken into account
-                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill_couple_down, lat
-                ));
-                maquis::cout << "  3a ";
-                ta.add_3term(vec, TM::three_term(
-                    ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill, lat
-                ));
-            }
-            else if (same_idx > std::max(pos1,pos2))
-            {
-                maquis::cout << "  3b ";
-                //this->terms_.push_back(TM::three_term(
-                ta.add_3term(vec, TM::three_term(
-                    ident_full, std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill, lat
-                ));
-                maquis::cout << "  3b ";
-                ta.add_3term(vec, TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill, lat
-                ));
-
-                maquis::cout << "  3b ";
-                //this->terms_.push_back(TM::three_term(
-                ta.add_3term(vec, TM::three_term(
-                    // note minus sign, because commutation on same_idx is not taken into account
-                    ident_full, -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill, lat
-                ));
-                maquis::cout << "  3b ";
-                ta.add_3term(vec, TM::three_term(
-                    ident,  -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count, count, create, create_fill, destroy, destroy_fill, lat
-                ));
-            }
-            else
-            {
-                maquis::cout << "  3c ";
-                //this->terms_.push_back(TM::three_term(
-                ta.add_3term(vec, TM::three_term(
-                    ident,      std::sqrt(3.)*matrix_elements[m], same_idx, pos1, pos2, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill, lat
-                ));
-                maquis::cout << "  3c ";
-                ta.add_3term(vec, TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos1, pos2, count_fill, count_fill, create, create_fill, destroy, destroy_fill, lat
-                ));
-
-                maquis::cout << "  3c ";
-                //this->terms_.push_back(TM::three_term(
-                ta.add_3term(vec, TM::three_term(
-                    ident,     -std::sqrt(3.)*matrix_elements[m], same_idx, pos2, pos1, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill, lat
-                ));
-                maquis::cout << "  3c ";
-                ta.add_3term(vec, TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_elements[m], same_idx, pos2, pos1, count_fill, count_fill, create, create_fill, destroy, destroy_fill, lat
-                ));
-            }
-*/
 
             used_elements[m] += 1;
         }
