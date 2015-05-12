@@ -275,6 +275,7 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
 
     /*************************************************************/
     typename TermMakerSU2<Matrix, SymmGroup>::OperatorBundle create_pkg, destroy_pkg;
+    typename TermMakerSU2<Matrix, SymmGroup>::OperatorBundle create_count_pkg, destroy_count_pkg;
 
     create_pkg.couple_up = create_couple_up;
     create_pkg.couple_down = create;
@@ -285,6 +286,37 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     destroy_pkg.couple_down = destroy;
     destroy_pkg.fill_couple_up = destroy_fill;
     destroy_pkg.fill_couple_down = destroy_fill_couple_down;
+
+    create_count_pkg.couple_down = create_count;
+    create_count_pkg.fill_couple_up = create_fill_count;
+
+    destroy_count_pkg.couple_down = destroy_count;
+    destroy_count_pkg.fill_couple_up = destroy_fill_count;
+
+    /**********************************************************************/
+    typename TermMakerSU2<Matrix, SymmGroup>::OperatorCollection op_collection;
+
+    op_collection.ident     .no_couple = ident;
+    op_collection.ident_full.no_couple = ident_full;
+    op_collection.fill      .no_couple = fill;
+
+    op_collection.create               = create_pkg;
+    op_collection.destroy              = destroy_pkg;
+
+    op_collection.count     .no_couple = count;
+    op_collection.count     .fill_no_couple = count_fill;
+
+    op_collection.create_count         = create_count_pkg;       
+    op_collection.destroy_count        = destroy_count_pkg;       
+
+    op_collection.e2d       .no_couple = e2d;
+    op_collection.d2e       .no_couple = d2e;
+    op_collection.docc      .no_couple = docc;
+
+    op_collection.flip      .no_couple = flip_S0;
+    op_collection.flip      .couple_up = flip_to_S2;
+    op_collection.flip      .couple_down = flip_to_S0;
+
     /**********************************************************************/
 
     chem_detail::ChemHelperSU2<Matrix, SymmGroup> ta(parms, lat, tag_handler);
@@ -434,14 +466,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             // c^dag_{p1, sigma} c^dag_{p2, sigma'} c_{p3, sigma'} d_{p4, sigma}, summed over sigma and sigma'
 
             term_vec terms;
-            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], i,k,l,j, flip_to_S2, flip_to_S0, flip_S0,
-                                           count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
-            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], i,l,k,j, flip_to_S2, flip_to_S0, flip_S0,
-                                           count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
-            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], j,k,l,i, flip_to_S2, flip_to_S0, flip_S0,
-                                           count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
-            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], j,l,k,i, flip_to_S2, flip_to_S0, flip_S0,
-                                           count, count_fill, e2d, d2e, create_pkg, destroy_pkg, lat));
+            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], i,k,l,j, op_collection, lat));
+            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], i,l,k,j, op_collection, lat));
+            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], j,k,l,i, op_collection, lat));
+            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], j,l,k,i, op_collection, lat));
 
             std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_3term, &ta, vec, _1));
 

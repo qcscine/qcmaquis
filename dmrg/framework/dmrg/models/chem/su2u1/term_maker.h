@@ -47,6 +47,25 @@ struct TermMakerSU2 {
         tag_vec couple_down;
         tag_vec fill_couple_up;
         tag_vec fill_couple_down;
+
+        tag_vec no_couple;
+        tag_vec fill_no_couple;
+    };
+
+    struct OperatorCollection
+    {
+        OperatorBundle ident;
+        OperatorBundle ident_full;
+        OperatorBundle fill;
+        OperatorBundle create;
+        OperatorBundle destroy;
+        OperatorBundle count;
+        OperatorBundle flip;
+        OperatorBundle e2d;
+        OperatorBundle d2e;
+        OperatorBundle docc;
+        OperatorBundle create_count;
+        OperatorBundle destroy_count;
     };
 
     typedef boost::tuple<pos_t, OperatorBundle> pos_bundle_t;
@@ -189,21 +208,47 @@ struct SpinSumSU2 {
 
     typedef TermMakerSU2<M, S> TM;
     typedef typename TM::OperatorBundle OperatorBundle;
+    typedef typename TM::OperatorCollection OperatorCollection;
+
+    //static term_descriptor three_term(tag_vec full_ident,
+    //                                  value_type scale, pos_t pb, pos_t p1, pos_t p2,
+    //                                  tag_vec boson_op, tag_vec boson_op_fill,
+    //                                  tag_vec op1, tag_vec op1_fill, tag_vec op2, tag_vec op2_fill, Lattice const & lat)
+    //{
+    //    if (i==j || k==l) return three_termA(full_ident, scale, pb, p1, p2, boson_op, boson_op_fill, op1, op1_fill, op2, op2_fill, lat);
+    //    else              return three_termB(full_ident, scale, pb, p1, p2, boson_op, boson_op_fill, op1, op1_fill, op2, op2_fill, lat);
+    //}
+
+    //static term_descriptor three_termA(tag_vec full_ident,
+    //                                   value_type scale, pos_t pb, pos_t p1, pos_t p2,
+    //                                   tag_vec boson_op, tag_vec boson_op_fill,
+    //                                   tag_vec op1, tag_vec op1_fill, tag_vec op2, tag_vec op2_fill, Lattice const & lat)
+    //{
+    //}
 
     static std::vector<term_descriptor> 
     three_term(tag_vec const & ident, tag_vec const & ident_full, value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
-               tag_vec const & flip_to_S2, tag_vec const & flip_to_S0, tag_vec const & flip_S0, tag_vec const & count, tag_vec const & count_fill, tag_vec const & e2d, tag_vec const & d2e,
-               OperatorBundle const & create_pkg, OperatorBundle const & destroy_pkg, Lattice const & lat)
+               OperatorCollection const & ops, Lattice const & lat)
     {
-        tag_vec const & create_couple_up         = create_pkg.couple_up         ; 
-        tag_vec const & create                   = create_pkg.couple_down       ; 
-        tag_vec const & create_fill              = create_pkg.fill_couple_up    ; 
-        tag_vec const & create_fill_couple_down  = create_pkg.fill_couple_down  ; 
+        tag_vec const & create_couple_up         = ops.create.couple_up        ; 
+        tag_vec const & create                   = ops.create.couple_down      ; 
+        tag_vec const & create_fill              = ops.create.fill_couple_up   ; 
+        tag_vec const & create_fill_couple_down  = ops.create.fill_couple_down ; 
 
-        tag_vec const & destroy_couple_up        = destroy_pkg.couple_up        ; 
-        tag_vec const & destroy                  = destroy_pkg.couple_down      ; 
-        tag_vec const & destroy_fill             = destroy_pkg.fill_couple_up   ; 
-        tag_vec const & destroy_fill_couple_down = destroy_pkg.fill_couple_down ; 
+        tag_vec const & destroy_couple_up        = ops.destroy.couple_up       ; 
+        tag_vec const & destroy                  = ops.destroy.couple_down     ; 
+        tag_vec const & destroy_fill             = ops.destroy.fill_couple_up  ; 
+        tag_vec const & destroy_fill_couple_down = ops.destroy.fill_couple_down; 
+
+        tag_vec const & flip_S0                  = ops.flip.no_couple          ; 
+        tag_vec const & flip_to_S2               = ops.flip.couple_up          ; 
+        tag_vec const & flip_to_S0               = ops.flip.couple_down        ; 
+
+        tag_vec const & count                    = ops.count.no_couple         ; 
+        tag_vec const & count_fill               = ops.count.fill_no_couple    ; 
+
+        tag_vec const & e2d                      = ops.e2d.no_couple           ; 
+        tag_vec const & d2e                      = ops.d2e.no_couple           ; 
 
         std::vector<term_descriptor> ret;
 
@@ -237,12 +282,10 @@ struct SpinSumSU2 {
                 ret.push_back(TM::three_term(
                     ident_full, phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S2, flip_to_S2,
                     create, create_fill_couple_down, destroy, destroy_fill_couple_down, lat
-                    //ident_full, std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S2, flip_to_S2,
-                    //create_pkg.couple_down, create.fill_couple_down, destroy_pkg.couple_down, destroy_pkg.fill_couple_down, lat
                 ));
                 ret.push_back(TM::three_term(
                     ident, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, count, count,
-                    create_pkg.couple_down, create_pkg.fill_couple_up, destroy_pkg.couple_down, destroy_pkg.fill_couple_up, lat
+                    ops.create.couple_down, ops.create.fill_couple_up, ops.destroy.couple_down, ops.destroy.fill_couple_up, lat
                 ));
             }
             else if (same_idx > std::max(pos1,pos2))
@@ -250,8 +293,6 @@ struct SpinSumSU2 {
                 ret.push_back(TM::three_term(
                     ident_full, phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S0, flip_to_S0,
                     create_couple_up, create_fill, destroy_couple_up, destroy_fill, lat
-                    //ident_full, std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S0, flip_to_S0,
-                    //create_pkg.couple_up, create.fill_couple_down, destroy_pkg.couple_up, destroy_pkg.fill_couple_up, lat
                 ));
                 ret.push_back(TM::three_term(
                     ident, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill, lat
