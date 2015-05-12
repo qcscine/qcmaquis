@@ -131,6 +131,8 @@ struct TermMakerSU2 {
         term.push_back( boost::make_tuple(start, op1_use[lat.get_prop<sc>("type", start)]) );
         term.push_back( boost::make_tuple(end, op2_use[lat.get_prop<sc>("type", end)]) );
 
+        maquis::cout << "  term " << pb << p1 << p2 << "   " << boson_op_use[lat.get_prop<sc>("type", pb)] << "," << op1_use[lat.get_prop<sc>("type", start)] << "," << op2_use[lat.get_prop<sc>("type", end)] << std::endl;
+
         // sort the terms w.r. to position
         term.canonical_order();
 
@@ -209,45 +211,62 @@ struct SpinSumSU2 {
 
         if (i==k)
         {
-            same_idx = i; pos1 = l; pos2 = j;
+            same_idx = i; pos1 = std::min(l, j); pos2 = std::max(l, j);
+            //maquis::cout << "  case 1 " << i << j << k << l << "   " << same_idx << pos1 << pos2 << std::endl;
+            maquis::cout << "  1  ";
             ret.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, e2d, e2d, destroy, destroy_fill, destroy, destroy_fill, lat));
         }
 
         if (j==l)
         {
-            same_idx = j; pos1 = k; pos2 = i;
+            same_idx = j; pos1 = std::min(i, k); pos2 = std::max(i, k);
+            //maquis::cout << "  case 2 " << i << j << k << l << "   " << same_idx << pos1 << pos2 << std::endl;
+            maquis::cout << "  2  ";
             ret.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, d2e, d2e, create, create_fill, create, create_fill, lat));
         }
 
-        if (j==k)
+        if (j==k || i==l)
         {
-            same_idx = j; pos1 = l; pos2 = i;
+            if (j==k) { same_idx = j; pos1 = l; pos2 = i; }
+            else { same_idx = i; pos1 = j; pos2 = k; }
+
+            //maquis::cout << "  case 3 " << i << j << k << l << "   " << same_idx << pos1 << pos2 << std::endl;
+
+            value_type phase = 1.;
+            if(TM::sgn(i,k,l,j))
+                phase = -1.;
 
             if ( same_idx < std::min(pos1,pos2) )
             {
+                maquis::cout << "  3A ";
                 ret.push_back(TM::three_term(
-                    ident_full, std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill, lat
+                    ident_full, phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create, create_fill_couple_down, destroy, destroy_fill_couple_down, lat
                     //ident_full, std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S2, flip_to_S2, create_pkg.couple_down, create.fill_couple_down, destroy_pkg.couple_down, destroy_pkg.fill_couple_down, lat
                 ));
+                maquis::cout << "  3a ";
                 ret.push_back(TM::three_term(
                     ident, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, count, count, create_pkg.couple_down, create_pkg.fill_couple_up, destroy_pkg.couple_down, destroy_pkg.fill_couple_up, lat
                 ));
             }
             else if (same_idx > std::max(pos1,pos2))
             {
+                maquis::cout << "  3b ";
                 ret.push_back(TM::three_term(
-                    ident_full, std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill, lat
+                    ident_full, phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S0, flip_to_S0, create_couple_up, create_fill, destroy_couple_up, destroy_fill, lat
                     //ident_full, std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S0, flip_to_S0, create_pkg.couple_up, create.fill_couple_down, destroy_pkg.couple_up, destroy_pkg.fill_couple_up, lat
                 ));
+                maquis::cout << "  3b ";
                 ret.push_back(TM::three_term(
                     ident, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill, lat
                 ));
             }
             else
             {
+                maquis::cout << "  3c ";
                 ret.push_back(TM::three_term(
-                    ident,      std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill, lat
+                    ident,  phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill, lat
                 ));
+                maquis::cout << "  3c ";
                 ret.push_back(TM::three_term(
                     ident, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, count_fill, count_fill, create, create_fill, destroy, destroy_fill, lat
                 ));
