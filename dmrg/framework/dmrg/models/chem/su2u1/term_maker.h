@@ -210,25 +210,33 @@ struct SpinSumSU2 {
     typedef typename TM::OperatorBundle OperatorBundle;
     typedef typename TM::OperatorCollection OperatorCollection;
 
-    //static term_descriptor three_term(tag_vec full_ident,
-    //                                  value_type scale, pos_t pb, pos_t p1, pos_t p2,
-    //                                  tag_vec boson_op, tag_vec boson_op_fill,
-    //                                  tag_vec op1, tag_vec op1_fill, tag_vec op2, tag_vec op2_fill, Lattice const & lat)
-    //{
-    //    if (i==j || k==l) return three_termA(full_ident, scale, pb, p1, p2, boson_op, boson_op_fill, op1, op1_fill, op2, op2_fill, lat);
-    //    else              return three_termB(full_ident, scale, pb, p1, p2, boson_op, boson_op_fill, op1, op1_fill, op2, op2_fill, lat);
-    //}
-
-    //static term_descriptor three_termA(tag_vec full_ident,
-    //                                   value_type scale, pos_t pb, pos_t p1, pos_t p2,
-    //                                   tag_vec boson_op, tag_vec boson_op_fill,
-    //                                   tag_vec op1, tag_vec op1_fill, tag_vec op2, tag_vec op2_fill, Lattice const & lat)
-    //{
-    //}
-
     static std::vector<term_descriptor> 
     three_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
                OperatorCollection const & ops, Lattice const & lat)
+    {
+        if (i==j || k==l) return three_termA(matrix_element, i, k, l, j, ops, lat);
+        else return three_termB(matrix_element, i, k, l, j, ops, lat);
+    }
+
+    static std::vector<term_descriptor> 
+    three_termA(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
+               OperatorCollection const & ops, Lattice const & lat)
+    {
+        std::vector<term_descriptor> ret;
+        int same_idx;
+        if (i==j) { same_idx = i; }
+        if (k==l) { same_idx = k; k = i; l = j; }
+
+        ret.push_back(TM::three_term(ops.ident.no_couple, std::sqrt(2.)*matrix_element, same_idx, k, l,
+                                     ops.count.no_couple, ops.count.fill_no_couple,
+                                     ops.create.couple_down, ops.create.fill_couple_up,
+                                     ops.destroy.couple_down, ops.destroy.fill_couple_up, lat));
+        return ret;
+    }
+
+    static std::vector<term_descriptor> 
+    three_termB(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
+                OperatorCollection const & ops, Lattice const & lat)
     {
         std::vector<term_descriptor> ret;
 
@@ -237,15 +245,19 @@ struct SpinSumSU2 {
         if (i==k)
         {
             same_idx = i; pos1 = std::min(l, j); pos2 = std::max(l, j);
-            ret.push_back(TM::three_term(ops.ident.no_couple, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, ops.e2d.no_couple, ops.e2d.no_couple,
-            ops.destroy.couple_down, ops.destroy.fill_couple_up, ops.destroy.couple_down, ops.destroy.fill_couple_up, lat));
+            ret.push_back(TM::three_term(ops.ident.no_couple, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2,
+                                         ops.e2d.no_couple, ops.e2d.no_couple,
+                                         ops.destroy.couple_down, ops.destroy.fill_couple_up,
+                                         ops.destroy.couple_down, ops.destroy.fill_couple_up, lat));
         }
 
         if (j==l)
         {
             same_idx = j; pos1 = std::min(i, k); pos2 = std::max(i, k);
-            ret.push_back(TM::three_term(ops.ident.no_couple, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, ops.d2e.no_couple, ops.d2e.no_couple,
-            ops.create.couple_down, ops.create.fill_couple_up, ops.create.couple_down, ops.create.fill_couple_up, lat));
+            ret.push_back(TM::three_term(ops.ident.no_couple, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2,
+                                         ops.d2e.no_couple, ops.d2e.no_couple,
+                                         ops.create.couple_down, ops.create.fill_couple_up,
+                                         ops.create.couple_down, ops.create.fill_couple_up, lat));
         }
 
         if (j==k || i==l)

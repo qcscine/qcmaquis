@@ -324,6 +324,15 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     std::vector<value_type> matrix_elements = ta.getMatrixElements();
 
     std::vector<int> used_elements(matrix_elements.size(), 0);
+
+    typedef TermMakerSU2<Matrix, SymmGroup> TM;
+
+    /**********************************************************************/
+
+    using boost::lambda::_1;
+    using boost::bind;
+    using chem_detail::ChemHelperSU2;
+    using chem_detail::append;
  
     for (std::size_t m=0; m < matrix_elements.size(); ++m) {
         int i = idx_(m, 0);
@@ -428,18 +437,25 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // 8 (4x2)-fold degenerate V_iilk == V_iikl = V_lkii = V_klii  <--- coded
         //                         V_ijkk == V_jikk = V_kkij = V_kkji  <--- contained above
         else if ( (i==j && j!=k && k!=l) || (k==l && i!=j && j!=k)) {
-            typedef TermMakerSU2<Matrix, SymmGroup> TM;
 
-            int same_idx;
-            if (i==j) { same_idx = i; }
-            if (k==l) { same_idx = k; k = i; l = j; }
+            typedef SpinSumSU2<Matrix, SymmGroup> SSUM;
+            typedef std::vector<term_descriptor> term_vec;
 
-            std::vector<term_descriptor> & vec = this->terms_;
+            term_vec & vec = this->terms_;
 
-            ta.add_3term(vec, TM::three_term(ident, std::sqrt(2.)*matrix_elements[m], same_idx, k, l,
-                                             count, count_fill, create, create_fill, destroy, destroy_fill, lat));
-            ta.add_3term(vec, TM::three_term(ident, std::sqrt(2.)*matrix_elements[m], same_idx, l, k,
-                                             count, count_fill, create, create_fill, destroy, destroy_fill, lat));
+            term_vec terms;
+            if (i==j)
+            {
+                append(terms, SSUM::three_term(matrix_elements[m], i,k,l,j, op_collection, lat));
+                append(terms, SSUM::three_term(matrix_elements[m], i,l,k,j, op_collection, lat));
+            }
+            else // (k==l)
+            {
+                append(terms, SSUM::three_term(matrix_elements[m], i,k,l,j, op_collection, lat));
+                append(terms, SSUM::three_term(matrix_elements[m], j,k,l,i, op_collection, lat));
+            }
+
+            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_3term, &ta, vec, _1));
 
             used_elements[m] += 1;
         }
@@ -449,12 +465,6 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // 4-fold degenerate (+spin) V_ijil = V_ijli = V_jiil = V_jili  <--- coded
         //                           V_ilij = V_ilji = V_liij = V_liji
         else if ( ((i==k && j!=l) || j==k || (j==l && i!=k)) && (i!=j && k!=l)) {
-            typedef TermMakerSU2<Matrix, SymmGroup> TM;
-
-            using boost::lambda::_1;
-            using boost::bind;
-            using chem_detail::ChemHelperSU2;
-            using chem_detail::append;
 
             typedef SpinSumSU2<Matrix, SymmGroup> SSUM;
             typedef std::vector<term_descriptor> term_vec;
@@ -480,11 +490,6 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // V_ijkl -> 24 permutations which fall into 3 equivalence classes of 8 elements (with identical V_ matrix element)
         // coded: 4 index permutations which generate all Sz spins
         else if (i!=j && j!=k && k!=l && i!=k && j!=l) {
-
-            using boost::lambda::_1;
-            using boost::bind;
-            using chem_detail::ChemHelperSU2;
-            using chem_detail::append;
 
             typedef SpinSumSU2<Matrix, SymmGroup> SSUM;
             typedef std::vector<term_descriptor>  term_vec;
