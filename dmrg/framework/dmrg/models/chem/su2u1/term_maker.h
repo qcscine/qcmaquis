@@ -230,16 +230,6 @@ struct SpinSumSU2 {
     three_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
                OperatorCollection const & ops, Lattice const & lat)
     {
-        tag_vec const & create_couple_up         = ops.create.couple_up        ; 
-        tag_vec const & create                   = ops.create.couple_down      ; 
-        tag_vec const & create_fill              = ops.create.fill_couple_up   ; 
-        tag_vec const & create_fill_couple_down  = ops.create.fill_couple_down ; 
-
-        tag_vec const & destroy_couple_up        = ops.destroy.couple_up       ; 
-        tag_vec const & destroy                  = ops.destroy.couple_down     ; 
-        tag_vec const & destroy_fill             = ops.destroy.fill_couple_up  ; 
-        tag_vec const & destroy_fill_couple_down = ops.destroy.fill_couple_down; 
-
         std::vector<term_descriptor> ret;
 
         int same_idx, pos1, pos2;
@@ -271,7 +261,7 @@ struct SpinSumSU2 {
             {
                 ret.push_back(TM::three_term(
                     ops.ident_full.no_couple, phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, ops.flip.couple_up, ops.flip.couple_up,
-                    create, create_fill_couple_down, destroy, destroy_fill_couple_down, lat
+                    ops.create.couple_down, ops.create.fill_couple_down, ops.destroy.couple_down, ops.destroy.fill_couple_down, lat
                 ));
                 ret.push_back(TM::three_term(
                     ops.ident.no_couple, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, ops.count.no_couple, ops.count.no_couple,
@@ -282,22 +272,22 @@ struct SpinSumSU2 {
             {
                 ret.push_back(TM::three_term(
                     ops.ident_full.no_couple, phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, ops.flip.couple_down, ops.flip.couple_down,
-                    create_couple_up, create_fill, destroy_couple_up, destroy_fill, lat
+                    ops.create.couple_up, ops.create.fill_couple_up, ops.destroy.couple_up, ops.destroy.fill_couple_up, lat
                 ));
                 ret.push_back(TM::three_term(
                     ops.ident.no_couple, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, ops.count.no_couple, ops.count.no_couple,
-                    create, create_fill, destroy, destroy_fill, lat
+                    ops.create.couple_down, ops.create.fill_couple_up, ops.destroy.couple_down, ops.destroy.fill_couple_up, lat
                 ));
             }
             else
             {
                 ret.push_back(TM::three_term(
                     ops.ident.no_couple,  phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, ops.flip.no_couple, ops.flip.no_couple,
-                    create, create_fill, destroy, destroy_fill, lat
+                    ops.create.couple_down, ops.create.fill_couple_up, ops.destroy.couple_down, ops.destroy.fill_couple_up, lat
                 ));
                 ret.push_back(TM::three_term(
                     ops.ident.no_couple, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, ops.count.fill_no_couple, ops.count.fill_no_couple,
-                    create, create_fill, destroy, destroy_fill, lat
+                    ops.create.couple_down, ops.create.fill_couple_up, ops.destroy.couple_down, ops.destroy.fill_couple_up, lat
                 ));
             }
         }
