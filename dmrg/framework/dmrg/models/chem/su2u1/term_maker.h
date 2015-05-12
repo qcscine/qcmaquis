@@ -197,8 +197,9 @@ struct TermMakerSU2 {
 };
 
 template <class M, class S>
-struct SpinSumSU2 {
+class SpinSumSU2 {
 
+public:
     typedef typename Lattice::pos_t pos_t;
     typedef typename M::value_type value_type;
     typedef ::term_descriptor<value_type> term_descriptor;
@@ -211,11 +212,88 @@ struct SpinSumSU2 {
     typedef typename TM::OperatorCollection OperatorCollection;
 
     static std::vector<term_descriptor> 
+    two_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
+             OperatorCollection const & ops, Lattice const & lat)
+    {
+        if (i==j && k==l && j!=k) return two_termA(matrix_element, i, k, l, j, ops, lat);
+        else if (i==k && j==l && j!=k) return two_termB1(matrix_element, i, k, l, j, ops, lat);
+        //else if (i==l && j==k) return two_termB1(matrix_element, i, k, l, j, ops, lat);
+        else return two_termC(matrix_element, i, k, l, j, ops, lat);
+    }
+
+    static std::vector<term_descriptor> 
     three_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
                OperatorCollection const & ops, Lattice const & lat)
     {
         if (i==j || k==l) return three_termA(matrix_element, i, k, l, j, ops, lat);
         else return three_termB(matrix_element, i, k, l, j, ops, lat);
+    }
+
+    static std::vector<term_descriptor> 
+    four_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
+              OperatorCollection const & ops, Lattice const & lat)
+    {
+        std::vector<term_descriptor> ret;
+
+        // These 3 cases produce different S_z spin patterns, which differ along with different index permutations
+        // As in standard notation of the Hamiltonian, the first two positions get a creator, the last two a destructor
+
+        chem_detail::IndexTuple key = chem_detail::align<S>(i,j,k,l);
+        pos_t i_ = key[0], j_ = key[1], k_ = key[2], l_ = key[3];
+
+        if (k_ > l_ && l_ > j_) // eg V_4132
+        { // generates up|up|up|up + up|down|down|up + down|up|up|down + down|down|down|down
+
+            ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, -std::sqrt(3.)*matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
+            ret.push_back(TM::four_term(ops.ident.no_couple,      1,                matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
+        }
+        else if (k_ > j_ && j_ > l_) // eg V_4231
+        { // generates up|up|up|up + up|down|up|down + down|up|down|up + down|down|down|down
+
+            value_type local_element = matrix_element;
+            if (TM::sgn(i,k,l,j)) local_element = -matrix_element;
+
+            ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, std::sqrt(3.)*local_element, i,k,l,j, ops.create, ops.destroy, lat));
+            ret.push_back(TM::four_term(ops.ident.no_couple,      1,               local_element, i,k,l,j, ops.create, ops.destroy, lat));
+        }
+        else if (j_ > k_ && k_ > l_) // eg V_4321
+        { // generates up|up|up|up + up|up|down|down + down|down|up|up + down|down|down|down
+
+            ret.push_back(TM::four_term(ops.ident.no_couple, 1, 2.*matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
+        }
+        else { throw std::runtime_error("unexpected index arrangment in V_ijkl term\n"); }
+
+        return ret;
+    }
+
+private:
+
+    static std::vector<term_descriptor> 
+    two_termA(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
+              OperatorCollection const & ops, Lattice const & lat)
+    {
+        std::vector<term_descriptor> ret;
+        ret.push_back(TM::two_term(false, ops.ident.no_couple,
+                                   matrix_element, i, k, ops.count.no_couple, ops.count.no_couple, lat));
+        return ret;
+    }
+
+    static std::vector<term_descriptor> 
+    two_termB1(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
+              OperatorCollection const & ops, Lattice const & lat)
+    {
+        std::vector<term_descriptor> ret;
+        ret.push_back(TM::two_term(false, ops.ident.no_couple,
+                                   matrix_element, i, j, ops.e2d.no_couple, ops.d2e.no_couple, lat));
+        return ret;
+    }
+
+    static std::vector<term_descriptor> 
+    two_termC(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
+              OperatorCollection const & ops, Lattice const & lat)
+    {
+        std::vector<term_descriptor> ret;
+        return ret;
     }
 
     static std::vector<term_descriptor> 
@@ -303,43 +381,6 @@ struct SpinSumSU2 {
                 ));
             }
         }
-
-        return ret;
-    }
-
-    static std::vector<term_descriptor> 
-    four_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
-              OperatorCollection const & ops, Lattice const & lat)
-    {
-        std::vector<term_descriptor> ret;
-
-        // These 3 cases produce different S_z spin patterns, which differ along with different index permutations
-        // As in standard notation of the Hamiltonian, the first two positions get a creator, the last two a destructor
-
-        chem_detail::IndexTuple key = chem_detail::align<S>(i,j,k,l);
-        pos_t i_ = key[0], j_ = key[1], k_ = key[2], l_ = key[3];
-
-        if (k_ > l_ && l_ > j_) // eg V_4132
-        { // generates up|up|up|up + up|down|down|up + down|up|up|down + down|down|down|down
-
-            ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, -std::sqrt(3.)*matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
-            ret.push_back(TM::four_term(ops.ident.no_couple,      1,                matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
-        }
-        else if (k_ > j_ && j_ > l_) // eg V_4231
-        { // generates up|up|up|up + up|down|up|down + down|up|down|up + down|down|down|down
-
-            value_type local_element = matrix_element;
-            if (TM::sgn(i,k,l,j)) local_element = -matrix_element;
-
-            ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, std::sqrt(3.)*local_element, i,k,l,j, ops.create, ops.destroy, lat));
-            ret.push_back(TM::four_term(ops.ident.no_couple,      1,               local_element, i,k,l,j, ops.create, ops.destroy, lat));
-        }
-        else if (j_ > k_ && k_ > l_) // eg V_4321
-        { // generates up|up|up|up + up|up|down|down + down|down|up|up + down|down|down|down
-
-            ret.push_back(TM::four_term(ops.ident.no_couple, 1, 2.*matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
-        }
-        else { throw std::runtime_error("unexpected index arrangment in V_ijkl term\n"); }
 
         return ret;
     }

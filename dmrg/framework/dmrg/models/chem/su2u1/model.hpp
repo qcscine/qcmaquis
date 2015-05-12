@@ -410,16 +410,28 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // V_iijj == V_jjii
         else if ( i==j && k==l && j!=k) {
 
-            ta.add_2term(this->terms_, TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, k, count, count, lat));
+            typedef SpinSumSU2<Matrix, SymmGroup> SSUM;
+            typedef std::vector<term_descriptor> term_vec;
+
+            term_vec & vec = this->terms_;
+
+            term_vec terms = SSUM::two_term(matrix_elements[m], i,k,l,j, op_collection, lat);
+            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_2term, &ta, vec, _1));
 
             used_elements[m] += 1;
         }
 
         // V_ijij == V_jiji = V_ijji = V_jiij
         else if ( i==k && j==l && i!=j) {
+            typedef SpinSumSU2<Matrix, SymmGroup> SSUM;
+            typedef std::vector<term_descriptor> term_vec;
 
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, e2d, d2e, lat));
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, matrix_elements[m], i, j, d2e, e2d, lat));
+            term_vec & vec = this->terms_;
+
+            term_vec terms;
+            append(terms, SSUM::two_term(matrix_elements[m], i,k,l,j, op_collection, lat));
+            append(terms, SSUM::two_term(matrix_elements[m], l,j,i,k, op_collection, lat));
+            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_2term, &ta, vec, _1));
 
             // here we have spin0--j--spin1--i--spin0
             // the sqrt(3.) counteracts the Clebsch coeff C^{110}_{mrm'} which applies when the spin1 couples back to spin0
