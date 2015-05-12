@@ -227,7 +227,7 @@ struct SpinSumSU2 {
     //}
 
     static std::vector<term_descriptor> 
-    three_term(tag_vec const & ident, tag_vec const & ident_full, value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
+    three_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
                OperatorCollection const & ops, Lattice const & lat)
     {
         tag_vec const & create_couple_up         = ops.create.couple_up        ; 
@@ -240,16 +240,6 @@ struct SpinSumSU2 {
         tag_vec const & destroy_fill             = ops.destroy.fill_couple_up  ; 
         tag_vec const & destroy_fill_couple_down = ops.destroy.fill_couple_down; 
 
-        tag_vec const & flip_S0                  = ops.flip.no_couple          ; 
-        tag_vec const & flip_to_S2               = ops.flip.couple_up          ; 
-        tag_vec const & flip_to_S0               = ops.flip.couple_down        ; 
-
-        tag_vec const & count                    = ops.count.no_couple         ; 
-        tag_vec const & count_fill               = ops.count.fill_no_couple    ; 
-
-        tag_vec const & e2d                      = ops.e2d.no_couple           ; 
-        tag_vec const & d2e                      = ops.d2e.no_couple           ; 
-
         std::vector<term_descriptor> ret;
 
         int same_idx, pos1, pos2;
@@ -257,15 +247,15 @@ struct SpinSumSU2 {
         if (i==k)
         {
             same_idx = i; pos1 = std::min(l, j); pos2 = std::max(l, j);
-            ret.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, e2d, e2d,
-            destroy, destroy_fill, destroy, destroy_fill, lat));
+            ret.push_back(TM::three_term(ops.ident.no_couple, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, ops.e2d.no_couple, ops.e2d.no_couple,
+            ops.destroy.couple_down, ops.destroy.fill_couple_up, ops.destroy.couple_down, ops.destroy.fill_couple_up, lat));
         }
 
         if (j==l)
         {
             same_idx = j; pos1 = std::min(i, k); pos2 = std::max(i, k);
-            ret.push_back(TM::three_term(ident, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, d2e, d2e,
-            create, create_fill, create, create_fill, lat));
+            ret.push_back(TM::three_term(ops.ident.no_couple, -std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, ops.d2e.no_couple, ops.d2e.no_couple,
+            ops.create.couple_down, ops.create.fill_couple_up, ops.create.couple_down, ops.create.fill_couple_up, lat));
         }
 
         if (j==k || i==l)
@@ -280,31 +270,34 @@ struct SpinSumSU2 {
             if ( same_idx < std::min(pos1,pos2) )
             {
                 ret.push_back(TM::three_term(
-                    ident_full, phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S2, flip_to_S2,
+                    ops.ident_full.no_couple, phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, ops.flip.couple_up, ops.flip.couple_up,
                     create, create_fill_couple_down, destroy, destroy_fill_couple_down, lat
                 ));
                 ret.push_back(TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, count, count,
+                    ops.ident.no_couple, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, ops.count.no_couple, ops.count.no_couple,
                     ops.create.couple_down, ops.create.fill_couple_up, ops.destroy.couple_down, ops.destroy.fill_couple_up, lat
                 ));
             }
             else if (same_idx > std::max(pos1,pos2))
             {
                 ret.push_back(TM::three_term(
-                    ident_full, phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_to_S0, flip_to_S0,
+                    ops.ident_full.no_couple, phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, ops.flip.couple_down, ops.flip.couple_down,
                     create_couple_up, create_fill, destroy_couple_up, destroy_fill, lat
                 ));
                 ret.push_back(TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, count, count, create, create_fill, destroy, destroy_fill, lat
+                    ops.ident.no_couple, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, ops.count.no_couple, ops.count.no_couple,
+                    create, create_fill, destroy, destroy_fill, lat
                 ));
             }
             else
             {
                 ret.push_back(TM::three_term(
-                    ident,  phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, flip_S0, flip_S0, create, create_fill, destroy, destroy_fill, lat
+                    ops.ident.no_couple,  phase * std::sqrt(3.)*matrix_element, same_idx, pos1, pos2, ops.flip.no_couple, ops.flip.no_couple,
+                    create, create_fill, destroy, destroy_fill, lat
                 ));
                 ret.push_back(TM::three_term(
-                    ident, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, count_fill, count_fill, create, create_fill, destroy, destroy_fill, lat
+                    ops.ident.no_couple, -0.5*std::sqrt(2.)*matrix_element, same_idx, pos1, pos2, ops.count.fill_no_couple, ops.count.fill_no_couple,
+                    create, create_fill, destroy, destroy_fill, lat
                 ));
             }
         }
@@ -313,8 +306,8 @@ struct SpinSumSU2 {
     }
 
     static std::vector<term_descriptor> 
-    four_term(tag_vec const & ident, tag_vec const & ident_full, value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
-              OperatorBundle const & create_pkg, OperatorBundle const & destroy_pkg, Lattice const & lat)
+    four_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
+              OperatorCollection const & ops, Lattice const & lat)
     {
         std::vector<term_descriptor> ret;
 
@@ -327,8 +320,8 @@ struct SpinSumSU2 {
         if (k_ > l_ && l_ > j_) // eg V_4132
         { // generates up|up|up|up + up|down|down|up + down|up|up|down + down|down|down|down
 
-            ret.push_back(TM::four_term(ident_full, 2, -std::sqrt(3.)*matrix_element, i,k,l,j, create_pkg, destroy_pkg, lat));
-            ret.push_back(TM::four_term(ident,      1,                matrix_element, i,k,l,j, create_pkg, destroy_pkg, lat));
+            ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, -std::sqrt(3.)*matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
+            ret.push_back(TM::four_term(ops.ident.no_couple,      1,                matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
         }
         else if (k_ > j_ && j_ > l_) // eg V_4231
         { // generates up|up|up|up + up|down|up|down + down|up|down|up + down|down|down|down
@@ -336,13 +329,13 @@ struct SpinSumSU2 {
             value_type local_element = matrix_element;
             if (TM::sgn(i,k,l,j)) local_element = -matrix_element;
 
-            ret.push_back(TM::four_term(ident_full, 2, std::sqrt(3.)*local_element, i,k,l,j, create_pkg, destroy_pkg, lat));
-            ret.push_back(TM::four_term(ident,      1,               local_element, i,k,l,j, create_pkg, destroy_pkg, lat));
+            ret.push_back(TM::four_term(ops.ident_full.no_couple, 2, std::sqrt(3.)*local_element, i,k,l,j, ops.create, ops.destroy, lat));
+            ret.push_back(TM::four_term(ops.ident.no_couple,      1,               local_element, i,k,l,j, ops.create, ops.destroy, lat));
         }
         else if (j_ > k_ && k_ > l_) // eg V_4321
         { // generates up|up|up|up + up|up|down|down + down|down|up|up + down|down|down|down
 
-            ret.push_back(TM::four_term(ident, 1, 2.*matrix_element, i,k,l,j, create_pkg, destroy_pkg, lat));
+            ret.push_back(TM::four_term(ops.ident.no_couple, 1, 2.*matrix_element, i,k,l,j, ops.create, ops.destroy, lat));
         }
         else { throw std::runtime_error("unexpected index arrangment in V_ijkl term\n"); }
 

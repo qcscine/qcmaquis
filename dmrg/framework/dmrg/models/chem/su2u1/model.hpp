@@ -466,10 +466,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             // c^dag_{p1, sigma} c^dag_{p2, sigma'} c_{p3, sigma'} d_{p4, sigma}, summed over sigma and sigma'
 
             term_vec terms;
-            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], i,k,l,j, op_collection, lat));
-            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], i,l,k,j, op_collection, lat));
-            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], j,k,l,i, op_collection, lat));
-            append(terms, SSUM::three_term(ident, ident_full, matrix_elements[m], j,l,k,i, op_collection, lat));
+            append(terms, SSUM::three_term(matrix_elements[m], i,k,l,j, op_collection, lat));
+            append(terms, SSUM::three_term(matrix_elements[m], i,l,k,j, op_collection, lat));
+            append(terms, SSUM::three_term(matrix_elements[m], j,k,l,i, op_collection, lat));
+            append(terms, SSUM::three_term(matrix_elements[m], j,l,k,i, op_collection, lat));
 
             std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_3term, &ta, vec, _1));
 
@@ -496,10 +496,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             // \sum_{sigma, sigma'} c^dag_{p1, sigma} c^dag_{p2, sigma'} c_{p3, sigma'} c_{p4, sigma}
 
             term_vec terms;
-            append(terms, SSUM::four_term(ident, ident_full, matrix_elements[m], i,k,l,j, create_pkg, destroy_pkg, lat));
-            append(terms, SSUM::four_term(ident, ident_full, matrix_elements[m], i,l,k,j, create_pkg, destroy_pkg, lat));
-            append(terms, SSUM::four_term(ident, ident_full, matrix_elements[m], j,k,l,i, create_pkg, destroy_pkg, lat));
-            append(terms, SSUM::four_term(ident, ident_full, matrix_elements[m], j,l,k,i, create_pkg, destroy_pkg, lat));
+            append(terms, SSUM::four_term(matrix_elements[m], i,k,l,j, op_collection, lat));
+            append(terms, SSUM::four_term(matrix_elements[m], i,l,k,j, op_collection, lat));
+            append(terms, SSUM::four_term(matrix_elements[m], j,k,l,i, op_collection, lat));
+            append(terms, SSUM::four_term(matrix_elements[m], j,l,k,i, op_collection, lat));
 
             std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_4term, &ta, vec, _1));
 
