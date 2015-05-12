@@ -372,7 +372,10 @@ public:
                 //    name = "threeptdm";
                 name = "fourptdm";
 
+                // stknecht - may 2015: collapsing operator combinations - check for odd electron/open shell systems
+
                 std::vector<scaled_bond_element> synchronous_meas_operators;
+                // synop 0
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
@@ -385,6 +388,7 @@ public:
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
+                // synop 1
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_down);
@@ -397,6 +401,7 @@ public:
                     meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
+                // synop 2 - collapsing with synop 6 --> factor 2
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
@@ -407,8 +412,9 @@ public:
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_down);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 2));
                 }
+                // synop 3 - collapsing with synop 7 --> factor 2
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
@@ -419,8 +425,9 @@ public:
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_up);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 2));
                 }
+                // synop 4 - collapsing with synop 8 --> factor 2
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
@@ -431,8 +438,9 @@ public:
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 2));
                 }
+                // synop 5 - collapsing with synop 9 --> factor 2
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_down);
@@ -443,8 +451,10 @@ public:
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_up);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 2));
                 }
+                /*
+                // synop 6
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_down);
@@ -457,6 +467,7 @@ public:
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
+                // synop 7
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_down);
@@ -469,6 +480,7 @@ public:
                     meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
+                // synop 8
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_down);
@@ -481,6 +493,7 @@ public:
                     meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
+                // synop 9
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
@@ -493,6 +506,8 @@ public:
                     meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
+                */
+                // synop 10 - collapsing with synop 11 --> factor 2
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
@@ -503,8 +518,10 @@ public:
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_down);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 2));
                 }
+                /*
+                // synop 11
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_down);
@@ -517,6 +534,8 @@ public:
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
+                */
+                // synop 12 - collapsing with synop 13 --> factor 2
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
@@ -527,8 +546,10 @@ public:
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_up);
                     meas_operators.push_back(destroy_down);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 2));
                 }
+                /*
+                // synop 13
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_down);
@@ -541,6 +562,8 @@ public:
                     meas_operators.push_back(destroy_up);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
+                */
+                // synop 14 - collapsing with synop 15 --> factor 2
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_up);
@@ -551,8 +574,10 @@ public:
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_down);
                     meas_operators.push_back(destroy_up);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
+                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 2));
                 }
+                /*
+                // synop 15
                 {
                     bond_tag_element meas_operators;
                     meas_operators.push_back(create_down);
@@ -565,6 +590,7 @@ public:
                     meas_operators.push_back(destroy_down);
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
+                */
                 half_only = true;
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
