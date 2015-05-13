@@ -217,7 +217,7 @@ public:
     {
         if (i==j && k==l && j!=k) return two_termA(matrix_element, i, k, l, j, ops, lat);
         else if (i==k && j==l && j!=k) return two_termB1(matrix_element, i, k, l, j, ops, lat);
-        //else if (i==l && j==k) return two_termB1(matrix_element, i, k, l, j, ops, lat);
+        else if (i==l && j==k) return two_termB2(matrix_element, i, k, l, j, ops, lat);
         else return two_termC(matrix_element, i, k, l, j, ops, lat);
     }
 
@@ -285,6 +285,24 @@ private:
         std::vector<term_descriptor> ret;
         ret.push_back(TM::two_term(false, ops.ident.no_couple,
                                    matrix_element, i, j, ops.e2d.no_couple, ops.d2e.no_couple, lat));
+        return ret;
+    }
+
+    static std::vector<term_descriptor> 
+    two_termB2(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
+              OperatorCollection const & ops, Lattice const & lat)
+    {
+        std::vector<term_descriptor> ret;
+
+        // here we have spin0--j--spin1--i--spin0
+        // the sqrt(3.) counteracts the Clebsch coeff C^{110}_{mrm'} which applies when the spin1 couples back to spin0
+        ret.push_back(TM::positional_two_term(
+            false, ops.ident_full.no_couple, std::sqrt(3.) * matrix_element, i, j,
+            ops.flip.couple_down, ops.flip.couple_up, ops.flip.couple_down, ops.flip.couple_up, lat
+        ));
+
+        ret.push_back(TM::two_term(false, ops.ident.no_couple, -0.5 * matrix_element, i, j, ops.count.no_couple, ops.count.no_couple, lat));
+
         return ret;
     }
 

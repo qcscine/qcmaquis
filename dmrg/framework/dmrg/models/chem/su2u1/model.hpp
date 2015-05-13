@@ -431,15 +431,10 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             term_vec terms;
             append(terms, SSUM::two_term(matrix_elements[m], i,k,l,j, op_collection, lat));
             append(terms, SSUM::two_term(matrix_elements[m], l,j,i,k, op_collection, lat));
+
+            append(terms, SSUM::two_term(matrix_elements[m], i,l,k,j, op_collection, lat));
+
             std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_2term, &ta, vec, _1));
-
-            // here we have spin0--j--spin1--i--spin0
-            // the sqrt(3.) counteracts the Clebsch coeff C^{110}_{mrm'} which applies when the spin1 couples back to spin0
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                false, ident_full, std::sqrt(3.) * matrix_elements[m], i, j, flip_to_S0, flip_to_S2, flip_to_S0, flip_to_S2, lat
-            ));
-
-            ta.add_2term(this->terms_, TermMakerSU2<Matrix, SymmGroup>::two_term(false, ident, -0.5 * matrix_elements[m], i, j, count, count, lat));
 
             used_elements[m] += 1;
         }
