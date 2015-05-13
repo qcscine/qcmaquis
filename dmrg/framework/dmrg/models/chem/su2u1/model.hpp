@@ -391,18 +391,20 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
         // V_ijjj = V_jijj = V_jjij = V_jjji
         else if ( (i==j && j==k && k!=l) || (i!=j && j==k && k==l) ) {
 
-            int same_idx, pos1;
+            typedef SpinSumSU2<Matrix, SymmGroup> SSUM;
+            typedef std::vector<term_descriptor> term_vec;
 
-            if      (i==j) { same_idx = i; pos1 = l; }
-            else if (k==l) { same_idx = l; pos1 = i; }
+            int s, p;
+            if      (i==j) { s = i; p = l; }
+            else if (k==l) { s = l; p = i; }
             else           { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
 
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, ident,  std::sqrt(2.)*matrix_elements[m], same_idx, pos1, create_count, create_fill_count, destroy, destroy_fill, lat
-            ));
-            this->terms_.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
-                true, ident, -std::sqrt(2.)*matrix_elements[m], same_idx, pos1, destroy_count, destroy_fill_count, create, create_fill, lat
-            ));
+            term_vec & vec = this->terms_;
+
+            term_vec terms;
+            append(terms, SSUM::two_term(matrix_elements[m], s,s,s,p, op_collection, lat));
+            append(terms, SSUM::two_term(matrix_elements[m], s,p,s,s, op_collection, lat));
+            std::for_each(terms.begin(), terms.end(), bind(&ChemHelperSU2<Matrix, SymmGroup>::add_2term, &ta, vec, _1));
 
             used_elements[m] += 1;
         }

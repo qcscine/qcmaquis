@@ -217,8 +217,12 @@ public:
     {
         if (i==j && k==l && j!=k) return two_termA(matrix_element, i, k, l, j, ops, lat);
         else if (i==k && j==l && j!=k) return two_termB1(matrix_element, i, k, l, j, ops, lat);
-        else if (i==l && j==k) return two_termB2(matrix_element, i, k, l, j, ops, lat);
-        else return two_termC(matrix_element, i, k, l, j, ops, lat);
+        else if (i==l && j==k && i!=j) return two_termB2(matrix_element, i, k, l, j, ops, lat);
+        else if ((i==k && k==l) ||
+                 (k==l && l==j) ||
+                 (i==l && l==j) ||
+                 (i==k && k==j)) return two_termC(matrix_element, i, k, l, j, ops, lat);
+        else { throw std::runtime_error("Unexpected index arrangement for V_ijjj term\n"); }
     }
 
     static std::vector<term_descriptor> 
@@ -310,7 +314,27 @@ private:
     two_termC(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
               OperatorCollection const & ops, Lattice const & lat)
     {
+        int s, p;
+
+        if (i==k && k==l)      { s = i; p = j; }
+        else if (k==l && l==j) { s = j; p = i; }
+        else if (i==l && l==j) { s = i; p = k; }
+        else if (i==k && k==j) { s = i; p = l; }
+        else  { throw std::runtime_error("Term generation logic has failed for V_ijjj term\n"); }
+
         std::vector<term_descriptor> ret;
+
+        if (i==k) // one lonely destructor
+            ret.push_back(TM::positional_two_term(
+                true, ops.ident.no_couple,  std::sqrt(2.)*matrix_element, s, p, ops.create_count.couple_down, ops.create_count.fill_couple_up,
+                ops.destroy.couple_down, ops.destroy.fill_couple_up, lat
+            ));
+        else     // one lonely constructor
+            ret.push_back(TM::positional_two_term(
+                true, ops.ident.no_couple, -std::sqrt(2.)*matrix_element, s, p, ops.destroy_count.couple_down, ops.destroy_count.fill_couple_up,
+                ops.create.couple_down, ops.create.fill_couple_up, lat
+            ));
+
         return ret;
     }
 
