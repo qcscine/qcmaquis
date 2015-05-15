@@ -294,7 +294,6 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
     destroy_count_pkg.fill_couple_up = destroy_fill_count;
 
     /**********************************************************************/
-    typename TermMakerSU2<Matrix, SymmGroup>::OperatorCollection op_collection;
 
     op_collection.ident     .no_couple = ident;
     op_collection.ident_full.no_couple = ident_full;

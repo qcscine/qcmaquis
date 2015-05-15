@@ -180,7 +180,7 @@ public:
 
                 std::string bra_ckp("");
                 std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, op_collection, synchronous_meas_operators,
                                                                                     false, positions, bra_ckp));
             }
         }
@@ -200,6 +200,8 @@ private:
                           create_fill_count, create_count, destroy_fill_count, destroy_count,
                           count, docc, e2d, d2e, flip_S0, flip_to_S2, flip_to_S0,
                           ident, ident_full, fill, count_fill;
+
+    typename TermMakerSU2<Matrix, SymmGroup>::OperatorCollection op_collection;
 
     typename SymmGroup::subcharge max_irrep;
 
