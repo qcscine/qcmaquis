@@ -566,12 +566,13 @@ namespace measurements {
                                       if(measured)
                                       {
                                           // defines position vector for contracted spin-free 4-RDM element
-                                          pos_t pcontr = measurements_details::get_indx_contr<pos_t>(positions);
+                                          //pos_t pcontr = measurements_details::get_indx_contr<pos_t>(positions);
      
-                                          pos_t pos_f_[5] = {pcontr, p5, p6, p7, p8};
-                                          std::vector<pos_t> positions_f(pos_f_, pos_f_ + 5);
+                                          //pos_t pos_f_[5] = {pcontr, p5, p6, p7, p8};
+                                          //std::vector<pos_t> positions_f(pos_f_, pos_f_ + 5);
                                           
                                           dct.push_back(value);
+                                          //num_labels.push_back(positions_f);
                                           num_labels.push_back(positions_f);
                                       }
                                   }
@@ -692,13 +693,14 @@ namespace measurements {
                                       if(measured)
                                       {
                                           // defines position vector for contracted spin-free 4-RDM element
-                                          pos_t pcontr = measurements_details::get_indx_contr<pos_t>(positions);
+                                          //pos_t pcontr = measurements_details::get_indx_contr<pos_t>(positions);
      
-                                          pos_t pos_f_[5] = {pcontr, p5, p6, p7, p8};
-                                          std::vector<pos_t> positions_f(pos_f_, pos_f_ + 5);
+                                          //pos_t pos_f_[5] = {pcontr, p5, p6, p7, p8};
+                                          //std::vector<pos_t> positions_f(pos_f_, pos_f_ + 5);
                                           
                                           dct.push_back(value);
-                                          num_labels.push_back(positions_f);
+                                          //num_labels.push_back(positions_f);
+                                          num_labels.push_back(positions);
                                       }
                                   }
                               }
