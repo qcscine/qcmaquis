@@ -614,7 +614,6 @@ namespace measurements {
                  pos_t p1 = positions_first[2];
 
                  {
-
                       boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
                       MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
 
