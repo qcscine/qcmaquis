@@ -550,7 +550,7 @@ namespace measurements {
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for collapse(1)
+            #pragma omp parallel for collapse(1) schedule(dynamic)
             #endif
             for (pos_t p1 = 0; p1 < lattice.size(); ++p1)
             for (pos_t p2 = 0; p2 < lattice.size(); ++p2)
@@ -564,23 +564,17 @@ namespace measurements {
                 if (bra_neq_ket)
                     pos_t subref = 0;
 
+                std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
+                std::vector<std::vector<pos_t> > num_labels;
+
                 for (pos_t p3 = subref; p3 < lattice.size(); ++p3)
                 { 
-                    std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
-                    std::vector<std::vector<pos_t> > num_labels;
-
                     for (pos_t p4 = p3; p4 < lattice.size(); ++p4)
                     { 
                         pos_t pos_[4] = {p1, p2, p3, p4};
                         std::vector<pos_t> positions(pos_, pos_ + 4);
 
                         std::vector<term_descriptor> terms = SpinSumSU2<Matrix, SymmGroup>::V_term(1., p1, p2, p3, p4, op_collection, lattice);
-
-                        //std::vector<tag_type> operators;
-                        //operators.push_back(terms[0].operator_tag(0));
-                        //operators.push_back(terms[0].operator_tag(1));
-                        //operators.push_back(terms[0].operator_tag(2));
-                        //operators.push_back(terms[0].operator_tag(3));
 
                         // check if term is allowed by symmetry
                         if(not measurements_details::checkpg<SymmGroup>()(terms[0], tag_handler_local, lattice))
@@ -595,20 +589,21 @@ namespace measurements {
                         num_labels.push_back(positions);
                     }
 
-                    std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
-                                                ? detail::resort_labels(num_labels, order, false) : num_labels );
+                }
 
-                    // save results and labels
-                    #ifdef MAQUIS_OPENMP
-                    #pragma omp critical
-                    #endif
-                    {
-                        this->vector_results.reserve(this->vector_results.size() + dct.size());
-                        std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
+                std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
+                                            ? detail::resort_labels(num_labels, order, false) : num_labels );
 
-                        this->labels.reserve(this->labels.size() + dct.size());
-                        std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
-                    }
+                // save results and labels
+                #ifdef MAQUIS_OPENMP
+                #pragma omp critical
+                #endif
+                {
+                    this->vector_results.reserve(this->vector_results.size() + dct.size());
+                    std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
+
+                    this->labels.reserve(this->labels.size() + dct.size());
+                    std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
                 }
             }
         }
