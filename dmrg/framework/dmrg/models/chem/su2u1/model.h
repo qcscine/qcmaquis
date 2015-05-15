@@ -143,6 +143,7 @@ public:
         typedef std::vector<tag_type> tag_vec;
         typedef std::vector<tag_vec> bond_element;
 
+        boost::regex expression_oneptdm("^MEASURE_ONEPTDM(.*)$");
         boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
         boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
         boost::smatch what;
@@ -155,6 +156,16 @@ public:
                 boost::regex_match(lhs, what, expression_transition_twoptdm)) {
 
                 name = "twoptdm";
+
+                std::string bra_ckp("");
+                std::vector<pos_t> positions;
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
+                                name, lat, tag_handler, op_collection, positions, bra_ckp));
+            }
+
+            if (boost::regex_match(lhs, what, expression_oneptdm)) {
+
+                name = "oneptdm";
 
                 std::string bra_ckp("");
                 std::vector<pos_t> positions;

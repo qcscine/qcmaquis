@@ -475,9 +475,9 @@ namespace measurements {
                     throw std::runtime_error("The bra checkpoint file " + bra_ckp + " was not found\n");
             }
 
-            //if (operator_terms[0].first.size() == 2)
-            //    measure_correlation(bra_mps, ket_mps);
-            //else if (operator_terms[0].first.size() == 4)
+            if (this->name() == "oneptdm")
+                measure_correlation(bra_mps, ket_mps);
+            else if (this->name() == "twoptdm")
                 measure_2rdm(bra_mps, ket_mps);
             //else
             //    throw std::runtime_error("correlation measurements at the moment supported with 2 and 4 operators, size is "
@@ -500,7 +500,7 @@ namespace measurements {
             MPS<Matrix, SymmGroup> const & bra_mps = (bra_neq_ket) ? dummy_bra_mps : ket_mps;
 
             #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for
+            #pragma omp parallel for schedule(dynamic)
             #endif
             for (std::size_t i = 0; i < positions_first.size(); ++i) {
                 pos_t p1 = positions_first[i];
@@ -508,18 +508,33 @@ namespace measurements {
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
-                for (pos_t p2 = p1+1; p2 < lattice.size(); ++p2)
+                for (pos_t p2 = p1; p2 < lattice.size(); ++p2)
                 { 
                     pos_t pos_[2] = {p1, p2};
                     std::vector<pos_t> positions(pos_, pos_ + 2);
 
-                    tag_vec operators(2);
+                    std::vector<term_descriptor> terms;
+                    if (p1 != p2) 
+                        // The sqrt(2.) balances the magnitudes of Clebsch coeffs C^{1/2 1/2 0}_{mrm'} which apply at the second spin-1/2 operator
+                        terms.push_back(TermMakerSU2<Matrix, SymmGroup>::positional_two_term(
+                            true, op_collection.ident.no_couple, std::sqrt(2.), p1, p2, op_collection.create.couple_down, op_collection.create.fill_couple_up,
+                                                              op_collection.destroy.couple_down, op_collection.destroy.fill_couple_up, lattice
+                        ));
+                    else {
+                        term_descriptor term;
+                        term.coeff = 1.;
+                        term.push_back( boost::make_tuple(p1, op_collection.count.no_couple[lattice.get_prop<typename SymmGroup::subcharge>("type", p1)]) );
+                        terms.push_back(term);
+                    }
 
+                    // check if term is allowed by symmetry
+                    if(not measurements_details::checkpg<SymmGroup>()(terms[0], tag_handler_local, lattice))
+                           continue;
                     
-                    //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
-                    MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
-                    //typename MPS<Matrix, SymmGroup>::scalar_type value = operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
-                    typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
+                    generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpo_m(lattice, op_collection.ident.no_couple, op_collection.ident_full.no_couple,
+                                                                          op_collection.fill.no_couple, tag_handler_local, terms);
+                    MPO<Matrix, SymmGroup> mpo = mpo_m.create_mpo();
+                    typename MPS<Matrix, SymmGroup>::scalar_type value = expval(bra_mps, ket_mps, mpo);
 
                     dct.push_back(value);
                     num_labels.push_back(positions);
