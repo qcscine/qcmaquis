@@ -118,6 +118,7 @@ namespace generate_mpo
         , trivial_left(prempo_key_type::trivial_left)
         , trivial_right(prempo_key_type::trivial_right)
         , leftmost_right(length)
+        , rightmost_left(0)
         , finalized(false)
         , verbose(true)
         , core_energy(0.)
@@ -130,9 +131,6 @@ namespace generate_mpo
                 catch (std::runtime_error const & e) {}
             }
 
-            for (size_t p = 0; p < length-1; ++p)
-                prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(model.identity_matrix_tag(lat.get_prop<int>("type",p)), 1.);
-            
             typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
             std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
         }
@@ -149,12 +147,13 @@ namespace generate_mpo
         , trivial_left(prempo_key_type::trivial_left)
         , trivial_right(prempo_key_type::trivial_right)
         , leftmost_right(length)
+        , rightmost_left(0)
         , finalized(false)
         , verbose(false)
         , core_energy(0.)
         {
-            for (size_t p = 0; p < length-1; ++p)
-                prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(identities[lat.get_prop<int>("type",p)], 1.);
+            //for (size_t p = 0; p < length-1; ++p)
+            //    prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(identities[lat.get_prop<int>("type",p)], 1.);
             
             std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
         }
@@ -183,6 +182,7 @@ namespace generate_mpo
             }
             
             leftmost_right = std::min(leftmost_right, boost::get<0>(*term.rbegin()));
+            rightmost_left = std::max(rightmost_left, boost::get<0>(*term.begin()));
         }
                 
         MPO<Matrix, SymmGroup> create_mpo()
@@ -487,6 +487,10 @@ namespace generate_mpo
                     throw std::runtime_error("another site term already existing!");
             }
 
+            // fill with ident from the begin
+            for (size_t p = 0; p < rightmost_left; ++p)
+                prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(identities[lat.get_prop<int>("type",p)], 1.);
+
             /// fill with ident until the end
             bool trivial_fill = true;
             insert_filling(leftmost_right+1, length, trivial_right, trivial_fill);
@@ -507,7 +511,7 @@ namespace generate_mpo
         prempo_key_type trivial_left, trivial_right;
         std::map<pos_t, op_t> site_terms;
         
-        pos_t leftmost_right;
+        pos_t leftmost_right, rightmost_left;
         bool finalized, verbose;
         scale_type core_energy;
     };
