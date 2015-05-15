@@ -573,7 +573,7 @@ namespace measurements {
                                           
                                           dct.push_back(value);
                                           //num_labels.push_back(positions_f);
-                                          num_labels.push_back(positions_f);
+                                          num_labels.push_back(positions);
                                       }
                                   }
                               }
