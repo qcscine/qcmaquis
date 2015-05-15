@@ -430,8 +430,8 @@ qc_su2<Matrix, SymmGroup>::qc_su2(Lattice const & lat_, BaseParameters & parms_)
             term_vec & vec = this->terms_;
 
             term_vec terms;
-            append(terms, SSUM::two_term(matrix_elements[m], i,i,j,j, op_collection, lat));
-            append(terms, SSUM::two_term(matrix_elements[m], j,j,i,i, op_collection, lat));
+            append(terms, SSUM::two_term(0.5*matrix_elements[m], i,i,j,j, op_collection, lat));
+            append(terms, SSUM::two_term(0.5*matrix_elements[m], j,j,i,i, op_collection, lat));
 
             append(terms, SSUM::two_term(matrix_elements[m], i,j,i,j, op_collection, lat));
 

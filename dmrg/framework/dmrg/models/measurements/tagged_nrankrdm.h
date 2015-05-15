@@ -542,18 +542,15 @@ namespace measurements {
                         pos_t pos_[4] = {p1, p2, p3, p4};
                         std::vector<pos_t> positions(pos_, pos_ + 4);
 
-                        // Loop over operator terms that are measured synchronously and added together
-                        // Used e.g. for the four spin combos of the 2-RDM
-                        typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-
                         // check if term is allowed by symmetry
                         //if(not measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local))
                         //       continue;
                         
-                        //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
-                        //MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
-                        //value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
-                        value += 0;
+                        std::vector<term_descriptor> terms = SpinSumSU2<Matrix, SymmGroup>::V_term(1., p1, p2, p3, p4, op_collection, lattice);
+                        generate_mpo::TaggedMPOMaker<Matrix, SymmGroup> mpo_m(lattice, op_collection.ident.no_couple, op_collection.ident_full.no_couple,
+                                                                              op_collection.fill.no_couple, tag_handler_local, terms);
+                        MPO<Matrix, SymmGroup> mpo = mpo_m.create_mpo();
+                        typename MPS<Matrix, SymmGroup>::scalar_type value = expval(bra_mps, ket_mps, mpo);
 
                         dct.push_back(value);
                         num_labels.push_back(positions);

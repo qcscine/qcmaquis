@@ -119,6 +119,7 @@ namespace generate_mpo
         , trivial_right(prempo_key_type::trivial_right)
         , leftmost_right(length)
         , finalized(false)
+        , verbose(true)
         , core_energy(0.)
         {
             for (size_t p = 0; p <= lat.maximum_vertex_type(); ++p)
@@ -149,6 +150,7 @@ namespace generate_mpo
         , trivial_right(prempo_key_type::trivial_right)
         , leftmost_right(length)
         , finalized(false)
+        , verbose(false)
         , core_energy(0.)
         {
             for (size_t p = 0; p < length-1; ++p)
@@ -240,8 +242,8 @@ namespace generate_mpo
                     mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, 1, pre_tensor, tag_handler->get_operator_table(), left_spins, right_spins) );
                 else
                     mpo.push_back( MPOTensor<Matrix, SymmGroup>(rcd.first, rcd.second, pre_tensor, tag_handler->get_operator_table(), left_spins, right_spins) );
-
-                maquis::cout << "MPO Bond: " << rcd.second << std::endl;
+                if (verbose)
+                    maquis::cout << "MPO Bond: " << rcd.second << std::endl;
                 swap(left, right);
                 swap(left_spins, right_spins);
             }
@@ -506,7 +508,7 @@ namespace generate_mpo
         std::map<pos_t, op_t> site_terms;
         
         pos_t leftmost_right;
-        bool finalized;
+        bool finalized, verbose;
         scale_type core_energy;
     };
 

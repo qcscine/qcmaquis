@@ -215,6 +215,34 @@ public:
     typedef typename TM::OperatorCollection OperatorCollection;
 
     static std::vector<term_descriptor> 
+    V_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
+         OperatorCollection const & ops, Lattice const & lat)
+    {
+        Lattice::pos_t p[4] = {i,k,l,j};
+        std::vector<pos_t> ps(p, p + 4);
+        std::sort(ps.begin(), ps.end());
+        std::vector<pos_t>::iterator it = std::unique(ps.begin(), ps.end());
+
+        std::size_t n_unique = std::distance(ps.begin(), it);
+
+        switch(n_unique) {
+            case 4:
+                return four_term(matrix_element, i, k, l, j, ops, lat);
+            case 3:
+                return three_term(matrix_element, i, k, l, j, ops, lat);
+            case 2:
+                return two_term(matrix_element, i, k, l, j, ops, lat);
+            case 1:
+                term_descriptor term;
+                term.coeff = 2.*matrix_element; // 2 spin combinations are non-zero 
+                term.push_back(boost::make_tuple(i, ops.docc.no_couple[lat.get_prop<typename S::subcharge>("type", i)]));
+                return std::vector<term_descriptor>(1, term);
+        }
+
+        return std::vector<term_descriptor>();
+    }
+
+    static std::vector<term_descriptor> 
     two_term(value_type matrix_element, pos_t i, pos_t k, pos_t l, pos_t j,
              OperatorCollection const & ops, Lattice const & lat)
     {
@@ -291,7 +319,7 @@ private:
     {
         std::vector<term_descriptor> ret;
         ret.push_back(TM::two_term(false, ops.ident.no_couple,
-                                   matrix_element, i, j, ops.e2d.no_couple, ops.d2e.no_couple, lat));
+                                   2.0 * matrix_element, i, j, ops.e2d.no_couple, ops.d2e.no_couple, lat));
         return ret;
     }
 
