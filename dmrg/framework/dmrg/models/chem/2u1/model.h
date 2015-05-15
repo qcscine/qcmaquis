@@ -585,7 +585,25 @@ public:
                     synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
                 }
                   
+                value = it->value();
                 half_only = true;
+                /// parse positions p4:p3:p1@x,y,z,... and split into {x,y,z}
+                std::vector<pos_t> my_positions;
+                std::vector<std::string> value_split;
+
+                boost::split( value_split, value, boost::is_any_of("@"));
+                if (value_split.size() > 1) {
+                    boost::char_separator<char> pos_sep(",");
+                    tokenizer pos_tokens(value_split[1], pos_sep);
+                    std::transform(pos_tokens.begin(), pos_tokens.end(), std::back_inserter(my_positions),
+                                   static_cast<pos_t (*)(std::string const&)>(boost::lexical_cast<pos_t, std::string>));
+                    /*
+                    maquis::cout << "my positions are ... ";
+                    std::transform(my_positions.begin(), my_positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::    _1 + 1);
+                    maquis::cout << " " << std::endl;
+                    */
+
+                }
                 std::vector<pos_t> positions;
                 meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, ident, fill, synchronous_meas_operators,
                                                                                     half_only, positions, bra_ckp));
