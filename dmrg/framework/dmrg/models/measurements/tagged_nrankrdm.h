@@ -406,8 +406,8 @@ namespace measurements {
     public:
         TaggedNRankRDM(std::string const& name_, const Lattice & lat,
                        boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_,
-                       typename TM::OperatorCollection const & op_collection_, std::vector<scaled_bond_term> const& ops_,
-                       bool half_only_, positions_type const& positions_ = positions_type(),
+                       typename TM::OperatorCollection const & op_collection_,
+                       positions_type const& positions_ = positions_type(),
                        std::string const& ckp_ = std::string(""))
         : base(name_)
         , lattice(lat)
@@ -416,10 +416,9 @@ namespace measurements {
         , positions_first(positions_)
         , identities(op_collection.ident.no_couple)
         , fillings(op_collection.fill.no_couple)
-        , operator_terms(ops_)
         , bra_ckp(ckp_)
         {
-            pos_t extent = operator_terms.size() > 2 ? lattice.size() : lattice.size()-1;
+            pos_t extent = lattice.size();
             if (positions_first.size() == 0)
                 std::copy(boost::counting_iterator<pos_t>(0), boost::counting_iterator<pos_t>(extent),
                           back_inserter(positions_first));
@@ -480,8 +479,6 @@ namespace measurements {
                     std::vector<pos_t> positions(pos_, pos_ + 2);
 
                     tag_vec operators(2);
-                    operators[0] = operator_terms[0].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
-                    operators[1] = operator_terms[0].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
 
                     // check if term is allowed by symmetry
                     if(not measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local))
@@ -489,7 +486,8 @@ namespace measurements {
                     
                     //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
                     MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
-                    typename MPS<Matrix, SymmGroup>::scalar_type value = operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
+                    //typename MPS<Matrix, SymmGroup>::scalar_type value = operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
+                    typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
 
                     dct.push_back(value);
                     num_labels.push_back(positions);
@@ -547,22 +545,15 @@ namespace measurements {
                         // Loop over operator terms that are measured synchronously and added together
                         // Used e.g. for the four spin combos of the 2-RDM
                         typename MPS<Matrix, SymmGroup>::scalar_type value = 0;
-                        for (std::size_t synop = 0; synop < operator_terms.size(); ++synop) {
 
-                            tag_vec operators(4);
-                            operators[0] = operator_terms[synop].first[0][lattice.get_prop<typename SymmGroup::subcharge>("type", p1)];
-                            operators[1] = operator_terms[synop].first[1][lattice.get_prop<typename SymmGroup::subcharge>("type", p2)];
-                            operators[2] = operator_terms[synop].first[2][lattice.get_prop<typename SymmGroup::subcharge>("type", p3)];
-                            operators[3] = operator_terms[synop].first[3][lattice.get_prop<typename SymmGroup::subcharge>("type", p4)];
-
-                            // check if term is allowed by symmetry
-                            if(not measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local))
-                                   continue;
-                            
-                            //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
-                            MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
-                            value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
-                        }
+                        // check if term is allowed by symmetry
+                        //if(not measurements_details::checkpg<SymmGroup>()(operators, tag_handler_local))
+                        //       continue;
+                        
+                        //term_descriptor term = generate_mpo::arrange_operators(tag_handler, positions, operators);
+                        //MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
+                        //value += operator_terms[synop].second * expval(bra_mps, ket_mps, mpo);
+                        value += 0;
 
                         dct.push_back(value);
                         num_labels.push_back(positions);
@@ -594,7 +585,6 @@ namespace measurements {
 
         positions_type positions_first;
         tag_vec identities, fillings;
-        std::vector<scaled_bond_term> operator_terms;
 
         std::string bra_ckp;
     };

@@ -127,12 +127,6 @@ public:
         else
             throw std::runtime_error("Operator not valid for this model: " + name);
         return 0;
-                          //create_fill, create, destroy_fill, destroy,
-                          //create_fill_couple_down, destroy_fill_couple_down,
-                          //create_couple_up, destroy_couple_up,
-                          //create_fill_count, create_count, destroy_fill_count, destroy_count,
-                          //count, docc, e2d, d2e, flip_S0, flip_to_S2, flip_to_S0,
-                          //ident, ident_full, fill, count_fill;
     }
 
     table_ptr operators_table() const
@@ -148,15 +142,9 @@ public:
 
         typedef std::vector<tag_type> tag_vec;
         typedef std::vector<tag_vec> bond_element;
-        typedef std::pair<bond_element, value_type> scaled_bond_element;
 
-        boost::regex expression("^MEASURE_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_half("^MEASURE_HALF_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_nn("^MEASURE_NN_CORRELATIONS\\[(.*)]$");
-        boost::regex expression_halfnn("^MEASURE_HALF_NN_CORRELATIONS\\[(.*)]$");
         boost::regex expression_twoptdm("^MEASURE_TWOPTDM(.*)$");
         boost::regex expression_transition_twoptdm("^MEASURE_TRANSITION_TWOPTDM(.*)$");
-        boost::regex expression_threeptdm("^MEASURE_THREEPTDM(.*)$");
         boost::smatch what;
 
         for (alps::Parameters::const_iterator it=parms.begin();it != parms.end();++it) {
@@ -168,20 +156,10 @@ public:
 
                 name = "twoptdm";
 
-                std::vector<scaled_bond_element> synchronous_meas_operators;
-                {
-                    bond_element meas_operators;
-                    meas_operators.push_back(create_fill);
-                    meas_operators.push_back(create);
-                    meas_operators.push_back(destroy_fill);
-                    meas_operators.push_back(destroy);
-                    synchronous_meas_operators.push_back(std::make_pair(meas_operators, 1));
-                }
-
                 std::string bra_ckp("");
                 std::vector<pos_t> positions;
-                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(name, lat, tag_handler, op_collection, synchronous_meas_operators,
-                                                                                    false, positions, bra_ckp));
+                meas.push_back( new measurements::TaggedNRankRDM<Matrix, SymmGroup>(
+                                name, lat, tag_handler, op_collection, positions, bra_ckp));
             }
         }
 

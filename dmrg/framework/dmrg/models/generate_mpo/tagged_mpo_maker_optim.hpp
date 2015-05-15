@@ -100,6 +100,7 @@ namespace generate_mpo
         typedef boost::tuple<std::size_t, std::size_t, tag_type, scale_type> tag_block;
         
         typedef ::term_descriptor<typename Matrix::value_type> term_descriptor;
+        typedef std::vector<tag_type> tag_vec;
         
         typedef detail::prempo_key<pos_t, tag_type, index_type> prempo_key_type;
         typedef std::pair<tag_type, scale_type> prempo_value_type;
@@ -109,9 +110,8 @@ namespace generate_mpo
         enum merge_kind {attach, detach};
         
     public:
-        TaggedMPOMaker(Lattice const& lat_, Model<Matrix,SymmGroup> const& model_)
+        TaggedMPOMaker(Lattice const& lat_, Model<Matrix,SymmGroup> const& model)
         : lat(lat_)
-        , model(model_)
         , length(lat.size())
         , tag_handler(model.operators_table())
         , prempo(length)
@@ -121,10 +121,39 @@ namespace generate_mpo
         , finalized(false)
         , core_energy(0.)
         {
+            for (size_t p = 0; p <= lat.maximum_vertex_type(); ++p)
+            {
+                identities.push_back(model.identity_matrix_tag(p));
+                fillings.push_back(model.filling_matrix_tag(p));
+                try { identities_full.push_back(model.get_operator_tag("ident_full", p)); }
+                catch (std::runtime_error const & e) {}
+            }
+
             for (size_t p = 0; p < length-1; ++p)
                 prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(model.identity_matrix_tag(lat.get_prop<int>("type",p)), 1.);
             
             typename Model<Matrix, SymmGroup>::terms_type const& terms = model.hamiltonian_terms();
+            std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
+        }
+
+        TaggedMPOMaker(Lattice const& lat_, tag_vec const & i_, tag_vec const & i_f_, tag_vec const & f_,
+                       boost::shared_ptr<TagHandler<Matrix, SymmGroup> > th_, typename Model<Matrix, SymmGroup>::terms_type const& terms)
+        : lat(lat_)
+        , identities(i_)
+        , identities_full(i_f_)
+        , fillings(f_)
+        , length(lat.size())
+        , tag_handler(th_)
+        , prempo(length)
+        , trivial_left(prempo_key_type::trivial_left)
+        , trivial_right(prempo_key_type::trivial_right)
+        , leftmost_right(length)
+        , finalized(false)
+        , core_energy(0.)
+        {
+            for (size_t p = 0; p < length-1; ++p)
+                prempo[p][make_pair(trivial_left,trivial_left)] = prempo_value_type(identities[lat.get_prop<int>("type",p)], 1.);
+            
             std::for_each(terms.begin(), terms.end(), boost::bind(&TaggedMPOMaker<Matrix,SymmGroup>::add_term, this, _1));
         }
         
@@ -227,7 +256,7 @@ namespace generate_mpo
             assert(term.size() == 1);
             
             /// Due to numerical instability: treat the core energy separately
-            if (term.operator_tag(0) == model.identity_matrix_tag(term.position(0)))
+            if (term.operator_tag(0) == identities[lat.get_prop<int>("type", term.position(0))])
                 core_energy += term.coeff;
 
             else {
@@ -405,9 +434,9 @@ namespace generate_mpo
 		void insert_filling(pos_t i, pos_t j, prempo_key_type k, bool trivial_fill, int custom_ident = -1)
 		{
 			for (; i < j; ++i) {
-                tag_type use_ident = (custom_ident != -1) ? model.get_operator_tag("ident_full", lat.get_prop<int>("type",i))
-                                                          : model.identity_matrix_tag(lat.get_prop<int>("type",i));
-                tag_type op = (trivial_fill) ? use_ident : model.filling_matrix_tag(lat.get_prop<int>("type",i));
+                tag_type use_ident = (custom_ident != -1) ? identities_full[lat.get_prop<int>("type",i)]
+                                                          : identities[lat.get_prop<int>("type",i)];
+                tag_type op = (trivial_fill) ? use_ident : fillings[lat.get_prop<int>("type",i)];
 				std::pair<typename prempo_map_type::iterator,bool> ret = prempo[i].insert( make_pair(make_pair(k,k), prempo_value_type(op, 1.)) );
 				if (!ret.second && ret.first->second.first != op)
 					throw std::runtime_error("Pre-existing term at site "+boost::lexical_cast<std::string>(i)
@@ -466,7 +495,8 @@ namespace generate_mpo
 
     private:
         Lattice const& lat;
-        Model<Matrix,SymmGroup> const& model;
+
+        tag_vec identities, identities_full, fillings;
         
         pos_t length;
         
