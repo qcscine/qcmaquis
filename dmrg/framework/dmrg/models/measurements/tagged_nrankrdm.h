@@ -503,17 +503,18 @@ namespace measurements {
                           // fourth index must be different if p1 == p2 or p1 == p3 or p2 == p3
                           if((p1 == p2 && p4 == p1) || (p1 == p3 && p4 == p1) || (p2 == p3 && p4 == p2)) continue;
                           //if((p1 == p3 && p4 == p1) || (p2 == p3 && p4 == p2)) continue;
+                          bool double_equal = (p1 == p2 && p3 == p4);
 
                           for (pos_t p5 = 0; p5 < p1+1; ++p5)
-                          for (pos_t p6 = 0; p6 < p1+1; ++p6)
-                          for (pos_t p7 = 0; p7 < p1+1; ++p7)
+                          for (pos_t p6 = ((double_equal) ? p5 : 0); p6 < p1+1; ++p6)
+                          for (pos_t p7 = ((double_equal) ? p6+1 : 0); p7 < p1+1; ++p7)
                           {
                               // seventh index must be different if p5 == p6
                               if(p5 == p6 && p7 == p5) continue;
 
                               {
 
-                                  for (pos_t p8 = 0; p8 < p1+1; ++p8)
+                                  for (pos_t p8 = ((double_equal) ? p5 : 0); p8 < p1+1; ++p8)
                                   {
                                       // eighth index must be different if p5 == p6 or p5 == p7 or p6 == p7
                                       if((p5 == p6 && p8 == p5) || (p5 == p7 && p8 == p5) || (p6 == p7 && p8 == p6))
