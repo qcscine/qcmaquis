@@ -187,7 +187,7 @@ public:
 
             orb_file.close();
 
-            maximum_vertex = *std::max(irreps.begin(), irreps.end());
+            maximum_vertex = *std::max_element(irreps.begin(), irreps.end());
         }
         else
             throw std::runtime_error("\"integral_file\" in model input file is not set\n");
