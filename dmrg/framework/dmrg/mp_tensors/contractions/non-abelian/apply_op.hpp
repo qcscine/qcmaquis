@@ -94,10 +94,8 @@ namespace SU2 {
                         size_t r_size = right_i.size_of_block(out_r_charge);
 
                         size_t o = ret.find_block(out_l_charge, out_r_charge);
-                        if ( o == ret.n_blocks() ) {
-                            o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
-                            ret.resize_block(o, out_left_i.size_of_block(out_l_charge), r_size);
-                        }
+                        if ( o == ret.n_blocks() )
+                            o = ret.insert_block(Matrix(out_left_i.size_of_block(out_l_charge),r_size), out_l_charge, out_r_charge);
 
                         int i = SymmGroup::spin(lc), ip = SymmGroup::spin(out_l_charge);
                         int j = SymmGroup::spin(mc), jp = SymmGroup::spin(out_r_charge);
@@ -212,10 +210,8 @@ namespace SU2 {
                         size_t l_size = left_i.size_of_block(out_l_charge);
 
                         size_t o = ret.find_block(out_l_charge, out_r_charge);
-                        if ( o == ret.n_blocks() ) {
-                            o = ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge);
-                            ret.resize_block(o, l_size, out_right_i.size_of_block(out_r_charge));
-                        }
+                        if ( o == ret.n_blocks() )
+                            o = ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
 
                         int i = out_r_charge[1], ip = rc[1];
                         int j = out_l_charge[1], jp = mc[1];
