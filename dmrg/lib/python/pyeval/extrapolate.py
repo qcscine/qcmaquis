@@ -87,8 +87,6 @@ def plot(flist, sweepnr=None):
         yshift = (max(yd) - min(yd)) * 0.05
         xshift = (max(xd) - min(xd)) * 0.2
         for x,y,l in zip(xd, yd, labels):
-            item = ax.text(x - xshift, y, '$m=%d$'%l,
-                        ha='right', va='center')
             #item = ax.text(x - xshift, y, '$m=%d$'%l,
             #            ha='right', va='center')
             item = ax.text(x, y, '$m=%d$'%l,
@@ -98,8 +96,6 @@ def plot(flist, sweepnr=None):
     autolabel(xdata, ydata, extr.m())
 
     # add the extrapolated energy to the plot"
-    ext_note = ax.text(0 + (max(xf)-min(xf)) * 0.05, fit(0),
-    ext_note = ax.text(max(xf)/2.0 + (max(xf)-min(xf)) * 0.05, fit(0),
     ext_note = ax.text(max(xf)/2.0 + (max(xf)-min(xf)) * 0.05, fit(0),
                        'extrapolation:\n$%.6f$'%fit(0), ha='left', va='center')
     # position below is yaxis 
