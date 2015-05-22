@@ -587,7 +587,8 @@ public:
                   
                 value = it->value();
                 half_only = true;
-                /// parse positions p4:p3:p1@x,y,z,... and split into {x,y,z}
+                // parse positions p4:p3:p1:p2@w,x,y,z,... and split into {w,x,y,z}
+                // the position vector reflects the loop ordering in the 4-RDM emasurement 
                 std::vector<pos_t> positions;
                 std::vector<std::string> value_split;
 
