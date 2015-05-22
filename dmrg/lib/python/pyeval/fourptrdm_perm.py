@@ -54,8 +54,8 @@ def print_4rdm(rdm):
         valm05 = val*(-0.5)
         valm2  = val*(-2.0)
 
-        # print duplicates
-        if i==j and k==l:
+        # print permutations
+        if i==j and k==l: # case 1: i==j k==l
            if m==n and o==p:
                print i+1,j+1,k+1,l+1,o+1,o+1,m+1,m+1, fmt%val
 
@@ -132,10 +132,66 @@ def print_4rdm(rdm):
                         print i+1,j+1,k+1,l+1,p+1,o+1,n+1,m+1, fmt%val
                         print i+1,j+1,k+1,l+1,p+1,o+1,m+1,n+1, fmt%val
 
-        #if not min(i,j) == min(l,k):
-        #    print k,l,i,j, fmt%val
-        #    if k!=l:
-        #        print l,k,j,i, fmt%val
+        elif i==j and k!=l: # case 2: i==j k!=l
+           if m==n and o==p: # 2x2 equal
+               print i+1,j+1,k+1,l+1,o+1,o+1,m+1,m+1, fmt%val
+
+               print i+1,j+1,k+1,l+1,m+1,o+1,o+1,m+1, fmt%valm05
+               print i+1,j+1,k+1,l+1,o+1,m+1,m+1,o+1, fmt%valm05
+               print i+1,j+1,k+1,l+1,o+1,m+1,o+1,m+1, fmt%valm05
+               print i+1,j+1,k+1,l+1,m+1,o+1,m+1,o+1, fmt%valm05
+           if m==n and o!=p: # 1 equal (first 2)
+               print i+1,j+1,k+1,l+1,m+1,o+1,m+1,p+1, fmt%valm05
+               print i+1,j+1,k+1,l+1,m+1,p+1,o+1,m+1, fmt%valm05
+               print i+1,j+1,k+1,l+1,o+1,m+1,m+1,o+1, fmt%valm05
+               print i+1,j+1,k+1,l+1,p+1,m+1,o+1,m+1, fmt%valm05
+           if m!=n and o==p: # 1 equal (latter 2)
+               print i+1,j+1,k+1,l+1,n+1,m+1,o+1,o+1, fmt%val
+           if m!=n and n!=o and o!=p and m!=p: # all different
+               print i+1,j+1,k+1,l+1,n+1,m+1,o+1,p+1, fmt%val
+
+        elif i!=j and j==k and k!=l: # case 3: i!=j j==k k!=l
+           if m==n and o==p: # 2x2 equal
+               print i+1,j+1,k+1,l+1,o+1,o+1,m+1,m+1, fmt%val
+               print i+1,j+1,k+1,l+1,o+1,m+1,o+1,m+1, fmt%val
+               print i+1,j+1,k+1,l+1,m+1,o+1,m+1,o+1, fmt%val
+
+               print i+1,j+1,k+1,l+1,m+1,o+1,o+1,m+1, fmt%valm2
+               print i+1,j+1,k+1,l+1,o+1,m+1,m+1,o+1, fmt%valm2
+           if m!=n and o==p: # 1 equal (latter 2)
+               print i+1,j+1,k+1,l+1,o+1,o+1,m+1,n+1, fmt%val
+               print i+1,j+1,k+1,l+1,o+1,m+1,o+1,n+1, fmt%val
+               print i+1,j+1,k+1,l+1,m+1,o+1,n+1,o+1, fmt%val
+
+               print i+1,j+1,k+1,l+1,m+1,o+1,o+1,n+1, fmt%valm2
+           if m!=n and o!=p and m==p: # 1 equal (first and last)
+               print i+1,j+1,k+1,l+1,m+1,o+1,n+1,m+1, fmt%val
+           if m!=n and n!=o and o!=p and m!=p: # all different
+               print i+1,j+1,k+1,l+1,m+1,o+1,n+1,p+1, fmt%val
+
+        elif i!=j and k==l: # case 4: i!=j k==l
+           if m==n and o==p: # 2x2 equal
+               print i+1,j+1,k+1,l+1,o+1,o+1,m+1,m+1, fmt%val
+
+               print i+1,j+1,k+1,l+1,m+1,o+1,o+1,m+1, fmt%valm05
+               print i+1,j+1,k+1,l+1,o+1,m+1,m+1,o+1, fmt%valm05
+               print i+1,j+1,k+1,l+1,o+1,m+1,o+1,m+1, fmt%valm05
+               print i+1,j+1,k+1,l+1,m+1,o+1,m+1,o+1, fmt%valm05
+           if m==n and o!=p: # 1 equal (first 2)
+               print i+1,j+1,k+1,l+1,m+1,m+1,p+1,o+1, fmt%val
+           if m!=n and o==p: # 1 equal (latter 2)
+               print i+1,j+1,k+1,l+1,m+1,o+1,n+1,o+1, fmt%valm05
+               print i+1,j+1,k+1,l+1,m+1,o+1,o+1,n+1, fmt%valm05
+               print i+1,j+1,k+1,l+1,o+1,n+1,o+1,m+1, fmt%valm05
+               print i+1,j+1,k+1,l+1,o+1,n+1,m+1,o+1, fmt%valm05
+           if m!=n and n!=o and o!=p and m!=p: # all different
+               print i+1,j+1,k+1,l+1,m+1,n+1,p+1,o+1, fmt%val
+
+        elif i!=j and k!=l and j!=k: # case 5: i!=j j!=k k!=l
+           if (m==o and n==p) or (m==p and n==o):
+               print i+1,j+1,k+1,l+1,n+1,m+1,p+1,o+1, fmt%val
+           if m==n and o==p:
+               print i+1,j+1,k+1,l+1,o+1,o+1,m+1,m+1, fmt%val
 
 if __name__ == '__main__':
     inputfile = sys.argv[1]
