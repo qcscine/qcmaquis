@@ -143,7 +143,7 @@ def print_4rdm(rdm):
            if m==n and o!=p: # 1 equal (first 2)
                print i+1,j+1,k+1,l+1,m+1,o+1,m+1,p+1, fmt%valm05
                print i+1,j+1,k+1,l+1,m+1,p+1,o+1,m+1, fmt%valm05
-               print i+1,j+1,k+1,l+1,o+1,m+1,m+1,o+1, fmt%valm05
+               print i+1,j+1,k+1,l+1,o+1,m+1,m+1,p+1, fmt%valm05
                print i+1,j+1,k+1,l+1,p+1,m+1,o+1,m+1, fmt%valm05
            if m!=n and o==p: # 1 equal (latter 2)
                print i+1,j+1,k+1,l+1,n+1,m+1,o+1,o+1, fmt%val
