@@ -485,23 +485,12 @@ namespace measurements {
                 p1_end   = positions_first[2];
                 p2_end   = positions_first[3];
             }
-
-            #ifdef MAQUIS_OPENMP
-            #pragma omp parallel for collapse(3) schedule(dynamic,1)
-            #endif
-
             for (pos_t p4 = p4_start ; p4 < p4_end; ++p4)
             for (pos_t p3 = p3_start ; p3 < p3_end; ++p3)
             {
                  for (pos_t p1 = p1_start; p1 >= p1_end; --p1)
                  {
                       if(p4 > p3 || p4 > p1 || p3 > p1) continue;
-
-                      boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
-                      MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
-
-                      std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
-                      std::vector<std::vector<pos_t> > num_labels;
 
                       if(positions_first.size() == 0){
                           p2_start = p1;
@@ -524,17 +513,22 @@ namespace measurements {
                           bool     kl_equal = (p1 != p2 && p2 != p3 && p3 == p4); // case 4
                           bool   none_equal = (p1 != p2 && p2 != p3 && p3 != p4); // case 5
 
-                          for (pos_t p5 = 0; p5 < p1+1; ++p5)
-                          {
-                              // set restrictions on index p6
-                              pos_t p6_end = 0;
-                              if (double_equal || ij_equal)
-                                  p6_end = p5+1;
-                              else
-                                  p6_end = p1+1;
+                          #ifdef MAQUIS_OPENMP
+                          #pragma omp parallel for collapse(2) schedule(dynamic,1)
+                          #endif
 
-                              for (pos_t p6 = 0; p6 < p6_end; ++p6)
+                          for (pos_t p5 = p1; p5 >= 0; --p5)
+                          {
+                              for (pos_t p6 = p1; p6 >= 0; --p6)
                               {
+                                  // set restrictions on index p6
+                                  if ((double_equal || ij_equal) && p6 > p5 ) continue;
+
+                                  MPS<Matrix, SymmGroup> ket_mps_local = ket_mps;
+                                  boost::shared_ptr<TagHandler<Matrix, SymmGroup> > tag_handler_local(new TagHandler<Matrix, SymmGroup>(*tag_handler));
+                                  std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
+                                  std::vector<std::vector<pos_t> > num_labels;
+
                                   // set restrictions on index p7
                                   pos_t p7_end = 0;
                                   if (double_equal)
@@ -643,10 +637,24 @@ namespace measurements {
                                           }
                                       }
                                   }
-                              }
+                                  std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
+                                             ? detail::resort_labels(num_labels, order, false) : num_labels );
+     
+                                 // save results and labels
+                                 #ifdef MAQUIS_OPENMP
+                                 #pragma omp critical
+                                 #endif
+                                 {
+                                    this->vector_results.reserve(this->vector_results.size() + dct.size());
+                                         std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
+     
+                                    this->labels.reserve(this->labels.size() + dct.size());
+                                         std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
+                                  }
+                              } // p6 loop
                           }
                       }
-                      std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
+                      /*std::vector<std::string> lbt = label_strings(lattice,  (order.size() > 0)
                                                   ? detail::resort_labels(num_labels, order, false) : num_labels );
      
                       // save results and labels
@@ -659,7 +667,7 @@ namespace measurements {
      
                           this->labels.reserve(this->labels.size() + dct.size());
                           std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
-                      }
+                      }*/
                  }
              }
          }
