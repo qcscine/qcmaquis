@@ -49,6 +49,8 @@ def print_4rdm(rdm):
         o = lab[6]
         p = lab[7]
 
+        if abs(val) == 0: continue
+
         print i+1,j+1,k+1,l+1,m+1,n+1,o+1,p+1, fmt%val
 
         valm05 = val*(-0.5)
