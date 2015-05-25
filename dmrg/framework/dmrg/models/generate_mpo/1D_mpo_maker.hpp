@@ -188,8 +188,6 @@ namespace generate_mpo
                 if (tag_handler->is_fermionic(product) != carry_sign)
                 {
                     typename Matrix::value_type scale;
-                    //boost::tie(product, scale) = tag_handler->get_product_tag(fill[lat.get_prop<sc>("type", p)], product);
-                    //term.coeff *= scale;
                 }
 
                 // update the phase
@@ -200,8 +198,6 @@ namespace generate_mpo
 
                 prempo.push_back(boost::make_tuple(0,0, product, 1.));
                 ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table(), left_spins, right_spins); 
-                maquis::cout << "site " << p << "   " << left_spins[0] << " -> " << right_spins[0] << "     W: "
-                             << tag_handler->get_op(product).spin() << std::endl;
                 std::swap(left_spins, right_spins);
             }
 
@@ -209,16 +205,13 @@ namespace generate_mpo
             {
                 prempo.push_back(boost::make_tuple(0,0, fill[lat.get_prop<sc>("type", p)], 1.));
                 ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table(), left_spins, left_spins); 
-                maquis::cout << "site " << p << "   " << left_spins[0] << " -> " << left_spins[0] << std::endl;
             }
 
             else
             {
                 prempo.push_back(boost::make_tuple(0,0, ident[lat.get_prop<sc>("type", p)], 1.));
                 ret[p] = MPOTensor<Matrix, SymmGroup>(1, 1, prempo, tag_handler->get_operator_table(), left_spins, left_spins); 
-                maquis::cout << "site " << p << "   " << left_spins[0] << " -> " << left_spins[0] << std::endl;
             }
-
         }
 
         // put the term scale on the first non-trivial operator
