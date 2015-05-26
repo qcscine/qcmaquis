@@ -16,11 +16,12 @@ if [[ -z "$MAQUIS_ONCE" ]]
 then
     export MAQUIS_ONCE=true
     module switch PrgEnv-cray PrgEnv-intel
+    module load python/2.7.6
     module unload cray-libsci
     module load cmake
 
     export PLASMA_ROOT=$MYAPPS/plasma
-    export ALPS_ROOT=$MYAPPS/alps
+    export ALPS_ROOT=$MYAPPS/alps-cxx11
     export CRAYPE_LINK_TYPE=dynamic
     export PATH=$ALPS_ROOT/bin:$MYAPPS/hdf5/bin:$MYAPPS/bin:$PATH
     export LD_LIBRARY_PATH=${ALPS_ROOT}/lib:$MYAPPS/hdf5/lib:${LD_LIBRARY_PATH}
@@ -31,7 +32,7 @@ then
     export PATH=${MAQUIS_INSTALL}/bin:${PATH}
     export PYTHONPATH=$ALPS_ROOT/lib:${HOME}/code/pylibs:$PYTHONPATH
 
-    alias sync_maquis_deps='rsync -aut /project/s512/install.bkp/daint/apps/intel_14_0_2/ $MYAPPS'
+    alias sync_maquis_deps='rsync -aut /project/s576/install.bkp/daint/apps/intel_14_0_2/ $MYAPPS'
 fi
 
 COMMON_CMAKE_INSTALL_PREFIX=${MAQUIS_INSTALL}
