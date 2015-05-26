@@ -49,6 +49,8 @@ def print_3rdm(rdm):
         m = lab[4]
         n = lab[5]
 
+        if abs(val) == 0: continue
+
         print i+1,j+1,k+1,l+1,m+1,n+1, fmt%val
 
         # print duplicates
