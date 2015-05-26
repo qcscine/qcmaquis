@@ -52,25 +52,24 @@ namespace SU2 {
             charge ar = A.basis().right_charge(k);
             const_iterator it = B.basis().left_lower_bound(ar);
 
-            //for ( ; it != B_end && it->lc == ar; ++it)
-            //{
-            //    std::size_t matched_block = std::distance(B_begin, it);
-
-            //    std::size_t c_block = C.find_block(A.basis().left_charge(k), it->rc);
-            //    if (c_block == C.n_blocks()) {
-            //        c_block = C.insert_block(Matrix3(1,1), A.basis().left_charge(k), it->rc);
-            //        C.resize_block(c_block, num_rows(A[k]), it->rs);
-            //    }
-            //    boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
-            //}
-
             for ( ; it != B_end && it->lc == ar; ++it)
             {
                 std::size_t matched_block = std::distance(B_begin, it);
-                Matrix3 tmp(num_rows(A[k]), it->rs);
-                gemm(A[k], B[matched_block], tmp);
-                C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
+
+                std::size_t c_block = C.find_block(A.basis().left_charge(k), it->rc);
+                if (c_block == C.n_blocks())
+                    c_block = C.insert_block(Matrix3(num_rows(A[k]), it->rs), A.basis().left_charge(k), it->rc);
+
+                boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
             }
+
+            //for ( ; it != B_end && it->lc == ar; ++it)
+            //{
+            //    std::size_t matched_block = std::distance(B_begin, it);
+            //    Matrix3 tmp(num_rows(A[k]), it->rs);
+            //    gemm(A[k], B[matched_block], tmp);
+            //    C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
+            //}
         }
     }
 
@@ -93,28 +92,27 @@ namespace SU2 {
             charge ar = A.basis().right_charge(k);
             const_iterator it = B.basis().left_lower_bound(ar);
 
-            //for ( ; it != B_end && it->lc == ar; ++it)
-            //{
-            //    if (A.basis().left_charge(k) != it->rc) continue;
-
-            //    std::size_t matched_block = std::distance(B_begin, it);
-
-            //    std::size_t c_block = C.find_block(A.basis().left_charge(k), it->rc);
-            //    if (c_block == C.n_blocks()) {
-            //        c_block = C.insert_block(Matrix3(1,1), A.basis().left_charge(k), it->rc);
-            //        C.resize_block(c_block, num_rows(A[k]), it->rs);
-            //    }
-            //    boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
-            //}
-
             for ( ; it != B_end && it->lc == ar; ++it)
             {
                 if (A.basis().left_charge(k) != it->rc) continue;
+
                 std::size_t matched_block = std::distance(B_begin, it);
-                Matrix3 tmp(num_rows(A[k]), it->rs);
-                gemm(A[k], B[matched_block], tmp);
-                C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
+
+                std::size_t c_block = C.find_block(A.basis().left_charge(k), it->rc);
+                if (c_block == C.n_blocks())
+                    c_block = C.insert_block(Matrix3(num_rows(A[k]),it->rs), A.basis().left_charge(k), it->rc);
+
+                boost::numeric::bindings::blas::gemm(value_type(1), A[k], B[matched_block], value_type(1), C[c_block]);
             }
+
+            //for ( ; it != B_end && it->lc == ar; ++it)
+            //{
+            //    if (A.basis().left_charge(k) != it->rc) continue;
+            //    std::size_t matched_block = std::distance(B_begin, it);
+            //    Matrix3 tmp(num_rows(A[k]), it->rs);
+            //    gemm(A[k], B[matched_block], tmp);
+            //    C.match_and_add_block(tmp, A.basis().left_charge(k), it->rc);
+            //}
         }
     }
 }
