@@ -173,6 +173,7 @@ namespace measurements {
         {
             pos_t extent = operator_terms.size() > 2 ? lattice.size() : lattice.size()-1;
             // the default setting is only required for "measure_correlation"
+            maquis::cout << "positions size ... " << positions_first.size() << std::endl;
             if (positions_first.size() == 0 && operator_terms[0].first.size() == 2)
                 std::copy(boost::counting_iterator<pos_t>(0), boost::counting_iterator<pos_t>(extent),
                           back_inserter(positions_first));
@@ -250,6 +251,13 @@ namespace measurements {
                     //MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
                     MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
                     typename MPS<Matrix, SymmGroup>::scalar_type value = operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
+
+                    // debug print
+                    if (std::abs(value) > 0)
+                    {
+                        std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
+                        maquis::cout << " " << value << std::endl;
+                    }
 
                     if(measured)
                     {
@@ -426,11 +434,11 @@ namespace measurements {
     
                                 }
                                 // debug print
-                                //if (std::abs(value) > 0)
-                                //{
-                                //    std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
-                                //    maquis::cout << " " << value << std::endl;
-                                //}
+                                if (std::abs(value) > 0)
+                                {
+                                    std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
+                                    maquis::cout << " " << value << std::endl;
+                                }
                                 if(measured)
                                 {
                                      dct.push_back(value);

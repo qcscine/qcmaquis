@@ -38,8 +38,8 @@ def load_2rdm(inputfile):
     return rdm
 
 def print_2rdm(rdm):
-    #fmt = '% -016.10E'
-    fmt = '%e'
+    fmt = '% -016.10E'
+    #fmt = '%e'
 
     for lab, val in zip(rdm.x, rdm.y[0]):
         i = lab[0]
@@ -47,16 +47,18 @@ def print_2rdm(rdm):
         k = lab[2]
         l = lab[3]
 
-        print i,j,k,l, fmt%val
+        if abs(val) == 0: continue
+ 
+        print i+1,j+1,k+1,l+1, fmt%val
 
         # print duplicates
         if l!=k:
-            print j,i,l,k, fmt%val
+            print j+1,i+1,l+1,k+1, fmt%val
 
         if not min(i,j) == min(l,k):
-            print k,l,i,j, fmt%val
+            print k+1,l+1,i+1,j+1, fmt%val
             if k!=l:
-                print l,k,j,i, fmt%val
+                print l+1,k+1,j+1,i+1, fmt%val
 
 if __name__ == '__main__':
     inputfile = sys.argv[1]
