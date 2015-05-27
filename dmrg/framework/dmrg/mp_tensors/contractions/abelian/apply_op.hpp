@@ -69,8 +69,9 @@ namespace contraction {
                 charge out_l_charge = SymmGroup::fuse(out_r_charge, total_delta);             if(!out_left_i.has(out_l_charge)) continue;
                 size_t r_size = right_i[r].second;
                 if(ret.find_block(out_l_charge, out_r_charge) == ret.n_blocks())
-                    ret.resize_block(ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge), 
-                                     out_left_i.size_of_block(out_l_charge), r_size);
+                    //ret.resize_block(ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge), 
+                    //                 out_left_i.size_of_block(out_l_charge), r_size);
+                    ret.insert_block(Matrix(out_left_i.size_of_block(out_l_charge), r_size), out_l_charge, out_r_charge);
             }
         }
         contr_grid.index_sizes(b2);
@@ -174,8 +175,9 @@ namespace contraction {
                 charge out_r_charge = SymmGroup::fuse(out_l_charge, -total_delta);            if(!out_right_i.has(out_r_charge)) continue;
                 size_t l_size = left_i[l].second;
                 if(ret.find_block(out_l_charge, out_r_charge) == ret.n_blocks())
-                    ret.resize_block(ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge), 
-                                     l_size, out_right_i.size_of_block(out_r_charge));
+                    //ret.resize_block(ret.insert_block(Matrix(1,1), out_l_charge, out_r_charge), 
+                    //                 l_size, out_right_i.size_of_block(out_r_charge));
+                    ret.insert_block(Matrix(l_size, out_right_i.size_of_block(out_r_charge)), out_l_charge, out_r_charge);
             }
         }
         ret.index_sizes();
