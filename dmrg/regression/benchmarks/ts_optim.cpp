@@ -90,11 +90,7 @@ int main(int argc, char ** argv)
         maquis::cout.precision(10);
         
         /// Timers
-        #ifdef USE_AMBIENT
-        ambient::timer 
-        #else
         Timer
-        #endif
         time_model      ("Parsing model"),  time_load       ("Load MPS"),
         time_l_boundary ("Left boundary"),  time_r_boundary ("Right boundary"),
         time_optim_jcd  ("Optim. JCD"   ),  time_truncation ("Truncation"),
