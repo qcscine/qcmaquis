@@ -173,7 +173,6 @@ namespace measurements {
         {
             pos_t extent = operator_terms.size() > 2 ? lattice.size() : lattice.size()-1;
             // the default setting is only required for "measure_correlation"
-            maquis::cout << "positions size ... " << positions_first.size() << std::endl;
             if (positions_first.size() == 0 && operator_terms[0].first.size() == 2)
                 std::copy(boost::counting_iterator<pos_t>(0), boost::counting_iterator<pos_t>(extent),
                           back_inserter(positions_first));
@@ -232,7 +231,7 @@ namespace measurements {
 
                 std::vector<typename MPS<Matrix, SymmGroup>::scalar_type> dct;
                 std::vector<std::vector<pos_t> > num_labels;
-                bool measured = false;
+                bool measured = true;
                 for (pos_t p2 = p1+1; p2 < lattice.size(); ++p2)
                 { 
                     pos_t pos_[2] = {p1, p2};
@@ -245,21 +244,28 @@ namespace measurements {
                     // check if term is allowed by symmetry
                     term_descriptor term = generate_mpo::arrange_operators(positions, operators, tag_handler_local);
                     if(not measurements_details::checkpg<SymmGroup>()(term, tag_handler_local, lattice))
-                          continue;
-                    measured = true;
+                    //      continue;
+                            measured = false;
                     
                     //MPO<Matrix, SymmGroup> mpo = generate_mpo::make_1D_mpo(positions, operators, identities, fillings, tag_handler_local, lattice);
-                    MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
-                    typename MPS<Matrix, SymmGroup>::scalar_type value = operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
+                    typename MPS<Matrix, SymmGroup>::scalar_type value;
+                    if(measured)
+                    {
+                         MPO<Matrix, SymmGroup> mpo = generate_mpo::sign_and_fill(term, identities, fillings, tag_handler_local, lattice);
+                         value = operator_terms[0].second * expval(bra_mps, ket_mps, mpo);
+                    }
+                    else
+                         value = 0;
+                 
 
                     // debug print
-                    if (std::abs(value) > 0)
+                    /*if (std::abs(value) > 0)
                     {
                         std::transform(positions.begin(), positions.end(), std::ostream_iterator<pos_t>(std::cout, " "), boost::lambda::_1 + 1);
                         maquis::cout << " " << value << std::endl;
-                    }
+                    }*/
 
-                    if(measured)
+                    //if(measured)
                     {
                          dct.push_back(value);
                          num_labels.push_back(positions);
@@ -275,6 +281,10 @@ namespace measurements {
                 {
                     this->vector_results.reserve(this->vector_results.size() + dct.size());
                     std::copy(dct.rbegin(), dct.rend(), std::back_inserter(this->vector_results));
+
+                    maquis::cout << "dct.size() ... " << dct.size() << std::endl;
+                    //std::transform(lbt.rbegin(), lbt.rend(), std::ostream_iterator<std::string>(std::cout, " "), boost::lambda::_1 + 1);
+                    maquis::cout << " " << std::endl;
 
                     this->labels.reserve(this->labels.size() + dct.size());
                     std::copy(lbt.rbegin(), lbt.rend(), std::back_inserter(this->labels));
