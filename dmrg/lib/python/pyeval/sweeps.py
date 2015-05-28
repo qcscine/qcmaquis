@@ -41,38 +41,37 @@ import matplotlib.pyplot as plt
 import pyalps.plot
 import plotutil
 
-def plot(fname):
+def plot(fnames):
 
-    ret = pydmrg.LoadDMRGSweeps([fname],['Energy'])
+    ret = pydmrg.LoadDMRGSweeps(fnames,['Energy'])
 
-    sweeps = []
-    for sw in ret[0]:
-        sweeps += list(sw[0].y)
+    plot_data = []
+    for i,f in enumerate(ret):
+        sweeps = []
+        for sw in f:
+            sweeps += list(sw[0].y)
 
-    print "total number of sweep values", len(sweeps)
-    print sweeps
-    props = ret[0][0][0].props
-    L = props['L']
-    print "L", L
-    swl = 2.0*(L-1)
-    xdata = np.arange(len(sweeps))/swl
-    ydata = np.array(sweeps)
-  
-#    for y in ydata:
-#        print y
+        print "total number of sweep values", len(sweeps)
+        props = f[0][0].props
+        L = props['L']
+        print "L", L
+        swl = 2.0*(L-1)
+        xdata = np.arange(len(sweeps))/swl
+        ydata = np.array(sweeps)
+      
+        #print ydata
+        print "Minimum energy:", np.min(ydata), "\n"
 
-    print ydata
-    print "Minimum energy:", np.min(ydata)
-
-    pdata = pyalps.DataSet()
-    pdata.x = xdata
-    pdata.y = ydata
-    pdata.props['label'] = "Energy"
+        pdata = pyalps.DataSet()
+        pdata.x = xdata
+        pdata.y = ydata
+        pdata.props['label'] = "Energy " + props["resultfile"]
+        plot_data.append(pdata)
 
     fig = plt.figure()
     plt.xlabel('Sweeps')
     plt.ylabel('Energy')
-    pyalps.plot.plot(pdata)
+    pyalps.plot.plot(plot_data)
 
     #locs,labels = plt.xticks()
     #plt.xticks(locs, map(lambda x: "%g" % x, locs))
@@ -90,7 +89,7 @@ def plot(fname):
     
 
 if __name__=='__main__':
-    rfile = sys.argv[1]
+    rfile = sys.argv[1:]
     plot(rfile)
 
 
