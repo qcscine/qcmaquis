@@ -95,7 +95,7 @@ def plot_mutinf(entanglement_measurement, props):
         
         #img=OffsetImage(read_png(str(i+1)+".png"),zoom=0.08) # The zoom factor should be ideally adjusted to the size of the images
         print i+1, labels[i]
-        img=OffsetImage(read_png("t" + str(int(labels[i]))+".png"),zoom=0.2) # The zoom factor should be ideally adjusted to the size of the images
+        img=OffsetImage(read_png(str(int(labels[i]))+".png"),zoom=0.2) # The zoom factor should be ideally adjusted to the size of the images
         ab=AnnotationBbox(img,[theta[i],r[i]+0.57], frameon=False) # pass Frameon=False to disable the frames around the images
         ax.add_artist(ab)
         
