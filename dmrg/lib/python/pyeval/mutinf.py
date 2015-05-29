@@ -86,15 +86,10 @@ def plot_mutinf(entanglement_measurement, props):
       plt.text(theta[i],(r[i]+0.18),int(labels[i]),size='xx-large',ha='center',va='center')
       
       if(pics): # generate pictures.
-        #import matplotlib.pyplot as plt
-        #from matplotlib import lines
-        #from pylab import *
         from matplotlib.offsetbox import OffsetImage, AnnotationBbox
         from matplotlib.cbook import get_sample_data
         from matplotlib._png import read_png
         
-        #img=OffsetImage(read_png(str(i+1)+".png"),zoom=0.08) # The zoom factor should be ideally adjusted to the size of the images
-        print i+1, labels[i]
         img=OffsetImage(read_png(str(int(labels[i]))+".png"),zoom=0.2) # The zoom factor should be ideally adjusted to the size of the images
         ab=AnnotationBbox(img,[theta[i],r[i]+0.57], frameon=False) # pass Frameon=False to disable the frames around the images
         ax.add_artist(ab)
