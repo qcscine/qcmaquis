@@ -48,6 +48,13 @@ create_tools_symm_target("mps_upgrade_none" "NONE"   "mps_upgrade.cpp"  "${DMRG_
 
 create_tools_symm_target("nrdmexpect_2u1pg"   "TWOU1PG" "nrdmexpect.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
 
+create_tools_symm_target("mps2ci_2u1pg"   "TWOU1PG" "mps2ci.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("ci_generator_2u1pg"   "TWOU1PG" "ci_generator.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("deas_2u1pg"   "TWOU1PG" "deas.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+create_tools_symm_target("det2mps_2u1pg"   "TWOU1PG" "det2mps.cpp"  "dmrg_models;${DMRG_APP_LIBRARIES}")
+
+
+
 if(USE_AMBIENT)
   ## enable only if needed, and with a revision < r3578
   # add_executable(mps_converter mps_converter.cpp)
