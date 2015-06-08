@@ -190,6 +190,7 @@ int main(int argc, char ** argv)
         DmrgParameters parms;
         ar["/parameters"] >> parms;
 
+
         int L = parms["L"];
 
   //create product table

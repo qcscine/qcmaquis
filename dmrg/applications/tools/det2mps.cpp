@@ -58,7 +58,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     {}
 
     typedef Lattice::pos_t pos_t;
-    typedef std::size_t size_t;
+    typedef std::size_t size_t
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
@@ -82,7 +82,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
 
       //get allowed sectors; only interested in charges, may grow the sizes later
-//        std::vector<Index<SymmGroup> > all_sect = allowed_sectors(site_types, phys_dims, right_end, 1);
+      //  std::vector<Index<SymmGroup> > all_sect = allowed_sectors(site_types, phys_dims, right_end, 1);
 
 //        for(int i=0; i<all_sect.size(); i++){
 //           maquis::cout << all_sect[i] <<std::endl;
@@ -154,7 +154,25 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
 
      //initialize sectors according to size of largest sector
       maquis::cout <<std::endl << "    Mmax is set to: " << Mmax <<std::endl<<std::endl;
+
+    //sooner or later is part should be adjusted such that each sector gets only the size required
       di.init_sectors(mps, Mmax, true, 0); 
+
+    //here we should have some resizing of the indices
+    //first testing
+/*      typename SymmGroup::charge doub(2);
+      int sizes = mps[3].col_dim().position(doub);
+      int power = mps[3].col_dim()[sizes].second;
+      maquis::cout << "size of " << doub<<"  is " << power << std::endl;
+
+      mps[3].col_dim()[sizes].second = 4;
+      power = mps[3].col_dim().size_of_block(doub);
+      maquis::cout << "but now it is  is " << sizes << std::endl;
+
+*/
+
+
+
      //this here is absolutely necessary
       for(pos_t i = 0; i < mps.length(); ++i){
          mps[i].multiply_by_scalar(0.0);
