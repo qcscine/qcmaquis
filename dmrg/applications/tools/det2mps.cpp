@@ -34,7 +34,7 @@
 #include "dmrg/sim/matrix_types.h"
 //#include "dmrg/mp_tensors/compression.h"
 #include "dmrg/models/model.h"
-#include "dmrg/mp_tensors/mps_initializers.h"
+//#include "dmrg/mp_tensors/mps_initializers.h"
 #include "dmrg/mp_tensors/mps.h"
 #include "dmrg/mp_tensors/compression.h"
 #include "dmrg/models/lattice.h"
@@ -58,7 +58,7 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
     {}
 
     typedef Lattice::pos_t pos_t;
-    typedef std::size_t size_t
+    typedef std::size_t size_t;
 
     void operator()(MPS<Matrix, SymmGroup> & mps)
     {
@@ -155,21 +155,8 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
      //initialize sectors according to size of largest sector
       maquis::cout <<std::endl << "    Mmax is set to: " << Mmax <<std::endl<<std::endl;
 
-    //sooner or later is part should be adjusted such that each sector gets only the size required
-      di.init_sectors(mps, Mmax, true, 0); 
-
-    //here we should have some resizing of the indices
-    //first testing
-/*      typename SymmGroup::charge doub(2);
-      int sizes = mps[3].col_dim().position(doub);
-      int power = mps[3].col_dim()[sizes].second;
-      maquis::cout << "size of " << doub<<"  is " << power << std::endl;
-
-      mps[3].col_dim()[sizes].second = 4;
-      power = mps[3].col_dim().size_of_block(doub);
-      maquis::cout << "but now it is  is " << sizes << std::endl;
-
-*/
+     //this now calls a function which is part of this structure
+      init_sect(mps, Mmax, true, 0); 
 
 
 
@@ -275,6 +262,115 @@ typename SymmGroup::charge charge_from_int (int sc_input){
    }   
    return site_charge;
 }
+
+//function to initalize sectors -> copied from mps-initializers
+
+void init_sect(MPS<Matrix, SymmGroup> & mps, size_t Mmax, bool fillrand = true, typename Matrix::value_type val = 0)
+{
+    parallel::scheduler_balanced scheduler(mps.length());
+    std::size_t L = mps.length();
+
+    std::vector<Index<SymmGroup> > allowed = allowed_sect(site_types, phys_dims, right_end, Mmax);
+
+    omp_for(size_t i, parallel::range<size_t>(0,L), {
+        parallel::guard proc(scheduler(i));
+        mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_types[i]], allowed[i], allowed[i+1], fillrand, val);
+        mps[i].divide_by_scalar(mps[i].scalar_norm());
+    });
+}
+
+
+//adaption of the allowed sectors function in mps_sectors
+std::vector<Index<SymmGroup> > allowed_sect(std::vector<int> const& site_type,
+                                                      std::vector<Index<SymmGroup> > const& phys_dims,
+                                                      typename SymmGroup::charge right_end,
+                                                      std::size_t Mmax)
+{
+    bool finitegroup = SymmGroup::finite;
+
+    std::size_t L = site_type.size();
+
+    std::vector<typename SymmGroup::charge> maximum_charges(phys_dims.size()), minimum_charges(phys_dims.size());
+    for (int type=0; type<phys_dims.size(); ++type) {
+        Index<SymmGroup> physc = phys_dims[type];
+        physc.sort();
+        maximum_charges[type] = physc.begin()->first;
+        minimum_charges[type] = physc.rbegin()->first;
+        if (minimum_charges[type] > maximum_charges[type]) std::swap(maximum_charges[type], minimum_charges[type]);
+    }
+
+    typename SymmGroup::charge maximum_total_charge=SymmGroup::IdentityCharge, minimum_total_charge=SymmGroup::IdentityCharge;
+    for (int i = 0; i < L; ++i) {
+        maximum_total_charge = SymmGroup::fuse(maximum_total_charge, maximum_charges[site_type[i]]);
+        minimum_total_charge = SymmGroup::fuse(minimum_total_charge, minimum_charges[site_type[i]]);
+    }
+
+    Index<SymmGroup> l_triv, r_triv;
+    l_triv.insert( std::make_pair(SymmGroup::IdentityCharge, 1) );
+    r_triv.insert( std::make_pair(right_end, 1) );
+
+    std::vector<Index<SymmGroup> > left_allowed(L+1), right_allowed(L+1), allowed(L+1);
+    left_allowed[0] = l_triv;
+    right_allowed[L] = r_triv;
+
+    typename SymmGroup::charge cmaxi=maximum_total_charge, cmini=minimum_total_charge;
+    for (int i = 1; i < L+1; ++i) {
+        left_allowed[i] = phys_dims[site_type[i-1]] * left_allowed[i-1];
+        typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
+        cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i-1]]);
+        cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i-1]]);
+        while ( it != left_allowed[i].end() )
+        {
+            if (!finitegroup && SymmGroup::fuse(it->first, cmaxi) < right_end)
+                it = left_allowed[i].erase(it);
+            else if (!finitegroup && SymmGroup::fuse(it->first, cmini) > right_end)
+                it = left_allowed[i].erase(it);
+            else if (!finitegroup && !charge_detail::physical<SymmGroup>(it->first))
+                it = left_allowed[i].erase(it);
+            else {
+                it->second = std::min(Mmax, it->second);
+                ++it;
+            }
+        }
+    }
+
+    cmaxi=maximum_total_charge; cmini=minimum_total_charge;
+    for (int i = L-1; i >= 0; --i) {
+        right_allowed[i] = adjoin(phys_dims[site_type[i]]) * right_allowed[i+1];
+        cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i]]);
+        cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i]]);
+
+        typename Index<SymmGroup>::iterator it = right_allowed[i].begin();
+        while ( it != right_allowed[i].end() )
+        {
+            if (!finitegroup && SymmGroup::fuse(it->first, -cmaxi) > SymmGroup::IdentityCharge)
+                it = right_allowed[i].erase(it);
+            else if (!finitegroup && SymmGroup::fuse(it->first, -cmini) < SymmGroup::IdentityCharge)
+                it = right_allowed[i].erase(it);
+            else if (!finitegroup && !charge_detail::physical<SymmGroup>(it->first))
+                it = right_allowed[i].erase(it);
+            else {
+                it->second = std::min(Mmax, it->second);
+                ++it;
+            }
+        }
+    }
+
+    for (int i = 0; i < L+1; ++i) {
+        allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
+        for (typename Index<SymmGroup>::iterator it = allowed[i].begin();
+            it != allowed[i].end(); ++it)
+            it->second = tri_min(Mmax,
+                                 left_allowed[i].size_of_block(it->first),
+                                 right_allowed[i].size_of_block(it->first));
+    }
+
+    return allowed;
+}
+
+
+
+
 
 
 
@@ -399,7 +495,7 @@ b[0]=c[1] = 1;
    MPS<Matrix,TwoU1PG> hf_mps(L);;
    deas_mps_init<Matrix,TwoU1PG> hf(parms,phys_dims,right_end,site_types,det_list);
    hf(hf_mps); 
-   maquis::cout << "up to here it is fine" << std::endl;
+   maquis::cout << "current date: 09.06.15" << std::endl;
    save("test",hf_mps);
  
     } catch (std::exception& e) {
