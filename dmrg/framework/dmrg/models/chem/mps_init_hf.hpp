@@ -194,7 +194,7 @@ struct hf_mps_init<Matrix, SymmGroup, typename boost::enable_if< symm_traits::Ha
                 {
                     charge sector = SymmGroup::fuse(*it, *it2);
                     if (mps[i].col_dim().has(sector))
-                        next_bond_charges.insert(SymmGroup::fuse(*it, *it2));
+                        next_bond_charges.insert(sector);
                 }
 
             #ifndef NDEBUG
