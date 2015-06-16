@@ -362,11 +362,8 @@ int main(int argc, char ** argv)
      else if(left==0){ //this is only for testing purposes, usually always left>0
 
         int act_orb = casv[0];
-        int deas_pos = 0;
-        int ci_pos = 0;
         int length = 0;
-        int Mmax = 1000;
-        std::vector <int> erase_vec;
+        int Mmax = 50000;
 
            //create first four determinants 
         deas_dets.push_back(hf_occ);
@@ -386,37 +383,26 @@ int main(int argc, char ** argv)
            deas_dets = copy_det(pos,deas_dets);
            act_orb = casv[pos+1];
            deas_dets = deas(pos+1,act_orb,deas_dets);
+
+//improve selection of determinants
         
-        //copy deas_dets to ci_dets
-           length = deas_dets.size();
-           for(int i = deas_pos; i<length; i++){
-              ci_dets.push_back(deas_dets[i]);
-           }
-           deas_pos = length;
 
         //check ci-dets vector for correct spatial symmetry, spin, number of electrons (and later ci-level)
             int nel_det,sym_det,spin_det = 0;
-            erase_vec.clear();
-            for(int i = ci_pos; i<ci_dets.size(); i++){
-               nel_det = num_el(ci_dets[i]);
-               sym_det = sym_check(ci_dets[i], sym_vec, prd); 
-               spin_det = spin_check(ci_dets[i]);
+            for(int i = length; i<deas_dets.size(); i++){
+               nel_det = num_el(deas_dets[i]);
+               sym_det = sym_check(deas_dets[i], sym_vec, prd); 
+               spin_det = spin_check(deas_dets[i]);
         //later also check for suitable ci_level
-               if(nel_det!=nelec ||sym_det!=target_sym ||spin_det!=spin ||ci_check(ci_level,hf_occ_orb,ci_dets[i])){
-                  erase_vec.push_back(i);
+               if(nel_det==nelec &&sym_det==target_sym &&spin_det==spin &&!ci_check(ci_level,hf_occ_orb,deas_dets[i])){
+                  ci_dets.push_back(deas_dets[i]);
+                  if(ci_dets.size()>=Mmax){break;}
                }
             }
-  
-         //actual deletion; reverse iteration is a must here
-            for(int i = erase_vec.size()-1; i>-1; i--){
-               ci_dets.erase(ci_dets.begin()+erase_vec[i]);
-            }
-
-            ci_pos = ci_dets.size();
+            length = deas_dets.size()-1;
 
          //import criterium for maximum number of determinants 
-           if(ci_pos>Mmax){
-              ci_dets.erase(ci_dets.begin()+Mmax,ci_dets.end());
+           if(ci_dets.size()>=Mmax){
               break;
            } 
         }
