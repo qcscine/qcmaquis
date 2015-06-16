@@ -23,11 +23,13 @@
  * DEALINGS IN THE SOFTWARE.
  *
  *****************************************************************************/
-#include "../applications/tools/deas.hpp"
+
 #include <math.h>
 #include <algorithm>
 #include <alps/numeric/matrix.hpp>
+
 #include "dmrg/models/lattice.h"
+#include "../applications/tools/deas.hpp"
 
 
 //function to get orb under consideration
