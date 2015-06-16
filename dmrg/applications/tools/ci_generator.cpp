@@ -363,7 +363,7 @@ int main(int argc, char ** argv)
         int deas_pos = 0;
         int ci_pos = 0;
         int length = 0;
-        int Mmax = 2000;
+        int Mmax = 1000;
         std::vector <int> erase_vec;
 
            //create first four determinants 
@@ -432,6 +432,7 @@ int main(int argc, char ** argv)
            wfile <<std::endl;
         }
         std::cout <<"size of ci_dets: " << ci_dets.size() << std::endl;
+        std::cout <<"size of deas_dets: " << deas_dets.size() << std::endl;
 
 
 
