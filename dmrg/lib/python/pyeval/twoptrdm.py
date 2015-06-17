@@ -35,6 +35,8 @@ def load_2rdm(inputfile):
     # load data from the HDF5 result file
     rdm =  pyalps.loadEigenstateMeasurements([inputfile], what='twoptdm')[0][0]
     rdm.y[0] = 0.5 * rdm.y[0]
+    # uncomment for CASPT2 comparison
+    # rdm.y[0] = rdm.y[0]
     return rdm
 
 def print_2rdm(rdm):
