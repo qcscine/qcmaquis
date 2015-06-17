@@ -71,22 +71,19 @@ typedef U1 grp;
 //additional functions - only reason why functions appear here is my (yet) poor c++ knowledge
 
 //function declaration get_labels
-extern std::vector<std::pair<int,int> > get_labels(const std::vector<std::string> & quant_label,const int L);
+extern std::vector<std::pair<int,int> > get_labels(const std::vector<std::string> & quant_label);
 //function definition get_labels 
-std::vector<std::pair<int,int> > get_labels(const std::vector<std::string> & quant_label,const int L)
+std::vector<std::pair<int,int> > get_labels(const std::vector<std::string> & quant_label)
 {
    std::vector<std::pair<int,int> > labels;
-   int i,j = 0;
    std::pair<int,int> lab;
-      for(j=0;j<L*(L-1)/2;j++){
-         i = 0;
+      for(int j=0;j<quant_label.size();j++){
          boost::tokenizer<> tok(quant_label[j]);
-         for(boost::tokenizer<>::iterator beg= tok.begin(); beg!= tok.end();++beg){
-            if(i==0){lab.first = boost::lexical_cast<int>(*beg);}
-            else{lab.second = boost::lexical_cast<int>(*beg);}
-            i++;
-         }
-            labels.push_back(lab);         
+         boost::tokenizer<>::iterator beg= tok.begin();
+         lab.first = boost::lexical_cast<int>(*beg);
+         ++beg;
+         lab.second = boost::lexical_cast<int>(*beg);
+         labels.push_back(lab);         
       }
       return labels;
 }
@@ -104,14 +101,10 @@ namespace entanglement_detail {
     Matrix assy_hc(const std::vector<std::string> & label_str, Matrix const & values, const int L)
     {
        std::vector<std::pair<int,int> > labels;
-       labels = get_labels(label_str,L);
-       Matrix ret(L,L);
-       //diagonal is zero
-       for(int i=0;i<L;i++){
-          ret(i,i) = 0.0;
-       }
+       labels = get_labels(label_str);
+       Matrix ret(L,L,0);
        //symmetric Matrix build with entries and labels
-       for(int i=0;i<L*(L-1)/2;i++){
+       for(int i=0;i<labels.size();i++){
           ret(labels[i].first,labels[i].second) = double(values(i,0));
           ret(labels[i].second,labels[i].first) = double(values(i,0));
        }
