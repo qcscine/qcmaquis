@@ -274,13 +274,42 @@ void init_sect(MPS<Matrix, SymmGroup> & mps,
     parallel::scheduler_balanced scheduler(mps.length());
     std::size_t L = mps.length();
 
-    std::vector<Index<SymmGroup> > allowed = allowed_sect(site_types, phys_dims, right_end, str_to_col_map, charge_to_int);
+   // std::vector<Index<SymmGroup> > allowed = allowed_sect(site_types, phys_dims, right_end, str_to_col_map, charge_to_int);
+
+    std::vector<Index<SymmGroup> > allowed = allowed_sectors(site_types, phys_dims, right_end, 5);
+    maquis::cout << "allowed sectors created" <<std::endl;
+    allowed = adapt_allowed(allowed, str_to_col_map, charge_to_int);
+
+    maquis::cout << " sectors succesfully adapted" << std::endl;
 
     omp_for(size_t i, parallel::range<size_t>(0,L), {
         parallel::guard proc(scheduler(i));
         mps[i] = MPSTensor<Matrix, SymmGroup>(phys_dims[site_types[i]], allowed[i], allowed[i+1], fillrand, val);
         mps[i].divide_by_scalar(mps[i].scalar_norm());
     });
+}
+
+std::vector<Index<SymmGroup> > adapt_allowed(std::vector<Index<SymmGroup> > allowed,
+                                                 const std::vector<std::vector<std::map<std::string, int > > > &str_to_col_map,
+                                                 std::map <typename SymmGroup::charge, int> &charge_to_int)
+{
+   std::vector<Index<SymmGroup> > adapted = allowed;
+   maquis::cout << "created adapted with size " << adapted.size() << std::endl; 
+   int ifc = 0, Mmax = 0;
+   int L = str_to_col_map.size();
+   maquis::cout << "L is " << L << std::endl;
+   for(int i = 1; i<L+1; ++i){
+      maquis::cout << "in loop " << i << std::endl;
+      for(typename Index<SymmGroup>::iterator it = adapted[i].begin();
+                 it != adapted[i].end(); ++it){
+         ifc = charge_to_int[it->first];
+         Mmax = str_to_col_map[i-1][ifc].size();
+         if(Mmax>0){
+           it->second = str_to_col_map[i-1][ifc].size();
+         }
+      }
+   }
+   return adapted;
 }
 
 
