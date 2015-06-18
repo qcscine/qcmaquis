@@ -80,13 +80,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
         typename SymmGroup::charge up(0), down(0);
         up[0] = down[1] = 1;
 
-
-      //get allowed sectors; only interested in charges, may grow the sizes later
-      //  std::vector<Index<SymmGroup> > all_sect = allowed_sectors(site_types, phys_dims, right_end, 1);
-
-//        for(int i=0; i<all_sect.size(); i++){
-//           maquis::cout << all_sect[i] <<std::endl;
-//        }
       //go through determinants and get possible charges
         std::map <typename SymmGroup::charge, int> charge_to_int;
         typename std::map <typename SymmGroup::charge, int>::iterator it;
@@ -108,13 +101,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
            }
         }
 
-        for(it = charge_to_int.begin(); it != charge_to_int.end(); it++){
-           maquis::cout << "Key is: " << it->first << " with value: " << it->second << std::endl;
-        }
-
-
-
-
 //New Approach including subsectors
 
 // initialize objects required 
@@ -132,40 +118,28 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
           if(dets[d][s]==2||dets[d][s]==3){site_charge[2]=site_types[s];}
           max_charge = SymmGroup::fuse(max_charge,-site_charge);
           str = det_string(s, dets[d]);
-        //  maquis::cout << "at site " << s << " string for map with charge "<<max_charge<<" at site " <<s-1 << " is "  << str << std::endl;
           ifc = charge_to_int[max_charge];
           if(str_to_col_map[s-1][ifc][str]){
-        //     maquis::cout << "already in map"<< std::endl;
              rows_to_fill[d][s]=str_to_col_map[s-1][ifc][str]-1;
           }
           else{
-       //      maquis::cout << "not in map" << std::endl;
              //get largest element in map
              max_value = str_to_col_map[s-1][ifc].size();
              str_to_col_map[s-1][ifc][str]=max_value;
              rows_to_fill[d][s] = max_value -1;
             //get size of largest sector
              Mmax = std::max(Mmax, max_value);
-
-        //     maquis::cout << "    will now be connected to col " << max_value << std::endl;
           }
        }
    } 
 
-     //initialize sectors according to size of largest sector
-      maquis::cout <<std::endl << "    Mmax is set to: " << Mmax <<std::endl<<std::endl;
-
      //this now calls a function which is part of this structure
       init_sect(mps, str_to_col_map, charge_to_int, true, 0); 
-
-
 
      //this here is absolutely necessary
       for(pos_t i = 0; i < mps.length(); ++i){
          mps[i].multiply_by_scalar(0.0);
       }
-
-
 
 
 //fill loop
@@ -177,12 +151,10 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
           if(dets[d][s]==2||dets[d][s]==3){site_charge[2]=site_types[s];}
           search_charge = SymmGroup::fuse(max_charge,-site_charge);
           nrows_fill = mps[s].row_dim().size_of_block(search_charge);
-     //   maquis::cout << "determinant " << d << "  site " << s << " site charge  " << site_charge << " max charge " << max_charge <<std::endl;
       //get current matrix
          size_t max_pos = mps[s].data().left_basis().position(max_charge);
          Matrix & m_insert = mps[s].data()[max_pos];
          nrows = m_insert.num_rows();
-      //   maquis::cout << "number of rows " <<nrows << " and number of rows in subsector " << nrows_fill <<std::endl;
       //get additional offsets for subsectors
          off = 0;
          if(dets[d][s] == 3){
@@ -197,7 +169,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
          }
          else if(dets[d][s] == 1){off = nrows- nrows_fill;}
       //actual insertion
-      //   maquis::cout << "    row to fill here is " <<rows_to_fill[d][s] << " with offset  " <<off <<std::endl;
          m_insert(off+rows_to_fill[d][s],prev_row) = 1;
          prev_row = rows_to_fill[d][s];
          max_charge = SymmGroup::fuse(max_charge,-site_charge);
@@ -213,12 +184,6 @@ struct deas_mps_init : public mps_initializer<Matrix,SymmGroup>
       Matrix & m_first = mps[0].data()[first_pos];
       m_first(0,0) = 1;
    }
-
-//   for(pos_t i = 0; i<mps.length(); i++){
-//      maquis::cout<<mps[i].data() <<std::endl;
-//      mps[i].multiply_by_scalar(1. / mps[i].scalar_norm());
-//   }
-
 
 }//end of main initialization function 
 
@@ -274,13 +239,11 @@ void init_sect(MPS<Matrix, SymmGroup> & mps,
     parallel::scheduler_balanced scheduler(mps.length());
     std::size_t L = mps.length();
 
-   // std::vector<Index<SymmGroup> > allowed = allowed_sect(site_types, phys_dims, right_end, str_to_col_map, charge_to_int);
-
     std::vector<Index<SymmGroup> > allowed = allowed_sectors(site_types, phys_dims, right_end, 5);
     maquis::cout << "allowed sectors created" <<std::endl;
     allowed = adapt_allowed(allowed, str_to_col_map, charge_to_int);
 
-    maquis::cout << " sectors succesfully adapted" << std::endl;
+    maquis::cout << "size of sectors succesfully adapted" << std::endl;
 
     omp_for(size_t i, parallel::range<size_t>(0,L), {
         parallel::guard proc(scheduler(i));
@@ -294,12 +257,9 @@ std::vector<Index<SymmGroup> > adapt_allowed(std::vector<Index<SymmGroup> > allo
                                                  std::map <typename SymmGroup::charge, int> &charge_to_int)
 {
    std::vector<Index<SymmGroup> > adapted = allowed;
-   maquis::cout << "created adapted with size " << adapted.size() << std::endl; 
    int ifc = 0, Mmax = 0;
    int L = str_to_col_map.size();
-   maquis::cout << "L is " << L << std::endl;
    for(int i = 1; i<L+1; ++i){
-      maquis::cout << "in loop " << i << std::endl;
       for(typename Index<SymmGroup>::iterator it = adapted[i].begin();
                  it != adapted[i].end(); ++it){
          ifc = charge_to_int[it->first];
@@ -311,126 +271,6 @@ std::vector<Index<SymmGroup> > adapt_allowed(std::vector<Index<SymmGroup> > allo
    }
    return adapted;
 }
-
-
-//adaption of the allowed sectors function in mps_sectors
-std::vector<Index<SymmGroup> > allowed_sect(std::vector<int> const& site_type,
-                                                      std::vector<Index<SymmGroup> > const& phys_dims,
-                                                      typename SymmGroup::charge right_end,
-                                                      const std::vector<std::vector<std::map<std::string, int > > > &str_to_col_map,
-                                                      std::map <typename SymmGroup::charge, int> &charge_to_int)
-{
-    bool finitegroup = SymmGroup::finite;
-    size_t Mmax = 30;
-    int ifc = 0;
-    std::size_t L = site_types.size();
-
-    std::vector<typename SymmGroup::charge> maximum_charges(phys_dims.size()), minimum_charges(phys_dims.size());
-    for (int type=0; type<phys_dims.size(); ++type) {
-        Index<SymmGroup> physc = phys_dims[type];
-        physc.sort();
-        maximum_charges[type] = physc.begin()->first;
-        minimum_charges[type] = physc.rbegin()->first;
-        if (minimum_charges[type] > maximum_charges[type]) std::swap(maximum_charges[type], minimum_charges[type]);
-    }
-
-    typename SymmGroup::charge maximum_total_charge=SymmGroup::IdentityCharge, minimum_total_charge=SymmGroup::IdentityCharge;
-    for (int i = 0; i < L; ++i) {
-        maximum_total_charge = SymmGroup::fuse(maximum_total_charge, maximum_charges[site_types[i]]);
-        minimum_total_charge = SymmGroup::fuse(minimum_total_charge, minimum_charges[site_types[i]]);
-    }
-
-    Index<SymmGroup> l_triv, r_triv;
-    l_triv.insert( std::make_pair(SymmGroup::IdentityCharge, 1) );
-    r_triv.insert( std::make_pair(right_end, 1) );
-
-    std::vector<Index<SymmGroup> > left_allowed(L+1), right_allowed(L+1), allowed(L+1);
-    left_allowed[0] = l_triv;
-    right_allowed[L] = r_triv;
-
-    typename SymmGroup::charge cmaxi=maximum_total_charge, cmini=minimum_total_charge;
-    for (int i = 1; i < L+1; ++i) {
-        left_allowed[i] = phys_dims[site_types[i-1]] * left_allowed[i-1];
-        typename Index<SymmGroup>::iterator it = left_allowed[i].begin();
-        cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_types[i-1]]);
-        cmini = SymmGroup::fuse(cmini, -minimum_charges[site_types[i-1]]);
- 
-//        maquis::cout << std::endl << "new site "<< i <<" ; size of left_allowed[i] "<< left_allowed[i].size()  << std::endl << std::endl;
- 
-        while ( it != left_allowed[i].end() )
-        {  
-            if(charge_to_int.find(it->first) != charge_to_int.end()){
-               ifc = charge_to_int[it->first];
-               Mmax = str_to_col_map[i-1][ifc].size();
-            }else{Mmax = 0;}
-   
-            if (!finitegroup && SymmGroup::fuse(it->first, cmaxi) < right_end)
-                it = left_allowed[i].erase(it);
-            else if (!finitegroup && SymmGroup::fuse(it->first, cmini) > right_end)
-                it = left_allowed[i].erase(it);
-            else if (!finitegroup && !charge_detail::physical<SymmGroup>(it->first))
-                it = left_allowed[i].erase(it);
-            else {
-                it->second = std::min(Mmax, it->second);
-                ++it;
-            }
-        }
-    }
-
-//maquis::cout << "FINISHED LEFT_ALLOWED" <<std::endl;
-
-    cmaxi=maximum_total_charge; cmini=minimum_total_charge;
-    for (int i = L-1; i >= 0; --i) {
-        right_allowed[i] = adjoin(phys_dims[site_types[i]]) * right_allowed[i+1];
-        cmaxi = SymmGroup::fuse(cmaxi, -maximum_charges[site_type[i]]);
-        cmini = SymmGroup::fuse(cmini, -minimum_charges[site_type[i]]);
-
-        typename Index<SymmGroup>::iterator it = right_allowed[i].begin();
-//        maquis::cout << std::endl << "new site "<< i << std::endl << std::endl;
-        while ( it != right_allowed[i].end() )
-        {
-            if(charge_to_int.find(it->first) != charge_to_int.end() && i>0){            
-               ifc = charge_to_int[it->first];
-               Mmax = str_to_col_map[i-1][ifc].size();
-            }else{Mmax = 0;} 
-
-           if (!finitegroup && SymmGroup::fuse(it->first, -cmaxi) > SymmGroup::IdentityCharge){
-                it = right_allowed[i].erase(it);}
-            else if (!finitegroup && SymmGroup::fuse(it->first, -cmini) < SymmGroup::IdentityCharge){
-                it = right_allowed[i].erase(it);}
-            else if (!finitegroup && !charge_detail::physical<SymmGroup>(it->first))
-                it = right_allowed[i].erase(it);
-            else {
-                it->second = std::min(Mmax, it->second);
-                ++it;
-            }
-        }
-    }
-
-    for (int i = 0; i < L+1; ++i) {
-//        maquis::cout << "site: " << i <<std::endl;
-        allowed[i] = common_subset(left_allowed[i], right_allowed[i]);
-        for (typename Index<SymmGroup>::iterator it = allowed[i].begin();
-            it != allowed[i].end(); ++it){
-        //this was a tri_min before
-        //   Mmax = str_to_col_map[i][ifc].size();
-             Mmax = std::max(
-                                 left_allowed[i].size_of_block(it->first),
-                                 right_allowed[i].size_of_block(it->first));
-             if(Mmax>0){it->second=Mmax;}
-             else{it->second=1;}
-//             maquis::cout << it->first << it->second<< std::endl;
-           }
-    }
-
-    return allowed;
-}
-
-
-
-
-
-
 
 
     BaseParameters parms;
@@ -494,26 +334,11 @@ int main(int argc, char ** argv){
         Lattice lat(parms);
 
         typedef alps::numeric::matrix<double> Matrix;
+
+
 /***Create TEST environment not needed in actual implementation***/
    size_t L = parms["L"];
 
-//create vector of indices -> phys_dims
-TwoU1PG::charge a(0), b(0), c(0), d(1);
-b[0]=c[1] = 1;
-
-   std::vector<Index<TwoU1PG> > phys_dims(4);
-   for(int i = 0; i< 4; i++){
-      b[2]=c[2]=i;
-      phys_dims[i].insert(std::make_pair(a,1));
-      phys_dims[i].insert(std::make_pair(b,1));
-      phys_dims[i].insert(std::make_pair(c,1));
-      phys_dims[i].insert(std::make_pair(d,1));
-   }
-
-
-   for(int i = 0; i<4; i++){
-      std::cout << "phys_dims["<<i<<"] = " <<phys_dims[i] <<std::endl; 
-   }
 //create symmetry vector -> site_types
    int max_site_type = 0;
    std::vector<int> site_types(lat.size());
@@ -528,11 +353,21 @@ b[0]=c[1] = 1;
    std::cout <<std::endl;
    maquis::cout << "maximal site type: " << max_site_type << std::endl;
 
-//get physical dimensions TODO: get phys_dims from parms not manually
-//so far only total symmetric initialization is possible
-//  std::vector<Index<TwoU1PG> > phys_dim(max_site_type+1);
+//create vector of indices -> phys_dims
+TwoU1PG::charge a(0), b(0), c(0), d(1);
+b[0]=c[1] = 1;
 
-
+   std::vector<Index<TwoU1PG> > phys_dims(4);
+   for(int i = 0; i< max_site_type+1; i++){
+      b[2]=c[2]=i;
+      phys_dims[i].insert(std::make_pair(a,1));
+      phys_dims[i].insert(std::make_pair(b,1));
+      phys_dims[i].insert(std::make_pair(c,1));
+      phys_dims[i].insert(std::make_pair(d,1));
+   }
+   for(int i = 0; i<max_site_type+1; i++){
+      std::cout << "phys_dims["<<i<<"] = " <<phys_dims[i] <<std::endl; 
+   }
 
 //get right end charge
  TwoU1PG::charge right_end = chem_detail::qn_helper<TwoU1PG>().total_qn(parms);
@@ -553,9 +388,11 @@ b[0]=c[1] = 1;
    MPS<Matrix,TwoU1PG> hf_mps(L);;
    deas_mps_init<Matrix,TwoU1PG> hf(parms,phys_dims,right_end,site_types,det_list);
    hf(hf_mps); 
-   maquis::cout << "current date: 09.06.15" << std::endl;
+   maquis::cout << "MPS created" << std::endl;
    save("test",hf_mps);
- 
+   maquis::cout << "MPS saved" << std::endl; 
+
+
     } catch (std::exception& e) {
         std::cerr << "Error:" << std::endl << e.what() << std::endl;
         return 1;
