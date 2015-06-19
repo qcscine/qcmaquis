@@ -281,7 +281,8 @@ int main(int argc, char ** argv)
 
     //subtract left part, size is 2 in first microiteration
         int left = 7;//0 not possible here ... would be nice for testing
-
+        int Mmax = 200;
+        int length = 0;
         if(left!=0){
            int L_env = L-left;
            std::vector<int> hf_left = hf_occ;
@@ -319,6 +320,13 @@ int main(int argc, char ** argv)
            for(int i =0; i<L_env; i++){std::cout << ","<<casv_right[i];}
            std::cout <<std::endl;
  
+           //some initializations
+           int nelec_right = 0, nelec_left = 0;
+
+           //create map that connects number of multiplications (half filled orbitals) to possible symmetries
+           std::map<int, std::vector<int> > sym_map;
+
+
            //create first four determinants of right part
            dets_right.push_back(hf_occ);
            int count = 0;
@@ -329,6 +337,48 @@ int main(int argc, char ** argv)
                  dets_right[count][act_orb_right] =i;
               }
            }
+
+       //iteratively copy and create new DEAS determinants right
+           for(int pos = 0; pos<L_env-1; pos++){
+              dets_right = copy_det(pos,dets_right);
+              act_orb_right = casv_right[pos+1]-left;
+              dets_right = deas(pos+1,act_orb_right,dets_right);
+          
+
+             for(int i = length; i<dets_right.size(); i++){
+             //check for number of electrons, spin and symmetry here
+             //get number of electrons in current det
+                nelec_right = num_el(dets_right[i]);
+                nelec_left = nelec-nelec_right;
+             //get possible number of half filled orbitals left
+             
+
+             //check if symmetries that can be created with number of half shells can add to correct total symmetry
+
+
+             //check if number of half shells rewuired to obtain correct symmetry allow to add to the coorect total spin 
+
+
+
+
+
+
+             //also check for suitable ci_level
+
+ 
+             //copy suitable determinants to ci_dets here
+             //check if Mmax is reached already
+
+
+
+
+             }
+             length = dets_right.size(); 
+         }
+
+
+
+
 /* This will no longer be neccesary 
            //create first four determinants of left part
            dets_left.push_back(hf_left);
@@ -340,16 +390,9 @@ int main(int argc, char ** argv)
                  dets_left[count][act_orb_left] =i;
               }
            }
- */
  
-       //iteratively copy and create new DEAS determinants right
-           for(int pos = 0; pos<L_env-1; pos++){
-              dets_right = copy_det(pos,dets_right);
-              act_orb_right = casv_right[pos+1]-left;
-              dets_right = deas(pos+1,act_orb_right,dets_right);
-           }
            
-/*       //iteratively copy and create new DEAS determinants left
+       //iteratively copy and create new DEAS determinants left
            for(int pos = 0;pos<left-1;pos++){
               dets_left = copy_det(pos,dets_left);
               act_orb_left = casv_left[pos+1];
@@ -362,14 +405,11 @@ int main(int argc, char ** argv)
 
 
 
-       ci_dets=deas_dets;
+
      }
      else if(left==0){ //this is only for testing purposes, usually always left>0
 
         int act_orb = casv[0];
-        int length = 0;
-        int Mmax = 50000;
-
            //create first four determinants 
         deas_dets.push_back(hf_occ);
         int count = 0;
