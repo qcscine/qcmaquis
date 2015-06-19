@@ -280,7 +280,7 @@ int main(int argc, char ** argv)
        std::cout <<std::endl;
 
     //subtract left part, size is 2 in first microiteration
-        int left = 0;//0 not possible here ... would be nice for testing
+        int left = 7;//0 not possible here ... would be nice for testing
 
         if(left!=0){
            int L_env = L-left;
@@ -329,7 +329,7 @@ int main(int argc, char ** argv)
                  dets_right[count][act_orb_right] =i;
               }
            }
- 
+/* This will no longer be neccesary 
            //create first four determinants of left part
            dets_left.push_back(hf_left);
            count = 0;
@@ -340,7 +340,7 @@ int main(int argc, char ** argv)
                  dets_left[count][act_orb_left] =i;
               }
            }
- 
+ */
  
        //iteratively copy and create new DEAS determinants right
            for(int pos = 0; pos<L_env-1; pos++){
@@ -349,15 +349,20 @@ int main(int argc, char ** argv)
               dets_right = deas(pos+1,act_orb_right,dets_right);
            }
            
-       //iteratively copy and create new DEAS determinants right
+/*       //iteratively copy and create new DEAS determinants left
            for(int pos = 0;pos<left-1;pos++){
               dets_left = copy_det(pos,dets_left);
               act_orb_left = casv_left[pos+1];
               dets_left = deas(pos+1,act_orb_left,dets_left);
            }
- 
+
        //check for spin, symmetry and number of electrons
-       deas_dets = det_sym_check(dets_left, dets_right, spin, target_sym, nelec, symvec_left, symvec_right, prd);
+*/       deas_dets = det_sym_check(dets_left, dets_right, spin, target_sym, nelec, symvec_left, symvec_right, prd);
+
+
+
+
+       ci_dets=deas_dets;
      }
      else if(left==0){ //this is only for testing purposes, usually always left>0
 
