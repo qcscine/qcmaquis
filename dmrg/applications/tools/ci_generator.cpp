@@ -71,6 +71,80 @@ std::vector<std::vector<int> > deas(const int &pos, const int &act_orb, std::vec
    return dets;
 }
 
+//some functions to get info on left part
+
+
+std::vector<int> get_half_filled(int nelec_left, int left){
+   std::vector<int> half_filled;
+   if(nelec_left>left){nelec_left=nelec_left-left;}
+   if(nelec_left>8){
+     if(nelec_left%2==0){nelec_left=8;}
+     else{nelec_left=7;}
+   }
+   for(int i = nelec_left; i>=0; i-=2){
+      half_filled.push_back(i);
+   }
+   return half_filled;
+}
+
+std::vector<std::pair<int,int> > reduce_symvec(const std::vector<int> &symvec_left){
+   std::vector<std::pair<int,int> > symvec_red;
+   int size  = 0;
+   for(int i = 0; i<8; i++){
+      size = 0;
+      for(int j = 0; j<symvec_left.size(); j++){
+         if(symvec_left[j]==i){size++;}
+      }
+      if(size>0){symvec_red.push_back(std::make_pair(i,size));}
+   }
+   return symvec_red;
+}
+
+
+/*
+std::vector<int> nr_mults(int sym_right, int target_sym, std::vector<std::pair<int,int> > symvec_red; const alps::numeric::matrix<int> &prd){
+   std::vector<int> nr_mults;
+   int sym = 0;
+   int mults = 0;
+   int largest = 0;
+   for(int i=0; i<symvec_red.size();i++){
+      if(symvec_red[i].second>largest){
+         largest = symvec_red[i].second;
+      }
+   }
+
+
+   //symmetry already reached with right part?
+   if(sym_right==target_sym){
+      for(int i = 0; i<=largest; i+=2){
+         nr_mults.push_back(i);
+      }
+   }
+   //symmetry can be reached with one multiplication
+   for(int i = 0; i< symvec_red.size();i++){
+      if(prd(sym_right,symvec_red[i].first)==target_sym){
+         for(int j = 1 j<symvec_red[i].second; j+=2){
+            nr_mults.push_back(i);
+         }
+      break;
+      }
+   }
+  //symmetry can be reached with more than one multiplication
+  for(int i = 0; i< symvec_red.size(); i++){
+     
+
+
+  }
+   
+
+
+
+   return nr_mults;
+}
+*/
+
+
+
 //function to extract ci determinants of a given level
 bool ci_check(const std::vector<int> &ci_level, const std::vector<std::pair<int,int> > &hf_occ_orb, const std::vector<int> &det ){
    bool wrong_level = false;
@@ -280,7 +354,7 @@ int main(int argc, char ** argv)
        std::cout <<std::endl;
 
     //subtract left part, size is 2 in first microiteration
-        int left = 7;//0 not possible here ... would be nice for testing
+        int left = 4;//0 not possible here ... would be nice for testing
         int Mmax = 200;
         int length = 0;
         if(left!=0){
@@ -322,10 +396,48 @@ int main(int argc, char ** argv)
  
            //some initializations
            int nelec_right = 0, nelec_left = 0;
+           int spin_right = 0, spin_left = 0;
+           int sym_right = 0, sym_left = 0;
+           
+           std::vector<int> half_filled;
+
+
+           //reduce sym left
+           std::vector<std::pair<int,int> > red_sym = reduce_symvec(symvec_left);
 
            //create map that connects number of multiplications (half filled orbitals) to possible symmetries
            std::map<int, std::vector<int> > sym_map;
+           std::vector<int> irreps, irreps_old;
+           int irrep = 0;
+           irreps.push_back(0);
+          //case: no multiplication
+           sym_map[0] = irreps;
+           irreps.clear();
+          //case: 1 multiplication 
+           for(int i = 0; i< red_sym.size(); i++){irreps.push_back(red_sym[i].first);}
+           sym_map[1] = irreps;
+           irreps.clear();          
+          //case n multiplications, nr_irreps>=n>1
+           for(int i = 2; i<8; i++){
+              irreps_old = sym_map[i-1];
+              for(int j = 0; j<irreps_old.size();j++){
+                  for(int k= 0; k<red_sym.size();k++){
+                     irrep = prd(irreps_old[j],red_sym[k].first);
+                     if(std::find(irreps.begin(), irreps.end(), irrep) == irreps.end()){
+                        irreps.push_back(irrep);
+                     }
+                  }
+              }
+              sym_map[i]=irreps;
+              irreps.clear();
+           }
 
+  for(int i = 0; i< sym_map.size(); i++){
+     maquis::cout << " Nr of mults = " <<i<< ", possible irreps: "<< sym_map[i].size() <<std::endl; 
+     maquis::cout << "  irreps: " ; for(int j = 0; j <sym_map[i].size(); j++){maquis::cout << sym_map[i][j];}
+     maquis::cout << std::endl;
+  }
+           
 
            //create first four determinants of right part
            dets_right.push_back(hf_occ);
@@ -338,42 +450,64 @@ int main(int argc, char ** argv)
               }
            }
 
-       //iteratively copy and create new DEAS determinants right
-           for(int pos = 0; pos<L_env-1; pos++){
-              dets_right = copy_det(pos,dets_right);
-              act_orb_right = casv_right[pos+1]-left;
-              dets_right = deas(pos+1,act_orb_right,dets_right);
-          
+          maquis::cout <<" first four determinants created" <<std::endl;
 
+       //iteratively copy and create new DEAS determinants right
+           for(int pos = 0; pos<L_env; pos++){
              for(int i = length; i<dets_right.size(); i++){
              //check for number of electrons, spin and symmetry here
-             //get number of electrons in current det
+             //collect some information
+                maquis::cout << "in det " << i << "   " ;
+                for(int k = 0; k<dets_right[i].size();k++){ maquis::cout << dets_right[i][k];}
+                maquis::cout << std::endl;
+
                 nelec_right = num_el(dets_right[i]);
                 nelec_left = nelec-nelec_right;
-             //get possible number of half filled orbitals left
-             
-
-             //check if symmetries that can be created with number of half shells can add to correct total symmetry
-
-
-             //check if number of half shells rewuired to obtain correct symmetry allow to add to the coorect total spin 
-
-
-
-
-
-
-             //also check for suitable ci_level
-
+                spin_right = spin_check(dets_right[i]);
+                spin_left = spin-spin_right;
+                sym_right = sym_check(dets_right[i],symvec_right,prd);
  
-             //copy suitable determinants to ci_dets here
-             //check if Mmax is reached already
-
-
-
-
+             //necessary check for number of electrons
+                if(nelec_right <= nelec && nelec_left <= 2*left){
+                //   maquis::cout << "number of electrons ok" <<std::endl;
+                   half_filled = get_half_filled(nelec_left,left);
+                   maquis::cout << " size of half_filled " << half_filled.size()<<std::endl;
+                   //those entries in half_filled that can not enable the correct spin will be deleted
+                   for(int k = 0; k<half_filled.size(); k++){
+                      if(spin_left == half_filled[k]){
+                         half_filled.erase(half_filled.begin()+k,half_filled.end());
+                         break;
+                      }
+                   }
+                   maquis::cout << " size of half_filled after reduction" << half_filled.size()<<std::endl;
+                   //get symmetry for left part
+                   for(int k = 0; k<8; k++){
+                      sym_left = k;
+                      if(prd(sym_right,sym_left)==target_sym){
+                         break;
+                      }
+                   }
+                   maquis::cout << "   symmetry required here is:  " << sym_left <<std::endl;
+                   //check if symmetry can be reached with at least one number in half_filled
+                   std::vector<int> irreps;
+                   bool sym_check = false;
+                   for(int k = 0;k<half_filled.size();k++){                
+                      irreps=sym_map[half_filled[k]];
+                      if(std::find(irreps.begin(),irreps.end(),sym_left) != irreps.end()){
+                         maquis::cout << "  possible to get that symmetry" <<std::endl;
+                         sym_check = true;
+                         break;
+                      }
+                   }
+                   if(sym_check==true){ci_dets.push_back(dets_right[i]);}
+                }
              }
-             length = dets_right.size(); 
+             length = dets_right.size();
+             if(pos!=L_env-1){
+                 dets_right = copy_det(pos,dets_right);
+                 act_orb_right = casv_right[pos+1]-left;
+                 dets_right = deas(pos+1,act_orb_right,dets_right);
+             }
          }
 
 
@@ -466,7 +600,7 @@ int main(int argc, char ** argv)
         }
         std::cout <<"size of ci_dets: " << ci_dets.size() << std::endl;
         std::cout <<"size of deas_dets: " << deas_dets.size() << std::endl;
-
+        std::cout << "size of deas dets_right: " <<dets_right.size()<<std::endl;
 
 
     } catch (std::exception& e) {
