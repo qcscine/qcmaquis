@@ -99,6 +99,14 @@ std::vector<std::pair<int,int> > reduce_symvec(const std::vector<int> &symvec_le
 }
 
 
+//function to determine occupied orbitals in det
+std::vector<std::pair<int,int> > get_orb(std::vector<int> hf_occ){
+   std::vector<std::pair<int,int> > occ_orb;
+   for(int i= 0; i< hf_occ.size(); i++){
+      if(hf_occ[i]!=1){occ_orb.push_back(std::make_pair(i, hf_occ[i]));}
+   }
+   return occ_orb;
+}
 
 //function to extract ci determinants of a given level
 bool ci_check(const std::vector<int> &ci_level, const std::vector<std::pair<int,int> > &hf_occ_orb, const std::vector<int> &det ){
@@ -153,7 +161,6 @@ int sym_check(const std::vector<int> &det, const std::vector<int> &sym_vec, cons
         sym = prd(sym,sym_vec[i]);
      }
   }
-
    return sym;
 }
 
@@ -242,7 +249,6 @@ int main(int argc, char ** argv)
        hf_sym = sym_check(hf_occ, sym_vec, prd);
        std::cout << "symmetry of HF determinant: " << hf_sym << " vs. target symmetry: " << target_sym << std::endl;      
 
-
     // get number of electrons
        int nelec = 0;
        nelec = num_el(hf_occ);
@@ -252,16 +258,6 @@ int main(int argc, char ** argv)
        int spin = 0;
        spin = spin_check(hf_occ);
        std::cout << "spin of HF determinant: " << spin << std::endl;
-
-    //determine occupied orbitals in hf_det
-       std::vector<std::pair<int,int> > hf_occ_orb;
-       int first = 0;
-       int second = 0;
-       for(int i= 0; i< hf_occ.size(); i++){
-          if(hf_occ[i]!=1){
-             hf_occ_orb.push_back(std::make_pair(i, hf_occ[i]));
-          }
-       }
 
 
     //initialize stuff
@@ -276,8 +272,8 @@ int main(int argc, char ** argv)
        std::cout <<std::endl;
 
     //subtract left part, size is 2 in first microiteration
-        int left = 3;
-        int Mmax = 200;
+        int left = 26;
+        int Mmax = 20000;
         int length = 0;
         if(left!=0){
            int L_env = L-left;
@@ -314,9 +310,9 @@ int main(int argc, char ** argv)
            int nelec_right = 0, nelec_left = 0;
            int spin_right = 0, spin_left = 0;
            int sym_right = 0, sym_left = 0;
-           
            std::vector<int> half_filled;
-
+           //determine occupied orbitals in first det
+           std::vector<std::pair<int,int> > hf_occ_orb = get_orb(hf_right);
 
            //reduce sym left
            std::vector<std::pair<int,int> > red_sym = reduce_symvec(symvec_left);
@@ -348,11 +344,11 @@ int main(int argc, char ** argv)
               irreps.clear();
            }
 
-  for(int i = 0; i< sym_map.size(); i++){
-     maquis::cout << " Nr of mults = " <<i<< ", possible irreps: "<< sym_map[i].size() <<std::endl; 
-     maquis::cout << "  irreps: " ; for(int j = 0; j <sym_map[i].size(); j++){maquis::cout << sym_map[i][j];}
-     maquis::cout << std::endl;
-  }
+//  for(int i = 0; i< sym_map.size(); i++){
+//     maquis::cout << " Nr of mults = " <<i<< ", possible irreps: "<< sym_map[i].size() <<std::endl; 
+//     maquis::cout << "  irreps: " ; for(int j = 0; j <sym_map[i].size(); j++){maquis::cout << sym_map[i][j];}
+//     maquis::cout << std::endl;
+//  }
            
 
            //create first four determinants of right part
@@ -380,7 +376,7 @@ int main(int argc, char ** argv)
  
              //left part is forced to be totally symmetric
                 if(nelec_left == 2*left){
-                   if(prd(0,sym_right)==target_sym&&spin_right==spin){ci_dets.push_back(dets_right[i]);}
+                   if(prd(0,sym_right)==target_sym&&spin_right==spin&&!ci_check(ci_level,hf_occ_orb,dets_right[i])){ci_dets.push_back(dets_right[i]);}
                 }else if(nelec_right < nelec && nelec_left <= (2*left-abs(spin_left))&&nelec_left>=abs(spin_left)&&left!=abs(spin_left)){
 
                    half_filled = get_half_filled(nelec_left,left);
@@ -409,20 +405,23 @@ int main(int argc, char ** argv)
                          break;
                       }
                    }
-                   if(sym_check==true){ci_dets.push_back(dets_right[i]);}
-                //if configuration on the left is completely determined by the spin the symmetry has no degrees of freedom and is forced to be the product of the sym_left vector
+                   if(sym_check==true&&!ci_check(ci_level,hf_occ_orb,dets_right[i])){ci_dets.push_back(dets_right[i]);}
+                //if configuration on the left is completely determined by the spin, the symmetry is forced to be the direct product of the entries of the sym_left vector
                 }else if(nelec_right < nelec && nelec_left <= (2*left-abs(spin_left))&&nelec_left>=abs(spin_left)&&left==abs(spin_left)){
                    int force_sym = 0;
                    for(int k = 0; k<left; k++){
                       force_sym = prd(force_sym,symvec_left[k]);
                    }
-                   if(prd(force_sym,sym_right)==target_sym){ci_dets.push_back(dets_right[i]);}
-                }else if(nelec_right==nelec&&spin_right == spin &&sym_right==target_sym){
+                   if(prd(force_sym,sym_right)==target_sym&&!ci_check(ci_level,hf_occ_orb,dets_right[i])){ci_dets.push_back(dets_right[i]);}
+                }else if(nelec_right==nelec&&spin_right == spin &&sym_right==target_sym&&!ci_check(ci_level,hf_occ_orb,dets_right[i])){
                    ci_dets.push_back(dets_right[i]);
                 }
+                if(ci_dets.size()>=Mmax){break;}
              }
+             if(ci_dets.size()>=Mmax){break;}
              length = dets_right.size();
              if(pos!=L_env-1){
+                 maquis::cout << "DEAS step "<<pos+2 << ": " << dets_right.size() << " DEAS dets and " << ci_dets.size() << " CI dets" << std::endl;
                  dets_right = copy_det(pos,dets_right);
                  act_orb_right = casv_right[pos+1]-left;
                  dets_right = deas(pos+1,act_orb_right,dets_right);
@@ -430,6 +429,9 @@ int main(int argc, char ** argv)
          }
      }//end of cas left != 0
      else if(left==0){ 
+           
+
+        std::vector<std::pair<int,int> > hf_occ_orb = get_orb(hf_occ);
 
         int act_orb = casv[0];
            //create first four determinants 
