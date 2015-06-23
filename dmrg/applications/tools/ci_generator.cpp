@@ -72,8 +72,6 @@ std::vector<std::vector<int> > deas(const int &pos, const int &act_orb, std::vec
 }
 
 //some functions to get info on left part
-
-
 std::vector<int> get_half_filled(int nelec_left, int left){
    std::vector<int> half_filled;
    if(nelec_left>left){nelec_left=left-(nelec_left-left);}
@@ -86,7 +84,7 @@ std::vector<int> get_half_filled(int nelec_left, int left){
    }
    return half_filled;
 }
-
+//function to reduce the symmetry vector - here actually no pair is required since later only first entry is used
 std::vector<std::pair<int,int> > reduce_symvec(const std::vector<int> &symvec_left){
    std::vector<std::pair<int,int> > symvec_red;
    int size  = 0;
@@ -99,49 +97,6 @@ std::vector<std::pair<int,int> > reduce_symvec(const std::vector<int> &symvec_le
    }
    return symvec_red;
 }
-
-
-/*
-std::vector<int> nr_mults(int sym_right, int target_sym, std::vector<std::pair<int,int> > symvec_red; const alps::numeric::matrix<int> &prd){
-   std::vector<int> nr_mults;
-   int sym = 0;
-   int mults = 0;
-   int largest = 0;
-   for(int i=0; i<symvec_red.size();i++){
-      if(symvec_red[i].second>largest){
-         largest = symvec_red[i].second;
-      }
-   }
-
-
-   //symmetry already reached with right part?
-   if(sym_right==target_sym){
-      for(int i = 0; i<=largest; i+=2){
-         nr_mults.push_back(i);
-      }
-   }
-   //symmetry can be reached with one multiplication
-   for(int i = 0; i< symvec_red.size();i++){
-      if(prd(sym_right,symvec_red[i].first)==target_sym){
-         for(int j = 1 j<symvec_red[i].second; j+=2){
-            nr_mults.push_back(i);
-         }
-      break;
-      }
-   }
-  //symmetry can be reached with more than one multiplication
-  for(int i = 0; i< symvec_red.size(); i++){
-     
-
-
-  }
-   
-
-
-
-   return nr_mults;
-}
-*/
 
 
 
@@ -165,7 +120,7 @@ bool ci_check(const std::vector<int> &ci_level, const std::vector<std::pair<int,
          }
       }
    }
-//theck if number of changes agrees with ci_level 
+//check if number of changes agrees with ci_level 
    for(int i = 0; i<ci_level.size(); i++){
       if(ci_level[i] != diff){
          wrong_level = true;
@@ -176,8 +131,6 @@ bool ci_check(const std::vector<int> &ci_level, const std::vector<std::pair<int,
    }
    return wrong_level;
 }
-
-
 
 
 //get number of electrons in a determinant
@@ -191,7 +144,6 @@ int num_el(const std::vector<int> &det){
     }
    return nelec;
 }
-
 
 //check symmetry of a determinant
 int sym_check(const std::vector<int> &det, const std::vector<int> &sym_vec, const alps::numeric::matrix<int> &prd){
@@ -213,36 +165,6 @@ int spin_check(const std::vector<int> &det){
       else if(det[i]==3){spin = spin+1;}
    }
    return spin;
-}
-
-
-//check if target symmetry can be reached with current determinant
-
-std::vector<std::vector<int> > det_sym_check(const std::vector<std::vector<int> > &dets_left, const std::vector<std::vector<int> > &dets_right, const int &spin, const int &sym, const int &nelec, const std::vector<int> &symvec_left, const std::vector<int> symvec_right, const alps::numeric::matrix<int> &prd){
-
-std::vector<std::vector<int> > deas_dets;
-int n_left, n_right, spin_left, spin_right, sym_left, sym_right,tot_sym,tot_spin,tot_nel = 0;
-//outer loop over all possible determinants
-   for(int i = 0; i<dets_right.size();i++){
-      n_right = num_el(dets_right[i]);
-      spin_right = spin_check(dets_right[i]);
-      sym_right = sym_check(dets_right[i],symvec_right,prd);
-   //inner loop over all possible counterparts
-      for(int j=0; j<dets_left.size();j++){
-         n_left = num_el(dets_left[j]);
-         spin_left = spin_check(dets_left[j]);
-         sym_left = sym_check(dets_left[j],symvec_left,prd);
-         tot_sym = prd(sym_left,sym_right);
-         tot_spin = abs(spin_right+spin_left); //up and down spins are indistinguishable -> take absolute value
-         tot_nel =n_left + n_right;
-         if(tot_spin==abs(spin) && tot_sym == sym && tot_nel==nelec){
-            deas_dets.push_back(dets_right[i]);
-            break;
-         }
-         else{;}
-      }
-   }
-   return deas_dets;
 }
 
 
@@ -354,25 +276,21 @@ int main(int argc, char ** argv)
        std::cout <<std::endl;
 
     //subtract left part, size is 2 in first microiteration
-        int left = 7;//0 not possible here ... would be nice for testing
+        int left = 3;
         int Mmax = 200;
         int length = 0;
         if(left!=0){
            int L_env = L-left;
-           std::vector<int> hf_left = hf_occ;
+           std::vector<int> hf_right = hf_occ;
            std::vector<int> symvec_left = sym_vec;
            std::vector<int> symvec_right = sym_vec;
-           hf_occ.erase(hf_occ.begin(), hf_occ.begin()+left);
-           hf_left.erase(hf_left.begin()+left,hf_left.end());
+           hf_right.erase(hf_right.begin(), hf_right.begin()+left);
            symvec_right.erase(symvec_right.begin(), symvec_right.begin()+left);
            symvec_left.erase(symvec_left.begin()+left,symvec_left.end());
  
  
            std::cout << "environment only HF occupation  vector: ";
-           for(int i =0; i<L_env; i++){std::cout << ","<<hf_occ[i];}
-           std::cout <<std::endl;
-           std::cout << "system only HF occupation  vector: ";
-           for(int i =0; i<left; i++){std::cout << ","<<hf_left[i];}
+           for(int i =0; i<L_env; i++){std::cout << ","<<hf_right[i];}
            std::cout <<std::endl;
  
            std::cout << "environment only symmetry  vector: ";
@@ -383,12 +301,10 @@ int main(int argc, char ** argv)
            std::cout <<std::endl;
  
        //create first set of determinants by DEAS procedure
-           std::vector<int> casv_right, casv_left;
-           casv_left = el_casv(1,left,casv);
+           std::vector<int> casv_right;
            casv_right = el_casv(0,left,casv);
  
            int act_orb_right = casv_right[0]-left;
-           int act_orb_left = casv_left[0];
  
            std::cout << "CAS vector after elimination: ";
            for(int i =0; i<L_env; i++){std::cout << ","<<casv_right[i];}
@@ -440,11 +356,11 @@ int main(int argc, char ** argv)
            
 
            //create first four determinants of right part
-           dets_right.push_back(hf_occ);
+           dets_right.push_back(hf_right);
            int count = 0;
            for(int i = 1; i<5; i++){
-              if(hf_occ[act_orb_right]!=i){
-                 dets_right.push_back(hf_occ);
+              if(hf_right[act_orb_right]!=i){
+                 dets_right.push_back(hf_right);
                  count++;
                  dets_right[count][act_orb_right] =i;
               }
@@ -455,12 +371,7 @@ int main(int argc, char ** argv)
        //iteratively copy and create new DEAS determinants right
            for(int pos = 0; pos<L_env; pos++){
              for(int i = length; i<dets_right.size(); i++){
-             //check for number of electrons, spin and symmetry here
-             //collect some information
-                maquis::cout << "in det " << i << "   " ;
-                for(int k = 0; k<dets_right[i].size();k++){ maquis::cout << dets_right[i][k];}
-                maquis::cout << std::endl;
-
+           //collect information
                 nelec_right = num_el(dets_right[i]);
                 nelec_left = nelec-nelec_right;
                 spin_right = spin_check(dets_right[i]);
@@ -471,9 +382,9 @@ int main(int argc, char ** argv)
                 if(nelec_left == 2*left){
                    if(prd(0,sym_right)==target_sym&&spin_right==spin){ci_dets.push_back(dets_right[i]);}
                 }else if(nelec_right < nelec && nelec_left <= (2*left-abs(spin_left))&&nelec_left>=abs(spin_left)&&left!=abs(spin_left)){
-                //   maquis::cout << "number of electrons ok" <<std::endl;
+
                    half_filled = get_half_filled(nelec_left,left);
-                   maquis::cout << " size of half_filled " << half_filled.size()<<std::endl;
+
                    //those entries in half_filled that can not enable the correct spin will be deleted
                    for(int k = 0; k<half_filled.size(); k++){
                       if(spin_left == half_filled[k]){
@@ -481,7 +392,6 @@ int main(int argc, char ** argv)
                          break;
                       }
                    }
-                   maquis::cout << " size of half_filled after reduction " << half_filled.size()<<std::endl;
                    //get symmetry for left part
                    for(int k = 0; k<8; k++){
                       sym_left = k;
@@ -489,14 +399,12 @@ int main(int argc, char ** argv)
                          break;
                       }
                    }
-                   maquis::cout << "   symmetry required here is:  " << sym_left <<std::endl;
                    //check if symmetry can be reached with at least one number in half_filled
                    std::vector<int> irreps;
                    bool sym_check = false;
                    for(int k = 0;k<half_filled.size();k++){                
                       irreps=sym_map[half_filled[k]];
                       if(std::find(irreps.begin(),irreps.end(),sym_left) != irreps.end()){
-                         maquis::cout << "  possible to get that symmetry" <<std::endl;
                          sym_check = true;
                          break;
                       }
@@ -520,39 +428,8 @@ int main(int argc, char ** argv)
                  dets_right = deas(pos+1,act_orb_right,dets_right);
              }
          }
-
-
-
-
-/* This will no longer be neccesary 
-           //create first four determinants of left part
-           dets_left.push_back(hf_left);
-           count = 0;
-           for(int i = 1; i<5;i++){
-              if(hf_left[act_orb_left]!=i){
-                 dets_left.push_back(hf_left);
-                 count++;
-                 dets_left[count][act_orb_left] =i;
-              }
-           }
- 
-           
-       //iteratively copy and create new DEAS determinants left
-           for(int pos = 0;pos<left-1;pos++){
-              dets_left = copy_det(pos,dets_left);
-              act_orb_left = casv_left[pos+1];
-              dets_left = deas(pos+1,act_orb_left,dets_left);
-           }
-
-       //check for spin, symmetry and number of electrons
-*/       deas_dets = det_sym_check(dets_left, dets_right, spin, target_sym, nelec, symvec_left, symvec_right, prd);
-
-
-
-
-
-     }
-     else if(left==0){ //this is only for testing purposes, usually always left>0
+     }//end of cas left != 0
+     else if(left==0){ 
 
         int act_orb = casv[0];
            //create first four determinants 
@@ -566,16 +443,12 @@ int main(int argc, char ** argv)
            }
         }
 
-
   //main loop for deas and all checks
   //    first create new set of deas determinantes iteratively
         for(int pos = 0; pos<L-1; pos++){
            deas_dets = copy_det(pos,deas_dets);
            act_orb = casv[pos+1];
            deas_dets = deas(pos+1,act_orb,deas_dets);
-
-//improve selection of determinants
-        
 
         //check ci-dets vector for correct spatial symmetry, spin, number of electrons (and later ci-level)
             int nel_det,sym_det,spin_det = 0;
