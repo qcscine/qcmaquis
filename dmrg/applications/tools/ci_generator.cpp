@@ -76,7 +76,7 @@ std::vector<std::vector<int> > deas(const int &pos, const int &act_orb, std::vec
 
 std::vector<int> get_half_filled(int nelec_left, int left){
    std::vector<int> half_filled;
-   if(nelec_left>left){nelec_left=nelec_left-left;}
+   if(nelec_left>left){nelec_left=left-(nelec_left-left);}
    if(nelec_left>8){
      if(nelec_left%2==0){nelec_left=8;}
      else{nelec_left=7;}
@@ -354,7 +354,7 @@ int main(int argc, char ** argv)
        std::cout <<std::endl;
 
     //subtract left part, size is 2 in first microiteration
-        int left = 4;//0 not possible here ... would be nice for testing
+        int left = 7;//0 not possible here ... would be nice for testing
         int Mmax = 200;
         int length = 0;
         if(left!=0){
@@ -467,19 +467,21 @@ int main(int argc, char ** argv)
                 spin_left = spin-spin_right;
                 sym_right = sym_check(dets_right[i],symvec_right,prd);
  
-             //necessary check for number of electrons
-                if(nelec_right <= nelec && nelec_left <= 2*left){
+             //left part is forced to be totally symmetric
+                if(nelec_left == 2*left){
+                   if(prd(0,sym_right)==target_sym&&spin_right==spin){ci_dets.push_back(dets_right[i]);}
+                }else if(nelec_right < nelec && nelec_left <= (2*left-abs(spin_left))&&nelec_left>=abs(spin_left)&&left!=abs(spin_left)){
                 //   maquis::cout << "number of electrons ok" <<std::endl;
                    half_filled = get_half_filled(nelec_left,left);
                    maquis::cout << " size of half_filled " << half_filled.size()<<std::endl;
                    //those entries in half_filled that can not enable the correct spin will be deleted
                    for(int k = 0; k<half_filled.size(); k++){
                       if(spin_left == half_filled[k]){
-                         half_filled.erase(half_filled.begin()+k,half_filled.end());
+                         half_filled.erase(half_filled.begin()+k+1,half_filled.end());
                          break;
                       }
                    }
-                   maquis::cout << " size of half_filled after reduction" << half_filled.size()<<std::endl;
+                   maquis::cout << " size of half_filled after reduction " << half_filled.size()<<std::endl;
                    //get symmetry for left part
                    for(int k = 0; k<8; k++){
                       sym_left = k;
@@ -500,6 +502,15 @@ int main(int argc, char ** argv)
                       }
                    }
                    if(sym_check==true){ci_dets.push_back(dets_right[i]);}
+                //if configuration on the left is completely determined by the spin the symmetry has no degrees of freedom and is forced to be the product of the sym_left vector
+                }else if(nelec_right < nelec && nelec_left <= (2*left-abs(spin_left))&&nelec_left>=abs(spin_left)&&left==abs(spin_left)){
+                   int force_sym = 0;
+                   for(int k = 0; k<left; k++){
+                      force_sym = prd(force_sym,symvec_left[k]);
+                   }
+                   if(prd(force_sym,sym_right)==target_sym){ci_dets.push_back(dets_right[i]);}
+                }else if(nelec_right==nelec&&spin_right == spin &&sym_right==target_sym){
+                   ci_dets.push_back(dets_right[i]);
                 }
              }
              length = dets_right.size();
